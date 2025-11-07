@@ -22,6 +22,7 @@ import { BrandDeal } from '@/types';
 import { useScanContractAI } from '@/lib/hooks/useScanContractAI'; // Import the new hook
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button'; // Ensure Button is imported
+import { Label } from '@/components/ui/label'; // Import Label
 
 const CreatorDashboard = () => {
   const { profile, loading: sessionLoading, isCreator } = useSession();
