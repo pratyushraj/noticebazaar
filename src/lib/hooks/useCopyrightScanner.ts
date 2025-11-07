@@ -17,7 +17,9 @@ export const useOriginalContent = (options: UseOriginalContentOptions) => {
   return useSupabaseQuery<OriginalContent[], Error>(
     ['original_content', creatorId],
     async () => {
-      if (!creatorId) throw new Error('Creator ID is required.');
+      if (!creatorId) {
+        return [];
+      }
 
       const { data, error } = await supabase
         .from('original_content')
@@ -25,12 +27,17 @@ export const useOriginalContent = (options: UseOriginalContentOptions) => {
         .eq('user_id', creatorId)
         .order('created_at', { ascending: false });
 
-      if (error) throw new Error(error.message);
+      if (error) {
+        // Log the error but return an empty array to prevent crashing the UI
+        console.error('Supabase Error in useOriginalContent:', error.message);
+        return [];
+      }
       return data as OriginalContent[];
     },
     {
       enabled: enabled && !!creatorId,
       errorMessage: 'Failed to fetch original content list',
+      retry: false,
     }
   );
 };
@@ -148,6 +155,7 @@ export const useCopyrightMatches = (options: UseCopyrightMatchesOptions) => {
     {
       enabled: enabled && !!contentId,
       errorMessage: 'Failed to fetch copyright matches',
+      retry: false,
     }
   );
 };

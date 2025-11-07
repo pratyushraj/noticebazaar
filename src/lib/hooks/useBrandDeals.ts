@@ -20,7 +20,8 @@ export const useBrandDeals = (options: UseBrandDealsOptions) => {
     ['brand_deals', creatorId, statusFilter, sortBy, sortOrder, limit],
     async () => {
       if (!creatorId) {
-        throw new Error('Creator ID is required to fetch brand deals.');
+        // Return empty array immediately if no creatorId
+        return [];
       }
 
       let query = supabase
@@ -40,13 +41,18 @@ export const useBrandDeals = (options: UseBrandDealsOptions) => {
       const { data, error } = await query;
 
       if (error) {
-        throw new Error(error.message);
+        // Log the error but return an empty array to prevent crashing the UI
+        console.error('Supabase Error in useBrandDeals:', error.message);
+        // NOTE: We return [] here instead of throwing to handle missing tables gracefully.
+        return [];
       }
       return data as BrandDeal[];
     },
     {
       enabled: enabled && !!creatorId,
       errorMessage: 'Failed to fetch brand deals',
+      // Do not throw error here, let the queryFn handle it and return []
+      retry: false,
     }
   );
 };
