@@ -11,6 +11,7 @@
           instagram_handle: string | null
           last_name: string | null
           onboarding_complete: boolean | null
+          pan: string | null
           role: string
           tiktok_handle: string | null
           twitter_handle: string | null
@@ -28,6 +29,7 @@
           instagram_handle?: string | null
           last_name?: string | null
           onboarding_complete?: boolean | null
+          pan?: string | null
           role?: string
           tiktok_handle?: string | null
           twitter_handle?: string | null
@@ -45,6 +47,7 @@
           instagram_handle?: string | null
           last_name?: string | null
           onboarding_complete?: boolean | null
+          pan?: string | null
           role?: string
           tiktok_handle?: string | null
           twitter_handle?: string | null

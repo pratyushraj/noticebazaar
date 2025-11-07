@@ -13,6 +13,7 @@ export type Profile = Tables<'profiles'> & {
   tiktok_handle?: string | null; // NEW
   facebook_profile_url?: string | null; // NEW
   twitter_handle?: string | null; // NEW
+  pan?: string | null; // NEW: Added PAN field
 };
 
 export type Message = Tables<'messages'> & {

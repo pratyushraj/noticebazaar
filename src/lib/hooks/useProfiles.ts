@@ -27,7 +27,7 @@ export const useProfiles = (options?: UseProfilesOptions) => {
   // Memoize the queryFn to ensure referential stability
   const queryFn = useCallback(async () => {
     // Reverting to original select statement
-    const selectStatement = 'id, first_name, last_name, avatar_url, role, updated_at, instagram_handle, youtube_channel_id, tiktok_handle, facebook_profile_url, twitter_handle'; // UPDATED: Include new social media fields
+    const selectStatement = 'id, first_name, last_name, avatar_url, role, updated_at, instagram_handle, youtube_channel_id, tiktok_handle, facebook_profile_url, twitter_handle, pan'; // UPDATED: Include new social media fields and pan
 
     let query = supabase
       .from('profiles')
@@ -77,7 +77,7 @@ export const useProfileById = (profileId: string | undefined, options?: { enable
     }
     const { data, error } = await supabase
       .from('profiles')
-      .select('id, first_name, last_name, avatar_url, role, instagram_handle, youtube_channel_id, tiktok_handle, facebook_profile_url, twitter_handle') // UPDATED: Include new social media fields
+      .select('id, first_name, last_name, avatar_url, role, instagram_handle, youtube_channel_id, tiktok_handle, facebook_profile_url, twitter_handle, pan') // UPDATED: Include new social media fields and pan
       .eq('id', profileId)
       .single();
 
@@ -112,12 +112,13 @@ interface UpdateProfileVariables {
   tiktok_handle?: string | null; // NEW
   facebook_profile_url?: string | null; // NEW
   twitter_handle?: string | null; // NEW
+  pan?: string | null; // NEW: Added PAN field
 }
 
 export const useUpdateProfile = () => {
   const queryClient = useQueryClient();
   return useSupabaseMutation<void, Error, UpdateProfileVariables>(
-    async ({ id, first_name, last_name, avatar_url, role, business_name, gstin, business_entity_type, onboarding_complete, instagram_handle, youtube_channel_id, tiktok_handle, facebook_profile_url, twitter_handle }) => { // UPDATED: Destructure new fields
+    async ({ id, first_name, last_name, avatar_url, role, business_name, gstin, business_entity_type, onboarding_complete, instagram_handle, youtube_channel_id, tiktok_handle, facebook_profile_url, twitter_handle, pan }) => { // UPDATED: Destructure new fields
       const updateData: { 
         first_name: string; 
         last_name: string; 
@@ -133,6 +134,7 @@ export const useUpdateProfile = () => {
         tiktok_handle?: string | null; // NEW
         facebook_profile_url?: string | null; // NEW
         twitter_handle?: string | null; // NEW
+        pan?: string | null; // NEW
       } = {
         first_name,
         last_name,
@@ -170,6 +172,10 @@ export const useUpdateProfile = () => {
       }
       if (twitter_handle !== undefined) {
         updateData.twitter_handle = twitter_handle;
+      }
+      // NEW: Add PAN field to updateData if provided
+      if (pan !== undefined) {
+        updateData.pan = pan;
       }
 
       const { error } = await supabase
