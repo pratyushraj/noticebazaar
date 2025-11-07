@@ -1,28 +1,3 @@
--- Table: brand_deals
-CREATE TABLE public.brand_deals (
-    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-    creator_id uuid REFERENCES public.creators(id) ON DELETE CASCADE,
-    brand_name text NOT NULL,
-    deal_amount decimal NOT NULL,
-    deliverables jsonb,
-    contract_url text,
-    expected_payment_date date NOT NULL,
-    actual_payment_date date,
-    contact_person text,
-    platform text,
-    status text DEFAULT 'active' NOT NULL,
-    created_at timestamp with time zone DEFAULT now()
-);
-
-ALTER TABLE public.brand_deals ENABLE ROW LEVEL SECURITY;
-
--- Optional RLS policies for brand_deals
--- CREATE POLICY "Enable read access for authenticated creator's brand deals" ON public.brand_deals FOR SELECT USING (auth.uid() = creator_id);
--- CREATE POLICY "Enable insert for authenticated creator's brand deals" ON public.brand_deals FOR INSERT WITH CHECK (auth.uid() = creator_id);
--- CREATE POLICY "Enable update for authenticated creator's brand deals" ON public.brand_deals FOR UPDATE USING (auth.uid() = creator_id);
--- CREATE POLICY "Enable delete for authenticated creator's brand deals" ON public.brand_deals FOR DELETE USING (auth.uid() = creator_id);
-
-
 -- Table: payments
 CREATE TABLE public.payments (
     id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
