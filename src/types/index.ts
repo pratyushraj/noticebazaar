@@ -1,5 +1,6 @@
 // src/types/index.ts
 import { Tables } from './supabase';
+import { LucideIcon } from 'lucide-react'; // Import LucideIcon for CreatorKpi
 
 export type Profile = Tables<'profiles'> & {
   role: 'client' | 'admin' | 'chartered_accountant' | 'creator'; // Override role to be specific string literals, added 'chartered_accountant' and 'creator'
@@ -70,3 +71,15 @@ export type Consultation = Tables<'consultations'> & {
     last_name: string;
   } | null;
 };
+
+// New type for Creator KPI cards
+export interface CreatorKpi {
+  title: string;
+  value: string;
+  description: string;
+  icon: LucideIcon;
+  color: string;
+  changePercentage?: number; // Optional: e.g., 12 for +12%
+  changeDirection?: 'up' | 'down' | 'neutral'; // Optional: for trend arrows
+  statusDescription?: string; // Optional: e.g., "In Progress", "Requires Action", "Improving"
+}

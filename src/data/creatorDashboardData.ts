@@ -7,6 +7,9 @@ export interface CreatorKpi {
   description: string;
   icon: LucideIcon;
   color: string;
+  changePercentage?: number; // Optional: e.g., 12 for +12%
+  changeDirection?: 'up' | 'down' | 'neutral'; // Optional: for trend arrows
+  statusDescription?: string; // Optional: e.g., "In Progress", "Requires Action", "Improving"
 }
 
 export interface QuickAction {
@@ -54,6 +57,9 @@ export const MOCK_CREATOR_KPI_CARDS: CreatorKpi[] = [
     description: 'This Month',
     icon: IndianRupee,
     color: 'text-green-500',
+    changePercentage: 12,
+    changeDirection: 'up',
+    statusDescription: 'This Month',
   },
   {
     title: 'Active Brand Deals',
@@ -61,6 +67,9 @@ export const MOCK_CREATOR_KPI_CARDS: CreatorKpi[] = [
     description: 'In Progress',
     icon: Briefcase,
     color: 'text-blue-500',
+    changePercentage: 0,
+    changeDirection: 'neutral',
+    statusDescription: 'In Progress',
   },
   {
     title: 'Pending Legal Tasks',
@@ -68,6 +77,9 @@ export const MOCK_CREATOR_KPI_CARDS: CreatorKpi[] = [
     description: 'Requires Action',
     icon: AlertTriangle,
     color: 'text-orange-500',
+    changePercentage: 5,
+    changeDirection: 'up', // More tasks pending
+    statusDescription: 'Requires Action',
   },
   {
     title: 'Protection Score',
@@ -75,6 +87,9 @@ export const MOCK_CREATOR_KPI_CARDS: CreatorKpi[] = [
     description: 'Legal Health',
     icon: ShieldCheck,
     color: 'text-purple-500',
+    changePercentage: 3,
+    changeDirection: 'up',
+    statusDescription: 'Improving',
   },
 ];
 
