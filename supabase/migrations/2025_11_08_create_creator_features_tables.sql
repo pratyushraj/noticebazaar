@@ -1,23 +1,3 @@
--- Table: payments
-CREATE TABLE public.payments (
-    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-    deal_id uuid REFERENCES public.brand_deals(id) ON DELETE CASCADE,
-    invoice_url text,
-    utr_number text,
-    payment_received boolean DEFAULT FALSE NOT NULL,
-    payment_date date,
-    created_at timestamp with time zone DEFAULT now()
-);
-
-ALTER TABLE public.payments ENABLE ROW LEVEL SECURITY;
-
--- Optional RLS policies for payments
--- CREATE POLICY "Enable read access for authenticated creator's payments" ON public.payments FOR SELECT USING (EXISTS (SELECT 1 FROM public.brand_deals WHERE brand_deals.id = payments.deal_id AND brand_deals.creator_id = auth.uid()));
--- CREATE POLICY "Enable insert for authenticated creator's payments" ON public.payments FOR INSERT WITH CHECK (EXISTS (SELECT 1 FROM public.brand_deals WHERE brand_deals.id = payments.deal_id AND brand_deals.creator_id = auth.uid()));
--- CREATE POLICY "Enable update for authenticated creator's payments" ON public.payments FOR UPDATE USING (EXISTS (SELECT 1 FROM public.brand_deals WHERE brand_deals.id = payments.deal_id AND brand_deals.creator_id = auth.uid()));
--- CREATE POLICY "Enable delete for authenticated creator's payments" ON public.payments FOR DELETE USING (EXISTS (SELECT 1 FROM public.brand_deals WHERE brand_deals.id = payments.deal_id AND brand_deals.creator_id = auth.uid()));
-
-
 -- Table: contracts
 CREATE TABLE public.contracts (
     id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
