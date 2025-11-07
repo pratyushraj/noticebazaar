@@ -2,7 +2,7 @@
 import { Tables } from './supabase';
 
 export type Profile = Tables<'profiles'> & {
-  role: 'client' | 'admin' | 'chartered_accountant'; // Override role to be specific string literals, added 'chartered_accountant'
+  role: 'client' | 'admin' | 'chartered_accountant' | 'creator'; // Override role to be specific string literals, added 'chartered_accountant' and 'creator'
   business_name?: string | null; // New field
   gstin?: string | null; // New field
   business_entity_type?: string | null; // New field
