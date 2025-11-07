@@ -18,8 +18,8 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog'; // Added DialogFooter
 import BrandDealForm from '@/components/forms/BrandDealForm';
 import { useBrandDeals } from '@/lib/hooks/useBrandDeals';
+import { useAIScanContractReview } from '@/lib/hooks/useAIScanContractReview'; // Import the correct hook
 import { BrandDeal } from '@/types';
-import { useScanContractAI } from '@/lib/hooks/useScanContractAI'; // Import the new hook
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button'; // Ensure Button is imported
 import { Label } from '@/components/ui/label'; // Import Label
@@ -57,7 +57,7 @@ const CreatorDashboard = () => {
   });
 
   // AI Scan Contract Mutation
-  const scanContractMutation = useScanContractAI();
+  const scanContractMutation = useAIScanContractReview();
   // NEW: Send Payment Reminder Mutation
   const sendPaymentReminderMutation = useSendPaymentReminder();
   // NEW: Send Takedown Notice Mutation
