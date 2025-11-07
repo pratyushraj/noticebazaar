@@ -49,10 +49,14 @@ export type Database = {
           deliverables: string | null
           due_date: string
           id: string
+          invoice_file_url: string | null
           payment_expected_date: string
+          payment_received_date: string | null
           platform: string | null
           status: string
           updated_at: string
+          utr_number: string | null
+          brand_email: string | null
         }
         Insert: {
           brand_name: string
@@ -64,10 +68,14 @@ export type Database = {
           deliverables?: string | null
           due_date: string
           id?: string
+          invoice_file_url?: string | null
           payment_expected_date: string
+          payment_received_date?: string | null
           platform?: string | null
           status?: string
           updated_at?: string
+          utr_number?: string | null
+          brand_email?: string | null
         }
         Update: {
           brand_name?: string
@@ -79,10 +87,14 @@ export type Database = {
           deliverables?: string | null
           due_date?: string
           id?: string
+          invoice_file_url?: string | null
           payment_expected_date?: string
+          payment_received_date?: string | null
           platform?: string | null
           status?: string
           updated_at?: string
+          utr_number?: string | null
+          brand_email?: string | null
         }
         Relationships: [
           {

@@ -23,6 +23,7 @@ import { BrandDeal } from '@/types'; // Import BrandDeal type
 const CreatorDashboard = () => {
   const { profile, loading: sessionLoading, isCreator } = useSession();
   const [isBrandDealFormOpen, setIsBrandDealFormOpen] = useState(false);
+  const [editingBrandDeal, setEditingBrandDeal] = useState<BrandDeal | null>(null); // New state for editing
 
   // Fetch mock dashboard data (for KPIs, AI actions, etc. that are not directly brand deals)
   const { data: mockDashboardData, isLoading: isLoadingMocks, error: mockError } = useCreatorDashboardData(
@@ -46,7 +47,7 @@ const CreatorDashboard = () => {
 
   // Derive data for Revenue & Payments from real brand deals
   const derivedPendingBrandPayments = useMemo(() => {
-    const pending = brandDeals?.filter(deal => deal.status === 'Payment Pending' || deal.status === 'Approved' && new Date(deal.payment_expected_date) > new Date()) || [];
+    const pending = brandDeals?.filter(deal => deal.status === 'Payment Pending' && new Date(deal.payment_expected_date) >= new Date()) || [];
     const overdue = brandDeals?.filter(deal => deal.status === 'Payment Pending' && new Date(deal.payment_expected_date) < new Date()) || [];
     
     const totalPendingAmount = pending.reduce((sum, deal) => sum + deal.deal_amount, 0);
@@ -93,6 +94,15 @@ const CreatorDashboard = () => {
       })) || [];
   }, [brandDeals]);
 
+  const handleAddBrandDeal = () => {
+    setEditingBrandDeal(null); // Clear any editing data
+    setIsBrandDealFormOpen(true);
+  };
+
+  const handleEditBrandDeal = (deal: BrandDeal) => {
+    setEditingBrandDeal(deal);
+    setIsBrandDealFormOpen(true);
+  };
 
   if (sessionLoading || isLoadingMocks || isLoadingBrandDeals) {
     return (
@@ -122,7 +132,7 @@ const CreatorDashboard = () => {
       <CreatorKpiCards kpiCards={mockDashboardData.kpiCards} />
 
       {/* Quick Actions */}
-      <CreatorQuickActions quickActions={mockDashboardData.quickActions} onAddBrandDeal={() => setIsBrandDealFormOpen(true)} />
+      <CreatorQuickActions quickActions={mockDashboardData.quickActions} onAddBrandDeal={handleAddBrandDeal} />
 
       {/* Revenue & Payments */}
       <CreatorRevenuePayments
@@ -130,6 +140,7 @@ const CreatorDashboard = () => {
         activeBrandDeals={derivedActiveBrandDeals}
         previousBrands={derivedPreviousBrands}
         totalIncomeTracked={derivedTotalIncomeTracked}
+        onEditBrandDeal={handleEditBrandDeal} // Pass the edit handler
       />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -163,21 +174,26 @@ const CreatorDashboard = () => {
       <Dialog open={isBrandDealFormOpen} onOpenChange={setIsBrandDealFormOpen}>
         <DialogContent 
           className="sm:max-w-[600px] bg-card text-foreground border-border"
-          aria-labelledby="add-brand-deal-title"
-          aria-describedby="add-brand-deal-description"
+          aria-labelledby="brand-deal-form-title"
+          aria-describedby="brand-deal-form-description"
         >
           <DialogHeader>
-            <DialogTitle id="add-brand-deal-title">Add New Brand Deal</DialogTitle>
-            <DialogDescription id="add-brand-deal-description" className="text-muted-foreground">
-              Enter the details for your new brand collaboration.
+            <DialogTitle id="brand-deal-form-title">{editingBrandDeal ? 'Edit Brand Deal' : 'Add New Brand Deal'}</DialogTitle>
+            <DialogDescription id="brand-deal-form-description" className="text-muted-foreground">
+              {editingBrandDeal ? 'Update the details for this brand collaboration.' : 'Enter the details for your new brand collaboration.'}
             </DialogDescription>
           </DialogHeader>
           <BrandDealForm
+            initialData={editingBrandDeal} // Pass initial data for editing
             onSaveSuccess={() => {
               refetchBrandDeals(); // Refetch brand deals after successful save
               setIsBrandDealFormOpen(false);
+              setEditingBrandDeal(null); // Clear editing state
             }}
-            onClose={() => setIsBrandDealFormOpen(false)}
+            onClose={() => {
+              setIsBrandDealFormOpen(false);
+              setEditingBrandDeal(null); // Clear editing state
+            }}
           />
         </DialogContent>
       </Dialog>

@@ -62,20 +62,26 @@ interface AddBrandDealVariables {
   contact_person: string;
   platform: string;
   status: BrandDeal['status'];
+  invoice_file: File | null; // New: invoice file
+  utr_number: string | null; // New: UTR number
+  brand_email: string | null; // New: brand email
+  payment_received_date: string | null; // New: payment received date
 }
 
 export const useAddBrandDeal = () => {
   const queryClient = useQueryClient();
   return useSupabaseMutation<void, Error, AddBrandDealVariables>(
-    async ({ creator_id, brand_name, deliverables, contract_file, ...rest }) => {
+    async ({ creator_id, brand_name, deliverables, contract_file, invoice_file, ...rest }) => {
       let contract_file_url: string | null = null;
+      let invoice_file_url: string | null = null;
 
+      // Upload contract file
       if (contract_file) {
         const fileExtension = contract_file.name.split('.').pop();
-        const filePath = `${creator_id}/brand_deals/${brand_name.replace(/\s/g, '_')}-${Date.now()}.${fileExtension}`;
+        const filePath = `${creator_id}/brand_deals/${brand_name.replace(/\s/g, '_')}-contract-${Date.now()}.${fileExtension}`;
 
         const { data: uploadData, error: uploadError } = await supabase.storage
-          .from('creator-assets') // Assuming a 'creator-assets' bucket for creator-specific files
+          .from('creator-assets')
           .upload(filePath, contract_file, {
             cacheControl: '3600',
             upsert: false,
@@ -96,6 +102,33 @@ export const useAddBrandDeal = () => {
         contract_file_url = publicUrlData.publicUrl;
       }
 
+      // Upload invoice file
+      if (invoice_file) {
+        const fileExtension = invoice_file.name.split('.').pop();
+        const filePath = `${creator_id}/brand_deals/${brand_name.replace(/\s/g, '_')}-invoice-${Date.now()}.${fileExtension}`;
+
+        const { data: uploadData, error: uploadError } = await supabase.storage
+          .from('creator-assets')
+          .upload(filePath, invoice_file, {
+            cacheControl: '3600',
+            upsert: false,
+          });
+
+        if (uploadError) {
+          throw new Error(`Invoice file upload failed: ${uploadError.message}`);
+        }
+
+        const { data: publicUrlData } = supabase.storage
+          .from('creator-assets')
+          .getPublicUrl(filePath);
+
+        if (!publicUrlData?.publicUrl) {
+          await supabase.storage.from('creator-assets').remove([filePath]);
+          throw new Error('Failed to get public URL for the uploaded invoice file.');
+        }
+        invoice_file_url = publicUrlData.publicUrl;
+      }
+
       const { error: insertError } = await supabase
         .from('brand_deals')
         .insert({
@@ -103,12 +136,18 @@ export const useAddBrandDeal = () => {
           brand_name,
           deliverables,
           contract_file_url,
+          invoice_file_url, // New field
           ...rest,
         });
 
       if (insertError) {
+        // Attempt to remove uploaded files if database insert fails
         if (contract_file_url) {
           const filePath = contract_file_url.split('/creator-assets/')[1];
+          await supabase.storage.from('creator-assets').remove([filePath]);
+        }
+        if (invoice_file_url) {
+          const filePath = invoice_file_url.split('/creator-assets/')[1];
           await supabase.storage.from('creator-assets').remove([filePath]);
         }
         throw new Error(`Failed to record brand deal in database: ${insertError.message}`);
@@ -130,63 +169,64 @@ interface UpdateBrandDealVariables {
   brand_name?: string;
   deal_amount?: number;
   deliverables?: string;
-  contract_file?: File | null; // Allow updating file
+  contract_file?: File | null;
   due_date?: string;
   payment_expected_date?: string;
   contact_person?: string;
   platform?: string;
   status?: BrandDeal['status'];
-  // Add original_contract_file_url if you need to delete old file on update
-  original_contract_file_url?: string | null; 
+  original_contract_file_url?: string | null;
+  invoice_file?: File | null; // New: invoice file
+  original_invoice_file_url?: string | null; // New: original invoice file URL
+  utr_number?: string | null; // New: UTR number
+  brand_email?: string | null; // New: brand email
+  payment_received_date?: string | null; // New: payment received date
 }
 
 export const useUpdateBrandDeal = () => {
   const queryClient = useQueryClient();
   return useSupabaseMutation<void, Error, UpdateBrandDealVariables>(
-    async ({ id, creator_id, contract_file, original_contract_file_url, ...updates }) => {
+    async ({ id, creator_id, contract_file, original_contract_file_url, invoice_file, original_invoice_file_url, ...updates }) => {
       let contract_file_url: string | null | undefined = undefined;
+      let invoice_file_url: string | null | undefined = undefined;
 
-      if (contract_file !== undefined) { // If a new file is provided or file is explicitly set to null
+      // Handle contract file update
+      if (contract_file !== undefined) {
         if (original_contract_file_url) {
-          // Delete old file if it exists
           const oldFilePath = original_contract_file_url.split('/creator-assets/')[1];
-          if (oldFilePath) {
-            await supabase.storage.from('creator-assets').remove([oldFilePath]);
-          }
+          if (oldFilePath) { await supabase.storage.from('creator-assets').remove([oldFilePath]); }
         }
-
         if (contract_file) {
           const fileExtension = contract_file.name.split('.').pop();
           const filePath = `${creator_id}/brand_deals/${updates.brand_name || 'contract'}-${Date.now()}.${fileExtension}`;
-
-          const { data: uploadData, error: uploadError } = await supabase.storage
-            .from('creator-assets')
-            .upload(filePath, contract_file, {
-              cacheControl: '3600',
-              upsert: false,
-            });
-
-          if (uploadError) {
-            throw new Error(`Contract file upload failed: ${uploadError.message}`);
-          }
-
-          const { data: publicUrlData } = supabase.storage
-            .from('creator-assets')
-            .getPublicUrl(filePath);
-
-          if (!publicUrlData?.publicUrl) {
-            await supabase.storage.from('creator-assets').remove([filePath]);
-            throw new Error('Failed to get public URL for the uploaded contract file.');
-          }
+          const { data: uploadData, error: uploadError } = await supabase.storage.from('creator-assets').upload(filePath, contract_file, { cacheControl: '3600', upsert: false });
+          if (uploadError) { throw new Error(`Contract file upload failed: ${uploadError.message}`); }
+          const { data: publicUrlData } = supabase.storage.from('creator-assets').getPublicUrl(filePath);
+          if (!publicUrlData?.publicUrl) { await supabase.storage.from('creator-assets').remove([filePath]); throw new Error('Failed to get public URL for the uploaded contract file.'); }
           contract_file_url = publicUrlData.publicUrl;
-        } else {
-          contract_file_url = null; // Explicitly set to null if file is removed
+        } else { contract_file_url = null; }
+      }
+
+      // Handle invoice file update
+      if (invoice_file !== undefined) {
+        if (original_invoice_file_url) {
+          const oldFilePath = original_invoice_file_url.split('/creator-assets/')[1];
+          if (oldFilePath) { await supabase.storage.from('creator-assets').remove([oldFilePath]); }
         }
+        if (invoice_file) {
+          const fileExtension = invoice_file.name.split('.').pop();
+          const filePath = `${creator_id}/brand_deals/${updates.brand_name || 'invoice'}-${Date.now()}.${fileExtension}`;
+          const { data: uploadData, error: uploadError } = await supabase.storage.from('creator-assets').upload(filePath, invoice_file, { cacheControl: '3600', upsert: false });
+          if (uploadError) { throw new Error(`Invoice file upload failed: ${uploadError.message}`); }
+          const { data: publicUrlData } = supabase.storage.from('creator-assets').getPublicUrl(filePath);
+          if (!publicUrlData?.publicUrl) { await supabase.storage.from('creator-assets').remove([filePath]); throw new Error('Failed to get public URL for the uploaded invoice file.'); }
+          invoice_file_url = publicUrlData.publicUrl;
+        } else { invoice_file_url = null; }
       }
 
       const { error } = await supabase
         .from('brand_deals')
-        .update({ ...updates, contract_file_url, updated_at: new Date().toISOString() })
+        .update({ ...updates, contract_file_url, invoice_file_url, updated_at: new Date().toISOString() })
         .eq('id', id);
 
       if (error) {
@@ -205,18 +245,22 @@ export const useUpdateBrandDeal = () => {
 
 export const useDeleteBrandDeal = () => {
   const queryClient = useQueryClient();
-  return useSupabaseMutation<void, Error, { id: string; creator_id: string; contract_file_url: string | null }>(
-    async ({ id, creator_id, contract_file_url }) => {
+  return useSupabaseMutation<void, Error, { id: string; creator_id: string; contract_file_url: string | null; invoice_file_url: string | null }>(
+    async ({ id, creator_id, contract_file_url, invoice_file_url }) => {
+      // Delete contract file from storage
       if (contract_file_url) {
         const filePath = contract_file_url.split('/creator-assets/')[1];
         if (filePath) {
-          const { error: storageError } = await supabase.storage
-            .from('creator-assets')
-            .remove([filePath]);
-          if (storageError) {
-            console.warn('Failed to delete contract file from storage:', storageError.message);
-            // Don't throw, proceed with DB deletion even if file deletion fails
-          }
+          const { error: storageError } = await supabase.storage.from('creator-assets').remove([filePath]);
+          if (storageError) { console.warn('Failed to delete contract file from storage:', storageError.message); }
+        }
+      }
+      // Delete invoice file from storage
+      if (invoice_file_url) {
+        const filePath = invoice_file_url.split('/creator-assets/')[1];
+        if (filePath) {
+          const { error: storageError } = await supabase.storage.from('creator-assets').remove([filePath]);
+          if (storageError) { console.warn('Failed to delete invoice file from storage:', storageError.message); }
         }
       }
 

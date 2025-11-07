@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Loader2, Upload, FileText, CalendarDays, DollarSign, User, Globe } from 'lucide-react';
+import { Loader2, Upload, FileText, CalendarDays, DollarSign, User, Globe, Mail, ReceiptText } from 'lucide-react'; // Added Mail and ReceiptText icons
 import { toast } from 'sonner';
 import { DialogFooter } from '@/components/ui/dialog';
 import { useSession } from '@/contexts/SessionContext';
@@ -34,6 +34,11 @@ const BrandDealForm = ({ initialData, onSaveSuccess, onClose }: BrandDealFormPro
   const [contactPerson, setContactPerson] = useState(initialData?.contact_person || '');
   const [platform, setPlatform] = useState(initialData?.platform || '');
   const [status, setStatus] = useState<BrandDeal['status']>(initialData?.status || 'Drafting');
+  const [brandEmail, setBrandEmail] = useState(initialData?.brand_email || ''); // New state
+  const [invoiceFile, setInvoiceFile] = useState<File | null>(null); // New state
+  const [existingInvoiceFileUrl, setExistingInvoiceFileUrl] = useState(initialData?.invoice_file_url || null); // New state
+  const [utrNumber, setUtrNumber] = useState(initialData?.utr_number || ''); // New state
+  const [paymentReceivedDate, setPaymentReceivedDate] = useState(initialData?.payment_received_date || ''); // New state
 
   const addBrandDealMutation = useAddBrandDeal();
   const updateBrandDealMutation = useUpdateBrandDeal();
@@ -49,6 +54,10 @@ const BrandDealForm = ({ initialData, onSaveSuccess, onClose }: BrandDealFormPro
       setContactPerson(initialData.contact_person || '');
       setPlatform(initialData.platform || '');
       setStatus(initialData.status);
+      setBrandEmail(initialData.brand_email || ''); // Set new state
+      setExistingInvoiceFileUrl(initialData.invoice_file_url || null); // Set new state
+      setUtrNumber(initialData.utr_number || ''); // Set new state
+      setPaymentReceivedDate(initialData.payment_received_date || ''); // Set new state
     } else {
       // Reset form for new entry
       setBrandName('');
@@ -61,14 +70,27 @@ const BrandDealForm = ({ initialData, onSaveSuccess, onClose }: BrandDealFormPro
       setContactPerson('');
       setPlatform('');
       setStatus('Drafting');
+      setBrandEmail(''); // Reset new state
+      setInvoiceFile(null); // Reset new state
+      setExistingInvoiceFileUrl(null); // Reset new state
+      setUtrNumber(''); // Reset new state
+      setPaymentReceivedDate(''); // Reset new state
     }
   }, [initialData]);
 
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleContractFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files[0]) {
       setContractFile(event.target.files[0]);
     } else {
       setContractFile(null);
+    }
+  };
+
+  const handleInvoiceFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.files && event.target.files[0]) {
+      setInvoiceFile(event.target.files[0]);
+    } else {
+      setInvoiceFile(null);
     }
   };
 
@@ -100,13 +122,18 @@ const BrandDealForm = ({ initialData, onSaveSuccess, onClose }: BrandDealFormPro
           brand_name: brandName.trim(),
           deal_amount: dealAmountNum,
           deliverables: deliverables.trim(),
-          contract_file: contractFile, // Pass new file or null
-          original_contract_file_url: existingContractFileUrl, // Pass original URL for deletion if new file
+          contract_file: contractFile,
+          original_contract_file_url: existingContractFileUrl,
           due_date: dueDate,
           payment_expected_date: paymentExpectedDate,
           contact_person: contactPerson.trim(),
           platform: platform,
           status: status,
+          brand_email: brandEmail.trim() || null, // New field
+          invoice_file: invoiceFile, // New field
+          original_invoice_file_url: existingInvoiceFileUrl, // New field
+          utr_number: utrNumber.trim() || null, // New field
+          payment_received_date: paymentReceivedDate || null, // New field
         });
         toast.success('Brand deal updated successfully!');
       } else {
@@ -122,6 +149,10 @@ const BrandDealForm = ({ initialData, onSaveSuccess, onClose }: BrandDealFormPro
           contact_person: contactPerson.trim(),
           platform: platform,
           status: status,
+          brand_email: brandEmail.trim() || null, // New field
+          invoice_file: invoiceFile, // New field
+          utr_number: utrNumber.trim() || null, // New field
+          payment_received_date: paymentReceivedDate || null, // New field
         });
         toast.success('Brand deal added successfully!');
       }
@@ -146,6 +177,21 @@ const BrandDealForm = ({ initialData, onSaveSuccess, onClose }: BrandDealFormPro
             onChange={(e) => setBrandName(e.target.value)}
             disabled={isSubmitting}
             placeholder="e.g., Nike, Coca-Cola"
+            className="pl-9"
+          />
+        </div>
+      </div>
+      <div>
+        <Label htmlFor="brandEmail">Brand Email (Optional)</Label>
+        <div className="relative">
+          <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            id="brandEmail"
+            type="email"
+            value={brandEmail}
+            onChange={(e) => setBrandEmail(e.target.value)}
+            disabled={isSubmitting}
+            placeholder="e.g., contact@brand.com"
             className="pl-9"
           />
         </div>
@@ -180,7 +226,7 @@ const BrandDealForm = ({ initialData, onSaveSuccess, onClose }: BrandDealFormPro
         <Input
           id="contractFile"
           type="file"
-          onChange={handleFileChange}
+          onChange={handleContractFileChange}
           disabled={isSubmitting}
         />
         {existingContractFileUrl && !contractFile && (
@@ -250,6 +296,56 @@ const BrandDealForm = ({ initialData, onSaveSuccess, onClose }: BrandDealFormPro
             ))}
           </SelectContent>
         </Select>
+      </div>
+      <div className="space-y-2 border-t border-border pt-4 mt-4">
+        <h3 className="text-lg font-semibold text-foreground">Payment Details</h3>
+        <div>
+          <Label htmlFor="utrNumber">UTR Number (Optional)</Label>
+          <div className="relative">
+            <ReceiptText className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              id="utrNumber"
+              value={utrNumber}
+              onChange={(e) => setUtrNumber(e.target.value)}
+              disabled={isSubmitting}
+              placeholder="e.g., 1234567890ABC"
+              className="pl-9"
+            />
+          </div>
+        </div>
+        <div>
+          <Label htmlFor="invoiceFile">Invoice File (Optional)</Label>
+          <Input
+            id="invoiceFile"
+            type="file"
+            onChange={handleInvoiceFileChange}
+            disabled={isSubmitting}
+          />
+          {existingInvoiceFileUrl && !invoiceFile && (
+            <p className="text-xs text-muted-foreground mt-1 flex items-center">
+              <FileText className="h-3 w-3 mr-1" /> Existing file: <a href={existingInvoiceFileUrl} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline ml-1">View Invoice</a>
+            </p>
+          )}
+          {invoiceFile && (
+            <p className="text-xs text-muted-foreground mt-1 flex items-center">
+              <Upload className="h-3 w-3 mr-1" /> New file selected: {invoiceFile.name}
+            </p>
+          )}
+        </div>
+        <div>
+          <Label htmlFor="paymentReceivedDate">Payment Received Date (Optional)</Label>
+          <div className="relative">
+            <CalendarDays className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              id="paymentReceivedDate"
+              type="date"
+              value={paymentReceivedDate}
+              onChange={(e) => setPaymentReceivedDate(e.target.value)}
+              disabled={isSubmitting}
+              className="pl-9"
+            />
+          </div>
+        </div>
       </div>
       <div>
         <Label htmlFor="status">Status *</Label>
