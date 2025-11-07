@@ -83,3 +83,8 @@ export interface CreatorKpi {
   changeDirection?: 'up' | 'down' | 'neutral'; // Optional: for trend arrows
   statusDescription?: string; // Optional: e.g., "In Progress", "Requires Action", "Improving"
 }
+
+// New type for Brand Deals
+export type BrandDeal = Tables<'brand_deals'> & {
+  // Add any joined profiles or specific brand deal related fields here if needed
+};

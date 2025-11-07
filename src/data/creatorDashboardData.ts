@@ -19,10 +19,11 @@ export interface QuickAction {
   variant?: 'default' | 'outline' | 'destructive';
 }
 
-export interface BrandDeal {
-  name: string;
-  status: 'Drafting' | 'Payment Pending' | 'Completed';
-}
+// These types will now be replaced by the BrandDeal type from src/types/index.ts
+// export interface BrandDeal {
+//   name: string;
+//   status: 'Drafting' | 'Payment Pending' | 'Completed';
+// }
 
 export interface ContractReview {
   id: string;
@@ -93,6 +94,7 @@ export const MOCK_CREATOR_KPI_CARDS: CreatorKpi[] = [
   },
 ];
 
+// MOCK_CREATOR_QUICK_ACTIONS will be updated in CreatorQuickActions.tsx
 export const MOCK_CREATOR_QUICK_ACTIONS: QuickAction[] = [
   { label: 'Send Payment Reminder', icon: DollarSign, onClick: () => console.log('Send Payment Reminder') },
   { label: 'Upload Contract', icon: FileText, onClick: () => console.log('Upload Contract') },
@@ -100,19 +102,16 @@ export const MOCK_CREATOR_QUICK_ACTIONS: QuickAction[] = [
   { label: 'Send Takedown Notice', icon: ShieldCheck, onClick: () => console.log('Send Takedown Notice'), variant: 'destructive' },
 ];
 
+// These will now be fetched from the database
 export const MOCK_PENDING_BRAND_PAYMENTS = {
   amount: '₹1,25,000',
   status: 'Overdue',
   details: '3 invoices - 68 days',
 };
 
-export const MOCK_ACTIVE_BRAND_DEALS: BrandDeal[] = [
-  { name: 'Nykaa Campaign', status: 'Drafting' },
-  { name: 'Boat Collab', status: 'Payment Pending' },
-];
-
-export const MOCK_PREVIOUS_BRANDS = ['MamaEarth', 'Myntra', 'Unacademy'];
-export const MOCK_TOTAL_INCOME_TRACKED = '₹2,85,700';
+export const MOCK_ACTIVE_BRAND_DEALS: any[] = []; // Will be fetched from DB
+export const MOCK_PREVIOUS_BRANDS: string[] = []; // Will be derived from DB
+export const MOCK_TOTAL_INCOME_TRACKED = '₹0'; // Will be derived from DB
 
 export const MOCK_CONTRACTS_REQUIRING_REVIEW: ContractReview[] = [
   { id: '1', title: 'MamaEarth Deal - 2 clauses risky', status: 'risky' },

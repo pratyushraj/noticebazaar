@@ -5,12 +5,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { IndianRupee, Briefcase, ArrowRight, DollarSign } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import { MOCK_PENDING_BRAND_PAYMENTS, MOCK_ACTIVE_BRAND_DEALS, MOCK_PREVIOUS_BRANDS, MOCK_TOTAL_INCOME_TRACKED, BrandDeal } from '@/data/creatorDashboardData';
+import { BrandDeal } from '@/types'; // Import BrandDeal type
 import { cn } from '@/lib/utils';
 import BrandPill from './BrandPill'; // Import the new BrandPill component
 
 interface CreatorRevenuePaymentsProps {
-  pendingBrandPayments: typeof MOCK_PENDING_BRAND_PAYMENTS;
+  pendingBrandPayments: { amount: string; status: string; details: string };
   activeBrandDeals: BrandDeal[];
   previousBrands: string[];
   totalIncomeTracked: string;
@@ -58,22 +58,28 @@ const CreatorRevenuePayments: React.FC<CreatorRevenuePaymentsProps> = ({
           </CardHeader>
           <CardContent className="px-0 pb-0 flex-grow"> {/* Minimal padding, added flex-grow */}
             <ul className="space-y-2 mt-2">
-              {activeBrandDeals.map((deal, index) => (
-                <li key={index} className="flex items-center justify-between">
-                  <span className="text-foreground">{deal.name}</span>
-                  <Badge 
-                    variant="outline" // Use outline variant to allow custom background
-                    className={cn(
-                      "rounded-full px-2.5 py-0.5 text-xs font-semibold",
-                      deal.status === 'Drafting' 
-                        ? 'badge-drafting-gradient' 
-                        : 'badge-payment-pending-gradient'
-                    )}
-                  >
-                    {deal.status}
-                  </Badge>
-                </li>
-              ))}
+              {activeBrandDeals.length > 0 ? (
+                activeBrandDeals.map((deal, index) => (
+                  <li key={index} className="flex items-center justify-between">
+                    <span className="text-foreground">{deal.brand_name}</span>
+                    <Badge 
+                      variant="outline" // Use outline variant to allow custom background
+                      className={cn(
+                        "rounded-full px-2.5 py-0.5 text-xs font-semibold",
+                        deal.status === 'Drafting' 
+                          ? 'badge-drafting-gradient' 
+                          : deal.status === 'Payment Pending'
+                            ? 'badge-payment-pending-gradient'
+                            : 'bg-green-500/20 text-green-400 border-green-500/30' // Default for other active statuses
+                      )}
+                    >
+                      {deal.status}
+                    </Badge>
+                  </li>
+                ))
+              ) : (
+                <p className="text-muted-foreground text-sm">No active deals.</p>
+              )}
             </ul>
           </CardContent>
           <Button variant="link" className="p-0 w-full text-primary hover:text-primary/80 mt-4"> {/* Full width link */}
@@ -89,9 +95,13 @@ const CreatorRevenuePayments: React.FC<CreatorRevenuePaymentsProps> = ({
           </CardHeader>
           <CardContent className="px-0 pb-0 flex-grow"> {/* Minimal padding, added flex-grow */}
             <div className="flex flex-wrap gap-2 mb-4 mt-2">
-              {previousBrands.map((brand, index) => (
-                <BrandPill key={index} brandName={brand} />
-              ))}
+              {previousBrands.length > 0 ? (
+                previousBrands.map((brand, index) => (
+                  <BrandPill key={index} brandName={brand} />
+                ))
+              ) : (
+                <p className="text-muted-foreground text-sm">No previous brands.</p>
+              )}
             </div>
             <p className="text-sm text-muted-foreground">Total income tracked: <span className="font-bold text-foreground">{totalIncomeTracked}</span></p>
           </CardContent>

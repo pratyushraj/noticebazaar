@@ -38,6 +38,62 @@ export type Database = {
           },
         ]
       }
+      brand_deals: {
+        Row: {
+          brand_name: string
+          contact_person: string | null
+          contract_file_url: string | null
+          created_at: string
+          creator_id: string
+          deal_amount: number
+          deliverables: string | null
+          due_date: string
+          id: string
+          payment_expected_date: string
+          platform: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          brand_name: string
+          contact_person?: string | null
+          contract_file_url?: string | null
+          created_at?: string
+          creator_id: string
+          deal_amount: number
+          deliverables?: string | null
+          due_date: string
+          id?: string
+          payment_expected_date: string
+          platform?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          brand_name?: string
+          contact_person?: string | null
+          contract_file_url?: string | null
+          created_at?: string
+          creator_id?: string
+          deal_amount?: number
+          deliverables?: string | null
+          due_date?: string
+          id?: string
+          payment_expected_date?: string
+          platform?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "brand_deals_creator_id_fkey"
+            columns: ["creator_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       cases: {
         Row: {
           client_id: string
@@ -325,25 +381,37 @@ export type Database = {
       profiles: {
         Row: {
           avatar_url: string | null
+          business_entity_type: string | null
+          business_name: string | null
           first_name: string | null
+          gstin: string | null
           id: string
           last_name: string | null
+          onboarding_complete: boolean | null
           role: string
           updated_at: string | null
         }
         Insert: {
           avatar_url?: string | null
+          business_entity_type?: string | null
+          business_name?: string | null
           first_name?: string | null
+          gstin?: string | null
           id: string
           last_name?: string | null
+          onboarding_complete?: boolean | null
           role?: string
           updated_at?: string | null
         }
         Update: {
           avatar_url?: string | null
+          business_entity_type?: string | null
+          business_name?: string | null
           first_name?: string | null
+          gstin?: string | null
           id?: string
           last_name?: string | null
+          onboarding_complete?: boolean | null
           role?: string
           updated_at?: string | null
         }

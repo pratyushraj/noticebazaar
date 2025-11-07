@@ -4,11 +4,11 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { FileText, AlertTriangle, ArrowRight, CheckCircle } from 'lucide-react';
-import { ContractReview, TakedownAlert } from '@/data/creatorDashboardData';
+import { ContractReview, TakedownAlert } from '@/data/creatorDashboardData'; // Keep TakedownAlert type
 import { cn } from '@/lib/utils';
 
 interface CreatorLegalWorkflowsProps {
-  contractsRequiringReview: ContractReview[];
+  contractsRequiringReview: ContractReview[]; // Now derived from BrandDeals
   takedownAlerts: TakedownAlert[];
 }
 
@@ -28,12 +28,16 @@ const CreatorLegalWorkflows: React.FC<CreatorLegalWorkflowsProps> = ({
           </CardHeader>
           <CardContent className="px-0 pb-0 flex-grow"> {/* Minimal padding, added flex-grow */}
             <ul className="space-y-3 mb-4">
-              {contractsRequiringReview.map((contract, index) => (
-                <li key={index} className="flex items-start">
-                  <CheckCircle className="h-5 w-5 text-green-500 mr-2 flex-shrink-0" />
-                  <span className="text-foreground">{contract.title}</span>
-                </li>
-              ))}
+              {contractsRequiringReview.length > 0 ? (
+                contractsRequiringReview.map((contract, index) => (
+                  <li key={index} className="flex items-start">
+                    <CheckCircle className="h-5 w-5 text-green-500 mr-2 flex-shrink-0" />
+                    <span className="text-foreground">{contract.title}</span>
+                  </li>
+                ))
+              ) : (
+                <p className="text-muted-foreground text-sm">No contracts currently require review.</p>
+              )}
             </ul>
           </CardContent>
           <Button variant="default" className="w-full bg-primary text-primary-foreground hover:bg-primary/90 mt-4">
@@ -49,12 +53,16 @@ const CreatorLegalWorkflows: React.FC<CreatorLegalWorkflowsProps> = ({
           </CardHeader>
           <CardContent className="px-0 pb-0 flex-grow"> {/* Minimal padding, added flex-grow */}
             <ul className="space-y-3 mb-4">
-              {takedownAlerts.map((alert, index) => (
-                <li key={index} className="flex flex-col">
-                  <span className="font-semibold text-foreground">{alert.description}</span>
-                  <span className="text-sm text-muted-foreground">{alert.action}</span>
-                </li>
-              ))}
+              {takedownAlerts.length > 0 ? (
+                takedownAlerts.map((alert, index) => (
+                  <li key={index} className="flex flex-col">
+                    <span className="font-semibold text-foreground">{alert.description}</span>
+                    <span className="text-sm text-muted-foreground">{alert.action}</span>
+                  </li>
+                ))
+              ) : (
+                <p className="text-muted-foreground text-sm">No takedown alerts.</p>
+              )}
             </ul>
           </CardContent>
           <Button variant="destructive" className="w-full bg-destructive text-destructive-foreground hover:bg-destructive/90 mt-4">

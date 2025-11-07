@@ -4,18 +4,35 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { QuickAction } from '@/data/creatorDashboardData';
 import { cn } from '@/lib/utils';
-import { DollarSign, FileText, Bot, ShieldCheck } from 'lucide-react'; // Import specific icons
+import { DollarSign, FileText, Bot, ShieldCheck, PlusCircle } from 'lucide-react'; // Import PlusCircle
 
 interface CreatorQuickActionsProps {
   quickActions: QuickAction[];
+  onAddBrandDeal: () => void; // New prop for opening the brand deal form
 }
 
-const CreatorQuickActions: React.FC<CreatorQuickActionsProps> = ({ quickActions }) => {
+const CreatorQuickActions: React.FC<CreatorQuickActionsProps> = ({ quickActions, onAddBrandDeal }) => {
+  // Filter out the mock quick actions that will be replaced by specific buttons or real data
+  const filteredQuickActions = quickActions.filter(action => 
+    action.label !== 'Send Payment Reminder' && 
+    action.label !== 'Upload Contract' && 
+    action.label !== 'AI Scan Contract' && 
+    action.label !== 'Send Takedown Notice'
+  );
+
+  const customQuickActions = [
+    { label: 'Add Brand Deal', icon: PlusCircle, onClick: onAddBrandDeal, variant: 'default' as const },
+    { label: 'Send Payment Reminder', icon: DollarSign, onClick: () => console.log('Send Payment Reminder') },
+    { label: 'Upload Contract', icon: FileText, onClick: () => console.log('Upload Contract') },
+    { label: 'AI Scan Contract', icon: Bot, onClick: () => console.log('AI Scan Contract') },
+    { label: 'Send Takedown Notice', icon: ShieldCheck, onClick: () => console.log('Send Takedown Notice'), variant: 'destructive' as const },
+  ];
+
   return (
     <div className="space-y-4">
       <h2 className="text-xl font-semibold text-foreground">Quick Actions</h2>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {quickActions.map((action, index) => (
+        {customQuickActions.map((action, index) => (
           <Button
             key={index}
             onClick={action.onClick}
