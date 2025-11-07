@@ -7,6 +7,7 @@ import { IndianRupee, Briefcase, ArrowRight, DollarSign } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { MOCK_PENDING_BRAND_PAYMENTS, MOCK_ACTIVE_BRAND_DEALS, MOCK_PREVIOUS_BRANDS, MOCK_TOTAL_INCOME_TRACKED, BrandDeal } from '@/data/creatorDashboardData';
 import { cn } from '@/lib/utils';
+import BrandPill from './BrandPill'; // Import the new BrandPill component
 
 interface CreatorRevenuePaymentsProps {
   pendingBrandPayments: typeof MOCK_PENDING_BRAND_PAYMENTS;
@@ -89,9 +90,7 @@ const CreatorRevenuePayments: React.FC<CreatorRevenuePaymentsProps> = ({
           <CardContent className="px-0 pb-0 flex-grow"> {/* Minimal padding, added flex-grow */}
             <div className="flex flex-wrap gap-2 mb-4 mt-2">
               {previousBrands.map((brand, index) => (
-                <Badge key={index} variant="outline" className="text-muted-foreground">
-                  {brand}
-                </Badge>
+                <BrandPill key={index} brandName={brand} />
               ))}
             </div>
             <p className="text-sm text-muted-foreground">Total income tracked: <span className="font-bold text-foreground">{totalIncomeTracked}</span></p>
