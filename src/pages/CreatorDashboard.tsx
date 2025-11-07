@@ -23,6 +23,7 @@ import { useScanContractAI } from '@/lib/hooks/useScanContractAI'; // Import the
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button'; // Ensure Button is imported
 import { Label } from '@/components/ui/label'; // Import Label
+import { Input } from '@/components/ui/input'; // Import Input
 import { ScrollArea } from '@/components/ui/scroll-area'; // Import ScrollArea
 import SocialAccountLinkForm from '@/components/forms/SocialAccountLinkForm'; // NEW: Import SocialAccountLinkForm
 import { useSendPaymentReminder } from '@/lib/hooks/useSendPaymentReminder'; // NEW: Import useSendPaymentReminder
