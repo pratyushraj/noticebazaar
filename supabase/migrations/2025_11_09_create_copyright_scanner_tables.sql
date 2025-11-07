@@ -1,4 +1,4 @@
--- Create table for original content registration
+-- 1. Table for Creator's Original Content
 CREATE TABLE public.original_content (
     id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id uuid REFERENCES public.profiles(id) ON DELETE CASCADE NOT NULL,
@@ -10,82 +10,86 @@ CREATE TABLE public.original_content (
 
 ALTER TABLE public.original_content ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Creators can view and insert their own original content"
+-- Policy: Creators can see and manage their own content
+CREATE POLICY "Creators can view and manage their own original content"
 ON public.original_content
 FOR ALL
 USING (auth.uid() = user_id)
 WITH CHECK (auth.uid() = user_id);
 
--- Create table for scan jobs
+
+-- 2. Table for Copyright Scans (Logs when a scan is run)
 CREATE TABLE public.copyright_scans (
     id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
     content_id uuid REFERENCES public.original_content(id) ON DELETE CASCADE NOT NULL,
-    scan_status text NOT NULL DEFAULT 'pending', -- "pending", "processing", "completed"
+    scan_status text NOT NULL DEFAULT 'pending', -- 'pending', 'completed', 'failed'
     created_at timestamp with time zone DEFAULT now() NOT NULL
 );
 
 ALTER TABLE public.copyright_scans ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Creators can view and insert their own scans"
+-- Policy: Only the owner of the original content can see the scans
+CREATE POLICY "Creators can view scans for their content"
 ON public.copyright_scans
-FOR ALL
-USING (auth.uid() IN (SELECT user_id FROM public.original_content WHERE id = content_id))
-WITH CHECK (auth.uid() IN (SELECT user_id FROM public.original_content WHERE id = content_id));
+FOR SELECT
+USING (
+    EXISTS (
+        SELECT 1
+        FROM public.original_content
+        WHERE original_content.id = content_id AND original_content.user_id = auth.uid()
+    )
+);
 
--- Create table for matches found
+
+-- 3. Table for Copyright Matches (Infringing content found)
 CREATE TABLE public.copyright_matches (
     id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
     scan_id uuid REFERENCES public.copyright_scans(id) ON DELETE CASCADE NOT NULL,
     matched_url text NOT NULL,
     platform text NOT NULL,
-    similarity_score int NOT NULL,
+    similarity_score numeric NOT NULL,
     screenshot_url text,
-    detected_at timestamp with time zone DEFAULT now() NOT NULL
+    created_at timestamp with time zone DEFAULT now() NOT NULL
 );
 
 ALTER TABLE public.copyright_matches ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Creators can view matches related to their content"
+-- Policy: Only the owner of the original content can see the matches
+CREATE POLICY "Creators can view matches for their content"
 ON public.copyright_matches
 FOR SELECT
 USING (
     EXISTS (
         SELECT 1
-        FROM public.copyright_scans AS cs
-        JOIN public.original_content AS oc ON cs.content_id = oc.id
-        WHERE cs.id = scan_id AND oc.user_id = auth.uid()
+        FROM public.copyright_scans
+        JOIN public.original_content ON copyright_scans.content_id = original_content.id
+        WHERE copyright_scans.id = scan_id AND original_content.user_id = auth.uid()
     )
 );
 
--- Create table for actions taken on matches
+
+-- 4. Table for Copyright Actions (Takedown, Email, Ignore)
 CREATE TABLE public.copyright_actions (
     id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
     match_id uuid REFERENCES public.copyright_matches(id) ON DELETE CASCADE NOT NULL,
-    action_type text NOT NULL, -- "takedown", "email", "ignored"
-    status text NOT NULL DEFAULT 'sent', -- "sent", "pending", "failed"
+    action_type text NOT NULL, -- 'takedown', 'email', 'ignored'
+    status text NOT NULL DEFAULT 'sent', -- 'sent', 'ignored', 'resolved'
+    document_url text,
     created_at timestamp with time zone DEFAULT now() NOT NULL
 );
 
 ALTER TABLE public.copyright_actions ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Creators can view and insert actions related to their matches"
+-- Policy: Only the owner of the original content can see the actions
+CREATE POLICY "Creators can view actions for their matches"
 ON public.copyright_actions
-FOR ALL
+FOR SELECT
 USING (
     EXISTS (
         SELECT 1
-        FROM public.copyright_matches AS cm
-        JOIN public.copyright_scans AS cs ON cm.scan_id = cs.id
-        JOIN public.original_content AS oc ON cs.content_id = oc.id
-        WHERE cm.id = match_id AND oc.user_id = auth.uid()
-    )
-)
-WITH CHECK (
-    EXISTS (
-        SELECT 1
-        FROM public.copyright_matches AS cm
-        JOIN public.copyright_scans AS cs ON cm.scan_id = cs.id
-        JOIN public.original_content AS oc ON cs.content_id = oc.id
-        WHERE cm.id = match_id AND oc.user_id = auth.uid()
+        FROM public.copyright_matches
+        JOIN public.copyright_scans ON copyright_matches.scan_id = copyright_scans.id
+        JOIN public.original_content ON copyright_scans.content_id = original_content.id
+        WHERE copyright_matches.id = match_id AND original_content.user_id = auth.uid()
     )
 );
