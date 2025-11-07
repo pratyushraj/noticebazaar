@@ -23,6 +23,7 @@ import { useScanContractAI } from '@/lib/hooks/useScanContractAI'; // Import the
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button'; // Ensure Button is imported
 import { Label } from '@/components/ui/label'; // Import Label
+import { ScrollArea } from '@/components/ui/scroll-area'; // Import ScrollArea
 
 const CreatorDashboard = () => {
   const { profile, loading: sessionLoading, isCreator } = useSession();
@@ -223,7 +224,7 @@ const CreatorDashboard = () => {
       {/* Brand Deal Form Dialog */}
       <Dialog open={isBrandDealFormOpen} onOpenChange={setIsBrandDealFormOpen}>
         <DialogContent 
-          className="sm:max-w-[600px] bg-card text-foreground border-border"
+          className="sm:max-w-[600px] bg-card text-foreground border-border h-[90vh] flex flex-col" // Added h-[90vh] flex flex-col
           aria-labelledby="brand-deal-form-title"
           aria-describedby="brand-deal-form-description"
         >
@@ -233,25 +234,27 @@ const CreatorDashboard = () => {
               {editingBrandDeal ? 'Update the details for this brand collaboration.' : 'Enter the details for your new brand collaboration.'}
             </DialogDescription>
           </DialogHeader>
-          <BrandDealForm
-            initialData={editingBrandDeal}
-            onSaveSuccess={() => {
-              refetchBrandDeals();
-              setIsBrandDealFormOpen(false);
-              setEditingBrandDeal(null);
-            }}
-            onClose={() => {
-              setIsBrandDealFormOpen(false);
-              setEditingBrandDeal(null);
-            }}
-          />
+          <ScrollArea className="flex-1 p-4 -mx-4"> {/* Added flex-1 and negative margin for padding */}
+            <BrandDealForm
+              initialData={editingBrandDeal}
+              onSaveSuccess={() => {
+                refetchBrandDeals();
+                setIsBrandDealFormOpen(false);
+                setEditingBrandDeal(null);
+              }}
+              onClose={() => {
+                setIsBrandDealFormOpen(false);
+                setEditingBrandDeal(null);
+              }}
+            />
+          </ScrollArea>
         </DialogContent>
       </Dialog>
 
       {/* NEW: Upload Contract Quick Action Dialog */}
       <Dialog open={isUploadContractQuickActionOpen} onOpenChange={setIsUploadContractQuickActionOpen}>
         <DialogContent 
-          className="sm:max-w-[600px] bg-card text-foreground border-border"
+          className="sm:max-w-[600px] bg-card text-foreground border-border h-[90vh] flex flex-col" // Added h-[90vh] flex flex-col
           aria-labelledby="upload-contract-quick-action-title"
           aria-describedby="upload-contract-quick-action-description"
         >
@@ -261,16 +264,18 @@ const CreatorDashboard = () => {
               To upload a contract, please create a new brand deal and attach the file.
             </DialogDescription>
           </DialogHeader>
-          <BrandDealForm
-            initialData={null} // Always for a new deal
-            onSaveSuccess={() => {
-              refetchBrandDeals();
-              setIsUploadContractQuickActionOpen(false);
-            }}
-            onClose={() => {
-              setIsUploadContractQuickActionOpen(false);
-            }}
-          />
+          <ScrollArea className="flex-1 p-4 -mx-4"> {/* Added flex-1 and negative margin for padding */}
+            <BrandDealForm
+              initialData={null} // Always for a new deal
+              onSaveSuccess={() => {
+                refetchBrandDeals();
+                setIsUploadContractQuickActionOpen(false);
+              }}
+              onClose={() => {
+                setIsUploadContractQuickActionOpen(false);
+              }}
+            />
+          </ScrollArea>
         </DialogContent>
       </Dialog>
 
