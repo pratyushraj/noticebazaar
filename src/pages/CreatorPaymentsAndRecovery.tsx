@@ -4,7 +4,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useSession } from '@/contexts/SessionContext';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { Loader2, IndianRupee, MessageSquare, Send, Eye, FileText, CalendarDays, AlertTriangle } from 'lucide-react';
+import { Loader2, IndianRupee, MessageSquare, Send, Eye, FileText, CalendarDays, AlertTriangle, Mail } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { useBrandDeals } from '@/lib/hooks/useBrandDeals';
 import { usePagination } from '@/lib/hooks/usePagination';
@@ -116,6 +116,22 @@ const CreatorPaymentsAndRecovery = () => {
   return (
     <>
       <h1 className="text-3xl font-bold text-foreground mb-6">My Payments & Recovery</h1>
+
+      <section className="bg-card p-6 rounded-lg shadow-sm border border-border">
+        <h2 className="text-xl font-semibold text-foreground mb-4 flex items-center">
+          <IndianRupee className="h-5 w-5 mr-2 text-green-500" /> Financial Overview
+        </h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="flex flex-col p-4 rounded-lg bg-secondary border border-border">
+            <p className="text-sm text-muted-foreground">Total Income Tracked (Completed Deals)</p>
+            <p className="text-3xl font-bold text-foreground mt-1">₹{totalIncome.toLocaleString('en-IN')}</p>
+          </div>
+          <div className="flex flex-col p-4 rounded-lg bg-secondary border border-border">
+            <p className="text-sm text-muted-foreground">Estimated Tax Liability (Mock)</p>
+            <p className="text-3xl font-bold text-foreground mt-1">₹{(totalIncome * 0.15).toLocaleString('en-IN')}</p> {/* Mock 15% tax */}
+          </div>
+        </div>
+      </section>
 
       <section className="bg-card p-6 rounded-lg shadow-sm border border-border">
         <h2 className="text-xl font-semibold text-foreground mb-4">Payment Tracking</h2>
