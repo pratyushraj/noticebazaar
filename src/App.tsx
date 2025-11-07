@@ -41,109 +41,73 @@ import AppToaster from "./components/AppToaster";
 import FacebookPixelTracker from "./components/FacebookPixelTracker";
 import GoogleAnalyticsTracker from "./components/GoogleAnalyticsTracker"; // Import new tracker
 
-// Temporary imports for one-off role update
-import { useEffect } from 'react';
-import { useUpdateUserRole } from './lib/hooks/useUpdateUserRole';
-import { toast } from 'sonner';
-
 const queryClient = new QueryClient();
 
-const ADMIN_EMAIL_TO_UPDATE = 'noticebazaar.legal@gmail.com';
-const NEW_ROLE = 'creator';
-const ROLE_UPDATE_FLAG = 'role_update_noticebazaar_legal_to_creator_done';
+const App = () => (
+  <QueryClientProvider client={queryClient}>
+    <TooltipProvider>
+      <AppToaster />
+      <BrowserRouter>
+        <FacebookPixelTracker />
+        <GoogleAnalyticsTracker /> {/* Add GA4 tracker here */}
+        <SessionContextProvider>
+          <Routes>
+            {/* Root route: Renders MarketingHome. ProtectedRoute handles redirection if authenticated. */}
+            <Route path="/" element={<ProtectedRoute><MarketingHome /></ProtectedRoute>} />
+            
+            {/* Login route: Accessible directly, not protected */}
+            <Route path="/login" element={<Login />} />
 
-const App = () => {
-  const updateUserRoleMutation = useUpdateUserRole();
+            {/* Public routes */}
+            <Route path="/blog" element={<Blog />} />
+            <Route path="/blog/:slug" element={<BlogPostDetail />} />
+            <Route path="/pricing-comparison" element={<PricingComparison />} />
+            <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+            <Route path="/terms-of-service" element={<TermsOfService />} />
+            <Route path="/refund-policy" element={<RefundPolicy />} />
+            <Route path="/sitemap" element={<Sitemap />} />
+            
+            {/* Plan Detail Routes */}
+            <Route path="/plan/essential" element={<EssentialPlan />} />
+            <Route path="/plan/growth" element={<GrowthPlan />} />
+            <Route path="/plan/strategic" element={<StrategicPlan />} />
+            
+            {/* NEW LEAD FUNNEL ROUTES */}
+            <Route path="/free-legal-check" element={<FreeLegalCheck />} />
+            <Route path="/thank-you" element={<ThankYou />} />
 
-  useEffect(() => {
-    const hasRun = localStorage.getItem(ROLE_UPDATE_FLAG);
-    if (!hasRun) {
-      console.log(`Attempting to update role for ${ADMIN_EMAIL_TO_UPDATE} to ${NEW_ROLE}...`);
-      updateUserRoleMutation.mutate(
-        { email: ADMIN_EMAIL_TO_UPDATE, newRole: NEW_ROLE },
-        {
-          onSuccess: () => {
-            toast.success(`Successfully updated role for ${ADMIN_EMAIL_TO_UPDATE} to ${NEW_ROLE}.`);
-            localStorage.setItem(ROLE_UPDATE_FLAG, 'true');
-            console.log('Role update successful. Flag set in localStorage.');
-          },
-          onError: (error) => {
-            toast.error(`Failed to update role for ${ADMIN_EMAIL_TO_UPDATE}.`, { description: error.message });
-            console.error('Role update failed:', error);
-          },
-        }
-      );
-    } else {
-      console.log(`Role update for ${ADMIN_EMAIL_TO_UPDATE} already performed.`);
-    }
-  }, []); // Empty dependency array to run once on mount
+            {/* Client-specific routes */}
+            <Route path="/client-dashboard" element={<ProtectedLayout allowedRoles={['client']}><ClientDashboard /></ProtectedLayout>} />
+            <Route path="/client-profile" element={<ProtectedLayout allowedRoles={['client']}><ClientProfile /></ProtectedLayout>} />
+            <Route path="/client-subscription" element={<ProtectedLayout allowedRoles={['client']}><ClientSubscription /></ProtectedLayout>} />
+            <Route path="/client-cases" element={<ProtectedLayout allowedRoles={['client']}><ClientCases /></ProtectedLayout>} />
+            <Route path="/client-documents" element={<ProtectedLayout allowedRoles={['client']}><ClientDocuments /></ProtectedLayout>} />
+            <Route path="/client-consultations" element={<ProtectedLayout allowedRoles={['client']}><ClientConsultations /></ProtectedLayout>} />
+            <Route path="/client-activity-log" element={<ProtectedLayout allowedRoles={['client']}><ClientActivityLog /></ProtectedLayout>} />
+            
+            {/* Admin-specific routes */}
+            <Route path="/admin-dashboard" element={<ProtectedLayout allowedRoles={['admin']}><AdminDashboard /></ProtectedLayout>} />
+            <Route path="/admin-documents" element={<ProtectedLayout allowedRoles={['admin']}><AdminDocuments /></ProtectedLayout>} />
+            <Route path="/admin-cases" element={<ProtectedLayout allowedRoles={['admin']}><AdminCases /></ProtectedLayout>} />
+            <Route path="/admin-clients" element={<ProtectedLayout allowedRoles={['admin']}><AdminClients /></ProtectedLayout>} />
+            <Route path="/admin-consultations" element={<ProtectedLayout allowedRoles={['admin']}><AdminConsultations /></ProtectedLayout>} />
+            <Route path="/admin-subscriptions" element={<ProtectedLayout allowedRoles={['admin']}><AdminSubscriptions /></ProtectedLayout>} />
+            <Route path="/admin-activity-log" element={<ProtectedLayout allowedRoles={['admin']}><AdminActivityLog /></ProtectedLayout>} />
+            <Route path="/admin-profile" element={<ProtectedLayout allowedRoles={['admin']}><AdminProfile /></ProtectedLayout>} />
 
-  return (
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <AppToaster />
-        <BrowserRouter>
-          <FacebookPixelTracker />
-          <GoogleAnalyticsTracker /> {/* Add GA4 tracker here */}
-          <SessionContextProvider>
-            <Routes>
-              {/* Root route: Renders MarketingHome. ProtectedRoute handles redirection if authenticated. */}
-              <Route path="/" element={<ProtectedRoute><MarketingHome /></ProtectedRoute>} />
-              
-              {/* Login route: Accessible directly, not protected */}
-              <Route path="/login" element={<Login />} />
+            {/* CA-specific routes */}
+            <Route path="/ca-dashboard" element={<ProtectedLayout allowedRoles={['chartered_accountant']}><CADashboard /></ProtectedLayout>} />
+            
+            {/* Shared routes (accessible by client, admin, and CA) */}
+            <Route path="/messages" element={<ProtectedLayout allowedRoles={['client', 'admin', 'chartered_accountant']}><MessagesPage /></ProtectedLayout>} />
 
-              {/* Public routes */}
-              <Route path="/blog" element={<Blog />} />
-              <Route path="/blog/:slug" element={<BlogPostDetail />} />
-              <Route path="/pricing-comparison" element={<PricingComparison />} />
-              <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-              <Route path="/terms-of-service" element={<TermsOfService />} />
-              <Route path="/refund-policy" element={<RefundPolicy />} />
-              <Route path="/sitemap" element={<Sitemap />} />
-              
-              {/* Plan Detail Routes */}
-              <Route path="/plan/essential" element={<EssentialPlan />} />
-              <Route path="/plan/growth" element={<GrowthPlan />} />
-              <Route path="/plan/strategic" element={<StrategicPlan />} />
-              
-              {/* NEW LEAD FUNNEL ROUTES */}
-              <Route path="/free-legal-check" element={<FreeLegalCheck />} />
-              <Route path="/thank-you" element={<ThankYou />} />
-
-              {/* Client-specific routes */}
-              <Route path="/client-dashboard" element={<ProtectedLayout allowedRoles={['client']}><ClientDashboard /></ProtectedLayout>} />
-              <Route path="/client-profile" element={<ProtectedLayout allowedRoles={['client']}><ClientProfile /></ProtectedLayout>} />
-              <Route path="/client-subscription" element={<ProtectedLayout allowedRoles={['client']}><ClientSubscription /></ProtectedLayout>} />
-              <Route path="/client-cases" element={<ProtectedLayout allowedRoles={['client']}><ClientCases /></ProtectedLayout>} />
-              <Route path="/client-documents" element={<ProtectedLayout allowedRoles={['client']}><ClientDocuments /></ProtectedLayout>} />
-              <Route path="/client-consultations" element={<ProtectedLayout allowedRoles={['client']}><ClientConsultations /></ProtectedLayout>} />
-              <Route path="/client-activity-log" element={<ProtectedLayout allowedRoles={['client']}><ClientActivityLog /></ProtectedLayout>} />
-              
-              {/* Admin-specific routes */}
-              <Route path="/admin-dashboard" element={<ProtectedLayout allowedRoles={['admin']}><AdminDashboard /></ProtectedLayout>} />
-              <Route path="/admin-documents" element={<ProtectedLayout allowedRoles={['admin']}><AdminDocuments /></ProtectedLayout>} />
-              <Route path="/admin-cases" element={<ProtectedLayout allowedRoles={['admin']}><AdminCases /></ProtectedLayout>} />
-              <Route path="/admin-clients" element={<ProtectedLayout allowedRoles={['admin']}><AdminClients /></ProtectedLayout>} />
-              <Route path="/admin-consultations" element={<ProtectedLayout allowedRoles={['admin']}><AdminConsultations /></ProtectedLayout>} />
-              <Route path="/admin-subscriptions" element={<ProtectedLayout allowedRoles={['admin']}><AdminSubscriptions /></ProtectedLayout>} />
-              <Route path="/admin-activity-log" element={<ProtectedLayout allowedRoles={['admin']}><AdminActivityLog /></ProtectedLayout>} />
-              <Route path="/admin-profile" element={<ProtectedLayout allowedRoles={['admin']}><AdminProfile /></ProtectedLayout>} />
-
-              {/* CA-specific routes */}
-              <Route path="/ca-dashboard" element={<ProtectedLayout allowedRoles={['chartered_accountant']}><CADashboard /></ProtectedLayout>} />
-              
-              {/* Shared routes (accessible by client, admin, and CA) */}
-              <Route path="/messages" element={<ProtectedLayout allowedRoles={['client', 'admin', 'chartered_accountant']}><MessagesPage /></ProtectedLayout>} />
-
-              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </SessionContextProvider>
-        </BrowserRouter>
-      </TooltipProvider>
-    </QueryClientProvider>
-  );
-};
+            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </SessionContextProvider>
+      </BrowserRouter>
+    </TooltipProvider>
+  </QueryClientProvider>
+);
 
 export default App;
