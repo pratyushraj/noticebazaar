@@ -4,17 +4,17 @@
 
 @layer base {
   :root {
-    /* Dark Mode Colors (Default) */
-    --background: 220 10% 10%; /* Very dark grey #1F2125 */
+    /* New Dark Mode Colors (Default) */
+    --background: 220 10% 7%; /* #0B1325 */
     --foreground: 0 0% 98%; /* White text */
 
-    --card: 220 10% 15%; /* Slightly lighter dark grey #2C2F33 */
+    --card: 220 10% 10%; /* #131F3B (base for gradient) */
     --card-foreground: 0 0% 98%;
 
     --popover: 220 10% 15%;
     --popover-foreground: 0 0% 98%;
 
-    --primary: 217.2 91.2% 59.8%; /* Primary blue accent */
+    --primary: 217.2 91.2% 59.8%; /* #3B82F6 */
     --primary-foreground: 0 0% 98%;
 
     --secondary: 220 10% 20%; /* Darker grey secondary */
@@ -26,14 +26,14 @@
     --accent: 220 10% 20%;
     --accent-foreground: 0 0% 98%;
 
-    --destructive: 0 84.2% 60.2%;
+    --destructive: 0 84.2% 60.2%; /* #EF4444 */
     --destructive-foreground: 0 0% 98%;
 
     --border: 220 10% 25%; /* Darker border */
     --input: 220 10% 20%;
     --ring: 217.2 91.2% 59.8%;
 
-    --radius: 0.5rem;
+    --radius: 0.75rem; /* Increased to 12px */
 
     --sidebar-background: 220 10% 10%;
     --sidebar-foreground: 0 0% 98%;
@@ -93,6 +93,7 @@
 
   body {
     @apply bg-background text-foreground;
+    line-height: 1.45; /* Increased line height globally */
   }
 }
 
@@ -108,7 +109,8 @@
 
 /* Custom gradient for Creator KPI cards */
 .creator-kpi-card-gradient {
-  background: linear-gradient(#0f1730, #0b1228);
+  background: linear-gradient(180deg, #131F3B 0%, #0E1629 100%); /* Card gradient */
+  border: 1px solid rgba(255,255,255,0.08); /* Subtle card border */
 }
 
 /* Custom gradient for Quick Action buttons */

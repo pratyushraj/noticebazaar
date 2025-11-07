@@ -138,26 +138,29 @@ const MarketingHome = () => {
     <div className="antialiased">
       <style>{`
         :root{
-          --bg:#10142A; /* Deep Navy Blue */
-          --card:#171A33; /* Slightly lighter Navy for cards */
+          --bg:#0B1325; /* Deep Navy Blue */
+          --card:#131F3B; /* Slightly lighter Navy for cards */
           --muted: #9CA3AF;
           --accent-blue:#3B82F6;
-          --accent-yellow:#FBBF24;
+          --accent-purple:#8B5CF6; /* New Purple Accent */
+          --accent-green:#22C55E; /* New Green Accent */
+          --accent-yellow:#FACC15; /* New Yellow Accent */
+          --accent-red:#EF4444; /* New Red Accent */
           --glass: rgba(255,255,255,0.03);
         }
-        html,body{font-family:'Inter',system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial; background:var(--bg); color:#E6EEF8; font-size: 16px;} /* Increased base font size */
-        .gradient-text{background:linear-gradient(90deg,#3B82F6,#A78BFA); -webkit-background-clip:text; -webkit-text-fill-color:transparent;}
+        html,body{font-family:'Inter',system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial; background:var(--bg); color:#E6EEF8; font-size: 16px; line-height: 1.45;} /* Increased base font size and line height */
+        .gradient-text{background:linear-gradient(90deg,var(--accent-blue),var(--accent-purple)); -webkit-background-clip:text; -webkit-text-fill-color:transparent;}
         .cta-primary{background:linear-gradient(90deg,var(--accent-yellow),#F59E0B); color:#0b1020}
         .cta-primary:hover{transform:translateY(-3px) scale(1.02)}
         .cta-secondary{background:linear-gradient(90deg,var(--accent-blue),#2563EB); color:white}
-        .card{background:var(--card); border:1px solid rgba(255,255,255,0.03); box-shadow: 0 6px 18px rgba(3,7,18,0.6)}
+        .card{background:var(--card); border:1px solid rgba(255,255,255,0.08); box-shadow: 0 6px 18px rgba(3,7,18,0.6); border-radius: 0.75rem;} /* Increased border radius and subtle border */
         .glass{background:var(--glass); border:1px solid rgba(255,255,255,0.02)}
         .hero-bg { background: linear-gradient(120deg, rgba(59,130,246,0.07), rgba(167,139,250,0.04)); backdrop-filter: blur(8px); }
         .cta-bg { background-image: url('/handshake_cta.png'); background-size: cover; background-position: center; position: relative; overflow: hidden; }
         .cta-overlay { position: absolute; inset: 0; background: rgba(23, 26, 51, 0.65); } /* Adjusted opacity to 0.65 */
         .badge {background: rgba(255,255,255,0.04); color: #D1FAE5; padding:6px 10px; border-radius:999px; font-weight:600; display:inline-flex; gap:.5rem; align-items:center}
         /* Ensure all paragraphs and list items are legible */
-        p, li { font-size: 1rem; line-height: 1.6; }
+        p, li { font-size: 1rem; line-height: 1.45; } /* Increased line height */
         @media (max-width: 768px) {
             /* Ensure minimum tap target size */
             .btn, button, a.inline-flex {

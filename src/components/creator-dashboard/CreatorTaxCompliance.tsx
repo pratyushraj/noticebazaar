@@ -1,7 +1,7 @@
 "use client";
 
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card'; // Import CardFooter
 import { Button } from '@/components/ui/button';
 import { IndianRupee, AlertTriangle, ArrowRight } from 'lucide-react';
 import { MOCK_TAX_COMPLIANCE_STATUS } from '@/data/creatorDashboardData';
@@ -13,21 +13,23 @@ interface CreatorTaxComplianceProps {
 
 const CreatorTaxCompliance: React.FC<CreatorTaxComplianceProps> = ({ taxComplianceStatus }) => {
   return (
-    <Card className="bg-card shadow-sm border border-border">
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+    <Card className="bg-card shadow-sm border border-border p-6 flex flex-col justify-between min-h-[200px]"> {/* Added padding, flex-col, min-h */}
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 px-0 pt-0"> {/* Minimal padding */}
         <CardTitle className="text-sm font-medium text-muted-foreground">Tax Compliance Status</CardTitle>
-        <AlertTriangle className="h-4 w-4 text-yellow-500" />
+        <AlertTriangle className="h-4 w-4 text-yellow-500" /> {/* Warning triangle icon */}
       </CardHeader>
-      <CardContent>
+      <CardContent className="px-0 pb-0 flex-grow"> {/* Minimal padding, added flex-grow */}
         <div className="flex items-center justify-between mb-4">
-          <div className="text-3xl font-bold text-foreground">{taxComplianceStatus.amount}</div>
+          <div className="text-4xl font-bold text-foreground">{taxComplianceStatus.amount}</div> {/* Increased font size */}
           <div className="text-sm text-muted-foreground">{taxComplianceStatus.deals}</div>
         </div>
         <p className="text-sm text-muted-foreground mb-4">Next Due: <span className="font-bold text-foreground">{taxComplianceStatus.nextDue}</span></p>
+      </CardContent>
+      <CardFooter className="px-0 pb-0 pt-4"> {/* Added CardFooter */}
         <Button variant="default" className="w-full bg-primary text-primary-foreground hover:bg-primary/90">
           File Now <ArrowRight className="ml-2 h-4 w-4" />
         </Button>
-      </CardContent>
+      </CardFooter>
     </Card>
   );
 };
