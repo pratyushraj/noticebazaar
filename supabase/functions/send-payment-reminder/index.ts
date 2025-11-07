@@ -7,6 +7,7 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
+  // Handle CORS preflight request
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -60,6 +61,17 @@ serve(async (req) => {
         status: 404,
       });
     }
+    
+    // Fetch creator profile details for the email signature
+    const { data: creatorProfile, error: profileError } = await supabaseAdmin
+      .from('profiles')
+      .select('first_name, last_name')
+      .eq('id', creatorId)
+      .single();
+
+    const creatorFirstName = creatorProfile?.first_name || 'Creator';
+    const creatorLastName = creatorProfile?.last_name || '';
+
 
     const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');
     if (!RESEND_API_KEY) {
@@ -87,7 +99,7 @@ serve(async (req) => {
         <p>The payment for this deal is currently due. We would appreciate it if you could process this at your earliest convenience.</p>
         <p>Please let us know if you have any questions or require further information.</p>
         <p>Thank you,</p>
-        <p><strong>${user.user_metadata.first_name || 'Creator'} ${user.user_metadata.last_name || ''}</strong></p>
+        <p><strong>${creatorFirstName} ${creatorLastName}</strong></p>
         <p style="font-size: 12px; color: #888; margin-top: 20px;">
           This reminder was sent via NoticeBazaar.
         </p>

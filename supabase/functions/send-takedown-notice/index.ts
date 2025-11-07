@@ -45,6 +45,17 @@ serve(async (req) => {
     }
     const creatorId = user.id;
 
+    // Fetch creator profile details for the email signature
+    const { data: creatorProfile, error: profileError } = await supabaseAdmin
+      .from('profiles')
+      .select('first_name, last_name')
+      .eq('id', creatorId)
+      .single();
+
+    const creatorFirstName = creatorProfile?.first_name || 'Creator';
+    const creatorLastName = creatorProfile?.last_name || '';
+
+
     const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');
     if (!RESEND_API_KEY) {
       console.error('CRITICAL: RESEND_API_KEY is missing.');
@@ -71,7 +82,7 @@ serve(async (req) => {
         <p>I swear, under penalty of perjury, that the information in this notification is accurate and that I am the copyright owner or am authorized to act on behalf of the owner of an exclusive right that is allegedly infringed.</p>
         <p>I hereby demand that you immediately remove or disable access to the infringing material.</p>
         <p>Sincerely,</p>
-        <p><strong>${user.user_metadata.first_name || 'Creator'} ${user.user_metadata.last_name || ''}</strong></p>
+        <p><strong>${creatorFirstName} ${creatorLastName}</strong></p>
         <p>Email: ${user.email}</p>
         <p style="font-size: 12px; color: #888; margin-top: 20px;">
           This notice was generated and sent via NoticeBazaar.
