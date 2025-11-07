@@ -14,7 +14,7 @@ interface UseBrandDealsOptions {
 }
 
 export const useBrandDeals = (options: UseBrandDealsOptions) => {
-  const { creatorId, enabled = true, statusFilter, sortBy = 'due_date', sortOrder = 'asc', limit } = options;
+  const { creatorId, enabled = true, statusFilter, sortBy = 'created_at', sortOrder = 'desc', limit } = options;
 
   return useSupabaseQuery<BrandDeal[], Error>(
     ['brand_deals', creatorId, statusFilter, sortBy, sortOrder, limit],

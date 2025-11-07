@@ -58,6 +58,11 @@ const CreatorPaymentsAndRecovery = () => {
   const totalFilteredCount = filteredAndSearchedDeals.length;
   const calculatedTotalPages = Math.ceil(totalFilteredCount / pageSize);
 
+  // Calculate total income from completed deals
+  const totalIncome = useMemo(() => {
+    return allBrandDeals.filter(deal => deal.status === 'Completed').reduce((sum, deal) => sum + deal.deal_amount, 0) || 0;
+  }, [allBrandDeals]);
+
   useEffect(() => {
     if (brandDealsError) {
       toast.error('Error fetching brand deals', { description: brandDealsError.message });
