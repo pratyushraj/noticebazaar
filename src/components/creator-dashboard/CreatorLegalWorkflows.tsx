@@ -21,7 +21,7 @@ const CreatorLegalWorkflows: React.FC<CreatorLegalWorkflowsProps> = ({
       <h2 className="text-xl font-semibold text-foreground">Legal Workflows</h2>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Contracts Requiring Review */}
-        <Card className="bg-card shadow-sm border border-border border-l-4 border-blue-500 p-6 flex flex-col justify-between min-h-[200px]"> {/* Increased padding, added flex-col, min-h, and left border */}
+        <Card className="creator-card-base shadow-sm border-l-4 border-blue-500 p-6 flex flex-col justify-between min-h-[200px]"> {/* Applied new base card class */}
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 px-0 pt-0"> {/* Minimal padding */}
             <CardTitle className="text-sm font-medium text-muted-foreground">Contracts Requiring Review</CardTitle>
             <FileText className="h-4 w-4 text-blue-500" /> {/* Header Icon */}
@@ -42,7 +42,7 @@ const CreatorLegalWorkflows: React.FC<CreatorLegalWorkflowsProps> = ({
         </Card>
 
         {/* Takedown Alerts */}
-        <Card className="bg-destructive/20 shadow-sm border border-destructive border-l-4 border-red-500 p-6 flex flex-col justify-between min-h-[200px]"> {/* Increased padding, added flex-col, min-h, and left border */}
+        <Card className="bg-destructive/20 creator-card-base shadow-sm border-l-4 border-red-500 p-6 flex flex-col justify-between min-h-[200px]"> {/* Applied new base card class */}
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 px-0 pt-0"> {/* Minimal padding */}
             <CardTitle className="text-sm font-medium text-destructive">Takedown Alerts</CardTitle>
             <AlertTriangle className="h-4 w-4 text-destructive" /> {/* Header Icon */}

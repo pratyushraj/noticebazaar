@@ -10,7 +10,7 @@ import { cn } from '@/lib/utils';
 
 const CreatorCopyrightScanner: React.FC = () => {
   return (
-    <Card className="bg-card shadow-sm border border-border p-6 flex flex-col justify-between min-h-[200px]"> {/* Added padding, flex-col, min-h */}
+    <Card className="creator-card-base shadow-sm p-6 flex flex-col justify-between min-h-[200px]"> {/* Applied new base card class */}
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 px-0 pt-0"> {/* Minimal padding */}
         <CardTitle className="text-sm font-medium text-muted-foreground">Copyright Scanner</CardTitle>
         <Badge variant="outline" className="bg-purple-500/20 text-purple-400 border-purple-500/30">IP Protection</Badge> {/* Purple protection label */}

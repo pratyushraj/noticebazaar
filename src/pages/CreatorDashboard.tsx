@@ -47,7 +47,7 @@ const CreatorDashboard = () => {
   }
 
   return (
-    <div className="flex flex-col gap-8">
+    <div className="flex flex-col gap-8 bg-background"> {/* Ensure main container uses background color */}
       <h1 className="text-3xl font-bold text-foreground">
         CREATOR DASHBOARD, Welcome back, {profile?.first_name || 'Creator'}!
       </h1>

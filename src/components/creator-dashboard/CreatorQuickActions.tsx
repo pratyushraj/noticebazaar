@@ -4,6 +4,7 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { QuickAction } from '@/data/creatorDashboardData';
 import { cn } from '@/lib/utils';
+import { DollarSign, FileText, Bot, ShieldCheck } from 'lucide-react'; // Import specific icons
 
 interface CreatorQuickActionsProps {
   quickActions: QuickAction[];

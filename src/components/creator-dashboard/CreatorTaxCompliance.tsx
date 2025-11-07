@@ -3,7 +3,7 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card'; // Import CardFooter
 import { Button } from '@/components/ui/button';
-import { IndianRupee, AlertTriangle, ArrowRight } from 'lucide-react';
+import { IndianRupee, Calculator, ArrowRight } from 'lucide-react'; // Changed AlertTriangle to Calculator
 import { MOCK_TAX_COMPLIANCE_STATUS } from '@/data/creatorDashboardData';
 import { cn } from '@/lib/utils';
 
@@ -13,10 +13,10 @@ interface CreatorTaxComplianceProps {
 
 const CreatorTaxCompliance: React.FC<CreatorTaxComplianceProps> = ({ taxComplianceStatus }) => {
   return (
-    <Card className="bg-card shadow-sm border border-border p-6 flex flex-col justify-between min-h-[200px]"> {/* Added padding, flex-col, min-h */}
+    <Card className="creator-card-base shadow-sm p-6 flex flex-col justify-between min-h-[200px]"> {/* Applied new base card class */}
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 px-0 pt-0"> {/* Minimal padding */}
         <CardTitle className="text-sm font-medium text-muted-foreground">Tax Compliance Status</CardTitle>
-        <AlertTriangle className="h-4 w-4 text-yellow-500" /> {/* Warning triangle icon */}
+        <Calculator className="h-4 w-4 text-yellow-500" /> {/* Changed to Calculator icon */}
       </CardHeader>
       <CardContent className="px-0 pb-0 flex-grow"> {/* Minimal padding, added flex-grow */}
         <div className="flex items-center justify-between mb-4">

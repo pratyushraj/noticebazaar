@@ -62,12 +62,16 @@ export default {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
-        "accent-gold": { // New accent color for the "Book with Advisor" button
-          DEFAULT: "#FFD700",
+        "accent-gold": { // Renamed to match new yellow accent
+          DEFAULT: "#FACC15", // Updated to #FACC15
           foreground: "#1F2125", // Dark text for the gold button
         },
         "success": { // New success color for badges
           DEFAULT: "#22C55E", // Green from new palette
+          foreground: "#FFFFFF",
+        },
+        "purple-accent": { // New purple accent color
+          DEFAULT: "#8B5CF6",
           foreground: "#FFFFFF",
         },
       },

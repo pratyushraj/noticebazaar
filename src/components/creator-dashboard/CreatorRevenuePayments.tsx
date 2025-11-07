@@ -27,7 +27,7 @@ const CreatorRevenuePayments: React.FC<CreatorRevenuePaymentsProps> = ({
       <h2 className="text-xl font-semibold text-foreground">Revenue & Payments</h2>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Pending Brand Payments */}
-        <Card className="bg-card shadow-sm border border-border p-6 flex flex-col justify-between"> {/* Increased padding, added flex-col */}
+        <Card className="creator-card-base shadow-sm p-6 flex flex-col justify-between"> {/* Applied new base card class */}
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 px-0 pt-0"> {/* Minimal padding */}
             <CardTitle className="text-sm font-medium text-muted-foreground">Pending Brand Payments</CardTitle>
             <IndianRupee className="h-4 w-4 text-yellow-500" />
@@ -51,7 +51,7 @@ const CreatorRevenuePayments: React.FC<CreatorRevenuePaymentsProps> = ({
         </Card>
 
         {/* Active Brand Deals */}
-        <Card className="bg-card shadow-sm border border-border p-6 flex flex-col justify-between"> {/* Increased padding, added flex-col */}
+        <Card className="creator-card-base shadow-sm p-6 flex flex-col justify-between"> {/* Applied new base card class */}
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 px-0 pt-0"> {/* Minimal padding */}
             <CardTitle className="text-sm font-medium text-muted-foreground">Active Brand Deals</CardTitle>
             <Briefcase className="h-4 w-4 text-blue-500" />
@@ -82,7 +82,7 @@ const CreatorRevenuePayments: React.FC<CreatorRevenuePaymentsProps> = ({
         </Card>
 
         {/* Previous Brands */}
-        <Card className="bg-card shadow-sm border border-border p-6 flex flex-col justify-between"> {/* Increased padding, added flex-col */}
+        <Card className="creator-card-base shadow-sm p-6 flex flex-col justify-between"> {/* Applied new base card class */}
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 px-0 pt-0"> {/* Minimal padding */}
             <CardTitle className="text-sm font-medium text-muted-foreground">Previous Brands</CardTitle>
             <DollarSign className="h-4 w-4 text-green-500" />

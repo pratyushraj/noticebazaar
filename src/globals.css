@@ -107,8 +107,8 @@
   display: none; /* Chrome, Safari, Opera */
 }
 
-/* Custom gradient for Creator KPI cards */
-.creator-kpi-card-gradient {
+/* Base gradient for all Creator Dashboard cards */
+.creator-card-base {
   background: linear-gradient(180deg, #131F3B 0%, #0E1629 100%); /* Card gradient */
   border: 1px solid rgba(255,255,255,0.08); /* Subtle card border */
 }

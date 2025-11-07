@@ -19,7 +19,7 @@ const CreatorKpiCards: React.FC<CreatorKpiCardsProps> = ({ kpiCards }) => {
         const changeColor = kpi.changeDirection === 'up' ? 'text-green-500' : kpi.changeDirection === 'down' ? 'text-red-500' : 'text-muted-foreground';
 
         return (
-          <Card key={index} className="creator-kpi-card-gradient shadow-lg border border-border p-4"> {/* Applied custom gradient class */}
+          <Card key={index} className="creator-card-base shadow-lg p-4"> {/* Applied new base card class */}
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 px-0 pt-0"> {/* Minimal padding */}
               <CardTitle className="text-sm font-medium text-muted-foreground">{kpi.title}</CardTitle>
               <div className="relative">
