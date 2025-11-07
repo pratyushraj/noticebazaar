@@ -51,6 +51,7 @@ const CreatorDashboard = () => {
       <h1 className="text-3xl font-bold text-foreground">
         CREATOR DASHBOARD, Welcome back, {profile?.first_name || 'Creator'}!
       </h1>
+      <p className="text-muted-foreground opacity-60 -mt-6">Your comprehensive overview of brand deals, legal protection, and financial health.</p>
 
       {/* KPI Cards */}
       <CreatorKpiCards kpiCards={dashboardData.kpiCards} />

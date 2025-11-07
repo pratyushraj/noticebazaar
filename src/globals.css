@@ -105,3 +105,8 @@
 .no-scrollbar::-webkit-scrollbar {
   display: none; /* Chrome, Safari, Opera */
 }
+
+/* Custom gradient for Creator KPI cards */
+.creator-kpi-card-gradient {
+  background: linear-gradient(#0f1730, #0b1228);
+}
