@@ -22,12 +22,12 @@ const CreatorProtectionCompliance: React.FC<CreatorProtectionComplianceProps> = 
   };
 
   return (
-    <Card className="bg-card shadow-sm border border-border">
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+    <Card className="bg-card shadow-sm border border-border border-l-4 border-purple-500 p-6 flex flex-col justify-between min-h-[200px]"> {/* Increased padding, added flex-col, min-h, and left border */}
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 px-0 pt-0"> {/* Minimal padding */}
         <CardTitle className="text-sm font-medium text-muted-foreground">Protection & Compliance</CardTitle>
-        <ShieldCheck className="h-4 w-4 text-purple-500" />
+        <ShieldCheck className="h-4 w-4 text-purple-500" /> {/* Header Icon */}
       </CardHeader>
-      <CardContent>
+      <CardContent className="px-0 pb-0 flex-grow"> {/* Minimal padding, added flex-grow */}
         <div className="flex items-center justify-between mb-4">
           <div className="text-4xl font-bold text-foreground">{protectionCompliance.healthScore}</div>
           <div className="text-sm text-muted-foreground">Health Score</div>
@@ -40,10 +40,10 @@ const CreatorProtectionCompliance: React.FC<CreatorProtectionComplianceProps> = 
             </li>
           ))}
         </ul>
-        <Button variant="default" className="w-full bg-primary text-primary-foreground hover:bg-primary/90">
-          Fix Issues <ArrowRight className="ml-2 h-4 w-4" />
-        </Button>
       </CardContent>
+      <Button variant="default" className="w-full bg-primary text-primary-foreground hover:bg-primary/90 mt-4">
+        Fix Issues <ArrowRight className="ml-2 h-4 w-4" />
+      </Button>
     </Card>
   );
 };
