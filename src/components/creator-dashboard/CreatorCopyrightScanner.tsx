@@ -3,7 +3,7 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card'; // Import CardFooter
 import { Button } from '@/components/ui/button';
-import { Search, ShieldCheck, ArrowRight, Youtube, Instagram, Tiktok, Facebook } from 'lucide-react'; // Import platform icons
+import { Search, ShieldCheck, ArrowRight, Youtube, Instagram, Globe, Facebook } from 'lucide-react'; // Replaced Tiktok with Globe
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge'; // Import Badge
 import { cn } from '@/lib/utils';
@@ -26,7 +26,7 @@ const CreatorCopyrightScanner: React.FC = () => {
         <div className="flex items-center justify-center gap-4 mb-4"> {/* Platform icons */}
           <Youtube className="h-6 w-6 text-red-500" />
           <Instagram className="h-6 w-6 text-pink-500" />
-          <Tiktok className="h-6 w-6 text-black dark:text-white" /> {/* TikTok icon might need dark/light mode adjustment */}
+          <Globe className="h-6 w-6 text-gray-400" /> {/* Replaced Tiktok with Globe */}
           <Facebook className="h-6 w-6 text-blue-600" />
         </div>
       </CardContent>
