@@ -8,6 +8,11 @@ export type Profile = Tables<'profiles'> & {
   gstin?: string | null; // New field
   business_entity_type?: string | null; // New field
   onboarding_complete?: boolean; // New field
+  instagram_handle?: string | null; // NEW
+  youtube_channel_id?: string | null; // NEW
+  tiktok_handle?: string | null; // NEW
+  facebook_profile_url?: string | null; // NEW
+  twitter_handle?: string | null; // NEW
 };
 
 export type Message = Tables<'messages'> & {

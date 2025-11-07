@@ -402,6 +402,11 @@ export type Database = {
           onboarding_complete: boolean | null
           role: string
           updated_at: string | null
+          instagram_handle: string | null // NEW
+          youtube_channel_id: string | null // NEW
+          tiktok_handle: string | null // NEW
+          facebook_profile_url: string | null // NEW
+          twitter_handle: string | null // NEW
         }
         Insert: {
           avatar_url?: string | null
@@ -414,6 +419,11 @@ export type Database = {
           onboarding_complete?: boolean | null
           role?: string
           updated_at?: string | null
+          instagram_handle?: string | null // NEW
+          youtube_channel_id?: string | null // NEW
+          tiktok_handle?: string | null // NEW
+          facebook_profile_url?: string | null // NEW
+          twitter_handle?: string | null // NEW
         }
         Update: {
           avatar_url?: string | null
@@ -426,6 +436,11 @@ export type Database = {
           onboarding_complete?: boolean | null
           role?: string
           updated_at?: string | null
+          instagram_handle?: string | null // NEW
+          youtube_channel_id?: string | null // NEW
+          tiktok_handle?: string | null // NEW
+          facebook_profile_url?: string | null // NEW
+          twitter_handle?: string | null // NEW
         }
         Relationships: [
           {

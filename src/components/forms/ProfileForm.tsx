@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Instagram, Youtube, Facebook, Twitter, Globe } from 'lucide-react'; // NEW: Import social media icons
 import { toast } from 'sonner';
 import { Profile } from '@/types';
 import { useUpdateProfile } from '@/lib/hooks/useProfiles';
@@ -23,6 +23,12 @@ const ProfileForm = ({ initialProfile, onSaveSuccess, isAdminView = false }: Pro
   const [lastName, setLastName] = useState(initialProfile.last_name || '');
   const [avatarUrl, setAvatarUrl] = useState(initialProfile.avatar_url || '');
   const [role, setRole] = useState<'client' | 'admin' | 'chartered_accountant' | 'creator'>(initialProfile.role); // Updated role type
+  // NEW: Social media states
+  const [instagramHandle, setInstagramHandle] = useState(initialProfile.instagram_handle || '');
+  const [youtubeChannelId, setYoutubeChannelId] = useState(initialProfile.youtube_channel_id || '');
+  const [tiktokHandle, setTiktokHandle] = useState(initialProfile.tiktok_handle || '');
+  const [facebookProfileUrl, setFacebookProfileUrl] = useState(initialProfile.facebook_profile_url || '');
+  const [twitterHandle, setTwitterHandle] = useState(initialProfile.twitter_handle || '');
 
   const updateProfileMutation = useUpdateProfile();
 
@@ -31,6 +37,12 @@ const ProfileForm = ({ initialProfile, onSaveSuccess, isAdminView = false }: Pro
     setLastName(initialProfile.last_name || '');
     setAvatarUrl(initialProfile.avatar_url || '');
     setRole(initialProfile.role);
+    // NEW: Set social media states from initialProfile
+    setInstagramHandle(initialProfile.instagram_handle || '');
+    setYoutubeChannelId(initialProfile.youtube_channel_id || '');
+    setTiktokHandle(initialProfile.tiktok_handle || '');
+    setFacebookProfileUrl(initialProfile.facebook_profile_url || '');
+    setTwitterHandle(initialProfile.twitter_handle || '');
   }, [initialProfile]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -48,6 +60,12 @@ const ProfileForm = ({ initialProfile, onSaveSuccess, isAdminView = false }: Pro
         last_name: lastName.trim(),
         avatar_url: avatarUrl.trim() || null,
         role: role, // Include role in the update
+        // NEW: Include social media handles in the update
+        instagram_handle: instagramHandle.trim() || null,
+        youtube_channel_id: youtubeChannelId.trim() || null,
+        tiktok_handle: tiktokHandle.trim() || null,
+        facebook_profile_url: facebookProfileUrl.trim() || null,
+        twitter_handle: twitterHandle.trim() || null,
       });
       toast.success('Profile updated successfully!');
       onSaveSuccess?.();
@@ -99,8 +117,8 @@ const ProfileForm = ({ initialProfile, onSaveSuccess, isAdminView = false }: Pro
           value={avatarUrl}
           onChange={(e) => setAvatarUrl(e.target.value)}
           placeholder="Enter URL for your profile picture"
-          disabled={updateProfileMutation.isPending}
           className="bg-input text-foreground border-border"
+          disabled={updateProfileMutation.isPending}
         />
       </div>
       {isAdminView && (
@@ -119,6 +137,85 @@ const ProfileForm = ({ initialProfile, onSaveSuccess, isAdminView = false }: Pro
           </Select>
         </div>
       )}
+
+      {/* NEW: Social Media Fields (only for Creator role or if isAdminView) */}
+      {(initialProfile.role === 'creator' || isAdminView) && (
+        <div className="space-y-4 border-t border-border pt-4 mt-4">
+          <h3 className="text-lg font-semibold text-foreground">Social Accounts</h3>
+          <div>
+            <Label htmlFor="instagramHandle">Instagram Handle</Label>
+            <div className="relative">
+              <Instagram className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                id="instagramHandle"
+                value={instagramHandle}
+                onChange={(e) => setInstagramHandle(e.target.value)}
+                disabled={updateProfileMutation.isPending}
+                placeholder="e.g., @yourusername"
+                className="pl-9"
+              />
+            </div>
+          </div>
+          <div>
+            <Label htmlFor="youtubeChannelId">YouTube Channel ID</Label>
+            <div className="relative">
+              <Youtube className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                id="youtubeChannelId"
+                value={youtubeChannelId}
+                onChange={(e) => setYoutubeChannelId(e.target.value)}
+                disabled={updateProfileMutation.isPending}
+                placeholder="e.g., UC_x5XG1OV2P6wGrFgCPvr2w"
+                className="pl-9"
+              />
+            </div>
+          </div>
+          <div>
+            <Label htmlFor="tiktokHandle">TikTok Handle</Label>
+            <div className="relative">
+              <Globe className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                id="tiktokHandle"
+                value={tiktokHandle}
+                onChange={(e) => setTiktokHandle(e.target.value)}
+                disabled={updateProfileMutation.isPending}
+                placeholder="e.g., @yourusername"
+                className="pl-9"
+              />
+            </div>
+          </div>
+          <div>
+            <Label htmlFor="facebookProfileUrl">Facebook Profile URL</Label>
+            <div className="relative">
+              <Facebook className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                id="facebookProfileUrl"
+                type="url"
+                value={facebookProfileUrl}
+                onChange={(e) => setFacebookProfileUrl(e.target.value)}
+                disabled={updateProfileMutation.isPending}
+                placeholder="e.g., https://facebook.com/yourprofile"
+                className="pl-9"
+              />
+            </div>
+          </div>
+          <div>
+            <Label htmlFor="twitterHandle">Twitter Handle</Label>
+            <div className="relative">
+              <Twitter className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                id="twitterHandle"
+                value={twitterHandle}
+                onChange={(e) => setTwitterHandle(e.target.value)}
+                disabled={updateProfileMutation.isPending}
+                placeholder="e.g., @yourusername"
+                className="pl-9"
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
       <Button type="submit" className="w-full bg-primary text-primary-foreground hover:bg-primary/90" disabled={updateProfileMutation.isPending}>
         {updateProfileMutation.isPending ? (
           <>

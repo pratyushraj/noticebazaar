@@ -24,6 +24,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Button } from '@/components/ui/button'; // Ensure Button is imported
 import { Label } from '@/components/ui/label'; // Import Label
 import { ScrollArea } from '@/components/ui/scroll-area'; // Import ScrollArea
+import SocialAccountLinkForm from '@/components/forms/SocialAccountLinkForm'; // NEW: Import SocialAccountLinkForm
 
 const CreatorDashboard = () => {
   const { profile, loading: sessionLoading, isCreator } = useSession();
@@ -32,7 +33,8 @@ const CreatorDashboard = () => {
   const [isAIScanDialogOpen, setIsAIScanDialogOpen] = useState(false); // New state for AI scan dialog
   const [selectedContractForAIScan, setSelectedContractForAIScan] = useState<string | null>(null); // Stores contract_file_url
   const [aiScanResults, setAiScanResults] = useState<any>(null); // Stores AI scan results
-  const [isUploadContractQuickActionOpen, setIsUploadContractQuickActionOpen] = useState(false); // NEW: State for 'Upload Contract' quick action dialog
+  const [isUploadContractQuickActionOpen, setIsUploadContractQuickActionOpen] = useState(false); // State for 'Upload Contract' quick action dialog
+  const [isSocialLinkFormOpen, setIsSocialLinkFormOpen] = useState(false); // NEW: State for SocialAccountLinkForm dialog
 
   // Fetch mock dashboard data (for KPIs, AI actions, etc. that are not directly brand deals)
   const { data: mockDashboardData, isLoading: isLoadingMocks, error: mockError } = useCreatorDashboardData(
@@ -122,9 +124,14 @@ const CreatorDashboard = () => {
     setIsAIScanDialogOpen(true);
   };
 
-  // NEW: Handler for 'Upload Contract' quick action
+  // Handler for 'Upload Contract' quick action
   const handleUploadContractQuickAction = () => {
     setIsUploadContractQuickActionOpen(true);
+  };
+
+  // NEW: Handler for 'Link Social Accounts' quick action
+  const handleLinkSocialAccounts = () => {
+    setIsSocialLinkFormOpen(true);
   };
 
   const handlePerformAIScan = async () => {
@@ -182,7 +189,8 @@ const CreatorDashboard = () => {
         quickActions={mockDashboardData.quickActions} 
         onAddBrandDeal={handleAddBrandDeal} 
         onAIScanContract={handleAIScanContract} 
-        onUploadContract={handleUploadContractQuickAction} // NEW: Pass the handler
+        onUploadContract={handleUploadContractQuickAction} 
+        onLinkSocialAccounts={handleLinkSocialAccounts} // NEW: Pass the handler
       />
 
       {/* Revenue & Payments */}
@@ -224,7 +232,7 @@ const CreatorDashboard = () => {
       {/* Brand Deal Form Dialog */}
       <Dialog open={isBrandDealFormOpen} onOpenChange={setIsBrandDealFormOpen}>
         <DialogContent 
-          className="sm:max-w-[600px] bg-card text-foreground border-border h-[90vh] flex flex-col" // Added h-[90vh] flex flex-col
+          className="sm:max-w-[600px] bg-card text-foreground border-border h-[90vh] flex flex-col"
           aria-labelledby="brand-deal-form-title"
           aria-describedby="brand-deal-form-description"
         >
@@ -234,7 +242,7 @@ const CreatorDashboard = () => {
               {editingBrandDeal ? 'Update the details for this brand collaboration.' : 'Enter the details for your new brand collaboration.'}
             </DialogDescription>
           </DialogHeader>
-          <ScrollArea className="flex-1 p-4 -mx-4"> {/* Added flex-1 and negative margin for padding */}
+          <ScrollArea className="flex-1 p-4 -mx-4">
             <BrandDealForm
               initialData={editingBrandDeal}
               onSaveSuccess={() => {
@@ -251,10 +259,10 @@ const CreatorDashboard = () => {
         </DialogContent>
       </Dialog>
 
-      {/* NEW: Upload Contract Quick Action Dialog */}
+      {/* Upload Contract Quick Action Dialog */}
       <Dialog open={isUploadContractQuickActionOpen} onOpenChange={setIsUploadContractQuickActionOpen}>
         <DialogContent 
-          className="sm:max-w-[600px] bg-card text-foreground border-border h-[90vh] flex flex-col" // Added h-[90vh] flex flex-col
+          className="sm:max-w-[600px] bg-card text-foreground border-border h-[90vh] flex flex-col"
           aria-labelledby="upload-contract-quick-action-title"
           aria-describedby="upload-contract-quick-action-description"
         >
@@ -264,7 +272,7 @@ const CreatorDashboard = () => {
               To upload a contract, please create a new brand deal and attach the file.
             </DialogDescription>
           </DialogHeader>
-          <ScrollArea className="flex-1 p-4 -mx-4"> {/* Added flex-1 and negative margin for padding */}
+          <ScrollArea className="flex-1 p-4 -mx-4">
             <BrandDealForm
               initialData={null} // Always for a new deal
               onSaveSuccess={() => {
@@ -275,6 +283,34 @@ const CreatorDashboard = () => {
                 setIsUploadContractQuickActionOpen(false);
               }}
             />
+          </ScrollArea>
+        </DialogContent>
+      </Dialog>
+
+      {/* NEW: Social Account Link Dialog */}
+      <Dialog open={isSocialLinkFormOpen} onOpenChange={setIsSocialLinkFormOpen}>
+        <DialogContent 
+          className="sm:max-w-[600px] bg-card text-foreground border-border h-[90vh] flex flex-col" // Added h-[90vh] flex flex-col
+          aria-labelledby="social-link-form-title"
+          aria-describedby="social-link-form-description"
+        >
+          <DialogHeader>
+            <DialogTitle id="social-link-form-title">Link Social Accounts</DialogTitle>
+            <DialogDescription id="social-link-form-description" className="text-muted-foreground">
+              Connect your social media profiles to enable advanced insights and protection.
+            </DialogDescription>
+          </DialogHeader>
+          <ScrollArea className="flex-1 p-4 -mx-4"> {/* Added flex-1 and negative margin for padding */}
+            {profile && (
+              <SocialAccountLinkForm
+                initialData={profile}
+                onSaveSuccess={() => {
+                  // Profile refetch is handled by useUpdateProfile's onSuccess
+                  setIsSocialLinkFormOpen(false);
+                }}
+                onClose={() => setIsSocialLinkFormOpen(false)}
+              />
+            )}
           </ScrollArea>
         </DialogContent>
       </Dialog>

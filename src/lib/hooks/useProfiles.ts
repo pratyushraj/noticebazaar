@@ -27,7 +27,7 @@ export const useProfiles = (options?: UseProfilesOptions) => {
   // Memoize the queryFn to ensure referential stability
   const queryFn = useCallback(async () => {
     // Reverting to original select statement
-    const selectStatement = 'id, first_name, last_name, avatar_url, role, updated_at'; 
+    const selectStatement = 'id, first_name, last_name, avatar_url, role, updated_at, instagram_handle, youtube_channel_id, tiktok_handle, facebook_profile_url, twitter_handle'; // UPDATED: Include new social media fields
 
     let query = supabase
       .from('profiles')
@@ -77,7 +77,7 @@ export const useProfileById = (profileId: string | undefined, options?: { enable
     }
     const { data, error } = await supabase
       .from('profiles')
-      .select('id, first_name, last_name, avatar_url, role')
+      .select('id, first_name, last_name, avatar_url, role, instagram_handle, youtube_channel_id, tiktok_handle, facebook_profile_url, twitter_handle') // UPDATED: Include new social media fields
       .eq('id', profileId)
       .single();
 
@@ -102,27 +102,37 @@ interface UpdateProfileVariables {
   first_name: string;
   last_name: string;
   avatar_url: string | null;
-  role?: 'client' | 'admin' | 'chartered_accountant'; // Added role to the interface
+  role?: 'client' | 'admin' | 'chartered_accountant' | 'creator'; // Added role to the interface
   business_name?: string | null; // Added new field
   gstin?: string | null; // Added new field
   business_entity_type?: string | null; // Added new field
   onboarding_complete?: boolean; // Added new field
+  instagram_handle?: string | null; // NEW
+  youtube_channel_id?: string | null; // NEW
+  tiktok_handle?: string | null; // NEW
+  facebook_profile_url?: string | null; // NEW
+  twitter_handle?: string | null; // NEW
 }
 
 export const useUpdateProfile = () => {
   const queryClient = useQueryClient();
   return useSupabaseMutation<void, Error, UpdateProfileVariables>(
-    async ({ id, first_name, last_name, avatar_url, role, business_name, gstin, business_entity_type, onboarding_complete }) => {
+    async ({ id, first_name, last_name, avatar_url, role, business_name, gstin, business_entity_type, onboarding_complete, instagram_handle, youtube_channel_id, tiktok_handle, facebook_profile_url, twitter_handle }) => { // UPDATED: Destructure new fields
       const updateData: { 
         first_name: string; 
         last_name: string; 
         avatar_url: string | null; 
-        role?: 'client' | 'admin' | 'chartered_accountant'; 
+        role?: 'client' | 'admin' | 'chartered_accountant' | 'creator'; 
         updated_at: string;
         business_name?: string | null;
         gstin?: string | null;
         business_entity_type?: string | null;
         onboarding_complete?: boolean;
+        instagram_handle?: string | null; // NEW
+        youtube_channel_id?: string | null; // NEW
+        tiktok_handle?: string | null; // NEW
+        facebook_profile_url?: string | null; // NEW
+        twitter_handle?: string | null; // NEW
       } = {
         first_name,
         last_name,
@@ -144,6 +154,22 @@ export const useUpdateProfile = () => {
       }
       if (onboarding_complete !== undefined) {
         updateData.onboarding_complete = onboarding_complete;
+      }
+      // NEW: Add social media fields to updateData if provided
+      if (instagram_handle !== undefined) {
+        updateData.instagram_handle = instagram_handle;
+      }
+      if (youtube_channel_id !== undefined) {
+        updateData.youtube_channel_id = youtube_channel_id;
+      }
+      if (tiktok_handle !== undefined) {
+        updateData.tiktok_handle = tiktok_handle;
+      }
+      if (facebook_profile_url !== undefined) {
+        updateData.facebook_profile_url = facebook_profile_url;
+      }
+      if (twitter_handle !== undefined) {
+        updateData.twitter_handle = twitter_handle;
       }
 
       const { error } = await supabase

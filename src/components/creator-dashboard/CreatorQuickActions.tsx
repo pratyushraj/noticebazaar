@@ -4,16 +4,17 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { QuickAction } from '@/data/creatorDashboardData';
 import { cn } from '@/lib/utils';
-import { DollarSign, FileText, Bot, ShieldCheck, PlusCircle } from 'lucide-react'; // Import PlusCircle
+import { DollarSign, FileText, Bot, ShieldCheck, PlusCircle, Link as LinkIcon } from 'lucide-react'; // Import LinkIcon
 
 interface CreatorQuickActionsProps {
   quickActions: QuickAction[];
   onAddBrandDeal: () => void; // New prop for opening the brand deal form
   onAIScanContract: () => void; // New prop for opening the AI scan dialog
-  onUploadContract: () => void; // NEW: Handler for 'Upload Contract' quick action
+  onUploadContract: () => void; // Handler for 'Upload Contract' quick action
+  onLinkSocialAccounts: () => void; // NEW: Handler for 'Link Social Accounts' quick action
 }
 
-const CreatorQuickActions: React.FC<CreatorQuickActionsProps> = ({ quickActions, onAddBrandDeal, onAIScanContract, onUploadContract }) => {
+const CreatorQuickActions: React.FC<CreatorQuickActionsProps> = ({ quickActions, onAddBrandDeal, onAIScanContract, onUploadContract, onLinkSocialAccounts }) => { // UPDATED: Add onLinkSocialAccounts
   // Filter out the mock quick actions that will be replaced by specific buttons or real data
   const filteredQuickActions = quickActions.filter(action => 
     action.label !== 'Send Payment Reminder' && 
@@ -25,8 +26,9 @@ const CreatorQuickActions: React.FC<CreatorQuickActionsProps> = ({ quickActions,
   const customQuickActions = [
     { label: 'Add Brand Deal', icon: PlusCircle, onClick: onAddBrandDeal, variant: 'default' as const },
     { label: 'Send Payment Reminder', icon: DollarSign, onClick: () => console.log('Send Payment Reminder') },
-    { label: 'Upload Contract', icon: FileText, onClick: onUploadContract }, // UPDATED: Use the new handler here
+    { label: 'Upload Contract', icon: FileText, onClick: onUploadContract },
     { label: 'AI Scan Contract', icon: Bot, onClick: onAIScanContract },
+    { label: 'Link Social Accounts', icon: LinkIcon, onClick: onLinkSocialAccounts }, // NEW: Link Social Accounts button
     { label: 'Send Takedown Notice', icon: ShieldCheck, onClick: () => console.log('Send Takedown Notice'), variant: 'destructive' as const },
   ];
 
