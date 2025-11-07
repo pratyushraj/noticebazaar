@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useSession } from '@/contexts/SessionContext';
-import { Loader2, Check, Menu, X, Briefcase, Clock, IndianRupee, Star, ArrowRight, MessageSquare, Bot, ShieldCheck, Users, Lock, Award, Zap, AlertTriangle, Phone, Send, UserCheck, FileText, Calculator, Gavel, Youtube, Instagram, Tiktok, Facebook } from 'lucide-react'; // Added new icons
+import { Loader2, Check, Menu, X, Briefcase, Clock, IndianRupee, Star, ArrowRight, MessageSquare, Bot, ShieldCheck, Users, Lock, Award, Zap, AlertTriangle, Phone, Send, UserCheck, FileText, Calculator, Gavel, Youtube, Instagram, Tiktok, Facebook, LayoutDashboard } from 'lucide-react'; // Added LayoutDashboard icon
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils'; // Import cn for conditional class merging
