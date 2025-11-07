@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState, useMemo } from 'react';
 import { useSession } from '@/contexts/SessionContext';
-import { Loader2, PlusCircle } from 'lucide-react';
+import { Loader2, PlusCircle, FileText, Bot, CheckCircle, AlertTriangle, MessageSquare, Lightbulb } from 'lucide-react'; // Added Lightbulb icon
 import { toast } from 'sonner';
 import { useCreatorDashboardData } from '@/lib/hooks/useCreatorDashboardData';
 import CreatorKpiCards from '@/components/creator-dashboard/CreatorKpiCards';
@@ -15,15 +15,21 @@ import CreatorCopyrightScanner from '@/components/creator-dashboard/CreatorCopyr
 import CreatorAIActionCenter from '@/components/creator-dashboard/CreatorAIActionCenter';
 import CreatorImportantDeadlines from '@/components/creator-dashboard/CreatorImportantDeadlines';
 import { Card, CardContent } from '@/components/ui/card';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import BrandDealForm from '@/components/forms/BrandDealForm'; // Import the new form
-import { useBrandDeals } from '@/lib/hooks/useBrandDeals'; // Import the new hook
-import { BrandDeal } from '@/types'; // Import BrandDeal type
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog'; // Added DialogFooter
+import BrandDealForm from '@/components/forms/BrandDealForm';
+import { useBrandDeals } from '@/lib/hooks/useBrandDeals';
+import { BrandDeal } from '@/types';
+import { useScanContractAI } from '@/lib/hooks/useScanContractAI'; // Import the new hook
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Button } from '@/components/ui/button'; // Ensure Button is imported
 
 const CreatorDashboard = () => {
   const { profile, loading: sessionLoading, isCreator } = useSession();
   const [isBrandDealFormOpen, setIsBrandDealFormOpen] = useState(false);
-  const [editingBrandDeal, setEditingBrandDeal] = useState<BrandDeal | null>(null); // New state for editing
+  const [editingBrandDeal, setEditingBrandDeal] = useState<BrandDeal | null>(null);
+  const [isAIScanDialogOpen, setIsAIScanDialogOpen] = useState(false); // New state for AI scan dialog
+  const [selectedContractForAIScan, setSelectedContractForAIScan] = useState<string | null>(null); // Stores contract_file_url
+  const [aiScanResults, setAiScanResults] = useState<any>(null); // Stores AI scan results
 
   // Fetch mock dashboard data (for KPIs, AI actions, etc. that are not directly brand deals)
   const { data: mockDashboardData, isLoading: isLoadingMocks, error: mockError } = useCreatorDashboardData(
@@ -35,6 +41,9 @@ const CreatorDashboard = () => {
     creatorId: profile?.id,
     enabled: !sessionLoading && isCreator && !!profile?.id,
   });
+
+  // AI Scan Contract Mutation
+  const scanContractMutation = useScanContractAI();
 
   useEffect(() => {
     if (mockError) {
@@ -104,6 +113,35 @@ const CreatorDashboard = () => {
     setIsBrandDealFormOpen(true);
   };
 
+  const handleAIScanContract = () => {
+    setSelectedContractForAIScan(null); // Reset selection
+    setAiScanResults(null); // Clear previous results
+    setIsAIScanDialogOpen(true);
+  };
+
+  const handlePerformAIScan = async () => {
+    if (!selectedContractForAIScan) {
+      toast.error('Please select a contract to scan.');
+      return;
+    }
+    const selectedDeal = brandDeals?.find(deal => deal.contract_file_url === selectedContractForAIScan);
+    if (!selectedDeal) {
+      toast.error('Selected contract not found.');
+      return;
+    }
+
+    try {
+      const results = await scanContractMutation.mutateAsync({
+        contract_file_url: selectedContractForAIScan,
+        brand_name: selectedDeal.brand_name,
+      });
+      setAiScanResults(results);
+      toast.success('AI scan completed successfully!');
+    } catch (error: any) {
+      toast.error('AI scan failed', { description: error.message });
+    }
+  };
+
   if (sessionLoading || isLoadingMocks || isLoadingBrandDeals) {
     return (
       <div className="min-h-[300px] flex flex-col items-center justify-center bg-background">
@@ -132,7 +170,7 @@ const CreatorDashboard = () => {
       <CreatorKpiCards kpiCards={mockDashboardData.kpiCards} />
 
       {/* Quick Actions */}
-      <CreatorQuickActions quickActions={mockDashboardData.quickActions} onAddBrandDeal={handleAddBrandDeal} />
+      <CreatorQuickActions quickActions={mockDashboardData.quickActions} onAddBrandDeal={handleAddBrandDeal} onAIScanContract={handleAIScanContract} />
 
       {/* Revenue & Payments */}
       <CreatorRevenuePayments
@@ -140,7 +178,7 @@ const CreatorDashboard = () => {
         activeBrandDeals={derivedActiveBrandDeals}
         previousBrands={derivedPreviousBrands}
         totalIncomeTracked={derivedTotalIncomeTracked}
-        onEditBrandDeal={handleEditBrandDeal} // Pass the edit handler
+        onEditBrandDeal={handleEditBrandDeal}
       />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -184,17 +222,105 @@ const CreatorDashboard = () => {
             </DialogDescription>
           </DialogHeader>
           <BrandDealForm
-            initialData={editingBrandDeal} // Pass initial data for editing
+            initialData={editingBrandDeal}
             onSaveSuccess={() => {
-              refetchBrandDeals(); // Refetch brand deals after successful save
+              refetchBrandDeals();
               setIsBrandDealFormOpen(false);
-              setEditingBrandDeal(null); // Clear editing state
+              setEditingBrandDeal(null);
             }}
             onClose={() => {
               setIsBrandDealFormOpen(false);
-              setEditingBrandDeal(null); // Clear editing state
+              setEditingBrandDeal(null);
             }}
           />
+        </DialogContent>
+      </Dialog>
+
+      {/* AI Scan Contract Dialog */}
+      <Dialog open={isAIScanDialogOpen} onOpenChange={setIsAIScanDialogOpen}>
+        <DialogContent 
+          className="sm:max-w-[600px] bg-card text-foreground border-border"
+          aria-labelledby="ai-scan-contract-title"
+          aria-describedby="ai-scan-contract-description"
+        >
+          <DialogHeader>
+            <DialogTitle id="ai-scan-contract-title">AI Contract Scan</DialogTitle>
+            <DialogDescription id="ai-scan-contract-description" className="text-muted-foreground">
+              Select a contract to analyze for potential risks and insights.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div>
+              <Label htmlFor="selectContract">Select Contract to Scan</Label>
+              <Select
+                onValueChange={setSelectedContractForAIScan}
+                value={selectedContractForAIScan || ''}
+                disabled={scanContractMutation.isPending || !brandDeals || brandDeals.length === 0}
+              >
+                <SelectTrigger id="selectContract">
+                  <SelectValue placeholder="Choose a contract" />
+                </SelectTrigger>
+                <SelectContent>
+                  {brandDeals?.length === 0 ? (
+                    <SelectItem value="no-contracts" disabled>No contracts available</SelectItem>
+                  ) : (
+                    brandDeals?.filter(deal => deal.contract_file_url).map((deal) => (
+                      <SelectItem key={deal.id} value={deal.contract_file_url!}>
+                        {deal.brand_name} - {deal.deliverables}
+                      </SelectItem>
+                    ))
+                  )}
+                </SelectContent>
+              </Select>
+              {!brandDeals?.some(deal => deal.contract_file_url) && (
+                <p className="text-sm text-muted-foreground mt-2 flex items-center">
+                  <Lightbulb className="h-4 w-4 mr-2 text-yellow-500" /> Upload a contract to a brand deal first to enable AI scanning.
+                </p>
+              )}
+            </div>
+
+            <Button
+              onClick={handlePerformAIScan}
+              disabled={!selectedContractForAIScan || scanContractMutation.isPending}
+              className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
+            >
+              {scanContractMutation.isPending ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Scanning...
+                </>
+              ) : (
+                <>
+                  <Bot className="mr-2 h-4 w-4" /> Perform AI Scan
+                </>
+              )}
+            </Button>
+
+            {aiScanResults && (
+              <Card className="bg-secondary p-4 rounded-lg border border-border mt-4">
+                <CardHeader className="p-0 mb-3">
+                  <CardTitle className="text-lg font-semibold text-foreground flex items-center">
+                    <CheckCircle className="h-5 w-5 text-green-500 mr-2" /> AI Scan Results
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="p-0 space-y-3">
+                  <p className="text-sm text-muted-foreground">{aiScanResults.summary}</p>
+                  <h4 className="font-medium text-foreground flex items-center"><AlertTriangle className="h-4 w-4 text-red-500 mr-2" /> Key Insights:</h4>
+                  <ul className="list-disc list-inside ml-4 space-y-1 text-sm text-muted-foreground">
+                    {aiScanResults.insights.map((insight: any, index: number) => (
+                      <li key={index}>{insight.description}</li>
+                    ))}
+                  </ul>
+                  <p className="text-sm text-muted-foreground mt-3">
+                    <MessageSquare className="h-4 w-4 inline mr-2 text-blue-500" />
+                    **Recommendation:** {aiScanResults.recommendations}
+                  </p>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsAIScanDialogOpen(false)}>Close</Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>

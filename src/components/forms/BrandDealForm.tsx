@@ -228,7 +228,9 @@ const BrandDealForm = ({ initialData, onSaveSuccess, onClose }: BrandDealFormPro
           type="file"
           onChange={handleContractFileChange}
           disabled={isSubmitting}
+          accept=".pdf,.doc,.docx,.png,.jpg,.jpeg" // Specify accepted file types
         />
+        <p className="text-xs text-muted-foreground mt-1">Accepted formats: PDF, DOC, DOCX, PNG, JPG, JPEG (for screenshots/email agreements).</p>
         {existingContractFileUrl && !contractFile && (
           <p className="text-xs text-muted-foreground mt-1 flex items-center">
             <FileText className="h-3 w-3 mr-1" /> Existing file: <a href={existingContractFileUrl} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline ml-1">View Contract</a>

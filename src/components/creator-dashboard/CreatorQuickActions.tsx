@@ -9,9 +9,10 @@ import { DollarSign, FileText, Bot, ShieldCheck, PlusCircle } from 'lucide-react
 interface CreatorQuickActionsProps {
   quickActions: QuickAction[];
   onAddBrandDeal: () => void; // New prop for opening the brand deal form
+  onAIScanContract: () => void; // New prop for opening the AI scan dialog
 }
 
-const CreatorQuickActions: React.FC<CreatorQuickActionsProps> = ({ quickActions, onAddBrandDeal }) => {
+const CreatorQuickActions: React.FC<CreatorQuickActionsProps> = ({ quickActions, onAddBrandDeal, onAIScanContract }) => {
   // Filter out the mock quick actions that will be replaced by specific buttons or real data
   const filteredQuickActions = quickActions.filter(action => 
     action.label !== 'Send Payment Reminder' && 
@@ -24,7 +25,7 @@ const CreatorQuickActions: React.FC<CreatorQuickActionsProps> = ({ quickActions,
     { label: 'Add Brand Deal', icon: PlusCircle, onClick: onAddBrandDeal, variant: 'default' as const },
     { label: 'Send Payment Reminder', icon: DollarSign, onClick: () => console.log('Send Payment Reminder') },
     { label: 'Upload Contract', icon: FileText, onClick: () => console.log('Upload Contract') },
-    { label: 'AI Scan Contract', icon: Bot, onClick: () => console.log('AI Scan Contract') },
+    { label: 'AI Scan Contract', icon: Bot, onClick: onAIScanContract }, // Use the new prop here
     { label: 'Send Takedown Notice', icon: ShieldCheck, onClick: () => console.log('Send Takedown Notice'), variant: 'destructive' as const },
   ];
 
