@@ -60,7 +60,15 @@ const CreatorRevenuePayments: React.FC<CreatorRevenuePaymentsProps> = ({
               {activeBrandDeals.map((deal, index) => (
                 <li key={index} className="flex items-center justify-between">
                   <span className="text-foreground">{deal.name}</span>
-                  <Badge variant={deal.status === 'Drafting' ? 'secondary' : 'default'}>
+                  <Badge 
+                    variant="outline" // Use outline variant to allow custom background
+                    className={cn(
+                      "rounded-full px-2.5 py-0.5 text-xs font-semibold",
+                      deal.status === 'Drafting' 
+                        ? 'badge-drafting-gradient' 
+                        : 'badge-payment-pending-gradient'
+                    )}
+                  >
                     {deal.status}
                   </Badge>
                 </li>

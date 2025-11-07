@@ -135,3 +135,17 @@
   transform: scale(1.02);
   box-shadow: 0 4px 10px rgba(255,0,0,0.2);
 }
+
+/* Custom gradient for Drafting badge */
+.badge-drafting-gradient {
+  background: linear-gradient(145deg, rgba(59, 130, 246, 0.2), rgba(37, 99, 235, 0.2)); /* Blueish subtle gradient */
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  color: #93C5FD; /* Light blue text */
+}
+
+/* Custom gradient for Payment Pending badge */
+.badge-payment-pending-gradient {
+  background: linear-gradient(145deg, rgba(251, 191, 36, 0.2), rgba(245, 158, 11, 0.2)); /* Yellowish subtle gradient */
+  border: 1px solid rgba(251, 191, 36, 0.3);
+  color: #FCD34D; /* Light yellow text */
+}
