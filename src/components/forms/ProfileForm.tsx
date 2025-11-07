@@ -22,7 +22,7 @@ const ProfileForm = ({ initialProfile, onSaveSuccess, isAdminView = false }: Pro
   const [firstName, setFirstName] = useState(initialProfile.first_name || '');
   const [lastName, setLastName] = useState(initialProfile.last_name || '');
   const [avatarUrl, setAvatarUrl] = useState(initialProfile.avatar_url || '');
-  const [role, setRole] = useState<'client' | 'admin'>(initialProfile.role);
+  const [role, setRole] = useState<'client' | 'admin' | 'chartered_accountant' | 'creator'>(initialProfile.role); // Updated role type
 
   const updateProfileMutation = useUpdateProfile();
 
@@ -65,7 +65,8 @@ const ProfileForm = ({ initialProfile, onSaveSuccess, isAdminView = false }: Pro
             {getInitials(firstName, lastName)}
           </AvatarFallback>
         </Avatar>
-        {isAdminView && <p className="text-sm text-muted-foreground">Role: {role}</p>}
+        {isAdminView && <p className="text-sm text-muted-foreground">Email: {initialProfile.email}</p>} {/* Display email for admin view */}
+        {isAdminView && <p className="text-sm text-muted-foreground">Current Role: {initialProfile.role}</p>}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -105,13 +106,15 @@ const ProfileForm = ({ initialProfile, onSaveSuccess, isAdminView = false }: Pro
       {isAdminView && (
         <div>
           <Label htmlFor="role" className="text-foreground">Role</Label>
-          <Select onValueChange={(value: 'client' | 'admin') => setRole(value)} value={role} disabled={updateProfileMutation.isPending}>
+          <Select onValueChange={(value: 'client' | 'admin' | 'chartered_accountant' | 'creator') => setRole(value)} value={role} disabled={updateProfileMutation.isPending}>
             <SelectTrigger id="role" className="bg-input text-foreground border-border">
               <SelectValue placeholder="Select role" />
             </SelectTrigger>
             <SelectContent className="bg-popover text-popover-foreground border-border">
               <SelectItem value="client">Client</SelectItem>
               <SelectItem value="admin">Admin</SelectItem>
+              <SelectItem value="chartered_accountant">Chartered Accountant</SelectItem>
+              <SelectItem value="creator">Creator</SelectItem> {/* New: Creator role */}
             </SelectContent>
           </Select>
         </div>

@@ -7,6 +7,7 @@ import MarketingHome from "./pages/MarketingHome";
 import ClientDashboard from "./pages/ClientDashboard";
 import AdminDashboard from "./pages/AdminDashboard";
 import CADashboard from "./pages/CADashboard";
+import CreatorDashboard from "./pages/CreatorDashboard"; // New: Import CreatorDashboard
 import AdminDocuments from "./pages/AdminDocuments";
 import AdminCases from "./pages/AdminCases";
 import AdminClients from "./pages/AdminClients";
@@ -22,7 +23,7 @@ import AdminActivityLog from "./pages/AdminActivityLog";
 import ClientActivityLog from "./pages/ClientActivityLog";
 import AdminProfile from "./pages/AdminProfile";
 import Blog from "./pages/Blog";
-import BlogPostDetail from "./pages/BlogPostDetail";
+import BlogPostDetail from "./pages/BlogPost/BlogPostDetail"; // Corrected path
 import PricingComparison from "./pages/PricingComparison";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
@@ -43,71 +44,80 @@ import GoogleAnalyticsTracker from "./components/GoogleAnalyticsTracker"; // Imp
 
 const queryClient = new QueryClient();
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <AppToaster />
-      <BrowserRouter>
-        <FacebookPixelTracker />
-        <GoogleAnalyticsTracker /> {/* Add GA4 tracker here */}
-        <SessionContextProvider>
-          <Routes>
-            {/* Root route: Renders MarketingHome. ProtectedRoute handles redirection if authenticated. */}
-            <Route path="/" element={<ProtectedRoute><MarketingHome /></ProtectedRoute>} />
-            
-            {/* Login route: Accessible directly, not protected */}
-            <Route path="/login" element={<Login />} />
+const App = () => {
+  // Removed the temporary useEffect block for role update
 
-            {/* Public routes */}
-            <Route path="/blog" element={<Blog />} />
-            <Route path="/blog/:slug" element={<BlogPostDetail />} />
-            <Route path="/pricing-comparison" element={<PricingComparison />} />
-            <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-            <Route path="/terms-of-service" element={<TermsOfService />} />
-            <Route path="/refund-policy" element={<RefundPolicy />} />
-            <Route path="/sitemap" element={<Sitemap />} />
-            
-            {/* Plan Detail Routes */}
-            <Route path="/plan/essential" element={<EssentialPlan />} />
-            <Route path="/plan/growth" element={<GrowthPlan />} />
-            <Route path="/plan/strategic" element={<StrategicPlan />} />
-            
-            {/* NEW LEAD FUNNEL ROUTES */}
-            <Route path="/free-legal-check" element={<FreeLegalCheck />} />
-            <Route path="/thank-you" element={<ThankYou />} />
+  return (
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <AppToaster />
+        <BrowserRouter>
+          <FacebookPixelTracker />
+          <GoogleAnalyticsTracker /> {/* Add GA4 tracker here */}
+          <SessionContextProvider>
+            <Routes>
+              {/* Root route: Renders MarketingHome. ProtectedRoute handles redirection if authenticated. */}
+              <Route path="/" element={<ProtectedRoute><MarketingHome /></ProtectedRoute>} />
+              
+              {/* Login route: Accessible directly, not protected */}
+              <Route path="/login" element={<Login />} />
 
-            {/* Client-specific routes */}
-            <Route path="/client-dashboard" element={<ProtectedLayout allowedRoles={['client']}><ClientDashboard /></ProtectedLayout>} />
-            <Route path="/client-profile" element={<ProtectedLayout allowedRoles={['client']}><ClientProfile /></ProtectedLayout>} />
-            <Route path="/client-subscription" element={<ProtectedLayout allowedRoles={['client']}><ClientSubscription /></ProtectedLayout>} />
-            <Route path="/client-cases" element={<ProtectedLayout allowedRoles={['client']}><ClientCases /></ProtectedLayout>} />
-            <Route path="/client-documents" element={<ProtectedLayout allowedRoles={['client']}><ClientDocuments /></ProtectedLayout>} />
-            <Route path="/client-consultations" element={<ProtectedLayout allowedRoles={['client']}><ClientConsultations /></ProtectedLayout>} />
-            <Route path="/client-activity-log" element={<ProtectedLayout allowedRoles={['client']}><ClientActivityLog /></ProtectedLayout>} />
-            
-            {/* Admin-specific routes */}
-            <Route path="/admin-dashboard" element={<ProtectedLayout allowedRoles={['admin']}><AdminDashboard /></ProtectedLayout>} />
-            <Route path="/admin-documents" element={<ProtectedLayout allowedRoles={['admin']}><AdminDocuments /></ProtectedLayout>} />
-            <Route path="/admin-cases" element={<ProtectedLayout allowedRoles={['admin']}><AdminCases /></ProtectedLayout>} />
-            <Route path="/admin-clients" element={<ProtectedLayout allowedRoles={['admin']}><AdminClients /></ProtectedLayout>} />
-            <Route path="/admin-consultations" element={<ProtectedLayout allowedRoles={['admin']}><AdminConsultations /></ProtectedLayout>} />
-            <Route path="/admin-subscriptions" element={<ProtectedLayout allowedRoles={['admin']}><AdminSubscriptions /></ProtectedLayout>} />
-            <Route path="/admin-activity-log" element={<ProtectedLayout allowedRoles={['admin']}><AdminActivityLog /></ProtectedLayout>} />
-            <Route path="/admin-profile" element={<ProtectedLayout allowedRoles={['admin']}><AdminProfile /></ProtectedLayout>} />
+              {/* Public routes */}
+              <Route path="/blog" element={<Blog />} />
+              <Route path="/blog/:slug" element={<BlogPostDetail />} />
+              <Route path="/pricing-comparison" element={<PricingComparison />} />
+              <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+              <Route path="/terms-of-service" element={<TermsOfService />} />
+              <Route path="/refund-policy" element={<RefundPolicy />} />
+              <Route path="/sitemap" element={<Sitemap />} />
+              
+              {/* Plan Detail Routes */}
+              <Route path="/plan/essential" element={<EssentialPlan />} />
+              <Route path="/plan/growth" element={<GrowthPlan />} />
+              <Route path="/plan/strategic" element={<StrategicPlan />} />
+              
+              {/* NEW LEAD FUNNEL ROUTES */}
+              <Route path="/free-legal-check" element={<FreeLegalCheck />} />
+              <Route path="/thank-you" element={<ThankYou />} />
 
-            {/* CA-specific routes */}
-            <Route path="/ca-dashboard" element={<ProtectedLayout allowedRoles={['chartered_accountant']}><CADashboard /></ProtectedLayout>} />
-            
-            {/* Shared routes (accessible by client, admin, and CA) */}
-            <Route path="/messages" element={<ProtectedLayout allowedRoles={['client', 'admin', 'chartered_accountant']}><MessagesPage /></ProtectedLayout>} />
+              {/* Client-specific routes */}
+              <Route path="/client-dashboard" element={<ProtectedLayout allowedRoles={['client']}><ClientDashboard /></ProtectedLayout>} />
+              <Route path="/client-profile" element={<ProtectedLayout allowedRoles={['client']}><ClientProfile /></ProtectedLayout>} />
+              <Route path="/client-subscription" element={<ProtectedLayout allowedRoles={['client']}><ClientSubscription /></ProtectedLayout>} />
+              <Route path="/client-cases" element={<ProtectedLayout allowedRoles={['client']}><ClientCases /></ProtectedLayout>} />
+              <Route path="/client-documents" element={<ProtectedLayout allowedRoles={['client']}><ClientDocuments /></ProtectedLayout>} />
+              <Route path="/client-consultations" element={<ProtectedLayout allowedRoles={['client']}><ClientConsultations /></ProtectedLayout>} />
+              <Route path="/client-activity-log" element={<ProtectedLayout allowedRoles={['client']}><ClientActivityLog /></ProtectedLayout>} />
+              
+              {/* Admin-specific routes */}
+              <Route path="/admin-dashboard" element={<ProtectedLayout allowedRoles={['admin']}><AdminDashboard /></ProtectedLayout>} />
+              <Route path="/admin-documents" element={<ProtectedLayout allowedRoles={['admin']}><AdminDocuments /></ProtectedLayout>} />
+              <Route path="/admin-cases" element={<ProtectedLayout allowedRoles={['admin']}><AdminCases /></ProtectedLayout>} />
+              <Route path="/admin-clients" element={<ProtectedLayout allowedRoles={['admin']}><AdminClients /></ProtectedLayout>} />
+              <Route path="/admin-consultations" element={<ProtectedLayout allowedRoles={['admin']}><AdminConsultations /></ProtectedLayout>} />
+              <Route path="/admin-subscriptions" element={<ProtectedLayout allowedRoles={['admin']}><AdminSubscriptions /></ProtectedLayout>} />
+              <Route path="/admin-activity-log" element={<ProtectedLayout allowedRoles={['admin']}><AdminActivityLog /></ProtectedLayout>} />
+              <Route path="/admin-profile" element={<ProtectedLayout allowedRoles={['admin']}><AdminProfile /></ProtectedLayout>} />
 
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </SessionContextProvider>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
+              {/* CA-specific routes */}
+              <Route path="/ca-dashboard" element={<ProtectedLayout allowedRoles={['chartered_accountant']}><CADashboard /></ProtectedLayout>} />
+              
+              {/* Creator-specific routes */}
+              <Route path="/creator-dashboard" element={<ProtectedLayout allowedRoles={['creator']}><CreatorDashboard /></ProtectedLayout>} /> {/* New: Creator Dashboard Route */}
+              {/* Add other creator-specific routes here as needed */}
+              <Route path="/creator-profile" element={<ProtectedLayout allowedRoles={['creator']}><AdminProfile /></ProtectedLayout>} /> {/* Using AdminProfile for now */}
+
+              {/* Shared routes (accessible by client, admin, and CA) */}
+              <Route path="/messages" element={<ProtectedLayout allowedRoles={['client', 'admin', 'chartered_accountant', 'creator']}><MessagesPage /></ProtectedLayout>} /> {/* Added creator role */}
+
+              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </SessionContextProvider>
+        </BrowserRouter>
+      </TooltipProvider>
+    </QueryClientProvider>
+  );
+};
 
 export default App;

@@ -10,6 +10,7 @@ interface SessionContextType {
   profile: Profile | null;
   loading: boolean;
   isAdmin: boolean;
+  isCreator: boolean; // New: Add isCreator
   refetchProfile: () => void; // Add refetchProfile to the context type
 }
 
@@ -49,6 +50,7 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
   );
 
   const isAdmin = profile?.role === 'admin';
+  const isCreator = profile?.role === 'creator'; // New: Define isCreator
   // Overall loading state: true if initial session load is not complete OR profile is still loading
   const loading = !initialLoadComplete || isLoadingProfile;
 
@@ -93,8 +95,9 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
     profile,
     loading,
     isAdmin,
+    isCreator, // New: Include isCreator
     refetchProfile: refetchProfileQuery, // Expose refetch function
-  }), [session, user, profile, loading, isAdmin, refetchProfileQuery]);
+  }), [session, user, profile, loading, isAdmin, isCreator, refetchProfileQuery]);
 
   return (
     <SessionContext.Provider value={contextValue}>

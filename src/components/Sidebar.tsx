@@ -4,7 +4,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { Users, Briefcase, FileText, CalendarDays, MessageSquare, Activity, CreditCard, LayoutDashboard, Settings, Home, FolderOpen, LogOut, Calculator } from 'lucide-react'; // Import LogOut and Calculator icons
+import { Users, Briefcase, FileText, CalendarDays, MessageSquare, Activity, CreditCard, LayoutDashboard, Settings, Home, FolderOpen, LogOut, Calculator, ShieldCheck, DollarSign, Bell } from 'lucide-react'; // Import LogOut, Calculator, ShieldCheck, DollarSign, Bell icons
 import { useSession } from '@/contexts/SessionContext';
 import { useSignOut } from '@/lib/hooks/useAuth';
 
@@ -13,40 +13,51 @@ interface SidebarProps {
 }
 
 const Sidebar = ({ className }: SidebarProps) => {
-  const { profile, isAdmin } = useSession(); // Get profile to check role
+  const { profile, isAdmin, isCreator } = useSession(); // Get profile to check role
   const signOutMutation = useSignOut();
 
   const adminMainNavItems = [
-    { to: "/admin-dashboard", icon: '🏠', label: "Dashboard" },
-    { to: "/admin-clients", icon: '👥', label: "Clients" },
-    { to: "/admin-cases", icon: '💼', label: "Cases" },
-    { to: "/admin-documents", icon: '📁', label: "Documents" },
-    { to: "/admin-consultations", icon: '📅', label: "Consultations" },
-    { to: "/admin-subscriptions", icon: '💳', label: "Subscriptions" },
-    { to: "/messages", icon: '💬', label: "Messages" },
-    { to: "/admin-activity-log", icon: '⚡', label: "Activity Log" },
+    { to: "/admin-dashboard", icon: <LayoutDashboard className="h-4 w-4" />, label: "Dashboard" },
+    { to: "/admin-clients", icon: <Users className="h-4 w-4" />, label: "Clients" },
+    { to: "/admin-cases", icon: <Briefcase className="h-4 w-4" />, label: "Cases" },
+    { to: "/admin-documents", icon: <FileText className="h-4 w-4" />, label: "Documents" },
+    { to: "/admin-consultations", icon: <CalendarDays className="h-4 w-4" />, label: "Consultations" },
+    { to: "/admin-subscriptions", icon: <CreditCard className="h-4 w-4" />, label: "Subscriptions" },
+    { to: "/messages", icon: <MessageSquare className="h-4 w-4" />, label: "Messages" },
+    { to: "/admin-activity-log", icon: <Activity className="h-4 w-4" />, label: "Activity Log" },
   ];
-  const adminProfileSettingsItem = { to: "/admin-profile", icon: '⚙️', label: "Profile Settings" };
+  const adminProfileSettingsItem = { to: "/admin-profile", icon: <Settings className="h-4 w-4" />, label: "Profile Settings" };
 
   const clientMainNavItems = [
-    { to: "/client-dashboard", icon: '🏠', label: "Dashboard" },
-    { to: "/client-subscription", icon: '💳', label: "Subscription" }, // Changed from "My Subscription"
-    { to: "/client-cases", icon: '💼', label: "Cases" }, // Changed from "My Cases"
-    { to: "/client-documents", icon: '📁', label: "Documents" }, // Changed from "My Documents"
-    { to: "/client-consultations", icon: '📅', label: "Consultations" }, // Changed from "My Consultations"
-    { to: "/messages", icon: '💬', label: "Messages" },
-    { to: "/client-activity-log", icon: '⚡', label: "Activity Log" },
+    { to: "/client-dashboard", icon: <LayoutDashboard className="h-4 w-4" />, label: "Dashboard" },
+    { to: "/client-subscription", icon: <CreditCard className="h-4 w-4" />, label: "Subscription" },
+    { to: "/client-cases", icon: <Briefcase className="h-4 w-4" />, label: "Cases" },
+    { to: "/client-documents", icon: <FileText className="h-4 w-4" />, label: "Documents" },
+    { to: "/client-consultations", icon: <CalendarDays className="h-4 w-4" />, label: "Consultations" },
+    { to: "/messages", icon: <MessageSquare className="h-4 w-4" />, label: "Messages" },
+    { to: "/client-activity-log", icon: <Activity className="h-4 w-4" />, label: "Activity Log" },
   ];
-  const clientProfileSettingsItem = { to: "/client-profile", icon: '⚙️', label: "Profile Settings" };
+  const clientProfileSettingsItem = { to: "/client-profile", icon: <Settings className="h-4 w-4" />, label: "Profile Settings" };
 
-  const caMainNavItems = [ // New navigation items for Chartered Accountant
-    { to: "/ca-dashboard", icon: '🏠', label: "Dashboard" },
-    { to: "/admin-clients", icon: '👥', label: "Clients" }, // CA can also manage clients
-    { to: "/admin-documents", icon: '📁', label: "Documents" }, // CA can also manage documents
-    { to: "/messages", icon: '💬', label: "Messages" },
-    { to: "/admin-activity-log", icon: '⚡', label: "Activity Log" }, // CA can view activity log
+  const caMainNavItems = [
+    { to: "/ca-dashboard", icon: <LayoutDashboard className="h-4 w-4" />, label: "Dashboard" },
+    { to: "/admin-clients", icon: <Users className="h-4 w-4" />, label: "Clients" },
+    { to: "/admin-documents", icon: <FileText className="h-4 w-4" />, label: "Documents" },
+    { to: "/messages", icon: <MessageSquare className="h-4 w-4" />, label: "Messages" },
+    { to: "/admin-activity-log", icon: <Activity className="h-4 w-4" />, label: "Activity Log" },
   ];
-  const caProfileSettingsItem = { to: "/admin-profile", icon: '⚙️', label: "Profile Settings" }; // CA uses admin profile settings for now
+  const caProfileSettingsItem = { to: "/admin-profile", icon: <Settings className="h-4 w-4" />, label: "Profile Settings" };
+
+  const creatorMainNavItems = [ // New navigation items for Creator
+    { to: "/creator-dashboard", icon: <LayoutDashboard className="h-4 w-4" />, label: "Dashboard" },
+    { to: "/creator-contracts", icon: <FileText className="h-4 w-4" />, label: "Contracts" },
+    { to: "/creator-payments", icon: <DollarSign className="h-4 w-4" />, label: "Payments & Recovery" },
+    { to: "/creator-content-protection", icon: <ShieldCheck className="h-4 w-4" />, label: "Content Protection" },
+    { to: "/creator-tax-compliance", icon: <Calculator className="h-4 w-4" />, label: "Taxes & Compliance" },
+    { to: "/messages", icon: <MessageSquare className="h-4 w-4" />, label: "Messages" },
+    { to: "/creator-support", icon: <Bell className="h-4 w-4" />, label: "Support" },
+  ];
+  const creatorProfileSettingsItem = { to: "/creator-profile", icon: <Settings className="h-4 w-4" />, label: "Profile Settings" };
 
   let mainNavItems;
   let profileSettingsItem;
@@ -54,9 +65,12 @@ const Sidebar = ({ className }: SidebarProps) => {
   if (profile?.role === 'admin') {
     mainNavItems = adminMainNavItems;
     profileSettingsItem = adminProfileSettingsItem;
-  } else if (profile?.role === 'chartered_accountant') { // Conditional for CA role
+  } else if (profile?.role === 'chartered_accountant') {
     mainNavItems = caMainNavItems;
     profileSettingsItem = caProfileSettingsItem;
+  } else if (profile?.role === 'creator') { // Conditional for Creator role
+    mainNavItems = creatorMainNavItems;
+    profileSettingsItem = creatorProfileSettingsItem;
   } else {
     mainNavItems = clientMainNavItems;
     profileSettingsItem = clientProfileSettingsItem;

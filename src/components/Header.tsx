@@ -14,14 +14,14 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { LogOut, User as UserIcon, Settings, FileText, MessageSquare, Briefcase, Users, CalendarDays, Activity, CreditCard, FolderOpen, Bell, Calculator } from 'lucide-react'; // Added Calculator icon
+import { LogOut, User as UserIcon, Settings, FileText, MessageSquare, Briefcase, Users, CalendarDays, Activity, CreditCard, FolderOpen, Bell, Calculator, LayoutDashboard } from 'lucide-react'; // Added Calculator icon and LayoutDashboard
 import { toast } from 'sonner';
 import { Profile } from '@/types';
 import { useSignOut } from '@/lib/hooks/useAuth';
 import { getInitials, DEFAULT_AVATAR_URL } from '@/lib/utils/avatar';
 
 const Header = () => {
-  const { user, profile, isAdmin } = useSession();
+  const { user, profile, isAdmin, isCreator } = useSession(); // Added isCreator
   const signOutMutation = useSignOut();
 
   const handleLogout = async () => {
@@ -33,14 +33,17 @@ const Header = () => {
   if (profile?.role === 'admin') {
     dashboardPath = "/admin-dashboard";
     profilePath = "/admin-profile";
-  } else if (profile?.role === 'chartered_accountant') { // New: CA dashboard and profile
+  } else if (profile?.role === 'chartered_accountant') {
     dashboardPath = "/ca-dashboard";
-    profilePath = "/admin-profile"; // CA uses admin profile settings for now
+    profilePath = "/admin-profile";
+  } else if (profile?.role === 'creator') { // New: Creator dashboard and profile
+    dashboardPath = "/creator-dashboard";
+    profilePath = "/creator-profile"; // Assuming a separate creator profile page
   }
 
   return (
     <header className="sticky top-0 z-40 w-full border-b border-border bg-background">
-      <div className="flex h-16 items-center justify-between py-4 px-3 md:px-4"> {/* Changed container to flex and added responsive padding */}
+      <div className="flex h-16 items-center justify-between py-4 px-3 md:px-4">
         <Link to={dashboardPath} className="text-2xl font-bold text-primary">
           NoticeBazaar
         </Link>
@@ -89,7 +92,7 @@ const Header = () => {
                       </span>
                     </Link>
                   </DropdownMenuItem>
-                  {profile?.role === 'client' && ( // Only show client-specific items for clients
+                  {profile?.role === 'client' && (
                     <>
                       <DropdownMenuItem asChild className="hover:bg-accent hover:text-accent-foreground">
                         <Link to="/client-subscription" className="flex items-center">
@@ -109,7 +112,7 @@ const Header = () => {
                       </DropdownMenuItem>
                     </>
                   )}
-                  {profile?.role === 'chartered_accountant' && ( // New: CA-specific items
+                  {(profile?.role === 'chartered_accountant' || profile?.role === 'admin') && ( // Combined for admin/CA
                     <>
                       <DropdownMenuItem asChild className="hover:bg-accent hover:text-accent-foreground">
                         <Link to="/admin-clients" className="flex items-center">
@@ -124,6 +127,26 @@ const Header = () => {
                           <span>
                             <FileText className="mr-2 h-4 w-4" />
                             <span>Manage Documents</span>
+                          </span>
+                        </Link>
+                      </DropdownMenuItem>
+                    </>
+                  )}
+                  {profile?.role === 'creator' && ( // New: Creator-specific items
+                    <>
+                      <DropdownMenuItem asChild className="hover:bg-accent hover:text-accent-foreground">
+                        <Link to="/creator-dashboard" className="flex items-center">
+                          <span>
+                            <LayoutDashboard className="mr-2 h-4 w-4" />
+                            <span>Dashboard</span>
+                          </span>
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild className="hover:bg-accent hover:text-accent-foreground">
+                        <Link to="/messages" className="flex items-center">
+                          <span>
+                            <MessageSquare className="mr-2 h-4 w-4" />
+                            <span>Messages</span>
                           </span>
                         </Link>
                       </DropdownMenuItem>
