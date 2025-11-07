@@ -40,6 +40,7 @@ export type Database = {
       }
       brand_deals: {
         Row: {
+          brand_email: string | null
           brand_name: string
           contact_person: string | null
           contract_file_url: string | null
@@ -56,9 +57,9 @@ export type Database = {
           status: string
           updated_at: string
           utr_number: string | null
-          brand_email: string | null
         }
         Insert: {
+          brand_email?: string | null
           brand_name: string
           contact_person?: string | null
           contract_file_url?: string | null
@@ -75,9 +76,9 @@ export type Database = {
           status?: string
           updated_at?: string
           utr_number?: string | null
-          brand_email?: string | null
         }
         Update: {
+          brand_email?: string | null
           brand_name?: string
           contact_person?: string | null
           contract_file_url?: string | null
@@ -94,7 +95,6 @@ export type Database = {
           status?: string
           updated_at?: string
           utr_number?: string | null
-          brand_email?: string | null
         }
         Relationships: [
           {
@@ -219,9 +219,9 @@ export type Database = {
           id: string
           is_favorite: boolean
           name: string
+          status: string
           url: string
           uploaded_at: string | null
-          status: string
         }
         Insert: {
           case_id?: string | null
@@ -230,9 +230,9 @@ export type Database = {
           id?: string
           is_favorite?: boolean
           name: string
+          status?: string
           url: string
           uploaded_at?: string | null
-          status?: string
         }
         Update: {
           case_id?: string | null
@@ -241,9 +241,9 @@ export type Database = {
           id?: string
           is_favorite?: boolean
           name?: string
+          status?: string
           url?: string
           uploaded_at?: string | null
-          status?: string
         }
         Relationships: [
           {
@@ -395,52 +395,52 @@ export type Database = {
           avatar_url: string | null
           business_entity_type: string | null
           business_name: string | null
+          facebook_profile_url: string | null
           first_name: string | null
           gstin: string | null
           id: string
+          instagram_handle: string | null
           last_name: string | null
           onboarding_complete: boolean | null
           role: string
+          tiktok_handle: string | null
+          twitter_handle: string | null
           updated_at: string | null
-          instagram_handle: string | null // NEW
-          youtube_channel_id: string | null // NEW
-          tiktok_handle: string | null // NEW
-          facebook_profile_url: string | null // NEW
-          twitter_handle: string | null // NEW
+          youtube_channel_id: string | null
         }
         Insert: {
           avatar_url?: string | null
           business_entity_type?: string | null
           business_name?: string | null
+          facebook_profile_url?: string | null
           first_name?: string | null
           gstin?: string | null
           id: string
+          instagram_handle?: string | null
           last_name?: string | null
           onboarding_complete?: boolean | null
           role?: string
+          tiktok_handle?: string | null
+          twitter_handle?: string | null
           updated_at?: string | null
-          instagram_handle?: string | null // NEW
-          youtube_channel_id?: string | null // NEW
-          tiktok_handle?: string | null // NEW
-          facebook_profile_url?: string | null // NEW
-          twitter_handle?: string | null // NEW
+          youtube_channel_id?: string | null
         }
         Update: {
           avatar_url?: string | null
           business_entity_type?: string | null
           business_name?: string | null
+          facebook_profile_url?: string | null
           first_name?: string | null
           gstin?: string | null
           id?: string
+          instagram_handle?: string | null
           last_name?: string | null
           onboarding_complete?: boolean | null
           role?: string
+          tiktok_handle?: string | null
+          twitter_handle?: string | null
           updated_at?: string | null
-          instagram_handle?: string | null // NEW
-          youtube_channel_id?: string | null // NEW
-          tiktok_handle?: string | null // NEW
-          facebook_profile_url?: string | null // NEW
-          twitter_handle?: string | null // NEW
+          youtube_channel_id?: string | null
         }
         Relationships: [
           {
