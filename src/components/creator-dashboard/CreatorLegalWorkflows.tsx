@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { FileText, AlertTriangle, ArrowRight, CheckCircle } from 'lucide-react';
 import { ContractReview, TakedownAlert } from '@/data/creatorDashboardData'; // Keep TakedownAlert type
 import { cn } from '@/lib/utils';
+import { Link } from 'react-router-dom'; // Import Link
 
 interface CreatorLegalWorkflowsProps {
   contractsRequiringReview: ContractReview[]; // Now derived from BrandDeals
@@ -40,8 +41,10 @@ const CreatorLegalWorkflows: React.FC<CreatorLegalWorkflowsProps> = ({
               )}
             </ul>
           </CardContent>
-          <Button variant="default" className="w-full bg-primary text-primary-foreground hover:bg-primary/90 mt-4">
-            Review Now <ArrowRight className="ml-2 h-4 w-4" />
+          <Button asChild variant="default" className="w-full bg-primary text-primary-foreground hover:bg-primary/90 mt-4">
+            <Link to="/creator-contracts">
+              Review Now <ArrowRight className="ml-2 h-4 w-4" />
+            </Link>
           </Button>
         </Card>
 
@@ -65,8 +68,10 @@ const CreatorLegalWorkflows: React.FC<CreatorLegalWorkflowsProps> = ({
               )}
             </ul>
           </CardContent>
-          <Button variant="destructive" className="w-full bg-destructive text-destructive-foreground hover:bg-destructive/90 mt-4">
-            View Matches <ArrowRight className="ml-2 h-4 w-4" />
+          <Button asChild variant="destructive" className="w-full bg-destructive text-destructive-foreground hover:bg-destructive/90 mt-4">
+            <Link to="/creator-content-protection">
+              View Matches <ArrowRight className="ml-2 h-4 w-4" />
+            </Link>
           </Button>
         </Card>
       </div>

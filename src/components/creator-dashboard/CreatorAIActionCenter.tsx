@@ -6,12 +6,14 @@ import { Button } from '@/components/ui/button';
 import { Bot, ArrowRight, FileText, IndianRupee, Clock, MessageSquare, LucideIcon } from 'lucide-react'; // Import specific icons for color logic
 import { AIAction } from '@/data/creatorDashboardData';
 import { cn } from '@/lib/utils';
+import { Link } from 'react-router-dom'; // Import Link
 
 interface CreatorAIActionCenterProps {
   aiActions: AIAction[];
+  onSendPaymentReminder: () => void; // NEW: Handler for 'Send Reminder'
 }
 
-const CreatorAIActionCenter: React.FC<CreatorAIActionCenterProps> = ({ aiActions }) => {
+const CreatorAIActionCenter: React.FC<CreatorAIActionCenterProps> = ({ aiActions, onSendPaymentReminder }) => {
   // Helper function to determine the color class for the left bar
   const getActionColorClass = (icon: LucideIcon) => {
     if (icon === FileText) return 'border-blue-500'; // Contracts
@@ -41,11 +43,17 @@ const CreatorAIActionCenter: React.FC<CreatorAIActionCenterProps> = ({ aiActions
                 <action.icon className="h-4 w-4 text-muted-foreground mr-2" />
                 <span className="text-foreground text-sm">{action.description}</span>
               </div>
-              <Button variant="link" className="p-0 text-primary hover:text-primary/80" asChild>
-                <a href={action.linkHref}>
+              {action.linkText === 'Send Reminder' ? (
+                <Button variant="link" className="p-0 text-primary hover:text-primary/80" onClick={onSendPaymentReminder}>
                   {action.linkText} <ArrowRight className="ml-1 h-3 w-3" />
-                </a>
-              </Button>
+                </Button>
+              ) : (
+                <Button asChild variant="link" className="p-0 text-primary hover:text-primary/80">
+                  <Link to={action.linkHref}>
+                    {action.linkText} <ArrowRight className="ml-1 h-3 w-3" />
+                  </Link>
+                </Button>
+              )}
             </li>
           ))}
         </ul>

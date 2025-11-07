@@ -7,6 +7,7 @@ import { CalendarDays, ArrowRight } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { ComplianceDeadline } from '@/data/creatorDashboardData';
 import { cn } from '@/lib/utils';
+import { Link } from 'react-router-dom'; // Import Link
 
 interface CreatorImportantDeadlinesProps {
   deadlines: ComplianceDeadline[];
@@ -47,8 +48,10 @@ const CreatorImportantDeadlines: React.FC<CreatorImportantDeadlinesProps> = ({ d
         </ul>
       </CardContent>
       <CardFooter className="px-0 pb-0 pt-4"> {/* Added CardFooter */}
-        <Button variant="link" className="w-full p-0 text-primary hover:text-primary/80">
-          View Full Compliance Calendar <ArrowRight className="ml-1 h-4 w-4" />
+        <Button asChild variant="link" className="w-full p-0 text-primary hover:text-primary/80">
+          <Link to="/creator-tax-compliance">
+            View Full Compliance Calendar <ArrowRight className="ml-1 h-4 w-4" />
+          </Link>
         </Button>
       </CardFooter>
     </Card>

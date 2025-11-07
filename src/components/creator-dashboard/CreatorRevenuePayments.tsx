@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { BrandDeal } from '@/types'; // Import BrandDeal type
 import { cn } from '@/lib/utils';
 import BrandPill from './BrandPill'; // Import the new BrandPill component
+import { Link } from 'react-router-dom'; // Import Link
 
 interface CreatorRevenuePaymentsProps {
   pendingBrandPayments: { amount: string; status: string; details: string };
@@ -66,8 +67,10 @@ const CreatorRevenuePayments: React.FC<CreatorRevenuePaymentsProps> = ({
               </p>
             )}
           </CardContent>
-          <Button variant="default" className="w-full bg-primary text-primary-foreground hover:bg-primary/90 mt-4">
-            View Recovery Cases <ArrowRight className="ml-2 h-4 w-4" />
+          <Button asChild variant="default" className="w-full bg-primary text-primary-foreground hover:bg-primary/90 mt-4">
+            <Link to="/creator-payments">
+              View Recovery Cases <ArrowRight className="ml-2 h-4 w-4" />
+            </Link>
           </Button>
         </Card>
 
@@ -113,8 +116,10 @@ const CreatorRevenuePayments: React.FC<CreatorRevenuePaymentsProps> = ({
               )}
             </ul>
           </CardContent>
-          <Button variant="link" className="p-0 w-full text-primary hover:text-primary/80 mt-4">
-            View All Deals <ArrowRight className="ml-1 h-4 w-4" />
+          <Button asChild variant="link" className="p-0 w-full text-primary hover:text-primary/80 mt-4">
+            <Link to="/creator-contracts">
+              View All Deals <ArrowRight className="ml-1 h-4 w-4" />
+            </Link>
           </Button>
         </Card>
 
@@ -136,8 +141,10 @@ const CreatorRevenuePayments: React.FC<CreatorRevenuePaymentsProps> = ({
             </div>
             <p className="text-sm text-muted-foreground">Total income tracked: <span className="font-bold text-foreground">{totalIncomeTracked}</span></p>
           </CardContent>
-          <Button variant="link" className="p-0 w-full text-primary hover:text-primary/80 mt-4">
-            View All Brands <ArrowRight className="ml-1 h-4 w-4" />
+          <Button asChild variant="link" className="p-0 w-full text-primary hover:text-primary/80 mt-4">
+            <Link to="/creator-contracts">
+              View All Brands <ArrowRight className="ml-1 h-4 w-4" />
+            </Link>
           </Button>
         </Card>
       </div>

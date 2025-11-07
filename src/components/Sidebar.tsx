@@ -55,7 +55,7 @@ const Sidebar = ({ className }: SidebarProps) => {
     { to: "/creator-content-protection", icon: <ShieldCheck className="h-4 w-4" />, label: "Content Protection" },
     { to: "/creator-tax-compliance", icon: <Calculator className="h-4 w-4" />, label: "Taxes & Compliance" },
     { to: "/messages", icon: <MessageSquare className="h-4 w-4" />, label: "Messages" },
-    { to: "/creator-support", icon: <Bell className="h-4 w-4" />, label: "Support" },
+    { to: "/creator-support", icon: <Bell className="h-4 w-4" />, label: "Support" }, // Placeholder for support page
   ];
   const creatorProfileSettingsItem = { to: "/creator-profile", icon: <Settings className="h-4 w-4" />, label: "Profile Settings" };
 

@@ -94,3 +94,13 @@ export interface CreatorKpi {
 export type BrandDeal = Tables<'brand_deals'> & {
   // Add any joined profiles or specific brand deal related fields here if needed
 };
+
+// NEW: Type for Copyright Scan Alerts
+export interface CopyrightScanAlert {
+  id: string;
+  description: string;
+  platform: string;
+  infringingUrl: string;
+  infringingUser: string;
+  originalContentUrl: string;
+}

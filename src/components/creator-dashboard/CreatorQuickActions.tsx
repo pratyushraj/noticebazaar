@@ -12,9 +12,11 @@ interface CreatorQuickActionsProps {
   onAIScanContract: () => void; // New prop for opening the AI scan dialog
   onUploadContract: () => void; // Handler for 'Upload Contract' quick action
   onLinkSocialAccounts: () => void; // NEW: Handler for 'Link Social Accounts' quick action
+  onSendPaymentReminder: () => void; // NEW: Handler for 'Send Payment Reminder'
+  onSendTakedownNotice: () => void; // NEW: Handler for 'Send Takedown Notice'
 }
 
-const CreatorQuickActions: React.FC<CreatorQuickActionsProps> = ({ quickActions, onAddBrandDeal, onAIScanContract, onUploadContract, onLinkSocialAccounts }) => { // UPDATED: Add onLinkSocialAccounts
+const CreatorQuickActions: React.FC<CreatorQuickActionsProps> = ({ quickActions, onAddBrandDeal, onAIScanContract, onUploadContract, onLinkSocialAccounts, onSendPaymentReminder, onSendTakedownNotice }) => { // UPDATED: Add onLinkSocialAccounts, onSendPaymentReminder, onSendTakedownNotice
   // Filter out the mock quick actions that will be replaced by specific buttons or real data
   const filteredQuickActions = quickActions.filter(action => 
     action.label !== 'Send Payment Reminder' && 
@@ -25,11 +27,11 @@ const CreatorQuickActions: React.FC<CreatorQuickActionsProps> = ({ quickActions,
 
   const customQuickActions = [
     { label: 'Add Brand Deal', icon: PlusCircle, onClick: onAddBrandDeal, variant: 'default' as const },
-    { label: 'Send Payment Reminder', icon: DollarSign, onClick: () => console.log('Send Payment Reminder') },
+    { label: 'Send Payment Reminder', icon: DollarSign, onClick: onSendPaymentReminder }, // Use new handler
     { label: 'Upload Contract', icon: FileText, onClick: onUploadContract },
     { label: 'AI Scan Contract', icon: Bot, onClick: onAIScanContract },
     { label: 'Link Social Accounts', icon: LinkIcon, onClick: onLinkSocialAccounts }, // NEW: Link Social Accounts button
-    { label: 'Send Takedown Notice', icon: ShieldCheck, onClick: () => console.log('Send Takedown Notice'), variant: 'destructive' as const },
+    { label: 'Send Takedown Notice', icon: ShieldCheck, onClick: onSendTakedownNotice, variant: 'destructive' as const }, // Use new handler
   ];
 
   return (

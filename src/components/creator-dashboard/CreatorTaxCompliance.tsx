@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { IndianRupee, Calculator, ArrowRight } from 'lucide-react'; // Changed AlertTriangle to Calculator
 import { MOCK_TAX_COMPLIANCE_STATUS } from '@/data/creatorDashboardData';
 import { cn } from '@/lib/utils';
+import { Link } from 'react-router-dom'; // Import Link
 
 interface CreatorTaxComplianceProps {
   taxComplianceStatus: typeof MOCK_TAX_COMPLIANCE_STATUS;
@@ -26,8 +27,10 @@ const CreatorTaxCompliance: React.FC<CreatorTaxComplianceProps> = ({ taxComplian
         <p className="text-sm text-muted-foreground mb-4">Next Due: <span className="font-bold text-foreground">{taxComplianceStatus.nextDue}</span></p>
       </CardContent>
       <CardFooter className="px-0 pb-0 pt-4"> {/* Added CardFooter */}
-        <Button variant="default" className="w-full bg-primary text-primary-foreground hover:bg-primary/90">
-          File Now <ArrowRight className="ml-2 h-4 w-4" />
+        <Button asChild variant="default" className="w-full bg-primary text-primary-foreground hover:bg-primary/90">
+          <Link to="/creator-tax-compliance">
+            File Now <ArrowRight className="ml-2 h-4 w-4" />
+          </Link>
         </Button>
       </CardFooter>
     </Card>

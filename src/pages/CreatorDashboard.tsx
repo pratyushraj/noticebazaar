@@ -25,6 +25,8 @@ import { Button } from '@/components/ui/button'; // Ensure Button is imported
 import { Label } from '@/components/ui/label'; // Import Label
 import { ScrollArea } from '@/components/ui/scroll-area'; // Import ScrollArea
 import SocialAccountLinkForm from '@/components/forms/SocialAccountLinkForm'; // NEW: Import SocialAccountLinkForm
+import { useSendPaymentReminder } from '@/lib/hooks/useSendPaymentReminder'; // NEW: Import useSendPaymentReminder
+import { useSendTakedownNotice } from '@/lib/hooks/useSendTakedownNotice'; // NEW: Import useSendTakedownNotice
 
 const CreatorDashboard = () => {
   const { profile, loading: sessionLoading, isCreator } = useSession();
@@ -35,6 +37,12 @@ const CreatorDashboard = () => {
   const [aiScanResults, setAiScanResults] = useState<any>(null); // Stores AI scan results
   const [isUploadContractQuickActionOpen, setIsUploadContractQuickActionOpen] = useState(false); // State for 'Upload Contract' quick action dialog
   const [isSocialLinkFormOpen, setIsSocialLinkFormOpen] = useState(false); // NEW: State for SocialAccountLinkForm dialog
+  const [isSendPaymentReminderDialogOpen, setIsSendPaymentReminderDialogOpen] = useState(false); // NEW: State for Send Payment Reminder dialog
+  const [selectedDealForReminder, setSelectedDealForReminder] = useState<BrandDeal | null>(null); // NEW: State for selected deal for reminder
+  const [isSendTakedownNoticeDialogOpen, setIsSendTakedownNoticeDialogOpen] = useState(false); // NEW: State for Send Takedown Notice dialog
+  const [takedownNoticeDetails, setTakedownNoticeDetails] = useState({ // NEW: State for takedown notice details
+    contentUrl: '', platform: '', infringingUrl: '', infringingUser: ''
+  });
 
   // Fetch mock dashboard data (for KPIs, AI actions, etc. that are not directly brand deals)
   const { data: mockDashboardData, isLoading: isLoadingMocks, error: mockError } = useCreatorDashboardData(
@@ -49,6 +57,10 @@ const CreatorDashboard = () => {
 
   // AI Scan Contract Mutation
   const scanContractMutation = useScanContractAI();
+  // NEW: Send Payment Reminder Mutation
+  const sendPaymentReminderMutation = useSendPaymentReminder();
+  // NEW: Send Takedown Notice Mutation
+  const sendTakedownNoticeMutation = useSendTakedownNotice();
 
   useEffect(() => {
     if (mockError) {
@@ -134,6 +146,18 @@ const CreatorDashboard = () => {
     setIsSocialLinkFormOpen(true);
   };
 
+  // NEW: Handler for 'Send Payment Reminder' quick action
+  const handleSendPaymentReminderQuickAction = () => {
+    setSelectedDealForReminder(null); // Reset selected deal
+    setIsSendPaymentReminderDialogOpen(true);
+  };
+
+  // NEW: Handler for 'Send Takedown Notice' quick action
+  const handleSendTakedownNoticeQuickAction = () => {
+    setTakedownNoticeDetails({ contentUrl: '', platform: '', infringingUrl: '', infringingUser: '' }); // Reset form
+    setIsSendTakedownNoticeDialogOpen(true);
+  };
+
   const handlePerformAIScan = async () => {
     if (!selectedContractForAIScan) {
       toast.error('Please select a contract to scan.');
@@ -154,6 +178,43 @@ const CreatorDashboard = () => {
       toast.success('AI scan completed successfully!');
     } catch (error: any) {
       toast.error('AI scan failed', { description: error.message });
+    }
+  };
+
+  // NEW: Handle sending payment reminder from dialog
+  const handleSendReminderFromDialog = async () => {
+    if (!selectedDealForReminder) return;
+
+    try {
+      await sendPaymentReminderMutation.mutateAsync({ brandDealId: selectedDealForReminder.id });
+      toast.success('Payment reminder sent!');
+      setIsSendPaymentReminderDialogOpen(false);
+      setSelectedDealForReminder(null);
+      refetchBrandDeals();
+    } catch (error: any) {
+      toast.error('Failed to send reminder', { description: error.message });
+    }
+  };
+
+  // NEW: Handle sending takedown notice from dialog
+  const handleSendTakedownFromDialog = async () => {
+    if (!takedownNoticeDetails.contentUrl.trim() || !takedownNoticeDetails.platform.trim() || !takedownNoticeDetails.infringingUrl.trim()) {
+      toast.error('Please fill in all required fields for the takedown notice.');
+      return;
+    }
+
+    try {
+      await sendTakedownNoticeMutation.mutateAsync({
+        contentUrl: takedownNoticeDetails.contentUrl.trim(),
+        platform: takedownNoticeDetails.platform.trim(),
+        infringingUrl: takedownNoticeDetails.infringingUrl.trim(),
+        infringingUser: takedownNoticeDetails.infringingUser.trim() || undefined,
+      });
+      toast.success('Takedown notice sent successfully!');
+      setIsSendTakedownNoticeDialogOpen(false);
+      setTakedownNoticeDetails({ contentUrl: '', platform: '', infringingUrl: '', infringingUser: '' });
+    } catch (error: any) {
+      toast.error('Failed to send takedown notice', { description: error.message });
     }
   };
 
@@ -191,6 +252,8 @@ const CreatorDashboard = () => {
         onAIScanContract={handleAIScanContract} 
         onUploadContract={handleUploadContractQuickAction} 
         onLinkSocialAccounts={handleLinkSocialAccounts} // NEW: Pass the handler
+        onSendPaymentReminder={handleSendPaymentReminderQuickAction} // NEW: Pass the handler
+        onSendTakedownNotice={handleSendTakedownNoticeQuickAction} // NEW: Pass the handler
       />
 
       {/* Revenue & Payments */}
@@ -212,7 +275,7 @@ const CreatorDashboard = () => {
         </div>
 
         {/* AI Action Center */}
-        <CreatorAIActionCenter aiActions={mockDashboardData.aiActionCenter} />
+        <CreatorAIActionCenter aiActions={mockDashboardData.aiActionCenter} onSendPaymentReminder={handleSendPaymentReminderQuickAction} />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -399,6 +462,162 @@ const CreatorDashboard = () => {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsAIScanDialogOpen(false)}>Close</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* NEW: Send Payment Reminder Dialog */}
+      <Dialog open={isSendPaymentReminderDialogOpen} onOpenChange={setIsSendPaymentReminderDialogOpen}>
+        <DialogContent 
+          className="sm:max-w-[425px] bg-card text-foreground border-border"
+          aria-labelledby="send-reminder-title"
+          aria-describedby="send-reminder-description"
+        >
+          <DialogHeader>
+            <DialogTitle id="send-reminder-title">Send Payment Reminder</DialogTitle>
+            <DialogDescription id="send-reminder-description" className="text-muted-foreground">
+              Select a brand deal to send a payment reminder for.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div>
+              <Label htmlFor="selectDealForReminder">Select Deal</Label>
+              <Select
+                onValueChange={(value) => setSelectedDealForReminder(brandDeals?.find(deal => deal.id === value) || null)}
+                value={selectedDealForReminder?.id || ''}
+                disabled={sendPaymentReminderMutation.isPending || !brandDeals || brandDeals.length === 0}
+              >
+                <SelectTrigger id="selectDealForReminder">
+                  <SelectValue placeholder="Choose a deal" />
+                </SelectTrigger>
+                <SelectContent>
+                  {brandDeals?.filter(deal => deal.status === 'Payment Pending').length === 0 ? (
+                    <SelectItem value="no-deals" disabled>No pending payment deals</SelectItem>
+                  ) : (
+                    brandDeals?.filter(deal => deal.status === 'Payment Pending').map((deal) => (
+                      <SelectItem key={deal.id} value={deal.id}>
+                        {deal.brand_name} - ₹{deal.deal_amount.toLocaleString('en-IN')} (Due: {new Date(deal.payment_expected_date).toLocaleDateString()})
+                      </SelectItem>
+                    ))
+                  )}
+                </SelectContent>
+              </Select>
+              {!brandDeals?.some(deal => deal.status === 'Payment Pending') && (
+                <p className="text-sm text-muted-foreground mt-2 flex items-center">
+                  <Lightbulb className="h-4 w-4 mr-2 text-yellow-500" /> No deals with pending payments.
+                </p>
+              )}
+            </div>
+            {selectedDealForReminder && (
+              <p className="text-sm text-muted-foreground flex items-center">
+                <MessageSquare className="h-4 w-4 mr-2" /> Reminder will be sent to: {selectedDealForReminder.brand_email || 'NoticeBazaar Support'}
+              </p>
+            )}
+            <Button
+              onClick={handleSendReminderFromDialog}
+              disabled={!selectedDealForReminder || sendPaymentReminderMutation.isPending}
+              className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
+            >
+              {sendPaymentReminderMutation.isPending ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Sending...
+                </>
+              ) : (
+                'Send Reminder'
+              )}
+            </Button>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsSendPaymentReminderDialogOpen(false)}>Close</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* NEW: Send Takedown Notice Dialog */}
+      <Dialog open={isSendTakedownNoticeDialogOpen} onOpenChange={setIsSendTakedownNoticeDialogOpen}>
+        <DialogContent 
+          className="sm:max-w-[600px] bg-card text-foreground border-border"
+          aria-labelledby="send-takedown-title"
+          aria-describedby="send-takedown-description"
+        >
+          <DialogHeader>
+            <DialogTitle id="send-takedown-title">Send Takedown Notice</DialogTitle>
+            <DialogDescription id="send-takedown-description" className="text-muted-foreground">
+              Fill in details to send a formal DMCA takedown notice.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div>
+              <Label htmlFor="takedownContentUrl">Your Original Content URL *</Label>
+              <Input
+                id="takedownContentUrl"
+                type="url"
+                value={takedownNoticeDetails.contentUrl}
+                onChange={(e) => setTakedownNoticeDetails(prev => ({ ...prev, contentUrl: e.target.value }))}
+                disabled={sendTakedownNoticeMutation.isPending}
+                placeholder="e.g., https://youtube.com/watch?v=your_original_video_id"
+              />
+            </div>
+            <div>
+              <Label htmlFor="takedownPlatform">Platform of Infringement *</Label>
+              <Select
+                onValueChange={(value) => setTakedownNoticeDetails(prev => ({ ...prev, platform: value }))}
+                value={takedownNoticeDetails.platform}
+                disabled={sendTakedownNoticeMutation.isPending}
+              >
+                <SelectTrigger id="takedownPlatform">
+                  <SelectValue placeholder="Select platform" />
+                </SelectTrigger>
+                <SelectContent>
+                  {['YouTube', 'Instagram', 'TikTok', 'Facebook', 'Other Web'].map((platform) => (
+                    <SelectItem key={platform} value={platform}>{platform}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label htmlFor="takedownInfringingUrl">Infringing Content URL *</Label>
+              <Input
+                id="takedownInfringingUrl"
+                type="url"
+                value={takedownNoticeDetails.infringingUrl}
+                onChange={(e) => setTakedownNoticeDetails(prev => ({ ...prev, infringingUrl: e.target.value }))}
+                disabled={sendTakedownNoticeMutation.isPending}
+                placeholder="e.g., https://youtube.com/watch?v=infringing_video_id"
+              />
+            </div>
+            <div>
+              <Label htmlFor="takedownInfringingUser">Infringing User/Channel (Optional)</Label>
+              <Input
+                id="takedownInfringingUser"
+                value={takedownNoticeDetails.infringingUser}
+                onChange={(e) => setTakedownNoticeDetails(prev => ({ ...prev, infringingUser: e.target.value }))}
+                disabled={sendTakedownNoticeMutation.isPending}
+                placeholder="e.g., CopyCat Channel"
+              />
+            </div>
+            <p className="text-sm text-muted-foreground flex items-center">
+              <AlertTriangle className="h-4 w-4 mr-2 text-red-500" />
+              By sending this, you confirm you are the copyright owner or authorized agent.
+            </p>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsSendTakedownNoticeDialogOpen(false)} disabled={sendTakedownNoticeMutation.isPending}>
+              Cancel
+            </Button>
+            <Button
+              onClick={handleSendTakedownFromDialog}
+              disabled={!takedownNoticeDetails.contentUrl.trim() || !takedownNoticeDetails.platform.trim() || !takedownNoticeDetails.infringingUrl.trim() || sendTakedownNoticeMutation.isPending}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {sendTakedownNoticeMutation.isPending ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Sending...
+                </>
+              ) : (
+                'Send Takedown Notice'
+              )}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

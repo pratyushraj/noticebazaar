@@ -31,11 +31,7 @@ export interface ContractReview {
   status: 'risky' | 'missing_rights';
 }
 
-export interface TakedownAlert {
-  id: string;
-  description: string;
-  action: string;
-}
+// REMOVED: TakedownAlert interface as it's now in src/types/index.ts
 
 export interface ComplianceDeadline {
   date: string;
@@ -118,9 +114,8 @@ export const MOCK_CONTRACTS_REQUIRING_REVIEW: ContractReview[] = [
   { id: '2', title: 'XYZ Agency - missing usage rights details', status: 'missing_rights' },
 ];
 
-export const MOCK_TAKEDOWN_ALERTS: TakedownAlert[] = [
-  { id: '1', description: '2 Videos Reposted on TikTok', action: 'Immediate action required to prevent revenue loss.' },
-];
+// REMOVED: MOCK_TAKEDOWN_ALERTS as it's now handled by the CreatorContentProtection page
+export const MOCK_TAKEDOWN_ALERTS: any[] = [];
 
 export const MOCK_PROTECTION_COMPLIANCE = {
   healthScore: 72,
@@ -144,8 +139,8 @@ export const MOCK_IMPORTANT_DEADLINES: ComplianceDeadline[] = [
 ];
 
 export const MOCK_AI_ACTION_CENTER: AIAction[] = [
-  { description: '2 contracts missing usage rights summary — fix now', linkText: 'Review Contracts', linkHref: '#', icon: FileText },
-  { description: 'Your GST payment is due in 5 days', linkText: 'File Taxes', linkHref: '#', icon: IndianRupee },
-  { description: '1 pending invoice > 30 days overdue', linkText: 'Send Reminder', linkHref: '#', icon: Clock },
-  { description: 'New message from your legal advisor', linkText: 'View Messages', linkHref: '#', icon: MessageSquare },
+  { description: '2 contracts missing usage rights summary — fix now', linkText: 'Review Contracts', linkHref: '/creator-contracts', icon: FileText },
+  { description: 'Your GST payment is due in 5 days', linkText: 'File Taxes', linkHref: '/creator-tax-compliance', icon: IndianRupee },
+  { description: '1 pending invoice > 30 days overdue', linkText: 'Send Reminder', linkHref: '#', icon: Clock }, // Link to action
+  { description: 'New message from your legal advisor', linkText: 'View Messages', linkHref: '/messages', icon: MessageSquare },
 ];

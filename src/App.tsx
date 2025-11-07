@@ -42,6 +42,13 @@ import AppToaster from "./components/AppToaster";
 import FacebookPixelTracker from "./components/FacebookPixelTracker";
 import GoogleAnalyticsTracker from "./components/GoogleAnalyticsTracker"; // Import new tracker
 
+// NEW: Import Creator-specific pages
+import CreatorContracts from "./pages/CreatorContracts";
+import CreatorPaymentsAndRecovery from "./pages/CreatorPaymentsAndRecovery";
+import CreatorContentProtection from "./pages/CreatorContentProtection";
+import CreatorTaxCompliancePage from "./pages/CreatorTaxCompliancePage";
+
+
 const queryClient = new QueryClient();
 
 const App = () => {
@@ -104,8 +111,12 @@ const App = () => {
               
               {/* Creator-specific routes */}
               <Route path="/creator-dashboard" element={<ProtectedLayout allowedRoles={['creator']}><CreatorDashboard /></ProtectedLayout>} /> {/* New: Creator Dashboard Route */}
-              {/* Add other creator-specific routes here as needed */}
               <Route path="/creator-profile" element={<ProtectedLayout allowedRoles={['creator']}><AdminProfile /></ProtectedLayout>} /> {/* Using AdminProfile for now */}
+              {/* NEW: Creator-specific pages */}
+              <Route path="/creator-contracts" element={<ProtectedLayout allowedRoles={['creator']}><CreatorContracts /></ProtectedLayout>} />
+              <Route path="/creator-payments" element={<ProtectedLayout allowedRoles={['creator']}><CreatorPaymentsAndRecovery /></ProtectedLayout>} />
+              <Route path="/creator-content-protection" element={<ProtectedLayout allowedRoles={['creator']}><CreatorContentProtection /></ProtectedLayout>} />
+              <Route path="/creator-tax-compliance" element={<ProtectedLayout allowedRoles={['creator']}><CreatorTaxCompliancePage /></ProtectedLayout>} />
 
               {/* Shared routes (accessible by client, admin, and CA) */}
               <Route path="/messages" element={<ProtectedLayout allowedRoles={['client', 'admin', 'chartered_accountant', 'creator']}><MessagesPage /></ProtectedLayout>} /> {/* Added creator role */}

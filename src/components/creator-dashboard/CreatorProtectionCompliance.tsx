@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { ShieldCheck, ArrowRight } from 'lucide-react';
 import { MOCK_PROTECTION_COMPLIANCE } from '@/data/creatorDashboardData';
 import { cn } from '@/lib/utils';
+import { Link } from 'react-router-dom'; // Import Link
 
 interface CreatorProtectionComplianceProps {
   protectionCompliance: typeof MOCK_PROTECTION_COMPLIANCE;
@@ -41,8 +42,10 @@ const CreatorProtectionCompliance: React.FC<CreatorProtectionComplianceProps> = 
           ))}
         </ul>
       </CardContent>
-      <Button variant="default" className="w-full bg-primary text-primary-foreground hover:bg-primary/90 mt-4">
-        Fix Issues <ArrowRight className="ml-2 h-4 w-4" />
+      <Button asChild variant="default" className="w-full bg-primary text-primary-foreground hover:bg-primary/90 mt-4">
+        <Link to="/creator-content-protection">
+          Fix Issues <ArrowRight className="ml-2 h-4 w-4" />
+        </Link>
       </Button>
     </Card>
   );
