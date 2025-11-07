@@ -23,7 +23,7 @@ import AdminActivityLog from "./pages/AdminActivityLog";
 import ClientActivityLog from "./pages/ClientActivityLog";
 import AdminProfile from "./pages/AdminProfile";
 import Blog from "./pages/Blog";
-import BlogPostDetail from "./pages/BlogPost/BlogPostDetail"; // Corrected path
+import BlogPostDetail from "./pages/BlogPostDetail"; // Corrected path
 import PricingComparison from "./pages/PricingComparison";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
