@@ -31,6 +31,7 @@ const CreatorDashboard = () => {
   const [isAIScanDialogOpen, setIsAIScanDialogOpen] = useState(false); // New state for AI scan dialog
   const [selectedContractForAIScan, setSelectedContractForAIScan] = useState<string | null>(null); // Stores contract_file_url
   const [aiScanResults, setAiScanResults] = useState<any>(null); // Stores AI scan results
+  const [isUploadContractQuickActionOpen, setIsUploadContractQuickActionOpen] = useState(false); // NEW: State for 'Upload Contract' quick action dialog
 
   // Fetch mock dashboard data (for KPIs, AI actions, etc. that are not directly brand deals)
   const { data: mockDashboardData, isLoading: isLoadingMocks, error: mockError } = useCreatorDashboardData(
@@ -120,6 +121,11 @@ const CreatorDashboard = () => {
     setIsAIScanDialogOpen(true);
   };
 
+  // NEW: Handler for 'Upload Contract' quick action
+  const handleUploadContractQuickAction = () => {
+    setIsUploadContractQuickActionOpen(true);
+  };
+
   const handlePerformAIScan = async () => {
     if (!selectedContractForAIScan) {
       toast.error('Please select a contract to scan.');
@@ -171,7 +177,12 @@ const CreatorDashboard = () => {
       <CreatorKpiCards kpiCards={mockDashboardData.kpiCards} />
 
       {/* Quick Actions */}
-      <CreatorQuickActions quickActions={mockDashboardData.quickActions} onAddBrandDeal={handleAddBrandDeal} onAIScanContract={handleAIScanContract} />
+      <CreatorQuickActions 
+        quickActions={mockDashboardData.quickActions} 
+        onAddBrandDeal={handleAddBrandDeal} 
+        onAIScanContract={handleAIScanContract} 
+        onUploadContract={handleUploadContractQuickAction} // NEW: Pass the handler
+      />
 
       {/* Revenue & Payments */}
       <CreatorRevenuePayments
@@ -232,6 +243,32 @@ const CreatorDashboard = () => {
             onClose={() => {
               setIsBrandDealFormOpen(false);
               setEditingBrandDeal(null);
+            }}
+          />
+        </DialogContent>
+      </Dialog>
+
+      {/* NEW: Upload Contract Quick Action Dialog */}
+      <Dialog open={isUploadContractQuickActionOpen} onOpenChange={setIsUploadContractQuickActionOpen}>
+        <DialogContent 
+          className="sm:max-w-[600px] bg-card text-foreground border-border"
+          aria-labelledby="upload-contract-quick-action-title"
+          aria-describedby="upload-contract-quick-action-description"
+        >
+          <DialogHeader>
+            <DialogTitle id="upload-contract-quick-action-title">Upload New Contract</DialogTitle>
+            <DialogDescription id="upload-contract-quick-action-description" className="text-muted-foreground">
+              To upload a contract, please create a new brand deal and attach the file.
+            </DialogDescription>
+          </DialogHeader>
+          <BrandDealForm
+            initialData={null} // Always for a new deal
+            onSaveSuccess={() => {
+              refetchBrandDeals();
+              setIsUploadContractQuickActionOpen(false);
+            }}
+            onClose={() => {
+              setIsUploadContractQuickActionOpen(false);
             }}
           />
         </DialogContent>

@@ -10,9 +10,10 @@ interface CreatorQuickActionsProps {
   quickActions: QuickAction[];
   onAddBrandDeal: () => void; // New prop for opening the brand deal form
   onAIScanContract: () => void; // New prop for opening the AI scan dialog
+  onUploadContract: () => void; // NEW: Handler for 'Upload Contract' quick action
 }
 
-const CreatorQuickActions: React.FC<CreatorQuickActionsProps> = ({ quickActions, onAddBrandDeal, onAIScanContract }) => {
+const CreatorQuickActions: React.FC<CreatorQuickActionsProps> = ({ quickActions, onAddBrandDeal, onAIScanContract, onUploadContract }) => {
   // Filter out the mock quick actions that will be replaced by specific buttons or real data
   const filteredQuickActions = quickActions.filter(action => 
     action.label !== 'Send Payment Reminder' && 
@@ -24,8 +25,8 @@ const CreatorQuickActions: React.FC<CreatorQuickActionsProps> = ({ quickActions,
   const customQuickActions = [
     { label: 'Add Brand Deal', icon: PlusCircle, onClick: onAddBrandDeal, variant: 'default' as const },
     { label: 'Send Payment Reminder', icon: DollarSign, onClick: () => console.log('Send Payment Reminder') },
-    { label: 'Upload Contract', icon: FileText, onClick: () => console.log('Upload Contract') },
-    { label: 'AI Scan Contract', icon: Bot, onClick: onAIScanContract }, // Use the new prop here
+    { label: 'Upload Contract', icon: FileText, onClick: onUploadContract }, // UPDATED: Use the new handler here
+    { label: 'AI Scan Contract', icon: Bot, onClick: onAIScanContract },
     { label: 'Send Takedown Notice', icon: ShieldCheck, onClick: () => console.log('Send Takedown Notice'), variant: 'destructive' as const },
   ];
 
