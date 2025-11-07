@@ -1,3 +1,8 @@
+-- Drop existing brand_deals table if it exists to ensure a clean creation
+-- WARNING: This will delete all data in the brand_deals table if it exists.
+-- If you have existing data you want to keep, you would need to manually alter the table.
+DROP TABLE IF EXISTS public.brand_deals CASCADE;
+
 -- Create the brand_deals table
 CREATE TABLE public.brand_deals (
     id uuid DEFAULT gen_random_uuid() NOT NULL,
@@ -31,11 +36,12 @@ TO authenticated
 USING (auth.uid() = creator_id)
 WITH CHECK (auth.uid() = creator_id);
 
--- Optional: Add the new social media columns to the profiles table if you haven't already
--- You can run these individually if you prefer, or check your profiles table first.
-ALTER TABLE public.profiles
-ADD COLUMN instagram_handle text,
-ADD COLUMN youtube_channel_id text,
-ADD COLUMN tiktok_handle text,
-ADD COLUMN facebook_profile_url text,
-ADD COLUMN twitter_handle text;
+-- Add the new social media columns to the profiles table if they don't exist
+-- These commands will only add the columns if they are not already present.
+DO $$ BEGIN
+    ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS instagram_handle text;
+    ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS youtube_channel_id text;
+    ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS tiktok_handle text;
+    ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS facebook_profile_url text;
+    ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS twitter_handle text;
+END $$;
