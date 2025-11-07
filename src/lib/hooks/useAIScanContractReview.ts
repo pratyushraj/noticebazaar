@@ -12,10 +12,11 @@ interface AIScanResult {
   recommendations: string;
 }
 
-export const useScanContractAI = () => {
+export const useAIScanContractReview = () => {
   return useSupabaseMutation<AIScanResult, Error, ScanContractAIVariables>(
     async ({ contract_file_url, brand_name }) => {
-      const { data, error } = await supabase.functions.invoke('scan-contract-ai', {
+      // NOTE: This calls a mock Edge Function.
+      const { data, error } = await supabase.functions.invoke('copyright/scan-contract-review', {
         body: { contract_file_url, brand_name },
       });
 

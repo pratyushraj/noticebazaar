@@ -22,37 +22,9 @@ serve(async (req) => {
       });
     }
 
-    const token = authHeader.replace('Bearer ', '');
-    
-    // Initialize Supabase Admin Client (Service Role) to verify user
-    const supabaseAdmin = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
-      {
-        auth: {
-          autoRefreshToken: false,
-          persistSession: false,
-        },
-      }
-    );
-
-    // Get User ID from JWT (using Service Role client to decode JWT)
-    const { data: { user }, error: userError } = await supabaseAdmin.auth.getUser(token);
-    if (userError || !user) {
-      console.error('JWT verification failed:', userError?.message);
-      return new Response(JSON.stringify({ error: 'Unauthorized: Invalid token' }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 401,
-      });
-    }
-    const creatorId = user.id;
-
     // --- Simulate AI Analysis ---
-    // In a real scenario, you'd send the contract_file_url to an actual LLM or document processing API.
-    // For this simulation, we'll return a consistent mock analysis.
-
     const mockAnalysis = {
-      summary: `AI analysis for contract with ${brand_name} completed.`,
+      summary: `AI analysis for contract with ${brand_name} completed. Found 5 potential risks.`,
       insights: [
         { type: 'missing_clause', description: 'Missing clear termination clause for creator-initiated cancellation.' },
         { type: 'risky_term', description: 'Broad "all rights" clause could impact future content usage. Recommend clarifying usage rights.' },
@@ -69,7 +41,7 @@ serve(async (req) => {
     });
 
   } catch (error) {
-    console.error('AI Contract Scan Error:', error.message);
+    console.error('AI Contract Scan Edge Function Error:', error.message);
     return new Response(JSON.stringify({ error: error.message }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 500,

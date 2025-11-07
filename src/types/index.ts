@@ -95,7 +95,16 @@ export type BrandDeal = Tables<'brand_deals'> & {
   // Add any joined profiles or specific brand deal related fields here if needed
 };
 
-// NEW: Type for Copyright Scan Alerts
+// NEW: Copyright Scanner Types
+export type OriginalContent = Tables<'original_content'>;
+export type CopyrightScan = Tables<'copyright_scans'>;
+export type CopyrightAction = Tables<'copyright_actions'>;
+
+export type CopyrightMatch = Tables<'copyright_matches'> & {
+  copyright_actions?: CopyrightAction[]; // Joined actions
+};
+
+// NEW: Type for Copyright Scan Alerts (kept for compatibility, but now using CopyrightMatch)
 export interface CopyrightScanAlert {
   id: string;
   description: string;
