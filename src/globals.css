@@ -110,3 +110,28 @@
 .creator-kpi-card-gradient {
   background: linear-gradient(#0f1730, #0b1228);
 }
+
+/* Custom gradient for Quick Action buttons */
+.quick-action-button-gradient {
+  background: linear-gradient(145deg, rgba(23,26,51,0.8), rgba(16,20,42,0.8));
+  border: 1px solid rgba(255,255,255,0.05);
+  transition: all 0.2s ease-in-out;
+}
+
+.quick-action-button-gradient:hover {
+  transform: scale(1.02);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+}
+
+/* Custom gradient for destructive Quick Action button */
+.quick-action-button-destructive-gradient {
+  background: linear-gradient(145deg, rgba(255,0,0,0.2), rgba(139,0,0,0.2));
+  border: 1px solid rgba(255,0,0,0.3);
+  color: hsl(var(--destructive-foreground)); /* Ensure text color is readable */
+  transition: all 0.2s ease-in-out;
+}
+
+.quick-action-button-destructive-gradient:hover {
+  transform: scale(1.02);
+  box-shadow: 0 4px 10px rgba(255,0,0,0.2);
+}

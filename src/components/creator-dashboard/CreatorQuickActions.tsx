@@ -17,15 +17,16 @@ const CreatorQuickActions: React.FC<CreatorQuickActionsProps> = ({ quickActions 
         {quickActions.map((action, index) => (
           <Button
             key={index}
-            variant={action.variant || 'outline'}
             onClick={action.onClick}
             className={cn(
-              "flex flex-col items-center justify-center p-4 h-auto text-lg",
-              action.variant === 'destructive' ? 'bg-destructive text-destructive-foreground hover:bg-destructive/90' : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
+              "flex flex-col items-center justify-center p-4 h-24 rounded-xl", // Increased height to h-24, added rounded-xl
+              action.variant === 'destructive' 
+                ? 'quick-action-button-destructive-gradient text-destructive-foreground' // Apply destructive gradient
+                : 'quick-action-button-gradient text-secondary-foreground' // Apply general gradient
             )}
           >
-            <action.icon className="h-5 w-5 mb-1" />
-            <span className="text-sm">{action.label}</span>
+            <action.icon className="h-6 w-6 mb-2" /> {/* Increased icon size */}
+            <span className="text-sm font-semibold">{action.label}</span> {/* Added font-semibold */}
           </Button>
         ))}
       </div>
