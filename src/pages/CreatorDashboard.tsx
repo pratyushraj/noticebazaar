@@ -29,9 +29,11 @@ import SocialAccountLinkForm from '@/components/forms/SocialAccountLinkForm'; //
 import { useSendPaymentReminder } from '@/lib/hooks/useSendPaymentReminder'; // NEW: Import useSendPaymentReminder
 import { useSendTakedownNotice } from '@/lib/hooks/useSendTakedownNotice'; // NEW: Import useSendTakedownNotice
 import { useCreatorDeadlines } from '@/lib/hooks/useTaxFilings'; // NEW: Import useCreatorDeadlines
+import { useNavigate } from 'react-router-dom'; // Import useNavigate
 
 const CreatorDashboard = () => {
   const { profile, loading: sessionLoading, isCreator } = useSession();
+  const navigate = useNavigate(); // Initialize useNavigate
   const creatorId = profile?.id;
   const [isBrandDealFormOpen, setIsBrandDealFormOpen] = useState(false);
   const [editingBrandDeal, setEditingBrandDeal] = useState<BrandDeal | null>(null);
@@ -47,21 +49,29 @@ const CreatorDashboard = () => {
     contentUrl: '', platform: '', infringingUrl: '', infringingUser: ''
   });
 
+  // --- Onboarding Check ---
+  useEffect(() => {
+    if (!sessionLoading && isCreator && profile && profile.onboarding_complete === false) {
+      navigate('/creator-onboarding', { replace: true });
+    }
+  }, [sessionLoading, isCreator, profile, navigate]);
+  // -------------------------
+
   // Fetch mock dashboard data (for KPIs, AI actions, etc. that are not directly brand deals)
   const { data: mockDashboardData, isLoading: isLoadingMocks, error: mockError } = useCreatorDashboardData(
-    !sessionLoading && isCreator
+    !sessionLoading && isCreator && profile?.onboarding_complete // Only enable if onboarding is complete
   );
 
   // Fetch real brand deals
   const { data: brandDeals, isLoading: isLoadingBrandDeals, error: brandDealsError, refetch: refetchBrandDeals } = useBrandDeals({
     creatorId: profile?.id,
-    enabled: !sessionLoading && isCreator && !!profile?.id,
+    enabled: !sessionLoading && isCreator && !!profile?.id && profile?.onboarding_complete, // Only enable if onboarding is complete
   });
   
   // NEW: Fetch real upcoming deadlines
   const { data: upcomingDeadlines, isLoading: isLoadingDeadlines } = useCreatorDeadlines({
     creatorId: creatorId,
-    enabled: !sessionLoading && isCreator && !!creatorId,
+    enabled: !sessionLoading && isCreator && !!creatorId && profile?.onboarding_complete, // Only enable if onboarding is complete
   });
 
   // AI Scan Contract Mutation
@@ -227,7 +237,8 @@ const CreatorDashboard = () => {
     }
   };
 
-  if (sessionLoading || isLoadingMocks || isLoadingBrandDeals || isLoadingDeadlines) {
+  if (sessionLoading || isLoadingMocks || isLoadingBrandDeals || isLoadingDeadlines || profile?.onboarding_complete === false) {
+    // If loading or explicitly waiting for redirection, show a simple loader
     return (
       <div className="min-h-[300px] flex flex-col items-center justify-center bg-background">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
