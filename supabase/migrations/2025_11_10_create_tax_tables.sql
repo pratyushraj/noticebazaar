@@ -1,53 +1,46 @@
--- Table: tax_settings
+-- Create tax_settings table for creator tax profile
 CREATE TABLE public.tax_settings (
-    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
     creator_id uuid REFERENCES public.profiles(id) ON DELETE CASCADE NOT NULL,
-    gst_rate numeric DEFAULT 0.18 NOT NULL, -- Default 18%
-    tds_rate numeric DEFAULT 0.10 NOT NULL, -- Default 10%
-    itr_slab text DEFAULT 'basic' NOT NULL, -- e.g., 'basic', 'high'
+    gst_rate numeric DEFAULT 0.18 NOT NULL,
+    tds_rate numeric DEFAULT 0.10 NOT NULL,
+    itr_slab text DEFAULT 'basic' NOT NULL,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
-    updated_at timestamp with time zone
+    updated_at timestamp with time zone DEFAULT now()
 );
 
--- Enable RLS
+-- Enable RLS for tax_settings
 ALTER TABLE public.tax_settings ENABLE ROW LEVEL SECURITY;
 
--- Policy: Creators can see and update their own tax settings
-CREATE POLICY "Creators can view and update own tax settings"
+-- Policy for tax_settings: Creators can see and update their own settings
+CREATE POLICY "Creators can view and update their own tax settings"
 ON public.tax_settings FOR ALL
+TO authenticated
 USING (auth.uid() = creator_id)
 WITH CHECK (auth.uid() = creator_id);
 
 
--- Table: tax_filings
+-- Create tax_filings table for compliance calendar
 CREATE TABLE public.tax_filings (
-    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
     creator_id uuid REFERENCES public.profiles(id) ON DELETE CASCADE NOT NULL,
-    filing_type text NOT NULL, -- e.g., 'gst_q1', 'itr', 'tds'
+    filing_type text NOT NULL, -- e.g., gst_q1, tds_q2, itr_annual
     period_start date NOT NULL,
     period_end date NOT NULL,
     due_date date NOT NULL,
-    details text,
-    status text DEFAULT 'pending' NOT NULL, -- 'pending', 'filed', 'overdue'
+    status text DEFAULT 'pending' NOT NULL, -- pending, filed
     filed_date date,
     filing_document_url text,
+    details text,
     created_at timestamp with time zone DEFAULT now() NOT NULL
 );
 
--- Enable RLS
+-- Enable RLS for tax_filings
 ALTER TABLE public.tax_filings ENABLE ROW LEVEL SECURITY;
 
--- Policy: Creators can see their own tax filings
-CREATE POLICY "Creators can view own tax filings"
-ON public.tax_filings FOR SELECT
-USING (auth.uid() = creator_id);
-
--- Policy: Creators can insert/update their own tax filings (e.g., marking as filed)
-CREATE POLICY "Creators can insert and update own tax filings"
-ON public.tax_filings FOR INSERT
-WITH CHECK (auth.uid() = creator_id);
-
-CREATE POLICY "Creators can update own tax filings"
-ON public.tax_filings FOR UPDATE
+-- Policy for tax_filings: Creators can view and update their own filings
+CREATE POLICY "Creators can view and update their own tax filings"
+ON public.tax_filings FOR ALL
+TO authenticated
 USING (auth.uid() = creator_id)
 WITH CHECK (auth.uid() = creator_id);
