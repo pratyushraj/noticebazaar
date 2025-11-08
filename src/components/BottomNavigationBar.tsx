@@ -244,7 +244,7 @@ const BottomNavigationBar = ({ onDocumentUploadSuccess, onConsultationBookingSuc
             aiState={aiState}
             setAiState={setAiState}
             collectedData={aiCollectedData}
-            setCollectedData={aiCollectedData}
+            setCollectedData={setAiCollectedData}
           />
         </DialogContent>
       </Dialog>
