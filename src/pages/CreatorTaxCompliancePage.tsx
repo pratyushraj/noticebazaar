@@ -24,6 +24,7 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import FilingUploadForm from '@/components/creator-tax/FilingUploadForm'; // NEW: Import the new form
+import TaxProfileSetupForm from '@/components/creator-tax/TaxProfileSetupForm'; // NEW: Import the new setup form
 
 const CreatorTaxCompliancePage = () => {
   const { profile, loading: sessionLoading, isCreator } = useSession();
@@ -47,7 +48,7 @@ const CreatorTaxCompliancePage = () => {
     statusFilter: filterStatus,
   });
 
-  const { data: taxSettings, isLoading: isLoadingSettings } = useTaxSettings({
+  const { data: taxSettings, isLoading: isLoadingSettings, refetch: refetchTaxSettings } = useTaxSettings({
     creatorId: creatorId,
     enabled: !sessionLoading && isCreator && !!creatorId,
   });
@@ -89,6 +90,10 @@ const CreatorTaxCompliancePage = () => {
     // Refetch filings to update the table status
     // Invalidation is handled by the mutation hook
   };
+  
+  const handleSettingsSaveSuccess = () => {
+    refetchTaxSettings(); // Refetch settings to update the dashboard view
+  };
 
   const getStatusBadgeVariant = (status: TaxFiling['status']) => {
     switch (status) {
@@ -115,6 +120,8 @@ const CreatorTaxCompliancePage = () => {
       </div>
     );
   }
+  
+  if (!profile) return null;
 
   return (
     <>
@@ -126,7 +133,7 @@ const CreatorTaxCompliancePage = () => {
             <IndianRupee className="h-5 w-5 mr-2 text-green-500" /> Financial Overview
           </h2>
           <Button variant="outline" size="sm" onClick={() => setIsSettingsDialogOpen(true)}>
-            <Settings className="h-4 w-4 mr-2" /> Tax Settings
+            <Settings className="h-4 w-4 mr-2" /> Tax Profile Setup
           </Button>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -252,7 +259,8 @@ const CreatorTaxCompliancePage = () => {
         isOpen={isSettingsDialogOpen} 
         onClose={() => setIsSettingsDialogOpen(false)} 
         initialSettings={taxSettings}
-        creatorId={creatorId}
+        initialProfile={profile}
+        onSaveSuccess={handleSettingsSaveSuccess}
       />
       
       {/* NEW: Upload Filing Document Dialog */}
@@ -290,102 +298,26 @@ interface TaxSettingsDialogProps {
   isOpen: boolean;
   onClose: () => void;
   initialSettings: TaxSetting | null;
-  creatorId: string | undefined;
+  initialProfile: Profile;
+  onSaveSuccess: () => void;
 }
 
-const TaxSettingsDialog: React.FC<TaxSettingsDialogProps> = ({ isOpen, onClose, initialSettings, creatorId }) => {
-  const [gstRate, setGstRate] = useState(initialSettings?.gst_rate ? (initialSettings.gst_rate * 100).toString() : '18');
-  const [tdsRate, setTdsRate] = useState(initialSettings?.tds_rate ? (initialSettings.tds_rate * 100).toString() : '10');
-  const [itrSlab, setItrSlab] = useState(initialSettings?.itr_slab || 'basic');
-
-  const upsertMutation = useUpsertTaxSettings();
-
-  useEffect(() => {
-    if (initialSettings) {
-      setGstRate((initialSettings.gst_rate * 100).toString());
-      setTdsRate((initialSettings.tds_rate * 100).toString());
-      setItrSlab(initialSettings.itr_slab);
-    }
-  }, [initialSettings]);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!creatorId) return;
-
-    const gst = parseFloat(gstRate) / 100;
-    const tds = parseFloat(tdsRate) / 100;
-
-    if (isNaN(gst) || isNaN(tds) || gst < 0 || tds < 0) {
-      toast.error('Please enter valid percentage rates.');
-      return;
-    }
-
-    try {
-      await upsertMutation.mutateAsync({
-        creator_id: creatorId,
-        gst_rate: gst,
-        tds_rate: tds,
-        itr_slab: itrSlab,
-      });
-      onClose();
-    } catch (error) {
-      // Handled by hook
-    }
-  };
-
+const TaxSettingsDialog: React.FC<TaxSettingsDialogProps> = ({ isOpen, onClose, initialSettings, initialProfile, onSaveSuccess }) => {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[425px] bg-card text-foreground border-border">
         <DialogHeader>
-          <DialogTitle>Tax Settings</DialogTitle>
+          <DialogTitle>Tax Profile Setup</DialogTitle>
           <DialogDescription>
-            Configure your default tax rates for accurate liability estimation.
+            Configure your business identity and estimated tax rates.
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4 py-4">
-          <div>
-            <Label htmlFor="gstRate">GST Rate (%)</Label>
-            <Input
-              id="gstRate"
-              type="number"
-              value={gstRate}
-              onChange={(e) => setGstRate(e.target.value)}
-              disabled={upsertMutation.isPending}
-              placeholder="e.g., 18"
-            />
-          </div>
-          <div>
-            <Label htmlFor="tdsRate">TDS Rate (%)</Label>
-            <Input
-              id="tdsRate"
-              type="number"
-              value={tdsRate}
-              onChange={(e) => setTdsRate(e.target.value)}
-              disabled={upsertMutation.isPending}
-              placeholder="e.g., 10"
-            />
-          </div>
-          <div>
-            <Label htmlFor="itrSlab">ITR Slab Type</Label>
-            <Select onValueChange={setItrSlab} value={itrSlab} disabled={upsertMutation.isPending}>
-              <SelectTrigger id="itrSlab">
-                <SelectValue placeholder="Select slab" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="basic">Basic (Standard Deduction)</SelectItem>
-                <SelectItem value="high">High (Complex Deductions)</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={onClose} disabled={upsertMutation.isPending}>
-              Cancel
-            </Button>
-            <Button type="submit" disabled={upsertMutation.isPending}>
-              {upsertMutation.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Save Settings'}
-            </Button>
-          </DialogFooter>
-        </form>
+        <TaxProfileSetupForm
+          initialProfile={initialProfile}
+          initialTaxSettings={initialSettings}
+          onSaveSuccess={onSaveSuccess}
+          onClose={onClose}
+        />
       </DialogContent>
     </Dialog>
   );
