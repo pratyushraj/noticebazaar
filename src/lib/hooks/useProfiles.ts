@@ -3,16 +3,17 @@ import { supabase } from '@/integrations/supabase/client';
 import { Profile } from '@/types';
 import { useSupabaseQuery } from './useSupabaseQuery';
 import { useSupabaseMutation } from './useSupabaseMutation';
-import { useMemo, useCallback } from 'react'; // Import useCallback
+import { useMemo, useCallback } from 'react';
+import { useGenerateTaxFilings } from './useTaxFilings'; // NEW: Import the new hook
 
 interface UseProfilesOptions {
   role?: 'client' | 'admin';
-  enabled?: boolean; // To control when the query runs
-  page?: number; // New: current page number (1-indexed)
-  pageSize?: number; // New: number of items per page
-  disablePagination?: boolean; // New: flag to disable pagination
-  firstName?: string; // New
-  lastName?: string;  // New
+  enabled?: boolean;
+  page?: number;
+  pageSize?: number;
+  disablePagination?: boolean;
+  firstName?: string;
+  lastName?: string;
 }
 
 export const useProfiles = (options?: UseProfilesOptions) => {
@@ -117,8 +118,10 @@ interface UpdateProfileVariables {
 
 export const useUpdateProfile = () => {
   const queryClient = useQueryClient();
+  const generateTaxFilingsMutation = useGenerateTaxFilings(); // NEW: Initialize the mutation
+
   return useSupabaseMutation<void, Error, UpdateProfileVariables>(
-    async ({ id, first_name, last_name, avatar_url, role, business_name, gstin, business_entity_type, onboarding_complete, instagram_handle, youtube_channel_id, tiktok_handle, facebook_profile_url, twitter_handle, pan }) => { // UPDATED: Destructure new fields
+    async ({ id, first_name, last_name, avatar_url, role, business_name, gstin, business_entity_type, onboarding_complete, instagram_handle, youtube_channel_id, tiktok_handle, facebook_profile_url, twitter_handle, pan }) => {
       const updateData: { 
         first_name: string; 
         last_name: string; 
@@ -129,12 +132,12 @@ export const useUpdateProfile = () => {
         gstin?: string | null;
         business_entity_type?: string | null;
         onboarding_complete?: boolean;
-        instagram_handle?: string | null; // NEW
-        youtube_channel_id?: string | null; // NEW
-        tiktok_handle?: string | null; // NEW
-        facebook_profile_url?: string | null; // NEW
-        twitter_handle?: string | null; // NEW
-        pan?: string | null; // NEW
+        instagram_handle?: string | null;
+        youtube_channel_id?: string | null;
+        tiktok_handle?: string | null;
+        facebook_profile_url?: string | null;
+        twitter_handle?: string | null;
+        pan?: string | null;
       } = {
         first_name,
         last_name,
@@ -145,7 +148,7 @@ export const useUpdateProfile = () => {
       if (role) {
         updateData.role = role;
       }
-      if (business_name !== undefined) { // Check for undefined to allow null to be set
+      if (business_name !== undefined) {
         updateData.business_name = business_name;
       }
       if (gstin !== undefined) {
@@ -157,7 +160,6 @@ export const useUpdateProfile = () => {
       if (onboarding_complete !== undefined) {
         updateData.onboarding_complete = onboarding_complete;
       }
-      // NEW: Add social media fields to updateData if provided
       if (instagram_handle !== undefined) {
         updateData.instagram_handle = instagram_handle;
       }
@@ -173,7 +175,6 @@ export const useUpdateProfile = () => {
       if (twitter_handle !== undefined) {
         updateData.twitter_handle = twitter_handle;
       }
-      // NEW: Add PAN field to updateData if provided
       if (pan !== undefined) {
         updateData.pan = pan;
       }
@@ -186,6 +187,25 @@ export const useUpdateProfile = () => {
       if (error) {
         throw new Error(error.message);
       }
+      
+      // --- NEW LOGIC: Check for Creator Onboarding Completion ---
+      if (onboarding_complete === true && role === 'creator') {
+          // Check if tax filings already exist for this user (to prevent duplicates if the profile is updated later)
+          const { count: existingFilingsCount, error: checkError } = await supabase
+              .from('tax_filings')
+              .select('id', { count: 'exact', head: true })
+              .eq('creator_id', id)
+              .limit(1);
+
+          if (checkError) {
+              console.error('Error checking existing tax filings:', checkError);
+              // Continue without throwing, as the profile update succeeded
+          } else if (existingFilingsCount === 0) {
+              // Only generate if no filings exist
+              await generateTaxFilingsMutation.mutateAsync({ creator_id: id });
+          }
+      }
+      // --- END NEW LOGIC ---
     },
     {
       onSuccess: (_, variables) => {

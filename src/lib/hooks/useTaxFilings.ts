@@ -1,8 +1,9 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { TaxFiling, ComplianceDeadline } from '@/types'; // Import ComplianceDeadline
+import { TaxFiling, ComplianceDeadline } from '@/types';
 import { useSupabaseQuery } from './useSupabaseQuery';
 import { useSupabaseMutation } from './useSupabaseMutation';
+import { generateInitialTaxFilings } from '@/lib/utils/tax'; // Import the new utility
 
 // Helper function to calculate urgency
 const calculateUrgency = (dueDate: string): 'High' | 'Medium' | 'Low' => {
@@ -222,6 +223,36 @@ export const useCreatorDeadlines = (options: UseCreatorDeadlinesOptions) => {
       enabled: enabled && !!creatorId,
       errorMessage: 'Failed to fetch creator deadlines',
       retry: false,
+    }
+  );
+};
+
+// NEW: Mutation hook to generate and insert initial tax filings
+export const useGenerateTaxFilings = () => {
+  const queryClient = useQueryClient();
+  return useSupabaseMutation<void, Error, { creator_id: string }>(
+    async ({ creator_id }) => {
+      const filingsToInsert = generateInitialTaxFilings(creator_id);
+
+      if (filingsToInsert.length === 0) {
+        console.log(`No future tax filings to insert for creator ${creator_id}.`);
+        return;
+      }
+
+      const { error } = await supabase
+        .from('tax_filings')
+        .insert(filingsToInsert);
+
+      if (error) {
+        throw new Error(error.message);
+      }
+    },
+    {
+      onSuccess: (_, variables) => {
+        queryClient.invalidateQueries({ queryKey: ['tax_filings', variables.creator_id] });
+        queryClient.invalidateQueries({ queryKey: ['creator_deadlines', variables.creator_id] });
+      },
+      errorMessage: 'Failed to generate initial tax filings',
     }
   );
 };
