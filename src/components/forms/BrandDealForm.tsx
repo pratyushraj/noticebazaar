@@ -1,5 +1,3 @@
-"use client";
-
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -245,31 +243,23 @@ const BrandDealForm = ({ initialData, onSaveSuccess, onClose }: BrandDealFormPro
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <Label htmlFor="dueDate">Deliverable Due Date *</Label>
-          <div className="relative">
-            <CalendarDays className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              id="dueDate"
-              type="date"
-              value={dueDate}
-              onChange={(e) => setDueDate(e.target.value)}
-              disabled={isSubmitting}
-              className="pl-9"
-            />
-          </div>
+          <Input
+            id="dueDate"
+            type="date"
+            value={dueDate}
+            onChange={(e) => setDueDate(e.target.value)}
+            disabled={isSubmitting}
+          />
         </div>
         <div>
           <Label htmlFor="paymentExpectedDate">Payment Expected Date *</Label>
-          <div className="relative">
-            <CalendarDays className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              id="paymentExpectedDate"
-              type="date"
-              value={paymentExpectedDate}
-              onChange={(e) => setPaymentExpectedDate(e.target.value)}
-              disabled={isSubmitting}
-              className="pl-9"
-            />
-          </div>
+          <Input
+            id="paymentExpectedDate"
+            type="date"
+            value={paymentExpectedDate}
+            onChange={(e) => setPaymentExpectedDate(e.target.value)}
+            disabled={isSubmitting}
+          />
         </div>
       </div>
       <div>
@@ -336,17 +326,13 @@ const BrandDealForm = ({ initialData, onSaveSuccess, onClose }: BrandDealFormPro
         </div>
         <div>
           <Label htmlFor="paymentReceivedDate">Payment Received Date (Optional)</Label>
-          <div className="relative">
-            <CalendarDays className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              id="paymentReceivedDate"
-              type="date"
-              value={paymentReceivedDate}
-              onChange={(e) => setPaymentReceivedDate(e.target.value)}
-              disabled={isSubmitting}
-              className="pl-9"
-            />
-          </div>
+          <Input
+            id="paymentReceivedDate"
+            type="date"
+            value={paymentReceivedDate}
+            onChange={(e) => setPaymentReceivedDate(e.target.value)}
+            disabled={isSubmitting}
+          />
         </div>
       </div>
       <div>
