@@ -59,6 +59,7 @@ export const useBrandDeals = (options: UseBrandDealsOptions) => {
 
 interface AddBrandDealVariables {
   creator_id: string;
+  organization_id: string; // NEW: Required field
   brand_name: string;
   deal_amount: number;
   deliverables: string;
@@ -79,6 +80,7 @@ export const useAddBrandDeal = () => {
   return useSupabaseMutation<void, Error, AddBrandDealVariables>(
     async ({ 
       creator_id, 
+      organization_id, // DESTRUCTURE NEW FIELD
       brand_name, 
       deal_amount, 
       deliverables, 
@@ -161,6 +163,7 @@ export const useAddBrandDeal = () => {
 
       const insertPayload = {
           creator_id,
+          organization_id, // INCLUDE NEW FIELD
           brand_name,
           deal_amount,
           deliverables,
@@ -208,6 +211,7 @@ export const useAddBrandDeal = () => {
 interface UpdateBrandDealVariables {
   id: string;
   creator_id: string;
+  organization_id?: string; // NEW: Optional field for update
   brand_name?: string;
   deal_amount?: number;
   deliverables?: string;
@@ -228,7 +232,7 @@ interface UpdateBrandDealVariables {
 export const useUpdateBrandDeal = () => {
   const queryClient = useQueryClient();
   return useSupabaseMutation<void, Error, UpdateBrandDealVariables>(
-    async ({ id, creator_id, contract_file, original_contract_file_url, invoice_file, original_invoice_file_url, ...updates }) => {
+    async ({ id, creator_id, contract_file, original_contract_file_url, invoice_file, original_invoice_file_url, organization_id, ...updates }) => {
       let contract_file_url: string | null | undefined = undefined;
       let invoice_file_url: string | null | undefined = undefined;
 
@@ -288,6 +292,10 @@ export const useUpdateBrandDeal = () => {
         updatePayload.invoice_file_url = invoice_file_url;
       }
       
+      if (organization_id !== undefined) { // Include organization_id if provided
+          updatePayload.organization_id = organization_id;
+      }
+
       // Consistency Check: If payment received date is provided, force status to Completed.
       if (updates.payment_received_date) {
           updatePayload.status = 'Completed';

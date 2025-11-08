@@ -14,6 +14,7 @@ export type Profile = Tables<'profiles'> & {
   facebook_profile_url?: string | null; // NEW
   twitter_handle?: string | null; // NEW
   pan?: string | null; // NEW: Added PAN field
+  organization_id?: string | null; // NEW: Added organization_id
 };
 
 export type Message = Tables<'messages'> & {
@@ -92,7 +93,7 @@ export interface CreatorKpi {
 
 // New type for Brand Deals
 export type BrandDeal = Tables<'brand_deals'> & {
-  // Add any joined profiles or specific brand deal related fields here if needed
+  organization_id: string; // NEW: Added organization_id
 };
 
 // NEW: Copyright Scanner Types

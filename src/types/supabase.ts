@@ -51,6 +51,7 @@ export type Database = {
           due_date: string
           id: string
           invoice_file_url: string | null
+          organization_id: string
           payment_expected_date: string
           payment_received_date: string | null
           platform: string | null
@@ -70,6 +71,7 @@ export type Database = {
           due_date: string
           id?: string
           invoice_file_url?: string | null
+          organization_id: string
           payment_expected_date: string
           payment_received_date?: string | null
           platform?: string | null
@@ -89,6 +91,7 @@ export type Database = {
           due_date?: string
           id?: string
           invoice_file_url?: string | null
+          organization_id?: string
           payment_expected_date?: string
           payment_received_date?: string | null
           platform?: string | null
@@ -551,6 +554,7 @@ export type Database = {
           instagram_handle: string | null
           last_name: string | null
           onboarding_complete: boolean | null
+          organization_id: string | null
           pan: string | null
           role: string
           tiktok_handle: string | null
@@ -569,6 +573,7 @@ export type Database = {
           instagram_handle?: string | null
           last_name?: string | null
           onboarding_complete?: boolean | null
+          organization_id?: string | null
           pan?: string | null
           role?: string
           tiktok_handle?: string | null
@@ -587,6 +592,7 @@ export type Database = {
           instagram_handle?: string | null
           last_name?: string | null
           onboarding_complete?: boolean | null
+          organization_id?: string | null
           pan?: string | null
           role?: string
           tiktok_handle?: string | null

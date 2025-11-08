@@ -21,7 +21,7 @@ const PLATFORM_OPTIONS = ['Instagram', 'YouTube', 'TikTok', 'Facebook', 'LinkedI
 const DEAL_STATUS_OPTIONS = ['Drafting', 'Approved', 'Payment Pending', 'Completed', 'Cancelled'];
 
 const BrandDealForm = ({ initialData, onSaveSuccess, onClose }: BrandDealFormProps) => {
-  const { profile } = useSession();
+  const { profile, organizationId } = useSession();
   const [brandName, setBrandName] = useState(initialData?.brand_name || '');
   const [dealAmount, setDealAmount] = useState(initialData?.deal_amount?.toString() || '');
   const [deliverables, setDeliverables] = useState(initialData?.deliverables || '');
@@ -96,8 +96,8 @@ const BrandDealForm = ({ initialData, onSaveSuccess, onClose }: BrandDealFormPro
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!profile?.id) {
-      toast.error('Creator profile not found. Cannot save brand deal.');
+    if (!profile?.id || !organizationId) {
+      toast.error('Creator profile or organization ID not found. Cannot save brand deal.');
       return;
     }
 
@@ -118,46 +118,41 @@ const BrandDealForm = ({ initialData, onSaveSuccess, onClose }: BrandDealFormPro
     const finalPaymentExpectedDate = paymentExpectedDate.trim();
     const finalPaymentReceivedDate = paymentReceivedDate.trim() || null;
 
+    const basePayload = {
+      creator_id: profile.id,
+      organization_id: organizationId, // ADD organization_id here
+      brand_name: brandName.trim(),
+      deal_amount: dealAmountNum,
+      deliverables: deliverables.trim(),
+      due_date: finalDueDate,
+      payment_expected_date: finalPaymentExpectedDate,
+      contact_person: contactPerson.trim() || null,
+      platform: platform || null,
+      status: status,
+      brand_email: brandEmail.trim() || null,
+      invoice_file: invoiceFile,
+      utr_number: utrNumber.trim() || null,
+      payment_received_date: finalPaymentReceivedDate,
+    };
+
     try {
       if (initialData) {
         // Update existing brand deal
         await updateBrandDealMutation.mutateAsync({
           id: initialData.id,
-          creator_id: profile.id,
-          brand_name: brandName.trim(),
-          deal_amount: dealAmountNum,
-          deliverables: deliverables.trim(),
           contract_file: contractFile,
           original_contract_file_url: existingContractFileUrl,
-          due_date: finalDueDate,
-          payment_expected_date: finalPaymentExpectedDate,
-          contact_person: contactPerson.trim() || null,
-          platform: platform || null,
-          status: status,
-          brand_email: brandEmail.trim() || null, // New field
-          invoice_file: invoiceFile, // New field
-          original_invoice_file_url: existingInvoiceFileUrl, // New field
-          utr_number: utrNumber.trim() || null, // New field
-          payment_received_date: finalPaymentReceivedDate, // New field
+          invoice_file: invoiceFile,
+          original_invoice_file_url: existingInvoiceFileUrl,
+          ...basePayload, // Pass all fields including organization_id
         });
         toast.success('Brand deal updated successfully!');
       } else {
         // Add new brand deal
         await addBrandDealMutation.mutateAsync({
-          creator_id: profile.id,
-          brand_name: brandName.trim(),
-          deal_amount: dealAmountNum,
-          deliverables: deliverables.trim(),
           contract_file: contractFile,
-          due_date: finalDueDate,
-          payment_expected_date: finalPaymentExpectedDate,
-          contact_person: contactPerson.trim() || null,
-          platform: platform || null,
-          status: status,
-          brand_email: brandEmail.trim() || null, // New field
-          invoice_file: invoiceFile, // New field
-          utr_number: utrNumber.trim() || null, // New field
-          payment_received_date: finalPaymentReceivedDate, // New field
+          invoice_file: invoiceFile,
+          ...basePayload, // Pass all fields including organization_id
         });
         toast.success('Brand deal added successfully!');
       }

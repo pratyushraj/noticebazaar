@@ -11,6 +11,7 @@ interface SessionContextType {
   loading: boolean;
   isAdmin: boolean;
   isCreator: boolean; // New: Add isCreator
+  organizationId: string | null; // NEW: Add organizationId
   refetchProfile: () => void; // Add refetchProfile to the context type
 }
 
@@ -26,7 +27,7 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
     if (!user?.id) return null; // Don't fetch if no user ID
     const { data, error } = await supabase
       .from('profiles')
-      .select('id, first_name, last_name, avatar_url, role, updated_at, business_name, gstin, business_entity_type, onboarding_complete') // Include new profile fields
+      .select('id, first_name, last_name, avatar_url, role, updated_at, business_name, gstin, business_entity_type, onboarding_complete, organization_id') // Include new profile fields
       .eq('id', user.id)
       .single();
 
@@ -51,6 +52,7 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
 
   const isAdmin = profile?.role === 'admin';
   const isCreator = profile?.role === 'creator'; // New: Define isCreator
+  const organizationId = profile?.organization_id || null; // Derive from profile
   // Overall loading state: true if initial session load is not complete OR profile is still loading
   const loading = !initialLoadComplete || isLoadingProfile;
 
@@ -95,9 +97,10 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
     profile,
     loading,
     isAdmin,
-    isCreator, // New: Include isCreator
+    isCreator, // Include isCreator
+    organizationId, // Include organizationId
     refetchProfile: refetchProfileQuery, // Expose refetch function
-  }), [session, user, profile, loading, isAdmin, isCreator, refetchProfileQuery]);
+  }), [session, user, profile, loading, isAdmin, isCreator, organizationId, refetchProfileQuery]);
 
   return (
     <SessionContext.Provider value={contextValue}>
