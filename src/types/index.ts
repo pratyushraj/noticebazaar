@@ -115,7 +115,9 @@ export interface CopyrightScanAlert {
 }
 
 // New type for Tax Filings
-export type TaxFiling = Tables<'tax_filings'>;
+export type TaxFiling = Tables<'tax_filings'> & {
+  status: 'Pending' | 'Filed' | 'Overdue';
+};
 
 // New type for Tax Settings
 export type TaxSetting = Tables<'tax_settings'>;
