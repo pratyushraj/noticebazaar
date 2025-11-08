@@ -81,22 +81,64 @@ interface UpdateTaxFilingVariables {
   status: TaxFiling['status'];
   filed_date?: string | null;
   filing_document_url?: string | null;
+  filing_document_file?: File | null; // NEW: Optional file upload
 }
 
 export const useUpdateTaxFiling = () => {
   const queryClient = useQueryClient();
   return useSupabaseMutation<void, Error, UpdateTaxFilingVariables>(
-    async ({ id, creator_id, status, ...updates }) => {
+    async ({ id, creator_id, status, filing_document_file, ...updates }) => {
+      let filing_document_url: string | null | undefined = updates.filing_document_url;
+      
+      // 1. Handle file upload if provided
+      if (filing_document_file) {
+        const fileExtension = filing_document_file.name.split('.').pop();
+        const filePath = `${creator_id}/tax_filings/${id}-${Date.now()}.${fileExtension}`;
+
+        const { data: uploadData, error: uploadError } = await supabase.storage
+          .from('creator-assets') // Using the same bucket as brand deals
+          .upload(filePath, filing_document_file, {
+            cacheControl: '3600',
+            upsert: false,
+          });
+
+        if (uploadError) {
+          throw new Error(`Filing document upload failed: ${uploadError.message}`);
+        }
+
+        const { data: publicUrlData } = supabase.storage
+          .from('creator-assets')
+          .getPublicUrl(filePath);
+
+        if (!publicUrlData?.publicUrl) {
+          await supabase.storage.from('creator-assets').remove([filePath]);
+          throw new Error('Failed to get public URL for the uploaded filing document.');
+        }
+        filing_document_url = publicUrlData.publicUrl;
+      }
+
       // Ensure we only write 'filed' or 'pending' back to the DB, not 'Overdue'
       const dbStatus = status === 'Overdue' ? 'pending' : status.toLowerCase();
       
       const { error } = await supabase
         .from('tax_filings')
-        .update({ status: dbStatus, ...updates, updated_at: new Date().toISOString() })
+        .update({ 
+          status: dbStatus, 
+          filing_document_url: filing_document_url, // Include the new URL
+          updated_at: new Date().toISOString(),
+          ...updates 
+        })
         .eq('id', id)
         .eq('creator_id', creator_id);
 
-      if (error) throw new Error(error.message);
+      if (error) {
+        // If DB update fails, attempt to clean up the uploaded file if one exists
+        if (filing_document_file && filing_document_url) {
+            const filePath = filing_document_url.split('/creator-assets/')[1];
+            await supabase.storage.from('creator-assets').remove([filePath]);
+        }
+        throw new Error(error.message);
+      }
     },
     {
       onSuccess: (_, variables) => {

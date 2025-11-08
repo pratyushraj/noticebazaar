@@ -4,7 +4,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useSession } from '@/contexts/SessionContext';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { Loader2, CalendarDays, FileText, IndianRupee, Calculator, CheckCircle, AlertTriangle, Settings } from 'lucide-react';
+import { Loader2, CalendarDays, FileText, IndianRupee, Calculator, CheckCircle, AlertTriangle, Settings, Eye } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { useBrandDeals } from '@/lib/hooks/useBrandDeals'; // To get income data
@@ -23,12 +23,15 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
+import FilingUploadForm from '@/components/creator-tax/FilingUploadForm'; // NEW: Import the new form
 
 const CreatorTaxCompliancePage = () => {
   const { profile, loading: sessionLoading, isCreator } = useSession();
   const creatorId = profile?.id;
   const [filterStatus, setFilterStatus] = useState<'All' | 'Pending' | 'Filed' | 'Overdue'>('All');
   const [isSettingsDialogOpen, setIsSettingsDialogOpen] = useState(false);
+  const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false); // NEW: State for upload dialog
+  const [selectedFiling, setSelectedFiling] = useState<TaxFiling | null>(null); // NEW: State for selected filing
   const pageSize = 10;
 
   // --- Data Hooks ---
@@ -75,18 +78,16 @@ const CreatorTaxCompliancePage = () => {
   }, [filingsError]);
 
   // --- Handlers ---
-  const handleMarkAsFiled = async (filing: TaxFiling) => {
-    if (!creatorId) return;
-    try {
-      await updateFilingMutation.mutateAsync({
-        id: filing.id,
-        creator_id: creatorId,
-        status: 'Filed',
-        filed_date: new Date().toISOString().split('T')[0],
-      });
-    } catch (error) {
-      // Handled by hook
-    }
+  const handleOpenUploadDialog = (filing: TaxFiling) => { // NEW: Open dialog instead of direct mutation
+    setSelectedFiling(filing);
+    setIsUploadDialogOpen(true);
+  };
+
+  const handleUploadSuccess = () => { // NEW: Handler to close dialog and refetch
+    setIsUploadDialogOpen(false);
+    setSelectedFiling(null);
+    // Refetch filings to update the table status
+    // Invalidation is handled by the mutation hook
   };
 
   const getStatusBadgeVariant = (status: TaxFiling['status']) => {
@@ -96,6 +97,14 @@ const CreatorTaxCompliancePage = () => {
       case 'Overdue': return 'destructive';
       default: return 'outline';
     }
+  };
+
+  const isOverdue = (paymentExpectedDate: string) => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const expectedDate = new Date(paymentExpectedDate);
+    expectedDate.setHours(0, 0, 0, 0);
+    return expectedDate < today;
   };
 
   if (sessionLoading || isLoadingBrandDeals || isLoadingFilings || isLoadingSettings) {
@@ -191,10 +200,17 @@ const CreatorTaxCompliancePage = () => {
                         {filing.status}
                       </Badge>
                     </TableCell>
-                    <TableCell className="text-right">
+                    <TableCell className="text-right flex justify-end space-x-2">
+                      {filing.filing_document_url && (
+                        <Button variant="outline" size="sm" asChild className="text-primary border-border hover:bg-accent hover:text-foreground">
+                          <a href={filing.filing_document_url} target="_blank" rel="noopener noreferrer">
+                            <Eye className="h-4 w-4" />
+                          </a>
+                        </Button>
+                      )}
                       {filing.status === 'Pending' || filing.status === 'Overdue' ? (
-                        <Button variant="default" size="sm" onClick={() => handleMarkAsFiled(filing)} disabled={updateFilingMutation.isPending}>
-                          {updateFilingMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileText className="h-4 w-4 mr-1" />} Mark Filed
+                        <Button variant="default" size="sm" onClick={() => handleOpenUploadDialog(filing)} disabled={updateFilingMutation.isPending}>
+                          {updateFilingMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileText className="h-4 w-4 mr-1" />} File Now
                         </Button>
                       ) : (
                         <Button variant="outline" size="sm" disabled>
@@ -238,6 +254,29 @@ const CreatorTaxCompliancePage = () => {
         initialSettings={taxSettings}
         creatorId={creatorId}
       />
+      
+      {/* NEW: Upload Filing Document Dialog */}
+      <Dialog open={isUploadDialogOpen} onOpenChange={setIsUploadDialogOpen}>
+        <DialogContent 
+          className="sm:max-w-[425px] bg-card text-foreground border-border"
+          aria-labelledby="upload-filing-title"
+          aria-describedby="upload-filing-description"
+        >
+          <DialogHeader>
+            <DialogTitle id="upload-filing-title">Upload Filing Document</DialogTitle>
+            <DialogDescription id="upload-filing-description" className="text-muted-foreground">
+              Upload the official document (e.g., acknowledgement receipt) for this tax filing.
+            </DialogDescription>
+          </DialogHeader>
+          {selectedFiling && (
+            <FilingUploadForm
+              filing={selectedFiling}
+              onUploadSuccess={handleUploadSuccess}
+              onClose={() => setIsUploadDialogOpen(false)}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </>
   );
 };
