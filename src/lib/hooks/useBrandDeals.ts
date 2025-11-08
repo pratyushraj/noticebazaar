@@ -152,6 +152,11 @@ export const useAddBrandDeal = () => {
         }
         invoice_file_url = publicUrlData.publicUrl;
       }
+      
+      let finalStatus = status;
+      if (payment_received_date) {
+          finalStatus = 'Completed';
+      }
 
       const insertPayload = {
           creator_id,
@@ -160,7 +165,7 @@ export const useAddBrandDeal = () => {
           deliverables,
           due_date,
           payment_expected_date,
-          status,
+          status: finalStatus, // Use finalStatus
           contract_file_url,
           invoice_file_url,
           contact_person,
@@ -282,10 +287,13 @@ export const useUpdateBrandDeal = () => {
         updatePayload.invoice_file_url = invoice_file_url;
       }
       
-      // Ensure required fields are not accidentally set to undefined if they weren't passed in updates
-      // We rely on the form to pass all required fields, but if they are optional in the mutation interface, 
-      // we must ensure they are present if they are required in the DB.
-      // Since we are using the spread operator for updates, we assume the form handles required fields.
+      // Consistency Check: If payment received date is provided, force status to Completed.
+      if (updates.payment_received_date) {
+          updatePayload.status = 'Completed';
+      } else if (updates.payment_received_date === null && updatePayload.status === 'Completed') {
+          // If payment date is cleared, revert status to Payment Pending
+          updatePayload.status = 'Payment Pending';
+      }
 
       const { error } = await supabase
         .from('brand_deals')
