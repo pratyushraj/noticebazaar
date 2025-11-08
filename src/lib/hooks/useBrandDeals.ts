@@ -154,6 +154,7 @@ export const useAddBrandDeal = () => {
       }
       
       let finalStatus = status;
+      // Consistency Check: If payment received date is provided, force status to Completed.
       if (payment_received_date) {
           finalStatus = 'Completed';
       }
