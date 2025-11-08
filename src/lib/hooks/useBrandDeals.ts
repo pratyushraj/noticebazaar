@@ -82,11 +82,11 @@ export const useAddBrandDeal = () => {
       let invoice_file_url: string | null = null;
 
       const sanitizeName = (name: string) => name.trim().replace(/\s/g, '_').replace(/[^a-zA-Z0-9_.-]/g, '');
+      const sanitizedBrandName = sanitizeName(brand_name);
 
       // Upload contract file
       if (contract_file) {
         const fileExtension = contract_file.name.split('.').pop();
-        const sanitizedBrandName = sanitizeName(brand_name);
         const filePath = `${creator_id}/brand_deals/${sanitizedBrandName}-contract-${Date.now()}.${fileExtension}`;
 
         const { data: uploadData, error: uploadError } = await supabase.storage
@@ -114,7 +114,6 @@ export const useAddBrandDeal = () => {
       // Upload invoice file
       if (invoice_file) {
         const fileExtension = invoice_file.name.split('.').pop();
-        const sanitizedBrandName = sanitizeName(brand_name);
         const filePath = `${creator_id}/brand_deals/${sanitizedBrandName}-invoice-${Date.now()}.${fileExtension}`;
 
         const { data: uploadData, error: uploadError } = await supabase.storage
@@ -146,7 +145,7 @@ export const useAddBrandDeal = () => {
           brand_name,
           deliverables,
           contract_file_url,
-          invoice_file_url, // New field
+          invoice_file_url,
           ...rest,
         });
 
@@ -245,7 +244,12 @@ export const useUpdateBrandDeal = () => {
 
       const { error } = await supabase
         .from('brand_deals')
-        .update({ ...updates, contract_file_url, invoice_file_url, updated_at: new Date().toISOString() })
+        .update({ 
+          ...updates, 
+          contract_file_url: contract_file_url !== undefined ? contract_file_url : original_contract_file_url,
+          invoice_file_url: invoice_file_url !== undefined ? invoice_file_url : original_invoice_file_url,
+          updated_at: new Date().toISOString() 
+        })
         .eq('id', id);
 
       if (error) {
