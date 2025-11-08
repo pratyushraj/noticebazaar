@@ -65,8 +65,8 @@ interface AddBrandDealVariables {
   contract_file: File | null; // Allow null for no file
   due_date: string;
   payment_expected_date: string;
-  contact_person: string;
-  platform: string;
+  contact_person: string | null;
+  platform: string | null;
   status: BrandDeal['status'];
   invoice_file: File | null; // New: invoice file
   utr_number: string | null; // New: UTR number
@@ -77,7 +77,22 @@ interface AddBrandDealVariables {
 export const useAddBrandDeal = () => {
   const queryClient = useQueryClient();
   return useSupabaseMutation<void, Error, AddBrandDealVariables>(
-    async ({ creator_id, brand_name, deliverables, contract_file, invoice_file, ...rest }) => {
+    async ({ 
+      creator_id, 
+      brand_name, 
+      deal_amount, 
+      deliverables, 
+      contract_file, 
+      due_date, 
+      payment_expected_date, 
+      contact_person, 
+      platform, 
+      status, 
+      invoice_file, 
+      utr_number, 
+      brand_email, 
+      payment_received_date 
+    }) => {
       let contract_file_url: string | null = null;
       let invoice_file_url: string | null = null;
 
@@ -143,10 +158,18 @@ export const useAddBrandDeal = () => {
         .insert({
           creator_id,
           brand_name,
+          deal_amount,
           deliverables,
+          due_date,
+          payment_expected_date,
+          status,
           contract_file_url,
           invoice_file_url,
-          ...rest,
+          contact_person,
+          platform,
+          utr_number,
+          brand_email,
+          payment_received_date,
         });
 
       if (insertError) {
@@ -181,8 +204,8 @@ interface UpdateBrandDealVariables {
   contract_file?: File | null;
   due_date?: string;
   payment_expected_date?: string;
-  contact_person?: string;
-  platform?: string;
+  contact_person?: string | null;
+  platform?: string | null;
   status?: BrandDeal['status'];
   original_contract_file_url?: string | null;
   invoice_file?: File | null; // New: invoice file
@@ -242,14 +265,27 @@ export const useUpdateBrandDeal = () => {
         } else { invoice_file_url = null; }
       }
 
+      const updatePayload: Record<string, any> = {
+        ...updates,
+        updated_at: new Date().toISOString(),
+      };
+
+      // Only include file URLs if they were explicitly handled (i.e., file was uploaded or explicitly set to null)
+      if (contract_file_url !== undefined) {
+        updatePayload.contract_file_url = contract_file_url;
+      }
+      if (invoice_file_url !== undefined) {
+        updatePayload.invoice_file_url = invoice_file_url;
+      }
+      
+      // Ensure required fields are not accidentally set to undefined if they weren't passed in updates
+      // We rely on the form to pass all required fields, but if they are optional in the mutation interface, 
+      // we must ensure they are present if they are required in the DB.
+      // Since we are using the spread operator for updates, we assume the form handles required fields.
+
       const { error } = await supabase
         .from('brand_deals')
-        .update({ 
-          ...updates, 
-          contract_file_url: contract_file_url !== undefined ? contract_file_url : original_contract_file_url,
-          invoice_file_url: invoice_file_url !== undefined ? invoice_file_url : original_invoice_file_url,
-          updated_at: new Date().toISOString() 
-        })
+        .update(updatePayload)
         .eq('id', id);
 
       if (error) {
