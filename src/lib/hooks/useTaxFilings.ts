@@ -25,11 +25,14 @@ export const useTaxFilings = (options: UseTaxFilingsOptions) => {
         .eq('creator_id', creatorId)
         .order('due_date', { ascending: true });
 
-      // Only filter by status if it's 'Pending' or 'Filed' in the DB query, 
-      // as 'Overdue' is derived client-side from 'Pending'.
-      if (statusFilter && statusFilter !== 'All' && statusFilter !== 'Overdue') {
-        query = query.eq('status', statusFilter.toLowerCase());
+      // 1. Optimize DB query based on filter
+      if (statusFilter === 'Filed') {
+        query = query.eq('status', 'filed');
+      } else if (statusFilter === 'Pending' || statusFilter === 'Overdue') {
+        // If filtering for Pending or Overdue, we only need records that are 'pending' in the DB
+        query = query.eq('status', 'pending');
       }
+      // If statusFilter is 'All', no status filter is applied to the DB query.
 
       if (limit) {
         query = query.limit(limit);
@@ -44,7 +47,7 @@ export const useTaxFilings = (options: UseTaxFilingsOptions) => {
       
       const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format for comparison
 
-      // Apply client-side status derivation logic
+      // 2. Apply client-side status derivation logic
       const processedData = (data as TaxFiling[]).map(filing => {
         let derivedStatus: TaxFiling['status'] = filing.status as TaxFiling['status'];
 
@@ -60,12 +63,13 @@ export const useTaxFilings = (options: UseTaxFilingsOptions) => {
         return { ...filing, status: derivedStatus };
       });
 
-      // Apply client-side filtering for 'Overdue' status if requested
-      if (statusFilter === 'Overdue') {
-        return processedData.filter(filing => filing.status === 'Overdue');
+      // 3. Apply final client-side filtering based on derived status
+      if (statusFilter === 'All') {
+        return processedData;
       }
-
-      return processedData;
+      
+      // Filter by the derived status (Pending, Filed, or Overdue)
+      return processedData.filter(filing => filing.status === statusFilter);
     },
     {
       enabled: enabled && !!creatorId,
