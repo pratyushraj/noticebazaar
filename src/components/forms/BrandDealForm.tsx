@@ -47,15 +47,16 @@ const BrandDealForm = ({ initialData, onSaveSuccess, onClose }: BrandDealFormPro
       setDealAmount(initialData.deal_amount?.toString() || '');
       setDeliverables(initialData.deliverables || '');
       setExistingContractFileUrl(initialData.contract_file_url || null);
-      setDueDate(initialData.due_date);
-      setPaymentExpectedDate(initialData.payment_expected_date);
+      // Ensure date strings are correctly formatted for input type="date"
+      setDueDate(initialData.due_date.split('T')[0]);
+      setPaymentExpectedDate(initialData.payment_expected_date.split('T')[0]);
       setContactPerson(initialData.contact_person || '');
       setPlatform(initialData.platform || '');
       setStatus(initialData.status);
       setBrandEmail(initialData.brand_email || ''); // Set new state
       setExistingInvoiceFileUrl(initialData.invoice_file_url || null); // Set new state
       setUtrNumber(initialData.utr_number || ''); // Set new state
-      setPaymentReceivedDate(initialData.payment_received_date || ''); // Set new state
+      setPaymentReceivedDate(initialData.payment_received_date ? initialData.payment_received_date.split('T')[0] : ''); // Set new state
     } else {
       // Reset form for new entry
       setBrandName('');
@@ -100,8 +101,9 @@ const BrandDealForm = ({ initialData, onSaveSuccess, onClose }: BrandDealFormPro
       return;
     }
 
+    // Explicitly check for required fields, including dates
     if (!brandName.trim() || !dealAmount.trim() || !deliverables.trim() || !dueDate.trim() || !paymentExpectedDate.trim()) {
-      toast.error('Please fill in all required fields.');
+      toast.error('Please fill in all required fields (Brand Name, Amount, Deliverables, Due Date, Payment Expected Date).');
       return;
     }
 
@@ -110,6 +112,11 @@ const BrandDealForm = ({ initialData, onSaveSuccess, onClose }: BrandDealFormPro
       toast.error('Please enter a valid deal amount.');
       return;
     }
+
+    // Ensure dates are sent as ISO strings (YYYY-MM-DD is sufficient for Supabase date type)
+    const finalDueDate = dueDate.trim();
+    const finalPaymentExpectedDate = paymentExpectedDate.trim();
+    const finalPaymentReceivedDate = paymentReceivedDate.trim() || null;
 
     try {
       if (initialData) {
@@ -122,16 +129,16 @@ const BrandDealForm = ({ initialData, onSaveSuccess, onClose }: BrandDealFormPro
           deliverables: deliverables.trim(),
           contract_file: contractFile,
           original_contract_file_url: existingContractFileUrl,
-          due_date: dueDate,
-          payment_expected_date: paymentExpectedDate,
-          contact_person: contactPerson.trim(),
-          platform: platform,
+          due_date: finalDueDate,
+          payment_expected_date: finalPaymentExpectedDate,
+          contact_person: contactPerson.trim() || null,
+          platform: platform || null,
           status: status,
           brand_email: brandEmail.trim() || null, // New field
           invoice_file: invoiceFile, // New field
           original_invoice_file_url: existingInvoiceFileUrl, // New field
           utr_number: utrNumber.trim() || null, // New field
-          payment_received_date: paymentReceivedDate || null, // New field
+          payment_received_date: finalPaymentReceivedDate, // New field
         });
         toast.success('Brand deal updated successfully!');
       } else {
@@ -142,15 +149,15 @@ const BrandDealForm = ({ initialData, onSaveSuccess, onClose }: BrandDealFormPro
           deal_amount: dealAmountNum,
           deliverables: deliverables.trim(),
           contract_file: contractFile,
-          due_date: dueDate,
-          payment_expected_date: paymentExpectedDate,
-          contact_person: contactPerson.trim(),
-          platform: platform,
+          due_date: finalDueDate,
+          payment_expected_date: finalPaymentExpectedDate,
+          contact_person: contactPerson.trim() || null,
+          platform: platform || null,
           status: status,
           brand_email: brandEmail.trim() || null, // New field
           invoice_file: invoiceFile, // New field
           utr_number: utrNumber.trim() || null, // New field
-          payment_received_date: paymentReceivedDate || null, // New field
+          payment_received_date: finalPaymentReceivedDate, // New field
         });
         toast.success('Brand deal added successfully!');
       }
@@ -352,7 +359,7 @@ const BrandDealForm = ({ initialData, onSaveSuccess, onClose }: BrandDealFormPro
         <Button variant="outline" onClick={onClose} disabled={isSubmitting}>
           Cancel
         </Button>
-        <Button type="submit" disabled={isSubmitting}>
+        <Button type="submit" disabled={isSubmitting || !brandName.trim() || !dealAmount.trim() || !deliverables.trim() || !dueDate.trim() || !paymentExpectedDate.trim()}>
           {isSubmitting ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Saving...
