@@ -43,6 +43,13 @@ const TaxProfileSetupForm: React.FC<TaxProfileSetupFormProps> = ({ initialProfil
   const updateProfileMutation = useUpdateProfile();
   const upsertTaxSettingsMutation = useUpsertTaxSettings();
 
+  useEffect(() => {
+    setBusinessName(initialProfile.business_name || '');
+    setBusinessEntityType(initialProfile.business_entity_type || '');
+    setGstin(initialProfile.gstin || '');
+    setPan(initialProfile.pan || '');
+  }, [initialProfile]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -101,13 +108,17 @@ const TaxProfileSetupForm: React.FC<TaxProfileSetupFormProps> = ({ initialProfil
         <h3 className="text-lg font-semibold text-foreground flex items-center"><Building2 className="h-4 w-4 mr-2" /> Business Identity</h3>
         <div>
           <Label htmlFor="businessName">Business Name *</Label>
-          <Input
-            id="businessName"
-            value={businessName}
-            onChange={(e) => setBusinessName(e.target.value)}
-            disabled={isSubmitting}
-            placeholder="e.g., Your Brand Name"
-          />
+          <div className="relative">
+            <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              id="businessName"
+              value={businessName}
+              onChange={(e) => setBusinessName(e.target.value)}
+              disabled={isSubmitting}
+              placeholder="e.g., Your Brand Name"
+              className="pl-9"
+            />
+          </div>
         </div>
         <div>
           <Label htmlFor="businessEntityType">Business Entity Type *</Label>
@@ -124,23 +135,31 @@ const TaxProfileSetupForm: React.FC<TaxProfileSetupFormProps> = ({ initialProfil
         </div>
         <div>
           <Label htmlFor="pan">PAN (Permanent Account Number) *</Label>
-          <Input
-            id="pan"
-            value={pan}
-            onChange={(e) => setPan(e.target.value)}
-            disabled={isSubmitting}
-            placeholder="e.g., ABCDE1234F"
-          />
+          <div className="relative">
+            <IndianRupee className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              id="pan"
+              value={pan}
+              onChange={(e) => setPan(e.target.value)}
+              disabled={isSubmitting}
+              placeholder="e.g., ABCDE1234F"
+              className="pl-9"
+            />
+          </div>
         </div>
         <div>
           <Label htmlFor="gstin">GSTIN (Optional)</Label>
-          <Input
-            id="gstin"
-            value={gstin}
-            onChange={(e) => setGstin(e.target.value)}
-            disabled={isSubmitting}
-            placeholder="e.e., 27ABCDE1234F1Z5"
-          />
+          <div className="relative">
+            <FileText className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              id="gstin"
+              value={gstin}
+              onChange={(e) => setGstin(e.target.value)}
+              disabled={isSubmitting}
+              placeholder="e.e., 27ABCDE1234F1Z5"
+              className="pl-9"
+            />
+          </div>
         </div>
       </div>
 
