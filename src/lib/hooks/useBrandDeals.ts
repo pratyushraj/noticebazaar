@@ -153,9 +153,7 @@ export const useAddBrandDeal = () => {
         invoice_file_url = publicUrlData.publicUrl;
       }
 
-      const { error: insertError } = await supabase
-        .from('brand_deals')
-        .insert({
+      const insertPayload = {
           creator_id,
           brand_name,
           deal_amount,
@@ -170,7 +168,13 @@ export const useAddBrandDeal = () => {
           utr_number,
           brand_email,
           payment_received_date,
-        });
+      };
+      
+      console.log('DEBUG: Brand Deal Insert Payload:', insertPayload); // <-- DEBUG LOG
+
+      const { error: insertError } = await supabase
+        .from('brand_deals')
+        .insert(insertPayload);
 
       if (insertError) {
         // Attempt to remove uploaded files if database insert fails
