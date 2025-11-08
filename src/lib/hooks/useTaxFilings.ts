@@ -1,8 +1,27 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { TaxFiling } from '@/types';
+import { TaxFiling, ComplianceDeadline } from '@/types'; // Import ComplianceDeadline
 import { useSupabaseQuery } from './useSupabaseQuery';
 import { useSupabaseMutation } from './useSupabaseMutation';
+
+// Helper function to calculate urgency
+const calculateUrgency = (dueDate: string): 'High' | 'Medium' | 'Low' => {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const due = new Date(dueDate);
+  due.setHours(0, 0, 0, 0);
+
+  const diffTime = due.getTime() - today.getTime();
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+  if (diffDays <= 3) {
+    return 'High';
+  }
+  if (diffDays <= 30) {
+    return 'Medium';
+  }
+  return 'Low';
+};
 
 interface UseTaxFilingsOptions {
   creatorId: string | undefined;
@@ -150,6 +169,59 @@ export const useUpdateTaxFiling = () => {
       },
       successMessage: 'Tax filing updated successfully!',
       errorMessage: 'Failed to update tax filing',
+    }
+  );
+};
+
+interface UseCreatorDeadlinesOptions {
+  creatorId: string | undefined;
+  enabled?: boolean;
+}
+
+export const useCreatorDeadlines = (options: UseCreatorDeadlinesOptions) => {
+  const { creatorId, enabled = true } = options;
+
+  return useSupabaseQuery<ComplianceDeadline[], Error>(
+    ['creator_deadlines', creatorId],
+    async () => {
+      if (!creatorId) return [];
+
+      const { data, error } = await supabase
+        .from('tax_filings')
+        .select('filing_type, due_date, status')
+        .eq('creator_id', creatorId)
+        .eq('status', 'pending') // Only fetch pending items
+        .order('due_date', { ascending: true })
+        .limit(3);
+
+      if (error) {
+        console.error('Supabase Error in useCreatorDeadlines:', error.message);
+        return [];
+      }
+
+      const today = new Date().toISOString().split('T')[0];
+
+      const deadlines = (data as Pick<TaxFiling, 'filing_type' | 'due_date' | 'status'>[]).map(filing => {
+        // Only process if the due date is today or in the future (i.e., not overdue)
+        if (filing.due_date < today) {
+            return null; // Filter out overdue items from the "deadlines" list
+        }
+        
+        const urgency = calculateUrgency(filing.due_date);
+
+        return {
+          date: new Date(filing.due_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+          task: filing.filing_type.toUpperCase().replace(/_/g, ' '),
+          urgency: urgency,
+        };
+      }).filter(item => item !== null) as ComplianceDeadline[];
+      
+      return deadlines;
+    },
+    {
+      enabled: enabled && !!creatorId,
+      errorMessage: 'Failed to fetch creator deadlines',
+      retry: false,
     }
   );
 };

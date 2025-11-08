@@ -10,16 +10,15 @@ import {
   MOCK_TAKEDOWN_ALERTS,
   MOCK_PROTECTION_COMPLIANCE,
   MOCK_TAX_COMPLIANCE_STATUS,
-  MOCK_IMPORTANT_DEADLINES,
   MOCK_AI_ACTION_CENTER,
   CreatorKpi,
   QuickAction,
   BrandDeal,
   ContractReview,
   TakedownAlert,
-  ComplianceDeadline,
   AIAction,
 } from '@/data/creatorDashboardData';
+import { ComplianceDeadline } from '@/types'; // Import ComplianceDeadline
 
 interface CreatorDashboardData {
   kpiCards: CreatorKpi[];
@@ -32,7 +31,7 @@ interface CreatorDashboardData {
   takedownAlerts: TakedownAlert[];
   protectionCompliance: { healthScore: number; categories: { name: string; status: string }[] };
   taxComplianceStatus: { amount: string; deals: string; nextDue: string };
-  importantDeadlines: ComplianceDeadline[];
+  importantDeadlines: ComplianceDeadline[]; // Use imported type
   aiActionCenter: AIAction[];
 }
 
@@ -54,7 +53,7 @@ export const useCreatorDashboardData = (enabled: boolean = true) => {
         takedownAlerts: MOCK_TAKEDOWN_ALERTS,
         protectionCompliance: MOCK_PROTECTION_COMPLIANCE,
         taxComplianceStatus: MOCK_TAX_COMPLIANCE_STATUS,
-        importantDeadlines: MOCK_IMPORTANT_DEADLINES,
+        importantDeadlines: [], // Now fetched via dedicated hook
         aiActionCenter: MOCK_AI_ACTION_CENTER,
       };
     },

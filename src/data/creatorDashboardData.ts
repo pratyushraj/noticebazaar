@@ -1,4 +1,5 @@
 import { LucideIcon, DollarSign, Briefcase, FileText, ShieldCheck, Clock, AlertTriangle, MessageSquare, CalendarDays, IndianRupee, CheckCircle, XCircle, Bot } from 'lucide-react';
+import { ComplianceDeadline } from '@/types'; // Import the real type
 
 // --- Types for Mock Data ---
 export interface CreatorKpi {
@@ -33,11 +34,7 @@ export interface ContractReview {
 
 // REMOVED: TakedownAlert interface as it's now in src/types/index.ts
 
-export interface ComplianceDeadline {
-  date: string;
-  task: string;
-  urgency: 'High' | 'Medium' | 'Low';
-}
+// REMOVED: ComplianceDeadline interface definition
 
 export interface AIAction {
   description: string;
@@ -132,11 +129,7 @@ export const MOCK_TAX_COMPLIANCE_STATUS = {
   nextDue: 'GST Q4',
 };
 
-export const MOCK_IMPORTANT_DEADLINES: ComplianceDeadline[] = [
-  { date: 'Nov 20', task: 'GSTR-3B Filing', urgency: 'High' },
-  { date: 'Dec 31', task: 'Annual ITR Filing', urgency: 'Medium' },
-  { date: 'Jan 15', task: 'Q3 TDS Payment', urgency: 'Low' },
-];
+// REMOVED MOCK_IMPORTANT_DEADLINES
 
 export const MOCK_AI_ACTION_CENTER: AIAction[] = [
   { description: '2 contracts missing usage rights summary — fix now', linkText: 'Review Contracts', linkHref: '/creator-contracts', icon: FileText },

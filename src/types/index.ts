@@ -121,3 +121,10 @@ export type TaxFiling = Tables<'tax_filings'> & {
 
 // New type for Tax Settings
 export type TaxSetting = Tables<'tax_settings'>;
+
+// NEW: Type for Compliance Deadlines (used in dashboard)
+export interface ComplianceDeadline {
+  date: string;
+  task: string;
+  urgency: 'High' | 'Medium' | 'Low';
+}
