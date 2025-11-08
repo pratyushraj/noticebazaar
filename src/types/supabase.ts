@@ -639,6 +639,94 @@ export type Database = {
           },
         ]
       }
+      tax_filings: {
+        Row: {
+          creator_id: string
+          created_at: string
+          details: string | null
+          due_date: string
+          filed_date: string | null
+          filing_document_url: string | null
+          filing_type: string
+          id: string
+          period_end: string
+          period_start: string
+          status: string
+        }
+        Insert: {
+          creator_id: string
+          created_at?: string
+          details?: string | null
+          due_date: string
+          filed_date?: string | null
+          filing_document_url?: string | null
+          filing_type: string
+          id?: string
+          period_end: string
+          period_start: string
+          status?: string
+        }
+        Update: {
+          creator_id?: string
+          created_at?: string
+          details?: string | null
+          due_date?: string
+          filed_date?: string | null
+          filing_document_url?: string | null
+          filing_type?: string
+          id?: string
+          period_end?: string
+          period_start?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tax_filings_creator_id_fkey"
+            columns: ["creator_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tax_settings: {
+        Row: {
+          creator_id: string
+          created_at: string
+          gst_rate: number
+          id: string
+          itr_slab: string
+          tds_rate: number
+          updated_at: string | null
+        }
+        Insert: {
+          creator_id: string
+          created_at?: string
+          gst_rate?: number
+          id?: string
+          itr_slab?: string
+          tds_rate?: number
+          updated_at?: string | null
+        }
+        Update: {
+          creator_id?: string
+          created_at?: string
+          gst_rate?: number
+          id?: string
+          itr_slab?: string
+          tds_rate?: number
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tax_settings_creator_id_fkey"
+            columns: ["creator_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never

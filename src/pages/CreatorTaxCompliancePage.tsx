@@ -4,99 +4,90 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useSession } from '@/contexts/SessionContext';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { Loader2, CalendarDays, FileText, IndianRupee, Calculator, CheckCircle, AlertTriangle } from 'lucide-react';
+import { Loader2, CalendarDays, FileText, IndianRupee, Calculator, CheckCircle, AlertTriangle, Settings } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { useBrandDeals } from '@/lib/hooks/useBrandDeals'; // To get income data
 import { usePagination } from '@/lib/hooks/usePagination';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Label } from '@/components/ui/label'; // <-- ADDED IMPORT
-
-interface TaxFiling {
-  id: string;
-  type: string;
-  dueDate: string;
-  status: 'Pending' | 'Filed' | 'Overdue';
-  amount?: number;
-  details?: string;
-}
+import { Label } from '@/components/ui/label';
+import { TaxFiling, TaxSetting } from '@/types';
+import { useTaxFilings, useUpdateTaxFiling } from '@/lib/hooks/useTaxFilings';
+import { useTaxSettings, useUpsertTaxSettings } from '@/lib/hooks/useTaxSettings';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
 
 const CreatorTaxCompliancePage = () => {
   const { profile, loading: sessionLoading, isCreator } = useSession();
+  const creatorId = profile?.id;
   const [filterStatus, setFilterStatus] = useState<'All' | 'Pending' | 'Filed' | 'Overdue'>('All');
+  const [isSettingsDialogOpen, setIsSettingsDialogOpen] = useState(false);
   const pageSize = 10;
 
-  const { data: brandDealsData, isLoading: isLoadingBrandDeals, error: brandDealsError } = useBrandDeals({
-    creatorId: profile?.id,
-    enabled: !sessionLoading && isCreator && !!profile?.id,
+  // --- Data Hooks ---
+  const { data: brandDealsData, isLoading: isLoadingBrandDeals } = useBrandDeals({
+    creatorId: creatorId,
+    enabled: !sessionLoading && isCreator && !!creatorId,
     statusFilter: 'Completed', // Only consider completed deals for income
   });
 
+  const { data: taxFilingsData, isLoading: isLoadingFilings, error: filingsError } = useTaxFilings({
+    creatorId: creatorId,
+    enabled: !sessionLoading && isCreator && !!creatorId,
+    statusFilter: filterStatus,
+  });
+
+  const { data: taxSettings, isLoading: isLoadingSettings } = useTaxSettings({
+    creatorId: creatorId,
+    enabled: !sessionLoading && isCreator && !!creatorId,
+  });
+
+  const updateFilingMutation = useUpdateTaxFiling();
+
+  // --- Derived Data ---
   const totalIncome = useMemo(() => {
     return brandDealsData?.reduce((sum, deal) => sum + deal.deal_amount, 0) || 0;
   }, [brandDealsData]);
 
-  // Mock tax filings and deadlines
-  const mockTaxFilings: TaxFiling[] = useMemo(() => {
-    const today = new Date();
-    const nextMonth = new Date(today.getFullYear(), today.getMonth() + 1, 1);
-    const twoMonthsAgo = new Date(today.getFullYear(), today.getMonth() - 2, 1);
+  const estimatedTaxRate = taxSettings?.gst_rate || 0.18; // Use GST rate as a proxy for estimated tax liability
+  const estimatedTaxLiability = totalIncome * estimatedTaxRate;
 
-    return [
-      {
-        id: 'gst-q4-2024',
-        type: 'GST Q4 Filing',
-        dueDate: new Date(today.getFullYear(), 11, 20).toISOString().split('T')[0], // Dec 20 current year
-        status: 'Pending',
-        details: 'Quarterly GST return for Oct-Dec',
-      },
-      {
-        id: 'itr-2024',
-        type: 'Annual ITR Filing',
-        dueDate: new Date(today.getFullYear() + 1, 6, 31).toISOString().split('T')[0], // July 31 next year
-        status: 'Pending',
-        details: 'Income Tax Return for FY 2024-25',
-      },
-      {
-        id: 'tds-q3-2024',
-        type: 'TDS Q3 Payment',
-        dueDate: new Date(today.getFullYear(), 10, 15).toISOString().split('T')[0], // Nov 15 current year
-        status: 'Filed',
-        details: 'TDS payment for Oct-Dec',
-      },
-      {
-        id: 'gst-q3-2024',
-        type: 'GST Q3 Filing',
-        dueDate: new Date(twoMonthsAgo.getFullYear(), twoMonthsAgo.getMonth(), 20).toISOString().split('T')[0],
-        status: 'Overdue',
-        details: 'Quarterly GST return for Jul-Sep',
-      },
-    ].map(filing => {
-      const dueDate = new Date(filing.dueDate);
-      if (filing.status === 'Pending' && dueDate < today) {
-        return { ...filing, status: 'Overdue' as const };
-      }
-      return filing;
-    });
-  }, []);
-
-  const filteredFilings = useMemo(() => {
-    if (filterStatus === 'All') return mockTaxFilings;
-    return mockTaxFilings.filter(filing => filing.status === filterStatus);
-  }, [mockTaxFilings, filterStatus]);
+  const allFilings = taxFilingsData || [];
 
   const { currentPage, totalPages, handlePreviousPage, handleNextPage, setCurrentPage } = usePagination({
-    totalCount: filteredFilings.length,
+    totalCount: allFilings.length,
     pageSize: pageSize,
   });
 
-  const paginatedFilings = filteredFilings.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+  const paginatedFilings = allFilings.slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
   useEffect(() => {
-    if (brandDealsError) {
-      toast.error('Error fetching income data', { description: brandDealsError.message });
+    if (filingsError) {
+      toast.error('Error fetching tax filings', { description: filingsError.message });
     }
-  }, [brandDealsError]);
+  }, [filingsError]);
+
+  // --- Handlers ---
+  const handleMarkAsFiled = async (filing: TaxFiling) => {
+    if (!creatorId) return;
+    try {
+      await updateFilingMutation.mutateAsync({
+        id: filing.id,
+        creator_id: creatorId,
+        status: 'Filed',
+        filed_date: new Date().toISOString().split('T')[0],
+      });
+    } catch (error) {
+      // Handled by hook
+    }
+  };
 
   const getStatusBadgeVariant = (status: TaxFiling['status']) => {
     switch (status) {
@@ -107,7 +98,7 @@ const CreatorTaxCompliancePage = () => {
     }
   };
 
-  if (sessionLoading || isLoadingBrandDeals) {
+  if (sessionLoading || isLoadingBrandDeals || isLoadingFilings || isLoadingSettings) {
     return (
       <div className="min-h-[300px] flex flex-col items-center justify-center bg-background">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -121,17 +112,22 @@ const CreatorTaxCompliancePage = () => {
       <h1 className="text-3xl font-bold text-foreground mb-6">My Taxes & Compliance</h1>
 
       <section className="bg-card p-6 rounded-lg shadow-sm border border-border mb-8">
-        <h2 className="text-xl font-semibold text-foreground mb-4 flex items-center">
-          <IndianRupee className="h-5 w-5 mr-2 text-green-500" /> Financial Overview
-        </h2>
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-xl font-semibold text-foreground flex items-center">
+            <IndianRupee className="h-5 w-5 mr-2 text-green-500" /> Financial Overview
+          </h2>
+          <Button variant="outline" size="sm" onClick={() => setIsSettingsDialogOpen(true)}>
+            <Settings className="h-4 w-4 mr-2" /> Tax Settings
+          </Button>
+        </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="flex flex-col p-4 rounded-lg bg-secondary border border-border">
             <p className="text-sm text-muted-foreground">Total Income Tracked (Completed Deals)</p>
             <p className="text-3xl font-bold text-foreground mt-1">₹{totalIncome.toLocaleString('en-IN')}</p>
           </div>
           <div className="flex flex-col p-4 rounded-lg bg-secondary border border-border">
-            <p className="text-sm text-muted-foreground">Estimated Tax Liability (Mock)</p>
-            <p className="text-3xl font-bold text-foreground mt-1">₹{(totalIncome * 0.15).toLocaleString('en-IN')}</p> {/* Mock 15% tax */}
+            <p className="text-sm text-muted-foreground">Estimated Tax Liability (GST @ {Math.round(estimatedTaxRate * 100)}%)</p>
+            <p className="text-3xl font-bold text-foreground mt-1">₹{estimatedTaxLiability.toLocaleString('en-IN')}</p>
           </div>
         </div>
       </section>
@@ -158,14 +154,21 @@ const CreatorTaxCompliancePage = () => {
           </Select>
         </div>
 
-        {paginatedFilings.length > 0 ? (
+        {allFilings.length === 0 ? (
+          <div className="text-center py-8">
+            <p className="text-muted-foreground mb-4">No tax filings found. If you are a new user, please contact your CA to set up your compliance calendar.</p>
+            <Button variant="default" onClick={() => toast.info('Feature coming soon!', { description: 'This will open a form to request CA setup.' })}>
+              Request CA Setup
+            </Button>
+          </div>
+        ) : (
           <>
             <Table>
               <TableHeader>
                 <TableRow className="border-border">
                   <TableHead className="text-muted-foreground">Filing Type</TableHead>
                   <TableHead className="text-muted-foreground">Due Date</TableHead>
-                  <TableHead className="text-muted-foreground">Details</TableHead>
+                  <TableHead className="text-muted-foreground">Period</TableHead>
                   <TableHead className="text-muted-foreground">Status</TableHead>
                   <TableHead className="text-right text-muted-foreground">Actions</TableHead>
                 </TableRow>
@@ -173,16 +176,16 @@ const CreatorTaxCompliancePage = () => {
               <TableBody>
                 {paginatedFilings.map((filing) => (
                   <TableRow key={filing.id} className="border-border">
-                    <TableCell className="font-medium text-foreground">{filing.type}</TableCell>
+                    <TableCell className="font-medium text-foreground">{filing.filing_type.toUpperCase().replace(/_/g, ' ')}</TableCell>
                     <TableCell className="text-muted-foreground">
                       <div className="flex items-center">
-                        {new Date(filing.dueDate).toLocaleDateString()}
+                        {new Date(filing.due_date).toLocaleDateString()}
                         {filing.status === 'Overdue' && (
                           <AlertTriangle className="h-4 w-4 text-destructive ml-2" title="Overdue" />
                         )}
                       </div>
                     </TableCell>
-                    <TableCell className="text-muted-foreground">{filing.details}</TableCell>
+                    <TableCell className="text-muted-foreground">{new Date(filing.period_start).toLocaleDateString()} - {new Date(filing.period_end).toLocaleDateString()}</TableCell>
                     <TableCell>
                       <Badge variant={getStatusBadgeVariant(filing.status)}>
                         {filing.status}
@@ -190,8 +193,8 @@ const CreatorTaxCompliancePage = () => {
                     </TableCell>
                     <TableCell className="text-right">
                       {filing.status === 'Pending' || filing.status === 'Overdue' ? (
-                        <Button variant="default" size="sm" onClick={() => toast.info('Feature coming soon!', { description: 'File your taxes with our CA team.' })}>
-                          <FileText className="h-4 w-4 mr-1" /> File Now
+                        <Button variant="default" size="sm" onClick={() => handleMarkAsFiled(filing)} disabled={updateFilingMutation.isPending}>
+                          {updateFilingMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileText className="h-4 w-4 mr-1" />} Mark Filed
                         </Button>
                       ) : (
                         <Button variant="outline" size="sm" disabled>
@@ -207,7 +210,7 @@ const CreatorTaxCompliancePage = () => {
               <Button
                 variant="outline"
                 onClick={handlePreviousPage}
-                disabled={currentPage === 1 || isLoadingBrandDeals}
+                disabled={currentPage === 1 || isLoadingFilings}
                 className="text-primary border-border hover:bg-accent hover:text-foreground"
               >
                 Previous
@@ -218,19 +221,133 @@ const CreatorTaxCompliancePage = () => {
               <Button
                 variant="outline"
                 onClick={handleNextPage}
-                disabled={currentPage === totalPages || isLoadingBrandDeals}
+                disabled={currentPage === totalPages || isLoadingFilings}
                 className="text-primary border-border hover:bg-accent hover:text-foreground"
               >
                 Next
               </Button>
             </div>
           </>
-        ) : (
-          <p className="text-muted-foreground text-center py-8">No tax filings or deadlines found.</p>
         )}
       </section>
+
+      {/* Tax Settings Dialog */}
+      <TaxSettingsDialog 
+        isOpen={isSettingsDialogOpen} 
+        onClose={() => setIsSettingsDialogOpen(false)} 
+        initialSettings={taxSettings}
+        creatorId={creatorId}
+      />
     </>
   );
 };
 
 export default CreatorTaxCompliancePage;
+
+
+// --- Tax Settings Dialog Component ---
+
+interface TaxSettingsDialogProps {
+  isOpen: boolean;
+  onClose: () => void;
+  initialSettings: TaxSetting | null;
+  creatorId: string | undefined;
+}
+
+const TaxSettingsDialog: React.FC<TaxSettingsDialogProps> = ({ isOpen, onClose, initialSettings, creatorId }) => {
+  const [gstRate, setGstRate] = useState(initialSettings?.gst_rate ? (initialSettings.gst_rate * 100).toString() : '18');
+  const [tdsRate, setTdsRate] = useState(initialSettings?.tds_rate ? (initialSettings.tds_rate * 100).toString() : '10');
+  const [itrSlab, setItrSlab] = useState(initialSettings?.itr_slab || 'basic');
+
+  const upsertMutation = useUpsertTaxSettings();
+
+  useEffect(() => {
+    if (initialSettings) {
+      setGstRate((initialSettings.gst_rate * 100).toString());
+      setTdsRate((initialSettings.tds_rate * 100).toString());
+      setItrSlab(initialSettings.itr_slab);
+    }
+  }, [initialSettings]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!creatorId) return;
+
+    const gst = parseFloat(gstRate) / 100;
+    const tds = parseFloat(tdsRate) / 100;
+
+    if (isNaN(gst) || isNaN(tds) || gst < 0 || tds < 0) {
+      toast.error('Please enter valid percentage rates.');
+      return;
+    }
+
+    try {
+      await upsertMutation.mutateAsync({
+        creator_id: creatorId,
+        gst_rate: gst,
+        tds_rate: tds,
+        itr_slab: itrSlab,
+      });
+      onClose();
+    } catch (error) {
+      // Handled by hook
+    }
+  };
+
+  return (
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="sm:max-w-[425px] bg-card text-foreground border-border">
+        <DialogHeader>
+          <DialogTitle>Tax Settings</DialogTitle>
+          <DialogDescription>
+            Configure your default tax rates for accurate liability estimation.
+          </DialogDescription>
+        </DialogHeader>
+        <form onSubmit={handleSubmit} className="space-y-4 py-4">
+          <div>
+            <Label htmlFor="gstRate">GST Rate (%)</Label>
+            <Input
+              id="gstRate"
+              type="number"
+              value={gstRate}
+              onChange={(e) => setGstRate(e.target.value)}
+              disabled={upsertMutation.isPending}
+              placeholder="e.g., 18"
+            />
+          </div>
+          <div>
+            <Label htmlFor="tdsRate">TDS Rate (%)</Label>
+            <Input
+              id="tdsRate"
+              type="number"
+              value={tdsRate}
+              onChange={(e) => setTdsRate(e.target.value)}
+              disabled={upsertMutation.isPending}
+              placeholder="e.g., 10"
+            />
+          </div>
+          <div>
+            <Label htmlFor="itrSlab">ITR Slab Type</Label>
+            <Select onValueChange={setItrSlab} value={itrSlab} disabled={upsertMutation.isPending}>
+              <SelectTrigger id="itrSlab">
+                <SelectValue placeholder="Select slab" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="basic">Basic (Standard Deduction)</SelectItem>
+                <SelectItem value="high">High (Complex Deductions)</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={onClose} disabled={upsertMutation.isPending}>
+              Cancel
+            </Button>
+            <Button type="submit" disabled={upsertMutation.isPending}>
+              {upsertMutation.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Save Settings'}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+};

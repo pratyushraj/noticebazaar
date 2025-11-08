@@ -113,3 +113,9 @@ export interface CopyrightScanAlert {
   infringingUser: string;
   originalContentUrl: string;
 }
+
+// New type for Tax Filings
+export type TaxFiling = Tables<'tax_filings'>;
+
+// New type for Tax Settings
+export type TaxSetting = Tables<'tax_settings'>;
