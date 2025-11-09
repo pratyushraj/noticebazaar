@@ -3,9 +3,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { OriginalContent, CopyrightMatch, CopyrightAction } from '@/types';
 import { useSupabaseQuery } from './useSupabaseQuery';
 import { useSupabaseMutation } from './useSupabaseMutation';
-import { toast } from 'sonner'; // Import toast
 
-// --- 1. Original Content Management Hooks (No change needed here) ---
+// --- 1. Original Content Management Hooks ---
 
 interface UseOriginalContentOptions {
   creatorId: string | undefined;
@@ -128,7 +127,7 @@ export const useStartCopyrightScan = () => {
   );
 };
 
-// --- 3. Matches Retrieval Hook (No change needed here) ---
+// --- 3. Matches Retrieval Hook ---
 
 interface UseCopyrightMatchesOptions {
   contentId: string | undefined;
@@ -175,66 +174,18 @@ interface PerformActionResponse {
   document_url: string | null;
 }
 
-// Define the polling function for actions
-const pollActionJobStatus = async (jobId: string): Promise<PerformActionResponse> => {
-  const MAX_POLLS = 30; // Poll for up to 30 seconds
-  const POLL_INTERVAL = 1000; // 1 second interval
-
-  for (let i = 0; i < MAX_POLLS; i++) {
-    await new Promise(resolve => setTimeout(resolve, POLL_INTERVAL));
-
-    const { data, error } = await supabase
-      .from('ai_request_queue')
-      .select('status, result')
-      .eq('id', jobId)
-      .single();
-
-    if (error) {
-      throw new Error(`Polling failed: ${error.message}`);
-    }
-
-    if (data.status === 'completed') {
-      return data.result as PerformActionResponse;
-    }
-
-    if (data.status === 'failed') {
-      throw new Error(data.result?.error || 'Copyright action failed during processing.');
-    }
-  }
-
-  throw new Error("Copyright action timed out. Processing may continue in background.");
-};
-
-
 export const usePerformCopyrightAction = () => {
   const queryClient = useQueryClient();
   return useSupabaseMutation<PerformActionResponse, Error, PerformActionVariables>(
-    async (variables) => {
-      // 1. Send request to Edge Function (which now enqueues the job)
-      const { data, error, status } = await supabase.functions.invoke('copyright/perform-action', {
-        body: variables,
+    async ({ match_id, action_type }) => {
+      const { data, error } = await supabase.functions.invoke('copyright/perform-action', {
+        body: { match_id, action_type },
       });
 
-      if (error) {
-        throw new Error(error.message);
-      }
+      if (error) throw new Error(error.message);
+      if (data && (data as any).error) throw new Error((data as any).error);
       
-      // 2. Handle job queuing (status 202 Accepted)
-      if (status === 202 && (data as any).jobId) {
-        const jobId = (data as any).jobId;
-        
-        // Show non-blocking toast for background processing
-        toast.info("Copyright action queued. Processing in background...", { 
-          description: "This may take a few moments. You'll be notified when the result is ready.",
-          duration: 5000,
-        });
-
-        // Poll for the result
-        return pollActionJobStatus(jobId);
-      }
-      
-      // Fallback for unexpected response
-      throw new Error('Unexpected response from copyright action service.');
+      return data as PerformActionResponse;
     },
     {
       onSuccess: (data, variables) => {

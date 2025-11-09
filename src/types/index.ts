@@ -132,7 +132,3 @@ export interface ComplianceDeadline {
   task: string;
   urgency: 'High' | 'Medium' | 'Low';
 }
-
-// NEW: AI Queue and Cache Types
-export type AIRequestQueue = Tables<'ai_request_queue'>;
-export type AICache = Tables<'ai_cache'>;

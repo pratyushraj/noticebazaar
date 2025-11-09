@@ -22,72 +22,22 @@ serve(async (req) => {
       });
     }
 
-    const token = authHeader.replace('Bearer ', '');
-    
-    // Initialize Supabase Admin Client (Service Role)
-    const supabaseAdmin = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
-      {
-        auth: {
-          autoRefreshToken: false,
-          persistSession: false,
-        },
-      }
-    );
+    // --- Simulate AI Analysis ---
+    const mockAnalysis = {
+      summary: `AI analysis for contract with ${brand_name} completed. Found 5 potential risks.`,
+      insights: [
+        { type: 'missing_clause', description: 'Missing clear termination clause for creator-initiated cancellation.' },
+        { type: 'risky_term', description: 'Broad "all rights" clause could impact future content usage. Recommend clarifying usage rights.' },
+        { type: 'payment_mismatch', description: 'Payment terms in contract (Net 60) differ from expected (Net 30). Potential cash flow impact.' },
+        { type: 'exclusivity_issue', description: 'Exclusivity clause is too broad (6 months across all platforms). Recommend narrowing scope.' },
+        { type: 'termination_loophole', description: 'Brand can terminate without cause with 7-day notice, but creator cannot. Unbalanced.' },
+      ],
+      recommendations: 'Consult your legal advisor to review these insights and negotiate amendments.',
+    };
 
-    // Get User ID from JWT
-    const { data: { user }, error: userError } = await supabaseAdmin.auth.getUser(token);
-    if (userError || !user) {
-      console.error('JWT verification failed:', userError?.message);
-      return new Response(JSON.stringify({ error: 'Unauthorized: Invalid token' }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 401,
-      });
-    }
-    const userId = user.id;
-
-    // --- ENQUEUE JOB INSTEAD OF DIRECT EXECUTION ---
-    
-    const jobPayload = { contract_file_url, brand_name };
-    
-    // 1. Check Cache
-    const cacheKey = `${userId}:contract_scan:${JSON.stringify(jobPayload)}`;
-    const { data: cachedData } = await supabaseAdmin
-        .from('ai_cache')
-        .select('response')
-        .eq('cache_key', cacheKey)
-        .maybeSingle();
-
-    if (cachedData) {
-        console.log("Cache hit for contract_scan.");
-        return new Response(JSON.stringify({ analysis: cachedData.response.summary }), {
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-            status: 200,
-        });
-    }
-
-    // 2. Insert job into the queue
-    const { data: jobData, error: insertError } = await supabaseAdmin
-      .from('ai_request_queue')
-      .insert({
-        user_id: userId,
-        job_type: 'contract_scan',
-        payload: jobPayload,
-        status: 'pending',
-      })
-      .select('id')
-      .single();
-
-    if (insertError) {
-      console.error('Error inserting job into queue:', insertError.message);
-      throw new Error('Failed to enqueue AI request.');
-    }
-
-    // 3. Return job ID immediately (non-blocking)
-    return new Response(JSON.stringify({ jobId: jobData.id, status: 'queued' }), {
+    return new Response(JSON.stringify({ analysis: mockAnalysis }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      status: 202, // Accepted
+      status: 200,
     });
 
   } catch (error) {
