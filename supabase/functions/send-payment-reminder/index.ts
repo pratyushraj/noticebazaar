@@ -27,7 +27,10 @@ const calculateOverdueDays = (expectedDate: string): number => {
 serve(async (req) => {
   // ✅ Handle CORS preflight
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders });
+    return new Response(null, { 
+      status: 200,
+      headers: corsHeaders 
+    });
   }
 
   try {
@@ -155,7 +158,7 @@ serve(async (req) => {
                 }
             } catch (e) {
                 reminderStatus = 'failed';
-                errorMessage = e.message;
+                errorMessage = e instanceof Error ? e.message : String(e);
             }
         }
     } else if (messageType === 'whatsapp') {
@@ -200,8 +203,9 @@ serve(async (req) => {
     });
 
   } catch (error) {
-    console.error('Send Payment Reminder Edge Function Error:', error.message);
-    return new Response(JSON.stringify({ error: error.message }), {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    console.error('Send Payment Reminder Edge Function Error:', errorMessage);
+    return new Response(JSON.stringify({ error: errorMessage }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
