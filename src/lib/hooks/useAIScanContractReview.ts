@@ -16,7 +16,7 @@ export const useAIScanContractReview = () => {
   return useSupabaseMutation<AIScanResult, Error, ScanContractAIVariables>(
     async ({ contract_file_url, brand_name }) => {
       // NOTE: This calls a mock Edge Function.
-      const { data, error } = await supabase.functions.invoke('copyright/scan-contract-review', {
+      const { data, error } = await supabase.functions.invoke('scan-contract-review', {
         body: { contract_file_url, brand_name },
       });
 
