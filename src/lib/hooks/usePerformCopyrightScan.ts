@@ -8,6 +8,8 @@ interface CopyrightScanAlert {
   infringingUrl: string;
   infringingUser: string;
   originalContentUrl: string;
+  similarity_score?: number; // 0-1 scale
+  screenshot_url?: string | null; // Thumbnail URL
 }
 
 interface PerformCopyrightScanVariables {

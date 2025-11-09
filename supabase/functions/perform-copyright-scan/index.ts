@@ -19,6 +19,8 @@ interface CopyrightScanAlert {
   infringingUrl: string;
   infringingUser: string;
   originalContentUrl: string;
+  similarity_score?: number; // 0-1 scale
+  screenshot_url?: string | null; // Thumbnail URL
 }
 
 interface PerformCopyrightScanResponse {
@@ -104,17 +106,23 @@ serve(async (req) => {
     }
 
     // TODO: Implement actual copyright scan logic
-    // For now, return mock data
-    const alerts: CopyrightScanAlert[] = [
-      {
-        id: `alert-${Date.now()}-1`,
-        description: `Potential copyright infringement found on ${platforms[0]}`,
-        platform: platforms[0],
-        infringingUrl: `https://${platforms[0].toLowerCase()}.com/infringing-content-1`,
+    // For now, return mock data with similarity scores
+    const alerts: CopyrightScanAlert[] = platforms.map((platform, index) => {
+      // Generate varied similarity scores for demonstration
+      const baseScore = 0.85 - (index * 0.15); // Vary scores: 0.85, 0.70, 0.55, etc.
+      const similarityScore = Math.max(0.1, Math.min(0.95, baseScore));
+      
+      return {
+        id: `alert-${Date.now()}-${index}`,
+        description: `Potential copyright infringement found on ${platform}`,
+        platform: platform,
+        infringingUrl: `https://${platform.toLowerCase().replace(' ', '')}.com/infringing-content-${index + 1}`,
         infringingUser: 'user123',
         originalContentUrl: query,
-      },
-    ];
+        similarity_score: similarityScore, // Add similarity score
+        screenshot_url: `https://via.placeholder.com/200x200?text=${platform}+Match`, // Mock thumbnail
+      };
+    });
 
     const response: PerformCopyrightScanResponse = {
       alerts,

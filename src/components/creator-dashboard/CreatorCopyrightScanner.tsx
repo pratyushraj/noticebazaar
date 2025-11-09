@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Search, Youtube, Instagram, Globe, Facebook, Loader2, AlertTriangle, CheckCircle, XCircle, ChevronDown, ChevronUp, Link2 } from 'lucide-react';
+import { Search, Youtube, Instagram, Globe, Facebook, Loader2, AlertTriangle, CheckCircle, XCircle, ChevronDown, ChevronUp, Link2, ExternalLink, Image as ImageIcon } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
@@ -44,6 +44,8 @@ const CreatorCopyrightScanner: React.FC = () => {
     scanFullWeb: false,
   });
   const [scanStatus, setScanStatus] = useState<ScanStatus | null>(null);
+  const [platformScanStatus, setPlatformScanStatus] = useState<Record<string, 'scanning' | 'scanned' | 'not-scanned'>>({});
+  const [platformMatchCounts, setPlatformMatchCounts] = useState<Record<string, number>>({});
 
   const performCopyrightScanMutation = usePerformCopyrightScan();
 
@@ -79,14 +81,39 @@ const CreatorCopyrightScanner: React.FC = () => {
 
   useEffect(() => {
     if (performCopyrightScanMutation.isSuccess) {
-      setLastScanResults(performCopyrightScanMutation.data?.alerts || []);
+      const alerts = performCopyrightScanMutation.data?.alerts || [];
+      setLastScanResults(alerts);
       setLastScanTime(new Date().toLocaleString());
+      
+      // Update platform scan status
+      const newStatus: Record<string, 'scanning' | 'scanned' | 'not-scanned'> = {};
+      const newCounts: Record<string, number> = {};
+      
+      selectedPlatforms.forEach(platform => {
+        newStatus[platform] = 'scanned';
+        newCounts[platform] = alerts.filter(a => a.platform === platform).length;
+      });
+      
+      setPlatformScanStatus(newStatus);
+      setPlatformMatchCounts(newCounts);
+      
       toast.success('Copyright scan completed!');
     }
     if (performCopyrightScanMutation.isError) {
       toast.error('Copyright scan failed', { description: performCopyrightScanMutation.error?.message });
     }
-  }, [performCopyrightScanMutation.isSuccess, performCopyrightScanMutation.isError, performCopyrightScanMutation.data]);
+  }, [performCopyrightScanMutation.isSuccess, performCopyrightScanMutation.isError, performCopyrightScanMutation.data, selectedPlatforms]);
+
+  // Update platform status during scanning
+  useEffect(() => {
+    if (performCopyrightScanMutation.isPending) {
+      const newStatus: Record<string, 'scanning' | 'scanned' | 'not-scanned'> = {};
+      selectedPlatforms.forEach(platform => {
+        newStatus[platform] = 'scanning';
+      });
+      setPlatformScanStatus(newStatus);
+    }
+  }, [performCopyrightScanMutation.isPending, selectedPlatforms]);
 
   const togglePlatform = (platformId: string) => {
     if (performCopyrightScanMutation.isPending) return;
@@ -128,6 +155,19 @@ const CreatorCopyrightScanner: React.FC = () => {
   };
 
   const { highConfidence, possibleReposts, noMatch } = categorizeResults(lastScanResults);
+
+  // Get confidence description
+  const getConfidenceDescription = (score: number) => {
+    if (score >= 0.9) return 'likely repost';
+    if (score >= 0.6) return 'possibly commentary';
+    return 'false match';
+  };
+
+  // Get platform icon component
+  const getPlatformIcon = (platformName: string) => {
+    const platform = PLATFORM_OPTIONS.find(p => p.id === platformName || p.name === platformName);
+    return platform ? platform.icon : Globe;
+  };
 
   return (
     <Card className="creator-card-base shadow-sm p-6 flex flex-col justify-between min-h-[200px]">
@@ -293,83 +333,228 @@ const CreatorCopyrightScanner: React.FC = () => {
           </p>
         )}
 
-        {/* Results with Confidence Levels */}
+        {/* Platform Status Badges */}
+        {selectedPlatforms.length > 0 && (
+          <div className="mt-4 w-full space-y-2">
+            <Label className="text-xs text-muted-foreground">Platform Status</Label>
+            <div className="flex flex-wrap gap-2">
+              {selectedPlatforms.map((platformId) => {
+                const platform = PLATFORM_OPTIONS.find(p => p.id === platformId);
+                if (!platform) return null;
+                
+                const Icon = platform.icon;
+                const status = platformScanStatus[platformId] || 'not-scanned';
+                const matchCount = platformMatchCounts[platformId] || 0;
+                
+                return (
+                  <Badge
+                    key={platformId}
+                    variant="outline"
+                    className={cn(
+                      "flex items-center gap-1.5 px-2.5 py-1",
+                      status === 'scanned' && matchCount > 0 && "bg-green-500/10 border-green-500/30 text-green-600",
+                      status === 'scanned' && matchCount === 0 && "bg-gray-500/10 border-gray-500/30 text-gray-600",
+                      status === 'scanning' && "bg-yellow-500/10 border-yellow-500/30 text-yellow-600",
+                      status === 'not-scanned' && "bg-gray-500/10 border-gray-500/30 text-gray-400"
+                    )}
+                  >
+                    {status === 'scanned' && matchCount > 0 && <CheckCircle className="h-3 w-3" />}
+                    {status === 'scanning' && <Loader2 className="h-3 w-3 animate-spin" />}
+                    {status === 'not-scanned' && <XCircle className="h-3 w-3" />}
+                    <Icon className={cn("h-3 w-3", platform.color)} />
+                    <span className="text-xs font-medium">{platform.name}</span>
+                    {status === 'scanned' && matchCount > 0 && (
+                      <span className="text-xs">– {matchCount} match{matchCount !== 1 ? 'es' : ''}</span>
+                    )}
+                    {status === 'scanning' && <span className="text-xs">– scanning…</span>}
+                    {status === 'not-scanned' && <span className="text-xs">– not scanned</span>}
+                  </Badge>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* Results with Confidence Levels, Thumbnails, and View Buttons */}
         {lastScanResults.length > 0 && (
           <div className="mt-4 w-full space-y-4">
             {/* High Confidence Matches (90-100%) */}
             {highConfidence.length > 0 && (
-              <div className="space-y-2">
+              <div className="space-y-3">
                 <div className="flex items-center gap-2">
                   <CheckCircle className="h-4 w-4 text-green-500" />
                   <p className="text-sm font-semibold text-foreground">
                     High Confidence Matches ({highConfidence.length})
                   </p>
                 </div>
-                <ul className="list-disc list-inside ml-4 text-sm text-muted-foreground space-y-1">
-                  {highConfidence.map((alert, index) => (
-                    <li key={alert.id || index}>
-                      {alert.description} on {alert.platform}
-                      {alert.infringingUrl && (
-                        <a
-                          href={alert.infringingUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-primary hover:underline ml-1"
-                        >
-                          (View)
-                        </a>
-                      )}
-                    </li>
-                  ))}
-                </ul>
+                <div className="space-y-3">
+                  {highConfidence.map((alert, index) => {
+                    const similarityScore = (alert.similarity_score || 0) * 100;
+                    const PlatformIcon = getPlatformIcon(alert.platform);
+                    return (
+                      <Card key={alert.id || index} className="p-3 border-l-4 border-l-green-500">
+                        <div className="flex gap-3">
+                          {/* Thumbnail Preview */}
+                          <div className="flex-shrink-0">
+                            {alert.screenshot_url ? (
+                              <img
+                                src={alert.screenshot_url}
+                                alt={`Match on ${alert.platform}`}
+                                className="w-20 h-20 rounded-lg object-cover border border-border"
+                                onError={(e) => {
+                                  const target = e.target as HTMLImageElement;
+                                  target.style.display = 'none';
+                                }}
+                              />
+                            ) : (
+                              <div className="w-20 h-20 rounded-lg bg-muted flex items-center justify-center border border-border">
+                                <ImageIcon className="h-6 w-6 text-muted-foreground" />
+                              </div>
+                            )}
+                          </div>
+                          
+                          {/* Match Details */}
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-start justify-between gap-2 mb-1">
+                              <div className="flex items-center gap-2 flex-1 min-w-0">
+                                <PlatformIcon className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                                <span className="text-sm font-medium text-foreground truncate">
+                                  {alert.platform}
+                                </span>
+                              </div>
+                              <Badge variant="outline" className="bg-green-500/10 text-green-600 border-green-500/30 text-xs">
+                                {Math.round(similarityScore)}% similarity
+                              </Badge>
+                            </div>
+                            <p className="text-xs text-muted-foreground mb-2">
+                              {getConfidenceDescription(alert.similarity_score || 0)}
+                            </p>
+                            <p className="text-sm text-foreground mb-2 line-clamp-2">
+                              {alert.description}
+                            </p>
+                            {alert.infringingUrl && (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="w-full sm:w-auto"
+                                onClick={() => window.open(alert.infringingUrl, '_blank', 'noopener,noreferrer')}
+                              >
+                                <ExternalLink className="h-3 w-3 mr-1.5" />
+                                View Match
+                              </Button>
+                            )}
+                          </div>
+                        </div>
+                      </Card>
+                    );
+                  })}
+                </div>
               </div>
             )}
 
             {/* Possible Reposts (60-89%) */}
             {possibleReposts.length > 0 && (
-              <div className="space-y-2">
+              <div className="space-y-3">
                 <div className="flex items-center gap-2">
                   <AlertTriangle className="h-4 w-4 text-yellow-500" />
                   <p className="text-sm font-semibold text-foreground">
                     Possible Reposts ({possibleReposts.length})
                   </p>
                 </div>
-                <ul className="list-disc list-inside ml-4 text-sm text-muted-foreground space-y-1">
-                  {possibleReposts.map((alert, index) => (
-                    <li key={alert.id || index}>
-                      {alert.description} on {alert.platform}
-                      {alert.infringingUrl && (
-                        <a
-                          href={alert.infringingUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-primary hover:underline ml-1"
-                        >
-                          (View)
-                        </a>
-                      )}
-                    </li>
-                  ))}
-                </ul>
+                <div className="space-y-3">
+                  {possibleReposts.map((alert, index) => {
+                    const similarityScore = (alert.similarity_score || 0) * 100;
+                    const PlatformIcon = getPlatformIcon(alert.platform);
+                    return (
+                      <Card key={alert.id || index} className="p-3 border-l-4 border-l-yellow-500">
+                        <div className="flex gap-3">
+                          {/* Thumbnail Preview */}
+                          <div className="flex-shrink-0">
+                            {alert.screenshot_url ? (
+                              <img
+                                src={alert.screenshot_url}
+                                alt={`Match on ${alert.platform}`}
+                                className="w-20 h-20 rounded-lg object-cover border border-border"
+                                onError={(e) => {
+                                  const target = e.target as HTMLImageElement;
+                                  target.style.display = 'none';
+                                }}
+                              />
+                            ) : (
+                              <div className="w-20 h-20 rounded-lg bg-muted flex items-center justify-center border border-border">
+                                <ImageIcon className="h-6 w-6 text-muted-foreground" />
+                              </div>
+                            )}
+                          </div>
+                          
+                          {/* Match Details */}
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-start justify-between gap-2 mb-1">
+                              <div className="flex items-center gap-2 flex-1 min-w-0">
+                                <PlatformIcon className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                                <span className="text-sm font-medium text-foreground truncate">
+                                  {alert.platform}
+                                </span>
+                              </div>
+                              <Badge variant="outline" className="bg-yellow-500/10 text-yellow-600 border-yellow-500/30 text-xs">
+                                {Math.round(similarityScore)}% similarity
+                              </Badge>
+                            </div>
+                            <p className="text-xs text-muted-foreground mb-2">
+                              {getConfidenceDescription(alert.similarity_score || 0)}
+                            </p>
+                            <p className="text-sm text-foreground mb-2 line-clamp-2">
+                              {alert.description}
+                            </p>
+                            {alert.infringingUrl && (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="w-full sm:w-auto"
+                                onClick={() => window.open(alert.infringingUrl, '_blank', 'noopener,noreferrer')}
+                              >
+                                <ExternalLink className="h-3 w-3 mr-1.5" />
+                                View Match
+                              </Button>
+                            )}
+                          </div>
+                        </div>
+                      </Card>
+                    );
+                  })}
+                </div>
               </div>
             )}
 
             {/* No Match (0-59%) */}
             {noMatch.length > 0 && (
-              <div className="space-y-2">
+              <div className="space-y-3">
                 <div className="flex items-center gap-2">
                   <XCircle className="h-4 w-4 text-gray-400" />
                   <p className="text-sm font-semibold text-muted-foreground">
                     No Match ({noMatch.length})
                   </p>
                 </div>
-                <ul className="list-disc list-inside ml-4 text-sm text-muted-foreground space-y-1">
-                  {noMatch.map((alert, index) => (
-                    <li key={alert.id || index}>
-                      {alert.description} on {alert.platform}
-                    </li>
-                  ))}
-                </ul>
+                <div className="space-y-2">
+                  {noMatch.map((alert, index) => {
+                    const similarityScore = (alert.similarity_score || 0) * 100;
+                    const PlatformIcon = getPlatformIcon(alert.platform);
+                    return (
+                      <div key={alert.id || index} className="p-2 bg-muted/50 rounded-lg border border-border">
+                        <div className="flex items-center gap-2">
+                          <PlatformIcon className="h-4 w-4 text-muted-foreground" />
+                          <span className="text-sm text-muted-foreground">{alert.platform}</span>
+                          <Badge variant="outline" className="bg-gray-500/10 text-gray-500 border-gray-500/30 text-xs ml-auto">
+                            {Math.round(similarityScore)}% similarity
+                          </Badge>
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {getConfidenceDescription(alert.similarity_score || 0)}
+                        </p>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
             )}
           </div>
