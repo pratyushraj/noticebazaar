@@ -47,6 +47,7 @@ import CreatorContracts from "./pages/CreatorContracts";
 import CreatorPaymentsAndRecovery from "./pages/CreatorPaymentsAndRecovery";
 import CreatorContentProtection from "./pages/CreatorContentProtection";
 import CreatorTaxCompliancePage from "./pages/CreatorTaxCompliancePage";
+import CreatorOnboarding from "./pages/CreatorOnboarding"; // NEW: Import CreatorOnboarding
 
 
 const queryClient = new QueryClient();
@@ -110,6 +111,7 @@ const App = () => {
               <Route path="/ca-dashboard" element={<ProtectedLayout allowedRoles={['chartered_accountant']}><CADashboard /></ProtectedLayout>} />
               
               {/* Creator-specific routes */}
+              <Route path="/creator-onboarding" element={<ProtectedLayout allowedRoles={['creator']}><CreatorOnboarding /></ProtectedLayout>} /> {/* NEW: Onboarding Route */}
               <Route path="/creator-dashboard" element={<ProtectedLayout allowedRoles={['creator']}><CreatorDashboard /></ProtectedLayout>} /> {/* New: Creator Dashboard Route */}
               <Route path="/creator-profile" element={<ProtectedLayout allowedRoles={['creator']}><AdminProfile /></ProtectedLayout>} /> {/* Using AdminProfile for now */}
               {/* NEW: Creator-specific pages */}

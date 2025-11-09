@@ -39,7 +39,14 @@ const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
         targetDashboard = '/admin-dashboard';
       } else if (profile.role === 'chartered_accountant') {
         targetDashboard = '/ca-dashboard';
-      } else if (profile.role === 'creator') { // New: Redirect creator to their dashboard
+      } else if (profile.role === 'creator') {
+        // NEW: Creator Onboarding Check
+        if (!profile.onboarding_complete && location.pathname !== '/creator-onboarding') {
+          targetDashboard = '/creator-onboarding';
+          console.log(`ProtectedRoute: Creator needs onboarding, redirecting to ${targetDashboard}`);
+          navigate(targetDashboard, { replace: true });
+          return;
+        }
         targetDashboard = '/creator-dashboard';
       }
 
