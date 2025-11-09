@@ -26,7 +26,7 @@ interface PerformCopyrightScanResponse {
 }
 
 serve(async (req) => {
-  // Handle CORS preflight
+  // Handle CORS preflight - MUST be first and return 200
   if (req.method === 'OPTIONS') {
     return new Response(null, {
       status: 200,
