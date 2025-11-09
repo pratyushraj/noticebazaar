@@ -61,7 +61,10 @@ const SocialAccountLinkForm = ({ initialData, onSaveSuccess, onClose }: SocialAc
   }, []);
 
   const fetchLinkedAccounts = async () => {
-    if (!profile?.id) return;
+    if (!profile?.id) {
+      setIsLoading(false);
+      return;
+    }
     
     try {
       const { data, error } = await supabase
@@ -70,11 +73,20 @@ const SocialAccountLinkForm = ({ initialData, onSaveSuccess, onClose }: SocialAc
         .eq('user_id', profile.id)
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        // If table doesn't exist, return empty array (migration not run yet)
+        if (error.code === '42P01' || error.message.includes('does not exist')) {
+          console.warn('social_accounts table does not exist. Please run the migration.');
+          setLinkedAccounts([]);
+          return;
+        }
+        throw error;
+      }
       setLinkedAccounts(data || []);
     } catch (error: any) {
       console.error('Error fetching linked accounts:', error);
-      toast.error('Failed to load linked accounts');
+      toast.error(`Failed to load linked accounts: ${error.message}`);
+      setLinkedAccounts([]);
     } finally {
       setIsLoading(false);
     }
