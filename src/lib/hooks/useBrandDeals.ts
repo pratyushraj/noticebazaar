@@ -8,16 +8,17 @@ interface UseBrandDealsOptions {
   creatorId: string | undefined;
   enabled?: boolean;
   statusFilter?: BrandDeal['status'] | 'All';
-  sortBy?: 'created_at' | 'due_date' | 'payment_expected_date';
+  platformFilter?: string | 'All'; // NEW
+  sortBy?: 'created_at' | 'due_date' | 'payment_expected_date' | 'deal_amount'; // ADD deal_amount
   sortOrder?: 'asc' | 'desc';
   limit?: number;
 }
 
 export const useBrandDeals = (options: UseBrandDealsOptions) => {
-  const { creatorId, enabled = true, statusFilter, sortBy = 'created_at', sortOrder = 'desc', limit } = options;
+  const { creatorId, enabled = true, statusFilter, platformFilter, sortBy = 'created_at', sortOrder = 'desc', limit } = options;
 
   return useSupabaseQuery<BrandDeal[], Error>(
-    ['brand_deals', creatorId, statusFilter, sortBy, sortOrder, limit],
+    ['brand_deals', creatorId, statusFilter, platformFilter, sortBy, sortOrder, limit],
     async () => {
       if (!creatorId) {
         // Return empty array immediately if no creatorId
@@ -32,6 +33,10 @@ export const useBrandDeals = (options: UseBrandDealsOptions) => {
 
       if (statusFilter && statusFilter !== 'All') {
         query = query.eq('status', statusFilter);
+      }
+      
+      if (platformFilter && platformFilter !== 'All') { // NEW FILTER
+        query = query.eq('platform', platformFilter);
       }
 
       if (limit) {
