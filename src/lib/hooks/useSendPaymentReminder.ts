@@ -3,13 +3,15 @@ import { supabase } from '@/integrations/supabase/client';
 
 interface SendPaymentReminderVariables {
   brandDealId: string;
+  messageType?: 'email' | 'whatsapp'; // NEW
+  customMessage?: string; // NEW
 }
 
 export const useSendPaymentReminder = () => {
   return useSupabaseMutation<void, Error, SendPaymentReminderVariables>(
-    async ({ brandDealId }) => {
+    async ({ brandDealId, messageType = 'email', customMessage }) => { // Updated variables
       const { data, error } = await supabase.functions.invoke('send-payment-reminder', {
-        body: { brandDealId },
+        body: { brandDealId, messageType, customMessage }, // Pass all variables
       });
 
       if (error) {

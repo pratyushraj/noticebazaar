@@ -29,6 +29,8 @@ const CreatorPaymentsAndRecovery = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [isReminderDialogOpen, setIsReminderDialogOpen] = useState(false);
   const [selectedDealForReminder, setSelectedDealForReminder] = useState<BrandDeal | null>(null);
+  const [messageType, setMessageType] = useState<'email' | 'whatsapp'>('email'); // NEW state
+  const [customMessage, setCustomMessage] = useState(''); // NEW state
   const pageSize = 10;
 
   const { currentPage, totalPages, handlePreviousPage, handleNextPage, setCurrentPage } = usePagination({
@@ -73,6 +75,8 @@ const CreatorPaymentsAndRecovery = () => {
 
   const handleOpenReminderDialog = (deal: BrandDeal) => {
     setSelectedDealForReminder(deal);
+    setMessageType('email'); // Reset to default
+    setCustomMessage(''); // Reset custom message
     setIsReminderDialogOpen(true);
   };
 
@@ -80,10 +84,16 @@ const CreatorPaymentsAndRecovery = () => {
     if (!selectedDealForReminder) return;
 
     try {
-      await sendPaymentReminderMutation.mutateAsync({ brandDealId: selectedDealForReminder.id });
+      await sendPaymentReminderMutation.mutateAsync({ 
+        brandDealId: selectedDealForReminder.id,
+        messageType: messageType, // Pass state
+        customMessage: customMessage.trim() || undefined, // Pass state
+      });
       toast.success('Payment reminder sent!');
       setIsReminderDialogOpen(false);
       setSelectedDealForReminder(null);
+      setCustomMessage(''); // Reset
+      setMessageType('email'); // Reset
       refetchBrandDeals();
     } catch (error: any) {
       toast.error('Failed to send reminder', { description: error.message });
@@ -272,22 +282,43 @@ const CreatorPaymentsAndRecovery = () => {
           <DialogHeader>
             <DialogTitle id="send-reminder-title">Send Payment Reminder</DialogTitle>
             <DialogDescription id="send-reminder-description" className="text-muted-foreground">
-              Are you sure you want to send a payment reminder to <strong>{selectedDealForReminder?.brand_name}</strong> for <strong>₹{selectedDealForReminder?.deal_amount.toLocaleString('en-IN')}</strong>?
+              Send a reminder to <strong>{selectedDealForReminder?.brand_name}</strong> for <strong>₹{selectedDealForReminder?.deal_amount.toLocaleString('en-IN')}</strong>.
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-2">
-            <p className="text-sm text-muted-foreground">
-              An email will be sent to the brand's contact email (if available) or to our support team for manual follow-up.
-            </p>
-            <p className="text-sm text-muted-foreground flex items-center">
-              <Mail className="h-4 w-4 mr-2" /> Recipient: {selectedDealForReminder?.brand_email || 'NoticeBazaar Support'}
-            </p>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsReminderDialogOpen(false)} disabled={sendPaymentReminderMutation.isPending}>
-              Cancel
-            </Button>
-            <Button onClick={handleSendReminder} disabled={sendPaymentReminderMutation.isPending}>
+          <div className="space-y-4 py-4">
+            <div>
+              <Label htmlFor="messageType">Delivery Method</Label>
+              <Select onValueChange={(value: 'email' | 'whatsapp') => setMessageType(value)} value={messageType}>
+                <SelectTrigger id="messageType">
+                  <SelectValue placeholder="Select method" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="email">Email (Default Template)</SelectItem>
+                  <SelectItem value="whatsapp" disabled>WhatsApp (Coming Soon)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label htmlFor="customMessage">Custom Message (Optional)</Label>
+              <Input
+                id="customMessage"
+                value={customMessage}
+                onChange={(e) => setCustomMessage(e.target.value)}
+                placeholder="Enter a personalized message..."
+                disabled={sendPaymentReminderMutation.isPending}
+              />
+              <p className="text-xs text-muted-foreground mt-1">If left blank, a default template will be used.</p>
+            </div>
+            {selectedDealForReminder && (
+              <p className="text-sm text-muted-foreground flex items-center">
+                <Mail className="h-4 w-4 mr-2" /> Recipient: {selectedDealForReminder.brand_email || 'NoticeBazaar Support'}
+              </p>
+            )}
+            <Button
+              onClick={handleSendReminder}
+              disabled={!selectedDealForReminder || sendPaymentReminderMutation.isPending}
+              className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
+            >
               {sendPaymentReminderMutation.isPending ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Sending...
@@ -296,6 +327,9 @@ const CreatorPaymentsAndRecovery = () => {
                 'Send Reminder'
               )}
             </Button>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsReminderDialogOpen(false)}>Close</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

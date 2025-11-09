@@ -6,6 +6,23 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// Helper function to calculate overdue days
+const calculateOverdueDays = (expectedDate: string): number => {
+    const today = new Date();
+    const expected = new Date(expectedDate);
+    
+    // Normalize to start of day for accurate day count
+    today.setHours(0, 0, 0, 0);
+    expected.setHours(0, 0, 0, 0);
+
+    if (expected >= today) {
+        return 0;
+    }
+
+    const diffTime = Math.abs(today.getTime() - expected.getTime());
+    return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+};
+
 serve(async (req) => {
   // Handle CORS preflight request
   if (req.method === 'OPTIONS') {
@@ -13,7 +30,7 @@ serve(async (req) => {
   }
 
   try {
-    const { brandDealId } = await req.json();
+    const { brandDealId, messageType = 'email', customMessage } = await req.json();
     const authHeader = req.headers.get('Authorization');
     
     if (!authHeader || !brandDealId) {
@@ -25,6 +42,7 @@ serve(async (req) => {
 
     const token = authHeader.replace('Bearer ', '');
     
+    // 1. Initialize Supabase Admin Client (Service Role)
     const supabaseAdmin = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
@@ -36,6 +54,7 @@ serve(async (req) => {
       }
     );
 
+    // 2. Get User ID from JWT
     const { data: { user }, error: userError } = await supabaseAdmin.auth.getUser(token);
     if (userError || !user) {
       console.error('JWT verification failed:', userError?.message);
@@ -46,10 +65,10 @@ serve(async (req) => {
     }
     const creatorId = user.id;
 
-    // Fetch brand deal details
+    // 3. Fetch brand deal details
     const { data: brandDeal, error: dealError } = await supabaseAdmin
       .from('brand_deals')
-      .select('*')
+      .select('brand_name, brand_email, deal_amount, payment_expected_date, invoice_file_url, creator_id')
       .eq('id', brandDealId)
       .eq('creator_id', creatorId) // Ensure creator owns the deal
       .single();
@@ -62,75 +81,114 @@ serve(async (req) => {
       });
     }
     
-    // Fetch creator profile details for the email signature
+    // 4. Fetch creator profile details for the email signature
     const { data: creatorProfile, error: profileError } = await supabaseAdmin
       .from('profiles')
       .select('first_name, last_name')
       .eq('id', creatorId)
       .single();
 
-    const creatorFirstName = creatorProfile?.first_name || 'Creator';
-    const creatorLastName = creatorProfile?.last_name || '';
-
-
-    const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');
-    if (!RESEND_API_KEY) {
-      console.error('CRITICAL: RESEND_API_KEY is missing.');
-      return new Response(JSON.stringify({ error: 'Server configuration error: Email API key missing.' }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 500,
-      });
-    }
-
-    const senderEmail = 'noreply@noticebazaar.com'; // Use a generic noreply email
+    const creatorName = `${creatorProfile?.first_name || 'Creator'} ${creatorProfile?.last_name || ''}`;
     const recipientEmail = brandDeal.brand_email || 'support@noticebazaar.com'; // Fallback to support email
+    const overdueDays = calculateOverdueDays(brandDeal.payment_expected_date);
+    const formattedAmount = `₹${brandDeal.deal_amount.toLocaleString('en-IN')}`;
+    const expectedDate = new Date(brandDeal.payment_expected_date).toLocaleDateString();
+    const invoiceLink = brandDeal.invoice_file_url || 'N/A';
 
-    const subject = `Reminder: Payment Due for Brand Deal with ${brandDeal.brand_name}`;
-    const htmlContent = `
-      <div style="font-family: sans-serif; line-height: 1.6;">
-        <p>Dear ${brandDeal.contact_person || brandDeal.brand_name} Team,</p>
-        <p>This is a friendly reminder regarding the payment for our recent collaboration:</p>
-        <ul>
-          <li><strong>Brand:</strong> ${brandDeal.brand_name}</li>
-          <li><strong>Deal Amount:</strong> ₹${brandDeal.deal_amount.toLocaleString('en-IN')}</li>
-          <li><strong>Deliverables:</strong> ${brandDeal.deliverables}</li>
-          <li><strong>Payment Expected Date:</strong> ${new Date(brandDeal.payment_expected_date).toLocaleDateString()}</li>
-        </ul>
-        <p>The payment for this deal is currently due. We would appreciate it if you could process this at your earliest convenience.</p>
-        <p>Please let us know if you have any questions or require further information.</p>
-        <p>Thank you,</p>
-        <p><strong>${creatorFirstName} ${creatorLastName}</strong></p>
-        <p style="font-size: 12px; color: #888; margin-top: 20px;">
-          This reminder was sent via NoticeBazaar.
-        </p>
-      </div>
-    `;
+    let reminderStatus: 'sent' | 'failed' = 'sent';
+    let errorMessage: string | undefined;
 
-    const resendResponse = await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${RESEND_API_KEY}`,
-      },
-      body: JSON.stringify({
-        from: `NoticeBazaar <${senderEmail}>`,
-        to: recipientEmail,
-        subject: subject,
-        html: htmlContent,
-      }),
-    });
+    // 5. Send reminder based on messageType (only email implemented for now)
+    if (messageType === 'email') {
+        const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');
+        if (!RESEND_API_KEY) {
+            console.error('CRITICAL: RESEND_API_KEY is missing.');
+            throw new Error('Server configuration error: Email API key missing.');
+        }
 
-    const resendBody = await resendResponse.json();
+        const subject = customMessage 
+            ? `Payment Reminder - ${brandDeal.brand_name}`
+            : `Payment Reminder - ${brandDeal.brand_name} - ${formattedAmount}`;
+            
+        const defaultHtmlContent = `
+            <div style="font-family: sans-serif; line-height: 1.6;">
+                <p>Hi ${brandDeal.brand_name} Team,</p>
+                <p>This is a reminder for the pending payment of <strong>${formattedAmount}</strong> for our collaboration.</p>
+                <p>Deliverables have already been completed and submitted.</p>
+                <ul>
+                    <li><strong>Payment Expected Date:</strong> ${expectedDate}</li>
+                    <li><strong>Days Overdue:</strong> ${overdueDays}</li>
+                    <li><strong>Invoice Link:</strong> <a href="${invoiceLink}">${invoiceLink}</a></li>
+                </ul>
+                <p>Kindly release the payment at the earliest.</p>
+                <p>Regards,</p>
+                <p><strong>${creatorName}</strong></p>
+            </div>
+        `;
 
-    if (!resendResponse.ok) {
-      console.error('Resend API Error:', resendResponse.status, resendBody);
-      throw new Error(`Failed to send email: ${resendBody.message || 'Unknown error'}`);
+        const htmlContent = customMessage 
+            ? `<div style="font-family: sans-serif; line-height: 1.6;"><p>${customMessage}</p><p>Regards,<br><strong>${creatorName}</strong></p></div>`
+            : defaultHtmlContent;
+
+        try {
+            const resendResponse = await fetch('https://api.resend.com/emails', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${RESEND_API_KEY}`,
+                },
+                body: JSON.stringify({
+                    from: `NoticeBazaar <noreply@noticebazaar.com>`,
+                    to: recipientEmail,
+                    subject: subject,
+                    html: htmlContent,
+                }),
+            });
+
+            if (!resendResponse.ok) {
+                const resendBody = await resendResponse.json();
+                console.error('Resend API Error:', resendResponse.status, resendBody);
+                reminderStatus = 'failed';
+                errorMessage = resendBody.message || 'Unknown Resend error';
+            }
+        } catch (e) {
+            reminderStatus = 'failed';
+            errorMessage = e.message;
+        }
+    } else if (messageType === 'whatsapp') {
+        // User explicitly said to leave WhatsApp for now. Mock failure.
+        reminderStatus = 'failed';
+        errorMessage = 'WhatsApp integration is currently disabled.';
     }
 
-    // Log activity
+    // 6. Log the reminder in payment_reminders table.
+    const { error: logError } = await supabaseAdmin
+        .from('payment_reminders')
+        .insert({
+            deal_id: brandDealId,
+            creator_id: creatorId,
+            recipient_email: recipientEmail,
+            status: reminderStatus,
+            delivery_method: messageType,
+            error_message: errorMessage,
+        });
+
+    if (logError) {
+        console.error('Error logging payment reminder:', logError.message);
+        // Do not throw, as the email might have succeeded.
+    }
+
+    if (reminderStatus === 'failed') {
+        return new Response(JSON.stringify({ error: `Reminder failed to send: ${errorMessage}` }), {
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            status: 500,
+        });
+    }
+
+    // 7. Log activity 
     await supabaseAdmin.from('activity_log').insert({
-      client_id: creatorId,
-      description: `Sent payment reminder for brand deal "${brandDeal.brand_name}" (Amount: ₹${brandDeal.deal_amount.toLocaleString('en-IN')})`,
+        client_id: creatorId,
+        description: `Sent ${messageType} payment reminder for brand deal "${brandDeal.brand_name}"`,
     });
 
     return new Response(JSON.stringify({ message: 'Payment reminder sent successfully!' }), {

@@ -96,6 +96,9 @@ export type BrandDeal = Tables<'brand_deals'> & {
   organization_id: string; // NEW: Added organization_id
 };
 
+// NEW: Payment Reminder Type
+export type PaymentReminder = Tables<'payment_reminders'>;
+
 // NEW: Copyright Scanner Types
 export type OriginalContent = Tables<'original_content'>;
 export type CopyrightScan = Tables<'copyright_scans'>;
