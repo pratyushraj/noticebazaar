@@ -50,7 +50,7 @@ const Sidebar = ({ className }: SidebarProps) => {
 
   const creatorMainNavItems = [ // New navigation items for Creator
     { to: "/creator-dashboard", icon: <LayoutDashboard className="h-4 w-4" />, label: "Dashboard" },
-    { to: "/creator-contracts", icon: <FileText className="h-4 w-4" />, label: "Contracts" },
+    { to: "/creator-contracts", icon: <FileText className="h-4 w-4" />, label: "Brand Deals" },
     { to: "/creator-payments", icon: <DollarSign className="h-4 w-4" />, label: "Payments & Recovery" },
     { to: "/creator-content-protection", icon: <ShieldCheck className="h-4 w-4" />, label: "Content Protection" },
     { to: "/creator-tax-compliance", icon: <Calculator className="h-4 w-4" />, label: "Taxes & Compliance" },
