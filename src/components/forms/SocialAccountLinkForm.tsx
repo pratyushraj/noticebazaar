@@ -107,9 +107,15 @@ const SocialAccountLinkForm = ({ initialData, onSaveSuccess, onClose }: SocialAc
 
       console.log('Function response:', { data, error });
 
+      // Check for errors in both error object and data.error (common pattern with Supabase Edge Functions)
       if (error) {
         console.error('Function error details:', error);
-        throw error;
+        throw new Error(error.message || 'Unknown error occurred');
+      }
+      
+      if (data && (data as any).error) {
+        console.error('Function returned error in data:', (data as any).error);
+        throw new Error((data as any).error);
       }
 
       if (data?.oauth_url) {
@@ -122,8 +128,42 @@ const SocialAccountLinkForm = ({ initialData, onSaveSuccess, onClose }: SocialAc
       }
     } catch (error: any) {
       console.error('Error linking account:', error);
-      const errorMessage = error?.message || 'Unknown error occurred';
-      toast.error(`Failed to start ${platform} linking: ${errorMessage}`);
+      
+      // Extract error message from various possible formats
+      let errorMessage = 'Unknown error occurred';
+      
+      if (typeof error === 'string') {
+        errorMessage = error;
+      } else if (error?.message) {
+        errorMessage = error.message;
+      } else if (error?.error) {
+        errorMessage = error.error;
+      } else if (error?.context?.body) {
+        // Try to parse error from response body
+        try {
+          const body = typeof error.context.body === 'string' 
+            ? JSON.parse(error.context.body) 
+            : error.context.body;
+          errorMessage = body.error || body.message || errorMessage;
+        } catch {
+          errorMessage = String(error.context.body);
+        }
+      } else if (error?.context?.message) {
+        errorMessage = error.context.message;
+      }
+      
+      // Provide more helpful error messages
+      let userFriendlyMessage = errorMessage;
+      if (errorMessage.includes('Facebook/Instagram OAuth not configured') || 
+          errorMessage.includes('OAuth not configured')) {
+        userFriendlyMessage = 'Instagram OAuth is not configured. Please contact support or check your Supabase Edge Function secrets (FACEBOOK_APP_ID and FACEBOOK_APP_SECRET).';
+      } else if (errorMessage.includes('Unauthorized') || errorMessage.includes('Invalid token')) {
+        userFriendlyMessage = 'Authentication failed. Please try logging out and back in.';
+      } else if (errorMessage.includes('Missing platform') || errorMessage.includes('Invalid platform')) {
+        userFriendlyMessage = 'Invalid request. Please try again.';
+      }
+      
+      toast.error(`Failed to start ${platform} linking: ${userFriendlyMessage}`);
       setLinkingPlatform(null);
     }
   };
