@@ -12,11 +12,11 @@ serve(async (req) => {
   }
 
   try {
-    const { contract_file_url, brand_name } = await req.json();
+    const { query, platforms } = await req.json();
     const authHeader = req.headers.get('Authorization');
     
-    if (!authHeader || !contract_file_url || !brand_name) {
-      return new Response(JSON.stringify({ error: 'Missing contract_file_url, brand_name, or authorization header' }), {
+    if (!authHeader || !query || !platforms) {
+      return new Response(JSON.stringify({ error: 'Missing query, platforms, or authorization header' }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 400,
       });
@@ -49,30 +49,14 @@ serve(async (req) => {
 
     // --- ENQUEUE JOB INSTEAD OF DIRECT EXECUTION ---
     
-    const jobPayload = { contract_file_url, brand_name };
+    const jobPayload = { query, platforms };
     
-    // 1. Check Cache
-    const cacheKey = `${userId}:contract_scan:${JSON.stringify(jobPayload)}`;
-    const { data: cachedData } = await supabaseAdmin
-        .from('ai_cache')
-        .select('response')
-        .eq('cache_key', cacheKey)
-        .maybeSingle();
-
-    if (cachedData) {
-        console.log("Cache hit for contract_scan.");
-        return new Response(JSON.stringify({ analysis: cachedData.response.summary }), {
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-            status: 200,
-        });
-    }
-
-    // 2. Insert job into the queue
+    // 1. Insert job into the queue
     const { data: jobData, error: insertError } = await supabaseAdmin
       .from('ai_request_queue')
       .insert({
         user_id: userId,
-        job_type: 'contract_scan',
+        job_type: 'copyright_scan',
         payload: jobPayload,
         status: 'pending',
       })
@@ -84,14 +68,14 @@ serve(async (req) => {
       throw new Error('Failed to enqueue AI request.');
     }
 
-    // 3. Return job ID immediately (non-blocking)
+    // 2. Return job ID immediately (non-blocking)
     return new Response(JSON.stringify({ jobId: jobData.id, status: 'queued' }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 202, // Accepted
     });
 
   } catch (error) {
-    console.error('AI Contract Scan Edge Function Error:', error.message);
+    console.error('Perform Copyright Scan Edge Function Error:', error.message);
     return new Response(JSON.stringify({ error: error.message }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 500,
