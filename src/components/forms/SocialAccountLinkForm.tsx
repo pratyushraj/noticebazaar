@@ -67,9 +67,10 @@ const SocialAccountLinkForm = ({ initialData, onSaveSuccess, onClose }: SocialAc
     }
     
     try {
+      // Select only non-sensitive fields (exclude access_token and refresh_token)
       const { data, error } = await supabase
         .from('social_accounts')
-        .select('*')
+        .select('id, platform, account_username, account_id, follower_count, profile_picture_url, last_synced_at, created_at, updated_at')
         .eq('user_id', profile.id)
         .order('created_at', { ascending: false });
 
