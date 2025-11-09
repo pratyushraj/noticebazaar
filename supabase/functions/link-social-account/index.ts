@@ -5,7 +5,7 @@ import { encode } from "https://deno.land/std@0.200.0/encoding/base64url.ts";
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
 };
 
 serve(async (req) => {
@@ -18,11 +18,30 @@ serve(async (req) => {
   }
 
   try {
-    const { platform } = await req.json();
+    // Handle GET requests (for testing) or POST requests
+    let platform: string;
+    try {
+      if (req.method === 'GET') {
+        const url = new URL(req.url);
+        platform = url.searchParams.get('platform') || '';
+      } else {
+        const body = await req.json().catch(() => ({}));
+        platform = body?.platform || '';
+      }
+    } catch (parseError) {
+      return new Response(JSON.stringify({ error: 'Invalid request body' }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 400,
+      });
+    }
+    
     const authHeader = req.headers.get('Authorization');
     
     if (!authHeader || !platform) {
-      return new Response(JSON.stringify({ error: 'Missing platform or authorization header' }), {
+      return new Response(JSON.stringify({ 
+        error: 'Missing platform or authorization header',
+        received: { hasAuth: !!authHeader, platform }
+      }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 400,
       });
