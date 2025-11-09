@@ -100,21 +100,30 @@ const SocialAccountLinkForm = ({ initialData, onSaveSuccess, onClose }: SocialAc
 
     setLinkingPlatform(platform);
     try {
+      console.log('Attempting to link platform:', platform);
       const { data, error } = await supabase.functions.invoke('link-social-account', {
         body: { platform },
       });
 
-      if (error) throw error;
+      console.log('Function response:', { data, error });
+
+      if (error) {
+        console.error('Function error details:', error);
+        throw error;
+      }
 
       if (data?.oauth_url) {
         // Redirect to OAuth URL
+        console.log('Redirecting to OAuth URL');
         window.location.href = data.oauth_url;
       } else {
-        throw new Error('No OAuth URL received');
+        console.error('No OAuth URL in response:', data);
+        throw new Error('No OAuth URL received from server');
       }
     } catch (error: any) {
       console.error('Error linking account:', error);
-      toast.error(`Failed to start ${platform} linking: ${error.message}`);
+      const errorMessage = error?.message || 'Unknown error occurred';
+      toast.error(`Failed to start ${platform} linking: ${errorMessage}`);
       setLinkingPlatform(null);
     }
   };
