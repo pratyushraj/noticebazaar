@@ -104,60 +104,61 @@ serve(async (req) => {
         const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');
         if (!RESEND_API_KEY) {
             console.error('CRITICAL: RESEND_API_KEY is missing.');
-            throw new Error('Server configuration error: Email API key missing.');
-        }
-
-        const subject = customMessage 
-            ? `Payment Reminder - ${brandDeal.brand_name}`
-            : `Payment Reminder - ${brandDeal.brand_name} - ${formattedAmount}`;
-            
-        const defaultHtmlContent = `
-            <div style="font-family: sans-serif; line-height: 1.6;">
-                <p>Hi ${brandDeal.brand_name} Team,</p>
-                <p>This is a reminder for the pending payment of <strong>${formattedAmount}</strong> for our collaboration.</p>
-                <p>Deliverables have already been completed and submitted.</p>
-                <ul>
-                    <li><strong>Payment Expected Date:</strong> ${expectedDate}</li>
-                    <li><strong>Days Overdue:</strong> ${overdueDays}</li>
-                    <li><strong>Invoice Link:</strong> <a href="${invoiceLink}">${invoiceLink}</a></li>
-                </ul>
-                <p>Kindly release the payment at the earliest.</p>
-                <p>Regards,</p>
-                <p><strong>${creatorName}</strong></p>
-            </div>
-        `;
-
-        const htmlContent = customMessage 
-            ? `<div style="font-family: sans-serif; line-height: 1.6;"><p>${customMessage}</p><p>Regards,<br><strong>${creatorName}</strong></p></div>`
-            : defaultHtmlContent;
-
-        try {
-            const resendResponse = await fetch('https://api.resend.com/emails', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${RESEND_API_KEY}`,
-                },
-                body: JSON.stringify({
-                    from: `NoticeBazaar <noreply@noticebazaar.com>`,
-                    to: recipientEmail,
-                    subject: subject,
-                    html: htmlContent,
-                }),
-            });
-
-            if (!resendResponse.ok) {
-                const resendBody = await resendResponse.json();
-                console.error('Resend API Error:', resendResponse.status, resendBody);
-                reminderStatus = 'failed';
-                errorMessage = resendBody.message || 'Unknown Resend error';
-            }
-        } catch (e) {
+            // Do not throw, but mark as failed and log the error
             reminderStatus = 'failed';
-            errorMessage = e.message;
+            errorMessage = 'Server configuration error: Email API key missing.';
+        } else {
+            const subject = customMessage 
+                ? `Payment Reminder - ${brandDeal.brand_name}`
+                : `Payment Reminder - ${brandDeal.brand_name} - ${formattedAmount}`;
+                
+            const defaultHtmlContent = `
+                <div style="font-family: sans-serif; line-height: 1.6;">
+                    <p>Hi ${brandDeal.brand_name} Team,</p>
+                    <p>This is a reminder for the pending payment of <strong>${formattedAmount}</strong> for our collaboration.</p>
+                    <p>Deliverables have already been completed and submitted.</p>
+                    <ul>
+                        <li><strong>Payment Expected Date:</strong> ${expectedDate}</li>
+                        <li><strong>Days Overdue:</strong> ${overdueDays}</li>
+                        <li><strong>Invoice Link:</strong> <a href="${invoiceLink}">${invoiceLink}</a></li>
+                    </ul>
+                    <p>Kindly release the payment at the earliest.</p>
+                    <p>Regards,</p>
+                    <p><strong>${creatorName}</strong></p>
+                </div>
+            `;
+
+            const htmlContent = customMessage 
+                ? `<div style="font-family: sans-serif; line-height: 1.6;"><p>${customMessage}</p><p>Regards,<br><strong>${creatorName}</strong></p></div>`
+                : defaultHtmlContent;
+
+            try {
+                const resendResponse = await fetch('https://api.resend.com/emails', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${RESEND_API_KEY}`,
+                    },
+                    body: JSON.stringify({
+                        from: `NoticeBazaar <noreply@noticebazaar.com>`,
+                        to: recipientEmail,
+                        subject: subject,
+                        html: htmlContent,
+                    }),
+                });
+
+                if (!resendResponse.ok) {
+                    const resendBody = await resendResponse.json();
+                    console.error('Resend API Error:', resendResponse.status, resendBody);
+                    reminderStatus = 'failed';
+                    errorMessage = resendBody.message || 'Unknown Resend error';
+                }
+            } catch (e) {
+                reminderStatus = 'failed';
+                errorMessage = e.message;
+            }
         }
     } else if (messageType === 'whatsapp') {
-        // User explicitly said to leave WhatsApp for now. Mock failure.
         reminderStatus = 'failed';
         errorMessage = 'WhatsApp integration is currently disabled.';
     }
@@ -180,6 +181,7 @@ serve(async (req) => {
     }
 
     if (reminderStatus === 'failed') {
+        // Return a 500 status if the reminder failed to send
         return new Response(JSON.stringify({ error: `Reminder failed to send: ${errorMessage}` }), {
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
             status: 500,
