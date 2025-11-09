@@ -49,10 +49,27 @@ serve(async (req) => {
 
     const token = authHeader.replace('Bearer ', '');
     
+    // Get environment variables
+    const supabaseUrl = Deno.env.get('SUPABASE_URL');
+    const supabaseServiceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+    
+    if (!supabaseUrl || !supabaseServiceRoleKey) {
+      console.error('Missing Supabase environment variables:', {
+        hasUrl: !!supabaseUrl,
+        hasServiceRoleKey: !!supabaseServiceRoleKey
+      });
+      return new Response(JSON.stringify({ 
+        error: 'Server configuration error: Missing Supabase credentials' 
+      }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 500,
+      });
+    }
+    
     // Initialize Supabase Admin Client
     const supabaseAdmin = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
+      supabaseUrl,
+      supabaseServiceRoleKey,
       {
         auth: {
           autoRefreshToken: false,
@@ -88,7 +105,7 @@ serve(async (req) => {
     
     // Get OAuth redirect URL based on platform
     let oauthUrl = '';
-    const redirectUri = `${Deno.env.get('SUPABASE_URL')}/functions/v1/social-account-callback`;
+    const redirectUri = `${supabaseUrl}/functions/v1/social-account-callback`;
     
     switch (platform) {
       case 'instagram': {
@@ -153,8 +170,18 @@ serve(async (req) => {
 
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
-    console.error('Link Social Account Error:', errorMessage);
-    return new Response(JSON.stringify({ error: errorMessage }), {
+    const errorStack = error instanceof Error ? error.stack : undefined;
+    console.error('Link Social Account Error:', {
+      message: errorMessage,
+      stack: errorStack,
+      error: error
+    });
+    return new Response(JSON.stringify({ 
+      error: 'Internal server error',
+      message: errorMessage,
+      // Only include stack in development
+      ...(Deno.env.get('ENVIRONMENT') === 'development' && { stack: errorStack })
+    }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
