@@ -205,7 +205,11 @@ export const useAddBrandDeal = () => {
     },
     {
       onSuccess: (_, variables) => {
-        queryClient.invalidateQueries({ queryKey: ['brand_deals', variables.creator_id] });
+        // Invalidate all brand_deals queries for this creator to ensure fresh data
+        queryClient.invalidateQueries({ 
+          queryKey: ['brand_deals', variables.creator_id],
+          exact: false 
+        });
       },
       successMessage: 'Brand deal added successfully!',
       errorMessage: 'Failed to add brand deal',
@@ -320,7 +324,11 @@ export const useUpdateBrandDeal = () => {
     },
     {
       onSuccess: (_, variables) => {
-        queryClient.invalidateQueries({ queryKey: ['brand_deals', variables.creator_id] });
+        // Invalidate all brand_deals queries for this creator to ensure fresh data
+        queryClient.invalidateQueries({ 
+          queryKey: ['brand_deals', variables.creator_id],
+          exact: false 
+        });
       },
       successMessage: 'Brand deal updated successfully!',
       errorMessage: 'Failed to update brand deal',

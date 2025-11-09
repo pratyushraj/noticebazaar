@@ -140,6 +140,8 @@ const CreatorDashboard = () => {
   };
 
   const handleAIScanContract = () => {
+    // Refetch brand deals to ensure we have the latest contracts
+    refetchBrandDeals();
     setSelectedContractForAIScan(null); // Reset selection
     setAiScanResults(null); // Clear previous results
     setIsAIScanDialogOpen(true);
@@ -414,6 +416,8 @@ const CreatorDashboard = () => {
                 <SelectContent>
                   {brandDeals?.length === 0 ? (
                     <SelectItem value="no-contracts" disabled>No contracts available</SelectItem>
+                  ) : brandDeals?.filter(deal => deal.contract_file_url).length === 0 ? (
+                    <SelectItem value="no-contracts-with-url" disabled>No contracts with uploaded files</SelectItem>
                   ) : (
                     brandDeals?.filter(deal => deal.contract_file_url).map((deal) => (
                       <SelectItem key={deal.id} value={deal.contract_file_url!}>
