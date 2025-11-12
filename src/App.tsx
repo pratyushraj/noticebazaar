@@ -28,6 +28,7 @@ import PricingComparison from "./pages/PricingComparison";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
 import RefundPolicy from "./pages/RefundPolicy";
+import DeleteData from "./pages/DeleteData";
 import Sitemap from "./pages/Sitemap";
 import EssentialPlan from "./pages/EssentialPlan";
 import GrowthPlan from "./pages/GrowthPlan";
@@ -77,6 +78,7 @@ const App = () => {
               <Route path="/privacy-policy" element={<PrivacyPolicy />} />
               <Route path="/terms-of-service" element={<TermsOfService />} />
               <Route path="/refund-policy" element={<RefundPolicy />} />
+              <Route path="/delete-data" element={<DeleteData />} />
               <Route path="/sitemap" element={<Sitemap />} />
               
               {/* Plan Detail Routes */}
