@@ -251,36 +251,41 @@ const MarketingHome = () => {
       <MobileMenu />
 
       <main className="container mx-auto px-6">
-        {/* SECTION 1 — Universal Hero (For Everyone) */}
+        {/* SECTION 1 — Creator-Focused Hero */}
         <section className="grid md:grid-cols-2 gap-8 items-center py-20 hero-bg rounded-xl p-8 relative overflow-hidden" data-aos="fade-up">
           <div className="absolute inset-0 opacity-10" style={{ background: 'radial-gradient(circle at 10% 10%, #3B82F6, transparent 50%), radial-gradient(circle at 90% 90%, #2563EB, transparent 50%)' }}></div>
           
           <div className="relative z-10">
             <h1 className="text-4xl md:text-5xl font-extrabold leading-tight mt-2">
-              Your AI-Powered Legal & CA Team
+              Your Personal Legal Team for <span className="gradient-text">Brand Deals & Payments</span>
             </h1>
             <p className="mt-4 text-gray-300 max-w-xl text-lg">
-              For SMEs, Startups & Creators. Everything legal, compliance, recovery & contracts — in one dashboard.
+              Secure every collaboration with airtight contracts, on-time payments, copyright enforcement and on-demand legal help. Built for India’s top creators and agencies.
             </p>
 
             <div className="mt-8 flex flex-col sm:flex-row gap-4">
               <Link to="/free-legal-check" className="cta-primary inline-flex items-center justify-center gap-3 font-bold py-3 px-5 rounded-lg shadow-md text-lg flex-1">
-                ✅ For Businesses
+                Start Creator Legal Check
+                <ArrowRight className="h-5 w-5" />
               </Link>
-              <Link to="/free-legal-check" className="cta-secondary inline-flex items-center justify-center gap-3 font-bold py-3 px-5 rounded-lg shadow-md text-lg flex-1">
-                ✅ For Creators
-              </Link>
+              <button
+                onClick={() => openCalendly(CALENDLY_URL)}
+                className="cta-secondary inline-flex items-center justify-center gap-3 font-bold py-3 px-5 rounded-lg shadow-md text-lg flex-1"
+              >
+                Book a Brand Deal Review
+                <Phone className="h-5 w-5" />
+              </button>
             </div>
           </div>
 
           <div className="relative flex items-center justify-center z-10">
-            <img 
-              src="/NOTICERBAZAAR.jpg" 
-              alt="NoticeBazaar Platform Preview" 
-              className="rounded-xl shadow-2xl w-full max-w-md object-cover border border-white/10" 
-              loading="lazy" 
-              data-aos="zoom-in" 
-              style={{ animation: 'fadeIn 2s ease-out' }}
+            <img
+              src="/mobile_team_and_cases.png"
+              alt="NoticeBazaar creator dashboard on mobile"
+              className="rounded-[2.5rem] shadow-[0_40px_120px_rgba(2,6,23,0.55)] w-full max-w-md object-cover border border-white/10 rotate-3 md:rotate-2"
+              loading="lazy"
+              data-aos="zoom-in"
+              style={{ animation: 'fadeIn 1.8s ease-out' }}
             />
           </div>
         </section>
@@ -328,34 +333,51 @@ const MarketingHome = () => {
           </div>
         </section>
 
-        {/* SECTION 3 — Creator-Specific Hero (Dedicated Block) */}
+        {/* SECTION 3 — Inside the Creator Vault */}
         <section className="py-16 bg-card rounded-xl shadow-lg border border-white/5" data-aos="fade-up">
           <div className="grid md:grid-cols-2 gap-12 items-center p-8">
             <div className="relative flex justify-center">
-              <img 
-                src="/iPhone-12-PRO-localhost.png" // Placeholder image
-                alt="Creator Dashboard Mockup" 
-                className="rounded-xl shadow-2xl w-full max-w-md object-cover border border-white/10" 
-                loading="lazy" 
-                data-aos="zoom-in" 
+              <img
+                src="/mobile_portal_mockup.png"
+                alt="Creator legal vault"
+                className="rounded-[2rem] shadow-[0_30px_90px_rgba(2,6,23,0.55)] w-full max-w-md object-cover border border-white/10"
+                loading="lazy"
               />
             </div>
             <div className="space-y-6">
-              <h2 className="text-4xl font-extrabold leading-tight">Your Personal Legal Team for <span className="gradient-text">Brand Deals & Payments</span></h2>
+              <h2 className="text-4xl font-extrabold leading-tight">What creators manage inside NoticeBazaar</h2>
               <p className="text-gray-300 text-lg">
-                No more unpaid invoices • Bad contracts • Copyright theft. Get protected with NoticeBazaar Creator Suite.
+                Automate the legal grind so you can focus on content. Every tool is built with Indian brand deals, agencies and platforms in mind.
               </p>
-              <ul className="space-y-3">
-                <ListItem Icon={FileText}>Contract scan & review</ListItem>
-                <ListItem Icon={IndianRupee}>Payment tracker & recovery</ListItem>
-                <ListItem Icon={ShieldCheck}>Copyright alerts & takedowns</ListItem>
-                <ListItem Icon={Users}>Influencer legal support</ListItem>
-                <ListItem Icon={MessageSquare}>WhatsApp evidence vault</ListItem>
-              </ul>
-              <div className="mt-6">
-                <Link to="/free-legal-check" className="cta-primary inline-flex items-center justify-center gap-3 font-bold py-3 px-5 rounded-lg shadow-md text-lg">
-                  Start Creator Legal Check (Free) <ArrowRight className="h-5 w-5" />
-                </Link>
+              <div className="grid sm:grid-cols-2 gap-3">
+                <div className="card p-4 flex items-start gap-3">
+                  <FileText className="h-5 w-5 text-blue-400 mt-1" />
+                  <div>
+                    <p className="font-semibold text-foreground">Contract Intelligence</p>
+                    <p className="text-xs text-muted">AI review, unfair clause detection, co-pilot edits.</p>
+                  </div>
+                </div>
+                <div className="card p-4 flex items-start gap-3">
+                  <IndianRupee className="h-5 w-5 text-green-400 mt-1" />
+                  <div>
+                    <p className="font-semibold text-foreground">Payment Recovery Desk</p>
+                    <p className="text-xs text-muted">Escalation stack, legal notices, follow-up automations.</p>
+                  </div>
+                </div>
+                <div className="card p-4 flex items-start gap-3">
+                  <ShieldCheck className="h-5 w-5 text-purple-400 mt-1" />
+                  <div>
+                    <p className="font-semibold text-foreground">Copyright Radar</p>
+                    <p className="text-xs text-muted">AI monitoring, takedown drafting, screenshot evidence.</p>
+                  </div>
+                </div>
+                <div className="card p-4 flex items-start gap-3">
+                  <MessageSquare className="h-5 w-5 text-yellow-400 mt-1" />
+                  <div>
+                    <p className="font-semibold text-foreground">Briefs & WhatsApp Vault</p>
+                    <p className="text-xs text-muted">Store briefs, chats, deliverables and invoices securely.</p>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
