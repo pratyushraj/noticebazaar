@@ -49,6 +49,7 @@ import CreatorPaymentsAndRecovery from "./pages/CreatorPaymentsAndRecovery";
 import CreatorContentProtection from "./pages/CreatorContentProtection";
 import CreatorTaxCompliancePage from "./pages/CreatorTaxCompliancePage";
 import CreatorOnboarding from "./pages/CreatorOnboarding"; // NEW: Import CreatorOnboarding
+import LegalNoticeAI from "./pages/LegalNoticeAI"; // NEW: Import LegalNoticeAI
 
 
 const queryClient = new QueryClient();
@@ -89,6 +90,7 @@ const App = () => {
               {/* NEW LEAD FUNNEL ROUTES */}
               <Route path="/free-legal-check" element={<FreeLegalCheck />} />
               <Route path="/thank-you" element={<ThankYou />} />
+              <Route path="/legal-notice-ai" element={<LegalNoticeAI />} />
 
               {/* Client-specific routes */}
               <Route path="/client-dashboard" element={<ProtectedLayout allowedRoles={['client']}><ClientDashboard /></ProtectedLayout>} />
