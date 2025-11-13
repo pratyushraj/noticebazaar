@@ -251,52 +251,133 @@ const MarketingHome = () => {
       <MobileMenu />
 
       <main className="container mx-auto px-6">
-        {/* SECTION 1 — Creator-Focused Hero */}
+        {/* SECTION 1 — Creator-First Hero */}
         <section className="grid md:grid-cols-2 gap-8 items-center py-20 hero-bg rounded-xl p-8 relative overflow-hidden" data-aos="fade-up">
           <div className="absolute inset-0 opacity-10" style={{ background: 'radial-gradient(circle at 10% 10%, #3B82F6, transparent 50%), radial-gradient(circle at 90% 90%, #2563EB, transparent 50%)' }}></div>
           
           <div className="relative z-10">
             <h1 className="text-4xl md:text-5xl font-extrabold leading-tight mt-2">
-              Your Personal Legal Team for <span className="gradient-text">Brand Deals & Payments</span>
+              Legal & Payments: <span className="gradient-text">Built for creators</span>
             </h1>
             <p className="mt-4 text-gray-300 max-w-xl text-lg">
-              Secure every collaboration with airtight contracts, on-time payments, copyright enforcement and on-demand legal help. Built for India’s top creators and agencies.
+              Get paid on time. Protect your content. Send enforceable legal notices — fast.
+            </p>
+            <p className="mt-2 text-gray-400 text-sm">
+              No law degree required. Drafts are prepared by legal templates and verified by CA.
             </p>
 
             <div className="mt-8 flex flex-col sm:flex-row gap-4">
               <Link to="/free-legal-check" className="cta-primary inline-flex items-center justify-center gap-3 font-bold py-3 px-5 rounded-lg shadow-md text-lg flex-1">
-                Start Creator Legal Check
+                Start a Free Creator Check
                 <ArrowRight className="h-5 w-5" />
               </Link>
-              <button
-                onClick={() => openCalendly(CALENDLY_URL)}
-                className="cta-secondary inline-flex items-center justify-center gap-3 font-bold py-3 px-5 rounded-lg shadow-md text-lg flex-1"
-              >
-                Book a Brand Deal Review
-                <Phone className="h-5 w-5" />
-              </button>
+              <Link to="/creator-dashboard" className="cta-secondary inline-flex items-center justify-center gap-3 font-bold py-3 px-5 rounded-lg shadow-md text-lg flex-1">
+                Scan a Video for Reposts
+                <Youtube className="h-5 w-5" />
+              </Link>
             </div>
           </div>
 
           <div className="relative flex items-center justify-center z-10">
             <img
-              src="/header-logo.jpg"
-              alt="NoticeBazaar professional legal team"
-              className="rounded-[2.5rem] shadow-[0_40px_120px_rgba(2,6,23,0.55)] w-full max-w-md object-cover border border-white/10"
+              src="/mobile_team_and_cases.png"
+              alt="NoticeBazaar Creator Dashboard"
+              className="rounded-[2.5rem] shadow-[0_40px_120px_rgba(2,6,23,0.55)] w-full max-w-md object-cover border border-white/10 rotate-3 md:rotate-2"
               loading="lazy"
               data-aos="zoom-in"
               style={{ animation: 'fadeIn 1.8s ease-out' }}
             />
           </div>
         </section>
+
+        {/* Quick Features Row */}
+        <section className="py-12" data-aos="fade-up">
+          <div className="grid md:grid-cols-3 gap-6">
+            <div className="card p-6 rounded-xl hover:border-blue-500/50 transition-all">
+              <FileText className="h-8 w-8 text-blue-400 mb-3" />
+              <h3 className="font-semibold text-xl mb-2">Contracts</h3>
+              <p className="text-gray-300 text-sm">Auto-extract deliverables, usage rights, and risky clauses.</p>
+              <Link to="/creator-contracts" className="text-blue-400 hover:text-blue-300 text-sm mt-3 inline-flex items-center gap-1">
+                View demo <ArrowRight className="h-4 w-4" />
+              </Link>
+            </div>
+            <div className="card p-6 rounded-xl hover:border-purple-500/50 transition-all">
+              <ShieldCheck className="h-8 w-8 text-purple-400 mb-3" />
+              <h3 className="font-semibold text-xl mb-2">Copyright Scanner</h3>
+              <p className="text-gray-300 text-sm">Scan YouTube, Instagram, TikTok for reposts.</p>
+              <Link to="/creator-content-protection" className="text-purple-400 hover:text-purple-300 text-sm mt-3 inline-flex items-center gap-1">
+                Try scanner <ArrowRight className="h-4 w-4" />
+              </Link>
+            </div>
+            <div className="card p-6 rounded-xl hover:border-green-500/50 transition-all">
+              <IndianRupee className="h-8 w-8 text-green-400 mb-3" />
+              <h3 className="font-semibold text-xl mb-2">Payments</h3>
+              <p className="text-gray-300 text-sm">Track invoices and auto-send payment reminders.</p>
+              <Link to="/creator-payments" className="text-green-400 hover:text-green-300 text-sm mt-3 inline-flex items-center gap-1">
+                See how it works <ArrowRight className="h-4 w-4" />
+              </Link>
+            </div>
+          </div>
+        </section>
         
-        {/* SECTION 2 — Split Selector Cards (Very Important) */}
+        {/* SECTION 2 — How It Works (3 Steps for Creators) */}
+        <section className="py-16" data-aos="fade-up">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold">How it works</h2>
+            <p className="text-gray-400 mt-2 max-w-2xl mx-auto text-lg">Get legal protection in 3 simple steps</p>
+          </div>
+          <div className="grid md:grid-cols-3 gap-8">
+            <div className="card p-6 rounded-xl">
+              <div className="bg-blue-500/10 w-12 h-12 rounded-full flex items-center justify-center mb-4">
+                <span className="text-2xl font-bold text-blue-400">1</span>
+              </div>
+              <h3 className="font-semibold text-xl mb-3">Add your brand deal / upload contract</h3>
+              <p className="text-gray-300 text-sm mb-4">Upload your brand deal contract or create a new deal. Our system extracts key terms automatically.</p>
+              <img src="/mobile_portal_mockup.png" alt="Upload contract" className="rounded-lg border border-white/10 w-full" />
+            </div>
+            <div className="card p-6 rounded-xl">
+              <div className="bg-purple-500/10 w-12 h-12 rounded-full flex items-center justify-center mb-4">
+                <span className="text-2xl font-bold text-purple-400">2</span>
+              </div>
+              <h3 className="font-semibold text-xl mb-3">AI scans + gives legal issues</h3>
+              <p className="text-gray-300 text-sm mb-4">AI analyzes your contract for risky clauses, missing terms, and payment risks. Get instant feedback.</p>
+              <img src="/iPhone-12-PRO-localhost.png" alt="AI scan result" className="rounded-lg border border-white/10 w-full" />
+            </div>
+            <div className="card p-6 rounded-xl">
+              <div className="bg-green-500/10 w-12 h-12 rounded-full flex items-center justify-center mb-4">
+                <span className="text-2xl font-bold text-green-400">3</span>
+              </div>
+              <h3 className="font-semibold text-xl mb-3">Auto-draft notice / send takedown</h3>
+              <p className="text-gray-300 text-sm mb-4">Draft legal notices instantly. Pay to have a lawyer verify and send. Or request copyright takedowns.</p>
+              <img src="/pasted-image-2025-10-30T08-18-24-826Z.png" alt="Notice flow" className="rounded-lg border border-white/10 w-full" />
+            </div>
+          </div>
+        </section>
+
+        {/* SECTION 3 — Split Selector Cards (Creators First) */}
         <section className="py-16" data-aos="fade-up">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold">Who are you building for?</h2>
             <p className="text-gray-400 mt-2 max-w-2xl mx-auto text-lg">Select your business type to see how NoticeBazaar can help you thrive.</p>
           </div>
           <div className="grid md:grid-cols-2 gap-8">
+            {/* FOR CREATORS & INFLUENCERS (First) */}
+            <Link to="/pricing-comparison" id="for-creators" className="card p-8 rounded-xl shadow-lg border-2 border-purple-500/50 hover:border-purple-500 transition-all duration-300 hover:scale-[1.02] flex flex-col justify-between">
+              <div>
+                <h3 className="text-3xl font-bold text-purple-400 mb-4">For Creators & Influencers</h3>
+                <ul className="space-y-2 text-gray-300 text-lg">
+                  <li className="flex items-center"><Check className="h-5 w-5 text-green-400 mr-2" /> Brand deal contract review</li>
+                  <li className="flex items-center"><Check className="h-5 w-5 text-green-400 mr-2" /> Payment recovery</li>
+                  <li className="flex items-center"><Check className="h-5 w-5 text-green-400 mr-2" /> Copyright protection</li>
+                  <li className="flex items-center"><Check className="h-5 w-5 text-green-400 mr-2" /> Defamation support</li>
+                  <li className="flex items-center"><Check className="h-5 w-5 text-green-400 mr-2" /> UGC contract negotiation</li>
+                </ul>
+              </div>
+              <Button className="cta-primary mt-8 py-3 px-6 rounded-lg font-bold text-lg">
+                Explore Creator Plans <ArrowRight className="h-5 w-5 ml-2" />
+              </Button>
+            </Link>
+
             {/* FOR BUSINESSES (SMEs / Startups) */}
             <Link to="/pricing-comparison" id="for-businesses" className="card p-8 rounded-xl shadow-lg border border-blue-500/30 hover:border-blue-500 transition-all duration-300 hover:scale-[1.02] flex flex-col justify-between">
               <div>
@@ -311,23 +392,6 @@ const MarketingHome = () => {
               </div>
               <Button className="cta-secondary mt-8 py-3 px-6 rounded-lg font-bold text-lg">
                 Explore SME Plans <ArrowRight className="h-5 w-5 ml-2" />
-              </Button>
-            </Link>
-
-            {/* FOR CREATORS & INFLUENCERS */}
-            <Link to="/pricing-comparison" id="for-creators" className="card p-8 rounded-xl shadow-lg border border-purple-500/30 hover:border-purple-500 transition-all duration-300 hover:scale-[1.02] flex flex-col justify-between">
-              <div>
-                <h3 className="text-3xl font-bold text-purple-400 mb-4">For Creators & Influencers</h3>
-                <ul className="space-y-2 text-gray-300 text-lg">
-                  <li className="flex items-center"><Check className="h-5 w-5 text-green-400 mr-2" /> Brand deal contract review</li>
-                  <li className="flex items-center"><Check className="h-5 w-5 text-green-400 mr-2" /> Payment recovery</li>
-                  <li className="flex items-center"><Check className="h-5 w-5 text-green-400 mr-2" /> Copyright protection</li>
-                  <li className="flex items-center"><Check className="h-5 w-5 text-green-400 mr-2" /> Defamation support</li>
-                  <li className="flex items-center"><Check className="h-5 w-5 text-green-400 mr-2" /> UGC contract negotiation</li>
-                </ul>
-              </div>
-              <Button className="cta-primary mt-8 py-3 px-6 rounded-lg font-bold text-lg">
-                Explore Creator Plans <ArrowRight className="h-5 w-5 ml-2" />
               </Button>
             </Link>
           </div>
@@ -479,10 +543,20 @@ const MarketingHome = () => {
                   ))}
                 </ul>
                 <div className="mt-6">
-                  <Link to={plan.link} className={cn("w-full inline-flex justify-center py-3 rounded-lg font-semibold text-lg", plan.isPopular ? 'cta-primary' : 'cta-secondary')}>
-                    Get Started
-                  </Link>
-                  <Link to={`/plan/${plan.name.toLowerCase().replace(' ', '-')}`} className="text-blue-400 hover:text-blue-300 font-medium text-sm mt-2 block text-center">[See All Features ↓]</Link>
+                  {plan.name === 'Creator Lite' ? (
+                    <Link to={plan.link} className="w-full inline-flex justify-center py-3 rounded-lg font-semibold text-lg cta-secondary">
+                      Start free
+                    </Link>
+                  ) : plan.name === 'Creator Pro' ? (
+                    <Link to={plan.link} className="w-full inline-flex justify-center py-3 rounded-lg font-semibold text-lg cta-primary">
+                      Most creators choose this
+                    </Link>
+                  ) : (
+                    <Link to={plan.link} className={cn("w-full inline-flex justify-center py-3 rounded-lg font-semibold text-lg", plan.isPopular ? 'cta-primary' : 'cta-secondary')}>
+                      Get Started
+                    </Link>
+                  )}
+                  <Link to={`/plan/${plan.name.toLowerCase().replace(' ', '-')}`} className="text-purple-400 hover:text-purple-300 font-medium text-sm mt-2 block text-center">[See All Features ↓]</Link>
                 </div>
               </div>
             ))}
@@ -586,29 +660,29 @@ const MarketingHome = () => {
           </div>
         </section>
 
-        {/* SECTION 10 — WhatsApp Legal Vault (New Highlight) */}
+        {/* SECTION 10 — WhatsApp Legal Vault */}
         <section className="py-16 bg-card rounded-xl shadow-lg border border-white/5" data-aos="fade-up">
           <div className="grid md:grid-cols-2 gap-12 items-center p-8">
             <div className="space-y-6">
               <h2 className="text-4xl font-extrabold leading-tight">Your WhatsApp is Now a <span className="gradient-text">Legal Evidence Vault</span></h2>
               <p className="text-gray-300 text-lg">
-                Forward any message, image, or document to your dedicated NoticeBazaar WhatsApp number. It's automatically saved, timestamped, and ready as evidence for any dispute.
+                Forward messages to our WhatsApp number. We timestamp, hash, and store them as admissible evidence.
               </p>
               <ul className="space-y-3">
-                <ListItem Icon={Check}>Auto-save all communications.</ListItem>
-                <ListItem Icon={Check}>Timestamped for legal validity.</ListItem>
-                <ListItem Icon={Check}>Securely stored in your client portal.</ListItem>
-                <ListItem Icon={Check}>Accessible by your legal team.</ListItem>
+                <ListItem Icon={Check}>Auto-save all communications with SHA256 hash</ListItem>
+                <ListItem Icon={Check}>Timestamped for legal validity and chain-of-custody</ListItem>
+                <ListItem Icon={Check}>Securely stored in your client portal</ListItem>
+                <ListItem Icon={Check}>Export Evidence PDF with full documentation</ListItem>
               </ul>
               <div className="mt-6">
-                <a href="https://wa.me/919205376316?text=Hi%20NoticeBazaar,%20I%20want%20to%20know%20more%20about%20the%20WhatsApp%20Legal%20Vault" target="_blank" rel="noopener" className="bg-green-500/95 hover:bg-green-600 px-5 py-3 rounded-lg text-lg font-semibold inline-flex items-center gap-2">
-                  <MessageSquare className="h-5 w-5" /> Learn More on WhatsApp
+                <a href="https://wa.me/919205376316?text=Hi%20NoticeBazaar,%20I%20want%20to%20enable%20the%20WhatsApp%20Vault" target="_blank" rel="noopener" className="bg-green-500/95 hover:bg-green-600 px-5 py-3 rounded-lg text-lg font-semibold inline-flex items-center gap-2">
+                  <MessageSquare className="h-5 w-5" /> Enable Vault (WhatsApp)
                 </a>
               </div>
             </div>
             <div className="relative flex justify-center">
               <img 
-                src="/iPhone-12-PRO-localhost.png" // Placeholder for WhatsApp vault screenshot
+                src="/iPhone-12-PRO-localhost.png"
                 alt="WhatsApp Legal Vault Preview" 
                 className="rounded-xl shadow-2xl w-full max-w-md object-cover border border-white/10" 
                 loading="lazy" 
