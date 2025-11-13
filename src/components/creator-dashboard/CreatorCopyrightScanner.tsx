@@ -402,9 +402,10 @@ const CreatorCopyrightScanner: React.FC = () => {
                   onClick={() => isMobile && setOpenHigh(prev => !prev)}
                   className="md:hidden w-full flex items-center justify-between bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm font-semibold"
                 >
-                  <span className="flex items-center gap-2"><CheckCircle className="h-4 w-4 text-green-500" /> High Confidence Matches ({highConfidence.length})</span>
-                  <ChevronDown className={cn("h-4 w-4 transition-transform", openHigh ? "rotate-180" : "rotate-0")}
-                  />
+                  <span className="flex items-center gap-2">
+                    <CheckCircle className="h-4 w-4 text-green-500" /> High Confidence Matches ({highConfidence.length})
+                  </span>
+                  <ChevronDown className={cn("h-4 w-4 transition-transform", openHigh ? "rotate-180" : "rotate-0")} />
                 </button>
                 <div className="hidden md:flex items-center gap-2">
                   <CheckCircle className="h-4 w-4 text-green-500" />
@@ -412,15 +413,13 @@ const CreatorCopyrightScanner: React.FC = () => {
                     High Confidence Matches ({highConfidence.length})
                   </p>
                 </div>
-                <div className={cn("space-y-3", isMobile ? (openHigh ? "block" : "hidden") : "block")}
-                >
+                <div className={cn("space-y-3", isMobile ? (openHigh ? "block" : "hidden") : "block")}>
                   {highConfidence.map((alert, index) => {
                     const similarityScore = (alert.similarity_score || 0) * 100;
                     const PlatformIcon = getPlatformIcon(alert.platform);
                     return (
                       <Card key={alert.id || index} className="p-3 border-l-4 border-l-green-500">
                         <div className="flex gap-3">
-                          {/* Thumbnail Preview */}
                           <div className="flex-shrink-0">
                             {alert.screenshot_url ? (
                               <img
@@ -438,8 +437,6 @@ const CreatorCopyrightScanner: React.FC = () => {
                               </div>
                             )}
                           </div>
-                          
-                          {/* Match Details */}
                           <div className="flex-1 min-w-0">
                             <div className="flex items-start justify-between gap-2 mb-1">
                               <div className="flex items-center gap-2 flex-1 min-w-0">
@@ -476,127 +473,128 @@ const CreatorCopyrightScanner: React.FC = () => {
                   })}
                 </div>
               </div>
-            )}
 
-            {/* Possible Reposts (60-89%) */}
-            <div className="space-y-3">
-              <button
-                type="button"
-                onClick={() => isMobile && setOpenPossible(prev => !prev)}
-                className="md:hidden w-full flex items-center justify-between bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm font-semibold"
-              >
-                <span className="flex items-center gap-2"><AlertTriangle className="h-4 w-4 text-yellow-500" /> Possible Reposts ({possibleReposts.length})</span>
-                <ChevronDown className={cn("h-4 w-4 transition-transform", openPossible ? "rotate-180" : "rotate-0")} />
-              </button>
-              <div className="hidden md:flex items-center gap-2">
-                <AlertTriangle className="h-4 w-4 text-yellow-500" />
-                <p className="text-sm font-semibold text-foreground">
-                  Possible Reposts ({possibleReposts.length})
-                </p>
-              </div>
-              <div className={cn("space-y-3", isMobile ? (openPossible ? "block" : "hidden") : "block")}>
-                {possibleReposts.map((alert, index) => {
-                  const similarityScore = (alert.similarity_score || 0) * 100;
-                  const PlatformIcon = getPlatformIcon(alert.platform);
-                  return (
-                    <Card key={alert.id || index} className="p-3 border-l-4 border-l-yellow-500">
-                      <div className="flex gap-3">
-                        {/* Thumbnail Preview */}
-                        <div className="flex-shrink-0">
-                          {alert.screenshot_url ? (
-                            <img
-                              src={alert.screenshot_url}
-                              alt={`Match on ${alert.platform}`}
-                              className="w-20 h-20 rounded-lg object-cover border border-border"
-                              onError={(e) => {
-                                const target = e.target as HTMLImageElement;
-                                target.style.display = 'none';
-                              }}
-                            />
-                          ) : (
-                            <div className="w-20 h-20 rounded-lg bg-muted flex items-center justify-center border border-border">
-                              <ImageIcon className="h-6 w-6 text-muted-foreground" />
-                            </div>
-                          )}
-                        </div>
-                        
-                        {/* Match Details */}
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-start justify-between gap-2 mb-1">
-                            <div className="flex items-center gap-2 flex-1 min-w-0">
-                              <PlatformIcon className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                              <span className="text-sm font-medium text-foreground truncate">
-                                {alert.platform}
-                              </span>
-                            </div>
-                            <Badge variant="outline" className="bg-yellow-500/10 text-yellow-600 border-yellow-500/30 text-xs">
-                              {Math.round(similarityScore)}% similarity
-                            </Badge>
+              {/* Possible Reposts (60-89%) */}
+              <div className="space-y-3">
+                <button
+                  type="button"
+                  onClick={() => isMobile && setOpenPossible(prev => !prev)}
+                  className="md:hidden w-full flex items-center justify-between bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm font-semibold"
+                >
+                  <span className="flex items-center gap-2">
+                    <AlertTriangle className="h-4 w-4 text-yellow-500" /> Possible Reposts ({possibleReposts.length})
+                  </span>
+                  <ChevronDown className={cn("h-4 w-4 transition-transform", openPossible ? "rotate-180" : "rotate-0")} />
+                </button>
+                <div className="hidden md:flex items-center gap-2">
+                  <AlertTriangle className="h-4 w-4 text-yellow-500" />
+                  <p className="text-sm font-semibold text-foreground">
+                    Possible Reposts ({possibleReposts.length})
+                  </p>
+                </div>
+                <div className={cn("space-y-3", isMobile ? (openPossible ? "block" : "hidden") : "block")}>
+                  {possibleReposts.map((alert, index) => {
+                    const similarityScore = (alert.similarity_score || 0) * 100;
+                    const PlatformIcon = getPlatformIcon(alert.platform);
+                    return (
+                      <Card key={alert.id || index} className="p-3 border-l-4 border-l-yellow-500">
+                        <div className="flex gap-3">
+                          <div className="flex-shrink-0">
+                            {alert.screenshot_url ? (
+                              <img
+                                src={alert.screenshot_url}
+                                alt={`Match on ${alert.platform}`}
+                                className="w-20 h-20 rounded-lg object-cover border border-border"
+                                onError={(e) => {
+                                  const target = e.target as HTMLImageElement;
+                                  target.style.display = 'none';
+                                }}
+                              />
+                            ) : (
+                              <div className="w-20 h-20 rounded-lg bg-muted flex items-center justify-center border border-border">
+                                <ImageIcon className="h-6 w-6 text-muted-foreground" />
+                              </div>
+                            )}
                           </div>
-                          <p className="text-xs text-muted-foreground mb-2">
-                            {getConfidenceDescription(alert.similarity_score || 0)}
-                          </p>
-                          <p className="text-sm text-foreground mb-2 line-clamp-2">
-                            {alert.description}
-                          </p>
-                          {alert.infringingUrl && (
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              className="w-full sm:w-auto"
-                              onClick={() => window.open(alert.infringingUrl, '_blank', 'noopener,noreferrer')}
-                            >
-                              <ExternalLink className="h-3 w-3 mr-1.5" />
-                              View Match
-                            </Button>
-                          )}
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-start justify-between gap-2 mb-1">
+                              <div className="flex items-center gap-2 flex-1 min-w-0">
+                                <PlatformIcon className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                                <span className="text-sm font-medium text-foreground truncate">
+                                  {alert.platform}
+                                </span>
+                              </div>
+                              <Badge variant="outline" className="bg-yellow-500/10 text-yellow-600 border-yellow-500/30 text-xs">
+                                {Math.round(similarityScore)}% similarity
+                              </Badge>
+                            </div>
+                            <p className="text-xs text-muted-foreground mb-2">
+                              {getConfidenceDescription(alert.similarity_score || 0)}
+                            </p>
+                            <p className="text-sm text-foreground mb-2 line-clamp-2">
+                              {alert.description}
+                            </p>
+                            {alert.infringingUrl && (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="w-full sm:w-auto"
+                                onClick={() => window.open(alert.infringingUrl, '_blank', 'noopener,noreferrer')}
+                              >
+                                <ExternalLink className="h-3 w-3 mr-1.5" />
+                                View Match
+                              </Button>
+                            )}
+                          </div>
                         </div>
+                      </Card>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* No Match (0-59%) */}
+              <div className="space-y-3">
+                <button
+                  type="button"
+                  onClick={() => isMobile && setOpenNoMatch(prev => !prev)}
+                  className="md:hidden w-full flex items-center justify-between bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm font-semibold"
+                >
+                  <span className="flex items-center gap-2">
+                    <XCircle className="h-4 w-4 text-gray-400" /> No Match ({noMatch.length})
+                  </span>
+                  <ChevronDown className={cn("h-4 w-4 transition-transform", openNoMatch ? "rotate-180" : "rotate-0")} />
+                </button>
+                <div className="hidden md:flex items-center gap-2">
+                  <XCircle className="h-4 w-4 text-gray-400" />
+                  <p className="text-sm font-semibold text-muted-foreground">
+                    No Match ({noMatch.length})
+                  </p>
+                </div>
+                <div className={cn("space-y-2", isMobile ? (openNoMatch ? "block" : "hidden") : "block")}>
+                  {noMatch.map((alert, index) => {
+                    const similarityScore = (alert.similarity_score || 0) * 100;
+                    const PlatformIcon = getPlatformIcon(alert.platform);
+                    return (
+                      <div key={alert.id || index} className="p-2 bg-muted/50 rounded-lg border border-border">
+                        <div className="flex items-center gap-2">
+                          <PlatformIcon className="h-4 w-4 text-muted-foreground" />
+                          <span className="text-sm text-muted-foreground">{alert.platform}</span>
+                          <Badge variant="outline" className="bg-gray-500/10 text-gray-500 border-gray-500/30 text-xs ml-auto">
+                            {Math.round(similarityScore)}% similarity
+                          </Badge>
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {getConfidenceDescription(alert.similarity_score || 0)}
+                        </p>
                       </div>
-                    </Card>
-                  );
-                })}
+                    );
+                  })}
+                </div>
               </div>
             </div>
           )}
-
-          {/* No Match (0-59%) */}
-          <div className="space-y-3">
-            <button
-              type="button"
-              onClick={() => isMobile && setOpenNoMatch(prev => !prev)}
-              className="md:hidden w-full flex items-center justify-between bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm font-semibold"
-            >
-              <span className="flex items-center gap-2"><XCircle className="h-4 w-4 text-gray-400" /> No Match ({noMatch.length})</span>
-              <ChevronDown className={cn("h-4 w-4 transition-transform", openNoMatch ? "rotate-180" : "rotate-0")} />
-            </button>
-            <div className="hidden md:flex items-center gap-2">
-              <XCircle className="h-4 w-4 text-gray-400" />
-              <p className="text-sm font-semibold text-muted-foreground">
-                No Match ({noMatch.length})
-              </p>
-            </div>
-            <div className={cn("space-y-2", isMobile ? (openNoMatch ? "block" : "hidden") : "block")}>
-              {noMatch.map((alert, index) => {
-                const similarityScore = (alert.similarity_score || 0) * 100;
-                const PlatformIcon = getPlatformIcon(alert.platform);
-                return (
-                  <div key={alert.id || index} className="p-2 bg-muted/50 rounded-lg border border-border">
-                    <div className="flex items-center gap-2">
-                      <PlatformIcon className="h-4 w-4 text-muted-foreground" />
-                      <span className="text-sm text-muted-foreground">{alert.platform}</span>
-                      <Badge variant="outline" className="bg-gray-500/10 text-gray-500 border-gray-500/30 text-xs ml-auto">
-                        {Math.round(similarityScore)}% similarity
-                      </Badge>
-                    </div>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      {getConfidenceDescription(alert.similarity_score || 0)}
-                    </p>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        </div>
+        </CardFooter>
       </Card>
 
       {/* Mobile Bottom Navigation */}
