@@ -42,7 +42,7 @@ const Header = () => {
       <div className="flex h-16 items-center justify-between py-4 px-3 md:px-4">
         <Link to={dashboardPath} className="flex items-center space-x-3">
           <img
-            src="/Ca%2Blawyer.jpg"
+            src="/header-logo.jpg"
             alt="NoticeBazaar"
             className="h-10 w-auto rounded-md object-cover"
           />
