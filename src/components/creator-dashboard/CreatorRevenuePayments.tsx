@@ -23,7 +23,6 @@ const CreatorRevenuePayments: React.FC<CreatorRevenuePaymentsProps> = ({
   activeBrandDeals,
   previousBrands,
   totalIncomeTracked,
-  onEditBrandDeal,
   onSendReminder,
 }) => {
   const calculateOverdueDays = (paymentExpectedDate: string) => {
