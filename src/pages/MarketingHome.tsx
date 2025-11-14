@@ -138,12 +138,12 @@ const MarketingHome = () => {
     <div className="antialiased">
       <style>{`
         :root{
-          --bg:#0B1221; /* Deep Navy Blue */
-          --card:#121A2B; /* Slightly lighter Navy for cards */
+          --bg:#0B1325; /* Deep Navy Blue */
+          --card:#131F3B; /* Slightly lighter Navy for cards */
           --muted: #9CA3AF;
-          --accent-blue:#2D9CFF;
+          --accent-blue:#3B82F6;
           --accent-purple:#8B5CF6; /* New Purple Accent */
-          --accent-green:#4ADE80; /* New Green Accent */
+          --accent-green:#22C55E; /* New Green Accent */
           --accent-yellow:#FACC15; /* New Yellow Accent */
           --accent-red:#EF4444; /* New Red Accent */
           --glass: rgba(255,255,255,0.03);
@@ -162,33 +162,11 @@ const MarketingHome = () => {
         /* Ensure all paragraphs and list items are legible */
         p, li { font-size: 1rem; line-height: 1.45; } /* Increased line height */
         @media (max-width: 768px) {
-            /* Ensure minimum tap target size - Mobile Optimization */
-            .btn, button, a.inline-flex, button[type="button"], .cta-primary, .cta-secondary {
-                min-height: 52px !important;
-                min-width: 52px !important;
-                font-size: 16px !important;
-                padding: 14px 20px !important;
+            /* Ensure minimum tap target size */
+            .btn, button, a.inline-flex {
+                min-height: 44px;
+                min-width: 44px;
             }
-            /* Larger font for mobile */
-            body { font-size: 16px; }
-            h1 { font-size: 32px; }
-            /* Single column layout */
-            .grid { grid-template-columns: 1fr !important; }
-            /* Stack cards on mobile */
-            .card { margin-bottom: 1rem; }
-            /* Sticky quick actions bar */
-            .sticky-quick-actions {
-                position: fixed;
-                bottom: 0;
-                left: 0;
-                right: 0;
-                z-index: 50;
-                background: var(--card);
-                border-top: 1px solid rgba(255,255,255,0.1);
-                padding: 12px;
-                box-shadow: 0 -4px 20px rgba(0,0,0,0.3);
-            }
-        }
             /* Larger font for mobile */
             body { font-size: 16px; } /* Never below 16px */
             h1 { font-size: 32px; }
@@ -279,12 +257,13 @@ const MarketingHome = () => {
           
           <div className="relative z-10">
             <h1 className="text-4xl md:text-5xl font-extrabold leading-tight mt-2">
-              Your Personal Legal HQ for Creators & Businesses
+              Legal & Payments: <span className="gradient-text">Built for creators</span>
             </h1>
             <p className="mt-4 text-gray-300 max-w-xl text-lg">
-              Manage brand deals, track payments, send legal notices, and stay compliant — all in one secure dashboard.
+              Get paid on time. Protect your content. Send enforceable legal notices — fast.
             </p>
             <p className="mt-2 text-gray-400 text-sm">
+              No law degree required. Drafts are prepared by legal templates and verified by CA.
             </p>
 
             <div className="mt-8 flex flex-col sm:flex-row gap-4">
@@ -301,8 +280,8 @@ const MarketingHome = () => {
 
           <div className="relative flex items-center justify-center z-10">
             <img
-              src="/creator-laptop-mobile-dashboard.png"
-              alt="Creator working on laptop with mobile dashboard"
+              src="/mobile_team_and_cases.png"
+              alt="NoticeBazaar Creator Dashboard"
               className="rounded-[2.5rem] shadow-[0_40px_120px_rgba(2,6,23,0.55)] w-full max-w-md object-cover border border-white/10 rotate-3 md:rotate-2"
               loading="lazy"
               data-aos="zoom-in"

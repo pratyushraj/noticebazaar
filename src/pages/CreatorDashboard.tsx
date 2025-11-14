@@ -281,31 +281,31 @@ const CreatorDashboard = () => {
       </div>
 
       {/* Top Action Buttons - Above the fold */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sticky-quick-actions md:relative md:sticky md:top-0">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <Button
           onClick={handleAddBrandDeal}
-          className="flex flex-col items-center justify-center p-4 md:p-6 h-20 md:h-24 rounded-xl quick-action-button-gradient min-h-[52px] md:min-h-[80px] text-secondary-foreground"
+          className="flex flex-col items-center justify-center p-6 h-20 rounded-xl quick-action-button-gradient text-secondary-foreground"
         >
           <PlusCircle className="h-6 w-6 mb-2" />
           <span className="text-sm font-semibold">Add Brand Deal</span>
         </Button>
         <Button
           onClick={handleUploadContractQuickAction}
-          className="flex flex-col items-center justify-center p-4 md:p-6 h-20 md:h-24 rounded-xl quick-action-button-gradient min-h-[52px] md:min-h-[80px] text-secondary-foreground"
+          className="flex flex-col items-center justify-center p-6 h-20 rounded-xl quick-action-button-gradient text-secondary-foreground"
         >
           <FileText className="h-6 w-6 mb-2" />
           <span className="text-sm font-semibold">Upload Contract</span>
         </Button>
         <Button
           onClick={handleAIScanContract}
-          className="flex flex-col items-center justify-center p-4 md:p-6 h-20 md:h-24 rounded-xl quick-action-button-gradient min-h-[52px] md:min-h-[80px] text-secondary-foreground"
+          className="flex flex-col items-center justify-center p-6 h-20 rounded-xl quick-action-button-gradient text-secondary-foreground"
         >
           <Bot className="h-6 w-6 mb-2" />
           <span className="text-sm font-semibold">AI Scan Contract</span>
         </Button>
         <Button
           onClick={handleSendPaymentReminderQuickAction}
-          className="flex flex-col items-center justify-center p-4 md:p-6 h-20 md:h-24 rounded-xl quick-action-button-gradient min-h-[52px] md:min-h-[80px] text-secondary-foreground"
+          className="flex flex-col items-center justify-center p-6 h-20 rounded-xl quick-action-button-gradient text-secondary-foreground"
         >
           <DollarSign className="h-6 w-6 mb-2" />
           <span className="text-sm font-semibold">Payment Reminder</span>
