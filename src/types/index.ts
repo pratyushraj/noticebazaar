@@ -94,8 +94,6 @@ export interface CreatorKpi {
 // New type for Brand Deals
 export type BrandDeal = Tables<'brand_deals'> & {
   organization_id: string; // NEW: Added organization_id
-  brand_domain?: string | null; // NEW: Brand domain for logo fetching
-  brand_logo_url?: string | null; // NEW: URL to brand logo
 };
 
 // NEW: Payment Reminder Type
