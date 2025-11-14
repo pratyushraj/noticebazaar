@@ -280,9 +280,9 @@ const MarketingHome = () => {
 
           <div className="relative flex items-center justify-center z-10">
             <img
-              src="/header-logo.jpg"
-              alt="NoticeBazaar professional legal team"
-              className="rounded-[2.5rem] shadow-[0_40px_120px_rgba(2,6,23,0.55)] w-full max-w-md object-cover border border-white/10"
+              src="/mobile_team_and_cases.png"
+              alt="NoticeBazaar creator dashboard on mobile"
+              className="rounded-[2.5rem] shadow-[0_40px_120px_rgba(2,6,23,0.55)] w-full max-w-md object-cover border border-white/10 rotate-3 md:rotate-2"
               loading="lazy"
               data-aos="zoom-in"
               style={{ animation: 'fadeIn 1.8s ease-out' }}
