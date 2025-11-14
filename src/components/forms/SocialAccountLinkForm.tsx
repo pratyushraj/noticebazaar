@@ -103,10 +103,7 @@ const SocialAccountLinkForm = ({ initialData, onSaveSuccess, onClose }: SocialAc
     try {
       console.log('Attempting to link platform:', platform);
       const { data, error } = await supabase.functions.invoke('link-social-account', {
-        body: { 
-          platform,
-          user_id: profile.id, // Pass user_id for OAuth URL generation
-        },
+        body: { platform },
       });
 
       console.log('Function response:', { data, error });
