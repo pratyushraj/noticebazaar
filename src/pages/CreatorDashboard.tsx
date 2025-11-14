@@ -25,6 +25,7 @@ import { Button } from '@/components/ui/button'; // Ensure Button is imported
 import { Label } from '@/components/ui/label'; // Import Label
 import { Input } from '@/components/ui/input'; // Import Input
 import { ScrollArea } from '@/components/ui/scroll-area'; // Import ScrollArea
+import SocialAccountLinkForm from '@/components/forms/SocialAccountLinkForm'; // NEW: Import SocialAccountLinkForm
 import { useSendPaymentReminder } from '@/lib/hooks/useSendPaymentReminder'; // NEW: Import useSendPaymentReminder
 import { useSendTakedownNotice } from '@/lib/hooks/useSendTakedownNotice'; // NEW: Import useSendTakedownNotice
 import { useCreatorDeadlines } from '@/lib/hooks/useTaxFilings'; // NEW: Import useCreatorDeadlines
@@ -38,6 +39,7 @@ const CreatorDashboard = () => {
   const [selectedContractForAIScan, setSelectedContractForAIScan] = useState<string | null>(null); // Stores contract_file_url
   const [aiScanResults, setAiScanResults] = useState<any>(null); // Stores AI scan results
   const [isUploadContractQuickActionOpen, setIsUploadContractQuickActionOpen] = useState(false); // State for 'Upload Contract' quick action dialog
+  const [isSocialLinkFormOpen, setIsSocialLinkFormOpen] = useState(false); // NEW: State for SocialAccountLinkForm dialog
   const [isSendPaymentReminderDialogOpen, setIsSendPaymentReminderDialogOpen] = useState(false); // NEW: State for Send Payment Reminder dialog
   const [selectedDealForReminder, setSelectedDealForReminder] = useState<BrandDeal | null>(null); // NEW: State for selected deal for reminder
   const [isSendTakedownNoticeDialogOpen, setIsSendTakedownNoticeDialogOpen] = useState(false); // NEW: State for Send Takedown Notice dialog
@@ -150,6 +152,11 @@ const CreatorDashboard = () => {
     setIsUploadContractQuickActionOpen(true);
   };
 
+  // NEW: Handler for 'Link Social Accounts' quick action
+  const handleLinkSocialAccounts = () => {
+    setIsSocialLinkFormOpen(true);
+  };
+
   // NEW: Handler for 'Send Payment Reminder' quick action
   const handleSendPaymentReminderQuickAction = () => {
     setSelectedDealForReminder(null); // Reset selected deal
@@ -255,6 +262,7 @@ const CreatorDashboard = () => {
         onAddBrandDeal={handleAddBrandDeal} 
         onAIScanContract={handleAIScanContract} 
         onUploadContract={handleUploadContractQuickAction} 
+        onLinkSocialAccounts={handleLinkSocialAccounts} // NEW: Pass the handler
         onSendPaymentReminder={handleSendPaymentReminderQuickAction} // NEW: Pass the handler
         onSendTakedownNotice={handleSendTakedownNoticeQuickAction} // NEW: Pass the handler
       />
@@ -349,6 +357,34 @@ const CreatorDashboard = () => {
                 setIsUploadContractQuickActionOpen(false);
               }}
             />
+          </ScrollArea>
+        </DialogContent>
+      </Dialog>
+
+      {/* NEW: Social Account Link Dialog */}
+      <Dialog open={isSocialLinkFormOpen} onOpenChange={setIsSocialLinkFormOpen}>
+        <DialogContent 
+          className="sm:max-w-[600px] bg-card text-foreground border-border h-[90vh] flex flex-col" // Added h-[90vh] flex flex-col
+          aria-labelledby="social-link-form-title"
+          aria-describedby="social-link-form-description"
+        >
+          <DialogHeader>
+            <DialogTitle id="social-link-form-title">Link Social Accounts</DialogTitle>
+            <DialogDescription id="social-link-form-description" className="text-muted-foreground">
+              Connect your social media profiles to enable advanced insights and protection.
+            </DialogDescription>
+          </DialogHeader>
+          <ScrollArea className="flex-1 p-4 -mx-4"> {/* Added flex-1 and negative margin for padding */}
+            {profile && (
+              <SocialAccountLinkForm
+                initialData={profile}
+                onSaveSuccess={() => {
+                  // Profile refetch is handled by useUpdateProfile's onSuccess
+                  setIsSocialLinkFormOpen(false);
+                }}
+                onClose={() => setIsSocialLinkFormOpen(false)}
+              />
+            )}
           </ScrollArea>
         </DialogContent>
       </Dialog>
