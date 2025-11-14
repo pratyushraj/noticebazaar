@@ -33,3 +33,4 @@ ADD_FACEBOOK_SECRETS.md
 .env.local
 .env.production
 RAZORPAY_CREDENTIALS.md
+.vercel
