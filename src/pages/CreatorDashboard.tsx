@@ -6,6 +6,7 @@ import { Loader2, PlusCircle, FileText, Bot, CheckCircle, AlertTriangle, Message
 import { toast } from 'sonner';
 import { useCreatorDashboardData } from '@/lib/hooks/useCreatorDashboardData';
 import CreatorKpiCards from '@/components/creator-dashboard/CreatorKpiCards';
+import ProtectionScoreCard from '@/components/creator-dashboard/ProtectionScoreCard';
 import LegalHealthOverview from '@/components/creator-dashboard/LegalHealthOverview';
 import SimpleQuickActions from '@/components/creator-dashboard/SimpleQuickActions';
 import MonthSummary from '@/components/creator-dashboard/MonthSummary';
@@ -249,42 +250,38 @@ const CreatorDashboard = () => {
       </h1>
       <p className="text-muted-foreground opacity-60 -mt-6">Your comprehensive overview of brand deals, legal protection, and financial health.</p>
 
-      {/* KPI Cards - Reordered: Money First (Total Income, Active Deals, Pending Payments), Legal Health Last */}
+      {/* KPI Cards with Protection Score */}
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-        {/* Other KPI Cards - Total Income, Active Brand Deals, Pending Payments */}
+        {/* Protection Score - Enhanced and Prominent */}
+        <div className="lg:col-span-1">
+          {mockDashboardData?.kpiCards && (() => {
+            const protectionScoreKpi = mockDashboardData.kpiCards.find(kpi => kpi.title === 'Protection Score');
+            if (protectionScoreKpi) {
+              const scoreValue = parseInt(protectionScoreKpi.value.replace('%', ''));
+              return (
+                <ProtectionScoreCard
+                  score={scoreValue}
+                  changePercentage={protectionScoreKpi.changePercentage}
+                  changeDirection={protectionScoreKpi.changeDirection}
+                  statusDescription={protectionScoreKpi.statusDescription}
+                  onUploadContract={handleUploadContractQuickAction}
+                  onResolveCopyright={() => {
+                    // Navigate to content protection page
+                    window.location.href = '/creator-content-protection';
+                  }}
+                  onSendPaymentReminder={handleSendPaymentReminderQuickAction}
+                />
+              );
+            }
+            return null;
+          })()}
+        </div>
+        
+        {/* Other KPI Cards */}
         <div className="lg:col-span-3">
           <CreatorKpiCards kpiCards={mockDashboardData?.kpiCards || []} />
         </div>
-        
-        {/* Legal Health Overview - Last */}
-        <div className="lg:col-span-1">
-          <LegalHealthOverview
-            copyrightHealth={{
-              status: 'healthy',
-              message: 'No takedowns pending',
-            }}
-            contractHealth={{
-              status: 'healthy',
-              message: '2 contracts reviewed',
-              reviewedContracts: 2,
-            }}
-            paymentHealth={{
-              status: derivedPendingBrandPayments.status === 'Overdue' ? 'critical' : 'warning',
-              message: `${derivedPendingBrandPayments.details}`,
-              overdueInvoices: derivedPendingBrandPayments.status === 'Overdue' ? parseInt(derivedPendingBrandPayments.details.split(' ')[0]) : 0,
-            }}
-          />
-        </div>
       </div>
-
-      {/* Month Summary */}
-      <MonthSummary
-        earningsReceived={35000}
-        paymentsPending={42000}
-        newDeals={3}
-        contractsReviewed={5}
-        aiFlagsFound={2}
-      />
 
       {/* Top Action Buttons - Above the fold */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sticky-quick-actions md:relative md:sticky md:top-0">
