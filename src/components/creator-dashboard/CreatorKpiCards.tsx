@@ -11,9 +11,12 @@ interface CreatorKpiCardsProps {
 }
 
 const CreatorKpiCards: React.FC<CreatorKpiCardsProps> = ({ kpiCards }) => {
+  // Filter out Protection Score - it will be rendered separately
+  const filteredKpiCards = kpiCards.filter(kpi => kpi.title !== 'Protection Score');
+  
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-      {kpiCards.map((kpi, index) => {
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {filteredKpiCards.map((kpi, index) => {
         const Icon = kpi.icon;
         const ChangeIcon = kpi.changeDirection === 'up' ? ArrowUp : kpi.changeDirection === 'down' ? ArrowDown : Minus;
         const changeColor = kpi.changeDirection === 'up' ? 'text-green-500' : kpi.changeDirection === 'down' ? 'text-red-500' : 'text-muted-foreground';
