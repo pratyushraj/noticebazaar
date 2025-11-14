@@ -66,6 +66,7 @@ interface AddBrandDealVariables {
   creator_id: string;
   organization_id: string; // NEW: Required field
   brand_name: string;
+  brand_domain?: string; // NEW: Optional brand domain
   deal_amount: number;
   deliverables: string;
   contract_file: File | null; // Allow null for no file
@@ -166,7 +167,7 @@ export const useAddBrandDeal = () => {
           finalStatus = 'Completed';
       }
 
-      const insertPayload = {
+      const insertPayload: any = {
           creator_id,
           organization_id, // INCLUDE NEW FIELD
           brand_name,
@@ -183,12 +184,19 @@ export const useAddBrandDeal = () => {
           brand_email,
           payment_received_date,
       };
+
+      // Add brand_domain if provided
+      if (brand_domain) {
+        insertPayload.brand_domain = brand_domain;
+      }
       
       console.log('DEBUG: Brand Deal Insert Payload:', insertPayload); // <-- DEBUG LOG
 
-      const { error: insertError } = await supabase
+      const { data: insertedData, error: insertError } = await supabase
         .from('brand_deals')
-        .insert(insertPayload);
+        .insert(insertPayload)
+        .select('id')
+        .single();
 
       if (insertError) {
         // Attempt to remove uploaded files if database insert fails
@@ -201,6 +209,23 @@ export const useAddBrandDeal = () => {
           await supabase.storage.from('creator-assets').remove([filePath]);
         }
         throw new Error(`Failed to record brand deal in database: ${insertError.message}. Ensure RLS is configured for INSERT on 'brand_deals' table.`);
+      }
+
+      // Fetch brand logo asynchronously (don't wait for it)
+      if (insertedData?.id) {
+        supabase.functions
+          .invoke('fetch-brand-logo', {
+            body: {
+              brand_name,
+              brand_domain: brand_domain || null,
+              deal_id: insertedData.id,
+              creator_id,
+            },
+          })
+          .catch((error) => {
+            console.error('Error fetching brand logo:', error);
+            // Don't throw - logo fetching is non-critical
+          });
       }
     },
     {
@@ -222,6 +247,7 @@ interface UpdateBrandDealVariables {
   creator_id: string;
   organization_id?: string; // NEW: Optional field for update
   brand_name?: string;
+  brand_domain?: string; // NEW: Optional brand domain
   deal_amount?: number;
   deliverables?: string;
   contract_file?: File | null;
@@ -305,6 +331,11 @@ export const useUpdateBrandDeal = () => {
           updatePayload.organization_id = organization_id;
       }
 
+      // Add brand_domain if provided
+      if (updates.brand_domain !== undefined) {
+        updatePayload.brand_domain = updates.brand_domain;
+      }
+
       // Consistency Check: If payment received date is provided, force status to Completed.
       if (updates.payment_received_date) {
           updatePayload.status = 'Completed';
@@ -320,6 +351,23 @@ export const useUpdateBrandDeal = () => {
 
       if (error) {
         throw new Error(error.message);
+      }
+
+      // Fetch brand logo asynchronously if brand_name or brand_domain changed (don't wait for it)
+      if ((updates.brand_name || updates.brand_domain) && !updatePayload.brand_logo_url) {
+        supabase.functions
+          .invoke('fetch-brand-logo', {
+            body: {
+              brand_name: updates.brand_name || '',
+              brand_domain: updates.brand_domain || null,
+              deal_id: id,
+              creator_id,
+            },
+          })
+          .catch((error) => {
+            console.error('Error fetching brand logo:', error);
+            // Don't throw - logo fetching is non-critical
+          });
       }
     },
     {

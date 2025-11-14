@@ -92,7 +92,36 @@ const CreatorRevenuePayments: React.FC<CreatorRevenuePaymentsProps> = ({
                     const isOverdue = overdueDays > 0;
                     const hasInvoice = !!deal.invoice_file_url;
                     
-                    // Get brand emoji or first letter
+                    // Get brand logo or fallback to emoji/first letter
+                    const getBrandLogo = (deal: BrandDeal) => {
+                      // If logo URL exists, use it
+                      if (deal.brand_logo_url) {
+                        return (
+                          <img
+                            src={deal.brand_logo_url}
+                            alt={deal.brand_name}
+                            className="w-10 h-10 rounded-full object-cover border border-border"
+                            onError={(e) => {
+                              // Fallback to icon if image fails to load
+                              const target = e.target as HTMLImageElement;
+                              target.style.display = 'none';
+                              const parent = target.parentElement;
+                              if (parent) {
+                                parent.innerHTML = getBrandIcon(deal.brand_name);
+                              }
+                            }}
+                          />
+                        );
+                      }
+                      // Otherwise use emoji/letter icon
+                      return (
+                        <div className="flex-shrink-0 w-10 h-10 rounded-full bg-gradient-to-br from-blue-500/20 to-purple-500/20 flex items-center justify-center text-lg border border-border">
+                          {getBrandIcon(deal.brand_name)}
+                        </div>
+                      );
+                    };
+
+                    // Get brand emoji or first letter (fallback)
                     const getBrandIcon = (brandName: string) => {
                       const name = brandName.toLowerCase();
                       if (name.includes('nike')) return '🎯';
@@ -111,9 +140,7 @@ const CreatorRevenuePayments: React.FC<CreatorRevenuePaymentsProps> = ({
                       )}>
                         <div className="flex items-start gap-3">
                           {/* Brand Logo/Icon */}
-                          <div className="flex-shrink-0 w-10 h-10 rounded-full bg-gradient-to-br from-blue-500/20 to-purple-500/20 flex items-center justify-center text-lg border border-border">
-                            {getBrandIcon(deal.brand_name)}
-                          </div>
+                          {getBrandLogo(deal)}
                           
                           {/* Brand Info */}
                           <div className="flex-1 min-w-0">
