@@ -409,7 +409,7 @@ const CreatorDashboard = () => {
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
-            {brandDeals
+            {brandDealsData?.data
               ?.filter((deal) => deal.contract_file_url)
               .map((deal) => (
                 <div
@@ -460,7 +460,7 @@ const CreatorDashboard = () => {
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
-            {brandDeals?.map((deal) => (
+            {brandDealsData?.data?.map((deal) => (
               <Button
                 key={deal.id}
                 variant="outline"
@@ -491,7 +491,7 @@ const CreatorDashboard = () => {
           </DialogHeader>
           <div className="space-y-4 py-4">
             {!selectedDealForReminder ? (
-              brandDeals
+              brandDealsData?.data
                 ?.filter((deal) => deal.status === 'Payment Pending')
                 .map((deal) => (
                   <Button
