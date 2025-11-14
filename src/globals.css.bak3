@@ -1,0 +1,231 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* New Dark Mode Colors (Default) */
+    --background: 220 15% 11%; /* #0B1221 Deep Navy Background *
+    --foreground: 0 0% 98%; /* White text */
+
+    --card: 220 14% 16%; /* #121A2B Smooth Glass Panels */
+    --card-foreground: 0 0% 98%;
+
+    --popover: 220 10% 15%;
+    --popover-foreground: 0 0% 98%;
+
+    --primary: 206 100% 59%; /* #2D9CFF Neon Blue Highlights *
+    --primary-foreground: 0 0% 98%;
+
+    --secondary: 220 10% 20%; /* Darker grey secondary */
+    --secondary-foreground: 0 0% 98%;
+
+    --muted: 220 10% 20%;
+    --muted-foreground: 215 14% 70%; /* Muted light grey text */
+
+    --accent: 220 10% 20%;
+    --accent-foreground: 0 0% 98%;
+
+    --destructive: 0 84.2% 60.2%; /* #EF4444 */
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 220 10% 25%; /* Darker border */
+    --input: 220 10% 20%;
+    --ring: 206 100% 59%; /* #2D9CFF Neon Blue */
+
+    --radius: 0.75rem; /* Increased to 12px */
+
+    --sidebar-background: 220 10% 10%;
+    --sidebar-foreground: 0 0% 98%;
+    --sidebar-primary: 217.2 91.2% 59.8%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 220 10% 20%;
+    --sidebar-accent-foreground: 0 0% 98%;
+    --sidebar-border: 220 10% 25%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  /* Optional: Light mode class if needed for specific elements */
+  .light {
+    --background: 0 0% 100%; /* White background */
+    --foreground: 222.2 84% 4.9%; /* Dark text */
+
+    --card: 0 0% 100%; /* White card background */
+    --card-foreground: 222.2 84% 4.9%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+
+    --primary: 222.2 47.4% 11.2%; /* Dark blue for primary actions */
+    --primary-foreground: 210 40% 98%; /* White text on primary */
+
+    --secondary: 210 40% 96.1%; /* Light grey secondary */
+    --secondary-foreground: 222.2 47.4% 11.2%;
+
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%; /* Muted grey text */
+
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 214.3 31.8% 91.4%; /* Light grey border */
+    --input: 214.3 31.8% 91.4%;
+    --ring: 222.2 84% 4.9%;
+
+    --sidebar-background: 220 10% 10%;
+    --sidebar-foreground: 0 0% 98%;
+    --sidebar-primary: 217.2 91.2% 59.8%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 220 10% 20%;
+    --sidebar-accent-foreground: 0 0% 98%;
+    --sidebar-border: 220 10% 25%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    line-height: 1.45; /* Increased line height globally */
+  }
+}
+
+/* Custom utility to hide scrollbar */
+.no-scrollbar {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}
+
+/* Base gradient for all Creator Dashboard cards */
+.creator-card-base {
+  background: hsl(var(--card)); /* #121A2B Smooth Glass Panels */ /* Card gradient */
+  border: 1px solid rgba(255,255,255,0.08); /* Subtle card border */
+}
+
+/* Custom gradient for Quick Action buttons */
+.quick-action-button-gradient {
+  background: linear-gradient(145deg, hsl(var(--primary) / 0.2), hsl(var(--primary) / 0.1)); /* Neon Blue Gradient */
+  border: 1px solid rgba(255,255,255,0.05);
+  transition: all 0.2s ease-in-out;
+}
+
+.quick-action-button-gradient:hover {
+  transform: scale(1.02);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+}
+
+/* Custom gradient for destructive Quick Action button */
+.quick-action-button-destructive-gradient {
+  background: linear-gradient(145deg, rgba(255,0,0,0.2), rgba(139,0,0,0.2));
+  border: 1px solid rgba(255,0,0,0.3);
+  color: hsl(var(--destructive-foreground)); /* Ensure text color is readable */
+  transition: all 0.2s ease-in-out;
+}
+
+.quick-action-button-destructive-gradient:hover {
+  transform: scale(1.02);
+  box-shadow: 0 4px 10px rgba(255,0,0,0.2);
+}
+
+/* Custom gradient for Drafting badge */
+.badge-drafting-gradient {
+  background: linear-gradient(145deg, rgba(59, 130, 246, 0.2), rgba(37, 99, 235, 0.2)); /* Blueish subtle gradient */
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  color: #93C5FD; /* Light blue text */
+}
+
+/* Custom gradient for Payment Pending badge */
+.badge-payment-pending-gradient {
+  background: linear-gradient(145deg, rgba(251, 191, 36, 0.2), rgba(245, 158, 11, 0.2)); /* Yellowish subtle gradient */
+  border: 1px solid rgba(251, 191, 36, 0.3);
+  color: #FCD34D; /* Light yellow text */
+}
+
+/* Custom gradient for brand pills */
+.brand-pill-gradient {
+  background: linear-gradient(145deg, rgba(255,255,255,0.08), rgba(255,255,255,0.02));
+}
+/* Dark Mode Enhancement - Updated Colors */
+@layer base {
+  :root {
+    /* Deep navy background (#0B1221) */
+    --background: 220 15% 11%;
+    
+    /* Smooth glass panels (#121A2B) */
+    --card: 220 14% 16%;
+    
+    /* Neon blue highlights (#2D9CFF) */
+    --primary: 206 100% 59%;
+    --ring: 206 100% 59%;
+    
+    /* Green for payments (#4ADE80) */
+    --payment-green: 142 71% 68%;
+  }
+}
+
+/* Mobile Optimization */
+@layer components {
+  @media (max-width: 768px) {
+    /* Larger touch buttons */
+    button, .btn, a.inline-flex, .cta-primary, .cta-secondary {
+      min-height: 52px !important;
+      min-width: 52px !important;
+      font-size: 16px !important;
+      padding: 14px 20px !important;
+    }
+    
+    /* Single column layout */
+    .grid {
+      grid-template-columns: 1fr !important;
+    }
+    
+    /* Cards stacked */
+    .creator-card-base {
+      margin-bottom: 1rem;
+      width: 100%;
+    }
+    
+    /* Sticky quick actions bar */
+    .sticky-quick-actions {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 50;
+      background: hsl(var(--card));
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 12px;
+      box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
+      backdrop-filter: blur(8px);
+    }
+    
+    /* Add padding to body when sticky bar is visible */
+    body:has(.sticky-quick-actions) {
+      padding-bottom: 80px;
+    }
+  }
+}
+
+/* Payment green color utility */
+.text-payment-green {
+  color: hsl(142 71% 68%);
+}
+
+.bg-payment-green {
+  background-color: hsl(142 71% 68%);
+}
+
+.border-payment-green {
+  border-color: hsl(142 71% 68%);
+}
