@@ -4,19 +4,18 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { QuickAction } from '@/data/creatorDashboardData';
 import { cn } from '@/lib/utils';
-import { DollarSign, FileText, Bot, ShieldCheck, PlusCircle, Link as LinkIcon } from 'lucide-react'; // Import LinkIcon
+import { DollarSign, FileText, Bot, ShieldCheck, PlusCircle } from 'lucide-react';
 
 interface CreatorQuickActionsProps {
   quickActions: QuickAction[];
   onAddBrandDeal: () => void; // New prop for opening the brand deal form
   onAIScanContract: () => void; // New prop for opening the AI scan dialog
   onUploadContract: () => void; // Handler for 'Upload Contract' quick action
-  onLinkSocialAccounts: () => void; // NEW: Handler for 'Link Social Accounts' quick action
   onSendPaymentReminder: () => void; // NEW: Handler for 'Send Payment Reminder'
   onSendTakedownNotice: () => void; // NEW: Handler for 'Send Takedown Notice'
 }
 
-const CreatorQuickActions: React.FC<CreatorQuickActionsProps> = ({ quickActions, onAddBrandDeal, onAIScanContract, onUploadContract, onLinkSocialAccounts, onSendPaymentReminder, onSendTakedownNotice }) => { // UPDATED: Add onLinkSocialAccounts, onSendPaymentReminder, onSendTakedownNotice
+const CreatorQuickActions: React.FC<CreatorQuickActionsProps> = ({ quickActions, onAddBrandDeal, onAIScanContract, onUploadContract, onSendPaymentReminder, onSendTakedownNotice }) => {
   // Filter out the mock quick actions that will be replaced by specific buttons or real data
   const filteredQuickActions = quickActions.filter(action => 
     action.label !== 'Send Payment Reminder' && 
@@ -30,7 +29,6 @@ const CreatorQuickActions: React.FC<CreatorQuickActionsProps> = ({ quickActions,
     { label: 'Send Payment Reminder', icon: DollarSign, onClick: onSendPaymentReminder }, // Use new handler
     { label: 'Upload Contract', icon: FileText, onClick: onUploadContract },
     { label: 'AI Scan Contract', icon: Bot, onClick: onAIScanContract },
-    { label: 'Link Social Accounts', icon: LinkIcon, onClick: onLinkSocialAccounts }, // NEW: Link Social Accounts button
     { label: 'Send Takedown Notice', icon: ShieldCheck, onClick: onSendTakedownNotice, variant: 'destructive' as const }, // Use new handler
   ];
 
