@@ -87,7 +87,8 @@ export const useAddBrandDeal = () => {
     async ({ 
       creator_id, 
       organization_id, // DESTRUCTURE NEW FIELD
-      brand_name, 
+      brand_name,
+      brand_domain, // NEW: Optional brand domain
       deal_amount, 
       deliverables, 
       contract_file, 
