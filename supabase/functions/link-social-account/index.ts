@@ -3,8 +3,8 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 
 interface LinkSocialAccountRequest {
   platform: "instagram" | "youtube" | "tiktok" | "twitter";
-  auth_code?: string;
-  user_id?: string;
+  auth_code: string;
+  user_id: string;
   redirect_uri?: string;
 }
 
@@ -319,54 +319,6 @@ function resolveRedirectUri(platform: string, override?: string): string {
   }
 }
 
-function generateInstagramOAuthUrl(redirectUri: string, state: string): string {
-  const clientId = assertEnv("FACEBOOK_APP_ID");
-  // Use Instagram Basic Display API - valid scopes are: user_profile, user_media
-  const scopes = "user_profile,user_media";
-  const responseType = "code";
-  
-  return `https://api.instagram.com/oauth/authorize?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${scopes}&response_type=${responseType}&state=${state}`;
-}
-
-function generateYouTubeOAuthUrl(redirectUri: string, state: string): string {
-  const clientId = assertEnv("GOOGLE_CLIENT_ID");
-  const scopes = "https://www.googleapis.com/auth/youtube.readonly";
-  const responseType = "code";
-  
-  return `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${encodeURIComponent(scopes)}&response_type=${responseType}&state=${state}&access_type=offline&prompt=consent`;
-}
-
-function generateTikTokOAuthUrl(redirectUri: string, state: string): string {
-  const clientKey = assertEnv("TIKTOK_CLIENT_KEY");
-  const scopes = "user.info.basic";
-  
-  return `https://www.tiktok.com/v2/auth/authorize?client_key=${clientKey}&scope=${scopes}&response_type=code&redirect_uri=${encodeURIComponent(redirectUri)}&state=${state}`;
-}
-
-function generateTwitterOAuthUrl(redirectUri: string, state: string): string {
-  const clientId = assertEnv("TWITTER_CLIENT_ID");
-  const scopes = "tweet.read users.read offline.access";
-  const codeChallenge = "challenge"; // In production, use PKCE
-  const codeChallengeMethod = "plain";
-  
-  return `https://twitter.com/i/oauth2/authorize?response_type=code&client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${encodeURIComponent(scopes)}&state=${state}&code_challenge=${codeChallenge}&code_challenge_method=${codeChallengeMethod}`;
-}
-
-function generateOAuthUrl(platform: string, redirectUri: string, state: string): string {
-  switch (platform) {
-    case "instagram":
-      return generateInstagramOAuthUrl(redirectUri, state);
-    case "youtube":
-      return generateYouTubeOAuthUrl(redirectUri, state);
-    case "tiktok":
-      return generateTikTokOAuthUrl(redirectUri, state);
-    case "twitter":
-      return generateTwitterOAuthUrl(redirectUri, state);
-    default:
-      throw new Error(`Unsupported platform: ${platform}`);
-  }
-}
-
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { status: 200, headers: corsHeaders });
@@ -390,51 +342,9 @@ serve(async (req) => {
   }
 
   const { platform, auth_code: authCode, user_id: userId, redirect_uri: redirectOverride } = requestBody;
-  
-  if (!platform) {
-    return new Response(JSON.stringify({ error: "Missing platform" }), {
-      status: 400,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
-  }
-
-  // If no auth_code, generate OAuth URL
-  if (!authCode) {
-    if (!userId) {
-      return new Response(JSON.stringify({ error: "Missing user_id for OAuth URL generation" }), {
+  if (!platform || !authCode || !userId) {
+    return new Response(JSON.stringify({ error: "Missing platform, auth_code, or user_id" }), {
         status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
-    try {
-      const redirectUri = resolveRedirectUri(platform, redirectOverride);
-      const state = `${platform}_${userId}_${Date.now()}`; // State for CSRF protection
-      const oauthUrl = generateOAuthUrl(platform, redirectUri, state);
-      
-      return new Response(
-        JSON.stringify({ oauth_url: oauthUrl }),
-        {
-          status: 200,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        }
-      );
-    } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
-      return new Response(
-        JSON.stringify({ error: `Failed to generate OAuth URL: ${message}` }),
-        {
-          status: 500,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        }
-      );
-    }
-  }
-
-  // If auth_code is provided, exchange it for tokens
-  if (!userId) {
-    return new Response(JSON.stringify({ error: "Missing user_id" }), {
-      status: 400,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
