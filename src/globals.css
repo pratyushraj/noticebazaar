@@ -5,16 +5,16 @@
 @layer base {
   :root {
     /* New Dark Mode Colors (Default) */
-    --background: 220 15% 11%; /* #0B1221 Deep Navy Background */ */
+    --background: 220 15% 11%; /* #0B1221 Deep Navy Background *
     --foreground: 0 0% 98%; /* White text */
 
-    --card: 220 14% 16%; /* #121A2B Smooth Glass Panels *
+    --card: 220 14% 16%; /* #121A2B Smooth Glass Panels */
     --card-foreground: 0 0% 98%;
 
     --popover: 220 10% 15%;
     --popover-foreground: 0 0% 98%;
 
-    --primary: 206 100% 59%; /* #2D9CFF Neon Blue Highlights */ */
+    --primary: 206 100% 59%; /* #2D9CFF Neon Blue Highlights *
     --primary-foreground: 0 0% 98%;
 
     --secondary: 220 10% 20%; /* Darker grey secondary */
