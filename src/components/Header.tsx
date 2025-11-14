@@ -1,6 +1,8 @@
 "use client";
 
-import { Link } from 'react-router-dom';
+import React from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
 import { useSession } from '@/contexts/SessionContext';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -12,12 +14,14 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { LogOut, User as UserIcon, Settings, FileText, MessageSquare, Users, Activity, CreditCard, Bell, LayoutDashboard } from 'lucide-react';
+import { LogOut, User as UserIcon, Settings, FileText, MessageSquare, Briefcase, Users, CalendarDays, Activity, CreditCard, FolderOpen, Bell, Calculator, LayoutDashboard } from 'lucide-react'; // Added Calculator icon and LayoutDashboard
+import { toast } from 'sonner';
+import { Profile } from '@/types';
 import { useSignOut } from '@/lib/hooks/useAuth';
 import { getInitials, DEFAULT_AVATAR_URL } from '@/lib/utils/avatar';
 
 const Header = () => {
-  const { user, profile } = useSession();
+  const { user, profile, isAdmin, isCreator } = useSession(); // Added isCreator
   const signOutMutation = useSignOut();
 
   const handleLogout = async () => {
@@ -40,13 +44,8 @@ const Header = () => {
   return (
     <header className="sticky top-0 z-40 w-full border-b border-border bg-background">
       <div className="flex h-16 items-center justify-between py-4 px-3 md:px-4">
-        <Link to={dashboardPath} className="flex items-center space-x-3">
-          <img
-            src="/Ca%2Blawyer.jpg"
-            alt="NoticeBazaar"
-            className="h-10 w-auto rounded-md object-cover"
-          />
-          <span className="text-2xl font-bold text-primary">NoticeBazaar</span>
+        <Link to={dashboardPath} className="text-2xl font-bold text-primary">
+          NoticeBazaar
         </Link>
         <nav className="flex items-center space-x-4">
           {user && (
@@ -68,7 +67,7 @@ const Header = () => {
                     <Avatar className="h-8 w-8">
                       <AvatarImage src={profile?.avatar_url || DEFAULT_AVATAR_URL} alt={profile?.first_name || "User"} />
                       <AvatarFallback className="bg-primary text-primary-foreground">
-                        {getInitials(profile?.first_name ?? '', profile?.last_name ?? '')}
+                        {getInitials(profile?.first_name, profile?.last_name)}
                       </AvatarFallback>
                     </Avatar>
                   </Button>
