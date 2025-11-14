@@ -3,8 +3,7 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { IndianRupee, Briefcase, ArrowRight, DollarSign, Edit } from 'lucide-react'; // Added Edit icon
-import { Badge } from '@/components/ui/badge';
+import { IndianRupee, Briefcase, ArrowRight, DollarSign } from 'lucide-react';
 import { BrandDeal } from '@/types'; // Import BrandDeal type
 import { cn } from '@/lib/utils';
 import BrandPill from './BrandPill'; // Import the new BrandPill component
@@ -16,6 +15,7 @@ interface CreatorRevenuePaymentsProps {
   previousBrands: string[];
   totalIncomeTracked: string;
   onEditBrandDeal: (deal: BrandDeal) => void; // New prop for editing
+  onSendReminder?: (deal: BrandDeal) => void; // New prop for sending payment reminder
 }
 
 const CreatorRevenuePayments: React.FC<CreatorRevenuePaymentsProps> = ({
@@ -24,6 +24,7 @@ const CreatorRevenuePayments: React.FC<CreatorRevenuePaymentsProps> = ({
   previousBrands,
   totalIncomeTracked,
   onEditBrandDeal,
+  onSendReminder,
 }) => {
   const calculateOverdueDays = (paymentExpectedDate: string) => {
     const today = new Date();
@@ -74,47 +75,95 @@ const CreatorRevenuePayments: React.FC<CreatorRevenuePaymentsProps> = ({
           </Button>
         </Card>
 
-        {/* Active Brand Deals */}
+        {/* Active Brand Deals - Mini CRM */}
         <Card className="creator-card-base shadow-sm p-6 flex flex-col justify-between">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 px-0 pt-0">
             <CardTitle className="text-sm font-medium text-muted-foreground">Active Brand Deals</CardTitle>
             <Briefcase className="h-4 w-4 text-blue-500" />
           </CardHeader>
           <CardContent className="px-0 pb-0 flex-grow">
-            <ul className="space-y-2 mt-2">
+            <div className="space-y-3 mt-2">
               {activeBrandDeals.length > 0 ? (
-                activeBrandDeals.map((deal, index) => (
-                  <li key={index} className="flex items-center justify-between">
-                    <div className="flex items-center">
-                      <span className="text-foreground mr-2">{deal.brand_name}</span>
-                      {deal.status === 'Payment Pending' && calculateOverdueDays(deal.payment_expected_date) > 0 && (
-                        <span className="text-xs text-red-400">({calculateOverdueDays(deal.payment_expected_date)} days overdue)</span>
-                      )}
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <Badge 
-                        variant="outline"
-                        className={cn(
-                          "rounded-full px-2.5 py-0.5 text-xs font-semibold",
-                          deal.status === 'Drafting' 
-                            ? 'badge-drafting-gradient' 
-                            : deal.status === 'Payment Pending'
-                              ? 'badge-payment-pending-gradient'
-                              : 'bg-green-500/20 text-green-400 border-green-500/30'
-                        )}
-                      >
-                        {deal.status}
-                      </Badge>
-                      <Button variant="ghost" size="icon" onClick={() => onEditBrandDeal(deal)} className="h-6 w-6 text-muted-foreground hover:bg-secondary">
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </li>
-                ))
+                activeBrandDeals
+                  .filter(deal => deal.status === 'Payment Pending')
+                  .slice(0, 3) // Show max 3 deals
+                  .map((deal, index) => {
+                    const overdueDays = calculateOverdueDays(deal.payment_expected_date);
+                    const daysUntilDue = overdueDays === 0 ? Math.ceil((new Date(deal.payment_expected_date).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)) : 0;
+                    const isOverdue = overdueDays > 0;
+                    const hasInvoice = !!deal.invoice_file_url;
+                    
+                    // Get brand emoji or first letter
+                    const getBrandIcon = (brandName: string) => {
+                      const name = brandName.toLowerCase();
+                      if (name.includes('nike')) return '🎯';
+                      if (name.includes('mamaearth') || name.includes('mama')) return '🌿';
+                      if (name.includes('amazon')) return '📦';
+                      if (name.includes('flipkart')) return '🛒';
+                      if (name.includes('zomato')) return '🍔';
+                      if (name.includes('swiggy')) return '🚗';
+                      return brandName.charAt(0).toUpperCase();
+                    };
+
+                    return (
+                      <div key={index} className={cn(
+                        "p-4 rounded-lg border",
+                        isOverdue ? "bg-red-500/10 border-red-500/30" : "bg-card border-border"
+                      )}>
+                        <div className="flex items-start gap-3">
+                          {/* Brand Logo/Icon */}
+                          <div className="flex-shrink-0 w-10 h-10 rounded-full bg-gradient-to-br from-blue-500/20 to-purple-500/20 flex items-center justify-center text-lg border border-border">
+                            {getBrandIcon(deal.brand_name)}
+                          </div>
+                          
+                          {/* Brand Info */}
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-1">
+                              <h3 className="font-semibold text-foreground">{deal.brand_name}</h3>
+                            </div>
+                            
+                            <div className="flex flex-wrap items-center gap-2 text-sm mb-2">
+                              <span className="font-bold text-foreground">₹{deal.deal_amount.toLocaleString('en-IN')}</span>
+                              <span className="text-muted-foreground">•</span>
+                              {isOverdue ? (
+                                <span className="text-red-400 font-medium">Overdue by {overdueDays} day{overdueDays !== 1 ? 's' : ''}</span>
+                              ) : (
+                                <span className="text-muted-foreground">Due in {daysUntilDue} day{daysUntilDue !== 1 ? 's' : ''}</span>
+                              )}
+                              {hasInvoice && (
+                                <>
+                                  <span className="text-muted-foreground">•</span>
+                                  <span className="text-muted-foreground">1 invoice pending</span>
+                                </>
+                              )}
+                            </div>
+                            
+                            {/* Send Reminder Button */}
+                            {deal.status === 'Payment Pending' && (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="mt-2 h-8 text-xs"
+                                onClick={() => {
+                                  // This will be handled by the parent component
+                                  if (onSendReminder) {
+                                    onSendReminder(deal);
+                                  }
+                                }}
+                              >
+                                <DollarSign className="h-3 w-3 mr-1" />
+                                Send Reminder
+                              </Button>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })
               ) : (
                 <p className="text-muted-foreground text-sm">No active deals.</p>
               )}
-            </ul>
+            </div>
           </CardContent>
           <Button asChild variant="link" className="p-0 w-full text-primary hover:text-primary/80 mt-4">
             <Link to="/creator-contracts">

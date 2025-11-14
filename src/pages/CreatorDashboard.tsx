@@ -329,6 +329,10 @@ const CreatorDashboard = () => {
         previousBrands={derivedPreviousBrands}
         totalIncomeTracked={derivedTotalIncomeTracked}
         onEditBrandDeal={handleEditBrandDeal}
+        onSendReminder={(deal) => {
+          setSelectedDealForReminder(deal);
+          setIsSendPaymentReminderDialogOpen(true);
+        }}
       />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
