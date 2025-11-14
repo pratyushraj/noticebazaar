@@ -315,3 +315,335 @@ const CreatorDashboard = () => {
         </Button>
       </div>
 
+
+      {/* Simple Quick Actions - ONE clean row with 5 buttons */}
+      <SimpleQuickActions
+        onAddBrandDeal={handleAddBrandDeal}
+        onUploadContract={handleUploadContractQuickAction}
+        onAIScanContract={handleAIScanContract}
+        onSendPaymentReminder={handleSendPaymentReminderQuickAction}
+        onSendTakedownNotice={handleSendTakedownNoticeQuickAction}
+      />
+
+      {/* Revenue & Payments */}
+      <CreatorRevenuePayments
+        pendingBrandPayments={derivedPendingBrandPayments}
+        activeBrandDeals={derivedActiveBrandDeals}
+        previousBrands={derivedPreviousBrands}
+        totalIncomeTracked={derivedTotalIncomeTracked}
+        onEditBrandDeal={handleEditBrandDeal}
+        onSendReminder={(deal) => {
+          setSelectedDealForReminder(deal);
+          setIsSendPaymentReminderDialogOpen(true);
+        }}
+      />
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Legal Workflows */}
+        <div className="lg:col-span-2">
+          <CreatorLegalWorkflows
+            contractsRequiringReview={derivedContractsRequiringReview}
+            takedownAlerts={mockDashboardData.takedownAlerts}
+          />
+        </div>
+
+        {/* AI Action Center */}
+        <CreatorAIActionCenter aiActions={mockDashboardData.aiActionCenter} onSendPaymentReminder={handleSendPaymentReminderQuickAction} />
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Protection & Compliance */}
+        <CreatorProtectionCompliance protectionCompliance={mockDashboardData.protectionCompliance} />
+
+        {/* Tax Compliance Status */}
+        <CreatorTaxCompliance taxComplianceStatus={mockDashboardData.taxComplianceStatus} />
+
+        {/* Important Deadlines (Now using real data) */}
+        <CreatorImportantDeadlines deadlines={upcomingDeadlines || []} isLoading={isLoadingDeadlines} />
+      </div>
+
+      {/* Copyright Scanner - Link Card */}
+      <CopyrightScannerCard />
+
+
+      {/* Brand Deal Form Dialog */}
+      <Dialog open={isBrandDealFormOpen} onOpenChange={setIsBrandDealFormOpen}>
+        <DialogContent 
+          className="sm:max-w-[600px] bg-card text-foreground border-border h-[90vh] flex flex-col"
+          aria-labelledby="brand-deal-form-title"
+          aria-describedby="brand-deal-form-description"
+        >
+          <DialogHeader>
+            <DialogTitle id="brand-deal-form-title">{editingBrandDeal ? 'Edit Brand Deal' : 'Add New Brand Deal'}</DialogTitle>
+            <DialogDescription id="brand-deal-form-description" className="text-muted-foreground">
+              {editingBrandDeal ? 'Update the details for this brand collaboration.' : 'Enter the details for your new brand collaboration.'}
+            </DialogDescription>
+          </DialogHeader>
+          <ScrollArea className="flex-1 p-4 -mx-4">
+            <BrandDealForm
+              initialData={editingBrandDeal}
+              onSaveSuccess={() => {
+                refetchBrandDeals();
+                setIsBrandDealFormOpen(false);
+                setEditingBrandDeal(null);
+              }}
+              onClose={() => {
+                setIsBrandDealFormOpen(false);
+                setEditingBrandDeal(null);
+              }}
+            />
+          </ScrollArea>
+        </DialogContent>
+      </Dialog>
+
+      {/* AI Scan Contract Dialog */}
+      <Dialog open={isAIScanDialogOpen} onOpenChange={setIsAIScanDialogOpen}>
+        <DialogContent className="sm:max-w-[700px] bg-card text-foreground border-border max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>AI Contract Scan</DialogTitle>
+            <DialogDescription className="text-muted-foreground">
+              Select a contract to scan for legal risks and issues.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            {brandDealsData?.data
+              ?.filter((deal) => deal.contract_file_url)
+              .map((deal) => (
+                <div
+                  key={deal.id}
+                  className="flex items-center justify-between p-4 rounded-lg border border-border bg-card hover:bg-secondary/50 cursor-pointer transition-colors"
+                  onClick={() => {
+                    setSelectedContractForAIScan(deal.contract_file_url || null);
+                  }}
+                >
+                  <div>
+                    <p className="font-semibold text-foreground">{deal.brand_name}</p>
+                    <p className="text-sm text-muted-foreground">{deal.contract_file_url}</p>
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSelectedContractForAIScan(deal.contract_file_url || null);
+                    }}
+                  >
+                    Scan
+                  </Button>
+                </div>
+              ))}
+          </div>
+          {selectedContractForAIScan && (
+            <div className="space-y-4 py-4 border-t border-border">
+              <AIScanContractReview
+                contractFileUrl={selectedContractForAIScan}
+                onClose={() => {
+                  setSelectedContractForAIScan(null);
+                  setIsAIScanDialogOpen(false);
+                }}
+              />
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Upload Contract Quick Action Dialog */}
+      <Dialog open={isUploadContractQuickActionOpen} onOpenChange={setIsUploadContractQuickActionOpen}>
+        <DialogContent className="sm:max-w-[500px] bg-card text-foreground border-border">
+          <DialogHeader>
+            <DialogTitle>Upload Contract</DialogTitle>
+            <DialogDescription className="text-muted-foreground">
+              Select a brand deal to upload a contract for.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            {brandDealsData?.data?.map((deal) => (
+              <Button
+                key={deal.id}
+                variant="outline"
+                className="w-full justify-start"
+                onClick={() => {
+                  handleEditBrandDeal(deal);
+                  setIsUploadContractQuickActionOpen(false);
+                }}
+              >
+                <FileText className="h-4 w-4 mr-2" />
+                {deal.brand_name}
+              </Button>
+            ))}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Send Payment Reminder Dialog */}
+      <Dialog open={isSendPaymentReminderDialogOpen} onOpenChange={setIsSendPaymentReminderDialogOpen}>
+        <DialogContent className="sm:max-w-[500px] bg-card text-foreground border-border">
+          <DialogHeader>
+            <DialogTitle>Send Payment Reminder</DialogTitle>
+            <DialogDescription className="text-muted-foreground">
+              {selectedDealForReminder
+                ? `Send a payment reminder to ${selectedDealForReminder.brand_name} for ₹${selectedDealForReminder.deal_amount.toLocaleString('en-IN')}.`
+                : 'Select a brand deal to send a payment reminder.'}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            {!selectedDealForReminder ? (
+              brandDealsData?.data
+                ?.filter((deal) => deal.status === 'Payment Pending')
+                .map((deal) => (
+                  <Button
+                    key={deal.id}
+                    variant="outline"
+                    className="w-full justify-start"
+                    onClick={() => {
+                      setSelectedDealForReminder(deal);
+                    }}
+                  >
+                    <DollarSign className="h-4 w-4 mr-2" />
+                    {deal.brand_name} - ₹{deal.deal_amount.toLocaleString('en-IN')}
+                  </Button>
+                ))
+            ) : (
+              <div className="space-y-4">
+                <div className="p-4 rounded-lg border border-border bg-card">
+                  <p className="font-semibold text-foreground">{selectedDealForReminder.brand_name}</p>
+                  <p className="text-sm text-muted-foreground">
+                    Amount: ₹{selectedDealForReminder.deal_amount.toLocaleString('en-IN')}
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    Due: {new Date(selectedDealForReminder.payment_expected_date).toLocaleDateString('en-IN', {
+                      day: 'numeric',
+                      month: 'short',
+                      year: 'numeric',
+                    })}
+                  </p>
+                </div>
+                <Button
+                  onClick={handleSendPaymentReminder}
+                  className="w-full"
+                  disabled={sendPaymentReminderMutation.isPending}
+                >
+                  {sendPaymentReminderMutation.isPending ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Sending...
+                    </>
+                  ) : (
+                    <>
+                      <DollarSign className="h-4 w-4 mr-2" />
+                      Send Payment Reminder
+                    </>
+                  )}
+                </Button>
+              </div>
+            )}
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setIsSendPaymentReminderDialogOpen(false);
+                setSelectedDealForReminder(null);
+              }}
+            >
+              Cancel
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Send Takedown Notice Dialog */}
+      <Dialog open={isSendTakedownNoticeDialogOpen} onOpenChange={setIsSendTakedownNoticeDialogOpen}>
+        <DialogContent className="sm:max-w-[600px] bg-card text-foreground border-border">
+          <DialogHeader>
+            <DialogTitle>Send Takedown Notice</DialogTitle>
+            <DialogDescription className="text-muted-foreground">
+              Fill in the details to send a takedown notice for copyright infringement.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="content-url">Your Content URL</Label>
+              <Input
+                id="content-url"
+                placeholder="https://youtube.com/watch?v=..."
+                value={takedownNoticeDetails.contentUrl}
+                onChange={(e) =>
+                  setTakedownNoticeDetails({ ...takedownNoticeDetails, contentUrl: e.target.value })
+                }
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="platform">Platform</Label>
+              <Select
+                value={takedownNoticeDetails.platform}
+                onValueChange={(value) =>
+                  setTakedownNoticeDetails({ ...takedownNoticeDetails, platform: value })
+                }
+              >
+                <SelectTrigger id="platform">
+                  <SelectValue placeholder="Select platform" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="YouTube">YouTube</SelectItem>
+                  <SelectItem value="Instagram">Instagram</SelectItem>
+                  <SelectItem value="TikTok">TikTok</SelectItem>
+                  <SelectItem value="Facebook">Facebook</SelectItem>
+                  <SelectItem value="Other">Other</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="infringing-url">Infringing Content URL</Label>
+              <Input
+                id="infringing-url"
+                placeholder="https://..."
+                value={takedownNoticeDetails.infringingUrl}
+                onChange={(e) =>
+                  setTakedownNoticeDetails({ ...takedownNoticeDetails, infringingUrl: e.target.value })
+                }
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="infringing-user">Infringing User (Optional)</Label>
+              <Input
+                id="infringing-user"
+                placeholder="Username or channel name"
+                value={takedownNoticeDetails.infringingUser}
+                onChange={(e) =>
+                  setTakedownNoticeDetails({ ...takedownNoticeDetails, infringingUser: e.target.value })
+                }
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setIsSendTakedownNoticeDialogOpen(false);
+                setTakedownNoticeDetails({ contentUrl: '', platform: '', infringingUrl: '', infringingUser: '' });
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleSendTakedownFromDialog}
+              disabled={sendTakedownNoticeMutation.isPending}
+            >
+              {sendTakedownNoticeMutation.isPending ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Sending...
+                </>
+              ) : (
+                'Send Takedown Notice'
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+};
+
+export default CreatorDashboard;
