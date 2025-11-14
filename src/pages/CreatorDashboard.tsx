@@ -8,7 +8,6 @@ import { useCreatorDashboardData } from '@/lib/hooks/useCreatorDashboardData';
 import CreatorKpiCards from '@/components/creator-dashboard/CreatorKpiCards';
 import ProtectionScoreCard from '@/components/creator-dashboard/ProtectionScoreCard';
 import LegalHealthOverview from '@/components/creator-dashboard/LegalHealthOverview';
-import CreatorQuickActions from '@/components/creator-dashboard/CreatorQuickActions';
 import GroupedQuickActions from '@/components/creator-dashboard/GroupedQuickActions';
 import SimpleQuickActions from '@/components/creator-dashboard/SimpleQuickActions';
 import MonthSummary from '@/components/creator-dashboard/MonthSummary';
