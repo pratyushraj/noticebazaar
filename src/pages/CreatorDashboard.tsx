@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState, useMemo } from 'react';
 import { useSession } from '@/contexts/SessionContext';
-import { Loader2, PlusCircle, FileText, Bot, CheckCircle, AlertTriangle, MessageSquare, Lightbulb } from 'lucide-react'; // Added Lightbulb icon
+import { Loader2, PlusCircle, FileText, Bot, CheckCircle, AlertTriangle, MessageSquare, Lightbulb, DollarSign } from 'lucide-react'; // Added Lightbulb icon and DollarSign
 import { toast } from 'sonner';
 import { useCreatorDashboardData } from '@/lib/hooks/useCreatorDashboardData';
 import CreatorKpiCards from '@/components/creator-dashboard/CreatorKpiCards';
@@ -248,6 +248,38 @@ const CreatorDashboard = () => {
 
       {/* KPI Cards */}
       <CreatorKpiCards kpiCards={mockDashboardData.kpiCards} />
+
+      {/* Top Action Buttons - Above the fold */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <Button
+          onClick={handleAddBrandDeal}
+          className="flex flex-col items-center justify-center p-6 h-20 rounded-xl quick-action-button-gradient text-secondary-foreground"
+        >
+          <PlusCircle className="h-6 w-6 mb-2" />
+          <span className="text-sm font-semibold">Add Brand Deal</span>
+        </Button>
+        <Button
+          onClick={handleUploadContractQuickAction}
+          className="flex flex-col items-center justify-center p-6 h-20 rounded-xl quick-action-button-gradient text-secondary-foreground"
+        >
+          <FileText className="h-6 w-6 mb-2" />
+          <span className="text-sm font-semibold">Upload Contract</span>
+        </Button>
+        <Button
+          onClick={handleAIScanContract}
+          className="flex flex-col items-center justify-center p-6 h-20 rounded-xl quick-action-button-gradient text-secondary-foreground"
+        >
+          <Bot className="h-6 w-6 mb-2" />
+          <span className="text-sm font-semibold">AI Scan Contract</span>
+        </Button>
+        <Button
+          onClick={handleSendPaymentReminderQuickAction}
+          className="flex flex-col items-center justify-center p-6 h-20 rounded-xl quick-action-button-gradient text-secondary-foreground"
+        >
+          <DollarSign className="h-6 w-6 mb-2" />
+          <span className="text-sm font-semibold">Payment Reminder</span>
+        </Button>
+      </div>
 
       {/* Quick Actions */}
       <CreatorQuickActions 
