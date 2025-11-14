@@ -26,10 +26,3 @@ dist-ssr
 # Supabase
 supabase/.temp/
 ADD_FACEBOOK_SECRETS.md
-
-# Secrets and credentials (never commit)
-*.secret
-*.key
-.env.local
-.env.production
-RAZORPAY_CREDENTIALS.md
