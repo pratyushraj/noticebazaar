@@ -6,7 +6,6 @@ import { Loader2, PlusCircle, FileText, Bot, CheckCircle, AlertTriangle, Message
 import { toast } from 'sonner';
 import { useCreatorDashboardData } from '@/lib/hooks/useCreatorDashboardData';
 import CreatorKpiCards from '@/components/creator-dashboard/CreatorKpiCards';
-import ProtectionScoreCard from '@/components/creator-dashboard/ProtectionScoreCard';
 import CreatorQuickActions from '@/components/creator-dashboard/CreatorQuickActions';
 import CreatorRevenuePayments from '@/components/creator-dashboard/CreatorRevenuePayments';
 import CreatorLegalWorkflows from '@/components/creator-dashboard/CreatorLegalWorkflows';
@@ -247,38 +246,8 @@ const CreatorDashboard = () => {
       </h1>
       <p className="text-muted-foreground opacity-60 -mt-6">Your comprehensive overview of brand deals, legal protection, and financial health.</p>
 
-      {/* KPI Cards with Protection Score */}
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-        {/* Protection Score - Enhanced and Prominent */}
-        <div className="lg:col-span-1">
-          {mockDashboardData?.kpiCards && (() => {
-            const protectionScoreKpi = mockDashboardData.kpiCards.find(kpi => kpi.title === 'Protection Score');
-            if (protectionScoreKpi) {
-              const scoreValue = parseInt(protectionScoreKpi.value.replace('%', ''));
-              return (
-                <ProtectionScoreCard
-                  score={scoreValue}
-                  changePercentage={protectionScoreKpi.changePercentage}
-                  changeDirection={protectionScoreKpi.changeDirection}
-                  statusDescription={protectionScoreKpi.statusDescription}
-                  onUploadContract={handleUploadContractQuickAction}
-                  onResolveCopyright={() => {
-                    // Navigate to content protection page
-                    window.location.href = '/creator-content-protection';
-                  }}
-                  onSendPaymentReminder={handleSendPaymentReminderQuickAction}
-                />
-              );
-            }
-            return null;
-          })()}
-        </div>
-        
-        {/* Other KPI Cards */}
-        <div className="lg:col-span-3">
-          <CreatorKpiCards kpiCards={mockDashboardData?.kpiCards || []} />
-        </div>
-      </div>
+      {/* KPI Cards */}
+      <CreatorKpiCards kpiCards={mockDashboardData.kpiCards} />
 
       {/* Top Action Buttons - Above the fold */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
