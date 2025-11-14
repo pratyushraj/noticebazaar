@@ -7,14 +7,17 @@ import { toast } from 'sonner';
 import { useCreatorDashboardData } from '@/lib/hooks/useCreatorDashboardData';
 import CreatorKpiCards from '@/components/creator-dashboard/CreatorKpiCards';
 import ProtectionScoreCard from '@/components/creator-dashboard/ProtectionScoreCard';
+import LegalHealthOverview from '@/components/creator-dashboard/LegalHealthOverview';
 import CreatorQuickActions from '@/components/creator-dashboard/CreatorQuickActions';
 import GroupedQuickActions from '@/components/creator-dashboard/GroupedQuickActions';
+import SimpleQuickActions from '@/components/creator-dashboard/SimpleQuickActions';
 import MonthSummary from '@/components/creator-dashboard/MonthSummary';
 import CreatorRevenuePayments from '@/components/creator-dashboard/CreatorRevenuePayments';
 import CreatorLegalWorkflows from '@/components/creator-dashboard/CreatorLegalWorkflows';
 import CreatorProtectionCompliance from '@/components/creator-dashboard/CreatorProtectionCompliance';
 import CreatorTaxCompliance from '@/components/creator-dashboard/CreatorTaxCompliance';
 import CreatorCopyrightScanner from '@/components/creator-dashboard/CreatorCopyrightScanner';
+import CopyrightScannerCard from '@/components/creator-dashboard/CopyrightScannerCard';
 import CreatorAIActionCenter from '@/components/creator-dashboard/CreatorAIActionCenter';
 import CreatorImportantDeadlines from '@/components/creator-dashboard/CreatorImportantDeadlines';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -361,8 +364,8 @@ const CreatorDashboard = () => {
         <CreatorImportantDeadlines deadlines={upcomingDeadlines || []} isLoading={isLoadingDeadlines} />
       </div>
 
-      {/* Copyright Scanner */}
-      <CreatorCopyrightScanner />
+      {/* Copyright Scanner - Link Card */}
+      <CopyrightScannerCard />
 
       {/* Brand Deal Form Dialog */}
       <Dialog open={isBrandDealFormOpen} onOpenChange={setIsBrandDealFormOpen}>
