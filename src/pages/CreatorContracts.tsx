@@ -352,7 +352,7 @@ const CreatorContracts = () => {
           {paginatedDeals.length > 0 ? (
             <>
               {/* Mobile Cards - visible on screens < 768px */}
-              <div className="flex flex-col md:hidden">
+              <div className="flex flex-col w-full md:hidden" style={{ display: 'flex' }}>
                 {paginatedDeals.map((deal) => {
                   const stage = getDealStage(deal);
                   const dueDateStatus = getDueDateStatus(deal.payment_expected_date || deal.due_date);
@@ -376,7 +376,7 @@ const CreatorContracts = () => {
               </div>
 
               {/* Desktop Table Layout - visible on screens >= 768px */}
-              <div className="hidden md:block overflow-x-auto -mx-6 px-6 overflow-visible">
+              <div className="hidden md:block overflow-x-auto -mx-6 px-6 overflow-visible w-full" style={{ display: 'none' }}>
                 <Table className="table-fixed">
                   <TableHeader>
                     <TableRow className="border-border/50">
