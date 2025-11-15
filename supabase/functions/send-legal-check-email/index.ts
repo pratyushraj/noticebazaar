@@ -1,4 +1,4 @@
-import { serve } from "https://deno.land/std@0.200.0/http/server.ts";
+import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -78,7 +78,7 @@ const getPersonalizedEmailTemplate = (companyType: string, firstName: string) =>
       subject = `Your Legal Health Report — Contracts, GST & Client Safety`;
       bodyHtml = `
         <p style="font-size: 16px;">Hi ${firstName},</p>
-        <p style="font-size: 16px;">Thank you for completing your <strong>Free Legal Health Check</strong> with <strong>NoticeBazaar</strong>. Our experts are reviewing your service-based business across:</p>
+        <p style="font-size: 16px;">Thank you for completing your Legal Health Check! Our experts are reviewing your service-based business across:</p>
         <ul style="padding-left: 20px; font-size: 16px;">
           <li><strong>Client & freelancer contracts</strong></li>
           <li><strong>GST, TDS, and business filings</strong></li>
