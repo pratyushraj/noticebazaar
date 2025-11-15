@@ -15,6 +15,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { VisuallyHidden } from '@/components/ui/visually-hidden';
 import { LogOut, User as UserIcon, Settings, FileText, MessageSquare, Briefcase, Users, CalendarDays, Activity, CreditCard, FolderOpen, Bell, Calculator, LayoutDashboard, Menu, X, ShieldCheck, DollarSign } from 'lucide-react';
 import { toast } from 'sonner';
 import { Profile } from '@/types';
@@ -219,10 +220,12 @@ const Header = () => {
       {/* Mobile Menu */}
       <Dialog open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
         <DialogContent className="sm:max-w-md">
-          <DialogTitle className="sr-only">Navigation Menu</DialogTitle>
-          <DialogDescription className="sr-only">
-            Main navigation menu with links to different sections
-          </DialogDescription>
+          <VisuallyHidden>
+            <DialogTitle>Navigation Menu</DialogTitle>
+            <DialogDescription>
+              Main navigation menu with links to different sections
+            </DialogDescription>
+          </VisuallyHidden>
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold">Menu</h2>
             <Button
