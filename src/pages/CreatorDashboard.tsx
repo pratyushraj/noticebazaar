@@ -6,7 +6,6 @@ import { Loader2, PlusCircle, FileText, Bot, CheckCircle, AlertTriangle, Message
 import { toast } from 'sonner';
 import { useCreatorDashboardData } from '@/lib/hooks/useCreatorDashboardData';
 import CreatorKpiCards from '@/components/creator-dashboard/CreatorKpiCards';
-import CreatorTaxCompliance from '@/components/creator-dashboard/CreatorTaxCompliance';
 import CreatorCopyrightScanner from '@/components/creator-dashboard/CreatorCopyrightScanner';
 import CreatorAIActionCenter from '@/components/creator-dashboard/CreatorAIActionCenter';
 import CreatorImportantDeadlines from '@/components/creator-dashboard/CreatorImportantDeadlines';
@@ -213,12 +212,9 @@ const CreatorDashboard = () => {
       {/* KPI Cards */}
       <CreatorKpiCards kpiCards={mockDashboardData.kpiCards} />
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* AI Action Center */}
         <CreatorAIActionCenter aiActions={mockDashboardData.aiActionCenter} onSendPaymentReminder={handleSendPaymentReminderQuickAction} />
-
-        {/* Tax Compliance Status */}
-        <CreatorTaxCompliance taxComplianceStatus={mockDashboardData.taxComplianceStatus} />
 
         {/* Important Deadlines (Now using real data) */}
         <CreatorImportantDeadlines deadlines={upcomingDeadlines || []} isLoading={isLoadingDeadlines} />
