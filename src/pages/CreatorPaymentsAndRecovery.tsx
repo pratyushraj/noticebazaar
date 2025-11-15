@@ -1,10 +1,10 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useSession } from '@/contexts/SessionContext';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { Loader2, IndianRupee, MessageSquare, Send, Eye, FileText, CalendarDays, AlertTriangle, Mail } from 'lucide-react';
+import { Loader2, IndianRupee, Send, FileText, CalendarDays, AlertTriangle, Mail } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { useBrandDeals } from '@/lib/hooks/useBrandDeals';
 import { usePagination } from '@/lib/hooks/usePagination';
@@ -35,7 +35,7 @@ const CreatorPaymentsAndRecovery = () => {
   const [customMessage, setCustomMessage] = useState(''); // NEW state
   const pageSize = 10;
 
-  const { currentPage, totalPages, handlePreviousPage, handleNextPage, setCurrentPage } = usePagination({
+  const { currentPage, handlePreviousPage, handleNextPage, setCurrentPage } = usePagination({
     totalCount: undefined,
     pageSize: pageSize,
   });
@@ -102,11 +102,11 @@ const CreatorPaymentsAndRecovery = () => {
     }
   };
 
-  const getStatusBadgeVariant = (status: BrandDeal['status']) => {
+  const getStatusBadgeVariant = (status: BrandDeal['status']): 'default' | 'secondary' | 'success' | 'destructive' | 'outline' => {
     switch (status) {
       case 'Approved': return 'default';
       case 'Drafting': return 'secondary';
-      case 'Payment Pending': return 'accent';
+      case 'Payment Pending': return 'secondary';
       case 'Completed': return 'success';
       case 'Cancelled': return 'destructive';
       default: return 'outline';
@@ -281,7 +281,7 @@ const CreatorPaymentsAndRecovery = () => {
                             })}
                           </span>
                           {isOverdueDeal && (
-                            <AlertTriangle className="h-4 w-4 text-destructive" title="Overdue" />
+                            <AlertTriangle className="h-4 w-4 text-destructive" aria-label="Overdue" />
                           )}
                         </div>
                         <Badge variant={getStatusBadgeVariant(deal.status)} className="text-[11px]">
@@ -347,7 +347,7 @@ const CreatorPaymentsAndRecovery = () => {
                         <div className="flex items-center">
                           {new Date(deal.payment_expected_date).toLocaleDateString()}
                           {isOverdue(deal.payment_expected_date) && (
-                            <AlertTriangle className="h-4 w-4 text-destructive ml-2" title="Overdue" />
+                            <AlertTriangle className="h-4 w-4 text-destructive ml-2" aria-label="Overdue" />
                           )}
                         </div>
                       </TableCell>
