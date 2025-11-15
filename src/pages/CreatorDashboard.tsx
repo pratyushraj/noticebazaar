@@ -5,13 +5,15 @@ import { useSession } from '@/contexts/SessionContext';
 import { Loader2, PlusCircle, FileText, Bot, CheckCircle, AlertTriangle, MessageSquare, Lightbulb } from 'lucide-react'; // Added Lightbulb icon
 import { toast } from 'sonner';
 import { useCreatorDashboardData } from '@/lib/hooks/useCreatorDashboardData';
-import CreatorKpiCards from '@/components/creator-dashboard/CreatorKpiCards';
-import CreatorQuickActions from '@/components/creator-dashboard/CreatorQuickActions';
-import CreatorRevenuePayments from '@/components/creator-dashboard/CreatorRevenuePayments';
-import CreatorTaxCompliance from '@/components/creator-dashboard/CreatorTaxCompliance';
+import PendingPaymentsWidget from '@/components/creator-dashboard/PendingPaymentsWidget';
+import ActiveBrandDealsWidget from '@/components/creator-dashboard/ActiveBrandDealsWidget';
+import LegalTasksWidget from '@/components/creator-dashboard/LegalTasksWidget';
+import LegalHealthScoreWidget from '@/components/creator-dashboard/LegalHealthScoreWidget';
+import QuickActionsWidget from '@/components/creator-dashboard/QuickActionsWidget';
+import CollapsibleSection from '@/components/creator-dashboard/CollapsibleSection';
 import CreatorCopyrightScanner from '@/components/creator-dashboard/CreatorCopyrightScanner';
-import CreatorAIActionCenter from '@/components/creator-dashboard/CreatorAIActionCenter';
 import CreatorImportantDeadlines from '@/components/creator-dashboard/CreatorImportantDeadlines';
+import CreatorTaxCompliance from '@/components/creator-dashboard/CreatorTaxCompliance';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog'; // Added DialogFooter
 import BrandDealForm from '@/components/forms/BrandDealForm';
@@ -25,11 +27,13 @@ import { Input } from '@/components/ui/input'; // Import Input
 import { ScrollArea } from '@/components/ui/scroll-area'; // Import ScrollArea
 import SocialAccountLinkForm from '@/components/forms/SocialAccountLinkForm'; // NEW: Import SocialAccountLinkForm
 import { useSendPaymentReminder } from '@/lib/hooks/useSendPaymentReminder'; // NEW: Import useSendPaymentReminder
-import { useSendTakedownNotice } from '@/lib/hooks/useSendTakedownNotice'; // NEW: Import useSendTakedownNotice
-import { useCreatorDeadlines } from '@/lib/hooks/useTaxFilings'; // NEW: Import useCreatorDeadlines
+import { useSendTakedownNotice } from '@/lib/hooks/useSendTakedownNotice';
+import { useCreatorDeadlines } from '@/lib/hooks/useTaxFilings';
+import { useNavigate } from 'react-router-dom';
 
 const CreatorDashboard = () => {
   const { profile, loading: sessionLoading, isCreator } = useSession();
+  const navigate = useNavigate();
   const creatorId = profile?.id;
   const [isBrandDealFormOpen, setIsBrandDealFormOpen] = useState(false);
   const [editingBrandDeal, setEditingBrandDeal] = useState<BrandDeal | null>(null);
@@ -78,30 +82,49 @@ const CreatorDashboard = () => {
     }
   }, [mockError, brandDealsError]);
 
-  // Derive data for Revenue & Payments from real brand deals
-  const derivedPendingBrandPayments = useMemo(() => {
+  // Derive data for Pending Payments
+  const pendingPaymentsData = useMemo(() => {
     const pending = brandDeals?.filter(deal => deal.status === 'Payment Pending' && new Date(deal.payment_expected_date) >= new Date()) || [];
     const overdue = brandDeals?.filter(deal => deal.status === 'Payment Pending' && new Date(deal.payment_expected_date) < new Date()) || [];
     
     const totalPendingAmount = pending.reduce((sum, deal) => sum + deal.deal_amount, 0);
     const totalOverdueAmount = overdue.reduce((sum, deal) => sum + deal.deal_amount, 0);
 
-    let status = 'No Pending Payments';
-    let details = '';
+    let status: 'No Pending Payments' | 'Payment Pending' | 'Overdue' = 'No Pending Payments';
+    let invoiceCount = 0;
     let amount = '₹0';
 
     if (overdue.length > 0) {
       status = 'Overdue';
-      details = `${overdue.length} invoice${overdue.length !== 1 ? 's' : ''}`;
+      invoiceCount = overdue.length;
       amount = `₹${totalOverdueAmount.toLocaleString('en-IN')}`;
     } else if (pending.length > 0) {
       status = 'Payment Pending';
-      details = `${pending.length} invoice${pending.length !== 1 ? 's' : ''}`;
+      invoiceCount = pending.length;
       amount = `₹${totalPendingAmount.toLocaleString('en-IN')}`;
     }
 
-    return { amount, status, details };
+    return { amount, status, invoiceCount };
   }, [brandDeals]);
+
+  // Calculate Legal Health Score (0-100)
+  const legalHealthScore = useMemo(() => {
+    let score = 100;
+    
+    // Deduct points for overdue payments
+    const overdue = brandDeals?.filter(deal => deal.status === 'Payment Pending' && new Date(deal.payment_expected_date) < new Date()) || [];
+    score -= overdue.length * 10;
+    
+    // Deduct points for contracts needing review
+    const contractsNeedingReview = brandDeals?.filter(deal => deal.contract_file_url && (deal.status === 'Drafting' || deal.status === 'Active')) || [];
+    score -= contractsNeedingReview.length * 5;
+    
+    // Deduct points for urgent deadlines
+    const urgentDeadlines = upcomingDeadlines?.filter(d => d.urgency === 'High') || [];
+    score -= urgentDeadlines.length * 5;
+    
+    return Math.max(0, Math.min(100, score));
+  }, [brandDeals, upcomingDeadlines]);
 
   const derivedActiveBrandDeals = useMemo(() => {
     return brandDeals?.filter(deal => deal.status === 'Drafting' || deal.status === 'Approved' || deal.status === 'Payment Pending') || [];
@@ -244,49 +267,85 @@ const CreatorDashboard = () => {
     );
   }
 
+  const handleViewAllDeals = () => {
+    navigate('/creator-contracts');
+  };
+
+  const handleViewContracts = () => {
+    navigate('/creator-contracts');
+  };
+
+  const handleViewDeadlines = () => {
+    navigate('/creator-tax-compliance');
+  };
+
   return (
-    <div className="flex flex-col gap-8 bg-background"> {/* Ensure main container uses background color */}
-      <h1 className="text-3xl font-bold text-foreground">
-        CREATOR DASHBOARD, Welcome back, {profile?.first_name || 'Creator'}!
-      </h1>
-      <p className="text-muted-foreground opacity-60 -mt-6">Your comprehensive overview of brand deals, legal protection, and financial health.</p>
-
-      {/* KPI Cards */}
-      <CreatorKpiCards kpiCards={mockDashboardData.kpiCards} />
-
-      {/* Quick Actions */}
-      <CreatorQuickActions 
-        quickActions={mockDashboardData.quickActions} 
-        onAddBrandDeal={handleAddBrandDeal} 
-        onAIScanContract={handleAIScanContract} 
-        onUploadContract={handleUploadContractQuickAction} 
-        onLinkSocialAccounts={handleLinkSocialAccounts} // NEW: Pass the handler
-        onSendPaymentReminder={handleSendPaymentReminderQuickAction} // NEW: Pass the handler
-        onSendTakedownNotice={handleSendTakedownNoticeQuickAction} // NEW: Pass the handler
-      />
-
-      {/* Revenue & Payments */}
-      <CreatorRevenuePayments
-        pendingBrandPayments={derivedPendingBrandPayments}
-        activeBrandDeals={derivedActiveBrandDeals}
-        previousBrands={derivedPreviousBrands}
-        totalIncomeTracked={derivedTotalIncomeTracked}
-        onEditBrandDeal={handleEditBrandDeal}
-      />
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* AI Action Center */}
-        <CreatorAIActionCenter aiActions={mockDashboardData.aiActionCenter} onSendPaymentReminder={handleSendPaymentReminderQuickAction} />
-
-        {/* Tax Compliance Status */}
-        <CreatorTaxCompliance taxComplianceStatus={mockDashboardData.taxComplianceStatus} />
-
-        {/* Important Deadlines (Now using real data) */}
-        <CreatorImportantDeadlines deadlines={upcomingDeadlines || []} isLoading={isLoadingDeadlines} />
+    <div className="flex flex-col gap-6 bg-background">
+      {/* Header */}
+      <div className="mb-2">
+        <h1 className="text-2xl font-semibold text-foreground">
+          Welcome back, {profile?.first_name || 'Creator'}
+        </h1>
+        <p className="text-sm text-muted-foreground mt-1">
+          Overview of your brand deals, payments, and legal tasks
+        </p>
       </div>
 
-      {/* Copyright Scanner */}
-      <CreatorCopyrightScanner />
+      {/* Main 3-Column Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Left Column */}
+        <div className="space-y-6">
+          <PendingPaymentsWidget
+            amount={pendingPaymentsData.amount}
+            invoiceCount={pendingPaymentsData.invoiceCount}
+            status={pendingPaymentsData.status}
+            onSendReminder={handleSendPaymentReminderQuickAction}
+          />
+          
+          <LegalHealthScoreWidget score={legalHealthScore} />
+        </div>
+
+        {/* Middle Column */}
+        <div className="space-y-6">
+          <ActiveBrandDealsWidget
+            deals={derivedActiveBrandDeals}
+            onViewAll={handleViewAllDeals}
+            onEditDeal={handleEditBrandDeal}
+          />
+          
+          <LegalTasksWidget
+            brandDeals={brandDeals || []}
+            upcomingDeadlines={upcomingDeadlines || []}
+            onViewContracts={handleViewContracts}
+            onViewDeadlines={handleViewDeadlines}
+          />
+        </div>
+
+        {/* Right Column */}
+        <div className="space-y-6">
+          <QuickActionsWidget
+            onAddBrandDeal={handleAddBrandDeal}
+            onUploadContract={handleUploadContractQuickAction}
+            onAIScan={handleAIScanContract}
+            onSendReminder={handleSendPaymentReminderQuickAction}
+          />
+        </div>
+      </div>
+
+      {/* Collapsible Sections - Less Important Widgets */}
+      <div className="space-y-4 mt-6">
+        <CollapsibleSection title="Copyright Scanner">
+          <CreatorCopyrightScanner />
+        </CollapsibleSection>
+
+        <CollapsibleSection title="Compliance Calendar">
+          <CreatorImportantDeadlines deadlines={upcomingDeadlines || []} isLoading={isLoadingDeadlines} />
+        </CollapsibleSection>
+
+        <CollapsibleSection title="Tax Compliance">
+          <CreatorTaxCompliance taxComplianceStatus={mockDashboardData.taxComplianceStatus} />
+        </CollapsibleSection>
+      </div>
 
       {/* Brand Deal Form Dialog */}
       <Dialog open={isBrandDealFormOpen} onOpenChange={setIsBrandDealFormOpen}>
