@@ -40,8 +40,8 @@ const Layout = ({ children }: LayoutProps) => {
         onDocumentUploadSuccess={refetchDocuments}
         onConsultationBookingSuccess={refetchConsultations}
       />
-      {/* Footer - Only visible when content is scrolled to bottom */}
-      <div className="text-center py-6 md:py-8 text-sm text-muted-foreground mt-auto">
+      {/* Footer - Only visible when content is scrolled to bottom - Mobile: text-[10px], reduced padding */}
+      <div className="text-center py-3 md:py-8 text-[10px] md:text-sm text-muted-foreground mt-auto">
         <a href="#" className="hover:underline">Legal Resources</a> | <MadeWithDyad />
       </div>
     </div>
