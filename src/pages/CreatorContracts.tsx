@@ -83,6 +83,17 @@ const CreatorContracts = () => {
   const { profile, loading: sessionLoading, isCreator } = useSession();
   const creatorId = profile?.id;
   
+  // Mobile detection
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+  
   const [isBrandDealFormOpen, setIsBrandDealFormOpen] = useState(false);
   const [editingBrandDeal, setEditingBrandDeal] = useState<BrandDeal | null>(null);
   const [isMarkPaymentDialogOpen, setIsMarkPaymentDialogOpen] = useState(false);
@@ -352,7 +363,8 @@ const CreatorContracts = () => {
           {paginatedDeals.length > 0 ? (
             <>
               {/* Mobile Cards - visible on screens < 768px */}
-              <div className="flex flex-col w-full md:hidden" style={{ display: 'flex' }}>
+              {isMobile && (
+              <div className="flex flex-col w-full">
                 {paginatedDeals.map((deal) => {
                   const stage = getDealStage(deal);
                   const dueDateStatus = getDueDateStatus(deal.payment_expected_date || deal.due_date);
@@ -374,9 +386,11 @@ const CreatorContracts = () => {
                   );
                 })}
               </div>
+              )}
 
               {/* Desktop Table Layout - visible on screens >= 768px */}
-              <div className="hidden md:block overflow-x-auto -mx-6 px-6 overflow-visible w-full" style={{ display: 'none' }}>
+              {!isMobile && (
+              <div className="block overflow-x-auto -mx-6 px-6 overflow-visible w-full">
                 <Table className="table-fixed">
                   <TableHeader>
                     <TableRow className="border-border/50">
@@ -450,6 +464,7 @@ const CreatorContracts = () => {
                   </TableBody>
                 </Table>
               </div>
+              )}
 
               {/* Pagination */}
               <div className="flex flex-col md:flex-row justify-center items-center gap-4 mt-6">
