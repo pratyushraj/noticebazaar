@@ -104,6 +104,17 @@ const CreatorContracts = () => {
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
+
+  // Debug: Check what's actually rendered after state updates
+  useEffect(() => {
+    if (paginatedDeals.length > 0) {
+      setTimeout(() => {
+        const mobileView = document.querySelector('[data-mobile-view="true"]');
+        const desktopView = document.querySelector('[data-desktop-view="true"]');
+        console.log(`[CreatorContracts Debug] isMobile=${isMobile}, Mobile view: ${mobileView ? 'RENDERED' : 'NOT RENDERED'}, Desktop view: ${desktopView ? 'RENDERED' : 'NOT RENDERED'}`);
+      }, 100);
+    }
+  }, [isMobile, paginatedDeals.length]);
   
   const [isBrandDealFormOpen, setIsBrandDealFormOpen] = useState(false);
   const [editingBrandDeal, setEditingBrandDeal] = useState<BrandDeal | null>(null);
