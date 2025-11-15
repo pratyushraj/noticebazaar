@@ -41,60 +41,65 @@ const DealCard: React.FC<DealCardProps> = ({
       )}
       onClick={() => onView(deal)}
     >
-      {/* Top Row: Brand Logo + Name + Actions Menu */}
-      <div className="flex items-center justify-between gap-3">
-        <div className="flex items-center gap-3 flex-1 min-w-0">
+      {/* Top Row: Brand Name + Status + Actions Menu */}
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex items-center gap-2.5 flex-1 min-w-0">
           <BrandLogo 
             brandName={deal.brand_name} 
             brandLogo={null} 
             size="md" 
             className="flex-shrink-0" 
           />
-          <h3 className="font-semibold text-base text-foreground leading-tight truncate">
-            {deal.brand_name}
-          </h3>
+          <div className="flex flex-col gap-1 flex-1 min-w-0">
+            {/* Brand Name - Bold, Bigger */}
+            <h3 className="font-bold text-lg text-foreground leading-tight truncate">
+              {deal.brand_name}
+            </h3>
+            {/* Amount - Directly under brand */}
+            <span className="text-xl font-semibold text-foreground">
+              ₹{deal.deal_amount.toLocaleString('en-IN')}
+            </span>
+          </div>
         </div>
-        <div onClick={(e) => e.stopPropagation()}>
-          <DealActionsMenu
-            deal={deal}
-            onView={onView}
-            onEdit={onEdit}
-            onMarkPaid={onMarkPaid}
-            onDelete={onDelete}
-            isDeleting={isDeleting}
-          />
+        <div className="flex items-start gap-2 flex-shrink-0">
+          {/* Status Badge - Right Top */}
+          <DealStatusBadge stage={stage} />
+          {/* Actions Menu */}
+          <div onClick={(e) => e.stopPropagation()}>
+            <DealActionsMenu
+              deal={deal}
+              onView={onView}
+              onEdit={onEdit}
+              onMarkPaid={onMarkPaid}
+              onDelete={onDelete}
+              isDeleting={isDeleting}
+            />
+          </div>
         </div>
-      </div>
-
-      {/* Status Badge - Right Aligned */}
-      <div className="flex justify-end">
-        <DealStatusBadge stage={stage} />
-      </div>
-
-      {/* Amount - Large and Bold */}
-      <div>
-        <span className="text-2xl font-bold text-foreground">
-          ₹{deal.deal_amount.toLocaleString('en-IN')}
-        </span>
       </div>
 
       {/* Platform Section */}
-      <div className="flex flex-col gap-1.5">
-        <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">PLATFORM</span>
-        <span className="text-sm font-medium text-foreground">{deal.platform || 'N/A'}</span>
+      <div className="flex flex-col gap-1">
+        <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">PLATFORM</span>
+        <span className="text-sm text-foreground">{deal.platform || 'N/A'}</span>
       </div>
 
-      {/* Deliverables Section */}
-      <div className="flex flex-col gap-2">
-        <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">DELIVERABLES</span>
-        <DeliverablesBadge deliverables={deal.deliverables} maxDisplay={3} />
+      {/* Deliverables Section - Reduced text size */}
+      <div className="flex flex-col gap-1">
+        <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">DELIVERABLES</span>
+        <div className="text-xs">
+          <DeliverablesBadge deliverables={deal.deliverables} maxDisplay={3} />
+        </div>
       </div>
 
-      {/* Due Date Section - Bottom Border */}
-      <div className="flex items-center justify-between gap-3 pt-3 border-t border-border/40">
-        <div className="flex flex-col gap-1 flex-1 min-w-0">
-          <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">DUE DATE</span>
-          <span className="text-sm font-medium text-foreground">
+      {/* Subtle Separator Line */}
+      <div className="border-t border-border/30 my-1" />
+
+      {/* Due Date Section - Bottom Row */}
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex flex-col gap-0.5 flex-1 min-w-0">
+          <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">DUE DATE</span>
+          <span className="text-xs text-foreground">
             {new Date(deal.payment_expected_date || deal.due_date).toLocaleDateString('en-IN', {
               day: 'numeric',
               month: 'short',
@@ -102,9 +107,10 @@ const DealCard: React.FC<DealCardProps> = ({
             })}
           </span>
         </div>
+        {/* Due Date Status - Right Bottom */}
         <Badge 
           variant={isOverdue ? 'destructive' : 'secondary'}
-          className="text-xs px-3 py-1 whitespace-nowrap flex-shrink-0"
+          className="text-[10px] px-2 py-0.5 whitespace-nowrap flex-shrink-0"
         >
           {dueDateStatus}
         </Badge>
