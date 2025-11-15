@@ -83,12 +83,23 @@ const CreatorContracts = () => {
   const { profile, loading: sessionLoading, isCreator } = useSession();
   const creatorId = profile?.id;
   
-  // Mobile detection
-  const [isMobile, setIsMobile] = useState(false);
+  // Mobile detection - initialize with actual window width if available
+  const [isMobile, setIsMobile] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return window.innerWidth < 768;
+    }
+    return false;
+  });
+  
   useEffect(() => {
     const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768);
+      const width = window.innerWidth;
+      const mobile = width < 768;
+      setIsMobile(mobile);
+      // Debug log (remove in production if needed)
+      console.log(`[CreatorContracts] Screen width: ${width}px, isMobile: ${mobile}`);
     };
+    // Check immediately
     checkMobile();
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
@@ -294,7 +305,8 @@ const CreatorContracts = () => {
           </div>
 
           {/* Mobile Filters Accordion (< 768px) */}
-          <div className="block md:hidden mb-6">
+          {isMobile && (
+          <div className="mb-6">
             <MobileFiltersAccordion
               searchTerm={searchTerm}
               onSearchChange={(value) => {
@@ -325,9 +337,11 @@ const CreatorContracts = () => {
               onClearFilters={handleClearFilters}
             />
           </div>
+          )}
 
           {/* Desktop Filters Bar (>= 768px) */}
-          <div className="hidden md:block mb-6">
+          {!isMobile && (
+          <div className="mb-6">
             <FiltersBar
               searchTerm={searchTerm}
               onSearchChange={(value) => {
@@ -358,6 +372,7 @@ const CreatorContracts = () => {
               onClearFilters={handleClearFilters}
             />
           </div>
+          )}
 
           {/* Mobile Card Layout (< 768px) */}
           {paginatedDeals.length > 0 ? (
