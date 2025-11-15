@@ -40,6 +40,7 @@ import DealStatusBadge, { DealStage } from '@/components/creator-contracts/DealS
 import DeliverablesBadge from '@/components/creator-contracts/DeliverablesBadge';
 import DealActionsMenu from '@/components/creator-contracts/DealActionsMenu';
 import FiltersBar from '@/components/creator-contracts/FiltersBar';
+import MobileFiltersAccordion from '@/components/creator-contracts/MobileFiltersAccordion';
 import DealCard from '@/components/creator-contracts/DealCard';
 
 // Helper function to map old status to new stage
@@ -260,88 +261,121 @@ const CreatorContracts = () => {
   }
 
   return (
-    <>
-      <h1 className="text-3xl font-bold text-foreground mb-6">Brand Deals & Contracts</h1>
+    <div className="w-full max-w-full overflow-x-hidden">
+      <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-4 md:mb-6">Brand Deals & Contracts</h1>
 
       {/* Stats Section */}
       <BrandDealsStats allDeals={allBrandDeals || []} isLoading={isLoadingBrandDeals} />
 
-      <Card className="bg-card border-border/50 mt-8">
-        <CardContent className="p-6">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-            <h2 className="text-xl font-semibold text-foreground">
+      <Card className="bg-card border-border/50 mt-6 md:mt-8">
+        <CardContent className="p-4 md:p-6">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4 md:mb-6">
+            <h2 className="text-lg md:text-xl font-semibold text-foreground">
               All Brand Deals ({filteredAndSearchedDeals.length})
             </h2>
             <Button 
               onClick={handleAddBrandDeal} 
-              className="bg-primary text-primary-foreground hover:bg-primary/90"
+              className="bg-primary text-primary-foreground hover:bg-primary/90 w-full md:w-auto"
             >
               <PlusCircle className="mr-2 h-4 w-4" /> Add New Deal
             </Button>
           </div>
 
-          {/* Filters Bar */}
-          <FiltersBar
-            searchTerm={searchTerm}
-            onSearchChange={(value) => {
-              setSearchTerm(value);
-              setCurrentPage(1);
-            }}
-            brandFilter={brandFilter}
-            onBrandFilterChange={(value) => {
-              setBrandFilter(value);
-              setCurrentPage(1);
-            }}
-            statusFilter={statusFilter}
-            onStatusFilterChange={(value) => {
-              setStatusFilter(value);
-              setCurrentPage(1);
-            }}
-            platformFilter={platformFilter}
-            onPlatformFilterChange={(value) => {
-              setPlatformFilter(value);
-              setCurrentPage(1);
-            }}
-            dateRangeFilter={dateRangeFilter}
-            onDateRangeFilterChange={(value) => {
-              setDateRangeFilter(value);
-              setCurrentPage(1);
-            }}
-            allDeals={allBrandDeals || []}
-            onClearFilters={handleClearFilters}
-            className="mb-6"
-          />
+          {/* Mobile Filters Accordion (< 768px) */}
+          <div className="block md:hidden mb-6">
+            <MobileFiltersAccordion
+              searchTerm={searchTerm}
+              onSearchChange={(value) => {
+                setSearchTerm(value);
+                setCurrentPage(1);
+              }}
+              brandFilter={brandFilter}
+              onBrandFilterChange={(value) => {
+                setBrandFilter(value);
+                setCurrentPage(1);
+              }}
+              statusFilter={statusFilter}
+              onStatusFilterChange={(value) => {
+                setStatusFilter(value);
+                setCurrentPage(1);
+              }}
+              platformFilter={platformFilter}
+              onPlatformFilterChange={(value) => {
+                setPlatformFilter(value);
+                setCurrentPage(1);
+              }}
+              dateRangeFilter={dateRangeFilter}
+              onDateRangeFilterChange={(value) => {
+                setDateRangeFilter(value);
+                setCurrentPage(1);
+              }}
+              allDeals={allBrandDeals || []}
+              onClearFilters={handleClearFilters}
+            />
+          </div>
 
-          {/* Mobile Card Layout (< 640px) */}
+          {/* Desktop Filters Bar (>= 768px) */}
+          <div className="hidden md:block mb-6">
+            <FiltersBar
+              searchTerm={searchTerm}
+              onSearchChange={(value) => {
+                setSearchTerm(value);
+                setCurrentPage(1);
+              }}
+              brandFilter={brandFilter}
+              onBrandFilterChange={(value) => {
+                setBrandFilter(value);
+                setCurrentPage(1);
+              }}
+              statusFilter={statusFilter}
+              onStatusFilterChange={(value) => {
+                setStatusFilter(value);
+                setCurrentPage(1);
+              }}
+              platformFilter={platformFilter}
+              onPlatformFilterChange={(value) => {
+                setPlatformFilter(value);
+                setCurrentPage(1);
+              }}
+              dateRangeFilter={dateRangeFilter}
+              onDateRangeFilterChange={(value) => {
+                setDateRangeFilter(value);
+                setCurrentPage(1);
+              }}
+              allDeals={allBrandDeals || []}
+              onClearFilters={handleClearFilters}
+            />
+          </div>
+
+          {/* Mobile Card Layout (< 768px) */}
           {paginatedDeals.length > 0 ? (
             <>
-              {/* Mobile Cards - visible on screens < 640px */}
-              <div className="block sm:hidden">
+              {/* Mobile Cards - visible on screens < 768px */}
+              <div className="block md:hidden">
                 {paginatedDeals.map((deal) => {
                   const stage = getDealStage(deal);
                   const dueDateStatus = getDueDateStatus(deal.payment_expected_date || deal.due_date);
                   const isOverdue = stage === 'overdue';
 
                   return (
-                    <div key={deal.id} className="mb-4">
-                      <DealCard
-                        deal={deal}
-                        stage={stage}
-                        dueDateStatus={dueDateStatus}
-                        isOverdue={isOverdue}
-                        onView={handleViewDeal}
-                        onEdit={handleEditBrandDeal}
-                        onMarkPaid={handleMarkPaymentReceived}
-                        onDelete={handleDeleteBrandDeal}
-                        isDeleting={deleteBrandDealMutation.isPending && deleteBrandDealMutation.variables?.id === deal.id}
-                      />
-                    </div>
+                    <DealCard
+                      key={deal.id}
+                      deal={deal}
+                      stage={stage}
+                      dueDateStatus={dueDateStatus}
+                      isOverdue={isOverdue}
+                      onView={handleViewDeal}
+                      onEdit={handleEditBrandDeal}
+                      onMarkPaid={handleMarkPaymentReceived}
+                      onDelete={handleDeleteBrandDeal}
+                      isDeleting={deleteBrandDealMutation.isPending && deleteBrandDealMutation.variables?.id === deal.id}
+                    />
                   );
                 })}
               </div>
 
-              {/* Desktop Table Layout - visible on screens >= 640px */}
-              <div className="hidden sm:block overflow-x-auto -mx-6 px-6 overflow-visible">
+              {/* Desktop Table Layout - visible on screens >= 768px */}
+              <div className="hidden md:block overflow-x-auto -mx-6 px-6 overflow-visible">
                 <Table className="table-fixed">
                   <TableHeader>
                     <TableRow className="border-border/50">
@@ -417,26 +451,30 @@ const CreatorContracts = () => {
               </div>
 
               {/* Pagination */}
-              <div className="flex flex-col sm:flex-row justify-center items-center gap-4 mt-6">
-                <Button
-                  variant="outline"
-                  onClick={handlePreviousPage}
-                  disabled={currentPage === 1 || isLoadingBrandDeals}
-                  className="text-foreground border-border/50 hover:bg-accent/50 w-full sm:w-auto"
-                >
-                  Previous
-                </Button>
-                <span className="text-sm text-muted-foreground text-center">
+              <div className="flex flex-col md:flex-row justify-center items-center gap-4 mt-6">
+                <div className="order-2 md:order-1">
+                  <Button
+                    variant="outline"
+                    onClick={handlePreviousPage}
+                    disabled={currentPage === 1 || isLoadingBrandDeals}
+                    className="text-foreground border-border/50 hover:bg-accent/50 w-full md:w-auto"
+                  >
+                    Previous
+                  </Button>
+                </div>
+                <span className="order-1 md:order-2 text-sm text-muted-foreground text-center">
                   Page {currentPage} of {totalPages}
                 </span>
-                <Button
-                  variant="outline"
-                  onClick={handleNextPage}
-                  disabled={currentPage === totalPages || isLoadingBrandDeals}
-                  className="text-foreground border-border/50 hover:bg-accent/50 w-full sm:w-auto"
-                >
-                  Next
-                </Button>
+                <div className="order-3">
+                  <Button
+                    variant="outline"
+                    onClick={handleNextPage}
+                    disabled={currentPage === totalPages || isLoadingBrandDeals}
+                    className="text-foreground border-border/50 hover:bg-accent/50 w-full md:w-auto"
+                  >
+                    Next
+                  </Button>
+                </div>
               </div>
             </>
           ) : (
@@ -501,7 +539,7 @@ const CreatorContracts = () => {
           )}
         </DialogContent>
       </Dialog>
-    </>
+    </div>
   );
 };
 
