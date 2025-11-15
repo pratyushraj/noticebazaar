@@ -3,79 +3,55 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { FileText, AlertTriangle, ArrowRight, CheckCircle } from 'lucide-react';
-import { ContractReview, TakedownAlert } from '@/data/creatorDashboardData'; // Keep TakedownAlert type
-import { cn } from '@/lib/utils';
-import { Link } from 'react-router-dom'; // Import Link
+import { AlertTriangle, ArrowRight } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 interface CreatorLegalWorkflowsProps {
-  contractsRequiringReview: ContractReview[]; // Now derived from BrandDeals
-  takedownAlerts: TakedownAlert[];
+  takedownAlerts: any[];
 }
 
 const CreatorLegalWorkflows: React.FC<CreatorLegalWorkflowsProps> = ({
-  contractsRequiringReview,
   takedownAlerts,
 }) => {
-  return (
-    <div className="space-y-4">
-      <h2 className="text-xl font-semibold text-foreground">Legal Workflows</h2>
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Contracts Requiring Review */}
-        <Card className="creator-card-base shadow-sm border-l-4 border-blue-500 p-6 flex flex-col justify-between min-h-[200px]"> {/* Applied new base card class */}
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 px-0 pt-0"> {/* Minimal padding */}
-            <CardTitle className="text-sm font-medium text-muted-foreground">Contracts Requiring Review</CardTitle>
-            <FileText className="h-4 w-4 text-blue-500" /> {/* Header Icon */}
-          </CardHeader>
-          <CardContent className="px-0 pb-0 flex-grow"> {/* Minimal padding, added flex-grow */}
-            <ul className="space-y-3 mb-4">
-              {contractsRequiringReview.length > 0 ? (
-                contractsRequiringReview.map((contract, index) => (
-                  <li key={index} className="flex items-start">
-                    <CheckCircle className="h-5 w-5 text-green-500 mr-2 flex-shrink-0" />
-                    <span className="text-foreground">{contract.title}</span>
-                  </li>
-                ))
-              ) : (
-                <p className="text-muted-foreground text-sm">No contracts currently require review.</p>
-              )}
-            </ul>
-          </CardContent>
-          <Button asChild variant="default" className="w-full bg-primary text-primary-foreground hover:bg-primary/90 mt-4">
-            <Link to="/creator-contracts">
-              Review Now <ArrowRight className="ml-2 h-4 w-4" />
-            </Link>
-          </Button>
-        </Card>
+  // Calculate total videos reposted
+  const totalVideos = takedownAlerts.length || 2; // Default to 2 if no alerts
+  const platform = takedownAlerts.length > 0 ? takedownAlerts[0]?.platform || 'TikTok' : 'TikTok';
 
-        {/* Takedown Alerts */}
-        <Card className="bg-destructive/20 creator-card-base shadow-sm border-l-4 border-red-500 p-6 flex flex-col justify-between min-h-[200px]"> {/* Applied new base card class */}
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 px-0 pt-0"> {/* Minimal padding */}
-            <CardTitle className="text-sm font-medium text-destructive">Takedown Alerts</CardTitle>
-            <AlertTriangle className="h-4 w-4 text-destructive" /> {/* Header Icon */}
-          </CardHeader>
-          <CardContent className="px-0 pb-0 flex-grow"> {/* Minimal padding, added flex-grow */}
-            <ul className="space-y-3 mb-4">
-              {takedownAlerts.length > 0 ? (
-                takedownAlerts.map((alert, index) => (
-                  <li key={index} className="flex flex-col">
-                    <span className="font-semibold text-foreground">{alert.description}</span>
-                    <span className="text-sm text-muted-foreground">{alert.action}</span>
-                  </li>
-                ))
-              ) : (
-                <p className="text-muted-foreground text-sm">No takedown alerts.</p>
-              )}
-            </ul>
-          </CardContent>
-          <Button asChild variant="destructive" className="w-full bg-destructive text-destructive-foreground hover:bg-destructive/90 mt-4">
-            <Link to="/creator-content-protection">
-              View Matches <ArrowRight className="ml-2 h-4 w-4" />
-            </Link>
-          </Button>
-        </Card>
+  return (
+    <Card className="bg-red-500 text-white shadow-lg relative overflow-hidden min-h-[200px] flex flex-col justify-between p-6">
+      {/* Warning icons in corners */}
+      <div className="absolute top-4 left-4">
+        <AlertTriangle className="h-5 w-5 text-white opacity-80" />
       </div>
-    </div>
+      <div className="absolute top-4 right-4">
+        <AlertTriangle className="h-5 w-5 text-white opacity-80" />
+      </div>
+
+      <CardHeader className="pb-2 px-0 pt-0 relative z-10">
+        <CardTitle className="text-sm font-medium text-white">Takedown Alerts</CardTitle>
+      </CardHeader>
+
+      <CardContent className="px-0 pb-0 flex-grow flex flex-col justify-center relative z-10">
+        <div className="mb-4">
+          <h3 className="text-2xl font-bold text-white mb-2">
+            {totalVideos} Video{totalVideos !== 1 ? 's' : ''} Reposted on {platform}
+          </h3>
+          <p className="text-white/90 text-sm">
+            Immediate action required to prevent revenue loss.
+          </p>
+        </div>
+      </CardContent>
+
+      <Button 
+        asChild 
+        variant="destructive" 
+        className="w-full bg-white text-red-500 hover:bg-white/90 mt-4 relative z-10"
+      >
+        <Link to="/creator-content-protection">
+          View Matches <ArrowRight className="ml-2 h-4 w-4" />
+        </Link>
+      </Button>
+    </Card>
   );
 };
 

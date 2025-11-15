@@ -14,7 +14,7 @@ import CreatorTaxCompliance from '@/components/creator-dashboard/CreatorTaxCompl
 import CreatorCopyrightScanner from '@/components/creator-dashboard/CreatorCopyrightScanner';
 import CreatorAIActionCenter from '@/components/creator-dashboard/CreatorAIActionCenter';
 import CreatorImportantDeadlines from '@/components/creator-dashboard/CreatorImportantDeadlines';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog'; // Added DialogFooter
 import BrandDealForm from '@/components/forms/BrandDealForm';
 import { useBrandDeals } from '@/lib/hooks/useBrandDeals';
@@ -276,22 +276,20 @@ const CreatorDashboard = () => {
         onEditBrandDeal={handleEditBrandDeal}
       />
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Legal Workflows */}
-        <div className="lg:col-span-2">
-          <CreatorLegalWorkflows
-            contractsRequiringReview={derivedContractsRequiringReview}
-            takedownAlerts={mockDashboardData.takedownAlerts}
-          />
-        </div>
+      {/* Takedown Alerts & Protection & Compliance - Side by Side */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Takedown Alerts */}
+        <CreatorLegalWorkflows
+          takedownAlerts={mockDashboardData.takedownAlerts}
+        />
 
-        {/* AI Action Center */}
-        <CreatorAIActionCenter aiActions={mockDashboardData.aiActionCenter} onSendPaymentReminder={handleSendPaymentReminderQuickAction} />
+        {/* Protection & Compliance */}
+        <CreatorProtectionCompliance protectionCompliance={mockDashboardData.protectionCompliance} />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Protection & Compliance */}
-        <CreatorProtectionCompliance protectionCompliance={mockDashboardData.protectionCompliance} />
+        {/* AI Action Center */}
+        <CreatorAIActionCenter aiActions={mockDashboardData.aiActionCenter} onSendPaymentReminder={handleSendPaymentReminderQuickAction} />
 
         {/* Tax Compliance Status */}
         <CreatorTaxCompliance taxComplianceStatus={mockDashboardData.taxComplianceStatus} />
