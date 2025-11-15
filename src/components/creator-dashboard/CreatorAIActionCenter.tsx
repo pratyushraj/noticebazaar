@@ -45,7 +45,7 @@ const CreatorAIActionCenter: React.FC<CreatorAIActionCenterProps> = ({ aiActions
               </div>
               {action.linkText === 'Send Reminder' ? (
                 <Button variant="link" className="p-0 text-primary hover:text-primary/80" onClick={onSendPaymentReminder}>
-                  {action.linkText} <ArrowRight className="ml-1 h-3 w-3" />
+                  Escalate to Legal Action <ArrowRight className="ml-1 h-3 w-3" />
                 </Button>
               ) : (
                 <Button asChild variant="link" className="p-0 text-primary hover:text-primary/80">

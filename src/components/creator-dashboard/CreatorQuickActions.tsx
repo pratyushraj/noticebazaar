@@ -4,34 +4,36 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { QuickAction } from '@/data/creatorDashboardData';
 import { cn } from '@/lib/utils';
-import { DollarSign, FileText, Bot, ShieldCheck, PlusCircle, Link as LinkIcon } from 'lucide-react'; // Import LinkIcon
+import { DollarSign, Bot, ShieldCheck, PlusCircle } from 'lucide-react';
 
 interface CreatorQuickActionsProps {
   quickActions: QuickAction[];
-  onAddBrandDeal: () => void; // New prop for opening the brand deal form
-  onAIScanContract: () => void; // New prop for opening the AI scan dialog
-  onUploadContract: () => void; // Handler for 'Upload Contract' quick action
-  onLinkSocialAccounts: () => void; // NEW: Handler for 'Link Social Accounts' quick action
-  onSendPaymentReminder: () => void; // NEW: Handler for 'Send Payment Reminder'
-  onSendTakedownNotice: () => void; // NEW: Handler for 'Send Takedown Notice'
+  onAddBrandDeal: () => void;
+  onAIScanContract: () => void;
+  onUploadContract: () => void;
+  onLinkSocialAccounts: () => void; // Kept for backward compatibility but not used
+  onSendPaymentReminder: () => void;
+  onSendTakedownNotice: () => void;
 }
 
-const CreatorQuickActions: React.FC<CreatorQuickActionsProps> = ({ quickActions, onAddBrandDeal, onAIScanContract, onUploadContract, onLinkSocialAccounts, onSendPaymentReminder, onSendTakedownNotice }) => { // UPDATED: Add onLinkSocialAccounts, onSendPaymentReminder, onSendTakedownNotice
+const CreatorQuickActions: React.FC<CreatorQuickActionsProps> = ({ quickActions, onAddBrandDeal, onAIScanContract, onUploadContract, onLinkSocialAccounts, onSendPaymentReminder, onSendTakedownNotice }) => {
   // Filter out the mock quick actions that will be replaced by specific buttons or real data
   const filteredQuickActions = quickActions.filter(action => 
     action.label !== 'Send Payment Reminder' && 
     action.label !== 'Upload Contract' && 
     action.label !== 'AI Scan Contract' && 
-    action.label !== 'Send Takedown Notice'
+    action.label !== 'Send Takedown Notice' &&
+    action.label !== 'Link Social Accounts'
   );
 
   const customQuickActions = [
     { label: 'Add Brand Deal', icon: PlusCircle, onClick: onAddBrandDeal, variant: 'default' as const },
-    { label: 'Send Payment Reminder', icon: DollarSign, onClick: onSendPaymentReminder }, // Use new handler
-    { label: 'Upload Contract', icon: FileText, onClick: onUploadContract },
-    { label: 'AI Scan Contract', icon: Bot, onClick: onAIScanContract },
-    { label: 'Link Social Accounts', icon: LinkIcon, onClick: onLinkSocialAccounts }, // NEW: Link Social Accounts button
-    { label: 'Send Takedown Notice', icon: ShieldCheck, onClick: onSendTakedownNotice, variant: 'destructive' as const }, // Use new handler
+    { label: 'Send Payment Reminder', icon: DollarSign, onClick: onSendPaymentReminder },
+    { label: 'Scan New Contract', icon: Bot, onClick: () => {
+      // Combined action: First open upload dialog, then allow AI scan
+      onUploadContract();
+    }},
+    { label: 'Send Takedown Notice', icon: ShieldCheck, onClick: onSendTakedownNotice, variant: 'destructive' as const },
   ];
 
   return (

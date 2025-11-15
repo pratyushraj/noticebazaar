@@ -247,12 +247,16 @@ const CreatorDashboard = () => {
   return (
     <div className="flex flex-col gap-8 bg-background"> {/* Ensure main container uses background color */}
       <h1 className="text-3xl font-bold text-foreground">
-        CREATOR DASHBOARD, Welcome back, {profile?.first_name || 'Creator'}!
+        Welcome back, {profile?.first_name || 'Creator'}!
       </h1>
       <p className="text-muted-foreground opacity-60 -mt-6">Your comprehensive overview of brand deals, legal protection, and financial health.</p>
 
       {/* KPI Cards */}
-      <CreatorKpiCards kpiCards={mockDashboardData.kpiCards} />
+      <CreatorKpiCards kpiCards={mockDashboardData.kpiCards.map(kpi => 
+        kpi.title === 'Total Income' 
+          ? { ...kpi, value: derivedTotalIncomeTracked }
+          : kpi
+      )} />
 
       {/* Quick Actions */}
       <CreatorQuickActions 
@@ -272,6 +276,7 @@ const CreatorDashboard = () => {
         previousBrands={derivedPreviousBrands}
         totalIncomeTracked={derivedTotalIncomeTracked}
         onEditBrandDeal={handleEditBrandDeal}
+        allBrandDeals={brandDeals || []}
       />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
