@@ -27,12 +27,13 @@ export const useProfiles = (options?: UseProfilesOptions) => {
 
   // Memoize the queryFn to ensure referential stability
   const queryFn = useCallback(async () => {
-    // Reverting to original select statement
-    const selectStatement = 'id, first_name, last_name, avatar_url, role, updated_at, instagram_handle, youtube_channel_id, tiktok_handle, facebook_profile_url, twitter_handle, pan'; // UPDATED: Include new social media fields and pan
+    // Try with full select statement first, fallback to basic fields if columns don't exist
+    const fullSelectStatement = 'id, first_name, last_name, avatar_url, role, updated_at, instagram_handle, youtube_channel_id, tiktok_handle, facebook_profile_url, twitter_handle, pan';
+    const basicSelectStatement = 'id, first_name, last_name, avatar_url, role, updated_at';
 
     let query = supabase
       .from('profiles')
-      .select(selectStatement, { count: 'exact' })
+      .select(fullSelectStatement, { count: 'exact' })
       .order('updated_at', { ascending: false });
 
     if (role) {
@@ -51,13 +52,44 @@ export const useProfiles = (options?: UseProfilesOptions) => {
       query = query.range(from, to);
     }
 
-    const { data, error, count } = await query;
+    let { data, error, count } = await query;
+
+    // If error is due to missing columns, retry with basic select
+    if (error && (error.message.includes('column') || error.code === '42703')) {
+      query = supabase
+        .from('profiles')
+        .select(basicSelectStatement, { count: 'exact' })
+        .order('updated_at', { ascending: false });
+
+      if (role) {
+        query = query.eq('role', role);
+      }
+      if (firstName) {
+        query = query.ilike('first_name', `%${firstName}%`);
+      }
+      if (lastName) {
+        query = query.eq('last_name', lastName);
+      }
+
+      if (!disablePagination) {
+        const from = (page - 1) * pageSize;
+        const to = from + pageSize - 1;
+        query = query.range(from, to);
+      }
+
+      const retryResult = await query;
+      data = retryResult.data;
+      error = retryResult.error;
+      count = retryResult.count;
+    }
 
     if (error) {
-      throw new Error(error.message);
+      console.error('Error fetching profiles:', error);
+      // Return empty data instead of throwing to prevent UI crashes
+      return { data: [] as Profile[], count: 0 };
     }
     return { data: data as Profile[], count };
-  }, [role, page, pageSize, disablePagination, firstName, lastName]); // Dependencies for useCallback
+  }, [role, page, pageSize, disablePagination, firstName, lastName]);
 
   return useSupabaseQuery<{ data: Profile[], count: number | null }, Error>(
     queryKey,
@@ -76,17 +108,33 @@ export const useProfileById = (profileId: string | undefined, options?: { enable
     if (!profileId) {
       throw new Error('Profile ID is required');
     }
-    const { data, error } = await supabase
+    
+    const fullSelect = 'id, first_name, last_name, avatar_url, role, instagram_handle, youtube_channel_id, tiktok_handle, facebook_profile_url, twitter_handle, pan';
+    const basicSelect = 'id, first_name, last_name, avatar_url, role';
+    
+    let { data, error } = await supabase
       .from('profiles')
-      .select('id, first_name, last_name, avatar_url, role, instagram_handle, youtube_channel_id, tiktok_handle, facebook_profile_url, twitter_handle, pan') // UPDATED: Include new social media fields and pan
+      .select(fullSelect)
       .eq('id', profileId)
       .single();
 
+    // If error is due to missing columns, retry with basic select
+    if (error && (error.message.includes('column') || error.code === '42703')) {
+      const retryResult = await supabase
+        .from('profiles')
+        .select(basicSelect)
+        .eq('id', profileId)
+        .single();
+      data = retryResult.data;
+      error = retryResult.error;
+    }
+
     if (error) {
+      console.error('Error fetching profile:', error);
       throw new Error(error.message);
     }
     return data as Profile;
-  }, [profileId]); // Dependency for useCallback
+  }, [profileId]);
 
   return useSupabaseQuery<Profile, Error>(
     ['profile', profileId],

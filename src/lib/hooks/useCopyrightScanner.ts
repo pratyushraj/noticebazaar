@@ -28,7 +28,15 @@ export const useOriginalContent = (options: UseOriginalContentOptions) => {
         .order('created_at', { ascending: false });
 
       if (error) {
-        // Log the error but return an empty array to prevent crashing the UI
+        // If table doesn't exist (404 or schema cache error), return empty array silently
+        if (error.message.includes('Could not find the table') || 
+            error.message.includes('schema cache') ||
+            error.code === 'PGRST116' ||
+            error.code === '42P01') {
+          // Table doesn't exist - return empty array without logging error
+          return [];
+        }
+        // For other errors, log but still return empty array to prevent UI crashes
         console.error('Supabase Error in useOriginalContent:', error.message);
         return [];
       }
