@@ -263,6 +263,7 @@ const CreatorContracts = () => {
   return (
     <div className="w-full max-w-full overflow-x-hidden">
       <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-4 md:mb-6">Brand Deals & Contracts</h1>
+      {/* Mobile card layout active on screens < 768px */}
 
       {/* Stats Section */}
       <BrandDealsStats allDeals={allBrandDeals || []} isLoading={isLoadingBrandDeals} />
