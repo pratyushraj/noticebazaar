@@ -316,25 +316,26 @@ const CreatorContracts = () => {
           {paginatedDeals.length > 0 ? (
             <>
               {/* Mobile Cards - visible on screens < 640px */}
-              <div className="block sm:hidden space-y-4">
+              <div className="block sm:hidden">
                 {paginatedDeals.map((deal) => {
                   const stage = getDealStage(deal);
                   const dueDateStatus = getDueDateStatus(deal.payment_expected_date || deal.due_date);
                   const isOverdue = stage === 'overdue';
 
                   return (
-                    <DealCard
-                      key={deal.id}
-                      deal={deal}
-                      stage={stage}
-                      dueDateStatus={dueDateStatus}
-                      isOverdue={isOverdue}
-                      onView={handleViewDeal}
-                      onEdit={handleEditBrandDeal}
-                      onMarkPaid={handleMarkPaymentReceived}
-                      onDelete={handleDeleteBrandDeal}
-                      isDeleting={deleteBrandDealMutation.isPending && deleteBrandDealMutation.variables?.id === deal.id}
-                    />
+                    <div key={deal.id} className="mb-4">
+                      <DealCard
+                        deal={deal}
+                        stage={stage}
+                        dueDateStatus={dueDateStatus}
+                        isOverdue={isOverdue}
+                        onView={handleViewDeal}
+                        onEdit={handleEditBrandDeal}
+                        onMarkPaid={handleMarkPaymentReceived}
+                        onDelete={handleDeleteBrandDeal}
+                        isDeleting={deleteBrandDealMutation.isPending && deleteBrandDealMutation.variables?.id === deal.id}
+                      />
+                    </div>
                   );
                 })}
               </div>
@@ -416,23 +417,23 @@ const CreatorContracts = () => {
               </div>
 
               {/* Pagination */}
-              <div className="flex justify-between items-center mt-6">
+              <div className="flex flex-col sm:flex-row justify-center items-center gap-4 mt-6">
                 <Button
                   variant="outline"
                   onClick={handlePreviousPage}
                   disabled={currentPage === 1 || isLoadingBrandDeals}
-                  className="text-foreground border-border/50 hover:bg-accent/50"
+                  className="text-foreground border-border/50 hover:bg-accent/50 w-full sm:w-auto"
                 >
                   Previous
                 </Button>
-                <span className="text-sm text-muted-foreground">
+                <span className="text-sm text-muted-foreground text-center">
                   Page {currentPage} of {totalPages}
                 </span>
                 <Button
                   variant="outline"
                   onClick={handleNextPage}
                   disabled={currentPage === totalPages || isLoadingBrandDeals}
-                  className="text-foreground border-border/50 hover:bg-accent/50"
+                  className="text-foreground border-border/50 hover:bg-accent/50 w-full sm:w-auto"
                 >
                   Next
                 </Button>
