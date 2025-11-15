@@ -13,7 +13,7 @@ interface BrandDealsStatsProps {
 
 const BrandDealsStats: React.FC<BrandDealsStatsProps> = ({ allDeals, isLoading }) => {
   const totalDeals = allDeals.length;
-  const activeDeals = allDeals.filter(d => d.status === 'Drafting' || d.status === 'Approved').length;
+  const activeDeals = allDeals.filter(d => d.status === 'Drafting' || d.status === 'Approved' || d.status === 'Payment Pending').length;
   const pendingPayments = allDeals.filter(d => d.status === 'Payment Pending').length;
   
   const incomeTracked = allDeals
@@ -35,7 +35,7 @@ const BrandDealsStats: React.FC<BrandDealsStatsProps> = ({ allDeals, isLoading }
       value: activeDeals,
       icon: Clock,
       color: 'text-orange-500',
-      description: 'In progress (Drafting/Approved)',
+      description: 'In progress (Drafting/Approved/Payment Pending)',
     },
     {
       title: 'Pending Payments',
