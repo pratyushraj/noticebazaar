@@ -205,11 +205,11 @@ const CreatorDashboard = () => {
       {/* KPI Cards */}
       <CreatorKpiCards kpiCards={mockDashboardData.kpiCards} />
 
-      {/* AI Action Center */}
-      <CreatorAIActionCenter aiActions={mockDashboardData.aiActionCenter} onSendPaymentReminder={handleSendPaymentReminderQuickAction} />
-
-      {/* Copyright Scanner */}
-      <CreatorCopyrightScanner />
+      {/* AI Action Center and Copyright Scanner */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <CreatorAIActionCenter aiActions={mockDashboardData.aiActionCenter} onSendPaymentReminder={handleSendPaymentReminderQuickAction} />
+        <CreatorCopyrightScanner />
+      </div>
 
       {/* Brand Deal Form Dialog */}
       <Dialog open={isBrandDealFormOpen} onOpenChange={setIsBrandDealFormOpen}>
