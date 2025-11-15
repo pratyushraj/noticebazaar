@@ -6,7 +6,7 @@ import Layout from '@/components/Layout';
 
 interface ProtectedLayoutProps {
   children: ReactNode;
-  allowedRoles?: ('client' | 'admin')[];
+  allowedRoles?: ('client' | 'admin' | 'creator' | 'chartered_accountant')[];
 }
 
 const ProtectedLayout = ({ children, allowedRoles }: ProtectedLayoutProps) => {
