@@ -6,7 +6,6 @@ import { Loader2, PlusCircle, FileText, Bot, CheckCircle, AlertTriangle, Message
 import { toast } from 'sonner';
 import { useCreatorDashboardData } from '@/lib/hooks/useCreatorDashboardData';
 import CreatorKpiCards from '@/components/creator-dashboard/CreatorKpiCards';
-import CreatorRevenuePayments from '@/components/creator-dashboard/CreatorRevenuePayments';
 import CreatorTaxCompliance from '@/components/creator-dashboard/CreatorTaxCompliance';
 import CreatorCopyrightScanner from '@/components/creator-dashboard/CreatorCopyrightScanner';
 import CreatorAIActionCenter from '@/components/creator-dashboard/CreatorAIActionCenter';
@@ -76,45 +75,6 @@ const CreatorDashboard = () => {
       toast.error('Failed to load brand deals', { description: brandDealsError.message });
     }
   }, [mockError, brandDealsError]);
-
-  // Derive data for Revenue & Payments from real brand deals
-  const derivedPendingBrandPayments = useMemo(() => {
-    const pending = brandDeals?.filter(deal => deal.status === 'Payment Pending' && new Date(deal.payment_expected_date) >= new Date()) || [];
-    const overdue = brandDeals?.filter(deal => deal.status === 'Payment Pending' && new Date(deal.payment_expected_date) < new Date()) || [];
-    
-    const totalPendingAmount = pending.reduce((sum, deal) => sum + deal.deal_amount, 0);
-    const totalOverdueAmount = overdue.reduce((sum, deal) => sum + deal.deal_amount, 0);
-
-    let status = 'No Pending Payments';
-    let details = '';
-    let amount = '₹0';
-
-    if (overdue.length > 0) {
-      status = 'Overdue';
-      details = `${overdue.length} invoice${overdue.length !== 1 ? 's' : ''}`;
-      amount = `₹${totalOverdueAmount.toLocaleString('en-IN')}`;
-    } else if (pending.length > 0) {
-      status = 'Payment Pending';
-      details = `${pending.length} invoice${pending.length !== 1 ? 's' : ''}`;
-      amount = `₹${totalPendingAmount.toLocaleString('en-IN')}`;
-    }
-
-    return { amount, status, details };
-  }, [brandDeals]);
-
-  const derivedActiveBrandDeals = useMemo(() => {
-    return brandDeals?.filter(deal => deal.status === 'Drafting' || deal.status === 'Approved' || deal.status === 'Payment Pending') || [];
-  }, [brandDeals]);
-
-  const derivedPreviousBrands = useMemo(() => {
-    const completedBrands = brandDeals?.filter(deal => deal.status === 'Completed').map(deal => deal.brand_name) || [];
-    return Array.from(new Set(completedBrands)); // Unique brand names
-  }, [brandDeals]);
-
-  const derivedTotalIncomeTracked = useMemo(() => {
-    const total = brandDeals?.filter(deal => deal.status === 'Completed' || deal.status === 'Approved' || deal.status === 'Payment Pending').reduce((sum, deal) => sum + deal.deal_amount, 0) || 0;
-    return `₹${total.toLocaleString('en-IN')}`;
-  }, [brandDeals]);
 
   // Derive contracts requiring review from brand deals
   const derivedContractsRequiringReview = useMemo(() => {
@@ -252,16 +212,6 @@ const CreatorDashboard = () => {
 
       {/* KPI Cards */}
       <CreatorKpiCards kpiCards={mockDashboardData.kpiCards} />
-
-      {/* Revenue & Payments */}
-      <CreatorRevenuePayments
-        pendingBrandPayments={derivedPendingBrandPayments}
-        activeBrandDeals={derivedActiveBrandDeals}
-        previousBrands={derivedPreviousBrands}
-        totalIncomeTracked={derivedTotalIncomeTracked}
-        onEditBrandDeal={handleEditBrandDeal}
-        allBrandDeals={brandDeals || []}
-      />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* AI Action Center */}
