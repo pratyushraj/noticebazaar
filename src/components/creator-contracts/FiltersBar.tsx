@@ -47,8 +47,8 @@ const FiltersBar: React.FC<FiltersBarProps> = ({
                           platformFilter !== 'All' || dateRangeFilter !== 'All';
 
   return (
-    <div className={cn("space-y-4", className)}>
-      {/* Search Bar */}
+    <div className={cn("space-y-4 hidden md:block", className)}>
+      {/* Search Bar - Desktop only */}
       <div className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input
@@ -56,6 +56,7 @@ const FiltersBar: React.FC<FiltersBarProps> = ({
           className="pl-9 bg-background text-foreground border-border/40 focus:border-primary/50 h-10"
           value={searchTerm}
           onChange={(e) => onSearchChange(e.target.value)}
+          aria-label="Search brand deals"
         />
       </div>
 

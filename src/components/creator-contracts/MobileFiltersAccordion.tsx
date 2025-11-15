@@ -72,20 +72,24 @@ const MobileFiltersAccordion: React.FC<MobileFiltersAccordionProps> = ({
 
   return (
     <div className={cn("w-full space-y-3", className)}>
-      {/* Search Bar - 42px height, 14px rounded, 16px icon */}
+      {/* Search Bar - Full width, h-[42px], rounded-[14px], px-4 */}
       <div className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input
           placeholder="Search..."
-          className="pl-10 pr-3 bg-background text-foreground border-border/40 focus:border-primary/50 w-full h-[42px] rounded-[14px] text-sm"
+          className="pl-10 pr-4 bg-background text-foreground border-border/40 focus:border-primary/50 w-full h-[42px] rounded-[14px] text-sm"
           value={searchTerm}
           onChange={(e) => onSearchChange(e.target.value)}
+          aria-label="Search brand deals"
         />
       </div>
 
-      {/* Filters Section - Collapsed by Default - 42px header height */}
+      {/* Filters Section - Collapsed by Default - h-[42px] rounded-[14px] px-3 */}
       <Collapsible open={isOpen} onOpenChange={setIsOpen} className="w-full">
-        <CollapsibleTrigger className="w-full flex items-center justify-between h-[42px] px-3 border border-border/40 rounded-[14px] hover:bg-accent/50 transition-colors">
+        <CollapsibleTrigger 
+          className="w-full flex items-center justify-between h-[42px] px-3 border border-border/40 rounded-[14px] hover:bg-accent/50 transition-colors"
+          aria-label="Toggle filters"
+        >
           <div className="flex items-center gap-2">
             <Filter className="h-3.5 w-3.5 text-muted-foreground" />
             <span className="text-xs font-medium text-foreground">Filters</span>
