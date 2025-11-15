@@ -552,7 +552,7 @@ const CreatorContracts = () => {
               {editingBrandDeal ? 'Update the details for this brand collaboration.' : 'Enter the details for your new brand collaboration.'}
             </DialogDescription>
           </DialogHeader>
-          <ScrollArea className="flex-1 p-4 -mx-4">
+          <ScrollArea className="flex-1 p-4">
             <BrandDealForm
               initialData={editingBrandDeal}
               onSaveSuccess={() => {
