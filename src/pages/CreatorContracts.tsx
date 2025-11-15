@@ -40,6 +40,7 @@ import DealStatusBadge, { DealStage } from '@/components/creator-contracts/DealS
 import DeliverablesBadge from '@/components/creator-contracts/DeliverablesBadge';
 import DealActionsMenu from '@/components/creator-contracts/DealActionsMenu';
 import FiltersBar from '@/components/creator-contracts/FiltersBar';
+import DealCard from '@/components/creator-contracts/DealCard';
 
 // Helper function to map old status to new stage
 const getDealStage = (deal: BrandDeal): DealStage => {
@@ -311,10 +312,35 @@ const CreatorContracts = () => {
             className="mb-6"
           />
 
-          {/* Table */}
+          {/* Mobile Card Layout (< 640px) */}
           {paginatedDeals.length > 0 ? (
             <>
-              <div className="overflow-x-auto -mx-6 px-6 overflow-visible">
+              {/* Mobile Cards - visible on screens < 640px */}
+              <div className="block sm:hidden space-y-4">
+                {paginatedDeals.map((deal) => {
+                  const stage = getDealStage(deal);
+                  const dueDateStatus = getDueDateStatus(deal.payment_expected_date || deal.due_date);
+                  const isOverdue = stage === 'overdue';
+
+                  return (
+                    <DealCard
+                      key={deal.id}
+                      deal={deal}
+                      stage={stage}
+                      dueDateStatus={dueDateStatus}
+                      isOverdue={isOverdue}
+                      onView={handleViewDeal}
+                      onEdit={handleEditBrandDeal}
+                      onMarkPaid={handleMarkPaymentReceived}
+                      onDelete={handleDeleteBrandDeal}
+                      isDeleting={deleteBrandDealMutation.isPending && deleteBrandDealMutation.variables?.id === deal.id}
+                    />
+                  );
+                })}
+              </div>
+
+              {/* Desktop Table Layout - visible on screens >= 640px */}
+              <div className="hidden sm:block overflow-x-auto -mx-6 px-6 overflow-visible">
                 <Table className="table-fixed">
                   <TableHeader>
                     <TableRow className="border-border/50">
