@@ -118,10 +118,10 @@ const BrandDealsStats: React.FC<BrandDealsStatsProps> = ({ allDeals, isLoading }
 
   if (isLoading) {
     return (
-      <div className="grid grid-cols-1 xl:grid-cols-6 gap-3 md:gap-4">
+      <div className="grid grid-cols-1 xl:grid-cols-6 gap-3">
         {[1, 2, 3, 4, 5, 6].map(i => (
-          <Card key={i} className="bg-gradient-to-br from-card to-card/80 border-border/40 shadow-sm h-24 xl:h-auto">
-            <CardContent className="p-3 xl:p-4">
+          <Card key={i} className="bg-gradient-to-br from-card to-card/80 border-border/40 shadow-sm">
+            <CardContent className="p-4">
               <div className="flex items-center justify-center h-full">
                 <Loader2 className="h-5 w-5 animate-spin text-primary" />
               </div>
@@ -133,7 +133,7 @@ const BrandDealsStats: React.FC<BrandDealsStatsProps> = ({ allDeals, isLoading }
   }
 
   return (
-    <div className="grid grid-cols-1 xl:grid-cols-6 gap-3 md:gap-4">
+    <div className="grid grid-cols-1 xl:grid-cols-6 gap-3">
       {stats.map((stat, index) => {
         const Icon = stat.icon;
         return (
@@ -141,21 +141,20 @@ const BrandDealsStats: React.FC<BrandDealsStatsProps> = ({ allDeals, isLoading }
             key={index} 
             className={cn(
               "bg-gradient-to-br from-card to-card/80 border-border/40 shadow-sm",
-              "rounded-xl overflow-hidden transition-all hover:shadow-md",
-              "h-24 xl:h-auto"
+              "rounded-xl overflow-hidden transition-all hover:shadow-md"
             )}
           >
-            <CardContent className="p-3 xl:p-4">
-              <div className="flex items-start justify-between mb-2 xl:mb-3">
+            <CardContent className="p-4">
+              <div className="flex items-start justify-between mb-2">
                 <div className="flex-1 min-w-0">
-                  <p className="text-xs xl:text-sm font-medium text-muted-foreground mb-0.5 xl:mb-1">{stat.title}</p>
-                  <p className="text-xl xl:text-2xl font-bold text-foreground leading-tight">{stat.value}</p>
+                  <p className="text-xs font-medium text-muted-foreground mb-1">{stat.title}</p>
+                  <p className="text-2xl font-semibold text-foreground leading-tight">{stat.value}</p>
                 </div>
-                <div className="flex-shrink-0 ml-2 xl:ml-3">
+                <div className="flex-shrink-0 ml-2">
                   <Icon className={cn("h-4 w-4 xl:h-5 xl:w-5", stat.color)} />
                 </div>
               </div>
-              <p className="text-xs text-muted-foreground mt-1 xl:mt-2">{stat.description}</p>
+              <p className="text-xs text-muted-foreground mt-1">{stat.description}</p>
             </CardContent>
           </Card>
         );

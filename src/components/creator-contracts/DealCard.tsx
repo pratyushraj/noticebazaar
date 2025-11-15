@@ -35,14 +35,14 @@ const DealCard: React.FC<DealCardProps> = ({
   return (
     <div
       className={cn(
-        "flex flex-col gap-3 p-3 rounded-xl border w-full cursor-pointer transition-all",
+        "flex flex-col gap-3 p-4 rounded-xl border w-full cursor-pointer transition-all",
         "bg-card border-border/40 hover:bg-accent/10 hover:shadow-md",
         isOverdue && 'border-red-500/30 bg-red-500/5'
       )}
       onClick={() => onView(deal)}
     >
-      {/* Top Row: Brand Name + Status + Actions Menu */}
-      <div className="flex items-start justify-between gap-3">
+      {/* Top Row: Brand + Status in one row */}
+      <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-2.5 flex-1 min-w-0">
           <BrandLogo 
             brandName={deal.brand_name} 
@@ -55,13 +55,13 @@ const DealCard: React.FC<DealCardProps> = ({
             <h3 className="font-bold text-lg text-foreground leading-tight truncate">
               {deal.brand_name}
             </h3>
-            {/* Amount - Directly under brand */}
-            <span className="text-xl font-semibold text-foreground">
+            {/* Amount - text-xl font-bold */}
+            <span className="text-xl font-bold text-foreground">
               ₹{deal.deal_amount.toLocaleString('en-IN')}
             </span>
           </div>
         </div>
-        <div className="flex items-start gap-2 flex-shrink-0">
+        <div className="flex items-center gap-2 flex-shrink-0">
           {/* Status Badge - Right Top */}
           <DealStatusBadge stage={stage} />
           {/* Actions Menu */}
@@ -78,28 +78,26 @@ const DealCard: React.FC<DealCardProps> = ({
         </div>
       </div>
 
-      {/* Platform Section */}
+      {/* Platform Section - Labels: text-xs uppercase tracking-wide text-muted, Values: text-sm */}
       <div className="flex flex-col gap-1">
-        <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">PLATFORM</span>
+        <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">PLATFORM</span>
         <span className="text-sm text-foreground">{deal.platform || 'N/A'}</span>
       </div>
 
-      {/* Deliverables Section - Reduced text size */}
+      {/* Deliverables Section - Pill-styled */}
       <div className="flex flex-col gap-1">
-        <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">DELIVERABLES</span>
-        <div className="text-xs">
-          <DeliverablesBadge deliverables={deal.deliverables} maxDisplay={3} />
-        </div>
+        <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">DELIVERABLES</span>
+        <DeliverablesBadge deliverables={deal.deliverables} maxDisplay={3} />
       </div>
 
       {/* Subtle Separator Line */}
       <div className="border-t border-border/30 my-1" />
 
-      {/* Due Date Section - Bottom Row */}
+      {/* Due Date Section - date left, days-left badge right */}
       <div className="flex items-center justify-between gap-3">
         <div className="flex flex-col gap-0.5 flex-1 min-w-0">
-          <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">DUE DATE</span>
-          <span className="text-xs text-foreground">
+          <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">DUE DATE</span>
+          <span className="text-sm text-foreground">
             {new Date(deal.payment_expected_date || deal.due_date).toLocaleDateString('en-IN', {
               day: 'numeric',
               month: 'short',
@@ -110,7 +108,7 @@ const DealCard: React.FC<DealCardProps> = ({
         {/* Due Date Status - Right Bottom */}
         <Badge 
           variant={isOverdue ? 'destructive' : 'secondary'}
-          className="text-[10px] px-2 py-0.5 whitespace-nowrap flex-shrink-0"
+          className="text-xs px-2 py-1 whitespace-nowrap flex-shrink-0"
         >
           {dueDateStatus}
         </Badge>
