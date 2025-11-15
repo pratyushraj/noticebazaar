@@ -158,7 +158,7 @@ const CreatorRevenuePayments: React.FC<CreatorRevenuePaymentsProps> = ({
                 <p className="text-muted-foreground text-sm">No previous brands.</p>
               )}
             </div>
-            <p className="text-sm text-muted-foreground">Total income tracked: <span className="font-bold text-foreground">{totalIncomeTracked}</span></p>
+            <p className="text-sm text-muted-foreground">Total Pending: <span className="font-bold text-foreground">{totalIncomeTracked}</span></p>
           </CardContent>
           <Button asChild variant="link" className="p-0 w-full text-primary hover:text-primary/80 mt-4">
             <Link to="/creator-contracts">

@@ -19,12 +19,17 @@ const CreatorTaxCompliance: React.FC<CreatorTaxComplianceProps> = ({ taxComplian
         <CardTitle className="text-sm font-medium text-muted-foreground">Tax Compliance Status</CardTitle>
         <Calculator className="h-4 w-4 text-yellow-500" /> {/* Changed to Calculator icon */}
       </CardHeader>
-      <CardContent className="px-0 pb-0 flex-grow"> {/* Minimal padding, added flex-grow */}
-        <div className="flex items-center justify-between mb-4">
-          <div className="text-4xl font-bold text-foreground">{taxComplianceStatus.amount}</div> {/* Increased font size */}
-          <div className="text-sm text-muted-foreground">{taxComplianceStatus.deals}</div>
+      <CardContent className="px-0 pb-0 flex-grow">
+        <div className="space-y-3">
+          <div>
+            <p className="text-sm text-muted-foreground mb-1">Next Due</p>
+            <p className="text-2xl font-bold text-foreground">{taxComplianceStatus.nextDue}</p>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="h-2.5 w-2.5 rounded-full bg-green-500"></span>
+            <p className="text-sm text-muted-foreground">Status: <span className="font-semibold text-green-400">On Track</span></p>
+          </div>
         </div>
-        <p className="text-sm text-muted-foreground mb-4">Next Due: <span className="font-bold text-foreground">{taxComplianceStatus.nextDue}</span></p>
       </CardContent>
       <CardFooter className="px-0 pb-0 pt-4"> {/* Added CardFooter */}
         <Button asChild variant="default" className="w-full bg-primary text-primary-foreground hover:bg-primary/90">

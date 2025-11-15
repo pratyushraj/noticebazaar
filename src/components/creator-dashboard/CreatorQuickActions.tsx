@@ -33,7 +33,7 @@ const CreatorQuickActions: React.FC<CreatorQuickActionsProps> = ({ quickActions,
       // Combined action: First open upload dialog, then allow AI scan
       onUploadContract();
     }},
-    { label: 'Send Takedown Notice', icon: ShieldCheck, onClick: onSendTakedownNotice, variant: 'destructive' as const },
+    { label: 'Send Takedown Notice', icon: ShieldCheck, onClick: onSendTakedownNotice, variant: 'primary' as const },
   ];
 
   return (
@@ -45,10 +45,12 @@ const CreatorQuickActions: React.FC<CreatorQuickActionsProps> = ({ quickActions,
             key={index}
             onClick={action.onClick}
             className={cn(
-              "flex flex-col items-center justify-center p-4 h-24 rounded-xl", // Increased height to h-24, added rounded-xl
-              action.variant === 'destructive' 
-                ? 'quick-action-button-destructive-gradient text-destructive-foreground' // Apply destructive gradient
-                : 'quick-action-button-gradient text-secondary-foreground' // Apply general gradient
+              "flex flex-col items-center justify-center p-4 h-24 rounded-xl",
+              action.variant === 'primary'
+                ? 'bg-amber-500 hover:bg-amber-600 text-white shadow-lg hover:shadow-xl transition-all' // High-contrast amber for Send Takedown Notice
+                : action.variant === 'destructive'
+                  ? 'quick-action-button-destructive-gradient text-destructive-foreground'
+                  : 'quick-action-button-gradient text-secondary-foreground'
             )}
           >
             <action.icon className="h-6 w-6 mb-2" /> {/* Increased icon size */}

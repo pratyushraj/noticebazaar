@@ -252,11 +252,7 @@ const CreatorDashboard = () => {
       <p className="text-muted-foreground opacity-60 -mt-6">Your comprehensive overview of brand deals, legal protection, and financial health.</p>
 
       {/* KPI Cards */}
-      <CreatorKpiCards kpiCards={mockDashboardData.kpiCards.map(kpi => 
-        kpi.title === 'Total Income' 
-          ? { ...kpi, value: derivedTotalIncomeTracked }
-          : kpi
-      )} />
+      <CreatorKpiCards kpiCards={mockDashboardData.kpiCards} />
 
       {/* Quick Actions */}
       <CreatorQuickActions 
