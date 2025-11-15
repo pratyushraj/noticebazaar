@@ -314,15 +314,15 @@ const CreatorContracts = () => {
           {/* Table */}
           {paginatedDeals.length > 0 ? (
             <>
-              <div className="overflow-x-auto -mx-6 px-6">
-                <Table>
+              <div className="overflow-x-auto -mx-6 px-6 overflow-visible">
+                <Table className="table-fixed">
                   <TableHeader>
                     <TableRow className="border-border/50">
                       <TableHead className="text-muted-foreground min-w-[150px]">Brand</TableHead>
                       <TableHead className="text-muted-foreground min-w-[100px]">Amount</TableHead>
                       <TableHead className="text-muted-foreground hidden md:table-cell min-w-[100px]">Platform</TableHead>
                       <TableHead className="text-muted-foreground hidden lg:table-cell min-w-[150px]">Deliverables</TableHead>
-                      <TableHead className="text-muted-foreground min-w-[100px] sm:min-w-[120px]">Stage</TableHead>
+                      <TableHead className="text-muted-foreground min-w-[110px] md:min-w-[130px]">Stage</TableHead>
                       <TableHead className="text-muted-foreground hidden sm:table-cell min-w-[130px]">Due Date Status</TableHead>
                       <TableHead className="text-right text-muted-foreground min-w-[80px]">Actions</TableHead>
                     </TableRow>
@@ -361,7 +361,7 @@ const CreatorContracts = () => {
                           <TableCell className="hidden lg:table-cell">
                             <DeliverablesBadge deliverables={deal.deliverables} maxDisplay={2} />
                           </TableCell>
-                          <TableCell>
+                          <TableCell className="overflow-visible min-w-[110px] md:min-w-[130px]">
                             <DealStatusBadge stage={stage} />
                           </TableCell>
                           <TableCell className="hidden sm:table-cell">

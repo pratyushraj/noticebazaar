@@ -65,14 +65,14 @@ const DealStatusBadge: React.FC<DealStatusBadgeProps> = ({ stage, className }) =
     <Badge
       variant="outline"
       className={cn(
-        "rounded-full px-2.5 py-0.5 text-xs font-semibold whitespace-nowrap",
+        "rounded-full px-2.5 py-0.5 text-xs font-semibold whitespace-nowrap inline-flex",
         config.className,
         className
       )}
       title={config.label}
     >
-      <span className="hidden sm:inline">{config.label}</span>
-      <span className="sm:hidden">{config.shortLabel}</span>
+      <span className="hidden md:inline">{config.label}</span>
+      <span className="md:hidden">{config.shortLabel}</span>
     </Badge>
   );
 };
