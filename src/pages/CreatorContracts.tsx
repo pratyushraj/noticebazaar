@@ -297,18 +297,18 @@ const CreatorContracts = () => {
   return (
     <div className="w-full max-w-full overflow-x-hidden">
       {/* Page Title */}
-      <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-6">Brand Deals & Contracts</h1>
+      <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-4">Brand Deals & Contracts</h1>
 
-      {/* Stats Section - 24px spacing */}
-      <div className="mb-6">
+      {/* Stats Section - Reduced spacing */}
+      <div className="mb-4">
         <BrandDealsStats allDeals={allBrandDeals || []} isLoading={isLoadingBrandDeals} />
       </div>
 
       {/* Main Content Card */}
       <Card className="bg-card border-border/40 shadow-sm">
-        <CardContent className="p-6">
+        <CardContent className="p-4 md:p-6">
           {/* Header Section */}
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
             <h2 className="text-lg md:text-xl font-semibold text-foreground">
               All Brand Deals ({filteredAndSearchedDeals.length})
             </h2>
@@ -320,9 +320,9 @@ const CreatorContracts = () => {
             </Button>
           </div>
 
-          {/* Mobile Filters Accordion (< 768px) - 24px spacing */}
+          {/* Mobile Filters Accordion (< 768px) - Reduced spacing */}
           {isMobile && (
-          <div className="mb-6">
+          <div className="mb-4">
             <MobileFiltersAccordion
               searchTerm={searchTerm}
               onSearchChange={(value) => {
@@ -355,9 +355,9 @@ const CreatorContracts = () => {
           </div>
           )}
 
-          {/* Desktop Filters Bar (>= 768px) - 24px spacing */}
+          {/* Desktop Filters Bar (>= 768px) - Reduced spacing */}
           {!isMobile && (
-          <div className="mb-6">
+          <div className="mb-4">
             <FiltersBar
               searchTerm={searchTerm}
               onSearchChange={(value) => {
@@ -499,8 +499,8 @@ const CreatorContracts = () => {
               </div>
               ) : null}
 
-              {/* Pagination - 24px spacing */}
-              <div className="flex flex-col md:flex-row justify-center items-center gap-4 mt-6">
+              {/* Pagination - Reduced spacing */}
+              <div className="flex flex-col md:flex-row justify-center items-center gap-4 mt-4">
                 <div className="order-2 md:order-1">
                   <Button
                     variant="outline"

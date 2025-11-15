@@ -50,7 +50,7 @@ const MobileFiltersAccordion: React.FC<MobileFiltersAccordionProps> = ({
                           platformFilter !== 'All' || dateRangeFilter !== 'All';
 
   return (
-    <div className={cn("w-full space-y-4", className)}>
+    <div className={cn("w-full space-y-3", className)}>
       {/* Always Visible Search Bar */}
       <div className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />

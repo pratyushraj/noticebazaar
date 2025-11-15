@@ -35,7 +35,7 @@ const DealCard: React.FC<DealCardProps> = ({
   return (
     <div
       className={cn(
-        "flex flex-col gap-4 p-4 rounded-xl border w-full cursor-pointer transition-all",
+        "flex flex-col gap-3 p-3 rounded-xl border w-full cursor-pointer transition-all",
         "bg-card border-border/40 hover:bg-accent/10 hover:shadow-md",
         isOverdue && 'border-red-500/30 bg-red-500/5'
       )}
