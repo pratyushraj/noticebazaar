@@ -148,7 +148,7 @@ const CreatorPaymentsAndRecovery = () => {
   }, []);
 
   // Handle deliverables array/string
-  const getDeliverablesArray = (deal: BrandDeal) => {
+  const getDeliverablesArray = (deal: BrandDeal): string[] => {
     if (Array.isArray(deal.deliverables)) return deal.deliverables;
     if (typeof deal.deliverables === 'string') {
       return deal.deliverables.split(',').map(d => d.trim()).filter(Boolean);
