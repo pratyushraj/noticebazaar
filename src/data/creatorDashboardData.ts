@@ -111,8 +111,6 @@ export const MOCK_CONTRACTS_REQUIRING_REVIEW: ContractReview[] = [
   { id: '2', title: 'XYZ Agency - missing usage rights details', status: 'missing_rights' },
 ];
 
-// REMOVED: MOCK_TAKEDOWN_ALERTS as it's now handled by the CreatorContentProtection page
-export const MOCK_TAKEDOWN_ALERTS: any[] = [];
 
 export const MOCK_PROTECTION_COMPLIANCE = {
   healthScore: 72,

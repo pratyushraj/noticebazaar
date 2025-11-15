@@ -8,7 +8,6 @@ import { useCreatorDashboardData } from '@/lib/hooks/useCreatorDashboardData';
 import CreatorKpiCards from '@/components/creator-dashboard/CreatorKpiCards';
 import CreatorQuickActions from '@/components/creator-dashboard/CreatorQuickActions';
 import CreatorRevenuePayments from '@/components/creator-dashboard/CreatorRevenuePayments';
-import CreatorLegalWorkflows from '@/components/creator-dashboard/CreatorLegalWorkflows';
 import CreatorProtectionCompliance from '@/components/creator-dashboard/CreatorProtectionCompliance';
 import CreatorTaxCompliance from '@/components/creator-dashboard/CreatorTaxCompliance';
 import CreatorCopyrightScanner from '@/components/creator-dashboard/CreatorCopyrightScanner';
@@ -276,16 +275,8 @@ const CreatorDashboard = () => {
         onEditBrandDeal={handleEditBrandDeal}
       />
 
-      {/* Takedown Alerts & Protection & Compliance - Side by Side */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Takedown Alerts */}
-        <CreatorLegalWorkflows
-          takedownAlerts={mockDashboardData.takedownAlerts}
-        />
-
-        {/* Protection & Compliance */}
-        <CreatorProtectionCompliance protectionCompliance={mockDashboardData.protectionCompliance} />
-      </div>
+      {/* Protection & Compliance */}
+      <CreatorProtectionCompliance protectionCompliance={mockDashboardData.protectionCompliance} />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* AI Action Center */}
