@@ -118,12 +118,12 @@ const BrandDealsStats: React.FC<BrandDealsStatsProps> = ({ allDeals, isLoading }
 
   if (isLoading) {
     return (
-      <div className="grid grid-cols-1 xl:grid-cols-6 gap-4 mb-6">
+      <div className="grid grid-cols-1 xl:grid-cols-6 gap-3 md:gap-4">
         {[1, 2, 3, 4, 5, 6].map(i => (
-          <Card key={i} className="bg-gradient-to-br from-card to-card/80 border-border/40 shadow-sm">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-center h-20">
-                <Loader2 className="h-6 w-6 animate-spin text-primary" />
+          <Card key={i} className="bg-gradient-to-br from-card to-card/80 border-border/40 shadow-sm h-24 xl:h-auto">
+            <CardContent className="p-3 xl:p-4">
+              <div className="flex items-center justify-center h-full">
+                <Loader2 className="h-5 w-5 animate-spin text-primary" />
               </div>
             </CardContent>
           </Card>
