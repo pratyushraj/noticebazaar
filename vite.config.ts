@@ -10,9 +10,13 @@ export default defineConfig(() => ({
   },
   build: {
     sourcemap: false, // Disable source maps in production to avoid 404 errors
+    assetsDir: 'assets',
     rollupOptions: {
       output: {
         manualChunks: undefined, // Let Vite handle chunking automatically
+        assetFileNames: 'assets/[name].[ext]',
+        chunkFileNames: 'assets/[name]-[hash].js',
+        entryFileNames: 'assets/[name]-[hash].js',
       },
     },
   },
