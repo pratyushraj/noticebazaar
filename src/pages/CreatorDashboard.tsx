@@ -12,7 +12,7 @@ import CreatorTaxCompliance from '@/components/creator-dashboard/CreatorTaxCompl
 import CreatorCopyrightScanner from '@/components/creator-dashboard/CreatorCopyrightScanner';
 import CreatorAIActionCenter from '@/components/creator-dashboard/CreatorAIActionCenter';
 import CreatorImportantDeadlines from '@/components/creator-dashboard/CreatorImportantDeadlines';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog'; // Added DialogFooter
 import BrandDealForm from '@/components/forms/BrandDealForm';
 import { useBrandDeals } from '@/lib/hooks/useBrandDeals';
