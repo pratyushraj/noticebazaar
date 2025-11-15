@@ -295,21 +295,21 @@ const CreatorContracts = () => {
   }
 
   return (
-    <div className="w-full max-w-full overflow-x-hidden pb-[90px] px-4 md:px-6 antialiased">
-      {/* Page Title - text-xl on mobile, tighter spacing */}
-      <h1 className="text-xl md:text-3xl font-bold text-foreground mb-2 md:mb-3">Brand Deals & Contracts</h1>
+    <div className="w-full max-w-full overflow-x-hidden pb-[80px] px-4 md:px-6 antialiased">
+      {/* Page Title - text-2xl on mobile per design system */}
+      <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-4">Brand Deals & Contracts</h1>
 
-      {/* Stats Section - 12px gap */}
-      <div className="mb-3">
+      {/* Stats Section - gap-4 spacing per design system */}
+      <div className="mb-4">
         <BrandDealsStats allDeals={allBrandDeals || []} isLoading={isLoadingBrandDeals} />
       </div>
 
       {/* Main Content Card */}
       <Card className="bg-card border-border/40 shadow-sm">
         <CardContent className="p-4 md:p-6">
-          {/* Header Section - text-base on mobile, mb-3 */}
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mt-6 md:mt-8 mb-3">
-            <h2 className="text-base md:text-xl font-semibold text-foreground">
+          {/* Header Section - text-lg on mobile per design system */}
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mt-4 md:mt-8 mb-4">
+            <h2 className="text-lg md:text-xl font-semibold text-foreground">
               All Brand Deals ({filteredAndSearchedDeals.length})
             </h2>
             <Button 
@@ -320,9 +320,9 @@ const CreatorContracts = () => {
             </Button>
           </div>
 
-          {/* Mobile Filters Accordion (< 768px) - 12px gap */}
+          {/* Mobile Filters Accordion (< 768px) - gap-4 spacing */}
           {isMobile && (
-          <div className="mb-3">
+          <div className="mb-4">
             <MobileFiltersAccordion
               searchTerm={searchTerm}
               onSearchChange={(value) => {
@@ -355,9 +355,9 @@ const CreatorContracts = () => {
           </div>
           )}
 
-          {/* Desktop Filters Bar (>= 768px) - 12px gap */}
+          {/* Desktop Filters Bar (>= 768px) - gap-4 spacing */}
           {!isMobile && (
-          <div className="mb-3">
+          <div className="mb-4">
             <FiltersBar
               searchTerm={searchTerm}
               onSearchChange={(value) => {
@@ -499,15 +499,15 @@ const CreatorContracts = () => {
               </div>
               ) : null}
 
-              {/* Pagination - Mobile: h-[36px] w-full rounded-[10px] text-sm, reduced gap */}
-              <div className="flex flex-col md:flex-row justify-center items-center gap-3 mt-4 md:mt-6">
-                {/* Mobile: Full-width button, h-[36px], rounded-[10px] */}
+              {/* Pagination - Mobile: h-[40px] w-full text-sm per design system */}
+              <div className="flex flex-col md:flex-row justify-center items-center gap-3 mt-4">
+                {/* Mobile: Full-width button, h-[40px] */}
                 <div className="w-full md:w-auto md:order-1">
                   <Button
                     variant="outline"
                     onClick={handlePreviousPage}
                     disabled={currentPage === 1 || isLoadingBrandDeals}
-                    className="w-full md:w-auto text-foreground border-border/50 hover:bg-accent/50 h-[36px] md:h-9 text-sm rounded-[10px] md:rounded-md"
+                    className="w-full md:w-auto text-foreground border-border/50 hover:bg-accent/50 h-[40px] md:h-9 text-sm rounded-[10px] md:rounded-md"
                   >
                     Previous
                   </Button>
@@ -516,13 +516,13 @@ const CreatorContracts = () => {
                 <span className="hidden md:inline-flex order-2 text-xs md:text-sm text-muted-foreground text-center">
                   Page {currentPage} of {totalPages}
                 </span>
-                {/* Mobile: Full-width button, h-[36px], rounded-[10px] */}
+                {/* Mobile: Full-width button, h-[40px] */}
                 <div className="w-full md:w-auto md:order-3">
                   <Button
                     variant="outline"
                     onClick={handleNextPage}
                     disabled={currentPage === totalPages || isLoadingBrandDeals}
-                    className="w-full md:w-auto text-foreground border-border/50 hover:bg-accent/50 h-[36px] md:h-9 text-sm rounded-[10px] md:rounded-md"
+                    className="w-full md:w-auto text-foreground border-border/50 hover:bg-accent/50 h-[40px] md:h-9 text-sm rounded-[10px] md:rounded-md"
                   >
                     Next
                   </Button>

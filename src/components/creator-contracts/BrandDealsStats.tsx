@@ -118,9 +118,9 @@ const BrandDealsStats: React.FC<BrandDealsStatsProps> = ({ allDeals, isLoading }
 
   if (isLoading) {
     return (
-      <div className="flex flex-col gap-[10px] md:flex-row md:gap-4 xl:grid xl:grid-cols-6">
+      <div className="flex flex-col gap-3 md:flex-row md:gap-4 xl:grid xl:grid-cols-6">
         {[1, 2, 3, 4, 5, 6].map(i => (
-          <Card key={i} className="bg-gradient-to-br from-card to-card/80 border-border/40 shadow-sm rounded-[12px]">
+          <Card key={i} className="bg-gradient-to-br from-card to-card/80 border-border/40 shadow-sm shadow-black/20 rounded-[12px]">
             <CardContent className="p-4">
               <div className="flex items-center justify-center h-full">
                 <Loader2 className="h-4 w-4 animate-spin text-primary" />
@@ -133,22 +133,22 @@ const BrandDealsStats: React.FC<BrandDealsStatsProps> = ({ allDeals, isLoading }
   }
 
   return (
-    <div className="flex flex-col gap-[10px] md:flex-row md:gap-4 xl:grid xl:grid-cols-6">
+    <div className="flex flex-col gap-3 md:flex-row md:gap-4 xl:grid xl:grid-cols-6">
       {stats.map((stat, index) => {
         const Icon = stat.icon;
         return (
           <Card 
             key={index} 
             className={cn(
-              "bg-gradient-to-br from-card to-card/80 border-border/40 shadow-sm",
+              "bg-gradient-to-br from-card to-card/80 border-border/40 shadow-sm shadow-black/20",
               "rounded-[12px] overflow-hidden transition-all hover:shadow-md"
             )}
           >
             <CardContent className="p-4">
               <div className="flex items-start justify-between mb-2">
                 <div className="flex-1 min-w-0">
-                  <p className="text-[11px] md:text-xs tracking-wide text-muted-foreground mb-1">{stat.title}</p>
-                  <p className="text-[22px] md:text-2xl font-semibold text-foreground leading-tight">{stat.value}</p>
+                  <p className="text-[11px] md:text-xs uppercase tracking-wide text-muted-foreground mb-1">{stat.title}</p>
+                  <p className="text-xl md:text-2xl font-bold text-foreground leading-tight">{stat.value}</p>
                 </div>
                 <div className="flex-shrink-0 ml-2">
                   <Icon className={cn("h-4 w-4 xl:h-5 xl:w-5", stat.color)} />

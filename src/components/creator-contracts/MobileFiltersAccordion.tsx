@@ -72,26 +72,26 @@ const MobileFiltersAccordion: React.FC<MobileFiltersAccordionProps> = ({
 
   return (
     <div className={cn("w-full space-y-3", className)}>
-      {/* Search Bar - h-[40px], rounded-[12px], text-sm, smaller icon, lighter placeholder */}
+      {/* Search Bar - h-[42px], rounded-[14px], 16px icon, placeholder 70% opacity */}
       <div className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input
           placeholder="Search..."
-          className="pl-10 pr-3 bg-background text-foreground border-border/40 focus:border-primary/50 w-full h-[40px] rounded-[12px] text-sm placeholder:text-muted-foreground/60"
+          className="pl-10 pr-3 bg-background text-foreground border-border/40 focus:border-primary/50 w-full h-[42px] rounded-[14px] text-sm placeholder:text-muted-foreground/70"
           value={searchTerm}
           onChange={(e) => onSearchChange(e.target.value)}
           aria-label="Search brand deals"
         />
       </div>
 
-      {/* Filters Section - Collapsed by Default - h-[40px] rounded-[12px] text-sm */}
+      {/* Filters Section - Collapsed by Default - h-[42px] rounded-[14px], icon right aligned */}
       <Collapsible open={isOpen} onOpenChange={setIsOpen} className="w-full">
         <CollapsibleTrigger 
-          className="w-full flex items-center justify-between h-[40px] px-3 border border-border/40 rounded-[12px] hover:bg-accent/50 transition-colors"
+          className="w-full flex items-center justify-between h-[42px] px-3 border border-border/40 rounded-[14px] hover:bg-accent/50 transition-colors"
           aria-label="Toggle filters"
         >
           <div className="flex items-center gap-2">
-            <Filter className="h-3.5 w-3.5 text-muted-foreground" />
+            <Filter className="h-4 w-4 text-muted-foreground" />
             <span className="text-sm font-medium text-foreground">Filters</span>
             {hasActiveFilters && (
               <Badge variant="secondary" className="h-4 px-1.5 text-[10px]">
@@ -101,10 +101,10 @@ const MobileFiltersAccordion: React.FC<MobileFiltersAccordionProps> = ({
           </div>
           <ChevronDown className={cn("h-4 w-4 text-muted-foreground transition-transform duration-200", isOpen && "rotate-180")} />
         </CollapsibleTrigger>
-        <CollapsibleContent className="space-y-2.5 pt-3 px-3">
-          {/* Brand Filter Pills - Ultra-clean minimal pill chips, gap-2 */}
+        <CollapsibleContent className="space-y-3 pt-3 px-3">
+          {/* Brand Filter Pills - px-3 py-1.5 rounded-full border text-sm, gap-3 spacing */}
           <div className="space-y-1.5">
-            <label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide px-1">Brand</label>
+            <label className="text-[11px] font-medium text-muted-foreground uppercase tracking-wide px-1">Brand</label>
             <ScrollArea className="w-full">
               <div className="flex gap-2 pb-2">
                 <Button
@@ -112,7 +112,7 @@ const MobileFiltersAccordion: React.FC<MobileFiltersAccordionProps> = ({
                   size="sm"
                   onClick={() => onBrandFilterChange('All')}
                   className={cn(
-                    "rounded-full border px-3 py-1.5 text-xs whitespace-nowrap h-auto",
+                    "rounded-full border px-3 py-1.5 text-sm whitespace-nowrap h-auto",
                     brandFilter === 'All' ? 'bg-primary text-primary-foreground border-primary' : 'border-border bg-transparent'
                   )}
                 >
@@ -125,7 +125,7 @@ const MobileFiltersAccordion: React.FC<MobileFiltersAccordionProps> = ({
                     size="sm"
                     onClick={() => onBrandFilterChange(brand)}
                     className={cn(
-                      "rounded-full border px-3 py-1.5 text-xs whitespace-nowrap h-auto",
+                      "rounded-full border px-3 py-1.5 text-sm whitespace-nowrap h-auto",
                       brandFilter === brand ? 'bg-primary text-primary-foreground border-primary' : 'border-border bg-transparent'
                     )}
                   >
@@ -149,7 +149,7 @@ const MobileFiltersAccordion: React.FC<MobileFiltersAccordionProps> = ({
                     size="sm"
                     onClick={() => onStatusFilterChange(option.value as DealStage | 'All')}
                     className={cn(
-                      "rounded-full border px-3 py-1.5 text-xs whitespace-nowrap h-auto",
+                      "rounded-full border px-3 py-1.5 text-sm whitespace-nowrap h-auto",
                       statusFilter === option.value ? 'bg-primary text-primary-foreground border-primary' : 'border-border bg-transparent'
                     )}
                   >
@@ -171,7 +171,7 @@ const MobileFiltersAccordion: React.FC<MobileFiltersAccordionProps> = ({
                   size="sm"
                   onClick={() => onPlatformFilterChange('All')}
                   className={cn(
-                    "rounded-full border px-3 py-1.5 text-xs whitespace-nowrap h-auto",
+                    "rounded-full border px-3 py-1.5 text-sm whitespace-nowrap h-auto",
                     platformFilter === 'All' ? 'bg-primary text-primary-foreground border-primary' : 'border-border bg-transparent'
                   )}
                 >
@@ -184,7 +184,7 @@ const MobileFiltersAccordion: React.FC<MobileFiltersAccordionProps> = ({
                     size="sm"
                     onClick={() => onPlatformFilterChange(platform || 'All')}
                     className={cn(
-                      "rounded-full border px-3 py-1.5 text-xs whitespace-nowrap h-auto",
+                      "rounded-full border px-3 py-1.5 text-sm whitespace-nowrap h-auto",
                       platformFilter === platform ? 'bg-primary text-primary-foreground border-primary' : 'border-border bg-transparent'
                     )}
                   >
@@ -208,7 +208,7 @@ const MobileFiltersAccordion: React.FC<MobileFiltersAccordionProps> = ({
                     size="sm"
                     onClick={() => onDateRangeFilterChange(option.value)}
                     className={cn(
-                      "rounded-full border px-3 py-1.5 text-xs whitespace-nowrap h-auto",
+                      "rounded-full border px-3 py-1.5 text-sm whitespace-nowrap h-auto",
                       dateRangeFilter === option.value ? 'bg-primary text-primary-foreground border-primary' : 'border-border bg-transparent'
                     )}
                   >
