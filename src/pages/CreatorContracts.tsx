@@ -322,7 +322,7 @@ const CreatorContracts = () => {
                       <TableHead className="text-muted-foreground min-w-[100px]">Amount</TableHead>
                       <TableHead className="text-muted-foreground hidden md:table-cell min-w-[100px]">Platform</TableHead>
                       <TableHead className="text-muted-foreground hidden lg:table-cell min-w-[150px]">Deliverables</TableHead>
-                      <TableHead className="text-muted-foreground min-w-[120px]">Stage</TableHead>
+                      <TableHead className="text-muted-foreground min-w-[100px] sm:min-w-[120px]">Stage</TableHead>
                       <TableHead className="text-muted-foreground hidden sm:table-cell min-w-[130px]">Due Date Status</TableHead>
                       <TableHead className="text-right text-muted-foreground min-w-[80px]">Actions</TableHead>
                     </TableRow>
