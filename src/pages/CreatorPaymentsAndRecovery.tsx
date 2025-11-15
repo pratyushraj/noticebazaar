@@ -33,6 +33,24 @@ const CreatorPaymentsAndRecovery = () => {
   const [selectedDealForReminder, setSelectedDealForReminder] = useState<BrandDeal | null>(null);
   const [messageType, setMessageType] = useState<'email' | 'whatsapp'>('email'); // NEW state
   const [customMessage, setCustomMessage] = useState(''); // NEW state
+  
+  // Mobile detection - MUST be before any conditional returns
+  const [isMobile, setIsMobile] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return window.innerWidth < 768;
+    }
+    return false;
+  });
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
   const pageSize = 10;
 
   const { currentPage, handlePreviousPage, handleNextPage, setCurrentPage } = usePagination({
@@ -121,6 +139,15 @@ const CreatorPaymentsAndRecovery = () => {
     return expectedDate < today;
   };
 
+  // Handle deliverables array/string
+  const getDeliverablesArray = (deal: BrandDeal): string[] => {
+    if (Array.isArray(deal.deliverables)) return deal.deliverables;
+    if (typeof deal.deliverables === 'string') {
+      return deal.deliverables.split(',').map(d => d.trim()).filter(Boolean);
+    }
+    return [];
+  };
+
   if (sessionLoading || isLoadingBrandDeals) {
     return (
       <div className="min-h-[300px] flex flex-col items-center justify-center bg-background">
@@ -129,23 +156,6 @@ const CreatorPaymentsAndRecovery = () => {
       </div>
     );
   }
-
-  // Mobile detection
-  const [isMobile, setIsMobile] = useState(() => {
-    if (typeof window !== 'undefined') {
-      return window.innerWidth < 768;
-    }
-    return false;
-  });
-
-  useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
 
   // Handle deliverables array/string
   const getDeliverablesArray = (deal: BrandDeal): string[] => {
