@@ -378,8 +378,8 @@ const CreatorContracts = () => {
           {paginatedDeals.length > 0 ? (
             <>
               {/* Mobile Cards - visible on screens < 768px */}
-              {isMobile && (
-              <div className="flex flex-col w-full">
+              {isMobile ? (
+              <div className="flex flex-col w-full" data-mobile-view="true">
                 {paginatedDeals.map((deal) => {
                   const stage = getDealStage(deal);
                   const dueDateStatus = getDueDateStatus(deal.payment_expected_date || deal.due_date);
@@ -401,11 +401,11 @@ const CreatorContracts = () => {
                   );
                 })}
               </div>
-              )}
+              ) : null}
 
               {/* Desktop Table Layout - visible on screens >= 768px */}
-              {!isMobile && (
-              <div className="block overflow-x-auto -mx-6 px-6 overflow-visible w-full">
+              {!isMobile ? (
+              <div className="block overflow-x-auto -mx-6 px-6 overflow-visible w-full" data-desktop-view="true">
                 <Table className="table-fixed">
                   <TableHeader>
                     <TableRow className="border-border/50">
@@ -479,7 +479,7 @@ const CreatorContracts = () => {
                   </TableBody>
                 </Table>
               </div>
-              )}
+              ) : null}
 
               {/* Pagination */}
               <div className="flex flex-col md:flex-row justify-center items-center gap-4 mt-6">
