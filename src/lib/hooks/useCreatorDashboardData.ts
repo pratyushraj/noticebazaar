@@ -7,7 +7,6 @@ import {
   MOCK_PREVIOUS_BRANDS,
   MOCK_TOTAL_INCOME_TRACKED,
   MOCK_CONTRACTS_REQUIRING_REVIEW,
-  MOCK_PROTECTION_COMPLIANCE,
   MOCK_TAX_COMPLIANCE_STATUS,
   MOCK_AI_ACTION_CENTER,
   CreatorKpi,
@@ -25,7 +24,6 @@ interface CreatorDashboardData {
   previousBrands: string[];
   totalIncomeTracked: string;
   contractsRequiringReview: ContractReview[];
-  protectionCompliance: { healthScore: number; categories: { name: string; status: string }[] };
   taxComplianceStatus: { amount: string; deals: string; nextDue: string };
   importantDeadlines: ComplianceDeadline[]; // Use imported type
   aiActionCenter: AIAction[];
@@ -46,7 +44,6 @@ export const useCreatorDashboardData = (enabled: boolean = true) => {
         previousBrands: MOCK_PREVIOUS_BRANDS,
         totalIncomeTracked: MOCK_TOTAL_INCOME_TRACKED,
         contractsRequiringReview: MOCK_CONTRACTS_REQUIRING_REVIEW,
-        protectionCompliance: MOCK_PROTECTION_COMPLIANCE,
         taxComplianceStatus: MOCK_TAX_COMPLIANCE_STATUS,
         importantDeadlines: [], // Now fetched via dedicated hook
         aiActionCenter: MOCK_AI_ACTION_CENTER,

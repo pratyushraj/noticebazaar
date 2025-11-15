@@ -112,15 +112,6 @@ export const MOCK_CONTRACTS_REQUIRING_REVIEW: ContractReview[] = [
 ];
 
 
-export const MOCK_PROTECTION_COMPLIANCE = {
-  healthScore: 72,
-  categories: [
-    { name: 'Contracts', status: 'green' },
-    { name: 'Copyright', status: 'green' },
-    { name: 'Taxes', status: 'yellow' },
-  ],
-};
-
 export const MOCK_TAX_COMPLIANCE_STATUS = {
   amount: '₹2,85,700',
   deals: '5 Deals',

@@ -3,10 +3,9 @@
 import React, { ReactNode } from 'react';
 import Header from '@/components/Header';
 import { MadeWithDyad } from '@/components/made-with-dyad';
-import Sidebar from '@/components/Sidebar'; // Import Sidebar
-import { useSession } from '@/contexts/SessionContext'; // Import useSession
-import BottomNavigationBar from './BottomNavigationBar'; // Import BottomNavigationBar
-import { useQueryClient } from '@tanstack/react-query'; // Import useQueryClient
+import { useSession } from '@/contexts/SessionContext';
+import BottomNavigationBar from './BottomNavigationBar';
+import { useQueryClient } from '@tanstack/react-query';
 
 interface LayoutProps {
   children: ReactNode;
@@ -28,11 +27,11 @@ const Layout = ({ children }: LayoutProps) => {
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col"> {/* Changed bg-gray-100 to bg-background */}
+    <div className="min-h-screen bg-background flex flex-col">
       <Header />
-      <div className="flex flex-1"> {/* Flex container for sidebar and main content */}
-        <Sidebar className="w-64 hidden md:flex" /> {/* Always render sidebar on md+ screens */}
-        <main className="flex-1 py-8 px-3 md:px-4 pb-20 md:pb-8"> {/* Reduced mobile px to px-3 */}
+      <div className="flex flex-1">
+        {/* Sidebar hidden - navigation now in top navbar */}
+        <main className="flex-1 w-full py-6 px-4 md:px-6 lg:px-8 pb-20 md:pb-6">
           {children}
         </main>
       </div>
