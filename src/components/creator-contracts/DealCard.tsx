@@ -61,13 +61,7 @@ const DealCard: React.FC<DealCardProps> = ({
             <h3 className="text-sm font-semibold text-foreground truncate">
               {deal.brand_name}
             </h3>
-            {/* Status pill smaller on mobile */}
-            <div className="md:hidden">
-              <DealStatusBadge stage={stage} />
-            </div>
-            <div className="hidden md:block">
-              <DealStatusBadge stage={stage} />
-            </div>
+            <DealStatusBadge stage={stage} />
           </div>
         </div>
         <div className="text-right flex-shrink-0 flex flex-col items-end gap-1" onClick={(e) => e.stopPropagation()}>
