@@ -352,7 +352,7 @@ const CreatorContracts = () => {
           {paginatedDeals.length > 0 ? (
             <>
               {/* Mobile Cards - visible on screens < 768px */}
-              <div className="block md:hidden">
+              <div className="flex flex-col md:hidden">
                 {paginatedDeals.map((deal) => {
                   const stage = getDealStage(deal);
                   const dueDateStatus = getDueDateStatus(deal.payment_expected_date || deal.due_date);
