@@ -295,7 +295,7 @@ const CreatorContracts = () => {
   }
 
   return (
-    <div className="w-full max-w-full overflow-x-hidden">
+    <div className="w-full max-w-full overflow-x-hidden pb-8 md:pb-12">
       {/* Page Title */}
       <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-4">Brand Deals & Contracts</h1>
 
