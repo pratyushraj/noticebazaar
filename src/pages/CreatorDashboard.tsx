@@ -6,7 +6,6 @@ import { Loader2, PlusCircle, FileText, Bot, CheckCircle, AlertTriangle, Message
 import { toast } from 'sonner';
 import { useCreatorDashboardData } from '@/lib/hooks/useCreatorDashboardData';
 import CreatorKpiCards from '@/components/creator-dashboard/CreatorKpiCards';
-import CreatorQuickActions from '@/components/creator-dashboard/CreatorQuickActions';
 import CreatorRevenuePayments from '@/components/creator-dashboard/CreatorRevenuePayments';
 import CreatorTaxCompliance from '@/components/creator-dashboard/CreatorTaxCompliance';
 import CreatorCopyrightScanner from '@/components/creator-dashboard/CreatorCopyrightScanner';
@@ -253,17 +252,6 @@ const CreatorDashboard = () => {
 
       {/* KPI Cards */}
       <CreatorKpiCards kpiCards={mockDashboardData.kpiCards} />
-
-      {/* Quick Actions */}
-      <CreatorQuickActions 
-        quickActions={mockDashboardData.quickActions} 
-        onAddBrandDeal={handleAddBrandDeal} 
-        onAIScanContract={handleAIScanContract} 
-        onUploadContract={handleUploadContractQuickAction} 
-        onLinkSocialAccounts={handleLinkSocialAccounts} // NEW: Pass the handler
-        onSendPaymentReminder={handleSendPaymentReminderQuickAction} // NEW: Pass the handler
-        onSendTakedownNotice={handleSendTakedownNoticeQuickAction} // NEW: Pass the handler
-      />
 
       {/* Revenue & Payments */}
       <CreatorRevenuePayments
