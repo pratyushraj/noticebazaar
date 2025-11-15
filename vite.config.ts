@@ -8,6 +8,14 @@ export default defineConfig(() => ({
     host: "::",
     port: 8080,
   },
+  build: {
+    sourcemap: false, // Disable source maps in production to avoid 404 errors
+    rollupOptions: {
+      output: {
+        manualChunks: undefined, // Let Vite handle chunking automatically
+      },
+    },
+  },
   plugins: [
     react({
       jsx: 'react-jsx',
