@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { OriginalContent, CopyrightMatch, CopyrightAction } from '@/types';
 import { useSupabaseQuery } from './useSupabaseQuery';
 import { useSupabaseMutation } from './useSupabaseMutation';
+import { toast } from 'sonner';
 
 // --- 1. Original Content Management Hooks ---
 
@@ -21,26 +22,39 @@ export const useOriginalContent = (options: UseOriginalContentOptions) => {
         return [];
       }
 
-      const { data, error } = await supabase
-        .from('original_content')
-        .select('*')
-        .eq('user_id', creatorId)
-        .order('created_at', { ascending: false });
+      try {
+        const { data, error } = await supabase
+          .from('original_content')
+          .select('*')
+          .eq('user_id', creatorId)
+          .order('created_at', { ascending: false });
 
-      if (error) {
-        // If table doesn't exist (404 or schema cache error), return empty array silently
-        if (error.message.includes('Could not find the table') || 
-            error.message.includes('schema cache') ||
-            error.code === 'PGRST116' ||
-            error.code === '42P01') {
-          // Table doesn't exist - return empty array without logging error
+        if (error) {
+          // If table doesn't exist (404 or schema cache error), return empty array silently
+          if (error.message.includes('Could not find the table') || 
+              error.message.includes('schema cache') ||
+              error.message.includes('404') ||
+              error.code === 'PGRST116' ||
+              error.code === '42P01' ||
+              (error as any).status === 404 ||
+              (error as any).statusCode === 404) {
+            // Table doesn't exist - return empty array without logging error
+            return [];
+          }
+          // For other errors, log but still return empty array to prevent UI crashes
+          console.error('Supabase Error in useOriginalContent:', error.message);
           return [];
         }
-        // For other errors, log but still return empty array to prevent UI crashes
-        console.error('Supabase Error in useOriginalContent:', error.message);
+        return data as OriginalContent[];
+      } catch (err: any) {
+        // Catch network errors (404, etc.) and return empty array silently
+        if (err?.status === 404 || err?.statusCode === 404 || err?.message?.includes('404')) {
+          return [];
+        }
+        // For other errors, log but still return empty array
+        console.error('Supabase Error in useOriginalContent (catch):', err?.message || err);
         return [];
       }
-      return data as OriginalContent[];
     },
     {
       enabled: enabled && !!creatorId,
