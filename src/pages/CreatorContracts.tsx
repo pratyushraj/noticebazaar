@@ -499,27 +499,30 @@ const CreatorContracts = () => {
               </div>
               ) : null}
 
-              {/* Pagination - Reduced spacing */}
-              <div className="flex flex-col md:flex-row justify-center items-center gap-4 mt-4">
-                <div className="order-2 md:order-1">
+              {/* Pagination - Mobile-friendly */}
+              <div className="flex flex-col md:flex-row justify-center items-center gap-3 mt-6">
+                {/* Mobile: Full-width button */}
+                <div className="w-full md:w-auto md:order-1">
                   <Button
                     variant="outline"
                     onClick={handlePreviousPage}
                     disabled={currentPage === 1 || isLoadingBrandDeals}
-                    className="text-foreground border-border/50 hover:bg-accent/50 w-full md:w-auto"
+                    className="w-full md:w-auto text-foreground border-border/50 hover:bg-accent/50 h-10 md:h-9"
                   >
                     Previous
                   </Button>
                 </div>
-                <span className="order-1 md:order-2 text-sm text-muted-foreground text-center">
+                {/* Desktop: Page indicator */}
+                <span className="hidden md:inline-flex order-2 text-sm text-muted-foreground">
                   Page {currentPage} of {totalPages}
                 </span>
-                <div className="order-3">
+                {/* Mobile: Full-width button */}
+                <div className="w-full md:w-auto md:order-3">
                   <Button
                     variant="outline"
                     onClick={handleNextPage}
                     disabled={currentPage === totalPages || isLoadingBrandDeals}
-                    className="text-foreground border-border/50 hover:bg-accent/50 w-full md:w-auto"
+                    className="w-full md:w-auto text-foreground border-border/50 hover:bg-accent/50 h-10 md:h-9"
                   >
                     Next
                   </Button>
