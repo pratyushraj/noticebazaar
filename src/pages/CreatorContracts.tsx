@@ -296,15 +296,19 @@ const CreatorContracts = () => {
 
   return (
     <div className="w-full max-w-full overflow-x-hidden">
-      <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-4 md:mb-6">Brand Deals & Contracts</h1>
-      {/* Mobile card layout active on screens < 768px */}
+      {/* Page Title */}
+      <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-6">Brand Deals & Contracts</h1>
 
-      {/* Stats Section */}
-      <BrandDealsStats allDeals={allBrandDeals || []} isLoading={isLoadingBrandDeals} />
+      {/* Stats Section - 24px spacing */}
+      <div className="mb-6">
+        <BrandDealsStats allDeals={allBrandDeals || []} isLoading={isLoadingBrandDeals} />
+      </div>
 
-      <Card className="bg-card border-border/50 mt-6 md:mt-8">
-        <CardContent className="p-4 md:p-6">
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4 md:mb-6">
+      {/* Main Content Card */}
+      <Card className="bg-card border-border/40 shadow-sm">
+        <CardContent className="p-6">
+          {/* Header Section */}
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
             <h2 className="text-lg md:text-xl font-semibold text-foreground">
               All Brand Deals ({filteredAndSearchedDeals.length})
             </h2>
@@ -316,7 +320,7 @@ const CreatorContracts = () => {
             </Button>
           </div>
 
-          {/* Mobile Filters Accordion (< 768px) */}
+          {/* Mobile Filters Accordion (< 768px) - 24px spacing */}
           {isMobile && (
           <div className="mb-6">
             <MobileFiltersAccordion
@@ -351,7 +355,7 @@ const CreatorContracts = () => {
           </div>
           )}
 
-          {/* Desktop Filters Bar (>= 768px) */}
+          {/* Desktop Filters Bar (>= 768px) - 24px spacing */}
           {!isMobile && (
           <div className="mb-6">
             <FiltersBar
@@ -417,17 +421,17 @@ const CreatorContracts = () => {
 
               {/* Desktop Table Layout - visible on screens >= 768px */}
               {!isMobile ? (
-              <div className="block overflow-x-auto -mx-6 px-6 overflow-visible w-full" data-desktop-view="true" style={{ display: 'block' }}>
-                <Table className="table-fixed">
+              <div className="w-full overflow-x-auto" data-desktop-view="true">
+                <Table>
                   <TableHeader>
-                    <TableRow className="border-border/50">
-                      <TableHead className="text-muted-foreground min-w-[150px]">Brand</TableHead>
-                      <TableHead className="text-muted-foreground min-w-[100px]">Amount</TableHead>
-                      <TableHead className="text-muted-foreground hidden md:table-cell min-w-[100px]">Platform</TableHead>
-                      <TableHead className="text-muted-foreground hidden lg:table-cell min-w-[150px]">Deliverables</TableHead>
-                      <TableHead className="text-muted-foreground min-w-[110px] md:min-w-[130px]">Stage</TableHead>
-                      <TableHead className="text-muted-foreground hidden sm:table-cell min-w-[130px]">Due Date Status</TableHead>
-                      <TableHead className="text-right text-muted-foreground min-w-[80px]">Actions</TableHead>
+                    <TableRow className="border-border/40 hover:bg-transparent">
+                      <TableHead className="text-sm font-semibold text-muted-foreground h-12 px-4">Brand</TableHead>
+                      <TableHead className="text-sm font-semibold text-muted-foreground h-12 px-4">Amount</TableHead>
+                      <TableHead className="text-sm font-semibold text-muted-foreground h-12 px-4 hidden md:table-cell">Platform</TableHead>
+                      <TableHead className="text-sm font-semibold text-muted-foreground h-12 px-4 hidden lg:table-cell">Deliverables</TableHead>
+                      <TableHead className="text-sm font-semibold text-muted-foreground h-12 px-4">Stage</TableHead>
+                      <TableHead className="text-sm font-semibold text-muted-foreground h-12 px-4 hidden sm:table-cell">Due Date Status</TableHead>
+                      <TableHead className="text-sm font-semibold text-muted-foreground h-12 px-4 text-right">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -440,34 +444,36 @@ const CreatorContracts = () => {
                         <TableRow 
                           key={deal.id} 
                           className={cn(
-                            "border-border/50 cursor-pointer hover:bg-accent/30 transition-colors",
+                            "border-border/40 cursor-pointer hover:bg-accent/20 transition-colors",
                             isOverdue && 'bg-red-500/5'
                           )}
                           onClick={() => handleViewDeal(deal)}
                         >
-                          <TableCell>
+                          <TableCell className="px-4 py-4">
                             <div className="flex items-center gap-3">
                               <BrandLogo 
                                 brandName={deal.brand_name} 
                                 brandLogo={null}
                                 size="sm"
                               />
-                              <span className="font-medium text-foreground">{deal.brand_name}</span>
+                              <span className="font-medium text-base text-foreground">{deal.brand_name}</span>
                             </div>
                           </TableCell>
-                          <TableCell className="text-foreground">
-                            ₹{deal.deal_amount.toLocaleString('en-IN')}
+                          <TableCell className="px-4 py-4">
+                            <span className="text-base font-semibold text-foreground">
+                              ₹{deal.deal_amount.toLocaleString('en-IN')}
+                            </span>
                           </TableCell>
-                          <TableCell className="text-muted-foreground hidden md:table-cell">
-                            {deal.platform || 'N/A'}
+                          <TableCell className="px-4 py-4 text-muted-foreground hidden md:table-cell">
+                            <span className="text-sm">{deal.platform || 'N/A'}</span>
                           </TableCell>
-                          <TableCell className="hidden lg:table-cell">
+                          <TableCell className="px-4 py-4 hidden lg:table-cell">
                             <DeliverablesBadge deliverables={deal.deliverables} maxDisplay={2} />
                           </TableCell>
-                          <TableCell className="overflow-visible min-w-[110px] md:min-w-[130px]">
+                          <TableCell className="px-4 py-4 overflow-visible">
                             <DealStatusBadge stage={stage} />
                           </TableCell>
-                          <TableCell className="hidden sm:table-cell">
+                          <TableCell className="px-4 py-4 hidden sm:table-cell">
                             <Badge 
                               variant={isOverdue ? 'destructive' : 'secondary'}
                               className="text-xs"
@@ -475,7 +481,7 @@ const CreatorContracts = () => {
                               {dueDateStatus}
                             </Badge>
                           </TableCell>
-                          <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
+                          <TableCell className="px-4 py-4 text-right" onClick={(e) => e.stopPropagation()}>
                             <DealActionsMenu
                               deal={deal}
                               onView={handleViewDeal}
@@ -493,7 +499,7 @@ const CreatorContracts = () => {
               </div>
               ) : null}
 
-              {/* Pagination */}
+              {/* Pagination - 24px spacing */}
               <div className="flex flex-col md:flex-row justify-center items-center gap-4 mt-6">
                 <div className="order-2 md:order-1">
                   <Button
@@ -531,15 +537,15 @@ const CreatorContracts = () => {
       {/* Brand Deal Form Dialog */}
       <Dialog open={isBrandDealFormOpen} onOpenChange={setIsBrandDealFormOpen}>
         <DialogContent 
-          className="sm:max-w-[600px] bg-card text-foreground border-border/50 h-[90vh] flex flex-col"
+          className="sm:max-w-[600px] bg-card text-foreground border-border/40 rounded-xl shadow-lg backdrop-blur-sm h-[90vh] flex flex-col"
           aria-labelledby="brand-deal-form-title"
           aria-describedby="brand-deal-form-description"
         >
-          <DialogHeader>
-            <DialogTitle id="brand-deal-form-title">
+          <DialogHeader className="space-y-2">
+            <DialogTitle id="brand-deal-form-title" className="text-xl font-semibold">
               {editingBrandDeal ? 'Edit Brand Deal' : 'Add New Brand Deal'}
             </DialogTitle>
-            <DialogDescription id="brand-deal-form-description" className="text-muted-foreground">
+            <DialogDescription id="brand-deal-form-description" className="text-sm text-muted-foreground">
               {editingBrandDeal ? 'Update the details for this brand collaboration.' : 'Enter the details for your new brand collaboration.'}
             </DialogDescription>
           </DialogHeader>
@@ -563,13 +569,13 @@ const CreatorContracts = () => {
       {/* Mark Payment Received Dialog */}
       <Dialog open={isMarkPaymentDialogOpen} onOpenChange={setIsMarkPaymentDialogOpen}>
         <DialogContent 
-          className="sm:max-w-[425px] bg-card text-foreground border-border/50"
+          className="sm:max-w-[425px] bg-card text-foreground border-border/40 rounded-xl shadow-lg backdrop-blur-sm"
           aria-labelledby="mark-payment-title"
           aria-describedby="mark-payment-description"
         >
-          <DialogHeader>
-            <DialogTitle id="mark-payment-title">Mark Payment Received</DialogTitle>
-            <DialogDescription id="mark-payment-description" className="text-muted-foreground">
+          <DialogHeader className="space-y-2">
+            <DialogTitle id="mark-payment-title" className="text-xl font-semibold">Mark Payment Received</DialogTitle>
+            <DialogDescription id="mark-payment-description" className="text-sm text-muted-foreground">
               Confirm the payment details for this deal. This will mark the deal as 'Completed'.
             </DialogDescription>
           </DialogHeader>

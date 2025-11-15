@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useMemo } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { IndianRupee, Briefcase, Clock, DollarSign, Loader2, TrendingUp, AlertCircle } from 'lucide-react';
 import { BrandDeal } from '@/types';
 import { cn } from '@/lib/utils';
@@ -118,12 +118,14 @@ const BrandDealsStats: React.FC<BrandDealsStatsProps> = ({ allDeals, isLoading }
 
   if (isLoading) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+      <div className="grid grid-cols-1 xl:grid-cols-6 gap-4 mb-6">
         {[1, 2, 3, 4, 5, 6].map(i => (
-          <Card key={i} className="creator-card-base shadow-sm p-4">
-            <div className="flex items-center justify-center h-20">
-              <Loader2 className="h-6 w-6 animate-spin text-primary" />
-            </div>
+          <Card key={i} className="bg-gradient-to-br from-card to-card/80 border-border/40 shadow-sm">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-center h-20">
+                <Loader2 className="h-6 w-6 animate-spin text-primary" />
+              </div>
+            </CardContent>
           </Card>
         ))}
       </div>
@@ -131,24 +133,28 @@ const BrandDealsStats: React.FC<BrandDealsStatsProps> = ({ allDeals, isLoading }
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3 md:gap-4">
+    <div className="grid grid-cols-1 xl:grid-cols-6 gap-4 mb-6">
       {stats.map((stat, index) => {
         const Icon = stat.icon;
         return (
           <Card 
             key={index} 
             className={cn(
-              "creator-card-base shadow-sm p-4 md:p-4",
-              "rounded-[12px] w-full"
+              "bg-gradient-to-br from-card to-card/80 border-border/40 shadow-sm",
+              "rounded-xl overflow-hidden transition-all hover:shadow-md"
             )}
           >
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 px-0 pt-0">
-              <CardTitle className="text-sm font-medium text-muted-foreground">{stat.title}</CardTitle>
-              <Icon className={cn("h-4 w-4", stat.color)} />
-            </CardHeader>
-            <CardContent className="px-0 pb-0">
-              <div className="text-2xl font-bold text-foreground mt-1">{stat.value}</div>
-              <p className="text-xs text-muted-foreground mt-1">{stat.description}</p>
+            <CardContent className="p-4">
+              <div className="flex items-start justify-between mb-3">
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-muted-foreground mb-1">{stat.title}</p>
+                  <p className="text-2xl font-bold text-foreground leading-tight">{stat.value}</p>
+                </div>
+                <div className="flex-shrink-0 ml-3">
+                  <Icon className={cn("h-5 w-5", stat.color)} />
+                </div>
+              </div>
+              <p className="text-xs text-muted-foreground mt-2">{stat.description}</p>
             </CardContent>
           </Card>
         );

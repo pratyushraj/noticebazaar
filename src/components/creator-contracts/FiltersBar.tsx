@@ -53,18 +53,18 @@ const FiltersBar: React.FC<FiltersBarProps> = ({
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input
           placeholder="Search by brand, deliverables, or amount..."
-          className="pl-9 bg-input/50 text-foreground border-border/50 focus:border-primary/50"
+          className="pl-9 bg-background text-foreground border-border/40 focus:border-primary/50 h-10"
           value={searchTerm}
           onChange={(e) => onSearchChange(e.target.value)}
         />
       </div>
 
-      {/* Filter Row */}
-      <div className="flex flex-wrap gap-2 sm:gap-3 items-center">
+      {/* Horizontal Filter Row */}
+      <div className="flex flex-wrap items-center gap-3">
         {/* Brand Filter */}
         <Select value={brandFilter} onValueChange={onBrandFilterChange}>
-          <SelectTrigger className="w-full sm:w-[140px] bg-input/50 text-foreground border-border/50">
-            <SelectValue placeholder="Brand" />
+          <SelectTrigger className="w-[160px] bg-background text-foreground border-border/40 h-9">
+            <SelectValue placeholder="All Brands" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="All">All Brands</SelectItem>
@@ -76,8 +76,8 @@ const FiltersBar: React.FC<FiltersBarProps> = ({
 
         {/* Status Filter */}
         <Select value={statusFilter} onValueChange={(value) => onStatusFilterChange(value as DealStage | 'All')}>
-          <SelectTrigger className="w-full sm:w-[140px] bg-input/50 text-foreground border-border/50">
-            <SelectValue placeholder="Status" />
+          <SelectTrigger className="w-[160px] bg-background text-foreground border-border/40 h-9">
+            <SelectValue placeholder="All Statuses" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="All">All Statuses</SelectItem>
@@ -92,8 +92,8 @@ const FiltersBar: React.FC<FiltersBarProps> = ({
 
         {/* Platform Filter */}
         <Select value={platformFilter} onValueChange={onPlatformFilterChange}>
-          <SelectTrigger className="w-full sm:w-[140px] bg-input/50 text-foreground border-border/50">
-            <SelectValue placeholder="Platform" />
+          <SelectTrigger className="w-[160px] bg-background text-foreground border-border/40 h-9">
+            <SelectValue placeholder="All Platforms" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="All">All Platforms</SelectItem>
@@ -105,9 +105,9 @@ const FiltersBar: React.FC<FiltersBarProps> = ({
 
         {/* Date Range Filter */}
         <Select value={dateRangeFilter} onValueChange={onDateRangeFilterChange}>
-          <SelectTrigger className="w-full sm:w-[160px] bg-input/50 text-foreground border-border/50">
+          <SelectTrigger className="w-[180px] bg-background text-foreground border-border/40 h-9">
             <Calendar className="mr-2 h-4 w-4" />
-            <SelectValue placeholder="Date Range" />
+            <SelectValue placeholder="All Time" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="All">All Time</SelectItem>
@@ -120,17 +120,19 @@ const FiltersBar: React.FC<FiltersBarProps> = ({
           </SelectContent>
         </Select>
 
-        {/* Clear Filters Button */}
+        {/* Clear Filters Button - Right Aligned */}
         {hasActiveFilters && (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onClearFilters}
-            className="text-muted-foreground hover:text-foreground"
-          >
-            <X className="mr-2 h-4 w-4" />
-            Clear Filters
-          </Button>
+          <div className="ml-auto">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onClearFilters}
+              className="text-muted-foreground hover:text-foreground h-9"
+            >
+              <X className="mr-2 h-4 w-4" />
+              Clear Filters
+            </Button>
+          </div>
         )}
       </div>
     </div>
@@ -138,4 +140,3 @@ const FiltersBar: React.FC<FiltersBarProps> = ({
 };
 
 export default FiltersBar;
-

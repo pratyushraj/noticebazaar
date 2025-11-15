@@ -7,7 +7,6 @@ import DealStatusBadge, { DealStage } from './DealStatusBadge';
 import DeliverablesBadge from './DeliverablesBadge';
 import DealActionsMenu from './DealActionsMenu';
 import { Badge } from '@/components/ui/badge';
-import { IndianRupee } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface DealCardProps {
@@ -36,58 +35,65 @@ const DealCard: React.FC<DealCardProps> = ({
   return (
     <div
       className={cn(
-        "flex flex-col gap-y-3 py-4 px-4 rounded-[12px] shadow-sm border w-full cursor-pointer transition-colors mb-4",
-        "bg-card border-border/50 hover:bg-accent/20",
+        "flex flex-col gap-4 p-4 rounded-xl border w-full cursor-pointer transition-all",
+        "bg-card border-border/40 hover:bg-accent/10 hover:shadow-md",
         isOverdue && 'border-red-500/30 bg-red-500/5'
       )}
       onClick={() => onView(deal)}
     >
-      {/* Top row: Brand icon + Brand name + Status badge + Kebab menu */}
-      <div className="flex items-center justify-between gap-2 w-full">
-        <div className="flex items-center gap-2 flex-1 min-w-0">
-          <BrandLogo brandName={deal.brand_name} brandLogo={null} size="md" className="flex-shrink-0" />
-          <h3 className="font-semibold text-foreground text-sm leading-tight truncate flex-1">
+      {/* Top Row: Brand Logo + Name + Actions Menu */}
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center gap-3 flex-1 min-w-0">
+          <BrandLogo 
+            brandName={deal.brand_name} 
+            brandLogo={null} 
+            size="md" 
+            className="flex-shrink-0" 
+          />
+          <h3 className="font-semibold text-base text-foreground leading-tight truncate">
             {deal.brand_name}
           </h3>
         </div>
-        <div className="flex items-center gap-2 flex-shrink-0">
-          <DealStatusBadge stage={stage} />
-          <div onClick={(e) => e.stopPropagation()}>
-            <DealActionsMenu
-              deal={deal}
-              onView={onView}
-              onEdit={onEdit}
-              onMarkPaid={onMarkPaid}
-              onDelete={onDelete}
-              isDeleting={isDeleting}
-            />
-          </div>
+        <div onClick={(e) => e.stopPropagation()}>
+          <DealActionsMenu
+            deal={deal}
+            onView={onView}
+            onEdit={onEdit}
+            onMarkPaid={onMarkPaid}
+            onDelete={onDelete}
+            isDeleting={isDeleting}
+          />
         </div>
       </div>
 
-      {/* Amount row */}
-      <div className="flex items-center">
-        <span className="text-base font-bold text-foreground">
+      {/* Status Badge - Right Aligned */}
+      <div className="flex justify-end">
+        <DealStatusBadge stage={stage} />
+      </div>
+
+      {/* Amount - Large and Bold */}
+      <div>
+        <span className="text-2xl font-bold text-foreground">
           ₹{deal.deal_amount.toLocaleString('en-IN')}
         </span>
       </div>
 
-      {/* Platform section */}
-      <div className="flex flex-col gap-y-1">
-        <span className="text-xs text-muted-foreground uppercase tracking-wide font-medium">PLATFORM</span>
+      {/* Platform Section */}
+      <div className="flex flex-col gap-1.5">
+        <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">PLATFORM</span>
         <span className="text-sm font-medium text-foreground">{deal.platform || 'N/A'}</span>
       </div>
 
-      {/* Deliverables section */}
-      <div className="flex flex-col gap-y-2">
-        <span className="text-xs text-muted-foreground uppercase tracking-wide font-medium">DELIVERABLES</span>
+      {/* Deliverables Section */}
+      <div className="flex flex-col gap-2">
+        <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">DELIVERABLES</span>
         <DeliverablesBadge deliverables={deal.deliverables} maxDisplay={3} />
       </div>
 
-      {/* Due Date section */}
-      <div className="flex items-start justify-between gap-3 pt-2 border-t border-border/50">
-        <div className="flex flex-col gap-y-1 flex-1 min-w-0">
-          <span className="text-xs text-muted-foreground uppercase tracking-wide font-medium">DUE DATE</span>
+      {/* Due Date Section - Bottom Border */}
+      <div className="flex items-center justify-between gap-3 pt-3 border-t border-border/40">
+        <div className="flex flex-col gap-1 flex-1 min-w-0">
+          <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">DUE DATE</span>
           <span className="text-sm font-medium text-foreground">
             {new Date(deal.payment_expected_date || deal.due_date).toLocaleDateString('en-IN', {
               day: 'numeric',
@@ -98,7 +104,7 @@ const DealCard: React.FC<DealCardProps> = ({
         </div>
         <Badge 
           variant={isOverdue ? 'destructive' : 'secondary'}
-          className="text-xs px-2.5 py-1 whitespace-nowrap flex-shrink-0"
+          className="text-xs px-3 py-1 whitespace-nowrap flex-shrink-0"
         >
           {dueDateStatus}
         </Badge>
@@ -108,4 +114,3 @@ const DealCard: React.FC<DealCardProps> = ({
 };
 
 export default DealCard;
-
