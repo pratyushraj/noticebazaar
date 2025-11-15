@@ -157,15 +157,6 @@ const CreatorPaymentsAndRecovery = () => {
     );
   }
 
-  // Handle deliverables array/string
-  const getDeliverablesArray = (deal: BrandDeal): string[] => {
-    if (Array.isArray(deal.deliverables)) return deal.deliverables;
-    if (typeof deal.deliverables === 'string') {
-      return deal.deliverables.split(',').map(d => d.trim()).filter(Boolean);
-    }
-    return [];
-  };
-
   return (
     <div className="w-full max-w-full overflow-x-hidden pb-[80px] px-4 md:px-6 antialiased">
       {/* Page Title - text-2xl on mobile per design system */}
