@@ -8,7 +8,6 @@ import { useCreatorDashboardData } from '@/lib/hooks/useCreatorDashboardData';
 import CreatorKpiCards from '@/components/creator-dashboard/CreatorKpiCards';
 import CreatorCopyrightScanner from '@/components/creator-dashboard/CreatorCopyrightScanner';
 import CreatorAIActionCenter from '@/components/creator-dashboard/CreatorAIActionCenter';
-import CreatorImportantDeadlines from '@/components/creator-dashboard/CreatorImportantDeadlines';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog'; // Added DialogFooter
 import BrandDealForm from '@/components/forms/BrandDealForm';
@@ -23,7 +22,6 @@ import { ScrollArea } from '@/components/ui/scroll-area'; // Import ScrollArea
 import SocialAccountLinkForm from '@/components/forms/SocialAccountLinkForm'; // NEW: Import SocialAccountLinkForm
 import { useSendPaymentReminder } from '@/lib/hooks/useSendPaymentReminder'; // NEW: Import useSendPaymentReminder
 import { useSendTakedownNotice } from '@/lib/hooks/useSendTakedownNotice'; // NEW: Import useSendTakedownNotice
-import { useCreatorDeadlines } from '@/lib/hooks/useTaxFilings'; // NEW: Import useCreatorDeadlines
 
 const CreatorDashboard = () => {
   const { profile, loading: sessionLoading, isCreator } = useSession();
@@ -53,11 +51,6 @@ const CreatorDashboard = () => {
     enabled: !sessionLoading && isCreator && !!profile?.id,
   });
   
-  // NEW: Fetch real upcoming deadlines
-  const { data: upcomingDeadlines, isLoading: isLoadingDeadlines } = useCreatorDeadlines({
-    creatorId: creatorId,
-    enabled: !sessionLoading && isCreator && !!creatorId,
-  });
 
   // AI Scan Contract Mutation
   const scanContractMutation = useAIScanContractReview();
@@ -185,7 +178,7 @@ const CreatorDashboard = () => {
     }
   };
 
-  if (sessionLoading || isLoadingMocks || isLoadingBrandDeals || isLoadingDeadlines) {
+  if (sessionLoading || isLoadingMocks || isLoadingBrandDeals) {
     return (
       <div className="min-h-[300px] flex flex-col items-center justify-center bg-background">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -212,13 +205,8 @@ const CreatorDashboard = () => {
       {/* KPI Cards */}
       <CreatorKpiCards kpiCards={mockDashboardData.kpiCards} />
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* AI Action Center */}
-        <CreatorAIActionCenter aiActions={mockDashboardData.aiActionCenter} onSendPaymentReminder={handleSendPaymentReminderQuickAction} />
-
-        {/* Important Deadlines (Now using real data) */}
-        <CreatorImportantDeadlines deadlines={upcomingDeadlines || []} isLoading={isLoadingDeadlines} />
-      </div>
+      {/* AI Action Center */}
+      <CreatorAIActionCenter aiActions={mockDashboardData.aiActionCenter} onSendPaymentReminder={handleSendPaymentReminderQuickAction} />
 
       {/* Copyright Scanner */}
       <CreatorCopyrightScanner />
