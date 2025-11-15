@@ -133,7 +133,7 @@ const BrandDealsStats: React.FC<BrandDealsStatsProps> = ({ allDeals, isLoading }
   }
 
   return (
-    <div className="grid grid-cols-1 xl:grid-cols-6 gap-4 mb-6">
+    <div className="grid grid-cols-1 xl:grid-cols-6 gap-3 md:gap-4">
       {stats.map((stat, index) => {
         const Icon = stat.icon;
         return (
