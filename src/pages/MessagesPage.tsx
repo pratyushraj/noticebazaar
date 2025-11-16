@@ -1,37 +1,41 @@
 "use client";
 
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useSession } from '@/contexts/SessionContext';
-import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { Loader2, Lock } from 'lucide-react'; // Import Lock icon
-import ChatWindow from '@/components/ChatWindow';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Loader2, Lock, Menu } from 'lucide-react';
 import { Profile } from '@/types';
 import { useProfiles } from '@/lib/hooks/useProfiles';
-import ClientChatList from '@/components/ClientChatList';
-import ClientChatPartnerSelector from '@/components/ClientChatPartnerSelector';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'; // Import Tooltip
-import { Button } from '@/components/ui/button'; // Import Button for mobile back button
-import { ArrowLeft } from 'lucide-react'; // Import ArrowLeft
+import { Button } from '@/components/ui/button';
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import AdvisorList from '@/components/messages/AdvisorList';
+import ChatWindow from '@/components/messages/ChatWindow';
 
 const MessagesPage = () => {
   const { session, loading: sessionLoading, profile, isAdmin } = useSession();
   const [selectedChatPartnerId, setSelectedChatPartnerId] = useState<string | null>(null);
-  const [isChatViewActive, setIsChatViewActive] = useState(false); // New state for mobile view control
+  const [isMobileSheetOpen, setIsMobileSheetOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  // Mobile detection
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   // --- Admin View ---
-  // Fetch client profiles for admins
   const { data: clientProfilesData, isLoading: isLoadingClientProfiles, error: clientProfilesError } = useProfiles({
-    role: 'client', // Filter by role 'client'
-    enabled: isAdmin && !!profile, // Only fetch if admin and profile is loaded
-    disablePagination: true, // Fetch all clients for the chat list
+    role: 'client',
+    enabled: isAdmin && !!profile,
+    disablePagination: true,
   });
   const clientProfiles = clientProfilesData?.data || [];
 
   // --- Client View ---
-  // Fetch Admin profile (Legal Advisor)
   const { data: adminProfilesData, isLoading: isLoadingAdminProfile, error: adminProfileError } = useProfiles({
     role: 'admin',
     enabled: !isAdmin && !!profile,
@@ -39,7 +43,6 @@ const MessagesPage = () => {
   });
   const adminProfile = adminProfilesData?.data?.[0] || null;
 
-  // Fetch CA profile (Chartered Accountant)
   const { data: caProfilesData, isLoading: isLoadingCAProfile, error: caProfileError } = useProfiles({
     role: 'chartered_accountant',
     enabled: !isAdmin && !!profile,
@@ -47,7 +50,7 @@ const MessagesPage = () => {
   });
   const caProfile = caProfilesData?.data?.[0] || null;
 
-  // Combine potential chat partners for client view with refined labels
+  // Combine potential chat partners for client view
   const clientChatPartners = [
     ...(adminProfile ? [{ 
       ...adminProfile, 
@@ -69,25 +72,24 @@ const MessagesPage = () => {
   }, [clientProfilesError, adminProfileError, caProfileError]);
 
   useEffect(() => {
-    // For admins, automatically select the first client if available and none is selected
+    // Auto-select first available partner
     if (isAdmin && clientProfiles.length > 0 && !selectedChatPartnerId) {
       setSelectedChatPartnerId(clientProfiles[0].id);
     }
-    // For clients, automatically select the first available partner (Admin or CA)
     if (!isAdmin && clientChatPartners.length > 0 && !selectedChatPartnerId) {
       setSelectedChatPartnerId(clientChatPartners[0].id);
     }
   }, [isAdmin, clientProfiles, clientChatPartners, selectedChatPartnerId]);
 
-  // Handle selection and mobile view transition
   const handleSelectPartner = (partnerId: string) => {
     setSelectedChatPartnerId(partnerId);
-    setIsChatViewActive(true); // Activate chat view on mobile
+    if (isMobile) {
+      setIsMobileSheetOpen(false); // Close sheet on mobile after selection
+    }
   };
 
   const isLoadingPage = sessionLoading || isLoadingClientProfiles || isLoadingAdminProfile || isLoadingCAProfile;
 
-  // Helper function to find the selected partner's details
   const getSelectedPartnerDetails = () => {
     if (isAdmin) {
       return clientProfiles.find(c => c.id === selectedChatPartnerId);
@@ -98,89 +100,98 @@ const MessagesPage = () => {
 
   const selectedPartner = getSelectedPartnerDetails();
   const receiverName = selectedPartner ? `${selectedPartner.first_name} ${selectedPartner.last_name}` : '';
+  const receiverRole = selectedPartner 
+    ? selectedPartner.role === 'admin' 
+      ? 'Legal Advisor' 
+      : selectedPartner.role === 'chartered_accountant' 
+        ? 'Chartered Accountant' 
+        : selectedPartner.role
+    : '';
   const receiverAvatarUrl = selectedPartner?.avatar_url || undefined;
+
+  // Determine which advisors to show
+  const advisors = isAdmin ? clientProfiles : clientChatPartners;
+  const isLoadingAdvisors = isAdmin ? isLoadingClientProfiles : (isLoadingAdminProfile || isLoadingCAProfile);
+  const advisorTitle = isAdmin ? 'Clients' : 'Select Advisor';
 
   if (isLoadingPage) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-background">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        <p className="mt-3 text-muted-foreground">Loading messages page...</p>
+        <p className="mt-3 text-sm text-muted-foreground">Loading messages page...</p>
       </div>
     );
   }
 
-  // Determine if we are on a mobile screen and a chat is selected
-  const isMobile = window.innerWidth < 768;
-  const showChatWindowOnly = isMobile && isChatViewActive;
-  const showSelectorOnly = isMobile && !isChatViewActive;
-
   return (
-    <>
-      <div className="flex items-center mb-6">
-        {showChatWindowOnly && (
-          <Button variant="ghost" size="icon" onClick={() => setIsChatViewActive(false)} className="mr-2 flex-shrink-0">
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-        )}
-        <h1 className="text-3xl font-bold text-foreground mr-3">
-          {showChatWindowOnly ? receiverName : 'Secure Messages'}
-        </h1>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Lock className="h-5 w-5 text-green-500" />
-          </TooltipTrigger>
-          <TooltipContent className="bg-card text-foreground border-border">
-            <p>End-to-End Encrypted. Your communications remain privileged and confidential.</p>
-          </TooltipContent>
-        </Tooltip>
+    <div className="w-full h-full flex flex-col antialiased">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-4 md:mb-6">
+        <div className="flex items-center gap-3">
+          {isMobile && (
+            <Sheet open={isMobileSheetOpen} onOpenChange={setIsMobileSheetOpen}>
+              <SheetTrigger asChild>
+                <Button variant="ghost" size="icon" className="h-9 w-9">
+                  <Menu className="h-5 w-5" />
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="left" className="w-[85%] sm:w-[380px] p-0">
+                <div className="h-full">
+                  <AdvisorList
+                    advisors={advisors}
+                    selectedAdvisorId={selectedChatPartnerId}
+                    onSelectAdvisor={handleSelectPartner}
+                    isLoading={isLoadingAdvisors}
+                    title={advisorTitle}
+                  />
+                </div>
+              </SheetContent>
+            </Sheet>
+          )}
+          
+          <div className="flex items-center gap-2">
+            <h1 className="text-2xl md:text-3xl font-bold text-foreground">Secure Messages</h1>
+            <div className="flex items-center gap-1.5">
+              <Lock className="h-4 w-4 md:h-5 md:w-5 text-green-500" />
+            </div>
+          </div>
+        </div>
       </div>
 
-      {/* 
-        Height Calculation: 
-        We use a responsive height calculation to ensure the chat container fills the screen 
-        minus the fixed header, mobile nav (on mobile), and vertical padding from Layout.tsx.
-        
-        Mobile: 100vh - (Header 4rem + Bottom Nav 4rem + Layout Padding 7rem) = 15rem total subtraction
-        Desktop: 100vh - (Header 4rem + Layout Padding 4rem) = 8rem total subtraction
-      */}
-      <div className="flex gap-6 h-[calc(100vh-15rem)] md:h-[calc(100vh-8rem)]">
-        {/* Left Sidebar/Selector (Hidden on mobile if chat is active) */}
-        <div className={`md:w-1/4 md:min-w-[200px] md:max-w-[300px] h-full ${showChatWindowOnly ? 'hidden' : 'w-full'}`}>
-          {isAdmin ? (
-            <ClientChatList
-              clients={clientProfiles}
-              selectedClientId={selectedChatPartnerId}
-              onSelectClient={handleSelectPartner} // Use handleSelectPartner
-              isLoading={isLoadingClientProfiles}
+      {/* Main Content */}
+      <div className="flex-1 flex gap-4 md:gap-6 min-h-0">
+        {/* Left Sidebar - Desktop Only */}
+        {!isMobile && (
+          <div className="w-1/4 min-w-[280px] max-w-[320px] h-full">
+            <AdvisorList
+              advisors={advisors}
+              selectedAdvisorId={selectedChatPartnerId}
+              onSelectAdvisor={handleSelectPartner}
+              isLoading={isLoadingAdvisors}
+              title={advisorTitle}
             />
-          ) : (
-            <ClientChatPartnerSelector
-              partners={clientChatPartners}
-              selectedPartnerId={selectedChatPartnerId}
-              onSelectPartner={handleSelectPartner} // Use handleSelectPartner
-              isLoading={isLoadingAdminProfile || isLoadingCAProfile}
-            />
-          )}
-        </div>
+          </div>
+        )}
 
-        {/* Right Content: Chat Window (Hidden on mobile if selector is active) */}
-        <div className={`md:flex-1 ${showSelectorOnly ? 'hidden' : 'flex-1'}`}>
+        {/* Right Content: Chat Window */}
+        <div className="flex-1 min-w-0 h-full">
           {selectedChatPartnerId && selectedPartner ? (
             <ChatWindow
               receiverId={selectedChatPartnerId}
               receiverName={receiverName}
+              receiverRole={receiverRole}
               receiverAvatarUrl={receiverAvatarUrl}
             />
           ) : (
-            <div className="flex items-center justify-center h-full bg-card rounded-lg shadow-sm border border-border">
-              <p className="text-center text-muted-foreground py-8">
+            <div className="flex items-center justify-center h-full bg-card rounded-xl border border-border/40 shadow-sm">
+              <p className="text-sm text-muted-foreground text-center px-4">
                 {isAdmin ? 'Select a client to start chatting.' : 'Select an advisor to start chatting.'}
               </p>
             </div>
           )}
         </div>
       </div>
-    </>
+    </div>
   );
 };
 
