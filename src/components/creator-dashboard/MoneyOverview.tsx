@@ -120,7 +120,7 @@ const MoneyOverview: React.FC<MoneyOverviewProps> = ({
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.4 }}
-        className="grid grid-cols-1 md:grid-cols-2 gap-4 col-span-2"
+        className="grid grid-cols-2 gap-4 col-span-2"
       >
         {/* Active Campaigns Card */}
       <motion.div
@@ -130,28 +130,28 @@ const MoneyOverview: React.FC<MoneyOverviewProps> = ({
         transition={{ duration: 0.3, delay: 0.7 }}
       >
         <Card
-          className="bg-gradient-to-br from-blue-900/20 to-blue-950/20 border border-blue-700/40 rounded-xl p-5 hover:border-blue-600/60 transition-all cursor-pointer group hover:shadow-xl hover:shadow-blue-500/10"
+          className="bg-gradient-to-br from-blue-900/20 to-blue-950/20 border border-blue-700/40 rounded-xl p-3 md:p-5 hover:border-blue-600/60 transition-all cursor-pointer group hover:shadow-xl hover:shadow-blue-500/10"
           onClick={() => navigate('/creator-contracts')}
         >
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-2">
-              <div className="w-10 h-10 rounded-lg bg-blue-500/10 flex items-center justify-center">
-                <TrendingUp className="w-5 h-5 text-blue-500" />
+          <div className="flex items-center justify-between mb-2 md:mb-3">
+            <div className="flex items-center gap-1.5 md:gap-2">
+              <div className="w-8 h-8 md:w-10 md:h-10 rounded-lg bg-blue-500/10 flex items-center justify-center">
+                <TrendingUp className="w-4 h-4 md:w-5 md:h-5 text-blue-500" />
               </div>
-              <span className="text-sm font-medium text-foreground">Active Campaigns</span>
+              <span className="text-xs md:text-sm font-medium text-foreground">Active Campaigns</span>
             </div>
           </div>
 
           {activeCampaigns === 0 ? (
-            <div className="text-center py-6 space-y-4">
-              <div className="text-5xl font-bold text-foreground mb-2">{activeCampaigns}</div>
+            <div className="text-center py-3 md:py-6 space-y-2 md:space-y-4">
+              <div className="text-3xl md:text-5xl font-bold text-foreground mb-1 md:mb-2">{activeCampaigns}</div>
               <Button
                 size="sm"
                 onClick={(e) => {
                   e.stopPropagation();
                   onAddCampaign?.();
                 }}
-                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium"
+                className="px-2 py-1.5 md:px-4 md:py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs md:text-sm font-medium"
               >
                 Start Your Campaign
               </Button>
@@ -187,9 +187,9 @@ const MoneyOverview: React.FC<MoneyOverviewProps> = ({
             </div>
           )}
 
-          <div className="mt-4 flex items-center text-sm text-blue-500 group-hover:text-blue-400 transition-colors">
+          <div className="mt-2 md:mt-4 flex items-center text-xs md:text-sm text-blue-500 group-hover:text-blue-400 transition-colors">
             <span>Manage</span>
-            <ArrowRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
+            <ArrowRight className="w-3 h-3 md:w-4 md:h-4 ml-1 group-hover:translate-x-1 transition-transform" />
           </div>
         </Card>
       </motion.div>
@@ -202,26 +202,26 @@ const MoneyOverview: React.FC<MoneyOverviewProps> = ({
         transition={{ duration: 0.3, delay: 0.8 }}
       >
         <Card
-          className="bg-gradient-to-br from-green-900/20 to-green-950/20 border border-green-700/40 rounded-xl p-5 hover:border-green-600/60 transition-all cursor-pointer group hover:shadow-xl hover:shadow-green-500/10"
+          className="bg-gradient-to-br from-green-900/20 to-green-950/20 border border-green-700/40 rounded-xl p-3 md:p-5 hover:border-green-600/60 transition-all cursor-pointer group hover:shadow-xl hover:shadow-green-500/10"
           onClick={() => navigate('/creator-contracts')}
         >
-          <div className="flex items-center gap-2 mb-3">
-            <div className="w-10 h-10 rounded-lg bg-green-500/10 flex items-center justify-center">
-              <CheckCircle className="w-5 h-5 text-green-500" />
+          <div className="flex items-center gap-1.5 md:gap-2 mb-2 md:mb-3">
+            <div className="w-8 h-8 md:w-10 md:h-10 rounded-lg bg-green-500/10 flex items-center justify-center">
+              <CheckCircle className="w-4 h-4 md:w-5 md:h-5 text-green-500" />
             </div>
-            <span className="text-sm font-medium text-foreground">Completed</span>
+            <span className="text-xs md:text-sm font-medium text-foreground">Completed</span>
           </div>
 
-          <div className="space-y-2 mb-4">
-            <div className="text-3xl font-bold text-foreground tabular-nums">{completed} this month</div>
+          <div className="space-y-1 md:space-y-2 mb-2 md:mb-4">
+            <div className="text-2xl md:text-3xl font-bold text-foreground tabular-nums">{completed} this month</div>
             {completedChange !== 0 && (
-              <div className="flex items-center gap-2 text-sm">
+              <div className="flex items-center gap-1 md:gap-2 text-xs md:text-sm">
                 <div className={cn(
                   "flex items-center text-green-500",
                   completedChange < 0 && "text-red-500"
                 )}>
                   <TrendingUp className={cn(
-                    "w-4 h-4 mr-1",
+                    "w-3 h-3 md:w-4 md:h-4 mr-1",
                     completedChange < 0 && "rotate-180"
                   )} />
                   <span className="font-medium">
@@ -230,12 +230,12 @@ const MoneyOverview: React.FC<MoneyOverviewProps> = ({
                 </div>
               </div>
             )}
-            <div className="text-sm text-muted-foreground">{onTimeRate}% on time delivery</div>
+            <div className="text-xs md:text-sm text-muted-foreground">{onTimeRate}% on time delivery</div>
           </div>
 
-          <button className="w-full px-4 py-2 bg-green-500/10 hover:bg-green-500/20 border border-green-500/30 text-green-400 text-sm font-medium rounded-lg transition-all flex items-center justify-between group-hover:border-green-500/50">
+          <button className="w-full px-2 py-1.5 md:px-4 md:py-2 bg-green-500/10 hover:bg-green-500/20 border border-green-500/30 text-green-400 text-xs md:text-sm font-medium rounded-lg transition-all flex items-center justify-between group-hover:border-green-500/50">
             <span>View History</span>
-            <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+            <ArrowRight className="w-3 h-3 md:w-4 md:h-4 group-hover:translate-x-1 transition-transform" />
           </button>
         </Card>
       </motion.div>

@@ -79,7 +79,8 @@ const getPaymentStatus = (deal: BrandDeal): PaymentStatus => {
 const CreatorDashboard = () => {
   const navigate = useNavigate();
   const { profile, loading: sessionLoading, isCreator } = useSession();
-  const [activeTab, setActiveTab] = useState<'overview' | 'deals' | 'payments' | 'protection'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'deals' | 'protection'>('overview');
+  const [dealsViewMode, setDealsViewMode] = useState<'deals' | 'payments'>('deals');
   
   // Dialog states
   const [isBrandDealFormOpen, setIsBrandDealFormOpen] = useState(false);
@@ -504,8 +505,7 @@ const CreatorDashboard = () => {
           <div className="flex gap-1 px-4 overflow-x-auto">
             {[
               { id: 'overview', label: 'Overview' },
-              { id: 'deals', label: 'Deals' },
-              { id: 'payments', label: 'Payments' },
+              { id: 'deals', label: 'Deals & Payments' },
               { id: 'protection', label: 'Protection' }
             ].map((tab) => (
               <button
@@ -607,144 +607,175 @@ const CreatorDashboard = () => {
             </>
           )}
 
-          {/* Deals Tab */}
+          {/* Deals & Payments Tab */}
           {activeTab === 'deals' && (
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <h2 className="text-xl font-bold">Brand Deals & Contracts</h2>
+                <h2 className="text-xl font-bold">Deals & Payments</h2>
                 <Button onClick={handleAddBrandDeal} className="bg-blue-600 hover:bg-blue-700">
                   <Briefcase className="w-4 h-4 mr-2" /> Add New Deal
                 </Button>
               </div>
 
-              <div className="flex gap-2 flex-wrap">
-                <Button
-                  variant={quickFilter === null ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => setQuickFilter(null)}
+              {/* Sub-tabs for Deals vs Payments view */}
+              <div className="flex gap-2 border-b border-border/40">
+                <button
+                  onClick={() => setDealsViewMode('deals')}
+                  className={cn(
+                    "px-4 py-2 text-sm font-medium transition-colors border-b-2 -mb-[1px]",
+                    dealsViewMode === 'deals'
+                      ? 'text-blue-400 border-blue-400'
+                      : 'text-gray-400 border-transparent hover:text-gray-300'
+                  )}
                 >
-                  All ({brandDeals?.length || 0})
-                </Button>
-                <Button
-                  variant={quickFilter === 'active' ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => setQuickFilter('active')}
+                  Deals ({brandDeals?.length || 0})
+                </button>
+                <button
+                  onClick={() => setDealsViewMode('payments')}
+                  className={cn(
+                    "px-4 py-2 text-sm font-medium transition-colors border-b-2 -mb-[1px]",
+                    dealsViewMode === 'payments'
+                      ? 'text-blue-400 border-blue-400'
+                      : 'text-gray-400 border-transparent hover:text-gray-300'
+                  )}
                 >
-                  Active ({brandDeals?.filter(d => d.status === 'Approved' || d.status === 'Drafting').length || 0})
-                </Button>
-                <Button
-                  variant={quickFilter === 'pending_payment' ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => setQuickFilter('pending_payment')}
-                >
-                  Pending Payment ({brandDeals?.filter(d => d.status === 'Payment Pending').length || 0})
-                </Button>
-                <Button
-                  variant={quickFilter === 'completed' ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => setQuickFilter('completed')}
-                >
-                  Completed ({brandDeals?.filter(d => d.status === 'Completed').length || 0})
-                </Button>
+                  Payments ({filteredPayments.length})
+                </button>
               </div>
 
-              <Input
-                placeholder="Search deals..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="max-w-md"
-              />
+              {/* Deals View */}
+              {dealsViewMode === 'deals' && (
+                <>
+                  <div className="flex gap-2 flex-wrap">
+                    <Button
+                      variant={quickFilter === null ? 'default' : 'outline'}
+                      size="sm"
+                      onClick={() => setQuickFilter(null)}
+                    >
+                      All ({brandDeals?.length || 0})
+                    </Button>
+                    <Button
+                      variant={quickFilter === 'active' ? 'default' : 'outline'}
+                      size="sm"
+                      onClick={() => setQuickFilter('active')}
+                    >
+                      Active ({brandDeals?.filter(d => d.status === 'Approved' || d.status === 'Drafting').length || 0})
+                    </Button>
+                    <Button
+                      variant={quickFilter === 'pending_payment' ? 'default' : 'outline'}
+                      size="sm"
+                      onClick={() => setQuickFilter('pending_payment')}
+                    >
+                      Pending Payment ({brandDeals?.filter(d => d.status === 'Payment Pending').length || 0})
+                    </Button>
+                    <Button
+                      variant={quickFilter === 'completed' ? 'default' : 'outline'}
+                      size="sm"
+                      onClick={() => setQuickFilter('completed')}
+                    >
+                      Completed ({brandDeals?.filter(d => d.status === 'Completed').length || 0})
+                    </Button>
+                  </div>
 
-              <div className="space-y-3">
-                {filteredDeals.length === 0 ? (
-                  <Card className="p-8 text-center">
-                    <p className="text-gray-400">No deals found</p>
-                  </Card>
-                ) : (
-                  filteredDeals.map((deal) => {
-                    const stage = getDealStage(deal);
-                    const paymentStatus = getPaymentStatus(deal);
-                    return (
-                      <ProjectDealCard
-                        key={deal.id}
-                        deal={deal}
-                        stage={stage}
-                        paymentStatus={paymentStatus}
-                        onView={(d) => navigate(`/creator-contracts/${d.id}`)}
-                        onEdit={(d) => {
-                          setEditingBrandDeal(d);
-                          setIsBrandDealFormOpen(true);
-                        }}
-                        onManageDeliverables={() => toast.info('Deliverables management coming soon!')}
-                        onUploadContent={() => toast.info('Content upload coming soon!')}
-                        onContactBrand={() => navigate('/messages')}
-                        onViewContract={(d) => {
-                          if (d.contract_file_url) {
-                            window.open(d.contract_file_url, '_blank');
-                          } else {
-                            toast.error('Contract file not available');
-                          }
-                        }}
-                        onDelete={() => toast.info('Delete functionality coming soon!')}
-                      />
-                    );
-                  })
-                )}
-              </div>
-            </div>
-          )}
+                  <Input
+                    placeholder="Search deals..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="max-w-md"
+                  />
 
-          {/* Payments Tab */}
-          {activeTab === 'payments' && (
-            <div className="space-y-4">
-              <FinancialOverviewHeader allDeals={brandDeals || []} />
-              <PaymentQuickFilters
-                allDeals={brandDeals || []}
-                activeFilter={quickFilter}
-                onFilterChange={setQuickFilter}
-              />
-              <PaymentTimeline allDeals={filteredPayments} />
-              <div className="space-y-3">
-                {filteredPayments.length === 0 ? (
-                  <Card className="p-8 text-center">
-                    <p className="text-gray-400">No payments found</p>
-                  </Card>
-                ) : (
-                  filteredPayments.map((deal) => {
-                    const paymentStatus = getPaymentStatus(deal);
-                    // Map PaymentStatus to EnhancedPaymentCard status
-                    const status: 'overdue' | 'pending' | 'upcoming' | 'paid' = 
-                      paymentStatus === 'paid' ? 'paid' :
-                      paymentStatus === 'overdue' ? 'overdue' :
-                      paymentStatus === 'pending' ? 'pending' : 'upcoming';
-                    
-                    const now = new Date();
-                    now.setHours(0, 0, 0, 0);
-                    const dueDate = new Date(deal.payment_expected_date);
-                    dueDate.setHours(0, 0, 0, 0);
-                    const diffTime = dueDate.getTime() - now.getTime();
-                    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                    const daysOverdue = diffDays < 0 ? Math.abs(diffDays) : undefined;
-                    const daysLeft = diffDays >= 0 ? diffDays : undefined;
+                  <div className="space-y-3">
+                    {filteredDeals.length === 0 ? (
+                      <Card className="p-8 text-center">
+                        <p className="text-gray-400">No deals found</p>
+                      </Card>
+                    ) : (
+                      filteredDeals.map((deal) => {
+                        const stage = getDealStage(deal);
+                        const paymentStatus = getPaymentStatus(deal);
+                        return (
+                          <ProjectDealCard
+                            key={deal.id}
+                            deal={deal}
+                            stage={stage}
+                            paymentStatus={paymentStatus}
+                            onView={(d) => navigate(`/creator-contracts/${d.id}`)}
+                            onEdit={(d) => {
+                              setEditingBrandDeal(d);
+                              setIsBrandDealFormOpen(true);
+                            }}
+                            onManageDeliverables={() => toast.info('Deliverables management coming soon!')}
+                            onUploadContent={() => toast.info('Content upload coming soon!')}
+                            onContactBrand={() => navigate('/messages')}
+                            onViewContract={(d) => {
+                              if (d.contract_file_url) {
+                                window.open(d.contract_file_url, '_blank');
+                              } else {
+                                toast.error('Contract file not available');
+                              }
+                            }}
+                            onDelete={() => toast.info('Delete functionality coming soon!')}
+                          />
+                        );
+                      })
+                    )}
+                  </div>
+                </>
+              )}
 
-                    return (
-                      <EnhancedPaymentCard
-                        key={deal.id}
-                        deal={deal}
-                        status={status}
-                        daysOverdue={daysOverdue}
-                        daysLeft={daysLeft}
-                        onSendReminder={(d) => {
-                          setSelectedDealForReminder(d);
-                          setIsSendPaymentReminderDialogOpen(true);
-                        }}
-                        onMarkPaid={(d) => toast.info(`Mark ${d.brand_name} as paid coming soon!`)}
-                        onViewDetails={(d) => navigate(`/creator-contracts/${d.id}`)}
-                      />
-                    );
-                  })
-                )}
-              </div>
+              {/* Payments View */}
+              {dealsViewMode === 'payments' && (
+                <>
+                  <FinancialOverviewHeader allDeals={brandDeals || []} />
+                  <PaymentQuickFilters
+                    allDeals={brandDeals || []}
+                    activeFilter={quickFilter}
+                    onFilterChange={setQuickFilter}
+                  />
+                  <PaymentTimeline allDeals={filteredPayments} />
+                  <div className="space-y-3">
+                    {filteredPayments.length === 0 ? (
+                      <Card className="p-8 text-center">
+                        <p className="text-gray-400">No payments found</p>
+                      </Card>
+                    ) : (
+                      filteredPayments.map((deal) => {
+                        const paymentStatus = getPaymentStatus(deal);
+                        // Map PaymentStatus to EnhancedPaymentCard status
+                        const status: 'overdue' | 'pending' | 'upcoming' | 'paid' = 
+                          paymentStatus === 'paid' ? 'paid' :
+                          paymentStatus === 'overdue' ? 'overdue' :
+                          paymentStatus === 'pending' ? 'pending' : 'upcoming';
+                        
+                        const now = new Date();
+                        now.setHours(0, 0, 0, 0);
+                        const dueDate = new Date(deal.payment_expected_date);
+                        dueDate.setHours(0, 0, 0, 0);
+                        const diffTime = dueDate.getTime() - now.getTime();
+                        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                        const daysOverdue = diffDays < 0 ? Math.abs(diffDays) : undefined;
+                        const daysLeft = diffDays >= 0 ? diffDays : undefined;
+
+                        return (
+                          <EnhancedPaymentCard
+                            key={deal.id}
+                            deal={deal}
+                            status={status}
+                            daysOverdue={daysOverdue}
+                            daysLeft={daysLeft}
+                            onSendReminder={(d) => {
+                              setSelectedDealForReminder(d);
+                              setIsSendPaymentReminderDialogOpen(true);
+                            }}
+                            onMarkPaid={(d) => toast.info(`Mark ${d.brand_name} as paid coming soon!`)}
+                            onViewDetails={(d) => navigate(`/creator-contracts/${d.id}`)}
+                          />
+                        );
+                      })
+                    )}
+                  </div>
+                </>
+              )}
             </div>
           )}
 
