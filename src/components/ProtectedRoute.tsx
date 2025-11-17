@@ -4,8 +4,8 @@ import React, { ReactNode, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useSession } from '@/contexts/SessionContext';
 import { Loader2 } from 'lucide-react';
-import { MadeWithDyad } from '@/components/made-with-dyad';
 import { cn } from '@/lib/utils';
+import { MadeWithDyad } from '@/components/made-with-dyad';
 
 interface ProtectedRouteProps {
   children: ReactNode;

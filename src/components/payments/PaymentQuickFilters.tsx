@@ -1,8 +1,6 @@
 "use client";
 
 import React, { useMemo } from 'react';
-import { Button } from '@/components/ui/button';
-import { X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { BrandDeal } from '@/types';
 
@@ -63,32 +61,22 @@ const PaymentQuickFilters: React.FC<PaymentQuickFiltersProps> = ({
   ];
 
   return (
-    <div className="flex items-center gap-2 flex-wrap">
+    <div className="flex items-center gap-3 flex-wrap">
+      <span className="text-sm text-slate-400">Filter:</span>
       {filters.map((filter) => (
         <button
           key={filter.id}
           onClick={() => onFilterChange(activeFilter === filter.id ? null : filter.id)}
           className={cn(
-            "px-3 py-1.5 rounded-full text-sm font-medium transition-all border",
+            "px-4 py-2 rounded-lg text-sm font-medium transition-all border",
             activeFilter === filter.id
-              ? "bg-primary text-primary-foreground border-primary"
-              : "bg-muted/50 text-muted-foreground border-border hover:bg-muted hover:border-primary/50"
+              ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
+              : "bg-slate-800/50 text-slate-400 border border-slate-700/50 hover:border-slate-600"
           )}
         >
           {filter.label} ({filter.count})
         </button>
       ))}
-      {activeFilter && (
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => onFilterChange(null)}
-          className="h-7 px-2 text-xs text-muted-foreground hover:text-foreground"
-        >
-          <X className="w-3 h-3 mr-1" />
-          Clear
-        </Button>
-      )}
     </div>
   );
 };

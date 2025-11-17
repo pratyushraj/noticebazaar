@@ -16,12 +16,14 @@ import {
   Info,
   Copy,
   Download,
+  X,
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Slider } from '@/components/ui/slider';
+import { useNavigate } from 'react-router-dom';
 
 interface RateBreakdown {
   baseRate: number;
@@ -35,6 +37,7 @@ interface RateBreakdown {
 }
 
 const RateCalculator = () => {
+  const navigate = useNavigate();
   const [followers, setFollowers] = useState(100000);
   const [engagementRate, setEngagementRate] = useState(5);
   const [platform, setPlatform] = useState('instagram');
@@ -164,13 +167,26 @@ const RateCalculator = () => {
     <div className="w-full max-w-full overflow-x-hidden pb-[80px] px-4 md:px-6 antialiased">
       {/* Header */}
       <div className="mb-6">
-        <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-2 flex items-center gap-2">
-          <Calculator className="w-7 h-7 text-emerald-500" />
-          Rate Calculator
-        </h1>
-        <p className="text-sm text-muted-foreground">
-          Calculate fair rates for your content based on your metrics
-        </p>
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex-1">
+            <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-2 flex items-center gap-2">
+              <Calculator className="w-7 h-7 text-emerald-500" />
+              Rate Calculator
+            </h1>
+            <p className="text-sm text-muted-foreground">
+              Calculate fair rates for your content based on your metrics
+            </p>
+          </div>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => navigate(-1)}
+            className="shrink-0 hover:bg-muted/50"
+            aria-label="Close"
+          >
+            <X className="w-5 h-5" />
+          </Button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

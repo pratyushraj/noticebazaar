@@ -78,40 +78,34 @@ const FinancialOverviewHeader: React.FC<FinancialOverviewHeaderProps> = ({ allDe
     return {
       pending: { amount: pendingAmount, count: pendingCount },
       overdue: { amount: overdueAmount, count: overdueCount },
-      received: { amount: receivedAmount },
+      received: { amount: receivedAmount, count: receivedThisMonth.length },
       collectionRate,
       rateChange,
     };
   }, [allDeals]);
 
   return (
-    <div className="space-y-6 mb-6">
-      {/* Title */}
-      <div>
-        <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-2">💰 My Money</h1>
-        <p className="text-sm text-muted-foreground">
-          Track payments, recover overdue amounts, and manage your income
-        </p>
-      </div>
-
+    <div className="space-y-4 mb-4">
       {/* Key Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="space-y-4">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
         >
-          <Card className="bg-gradient-to-br from-yellow-900/20 to-yellow-950/20 border border-yellow-700/40 hover:border-yellow-600/60 transition-all">
-            <CardContent className="p-5">
-              <div className="flex items-center gap-2 mb-3">
-                <Clock className="w-5 h-5 text-yellow-500" />
-                <span className="text-sm font-medium text-muted-foreground">Pending</span>
-              </div>
-              <div className="text-3xl font-bold text-foreground mb-1 tabular-nums">
-                ₹{stats.pending.amount.toLocaleString('en-IN')}
-              </div>
-              <div className="text-sm text-muted-foreground">
-                {stats.pending.count} payment{stats.pending.count !== 1 ? 's' : ''}
+          <Card className="relative overflow-hidden rounded-2xl p-6 border transition-all hover:scale-[1.02] bg-gradient-to-br from-amber-950/50 to-amber-900/30 border-amber-800/50">
+            <CardContent className="p-0">
+              <div className="flex items-start justify-between">
+                <div className="flex items-start gap-4 flex-1">
+                  <div className="p-2.5 rounded-xl bg-amber-500/20">
+                    <Clock className="w-5 h-5 text-amber-400" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-slate-400 mb-2">Pending</p>
+                    <p className="text-3xl font-bold tabular-nums">₹{stats.pending.amount.toLocaleString('en-IN')}</p>
+                  </div>
+                </div>
+                <span className="text-sm font-medium text-slate-400">{stats.pending.count} payments</span>
               </div>
             </CardContent>
           </Card>
@@ -122,17 +116,19 @@ const FinancialOverviewHeader: React.FC<FinancialOverviewHeaderProps> = ({ allDe
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
         >
-          <Card className="bg-gradient-to-br from-red-900/20 to-red-950/20 border border-red-700/40 hover:border-red-600/60 transition-all">
-            <CardContent className="p-5">
-              <div className="flex items-center gap-2 mb-3">
-                <AlertTriangle className="w-5 h-5 text-red-500" />
-                <span className="text-sm font-medium text-muted-foreground">Overdue</span>
-              </div>
-              <div className="text-3xl font-bold text-red-500 mb-1 tabular-nums">
-                ₹{stats.overdue.amount.toLocaleString('en-IN')}
-              </div>
-              <div className="text-sm text-muted-foreground">
-                {stats.overdue.count} payment{stats.overdue.count !== 1 ? 's' : ''}
+          <Card className="relative overflow-hidden rounded-2xl p-6 border transition-all hover:scale-[1.02] bg-gradient-to-br from-red-950/50 to-red-900/30 border-red-800/50">
+            <CardContent className="p-0">
+              <div className="flex items-start justify-between">
+                <div className="flex items-start gap-4 flex-1">
+                  <div className="p-2.5 rounded-xl bg-red-500/20">
+                    <AlertTriangle className="w-5 h-5 text-red-400" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-slate-400 mb-2">Overdue</p>
+                    <p className="text-3xl font-bold text-red-400 tabular-nums">₹{stats.overdue.amount.toLocaleString('en-IN')}</p>
+                  </div>
+                </div>
+                <span className="text-sm font-medium text-slate-400">{stats.overdue.count} payments</span>
               </div>
             </CardContent>
           </Card>
@@ -143,16 +139,20 @@ const FinancialOverviewHeader: React.FC<FinancialOverviewHeaderProps> = ({ allDe
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
         >
-          <Card className="bg-gradient-to-br from-emerald-900/20 to-emerald-950/20 border border-emerald-700/40 hover:border-emerald-600/60 transition-all">
-            <CardContent className="p-5">
-              <div className="flex items-center gap-2 mb-3">
-                <CheckCircle className="w-5 h-5 text-emerald-500" />
-                <span className="text-sm font-medium text-muted-foreground">Received</span>
+          <Card className="relative overflow-hidden rounded-2xl p-6 border transition-all hover:scale-[1.02] bg-gradient-to-br from-emerald-950/50 to-emerald-900/30 border-emerald-800/50">
+            <CardContent className="p-0">
+              <div className="flex items-start justify-between">
+                <div className="flex items-start gap-4 flex-1">
+                  <div className="p-2.5 rounded-xl bg-emerald-500/20">
+                    <CheckCircle className="w-5 h-5 text-emerald-400" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-slate-400 mb-2">Received</p>
+                    <p className="text-3xl font-bold text-emerald-400 tabular-nums">₹{stats.received.amount.toLocaleString('en-IN')}</p>
+                  </div>
+                </div>
+                <span className="text-sm font-medium text-slate-400">{stats.received.count || 0} payments</span>
               </div>
-              <div className="text-3xl font-bold text-emerald-500 mb-1 tabular-nums">
-                ₹{stats.received.amount.toLocaleString('en-IN')}
-              </div>
-              <div className="text-sm text-muted-foreground">This month</div>
             </CardContent>
           </Card>
         </motion.div>

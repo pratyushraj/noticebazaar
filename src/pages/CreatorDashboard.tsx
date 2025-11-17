@@ -39,7 +39,6 @@ import { DealStage, PaymentStatus } from '@/components/creator-contracts/DealSta
 import EnhancedPaymentCard from '@/components/payments/EnhancedPaymentCard';
 import FinancialOverviewHeader from '@/components/payments/FinancialOverviewHeader';
 import PaymentQuickFilters from '@/components/payments/PaymentQuickFilters';
-import PaymentTimeline from '@/components/payments/PaymentTimeline';
 import CreatorCopyrightScanner from '@/components/creator-dashboard/CreatorCopyrightScanner';
 import ProtectionDashboardHeader from '@/components/content-protection/ProtectionDashboardHeader';
 import { useOriginalContent, useCopyrightMatches } from '@/lib/hooks/useCopyrightScanner';
@@ -646,35 +645,51 @@ const CreatorDashboard = () => {
               {/* Deals View */}
               {dealsViewMode === 'deals' && (
                 <>
-                  <div className="flex gap-2 flex-wrap">
-                    <Button
-                      variant={quickFilter === null ? 'default' : 'outline'}
-                      size="sm"
+                  <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
+                    <button
                       onClick={() => setQuickFilter(null)}
+                      className={cn(
+                        "px-4 py-1.5 rounded-full text-sm whitespace-nowrap transition-all",
+                        quickFilter === null
+                          ? "bg-blue-600 text-white shadow-[0_0_10px_rgba(59,130,246,0.6)]"
+                          : "text-muted-foreground border border-border/30 hover:bg-muted/20"
+                      )}
                     >
                       All ({brandDeals?.length || 0})
-                    </Button>
-                    <Button
-                      variant={quickFilter === 'active' ? 'default' : 'outline'}
-                      size="sm"
+                    </button>
+                    <button
                       onClick={() => setQuickFilter('active')}
+                      className={cn(
+                        "px-4 py-1.5 rounded-full text-sm whitespace-nowrap transition-all",
+                        quickFilter === 'active'
+                          ? "bg-blue-600 text-white shadow-[0_0_10px_rgba(59,130,246,0.6)]"
+                          : "text-muted-foreground border border-border/30 hover:bg-muted/20"
+                      )}
                     >
                       Active ({brandDeals?.filter(d => d.status === 'Approved' || d.status === 'Drafting').length || 0})
-                    </Button>
-                    <Button
-                      variant={quickFilter === 'pending_payment' ? 'default' : 'outline'}
-                      size="sm"
+                    </button>
+                    <button
                       onClick={() => setQuickFilter('pending_payment')}
+                      className={cn(
+                        "px-4 py-1.5 rounded-full text-sm whitespace-nowrap transition-all",
+                        quickFilter === 'pending_payment'
+                          ? "bg-blue-600 text-white shadow-[0_0_10px_rgba(59,130,246,0.6)]"
+                          : "text-muted-foreground border border-border/30 hover:bg-muted/20"
+                      )}
                     >
                       Pending Payment ({brandDeals?.filter(d => d.status === 'Payment Pending').length || 0})
-                    </Button>
-                    <Button
-                      variant={quickFilter === 'completed' ? 'default' : 'outline'}
-                      size="sm"
+                    </button>
+                    <button
                       onClick={() => setQuickFilter('completed')}
+                      className={cn(
+                        "px-4 py-1.5 rounded-full text-sm whitespace-nowrap transition-all",
+                        quickFilter === 'completed'
+                          ? "bg-blue-600 text-white shadow-[0_0_10px_rgba(59,130,246,0.6)]"
+                          : "text-muted-foreground border border-border/30 hover:bg-muted/20"
+                      )}
                     >
                       Completed ({brandDeals?.filter(d => d.status === 'Completed').length || 0})
-                    </Button>
+                    </button>
                   </div>
 
                   <Input
@@ -692,13 +707,11 @@ const CreatorDashboard = () => {
                     ) : (
                       filteredDeals.map((deal) => {
                         const stage = getDealStage(deal);
-                        const paymentStatus = getPaymentStatus(deal);
                         return (
                           <ProjectDealCard
                             key={deal.id}
                             deal={deal}
                             stage={stage}
-                            paymentStatus={paymentStatus}
                             onView={(d) => navigate(`/creator-contracts/${d.id}`)}
                             onEdit={(d) => {
                               setEditingBrandDeal(d);
@@ -714,7 +727,6 @@ const CreatorDashboard = () => {
                                 toast.error('Contract file not available');
                               }
                             }}
-                            onDelete={() => toast.info('Delete functionality coming soon!')}
                           />
                         );
                       })
@@ -732,7 +744,6 @@ const CreatorDashboard = () => {
                     activeFilter={quickFilter}
                     onFilterChange={setQuickFilter}
                   />
-                  <PaymentTimeline allDeals={filteredPayments} />
                   <div className="space-y-3">
                     {filteredPayments.length === 0 ? (
                       <Card className="p-8 text-center">

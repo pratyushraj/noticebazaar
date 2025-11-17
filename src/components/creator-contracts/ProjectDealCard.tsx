@@ -1,18 +1,14 @@
+
 "use client";
 
 import React from 'react';
 import { BrandDeal } from '@/types';
 import BrandLogo from './BrandLogo';
-import DealStatusBadge, { DealStage, PaymentStatus } from './DealStatusBadge';
+import DealStatusBadge, { DealStage } from './DealStatusBadge';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import { 
-  Calendar, 
   Package, 
-  CheckCircle, 
-  Clock, 
-  XCircle, 
   FileText,
   MessageSquare,
   Upload,
@@ -20,42 +16,32 @@ import {
   Instagram,
   Youtube,
   Music,
-  DollarSign,
-  ExternalLink
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
 
 interface ProjectDealCardProps {
   deal: BrandDeal;
   stage: DealStage;
-  paymentStatus: PaymentStatus;
   onView: (deal: BrandDeal) => void;
   onEdit: (deal: BrandDeal) => void;
   onManageDeliverables: (deal: BrandDeal) => void;
   onUploadContent: (deal: BrandDeal) => void;
   onContactBrand: (deal: BrandDeal) => void;
   onViewContract: (deal: BrandDeal) => void;
-  onDelete: (deal: BrandDeal) => void;
-  isDeleting?: boolean;
 }
 
 const ProjectDealCard: React.FC<ProjectDealCardProps> = ({
   deal,
   stage,
-  paymentStatus,
   onView,
   onEdit,
   onManageDeliverables,
   onUploadContent,
   onContactBrand,
   onViewContract,
-  onDelete,
-  isDeleting,
 }) => {
-  const navigate = useNavigate();
 
   // Handle deliverables array/string
   const deliverablesArray = Array.isArray(deal.deliverables) 
@@ -115,22 +101,6 @@ const ProjectDealCard: React.FC<ProjectDealCardProps> = ({
   };
 
   const nextMilestone = getNextMilestone();
-
-  // Get payment status badge (secondary info)
-  const getPaymentBadge = () => {
-    if (paymentStatus === 'paid') {
-      return { label: 'Paid', className: 'bg-green-500/20 text-green-400 border-green-500/30' };
-    }
-    if (paymentStatus === 'overdue') {
-      return { label: 'Payment Overdue', className: 'bg-red-500/20 text-red-400 border-red-500/30' };
-    }
-    if (paymentStatus === 'pending') {
-      return { label: 'Payment Pending', className: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30' };
-    }
-    return null;
-  };
-
-  const paymentBadge = getPaymentBadge();
 
   // Get deliverable statuses (mock - in real app, this would come from deal data)
   const getDeliverableStatuses = () => {
@@ -228,19 +198,6 @@ const ProjectDealCard: React.FC<ProjectDealCardProps> = ({
           </div>
           <div className="flex flex-col items-end gap-2 flex-shrink-0">
             <DealStatusBadge stage={stage} />
-            {paymentBadge && (
-              <Badge
-                variant="outline"
-                className={cn("text-xs px-2 py-0.5", paymentBadge.className)}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  navigate('/creator-payments');
-                }}
-              >
-                <DollarSign className="w-3 h-3 mr-1" />
-                {paymentBadge.label}
-              </Badge>
-            )}
           </div>
         </div>
 

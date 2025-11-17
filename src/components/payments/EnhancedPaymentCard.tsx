@@ -5,21 +5,10 @@ import { BrandDeal } from '@/types';
 import BrandLogo from '@/components/creator-contracts/BrandLogo';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import {
-  IndianRupee,
   Calendar,
-  FileText,
-  Mail,
-  Phone,
-  Scale,
-  AlertTriangle,
-  Clock,
-  CheckCircle,
+  CheckCircle2,
   Send,
-  MessageSquare,
-  Plus,
-  ChevronRight,
   Instagram,
   Youtube,
   Music,
@@ -61,13 +50,6 @@ const EnhancedPaymentCard: React.FC<EnhancedPaymentCardProps> = ({
   };
 
   const PlatformIcon = getPlatformIcon(deal.platform);
-
-  // Handle deliverables
-  const deliverablesArray = Array.isArray(deal.deliverables)
-    ? deal.deliverables
-    : typeof deal.deliverables === 'string'
-    ? deal.deliverables.split(',').map(d => d.trim()).filter(Boolean)
-    : [];
 
   // Mock reminder count (in real app, this would come from payment_reminders table)
   const remindersSent = daysOverdue && daysOverdue > 7 ? Math.floor(daysOverdue / 7) : 0;
@@ -115,258 +97,144 @@ const EnhancedPaymentCard: React.FC<EnhancedPaymentCardProps> = ({
     latePayments: 0,
   };
 
-  const getCardTheme = () => {
-    switch (status) {
-      case 'overdue':
-        return {
-          bg: 'bg-gradient-to-br from-red-950/40 to-red-900/20',
-          border: 'border-red-700/40',
-          hoverBorder: 'hover:border-red-600/60',
-          headerBg: 'bg-red-500/10',
-          headerText: 'text-red-500',
-          headerTitle: '🚨 OVERDUE - Needs Action',
-        };
-      case 'pending':
-        return {
-          bg: 'bg-gradient-to-br from-yellow-950/40 to-yellow-900/20',
-          border: 'border-yellow-700/40',
-          hoverBorder: 'hover:border-yellow-600/60',
-          headerBg: 'bg-yellow-500/10',
-          headerText: 'text-yellow-500',
-          headerTitle: '⏳ Payment Expected',
-        };
-      case 'upcoming':
-        return {
-          bg: 'bg-gradient-to-br from-green-950/40 to-green-900/20',
-          border: 'border-green-700/40',
-          hoverBorder: 'hover:border-green-600/60',
-          headerBg: 'bg-green-500/10',
-          headerText: 'text-green-500',
-          headerTitle: '✅ Payment Scheduled',
-        };
-      default:
-        return {
-          bg: 'bg-gradient-to-br from-blue-950/40 to-blue-900/20',
-          border: 'border-blue-700/40',
-          hoverBorder: 'hover:border-blue-600/60',
-          headerBg: 'bg-blue-500/10',
-          headerText: 'text-blue-500',
-          headerTitle: '✅ Payment Received',
-        };
-    }
-  };
-
-  const theme = getCardTheme();
+  // Calculate progress percentage
+  const progress = status === 'paid' ? 100 : status === 'overdue' ? 0 : status === 'pending' ? 65 : 85;
+  
+  // Get days left for display
+  const displayDaysLeft = daysLeft !== undefined ? daysLeft : daysOverdue ? -daysOverdue : null;
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      whileHover={{ scale: 1.02 }}
       transition={{ duration: 0.2 }}
     >
-      <Card className={cn(
-        theme.bg,
-        theme.border,
-        theme.hoverBorder,
-        "rounded-xl p-5 transition-all"
-      )}>
-        {/* Header */}
-        <div className={cn(
-          "flex items-center justify-between mb-4 p-3 rounded-lg",
-          theme.headerBg
-        )}>
-          <span className={cn("text-sm font-semibold", theme.headerText)}>
-            {theme.headerTitle}
-          </span>
-          {daysOverdue && (
-            <Badge variant="destructive" className="text-xs">
-              -{daysOverdue} days
-            </Badge>
-          )}
-          {daysLeft !== undefined && daysLeft > 0 && (
-            <Badge variant="secondary" className="text-xs">
-              {daysLeft} days left
-            </Badge>
-          )}
-        </div>
-
-        {/* Brand Info - Compact */}
-        <div className="flex items-center gap-2 mb-3">
-          <BrandLogo
-            brandName={deal.brand_name}
-            brandLogo={null}
-            size="sm"
-            className="flex-shrink-0"
-          />
-          <div className="flex-1 min-w-0">
-            <h3 className="text-base font-bold text-foreground truncate">
-              {deal.brand_name}
-            </h3>
-            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-              {PlatformIcon && <PlatformIcon className="w-3.5 h-3.5" />}
-              <span>{deal.platform || 'N/A'}</span>
-            </div>
+      <Card className="bg-gradient-to-br from-slate-800/80 to-slate-900/80 rounded-2xl p-6 border border-slate-700/50 backdrop-blur-sm hover:border-slate-600/50 transition-all">
+        {/* Urgency Banner */}
+        {displayDaysLeft !== null && (
+          <div className={cn(
+            "flex items-center gap-2 mb-4 px-3 py-2 rounded-lg",
+            (displayDaysLeft <= 7 || status === 'overdue') 
+              ? 'bg-amber-500/20 border border-amber-500/30' 
+              : 'bg-blue-500/20 border border-blue-500/30'
+          )}>
+            <Calendar className={cn(
+              "w-4 h-4",
+              (displayDaysLeft <= 7 || status === 'overdue') ? 'text-amber-400' : 'text-blue-400'
+            )} />
+            <span className={cn(
+              "text-sm font-medium",
+              (displayDaysLeft <= 7 || status === 'overdue') ? 'text-amber-400' : 'text-blue-400'
+            )}>
+              Payment Expected · {displayDaysLeft > 0 ? `${displayDaysLeft} days left` : `${Math.abs(displayDaysLeft)} days overdue`}
+            </span>
           </div>
-        </div>
+        )}
 
-        {/* Amount and Due Date - Compact */}
-        <div className="flex items-center justify-between mb-3 pb-3 border-b border-border/30">
-          <div>
-            <div className="text-[10px] text-muted-foreground mb-0.5">Amount</div>
-            <div className="text-lg font-bold text-foreground">
-              ₹{deal.deal_amount.toLocaleString('en-IN')}
+        {/* Company Info */}
+        <div className="flex items-start justify-between mb-6">
+          <div className="flex items-center gap-4">
+            <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-slate-700 to-slate-800 flex items-center justify-center text-2xl shadow-lg">
+              <BrandLogo
+                brandName={deal.brand_name}
+                brandLogo={null}
+                size="md"
+                className="w-full h-full"
+              />
+            </div>
+            <div>
+              <h3 className="font-bold text-xl mb-1">{deal.brand_name}</h3>
+              <p className="text-sm text-slate-400 flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-slate-600"></span>
+                {deal.platform || 'N/A'}
+              </p>
             </div>
           </div>
           <div className="text-right">
-            <div className="text-[10px] text-muted-foreground mb-0.5">
-              {status === 'overdue' ? 'Was Due' : 'Due'}
+            <p className="text-sm text-slate-400 mb-1">Amount</p>
+            <p className="text-2xl font-bold">₹{deal.deal_amount.toLocaleString('en-IN')}</p>
+          </div>
+        </div>
+
+        {/* Progress & Status */}
+        <div className="space-y-4 mb-6">
+          <div>
+            <div className="flex items-center justify-between text-sm mb-2">
+              <span className="text-slate-400">Payment Status</span>
+              <span className={cn(
+                "font-medium",
+                status === 'overdue' && 'text-red-400',
+                status === 'pending' && 'text-amber-400',
+                status === 'upcoming' && 'text-green-400',
+                status === 'paid' && 'text-emerald-400'
+              )}>
+                {status === 'overdue' ? 'Overdue' : 
+                 status === 'pending' ? 'Pending' :
+                 status === 'upcoming' ? 'Scheduled' : 'Paid'}
+              </span>
             </div>
-            <div className="text-xs font-medium text-foreground">
-              {new Date(deal.payment_expected_date).toLocaleDateString('en-IN', {
-                day: 'numeric',
-                month: 'short',
-                year: 'numeric',
-              })}
+            <div className="h-2 bg-slate-800 rounded-full overflow-hidden">
+              <motion.div
+                initial={{ width: 0 }}
+                animate={{ width: `${progress}%` }}
+                transition={{ duration: 0.5 }}
+                className={cn(
+                  "h-full rounded-full transition-all",
+                  status === 'paid' ? 'bg-gradient-to-r from-emerald-500 to-emerald-400' :
+                  status === 'overdue' ? 'bg-gradient-to-r from-red-500 to-red-400' :
+                  status === 'pending' ? 'bg-gradient-to-r from-amber-500 to-amber-400' :
+                  'bg-gradient-to-r from-green-500 to-green-400'
+                )}
+              />
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between text-sm">
+            <div className="bg-slate-800/50 rounded-lg px-3 py-2 border border-slate-700/50">
+              <p className="text-slate-500 mb-1">Payment History</p>
+              <p className="font-medium">~{Math.abs(brandPaymentHistory.avgDays)} days avg</p>
+            </div>
+            <div className="bg-slate-800/50 rounded-lg px-3 py-2 border border-slate-700/50">
+              <p className="text-slate-500 mb-1">Due Date</p>
+              <p className="font-medium">
+                {new Date(deal.payment_expected_date).toLocaleDateString('en-IN', {
+                  day: 'numeric',
+                  month: 'short',
+                  year: 'numeric',
+                })}
+              </p>
             </div>
           </div>
         </div>
 
-        {/* Payment Status Progress Bar */}
-        <div className="mb-3">
-          <div className="flex items-center justify-between text-[10px] text-muted-foreground mb-1.5">
-            <span>Payment Status</span>
-            <span className={cn(
-              status === 'overdue' && 'text-red-400',
-              status === 'pending' && 'text-yellow-400',
-              status === 'upcoming' && 'text-green-400',
-              status === 'paid' && 'text-green-500'
-            )}>
-              {status === 'overdue' ? 'Overdue' : 
-               status === 'pending' ? 'Pending' :
-               status === 'upcoming' ? 'Scheduled' : 'Paid'}
-            </span>
-          </div>
-          <div className="h-1.5 bg-muted rounded-full overflow-hidden">
-            <motion.div
-              initial={{ width: 0 }}
-              animate={{ width: status === 'paid' ? '100%' : status === 'overdue' ? '0%' : '70%' }}
-              transition={{ duration: 0.5 }}
-              className={cn(
-                "h-full transition-all",
-                status === 'paid' ? 'bg-green-500' :
-                status === 'overdue' ? 'bg-red-500' :
-                status === 'pending' ? 'bg-yellow-500' :
-                'bg-green-400'
-              )}
-            />
-          </div>
-        </div>
-
-        {/* Invoice and Reminders - Compact */}
-        <div className="flex items-center justify-between text-xs mb-3">
-          {deal.invoice_file_url && (
-            <a
-              href={deal.invoice_file_url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-primary hover:underline flex items-center gap-1"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <FileText className="w-3 h-3" />
-              <span>Invoice</span>
-            </a>
-          )}
-          {remindersSent > 0 && (
-            <div className="flex items-center gap-1 text-muted-foreground" title={`Last reminder sent ${daysOverdue ? `${daysOverdue} days ago` : 'recently'}`}>
-              <Mail className="w-3 h-3" />
-              <span>{remindersSent} reminder{remindersSent !== 1 ? 's' : ''} sent</span>
-            </div>
-          )}
-        </div>
-
-        {/* Brand Payment History - Compact */}
-        {status === 'pending' && (
-          <div className="mb-3 p-2 bg-muted/50 rounded-lg border border-border/40">
-            <div className="text-[10px] text-muted-foreground mb-0.5">Payment History</div>
-            <div className="text-xs text-foreground">
-              ~{brandPaymentHistory.avgDays} days avg {brandPaymentHistory.reliability === 'excellent' && '✅'}
-            </div>
-          </div>
-        )}
-
-        {/* Recovery Actions (Overdue only) - Compact */}
-        {status === 'overdue' && (
-          <div className="mb-3 p-2 bg-red-500/10 rounded-lg border border-red-500/20">
-            <div className="flex gap-1.5">
-              <Button
-                size="sm"
-                variant="default"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onSendReminder?.(deal);
-                }}
-                className="flex-1 h-7 text-xs bg-red-500 hover:bg-red-600"
-              >
-                <Send className="w-3 h-3 mr-1" />
-                Remind
-              </Button>
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onEscalate?.(deal);
-                }}
-                className="h-7 text-xs border-red-500/50 hover:bg-red-500/10"
-              >
-                <AlertTriangle className="w-3 h-3" />
-              </Button>
-            </div>
-          </div>
-        )}
-
-        {/* Action Buttons - Compact */}
-        <div className="flex flex-wrap gap-1.5 pt-3 border-t border-border/30" onClick={(e) => e.stopPropagation()}>
+        {/* Actions */}
+        <div className="flex gap-3" onClick={(e) => e.stopPropagation()}>
           {reminderConfig.show && (
             <Button
-              size="sm"
-              variant={reminderConfig.variant}
               onClick={(e) => {
                 e.stopPropagation();
-                // Show confirmation dialog before sending
                 if (window.confirm(`Send reminder to ${deal.brand_name}?\n\n${reminderConfig.urgent ? '⚠️ This payment is overdue. ' : ''}${remindersSent > 0 ? `\nPrevious reminder sent ${remindersSent} time${remindersSent > 1 ? 's' : ''}.` : ''}`)) {
                   onSendReminder?.(deal);
                 }
               }}
-              className={cn(
-                "flex-1 text-xs h-7 px-2",
-                reminderConfig.urgent && "bg-red-500 hover:bg-red-600"
-              )}
+              className="flex-1 px-4 py-3 bg-slate-800 hover:bg-slate-700 rounded-xl font-medium flex items-center justify-center gap-2 transition-all border border-slate-700 hover:border-slate-600"
             >
-              <Send className="w-3 h-3 mr-1" />
-              {reminderConfig.text}
+              <Send className="w-4 h-4" />
+              Send Reminder
             </Button>
           )}
-          {onMarkPaid && (
+          {onMarkPaid && status !== 'paid' && (
             <Button
-              size="sm"
-              variant="outline"
-              onClick={() => onMarkPaid(deal)}
-              className="flex-1 text-xs h-7 px-2"
+              onClick={(e) => {
+                e.stopPropagation();
+                onMarkPaid(deal);
+              }}
+              className="flex-1 px-4 py-3 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 rounded-xl font-medium flex items-center justify-center gap-2 transition-all shadow-lg shadow-emerald-500/20"
             >
-              <CheckCircle className="w-3 h-3 mr-1" />
+              <CheckCircle2 className="w-4 h-4" />
               Mark Paid
             </Button>
           )}
-          <Button
-            size="sm"
-            variant="ghost"
-            onClick={() => onViewDetails?.(deal)}
-            className="text-xs h-7 px-2"
-          >
-            <ChevronRight className="w-3 h-3" />
-          </Button>
         </div>
       </Card>
     </motion.div>

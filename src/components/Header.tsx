@@ -105,7 +105,12 @@ const Header = () => {
 
           {/* Right Section: Search, Notifications, Profile */}
           {user && (
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-4">
+              {/* Message */}
+              <span className="hidden xl:inline-block text-xs text-muted-foreground">
+                Powered by NoticeBazaar • Secure Legal Portal ©2025
+              </span>
+              
               {/* Search Icon */}
               <Button 
                 variant="ghost" 
