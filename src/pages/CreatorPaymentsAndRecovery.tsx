@@ -24,15 +24,25 @@ import {
 import { Label } from '@/components/ui/label';
 import BrandLogo from '@/components/creator-contracts/BrandLogo';
 import { cn } from '@/lib/utils';
+import FinancialOverviewHeader from '@/components/payments/FinancialOverviewHeader';
+import PaymentQuickFilters from '@/components/payments/PaymentQuickFilters';
+import PaymentTimeline from '@/components/payments/PaymentTimeline';
+import EnhancedPaymentCard from '@/components/payments/EnhancedPaymentCard';
+import PaymentAnalytics from '@/components/payments/PaymentAnalytics';
+import TaxSummaryCard from '@/components/payments/TaxSummaryCard';
+import MarkPaymentReceivedDialog from '@/components/creator-contracts/MarkPaymentReceivedDialog';
 
 const CreatorPaymentsAndRecovery = () => {
   const { profile, loading: sessionLoading, isCreator } = useSession();
   const [statusFilter, setStatusFilter] = useState<BrandDeal['status'] | 'All'>('All');
   const [searchTerm, setSearchTerm] = useState('');
+  const [quickFilter, setQuickFilter] = useState<string | null>(null);
   const [isReminderDialogOpen, setIsReminderDialogOpen] = useState(false);
   const [selectedDealForReminder, setSelectedDealForReminder] = useState<BrandDeal | null>(null);
-  const [messageType, setMessageType] = useState<'email' | 'whatsapp'>('email'); // NEW state
-  const [customMessage, setCustomMessage] = useState(''); // NEW state
+  const [messageType, setMessageType] = useState<'email' | 'whatsapp'>('email');
+  const [customMessage, setCustomMessage] = useState('');
+  const [isMarkPaymentDialogOpen, setIsMarkPaymentDialogOpen] = useState(false);
+  const [dealToMarkPaid, setDealToMarkPaid] = useState<BrandDeal | null>(null);
   
   // Mobile detection - MUST be before any conditional returns
   const [isMobile, setIsMobile] = useState(() => {
@@ -68,13 +78,98 @@ const CreatorPaymentsAndRecovery = () => {
 
   const allBrandDeals = brandDealsData || [];
 
+  // Helper to determine payment status
+  const getPaymentStatus = (deal: BrandDeal): 'overdue' | 'pending' | 'upcoming' | 'paid' => {
+    if (deal.status === 'Completed' && deal.payment_received_date) return 'paid';
+    
+    if (deal.status === 'Payment Pending') {
+      const now = new Date();
+      now.setHours(0, 0, 0, 0);
+      const dueDate = new Date(deal.payment_expected_date);
+      dueDate.setHours(0, 0, 0, 0);
+      
+      if (dueDate < now) return 'overdue';
+      const diffTime = dueDate.getTime() - now.getTime();
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      return diffDays <= 7 ? 'pending' : 'upcoming';
+    }
+    
+    return 'upcoming';
+  };
+
+  // Helper to calculate days
+  const getDaysInfo = (deal: BrandDeal) => {
+    const now = new Date();
+    now.setHours(0, 0, 0, 0);
+    const dueDate = new Date(deal.payment_expected_date);
+    dueDate.setHours(0, 0, 0, 0);
+    const diffTime = dueDate.getTime() - now.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+    if (diffDays < 0) {
+      return { daysOverdue: Math.abs(diffDays), daysLeft: undefined };
+    }
+    return { daysOverdue: undefined, daysLeft: diffDays };
+  };
+
   const filteredAndSearchedDeals = useMemo(() => {
-    return allBrandDeals.filter(deal => {
-      const matchesSearch = searchTerm ? deal.brand_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                                        deal.deliverables.toLowerCase().includes(searchTerm.toLowerCase()) : true;
-      return matchesSearch;
-    });
-  }, [allBrandDeals, searchTerm]);
+    let filtered = [...allBrandDeals];
+
+    // Quick filter
+    if (quickFilter) {
+      const now = new Date();
+      now.setHours(0, 0, 0, 0);
+      const sevenDaysFromNow = new Date(now);
+      sevenDaysFromNow.setDate(sevenDaysFromNow.getDate() + 7);
+
+      switch (quickFilter) {
+        case 'overdue':
+          filtered = filtered.filter(deal => {
+            if (deal.status !== 'Payment Pending') return false;
+            const dueDate = new Date(deal.payment_expected_date);
+            return dueDate < now;
+          });
+          break;
+        case 'due_this_week':
+          filtered = filtered.filter(deal => {
+            if (deal.status !== 'Payment Pending') return false;
+            const dueDate = new Date(deal.payment_expected_date);
+            return dueDate >= now && dueDate <= sevenDaysFromNow;
+          });
+          break;
+        case 'pending':
+          filtered = filtered.filter(deal => {
+            if (deal.status !== 'Payment Pending') return false;
+            const dueDate = new Date(deal.payment_expected_date);
+            return dueDate >= now;
+          });
+          break;
+        case 'paid':
+          filtered = filtered.filter(deal => 
+            deal.status === 'Completed' && deal.payment_received_date
+          );
+          break;
+        default:
+          break;
+      }
+    }
+
+    // Status filter
+    if (statusFilter !== 'All') {
+      filtered = filtered.filter(deal => deal.status === statusFilter);
+    }
+
+    // Search filter
+    if (searchTerm) {
+      const searchLower = searchTerm.toLowerCase();
+      filtered = filtered.filter(deal => 
+        deal.brand_name.toLowerCase().includes(searchLower) ||
+        deal.deal_amount.toString().includes(searchLower)
+      );
+    }
+
+    return filtered;
+  }, [allBrandDeals, searchTerm, statusFilter, quickFilter]);
 
   const paginatedDeals = filteredAndSearchedDeals.slice((currentPage - 1) * pageSize, currentPage * pageSize);
   const totalFilteredCount = filteredAndSearchedDeals.length;
@@ -106,18 +201,41 @@ const CreatorPaymentsAndRecovery = () => {
     try {
       await sendPaymentReminderMutation.mutateAsync({ 
         brandDealId: selectedDealForReminder.id,
-        messageType: messageType, // Pass state
-        customMessage: customMessage.trim() || undefined, // Pass state
+        messageType: messageType,
+        customMessage: customMessage.trim() || undefined,
       });
-      toast.success('Payment reminder sent!');
       setIsReminderDialogOpen(false);
       setSelectedDealForReminder(null);
-      setCustomMessage(''); // Reset
-      setMessageType('email'); // Reset
+      setCustomMessage('');
+      setMessageType('email');
       refetchBrandDeals();
     } catch (error: any) {
-      toast.error('Failed to send reminder', { description: error.message });
+      // Error handled by hook
     }
+  };
+
+  const handleMarkPaymentReceived = (deal: BrandDeal) => {
+    setDealToMarkPaid(deal);
+    setIsMarkPaymentDialogOpen(true);
+  };
+
+  const handlePaymentSuccess = () => {
+    refetchBrandDeals();
+    setIsMarkPaymentDialogOpen(false);
+    setDealToMarkPaid(null);
+  };
+
+  const handleEscalate = (deal: BrandDeal) => {
+    toast.info('Escalation feature coming soon!');
+  };
+
+  const handleViewDetails = (deal: BrandDeal) => {
+    // Navigate to deal details page
+    window.location.href = `/creator-contracts/${deal.id}`;
+  };
+
+  const handleAddNote = (deal: BrandDeal) => {
+    toast.info('Add note feature coming soon!');
   };
 
   const getStatusBadgeVariant = (status: BrandDeal['status']): 'default' | 'secondary' | 'success' | 'destructive' | 'outline' => {
@@ -159,25 +277,29 @@ const CreatorPaymentsAndRecovery = () => {
 
   return (
     <div className="w-full max-w-full overflow-x-hidden pb-[80px] px-4 md:px-6 antialiased">
-      {/* Page Title - text-2xl on mobile per design system */}
-      <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-4">My Payments & Recovery</h1>
+      {/* New Financial Overview Header */}
+      <FinancialOverviewHeader allDeals={allBrandDeals} />
 
-      {/* Financial Overview - Gradient background, large values, tiny labels */}
-      <section className="bg-gradient-to-br from-card to-card/80 p-4 md:p-6 rounded-[12px] shadow-sm shadow-black/20 border border-border/40 mb-4">
-        <h2 className="text-lg md:text-xl font-semibold text-foreground mb-4 flex items-center">
-          <IndianRupee className="h-5 w-5 mr-2 text-green-500" /> Financial Overview
-        </h2>
-        <div className="flex flex-col gap-3 md:grid md:grid-cols-2 md:gap-6">
-          <div className="flex flex-col p-4 rounded-[12px] bg-secondary/50 border border-border/40">
-            <p className="text-[11px] md:text-sm uppercase tracking-wide text-muted-foreground">Total Income Tracked (Completed Deals)</p>
-            <p className="text-2xl md:text-3xl font-bold text-foreground mt-1">₹{totalIncome.toLocaleString('en-IN')}</p>
-          </div>
-          <div className="flex flex-col p-4 rounded-[12px] bg-secondary/50 border border-border/40">
-            <p className="text-[11px] md:text-sm uppercase tracking-wide text-muted-foreground">Estimated Tax Liability (Mock)</p>
-            <p className="text-2xl md:text-3xl font-bold text-foreground mt-1">₹{(totalIncome * 0.15).toLocaleString('en-IN')}</p>
-          </div>
+      {/* Quick Filter Chips */}
+      {allBrandDeals.length > 0 && (
+        <div className="mb-6">
+          <PaymentQuickFilters
+            allDeals={allBrandDeals}
+            activeFilter={quickFilter}
+            onFilterChange={(filter) => {
+              setQuickFilter(filter);
+              setCurrentPage(1);
+            }}
+          />
         </div>
-      </section>
+      )}
+
+      {/* Payment Timeline */}
+      {allBrandDeals.length > 0 && (
+        <div className="mb-6">
+          <PaymentTimeline allDeals={allBrandDeals} />
+        </div>
+      )}
 
       {/* Payment Tracking - Mobile cards, desktop table */}
       <section className="bg-card p-4 md:p-6 rounded-[12px] shadow-sm shadow-black/20 border border-border/40">
@@ -185,16 +307,16 @@ const CreatorPaymentsAndRecovery = () => {
         <div className="flex flex-col sm:flex-row gap-3 md:gap-4 mb-4">
           <div className="relative flex-1">
             <IndianRupee className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Search by brand or deliverables..."
-              className="pl-9 pr-3 bg-background text-foreground border-border/40 focus:border-primary/50 h-[42px] md:h-10 rounded-[14px] md:rounded-md text-sm placeholder:text-muted-foreground/70"
-              value={searchTerm}
-              onChange={(e) => {
-                setSearchTerm(e.target.value);
-                setCurrentPage(1);
-              }}
-              aria-label="Search payments"
-            />
+              <Input
+                placeholder="Search by brand, invoice, or amount..."
+                className="pl-9 pr-3 bg-background text-foreground border-border/40 focus:border-primary/50 h-[42px] md:h-10 rounded-[14px] md:rounded-md text-sm placeholder:text-muted-foreground/70"
+                value={searchTerm}
+                onChange={(e) => {
+                  setSearchTerm(e.target.value);
+                  setCurrentPage(1);
+                }}
+                aria-label="Search payments"
+              />
           </div>
           <Select onValueChange={(value: BrandDeal['status'] | 'All') => {
             setStatusFilter(value);
@@ -215,215 +337,90 @@ const CreatorPaymentsAndRecovery = () => {
 
         {paginatedDeals.length > 0 ? (
           <>
-            {/* Mobile Card Layout (< 768px) */}
-            {isMobile ? (
-              <div className="flex flex-col gap-3">
-                {paginatedDeals.map((deal, index) => {
-                  const deliverablesArray = getDeliverablesArray(deal);
-                  const isOverdueDeal = isOverdue(deal.payment_expected_date);
-                  return (
-                    <article
-                      key={deal.id}
-                      className={cn(
-                        "bg-card rounded-[12px] p-4 border border-border/40 shadow-sm shadow-black/20",
-                        index < paginatedDeals.length - 1 && "border-b border-border/30",
-                        isOverdueDeal && 'border-red-500/30 bg-red-500/5'
-                      )}
-                    >
-                      {/* Brand Row: Logo + Name */}
-                      <div className="flex items-center justify-between gap-3 mb-3">
-                        <div className="flex items-center gap-3 flex-1 min-w-0">
-                          <BrandLogo 
-                            brandName={deal.brand_name} 
-                            brandLogo={null} 
-                            size="sm" 
-                            className="flex-shrink-0" 
-                          />
-                          <h3 className="text-sm font-semibold text-foreground truncate">
-                            {deal.brand_name}
-                          </h3>
-                        </div>
-                        <div className="text-right flex-shrink-0">
-                          <div className="text-xl font-bold text-foreground">
-                            ₹{deal.deal_amount.toLocaleString('en-IN')}
-                          </div>
-                        </div>
-                      </div>
+            {/* Enhanced Payment Cards - Grid Layout */}
+            <div className={cn(
+              "grid gap-4 mb-6",
+              isMobile ? "grid-cols-1" : "grid-cols-1 md:grid-cols-2 lg:grid-cols-3"
+            )}>
+              {paginatedDeals.map((deal) => {
+                const paymentStatus = getPaymentStatus(deal);
+                const daysInfo = getDaysInfo(deal);
 
-                      {/* Deliverables or Platform */}
-                      <div className="mb-3">
-                        <div className="text-[11px] uppercase tracking-wide text-muted-foreground mb-1">Deliverables</div>
-                        <div className="flex flex-wrap gap-2">
-                          {deliverablesArray.slice(0, 2).map((item: string, idx: number) => (
-                            <span 
-                              key={idx}
-                              className="text-[11px] bg-muted px-2 py-1 rounded-full text-foreground border border-border/40"
-                            >
-                              {item}
-                            </span>
-                          ))}
-                          {deliverablesArray.length > 2 && (
-                            <span className="text-[11px] bg-muted px-2 py-1 rounded-full text-muted-foreground border border-border/40">
-                              +{deliverablesArray.length - 2} more
-                            </span>
-                          )}
-                        </div>
-                      </div>
+                return (
+                  <EnhancedPaymentCard
+                    key={deal.id}
+                    deal={deal}
+                    status={paymentStatus}
+                    daysOverdue={daysInfo.daysOverdue}
+                    daysLeft={daysInfo.daysLeft}
+                    onSendReminder={handleOpenReminderDialog}
+                    onEscalate={handleEscalate}
+                    onMarkPaid={handleMarkPaymentReceived}
+                    onViewDetails={handleViewDetails}
+                    onAddNote={handleAddNote}
+                  />
+                );
+              })}
+            </div>
 
-                      {/* Payment Expected + Status Row */}
-                      <div className="flex items-center justify-between gap-3 pt-3 border-t border-border/30">
-                        <div className="flex items-center gap-2">
-                          <CalendarDays className="h-3.5 w-3.5 text-muted-foreground" />
-                          <span className="text-sm text-foreground">
-                            {new Date(deal.payment_expected_date).toLocaleDateString('en-IN', {
-                              day: 'numeric',
-                              month: 'short',
-                              year: 'numeric',
-                            })}
-                          </span>
-                          {isOverdueDeal && (
-                            <AlertTriangle className="h-4 w-4 text-destructive" aria-label="Overdue" />
-                          )}
-                        </div>
-                        <Badge variant={getStatusBadgeVariant(deal.status)} className="text-[11px]">
-                          {deal.status}
-                        </Badge>
-                      </div>
 
-                      {/* Actions Row */}
-                      <div className="flex items-center gap-2 mt-3 pt-3 border-t border-border/30">
-                        {deal.invoice_file_url && (
-                          <Button variant="outline" size="sm" asChild className="text-primary border-border hover:bg-accent hover:text-foreground h-[36px] flex-1">
-                            <a href={deal.invoice_file_url} target="_blank" rel="noopener noreferrer">
-                              <FileText className="h-4 w-4 mr-1" /> Invoice
-                            </a>
-                          </Button>
-                        )}
-                        {deal.status === 'Payment Pending' && (
-                          <>
-                            <Button
-                              variant="secondary"
-                              size="sm"
-                              onClick={() => handleOpenReminderDialog(deal)}
-                              disabled={sendPaymentReminderMutation.isPending}
-                              className="text-secondary-foreground border-border hover:bg-secondary/80 h-[36px] flex-1"
-                            >
-                              <Send className="h-4 w-4 mr-1" /> Reminder
-                            </Button>
-                            <Button
-                              variant="default"
-                              size="sm"
-                              onClick={() => toast.info('Feature coming soon!', { description: 'Advanced recovery options will be available here.' })}
-                              className="bg-accent-gold text-accent-gold-foreground hover:bg-accent-gold/90 h-[36px] flex-1"
-                            >
-                              <IndianRupee className="h-4 w-4 mr-1" /> Recover
-                            </Button>
-                          </>
-                        )}
-                      </div>
-                    </article>
-                  );
-                })}
-              </div>
-            ) : (
-              /* Desktop Table Layout (>= 768px) */
-              <Table>
-                <TableHeader>
-                  <TableRow className="border-border">
-                    <TableHead className="text-muted-foreground">Brand</TableHead>
-                    <TableHead className="text-muted-foreground">Amount</TableHead>
-                    <TableHead className="text-muted-foreground">Deliverables</TableHead>
-                    <TableHead className="text-muted-foreground">Payment Expected</TableHead>
-                    <TableHead className="text-muted-foreground">Status</TableHead>
-                    <TableHead className="text-right text-muted-foreground">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {paginatedDeals.map((deal) => (
-                    <TableRow key={deal.id} className="border-border">
-                      <TableCell className="font-medium text-foreground">{deal.brand_name}</TableCell>
-                      <TableCell className="text-muted-foreground">₹{deal.deal_amount.toLocaleString('en-IN')}</TableCell>
-                      <TableCell className="text-muted-foreground max-w-[200px] truncate">{deal.deliverables}</TableCell>
-                      <TableCell className="text-muted-foreground">
-                        <div className="flex items-center">
-                          {new Date(deal.payment_expected_date).toLocaleDateString()}
-                          {isOverdue(deal.payment_expected_date) && (
-                            <AlertTriangle className="h-4 w-4 text-destructive ml-2" aria-label="Overdue" />
-                          )}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant={getStatusBadgeVariant(deal.status)}>
-                          {deal.status}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-right flex justify-end space-x-2">
-                        {deal.invoice_file_url && (
-                          <Button variant="outline" size="sm" asChild className="text-primary border-border hover:bg-accent hover:text-foreground">
-                            <a href={deal.invoice_file_url} target="_blank" rel="noopener noreferrer">
-                              <FileText className="h-4 w-4" />
-                            </a>
-                          </Button>
-                        )}
-                        {deal.status === 'Payment Pending' && (
-                          <Button
-                            variant="secondary"
-                            size="sm"
-                            onClick={() => handleOpenReminderDialog(deal)}
-                            disabled={sendPaymentReminderMutation.isPending}
-                            className="text-secondary-foreground border-border hover:bg-secondary/80"
-                          >
-                            <Send className="h-4 w-4 mr-1" /> Reminder
-                          </Button>
-                        )}
-                        {deal.status === 'Payment Pending' && (
-                          <Button
-                            variant="default"
-                            size="sm"
-                            onClick={() => toast.info('Feature coming soon!', { description: 'Advanced recovery options will be available here.' })}
-                            className="bg-accent-gold text-accent-gold-foreground hover:bg-accent-gold/90"
-                          >
-                            <IndianRupee className="h-4 w-4 mr-1" /> Recover
-                          </Button>
-                        )}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            )}
-
-            {/* Pagination - Mobile: h-[40px] w-full text-sm, center page text */}
-            <div className="flex flex-col md:flex-row justify-center items-center gap-3 mt-4">
-              <div className="w-full md:w-auto md:order-1">
+            {/* Pagination */}
+            {calculatedTotalPages > 1 && (
+              <div className="flex flex-col md:flex-row justify-center items-center gap-3 mt-6">
                 <Button
                   variant="outline"
                   onClick={handlePreviousPage}
                   disabled={currentPage === 1 || isLoadingBrandDeals}
-                  className="w-full md:w-auto text-foreground border-border/50 hover:bg-accent/50 h-[40px] md:h-9 text-sm rounded-[10px] md:rounded-md"
+                  className="w-full md:w-auto"
                 >
                   Previous
                 </Button>
-              </div>
-              <span className="hidden md:inline-flex order-2 text-xs md:text-sm text-muted-foreground text-center">
-                Page {currentPage} of {calculatedTotalPages}
-              </span>
-              <div className="w-full md:w-auto md:order-3">
+                <span className="text-sm text-muted-foreground">
+                  Page {currentPage} of {calculatedTotalPages}
+                </span>
                 <Button
                   variant="outline"
                   onClick={handleNextPage}
                   disabled={currentPage === calculatedTotalPages || isLoadingBrandDeals}
-                  className="w-full md:w-auto text-foreground border-border/50 hover:bg-accent/50 h-[40px] md:h-9 text-sm rounded-[10px] md:rounded-md"
+                  className="w-full md:w-auto"
                 >
                   Next
                 </Button>
               </div>
-            </div>
+            )}
           </>
         ) : (
-          <p className="text-muted-foreground text-center py-8">No payment records found. Add brand deals to track payments.</p>
+          <div className="text-center py-12">
+            <p className="text-muted-foreground mb-4">No payment records found matching your criteria.</p>
+            {quickFilter && (
+              <Button
+                variant="outline"
+                onClick={() => setQuickFilter(null)}
+              >
+                Clear Filters
+              </Button>
+            )}
+          </div>
         )}
       </section>
+
+      {/* Payment Analytics & Tax Summary */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        <PaymentAnalytics allDeals={allBrandDeals} />
+        <TaxSummaryCard allDeals={allBrandDeals} />
+      </div>
+
+      {/* Mark Payment Received Dialog */}
+      {dealToMarkPaid && isMarkPaymentDialogOpen && (
+        <MarkPaymentReceivedDialog
+          deal={dealToMarkPaid}
+          onSaveSuccess={handlePaymentSuccess}
+          onClose={() => {
+            setIsMarkPaymentDialogOpen(false);
+            setDealToMarkPaid(null);
+          }}
+        />
+      )}
 
       <Dialog open={isReminderDialogOpen} onOpenChange={setIsReminderDialogOpen}>
         <DialogContent 

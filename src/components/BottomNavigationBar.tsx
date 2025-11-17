@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom'; // Import useLocation
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { Home, Briefcase, FileText, MessageSquare, PlusCircle, FileUp, CalendarDays, Bot, Zap, Paperclip } from 'lucide-react'; // Added Paperclip, kept FileUp for upload form
+import { Home, Briefcase, FileText, MessageSquare, PlusCircle, FileUp, CalendarDays, Bot, Zap, Paperclip, LayoutDashboard, DollarSign, ShieldCheck } from 'lucide-react'; // Added Paperclip, kept FileUp for upload form
 import {
   Dialog,
   DialogContent,
@@ -16,6 +16,7 @@ import DocumentUploadForm from '@/components/forms/DocumentUploadForm';
 import ConsultationBookingForm from '@/components/forms/ConsultationBookingForm';
 import { toast } from 'sonner';
 import { useQueryClient } from '@tanstack/react-query'; // Import useQueryClient
+import { useSession } from '@/contexts/SessionContext'; // Import useSession
 import AIAssistant, { AIState, Message } from './AIAssistant'; // Import AI Assistant types
 
 interface BottomNavigationBarProps {
@@ -27,6 +28,7 @@ const BottomNavigationBar = ({ onDocumentUploadSuccess, onConsultationBookingSuc
   const navigate = useNavigate();
   const location = useLocation(); // Initialize useLocation
   const queryClient = useQueryClient(); // Initialize queryClient
+  const { profile } = useSession(); // Get user profile to determine role
 
   const [isQuickActionsOpen, setIsQuickActionsOpen] = useState(false);
   const [activeQuickAction, setActiveQuickAction] = useState<'upload' | 'book' | 'message' | 'ai' | null>(null); // Added 'ai'
@@ -88,24 +90,33 @@ const BottomNavigationBar = ({ onDocumentUploadSuccess, onConsultationBookingSuc
     setAiInitialFlow('general'); // Reset flow for next open
   };
 
-  const navItems = [
-    { to: "/client-dashboard", icon: Home, label: "Home" },
-    { to: "/client-cases", icon: Briefcase, label: "Cases" },
-    { to: "quick-actions", icon: Zap, label: "Actions" }, // Changed icon to Zap
-    { to: "/client-documents", icon: FileText, label: "Docs" },
-    { to: "/messages", icon: MessageSquare, label: "Messages" },
-  ];
+  // Determine nav items based on user role
+  const navItems = profile?.role === 'creator' 
+    ? [
+        { to: "/creator-dashboard", icon: LayoutDashboard, label: "Dashboard" },
+        { to: "/creator-contracts", icon: FileText, label: "Brand Deals" },
+        { to: "/creator-payments", icon: DollarSign, label: "Payments & Recovery" },
+        { to: "/creator-content-protection", icon: ShieldCheck, label: "Content Protection" },
+        { to: "/messages", icon: MessageSquare, label: "Messages" },
+      ]
+    : [
+        { to: "/client-dashboard", icon: Home, label: "Home" },
+        { to: "/client-cases", icon: Briefcase, label: "Cases" },
+        { to: "quick-actions", icon: Zap, label: "Actions" }, // Changed icon to Zap
+        { to: "/client-documents", icon: FileText, label: "Docs" },
+        { to: "/messages", icon: MessageSquare, label: "Messages" },
+      ];
 
   return (
     <>
       <div className="fixed bottom-0 left-0 right-0 z-50 bg-card border-t border-border shadow-lg md:hidden">
-        <nav className="flex justify-around h-16 items-center">
+        <nav className="flex justify-around h-14 items-center">
           {navItems.map((item) => (
             <Button
               key={item.to}
               variant="ghost"
               className={cn(
-                "flex flex-col items-center justify-center h-full w-full text-muted-foreground hover:bg-accent hover:text-foreground",
+                "flex items-center justify-center h-full w-full text-muted-foreground hover:bg-accent hover:text-foreground",
                 (item.to === location.pathname || (item.to === "quick-actions" && isQuickActionsOpen)) && "text-primary bg-accent hover:bg-accent"
               )}
               onClick={() => {
@@ -115,9 +126,9 @@ const BottomNavigationBar = ({ onDocumentUploadSuccess, onConsultationBookingSuc
                   navigate(item.to);
                 }
               }}
+              title={item.label}
             >
-              <item.icon className={cn("h-5 w-5", item.to === "quick-actions" && "h-6 w-6")} />
-              <span className="text-xs mt-1">{item.label}</span>
+              <item.icon className={cn("h-6 w-6", item.to === "quick-actions" && "h-7 w-7")} />
             </Button>
           ))}
         </nav>

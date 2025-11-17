@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useSession } from '@/contexts/SessionContext';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -13,17 +13,6 @@ import {
   DialogTitle,
   DialogDescription,
 } from '@/components/ui/dialog';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
 import { useBrandDeals, useDeleteBrandDeal } from '@/lib/hooks/useBrandDeals';
 import { usePagination } from '@/lib/hooks/usePagination';
@@ -31,32 +20,55 @@ import { BrandDeal } from '@/types';
 import BrandDealForm from '@/components/forms/BrandDealForm';
 import { toast } from 'sonner';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import BrandDealsStats from '@/components/creator-contracts/BrandDealsStats';
-import MarkPaymentReceivedDialog from '@/components/creator-contracts/MarkPaymentReceivedDialog';
 import { cn } from '@/lib/utils';
 import { Card, CardContent } from '@/components/ui/card';
-import BrandLogo from '@/components/creator-contracts/BrandLogo';
 import DealStatusBadge, { DealStage } from '@/components/creator-contracts/DealStatusBadge';
-import DeliverablesBadge from '@/components/creator-contracts/DeliverablesBadge';
 import DealActionsMenu from '@/components/creator-contracts/DealActionsMenu';
+import BrandLogo from '@/components/creator-contracts/BrandLogo';
+import DeliverablesBadge from '@/components/creator-contracts/DeliverablesBadge';
 import FiltersBar from '@/components/creator-contracts/FiltersBar';
 import MobileFiltersAccordion from '@/components/creator-contracts/MobileFiltersAccordion';
-import DealCard from '@/components/creator-contracts/DealCard';
+import DealsHeader from '@/components/creator-contracts/DealsHeader';
+import QuickFilterChips from '@/components/creator-contracts/QuickFilterChips';
+import ProjectDealCard from '@/components/creator-contracts/ProjectDealCard';
+import EmptyDealsState from '@/components/creator-contracts/EmptyDealsState';
+import { PaymentStatus } from '@/components/creator-contracts/DealStatusBadge';
 
-// Helper function to map old status to new stage
+// Helper function to map old status to new project-focused stage
 const getDealStage = (deal: BrandDeal): DealStage => {
+  // Project-focused stages
   if (deal.status === 'Drafting') return 'draft';
-  if (deal.status === 'Approved') return 'active';
+  if (deal.status === 'Approved' && !deal.payment_received_date) {
+    // Check if deliverables are due
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const dueDate = new Date(deal.due_date || deal.payment_expected_date);
+    dueDate.setHours(0, 0, 0, 0);
+    const daysUntilDue = Math.ceil((dueDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+    
+    if (daysUntilDue <= 0) return 'deliverables_due';
+    if (daysUntilDue <= 7) return 'deliverables_due';
+    return 'in_progress';
+  }
+  // If payment is pending but deliverables are done, it's in review
+  if (deal.status === 'Payment Pending' && deal.payment_received_date === null) {
+    return 'review_pending';
+  }
+  if (deal.status === 'Completed' || deal.payment_received_date) return 'completed';
+  return 'draft';
+};
+
+// Helper to get payment status (secondary info)
+const getPaymentStatus = (deal: BrandDeal): PaymentStatus => {
+  if (deal.payment_received_date) return 'paid';
   if (deal.status === 'Payment Pending') {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const dueDate = new Date(deal.payment_expected_date);
     dueDate.setHours(0, 0, 0, 0);
-    return dueDate < today ? 'overdue' : 'payment_pending';
+    return dueDate < today ? 'overdue' : 'pending';
   }
-  if (deal.status === 'Completed') return 'completed';
-  if (deal.payment_received_date) return 'paid';
-  return 'draft';
+  return 'not_due';
 };
 
 // Helper to calculate days until due or overdue
@@ -108,8 +120,6 @@ const CreatorContracts = () => {
   
   const [isBrandDealFormOpen, setIsBrandDealFormOpen] = useState(false);
   const [editingBrandDeal, setEditingBrandDeal] = useState<BrandDeal | null>(null);
-  const [isMarkPaymentDialogOpen, setIsMarkPaymentDialogOpen] = useState(false);
-  const [dealToMarkPaid, setDealToMarkPaid] = useState<BrandDeal | null>(null);
   
   // Filter states
   const [searchTerm, setSearchTerm] = useState('');
@@ -117,6 +127,8 @@ const CreatorContracts = () => {
   const [statusFilter, setStatusFilter] = useState<DealStage | 'All'>('All');
   const [platformFilter, setPlatformFilter] = useState<string>('All');
   const [dateRangeFilter, setDateRangeFilter] = useState<string>('All');
+  const [quickFilter, setQuickFilter] = useState<string | null>(null);
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
   
   const pageSize = 10;
 
@@ -151,6 +163,44 @@ const CreatorContracts = () => {
     if (!allBrandDeals) return [];
 
     let filtered = [...allBrandDeals];
+
+    // Quick filter (applied first)
+    if (quickFilter) {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      
+      switch (quickFilter) {
+        case 'active':
+          filtered = filtered.filter(deal => {
+            const stage = getDealStage(deal);
+            return stage === 'in_progress' || stage === 'awaiting_approval';
+          });
+          break;
+        case 'pending_payment':
+          filtered = filtered.filter(deal => {
+            const paymentStatus = getPaymentStatus(deal);
+            return paymentStatus === 'pending' || paymentStatus === 'overdue';
+          });
+          break;
+        case 'expiring_soon':
+          const sevenDaysFromNow = new Date(today);
+          sevenDaysFromNow.setDate(sevenDaysFromNow.getDate() + 7);
+          filtered = filtered.filter(deal => {
+            const dueDate = new Date(deal.payment_expected_date || deal.due_date);
+            dueDate.setHours(0, 0, 0, 0);
+            return dueDate >= today && dueDate <= sevenDaysFromNow;
+          });
+          break;
+        case 'completed':
+          filtered = filtered.filter(deal => {
+            const stage = getDealStage(deal);
+            return stage === 'completed';
+          });
+          break;
+        default:
+          break;
+      }
+    }
 
     // Search filter
     if (searchTerm) {
@@ -214,7 +264,7 @@ const CreatorContracts = () => {
     }
 
     return filtered;
-  }, [allBrandDeals, searchTerm, brandFilter, statusFilter, platformFilter, dateRangeFilter]);
+  }, [allBrandDeals, searchTerm, brandFilter, statusFilter, platformFilter, dateRangeFilter, quickFilter]);
 
   const { currentPage, totalPages, handlePreviousPage, handleNextPage, setCurrentPage } = usePagination({
     totalCount: filteredAndSearchedDeals.length,
@@ -265,24 +315,18 @@ const CreatorContracts = () => {
     }
   };
 
-  const handleMarkPaymentReceived = (deal: BrandDeal) => {
-    setDealToMarkPaid(deal);
-    setIsMarkPaymentDialogOpen(true);
-  };
-
-  const handlePaymentSuccess = () => {
-    refetchBrandDeals();
-    setIsMarkPaymentDialogOpen(false);
-    setDealToMarkPaid(null);
-  };
-
   const handleClearFilters = () => {
     setSearchTerm('');
     setBrandFilter('All');
     setStatusFilter('All');
     setPlatformFilter('All');
     setDateRangeFilter('All');
+    setQuickFilter(null);
     setCurrentPage(1);
+  };
+
+  const handleExport = () => {
+    toast.info('Export feature coming soon!');
   };
 
   if (sessionLoading || isLoadingBrandDeals) {
@@ -294,15 +338,86 @@ const CreatorContracts = () => {
     );
   }
 
+
   return (
     <div className="w-full max-w-full overflow-x-hidden pb-[80px] px-4 md:px-6 antialiased">
-      {/* Page Title - text-2xl on mobile per design system */}
-      <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-4">Brand Deals & Contracts</h1>
-
-      {/* Stats Section - gap-4 spacing per design system */}
-      <div className="mb-4">
-        <BrandDealsStats allDeals={allBrandDeals || []} isLoading={isLoadingBrandDeals} />
+      {/* New Header with Quick Stats */}
+      <div className="mb-6">
+        <DealsHeader
+          allDeals={allBrandDeals || []}
+          onAddDeal={handleAddBrandDeal}
+          onExport={handleExport}
+          onFilterClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+        />
       </div>
+
+      {/* Quick Filter Chips */}
+      {allBrandDeals && allBrandDeals.length > 0 && (
+        <div className="mb-6">
+          <QuickFilterChips
+            allDeals={allBrandDeals}
+            activeFilter={quickFilter}
+            onFilterChange={(filter) => {
+              setQuickFilter(filter);
+              setCurrentPage(1);
+            }}
+          />
+        </div>
+      )}
+
+      {/* Old Quick Filter Chips - Keep for backward compatibility */}
+      {allBrandDeals && allBrandDeals.length > 0 && (
+        <div className="mb-4 flex flex-wrap gap-2">
+          <Button
+            variant={dateRangeFilter === 'due_soon' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => {
+              setDateRangeFilter(dateRangeFilter === 'due_soon' ? 'All' : 'due_soon');
+              setCurrentPage(1);
+            }}
+            className="text-xs h-7"
+          >
+            Expiring Soon
+          </Button>
+          <Button
+            variant={dateRangeFilter === 'overdue' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => {
+              setDateRangeFilter(dateRangeFilter === 'overdue' ? 'All' : 'overdue');
+              setCurrentPage(1);
+            }}
+            className="text-xs h-7"
+          >
+            Overdue
+          </Button>
+          <Button
+            variant={statusFilter === 'deliverables_due' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => {
+              setStatusFilter(statusFilter === 'deliverables_due' ? 'All' : 'deliverables_due');
+              setCurrentPage(1);
+            }}
+            className="text-xs h-7"
+          >
+            Deliverables Due
+          </Button>
+          <Button
+            variant={statusFilter === 'draft' || statusFilter === 'in_progress' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => {
+              if (statusFilter === 'draft' || statusFilter === 'in_progress') {
+                setStatusFilter('All');
+              } else {
+                setStatusFilter('in_progress');
+              }
+              setCurrentPage(1);
+            }}
+            className="text-xs h-7"
+          >
+            In Progress
+          </Button>
+        </div>
+      )}
 
       {/* Main Content Card */}
       <Card className="bg-card border-border/40 shadow-sm">
@@ -390,34 +505,68 @@ const CreatorContracts = () => {
           </div>
           )}
 
-          {/* Mobile Card Layout (< 768px) */}
-          {paginatedDeals.length > 0 ? (
+          {/* Empty State */}
+          {paginatedDeals.length === 0 && allBrandDeals && allBrandDeals.length === 0 ? (
+            <EmptyDealsState
+              onAddDeal={handleAddBrandDeal}
+            />
+          ) : paginatedDeals.length === 0 ? (
+            <div className="text-center py-12">
+              <p className="text-muted-foreground">No brand deals found matching your criteria.</p>
+              <Button
+                variant="outline"
+                onClick={handleClearFilters}
+                className="mt-4"
+              >
+                Clear Filters
+              </Button>
+            </div>
+          ) : (
             <>
-              {/* Mobile Cards - visible on screens < 768px - 12px gap between cards (mb-3) */}
-              {isMobile ? (
-              <div className="flex flex-col w-full" data-mobile-view="true" style={{ display: 'flex' }}>
+              {/* Project-Focused Deal Cards - Grid Layout */}
+              <div className={cn(
+                "grid gap-4 mb-6",
+                isMobile ? "grid-cols-1" : "grid-cols-1 md:grid-cols-2 lg:grid-cols-3"
+              )}>
                 {paginatedDeals.map((deal) => {
                   const stage = getDealStage(deal);
-                  const dueDateStatus = getDueDateStatus(deal.payment_expected_date || deal.due_date);
-                  const isOverdue = stage === 'overdue';
+                  const paymentStatus = getPaymentStatus(deal);
 
                   return (
-                    <DealCard
+                    <ProjectDealCard
                       key={deal.id}
                       deal={deal}
                       stage={stage}
-                      dueDateStatus={dueDateStatus}
-                      isOverdue={isOverdue}
+                      paymentStatus={paymentStatus}
                       onView={handleViewDeal}
                       onEdit={handleEditBrandDeal}
-                      onMarkPaid={handleMarkPaymentReceived}
+                      onManageDeliverables={(deal) => {
+                        toast.info('Deliverables management coming soon!');
+                        // Navigate to deal detail page with deliverables tab
+                        navigate(`/creator-contracts/${deal.id}?tab=deliverables`);
+                      }}
+                      onUploadContent={(deal) => {
+                        toast.info('Content upload coming soon!');
+                        // Navigate to deal detail page with upload tab
+                        navigate(`/creator-contracts/${deal.id}?tab=upload`);
+                      }}
+                      onContactBrand={(deal) => {
+                        navigate('/messages');
+                        toast.info(`Opening messages to contact ${deal.brand_name}`);
+                      }}
+                      onViewContract={(deal) => {
+                        if (deal.contract_file_url) {
+                          window.open(deal.contract_file_url, '_blank');
+                        } else {
+                          toast.error('Contract file not available');
+                        }
+                      }}
                       onDelete={handleDeleteBrandDeal}
                       isDeleting={deleteBrandDealMutation.isPending && deleteBrandDealMutation.variables?.id === deal.id}
                     />
                   );
                 })}
               </div>
-              ) : null}
 
               {/* Desktop Table Layout - visible on screens >= 768px */}
               {!isMobile ? (
@@ -437,8 +586,9 @@ const CreatorContracts = () => {
                   <TableBody>
                     {paginatedDeals.map((deal) => {
                       const stage = getDealStage(deal);
+                      const paymentStatus = getPaymentStatus(deal);
                       const dueDateStatus = getDueDateStatus(deal.payment_expected_date || deal.due_date);
-                      const isOverdue = stage === 'overdue';
+                      const isOverdue = paymentStatus === 'overdue';
 
                       return (
                         <TableRow 
@@ -486,7 +636,25 @@ const CreatorContracts = () => {
                               deal={deal}
                               onView={handleViewDeal}
                               onEdit={handleEditBrandDeal}
-                              onMarkPaid={handleMarkPaymentReceived}
+                              onManageDeliverables={(deal) => {
+                                toast.info('Deliverables management coming soon!');
+                                navigate(`/creator-contracts/${deal.id}?tab=deliverables`);
+                              }}
+                              onUploadContent={(deal) => {
+                                toast.info('Content upload coming soon!');
+                                navigate(`/creator-contracts/${deal.id}?tab=upload`);
+                              }}
+                              onContactBrand={(deal) => {
+                                navigate('/messages');
+                                toast.info('Opening messages to contact brand');
+                              }}
+                              onViewContract={(deal) => {
+                                if (deal.contract_file_url) {
+                                  window.open(deal.contract_file_url, '_blank');
+                                } else {
+                                  toast.error('Contract file not available');
+                                }
+                              }}
                               onDelete={handleDeleteBrandDeal}
                               isDeleting={deleteBrandDealMutation.isPending && deleteBrandDealMutation.variables?.id === deal.id}
                             />
@@ -499,40 +667,31 @@ const CreatorContracts = () => {
               </div>
               ) : null}
 
-              {/* Pagination - Mobile: h-[40px] w-full text-sm per design system */}
-              <div className="flex flex-col md:flex-row justify-center items-center gap-3 mt-4">
-                {/* Mobile: Full-width button, h-[40px] */}
-                <div className="w-full md:w-auto md:order-1">
+              {/* Pagination - Load More or Previous/Next */}
+              {totalPages > 1 && (
+                <div className="flex flex-col md:flex-row justify-center items-center gap-3 mt-6">
                   <Button
                     variant="outline"
                     onClick={handlePreviousPage}
                     disabled={currentPage === 1 || isLoadingBrandDeals}
-                    className="w-full md:w-auto text-foreground border-border/50 hover:bg-accent/50 h-[40px] md:h-9 text-sm rounded-[10px] md:rounded-md"
+                    className="w-full md:w-auto"
                   >
                     Previous
                   </Button>
-                </div>
-                {/* Page indicator - Hidden on mobile, centered on desktop */}
-                <span className="hidden md:inline-flex order-2 text-xs md:text-sm text-muted-foreground text-center">
-                  Page {currentPage} of {totalPages}
-                </span>
-                {/* Mobile: Full-width button, h-[40px] */}
-                <div className="w-full md:w-auto md:order-3">
+                  <span className="text-sm text-muted-foreground">
+                    Page {currentPage} of {totalPages}
+                  </span>
                   <Button
                     variant="outline"
                     onClick={handleNextPage}
                     disabled={currentPage === totalPages || isLoadingBrandDeals}
-                    className="w-full md:w-auto text-foreground border-border/50 hover:bg-accent/50 h-[40px] md:h-9 text-sm rounded-[10px] md:rounded-md"
+                    className="w-full md:w-auto"
                   >
                     Next
                   </Button>
                 </div>
-              </div>
+              )}
             </>
-          ) : (
-            <div className="text-center py-12">
-              <p className="text-muted-foreground">No brand deals found matching your criteria.</p>
-            </div>
           )}
         </CardContent>
       </Card>
@@ -569,28 +728,6 @@ const CreatorContracts = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Mark Payment Received Dialog */}
-      <Dialog open={isMarkPaymentDialogOpen} onOpenChange={setIsMarkPaymentDialogOpen}>
-        <DialogContent 
-          className="sm:max-w-[425px] bg-card text-foreground border-border/40 rounded-xl shadow-lg backdrop-blur-sm"
-          aria-labelledby="mark-payment-title"
-          aria-describedby="mark-payment-description"
-        >
-          <DialogHeader className="space-y-2">
-            <DialogTitle id="mark-payment-title" className="text-xl font-semibold">Mark Payment Received</DialogTitle>
-            <DialogDescription id="mark-payment-description" className="text-sm text-muted-foreground">
-              Confirm the payment details for this deal. This will mark the deal as 'Completed'.
-            </DialogDescription>
-          </DialogHeader>
-          {dealToMarkPaid && (
-            <MarkPaymentReceivedDialog
-              deal={dealToMarkPaid}
-              onSaveSuccess={handlePaymentSuccess}
-              onClose={() => setIsMarkPaymentDialogOpen(false)}
-            />
-          )}
-        </DialogContent>
-      </Dialog>
     </div>
   );
 };

@@ -39,6 +39,19 @@ const DealCard: React.FC<DealCardProps> = ({
       ? deal.deliverables.split(',').map(d => d.trim()).filter(Boolean)
       : [];
 
+  // Calculate progress percentage based on stage
+  const getProgressPercentage = (stage: DealStage): number => {
+    switch (stage) {
+      case 'draft': return 10;
+      case 'active': return 40;
+      case 'payment_pending': return 70;
+      case 'paid': return 90;
+      case 'completed': return 100;
+      case 'overdue': return 70; // Same as payment_pending but visually different
+      default: return 0;
+    }
+  };
+
   return (
     <article
       className={cn(
@@ -57,7 +70,7 @@ const DealCard: React.FC<DealCardProps> = ({
             size="sm" 
             className="flex-shrink-0" 
           />
-          <h3 className="text-sm font-semibold text-foreground truncate">
+          <h3 className="text-base md:text-sm font-bold text-foreground truncate">
             {deal.brand_name}
           </h3>
         </div>
@@ -73,6 +86,28 @@ const DealCard: React.FC<DealCardProps> = ({
               isDeleting={isDeleting}
             />
           </div>
+        </div>
+      </div>
+
+      {/* Progress Indicator */}
+      <div className="mt-2 mb-1">
+        <div className="flex items-center justify-between text-[10px] text-muted-foreground mb-1">
+          <span>Deal Progress</span>
+          <span>{getProgressPercentage(stage)}%</span>
+        </div>
+        <div className="h-1.5 bg-muted rounded-full overflow-hidden">
+          <div 
+            className={cn(
+              "h-full transition-all duration-300",
+              stage === 'completed' ? 'bg-green-500' :
+              stage === 'paid' ? 'bg-blue-500' :
+              stage === 'payment_pending' ? 'bg-yellow-500' :
+              stage === 'overdue' ? 'bg-red-500' :
+              stage === 'active' ? 'bg-blue-400' :
+              'bg-gray-400'
+            )}
+            style={{ width: `${getProgressPercentage(stage)}%` }}
+          />
         </div>
       </div>
 

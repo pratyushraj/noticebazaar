@@ -182,29 +182,26 @@ const CreatorCopyrightScanner: React.FC = () => {
         </p>
 
         <div className="space-y-4">
-          {/* Content Input */}
+          {/* Content Input - Simplified */}
           <div>
-            <Label htmlFor="scanQuery">What content do you want to scan?</Label>
+            <Label htmlFor="scanQuery">Content URL or Description</Label>
             <div className="relative">
               <Link2 className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 id="scanQuery"
                 value={scanQuery}
                 onChange={(e) => setScanQuery(e.target.value)}
-                placeholder="Paste your original post link (IG post, YT video, TikTok link) or enter title/description"
+                placeholder="Paste link or enter description"
                 className="pl-9"
                 disabled={performCopyrightScanMutation.isPending}
               />
             </div>
-            <p className="text-xs text-muted-foreground mt-1">
-              Enter video link / title / description
-            </p>
           </div>
 
-          {/* Platform Selection - Icon-based */}
+          {/* Platform Selection - Larger, more touch-friendly */}
           <div>
-            <Label>Scan Platforms</Label>
-            <div className="flex items-center gap-3 mt-2 flex-wrap">
+            <Label>Select Platforms to Scan</Label>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-2">
               {PLATFORM_OPTIONS.map((platform) => {
                 const Icon = platform.icon;
                 const isSelected = selectedPlatforms.includes(platform.id);
@@ -215,7 +212,7 @@ const CreatorCopyrightScanner: React.FC = () => {
                     onClick={() => togglePlatform(platform.id)}
                     disabled={performCopyrightScanMutation.isPending}
                     className={cn(
-                      "flex items-center gap-2 px-3 py-2 rounded-lg border transition-all",
+                      "relative flex flex-col items-center justify-center gap-2 px-4 py-3 rounded-lg border transition-all min-h-[80px]",
                       "hover:scale-105 active:scale-95",
                       isSelected
                         ? "bg-primary/10 border-primary shadow-lg shadow-primary/20 ring-2 ring-primary/20"
@@ -223,15 +220,18 @@ const CreatorCopyrightScanner: React.FC = () => {
                       performCopyrightScanMutation.isPending && "opacity-50 cursor-not-allowed"
                     )}
                   >
-                    <Icon className={cn("h-5 w-5", platform.color, isSelected && "scale-110")} />
-                    <span className="text-sm font-medium">{platform.name}</span>
                     {isSelected && (
-                      <CheckCircle className="h-4 w-4 text-primary" />
+                      <CheckCircle className="absolute top-1 right-1 h-4 w-4 text-primary" />
                     )}
+                    <Icon className={cn("h-6 w-6", platform.color, isSelected && "scale-110")} />
+                    <span className="text-xs font-medium">{platform.name}</span>
                   </button>
                 );
               })}
             </div>
+            <p className="text-xs text-muted-foreground mt-2">
+              Estimated scan time: ~2-5 minutes per platform
+            </p>
           </div>
 
           {/* Advanced Options */}

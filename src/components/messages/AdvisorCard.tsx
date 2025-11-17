@@ -1,68 +1,50 @@
 "use client";
 
 import React from 'react';
-import { Card, CardContent } from '@/components/ui/card';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { MessageSquare, User, Calculator } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { getInitials, generateAvatarUrl } from '@/lib/utils/avatar';
-import { Profile } from '@/types';
+import clsx from 'clsx';
+import { MessageSquare } from 'lucide-react';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { getInitials } from '@/lib/utils/avatar';
+import type { Advisor } from '@/types/messages';
 
-interface AdvisorCardProps {
-  advisor: Profile & { chat_label?: string };
-  isSelected: boolean;
-  onClick: () => void;
-}
-
-const AdvisorCard: React.FC<AdvisorCardProps> = ({ advisor, isSelected, onClick }) => {
-  const Icon = advisor.role === 'chartered_accountant' ? Calculator : User;
-  const roleLabel = advisor.role === 'admin' ? 'Legal Advisor' : advisor.role === 'chartered_accountant' ? 'Chartered Accountant' : advisor.role;
-  
-  const avatarSrc = advisor.avatar_url 
-    ? advisor.avatar_url 
-    : generateAvatarUrl(advisor.first_name, advisor.last_name);
-
-  return (
-    <Card
-      onClick={onClick}
-      className={cn(
-        "cursor-pointer transition-all duration-200 rounded-xl border hover:shadow-md",
-        isSelected 
-          ? "border-primary/50 bg-primary/5 shadow-sm shadow-primary/20" 
-          : "border-border/40 bg-card hover:bg-accent/5 hover:border-border"
-      )}
-    >
-      <CardContent className="p-4 flex items-center gap-3">
-        <div className="relative flex-shrink-0">
-          <Avatar className="h-12 w-12">
-            <AvatarImage src={avatarSrc} alt={`${advisor.first_name} ${advisor.last_name}`} />
-            <AvatarFallback className="bg-primary/10 text-primary">
-              {getInitials(advisor.first_name, advisor.last_name)}
-            </AvatarFallback>
-          </Avatar>
-          {/* Optional online indicator - can be added later */}
-        </div>
-        
-        <div className="flex-1 min-w-0">
-          <p className="font-semibold text-foreground text-sm truncate">
-            {advisor.first_name} {advisor.last_name}
-          </p>
-          <p className="text-xs text-muted-foreground flex items-center gap-1.5 mt-0.5">
-            <Icon className="h-3.5 w-3.5" />
-            {roleLabel}
-          </p>
-        </div>
-        
-        <MessageSquare 
-          className={cn(
-            "h-5 w-5 flex-shrink-0 transition-colors",
-            isSelected ? "text-primary" : "text-muted-foreground/50"
-          )} 
-        />
-      </CardContent>
-    </Card>
-  );
+type Props = {
+  advisor: Advisor;
+  selected?: boolean;
+  onClick?: (advisor: Advisor) => void;
 };
 
-export default AdvisorCard;
+export const AdvisorCard: React.FC<Props> = ({ advisor, selected, onClick }) => {
+  return (
+    <button
+      onClick={() => onClick?.(advisor)}
+      className={clsx(
+        'w-full text-left rounded-xl p-3 flex items-center gap-3 transition-all duration-150 ease-in-out',
+        'border border-border/40',
+        selected 
+          ? 'bg-muted/40 ring-1 ring-blue-400/30 shadow-[0_6px_20px_rgba(59,130,246,0.06)]' 
+          : 'hover:bg-muted/30'
+      )}
+    >
+      <div className="relative flex-shrink-0">
+        <Avatar className="h-10 w-10">
+          <AvatarImage src={advisor.avatarUrl} alt={advisor.name} />
+          <AvatarFallback className="bg-primary/10 text-primary text-xs">
+            {getInitials(advisor.name.split(' ')[0], advisor.name.split(' ')[1] || '')}
+          </AvatarFallback>
+        </Avatar>
+        {advisor.online && (
+          <span className="absolute right-0 bottom-0 inline-block w-2.5 h-2.5 bg-green-400 rounded-full ring-2 ring-background" />
+        )}
+      </div>
 
+      <div className="flex-1 min-w-0">
+        <div className="text-sm font-medium text-foreground truncate">{advisor.name}</div>
+        <div className="text-xs text-muted-foreground truncate">{advisor.role}</div>
+      </div>
+
+      <div className={clsx('p-1 rounded-md flex-shrink-0', selected ? 'text-blue-400' : 'text-muted-foreground/40')}>
+        <MessageSquare size={16} />
+      </div>
+    </button>
+  );
+};

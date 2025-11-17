@@ -7,7 +7,7 @@ import { useMemo, useCallback } from 'react';
 import { useGenerateTaxFilings } from './useTaxFilings'; // NEW: Import the new hook
 
 interface UseProfilesOptions {
-  role?: 'client' | 'admin';
+  role?: 'client' | 'admin' | 'chartered_accountant' | 'creator';
   enabled?: boolean;
   page?: number;
   pageSize?: number;

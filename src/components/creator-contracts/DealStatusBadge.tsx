@@ -4,7 +4,10 @@ import React from 'react';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 
-export type DealStage = 'draft' | 'active' | 'payment_pending' | 'paid' | 'overdue' | 'completed';
+// Project-focused stages (primary)
+export type DealStage = 'draft' | 'awaiting_approval' | 'in_progress' | 'deliverables_due' | 'review_pending' | 'completed';
+// Payment status (secondary, for reference)
+export type PaymentStatus = 'not_due' | 'pending' | 'overdue' | 'paid';
 
 interface DealStatusBadgeProps {
   stage: DealStage;
@@ -20,35 +23,35 @@ const DealStatusBadge: React.FC<DealStatusBadgeProps> = ({ stage, className }) =
           shortLabel: 'Draft',
           className: 'bg-gray-500/20 text-gray-400 border-gray-500/30',
         };
-      case 'active':
+      case 'awaiting_approval':
         return {
-          label: 'Active',
-          shortLabel: 'Active',
-          className: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
-        };
-      case 'payment_pending':
-        return {
-          label: 'Payment Pending',
+          label: 'Awaiting Approval',
           shortLabel: 'Pending',
           className: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
         };
-      case 'paid':
+      case 'in_progress':
         return {
-          label: 'Paid',
-          shortLabel: 'Paid',
-          className: 'bg-green-500/20 text-green-400 border-green-500/30',
+          label: 'In Progress',
+          shortLabel: 'Active',
+          className: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
         };
-      case 'overdue':
+      case 'deliverables_due':
         return {
-          label: 'Overdue',
-          shortLabel: 'Overdue',
-          className: 'bg-red-500/20 text-red-400 border-red-500/30',
+          label: 'Deliverables Due',
+          shortLabel: 'Due',
+          className: 'bg-orange-500/20 text-orange-400 border-orange-500/30',
+        };
+      case 'review_pending':
+        return {
+          label: 'Review Pending',
+          shortLabel: 'Review',
+          className: 'bg-purple-500/20 text-purple-400 border-purple-500/30',
         };
       case 'completed':
         return {
           label: 'Completed',
           shortLabel: 'Done',
-          className: 'bg-purple-500/20 text-purple-400 border-purple-500/30',
+          className: 'bg-green-500/20 text-green-400 border-green-500/30',
         };
       default:
         return {

@@ -3,6 +3,12 @@
 @tailwind utilities;
 
 @layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+@layer base {
   :root {
     /* New Dark Mode Colors (Default) */
     --background: 220 10% 7%; /* #0B1325 */

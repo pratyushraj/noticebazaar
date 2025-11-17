@@ -2,68 +2,48 @@
 
 import React from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Separator } from '@/components/ui/separator';
 import { Loader2 } from 'lucide-react';
-import AdvisorCard from './AdvisorCard';
-import { Profile } from '@/types';
+import { AdvisorCard } from './AdvisorCard';
+import type { Advisor } from '@/types/messages';
 
-interface AdvisorListProps {
-  advisors: (Profile & { chat_label?: string })[];
-  selectedAdvisorId: string | null;
-  onSelectAdvisor: (advisorId: string) => void;
-  isLoading: boolean;
-  title?: string;
-}
+type Props = {
+  advisors: Advisor[];
+  selectedId?: string | null;
+  onSelect?: (advisor: Advisor) => void;
+  isLoading?: boolean;
+};
 
-const AdvisorList: React.FC<AdvisorListProps> = ({ 
-  advisors, 
-  selectedAdvisorId, 
-  onSelectAdvisor, 
-  isLoading,
-  title = "Select Advisor"
-}) => {
+export const AdvisorList: React.FC<Props> = ({ advisors, selectedId, onSelect, isLoading }) => {
   if (isLoading) {
     return (
-      <div className="flex flex-col items-center justify-center h-full min-h-[200px] bg-card rounded-xl border border-border/40 p-4">
+      <aside className="w-[280px] min-w-[260px] max-w-[280px] p-4 rounded-xl bg-card border border-border/40 shadow-sm flex flex-col items-center justify-center min-h-[200px]">
         <Loader2 className="h-6 w-6 animate-spin text-primary" />
-        <p className="mt-2 text-muted-foreground text-sm">Loading advisors...</p>
-      </div>
+        <p className="mt-3 text-xs text-muted-foreground">Loading advisors...</p>
+      </aside>
     );
   }
 
   if (advisors.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center h-full min-h-[200px] bg-card rounded-xl border border-border/40 p-4">
-        <p className="text-sm text-muted-foreground text-center">No advisors available.</p>
-      </div>
+      <aside className="w-[280px] min-w-[260px] max-w-[280px] p-4 rounded-xl bg-card border border-border/40 shadow-sm flex flex-col items-center justify-center min-h-[200px]">
+        <p className="text-xs text-muted-foreground text-center">No advisors available.</p>
+      </aside>
     );
   }
 
   return (
-    <div className="h-full bg-card rounded-xl border border-border/40 shadow-sm flex flex-col overflow-hidden">
-      <div className="p-4 border-b border-border/40">
-        <h3 className="text-base font-semibold text-foreground">{title}</h3>
+    <aside className="w-[280px] min-w-[260px] max-w-[280px] rounded-xl bg-card border border-border/40 shadow-sm shadow-[inset_0_1px_2px_0_rgba(0,0,0,0.05)] flex flex-col overflow-hidden">
+      <div className="px-4 py-3 border-b border-border/40 bg-muted/20">
+        <div className="text-[10px] text-muted-foreground tracking-wide uppercase">Select Advisor</div>
       </div>
-      
+
       <ScrollArea className="flex-1">
-        <div className="p-3 space-y-2">
-          {advisors.map((advisor, index) => (
-            <React.Fragment key={advisor.id}>
-              <AdvisorCard
-                advisor={advisor}
-                isSelected={selectedAdvisorId === advisor.id}
-                onClick={() => onSelectAdvisor(advisor.id)}
-              />
-              {index < advisors.length - 1 && (
-                <Separator className="my-2 bg-border/30" />
-              )}
-            </React.Fragment>
+        <div className="p-3 flex flex-col gap-2">
+          {advisors.map((a) => (
+            <AdvisorCard key={a.id} advisor={a} selected={selectedId === a.id} onClick={onSelect} />
           ))}
         </div>
       </ScrollArea>
-    </div>
+    </aside>
   );
 };
-
-export default AdvisorList;
-

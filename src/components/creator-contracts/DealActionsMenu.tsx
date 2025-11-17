@@ -9,14 +9,18 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { MoreVertical, Eye, Edit, IndianRupee, FileText, ReceiptText, Trash2 } from 'lucide-react';
+import { MoreVertical, Eye, Edit, FileText, Package, Upload, MessageSquare, Trash2, ExternalLink } from 'lucide-react';
 import { BrandDeal } from '@/types';
+import { useNavigate } from 'react-router-dom';
 
 interface DealActionsMenuProps {
   deal: BrandDeal;
   onView: (deal: BrandDeal) => void;
   onEdit: (deal: BrandDeal) => void;
-  onMarkPaid: (deal: BrandDeal) => void;
+  onManageDeliverables?: (deal: BrandDeal) => void;
+  onUploadContent?: (deal: BrandDeal) => void;
+  onContactBrand?: (deal: BrandDeal) => void;
+  onViewContract?: (deal: BrandDeal) => void;
   onDelete: (deal: BrandDeal) => void;
   isDeleting?: boolean;
 }
@@ -25,10 +29,15 @@ const DealActionsMenu: React.FC<DealActionsMenuProps> = ({
   deal,
   onView,
   onEdit,
-  onMarkPaid,
+  onManageDeliverables,
+  onUploadContent,
+  onContactBrand,
+  onViewContract,
   onDelete,
   isDeleting = false,
 }) => {
+  const navigate = useNavigate();
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -40,7 +49,7 @@ const DealActionsMenu: React.FC<DealActionsMenuProps> = ({
           <MoreVertical className="h-4 w-4" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-48 bg-card border-border/50">
+      <DropdownMenuContent align="end" className="w-56 bg-card border-border/50">
         <DropdownMenuItem 
           onClick={() => onView(deal)}
           className="cursor-pointer hover:bg-accent/50"
@@ -55,44 +64,50 @@ const DealActionsMenu: React.FC<DealActionsMenuProps> = ({
           <Edit className="mr-2 h-4 w-4" />
           Edit Deal
         </DropdownMenuItem>
-        {deal.contract_file_url && (
-          <DropdownMenuItem asChild>
-            <a
-              href={deal.contract_file_url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center cursor-pointer hover:bg-accent/50"
-            >
-              <FileText className="mr-2 h-4 w-4" />
-              View Contract
-            </a>
+        {deal.contract_file_url && onViewContract && (
+          <DropdownMenuItem 
+            onClick={() => onViewContract(deal)}
+            className="cursor-pointer hover:bg-accent/50"
+          >
+            <FileText className="mr-2 h-4 w-4" />
+            View Contract
           </DropdownMenuItem>
         )}
-        {deal.invoice_file_url && (
-          <DropdownMenuItem asChild>
-            <a
-              href={deal.invoice_file_url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center cursor-pointer hover:bg-accent/50"
-            >
-              <ReceiptText className="mr-2 h-4 w-4" />
-              View Invoice
-            </a>
+        {onManageDeliverables && (
+          <DropdownMenuItem 
+            onClick={() => onManageDeliverables(deal)}
+            className="cursor-pointer hover:bg-accent/50"
+          >
+            <Package className="mr-2 h-4 w-4" />
+            Manage Deliverables
           </DropdownMenuItem>
         )}
-        {deal.status === 'Payment Pending' && (
-          <>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem 
-              onClick={() => onMarkPaid(deal)}
-              className="cursor-pointer hover:bg-green-500/10 text-green-400"
-            >
-              <IndianRupee className="mr-2 h-4 w-4" />
-              Mark as Paid
-            </DropdownMenuItem>
-          </>
+        {onUploadContent && (
+          <DropdownMenuItem 
+            onClick={() => onUploadContent(deal)}
+            className="cursor-pointer hover:bg-accent/50"
+          >
+            <Upload className="mr-2 h-4 w-4" />
+            Upload Content
+          </DropdownMenuItem>
         )}
+        {onContactBrand && (
+          <DropdownMenuItem 
+            onClick={() => onContactBrand(deal)}
+            className="cursor-pointer hover:bg-accent/50"
+          >
+            <MessageSquare className="mr-2 h-4 w-4" />
+            Contact Brand
+          </DropdownMenuItem>
+        )}
+        <DropdownMenuSeparator />
+        <DropdownMenuItem 
+          onClick={() => navigate('/creator-payments')}
+          className="cursor-pointer hover:bg-blue-500/10 text-blue-400"
+        >
+          <ExternalLink className="mr-2 h-4 w-4" />
+          View Payment Status
+        </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem 
           onClick={() => onDelete(deal)}

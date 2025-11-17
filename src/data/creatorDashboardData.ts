@@ -41,6 +41,8 @@ export interface AIAction {
   linkText: string;
   linkHref: string;
   icon: LucideIcon;
+  severity?: 'urgent' | 'warning' | 'info'; // Color-coded severity
+  estimatedTime?: string; // e.g., "5 min", "15 min"
 }
 
 // --- Mock Data ---
@@ -121,8 +123,8 @@ export const MOCK_TAX_COMPLIANCE_STATUS = {
 // REMOVED MOCK_IMPORTANT_DEADLINES
 
 export const MOCK_AI_ACTION_CENTER: AIAction[] = [
-  { description: '2 contracts missing usage rights summary — fix now', linkText: 'Review Contracts', linkHref: '/creator-contracts', icon: FileText },
-  { description: 'Your GST payment is due in 5 days', linkText: 'File Taxes', linkHref: '/creator-tax-compliance', icon: IndianRupee },
-  { description: '1 pending invoice > 30 days overdue', linkText: 'Send Reminder', linkHref: '#', icon: Clock }, // Link to action
-  { description: 'New message from your legal advisor', linkText: 'View Messages', linkHref: '/messages', icon: MessageSquare },
+  { description: '2 contracts missing usage rights summary — fix now', linkText: 'Review Contracts', linkHref: '/creator-contracts', icon: FileText, severity: 'urgent', estimatedTime: '10 min' },
+  { description: 'Your GST payment is due in 5 days', linkText: 'File Taxes', linkHref: '/creator-tax-compliance', icon: IndianRupee, severity: 'warning', estimatedTime: '15 min' },
+  { description: '1 pending invoice > 30 days overdue', linkText: 'Send Reminder', linkHref: '#', icon: Clock, severity: 'urgent', estimatedTime: '2 min' }, // Link to action
+  { description: 'New message from your legal advisor', linkText: 'View Messages', linkHref: '/messages', icon: MessageSquare, severity: 'info', estimatedTime: '5 min' },
 ];

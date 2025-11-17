@@ -118,13 +118,11 @@ const BrandDealsStats: React.FC<BrandDealsStatsProps> = ({ allDeals, isLoading }
 
   if (isLoading) {
     return (
-      <div className="flex flex-col gap-3 md:flex-row md:gap-4 xl:grid xl:grid-cols-6">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 md:gap-4">
         {[1, 2, 3, 4, 5, 6].map(i => (
-          <Card key={i} className="bg-gradient-to-br from-card to-card/80 border-border/40 shadow-sm shadow-black/20 rounded-[12px]">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-center h-full">
-                <Loader2 className="h-4 w-4 animate-spin text-primary" />
-              </div>
+          <Card key={i} className="bg-gradient-to-br from-card to-card/80 border-border/40 shadow-sm shadow-black/20 rounded-[12px] aspect-square">
+            <CardContent className="p-3 md:p-4 flex items-center justify-center h-full">
+              <Loader2 className="h-4 w-4 animate-spin text-primary" />
             </CardContent>
           </Card>
         ))}
@@ -133,7 +131,7 @@ const BrandDealsStats: React.FC<BrandDealsStatsProps> = ({ allDeals, isLoading }
   }
 
   return (
-    <div className="flex flex-col gap-3 md:flex-row md:gap-4 xl:grid xl:grid-cols-6">
+    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 md:gap-4">
       {stats.map((stat, index) => {
         const Icon = stat.icon;
         return (
@@ -141,20 +139,22 @@ const BrandDealsStats: React.FC<BrandDealsStatsProps> = ({ allDeals, isLoading }
             key={index} 
             className={cn(
               "bg-gradient-to-br from-card to-card/80 border-border/40 shadow-sm shadow-black/20",
-              "rounded-[12px] overflow-hidden transition-all hover:shadow-md"
+              "rounded-[12px] overflow-hidden transition-all hover:shadow-md aspect-square flex flex-col"
             )}
           >
-            <CardContent className="p-4">
-              <div className="flex items-start justify-between mb-2">
+            <CardContent className="p-3 md:p-4 flex flex-col flex-1">
+              <div className="flex items-start justify-between mb-2 flex-shrink-0">
                 <div className="flex-1 min-w-0">
-                  <p className="text-[11px] md:text-xs uppercase tracking-wide text-muted-foreground mb-1">{stat.title}</p>
-                  <p className="text-xl md:text-2xl font-bold text-foreground leading-tight">{stat.value}</p>
+                  <p className="text-[10px] md:text-xs uppercase tracking-wide text-muted-foreground mb-1 truncate">{stat.title}</p>
                 </div>
-                <div className="flex-shrink-0 ml-2">
-                  <Icon className={cn("h-4 w-4 xl:h-5 xl:w-5", stat.color)} />
+                <div className="flex-shrink-0 ml-1">
+                  <Icon className={cn("h-3.5 w-3.5 md:h-4 md:w-4 xl:h-5 xl:w-5", stat.color)} />
                 </div>
               </div>
-              <p className="text-[11px] md:text-xs text-muted-foreground mt-1">{stat.description}</p>
+              <div className="flex-1 flex flex-col justify-center">
+                <p className="text-lg md:text-xl lg:text-2xl font-bold text-foreground leading-tight mb-1">{stat.value}</p>
+                <p className="text-[10px] md:text-[11px] text-muted-foreground truncate">{stat.description}</p>
+              </div>
             </CardContent>
           </Card>
         );
@@ -164,3 +164,4 @@ const BrandDealsStats: React.FC<BrandDealsStatsProps> = ({ allDeals, isLoading }
 };
 
 export default BrandDealsStats;
+

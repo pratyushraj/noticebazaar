@@ -14,7 +14,17 @@ interface CreatorAIActionCenterProps {
 }
 
 const CreatorAIActionCenter: React.FC<CreatorAIActionCenterProps> = ({ aiActions, onSendPaymentReminder }) => {
-  // Helper function to determine the color class for the left bar
+  // Helper function to determine the color class based on severity
+  const getSeverityColorClass = (severity?: 'urgent' | 'warning' | 'info') => {
+    switch (severity) {
+      case 'urgent': return 'border-red-500 bg-red-500/5';
+      case 'warning': return 'border-yellow-500 bg-yellow-500/5';
+      case 'info': return 'border-blue-500 bg-blue-500/5';
+      default: return 'border-gray-500';
+    }
+  };
+
+  // Helper function to determine the color class for the left bar (fallback)
   const getActionColorClass = (icon: LucideIcon) => {
     if (icon === FileText) return 'border-blue-500'; // Contracts
     if (icon === IndianRupee) return 'border-yellow-500'; // Taxes
@@ -30,30 +40,48 @@ const CreatorAIActionCenter: React.FC<CreatorAIActionCenterProps> = ({ aiActions
         <Bot className="h-4 w-4 text-blue-500" />
       </CardHeader>
       <CardContent>
-        <ul className="space-y-4"> {/* Increased vertical spacing */}
+        <ul className="space-y-3"> {/* Increased vertical spacing */}
           {aiActions.map((action, index) => (
             <li 
               key={index} 
               className={cn(
-                "flex items-center justify-between border-l-4 pl-3 py-2 rounded-r-md", // Left bar and padding
-                getActionColorClass(action.icon) // Apply color based on icon
+                "flex items-center justify-between border-l-4 pl-3 py-2.5 rounded-r-md transition-all hover:shadow-sm", // Left bar and padding
+                action.severity ? getSeverityColorClass(action.severity) : getActionColorClass(action.icon) // Apply color based on severity or icon
               )}
             >
-              <div className="flex items-center">
-                <action.icon className="h-4 w-4 text-muted-foreground mr-2" />
-                <span className="text-foreground text-sm">{action.description}</span>
+              <div className="flex items-center gap-3 flex-1 min-w-0">
+                <action.icon className={cn(
+                  "h-4 w-4 flex-shrink-0",
+                  action.severity === 'urgent' ? 'text-red-500' :
+                  action.severity === 'warning' ? 'text-yellow-500' :
+                  action.severity === 'info' ? 'text-blue-500' :
+                  'text-muted-foreground'
+                )} />
+                <div className="flex-1 min-w-0">
+                  <span className="text-foreground text-sm block">{action.description}</span>
+                  {action.estimatedTime && (
+                    <span className="text-xs text-muted-foreground mt-0.5">Est. {action.estimatedTime}</span>
+                  )}
+                </div>
               </div>
-              {action.linkText === 'Send Reminder' ? (
-                <Button variant="link" className="p-0 text-primary hover:text-primary/80" onClick={onSendPaymentReminder}>
-                  Escalate to Legal Action <ArrowRight className="ml-1 h-3 w-3" />
-                </Button>
-              ) : (
-                <Button asChild variant="link" className="p-0 text-primary hover:text-primary/80">
-                  <Link to={action.linkHref}>
-                    {action.linkText} <ArrowRight className="ml-1 h-3 w-3" />
-                  </Link>
-                </Button>
-              )}
+              <div className="flex items-center gap-2 flex-shrink-0">
+                {action.linkText === 'Send Reminder' ? (
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    className="text-xs h-7 px-2"
+                    onClick={onSendPaymentReminder}
+                  >
+                    Quick Action
+                  </Button>
+                ) : (
+                  <Button asChild variant="outline" size="sm" className="text-xs h-7 px-2">
+                    <Link to={action.linkHref}>
+                      {action.linkText} <ArrowRight className="ml-1 h-3 w-3" />
+                    </Link>
+                  </Button>
+                )}
+              </div>
             </li>
           ))}
         </ul>

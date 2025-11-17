@@ -50,6 +50,9 @@ import CreatorPaymentsAndRecovery from "./pages/CreatorPaymentsAndRecovery";
 import CreatorContentProtection from "./pages/CreatorContentProtection";
 import CreatorTaxCompliancePage from "./pages/CreatorTaxCompliancePage";
 import CreatorOnboarding from "./pages/CreatorOnboarding"; // NEW: Import CreatorOnboarding
+import BrandDirectory from "./pages/BrandDirectory";
+import ContractAnalyzer from "./pages/ContractAnalyzer";
+import RateCalculator from "./pages/RateCalculator";
 
 
 const queryClient = new QueryClient();
@@ -124,6 +127,10 @@ const App = () => {
               <Route path="/creator-payments" element={<ProtectedLayout allowedRoles={['creator']}><CreatorPaymentsAndRecovery /></ProtectedLayout>} />
               <Route path="/creator-content-protection" element={<ProtectedLayout allowedRoles={['creator']}><CreatorContentProtection /></ProtectedLayout>} />
               <Route path="/creator-tax-compliance" element={<ProtectedLayout allowedRoles={['creator']}><CreatorTaxCompliancePage /></ProtectedLayout>} />
+              {/* NEW: Creator tools */}
+              <Route path="/brand-directory" element={<ProtectedLayout allowedRoles={['creator']}><BrandDirectory /></ProtectedLayout>} />
+              <Route path="/contract-analyzer" element={<ProtectedLayout allowedRoles={['creator']}><ContractAnalyzer /></ProtectedLayout>} />
+              <Route path="/rate-calculator" element={<ProtectedLayout allowedRoles={['creator']}><RateCalculator /></ProtectedLayout>} />
 
               {/* Shared routes (accessible by client, admin, and CA) */}
               <Route path="/messages" element={<ProtectedLayout allowedRoles={['client', 'admin', 'chartered_accountant', 'creator']}><MessagesPage /></ProtectedLayout>} /> {/* Added creator role */}

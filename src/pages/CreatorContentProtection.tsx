@@ -19,8 +19,16 @@ import {
 } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent } from '@/components/ui/card';
+import { cn } from '@/lib/utils';
 import { OriginalContent, CopyrightMatch, CopyrightAction } from '@/types';
 import { useOriginalContent, useAddOriginalContent, useDeleteOriginalContent, useStartCopyrightScan, useCopyrightMatches, usePerformCopyrightAction } from '@/lib/hooks/useCopyrightScanner';
+import CreatorCopyrightScanner from '@/components/creator-dashboard/CreatorCopyrightScanner';
+import ProtectionDashboardHeader from '@/components/content-protection/ProtectionDashboardHeader';
+import SimplifiedScanner from '@/components/content-protection/SimplifiedScanner';
+import ScanningProgress from '@/components/content-protection/ScanningProgress';
+import ScanResultsPreview from '@/components/content-protection/ScanResultsPreview';
+import ScanHistory from '@/components/content-protection/ScanHistory';
+import { usePerformCopyrightScan } from '@/lib/hooks/usePerformCopyrightScan';
 
 const PLATFORM_OPTIONS = ['YouTube', 'Instagram', 'TikTok', 'Facebook', 'Other Web'];
 const ACTION_TYPE_LABELS: Record<CopyrightAction['action_type'], string> = {
@@ -40,6 +48,9 @@ const CreatorContentProtection = () => {
   const [isActionDialogOpen, setIsActionDialogOpen] = useState(false);
   const [selectedMatch, setSelectedMatch] = useState<CopyrightMatch | null>(null);
   const [actionType, setActionType] = useState<CopyrightAction['action_type']>('takedown');
+  const [isQuickScanning, setIsQuickScanning] = useState(false);
+  const [quickScanProgress, setQuickScanProgress] = useState(0);
+  const [quickScanPlatform, setQuickScanPlatform] = useState<string | undefined>(undefined);
 
   // --- Hooks ---
   const { data: originalContentList, isLoading: isLoadingContent, refetch: refetchContent } = useOriginalContent({
@@ -50,6 +61,7 @@ const CreatorContentProtection = () => {
   const deleteContentMutation = useDeleteOriginalContent();
   const startScanMutation = useStartCopyrightScan();
   const performActionMutation = usePerformCopyrightAction();
+  const performQuickScanMutation = usePerformCopyrightScan();
 
   const { data: matches, isLoading: isLoadingMatches, refetch: refetchMatches } = useCopyrightMatches({
     contentId: selectedContentId,
@@ -125,12 +137,93 @@ const CreatorContentProtection = () => {
       });
       setIsActionDialogOpen(false);
       setSelectedMatch(null);
+      refetchMatches();
     } catch (error) {
       // Handled by hook
     }
   };
 
+  const handleQuickScan = async (query: string, platforms: string[]) => {
+    setIsQuickScanning(true);
+    setQuickScanProgress(0);
+    setQuickScanPlatform(undefined);
+
+    try {
+      // Simulate progress
+      const progressInterval = setInterval(() => {
+        setQuickScanProgress(prev => {
+          if (prev >= 90) {
+            clearInterval(progressInterval);
+            return 90;
+          }
+          return prev + 10;
+        });
+      }, 500);
+
+      // Simulate platform scanning
+      let platformIndex = 0;
+      const platformInterval = setInterval(() => {
+        if (platformIndex < platforms.length) {
+          setQuickScanPlatform(platforms[platformIndex]);
+          platformIndex++;
+        } else {
+          clearInterval(platformInterval);
+        }
+      }, 1000);
+
+      // Perform actual scan
+      const result = await performQuickScanMutation.mutateAsync({
+        query,
+        platforms,
+      });
+
+      clearInterval(progressInterval);
+      clearInterval(platformInterval);
+      setQuickScanProgress(100);
+      setQuickScanPlatform(undefined);
+
+      // Wait a bit then reset
+      setTimeout(() => {
+        setIsQuickScanning(false);
+        setQuickScanProgress(0);
+        // If matches found, show them
+        if (result.alerts && result.alerts.length > 0) {
+          toast.success(`Found ${result.alerts.length} potential matches!`);
+        } else {
+          toast.success('Scan completed. No matches found.');
+        }
+      }, 1000);
+    } catch (error) {
+      setIsQuickScanning(false);
+      setQuickScanProgress(0);
+      setQuickScanPlatform(undefined);
+      // Error handled by hook
+    }
+  };
+
   const selectedContent = originalContentList?.find(c => c.id === selectedContentId);
+
+  // Calculate scans this month (mock - in real app, fetch from copyright_scans table)
+  // MUST be before any conditional returns (Rules of Hooks)
+  const scansThisMonth = useMemo(() => {
+    // Mock calculation - in real app, count scans from this month
+    return Math.floor((originalContentList?.length || 0) * 0.5);
+  }, [originalContentList]);
+
+  // Generate scan history (mock - in real app, fetch from copyright_scans table)
+  // MUST be before any conditional returns (Rules of Hooks)
+  const scanHistory = useMemo(() => {
+    if (!originalContentList || originalContentList.length === 0) return [];
+    
+    return originalContentList.slice(0, 5).map((content, index) => ({
+      id: content.id,
+      date: new Date(Date.now() - index * 24 * 60 * 60 * 1000).toISOString(),
+      status: index % 3 === 0 ? 'completed' as const : index % 3 === 1 ? 'pending' as const : 'failed' as const,
+      matchesFound: index % 2 === 0 ? Math.floor(Math.random() * 5) : 0,
+      platform: content.platform,
+      contentUrl: content.original_url,
+    }));
+  }, [originalContentList]);
 
   if (sessionLoading || isLoadingContent) {
     return (
@@ -142,11 +235,57 @@ const CreatorContentProtection = () => {
   }
 
   return (
-    <>
-      <h1 className="text-3xl font-bold text-foreground mb-6">My Content Protection</h1>
+    <div className="w-full max-w-full overflow-x-hidden pb-[80px] px-4 md:px-6 antialiased">
+      {/* Protection Dashboard Header */}
+      <ProtectionDashboardHeader
+        originalContent={originalContentList || []}
+        matches={matches || []}
+        scansThisMonth={scansThisMonth}
+      />
 
-      {/* --- 1. Register Original Content --- */}
-      <Card className="bg-card p-6 rounded-lg shadow-sm border border-border mb-8">
+      {/* Simplified Scanner */}
+      <div className="mb-6">
+        <SimplifiedScanner
+          onScan={handleQuickScan}
+          isScanning={isQuickScanning}
+        />
+      </div>
+
+      {/* Scanning Progress */}
+      {isQuickScanning && (
+        <div className="mb-6">
+          <ScanningProgress
+            isScanning={isQuickScanning}
+            progress={quickScanProgress}
+            currentPlatform={quickScanPlatform}
+            matchesFound={0}
+            contentPreview={undefined}
+          />
+        </div>
+      )}
+
+      {/* Scan Results Preview */}
+      {matches && matches.length > 0 && !isQuickScanning && (
+        <div className="mb-6">
+          <ScanResultsPreview
+            matches={matches}
+            onTakeAction={handleOpenActionDialog}
+            onViewDetails={(match) => {
+              window.open(match.matched_url, '_blank');
+            }}
+          />
+        </div>
+      )}
+
+      {/* Scan History */}
+      {scanHistory.length > 0 && (
+        <div className="mb-6">
+          <ScanHistory scans={scanHistory} />
+        </div>
+      )}
+
+      {/* Registered Original Content Section */}
+      <Card className="bg-card p-6 rounded-lg shadow-sm border border-border mb-6">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-semibold text-foreground flex items-center">
             <ShieldCheck className="h-5 w-5 mr-2 text-purple-500" /> Registered Original Content
@@ -156,25 +295,52 @@ const CreatorContentProtection = () => {
           </Button>
         </div>
 
-        <div className="space-y-4">
-          <Label htmlFor="contentSelector">Select Content to Scan/View Matches</Label>
-          <Select
-            onValueChange={setSelectedContentId}
-            value={selectedContentId || ''}
-            disabled={!originalContentList || originalContentList.length === 0}
-          >
-            <SelectTrigger id="contentSelector">
-              <SelectValue placeholder="Choose content to manage" />
-            </SelectTrigger>
-            <SelectContent>
-              {originalContentList?.map((content) => (
-                <SelectItem key={content.id} value={content.id}>
-                  {content.platform} - {content.original_url.substring(0, 50)}...
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+        {originalContentList && originalContentList.length > 0 ? (
+          <div className="space-y-4">
+            <Label htmlFor="contentSelector">Select Content to Scan/View Matches</Label>
+            <Select
+              onValueChange={setSelectedContentId}
+              value={selectedContentId || ''}
+              disabled={!originalContentList || originalContentList.length === 0}
+            >
+              <SelectTrigger id="contentSelector">
+                <SelectValue placeholder="Choose content to manage" />
+              </SelectTrigger>
+              <SelectContent>
+                {originalContentList.map((content) => (
+                  <SelectItem key={content.id} value={content.id}>
+                    {content.platform} - {content.original_url.substring(0, 50)}...
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        ) : (
+          <div className="text-center py-12 space-y-6">
+            <div className="w-20 h-20 mx-auto rounded-full bg-purple-500/10 flex items-center justify-center">
+              <ShieldCheck className="w-10 h-10 text-purple-500" />
+            </div>
+            <div className="space-y-3">
+              <h3 className="text-lg font-semibold text-foreground">Protect Your First Video</h3>
+              <div className="space-y-2 max-w-md mx-auto">
+                <p className="text-sm text-muted-foreground">
+                  Creators recover <span className="font-semibold text-emerald-400">₹2.5L annually</span> from content theft
+                </p>
+                <div className="flex flex-wrap justify-center gap-2 text-xs text-muted-foreground">
+                  <span className="px-2 py-1 bg-muted rounded-full">Auto-scan</span>
+                  <span className="px-2 py-1 bg-muted rounded-full">Takedown assistance</span>
+                  <span className="px-2 py-1 bg-muted rounded-full">Legal templates</span>
+                </div>
+              </div>
+            </div>
+            <Button 
+              onClick={() => setIsContentFormOpen(true)} 
+              className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-2"
+            >
+              <PlusCircle className="mr-2 h-4 w-4" /> Protect Your First Video
+            </Button>
+          </div>
+        )}
       </Card>
 
       {/* --- 2. Scan and Matches View --- */}
@@ -228,7 +394,7 @@ const CreatorContentProtection = () => {
                     <TableRow key={match.id} className={cn("border-border", isHighRisk && 'bg-red-500/10')}>
                       <TableCell className="font-medium text-foreground">{match.platform}</TableCell>
                       <TableCell>
-                        <Badge variant={isHighRisk ? 'destructive' : match.similarity_score > 50 ? 'accent' : 'secondary'}>
+                        <Badge variant={isHighRisk ? 'destructive' : match.similarity_score > 50 ? 'default' : 'secondary'}>
                           {match.similarity_score}%
                         </Badge>
                       </TableCell>
@@ -353,7 +519,7 @@ const CreatorContentProtection = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </>
+    </div>
   );
 };
 
