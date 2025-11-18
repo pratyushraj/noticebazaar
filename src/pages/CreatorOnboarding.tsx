@@ -9,9 +9,10 @@ import { toast } from 'sonner';
 import CreatorBusinessDetailsForm from '@/components/creator-onboarding/CreatorBusinessDetailsForm';
 import { useUpdateProfile } from '@/lib/hooks/useProfiles';
 import { Button } from '@/components/ui/button';
+import { startTrialOnSignup } from '@/lib/trial';
 
 const CreatorOnboarding = () => {
-  const { profile, loading: sessionLoading, refetchProfile } = useSession();
+  const { profile, loading: sessionLoading, refetchProfile, user } = useSession();
   const navigate = useNavigate();
   const updateProfileMutation = useUpdateProfile();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -37,9 +38,14 @@ const CreatorOnboarding = () => {
   }
 
   const handleOnboardingComplete = async () => {
-    if (!profile.id) return;
+    if (!profile.id || !user?.id) return;
     setIsSubmitting(true);
     try {
+      // Start trial if not already started
+      if (!profile.is_trial) {
+        await startTrialOnSignup(user.id);
+      }
+
       // This mutation sets onboarding_complete to true, which triggers the tax filing generation inside the hook.
       await updateProfileMutation.mutateAsync({
         id: profile.id,
@@ -48,7 +54,7 @@ const CreatorOnboarding = () => {
         avatar_url: profile.avatar_url || null,
         onboarding_complete: true,
       });
-      toast.success('Onboarding complete! Your compliance calendar is being set up.');
+      toast.success('Onboarding complete! Your 30-day free trial has started.');
       refetchProfile(); // Refetch to update session context
       navigate('/creator-dashboard', { replace: true });
     } catch (error: any) {

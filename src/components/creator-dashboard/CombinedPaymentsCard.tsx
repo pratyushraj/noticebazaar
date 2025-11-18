@@ -82,7 +82,7 @@ const CombinedPaymentsCard: React.FC<CombinedPaymentsCardProps> = ({
     >
       <Card
         className={cn(
-          "bg-gradient-to-br from-amber-900/30 to-amber-950/20 border border-amber-700/40 rounded-xl overflow-hidden hover:border-amber-600/60 transition-all cursor-pointer",
+          "bg-gradient-to-br from-amber-900/30 to-amber-950/20 border border-amber-700/40 rounded-xl overflow-hidden hover:border-amber-600/60 transition-all cursor-pointer shadow-[0_0_20px_-6px_rgba(255,255,255,0.1)]",
           hasOverdue && "border-red-500/50"
         )}
         onClick={() => navigate('/creator-payments')}

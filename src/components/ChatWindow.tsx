@@ -15,6 +15,8 @@ import { useMessages, useSendMessage } from '@/lib/hooks/useMessages';
 import { useQueryClient } from '@tanstack/react-query';
 import { getInitials, DEFAULT_AVATAR_URL } from '@/lib/utils/avatar';
 import { useSampleChatHistory } from '@/lib/hooks/useSampleChatHistory';
+import { isTrialFeatureRestricted } from '@/lib/trial';
+import UpgradeModal from '@/components/trial/UpgradeModal';
 
 // Helper function to convert markdown-like bold syntax to JSX
 const formatMessageContent = (content: string | React.ReactNode): React.ReactNode => {
@@ -38,13 +40,21 @@ interface ChatWindowProps {
 }
 
 const ChatWindow = ({ receiverId, receiverName, receiverAvatarUrl }: ChatWindowProps) => {
-  const { user, profile, loading: sessionLoading } = useSession();
+  const { user, profile, loading: sessionLoading, trialStatus } = useSession();
   const [newMessage, setNewMessage] = useState('');
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const queryClient = useQueryClient();
 
   const currentUserId = user?.id;
   const isClient = profile?.role === 'client';
+  
+  // Check if this is CA or Lawyer chat (creator role checking CA/admin roles)
+  const isCAOrLawyerChat = React.useMemo(() => {
+    // This will be determined by checking the receiver role
+    // For now, assume CA/Lawyer chat if user is creator
+    return profile?.role === 'creator';
+  }, [profile]);
 
   // Fetch messages using the new hook
   const { data: realMessages, isLoading: isLoadingMessages, error: messagesError } = useMessages({
@@ -62,6 +72,23 @@ const ChatWindow = ({ receiverId, receiverName, receiverAvatarUrl }: ChatWindowP
   const messagesToDisplay = isShowingSample 
     ? sampleHistory 
     : realMessages || [];
+
+  // Count user's sent messages (only for CA/Lawyer chat during trial)
+  const userMessagesCount = React.useMemo(() => {
+    if (!isCAOrLawyerChat || !trialStatus.isTrial) return 0;
+    return messagesToDisplay.filter(msg => {
+      if (isShowingSample) {
+        return msg.sender_id === 'client';
+      }
+      return msg.sender_id === currentUserId;
+    }).length;
+  }, [messagesToDisplay, isCAOrLawyerChat, trialStatus.isTrial, isShowingSample, currentUserId]);
+
+  // Check if message sending is restricted
+  const isMessageRestricted = React.useMemo(() => {
+    if (!isCAOrLawyerChat || !trialStatus.isTrial) return false;
+    return isTrialFeatureRestricted(profile, userMessagesCount, 1);
+  }, [isCAOrLawyerChat, trialStatus.isTrial, profile, userMessagesCount]);
 
   // Mutation for sending messages
   const sendMessageMutation = useSendMessage();
@@ -110,6 +137,12 @@ const ChatWindow = ({ receiverId, receiverName, receiverAvatarUrl }: ChatWindowP
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newMessage.trim() || !currentUserId || !receiverId || !profile) return;
+
+    // Check trial restrictions for CA/Lawyer chat
+    if (isMessageRestricted) {
+      setShowUpgradeModal(true);
+      return;
+    }
 
     try {
       await sendMessageMutation.mutateAsync({
@@ -214,19 +247,38 @@ const ChatWindow = ({ receiverId, receiverName, receiverAvatarUrl }: ChatWindowP
         <div ref={messagesEndRef} />
       </ScrollArea>
 
+      {isMessageRestricted && (
+        <div className="px-4 py-3 bg-orange-500/10 border-t border-orange-500/30">
+          <p className="text-xs text-orange-400 text-center">
+            Free trial limit: 1 message. Upgrade to continue chatting.
+          </p>
+        </div>
+      )}
+      
       <form onSubmit={handleSendMessage} className="flex p-4 border-t border-border gap-2">
         <Input
           type="text"
           value={newMessage}
           onChange={(e) => setNewMessage(e.target.value)}
-          placeholder="Type your message..."
+          placeholder={isMessageRestricted ? "Upgrade to send more messages..." : "Type your message..."}
           className="flex-1 bg-input text-foreground border-border"
-          disabled={sendMessageMutation.isPending}
+          disabled={sendMessageMutation.isPending || isMessageRestricted || trialStatus.trialLocked}
         />
-        <Button type="submit" disabled={!newMessage.trim() || sendMessageMutation.isPending} className="bg-primary text-primary-foreground hover:bg-primary/90">
+        <Button 
+          type="submit" 
+          disabled={!newMessage.trim() || sendMessageMutation.isPending || isMessageRestricted || trialStatus.trialLocked} 
+          className="bg-primary text-primary-foreground hover:bg-primary/90"
+        >
           {sendMessageMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
         </Button>
       </form>
+
+      <UpgradeModal
+        open={showUpgradeModal}
+        onOpenChange={setShowUpgradeModal}
+        reason="chat_limit"
+        message="Upgrade to continue chatting with your CA and Lawyer. Free trial includes 1 message each."
+      />
     </div>
   );
 };

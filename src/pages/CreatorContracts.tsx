@@ -20,7 +20,7 @@ import { BrandDeal } from '@/types';
 import BrandDealForm from '@/components/forms/BrandDealForm';
 import { toast } from 'sonner';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { cn } from '@/lib/utils';
+import { cn, openContractFile } from '@/lib/utils';
 import { Card, CardContent } from '@/components/ui/card';
 import DealStatusBadge, { DealStage } from '@/components/creator-contracts/DealStatusBadge';
 import DealActionsMenu from '@/components/creator-contracts/DealActionsMenu';
@@ -555,11 +555,9 @@ const CreatorContracts = () => {
                         toast.info(`Opening messages to contact ${deal.brand_name}`);
                       }}
                       onViewContract={(deal) => {
-                        if (deal.contract_file_url) {
-                          window.open(deal.contract_file_url, '_blank');
-                        } else {
-                          toast.error('Contract file not available');
-                        }
+                        openContractFile(deal.contract_file_url, (error) => {
+                          toast.error(error);
+                        });
                       }}
                       onDelete={handleDeleteBrandDeal}
                       isDeleting={deleteBrandDealMutation.isPending && deleteBrandDealMutation.variables?.id === deal.id}
@@ -649,11 +647,9 @@ const CreatorContracts = () => {
                                 toast.info('Opening messages to contact brand');
                               }}
                               onViewContract={(deal) => {
-                                if (deal.contract_file_url) {
-                                  window.open(deal.contract_file_url, '_blank');
-                                } else {
-                                  toast.error('Contract file not available');
-                                }
+                                openContractFile(deal.contract_file_url, (error) => {
+                                  toast.error(error);
+                                });
                               }}
                               onDelete={handleDeleteBrandDeal}
                               isDeleting={deleteBrandDealMutation.isPending && deleteBrandDealMutation.variables?.id === deal.id}

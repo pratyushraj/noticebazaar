@@ -4,6 +4,7 @@ import { TaxFiling, ComplianceDeadline } from '@/types';
 import { useSupabaseQuery } from './useSupabaseQuery';
 import { useSupabaseMutation } from './useSupabaseMutation';
 import { generateInitialTaxFilings } from '@/lib/utils/tax'; // Import the new utility
+import { CREATOR_ASSETS_BUCKET, extractFilePathFromUrl } from '@/lib/constants/storage';
 
 // Helper function to calculate urgency
 const calculateUrgency = (dueDate: string): 'High' | 'Medium' | 'Low' => {
@@ -119,8 +120,8 @@ export const useUpdateTaxFiling = () => {
         const fileExtension = filing_document_file.name.split('.').pop();
         const filePath = `${creator_id}/tax_filings/${id}-${Date.now()}.${fileExtension}`;
 
-        const { data: uploadData, error: uploadError } = await supabase.storage
-          .from('creator-assets') // Using the same bucket as brand deals
+        const { error: uploadError } = await supabase.storage
+          .from(CREATOR_ASSETS_BUCKET) // Using the same bucket as brand deals
           .upload(filePath, filing_document_file, {
             cacheControl: '3600',
             upsert: false,
@@ -131,11 +132,11 @@ export const useUpdateTaxFiling = () => {
         }
 
         const { data: publicUrlData } = supabase.storage
-          .from('creator-assets')
+          .from(CREATOR_ASSETS_BUCKET)
           .getPublicUrl(filePath);
 
         if (!publicUrlData?.publicUrl) {
-          await supabase.storage.from('creator-assets').remove([filePath]);
+          await supabase.storage.from(CREATOR_ASSETS_BUCKET).remove([filePath]);
           throw new Error('Failed to get public URL for the uploaded filing document.');
         }
         filing_document_url = publicUrlData.publicUrl;
@@ -158,8 +159,10 @@ export const useUpdateTaxFiling = () => {
       if (error) {
         // If DB update fails, attempt to clean up the uploaded file if one exists
         if (filing_document_file && filing_document_url) {
-            const filePath = filing_document_url.split('/creator-assets/')[1];
-            await supabase.storage.from('creator-assets').remove([filePath]);
+            const filePath = extractFilePathFromUrl(filing_document_url, CREATOR_ASSETS_BUCKET);
+            if (filePath) {
+              await supabase.storage.from(CREATOR_ASSETS_BUCKET).remove([filePath]);
+            }
         }
         throw new Error(error.message);
       }

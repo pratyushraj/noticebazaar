@@ -56,7 +56,7 @@ const HeroEarningsCard: React.FC<HeroEarningsCardProps> = ({
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.5 }}
     >
-      <Card className="bg-gradient-to-br from-emerald-900/40 via-emerald-800/20 to-emerald-950/40 border border-emerald-700/50 backdrop-blur-sm shadow-2xl overflow-hidden hover:shadow-emerald-500/20 transition-all duration-300 relative">
+      <Card className="bg-gradient-to-br from-emerald-900/40 via-emerald-800/20 to-emerald-950/40 border border-emerald-700/50 backdrop-blur-sm shadow-2xl overflow-hidden hover:shadow-emerald-500/20 transition-all duration-300 relative shadow-[0_0_20px_-6px_rgba(255,255,255,0.1)]">
         {/* Animated background gradient */}
         <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/5 to-transparent animate-pulse"></div>
         

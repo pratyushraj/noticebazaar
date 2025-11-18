@@ -15,6 +15,27 @@ export type Profile = Tables<'profiles'> & {
   twitter_handle?: string | null; // NEW
   pan?: string | null; // NEW: Added PAN field
   organization_id?: string | null; // NEW: Added organization_id
+  is_trial?: boolean | null; // NEW: Trial fields
+  trial_started_at?: string | null;
+  trial_expires_at?: string | null;
+  trial_locked?: boolean | null;
+  // NEW: Creator profile fields
+  creator_category?: string | null;
+  pricing_min?: number | null;
+  pricing_avg?: number | null;
+  pricing_max?: number | null;
+  bank_account_name?: string | null;
+  bank_account_number?: string | null;
+  bank_ifsc?: string | null;
+  bank_upi?: string | null;
+  gst_number?: string | null;
+  pan_number?: string | null;
+  referral_code?: string | null;
+  instagram_followers?: number | null;
+  youtube_subs?: number | null;
+  tiktok_followers?: number | null;
+  twitter_followers?: number | null;
+  facebook_followers?: number | null;
 };
 
 export type Message = Tables<'messages'> & {

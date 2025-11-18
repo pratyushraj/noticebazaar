@@ -61,22 +61,29 @@ const PaymentQuickFilters: React.FC<PaymentQuickFiltersProps> = ({
   ];
 
   return (
-    <div className="flex items-center gap-3 flex-wrap">
-      <span className="text-sm text-slate-400">Filter:</span>
-      {filters.map((filter) => (
-        <button
-          key={filter.id}
-          onClick={() => onFilterChange(activeFilter === filter.id ? null : filter.id)}
-          className={cn(
-            "px-4 py-2 rounded-lg text-sm font-medium transition-all border",
-            activeFilter === filter.id
-              ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
-              : "bg-slate-800/50 text-slate-400 border border-slate-700/50 hover:border-slate-600"
-          )}
-        >
-          {filter.label} ({filter.count})
-        </button>
-      ))}
+    <div className="mt-3 md:mt-4">
+      <div className="w-full bg-white/[0.03] border border-white/10 rounded-2xl backdrop-blur-lg px-2 md:px-3 py-2 flex items-center gap-2 overflow-x-auto no-scrollbar">
+        {filters.map((filter) => (
+          <button
+            key={filter.id}
+            onClick={() => onFilterChange(activeFilter === filter.id ? null : filter.id)}
+            className={cn(
+              "px-2.5 md:px-3 py-1.5 rounded-full text-xs md:text-sm font-medium whitespace-nowrap border transition-all duration-300",
+              activeFilter === filter.id
+                ? "bg-white/10 border-white/20 text-white shadow-[0_0_12px_rgba(255,255,255,0.08)]"
+                : "border-white/10 text-gray-300 hover:bg-white/5"
+            )}
+          >
+            {filter.label}
+            <span className={cn(
+              "ml-1 text-xs",
+              activeFilter === filter.id ? "text-white/80" : "text-gray-400"
+            )}>
+              ({filter.count})
+            </span>
+          </button>
+        ))}
+      </div>
     </div>
   );
 };

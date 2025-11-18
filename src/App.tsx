@@ -22,6 +22,7 @@ import ClientConsultations from "./pages/ClientConsultations";
 import AdminActivityLog from "./pages/AdminActivityLog";
 import ClientActivityLog from "./pages/ClientActivityLog";
 import AdminProfile from "./pages/AdminProfile";
+import CreatorProfile from "./pages/CreatorProfile";
 import Blog from "./pages/Blog";
 import BlogPostDetail from "./pages/BlogPostDetail"; // Corrected path
 import PricingComparison from "./pages/PricingComparison";
@@ -119,7 +120,7 @@ const App = () => {
               {/* Creator-specific routes */}
               <Route path="/creator-onboarding" element={<ProtectedLayout allowedRoles={['creator']}><CreatorOnboarding /></ProtectedLayout>} /> {/* NEW: Onboarding Route */}
               <Route path="/creator-dashboard" element={<ProtectedLayout allowedRoles={['creator']}><CreatorDashboard /></ProtectedLayout>} /> {/* New: Creator Dashboard Route */}
-              <Route path="/creator-profile" element={<ProtectedLayout allowedRoles={['creator']}><AdminProfile /></ProtectedLayout>} /> {/* Using AdminProfile for now */}
+              <Route path="/creator-profile" element={<ProtectedLayout allowedRoles={['creator']}><CreatorProfile /></ProtectedLayout>} />
               {/* NEW: Creator-specific pages */}
               <Route path="/creator-contracts" element={<ProtectedLayout allowedRoles={['creator']}><CreatorContracts /></ProtectedLayout>} />
               <Route path="/brand-deals" element={<ProtectedLayout allowedRoles={['creator']}><CreatorContracts /></ProtectedLayout>} />

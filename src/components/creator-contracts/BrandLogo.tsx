@@ -50,16 +50,30 @@ const BrandLogo: React.FC<BrandLogoProps> = ({
 
   const logoUrl = brandLogo || (!imageError ? getClearbitLogo(brandName) : null);
 
-  return (
-    <Avatar className={cn(sizeClasses[size], className)}>
-      {logoUrl && !imageError ? (
-        <AvatarImage 
-          src={logoUrl} 
+  // Use custom div for logo display instead of Avatar
+  if (logoUrl && !imageError) {
+    return (
+      <div
+        className={cn(
+          "h-12 w-12 rounded-xl bg-white/5 border border-white/10 shadow-[0_4px_12px_-2px_rgba(0,0,0,0.35)] flex items-center justify-center backdrop-blur-md overflow-hidden",
+          size === 'sm' && 'h-8 w-8',
+          size === 'lg' && 'h-14 w-14',
+          className
+        )}
+      >
+        <img
+          src={logoUrl}
           alt={brandName}
           onError={() => setImageError(true)}
-          className="object-cover"
+          className="h-[60%] w-[60%] object-contain opacity-90 drop-shadow-[0_1px_2px_rgba(0,0,0,0.45)] saturate-[0.85]"
         />
-      ) : null}
+      </div>
+    );
+  }
+
+  // Fallback to Avatar for initials
+  return (
+    <Avatar className={cn(sizeClasses[size], className)}>
       <AvatarFallback className={cn(
         "bg-primary/10 text-primary font-semibold",
         textSizeClasses[size]

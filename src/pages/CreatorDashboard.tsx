@@ -20,6 +20,7 @@ import MoneyOverview from '@/components/creator-dashboard/MoneyOverview';
 import QuickStats from '@/components/creator-dashboard/QuickStats';
 import UpcomingDeadlines from '@/components/creator-dashboard/UpcomingDeadlines';
 import QuickActionsFAB from '@/components/creator-dashboard/QuickActionsFAB';
+import RecentActivity from '@/components/creator-dashboard/RecentActivity';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import BrandDealForm from '@/components/forms/BrandDealForm';
@@ -42,6 +43,24 @@ import PaymentQuickFilters from '@/components/payments/PaymentQuickFilters';
 import CreatorCopyrightScanner from '@/components/creator-dashboard/CreatorCopyrightScanner';
 import ProtectionDashboardHeader from '@/components/content-protection/ProtectionDashboardHeader';
 import { useOriginalContent, useCopyrightMatches } from '@/lib/hooks/useCopyrightScanner';
+import CreatorProfessionalTeam from '@/components/creator-dashboard/CreatorProfessionalTeam';
+import ChatWindow from '@/components/ChatWindow';
+import ProfileMenu from '@/components/ProfileMenu';
+import WeeklyPerformance from '@/components/creator-dashboard/WeeklyPerformance';
+import TrialBanner from '@/components/trial/TrialBanner';
+import UpgradeModal from '@/components/trial/UpgradeModal';
+import RiskAlerts from '@/components/creator-dashboard/RiskAlerts';
+import TaskManager from '@/components/creator-dashboard/TaskManager';
+import TaxFinanceSummary from '@/components/creator-dashboard/TaxFinanceSummary';
+import LegalHealthScore from '@/components/creator-dashboard/LegalHealthScore';
+import SmartSuggestions from '@/components/creator-dashboard/SmartSuggestions';
+import ProjectedEarnings from '@/components/creator-dashboard/ProjectedEarnings';
+import TopPayingBrands from '@/components/creator-dashboard/TopPayingBrands';
+import ReferAndEarn from '@/components/creator-dashboard/ReferAndEarn';
+import UploadCenter from '@/components/creator-dashboard/UploadCenter';
+import ThisWeeksSummary from '@/components/creator-dashboard/ThisWeeksSummary';
+import CreatorScoreBadge from '@/components/creator-dashboard/CreatorScoreBadge';
+import AccountSummary from '@/components/creator-dashboard/AccountSummary';
 
 // Helper functions
 const getDealStage = (deal: BrandDeal): DealStage => {
@@ -77,9 +96,9 @@ const getPaymentStatus = (deal: BrandDeal): PaymentStatus => {
 
 const CreatorDashboard = () => {
   const navigate = useNavigate();
-  const { profile, loading: sessionLoading, isCreator } = useSession();
-  const [activeTab, setActiveTab] = useState<'overview' | 'deals' | 'protection'>('overview');
-  const [dealsViewMode, setDealsViewMode] = useState<'deals' | 'payments'>('deals');
+  const { profile, loading: sessionLoading, isCreator, user, trialStatus } = useSession();
+  const [showExpiredModal, setShowExpiredModal] = useState(false);
+  const [activeTab, setActiveTab] = useState<'overview' | 'deals' | 'payments' | 'protection'>('overview');
   
   // Dialog states
   const [isBrandDealFormOpen, setIsBrandDealFormOpen] = useState(false);
@@ -93,10 +112,17 @@ const CreatorDashboard = () => {
   const [takedownNoticeDetails, setTakedownNoticeDetails] = useState({
     contentUrl: '', platform: '', infringingUrl: '', infringingUser: ''
   });
+  const [isMessageDialogOpen, setIsMessageDialogOpen] = useState(false);
+  const [messageReceiverId, setMessageReceiverId] = useState<string | null>(null);
+  const [messageReceiverName, setMessageReceiverName] = useState<string>('');
 
   // Filter states for deals tab
   const [searchTerm, setSearchTerm] = useState('');
   const [quickFilter, setQuickFilter] = useState<string | null>(null);
+  
+  // Filter states for payments tab
+  const [paymentSearchTerm, setPaymentSearchTerm] = useState('');
+  const [paymentQuickFilter, setPaymentQuickFilter] = useState<string | null>(null);
 
   // Fetch data
   const { data: mockDashboardData, isLoading: isLoadingMocks, error: mockError } = useCreatorDashboardData(
@@ -130,6 +156,15 @@ const CreatorDashboard = () => {
       toast.error('Failed to load brand deals', { description: brandDealsError.message });
     }
   }, [mockError, brandDealsError]);
+
+  // Check if trial is locked and redirect to billing or show modal
+  useEffect(() => {
+    if (!sessionLoading && profile && trialStatus.trialLocked) {
+      // Redirect to billing page if trial is locked
+      navigate('/creator-profile?tab=billing', { replace: true });
+      setShowExpiredModal(true);
+    }
+  }, [sessionLoading, profile, trialStatus.trialLocked, navigate]);
 
   // Calculate dashboard data
   const dashboardData = useMemo(() => {
@@ -366,7 +401,7 @@ const CreatorDashboard = () => {
       deal.status === 'Payment Pending' || (deal.status === 'Completed' && deal.payment_received_date)
     );
 
-    if (quickFilter === 'overdue') {
+    if (paymentQuickFilter === 'overdue') {
       const now = new Date();
       now.setHours(0, 0, 0, 0);
       filtered = filtered.filter(deal => {
@@ -374,7 +409,7 @@ const CreatorDashboard = () => {
         const dueDate = new Date(deal.payment_expected_date);
         return dueDate < now;
       });
-    } else if (quickFilter === 'due_this_week') {
+    } else if (paymentQuickFilter === 'due_this_week') {
       const now = new Date();
       now.setHours(0, 0, 0, 0);
       const sevenDaysFromNow = new Date(now);
@@ -384,14 +419,32 @@ const CreatorDashboard = () => {
         const dueDate = new Date(deal.payment_expected_date);
         return dueDate >= now && dueDate <= sevenDaysFromNow;
       });
-    } else if (quickFilter === 'paid') {
+    } else if (paymentQuickFilter === 'pending') {
+      const now = new Date();
+      now.setHours(0, 0, 0, 0);
+      filtered = filtered.filter(deal => {
+        if (deal.status !== 'Payment Pending') return false;
+        const dueDate = new Date(deal.payment_expected_date);
+        return dueDate >= now;
+      });
+    } else if (paymentQuickFilter === 'paid') {
       filtered = filtered.filter(deal => 
         deal.status === 'Completed' && deal.payment_received_date
       );
     }
 
+    // Apply search filter
+    if (paymentSearchTerm) {
+      const searchLower = paymentSearchTerm.toLowerCase();
+      filtered = filtered.filter(deal => 
+        deal.brand_name.toLowerCase().includes(searchLower) ||
+        deal.platform?.toLowerCase().includes(searchLower) ||
+        deal.deal_amount.toString().includes(searchLower)
+      );
+    }
+
     return filtered;
-  }, [brandDeals, quickFilter]);
+  }, [brandDeals, paymentQuickFilter, paymentSearchTerm]);
 
   const handleAddBrandDeal = () => {
     setEditingBrandDeal(null);
@@ -456,6 +509,18 @@ const CreatorDashboard = () => {
     }
   };
 
+  const handleOpenMessageDialog = (receiverId: string, receiverName: string) => {
+    setMessageReceiverId(receiverId);
+    setMessageReceiverName(receiverName);
+    setIsMessageDialogOpen(true);
+  };
+
+  const handleCloseMessageDialog = () => {
+    setIsMessageDialogOpen(false);
+    setMessageReceiverId(null);
+    setMessageReceiverName('');
+  };
+
   if (sessionLoading || isLoadingMocks || isLoadingBrandDeals) {
     return (
       <div className="min-h-[300px] flex flex-col items-center justify-center bg-background">
@@ -494,39 +559,47 @@ const CreatorDashboard = () => {
                 <Bell className="w-5 h-5 text-gray-400" />
                 <span className="absolute -top-1 -right-1 w-2 h-2 bg-blue-500 rounded-full"></span>
               </div>
-              <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center font-semibold">
-                {profile?.first_name?.[0] || 'U'}
-              </div>
+              <ProfileMenu 
+                profile={profile}
+                user={user}
+                profilePath="/creator-profile"
+              />
             </div>
           </div>
 
           {/* Navigation Tabs */}
-          <div className="flex gap-1 px-4 overflow-x-auto">
-            {[
-              { id: 'overview', label: 'Overview' },
-              { id: 'deals', label: 'Deals & Payments' },
-              { id: 'protection', label: 'Protection' }
-            ].map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id as any)}
-                className={cn(
-                  "px-4 py-2 text-sm font-medium capitalize whitespace-nowrap transition-colors",
-                  activeTab === tab.id
-                    ? 'text-blue-400 border-b-2 border-blue-400'
-                    : 'text-gray-400 hover:text-gray-300'
-                )}
-              >
-                {tab.label}
-              </button>
-            ))}
-          </div>
+            <div className="flex gap-1 px-4 py-3 overflow-x-auto">
+              {[
+                { id: 'overview', label: 'Overview' },
+                { id: 'deals', label: 'Deals' },
+                { id: 'payments', label: 'Payments' },
+                { id: 'protection', label: 'Protection' }
+              ].map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id as any)}
+                  className={cn(
+                    "px-4 py-2 text-sm font-medium capitalize whitespace-nowrap transition-colors relative",
+                    activeTab === tab.id
+                      ? 'text-blue-400'
+                      : 'text-gray-400 hover:text-gray-300'
+                  )}
+                >
+                  {tab.label}
+                  {activeTab === tab.id && (
+                    <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-400 shadow-[0_0_8px_rgba(59,130,246,0.6)]"></span>
+                  )}
+                </button>
+              ))}
+            </div>
         </header>
 
         <div className="max-w-7xl mx-auto px-4 py-6 space-y-6">
           {/* Overview Tab */}
           {activeTab === 'overview' && (
             <>
+              <TrialBanner />
+
               <div>
                 <h1 className="text-2xl font-bold mb-1">
                   Welcome back, <span className="text-blue-400">{profile?.first_name || 'Creator'}</span>!
@@ -603,190 +676,223 @@ const CreatorDashboard = () => {
                 />
                 <UpcomingDeadlines deadlines={dashboardData.upcomingDeadlines} />
               </div>
+
+              <WeeklyPerformance brandDeals={brandDeals} />
+
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <ReferAndEarn />
+                <UploadCenter brandDeals={brandDeals} />
+              </div>
+
+              <RiskAlerts brandDeals={brandDeals} />
+
+              <ThisWeeksSummary brandDeals={brandDeals} />
+
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <TaskManager />
+                <TaxFinanceSummary brandDeals={brandDeals} />
+              </div>
+
+              <CreatorScoreBadge brandDeals={brandDeals} />
+
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <LegalHealthScore brandDeals={brandDeals} />
+                <SmartSuggestions brandDeals={brandDeals} />
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <ProjectedEarnings brandDeals={brandDeals} />
+                <TopPayingBrands brandDeals={brandDeals} />
+              </div>
+
+              <CreatorProfessionalTeam onSendMessage={handleOpenMessageDialog} />
+
+              <RecentActivity brandDeals={brandDeals} />
+
+              <AccountSummary />
             </>
           )}
 
-          {/* Deals & Payments Tab */}
+          {/* Deals Tab */}
           {activeTab === 'deals' && (
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <h2 className="text-xl font-bold">Deals & Payments</h2>
+                <h2 className="text-xl font-bold">Deals</h2>
                 <Button onClick={handleAddBrandDeal} className="bg-blue-600 hover:bg-blue-700">
                   <Briefcase className="w-4 h-4 mr-2" /> Add New Deal
                 </Button>
               </div>
 
-              {/* Sub-tabs for Deals vs Payments view */}
-              <div className="flex gap-2 border-b border-border/40">
+              <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
                 <button
-                  onClick={() => setDealsViewMode('deals')}
+                  onClick={() => setQuickFilter(null)}
                   className={cn(
-                    "px-4 py-2 text-sm font-medium transition-colors border-b-2 -mb-[1px]",
-                    dealsViewMode === 'deals'
-                      ? 'text-blue-400 border-blue-400'
-                      : 'text-gray-400 border-transparent hover:text-gray-300'
+                    "px-4 py-1.5 rounded-full text-sm whitespace-nowrap transition-all",
+                    quickFilter === null
+                      ? "bg-blue-600 text-white shadow-[0_0_10px_rgba(59,130,246,0.6)]"
+                      : "text-muted-foreground border border-border/30 hover:bg-muted/20"
                   )}
                 >
-                  Deals ({brandDeals?.length || 0})
+                  All ({brandDeals?.length || 0})
                 </button>
                 <button
-                  onClick={() => setDealsViewMode('payments')}
+                  onClick={() => setQuickFilter('active')}
                   className={cn(
-                    "px-4 py-2 text-sm font-medium transition-colors border-b-2 -mb-[1px]",
-                    dealsViewMode === 'payments'
-                      ? 'text-blue-400 border-blue-400'
-                      : 'text-gray-400 border-transparent hover:text-gray-300'
+                    "px-4 py-1.5 rounded-full text-sm whitespace-nowrap transition-all",
+                    quickFilter === 'active'
+                      ? "bg-blue-600 text-white shadow-[0_0_10px_rgba(59,130,246,0.6)]"
+                      : "text-muted-foreground border border-border/30 hover:bg-muted/20"
                   )}
                 >
-                  Payments ({filteredPayments.length})
+                  Active ({brandDeals?.filter(d => d.status === 'Approved' || d.status === 'Drafting').length || 0})
+                </button>
+                <button
+                  onClick={() => setQuickFilter('pending_payment')}
+                  className={cn(
+                    "px-4 py-1.5 rounded-full text-sm whitespace-nowrap transition-all",
+                    quickFilter === 'pending_payment'
+                      ? "bg-blue-600 text-white shadow-[0_0_10px_rgba(59,130,246,0.6)]"
+                      : "text-muted-foreground border border-border/30 hover:bg-muted/20"
+                  )}
+                >
+                  Pending Payment ({brandDeals?.filter(d => d.status === 'Payment Pending').length || 0})
+                </button>
+                <button
+                  onClick={() => setQuickFilter('completed')}
+                  className={cn(
+                    "px-4 py-1.5 rounded-full text-sm whitespace-nowrap transition-all",
+                    quickFilter === 'completed'
+                      ? "bg-blue-600 text-white shadow-[0_0_10px_rgba(59,130,246,0.6)]"
+                      : "text-muted-foreground border border-border/30 hover:bg-muted/20"
+                  )}
+                >
+                  Completed ({brandDeals?.filter(d => d.status === 'Completed').length || 0})
                 </button>
               </div>
 
-              {/* Deals View */}
-              {dealsViewMode === 'deals' && (
-                <>
-                  <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
-                    <button
-                      onClick={() => setQuickFilter(null)}
-                      className={cn(
-                        "px-4 py-1.5 rounded-full text-sm whitespace-nowrap transition-all",
-                        quickFilter === null
-                          ? "bg-blue-600 text-white shadow-[0_0_10px_rgba(59,130,246,0.6)]"
-                          : "text-muted-foreground border border-border/30 hover:bg-muted/20"
-                      )}
-                    >
-                      All ({brandDeals?.length || 0})
-                    </button>
-                    <button
-                      onClick={() => setQuickFilter('active')}
-                      className={cn(
-                        "px-4 py-1.5 rounded-full text-sm whitespace-nowrap transition-all",
-                        quickFilter === 'active'
-                          ? "bg-blue-600 text-white shadow-[0_0_10px_rgba(59,130,246,0.6)]"
-                          : "text-muted-foreground border border-border/30 hover:bg-muted/20"
-                      )}
-                    >
-                      Active ({brandDeals?.filter(d => d.status === 'Approved' || d.status === 'Drafting').length || 0})
-                    </button>
-                    <button
-                      onClick={() => setQuickFilter('pending_payment')}
-                      className={cn(
-                        "px-4 py-1.5 rounded-full text-sm whitespace-nowrap transition-all",
-                        quickFilter === 'pending_payment'
-                          ? "bg-blue-600 text-white shadow-[0_0_10px_rgba(59,130,246,0.6)]"
-                          : "text-muted-foreground border border-border/30 hover:bg-muted/20"
-                      )}
-                    >
-                      Pending Payment ({brandDeals?.filter(d => d.status === 'Payment Pending').length || 0})
-                    </button>
-                    <button
-                      onClick={() => setQuickFilter('completed')}
-                      className={cn(
-                        "px-4 py-1.5 rounded-full text-sm whitespace-nowrap transition-all",
-                        quickFilter === 'completed'
-                          ? "bg-blue-600 text-white shadow-[0_0_10px_rgba(59,130,246,0.6)]"
-                          : "text-muted-foreground border border-border/30 hover:bg-muted/20"
-                      )}
-                    >
-                      Completed ({brandDeals?.filter(d => d.status === 'Completed').length || 0})
-                    </button>
-                  </div>
+              <Input
+                placeholder="Search deals..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="max-w-md"
+              />
 
-                  <Input
-                    placeholder="Search deals..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="max-w-md"
-                  />
+              <div className="space-y-3">
+                {filteredDeals.length === 0 ? (
+                  <Card className="p-8 text-center">
+                    <p className="text-gray-400">No deals found</p>
+                  </Card>
+                ) : (
+                  filteredDeals.map((deal) => {
+                    const stage = getDealStage(deal);
+                    return (
+                      <ProjectDealCard
+                        key={deal.id}
+                        deal={deal}
+                        stage={stage}
+                        onView={(d) => navigate(`/creator-contracts/${d.id}`)}
+                        onEdit={(d) => {
+                          setEditingBrandDeal(d);
+                          setIsBrandDealFormOpen(true);
+                        }}
+                        onManageDeliverables={() => toast.info('Deliverables management coming soon!')}
+                        onUploadContent={() => toast.info('Content upload coming soon!')}
+                        onContactBrand={() => navigate('/messages')}
+                        onViewContract={async (d) => {
+                          const { openContractFile } = await import('@/lib/utils');
+                          openContractFile(d.contract_file_url, (error) => {
+                            toast.error(error);
+                          });
+                        }}
+                      />
+                    );
+                  })
+                )}
+              </div>
+            </div>
+          )}
 
-                  <div className="space-y-3">
-                    {filteredDeals.length === 0 ? (
-                      <Card className="p-8 text-center">
-                        <p className="text-gray-400">No deals found</p>
-                      </Card>
-                    ) : (
-                      filteredDeals.map((deal) => {
-                        const stage = getDealStage(deal);
-                        return (
-                          <ProjectDealCard
-                            key={deal.id}
-                            deal={deal}
-                            stage={stage}
-                            onView={(d) => navigate(`/creator-contracts/${d.id}`)}
-                            onEdit={(d) => {
-                              setEditingBrandDeal(d);
-                              setIsBrandDealFormOpen(true);
-                            }}
-                            onManageDeliverables={() => toast.info('Deliverables management coming soon!')}
-                            onUploadContent={() => toast.info('Content upload coming soon!')}
-                            onContactBrand={() => navigate('/messages')}
-                            onViewContract={(d) => {
-                              if (d.contract_file_url) {
-                                window.open(d.contract_file_url, '_blank');
-                              } else {
-                                toast.error('Contract file not available');
-                              }
-                            }}
-                          />
-                        );
-                      })
-                    )}
-                  </div>
-                </>
-              )}
+          {/* Payments Tab */}
+          {activeTab === 'payments' && (
+            <div className="space-y-3 md:space-y-4 relative min-h-[600px]">
+              {/* Soft background gradient */}
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_bottom,rgba(68,0,255,0.25),transparent_60%)] pointer-events-none -z-10" />
+              <div className="relative z-10 space-y-3 md:space-y-4">
+              {/* Summary Cards */}
+              <FinancialOverviewHeader allDeals={brandDeals || []} />
 
-              {/* Payments View */}
-              {dealsViewMode === 'payments' && (
-                <>
-                  <FinancialOverviewHeader allDeals={brandDeals || []} />
-                  <PaymentQuickFilters
-                    allDeals={brandDeals || []}
-                    activeFilter={quickFilter}
-                    onFilterChange={setQuickFilter}
-                  />
-                  <div className="space-y-3">
-                    {filteredPayments.length === 0 ? (
-                      <Card className="p-8 text-center">
-                        <p className="text-gray-400">No payments found</p>
-                      </Card>
-                    ) : (
-                      filteredPayments.map((deal) => {
-                        const paymentStatus = getPaymentStatus(deal);
-                        // Map PaymentStatus to EnhancedPaymentCard status
-                        const status: 'overdue' | 'pending' | 'upcoming' | 'paid' = 
-                          paymentStatus === 'paid' ? 'paid' :
-                          paymentStatus === 'overdue' ? 'overdue' :
-                          paymentStatus === 'pending' ? 'pending' : 'upcoming';
-                        
-                        const now = new Date();
-                        now.setHours(0, 0, 0, 0);
-                        const dueDate = new Date(deal.payment_expected_date);
-                        dueDate.setHours(0, 0, 0, 0);
-                        const diffTime = dueDate.getTime() - now.getTime();
-                        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                        const daysOverdue = diffDays < 0 ? Math.abs(diffDays) : undefined;
-                        const daysLeft = diffDays >= 0 ? diffDays : undefined;
+              {/* Payments Title */}
+              <h2 className="text-lg md:text-xl font-bold mt-2">Payments</h2>
 
-                        return (
-                          <EnhancedPaymentCard
-                            key={deal.id}
-                            deal={deal}
-                            status={status}
-                            daysOverdue={daysOverdue}
-                            daysLeft={daysLeft}
-                            onSendReminder={(d) => {
-                              setSelectedDealForReminder(d);
-                              setIsSendPaymentReminderDialogOpen(true);
-                            }}
-                            onMarkPaid={(d) => toast.info(`Mark ${d.brand_name} as paid coming soon!`)}
-                            onViewDetails={(d) => navigate(`/creator-contracts/${d.id}`)}
-                          />
-                        );
-                      })
-                    )}
-                  </div>
-                </>
-              )}
+              {/* Filters */}
+              <PaymentQuickFilters
+                allDeals={brandDeals || []}
+                activeFilter={paymentQuickFilter}
+                onFilterChange={setPaymentQuickFilter}
+              />
+
+              {/* Search Bar */}
+              <div className="relative w-full md:max-w-md">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/50 pointer-events-none" />
+                <Input
+                  placeholder="Search payments..."
+                  value={paymentSearchTerm}
+                  onChange={(e) => setPaymentSearchTerm(e.target.value)}
+                  className="pl-10 rounded-xl shadow-inner shadow-black/20 border border-white/5 text-sm"
+                />
+              </div>
+
+              {/* Payments List Header */}
+              <div className="flex items-center justify-between flex-wrap gap-2 mb-1">
+                <div className="text-xs text-white/40 tracking-wide">Payments List — {filteredPayments.length} items</div>
+                <div className="px-3 py-1 rounded-full bg-white/5 backdrop-blur border border-white/10 text-xs text-gray-400">
+                  Sort: Due date
+                </div>
+              </div>
+
+              {/* Payments List */}
+              <div className="space-y-4">
+                {filteredPayments.length === 0 ? (
+                  <Card className="p-8 text-center">
+                    <p className="text-gray-400">No payments found</p>
+                  </Card>
+                ) : (
+                  filteredPayments.map((deal) => {
+                    const paymentStatus = getPaymentStatus(deal);
+                    // Map PaymentStatus to EnhancedPaymentCard status
+                    const status: 'overdue' | 'pending' | 'upcoming' | 'paid' = 
+                      paymentStatus === 'paid' ? 'paid' :
+                      paymentStatus === 'overdue' ? 'overdue' :
+                      paymentStatus === 'pending' ? 'pending' : 'upcoming';
+                    
+                    const now = new Date();
+                    now.setHours(0, 0, 0, 0);
+                    const dueDate = new Date(deal.payment_expected_date);
+                    dueDate.setHours(0, 0, 0, 0);
+                    const diffTime = dueDate.getTime() - now.getTime();
+                    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                    const daysOverdue = diffDays < 0 ? Math.abs(diffDays) : undefined;
+                    const daysLeft = diffDays >= 0 ? diffDays : undefined;
+
+                    return (
+                      <EnhancedPaymentCard
+                        key={deal.id}
+                        deal={deal}
+                        status={status}
+                        daysOverdue={daysOverdue}
+                        daysLeft={daysLeft}
+                        onSendReminder={(d) => {
+                          setSelectedDealForReminder(d);
+                          setIsSendPaymentReminderDialogOpen(true);
+                        }}
+                        onMarkPaid={(d) => toast.info(`Mark ${d.brand_name} as paid coming soon!`)}
+                        onViewDetails={(d) => navigate(`/creator-contracts/${d.id}`)}
+                      />
+                    );
+                  })
+                )}
+              </div>
+              </div>
             </div>
           )}
 
@@ -1010,6 +1116,37 @@ const CreatorDashboard = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Message Dialog */}
+      <Dialog open={isMessageDialogOpen} onOpenChange={handleCloseMessageDialog}>
+        <DialogContent 
+          className="sm:max-w-[600px] h-[80vh] flex flex-col bg-card text-foreground border-border"
+          aria-labelledby="send-message-title"
+          aria-describedby="send-message-description"
+        >
+          <DialogHeader>
+            <DialogTitle id="send-message-title">Send Message</DialogTitle>
+            <DialogDescription id="send-message-description" className="text-muted-foreground">
+              Start a secure conversation with {messageReceiverName}.
+            </DialogDescription>
+          </DialogHeader>
+          {messageReceiverId && (
+            <div className="flex-1 overflow-hidden">
+              <ChatWindow
+                receiverId={messageReceiverId}
+                receiverName={messageReceiverName}
+              />
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Trial Expired Modal */}
+      <UpgradeModal
+        open={showExpiredModal}
+        onOpenChange={setShowExpiredModal}
+        reason="trial_expired"
+      />
     </>
   );
 };

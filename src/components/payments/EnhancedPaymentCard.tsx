@@ -7,11 +7,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import {
   Calendar,
-  CheckCircle2,
   Send,
-  Instagram,
-  Youtube,
-  Music,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
@@ -34,23 +30,11 @@ const EnhancedPaymentCard: React.FC<EnhancedPaymentCardProps> = ({
   daysOverdue,
   daysLeft,
   onSendReminder,
-  onEscalate,
+  onEscalate: _onEscalate,
   onMarkPaid,
-  onViewDetails,
-  onAddNote,
+  onViewDetails: _onViewDetails,
+  onAddNote: _onAddNote,
 }) => {
-  // Get platform icon
-  const getPlatformIcon = (platform: string | null) => {
-    if (!platform) return null;
-    const platformLower = platform.toLowerCase();
-    if (platformLower.includes('instagram')) return Instagram;
-    if (platformLower.includes('youtube')) return Youtube;
-    if (platformLower.includes('tiktok')) return Music;
-    return null;
-  };
-
-  const PlatformIcon = getPlatformIcon(deal.platform);
-
   // Mock reminder count (in real app, this would come from payment_reminders table)
   const remindersSent = daysOverdue && daysOverdue > 7 ? Math.floor(daysOverdue / 7) : 0;
   
@@ -81,24 +65,12 @@ const EnhancedPaymentCard: React.FC<EnhancedPaymentCardProps> = ({
   
   const reminderConfig = getReminderButtonConfig();
 
-  // Mock communication history
-  const communicationHistory = [
-    { date: new Date(deal.payment_expected_date), type: 'invoice_sent', method: 'email' },
-    ...(remindersSent > 0 ? [
-      { date: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000), type: 'reminder', method: 'email' },
-      { date: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000), type: 'reminder', method: 'email' },
-    ] : []),
-  ].slice(0, 4);
-
   // Mock brand payment history (in real app, this would be calculated from all deals with this brand)
   const brandPaymentHistory = {
     avgDays: 35,
     reliability: 'good' as 'excellent' | 'good' | 'fair' | 'poor',
     latePayments: 0,
   };
-
-  // Calculate progress percentage
-  const progress = status === 'paid' ? 100 : status === 'overdue' ? 0 : status === 'pending' ? 65 : 85;
   
   // Get days left for display
   const displayDaysLeft = daysLeft !== undefined ? daysLeft : daysOverdue ? -daysOverdue : null;
@@ -109,32 +81,32 @@ const EnhancedPaymentCard: React.FC<EnhancedPaymentCardProps> = ({
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.2 }}
     >
-      <Card className="bg-gradient-to-br from-slate-800/80 to-slate-900/80 rounded-2xl p-6 border border-slate-700/50 backdrop-blur-sm hover:border-slate-600/50 transition-all">
-        {/* Urgency Banner */}
+      <Card className="bg-[#0F121A]/80 backdrop-blur-xl border border-white/5 rounded-2xl p-4 md:p-5 hover:border-white/10 transition-all shadow-[0_0_25px_-6px_rgba(0,0,0,0.45)]">
+        {/* Top Badge */}
         {displayDaysLeft !== null && (
           <div className={cn(
             "flex items-center gap-2 mb-4 px-3 py-2 rounded-lg",
             (displayDaysLeft <= 7 || status === 'overdue') 
-              ? 'bg-amber-500/20 border border-amber-500/30' 
-              : 'bg-blue-500/20 border border-blue-500/30'
+              ? 'bg-amber-500/20 border border-amber-400/20' 
+              : 'bg-white/5 border border-white/10'
           )}>
             <Calendar className={cn(
               "w-4 h-4",
-              (displayDaysLeft <= 7 || status === 'overdue') ? 'text-amber-400' : 'text-blue-400'
+              (displayDaysLeft <= 7 || status === 'overdue') ? 'text-amber-400' : 'text-white/80'
             )} />
             <span className={cn(
               "text-sm font-medium",
-              (displayDaysLeft <= 7 || status === 'overdue') ? 'text-amber-400' : 'text-blue-400'
+              (displayDaysLeft <= 7 || status === 'overdue') ? 'text-amber-400' : 'text-white/80'
             )}>
               Payment Expected · {displayDaysLeft > 0 ? `${displayDaysLeft} days left` : `${Math.abs(displayDaysLeft)} days overdue`}
             </span>
           </div>
         )}
 
-        {/* Company Info */}
-        <div className="flex items-start justify-between mb-6">
-          <div className="flex items-center gap-4">
-            <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-slate-700 to-slate-800 flex items-center justify-center text-2xl shadow-lg">
+        {/* Brand Logo + Name + Platform + Amount */}
+        <div className="flex items-start justify-between mb-5">
+          <div className="flex items-center gap-3 md:gap-4 flex-1">
+            <div className="w-12 h-12 md:w-14 md:h-14 rounded-xl bg-gradient-to-br from-slate-700 to-slate-800 flex items-center justify-center text-xl md:text-2xl shadow-lg shadow-[0_0_12px_2px_rgba(255,255,255,0.12)]">
               <BrandLogo
                 brandName={deal.brand_name}
                 brandLogo={null}
@@ -142,73 +114,57 @@ const EnhancedPaymentCard: React.FC<EnhancedPaymentCardProps> = ({
                 className="w-full h-full"
               />
             </div>
-            <div>
-              <h3 className="font-bold text-xl mb-1">{deal.brand_name}</h3>
-              <p className="text-sm text-slate-400 flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-slate-600"></span>
+            <div className="flex-1">
+              <h3 className="font-bold text-lg md:text-xl mb-1 text-white">{deal.brand_name}</h3>
+              <p className="text-sm text-white/60 flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-white/40"></span>
                 {deal.platform || 'N/A'}
               </p>
             </div>
           </div>
           <div className="text-right">
-            <p className="text-sm text-slate-400 mb-1">Amount</p>
-            <p className="text-2xl font-bold">₹{deal.deal_amount.toLocaleString('en-IN')}</p>
+            <p className="text-2xl md:text-3xl font-bold text-white">₹{deal.deal_amount.toLocaleString('en-IN')}</p>
           </div>
         </div>
 
-        {/* Progress & Status */}
-        <div className="space-y-4 mb-6">
-          <div>
-            <div className="flex items-center justify-between text-sm mb-2">
-              <span className="text-slate-400">Payment Status</span>
-              <span className={cn(
-                "font-medium",
-                status === 'overdue' && 'text-red-400',
-                status === 'pending' && 'text-amber-400',
-                status === 'upcoming' && 'text-green-400',
-                status === 'paid' && 'text-emerald-400'
-              )}>
-                {status === 'overdue' ? 'Overdue' : 
-                 status === 'pending' ? 'Pending' :
-                 status === 'upcoming' ? 'Scheduled' : 'Paid'}
-              </span>
-            </div>
-            <div className="h-2 bg-slate-800 rounded-full overflow-hidden">
-              <motion.div
-                initial={{ width: 0 }}
-                animate={{ width: `${progress}%` }}
-                transition={{ duration: 0.5 }}
-                className={cn(
-                  "h-full rounded-full transition-all",
-                  status === 'paid' ? 'bg-gradient-to-r from-emerald-500 to-emerald-400' :
-                  status === 'overdue' ? 'bg-gradient-to-r from-red-500 to-red-400' :
-                  status === 'pending' ? 'bg-gradient-to-r from-amber-500 to-amber-400' :
-                  'bg-gradient-to-r from-green-500 to-green-400'
-                )}
-              />
-            </div>
-          </div>
-
+        {/* Payment Status */}
+        <div className="mb-5">
           <div className="flex items-center justify-between text-sm">
-            <div className="bg-slate-800/50 rounded-lg px-3 py-2 border border-slate-700/50">
-              <p className="text-slate-500 mb-1">Payment History</p>
-              <p className="font-medium">~{Math.abs(brandPaymentHistory.avgDays)} days avg</p>
-            </div>
-            <div className="bg-slate-800/50 rounded-lg px-3 py-2 border border-slate-700/50">
-              <p className="text-slate-500 mb-1">Due Date</p>
-              <p className="font-medium">
-                {new Date(deal.payment_expected_date).toLocaleDateString('en-IN', {
-                  day: 'numeric',
-                  month: 'short',
-                  year: 'numeric',
-                })}
-              </p>
-            </div>
+            <span className="text-white/60">Payment Status:</span>
+            <span className={cn(
+              "font-medium",
+              status === 'overdue' && 'text-red-400',
+              status === 'pending' && 'text-yellow-400',
+              status === 'upcoming' && 'text-emerald-400',
+              status === 'paid' && 'text-emerald-400'
+            )}>
+              {status === 'overdue' ? 'Overdue' : 
+               status === 'pending' ? 'Pending' :
+               status === 'upcoming' ? 'Scheduled' : 'Paid'}
+            </span>
           </div>
         </div>
 
-        {/* Actions */}
-        <div className="flex gap-3" onClick={(e) => e.stopPropagation()}>
+        {/* Two Info Boxes */}
+        <div className="flex items-center justify-between gap-3 md:gap-4 mb-5">
+          <div className="bg-white/5 rounded-lg px-3 py-2 border border-white/10 flex-1">
+            <p className="text-white/60 mb-1 text-xs">Payment History</p>
+            <p className="font-medium text-white/80 text-sm">~{Math.abs(brandPaymentHistory.avgDays)} days avg</p>
+          </div>
+          <div className="bg-white/5 rounded-lg px-3 py-2 border border-white/10 flex-1">
+            <p className="text-white/60 mb-1 text-xs">Due Date</p>
+            <p className="font-medium text-white/80 text-sm">
+              {new Date(deal.payment_expected_date).toLocaleDateString('en-IN', {
+                day: 'numeric',
+                month: 'short',
+                year: 'numeric',
+              })}
+            </p>
+          </div>
+        </div>
+
+        {/* Bottom Actions */}
+        <div className="flex flex-col gap-2" onClick={(e) => e.stopPropagation()}>
           {reminderConfig.show && (
             <Button
               onClick={(e) => {
@@ -217,23 +173,24 @@ const EnhancedPaymentCard: React.FC<EnhancedPaymentCardProps> = ({
                   onSendReminder?.(deal);
                 }
               }}
-              className="flex-1 px-4 py-3 bg-slate-800 hover:bg-slate-700 rounded-xl font-medium flex items-center justify-center gap-2 transition-all border border-slate-700 hover:border-slate-600"
+              variant="outline"
+              className="w-full px-4 py-2.5 bg-white/5 hover:bg-white/10 rounded-xl font-medium flex items-center justify-center gap-2 transition-all border border-white/10 hover:border-white/20 text-white/80"
             >
               <Send className="w-4 h-4" />
               Send Reminder
             </Button>
           )}
           {onMarkPaid && status !== 'paid' && (
-            <Button
+            <button
               onClick={(e) => {
                 e.stopPropagation();
                 onMarkPaid(deal);
               }}
-              className="flex-1 px-4 py-3 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 rounded-xl font-medium flex items-center justify-center gap-2 transition-all shadow-lg shadow-emerald-500/20"
+              className="w-full py-3 rounded-xl font-semibold flex items-center justify-center gap-2 bg-gradient-to-br from-emerald-600 to-emerald-700 hover:from-emerald-500 hover:to-emerald-600 shadow-xl shadow-emerald-900/40 border border-emerald-500/30 text-white transition-all duration-300 ease-out hover:scale-[1.02]"
             >
-              <CheckCircle2 className="w-4 h-4" />
+              <span className="opacity-90 text-lg">✔</span>
               Mark Paid
-            </Button>
+            </button>
           )}
         </div>
       </Card>

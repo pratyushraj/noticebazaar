@@ -367,10 +367,17 @@ const DealDetailPage: React.FC = () => {
                       <p className="text-sm text-muted-foreground">View or download the contract</p>
                     </div>
                   </div>
-                  <Button variant="outline" size="sm" asChild>
-                    <a href={deal.contract_file_url} target="_blank" rel="noopener noreferrer">
-                      View
-                    </a>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={async () => {
+                      const { openContractFile } = await import('@/lib/utils');
+                      openContractFile(deal.contract_file_url, (error) => {
+                        toast.error(error);
+                      });
+                    }}
+                  >
+                    View
                   </Button>
                 </div>
               ) : (

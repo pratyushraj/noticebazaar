@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { BrandDeal } from '@/types';
 import { useSupabaseQuery } from './useSupabaseQuery';
 import { useSupabaseMutation } from './useSupabaseMutation';
+import { CREATOR_ASSETS_BUCKET, extractFilePathFromUrl } from '@/lib/constants/storage';
 
 interface UseBrandDealsOptions {
   creatorId: string | undefined;
@@ -112,22 +113,22 @@ export const useAddBrandDeal = () => {
         const filePath = `${creator_id}/brand_deals/${sanitizedBrandName}-contract-${Date.now()}.${fileExtension}`;
 
         const { data: uploadData, error: uploadError } = await supabase.storage
-          .from('creator-assets')
+          .from(CREATOR_ASSETS_BUCKET)
           .upload(filePath, contract_file, {
             cacheControl: '3600',
             upsert: false,
           });
 
         if (uploadError) {
-          throw new Error(`Contract file upload failed: ${uploadError.message}. Ensure RLS is configured for INSERT on 'creator-assets' bucket.`);
+          throw new Error(`Contract file upload failed: ${uploadError.message}. Ensure RLS is configured for INSERT on '${CREATOR_ASSETS_BUCKET}' bucket.`);
         }
 
         const { data: publicUrlData } = supabase.storage
-          .from('creator-assets')
+          .from(CREATOR_ASSETS_BUCKET)
           .getPublicUrl(filePath);
 
         if (!publicUrlData?.publicUrl) {
-          await supabase.storage.from('creator-assets').remove([filePath]);
+          await supabase.storage.from(CREATOR_ASSETS_BUCKET).remove([filePath]);
           throw new Error('Failed to get public URL for the uploaded contract file.');
         }
         contract_file_url = publicUrlData.publicUrl;
@@ -139,22 +140,22 @@ export const useAddBrandDeal = () => {
         const filePath = `${creator_id}/brand_deals/${sanitizedBrandName}-invoice-${Date.now()}.${fileExtension}`;
 
         const { data: uploadData, error: uploadError } = await supabase.storage
-          .from('creator-assets')
+          .from(CREATOR_ASSETS_BUCKET)
           .upload(filePath, invoice_file, {
             cacheControl: '3600',
             upsert: false,
           });
 
         if (uploadError) {
-          throw new Error(`Invoice file upload failed: ${uploadError.message}. Ensure RLS is configured for INSERT on 'creator-assets' bucket.`);
+          throw new Error(`Invoice file upload failed: ${uploadError.message}. Ensure RLS is configured for INSERT on '${CREATOR_ASSETS_BUCKET}' bucket.`);
         }
 
         const { data: publicUrlData } = supabase.storage
-          .from('creator-assets')
+          .from(CREATOR_ASSETS_BUCKET)
           .getPublicUrl(filePath);
 
         if (!publicUrlData?.publicUrl) {
-          await supabase.storage.from('creator-assets').remove([filePath]);
+          await supabase.storage.from(CREATOR_ASSETS_BUCKET).remove([filePath]);
           throw new Error('Failed to get public URL for the uploaded invoice file.');
         }
         invoice_file_url = publicUrlData.publicUrl;
@@ -193,12 +194,16 @@ export const useAddBrandDeal = () => {
       if (insertError) {
         // Attempt to remove uploaded files if database insert fails
         if (contract_file_url) {
-          const filePath = contract_file_url.split('/creator-assets/')[1];
-          await supabase.storage.from('creator-assets').remove([filePath]);
+          const filePath = extractFilePathFromUrl(contract_file_url, CREATOR_ASSETS_BUCKET);
+          if (filePath) {
+            await supabase.storage.from(CREATOR_ASSETS_BUCKET).remove([filePath]);
+          }
         }
         if (invoice_file_url) {
-          const filePath = invoice_file_url.split('/creator-assets/')[1];
-          await supabase.storage.from('creator-assets').remove([filePath]);
+          const filePath = extractFilePathFromUrl(invoice_file_url, CREATOR_ASSETS_BUCKET);
+          if (filePath) {
+            await supabase.storage.from(CREATOR_ASSETS_BUCKET).remove([filePath]);
+          }
         }
         throw new Error(`Failed to record brand deal in database: ${insertError.message}. Ensure RLS is configured for INSERT on 'brand_deals' table.`);
       }
@@ -251,19 +256,19 @@ export const useUpdateBrandDeal = () => {
       // Handle contract file update
       if (contract_file !== undefined) {
         if (original_contract_file_url) {
-          const oldFilePath = original_contract_file_url.split('/creator-assets/')[1];
-          if (oldFilePath) { 
-            const { error: deleteError } = await supabase.storage.from('creator-assets').remove([oldFilePath]);
+          const oldFilePath = extractFilePathFromUrl(original_contract_file_url, CREATOR_ASSETS_BUCKET);
+          if (oldFilePath) {
+            const { error: deleteError } = await supabase.storage.from(CREATOR_ASSETS_BUCKET).remove([oldFilePath]);
             if (deleteError) console.warn('Failed to delete old contract file:', deleteError.message);
           }
         }
         if (contract_file) {
           const fileExtension = contract_file.name.split('.').pop();
           const filePath = `${creator_id}/brand_deals/${sanitizedBrandName}-contract-${Date.now()}.${fileExtension}`;
-          const { data: uploadData, error: uploadError } = await supabase.storage.from('creator-assets').upload(filePath, contract_file, { cacheControl: '3600', upsert: false });
-          if (uploadError) { throw new Error(`Contract file upload failed: ${uploadError.message}. Ensure RLS is configured for INSERT on 'creator-assets' bucket.`); }
-          const { data: publicUrlData } = supabase.storage.from('creator-assets').getPublicUrl(filePath);
-          if (!publicUrlData?.publicUrl) { await supabase.storage.from('creator-assets').remove([filePath]); throw new Error('Failed to get public URL for the uploaded contract file.'); }
+          const { data: uploadData, error: uploadError } = await supabase.storage.from(CREATOR_ASSETS_BUCKET).upload(filePath, contract_file, { cacheControl: '3600', upsert: false });
+          if (uploadError) { throw new Error(`Contract file upload failed: ${uploadError.message}. Ensure RLS is configured for INSERT on '${CREATOR_ASSETS_BUCKET}' bucket.`); }
+          const { data: publicUrlData } = supabase.storage.from(CREATOR_ASSETS_BUCKET).getPublicUrl(filePath);
+          if (!publicUrlData?.publicUrl) { await supabase.storage.from(CREATOR_ASSETS_BUCKET).remove([filePath]); throw new Error('Failed to get public URL for the uploaded contract file.'); }
           contract_file_url = publicUrlData.publicUrl;
         } else { contract_file_url = null; }
       }
@@ -271,19 +276,19 @@ export const useUpdateBrandDeal = () => {
       // Handle invoice file update
       if (invoice_file !== undefined) {
         if (original_invoice_file_url) {
-          const oldFilePath = original_invoice_file_url.split('/creator-assets/')[1];
-          if (oldFilePath) { 
-            const { error: deleteError } = await supabase.storage.from('creator-assets').remove([oldFilePath]);
+          const oldFilePath = extractFilePathFromUrl(original_invoice_file_url, CREATOR_ASSETS_BUCKET);
+          if (oldFilePath) {
+            const { error: deleteError } = await supabase.storage.from(CREATOR_ASSETS_BUCKET).remove([oldFilePath]);
             if (deleteError) console.warn('Failed to delete old invoice file:', deleteError.message);
           }
         }
         if (invoice_file) {
           const fileExtension = invoice_file.name.split('.').pop();
           const filePath = `${creator_id}/brand_deals/${sanitizedBrandName}-invoice-${Date.now()}.${fileExtension}`;
-          const { data: uploadData, error: uploadError } = await supabase.storage.from('creator-assets').upload(filePath, invoice_file, { cacheControl: '3600', upsert: false });
-          if (uploadError) { throw new Error(`Invoice file upload failed: ${uploadError.message}. Ensure RLS is configured for INSERT on 'creator-assets' bucket.`); }
-          const { data: publicUrlData } = supabase.storage.from('creator-assets').getPublicUrl(filePath);
-          if (!publicUrlData?.publicUrl) { await supabase.storage.from('creator-assets').remove([filePath]); throw new Error('Failed to get public URL for the uploaded invoice file.'); }
+          const { data: uploadData, error: uploadError } = await supabase.storage.from(CREATOR_ASSETS_BUCKET).upload(filePath, invoice_file, { cacheControl: '3600', upsert: false });
+          if (uploadError) { throw new Error(`Invoice file upload failed: ${uploadError.message}. Ensure RLS is configured for INSERT on '${CREATOR_ASSETS_BUCKET}' bucket.`); }
+          const { data: publicUrlData } = supabase.storage.from(CREATOR_ASSETS_BUCKET).getPublicUrl(filePath);
+          if (!publicUrlData?.publicUrl) { await supabase.storage.from(CREATOR_ASSETS_BUCKET).remove([filePath]); throw new Error('Failed to get public URL for the uploaded invoice file.'); }
           invoice_file_url = publicUrlData.publicUrl;
         } else { invoice_file_url = null; }
       }
@@ -342,17 +347,17 @@ export const useDeleteBrandDeal = () => {
     async ({ id, creator_id, contract_file_url, invoice_file_url }) => {
       // Delete contract file from storage
       if (contract_file_url) {
-        const filePath = contract_file_url.split('/creator-assets/')[1];
+        const filePath = extractFilePathFromUrl(contract_file_url, CREATOR_ASSETS_BUCKET);
         if (filePath) {
-          const { error: storageError } = await supabase.storage.from('creator-assets').remove([filePath]);
+          const { error: storageError } = await supabase.storage.from(CREATOR_ASSETS_BUCKET).remove([filePath]);
           if (storageError) { console.warn('Failed to delete contract file from storage:', storageError.message); }
         }
       }
       // Delete invoice file from storage
       if (invoice_file_url) {
-        const filePath = invoice_file_url.split('/creator-assets/')[1];
+        const filePath = extractFilePathFromUrl(invoice_file_url, CREATOR_ASSETS_BUCKET);
         if (filePath) {
-          const { error: storageError } = await supabase.storage.from('creator-assets').remove([filePath]);
+          const { error: storageError } = await supabase.storage.from(CREATOR_ASSETS_BUCKET).remove([filePath]);
           if (storageError) { console.warn('Failed to delete invoice file from storage:', storageError.message); }
         }
       }

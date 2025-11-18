@@ -30,15 +30,26 @@ export const useSupabaseQuery = <
   useEffect(() => {
     if (queryResult.error) {
       const error = queryResult.error as any;
+      const errorMessageStr = String(error?.message || '').toLowerCase();
+      const errorStatus = error?.status || error?.statusCode || error?.code;
+      const queryKeyStr = JSON.stringify(queryKey || '').toLowerCase();
+      
       // Skip error handling for 404s on original_content table (table might not exist)
-      const errorMessageStr = error?.message || '';
-      const errorStatus = error?.status || error?.statusCode;
-      const isOriginalContent404 = errorMessageStr.includes('original_content') && 
-                                   (errorStatus === 404 || errorMessageStr.includes('404') || 
-                                    errorMessageStr.includes('Could not find the table'));
+      const isOriginalContent404 = 
+        (queryKeyStr.includes('original_content') || errorMessageStr.includes('original_content')) &&
+        (errorStatus === 404 || 
+         errorStatus === 'PGRST116' ||
+         errorStatus === '42P01' ||
+         errorMessageStr.includes('404') || 
+         errorMessageStr.includes('not found') ||
+         errorMessageStr.includes('could not find the table') ||
+         errorMessageStr.includes('relation') ||
+         errorMessageStr.includes('does not exist'));
       
       if (isOriginalContent404) {
         // Silently ignore 404 errors for original_content table
+        // This is expected if the table hasn't been created yet
+        // Don't log to console or show toast
         return;
       }
       
@@ -46,7 +57,7 @@ export const useSupabaseQuery = <
       toast.error(message, { description: error?.message || 'Unknown error' });
       console.error('Supabase Query Error:', queryResult.error);
     }
-  }, [queryResult.error, errorMessage]);
+  }, [queryResult.error, errorMessage, queryKey]);
 
   return queryResult;
 };

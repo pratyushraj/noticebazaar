@@ -30,30 +30,55 @@ export const useOriginalContent = (options: UseOriginalContentOptions) => {
           .order('created_at', { ascending: false });
 
         if (error) {
-          // If table doesn't exist (404 or schema cache error), return empty array silently
-          if (error.message.includes('Could not find the table') || 
-              error.message.includes('schema cache') ||
-              error.message.includes('404') ||
-              error.code === 'PGRST116' ||
-              error.code === '42P01' ||
-              (error as any).status === 404 ||
-              (error as any).statusCode === 404) {
-            // Table doesn't exist - return empty array without logging error
+          // Check for 404 or table not found errors
+          const errorStr = JSON.stringify(error).toLowerCase();
+          const is404Error = 
+            error.code === 'PGRST116' || // PostgREST: relation does not exist
+            error.code === '42P01' || // PostgreSQL: relation does not exist
+            error.code === 'PGRST301' || // PostgREST: not found
+            (error as any).status === 404 ||
+            (error as any).statusCode === 404 ||
+            error.message?.includes('404') ||
+            error.message?.includes('Could not find the table') ||
+            error.message?.includes('relation') ||
+            error.message?.includes('does not exist') ||
+            errorStr.includes('404') ||
+            errorStr.includes('not found');
+
+          if (is404Error) {
+            // Table doesn't exist - return empty array silently
+            // This is expected if the table hasn't been created yet
+            // Don't throw error - React Query will treat this as success with empty data
             return [];
           }
-          // For other errors, log but still return empty array to prevent UI crashes
-          console.error('Supabase Error in useOriginalContent:', error.message);
-          return [];
+          
+          // For other errors, throw to let React Query handle it
+          // But still return empty array to prevent UI crashes
+          throw error;
         }
         return data as OriginalContent[];
       } catch (err: any) {
         // Catch network errors (404, etc.) and return empty array silently
-        if (err?.status === 404 || err?.statusCode === 404 || err?.message?.includes('404')) {
+        const errorStr = String(err?.message || err || '').toLowerCase();
+        const is404Error = 
+          err?.status === 404 || 
+          err?.statusCode === 404 || 
+          err?.code === 404 ||
+          err?.code === 'PGRST116' ||
+          err?.code === '42P01' ||
+          errorStr.includes('404') ||
+          errorStr.includes('not found') ||
+          errorStr.includes('relation') ||
+          errorStr.includes('does not exist');
+
+        if (is404Error) {
+          // Expected 404 - table doesn't exist yet
+          // Return empty array - React Query will treat this as success
           return [];
         }
-        // For other errors, log but still return empty array
-        console.error('Supabase Error in useOriginalContent (catch):', err?.message || err);
-        return [];
+        
+        // For other errors, throw to let React Query handle it properly
+        throw err;
       }
     },
     {
