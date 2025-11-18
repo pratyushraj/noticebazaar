@@ -166,13 +166,34 @@ const CreatorProfileForm: React.FC<CreatorProfileFormProps> = ({ initialProfile,
               currentAvatarUrl={avatarUrl}
               firstName={firstName}
               lastName={lastName}
-              onUploadSuccess={(url) => {
+              onUploadSuccess={async (url) => {
+                // Update local state immediately for UI feedback
                 setAvatarUrl(url);
-                // Auto-save avatar URL
-                updateProfileMutation.mutate({
-                  id: initialProfile.id,
-                  avatar_url: url,
-                });
+                
+                // Auto-save avatar URL to database
+                try {
+                  await updateProfileMutation.mutateAsync({
+                    id: initialProfile.id,
+                    first_name: firstName,
+                    last_name: lastName,
+                    avatar_url: url,
+                  });
+                  
+                  // Refetch profile from SessionContext to update everywhere
+                  if (refetchProfile) {
+                    await refetchProfile();
+                  }
+                  
+                  // Small delay to ensure cache updates
+                  setTimeout(() => {
+                    toast.success('Avatar updated and saved!');
+                  }, 300);
+                } catch (error: any) {
+                  console.error('Error saving avatar:', error);
+                  // Revert local state on error
+                  setAvatarUrl(initialProfile.avatar_url || '');
+                  toast.error('Avatar uploaded but failed to save. Please try again.');
+                }
               }}
             />
           </div>
@@ -206,7 +227,7 @@ const CreatorProfileForm: React.FC<CreatorProfileFormProps> = ({ initialProfile,
             <Label htmlFor="email" className="text-white">Email</Label>
             <Input
               id="email"
-              value={initialProfile.email || ''}
+              value={user?.email || ''}
               disabled
               className="bg-[#0F121A]/50 text-white/60 border-white/10 cursor-not-allowed"
             />

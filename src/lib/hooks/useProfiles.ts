@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Profile } from '@/types';
 import { useSupabaseQuery } from './useSupabaseQuery';
@@ -88,7 +88,8 @@ export const useProfiles = (options?: UseProfilesOptions) => {
       // Return empty data instead of throwing to prevent UI crashes
       return { data: [] as Profile[], count: 0 };
     }
-    return { data: data as Profile[], count };
+    // Type assertion needed because fallback query may not include all fields
+    return { data: (data || []) as Profile[], count };
   }, [role, page, pageSize, disablePagination, firstName, lastName]);
 
   return useSupabaseQuery<{ data: Profile[], count: number | null }, Error>(
@@ -133,7 +134,9 @@ export const useProfileById = (profileId: string | undefined, options?: { enable
       console.error('Error fetching profile:', error);
       throw new Error(error.message);
     }
-    return data as Profile;
+    // Type assertion needed because fallback query may not include all fields
+    // Profile type allows missing optional fields
+    return (data || null) as Profile;
   }, [profileId]);
 
   return useSupabaseQuery<Profile, Error>(
@@ -162,6 +165,23 @@ interface UpdateProfileVariables {
   facebook_profile_url?: string | null; // NEW
   twitter_handle?: string | null; // NEW
   pan?: string | null; // NEW: Added PAN field
+  // Creator profile fields
+  creator_category?: string | null;
+  pricing_min?: number | null;
+  pricing_avg?: number | null;
+  pricing_max?: number | null;
+  bank_account_name?: string | null;
+  bank_account_number?: string | null;
+  bank_ifsc?: string | null;
+  bank_upi?: string | null;
+  gst_number?: string | null;
+  pan_number?: string | null;
+  referral_code?: string | null;
+  instagram_followers?: number | null;
+  youtube_subs?: number | null;
+  tiktok_followers?: number | null;
+  twitter_followers?: number | null;
+  facebook_followers?: number | null;
 }
 
 export const useUpdateProfile = () => {
@@ -169,7 +189,40 @@ export const useUpdateProfile = () => {
   const generateTaxFilingsMutation = useGenerateTaxFilings(); // NEW: Initialize the mutation
 
   return useSupabaseMutation<void, Error, UpdateProfileVariables>(
-    async ({ id, first_name, last_name, avatar_url, role, business_name, gstin, business_entity_type, onboarding_complete, instagram_handle, youtube_channel_id, tiktok_handle, facebook_profile_url, twitter_handle, pan }) => {
+    async ({ 
+      id, 
+      first_name, 
+      last_name, 
+      avatar_url, 
+      role, 
+      business_name, 
+      gstin, 
+      business_entity_type, 
+      onboarding_complete, 
+      instagram_handle, 
+      youtube_channel_id, 
+      tiktok_handle, 
+      facebook_profile_url, 
+      twitter_handle, 
+      pan,
+      // Creator profile fields
+      creator_category,
+      pricing_min,
+      pricing_avg,
+      pricing_max,
+      bank_account_name,
+      bank_account_number,
+      bank_ifsc,
+      bank_upi,
+      gst_number,
+      pan_number,
+      referral_code,
+      instagram_followers,
+      youtube_subs,
+      tiktok_followers,
+      twitter_followers,
+      facebook_followers,
+    }) => {
       const updateData: { 
         first_name: string; 
         last_name: string; 
@@ -186,6 +239,22 @@ export const useUpdateProfile = () => {
         facebook_profile_url?: string | null;
         twitter_handle?: string | null;
         pan?: string | null;
+        creator_category?: string | null;
+        pricing_min?: number | null;
+        pricing_avg?: number | null;
+        pricing_max?: number | null;
+        bank_account_name?: string | null;
+        bank_account_number?: string | null;
+        bank_ifsc?: string | null;
+        bank_upi?: string | null;
+        gst_number?: string | null;
+        pan_number?: string | null;
+        referral_code?: string | null;
+        instagram_followers?: number | null;
+        youtube_subs?: number | null;
+        tiktok_followers?: number | null;
+        twitter_followers?: number | null;
+        facebook_followers?: number | null;
       } = {
         first_name,
         last_name,
@@ -226,6 +295,54 @@ export const useUpdateProfile = () => {
       if (pan !== undefined) {
         updateData.pan = pan;
       }
+      if (creator_category !== undefined) {
+        updateData.creator_category = creator_category;
+      }
+      if (pricing_min !== undefined) {
+        updateData.pricing_min = pricing_min;
+      }
+      if (pricing_avg !== undefined) {
+        updateData.pricing_avg = pricing_avg;
+      }
+      if (pricing_max !== undefined) {
+        updateData.pricing_max = pricing_max;
+      }
+      if (bank_account_name !== undefined) {
+        updateData.bank_account_name = bank_account_name;
+      }
+      if (bank_account_number !== undefined) {
+        updateData.bank_account_number = bank_account_number;
+      }
+      if (bank_ifsc !== undefined) {
+        updateData.bank_ifsc = bank_ifsc;
+      }
+      if (bank_upi !== undefined) {
+        updateData.bank_upi = bank_upi;
+      }
+      if (gst_number !== undefined) {
+        updateData.gst_number = gst_number;
+      }
+      if (pan_number !== undefined) {
+        updateData.pan_number = pan_number;
+      }
+      if (referral_code !== undefined) {
+        updateData.referral_code = referral_code;
+      }
+      if (instagram_followers !== undefined) {
+        updateData.instagram_followers = instagram_followers;
+      }
+      if (youtube_subs !== undefined) {
+        updateData.youtube_subs = youtube_subs;
+      }
+      if (tiktok_followers !== undefined) {
+        updateData.tiktok_followers = tiktok_followers;
+      }
+      if (twitter_followers !== undefined) {
+        updateData.twitter_followers = twitter_followers;
+      }
+      if (facebook_followers !== undefined) {
+        updateData.facebook_followers = facebook_followers;
+      }
 
       const { error } = await supabase
         .from('profiles')
@@ -262,7 +379,12 @@ export const useUpdateProfile = () => {
         // Also invalidate the general profiles query if the role might change (which it now can)
         queryClient.invalidateQueries({ queryKey: ['profiles'] });
         // Invalidate the userProfile query in SessionContext to ensure it picks up the latest data
-        queryClient.invalidateQueries({ queryKey: ['userProfile', variables.id] });
+        queryClient.invalidateQueries({ queryKey: ['userProfile'] });
+        // Also invalidate by ID pattern for SessionContext
+        queryClient.invalidateQueries({ 
+          queryKey: ['userProfile', variables.id],
+          exact: false 
+        });
       },
       successMessage: 'Profile updated successfully!',
       errorMessage: 'Failed to update profile',

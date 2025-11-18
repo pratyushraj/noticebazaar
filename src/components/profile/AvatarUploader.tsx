@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
@@ -26,9 +26,19 @@ const AvatarUploader: React.FC<AvatarUploaderProps> = ({
   onUploadSuccess,
 }) => {
   const [preview, setPreview] = useState<string | null>(currentAvatarUrl || null);
+  const [uploadedUrl, setUploadedUrl] = useState<string | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Update preview when currentAvatarUrl changes (after DB update)
+  useEffect(() => {
+    if (currentAvatarUrl && !uploadedUrl) {
+      setPreview(currentAvatarUrl);
+    } else if (uploadedUrl) {
+      setPreview(uploadedUrl);
+    }
+  }, [currentAvatarUrl, uploadedUrl]);
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -67,34 +77,59 @@ const AvatarUploader: React.FC<AvatarUploaderProps> = ({
       const fileName = `${userId}/avatar.${fileExt}`;
       const filePath = `${fileName}`;
 
-      // Remove old avatar if exists
-      const oldPath = currentAvatarUrl?.includes('/avatar.') 
-        ? currentAvatarUrl.split('/').pop()?.split('?')[0]
-        : null;
-      if (oldPath) {
-        await supabase.storage.from(CREATOR_ASSETS_BUCKET).remove([`${userId}/${oldPath}`]);
+      // Remove old avatar if exists (try different patterns)
+      if (currentAvatarUrl) {
+        try {
+          // Pattern 1: Extract path from full URL
+          const urlMatch = currentAvatarUrl.match(/\/storage\/v1\/object\/public\/[^/]+\/(.+)$/);
+          if (urlMatch) {
+            await supabase.storage.from(CREATOR_ASSETS_BUCKET).remove([urlMatch[1].split('?')[0]]);
+          } else {
+            // Pattern 2: Try userId/avatar.ext pattern
+            const pathParts = currentAvatarUrl.split('/');
+            const avatarPart = pathParts.find(p => p.includes('avatar.'));
+            if (avatarPart) {
+              await supabase.storage.from(CREATOR_ASSETS_BUCKET).remove([`${userId}/${avatarPart.split('?')[0]}`]);
+            }
+          }
+        } catch (deleteError: any) {
+          // If deletion fails, continue anyway - might not exist
+          console.warn('Could not delete old avatar:', deleteError.message);
+        }
       }
 
       // Upload new avatar
-      const { error: uploadError, data } = await supabase.storage
+      const { error: uploadError } = await supabase.storage
         .from(CREATOR_ASSETS_BUCKET)
         .upload(filePath, file, {
           cacheControl: '3600',
           upsert: true,
         });
 
-      if (uploadError) throw uploadError;
+      if (uploadError) {
+        console.error('Upload error details:', uploadError);
+        throw new Error(`Upload failed: ${uploadError.message}. Make sure the '${CREATOR_ASSETS_BUCKET}' bucket exists and RLS policies allow uploads.`);
+      }
 
-      // Get public URL
+      // Get public URL (add timestamp to bust cache)
       const { data: { publicUrl } } = supabase.storage
         .from(CREATOR_ASSETS_BUCKET)
         .getPublicUrl(filePath);
+      
+      // Update preview immediately with new URL (cache bust)
+      const urlWithCache = `${publicUrl}?t=${Date.now()}`;
+      setUploadedUrl(publicUrl);
+      setPreview(urlWithCache);
 
+      // Call success callback (this will update the parent and save to DB)
       onUploadSuccess(publicUrl);
       setIsDialogOpen(false);
-      setPreview(null);
       if (fileInputRef.current) fileInputRef.current.value = '';
-      toast.success('Avatar updated successfully!');
+      
+      // Reset uploadedUrl after a delay so it can pick up the new currentAvatarUrl from DB
+      setTimeout(() => {
+        setUploadedUrl(null);
+      }, 2000);
     } catch (error: any) {
       console.error('Error uploading avatar:', error);
       toast.error('Failed to upload avatar', { description: error.message });
@@ -108,7 +143,19 @@ const AvatarUploader: React.FC<AvatarUploaderProps> = ({
       <div className="flex flex-col items-center space-y-4">
         <div className="relative">
           <Avatar className="h-24 w-24 border-4 border-white/10">
-            <AvatarImage src={preview || currentAvatarUrl || undefined} alt={`${firstName} ${lastName}`} />
+            <AvatarImage 
+              src={
+                preview 
+                  ? (preview.startsWith('data:') ? preview : `${preview}${preview.includes('?') ? '&' : '?'}t=${Date.now()}`)
+                  : (currentAvatarUrl ? `${currentAvatarUrl}${currentAvatarUrl.includes('?') ? '&' : '?'}t=${Date.now()}` : undefined)
+              }
+              onError={(e) => {
+                console.error('Avatar image failed to load:', e);
+                // Fallback to initials if image fails to load
+              }} 
+              alt={`${firstName} ${lastName}`}
+              key={preview || currentAvatarUrl || 'default'}
+            />
             <AvatarFallback className="bg-primary text-primary-foreground text-4xl">
               {getInitials(firstName, lastName)}
             </AvatarFallback>
@@ -140,7 +187,11 @@ const AvatarUploader: React.FC<AvatarUploaderProps> = ({
           <div className="flex flex-col items-center space-y-4 py-4">
             {preview && (
               <Avatar className="h-32 w-32 border-4 border-white/20">
-                <AvatarImage src={preview} alt="Preview" />
+                <AvatarImage 
+                  src={preview.startsWith('data:') ? preview : `${preview}${preview.includes('?') ? '&' : '?'}t=${Date.now()}`} 
+                  alt="Preview"
+                  key={`preview-${preview}`}
+                />
                 <AvatarFallback className="bg-primary text-primary-foreground text-5xl">
                   {getInitials(firstName, lastName)}
                 </AvatarFallback>

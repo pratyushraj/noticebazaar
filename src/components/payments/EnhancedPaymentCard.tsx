@@ -131,17 +131,24 @@ const EnhancedPaymentCard: React.FC<EnhancedPaymentCardProps> = ({
         <div className="mb-5">
           <div className="flex items-center justify-between text-sm">
             <span className="text-white/60">Payment Status:</span>
-            <span className={cn(
-              "font-medium",
-              status === 'overdue' && 'text-red-400',
-              status === 'pending' && 'text-yellow-400',
-              status === 'upcoming' && 'text-emerald-400',
-              status === 'paid' && 'text-emerald-400'
-            )}>
-              {status === 'overdue' ? 'Overdue' : 
-               status === 'pending' ? 'Pending' :
-               status === 'upcoming' ? 'Scheduled' : 'Paid'}
-            </span>
+            <div className="text-right">
+              <span className={cn(
+                "font-medium",
+                status === 'overdue' && 'text-red-400',
+                status === 'pending' && 'text-yellow-400',
+                status === 'upcoming' && 'text-emerald-400',
+                status === 'paid' && 'text-emerald-400'
+              )}>
+                {status === 'overdue' ? 'Overdue' : 
+                 status === 'pending' ? 'Pending' :
+                 status === 'upcoming' ? 'Scheduled' : 'Paid'}
+              </span>
+              {status === 'overdue' && daysOverdue !== undefined && daysOverdue > 0 && (
+                <div className="text-xs text-red-400 font-medium mt-0.5">
+                  Overdue by {daysOverdue} {daysOverdue === 1 ? 'day' : 'days'}
+                </div>
+              )}
+            </div>
           </div>
         </div>
 

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSession } from '@/contexts/SessionContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -10,6 +10,7 @@ import CreatorBusinessDetailsForm from '@/components/creator-onboarding/CreatorB
 import { useUpdateProfile } from '@/lib/hooks/useProfiles';
 import { Button } from '@/components/ui/button';
 import { startTrialOnSignup } from '@/lib/trial';
+import { supabase } from '@/integrations/supabase/client';
 
 const CreatorOnboarding = () => {
   const { profile, loading: sessionLoading, refetchProfile, user } = useSession();
@@ -41,6 +42,52 @@ const CreatorOnboarding = () => {
     if (!profile.id || !user?.id) return;
     setIsSubmitting(true);
     try {
+      // Handle referral tracking if user signed up via referral link
+      const referralCode = sessionStorage.getItem('referral_code');
+      if (referralCode) {
+        try {
+          // Get referrer's user_id from referral code
+          const { data: referralLink } = await (supabase
+            // @ts-expect-error - Table types will be updated after migration
+            .from('referral_links') as any)
+            .select('user_id')
+            .eq('code', referralCode)
+            .single();
+
+          if (referralLink) {
+            // Check if referral already exists (might have been created during signup)
+            const { data: existingReferral } = await (supabase
+              // @ts-expect-error - Table types will be updated after migration
+              .from('referrals') as any)
+              .select('id')
+              .eq('referrer_id', (referralLink as any).user_id)
+              .eq('referred_user_id', user.id)
+              .single();
+
+            if (!existingReferral) {
+              // Create referral record
+              // @ts-expect-error - Table types will be updated after migration
+              await (supabase.from('referrals') as any).insert({
+                referrer_id: (referralLink as any).user_id,
+                referred_user_id: user.id,
+                subscribed: false, // Will be updated on subscription
+              });
+
+              // Refresh referrer's stats
+              // @ts-expect-error - Function types will be updated after migration
+              await (supabase.rpc('refresh_partner_stats', {
+                p_user_id: (referralLink as any).user_id,
+              }) as any);
+            }
+          }
+          // Clear referral code from session storage
+          sessionStorage.removeItem('referral_code');
+        } catch (referralError: any) {
+          console.error('Error tracking referral:', referralError);
+          // Don't block onboarding if referral tracking fails
+        }
+      }
+
       // Start trial if not already started
       if (!profile.is_trial) {
         await startTrialOnSignup(user.id);

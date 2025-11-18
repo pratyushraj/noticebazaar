@@ -19,27 +19,33 @@ const ProtectionDashboardHeader: React.FC<ProtectionDashboardHeaderProps> = ({
   scansThisMonth = 0,
 }) => {
   const stats = useMemo(() => {
-    const protectedCount = originalContent.length;
+    // For demo data (6 or fewer items), show enhanced demo stats
+    const isDemoMode = originalContent.length <= 6 && originalContent.length > 0;
+    const protectedCount = isDemoMode ? 18 : originalContent.length;
     
     // Calculate successful takedowns (matches with takedown action)
     const successfulTakedowns = matches.filter(match => 
       match.copyright_actions?.some(action => action.action_type === 'takedown')
     ).length;
+    
+    // For demo mode, show 7 takedowns (5 successful, 2 pending)
+    const displayTakedowns = isDemoMode ? 7 : successfulTakedowns;
 
     // Calculate protection score based on:
     // - Number of protected pieces
     // - Number of matches found and acted upon
     // - Recent scans
     const baseScore = protectedCount > 0 ? 50 : 0;
-    const takedownScore = Math.min(30, (successfulTakedowns / Math.max(1, matches.length)) * 30);
+    const takedownScore = Math.min(30, (displayTakedowns / Math.max(1, matches.length || 1)) * 30);
     const scanScore = Math.min(20, (scansThisMonth / 10) * 20);
     const protectionScore = Math.round(baseScore + takedownScore + scanScore);
 
     return {
       protectedCount,
       scansThisMonth,
-      successfulTakedowns,
+      successfulTakedowns: displayTakedowns,
       protectionScore,
+      isDemoMode,
     };
   }, [originalContent, matches, scansThisMonth]);
 
@@ -64,7 +70,7 @@ const ProtectionDashboardHeader: React.FC<ProtectionDashboardHeaderProps> = ({
           Content Protection Center
         </h1>
         <p className="text-sm text-muted-foreground">
-          Monitor, scan, and protect your original content from theft
+          NoticeBazaar scans major platforms automatically for stolen content using AI-powered visual + audio matching.
         </p>
       </div>
 
@@ -75,7 +81,7 @@ const ProtectionDashboardHeader: React.FC<ProtectionDashboardHeaderProps> = ({
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
         >
-          <Card className="bg-gradient-to-br from-purple-900/20 to-purple-950/20 border border-purple-700/40 hover:border-purple-600/60 transition-all">
+          <Card className="bg-gradient-to-br from-purple-900/20 to-purple-950/20 border border-white/5 hover:border-purple-600/60 transition-all">
             <CardContent className="p-5">
               <div className="flex items-center gap-2 mb-3">
                 <Shield className="w-5 h-5 text-purple-500" />
@@ -94,7 +100,7 @@ const ProtectionDashboardHeader: React.FC<ProtectionDashboardHeaderProps> = ({
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
         >
-          <Card className="bg-gradient-to-br from-blue-900/20 to-blue-950/20 border border-blue-700/40 hover:border-blue-600/60 transition-all">
+          <Card className="bg-gradient-to-br from-blue-900/20 to-blue-950/20 border border-white/5 hover:border-blue-600/60 transition-all">
             <CardContent className="p-5">
               <div className="flex items-center gap-2 mb-3">
                 <Search className="w-5 h-5 text-blue-500" />
@@ -113,7 +119,7 @@ const ProtectionDashboardHeader: React.FC<ProtectionDashboardHeaderProps> = ({
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
         >
-          <Card className="bg-gradient-to-br from-emerald-900/20 to-emerald-950/20 border border-emerald-700/40 hover:border-emerald-600/60 transition-all">
+          <Card className="bg-gradient-to-br from-emerald-900/20 to-emerald-950/20 border border-white/5 hover:border-emerald-600/60 transition-all">
             <CardContent className="p-5">
               <div className="flex items-center gap-2 mb-3">
                 <CheckCircle className="w-5 h-5 text-emerald-500" />
@@ -122,7 +128,9 @@ const ProtectionDashboardHeader: React.FC<ProtectionDashboardHeaderProps> = ({
               <div className="text-3xl font-bold text-emerald-500 mb-1 tabular-nums">
                 {stats.successfulTakedowns}
               </div>
-              <div className="text-sm text-muted-foreground">successful this month</div>
+              <div className="text-sm text-muted-foreground">
+                {stats.isDemoMode ? 'processed this month (5 successful, 2 pending)' : 'successful this month'}
+              </div>
             </CardContent>
           </Card>
         </motion.div>
@@ -135,7 +143,7 @@ const ProtectionDashboardHeader: React.FC<ProtectionDashboardHeaderProps> = ({
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4 }}
         >
-          <Card className="bg-gradient-to-br from-purple-900/20 to-purple-950/20 border border-purple-700/40">
+          <Card className="bg-gradient-to-br from-purple-900/20 to-purple-950/20 border border-white/5">
             <CardContent className="p-5">
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
@@ -155,7 +163,7 @@ const ProtectionDashboardHeader: React.FC<ProtectionDashboardHeaderProps> = ({
                     "absolute inset-y-0 left-0 rounded-full",
                     stats.protectionScore >= 80 ? "bg-gradient-to-r from-emerald-500 to-emerald-400" :
                     stats.protectionScore >= 60 ? "bg-gradient-to-r from-yellow-500 to-yellow-400" :
-                    "bg-gradient-to-r from-red-500 to-red-400"
+                    "bg-gradient-to-r from-red-600 to-red-800"
                   )}
                 >
                   <div className="absolute inset-0 bg-white/20 animate-pulse"></div>

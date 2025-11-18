@@ -101,9 +101,34 @@ export const useRazorpayCheckout = () => {
         receipt: receiptId,
       });
 
-      const handlePaymentResponse = (response: any) => {
+      const handlePaymentResponse = async (response: any) => {
         // This handler is called on successful payment/subscription activation
         toast.success('Subscription successful!', { description: `Subscription ID: ${response.razorpay_subscription_id}. Status will be updated shortly.` });
+        
+        // Process referral commission if applicable
+        try {
+          // Get subscription amount (you may need to adjust this based on your plan pricing)
+          const planPrices: Record<string, number> = {
+            // Add your plan IDs and prices here
+            // Example: 'plan_xxxxx': 1000, // Monthly price in rupees
+          };
+          
+          const subscriptionAmount = planPrices[planId] || 0;
+          
+          if (subscriptionAmount > 0 && user?.id) {
+            // Call edge function to process referral commission
+            await supabase.functions.invoke('process-referral-commission', {
+              body: {
+                userId: user.id,
+                subscriptionAmount,
+              },
+            });
+          }
+        } catch (referralError: any) {
+          console.error('Error processing referral commission:', referralError);
+          // Don't block payment success if referral processing fails
+        }
+        
         onPaymentSuccess(response);
       };
 

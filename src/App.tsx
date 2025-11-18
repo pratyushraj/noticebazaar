@@ -54,6 +54,8 @@ import CreatorOnboarding from "./pages/CreatorOnboarding"; // NEW: Import Creato
 import BrandDirectory from "./pages/BrandDirectory";
 import ContractAnalyzer from "./pages/ContractAnalyzer";
 import RateCalculator from "./pages/RateCalculator";
+import PartnerProgram from "./pages/PartnerProgram";
+import ReferralLanding from "./pages/ReferralLanding";
 
 
 const queryClient = new QueryClient();
@@ -65,7 +67,7 @@ const App = () => {
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <AppToaster />
-        <BrowserRouter>
+        <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
           <FacebookPixelTracker />
           <GoogleAnalyticsTracker /> {/* Add GA4 tracker here */}
           <SessionContextProvider>
@@ -94,6 +96,9 @@ const App = () => {
               {/* NEW LEAD FUNNEL ROUTES */}
               <Route path="/free-legal-check" element={<FreeLegalCheck />} />
               <Route path="/thank-you" element={<ThankYou />} />
+              
+              {/* Referral Landing */}
+              <Route path="/p/:code" element={<ReferralLanding />} />
 
               {/* Client-specific routes */}
               <Route path="/client-dashboard" element={<ProtectedLayout allowedRoles={['client']}><ClientDashboard /></ProtectedLayout>} />
@@ -121,6 +126,7 @@ const App = () => {
               <Route path="/creator-onboarding" element={<ProtectedLayout allowedRoles={['creator']}><CreatorOnboarding /></ProtectedLayout>} /> {/* NEW: Onboarding Route */}
               <Route path="/creator-dashboard" element={<ProtectedLayout allowedRoles={['creator']}><CreatorDashboard /></ProtectedLayout>} /> {/* New: Creator Dashboard Route */}
               <Route path="/creator-profile" element={<ProtectedLayout allowedRoles={['creator']}><CreatorProfile /></ProtectedLayout>} />
+              <Route path="/partner-program" element={<ProtectedLayout allowedRoles={['creator']}><PartnerProgram /></ProtectedLayout>} />
               {/* NEW: Creator-specific pages */}
               <Route path="/creator-contracts" element={<ProtectedLayout allowedRoles={['creator']}><CreatorContracts /></ProtectedLayout>} />
               <Route path="/brand-deals" element={<ProtectedLayout allowedRoles={['creator']}><CreatorContracts /></ProtectedLayout>} />

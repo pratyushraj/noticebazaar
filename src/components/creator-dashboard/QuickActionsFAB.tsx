@@ -72,13 +72,13 @@ const QuickActionsFAB: React.FC<QuickActionsFABProps> = ({
   ];
 
   return (
-    <motion.div
-      initial={{ scale: 0, opacity: 0 }}
-      animate={{ scale: 1, opacity: 1 }}
-      transition={{ delay: 0.5, type: "spring", stiffness: 200 }}
-      className="fixed bottom-6 right-6 z-50"
-    >
-      <div className="relative">
+    <div className="fixed bottom-6 right-6 z-50">
+      <motion.div
+        initial={{ scale: 0, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{ delay: 0.5, type: "spring", stiffness: 200 }}
+        className="relative"
+      >
         {/* Quick actions menu */}
         <AnimatePresence>
           {showQuickActions && (
@@ -151,8 +151,8 @@ const QuickActionsFAB: React.FC<QuickActionsFABProps> = ({
             3
           </span>
         </motion.button>
-      </div>
-    </motion.div>
+      </motion.div>
+    </div>
   );
 };
 

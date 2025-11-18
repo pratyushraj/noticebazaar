@@ -54,6 +54,7 @@ const Sidebar = ({ className }: SidebarProps) => {
     { to: "/creator-payments", icon: <DollarSign className="h-4 w-4" />, label: "Payments & Recovery" },
     { to: "/creator-content-protection", icon: <ShieldCheck className="h-4 w-4" />, label: "Content Protection" },
     { to: "/creator-tax-compliance", icon: <Calculator className="h-4 w-4" />, label: "Taxes & Compliance" },
+    { to: "/partner-program", icon: <Gift className="h-4 w-4" />, label: "Partner Program" },
     { to: "/messages", icon: <MessageSquare className="h-4 w-4" />, label: "Messages" },
     { to: "/creator-support", icon: <Bell className="h-4 w-4" />, label: "Support" }, // Placeholder for support page
   ];

@@ -1,24 +1,31 @@
 "use client";
 
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Gift, DollarSign, Copy, CheckCircle2 } from 'lucide-react';
+import { Gift, DollarSign, Copy, CheckCircle2, ArrowRight } from 'lucide-react';
 import { toast } from 'sonner';
 import { useSession } from '@/contexts/SessionContext';
+import { useReferralLink } from '@/lib/hooks/usePartnerProgram';
+import { formatReferralLink } from '@/lib/utils/partner';
+import { Loader2 } from 'lucide-react';
 
 const ReferAndEarn: React.FC = () => {
-  const { profile } = useSession();
+  const { user } = useSession();
+  const navigate = useNavigate();
   const [copied, setCopied] = useState(false);
-
-  const referralLink = React.useMemo(() => {
-    if (!profile?.id) return window.location.origin;
-    return `${window.location.origin}?ref=${profile.id}`;
-  }, [profile?.id]);
+  
+  const { data: referralLink, isLoading: loadingLink } = useReferralLink(user?.id);
 
   const handleCopyLink = async () => {
+    if (!referralLink) {
+      navigate('/partner-program');
+      return;
+    }
     try {
-      await navigator.clipboard.writeText(referralLink);
+      const link = formatReferralLink(referralLink.code);
+      await navigator.clipboard.writeText(link);
       setCopied(true);
       toast.success('Invite link copied to clipboard!');
       setTimeout(() => setCopied(false), 2000);
@@ -49,19 +56,25 @@ const ReferAndEarn: React.FC = () => {
           <div className="flex items-start gap-3 p-3 rounded-xl bg-purple-500/10 border border-purple-500/20">
             <DollarSign className="h-5 w-5 text-green-400 mt-0.5 flex-shrink-0" />
             <div className="flex-1">
-              <p className="text-sm font-semibold text-white">10% commission when they upgrade</p>
+              <p className="text-sm font-semibold text-white">Up to 30% commission when they subscribe</p>
               <p className="text-xs text-white/60 mt-0.5">Earn recurring revenue from every referral</p>
             </div>
           </div>
         </div>
 
-        <div className="pt-3 border-t border-white/10">
+        <div className="pt-3 border-t border-white/10 space-y-2">
           <Button
             onClick={handleCopyLink}
+            disabled={loadingLink}
             className="w-full bg-purple-600 hover:bg-purple-700 text-white font-semibold flex items-center justify-center gap-2"
             size="lg"
           >
-            {copied ? (
+            {loadingLink ? (
+              <>
+                <Loader2 className="h-5 w-5 animate-spin" />
+                Loading...
+              </>
+            ) : copied ? (
               <>
                 <CheckCircle2 className="h-5 w-5" />
                 Link Copied!
@@ -73,9 +86,17 @@ const ReferAndEarn: React.FC = () => {
               </>
             )}
           </Button>
-          {copied && (
+          <Button
+            onClick={() => navigate('/partner-program')}
+            variant="outline"
+            className="w-full border-purple-500/40 text-purple-300 hover:bg-purple-500/10"
+          >
+            View Partner Dashboard
+            <ArrowRight className="h-4 w-4 ml-2" />
+          </Button>
+          {copied && referralLink && (
             <p className="text-xs text-purple-300 text-center mt-2">
-              Share this link: {referralLink.substring(0, 40)}...
+              Share this link: {formatReferralLink(referralLink.code).substring(0, 40)}...
             </p>
           )}
         </div>

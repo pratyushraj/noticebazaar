@@ -2,17 +2,15 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { useSession } from '@/contexts/SessionContext';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { Loader2, IndianRupee, Send, FileText, CalendarDays, AlertTriangle, Mail } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
+import { Loader2, IndianRupee, Mail } from 'lucide-react';
 import { useBrandDeals } from '@/lib/hooks/useBrandDeals';
 import { usePagination } from '@/lib/hooks/usePagination';
 import { BrandDeal } from '@/types';
 import { toast } from 'sonner';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
-import { useSendPaymentReminder } from '@/lib/hooks/useSendPaymentReminder'; // Import the new hook
+import { useSendPaymentReminder } from '@/lib/hooks/useSendPaymentReminder';
 import {
   Dialog,
   DialogContent,
@@ -22,7 +20,6 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
-import BrandLogo from '@/components/creator-contracts/BrandLogo';
 import { cn } from '@/lib/utils';
 import FinancialOverviewHeader from '@/components/payments/FinancialOverviewHeader';
 import PaymentQuickFilters from '@/components/payments/PaymentQuickFilters';
@@ -31,12 +28,18 @@ import EnhancedPaymentCard from '@/components/payments/EnhancedPaymentCard';
 import PaymentAnalytics from '@/components/payments/PaymentAnalytics';
 import TaxSummaryCard from '@/components/payments/TaxSummaryCard';
 import MarkPaymentReceivedDialog from '@/components/creator-contracts/MarkPaymentReceivedDialog';
+import TopInvoicesDueSoon from '@/components/payments/TopInvoicesDueSoon';
+import { motion } from 'framer-motion';
+import { Card, CardContent } from '@/components/ui/card';
+
+type SortOption = 'due_date' | 'amount_desc' | 'amount_asc' | 'brand_asc' | 'overdue_first' | 'platform';
 
 const CreatorPaymentsAndRecovery = () => {
   const { profile, loading: sessionLoading, isCreator } = useSession();
   const [statusFilter, setStatusFilter] = useState<BrandDeal['status'] | 'All'>('All');
   const [searchTerm, setSearchTerm] = useState('');
   const [quickFilter, setQuickFilter] = useState<string | null>(null);
+  const [sortBy, setSortBy] = useState<SortOption>('due_date');
   const [isReminderDialogOpen, setIsReminderDialogOpen] = useState(false);
   const [selectedDealForReminder, setSelectedDealForReminder] = useState<BrandDeal | null>(null);
   const [messageType, setMessageType] = useState<'email' | 'whatsapp'>('email');
@@ -168,17 +171,46 @@ const CreatorPaymentsAndRecovery = () => {
       );
     }
 
+    // Sort
+    const now = new Date();
+    now.setHours(0, 0, 0, 0);
+    
+    filtered.sort((a, b) => {
+      switch (sortBy) {
+        case 'due_date':
+          const dueA = new Date(a.payment_expected_date);
+          const dueB = new Date(b.payment_expected_date);
+          return dueA.getTime() - dueB.getTime();
+        
+        case 'amount_desc':
+          return b.deal_amount - a.deal_amount;
+        
+        case 'amount_asc':
+          return a.deal_amount - b.deal_amount;
+        
+        case 'brand_asc':
+          return a.brand_name.localeCompare(b.brand_name);
+        
+        case 'overdue_first':
+          const overdueA = new Date(a.payment_expected_date) < now ? 1 : 0;
+          const overdueB = new Date(b.payment_expected_date) < now ? 1 : 0;
+          if (overdueA !== overdueB) return overdueB - overdueA;
+          return new Date(a.payment_expected_date).getTime() - new Date(b.payment_expected_date).getTime();
+        
+        case 'platform':
+          return (a.platform || '').localeCompare(b.platform || '');
+        
+        default:
+          return 0;
+      }
+    });
+
     return filtered;
-  }, [allBrandDeals, searchTerm, statusFilter, quickFilter]);
+  }, [allBrandDeals, searchTerm, statusFilter, quickFilter, sortBy]);
 
   const paginatedDeals = filteredAndSearchedDeals.slice((currentPage - 1) * pageSize, currentPage * pageSize);
   const totalFilteredCount = filteredAndSearchedDeals.length;
   const calculatedTotalPages = Math.ceil(totalFilteredCount / pageSize);
-
-  // Calculate total income from completed deals
-  const totalIncome = useMemo(() => {
-    return allBrandDeals.filter(deal => deal.status === 'Completed').reduce((sum, deal) => sum + deal.deal_amount, 0) || 0;
-  }, [allBrandDeals]);
 
   useEffect(() => {
     if (brandDealsError) {
@@ -234,36 +266,8 @@ const CreatorPaymentsAndRecovery = () => {
     window.location.href = `/creator-contracts/${deal.id}`;
   };
 
-  const handleAddNote = (deal: BrandDeal) => {
+  const handleAddNote = (_deal: BrandDeal) => {
     toast.info('Add note feature coming soon!');
-  };
-
-  const getStatusBadgeVariant = (status: BrandDeal['status']): 'default' | 'secondary' | 'success' | 'destructive' | 'outline' => {
-    switch (status) {
-      case 'Approved': return 'default';
-      case 'Drafting': return 'secondary';
-      case 'Payment Pending': return 'secondary';
-      case 'Completed': return 'success';
-      case 'Cancelled': return 'destructive';
-      default: return 'outline';
-    }
-  };
-
-  const isOverdue = (paymentExpectedDate: string) => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const expectedDate = new Date(paymentExpectedDate);
-    expectedDate.setHours(0, 0, 0, 0);
-    return expectedDate < today;
-  };
-
-  // Handle deliverables array/string
-  const getDeliverablesArray = (deal: BrandDeal): string[] => {
-    if (Array.isArray(deal.deliverables)) return deal.deliverables;
-    if (typeof deal.deliverables === 'string') {
-      return deal.deliverables.split(',').map(d => d.trim()).filter(Boolean);
-    }
-    return [];
   };
 
   if (sessionLoading || isLoadingBrandDeals) {
@@ -279,6 +283,31 @@ const CreatorPaymentsAndRecovery = () => {
     <div className="w-full max-w-full overflow-x-hidden pb-[80px] px-4 md:px-6 antialiased">
       {/* New Financial Overview Header */}
       <FinancialOverviewHeader allDeals={allBrandDeals} />
+
+      {/* Payment Frequency Insights */}
+      {allBrandDeals.length > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.25 }}
+          className="mb-6"
+        >
+          <Card className="bg-gradient-to-br from-blue-900/20 to-indigo-900/20 border border-blue-700/40">
+            <CardContent className="p-4">
+              <p className="text-sm text-muted-foreground text-center">
+                Creators like you get paid every <span className="font-semibold text-foreground">32–40 days</span> on average.
+              </p>
+            </CardContent>
+          </Card>
+        </motion.div>
+      )}
+
+      {/* Top Invoices Due Soon */}
+      {allBrandDeals.length > 0 && (
+        <div className="mb-6">
+          <TopInvoicesDueSoon brandDeals={allBrandDeals} />
+        </div>
+      )}
 
       {/* Quick Filter Chips */}
       {allBrandDeals.length > 0 && (
@@ -318,21 +347,39 @@ const CreatorPaymentsAndRecovery = () => {
                 aria-label="Search payments"
               />
           </div>
-          <Select onValueChange={(value: BrandDeal['status'] | 'All') => {
-            setStatusFilter(value);
-            setCurrentPage(1);
-          }} value={statusFilter}>
-            <SelectTrigger className="w-full sm:w-[180px] bg-background text-foreground border-border/40 h-[42px] md:h-10 rounded-[14px] md:rounded-md">
-              <SelectValue placeholder="Filter by Status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="All">All Statuses</SelectItem>
-              <SelectItem value="Payment Pending">Payment Pending</SelectItem>
-              <SelectItem value="Completed">Completed</SelectItem>
-              <SelectItem value="Approved">Approved</SelectItem>
-              <SelectItem value="Cancelled">Cancelled</SelectItem>
-            </SelectContent>
-          </Select>
+          <div className="flex flex-col sm:flex-row gap-3">
+            <Select onValueChange={(value: BrandDeal['status'] | 'All') => {
+              setStatusFilter(value);
+              setCurrentPage(1);
+            }} value={statusFilter}>
+              <SelectTrigger className="w-full sm:w-[180px] bg-background text-foreground border-border/40 h-[42px] md:h-10 rounded-[14px] md:rounded-md">
+                <SelectValue placeholder="Filter by Status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="All">All Statuses</SelectItem>
+                <SelectItem value="Payment Pending">Payment Pending</SelectItem>
+                <SelectItem value="Completed">Completed</SelectItem>
+                <SelectItem value="Approved">Approved</SelectItem>
+                <SelectItem value="Cancelled">Cancelled</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select onValueChange={(value: SortOption) => {
+              setSortBy(value);
+              setCurrentPage(1);
+            }} value={sortBy}>
+              <SelectTrigger className="w-full sm:w-[180px] bg-background text-foreground border-border/40 h-[42px] md:h-10 rounded-[14px] md:rounded-md">
+                <SelectValue placeholder="Sort" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="due_date">Due Date (Soonest)</SelectItem>
+                <SelectItem value="amount_desc">Highest Amount</SelectItem>
+                <SelectItem value="amount_asc">Lowest Amount</SelectItem>
+                <SelectItem value="brand_asc">Brand Name A–Z</SelectItem>
+                <SelectItem value="overdue_first">Overdue First</SelectItem>
+                <SelectItem value="platform">Platform</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </div>
 
         {paginatedDeals.length > 0 ? (

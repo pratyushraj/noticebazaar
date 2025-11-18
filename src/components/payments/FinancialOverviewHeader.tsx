@@ -94,7 +94,7 @@ const FinancialOverviewHeader: React.FC<FinancialOverviewHeaderProps> = ({ allDe
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
         >
-          <Card className="relative overflow-hidden rounded-2xl p-4 md:p-6 border border-amber-400/20 transition-all hover:scale-[1.02] bg-gradient-to-br from-amber-500/20 to-amber-700/10 shadow-[0_0_20px_rgba(0,0,0,0.3)]">
+          <Card className="relative overflow-hidden rounded-2xl p-4 md:p-6 border border-white/5 transition-all hover:scale-[1.02] bg-gradient-to-br from-amber-500/20 to-amber-700/10 shadow-[0_0_20px_rgba(0,0,0,0.3)]">
             <CardContent className="p-0">
               <div className="flex items-start justify-between">
                 <div className="flex items-start gap-3 md:gap-4 flex-1">
@@ -119,7 +119,7 @@ const FinancialOverviewHeader: React.FC<FinancialOverviewHeaderProps> = ({ allDe
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
           >
-            <Card className="relative overflow-hidden rounded-2xl p-4 md:p-6 border border-white/10 transition-all hover:scale-[1.02] bg-gradient-to-br from-red-500/25 to-red-700/10 shadow-[0_0_20px_rgba(0,0,0,0.3)]">
+            <Card className="relative overflow-hidden rounded-2xl p-4 md:p-6 border border-white/5 transition-all hover:scale-[1.02] bg-gradient-to-br from-red-600/20 to-red-800/20 shadow-[0_0_20px_rgba(0,0,0,0.3)]">
               <CardContent className="p-0">
                 <div className="flex items-start justify-between">
                   <div className="flex items-start gap-3 md:gap-4 flex-1">
@@ -142,7 +142,7 @@ const FinancialOverviewHeader: React.FC<FinancialOverviewHeaderProps> = ({ allDe
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
           >
-            <Card className="relative overflow-hidden rounded-2xl p-4 md:p-6 border border-emerald-500/10 transition-all hover:scale-[1.02] bg-gradient-to-br from-emerald-500/10 to-emerald-700/8 shadow-[0_0_20px_rgba(0,0,0,0.3)]">
+            <Card className="relative overflow-hidden rounded-2xl p-4 md:p-6 border border-white/5 transition-all hover:scale-[1.02] bg-gradient-to-br from-emerald-500/10 to-emerald-700/8 shadow-[0_0_20px_rgba(0,0,0,0.3)]">
               <CardContent className="p-0">
                 <div className="flex items-start justify-between">
                   <div className="flex items-start gap-3 md:gap-4 flex-1">
@@ -169,7 +169,7 @@ const FinancialOverviewHeader: React.FC<FinancialOverviewHeaderProps> = ({ allDe
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4 }}
         >
-          <Card className="bg-gradient-to-br from-blue-900/20 to-blue-950/20 border border-blue-700/40">
+          <Card className="bg-gradient-to-br from-blue-900/20 to-blue-950/20 border border-white/5">
             <CardContent className="p-5">
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">

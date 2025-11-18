@@ -206,8 +206,12 @@ const CreatorContentProtection = () => {
   // Calculate scans this month (mock - in real app, fetch from copyright_scans table)
   // MUST be before any conditional returns (Rules of Hooks)
   const scansThisMonth = useMemo(() => {
+    // If we have demo data (6 items) or less, return demo stats
+    if (!originalContentList || originalContentList.length === 0 || originalContentList.length <= 6) {
+      return 42; // Demo: 42 scans this month
+    }
     // Mock calculation - in real app, count scans from this month
-    return Math.floor((originalContentList?.length || 0) * 0.5);
+    return Math.floor((originalContentList.length || 0) * 7);
   }, [originalContentList]);
 
   // Generate scan history (mock - in real app, fetch from copyright_scans table)

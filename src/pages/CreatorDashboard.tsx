@@ -5,7 +5,6 @@ import { useNavigate } from 'react-router-dom';
 import { useSession } from '@/contexts/SessionContext';
 import { 
   Search, 
-  Bell, 
   Loader2,
   Bot,
   Briefcase,
@@ -45,7 +44,6 @@ import ProtectionDashboardHeader from '@/components/content-protection/Protectio
 import { useOriginalContent, useCopyrightMatches } from '@/lib/hooks/useCopyrightScanner';
 import CreatorProfessionalTeam from '@/components/creator-dashboard/CreatorProfessionalTeam';
 import ChatWindow from '@/components/ChatWindow';
-import ProfileMenu from '@/components/ProfileMenu';
 import WeeklyPerformance from '@/components/creator-dashboard/WeeklyPerformance';
 import TrialBanner from '@/components/trial/TrialBanner';
 import UpgradeModal from '@/components/trial/UpgradeModal';
@@ -61,6 +59,18 @@ import UploadCenter from '@/components/creator-dashboard/UploadCenter';
 import ThisWeeksSummary from '@/components/creator-dashboard/ThisWeeksSummary';
 import CreatorScoreBadge from '@/components/creator-dashboard/CreatorScoreBadge';
 import AccountSummary from '@/components/creator-dashboard/AccountSummary';
+import AIInsights from '@/components/creator-dashboard/AIInsights';
+import BrandInterestScore from '@/components/creator-dashboard/BrandInterestScore';
+import AudienceAnalyticsPreview from '@/components/creator-dashboard/AudienceAnalyticsPreview';
+import TopActionNeeded from '@/components/creator-dashboard/TopActionNeeded';
+import AITaxAdvice from '@/components/creator-dashboard/AITaxAdvice';
+import AILegalRiskMeter from '@/components/creator-dashboard/AILegalRiskMeter';
+import ReferralEarningsPreview from '@/components/creator-dashboard/ReferralEarningsPreview';
+import ContentScannerQueue from '@/components/creator-dashboard/ContentScannerQueue';
+import GSTImpactSummary from '@/components/creator-dashboard/GSTImpactSummary';
+import GoalProgressAnnual from '@/components/creator-dashboard/GoalProgressAnnual';
+import CreatorBadge from '@/components/creator-dashboard/CreatorBadge';
+import ContentMetrics from '@/components/creator-dashboard/ContentMetrics';
 
 // Helper functions
 const getDealStage = (deal: BrandDeal): DealStage => {
@@ -96,7 +106,7 @@ const getPaymentStatus = (deal: BrandDeal): PaymentStatus => {
 
 const CreatorDashboard = () => {
   const navigate = useNavigate();
-  const { profile, loading: sessionLoading, isCreator, user, trialStatus } = useSession();
+  const { profile, loading: sessionLoading, isCreator, trialStatus } = useSession();
   const [showExpiredModal, setShowExpiredModal] = useState(false);
   const [activeTab, setActiveTab] = useState<'overview' | 'deals' | 'payments' | 'protection'>('overview');
   
@@ -540,60 +550,9 @@ const CreatorDashboard = () => {
 
   return (
     <>
-      <div className="min-h-screen bg-gray-950 text-white">
-        {/* Header */}
-        <header className="sticky top-0 z-50 bg-gray-900 border-b border-gray-800">
-          <div className="flex items-center justify-between px-4 py-3">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-blue-600 rounded flex items-center justify-center font-bold">
-                N
-              </div>
-              <div>
-                <h1 className="text-lg font-semibold">NoticeBazaar</h1>
-              </div>
-            </div>
-            
-            <div className="flex items-center gap-4">
-              <Search className="w-5 h-5 text-gray-400" />
-              <div className="relative">
-                <Bell className="w-5 h-5 text-gray-400" />
-                <span className="absolute -top-1 -right-1 w-2 h-2 bg-blue-500 rounded-full"></span>
-              </div>
-              <ProfileMenu 
-                profile={profile}
-                user={user}
-                profilePath="/creator-profile"
-              />
-            </div>
-          </div>
-
-          {/* Navigation Tabs */}
-            <div className="flex gap-1 px-4 py-3 overflow-x-auto">
-              {[
-                { id: 'overview', label: 'Overview' },
-                { id: 'deals', label: 'Deals' },
-                { id: 'payments', label: 'Payments' },
-                { id: 'protection', label: 'Protection' }
-              ].map((tab) => (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id as any)}
-                  className={cn(
-                    "px-4 py-2 text-sm font-medium capitalize whitespace-nowrap transition-colors relative",
-                    activeTab === tab.id
-                      ? 'text-blue-400'
-                      : 'text-gray-400 hover:text-gray-300'
-                  )}
-                >
-                  {tab.label}
-                  {activeTab === tab.id && (
-                    <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-400 shadow-[0_0_8px_rgba(59,130,246,0.6)]"></span>
-                  )}
-                </button>
-              ))}
-            </div>
-        </header>
-
+      <div className="min-h-screen bg-[#060A12] text-white">
+        {/* Header removed - now using Navbar from Layout component */}
+        
         <div className="max-w-7xl mx-auto px-4 py-6 space-y-6">
           {/* Overview Tab */}
           {activeTab === 'overview' && (
@@ -601,7 +560,7 @@ const CreatorDashboard = () => {
               <TrialBanner />
 
               <div>
-                <h1 className="text-2xl font-bold mb-1">
+                <h1 className="text-2xl font-bold mb-1 text-white/90">
                   Welcome back, <span className="text-blue-400">{profile?.first_name || 'Creator'}</span>!
                 </h1>
                 <p className="text-gray-400 text-sm">
@@ -613,7 +572,9 @@ const CreatorDashboard = () => {
                 current={dashboardData.earnings.current}
                 previous={dashboardData.earnings.previous}
                 goal={dashboardData.earnings.goal}
+                brandDeals={brandDeals}
               />
+
 
               <CriticalActions
                 actions={dashboardData.urgentActions}
@@ -678,6 +639,42 @@ const CreatorDashboard = () => {
               </div>
 
               <WeeklyPerformance brandDeals={brandDeals} />
+
+              {/* AI Insights Section */}
+              <AIInsights brandDeals={brandDeals} />
+
+              {/* Brand Interest & Audience Analytics */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <BrandInterestScore brandDeals={brandDeals} profile={profile} />
+                <AudienceAnalyticsPreview profile={profile} />
+              </div>
+
+              {/* Top Actions & Tax Advice */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <TopActionNeeded brandDeals={brandDeals} />
+                <AITaxAdvice brandDeals={brandDeals} />
+              </div>
+
+              {/* Legal Risk & Referral Earnings */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <AILegalRiskMeter brandDeals={brandDeals} />
+                <ReferralEarningsPreview />
+              </div>
+
+              {/* Content Scanner & GST Impact */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <ContentScannerQueue />
+                <GSTImpactSummary brandDeals={brandDeals} />
+              </div>
+
+              {/* Annual Goal Progress & Creator Badge */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <GoalProgressAnnual brandDeals={brandDeals} />
+                <CreatorBadge profile={profile} />
+              </div>
+
+              {/* Content Metrics */}
+              <ContentMetrics />
 
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <ReferAndEarn />

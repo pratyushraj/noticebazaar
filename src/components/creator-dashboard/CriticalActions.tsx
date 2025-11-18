@@ -77,7 +77,7 @@ const CriticalActions: React.FC<CriticalActionsProps> = ({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.2 }}
-      className="bg-gradient-to-br from-red-950/40 to-red-900/20 border border-red-700/40 rounded-xl p-5"
+      className="bg-gradient-to-br from-red-950/40 to-red-900/20 border border-white/5 rounded-xl p-5"
     >
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">

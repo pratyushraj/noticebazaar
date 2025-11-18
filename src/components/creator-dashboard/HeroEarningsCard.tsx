@@ -3,23 +3,26 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { TrendingUp, ArrowRight, IndianRupee } from 'lucide-react';
+import { TrendingUp, ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
+
+import EarningsNanoMetrics from './EarningsNanoMetrics';
+import { BrandDeal } from '@/types';
 
 interface HeroEarningsCardProps {
   current: number;
   previous: number;
   goal: number;
-  trend?: number[];
+  brandDeals?: BrandDeal[];
 }
 
 const HeroEarningsCard: React.FC<HeroEarningsCardProps> = ({ 
   current, 
   previous, 
   goal,
-  trend = []
+  brandDeals = []
 }) => {
   const navigate = useNavigate();
   const change = current - previous;
@@ -56,7 +59,7 @@ const HeroEarningsCard: React.FC<HeroEarningsCardProps> = ({
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.5 }}
     >
-      <Card className="bg-gradient-to-br from-emerald-900/40 via-emerald-800/20 to-emerald-950/40 border border-emerald-700/50 backdrop-blur-sm shadow-2xl overflow-hidden hover:shadow-emerald-500/20 transition-all duration-300 relative shadow-[0_0_20px_-6px_rgba(255,255,255,0.1)]">
+      <Card className="bg-gradient-to-br from-emerald-900/40 via-emerald-800/20 to-emerald-950/40 border border-white/5 backdrop-blur-sm shadow-2xl shadow-inner shadow-black/10 overflow-hidden hover:shadow-emerald-500/20 transition-all duration-300 relative shadow-[0_0_20px_-6px_rgba(255,255,255,0.1)]">
         {/* Animated background gradient */}
         <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/5 to-transparent animate-pulse"></div>
         
@@ -77,7 +80,7 @@ const HeroEarningsCard: React.FC<HeroEarningsCardProps> = ({
           </div>
 
           <div className="mb-4">
-            <div className="text-5xl font-bold text-white mb-2 tabular-nums">
+            <div className="text-5xl font-bold text-white/90 mb-2 tabular-nums">
               ₹{displayValue.toLocaleString('en-IN')}
             </div>
             <div className="flex items-center gap-2 text-sm">
@@ -112,6 +115,9 @@ const HeroEarningsCard: React.FC<HeroEarningsCardProps> = ({
               </motion.div>
             </div>
           </div>
+
+          {/* Nano Metrics */}
+          <EarningsNanoMetrics brandDeals={brandDeals} currentEarnings={current} />
         </CardContent>
       </Card>
     </motion.div>
