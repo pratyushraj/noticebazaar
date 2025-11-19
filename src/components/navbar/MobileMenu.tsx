@@ -4,7 +4,8 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-import { Home, Briefcase, Wallet, Shield, Sparkles, Menu, Settings, LogOut } from 'lucide-react';
+import { Home, Briefcase, Wallet, Shield, Sparkles, Settings, LogOut } from 'lucide-react';
+import AppsGridIcon from '@/components/icons/AppsGridIcon';
 import { cn } from '@/lib/utils';
 import { useLocation } from 'react-router-dom';
 import { useSession } from '@/contexts/SessionContext';
@@ -12,7 +13,6 @@ import { useSignOut } from '@/lib/hooks/useAuth';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { getInitials, DEFAULT_AVATAR_URL } from '@/lib/utils/avatar';
 import { usePartnerStats } from '@/lib/hooks/usePartnerProgram';
-import { motion } from 'framer-motion';
 
 interface NavTab {
   to: string;
@@ -74,49 +74,24 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ tabs, profilePath }) => {
   const role = profile?.role === 'creator' ? 'Creator' : profile?.role === 'admin' ? 'Admin' : profile?.role === 'chartered_accountant' ? 'CA' : 'Client';
   const plan = getPlanName();
 
-  // Get plan badge color based on tier
-  const getPlanBadgeClass = () => {
-    const tier = partnerStats?.tier || 'starter';
-    if (tier === 'pro') return 'bg-purple-600/20 text-purple-300 border-purple-500/20';
-    if (tier === 'elite') return 'bg-indigo-600/20 text-indigo-300 border-indigo-500/20';
-    if (tier === 'growth') return 'bg-emerald-600/20 text-emerald-300 border-emerald-500/20';
-    if (tier === 'partner') return 'bg-blue-600/20 text-blue-300 border-blue-500/20';
-    return 'bg-gray-600/20 text-gray-300 border-gray-500/20';
-  };
-
-  // Get role badge color
-  const getRoleBadgeClass = () => {
-    if (profile?.role === 'creator') return 'bg-purple-600/20 text-purple-300 border-purple-500/20';
-    if (profile?.role === 'admin') return 'bg-red-600/20 text-red-300 border-red-500/20';
-    if (profile?.role === 'chartered_accountant') return 'bg-orange-600/20 text-orange-300 border-orange-500/20';
-    return 'bg-blue-600/20 text-blue-300 border-blue-500/20';
-  };
-
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="lg:hidden h-9 w-9 text-gray-400 hover:text-gray-200 hover:bg-white/5 transition-all duration-200"
+        <div 
+          className="lg:hidden w-[38px] h-[38px] rounded-full hover:bg-[#1f1f1f] active:scale-95 transition-all duration-200 cursor-pointer flex items-center justify-center"
         >
-          <Menu className="h-5 w-5" />
-        </Button>
+          <AppsGridIcon />
+        </div>
       </SheetTrigger>
 
       <SheetContent
         side="left"
-        className="w-[280px] sm:w-[320px] bg-[#0F121A]/95 backdrop-blur-xl border-r border-white/10 p-4 transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] flex flex-col"
+        className="w-[84%] sm:w-[320px] bg-[#0C111C] backdrop-blur-xl border-r border-white/10 p-4 transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] flex flex-col rounded-r-2xl"
       >
-        {/* Profile Card at Top - Premium Glass Effect */}
-        <motion.div
-          initial={{ opacity: 0, y: -8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3, ease: "easeOut" }}
-          className="bg-white/5 backdrop-blur-md rounded-xl border border-white/10 p-4 mb-4 flex-shrink-0 shadow-[0_4px_20px_rgba(0,0,0,0.25)]"
-        >
+        {/* Profile Header at Top */}
+        <div className="mb-6 flex-shrink-0">
           <div className="flex items-center gap-3 mb-4">
-            <Avatar className="h-12 w-12 ring-2 ring-blue-500/40 rounded-full flex-shrink-0">
+            <Avatar className="h-12 w-12 ring-2 ring-blue-500/40 border-2 border-blue-500/20 rounded-full flex-shrink-0">
               <AvatarImage 
                 src={profile?.avatar_url || DEFAULT_AVATAR_URL} 
                 alt={fullName}
@@ -126,39 +101,32 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ tabs, profilePath }) => {
               </AvatarFallback>
             </Avatar>
             <div className="flex-1 min-w-0">
-              <h3 className="text-sm font-semibold text-white truncate">
+              <h3 className="text-base font-bold text-white truncate mb-0.5">
                 {fullName}
               </h3>
-              <p className="text-xs text-gray-400 truncate">
+              <p className="text-sm text-[#b0b0b0] truncate">
                 {email}
               </p>
             </div>
           </div>
           
           <div className="flex items-center gap-2 flex-wrap">
-            <div className="flex items-center gap-1.5">
-              <span className="text-xs text-gray-400">Role:</span>
-              <span className={cn(
-                "px-2 py-0.5 rounded-md text-xs font-medium border",
-                getRoleBadgeClass()
-              )}>
-                {role}
-              </span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <span className="text-xs text-gray-400">Plan:</span>
-              <span className={cn(
-                "px-2 py-0.5 rounded-md text-xs font-medium border",
-                getPlanBadgeClass()
-              )}>
-                {plan}
-              </span>
-            </div>
+            <span className={cn(
+              "px-2.5 py-1 rounded-full text-xs font-medium",
+              profile?.role === 'creator' 
+                ? "bg-[#6740FF] text-white" 
+                : "bg-[#363636] text-gray-300"
+            )}>
+              {role}
+            </span>
+            <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-[#363636] text-gray-300">
+              {plan}
+            </span>
           </div>
-        </motion.div>
+        </div>
 
         {/* Divider after Profile */}
-        <div className="border-t border-white/10 mb-4" />
+        <div className="h-[1px] bg-[#1A2333] mb-4" />
 
         {/* Main Navigation - Scrollable */}
         <nav className="flex-1 flex flex-col space-y-1 overflow-y-auto min-h-0 -mx-2 px-2">
@@ -172,35 +140,20 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ tabs, profilePath }) => {
                   to={tab.to}
                   onClick={() => setOpen(false)}
                   className={cn(
-                    "group relative flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all duration-150",
-                    "hover:bg-white/5 active:scale-[0.98]",
-                    "before:absolute before:inset-0 before:rounded-lg before:bg-blue-500/10 before:blur-md before:opacity-0 before:transition-opacity before:duration-300",
-                    "group-hover:before:opacity-100",
+                    "group relative flex items-center gap-3 px-4 py-2.5 rounded-2xl text-sm font-medium transition-all duration-150",
+                    "hover:bg-[#1C2433] active:scale-[0.98]",
                     active
-                      ? "bg-blue-600/20 text-white before:opacity-100"
-                      : "text-gray-300 hover:text-gray-200"
+                      ? "bg-gradient-to-r from-[#0A3AFF] to-[#003A9F] text-white"
+                      : "text-[#9FA8B7] hover:text-white"
                   )}
                 >
-                  {/* Active Left Indicator Bar */}
-                  {active && (
-                    <motion.div
-                      layoutId="activeNavIndicator"
-                      className="absolute left-0 w-1 h-8 bg-blue-500 rounded-r-md z-20"
-                      transition={{
-                        type: "spring",
-                        stiffness: 500,
-                        damping: 30
-                      }}
-                    />
-                  )}
-                  
                   <Icon className={cn(
-                    "h-[18px] w-[18px] flex-shrink-0 relative z-10 transition-transform duration-150 group-hover:translate-x-0.5",
-                    active ? "text-blue-400" : "text-gray-400"
+                    "h-[18px] w-[18px] flex-shrink-0 relative z-10 transition-all duration-150",
+                    active ? "text-white" : "text-[#A8B0C0] group-hover:text-white"
                   )} />
                   <span className="flex-1 relative z-10">{tab.label}</span>
                   {tab.to === '/partner-program' && showRewardBadge && (
-                    <span className="text-xs bg-purple-600/30 text-purple-300 px-2 py-0.5 rounded-md font-medium relative z-10">
+                    <span className="text-xs bg-purple-600/30 text-purple-300 px-2 py-0.5 rounded-full font-medium relative z-10">
                       +₹{totalEarnings.toLocaleString('en-IN')}
                     </span>
                   )}
@@ -208,54 +161,34 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ tabs, profilePath }) => {
               );
           })}
 
-          {/* Divider after Protection (if exists) */}
-          {visibleTabs.some(tab => tab.label === 'Protection') && (
-            <div className="border-t border-white/10 my-3" />
-          )}
-
           {/* Divider before Settings */}
-          <div className="border-t border-white/10 my-3" />
+          <div className="h-[1px] bg-[#1A2333] my-3" />
           
           <Link
             to={profilePath}
             onClick={() => setOpen(false)}
             className={cn(
-              "group relative flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all duration-150",
-              "hover:bg-white/5 active:scale-[0.98]",
-              "before:absolute before:inset-0 before:rounded-lg before:bg-blue-500/10 before:blur-md before:opacity-0 before:transition-opacity before:duration-300",
-              "group-hover:before:opacity-100",
+              "group relative flex items-center gap-3 px-4 py-2.5 rounded-2xl text-sm font-medium transition-all duration-150",
+              "hover:bg-[#1C2433] active:scale-[0.98]",
               isActive(profilePath)
-                ? "bg-blue-600/20 text-white before:opacity-100"
-                : "text-gray-300 hover:text-gray-200"
+                ? "bg-gradient-to-r from-[#0A3AFF] to-[#003A9F] text-white"
+                : "text-[#9FA8B7] hover:text-white"
             )}
           >
-            {/* Active Left Indicator Bar */}
-            {isActive(profilePath) && (
-              <motion.div
-                layoutId="activeNavIndicator"
-                className="absolute left-0 w-1 h-8 bg-blue-500 rounded-r-md z-20"
-                transition={{
-                  type: "spring",
-                  stiffness: 500,
-                  damping: 30
-                }}
-              />
-            )}
-            
             <Settings className={cn(
-              "h-[18px] w-[18px] flex-shrink-0 relative z-10 transition-transform duration-150 group-hover:translate-x-0.5",
-              isActive(profilePath) ? "text-blue-400" : "text-gray-400"
+              "h-[18px] w-[18px] flex-shrink-0 relative z-10 transition-all duration-150",
+              isActive(profilePath) ? "text-white" : "text-[#A8B0C0] group-hover:text-white"
             )} />
             <span className="relative z-10">Settings</span>
           </Link>
 
           {/* Divider before Logout */}
-          <div className="border-t border-white/10 my-3" />
+          <div className="h-[1px] bg-[#1A2333] my-3" />
 
           <button
             onClick={handleLogout}
             disabled={signOutMutation.isPending}
-            className="group relative flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-red-400 hover:bg-red-500/10 active:scale-[0.98] w-full text-left transition-all duration-150 disabled:opacity-50"
+            className="group relative flex items-center gap-3 px-4 py-2.5 rounded-2xl text-sm font-medium text-red-400 hover:bg-red-500/10 active:scale-[0.98] w-full text-left transition-all duration-150 disabled:opacity-50"
           >
             <LogOut className="h-[18px] w-[18px] flex-shrink-0 transition-transform duration-150 group-hover:translate-x-0.5" />
             <span>Logout</span>

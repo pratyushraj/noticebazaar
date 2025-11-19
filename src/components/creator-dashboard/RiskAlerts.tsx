@@ -135,7 +135,7 @@ const RiskAlerts: React.FC<RiskAlertsProps> = ({ brandDeals = [] }) => {
 
   if (alerts.length === 0) {
     return (
-      <Card className="bg-[#0F121A]/80 backdrop-blur-xl border border-white/5 rounded-2xl">
+      <Card className="bg-gradient-to-br from-[#210909] to-[#3A0F0F] border border-white/5 rounded-2xl shadow-[0px_4px_24px_rgba(0,0,0,0.25)] px-5 py-4">
       <CardHeader className="pb-3">
         <CardTitle className="text-lg font-semibold text-white flex items-center gap-2">
           <Shield className="h-5 w-5 text-green-400" />
@@ -164,7 +164,7 @@ const RiskAlerts: React.FC<RiskAlertsProps> = ({ brandDeals = [] }) => {
   };
 
   return (
-    <Card className="bg-[#0F121A]/80 backdrop-blur-xl border border-white/5 rounded-2xl">
+    <Card className="bg-gradient-to-br from-[#210909] to-[#3A0F0F] border border-white/5 rounded-2xl shadow-[0px_4px_24px_rgba(0,0,0,0.25)] px-5 py-4">
       <CardHeader className="pb-3">
         <CardTitle className="text-lg font-semibold text-white flex items-center gap-2">
           <Shield className="h-5 w-5 text-green-400" />

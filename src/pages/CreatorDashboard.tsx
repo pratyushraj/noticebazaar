@@ -8,7 +8,11 @@ import {
   Loader2,
   Bot,
   Briefcase,
-  CheckCircle
+  CheckCircle,
+  AlertCircle,
+  Wallet,
+  Target,
+  TrendingUp
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useCreatorDashboardData } from '@/lib/hooks/useCreatorDashboardData';
@@ -71,6 +75,13 @@ import GSTImpactSummary from '@/components/creator-dashboard/GSTImpactSummary';
 import GoalProgressAnnual from '@/components/creator-dashboard/GoalProgressAnnual';
 import CreatorBadge from '@/components/creator-dashboard/CreatorBadge';
 import ContentMetrics from '@/components/creator-dashboard/ContentMetrics';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { ChevronDown } from 'lucide-react';
+import { DashboardSummaryBar } from '@/components/dashboard/DashboardSummaryBar';
+import { DataFreshnessIndicator } from '@/components/dashboard/DataFreshnessIndicator';
+import { useDashboardShortcuts } from '@/hooks/useKeyboardShortcuts';
+import { ErrorBoundary } from '@/components/ui/error-boundary';
+import { QuickSearch } from '@/components/dashboard/QuickSearch';
 
 // Helper functions
 const getDealStage = (deal: BrandDeal): DealStage => {
@@ -110,6 +121,22 @@ const CreatorDashboard = () => {
   const [showExpiredModal, setShowExpiredModal] = useState(false);
   const [activeTab, setActiveTab] = useState<'overview' | 'deals' | 'payments' | 'protection'>('overview');
   
+  // Keyboard shortcuts
+  useDashboardShortcuts();
+  
+  // Handle Cmd+K for quick search
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        setIsQuickSearchOpen(true);
+      }
+    };
+    
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+  
   // Dialog states
   const [isBrandDealFormOpen, setIsBrandDealFormOpen] = useState(false);
   const [editingBrandDeal, setEditingBrandDeal] = useState<BrandDeal | null>(null);
@@ -125,6 +152,7 @@ const CreatorDashboard = () => {
   const [isMessageDialogOpen, setIsMessageDialogOpen] = useState(false);
   const [messageReceiverId, setMessageReceiverId] = useState<string | null>(null);
   const [messageReceiverName, setMessageReceiverName] = useState<string>('');
+  const [isQuickSearchOpen, setIsQuickSearchOpen] = useState(false);
 
   // Filter states for deals tab
   const [searchTerm, setSearchTerm] = useState('');
@@ -133,6 +161,7 @@ const CreatorDashboard = () => {
   // Filter states for payments tab
   const [paymentSearchTerm, setPaymentSearchTerm] = useState('');
   const [paymentQuickFilter, setPaymentQuickFilter] = useState<string | null>(null);
+  const [isCollapsibleOpen, setIsCollapsibleOpen] = useState(false);
 
   // Fetch data
   const { data: mockDashboardData, isLoading: isLoadingMocks, error: mockError } = useCreatorDashboardData(
@@ -176,9 +205,88 @@ const CreatorDashboard = () => {
     }
   }, [sessionLoading, profile, trialStatus.trialLocked, navigate]);
 
+  // Demo data for when brandDeals is empty
+  const demoBrandDeals: BrandDeal[] = useMemo(() => {
+    const now = new Date();
+    const currentMonth = now.getMonth();
+    const currentYear = now.getFullYear();
+    
+    return [
+      {
+        id: 'demo-1',
+        creator_id: profile?.id || '',
+        brand_name: 'Levi\'s',
+        platform: 'Instagram',
+        deal_amount: 1000,
+        status: 'Drafting',
+        payment_expected_date: new Date(currentYear, currentMonth, 25).toISOString(),
+        created_at: new Date(currentYear, currentMonth, 15).toISOString(),
+        deliverables: JSON.stringify([{ type: 'Reel', count: 1 }]),
+        due_date: new Date(currentYear, currentMonth, 25).toISOString(),
+      },
+      {
+        id: 'demo-2',
+        creator_id: profile?.id || '',
+        brand_name: 'Ajio',
+        platform: 'Instagram',
+        deal_amount: 14500,
+        status: 'Payment Pending',
+        payment_expected_date: new Date(currentYear, currentMonth, 22).toISOString(),
+        created_at: new Date(currentYear, currentMonth - 1, 20).toISOString(),
+        deliverables: JSON.stringify([{ type: 'Reel', count: 1 }, { type: 'Stories', count: 3 }]),
+      },
+      {
+        id: 'demo-3',
+        creator_id: profile?.id || '',
+        brand_name: 'Nike',
+        platform: 'YouTube',
+        deal_amount: 20000,
+        status: 'Payment Pending',
+        payment_expected_date: new Date(currentYear, currentMonth, 30).toISOString(),
+        created_at: new Date(currentYear, currentMonth - 1, 15).toISOString(),
+        deliverables: JSON.stringify([{ type: 'Integration', count: 1 }]),
+      },
+      {
+        id: 'demo-4',
+        creator_id: profile?.id || '',
+        brand_name: 'Mamaearth',
+        platform: 'Instagram',
+        deal_amount: 4254,
+        status: 'Payment Pending',
+        payment_expected_date: new Date(currentYear, currentMonth, 20).toISOString(),
+        created_at: new Date(currentYear, currentMonth - 1, 10).toISOString(),
+        deliverables: JSON.stringify([{ type: 'Carousel', count: 1 }, { type: 'Stories', count: 1 }]),
+      },
+      {
+        id: 'demo-5',
+        creator_id: profile?.id || '',
+        brand_name: 'boAt',
+        platform: 'Instagram',
+        deal_amount: 12000,
+        status: 'Payment Pending',
+        payment_expected_date: new Date(currentYear, currentMonth - 1, 10).toISOString(), // Overdue
+        created_at: new Date(currentYear, currentMonth - 2, 15).toISOString(),
+        deliverables: JSON.stringify([{ type: 'Reel', count: 1 }, { type: 'Stories', count: 2 }]),
+      },
+      {
+        id: 'demo-6',
+        creator_id: profile?.id || '',
+        brand_name: 'Zepto',
+        platform: 'Instagram',
+        deal_amount: 8500,
+        status: 'Payment Pending',
+        payment_expected_date: new Date(currentYear, currentMonth + 1, 4).toISOString(),
+        created_at: new Date(currentYear, currentMonth - 1, 5).toISOString(),
+        deliverables: JSON.stringify([{ type: 'Reel', count: 1 }]),
+      },
+    ] as BrandDeal[];
+  }, [profile?.id]);
+
   // Calculate dashboard data
   const dashboardData = useMemo(() => {
-    if (!brandDeals) return null;
+    // Use demo data if brandDeals is empty or has very few items
+    const dealsToUse = (!brandDeals || brandDeals.length < 3) ? demoBrandDeals : brandDeals;
+    if (!dealsToUse || dealsToUse.length === 0) return null;
 
     const now = new Date();
     const currentMonth = now.getMonth();
@@ -186,7 +294,7 @@ const CreatorDashboard = () => {
     const lastMonth = currentMonth === 0 ? 11 : currentMonth - 1;
     const lastMonthYear = currentMonth === 0 ? currentYear - 1 : currentYear;
 
-    const currentMonthEarnings = brandDeals
+    const currentMonthEarnings = dealsToUse
       .filter(deal => {
         if (!deal.payment_received_date) return false;
         const receivedDate = new Date(deal.payment_received_date);
@@ -196,7 +304,7 @@ const CreatorDashboard = () => {
       })
       .reduce((sum, deal) => sum + deal.deal_amount, 0);
 
-    const lastMonthEarnings = brandDeals
+    const lastMonthEarnings = dealsToUse
       .filter(deal => {
         if (!deal.payment_received_date) return false;
         const receivedDate = new Date(deal.payment_received_date);
@@ -220,9 +328,10 @@ const CreatorDashboard = () => {
       views?: number;
       platform?: string;
       dealId?: string;
+      lastReminderSentDays?: number;
     }> = [];
     
-    const overduePayments = brandDeals.filter(deal => {
+    const overduePayments = dealsToUse.filter(deal => {
       if (deal.status !== 'Payment Pending') return false;
       const dueDate = new Date(deal.payment_expected_date);
       const daysDiff = Math.floor((now.getTime() - dueDate.getTime()) / (1000 * 60 * 60 * 24));
@@ -232,6 +341,9 @@ const CreatorDashboard = () => {
     overduePayments.forEach(deal => {
       const dueDate = new Date(deal.payment_expected_date);
       const daysOverdue = Math.floor((now.getTime() - dueDate.getTime()) / (1000 * 60 * 60 * 24));
+      // Demo: Calculate last reminder sent days (in real app, fetch from payment_reminders table)
+      // For demo, assume a reminder was sent 5 days ago if overdue for more than 7 days
+      const lastReminderSentDays = daysOverdue > 7 ? 5 : undefined;
       urgentActions.push({
         type: 'payment_overdue' as const,
         title: `${deal.brand_name} Payment Overdue`,
@@ -240,10 +352,12 @@ const CreatorDashboard = () => {
         dueDate: deal.payment_expected_date,
         brand: deal.brand_name,
         dealId: deal.id,
+        platform: deal.platform || 'N/A',
+        lastReminderSentDays,
       });
     });
 
-    const contractsNeedingReview = brandDeals.filter(deal => 
+    const contractsNeedingReview = dealsToUse.filter(deal => 
       deal.status === 'Drafting' && deal.contract_file_url
     );
     
@@ -259,12 +373,12 @@ const CreatorDashboard = () => {
       });
     });
 
-    const pendingPayments = brandDeals
+    const pendingPayments = dealsToUse
       .filter(deal => deal.status === 'Payment Pending')
       .reduce((sum, deal) => sum + deal.deal_amount, 0);
     
     const pendingBrandCount = new Set(
-      brandDeals
+      dealsToUse
         .filter(deal => deal.status === 'Payment Pending')
         .map(deal => deal.brand_name)
     ).size;
@@ -272,7 +386,7 @@ const CreatorDashboard = () => {
     const oneWeekFromNow = new Date(now);
     oneWeekFromNow.setDate(oneWeekFromNow.getDate() + 7);
     
-    const dueThisWeek = brandDeals
+    const dueThisWeek = dealsToUse
       .filter(deal => {
         if (deal.status !== 'Payment Pending') return false;
         const dueDate = new Date(deal.payment_expected_date);
@@ -280,21 +394,21 @@ const CreatorDashboard = () => {
       })
       .reduce((sum, deal) => sum + deal.deal_amount, 0);
     
-    const dueThisWeekCount = brandDeals.filter(deal => {
+    const dueThisWeekCount = dealsToUse.filter(deal => {
       if (deal.status !== 'Payment Pending') return false;
       const dueDate = new Date(deal.payment_expected_date);
       return dueDate >= now && dueDate <= oneWeekFromNow;
     }).length;
 
-    const activeCampaigns = brandDeals.filter(deal => 
+    const activeCampaigns = dealsToUse.filter(deal => 
       deal.status === 'Approved' || deal.status === 'Drafting'
     ).length;
 
-    const deliverablesDue = brandDeals.filter(deal => {
+    const deliverablesDue = dealsToUse.filter(deal => {
       return deal.status === 'Approved';
     }).length;
 
-    const completedThisMonth = brandDeals.filter(deal => {
+    const completedThisMonth = dealsToUse.filter(deal => {
       if (deal.status !== 'Completed' || !deal.payment_received_date) return false;
       const receivedDate = new Date(deal.payment_received_date);
       return receivedDate.getMonth() === currentMonth && 
@@ -302,15 +416,15 @@ const CreatorDashboard = () => {
     }).length;
 
     const dealsClosedThisMonth = completedThisMonth;
-    const dealsClosedLastMonth = brandDeals.filter(deal => {
+    const dealsClosedLastMonth = dealsToUse.filter(deal => {
       if (deal.status !== 'Completed' || !deal.payment_received_date) return false;
       const receivedDate = new Date(deal.payment_received_date);
       return receivedDate.getMonth() === lastMonth && 
              receivedDate.getFullYear() === lastMonthYear;
     }).length;
 
-    const avgDealValue = completedThisMonth > 0
-      ? brandDeals
+    const         avgDealValue = completedThisMonth > 0
+      ? dealsToUse
           .filter(deal => {
             if (deal.status !== 'Completed' || !deal.payment_received_date) return false;
             const receivedDate = new Date(deal.payment_received_date);
@@ -320,7 +434,7 @@ const CreatorDashboard = () => {
           .reduce((sum, deal) => sum + deal.deal_amount, 0) / completedThisMonth
       : 0;
 
-    const upcomingDeadlines = brandDeals
+    const upcomingDeadlines = dealsToUse
       .filter(deal => {
         if (deal.status === 'Completed') return false;
         const dueDate = new Date(deal.payment_expected_date);
@@ -360,7 +474,7 @@ const CreatorDashboard = () => {
       },
       upcomingDeadlines,
     };
-  }, [brandDeals]);
+  }, [brandDeals, demoBrandDeals]);
 
   // Filter deals for deals tab
   const filteredDeals = useMemo(() => {
@@ -550,163 +664,322 @@ const CreatorDashboard = () => {
 
   return (
     <>
-      <div className="min-h-screen bg-[#060A12] text-white">
-        {/* Header removed - now using Navbar from Layout component */}
+      <div className="min-h-screen bg-gradient-to-b from-[#060A12] via-[#080C14] to-[#0A0E16] text-white relative overflow-hidden">
+        {/* Ambient background lighting */}
+        <div className="fixed inset-0 bg-[radial-gradient(circle_at_top,rgba(23,86,255,0.15),transparent_70%)] pointer-events-none z-0"></div>
+        <div className="fixed inset-0 bg-gradient-to-b from-white/5 to-transparent pointer-events-none z-0"></div>
         
-        <div className="max-w-7xl mx-auto px-4 py-6 space-y-6">
+        {/* Header removed - now using Navbar from Layout component */}
+        <div className="relative z-10 max-w-7xl mx-auto px-4 py-8">
           {/* Overview Tab */}
-          {activeTab === 'overview' && (
-            <>
-              <TrialBanner />
+              {activeTab === 'overview' && (
+                <>
+                  <TrialBanner />
 
-              <div>
-                <h1 className="text-2xl font-bold mb-1 text-white/90">
-                  Welcome back, <span className="text-blue-400">{profile?.first_name || 'Creator'}</span>!
-                </h1>
-                <p className="text-gray-400 text-sm">
-                  Your comprehensive overview of brand deals, legal protection, and financial health.
-                </p>
-              </div>
+                  <div className="mb-8">
+                    <div className="flex items-start justify-between mb-4 gap-4 flex-wrap">
+                      <div className="flex-1 min-w-0">
+                        <h1 className="text-2xl sm:text-3xl font-bold mb-2 text-white tracking-tight leading-tight">
+                          Welcome back,{' '}
+                          <span className="bg-gradient-to-r from-blue-400 via-blue-300 to-blue-400 bg-clip-text text-transparent">
+                            {profile?.first_name || 'Creator'}
+                          </span>
+                          !
+                        </h1>
+                        <p className="text-sm sm:text-base text-white/60 leading-relaxed max-w-2xl">
+                          Your comprehensive overview of brand deals, legal protection, and financial health.
+                        </p>
+                      </div>
+                      <div className="shrink-0">
+                        <DataFreshnessIndicator
+                          lastUpdated={new Date()}
+                          onRefresh={() => {
+                            refetchBrandDeals();
+                            toast.success('Dashboard refreshed');
+                          }}
+                        />
+                      </div>
+                    </div>
+                  </div>
 
-              <HeroEarningsCard
-                current={dashboardData.earnings.current}
-                previous={dashboardData.earnings.previous}
-                goal={dashboardData.earnings.goal}
-                brandDeals={brandDeals}
-              />
-
-
-              <CriticalActions
-                actions={dashboardData.urgentActions}
-                onSendReminder={(dealId) => {
-                  const deal = brandDeals?.find(d => d.id === dealId);
-                  if (deal) {
-                    setSelectedDealForReminder(deal);
-                    setIsSendPaymentReminderDialogOpen(true);
-                  }
-                }}
-                onEscalate={() => toast.info('Escalation feature coming soon!')}
-                onAnalyzeContract={(dealId) => {
-                  const deal = brandDeals?.find(d => d.id === dealId);
-                  if (deal?.contract_file_url) {
-                    setSelectedContractForAIScan(deal.contract_file_url);
-                    setIsAIScanDialogOpen(true);
-                  }
-                }}
-                onTakeDown={() => setIsSendTakedownNoticeDialogOpen(true)}
-              />
-
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <CombinedPaymentsCard
-                  pendingPayments={dashboardData.moneyOverview.pendingPayments}
-                  pendingBrandCount={dashboardData.moneyOverview.pendingBrandCount}
-                  dueThisWeek={dashboardData.moneyOverview.dueThisWeek}
-                  dueThisWeekCount={dashboardData.moneyOverview.dueThisWeekCount}
-                  brandDeals={brandDeals}
-                  onSendReminder={(dealId) => {
-                    const deal = brandDeals?.find(d => d.id === dealId);
-                    if (deal) {
-                      setSelectedDealForReminder(deal);
-                      setIsSendPaymentReminderDialogOpen(true);
+                  {/* Dashboard Summary Bar */}
+                  <DashboardSummaryBar
+                    earnings={dashboardData?.earnings.current}
+                    deadlines={dashboardData?.upcomingDeadlines?.length || 0}
+                    urgent={dashboardData?.urgentActions?.filter(a => a.type === 'payment_overdue').length || 0}
+                    earningsChange={dashboardData?.earnings.current && dashboardData?.earnings.previous 
+                      ? Math.round(((dashboardData.earnings.current - dashboardData.earnings.previous) / dashboardData.earnings.previous) * 100)
+                      : undefined
                     }
-                  }}
-                />
-                <MoneyOverview
-                  pendingPayments={0}
-                  pendingBrandCount={0}
-                  dueThisWeek={0}
-                  dueThisWeekCount={0}
-                  activeCampaigns={dashboardData.moneyOverview.activeCampaigns}
-                  deliverablesDue={dashboardData.moneyOverview.deliverablesDue}
-                  completed={dashboardData.moneyOverview.completed}
-                  onTimeRate={dashboardData.moneyOverview.onTimeRate}
-                  brandDeals={brandDeals}
-                  onSendReminder={() => {}}
-                  onAddCampaign={handleAddBrandDeal}
-                />
-              </div>
+                    className="mb-6"
+                  />
 
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <QuickStats
-                  dealsClosed={dashboardData.quickStats.dealsClosed}
-                  dealsChange={dashboardData.quickStats.dealsChange}
-                  avgDealValue={dashboardData.quickStats.avgDealValue}
-                  paymentCollectionRate={dashboardData.quickStats.paymentCollectionRate}
-                  pitchesSent={dashboardData.quickStats.pitchesSent}
-                  takedownsSuccessful={dashboardData.quickStats.takedownsSuccessful}
-                />
-                <UpcomingDeadlines deadlines={dashboardData.upcomingDeadlines} />
-              </div>
+              {/* ============================================ */}
+              {/* SECTION 1: Earnings (Hero) - Primary Card */}
+              {/* ============================================ */}
+              <section className="mt-8">
+                    <div className="active:scale-[0.98] transition-transform duration-150 shadow-sm shadow-black/10 hover:shadow-md">
+                      <HeroEarningsCard
+                        current={dashboardData.earnings.current}
+                        previous={dashboardData.earnings.previous}
+                        goal={dashboardData.earnings.goal}
+                        brandDeals={brandDeals}
+                        isLoading={isLoadingBrandDeals}
+                        earningsHistory={[230000, 240000, 250000, 260000, 270000, 280000, dashboardData.earnings.current]}
+                      />
+                    </div>
+              </section>
 
-              <WeeklyPerformance brandDeals={brandDeals} />
+              {/* ============================================ */}
+              {/* SECTION 2: Needs Attention & Payments */}
+              {/* ============================================ */}
+              <section id="needs-attention-payments" className="mt-8 space-y-3">
+                {/* Section Header */}
+                <div className="flex items-center gap-1.5 mb-2">
+                  <div className="flex items-center gap-2">
+                    <AlertCircle className="h-3.5 w-3.5 text-white/50 opacity-40" />
+                    <Wallet className="h-3.5 w-3.5 text-white/50 opacity-40" />
+                  </div>
+                  <h2 className="text-xs font-medium text-white/50 uppercase tracking-wide">Needs Attention & Payments</h2>
+                </div>
+                
+                {/* Section Content */}
+                <div className="space-y-3">
+                  {/* Needs Attention */}
+                  {dashboardData.urgentActions && dashboardData.urgentActions.length > 0 && (
+                    <ErrorBoundary>
+                      <div className="active:scale-[0.98] transition-transform duration-150 shadow-sm shadow-black/10 hover:shadow-md hover:border-white/10">
+                        <CriticalActions
+                          actions={dashboardData.urgentActions}
+                          onSendReminder={(dealId) => {
+                            const deal = brandDeals?.find(d => d.id === dealId);
+                            if (deal) {
+                              setSelectedDealForReminder(deal);
+                              setIsSendPaymentReminderDialogOpen(true);
+                            }
+                          }}
+                          onEscalate={() => toast.info('Escalation feature coming soon!')}
+                          onAnalyzeContract={(dealId) => {
+                            const deal = brandDeals?.find(d => d.id === dealId);
+                            if (deal?.contract_file_url) {
+                              setSelectedContractForAIScan(deal.contract_file_url);
+                              setIsAIScanDialogOpen(true);
+                            }
+                          }}
+                          onTakeDown={() => setIsSendTakedownNoticeDialogOpen(true)}
+                        />
+                      </div>
+                    </ErrorBoundary>
+                  )}
 
-              {/* AI Insights Section */}
-              <AIInsights brandDeals={brandDeals} />
+                  {/* Payments Overview */}
+                  <div className="active:scale-[0.98] transition-transform duration-150 shadow-sm shadow-black/10 hover:shadow-md hover:border-white/10">
+                    <CombinedPaymentsCard
+                      pendingPayments={dashboardData.moneyOverview.pendingPayments}
+                      pendingBrandCount={dashboardData.moneyOverview.pendingBrandCount}
+                      dueThisWeek={dashboardData.moneyOverview.dueThisWeek}
+                      dueThisWeekCount={dashboardData.moneyOverview.dueThisWeekCount}
+                      brandDeals={brandDeals}
+                      isLoading={isLoadingBrandDeals}
+                      onSendReminder={(dealId) => {
+                        const deal = brandDeals?.find(d => d.id === dealId);
+                        if (deal) {
+                          setSelectedDealForReminder(deal);
+                          setIsSendPaymentReminderDialogOpen(true);
+                        }
+                      }}
+                    />
+                  </div>
+                </div>
+                
+                {/* Section Separator */}
+                <div className="relative my-8">
+                  <div className="absolute inset-0 flex items-center">
+                    <div className="w-full border-t border-gradient-to-r from-transparent via-white/10 to-transparent"></div>
+                  </div>
+                  <div className="relative flex justify-center">
+                    <span className="bg-[#0B111B] px-4 text-xs text-white/30">●</span>
+                  </div>
+                </div>
+              </section>
 
-              {/* Brand Interest & Audience Analytics */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <BrandInterestScore brandDeals={brandDeals} profile={profile} />
-                <AudienceAnalyticsPreview profile={profile} />
-              </div>
+              {/* ============================================ */}
+              {/* SECTION 3: Campaigns */}
+              {/* ============================================ */}
+              <section id="campaigns" className="mt-8 space-y-3">
+                {/* Section Header */}
+                <div className="flex items-center gap-1.5 mb-2">
+                  <Target className="h-3.5 w-3.5 text-white/50 opacity-40" />
+                  <h2 className="text-xs font-medium text-white/50 uppercase tracking-wide">Campaigns</h2>
+                </div>
+                
+                {/* Section Content */}
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
+                  {/* Active Campaigns & Completed - Secondary Card */}
+                      <div className="active:scale-[0.98] transition-transform duration-150 shadow-sm shadow-black/10 hover:shadow-md hover:border-white/10">
+                        <MoneyOverview
+                          pendingPayments={0}
+                          pendingBrandCount={0}
+                          dueThisWeek={0}
+                          dueThisWeekCount={0}
+                          activeCampaigns={dashboardData.moneyOverview.activeCampaigns}
+                          deliverablesDue={dashboardData.moneyOverview.deliverablesDue}
+                          completed={dashboardData.moneyOverview.completed}
+                          onTimeRate={dashboardData.moneyOverview.onTimeRate}
+                          brandDeals={brandDeals}
+                          isLoading={isLoadingBrandDeals}
+                          onSendReminder={() => {}}
+                          onAddCampaign={handleAddBrandDeal}
+                        />
+                      </div>
+                  {/* Coming Up / Upcoming Deadlines - Tertiary Card */}
+                  <div className="active:scale-[0.98] transition-transform duration-150 shadow-sm shadow-black/5 hover:shadow-sm hover:border-white/5">
+                    <UpcomingDeadlines deadlines={dashboardData.upcomingDeadlines} />
+                  </div>
+                </div>
+                
+                {/* Section Separator */}
+                <div className="relative my-8">
+                  <div className="absolute inset-0 flex items-center">
+                    <div className="w-full border-t border-gradient-to-r from-transparent via-white/10 to-transparent"></div>
+                  </div>
+                  <div className="relative flex justify-center">
+                    <span className="bg-[#0B111B] px-4 text-xs text-white/30">●</span>
+                  </div>
+                </div>
+              </section>
 
-              {/* Top Actions & Tax Advice */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <TopActionNeeded brandDeals={brandDeals} />
-                <AITaxAdvice brandDeals={brandDeals} />
-              </div>
+              {/* ============================================ */}
+              {/* SECTION 5: Insights & Scores */}
+              {/* ============================================ */}
+              <section id="insights" className="mt-8 space-y-3">
+                {/* Section Header */}
+                <div className="flex items-center gap-1.5 mb-2">
+                  <TrendingUp className="h-3.5 w-3.5 text-white/50 opacity-40" />
+                  <h2 className="text-xs font-medium text-white/50 uppercase tracking-wide">Insights & Scores</h2>
+                </div>
+                
+                {/* Section Content */}
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
+                  <div className="active:scale-[0.98] transition-transform duration-150 shadow-sm shadow-black/10 hover:shadow-md hover:border-white/10">
+                    <BrandInterestScore brandDeals={brandDeals} profile={profile} />
+                  </div>
+                  <div className="active:scale-[0.98] transition-transform duration-150 shadow-sm shadow-black/10 hover:shadow-md hover:border-white/10">
+                    <WeeklyPerformance brandDeals={brandDeals} />
+                  </div>
+                  <div className="active:scale-[0.98] transition-transform duration-150 shadow-sm shadow-black/10 hover:shadow-md hover:border-white/10">
+                    <LegalHealthScore brandDeals={brandDeals} />
+                  </div>
+                </div>
+                
+                {/* Section Separator */}
+                <div className="relative my-8">
+                  <div className="absolute inset-0 flex items-center">
+                    <div className="w-full border-t border-gradient-to-r from-transparent via-white/10 to-transparent"></div>
+                  </div>
+                  <div className="relative flex justify-center">
+                    <span className="bg-[#0B111B] px-4 text-xs text-white/30">●</span>
+                  </div>
+                </div>
+              </section>
 
-              {/* Legal Risk & Referral Earnings */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <AILegalRiskMeter brandDeals={brandDeals} />
-                <ReferralEarningsPreview />
-              </div>
+              {/* Divider: Insights → More Tools */}
+              <div className="border-b border-white/5 my-6"></div>
 
-              {/* Content Scanner & GST Impact */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <ContentScannerQueue />
-                <GSTImpactSummary brandDeals={brandDeals} />
-              </div>
+              {/* ============================================ */}
+              {/* COLLAPSIBLE SECTION: Additional Insights & Tools */}
+              {/* ============================================ */}
+              <Collapsible open={isCollapsibleOpen} onOpenChange={setIsCollapsibleOpen} className="w-full">
+                <CollapsibleTrigger className="flex items-center justify-between w-full group hover:bg-white/5 rounded-lg p-4 transition-all duration-200 -mx-2">
+                  <div>
+                    <h2 className="text-lg font-semibold text-white/80 group-hover:text-white/90 transition-colors">
+                      More Insights & Tools
+                    </h2>
+                    <p className="text-xs text-white/50 mt-1">AI insights, partner program, account settings, and more</p>
+                  </div>
+                  <ChevronDown className={cn("h-5 w-5 text-white/60 group-hover:text-white/80 transition-transform duration-200", isCollapsibleOpen && "rotate-180")} />
+                </CollapsibleTrigger>
+                <CollapsibleContent className="mt-6 space-y-8">
+                  {/* AI Insights & Actions */}
+                  <div>
+                    <h3 className="text-base font-medium text-white/70 mb-4">AI Insights</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 xl:gap-6">
+                      <AIInsights brandDeals={brandDeals} />
+                      <TopActionNeeded brandDeals={brandDeals} />
+                      <AITaxAdvice brandDeals={brandDeals} />
+                      <AILegalRiskMeter brandDeals={brandDeals} />
+                      <ContentScannerQueue />
+                      <GSTImpactSummary brandDeals={brandDeals} />
+                    </div>
+                  </div>
 
-              {/* Annual Goal Progress & Creator Badge */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <GoalProgressAnnual brandDeals={brandDeals} />
-                <CreatorBadge profile={profile} />
-              </div>
+                  {/* Divider */}
+                  <div className="border-b border-white/5"></div>
 
-              {/* Content Metrics */}
-              <ContentMetrics />
+                  {/* Deals & Performance */}
+                  <div>
+                    <h3 className="text-base font-medium text-white/70 mb-4">Deals & Performance</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 xl:gap-6">
+                      <QuickStats
+                        dealsClosed={dashboardData.quickStats.dealsClosed}
+                        dealsChange={dashboardData.quickStats.dealsChange}
+                        avgDealValue={dashboardData.quickStats.avgDealValue}
+                        paymentCollectionRate={dashboardData.quickStats.paymentCollectionRate}
+                        pitchesSent={dashboardData.quickStats.pitchesSent}
+                        takedownsSuccessful={dashboardData.quickStats.takedownsSuccessful}
+                      />
+                      <ProjectedEarnings brandDeals={brandDeals} />
+                      <TopPayingBrands brandDeals={brandDeals} />
+                      <GoalProgressAnnual brandDeals={brandDeals} />
+                      <ContentMetrics />
+                      <ThisWeeksSummary brandDeals={brandDeals} />
+                    </div>
+                  </div>
 
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <ReferAndEarn />
-                <UploadCenter brandDeals={brandDeals} />
-              </div>
+                  {/* Divider */}
+                  <div className="border-b border-white/5"></div>
 
-              <RiskAlerts brandDeals={brandDeals} />
+                  {/* Partner Program */}
+                  <div>
+                    <h3 className="text-base font-medium text-white/70 mb-4">Partner Program</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 xl:gap-6">
+                      <ReferAndEarn />
+                      <ReferralEarningsPreview />
+                    </div>
+                  </div>
 
-              <ThisWeeksSummary brandDeals={brandDeals} />
+                  {/* Divider */}
+                  <div className="border-b border-white/5"></div>
 
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <TaskManager />
-                <TaxFinanceSummary brandDeals={brandDeals} />
-              </div>
+                  {/* Tasks & Finance */}
+                  <div>
+                    <h3 className="text-base font-medium text-white/70 mb-4">Tasks & Finance</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 xl:gap-6">
+                      <TaskManager />
+                      <TaxFinanceSummary brandDeals={brandDeals} />
+                      <RiskAlerts brandDeals={brandDeals} />
+                      <SmartSuggestions brandDeals={brandDeals} />
+                      <AudienceAnalyticsPreview profile={profile} />
+                      <CreatorScoreBadge brandDeals={brandDeals} />
+                    </div>
+                  </div>
 
-              <CreatorScoreBadge brandDeals={brandDeals} />
+                  {/* Divider */}
+                  <div className="border-b border-white/5"></div>
 
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <LegalHealthScore brandDeals={brandDeals} />
-                <SmartSuggestions brandDeals={brandDeals} />
-              </div>
-
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <ProjectedEarnings brandDeals={brandDeals} />
-                <TopPayingBrands brandDeals={brandDeals} />
-              </div>
-
-              <CreatorProfessionalTeam onSendMessage={handleOpenMessageDialog} />
-
-              <RecentActivity brandDeals={brandDeals} />
-
-              <AccountSummary />
+                  {/* Account & System */}
+                  <div>
+                    <h3 className="text-base font-medium text-white/70 mb-4">Account & System</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 xl:gap-6">
+                      <CreatorBadge profile={profile} />
+                      <CreatorProfessionalTeam onSendMessage={handleOpenMessageDialog} />
+                      <RecentActivity brandDeals={brandDeals} />
+                      <AccountSummary />
+                      <UploadCenter brandDeals={brandDeals} />
+                    </div>
+                  </div>
+                </CollapsibleContent>
+              </Collapsible>
             </>
           )}
 
@@ -1143,6 +1416,20 @@ const CreatorDashboard = () => {
         open={showExpiredModal}
         onOpenChange={setShowExpiredModal}
         reason="trial_expired"
+      />
+
+      {/* Quick Search Modal - Controlled by Cmd+K */}
+      <QuickSearch
+        isOpen={isQuickSearchOpen}
+        onClose={() => setIsQuickSearchOpen(false)}
+        onSelect={(result) => {
+          if (result.type === 'deal') {
+            navigate(`/creator-contracts/${result.id}`);
+          } else if (result.type === 'payment') {
+            navigate('/creator-payments');
+          }
+          setIsQuickSearchOpen(false);
+        }}
       />
     </>
   );

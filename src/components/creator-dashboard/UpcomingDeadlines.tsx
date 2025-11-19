@@ -5,6 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Calendar, ChevronRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
+import { Skeleton } from '@/components/ui/skeleton';
+import { EmptyState } from '@/components/ui/empty-state';
 
 interface Deadline {
   date: string;
@@ -13,11 +15,47 @@ interface Deadline {
 
 interface UpcomingDeadlinesProps {
   deadlines: Deadline[];
+  isLoading?: boolean;
 }
 
-const UpcomingDeadlines: React.FC<UpcomingDeadlinesProps> = ({ deadlines }) => {
+const UpcomingDeadlines: React.FC<UpcomingDeadlinesProps> = ({ deadlines, isLoading = false }) => {
+  if (isLoading) {
+    return (
+      <Card>
+        <CardHeader className="pb-3">
+          <Skeleton className="h-6 w-32" />
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-2.5">
+            {[1, 2, 3].map((i) => (
+              <Skeleton key={i} className="h-20 w-full rounded-[12px]" />
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
   if (deadlines.length === 0) {
-    return null;
+    return (
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="flex items-center gap-2 text-white">
+            <div className="h-9 w-9 rounded-xl flex items-center justify-center bg-blue-500/15 backdrop-blur-sm">
+              <Calendar className="w-4 h-4 text-blue-400" />
+            </div>
+            Coming Up
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <EmptyState
+            icon={Calendar}
+            title="No upcoming deadlines"
+            description="All caught up! Deadlines will appear here when you have upcoming tasks or payment due dates."
+          />
+        </CardContent>
+      </Card>
+    );
   }
 
   const getDaysUntil = (dateString: string): number => {
@@ -30,17 +68,45 @@ const UpcomingDeadlines: React.FC<UpcomingDeadlinesProps> = ({ deadlines }) => {
     return diffDays;
   };
 
-  const getUrgencyColor = (daysUntil: number): { bg: string; border: string; text: string } => {
+  const getUrgencyColor = (daysUntil: number): { bg: string; border: string; text: string; dateBg: string; dateBorder: string; dateText: string } => {
     if (daysUntil < 0) {
-      return { bg: 'bg-red-500/5', border: 'border-red-500/20', text: 'text-red-500' };
+      return { 
+        bg: 'bg-red-500/15', 
+        border: 'border-red-500/30', 
+        text: 'text-red-400',
+        dateBg: 'bg-red-500/20',
+        dateBorder: 'border-red-500/40',
+        dateText: 'text-red-400'
+      };
     }
     if (daysUntil <= 3) {
-      return { bg: 'bg-yellow-500/5', border: 'border-yellow-500/20', text: 'text-yellow-500' };
+      return { 
+        bg: 'bg-amber-500/15', 
+        border: 'border-amber-500/30', 
+        text: 'text-amber-400',
+        dateBg: 'bg-amber-500/20',
+        dateBorder: 'border-amber-500/40',
+        dateText: 'text-amber-400'
+      };
     }
     if (daysUntil <= 7) {
-      return { bg: 'bg-orange-500/5', border: 'border-orange-500/20', text: 'text-orange-500' };
+      return { 
+        bg: 'bg-orange-500/15', 
+        border: 'border-orange-500/30', 
+        text: 'text-orange-400',
+        dateBg: 'bg-orange-500/20',
+        dateBorder: 'border-orange-500/40',
+        dateText: 'text-orange-400'
+      };
     }
-    return { bg: 'bg-muted/50', border: 'border-border/40', text: 'text-muted-foreground' };
+    return { 
+      bg: 'bg-blue-500/10', 
+      border: 'border-blue-500/20', 
+      text: 'text-blue-300',
+      dateBg: 'bg-blue-500/15',
+      dateBorder: 'border-blue-500/30',
+      dateText: 'text-blue-300'
+    };
   };
 
   const formatDate = (dateString: string) => {
@@ -65,22 +131,24 @@ const UpcomingDeadlines: React.FC<UpcomingDeadlinesProps> = ({ deadlines }) => {
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, delay: 0.8 }}
+      transition={{ duration: 0.5, delay: 0.8, ease: [0.22, 1, 0.36, 1] }}
     >
-      <Card className="bg-card border-border/40 hover:border-border/60 transition-all">
+      <Card className="relative overflow-hidden">
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
-            <CardTitle className="flex items-center gap-2 text-lg font-semibold text-foreground">
-              <Calendar className="w-5 h-5 text-blue-500" />
+            <CardTitle className="flex items-center gap-2 text-white">
+              <div className="h-9 w-9 rounded-xl flex items-center justify-center bg-blue-500/15 backdrop-blur-sm">
+                <Calendar className="w-4 h-4 text-blue-400" />
+              </div>
               Coming Up
             </CardTitle>
-            <button className="text-sm text-blue-500 hover:text-blue-400 transition-colors">
+            <button className="text-[13px] text-blue-400 hover:text-blue-300 transition-colors font-medium active:scale-[0.97]">
               View Calendar →
             </button>
           </div>
         </CardHeader>
         <CardContent>
-          <div className="space-y-3">
+          <div className="space-y-2.5">
             {deadlines.map((deadline, index) => {
               const daysUntil = getDaysUntil(deadline.date);
               const urgency = getUrgencyColor(daysUntil);
@@ -90,40 +158,55 @@ const UpcomingDeadlines: React.FC<UpcomingDeadlinesProps> = ({ deadlines }) => {
               return (
                 <motion.div
                   key={index}
-                  initial={{ opacity: 0, x: -20 }}
+                  initial={{ opacity: 0, x: -10 }}
                   animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.3, delay: 0.9 + index * 0.05 }}
-                  whileHover={{ scale: 1.02 }}
+                  transition={{ duration: 0.25, delay: 0.9 + index * 0.05, ease: [0.22, 1, 0.36, 1] }}
+                  whileHover={{ scale: 1.01 }}
                   whileTap={{ scale: 0.98 }}
                   className={cn(
-                    "flex gap-3 p-3 rounded-lg border hover:bg-muted/30 transition-all cursor-pointer group",
+                    "flex gap-3 p-3.5 rounded-[12px] border backdrop-blur-sm",
+                    "hover:bg-white/5 active:bg-white/5 transition-all duration-150 cursor-pointer group",
                     urgency.bg,
                     urgency.border
                   )}
                 >
+                  {/* Premium Date Badge */}
                   <div className={cn(
-                    "flex flex-col items-center justify-center w-12 h-12 rounded-lg shrink-0",
-                    daysUntil <= 3 ? "bg-yellow-500/10" : "bg-muted"
+                    "flex flex-col items-center justify-center w-14 h-14 rounded-[12px] shrink-0 backdrop-blur-sm border",
+                    urgency.dateBg,
+                    urgency.dateBorder
                   )}>
-                    <div className={cn("text-xs font-medium", urgency.text)}>
+                    <div className={cn(
+                      "text-[10px] font-semibold uppercase tracking-wide leading-tight",
+                      urgency.dateText
+                    )}>
                       {dateFormatted.month}
                     </div>
                     <div className={cn(
-                      "text-lg font-bold",
-                      daysUntil <= 3 ? urgency.text : "text-foreground"
+                      "text-[20px] font-bold leading-tight tracking-tight mt-0.5",
+                      urgency.dateText
                     )}>
                       {dateFormatted.day}
                     </div>
                   </div>
+                  
+                  {/* Content */}
                   <div className="flex-1 min-w-0">
-                    <div className="text-sm font-medium text-foreground mb-1">
+                    <div className="text-[15px] font-semibold text-white mb-1 leading-tight tracking-[-0.2px]">
                       {deadline.task}
                     </div>
-                    <div className="text-xs text-muted-foreground">
+                    <div className={cn(
+                      "text-[12px] leading-relaxed font-medium",
+                      urgency.text
+                    )}>
                       {platform} • {daysUntil >= 0 ? `${daysUntil} day${daysUntil !== 1 ? 's' : ''} left` : `${Math.abs(daysUntil)} day${Math.abs(daysUntil) !== 1 ? 's' : ''} overdue`}
                     </div>
                   </div>
-                  <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-foreground transition-colors shrink-0" />
+                  
+                  {/* Arrow Icon */}
+                  <div className="flex items-center shrink-0">
+                    <ChevronRight className="w-4 h-4 text-white/40 group-hover:text-white/70 group-hover:translate-x-0.5 transition-all duration-150" />
+                  </div>
                 </motion.div>
               );
             })}

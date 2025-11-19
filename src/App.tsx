@@ -48,6 +48,7 @@ import GoogleAnalyticsTracker from "./components/GoogleAnalyticsTracker"; // Imp
 import CreatorContracts from "./pages/CreatorContracts";
 import DealDetailPage from "./pages/DealDetailPage";
 import CreatorPaymentsAndRecovery from "./pages/CreatorPaymentsAndRecovery";
+import DashboardWhitePreview from "./pages/DashboardWhitePreview";
 import CreatorContentProtection from "./pages/CreatorContentProtection";
 import CreatorTaxCompliancePage from "./pages/CreatorTaxCompliancePage";
 import CreatorOnboarding from "./pages/CreatorOnboarding"; // NEW: Import CreatorOnboarding
@@ -96,6 +97,9 @@ const App = () => {
               {/* NEW LEAD FUNNEL ROUTES */}
               <Route path="/free-legal-check" element={<FreeLegalCheck />} />
               <Route path="/thank-you" element={<ThankYou />} />
+              
+              {/* Preview Routes */}
+              <Route path="/dashboard-white-preview" element={<DashboardWhitePreview />} />
               
               {/* Referral Landing */}
               <Route path="/p/:code" element={<ReferralLanding />} />

@@ -87,9 +87,9 @@ const Notifications: React.FC = () => {
         <Button
           variant="ghost"
           size="icon"
-          className="relative h-9 w-9 text-gray-400 hover:text-gray-200 hover:bg-white/5 transition-all duration-200"
+          className="relative h-9 w-9 text-gray-400/80 hover:text-gray-200 hover:bg-white/5 transition-all duration-200"
         >
-          <Bell className="h-4 w-4" />
+          <Bell className="h-4 w-4 opacity-80" />
           {unreadCount > 0 && (
             <span className="absolute top-1.5 right-1.5 flex h-2 w-2">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-500 opacity-75"></span>

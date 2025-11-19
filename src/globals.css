@@ -162,3 +162,17 @@
 .brand-pill-gradient {
   background: linear-gradient(145deg, rgba(255,255,255,0.08), rgba(255,255,255,0.02));
 }
+
+/* Slow pulse animation for critical icons */
+@keyframes pulse-slow {
+  0%, 100% { 
+    opacity: 0.8; 
+  }
+  50% { 
+    opacity: 1; 
+  }
+}
+
+.animate-pulse-slow {
+  animation: pulse-slow 6s ease-in-out infinite;
+}

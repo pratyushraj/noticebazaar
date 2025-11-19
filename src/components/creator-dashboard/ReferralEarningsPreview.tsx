@@ -25,10 +25,10 @@ const ReferralEarningsPreview: React.FC = () => {
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.4 }}
     >
-      <Card className="bg-gradient-to-br from-purple-900/20 to-pink-900/20 border border-white/5 hover:border-purple-600/60 transition-all shadow-inner cursor-pointer hover:shadow-lg"
+      <Card className="bg-gradient-to-br from-[#0E121A] to-[#111827] border border-white/5 hover:border-white/10 transition-all rounded-2xl shadow-[0px_4px_24px_rgba(0,0,0,0.25)] cursor-pointer px-5 py-4"
         onClick={() => navigate('/partner-program')}
       >
-        <CardContent className="p-4">
+        <CardContent className="p-0">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
               <Gift className="h-4 w-4 text-purple-400" />

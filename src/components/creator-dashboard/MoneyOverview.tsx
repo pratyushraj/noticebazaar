@@ -1,13 +1,15 @@
 "use client";
 
 import React, { useMemo } from 'react';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { IndianRupee, Clock, Briefcase, CheckCircle, ArrowRight, AlertCircle, TrendingUp, MoreHorizontal, ChevronRight, PlusCircle, Send } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
 import { BrandDeal } from '@/types';
+import { Skeleton } from '@/components/ui/skeleton';
+import { EmptyState } from '@/components/ui/empty-state';
 
 interface MoneyOverviewProps {
   pendingPayments: number;
@@ -21,6 +23,7 @@ interface MoneyOverviewProps {
   brandDeals?: BrandDeal[];
   onSendReminder?: (dealId: string) => void;
   onAddCampaign?: () => void;
+  isLoading?: boolean;
 }
 
 const MoneyOverview: React.FC<MoneyOverviewProps> = ({
@@ -35,6 +38,7 @@ const MoneyOverview: React.FC<MoneyOverviewProps> = ({
   brandDeals = [],
   onSendReminder,
   onAddCampaign,
+  isLoading = false,
 }) => {
   const navigate = useNavigate();
 
@@ -114,13 +118,38 @@ const MoneyOverview: React.FC<MoneyOverviewProps> = ({
   const completedChange = completed - completedLastMonth;
 
   // If pending/due are 0, only render Active Campaigns and Completed (for use with CombinedPaymentsCard)
+  if (isLoading) {
+    return (
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 col-span-2">
+        <Card variant="metric">
+          <CardHeader className="pb-3">
+            <Skeleton className="h-6 w-32" />
+          </CardHeader>
+          <CardContent>
+            <Skeleton className="h-12 w-24" />
+            <Skeleton className="h-4 w-32 mt-2" />
+          </CardContent>
+        </Card>
+        <Card variant="metric">
+          <CardHeader className="pb-3">
+            <Skeleton className="h-6 w-32" />
+          </CardHeader>
+          <CardContent>
+            <Skeleton className="h-12 w-24" />
+            <Skeleton className="h-4 w-32 mt-2" />
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   if (pendingPayments === 0 && dueThisWeek === 0) {
     return (
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.4 }}
-        className="grid grid-cols-2 gap-4 col-span-2"
+        transition={{ duration: 0.5, delay: 0.4, ease: [0.22, 1, 0.36, 1] }}
+        className="grid grid-cols-1 sm:grid-cols-2 gap-3 col-span-2"
       >
         {/* Active Campaigns Card */}
       <motion.div
@@ -130,36 +159,39 @@ const MoneyOverview: React.FC<MoneyOverviewProps> = ({
         transition={{ duration: 0.3, delay: 0.7 }}
       >
         <Card
-          className="bg-gradient-to-br from-blue-900/20 to-blue-950/20 border border-blue-700/40 rounded-xl p-3 md:p-5 hover:border-blue-600/60 transition-all cursor-pointer group hover:shadow-xl hover:shadow-blue-500/10"
+          variant="metric"
+          interactive
+          className="h-auto group"
           onClick={() => navigate('/creator-contracts')}
         >
-          <div className="flex items-center justify-between mb-2 md:mb-3">
-            <div className="flex items-center gap-1.5 md:gap-2">
-              <div className="w-8 h-8 md:w-10 md:h-10 rounded-lg bg-blue-500/10 flex items-center justify-center">
-                <TrendingUp className="w-4 h-4 md:w-5 md:h-5 text-blue-500" />
+          
+          <CardHeader className="relative z-10 pb-3">
+            <div className="flex items-center gap-2">
+              <div className="h-9 w-9 rounded-xl flex items-center justify-center bg-white/5 backdrop-blur-sm">
+                <TrendingUp className="h-5 w-5 text-white/80" />
               </div>
-              <span className="text-xs md:text-sm font-medium text-foreground">Active Campaigns</span>
+              <CardTitle>Active Campaigns</CardTitle>
             </div>
-          </div>
+          </CardHeader>
 
           {activeCampaigns === 0 ? (
-            <div className="text-center py-3 md:py-6 space-y-2 md:space-y-4">
-              <div className="text-3xl md:text-5xl font-bold text-foreground mb-1 md:mb-2">{activeCampaigns}</div>
+            <div className="relative z-10 text-center py-6 space-y-4">
+              <div className="text-5xl font-bold text-foreground mb-2">{activeCampaigns}</div>
               <Button
                 size="sm"
                 onClick={(e) => {
                   e.stopPropagation();
                   onAddCampaign?.();
                 }}
-                className="px-2 py-1.5 md:px-4 md:py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs md:text-sm font-medium"
+                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium"
               >
                 Start Your Campaign
               </Button>
             </div>
           ) : (
-            <div className="space-y-2">
-              <div className="text-3xl font-bold text-foreground">{activeCampaigns} running</div>
-              <div className="text-sm text-muted-foreground">
+            <CardContent className="relative z-10">
+              <div className="text-2xl font-semibold text-white tracking-tight">{activeCampaigns} running</div>
+              <div className="text-[13px] text-white/60">
                 {deliverablesDue} deliverable{deliverablesDue !== 1 ? 's' : ''} due
                 {campaignWithDeliverable && (
                   <span className="text-yellow-500"> in {Math.ceil((new Date(campaignWithDeliverable.payment_expected_date).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))} days</span>
@@ -184,12 +216,14 @@ const MoneyOverview: React.FC<MoneyOverviewProps> = ({
                   </div>
                 </div>
               )}
-            </div>
+            </CardContent>
           )}
 
-          <div className="mt-2 md:mt-4 flex items-center text-xs md:text-sm text-blue-500 group-hover:text-blue-400 transition-colors">
-            <span>Manage</span>
-            <ArrowRight className="w-3 h-3 md:w-4 md:h-4 ml-1 group-hover:translate-x-1 transition-transform" />
+          <div className="relative z-10 px-4 pb-4 pt-3 mt-0 border-t border-white/10">
+            <div className="flex items-center gap-1.5 text-sm text-blue-500 group-hover:text-blue-400 transition-colors cursor-pointer">
+              <span className="whitespace-nowrap">Manage</span>
+              <ArrowRight className="w-4 h-4 shrink-0 group-hover:translate-x-1 transition-transform" />
+            </div>
           </div>
         </Card>
       </motion.div>
@@ -202,26 +236,31 @@ const MoneyOverview: React.FC<MoneyOverviewProps> = ({
         transition={{ duration: 0.3, delay: 0.8 }}
       >
         <Card
-          className="bg-gradient-to-br from-green-900/20 to-green-950/20 border border-green-700/40 rounded-xl p-3 md:p-5 hover:border-green-600/60 transition-all cursor-pointer group hover:shadow-xl hover:shadow-green-500/10"
+          variant="metric"
+          interactive
+          className="h-auto group relative"
           onClick={() => navigate('/creator-contracts')}
         >
-          <div className="flex items-center gap-1.5 md:gap-2 mb-2 md:mb-3">
-            <div className="w-8 h-8 md:w-10 md:h-10 rounded-lg bg-green-500/10 flex items-center justify-center">
-              <CheckCircle className="w-4 h-4 md:w-5 md:h-5 text-green-500" />
+          
+          <CardHeader className="relative z-10 pb-3">
+            <div className="flex items-center gap-2">
+              <div className="h-9 w-9 rounded-xl flex items-center justify-center bg-white/5">
+                <CheckCircle className="h-5 w-5 text-white/80" />
+              </div>
+              <CardTitle>Completed</CardTitle>
             </div>
-            <span className="text-xs md:text-sm font-medium text-foreground">Completed</span>
-          </div>
+          </CardHeader>
 
-          <div className="space-y-1 md:space-y-2 mb-2 md:mb-4">
-            <div className="text-2xl md:text-3xl font-bold text-foreground tabular-nums">{completed} this month</div>
+          <CardContent className="relative z-10 mb-4">
+            <div className="text-3xl font-bold text-white tabular-nums">{completed} this month</div>
             {completedChange !== 0 && (
-              <div className="flex items-center gap-1 md:gap-2 text-xs md:text-sm">
+              <div className="flex items-center gap-2 text-sm">
                 <div className={cn(
                   "flex items-center text-green-500",
                   completedChange < 0 && "text-red-500"
                 )}>
                   <TrendingUp className={cn(
-                    "w-3 h-3 md:w-4 md:h-4 mr-1",
+                    "w-4 h-4 mr-1",
                     completedChange < 0 && "rotate-180"
                   )} />
                   <span className="font-medium">
@@ -230,13 +269,15 @@ const MoneyOverview: React.FC<MoneyOverviewProps> = ({
                 </div>
               </div>
             )}
-            <div className="text-xs md:text-sm text-muted-foreground">{onTimeRate}% on time delivery</div>
-          </div>
+            <div className="text-sm text-white/60">{onTimeRate}% on time delivery</div>
+          </CardContent>
 
-          <button className="w-full px-2 py-1.5 md:px-4 md:py-2 bg-green-500/10 hover:bg-green-500/20 border border-green-500/30 text-green-400 text-xs md:text-sm font-medium rounded-lg transition-all flex items-center justify-between group-hover:border-green-500/50">
-            <span>View History</span>
-            <ArrowRight className="w-3 h-3 md:w-4 md:h-4 group-hover:translate-x-1 transition-transform" />
-          </button>
+          <div className="relative z-10 pt-3 border-t border-white/10">
+            <button className="w-full px-4 py-2 bg-green-500/10 hover:bg-green-500/20 border border-green-500/30 text-green-400 text-sm font-medium rounded-lg transition-all flex items-center justify-between group-hover:border-green-500/50">
+              <span>View History</span>
+              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+            </button>
+          </div>
         </Card>
       </motion.div>
       </motion.div>

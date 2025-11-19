@@ -1,15 +1,14 @@
 "use client";
 
 import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useSession } from '@/contexts/SessionContext';
-import { Home, Briefcase, Wallet, Shield, Sparkles, LayoutDashboard, FileText, DollarSign, Calculator, MessageSquare, Users, CalendarDays, CreditCard, Activity } from 'lucide-react';
+import { Home, Briefcase, Wallet, Shield, Sparkles, LayoutDashboard, FileText, MessageSquare, Users } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import NavTabs from './NavTabs';
 import SearchBar from './SearchBar';
 import Notifications from './Notifications';
-import ProfileDropdown from './ProfileDropdown';
-import MobileMenu from './MobileMenu';
+import AppsMenu from './AppsMenu';
 
 interface NavTab {
   to: string;
@@ -20,7 +19,6 @@ interface NavTab {
 
 const Navbar: React.FC = () => {
   const { user, profile } = useSession();
-  const location = useLocation();
 
   // Determine dashboard path based on role
   let dashboardPath = "/client-dashboard";
@@ -73,7 +71,7 @@ const Navbar: React.FC = () => {
     <header 
       className={cn(
         "sticky top-0 z-50 w-full h-16",
-        "bg-[#0F121A]/80 backdrop-blur-xl border-b border-white/10",
+        "bg-[#0B111B] backdrop-blur-xl border-b border-white/10",
         "shadow-[0_0_20px_rgba(0,0,0,0.15)]"
       )}
     >
@@ -98,19 +96,16 @@ const Navbar: React.FC = () => {
             <NavTabs tabs={navTabs} role={profile?.role || null} />
           </div>
 
-          {/* Right Section: Search, Notifications, Profile, Mobile Menu */}
-          <div className="flex items-center space-x-2">
+          {/* Right Section: Search, Notifications, Apps Menu */}
+          <div className="flex items-center gap-[14px] pr-4 lg:pr-0">
             {/* Search */}
             <SearchBar />
 
             {/* Notifications */}
             <Notifications />
 
-            {/* Profile Dropdown */}
-            <ProfileDropdown profilePath={profilePath} />
-
-            {/* Mobile Menu */}
-            <MobileMenu tabs={navTabs} profilePath={profilePath} />
+            {/* Apps Menu (Google-style 9-dots) */}
+            <AppsMenu profileRole={profile?.role || null} />
           </div>
         </div>
       </div>

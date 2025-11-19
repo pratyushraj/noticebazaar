@@ -33,10 +33,10 @@ const TaxFinanceSummary: React.FC<TaxFinanceSummaryProps> = ({ brandDeals = [] }
   const daysUntilTaxDue = Math.ceil((taxDueDate.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
 
   return (
-    <Card className="bg-gradient-to-br from-green-500/10 to-slate-900/50 border border-green-500/20 rounded-2xl">
+    <Card className="bg-gradient-to-br from-[#0E121A] to-[#111827] border border-white/5 rounded-2xl shadow-[0px_4px_24px_rgba(0,0,0,0.25)] px-5 py-4">
       <CardHeader className="pb-3">
         <CardTitle className="text-lg font-semibold text-white flex items-center gap-2">
-          <Calculator className="h-5 w-5 text-green-400" />
+          <Calculator className="h-5 w-5 text-green-400 opacity-70" />
           Tax & Finance Summary
         </CardTitle>
       </CardHeader>

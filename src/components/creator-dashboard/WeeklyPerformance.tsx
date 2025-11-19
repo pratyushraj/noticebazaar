@@ -4,12 +4,15 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { TrendingUp, FileText, DollarSign, AlertCircle } from 'lucide-react';
 import { BrandDeal } from '@/types';
+import { Skeleton } from '@/components/ui/skeleton';
+import { EmptyState } from '@/components/ui/empty-state';
 
 interface WeeklyPerformanceProps {
   brandDeals?: BrandDeal[];
+  isLoading?: boolean;
 }
 
-const WeeklyPerformance: React.FC<WeeklyPerformanceProps> = ({ brandDeals = [] }) => {
+const WeeklyPerformance: React.FC<WeeklyPerformanceProps> = ({ brandDeals = [], isLoading = false }) => {
   const now = new Date();
   const weekAgo = new Date(now);
   weekAgo.setDate(weekAgo.getDate() - 7);
@@ -42,49 +45,90 @@ const WeeklyPerformance: React.FC<WeeklyPerformanceProps> = ({ brandDeals = [] }
     }).length;
   }, [brandDeals, now]);
 
+  if (isLoading) {
+    return (
+      <Card variant="metric">
+        <CardHeader className="pb-3">
+          <Skeleton className="h-6 w-40" />
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-2 gap-4">
+            {[1, 2, 3, 4].map((i) => (
+              <Skeleton key={i} className="h-20 w-full" />
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (brandDeals.length === 0) {
+    return (
+      <Card variant="metric">
+        <CardHeader className="pb-3">
+          <CardTitle className="flex items-center gap-2">
+            <div className="h-9 w-9 rounded-xl flex items-center justify-center bg-white/5 backdrop-blur-sm">
+              <TrendingUp className="h-5 w-5 text-white/80" />
+            </div>
+            Weekly Performance
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <EmptyState
+            icon={TrendingUp}
+            title="No performance data yet"
+            description="Complete brand deals and track your weekly progress here."
+          />
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
-    <Card className="bg-gradient-to-br from-white/5 to-white/2 border border-white/10 rounded-3xl shadow-[0_0_20px_-6px_rgba(255,255,255,0.1)]">
+    <Card variant="metric">
       <CardHeader className="pb-3">
-        <CardTitle className="text-lg font-semibold text-white flex items-center gap-2">
-          <TrendingUp className="h-5 w-5 text-blue-400" />
+        <CardTitle className="flex items-center gap-2">
+          <div className="h-9 w-9 rounded-xl flex items-center justify-center bg-white/5 backdrop-blur-sm">
+            <TrendingUp className="h-5 w-5 text-white/80" />
+          </div>
           Weekly Performance
         </CardTitle>
       </CardHeader>
       <CardContent className="grid grid-cols-2 gap-4">
         <div className="space-y-1">
-          <div className="flex items-center gap-2 text-white/60 text-sm">
-            <FileText className="h-4 w-4" />
+          <div className="flex items-center gap-2 text-white/60 text-[13px]">
+            <FileText className="h-3.5 w-3.5" />
             <span>Brand Inquiries</span>
           </div>
-          <p className="text-2xl font-bold text-white">+{brandInquiries}</p>
-          <p className="text-xs text-white/40">this week</p>
+          <p className="text-3xl font-bold text-white tracking-tight">+{brandInquiries}</p>
+          <p className="text-[12px] text-white/50">this week</p>
         </div>
 
         <div className="space-y-1">
-          <div className="flex items-center gap-2 text-white/60 text-sm">
-            <DollarSign className="h-4 w-4" />
+          <div className="flex items-center gap-2 text-white/60 text-[13px]">
+            <DollarSign className="h-3.5 w-3.5" />
             <span>Est. Incoming</span>
           </div>
-          <p className="text-2xl font-bold text-white">₹{Math.round(estimatedPayments / 1000)}k</p>
-          <p className="text-xs text-white/40">pending payments</p>
+          <p className="text-3xl font-bold text-white tracking-tight">₹{Math.round(estimatedPayments / 1000)}k</p>
+          <p className="text-[12px] text-white/50">pending payments</p>
         </div>
 
         <div className="space-y-1">
-          <div className="flex items-center gap-2 text-white/60 text-sm">
-            <FileText className="h-4 w-4" />
+          <div className="flex items-center gap-2 text-white/60 text-[13px]">
+            <FileText className="h-3.5 w-3.5" />
             <span>Under Review</span>
           </div>
-          <p className="text-2xl font-bold text-white">{contractsReviewing}</p>
-          <p className="text-xs text-white/40">contracts</p>
+          <p className="text-3xl font-bold text-white tracking-tight">{contractsReviewing}</p>
+          <p className="text-[12px] text-white/50">contracts</p>
         </div>
 
         <div className="space-y-1">
-          <div className="flex items-center gap-2 text-white/60 text-sm">
-            <AlertCircle className="h-4 w-4 text-orange-400" />
+          <div className="flex items-center gap-2 text-white/60 text-[13px]">
+            <AlertCircle className="h-3.5 w-3.5 text-orange-400" />
             <span>Overdue</span>
           </div>
-          <p className="text-2xl font-bold text-white">{overduePayments}</p>
-          <p className="text-xs text-white/40">payments</p>
+          <p className="text-3xl font-bold text-white tracking-tight">{overduePayments}</p>
+          <p className="text-[12px] text-white/50">payments</p>
         </div>
       </CardContent>
     </Card>

@@ -72,7 +72,6 @@ const BrandInterestScore: React.FC<BrandInterestScoreProps> = ({ brandDeals = []
   };
 
   const scoreConfig = getScoreColor(score);
-  const gaugeRotation = (score / 100) * 180 - 90; // -90 to 90 degrees
 
   return (
     <motion.div
@@ -80,63 +79,84 @@ const BrandInterestScore: React.FC<BrandInterestScoreProps> = ({ brandDeals = []
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.15 }}
     >
-      <Card className={cn("bg-gradient-to-br", scoreConfig.bg, "border", scoreConfig.border, "hover:border-opacity-60 transition-all shadow-inner")}>
-        <CardContent className="p-4">
-          <div className="flex items-center justify-between mb-3">
+      <Card className={cn("border", scoreConfig.border, "hover:border-white/10 transition-all")}>
+        {/* Soft radial gradient overlay */}
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.04),transparent_70%)] pointer-events-none" />
+        
+        <CardContent className="p-0 relative z-10">
+          {/* Header */}
+          <div className="flex items-center justify-between mb-2.5">
             <div className="flex items-center gap-2">
-              <TrendingUp className="h-4 w-4 text-muted-foreground" />
-              <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Brand Interest Score</span>
+              <TrendingUp className="h-3.5 w-3.5 text-blue-300 opacity-80" />
+              <span className="text-[11px] font-semibold text-white/50 uppercase tracking-wide">Brand Interest Score</span>
             </div>
-            <span className={cn("text-lg font-bold", scoreConfig.text)}>
+            <span className={cn("text-[17px] font-bold tracking-tight", scoreConfig.text)}>
               {score}/100
             </span>
           </div>
 
-          {/* Gauge Meter */}
-          <div className="relative w-full h-24 mb-3 flex items-end justify-center">
-            <svg className="w-full h-full" viewBox="0 0 120 60" style={{ transform: 'scaleY(-1)' }}>
-              {/* Background arc */}
-              <path
-                d="M 10 50 A 50 50 0 0 1 110 50"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="8"
-                className="text-gray-800/30"
+          {/* Circular Radial Meter */}
+          <div className="relative w-full flex items-center justify-center my-2.5">
+            <div className="relative w-32 h-32">
+              {/* SVG Circular Progress Ring */}
+              <svg className="w-32 h-32 transform -rotate-90" viewBox="0 0 100 100">
+                {/* Background circle */}
+                <circle
+                  cx="50"
+                  cy="50"
+                  r="40"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="6"
+                  className="text-white/10"
+                />
+                {/* Progress arc */}
+                <motion.circle
+                  cx="50"
+                  cy="50"
+                  r="40"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="6"
+                  strokeLinecap="round"
+                  strokeDasharray={`${2 * Math.PI * 40}`}
+                  strokeDashoffset={`${2 * Math.PI * 40 * (1 - score / 100)}`}
+                  className={scoreConfig.text}
+                  initial={{ strokeDashoffset: 2 * Math.PI * 40 }}
+                  animate={{ strokeDashoffset: 2 * Math.PI * 40 * (1 - score / 100) }}
+                  transition={{ duration: 1, ease: "easeOut" }}
+                />
+              </svg>
+              
+              {/* Center content with percentage */}
+              <div className="absolute inset-0 flex flex-col items-center justify-center">
+                <div className={cn("text-3xl font-bold", scoreConfig.text)}>
+                  {score}%
+                </div>
+              </div>
+              
+              {/* Progress dot on arc */}
+              <motion.div
+                className="absolute top-1/2 left-1/2 w-3 h-3 rounded-full border-2 border-white shadow-lg"
+                style={{
+                  backgroundColor: score >= 80 ? '#10b981' : score >= 60 ? '#3b82f6' : score >= 40 ? '#eab308' : '#ef4444',
+                  transformOrigin: 'center',
+                  transform: `translate(-50%, -50%) rotate(${score / 100 * 360 - 90}deg) translateY(-40px)`,
+                }}
+                initial={{ transform: `translate(-50%, -50%) rotate(-90deg) translateY(-40px)` }}
+                animate={{ transform: `translate(-50%, -50%) rotate(${score / 100 * 360 - 90}deg) translateY(-40px)` }}
+                transition={{ duration: 1, ease: "easeOut" }}
               />
-              {/* Score arc */}
-              <path
-                d="M 10 50 A 50 50 0 0 1 110 50"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="8"
-                strokeLinecap="round"
-                strokeDasharray={`${(score / 100) * 157} 157`}
-                className={scoreConfig.text}
-                style={{ transform: 'translateY(-50px)' }}
-              />
-            </svg>
-            {/* Needle */}
-            <div
-              className="absolute bottom-0 left-1/2 origin-bottom"
-              style={{
-                transform: `translateX(-50%) rotate(${gaugeRotation}deg)`,
-                transformOrigin: 'bottom center',
-                width: '3px',
-                height: '35px',
-                background: `linear-gradient(to top, ${score >= 80 ? '#10b981' : score >= 60 ? '#3b82f6' : score >= 40 ? '#eab308' : '#ef4444'}, transparent)`,
-                borderRadius: '2px',
-                transition: 'transform 0.5s ease',
-              }}
-            />
-            <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-3 h-3 rounded-full bg-current" style={{ color: score >= 80 ? '#10b981' : score >= 60 ? '#3b82f6' : score >= 40 ? '#eab308' : '#ef4444' }} />
+            </div>
           </div>
 
-          <div className="text-center">
-            <span className={cn("text-sm font-semibold", scoreConfig.text)}>
+          {/* Bottom Status */}
+          <div className="text-center mt-2">
+            <span className={cn("text-sm font-semibold", score >= 60 ? 'text-blue-300' : scoreConfig.text)}>
               {scoreConfig.label}
             </span>
             <p className="text-xs text-muted-foreground mt-1">
-              Brands trust you {score >= 80 ? '— keep it up!' : score >= 60 ? '— maintain this level' : '— improve to attract more deals'}
+              {score >= 80 ? 'Brands trust you — keep it up!' : score >= 60 ? 'Brands trust you — maintain this level' : 'Improve to attract more deals'}
             </p>
           </div>
         </CardContent>

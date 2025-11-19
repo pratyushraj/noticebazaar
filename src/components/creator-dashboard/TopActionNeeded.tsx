@@ -77,8 +77,8 @@ const TopActionNeeded: React.FC<TopActionNeededProps> = ({ brandDeals = [] }) =>
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.25 }}
     >
-      <Card className="bg-gradient-to-br from-orange-900/20 to-red-900/20 border border-white/5 hover:border-orange-600/60 transition-all shadow-inner">
-        <CardContent className="p-4">
+      <Card className="bg-gradient-to-br from-[#210909] to-[#3A0F0F] border border-white/5 hover:border-white/10 transition-all rounded-2xl shadow-[0px_4px_24px_rgba(0,0,0,0.25)] px-5 py-4">
+        <CardContent className="p-0">
           <div className="flex items-center gap-2 mb-3">
             <AlertCircle className="h-4 w-4 text-orange-400" />
             <span className="text-xs font-semibold text-orange-400 uppercase tracking-wide">Top Action Needed</span>

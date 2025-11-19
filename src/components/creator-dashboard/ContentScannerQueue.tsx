@@ -26,10 +26,10 @@ const ContentScannerQueue: React.FC = () => {
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.45 }}
     >
-      <Card className="bg-gradient-to-br from-blue-900/20 to-indigo-900/20 border border-white/5 hover:border-blue-600/60 transition-all shadow-inner cursor-pointer hover:shadow-lg"
+      <Card className="bg-gradient-to-br from-blue-900/20 to-blue-950/20 border border-white/5 hover:border-white/10 transition-all rounded-2xl shadow-[0px_4px_24px_rgba(0,0,0,0.25)] cursor-pointer px-5 py-4"
         onClick={() => navigate('/creator-content-protection')}
       >
-        <CardContent className="p-4">
+        <CardContent className="p-0">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
               <Shield className="h-4 w-4 text-blue-400" />

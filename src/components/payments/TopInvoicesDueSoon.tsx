@@ -16,8 +16,8 @@ interface TopInvoicesDueSoonProps {
 
 const TopInvoicesDueSoon: React.FC<TopInvoicesDueSoonProps> = ({ brandDeals = [] }) => {
   const navigate = useNavigate();
-  const now = new Date();
-  now.setHours(0, 0, 0, 0);
+    const now = new Date();
+    now.setHours(0, 0, 0, 0);
 
   const upcomingInvoices = useMemo(() => {
     const pending = brandDeals
@@ -78,37 +78,58 @@ const TopInvoicesDueSoon: React.FC<TopInvoicesDueSoonProps> = ({ brandDeals = []
           </div>
         </CardHeader>
         <CardContent className="pt-0">
-          <div className="space-y-2 max-h-[200px] overflow-y-auto">
+          <style dangerouslySetInnerHTML={{__html: `
+            .premium-scrollbar::-webkit-scrollbar {
+              width: 6px;
+            }
+            .premium-scrollbar::-webkit-scrollbar-track {
+              background: transparent;
+              border-radius: 10px;
+            }
+            .premium-scrollbar::-webkit-scrollbar-thumb {
+              background: rgba(255, 255, 255, 0.2);
+              border-radius: 10px;
+              transition: background 0.2s ease;
+            }
+            .premium-scrollbar::-webkit-scrollbar-thumb:hover {
+              background: rgba(255, 255, 255, 0.35);
+            }
+            .premium-scrollbar {
+              scrollbar-width: thin;
+              scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+            }
+          `}} />
+          <div className="space-y-2 max-h-[200px] overflow-y-auto pr-2 premium-scrollbar">
             {upcomingInvoices.map(({ deal, daysUntil }) => (
-              <div
+                <div
                 key={deal.id}
                 className="flex items-center justify-between p-2 rounded-lg bg-white/5 hover:bg-white/10 transition-colors cursor-pointer"
                 onClick={() => navigate(`/creator-contracts/${deal.id}`)}
-              >
+                >
                 <div className="flex items-center gap-2 flex-1 min-w-0">
                   <BrandLogo brandName={deal.brand_name} size="sm" />
-                  <div className="flex-1 min-w-0">
+                    <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <span className="text-sm font-semibold text-foreground truncate">
+                        <span className="text-sm font-semibold text-foreground truncate">
                         {deal.brand_name}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
                       <span>₹{deal.deal_amount.toLocaleString('en-IN')}</span>
                       <span>•</span>
                       <div className={cn(
                         "flex items-center gap-1",
                         daysUntil <= 3 ? "text-orange-400" : "text-muted-foreground"
-                      )}>
+                        )}>
                         <Calendar className="h-3 w-3" />
                         <span>{daysUntil === 0 ? 'Due today' : `${daysUntil} day${daysUntil > 1 ? 's' : ''} left`}</span>
+                      </div>
                       </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
         </CardContent>
       </Card>
     </motion.div>

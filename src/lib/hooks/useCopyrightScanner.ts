@@ -101,22 +101,22 @@ export const useOriginalContent = (options: UseOriginalContentOptions) => {
             errorStr.includes('404') ||
             errorStr.includes('not found');
 
-        if (is404Error) {
+          if (is404Error) {
           // Return demo data when table doesn't exist
           return getDemoOriginalContent(creatorId);
+          }
+          
+          // For other errors, throw to let React Query handle it
+          // But still return empty array to prevent UI crashes
+          throw error;
         }
-        
-        // For other errors, throw to let React Query handle it
-        // But still return empty array to prevent UI crashes
-        throw error;
-      }
       
       // If no data, return demo data for preview/demo purposes
       if ((!data || data.length === 0) && creatorId) {
         return getDemoOriginalContent(creatorId);
       }
       
-      return data as OriginalContent[];
+        return data as OriginalContent[];
       } catch (err: any) {
         // Catch network errors (404, etc.) and return empty array silently
         const errorStr = String(err?.message || err || '').toLowerCase();
@@ -250,10 +250,10 @@ export const useCopyrightMatches = (options: UseCopyrightMatchesOptions) => {
       if (!contentId) return [];
 
       try {
-        // Use the Edge Function to fetch matches for the latest scan
-        const { data, error } = await supabase.functions.invoke('copyright/get-matches', {
-          body: { content_id: contentId },
-        });
+      // Use the Edge Function to fetch matches for the latest scan
+      const { data, error } = await supabase.functions.invoke('copyright/get-matches', {
+        body: { content_id: contentId },
+      });
 
         // Handle Edge Function errors gracefully
         if (error) {

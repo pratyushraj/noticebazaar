@@ -7,6 +7,9 @@ import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
 import { BrandDeal } from '@/types';
+import { Skeleton } from '@/components/ui/skeleton';
+import { EmptyState } from '@/components/ui/empty-state';
+import { Wallet } from 'lucide-react';
 
 interface CombinedPaymentsCardProps {
   pendingPayments: number;
@@ -15,6 +18,7 @@ interface CombinedPaymentsCardProps {
   dueThisWeekCount: number;
   brandDeals?: BrandDeal[];
   onSendReminder?: (dealId: string) => void;
+  isLoading?: boolean;
 }
 
 const CombinedPaymentsCard: React.FC<CombinedPaymentsCardProps> = ({
@@ -24,6 +28,7 @@ const CombinedPaymentsCard: React.FC<CombinedPaymentsCardProps> = ({
   dueThisWeekCount,
   brandDeals = [],
   onSendReminder,
+  isLoading = false,
 }) => {
   const navigate = useNavigate();
 
@@ -74,47 +79,123 @@ const CombinedPaymentsCard: React.FC<CombinedPaymentsCardProps> = ({
 
   const totalAmount = pendingPayments + dueThisWeek;
 
+  if (isLoading) {
+    return (
+      <Card variant="metric">
+        <CardContent>
+          <Skeleton className="h-32 w-full" />
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (totalAmount === 0 && !isLoading) {
+    return (
+      <Card variant="metric" interactive onClick={() => navigate('/creator-payments')}>
+        <CardContent>
+          <EmptyState
+            icon={Wallet}
+            title="No pending payments"
+            description="All caught up! Payments will appear here when deals are completed."
+            actionLabel="View All Payments"
+            onAction={() => navigate('/creator-payments')}
+          />
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3, delay: 0.5 }}
+      transition={{ duration: 0.3, delay: 0.5, ease: [0.22, 1, 0.36, 1] }}
+      className="relative group"
     >
       <Card
-        className={cn(
-          "bg-gradient-to-br from-amber-900/30 to-amber-950/20 border border-amber-700/40 rounded-xl overflow-hidden hover:border-amber-600/60 transition-all cursor-pointer shadow-[0_0_20px_-6px_rgba(255,255,255,0.1)]",
-          hasOverdue && "border-red-500/50"
-        )}
+        variant={hasOverdue ? "attention" : "metric"}
+        interactive
         onClick={() => navigate('/creator-payments')}
+        className="relative overflow-hidden"
       >
-        <CardContent className="p-5">
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-2">
-              <div className="w-10 h-10 rounded-lg bg-amber-500/10 flex items-center justify-center">
-                <IndianRupee className="w-5 h-5 text-amber-500" />
+        {/* Premium gradient overlay */}
+        <div className={cn(
+          "absolute inset-0 opacity-60 group-hover:opacity-80 transition-opacity duration-300 pointer-events-none",
+          hasOverdue 
+            ? "bg-gradient-to-br from-red-500/10 via-transparent to-transparent" 
+            : "bg-gradient-to-br from-emerald-500/10 via-blue-500/5 to-transparent"
+        )} />
+        
+        <CardContent className="relative z-10">
+          <div className="flex items-center justify-between mb-5 pt-1">
+            <div className="flex items-center gap-3">
+              <div className={cn(
+                "h-10 w-10 rounded-xl flex items-center justify-center backdrop-blur-sm shadow-lg transition-all duration-200",
+                hasOverdue
+                  ? "bg-gradient-to-br from-red-500/20 to-red-600/10 border border-red-500/30 shadow-red-500/20"
+                  : "bg-gradient-to-br from-emerald-500/20 to-blue-500/10 border border-emerald-500/30 shadow-emerald-500/20"
+              )}>
+                <IndianRupee className={cn(
+                  "h-5 w-5 transition-colors duration-200",
+                  hasOverdue ? "text-red-300" : "text-emerald-300"
+                )} />
               </div>
-              <span className="text-sm font-semibold text-foreground">Payments</span>
+              <div>
+                <span className="text-[15px] font-semibold text-white tracking-[-0.2px] block">
+                  Payments
+                </span>
+                <span className="text-[11px] text-white/50 font-medium uppercase tracking-wide">
+                  Overview
+                </span>
+              </div>
             </div>
             {hasOverdue && (
-              <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse"></div>
+              <div className="relative">
+                <div className="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse shadow-[0_0_8px_rgba(239,68,68,0.6)]" />
+                <div className="absolute inset-0 w-2.5 h-2.5 rounded-full bg-red-500 animate-ping opacity-75" />
+              </div>
             )}
           </div>
 
-          <div className="space-y-2 mb-3">
-            <div className="text-xs text-muted-foreground">
-              Pending ({pendingBrandCount}) • Due Soon ({dueThisWeekCount})
+          <div className="space-y-3 mb-1">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="px-2.5 py-1 rounded-lg bg-white/10 backdrop-blur-sm text-white/70 text-[11px] font-medium border border-white/10">
+                Pending ({pendingBrandCount})
+              </span>
+              <span className="px-2.5 py-1 rounded-lg bg-amber-500/20 backdrop-blur-sm text-amber-300 text-[11px] font-medium border border-amber-500/30">
+                Due Soon ({dueThisWeekCount})
+              </span>
             </div>
-            <div className="text-3xl font-bold text-foreground tabular-nums">
-              ₹{totalAmount.toLocaleString('en-IN')}
+            
+            <div className="flex items-baseline gap-2">
+              <div className="text-3xl font-bold text-white tabular-nums tracking-tight leading-none">
+                ₹{totalAmount.toLocaleString('en-IN')}
+              </div>
+              {hasOverdue && (
+                <span className="px-2 py-0.5 rounded text-[10px] font-semibold text-red-300 bg-red-500/20 border border-red-500/40">
+                  Overdue
+                </span>
+              )}
             </div>
+            
             {pendingBrands.length > 0 && (
-              <div className="text-sm text-muted-foreground">
+              <div className="flex items-center gap-2 flex-wrap pt-2">
+                <span className="text-[12px] text-white/50 font-medium">From:</span>
                 {pendingBrands.map((brand, idx) => (
-                  <span key={idx}>
+                  <span
+                    key={idx}
+                    className="px-2.5 py-1 rounded-lg bg-gradient-to-r from-white/10 to-white/5 
+                               backdrop-blur-sm text-white/90 text-[13px] font-medium border border-white/10 
+                               shadow-sm hover:from-white/15 hover:to-white/10 transition-all duration-150"
+                  >
                     {brand}
-                    {idx < pendingBrands.length - 1 ? '. ' : ''}
                   </span>
                 ))}
+                {pendingBrandCount > 3 && (
+                  <span className="text-[12px] text-white/50 font-medium">
+                    +{pendingBrandCount - 3} more
+                  </span>
+                )}
               </div>
             )}
           </div>

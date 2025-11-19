@@ -52,8 +52,8 @@ const AIInsights: React.FC<AIInsightsProps> = ({ brandDeals = [] }) => {
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.1 }}
     >
-      <Card className="bg-gradient-to-br from-purple-900/20 via-blue-900/20 to-purple-950/20 border border-white/5 hover:border-purple-600/60 transition-all shadow-inner">
-        <CardContent className="p-4">
+      <Card className="bg-gradient-to-br from-[#0E121A] to-[#111827] border border-white/5 hover:border-white/10 transition-all rounded-2xl shadow-[0px_4px_24px_rgba(0,0,0,0.25)] px-5 py-4">
+        <CardContent className="p-0">
           <div className="flex items-start gap-3">
             <div className="p-2 rounded-lg bg-gradient-to-br from-purple-500/20 to-blue-500/20 border border-purple-500/30 flex-shrink-0">
               <Sparkles className="h-5 w-5 text-purple-400" />

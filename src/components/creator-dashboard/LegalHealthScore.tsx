@@ -4,12 +4,15 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Shield, CheckCircle2, XCircle } from 'lucide-react';
 import { BrandDeal } from '@/types';
+import { Skeleton } from '@/components/ui/skeleton';
+import { EmptyState } from '@/components/ui/empty-state';
 
 interface LegalHealthScoreProps {
   brandDeals?: BrandDeal[];
+  isLoading?: boolean;
 }
 
-const LegalHealthScore: React.FC<LegalHealthScoreProps> = ({ brandDeals = [] }) => {
+const LegalHealthScore: React.FC<LegalHealthScoreProps> = ({ brandDeals = [], isLoading = false }) => {
   const score = React.useMemo(() => {
     let points = 0;
     let maxPoints = 0;
@@ -58,11 +61,48 @@ const LegalHealthScore: React.FC<LegalHealthScoreProps> = ({ brandDeals = [] }) 
     return 'bg-orange-500';
   };
 
+  if (isLoading) {
+    return (
+      <Card variant="metric">
+        <CardHeader className="pb-3">
+          <Skeleton className="h-6 w-40" />
+        </CardHeader>
+        <CardContent>
+          <Skeleton className="h-20 w-full" />
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (brandDeals.length === 0) {
+    return (
+      <Card variant="metric">
+        <CardHeader className="pb-3">
+          <CardTitle className="flex items-center gap-2">
+            <div className="h-9 w-9 rounded-xl flex items-center justify-center bg-white/5 backdrop-blur-sm">
+              <Shield className="h-5 w-5 text-white/80" />
+            </div>
+            Legal Health Score
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <EmptyState
+            icon={Shield}
+            title="No legal data yet"
+            description="Complete brand deals and review contracts to track your legal health score."
+          />
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
-    <Card className="bg-[#0F121A]/80 backdrop-blur-xl border border-white/5 rounded-2xl">
+    <Card variant="metric">
       <CardHeader className="pb-3">
-        <CardTitle className="text-lg font-semibold text-white flex items-center gap-2">
-          <Shield className="h-5 w-5 text-blue-400" />
+        <CardTitle className="flex items-center gap-2">
+          <div className="h-9 w-9 rounded-xl flex items-center justify-center bg-white/5 backdrop-blur-sm">
+            <Shield className="h-5 w-5 text-violet-300 opacity-70" />
+          </div>
           Legal Health Score
         </CardTitle>
       </CardHeader>
@@ -77,7 +117,7 @@ const LegalHealthScore: React.FC<LegalHealthScoreProps> = ({ brandDeals = [] }) 
         <div className="space-y-2">
           <div className="h-2 bg-white/10 rounded-full overflow-hidden">
             <div
-              className={`h-full ${getBarColor(score)} transition-all duration-500`}
+              className={`h-full ${getBarColor(score)} transition-all duration-500 shadow-[0_0_18px_rgba(34,197,94,0.4)]`}
               style={{ width: `${score}%` }}
             />
           </div>

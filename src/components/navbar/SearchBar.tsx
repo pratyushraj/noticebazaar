@@ -47,12 +47,12 @@ const SearchBar: React.FC<SearchBarProps> = ({ className }) => {
         variant="ghost"
         size="icon"
         className={cn(
-          "h-9 w-9 text-gray-400 hover:text-gray-200 hover:bg-white/5 transition-all duration-200",
+          "h-9 w-9 text-gray-400/80 hover:text-gray-200 hover:bg-white/5 transition-all duration-200",
           className
         )}
         onClick={() => setIsOpen(true)}
       >
-        <Search className="h-4 w-4" />
+        <Search className="h-4 w-4 opacity-80" />
       </Button>
 
       {/* Expanded Search Overlay */}

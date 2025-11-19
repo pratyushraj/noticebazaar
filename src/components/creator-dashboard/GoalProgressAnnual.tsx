@@ -44,8 +44,8 @@ const GoalProgressAnnual: React.FC<GoalProgressAnnualProps> = ({ brandDeals = []
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.55 }}
     >
-      <Card className="bg-gradient-to-br from-purple-900/20 to-indigo-900/20 border border-white/5 hover:border-purple-600/60 transition-all shadow-inner">
-        <CardContent className="p-4">
+      <Card className="bg-gradient-to-br from-purple-900/20 to-purple-950/20 border border-white/5 hover:border-white/10 transition-all rounded-2xl shadow-[0px_4px_24px_rgba(0,0,0,0.25)] px-5 py-4">
+        <CardContent className="p-0">
           <div className="flex items-center gap-2 mb-3">
             <Target className="h-4 w-4 text-purple-400" />
             <span className="text-xs font-semibold text-purple-400 uppercase tracking-wide">Annual Goal Progress</span>
