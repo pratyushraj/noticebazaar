@@ -6,6 +6,7 @@ import { Shield, CheckCircle2, XCircle } from 'lucide-react';
 import { BrandDeal } from '@/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { EmptyState } from '@/components/ui/empty-state';
+import { motion } from 'framer-motion';
 
 interface LegalHealthScoreProps {
   brandDeals?: BrandDeal[];
@@ -63,7 +64,7 @@ const LegalHealthScore: React.FC<LegalHealthScoreProps> = ({ brandDeals = [], is
 
   if (isLoading) {
     return (
-      <Card variant="metric">
+      <Card variant="secondary">
         <CardHeader className="pb-3">
           <Skeleton className="h-6 w-40" />
         </CardHeader>
@@ -76,7 +77,7 @@ const LegalHealthScore: React.FC<LegalHealthScoreProps> = ({ brandDeals = [], is
 
   if (brandDeals.length === 0) {
     return (
-      <Card variant="metric">
+      <Card variant="secondary">
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-2">
             <div className="h-9 w-9 rounded-xl flex items-center justify-center bg-white/5 backdrop-blur-sm">
@@ -97,48 +98,50 @@ const LegalHealthScore: React.FC<LegalHealthScoreProps> = ({ brandDeals = [], is
   }
 
   return (
-    <Card variant="metric">
-      <CardHeader className="pb-3">
-        <CardTitle className="flex items-center gap-2">
-          <div className="h-9 w-9 rounded-xl flex items-center justify-center bg-white/5 backdrop-blur-sm">
-            <Shield className="h-5 w-5 text-violet-300 opacity-70" />
+    <Card variant="metric" interactive>
+      <CardHeader>
+        <div className="flex items-center gap-3">
+          <div className="h-10 w-10 rounded-xl flex items-center justify-center bg-violet-500/10 border border-violet-500/20">
+            <Shield className="h-5 w-5 text-violet-400" />
           </div>
-          Legal Health Score
-        </CardTitle>
+          <CardTitle>Legal Health Score</CardTitle>
+        </div>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-6">
         <div className="text-center">
-          <div className={`text-6xl font-bold ${getScoreColor(score)}`}>
+          <div className={`text-6xl font-bold number-large ${getScoreColor(score)}`}>
             {score}
           </div>
-          <p className="text-sm text-white/60 mt-1">out of 100</p>
+          <p className="text-body text-white/60 mt-2">out of 100</p>
         </div>
 
         <div className="space-y-2">
-          <div className="h-2 bg-white/10 rounded-full overflow-hidden">
-            <div
-              className={`h-full ${getBarColor(score)} transition-all duration-500 shadow-[0_0_18px_rgba(34,197,94,0.4)]`}
-              style={{ width: `${score}%` }}
+          <div className="h-3 bg-white/10 rounded-full overflow-hidden">
+            <motion.div
+              initial={{ width: 0 }}
+              animate={{ width: `${score}%` }}
+              transition={{ duration: 1.2, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
+              className={`h-full ${getBarColor(score)} transition-all duration-500 shadow-lg`}
             />
           </div>
         </div>
 
-        <div className="space-y-2 pt-2">
-          <div className="flex items-center gap-2 text-sm">
-            <CheckCircle2 className="h-4 w-4 text-green-400" />
-            <span className="text-white/70">Reviewed contracts</span>
+        <div className="space-y-3 pt-2">
+          <div className="flex items-center gap-3 text-body">
+            <CheckCircle2 className="h-5 w-5 text-success" />
+            <span className="text-white/80">Reviewed contracts</span>
           </div>
-          <div className="flex items-center gap-2 text-sm">
-            <XCircle className="h-4 w-4 text-orange-400" />
-            <span className="text-white/70">Missing indemnity clause</span>
+          <div className="flex items-center gap-3 text-body">
+            <XCircle className="h-5 w-5 text-warning" />
+            <span className="text-white/80">Missing indemnity clause</span>
           </div>
-          <div className="flex items-center gap-2 text-sm">
-            <CheckCircle2 className="h-4 w-4 text-green-400" />
-            <span className="text-white/70">No open disputes</span>
+          <div className="flex items-center gap-3 text-body">
+            <CheckCircle2 className="h-5 w-5 text-success" />
+            <span className="text-white/80">No open disputes</span>
           </div>
-          <div className="flex items-center gap-2 text-sm">
-            <CheckCircle2 className="h-4 w-4 text-green-400" />
-            <span className="text-white/70">Delayed brands flagged</span>
+          <div className="flex items-center gap-3 text-body">
+            <CheckCircle2 className="h-5 w-5 text-success" />
+            <span className="text-white/80">Delayed brands flagged</span>
           </div>
         </div>
       </CardContent>

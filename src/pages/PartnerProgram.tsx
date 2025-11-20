@@ -41,8 +41,10 @@ import {
   History,
   Sparkles,
   ArrowLeft,
+  Link as LinkIcon,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { motion } from 'framer-motion';
 import { formatReferralLink, getNextTierRequirements, MILESTONE_REWARDS, getTierBenefits, type PartnerTier } from '@/lib/utils/partner';
 import { cn } from '@/lib/utils';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -300,142 +302,184 @@ const PartnerProgram: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background p-4 md:p-6 lg:p-8">
-      <div className="container mx-auto max-w-7xl space-y-6">
-        {/* Back Button */}
+    <div className="min-h-screen bg-gradient-to-b from-[#060A12] via-[#080C14] to-[#0A0E16] text-white relative overflow-x-hidden overflow-y-auto">
+      {/* Ambient background lighting */}
+      <div className="fixed inset-0 bg-[radial-gradient(circle_at_top,rgba(23,86,255,0.15),transparent_70%)] pointer-events-none z-0"></div>
+      <div className="fixed inset-0 bg-gradient-to-b from-white/5 to-transparent pointer-events-none z-0"></div>
+      
+      <div className="relative z-10 max-w-7xl mx-auto px-4 py-6 md:px-6 md:py-8" style={{ overflow: 'visible' }}>
+        {/* Back Button - Mobile Optimized */}
         <Button
           variant="ghost"
           size="sm"
           onClick={() => navigate('/creator-dashboard')}
-          className="text-white/70 hover:text-white hover:bg-white/10 mb-4"
+          className="text-white/70 hover:text-white hover:bg-white/10 mb-4 -mx-2 md:mx-0"
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
           Back to Dashboard
         </Button>
 
-        {/* Hero Section */}
-        <div className="text-center space-y-4 py-8">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/20 border border-primary/40">
-            <Gift className="h-5 w-5 text-primary" />
-            <span className="text-sm font-semibold text-primary">Partner Program</span>
-          </div>
-          <h1 className="text-4xl md:text-5xl font-bold text-white">
-            NoticeBazaar Partner Program
-          </h1>
-          <p className="text-lg text-white/70 max-w-2xl mx-auto">
-            Earn commissions, unlock rewards, and grow with us. Share NoticeBazaar and get rewarded for every subscription.
-          </p>
-        </div>
-
-        {/* Your Rank Widget */}
-        {displayRank && (
-          <div className="flex justify-center mb-4">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-blue-500/20 to-cyan-500/20 border border-blue-500/30 shadow-[0_0_10px_-3px_rgba(59,130,246,0.3)]">
-              <Trophy className="h-4 w-4 text-blue-400" />
-              <span className="text-sm font-semibold text-white">
-                Your Rank: #{displayRank.rank || 'N/A'} out of {displayRank.totalPartners || 0} partners
-              </span>
+        {/* Hero Section - Premium Mobile Layout */}
+        <section className="text-center space-y-6 py-6 md:py-8 mb-6 overflow-visible">
+          {/* Premium Icon Graphic */}
+          <div className="flex justify-center mb-6 py-8 md:py-12">
+            <div className="relative w-48 h-48 md:w-64 md:h-64 flex items-center justify-center">
+              {/* Glow Effect */}
+              <div className="absolute inset-0 bg-gradient-to-r from-pink-500/20 via-purple-500/20 to-blue-500/20 rounded-full blur-3xl animate-pulse opacity-60"></div>
+              
+              {/* Icon Container */}
+              <div className="relative z-10 w-full h-full flex items-center justify-center">
+                {/* Premium Icon - Large Gift Icon with decorative elements */}
+                <div className="relative">
+                  {/* Gift Box Icon */}
+                  <div className="w-32 h-32 md:w-40 md:h-40 bg-gradient-to-br from-pink-500 via-purple-600 to-blue-600 rounded-2xl shadow-2xl shadow-purple-500/40 flex items-center justify-center transform rotate-[-8deg] hover:rotate-[-5deg] transition-transform duration-300">
+                    <Gift className="w-16 h-16 md:w-20 md:h-20 text-white drop-shadow-lg" />
+                  </div>
+                  
+                  {/* Decorative Elements */}
+                  <div className="absolute -top-4 -right-4 w-12 h-12 md:w-16 md:h-16 bg-gradient-to-br from-amber-400 to-orange-500 rounded-full shadow-xl shadow-amber-500/50 flex items-center justify-center transform rotate-12 animate-bounce" style={{ animationDuration: '3s' }}>
+                    <span className="text-2xl md:text-3xl">💰</span>
+                  </div>
+                  
+                  <div className="absolute -bottom-4 -left-4 w-10 h-10 md:w-14 md:h-14 bg-gradient-to-br from-amber-400 to-orange-500 rounded-full shadow-xl shadow-amber-500/50 flex items-center justify-center transform -rotate-12 animate-bounce" style={{ animationDuration: '2.5s', animationDelay: '0.5s' }}>
+                    <span className="text-xl md:text-2xl">💵</span>
+                  </div>
+                  
+                  {/* Arrow pointing up */}
+                  <div className="absolute -right-8 top-1/2 transform -translate-y-1/2 translate-x-4">
+                    <TrendingUp className="w-12 h-12 md:w-16 md:h-16 text-blue-400 animate-pulse" />
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
+
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/20 border border-primary/40 shadow-lg shadow-black/20">
+            <Gift className="h-4 w-4 md:h-5 md:w-5 text-primary" />
+            <span className="text-xs md:text-sm font-semibold text-primary">Partner Program</span>
+          </div>
+          <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white tracking-tight px-4">
+            NoticeBazaar Partner Program
+          </h1>
+          <p className="text-sm md:text-base lg:text-lg text-white/70 max-w-2xl mx-auto px-4">
+            Earn commissions, unlock rewards, and grow with us. Share NoticeBazaar and get rewarded for every subscription.
+          </p>
+        </section>
+
+        {/* Your Rank Widget - Premium Badge */}
+        {displayRank && (
+          <section className="mb-6">
+            <div className="flex justify-center">
+              <div className="inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-gradient-to-r from-blue-500/20 to-cyan-500/20 border border-blue-500/30 shadow-lg shadow-black/20 hover:shadow-xl hover:shadow-black/30 transition-all">
+                <Trophy className="h-4 w-4 text-blue-400" />
+                <span className="text-sm font-semibold text-white">
+                  Your Rank: #{displayRank.rank || 'N/A'} out of {displayRank.totalPartners || 0} partners
+                </span>
+              </div>
+            </div>
+          </section>
         )}
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
-          <Card className="bg-[#0A0F1C] border-white/10 shadow-[0_0_20px_-4px_rgba(255,255,255,0.06)] shadow-inner">
-            <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-sm font-medium text-white/60">Total Earnings</CardTitle>
-                <DollarSign className="h-4 w-4 text-green-400" />
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-white">
-                ₹{(displayStats?.total_earnings || 0).toLocaleString('en-IN')}
-              </div>
-              <p className="text-xs text-white/40 mt-1">All time</p>
-            </CardContent>
-          </Card>
+        {/* Stats Cards - Premium Layout with Secondary Variant */}
+        <section className="mb-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+            <Card variant="secondary" className="shadow-lg shadow-black/20 hover:shadow-xl hover:shadow-black/30">
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between gap-2 min-h-[1.5em]">
+                  <CardTitle className="text-xs uppercase tracking-wide opacity-70 leading-[1.5]">Total Earnings</CardTitle>
+                  <DollarSign className="h-4 w-4 text-green-400 shrink-0" />
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="text-3xl font-bold text-white tabular-nums leading-tight">
+                  ₹{(displayStats?.total_earnings || 0).toLocaleString('en-IN')}
+                </div>
+                <p className="text-sm opacity-70 mt-1 leading-relaxed">All time</p>
+              </CardContent>
+            </Card>
 
-          <Card className="bg-[#0A0F1C] border-white/10 shadow-[0_0_20px_-4px_rgba(255,255,255,0.06)] shadow-inner">
-            <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-sm font-medium text-white/60">This Month</CardTitle>
-                <TrendingUp className="h-4 w-4 text-blue-400" />
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-white">
-                ₹{thisMonthEarnings.toLocaleString('en-IN')}
-              </div>
-              <p className="text-xs text-white/40 mt-1">Current month</p>
-            </CardContent>
-          </Card>
+            <Card variant="secondary" className="shadow-lg shadow-black/20 hover:shadow-xl hover:shadow-black/30">
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between gap-2 min-h-[1.5em]">
+                  <CardTitle className="text-xs uppercase tracking-wide opacity-70 leading-[1.5]">This Month</CardTitle>
+                  <TrendingUp className="h-4 w-4 text-blue-400 shrink-0" />
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="text-3xl font-bold text-white tabular-nums leading-tight">
+                  ₹{thisMonthEarnings.toLocaleString('en-IN')}
+                </div>
+                <p className="text-sm opacity-70 mt-1 leading-relaxed">Current month</p>
+              </CardContent>
+            </Card>
 
-          <Card className="bg-[#0A0F1C] border-white/10 shadow-[0_0_20px_-4px_rgba(255,255,255,0.06)] shadow-inner">
-            <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-sm font-medium text-white/60">Active Referrals</CardTitle>
-                <Users className="h-4 w-4 text-purple-400" />
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-white">
-                {displayStats?.active_referrals || 0}
-              </div>
-              <p className="text-xs text-white/40 mt-1">Subscribed users</p>
-            </CardContent>
-          </Card>
+            <Card variant="secondary" className="shadow-lg shadow-black/20 hover:shadow-xl hover:shadow-black/30">
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between gap-2 min-h-[1.5em]">
+                  <CardTitle className="text-xs uppercase tracking-wide opacity-70 leading-[1.5]">Active Referrals</CardTitle>
+                  <Users className="h-4 w-4 text-purple-400 shrink-0" />
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="text-3xl font-bold text-white tabular-nums leading-tight">
+                  {displayStats?.active_referrals || 0}
+                </div>
+                <p className="text-sm opacity-70 mt-1 leading-relaxed">Subscribed users</p>
+              </CardContent>
+            </Card>
 
-          <Card className="bg-[#0A0F1C] border-white/10 shadow-[0_0_20px_-4px_rgba(255,255,255,0.06)] shadow-inner">
-            <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-sm font-medium text-white/60">Tier</CardTitle>
-                <Award className="h-4 w-4 text-yellow-400" />
-              </div>
-            </CardHeader>
-            <CardContent>
-              <Badge
-                className={cn(
-                  'text-xs font-semibold uppercase transition-transform hover:scale-103',
-                  (currentTier === 'starter') && 'bg-gray-500/20 text-gray-300 border-gray-500/30',
-                  ((currentTier === 'partner' || currentTier === 'growth')) && 'bg-gradient-to-r from-green-500/20 to-emerald-500/20 text-green-300 border-green-500/30 shadow-[0_0_8px_-2px_rgba(34,197,94,0.3)]',
-                  (currentTier === 'elite') && 'bg-gradient-to-r from-purple-500/20 to-pink-500/20 text-purple-300 border-purple-500/30 shadow-[0_0_10px_-3px_rgba(168,85,247,0.4)]',
-                  (currentTier === 'pro') && 'bg-gradient-to-r from-yellow-500/20 to-amber-500/20 text-yellow-300 border-yellow-500/30 shadow-[0_0_10px_-3px_rgba(234,179,8,0.4)]'
-                )}
-              >
-                {((currentTier === 'partner' || currentTier === 'growth')) ? 'Growth Partner' : currentTier}
-              </Badge>
-              <p className="text-xs text-white/40 mt-1">
-                {nextTierInfo ? `${nextTierInfo.referralsNeeded} to ${nextTierInfo.tier}` : 'Max tier reached'}
-              </p>
-            </CardContent>
-          </Card>
-        </div>
+            <Card variant="secondary" className="shadow-lg shadow-black/20 hover:shadow-xl hover:shadow-black/30">
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between gap-2 min-h-[1.5em]">
+                  <CardTitle className="text-xs uppercase tracking-wide opacity-70 leading-[1.5]">Tier</CardTitle>
+                  <Award className="h-4 w-4 text-yellow-400 shrink-0" />
+                </div>
+              </CardHeader>
+              <CardContent>
+                <Badge
+                  className={cn(
+                    'text-xs font-semibold uppercase rounded-full px-2.5 py-1 transition-transform hover:scale-103 inline-block',
+                    (currentTier === 'starter') && 'bg-gray-500/20 text-gray-300 border-gray-500/30',
+                    ((currentTier === 'partner' || currentTier === 'growth')) && 'bg-gradient-to-r from-green-500/20 to-emerald-500/20 text-green-300 border-green-500/30 shadow-[0_0_8px_-2px_rgba(34,197,94,0.3)]',
+                    (currentTier === 'elite') && 'bg-gradient-to-r from-purple-500/20 to-pink-500/20 text-purple-300 border-purple-500/30 shadow-[0_0_10px_-3px_rgba(168,85,247,0.4)]',
+                    (currentTier === 'pro') && 'bg-gradient-to-r from-yellow-500/20 to-amber-500/20 text-yellow-300 border-yellow-500/30 shadow-[0_0_10px_-3px_rgba(234,179,8,0.4)]'
+                  )}
+                >
+                  {((currentTier === 'partner' || currentTier === 'growth')) ? 'Growth Partner' : currentTier}
+                </Badge>
+                <p className="text-sm opacity-70 mt-2 leading-relaxed">
+                  {nextTierInfo ? `${nextTierInfo.referralsNeeded} to ${nextTierInfo.tier}` : 'Max tier reached'}
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+        </section>
 
-        {/* Projected Monthly Earnings Widget */}
+        {/* Projected Monthly Earnings Widget - Secondary Card */}
         {(displayProjectedEarnings !== null && displayProjectedEarnings !== undefined) && (
-          <Card className="bg-gradient-to-br from-green-500/10 via-emerald-500/10 to-green-500/10 border-green-500/20 shadow-[0_0_20px_-4px_rgba(34,197,94,0.2)]">
-            <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-sm font-medium text-white/80 flex items-center gap-2">
+          <section className="mb-6">
+            <Card variant="secondary" className="shadow-lg shadow-black/20 hover:shadow-xl hover:shadow-black/30">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base font-semibold flex items-center gap-2">
                   <TrendingUp className="h-4 w-4 text-green-400" />
                   Projected Monthly Earnings
                 </CardTitle>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-white">
-                ₹{(displayProjectedEarnings || 0).toLocaleString('en-IN')}
-              </div>
-              <p className="text-xs text-white/60 mt-1">Based on current month's performance</p>
-            </CardContent>
-          </Card>
+              </CardHeader>
+              <CardContent>
+                <div className="text-3xl font-bold text-white tabular-nums">
+                  ₹{(displayProjectedEarnings || 0).toLocaleString('en-IN')}
+                </div>
+                <p className="text-sm opacity-70 mt-1">Based on current month's performance</p>
+              </CardContent>
+            </Card>
+          </section>
         )}
 
-        {/* Referral Link, Performance & Progress */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Referral Link Card */}
-          <Card className="bg-[#0A0F1C] border-white/10 shadow-[0_0_20px_-4px_rgba(255,255,255,0.06)]">
+        {/* Referral Link, Performance & Progress - Premium Spacing */}
+        <section className="mb-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
+            {/* Referral Link Card - Secondary */}
+            <Card variant="secondary" className="shadow-lg shadow-black/20 hover:shadow-xl hover:shadow-black/30">
             <CardHeader>
               <CardTitle className="text-white flex items-center gap-2">
                 <Gift className="h-5 w-5 text-primary" />
@@ -458,81 +502,142 @@ const PartnerProgram: React.FC = () => {
                 </div>
               ) : displayReferralLink ? (
                 <>
-                  <div className="bg-[#0F121A] rounded-lg p-4 border border-white/10 relative">
-                    <p className="text-xs text-white/40 mb-2">Share this link:</p>
+                  {/* Link Section - Premium Design */}
+                  <div className="space-y-3">
                     <div className="flex items-center gap-2">
-                      <code className="flex-1 text-sm text-white/80 break-all">
-                        {useDemoData ? DEMO_DATA.referralLink.url : formatReferralLink(displayReferralLink)}
-                      </code>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={handleCopyLink}
-                        className={cn(
-                          "flex-shrink-0 relative transition-all duration-300",
-                          copyAnimation && "scale-110 bg-green-500/20 border-green-500/50 shadow-[0_0_15px_-3px_rgba(34,197,94,0.5)]"
-                        )}
-                      >
-                        {copyAnimation ? (
-                          <div className="flex items-center gap-2">
-                            <Check className="h-4 w-4 text-green-400 animate-in fade-in zoom-in duration-300" />
-                            <span className="text-xs text-green-400 font-semibold animate-in fade-in slide-in-from-top-2 duration-300">
-                              Copied!
-                            </span>
-                          </div>
-                        ) : copied ? (
-                          <Check className="h-4 w-4 text-green-400" />
-                        ) : (
-                          <Copy className="h-4 w-4" />
-                        )}
-                      </Button>
+                      <Share2 className="h-4 w-4 text-blue-400 opacity-80" />
+                      <p className="text-xs font-medium text-white/50 uppercase tracking-wide">Your Referral Link</p>
                     </div>
-                    {copyAnimation && (
-                      <div className="absolute -top-8 left-1/2 -translate-x-1/2 animate-in fade-in zoom-in slide-in-from-bottom-2 duration-300 pointer-events-none">
-                        <div className="flex items-center gap-1 px-3 py-1.5 rounded-full bg-green-500/20 border border-green-500/40 shadow-lg">
-                          <Check className="h-3 w-3 text-green-400" />
-                          <span className="text-xs font-semibold text-green-300">Copied!</span>
+                    <div className="relative group">
+                      <div className="bg-gradient-to-br from-blue-500/10 via-purple-500/5 to-transparent rounded-xl p-4 border border-white/10 backdrop-blur-sm hover:border-blue-500/30 transition-all duration-200">
+                        <div className="flex items-start gap-3">
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-2">
+                              <LinkIcon className="h-4 w-4 text-blue-400 shrink-0" />
+                              <span className="text-xs text-white/40 font-medium">Share this link:</span>
+                            </div>
+                            <div className="relative">
+                              <code className="block text-sm font-mono text-white/90 break-all leading-relaxed pr-2">
+                                {useDemoData ? DEMO_DATA.referralLink.url : formatReferralLink(displayReferralLink)}
+                              </code>
+                            </div>
+                          </div>
+                          <Button
+                            size="sm"
+                            onClick={handleCopyLink}
+                            className={cn(
+                              "flex-shrink-0 relative transition-all duration-300 rounded-xl h-9 px-3",
+                              "bg-blue-600/20 hover:bg-blue-600/30 border border-blue-500/30 hover:border-blue-500/50",
+                              "text-blue-300 hover:text-blue-200",
+                              copyAnimation && "scale-105 bg-green-600/30 border-green-500/50 shadow-[0_0_20px_rgba(34,197,94,0.4)]"
+                            )}
+                          >
+                            {copyAnimation ? (
+                              <div className="flex items-center gap-1.5">
+                                <Check className="h-4 w-4 text-green-400 animate-in fade-in zoom-in duration-300" />
+                                <span className="text-xs text-green-400 font-semibold animate-in fade-in slide-in-from-top-2 duration-300">
+                                  Copied!
+                                </span>
+                              </div>
+                            ) : (
+                              <>
+                                <Copy className="h-3.5 w-3.5 mr-1.5" />
+                                <span className="text-xs font-medium">Copy</span>
+                              </>
+                            )}
+                          </Button>
                         </div>
                       </div>
-                    )}
+                      {/* Floating success message */}
+                      {copyAnimation && (
+                        <motion.div
+                          initial={{ opacity: 0, y: 10, scale: 0.9 }}
+                          animate={{ opacity: 1, y: -5, scale: 1 }}
+                          exit={{ opacity: 0, y: -10, scale: 0.9 }}
+                          className="absolute -top-10 left-1/2 transform -translate-x-1/2 z-20"
+                        >
+                          <div className="bg-green-600/90 backdrop-blur-sm text-white text-xs font-medium px-3 py-1.5 rounded-full shadow-lg border border-green-500/50 whitespace-nowrap">
+                            ✓ Link copied to clipboard!
+                          </div>
+                        </motion.div>
+                      )}
+                    </div>
                   </div>
-                  <div className="flex gap-2">
+
+                  {/* Action Buttons */}
+                  <div className="flex gap-2 pt-2">
                     <Button
                       onClick={() => setShowQR(!showQR)}
                       variant="outline"
-                      className="flex-1"
+                      size="sm"
+                      className={cn(
+                        "flex-1 rounded-xl h-9 border-white/10 hover:border-blue-500/30",
+                        "bg-white/5 hover:bg-blue-500/10 text-white/70 hover:text-white transition-all duration-200",
+                        showQR && "bg-blue-500/20 border-blue-500/40 text-blue-300"
+                      )}
                     >
-                      <QrCode className="h-4 w-4 mr-2" />
-                      {showQR ? 'Hide' : 'Show'} QR Code
+                      <QrCode className={cn("h-4 w-4 mr-2", showQR && "text-blue-400")} />
+                      <span className="text-xs font-medium">{showQR ? 'Hide' : 'Show'} QR</span>
                     </Button>
                     <Button
                       onClick={handleRefreshStats}
                       variant="outline"
+                      size="sm"
                       disabled={refreshStatsMutation.isPending}
-                      className="flex-1"
+                      className={cn(
+                        "flex-1 rounded-xl h-9 border-white/10 hover:border-purple-500/30",
+                        "bg-white/5 hover:bg-purple-500/10 text-white/70 hover:text-white transition-all duration-200",
+                        "disabled:opacity-50 disabled:cursor-not-allowed"
+                      )}
                     >
-                      <RefreshCw className={cn('h-4 w-4 mr-2', refreshStatsMutation.isPending && 'animate-spin')} />
-                      Refresh
+                      <RefreshCw className={cn(
+                        'h-4 w-4 mr-2 transition-transform',
+                        refreshStatsMutation.isPending && 'animate-spin'
+                      )} />
+                      <span className="text-xs font-medium">Refresh</span>
                     </Button>
                   </div>
+
+                  {/* QR Code Section */}
                   {showQR && (
-                    <div className="bg-white p-4 rounded-lg flex items-center justify-center">
-                      {/* QR Code placeholder - would use a QR library in production */}
-                      <div className="text-xs text-gray-500">
-                        QR Code: {useDemoData ? DEMO_DATA.referralLink.url : formatReferralLink(displayReferralLink)}
-                        {/* In production, use: <QRCodeSVG value={...} /> */}
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      exit={{ opacity: 0, height: 0 }}
+                      className="overflow-hidden"
+                    >
+                      <div className="bg-gradient-to-br from-white to-gray-50 rounded-xl p-6 border border-white/20 shadow-xl flex flex-col items-center justify-center space-y-4">
+                        <div className="w-48 h-48 bg-white rounded-lg p-3 shadow-inner flex items-center justify-center border-2 border-gray-200">
+                          {/* QR Code placeholder - would use a QR library in production */}
+                          <div className="text-center space-y-2">
+                            <QrCode className="h-24 w-24 mx-auto text-gray-400" />
+                            <p className="text-xs text-gray-500 font-medium">
+                              QR Code
+                            </p>
+                            <p className="text-[10px] text-gray-400 max-w-[160px] break-all">
+                              {useDemoData ? DEMO_DATA.referralLink.url : formatReferralLink(displayReferralLink)}
+                            </p>
+                          </div>
+                          {/* In production, use: <QRCodeSVG value={...} size={192} /> */}
+                        </div>
+                        <p className="text-xs text-gray-600 text-center max-w-xs">
+                          Scan this QR code to share your referral link
+                        </p>
                       </div>
-                    </div>
+                    </motion.div>
                   )}
                 </>
               ) : (
-                <p className="text-white/60">Failed to load referral link</p>
+                <div className="text-center py-8">
+                  <HelpCircle className="h-8 w-8 text-white/40 mx-auto mb-2" />
+                  <p className="text-sm text-white/60">Failed to load referral link</p>
+                </div>
               )}
             </CardContent>
           </Card>
 
-          {/* Referral Performance Metrics */}
-          <Card className="bg-[#0A0F1C] border-white/10 shadow-[0_0_20px_-4px_rgba(255,255,255,0.06)] shadow-inner">
+            {/* Referral Performance Metrics - Secondary */}
+            <Card variant="secondary" className="shadow-lg shadow-black/20 hover:shadow-xl hover:shadow-black/30">
             <CardHeader>
               <CardTitle className="text-white flex items-center gap-2">
                 <TrendingUp className="h-5 w-5 text-blue-400" />
@@ -550,21 +655,21 @@ const PartnerProgram: React.FC = () => {
                 </div>
               ) : displayPerformance ? (
                 <div className="grid grid-cols-3 gap-3">
-                  <div className="bg-gradient-to-br from-blue-500/10 to-cyan-500/10 rounded-lg p-4 border border-blue-500/20 text-center">
+                  <div className="bg-gradient-to-br from-blue-500/10 to-cyan-500/10 rounded-xl p-4 border border-blue-500/20 text-center">
                     <MousePointerClick className="h-5 w-5 text-blue-400 mx-auto mb-2" />
                     <div className="text-2xl font-bold text-white">
                       {(displayPerformance.total_clicks || 0).toLocaleString('en-IN')}
                     </div>
                     <p className="text-xs text-white/60 mt-1">Clicks</p>
                   </div>
-                  <div className="bg-gradient-to-br from-purple-500/10 to-pink-500/10 rounded-lg p-4 border border-purple-500/20 text-center">
+                  <div className="bg-gradient-to-br from-purple-500/10 to-pink-500/10 rounded-xl p-4 border border-purple-500/20 text-center">
                     <UserPlus className="h-5 w-5 text-purple-400 mx-auto mb-2" />
                     <div className="text-2xl font-bold text-white">
                       {(displayPerformance.total_signups || 0).toLocaleString('en-IN')}
                     </div>
                     <p className="text-xs text-white/60 mt-1">Signups</p>
                   </div>
-                  <div className="bg-gradient-to-br from-green-500/10 to-emerald-500/10 rounded-lg p-4 border border-green-500/20 text-center">
+                  <div className="bg-gradient-to-br from-green-500/10 to-emerald-500/10 rounded-xl p-4 border border-green-500/20 text-center">
                     <CreditCard className="h-5 w-5 text-green-400 mx-auto mb-2" />
                     <div className="text-2xl font-bold text-white">
                       {(displayPerformance.total_paid_users || 0).toLocaleString('en-IN')}
@@ -576,8 +681,8 @@ const PartnerProgram: React.FC = () => {
             </CardContent>
           </Card>
 
-          {/* Progress to Next Tier */}
-          <Card className="bg-[#0A0F1C] border-white/10 shadow-[0_0_20px_-4px_rgba(255,255,255,0.06)] shadow-inner">
+            {/* Progress to Next Tier - Secondary */}
+            <Card variant="secondary" className="shadow-lg shadow-black/20 hover:shadow-xl hover:shadow-black/30">
             <CardHeader>
               <CardTitle className="text-white flex items-center gap-2">
                 <TrendingUp className="h-5 w-5 text-green-400" />
@@ -654,8 +759,8 @@ const PartnerProgram: React.FC = () => {
             </CardContent>
           </Card>
 
-          {/* Next Reward Block */}
-          <Card className="bg-gradient-to-br from-purple-500/10 via-pink-500/10 to-purple-500/10 border-purple-500/20 shadow-[0_0_20px_-4px_rgba(168,85,247,0.2)] shadow-inner">
+          {/* Next Reward Block - Secondary */}
+          <Card variant="secondary" className="shadow-lg shadow-black/20 hover:shadow-xl hover:shadow-black/30">
             <CardHeader>
               <CardTitle className="text-white flex items-center gap-2">
                 <Sparkles className="h-5 w-5 text-purple-400" />
@@ -737,10 +842,12 @@ const PartnerProgram: React.FC = () => {
               })()}
             </CardContent>
           </Card>
-        </div>
+          </div>
+        </section>
 
-        {/* Earned Rewards */}
-        <Card className="bg-[#0A0F1C] border-white/10 shadow-[0_0_20px_-4px_rgba(255,255,255,0.06)] shadow-inner">
+        {/* Earned Rewards - Secondary */}
+        <section className="mb-6">
+          <Card variant="secondary" className="shadow-lg shadow-black/20 hover:shadow-xl hover:shadow-black/30">
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle className="text-white flex items-center gap-2">
@@ -751,7 +858,7 @@ const PartnerProgram: React.FC = () => {
                 variant="outline"
                 size="sm"
                 onClick={() => setShowRewardHistory(true)}
-                className="border-white/20 text-white/80 hover:bg-white/5"
+                className="border-white/20 text-white/80 hover:bg-white/5 rounded-xl"
               >
                 <History className="h-4 w-4 mr-2" />
                 View History
@@ -760,7 +867,7 @@ const PartnerProgram: React.FC = () => {
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-              <div className="bg-gradient-to-br from-green-500/10 to-emerald-500/10 rounded-lg p-4 border border-green-500/20">
+              <div className="bg-gradient-to-br from-green-500/10 to-emerald-500/10 rounded-xl p-4 border border-green-500/20">
                 <div className="flex items-center gap-2 mb-2">
                   <DollarSign className="h-5 w-5 text-green-400" />
                   <span className="text-sm font-medium text-white/70">Cash Commissions</span>
@@ -768,7 +875,7 @@ const PartnerProgram: React.FC = () => {
                 <p className="text-2xl font-bold text-white">₹{totalCashEarnings.toLocaleString('en-IN')}</p>
                 <p className="text-xs text-white/50 mt-1">Total paid commissions</p>
               </div>
-              <div className="bg-gradient-to-br from-purple-500/10 to-pink-500/10 rounded-lg p-4 border border-purple-500/20">
+              <div className="bg-gradient-to-br from-purple-500/10 to-pink-500/10 rounded-xl p-4 border border-purple-500/20">
                 <div className="flex items-center gap-2 mb-2">
                   <Gift className="h-5 w-5 text-purple-400" />
                   <span className="text-sm font-medium text-white/70">Voucher Rewards</span>
@@ -776,7 +883,7 @@ const PartnerProgram: React.FC = () => {
                 <p className="text-2xl font-bold text-white">₹{totalVoucherEarnings.toLocaleString('en-IN')}</p>
                 <p className="text-xs text-white/50 mt-1">Total vouchers earned</p>
               </div>
-              <div className="bg-gradient-to-br from-blue-500/10 to-cyan-500/10 rounded-lg p-4 border border-blue-500/20">
+              <div className="bg-gradient-to-br from-blue-500/10 to-cyan-500/10 rounded-xl p-4 border border-blue-500/20">
                 <div className="flex items-center gap-2 mb-2">
                   <Calendar className="h-5 w-5 text-blue-400" />
                   <span className="text-sm font-medium text-white/70">Free Months</span>
@@ -847,11 +954,13 @@ const PartnerProgram: React.FC = () => {
               </div>
             )}
           </CardContent>
-        </Card>
+          </Card>
+        </section>
 
-        {/* Leaderboard */}
+        {/* Leaderboard - Secondary */}
         {!loadingLeaderboard && (
-          <Card className="bg-[#0A0F1C] border-white/10 shadow-[0_0_20px_-4px_rgba(255,255,255,0.06)] shadow-inner">
+          <section className="mb-6">
+            <Card variant="secondary" className="shadow-lg shadow-black/20 hover:shadow-xl hover:shadow-black/30">
             <CardHeader>
               <CardTitle className="text-white flex items-center gap-2">
                 <Trophy className="h-5 w-5 text-yellow-400" />
@@ -879,7 +988,7 @@ const PartnerProgram: React.FC = () => {
                     <div
                       key={useDemoData ? idx : item.user_id}
                       className={cn(
-                        'flex items-center justify-between p-4 rounded-lg border',
+                        'flex items-center justify-between p-4 rounded-xl border shadow-sm',
                         isCurrentUser
                           ? 'bg-primary/20 border-primary/40'
                           : 'bg-[#0F121A] border-white/10'
@@ -944,11 +1053,13 @@ const PartnerProgram: React.FC = () => {
                 </div>
               )}
             </CardContent>
-          </Card>
+            </Card>
+          </section>
         )}
 
-        {/* Media Kit */}
-        <Card className="bg-[#0A0F1C] border-white/10 shadow-[0_0_20px_-4px_rgba(255,255,255,0.06)]">
+        {/* Media Kit - Secondary */}
+        <section className="mb-6">
+          <Card variant="secondary" className="shadow-lg shadow-black/20 hover:shadow-xl hover:shadow-black/30">
           <CardHeader>
             <CardTitle className="text-white flex items-center gap-2">
               <Download className="h-5 w-5 text-blue-400" />
@@ -969,7 +1080,7 @@ const PartnerProgram: React.FC = () => {
                 <Button
                   key={idx}
                   variant="outline"
-                  className="h-auto flex-col gap-2 py-4 bg-[#0F121A] border-white/10 hover:bg-[#0F121A]/80"
+                  className="h-auto flex-col gap-2 py-4 bg-[#0F121A] border-white/10 hover:bg-[#0F121A]/80 rounded-xl"
                   onClick={() => toast.info('Media kit download coming soon!')}
                 >
                   <item.icon className="h-6 w-6 text-primary" />
@@ -979,10 +1090,12 @@ const PartnerProgram: React.FC = () => {
               ))}
             </div>
           </CardContent>
-        </Card>
+          </Card>
+        </section>
 
-        {/* Social Share Buttons */}
-        <Card className="bg-[#0A0F1C] border-white/10 shadow-[0_0_20px_-4px_rgba(255,255,255,0.06)] shadow-inner">
+        {/* Social Share Buttons - Secondary */}
+        <section className="mb-6">
+          <Card variant="secondary" className="shadow-lg shadow-black/20 hover:shadow-xl hover:shadow-black/30">
           <CardHeader>
             <CardTitle className="text-white flex items-center gap-2">
               <Share2 className="h-5 w-5 text-primary" />
@@ -997,7 +1110,7 @@ const PartnerProgram: React.FC = () => {
               <Button
                 variant="outline"
                 onClick={() => handleSocialShare('instagram')}
-                className="h-auto flex-col gap-2 py-4 bg-gradient-to-br from-purple-500/10 to-pink-500/10 border-purple-500/30 hover:bg-purple-500/20 hover:border-purple-500/50"
+                className="h-auto flex-col gap-2 py-4 bg-gradient-to-br from-purple-500/10 to-pink-500/10 border-purple-500/30 hover:bg-purple-500/20 hover:border-purple-500/50 rounded-xl"
               >
                 <Instagram className="h-6 w-6 text-purple-400" />
                 <span className="text-sm font-semibold text-white">Share on Instagram Story</span>
@@ -1006,7 +1119,7 @@ const PartnerProgram: React.FC = () => {
               <Button
                 variant="outline"
                 onClick={() => handleSocialShare('whatsapp')}
-                className="h-auto flex-col gap-2 py-4 bg-gradient-to-br from-green-500/10 to-emerald-500/10 border-green-500/30 hover:bg-green-500/20 hover:border-green-500/50"
+                className="h-auto flex-col gap-2 py-4 bg-gradient-to-br from-green-500/10 to-emerald-500/10 border-green-500/30 hover:bg-green-500/20 hover:border-green-500/50 rounded-xl"
               >
                 <MessageCircle className="h-6 w-6 text-green-400" />
                 <span className="text-sm font-semibold text-white">Share on WhatsApp</span>
@@ -1015,7 +1128,7 @@ const PartnerProgram: React.FC = () => {
               <Button
                 variant="outline"
                 onClick={() => handleSocialShare('twitter')}
-                className="h-auto flex-col gap-2 py-4 bg-gradient-to-br from-blue-500/10 to-cyan-500/10 border-blue-500/30 hover:bg-blue-500/20 hover:border-blue-500/50"
+                className="h-auto flex-col gap-2 py-4 bg-gradient-to-br from-blue-500/10 to-cyan-500/10 border-blue-500/30 hover:bg-blue-500/20 hover:border-blue-500/50 rounded-xl"
               >
                 <Twitter className="h-6 w-6 text-blue-400" />
                 <span className="text-sm font-semibold text-white">Share on X (Twitter)</span>
@@ -1023,10 +1136,12 @@ const PartnerProgram: React.FC = () => {
               </Button>
             </div>
           </CardContent>
-        </Card>
+          </Card>
+        </section>
 
-        {/* FAQ */}
-        <Card className="bg-[#0A0F1C] border-white/10 shadow-[0_0_20px_-4px_rgba(255,255,255,0.06)] shadow-inner">
+        {/* FAQ - Secondary */}
+        <section className="mb-6">
+          <Card variant="secondary" className="shadow-lg shadow-black/20 hover:shadow-xl hover:shadow-black/30">
           <CardHeader>
             <CardTitle className="text-white flex items-center gap-2">
               <HelpCircle className="h-5 w-5 text-purple-400" />
@@ -1056,13 +1171,14 @@ const PartnerProgram: React.FC = () => {
                 a: 'For each successful referral (user who subscribes), you earn 1 free month credit. These credits can be applied to your own subscription to extend your plan.',
               },
             ].map((faq, idx) => (
-              <div key={idx} className="bg-[#0F121A] rounded-lg p-4 border border-white/10 shadow-inner">
+              <div key={idx} className="bg-[#0F121A] rounded-xl p-4 border border-white/10 shadow-sm">
                 <h4 className="font-semibold text-white mb-2">{faq.q}</h4>
                 <p className="text-sm text-white/70">{faq.a}</p>
               </div>
             ))}
           </CardContent>
-        </Card>
+          </Card>
+        </section>
 
         {/* Reward History Modal */}
         <Dialog open={showRewardHistory} onOpenChange={setShowRewardHistory}>

@@ -70,8 +70,8 @@ const CriticalActions: React.FC<CriticalActionsProps> = ({
     >
       {/* Premium Payment Overdue Card - iOS Style */}
       {paymentOverdueActions.length > 0 && (
-        <div className="space-y-3 mb-6">
-            {paymentOverdueActions.map((action, index) => {
+        <div className="space-y-3">
+            {paymentOverdueActions.slice(0, 1).map((action, index) => {
               const Icon = getActionIcon(action.type);
 
               return (
@@ -80,9 +80,9 @@ const CriticalActions: React.FC<CriticalActionsProps> = ({
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.25, delay: index * 0.05, ease: [0.22, 1, 0.36, 1] }}
-                  className="relative p-5 rounded-[16px] bg-gradient-to-br from-red-950/50 via-red-950/40 to-red-950/30 
+                  className="relative p-3 rounded-[16px] bg-gradient-to-br from-red-950/50 via-red-950/40 to-red-950/30 
                             backdrop-blur-xl border border-red-500/30 shadow-[0_4px_20px_rgba(239,68,68,0.25)] 
-                            space-y-4 active:scale-[0.98] transition-all duration-200
+                            space-y-2.5 active:scale-[0.98] transition-all duration-200
                             hover:bg-gradient-to-br hover:from-red-950/60 hover:via-red-950/50 hover:to-red-950/40 
                             hover:border-red-500/40 hover:shadow-[0_6px_24px_rgba(239,68,68,0.35)] overflow-hidden group"
                   onClick={() => {
@@ -96,75 +96,64 @@ const CriticalActions: React.FC<CriticalActionsProps> = ({
                   
                   {/* Content */}
                   <div className="relative z-10">
-                    <div className="flex justify-between items-start mb-4">
+                    <div className="flex justify-between items-start mb-2.5">
                       <div className="flex items-center gap-3 flex-1 min-w-0">
           <div className="relative">
-                          <div className="w-11 h-11 rounded-full bg-gradient-to-br from-red-500/30 to-red-600/20 
+                          <div className="w-7 h-7 rounded-full bg-gradient-to-br from-red-500/30 to-red-600/20 
                                         flex items-center justify-center backdrop-blur-sm border border-red-500/40 
-                                        shadow-[0_0_12px_rgba(239,68,68,0.3)] group-hover:shadow-[0_0_16px_rgba(239,68,68,0.4)] 
+                                        shadow-[0_0_8px_rgba(239,68,68,0.3)] group-hover:shadow-[0_0_12px_rgba(239,68,68,0.4)] 
                                         transition-all duration-200">
-                            <Icon className="w-5 h-5 text-red-300" />
+                            <Icon className="w-3.5 h-3.5 text-red-300" />
                           </div>
-                          <div className="absolute -top-0.5 -right-0.5 w-3 h-3 rounded-full bg-red-500 animate-pulse border-2 border-red-950/50" />
+                          <div className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-red-500 animate-pulse border border-red-950/50" />
                         </div>
 
                         <div className="flex-1 min-w-0">
-                          <h3 className="text-[16px] font-semibold text-white leading-tight tracking-[-0.3px] mb-1">
+                          <h3 className="text-sm font-semibold text-white leading-tight tracking-tight mb-0.5">
                             {action.brand || 'Payment'} <span className="text-white/60">•</span> Payment Overdue
                           </h3>
-                          <p className="text-[13px] text-red-200/90 leading-tight font-medium">
+                          <p className="text-xs text-red-200/90 leading-tight font-medium">
                             Due since: <span className="text-red-300">{action.daysOverdue || 0}</span> {action.daysOverdue === 1 ? 'day' : 'days'}
                           </p>
                         </div>
                       </div>
 
-                      <span className="px-3 py-1.5 rounded-full bg-gradient-to-r from-red-500/30 to-red-600/20 
-                                     text-red-100 text-[11px] font-semibold border border-red-500/50 
-                                     shadow-[0_2px_8px_rgba(239,68,68,0.3)] backdrop-blur-sm shrink-0 ml-2">
+                      <span className="px-2 py-0.5 rounded-full bg-gradient-to-r from-red-500/30 to-red-600/20 
+                                     text-red-100 text-[10px] font-semibold border border-red-500/50 
+                                     shadow-[0_1px_4px_rgba(239,68,68,0.3)] backdrop-blur-sm shrink-0 ml-2">
                         Overdue
                       </span>
                     </div>
 
-                    <div className="bg-white/5 backdrop-blur-sm rounded-[12px] p-4 border border-white/10 space-y-2.5 mb-4">
+                    <div className="bg-white/5 backdrop-blur-sm rounded-[12px] p-2.5 border border-white/10 space-y-1.5 mb-2.5">
                       <div className="flex items-center justify-between">
-                        <p className="text-[16px] font-bold text-white tabular-nums">
+                        <p className="text-lg font-bold text-white tabular-nums">
                           ₹{action.amount?.toLocaleString('en-IN')}
                         </p>
-                        <span className="px-2.5 py-1 rounded-lg bg-white/10 text-white/80 text-[12px] font-medium">
+                        <span className="px-2 py-0.5 rounded-lg bg-white/10 text-white/80 text-xs font-medium">
                           {action.platform || 'N/A'}
                         </span>
           </div>
-                      <div className="flex items-center gap-2 text-[13px] text-red-100/80">
+                      <div className="flex items-center gap-2 text-xs text-red-100/80">
                         <span className="text-white/50">Due Date:</span>
                         <span className="font-medium">
                           {action.dueDate ? new Date(action.dueDate).toLocaleDateString('en-IN', { month: 'short', day: 'numeric', year: 'numeric' }) : 'N/A'}
           </span>
         </div>
-                      {action.lastReminderSentDays !== undefined && action.lastReminderSentDays > 0 ? (
-                        <div className="flex items-center gap-2 text-[12px] text-red-200/70 pt-1 border-t border-white/5">
-                          <span className="text-white/40">Last reminder:</span>
-                          <span>{action.lastReminderSentDays} {action.lastReminderSentDays === 1 ? 'day' : 'days'} ago</span>
-                        </div>
-                      ) : (
-                        <div className="flex items-center gap-2 text-[12px] text-red-200/70 pt-1 border-t border-white/5">
-                          <span className="text-white/40">Status:</span>
-                          <span>Brand hasn't responded yet</span>
-                        </div>
-                      )}
                     </div>
 
-                    {/* Buttons - Premium Style */}
-                    <div className="space-y-2.5 pt-1">
+                    {/* Buttons - Compact Style */}
+                    <div className="flex gap-2 pt-1">
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
                           onSendReminder?.(action.dealId!);
                         }}
-                        className="w-full py-3.5 rounded-[12px] 
+                        className="flex-1 py-1.5 rounded-[12px] 
                                  bg-gradient-to-r from-red-500 to-red-600 hover:from-red-400 hover:to-red-500 
-                                 text-white font-semibold text-[15px] tracking-tight
+                                 text-white font-semibold text-xs tracking-tight
                                  active:scale-[0.97] active:opacity-90 transition-all duration-150
-                                 shadow-[0_4px_16px_rgba(239,68,68,0.5)] hover:shadow-[0_6px_20px_rgba(239,68,68,0.6)]
+                                 shadow-[0_2px_8px_rgba(239,68,68,0.5)] hover:shadow-[0_4px_12px_rgba(239,68,68,0.6)]
                                  border border-red-400/40 backdrop-blur-sm"
                       >
                         Send Reminder
@@ -175,10 +164,10 @@ const CriticalActions: React.FC<CriticalActionsProps> = ({
                           e.stopPropagation();
                           onEscalate?.(action.dealId!);
                         }}
-                        className="w-full py-3.5 rounded-[12px] 
-                                 bg-white/10 backdrop-blur-md hover:bg-white/15 text-white/95 font-semibold text-[15px] tracking-tight
+                        className="flex-1 py-1.5 rounded-[12px] 
+                                 bg-white/10 backdrop-blur-md hover:bg-white/15 text-white/95 font-semibold text-xs tracking-tight
                                  active:scale-[0.97] active:opacity-90 transition-all duration-150
-                                 border border-white/30 hover:border-white/40 shadow-[0_2px_8px_rgba(0,0,0,0.2)]"
+                                 border border-white/30 hover:border-white/40 shadow-[0_1px_4px_rgba(0,0,0,0.2)]"
         >
                         Escalate
         </button>

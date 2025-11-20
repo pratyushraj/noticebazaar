@@ -63,7 +63,7 @@ const HeroEarningsCard: React.FC<HeroEarningsCardProps> = ({
 
   if (isLoading) {
     return (
-      <Card variant="metric" className="relative">
+      <Card variant="primary" className="relative">
         <CardContent>
           <Skeleton className="h-32 w-full" />
         </CardContent>
@@ -73,7 +73,7 @@ const HeroEarningsCard: React.FC<HeroEarningsCardProps> = ({
 
   if (current === 0 && !isLoading) {
     return (
-      <Card variant="metric" className="relative">
+      <Card variant="primary" className="relative">
         <CardContent>
           <EmptyState
             icon={TrendingUpIcon}
@@ -93,7 +93,7 @@ const HeroEarningsCard: React.FC<HeroEarningsCardProps> = ({
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
     >
-      <Card variant="metric" className="relative">
+      <Card variant="primary" className="relative">
         {/* Animated background gradient */}
         <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/5 to-transparent animate-pulse pointer-events-none z-0"></div>
         

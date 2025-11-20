@@ -2,7 +2,7 @@ import * as React from "react";
 
 import { cn } from "@/lib/utils";
 
-export type CardVariant = "default" | "metric" | "attention" | "partner" | "profile";
+export type CardVariant = "primary" | "secondary" | "tertiary" | "default" | "metric" | "attention" | "partner" | "profile" | "pink" | "pink-gradient";
 
 interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
   variant?: CardVariant;
@@ -11,18 +11,28 @@ interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
 
 const Card = React.forwardRef<HTMLDivElement, CardProps>(
   ({ className, variant = "default", interactive = false, ...props }, ref) => {
-    // Premium compact card styling matching AILegalRiskMeter
-    const baseClasses = "rounded-[16px] backdrop-blur-xl border shadow-inner relative overflow-hidden transition-all";
+    // Premium card system: 3 main types + legacy variants
+    // Elevation system: card-elevation-2 (default), card-elevation-3 (hover)
+    // Radius: rounded-2xl for all cards
+    const baseClasses = "rounded-3xl backdrop-blur-[40px] border relative overflow-hidden transition-smooth";
     const interactiveClasses = interactive 
-      ? "hover:border-opacity-60 active:scale-[0.98] transition-all duration-150 cursor-pointer" 
+      ? "card-interactive hover:card-elevation-3 focus-ring" 
       : "";
     
     const variantClasses = {
-      default: "bg-gradient-to-br from-blue-500/20 via-blue-500/10 to-transparent border-white/5",
+      // 3 Main Premium Types
+      primary: "bg-gradient-to-br from-blue-500/20 via-blue-500/10 to-transparent border-blue-500/30", // Bold gradient + high contrast
+      secondary: "bg-gradient-to-br from-emerald-500/15 via-emerald-500/8 to-emerald-500/5 border-emerald-500/20", // Subtle gradient + soft border
+      tertiary: "bg-transparent border-white/10", // Transparent background + border only
+      // Legacy variants (for backwards compatibility)
+      default: "bg-white/[0.05] border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.3)]", // Liquid glass default
       metric: "bg-gradient-to-br from-emerald-500/20 via-emerald-500/10 to-emerald-500/5 border-emerald-500/20",
       attention: "bg-gradient-to-br from-red-500/20 via-red-500/10 to-red-500/5 border-red-500/20",
       partner: "bg-gradient-to-br from-purple-500/20 via-purple-500/10 to-purple-500/5 border-purple-500/20",
       profile: "bg-gradient-to-br from-slate-500/20 via-slate-500/10 to-transparent border-white/5",
+      // Pink theme variants
+      pink: "bg-[#2A1F2E] border-[#4A3A4F] hover:bg-[#3D2A3F] hover:border-[#5A4A5F]", // Soft pink card
+      "pink-gradient": "bg-gradient-to-br from-[#E879F9] via-[#F472B6] to-[#FB7185] border-[#FF6B9D]/30", // Pink gradient card
     };
 
     return (
@@ -47,7 +57,7 @@ const CardHeader = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <div
     ref={ref}
-    className={cn("flex flex-col space-y-1.5", className)}
+    className={cn("flex flex-col space-y-2 p-4 pb-3", className)}
     {...props}
   />
 ));
@@ -60,7 +70,7 @@ const CardTitle = React.forwardRef<
   <h3
     ref={ref}
     className={cn(
-      "text-xs font-semibold text-muted-foreground uppercase tracking-wide",
+      "text-h4 font-semibold leading-tight min-h-[1.5em]", // Using type scale
       className,
     )}
     {...props}
@@ -74,7 +84,7 @@ const CardDescription = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <p
     ref={ref}
-    className={cn("text-[13px] text-white/60 leading-relaxed", className)}
+    className={cn("text-body text-white/70 leading-relaxed", className)} // Using type scale
     {...props}
   />
 ));
@@ -84,7 +94,7 @@ const CardContent = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement>
 >(({ className, ...props }, ref) => (
-  <div ref={ref} className={cn("space-y-2 p-4", className)} {...props} />
+  <div ref={ref} className={cn("space-y-4 p-4", className)} {...props} /> // Compact padding: p-4 (16px)
 ));
 CardContent.displayName = "CardContent";
 

@@ -83,7 +83,7 @@ const BrandInterestScore: React.FC<BrandInterestScoreProps> = ({ brandDeals = []
         {/* Soft radial gradient overlay */}
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.04),transparent_70%)] pointer-events-none" />
         
-        <CardContent className="p-0 relative z-10">
+        <CardContent className="p-4 relative z-10 space-y-1.5">
           {/* Header */}
           <div className="flex items-center justify-between mb-2.5">
             <div className="flex items-center gap-2">
@@ -99,7 +99,7 @@ const BrandInterestScore: React.FC<BrandInterestScoreProps> = ({ brandDeals = []
           <div className="relative w-full flex items-center justify-center my-2.5">
             <div className="relative w-32 h-32">
               {/* SVG Circular Progress Ring */}
-              <svg className="w-32 h-32 transform -rotate-90" viewBox="0 0 100 100">
+              <svg className="w-24 h-24 transform -rotate-90" viewBox="0 0 100 100">
                 {/* Background circle */}
                 <circle
                   cx="50"
@@ -107,7 +107,7 @@ const BrandInterestScore: React.FC<BrandInterestScoreProps> = ({ brandDeals = []
                   r="40"
                   fill="none"
                   stroke="currentColor"
-                  strokeWidth="6"
+                  strokeWidth="5"
                   className="text-white/10"
                 />
                 {/* Progress arc */}
@@ -117,7 +117,7 @@ const BrandInterestScore: React.FC<BrandInterestScoreProps> = ({ brandDeals = []
                   r="40"
                   fill="none"
                   stroke="currentColor"
-                  strokeWidth="6"
+                  strokeWidth="5"
                   strokeLinecap="round"
                   strokeDasharray={`${2 * Math.PI * 40}`}
                   strokeDashoffset={`${2 * Math.PI * 40 * (1 - score / 100)}`}
@@ -130,7 +130,7 @@ const BrandInterestScore: React.FC<BrandInterestScoreProps> = ({ brandDeals = []
               
               {/* Center content with percentage */}
               <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <div className={cn("text-3xl font-bold", scoreConfig.text)}>
+                <div className={cn("text-xl font-bold", scoreConfig.text)}>
                   {score}%
                 </div>
               </div>
@@ -151,12 +151,12 @@ const BrandInterestScore: React.FC<BrandInterestScoreProps> = ({ brandDeals = []
           </div>
 
           {/* Bottom Status */}
-          <div className="text-center mt-2">
-            <span className={cn("text-sm font-semibold", score >= 60 ? 'text-blue-300' : scoreConfig.text)}>
+          <div className="text-center mt-1.5">
+            <span className={cn("text-xs font-semibold", score >= 60 ? 'text-blue-300' : scoreConfig.text)}>
               {scoreConfig.label}
             </span>
-            <p className="text-xs text-muted-foreground mt-1">
-              {score >= 80 ? 'Brands trust you — keep it up!' : score >= 60 ? 'Brands trust you — maintain this level' : 'Improve to attract more deals'}
+            <p className="text-[10px] text-white/50 mt-0.5 leading-tight">
+              {score >= 80 ? 'Keep it up!' : score >= 60 ? 'Maintain level' : 'Needs work'}
             </p>
           </div>
         </CardContent>

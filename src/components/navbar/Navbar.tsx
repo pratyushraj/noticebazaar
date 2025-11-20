@@ -71,8 +71,8 @@ const Navbar: React.FC = () => {
     <header 
       className={cn(
         "sticky top-0 z-50 w-full h-16",
-        "bg-[#0B111B] backdrop-blur-xl border-b border-white/10",
-        "shadow-[0_0_20px_rgba(0,0,0,0.15)]"
+        "bg-white/[0.08] backdrop-blur-[40px] border-b border-white/10",
+        "shadow-[0_4px_24px_rgba(0,0,0,0.2)]"
       )}
     >
       <div className="container mx-auto px-4 lg:px-6 h-full">

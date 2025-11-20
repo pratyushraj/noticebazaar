@@ -7,6 +7,7 @@ import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
 import { EmptyState } from '@/components/ui/empty-state';
+import { PINK_THEME } from '@/constants/colors';
 
 interface Deadline {
   date: string;
@@ -21,14 +22,17 @@ interface UpcomingDeadlinesProps {
 const UpcomingDeadlines: React.FC<UpcomingDeadlinesProps> = ({ deadlines, isLoading = false }) => {
   if (isLoading) {
     return (
-      <Card>
-        <CardHeader className="pb-3">
+      <Card variant="default">
+        <CardHeader>
+          <div className="flex items-center gap-3">
+            <Skeleton className="h-10 w-10 rounded-xl" />
           <Skeleton className="h-6 w-32" />
+          </div>
         </CardHeader>
         <CardContent>
-          <div className="space-y-2.5">
+          <div className="space-y-3">
             {[1, 2, 3].map((i) => (
-              <Skeleton key={i} className="h-20 w-full rounded-[12px]" />
+              <Skeleton key={i} className="h-20 w-full rounded-xl" />
             ))}
           </div>
         </CardContent>
@@ -38,14 +42,14 @@ const UpcomingDeadlines: React.FC<UpcomingDeadlinesProps> = ({ deadlines, isLoad
 
   if (deadlines.length === 0) {
     return (
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="flex items-center gap-2 text-white">
-            <div className="h-9 w-9 rounded-xl flex items-center justify-center bg-blue-500/15 backdrop-blur-sm">
-              <Calendar className="w-4 h-4 text-blue-400" />
+      <Card className="bg-[#2A1F2E] border-[#4A3A4F] rounded-2xl">
+        <CardHeader>
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-10 rounded-xl flex items-center justify-center bg-gradient-to-br from-[#E879F9] to-[#F472B6] border border-[#FF6B9D]/30 shadow-lg">
+              <Calendar className="h-5 w-5 text-white" />
             </div>
-            Coming Up
-          </CardTitle>
+            <CardTitle className="text-white">Coming Up</CardTitle>
+          </div>
         </CardHeader>
         <CardContent>
           <EmptyState
@@ -71,41 +75,41 @@ const UpcomingDeadlines: React.FC<UpcomingDeadlinesProps> = ({ deadlines, isLoad
   const getUrgencyColor = (daysUntil: number): { bg: string; border: string; text: string; dateBg: string; dateBorder: string; dateText: string } => {
     if (daysUntil < 0) {
       return { 
-        bg: 'bg-red-500/15', 
-        border: 'border-red-500/30', 
-        text: 'text-red-400',
-        dateBg: 'bg-red-500/20',
-        dateBorder: 'border-red-500/40',
-        dateText: 'text-red-400'
+        bg: 'bg-[#FFB3BA]/20', 
+        border: 'border-[#FF6B9D]/40', 
+        text: 'text-[#FF6B9D]',
+        dateBg: 'bg-[#FF6B9D]/30',
+        dateBorder: 'border-[#FF6B9D]/50',
+        dateText: 'text-white'
       };
     }
     if (daysUntil <= 3) {
       return { 
-        bg: 'bg-amber-500/15', 
-        border: 'border-amber-500/30', 
-        text: 'text-amber-400',
-        dateBg: 'bg-amber-500/20',
-        dateBorder: 'border-amber-500/40',
-        dateText: 'text-amber-400'
+        bg: 'bg-[#FFD89B]/20', 
+        border: 'border-[#FFB84D]/40', 
+        text: 'text-[#FFB84D]',
+        dateBg: 'bg-[#FFB84D]/30',
+        dateBorder: 'border-[#FFB84D]/50',
+        dateText: 'text-white'
       };
     }
     if (daysUntil <= 7) {
       return { 
-        bg: 'bg-orange-500/15', 
-        border: 'border-orange-500/30', 
-        text: 'text-orange-400',
-        dateBg: 'bg-orange-500/20',
-        dateBorder: 'border-orange-500/40',
-        dateText: 'text-orange-400'
+        bg: 'bg-[#FF8FAB]/20', 
+        border: 'border-[#FF6B9D]/40', 
+        text: 'text-[#FF6B9D]',
+        dateBg: 'bg-[#FF6B9D]/30',
+        dateBorder: 'border-[#FF6B9D]/50',
+        dateText: 'text-white'
       };
     }
     return { 
-      bg: 'bg-blue-500/10', 
-      border: 'border-blue-500/20', 
-      text: 'text-blue-300',
-      dateBg: 'bg-blue-500/15',
-      dateBorder: 'border-blue-500/30',
-      dateText: 'text-blue-300'
+      bg: 'bg-[#E879F9]/20', 
+      border: 'border-[#F472B6]/40', 
+      text: 'text-[#F472B6]',
+      dateBg: 'bg-[#F472B6]/30',
+      dateBorder: 'border-[#F472B6]/50',
+      dateText: 'text-white'
     };
   };
 
@@ -131,24 +135,24 @@ const UpcomingDeadlines: React.FC<UpcomingDeadlinesProps> = ({ deadlines, isLoad
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, delay: 0.8, ease: [0.22, 1, 0.36, 1] }}
+      transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
     >
-      <Card className="relative overflow-hidden">
-        <CardHeader className="pb-3">
+      <Card className="bg-[#2A1F2E] border-[#4A3A4F] rounded-2xl shadow-lg hover:bg-[#3D2A3F] transition-all duration-300">
+        <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle className="flex items-center gap-2 text-white">
-              <div className="h-9 w-9 rounded-xl flex items-center justify-center bg-blue-500/15 backdrop-blur-sm">
-                <Calendar className="w-4 h-4 text-blue-400" />
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-xl flex items-center justify-center bg-gradient-to-br from-[#E879F9] to-[#F472B6] border border-[#FF6B9D]/30 shadow-lg">
+                <Calendar className="h-5 w-5 text-white" />
               </div>
-              Coming Up
-            </CardTitle>
-            <button className="text-[13px] text-blue-400 hover:text-blue-300 transition-colors font-medium active:scale-[0.97]">
+              <CardTitle className="text-white">Coming Up</CardTitle>
+            </div>
+            <button className="text-body text-[#F472B6] hover:text-[#FF8FAB] hover:bg-[#F472B6]/10 transition-fast font-medium active:scale-[0.97] focus-ring rounded-lg px-3 py-2">
               View Calendar →
             </button>
           </div>
         </CardHeader>
         <CardContent>
-          <div className="space-y-2.5">
+          <div className="space-y-3">
             {deadlines.map((deadline, index) => {
               const daysUntil = getDaysUntil(deadline.date);
               const urgency = getUrgencyColor(daysUntil);
@@ -160,12 +164,9 @@ const UpcomingDeadlines: React.FC<UpcomingDeadlinesProps> = ({ deadlines, isLoad
                   key={index}
                   initial={{ opacity: 0, x: -10 }}
                   animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.25, delay: 0.9 + index * 0.05, ease: [0.22, 1, 0.36, 1] }}
-                  whileHover={{ scale: 1.01 }}
-                  whileTap={{ scale: 0.98 }}
+                  transition={{ duration: 0.3, delay: index * 0.1, ease: [0.22, 1, 0.36, 1] }}
                   className={cn(
-                    "flex gap-3 p-3.5 rounded-[12px] border backdrop-blur-sm",
-                    "hover:bg-white/5 active:bg-white/5 transition-all duration-150 cursor-pointer group",
+                    "flex gap-4 p-4 rounded-xl border backdrop-blur-sm card-interactive",
                     urgency.bg,
                     urgency.border
                   )}

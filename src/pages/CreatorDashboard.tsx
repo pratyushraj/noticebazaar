@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import IOSSegmentedControl from '@/components/navigation/IOSSegmentedControl';
 import { useSession } from '@/contexts/SessionContext';
 import { 
   Search, 
@@ -9,21 +10,18 @@ import {
   Bot,
   Briefcase,
   CheckCircle,
-  AlertCircle,
-  Wallet,
-  Target,
-  TrendingUp
+  DollarSign,
+  ArrowRight,
+  TrendingUp as TrendingUpIcon,
+  Bell,
+  Menu,
+  Calendar,
+  AlertTriangle
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useCreatorDashboardData } from '@/lib/hooks/useCreatorDashboardData';
-import HeroEarningsCard from '@/components/creator-dashboard/HeroEarningsCard';
-import CriticalActions from '@/components/creator-dashboard/CriticalActions';
-import CombinedPaymentsCard from '@/components/creator-dashboard/CombinedPaymentsCard';
-import MoneyOverview from '@/components/creator-dashboard/MoneyOverview';
-import QuickStats from '@/components/creator-dashboard/QuickStats';
-import UpcomingDeadlines from '@/components/creator-dashboard/UpcomingDeadlines';
+import ActionCenter from '@/components/creator-dashboard/ActionCenter';
 import QuickActionsFAB from '@/components/creator-dashboard/QuickActionsFAB';
-import RecentActivity from '@/components/creator-dashboard/RecentActivity';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import BrandDealForm from '@/components/forms/BrandDealForm';
@@ -46,42 +44,13 @@ import PaymentQuickFilters from '@/components/payments/PaymentQuickFilters';
 import CreatorCopyrightScanner from '@/components/creator-dashboard/CreatorCopyrightScanner';
 import ProtectionDashboardHeader from '@/components/content-protection/ProtectionDashboardHeader';
 import { useOriginalContent, useCopyrightMatches } from '@/lib/hooks/useCopyrightScanner';
-import CreatorProfessionalTeam from '@/components/creator-dashboard/CreatorProfessionalTeam';
 import ChatWindow from '@/components/ChatWindow';
-import WeeklyPerformance from '@/components/creator-dashboard/WeeklyPerformance';
 import TrialBanner from '@/components/trial/TrialBanner';
 import UpgradeModal from '@/components/trial/UpgradeModal';
-import RiskAlerts from '@/components/creator-dashboard/RiskAlerts';
-import TaskManager from '@/components/creator-dashboard/TaskManager';
-import TaxFinanceSummary from '@/components/creator-dashboard/TaxFinanceSummary';
-import LegalHealthScore from '@/components/creator-dashboard/LegalHealthScore';
-import SmartSuggestions from '@/components/creator-dashboard/SmartSuggestions';
-import ProjectedEarnings from '@/components/creator-dashboard/ProjectedEarnings';
-import TopPayingBrands from '@/components/creator-dashboard/TopPayingBrands';
-import ReferAndEarn from '@/components/creator-dashboard/ReferAndEarn';
-import UploadCenter from '@/components/creator-dashboard/UploadCenter';
-import ThisWeeksSummary from '@/components/creator-dashboard/ThisWeeksSummary';
-import CreatorScoreBadge from '@/components/creator-dashboard/CreatorScoreBadge';
-import AccountSummary from '@/components/creator-dashboard/AccountSummary';
-import AIInsights from '@/components/creator-dashboard/AIInsights';
-import BrandInterestScore from '@/components/creator-dashboard/BrandInterestScore';
-import AudienceAnalyticsPreview from '@/components/creator-dashboard/AudienceAnalyticsPreview';
-import TopActionNeeded from '@/components/creator-dashboard/TopActionNeeded';
-import AITaxAdvice from '@/components/creator-dashboard/AITaxAdvice';
-import AILegalRiskMeter from '@/components/creator-dashboard/AILegalRiskMeter';
-import ReferralEarningsPreview from '@/components/creator-dashboard/ReferralEarningsPreview';
-import ContentScannerQueue from '@/components/creator-dashboard/ContentScannerQueue';
-import GSTImpactSummary from '@/components/creator-dashboard/GSTImpactSummary';
-import GoalProgressAnnual from '@/components/creator-dashboard/GoalProgressAnnual';
-import CreatorBadge from '@/components/creator-dashboard/CreatorBadge';
-import ContentMetrics from '@/components/creator-dashboard/ContentMetrics';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { ChevronDown } from 'lucide-react';
-import { DashboardSummaryBar } from '@/components/dashboard/DashboardSummaryBar';
-import { DataFreshnessIndicator } from '@/components/dashboard/DataFreshnessIndicator';
 import { useDashboardShortcuts } from '@/hooks/useKeyboardShortcuts';
 import { ErrorBoundary } from '@/components/ui/error-boundary';
 import { QuickSearch } from '@/components/dashboard/QuickSearch';
+import Breadcrumbs from '@/components/navigation/Breadcrumbs';
 
 // Helper functions
 const getDealStage = (deal: BrandDeal): DealStage => {
@@ -115,11 +84,71 @@ const getPaymentStatus = (deal: BrandDeal): PaymentStatus => {
   return 'not_due';
 };
 
+// Pill Tab Button Component - Clean & Organized
+const PillTabButton = ({ 
+  label, 
+  isActive, 
+  onClick, 
+  count 
+}: { 
+  label: string; 
+  isActive: boolean; 
+  onClick: () => void;
+  count?: number;
+}) => {
+  return (
+    <button
+      onClick={onClick}
+      className={cn(
+        "relative px-6 py-3 text-base font-medium transition-all duration-300 border-b-2 border-transparent",
+        isActive
+          ? "text-white border-white"
+          : "text-white/60 hover:text-white/80"
+      )}
+    >
+      {label}
+      {count !== undefined && count > 0 && (
+        <span className={cn(
+          "ml-2 px-2.5 py-1 rounded-full text-xs font-semibold backdrop-blur-sm",
+          isActive 
+            ? "bg-white/20 text-white border border-white/30" 
+            : "bg-white/5 text-white/50 border border-white/10"
+        )}>
+          {count}
+        </span>
+      )}
+    </button>
+  );
+};
+
 const CreatorDashboard = () => {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { profile, loading: sessionLoading, isCreator, trialStatus } = useSession();
   const [showExpiredModal, setShowExpiredModal] = useState(false);
-  const [activeTab, setActiveTab] = useState<'overview' | 'deals' | 'payments' | 'protection'>('overview');
+  
+  // URL-based tab navigation
+  const validTabs: Array<'overview' | 'deals' | 'payments' | 'protection'> = ['overview', 'deals', 'payments', 'protection'];
+  const tabFromUrl = searchParams.get('tab') as 'overview' | 'deals' | 'payments' | 'protection' | null;
+  const activeTab = (tabFromUrl && validTabs.includes(tabFromUrl)) ? tabFromUrl : 'overview';
+  
+  // Debug: Log tab changes (remove in production)
+  useEffect(() => {
+    console.log('[CreatorDashboard] Tab from URL:', tabFromUrl, 'Active tab:', activeTab);
+  }, [tabFromUrl, activeTab]);
+  
+  const setActiveTab = (tab: 'overview' | 'deals' | 'payments' | 'protection') => {
+    setSearchParams({ tab }, { replace: true });
+  };
+  
+  // Sync URL on mount if no tab param or invalid tab
+  useEffect(() => {
+    const currentTab = searchParams.get('tab');
+    // Only set default if there's no tab or an invalid tab
+    if (!currentTab || !validTabs.includes(currentTab as any)) {
+      setSearchParams({ tab: 'overview' }, { replace: true });
+    }
+  }, []); // Only run once on mount to set default
   
   // Keyboard shortcuts
   useDashboardShortcuts();
@@ -161,7 +190,6 @@ const CreatorDashboard = () => {
   // Filter states for payments tab
   const [paymentSearchTerm, setPaymentSearchTerm] = useState('');
   const [paymentQuickFilter, setPaymentQuickFilter] = useState<string | null>(null);
-  const [isCollapsibleOpen, setIsCollapsibleOpen] = useState(false);
 
   // Fetch data
   const { data: mockDashboardData, isLoading: isLoadingMocks, error: mockError } = useCreatorDashboardData(
@@ -204,6 +232,7 @@ const CreatorDashboard = () => {
       setShowExpiredModal(true);
     }
   }, [sessionLoading, profile, trialStatus.trialLocked, navigate]);
+
 
   // Demo data for when brandDeals is empty
   const demoBrandDeals: BrandDeal[] = useMemo(() => {
@@ -633,11 +662,6 @@ const CreatorDashboard = () => {
     }
   };
 
-  const handleOpenMessageDialog = (receiverId: string, receiverName: string) => {
-    setMessageReceiverId(receiverId);
-    setMessageReceiverName(receiverName);
-    setIsMessageDialogOpen(true);
-  };
 
   const handleCloseMessageDialog = () => {
     setIsMessageDialogOpen(false);
@@ -664,123 +688,185 @@ const CreatorDashboard = () => {
 
   return (
     <>
-      <div className="min-h-screen bg-gradient-to-b from-[#060A12] via-[#080C14] to-[#0A0E16] text-white relative overflow-hidden">
-        {/* Ambient background lighting */}
-        <div className="fixed inset-0 bg-[radial-gradient(circle_at_top,rgba(23,86,255,0.15),transparent_70%)] pointer-events-none z-0"></div>
-        <div className="fixed inset-0 bg-gradient-to-b from-white/5 to-transparent pointer-events-none z-0"></div>
-        
+      <div className="min-h-screen text-white relative">
         {/* Header removed - now using Navbar from Layout component */}
-        <div className="relative z-10 max-w-7xl mx-auto px-4 py-8">
+        <div className="relative z-10 max-w-7xl mx-auto px-4 py-8 pb-24 md:pb-8">
+          {/* Breadcrumbs - Show for non-overview tabs */}
+          {activeTab !== 'overview' && (
+            <div className="mb-6">
+              <Breadcrumbs />
+            </div>
+          )}
+          
           {/* Overview Tab */}
               {activeTab === 'overview' && (
                 <>
                   <TrialBanner />
 
-                  <div className="mb-8">
-                    <div className="flex items-start justify-between mb-4 gap-4 flex-wrap">
+              {/* Hero Section - Liquid Glass */}
+              <div className="mb-12">
+                <div className="flex items-start justify-between mb-8 gap-4 flex-wrap">
                       <div className="flex-1 min-w-0">
-                        <h1 className="text-2xl sm:text-3xl font-bold mb-2 text-white tracking-tight leading-tight">
-                          Welcome back,{' '}
-                          <span className="bg-gradient-to-r from-blue-400 via-blue-300 to-blue-400 bg-clip-text text-transparent">
-                            {profile?.first_name || 'Creator'}
-                          </span>
-                          !
-                        </h1>
-                        <p className="text-sm sm:text-base text-white/60 leading-relaxed max-w-2xl">
-                          Your comprehensive overview of brand deals, legal protection, and financial health.
+                    <h1 className="text-3xl font-semibold mb-2 text-white tracking-tight leading-tight">
+                      Hey, {profile?.first_name || 'Creator'}! 👋
+                    </h1>
+                    <p className="text-base text-white/60">
+                      Content Creator
                         </p>
                       </div>
-                      <div className="shrink-0">
-                        <DataFreshnessIndicator
-                          lastUpdated={new Date()}
-                          onRefresh={() => {
-                            refetchBrandDeals();
-                            toast.success('Dashboard refreshed');
-                          }}
-                        />
+                  <div className="flex items-center gap-3 shrink-0">
+                    <div className="relative">
+                      <Bell className="h-5 w-5 text-white/70 cursor-pointer hover:text-white transition-colors" />
+                      {dashboardData?.urgentActions && dashboardData.urgentActions.length > 0 && (
+                        <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-red-500 text-white text-[10px] flex items-center justify-center font-semibold">
+                          {dashboardData.urgentActions.length}
+                        </span>
+                      )}
                       </div>
+                    <Menu className="h-5 w-5 text-white/70 cursor-pointer hover:text-white transition-colors" />
                     </div>
                   </div>
 
-                  {/* Dashboard Summary Bar */}
-                  <DashboardSummaryBar
-                    earnings={dashboardData?.earnings.current}
-                    deadlines={dashboardData?.upcomingDeadlines?.length || 0}
-                    urgent={dashboardData?.urgentActions?.filter(a => a.type === 'payment_overdue').length || 0}
-                    earningsChange={dashboardData?.earnings.current && dashboardData?.earnings.previous 
-                      ? Math.round(((dashboardData.earnings.current - dashboardData.earnings.previous) / dashboardData.earnings.previous) * 100)
-                      : undefined
-                    }
-                    className="mb-6"
-                  />
-
-              {/* ============================================ */}
-              {/* SECTION 1: Earnings (Hero) - Primary Card */}
-              {/* ============================================ */}
-              <section className="mt-8">
-                    <div className="active:scale-[0.98] transition-transform duration-150 shadow-sm shadow-black/10 hover:shadow-md">
-                      <HeroEarningsCard
-                        current={dashboardData.earnings.current}
-                        previous={dashboardData.earnings.previous}
-                        goal={dashboardData.earnings.goal}
-                        brandDeals={brandDeals}
-                        isLoading={isLoadingBrandDeals}
-                        earningsHistory={[230000, 240000, 250000, 260000, 270000, 280000, dashboardData.earnings.current]}
-                      />
+                {/* Liquid Glass Earnings Card */}
+                <div className="flex justify-center">
+                  <div className="relative w-full max-w-lg">
+                    <div className="relative bg-white/[0.08] backdrop-blur-[40px] border border-white/20 rounded-3xl p-8 shadow-[0_8px_32px_rgba(0,0,0,0.4)] overflow-hidden">
+                      {/* Subtle gradient overlay */}
+                      <div className="absolute inset-0 bg-gradient-to-br from-white/[0.1] via-transparent to-transparent pointer-events-none" />
+                      
+                      {/* Content */}
+                      <div className="relative z-10">
+                        <div className="flex items-center gap-3 mb-4">
+                          <div className="h-12 w-12 rounded-2xl bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center">
+                            <DollarSign className="h-6 w-6 text-white" />
+                          </div>
+                          <span className="text-sm font-medium text-white/80">Earnings</span>
+                        </div>
+                        <div className="text-5xl font-semibold text-white mb-3 tracking-tight">
+                          ₹{dashboardData?.earnings.current.toLocaleString('en-IN') || '0'}
+                        </div>
+                        <div className="text-base text-white/60">
+                          This Month
+                          {dashboardData?.earnings.previous && (
+                            <span className="ml-2 text-[#FF4DAA] font-medium">
+                              +{Math.round(((dashboardData.earnings.current - dashboardData.earnings.previous) / dashboardData.earnings.previous) * 100)}%
+                            </span>
+                          )}
+                        </div>
+                      </div>
                     </div>
+                  </div>
+                </div>
+              </div>
+            </>
+          )}
+
+          {/* iOS-style Segmented Control */}
+          <div className="mb-12 flex justify-center">
+            <IOSSegmentedControl
+              segments={[
+                { label: "Overview", value: "overview" },
+                { label: "Deals", value: "deals" },
+                { label: "Payments", value: "payments" },
+                { label: "Protection", value: "protection" },
+              ]}
+              value={activeTab}
+              onChange={(value) => setActiveTab(value as 'overview' | 'deals' | 'payments' | 'protection')}
+            />
+          </div>
+
+          {/* Overview Tab Content */}
+          {activeTab === 'overview' && (
+            <>
+              {/* Financial Overview Section */}
+              <section className="mb-12">
+                <h2 className="text-2xl font-semibold text-white mb-6">Financial Overview</h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                  {/* Pending Invoices */}
+                  <Card className="bg-white/[0.06] backdrop-blur-[40px] border-white/10 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.3)] hover:bg-white/[0.08] transition-all">
+                    <CardContent className="p-6">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-xs text-white/50 mb-2 font-medium">Pending Invoices</p>
+                          <p className="text-2xl font-semibold text-white">
+                            ₹{dashboardData?.moneyOverview.pendingPayments.toLocaleString('en-IN') || '0'}
+                          </p>
+                        </div>
+                        <div className="h-12 w-12 rounded-2xl bg-yellow-500/20 backdrop-blur-sm border border-yellow-500/30 flex items-center justify-center">
+                          <AlertTriangle className="h-5 w-5 text-yellow-400" />
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Tax Liability */}
+                  <Card className="bg-white/[0.06] backdrop-blur-[40px] border-white/10 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.3)] hover:bg-white/[0.08] transition-all">
+                    <CardContent className="p-6">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-xs text-white/50 mb-2 font-medium">Tax Liability (Q3)</p>
+                          <p className="text-2xl font-semibold text-white">
+                            ₹85,000
+                          </p>
+                        </div>
+                        <div className="h-12 w-12 rounded-2xl bg-orange-500/20 backdrop-blur-sm border border-orange-500/30 flex items-center justify-center">
+                          <Calendar className="h-5 w-5 text-orange-400" />
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
               </section>
 
-              {/* ============================================ */}
-              {/* SECTION 2: Needs Attention & Payments */}
-              {/* ============================================ */}
-              <section id="needs-attention-payments" className="mt-8 space-y-3">
-                {/* Section Header */}
-                <div className="flex items-center gap-1.5 mb-2">
-                  <div className="flex items-center gap-2">
-                    <AlertCircle className="h-3.5 w-3.5 text-white/50 opacity-40" />
-                    <Wallet className="h-3.5 w-3.5 text-white/50 opacity-40" />
+              {/* Recent Activity Section */}
+              <section className="mb-12">
+                <h2 className="text-2xl font-semibold text-white mb-6">Recent Activity</h2>
+                <Card className="bg-white/[0.06] backdrop-blur-[40px] border-white/10 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.3)]">
+                  <CardContent className="p-6">
+                    <div className="space-y-3">
+                      {brandDeals && brandDeals.length > 0 ? (
+                        brandDeals
+                          .filter(deal => deal.status === 'Approved' || deal.status === 'Completed')
+                          .slice(0, 3)
+                          .map((deal) => {
+                            const isCompleted = deal.status === 'Completed';
+                            const timeAgo = deal.payment_received_date 
+                              ? new Date(deal.payment_received_date)
+                              : new Date(deal.created_at);
+                            const hoursAgo = Math.floor((Date.now() - timeAgo.getTime()) / (1000 * 60 * 60));
+                            
+                            return (
+                              <div key={deal.id} className="flex items-center gap-3 p-4 rounded-2xl bg-white/5 backdrop-blur-sm hover:bg-white/10 transition-all border border-white/10">
+                                <div className="h-10 w-10 rounded-xl bg-green-500/20 backdrop-blur-sm flex items-center justify-center border border-green-500/30">
+                                  <CheckCircle className="h-5 w-5 text-green-400" />
+                    </div>
+                                <div className="flex-1">
+                                  <p className="text-sm font-medium text-white">
+                                    {deal.brand_name} collaboration agreement
+                                  </p>
+                                  <p className="text-xs text-white/60">
+                                    {isCompleted ? 'Approved' : 'Contract Reviewed'} • {hoursAgo} hours ago
+                                  </p>
+                                </div>
+                              </div>
+                            );
+                          })
+                      ) : (
+                        <p className="text-sm text-white/60 text-center py-4">No recent activity</p>
+                    )}
                   </div>
-                  <h2 className="text-xs font-medium text-white/50 uppercase tracking-wide">Needs Attention & Payments</h2>
-                </div>
-                
-                {/* Section Content */}
-                <div className="space-y-3">
-                  {/* Needs Attention */}
-                  {dashboardData.urgentActions && dashboardData.urgentActions.length > 0 && (
-                    <ErrorBoundary>
-                      <div className="active:scale-[0.98] transition-transform duration-150 shadow-sm shadow-black/10 hover:shadow-md hover:border-white/10">
-                        <CriticalActions
-                          actions={dashboardData.urgentActions}
-                          onSendReminder={(dealId) => {
-                            const deal = brandDeals?.find(d => d.id === dealId);
-                            if (deal) {
-                              setSelectedDealForReminder(deal);
-                              setIsSendPaymentReminderDialogOpen(true);
-                            }
-                          }}
-                          onEscalate={() => toast.info('Escalation feature coming soon!')}
-                          onAnalyzeContract={(dealId) => {
-                            const deal = brandDeals?.find(d => d.id === dealId);
-                            if (deal?.contract_file_url) {
-                              setSelectedContractForAIScan(deal.contract_file_url);
-                              setIsAIScanDialogOpen(true);
-                            }
-                          }}
-                          onTakeDown={() => setIsSendTakedownNoticeDialogOpen(true)}
-                        />
-                      </div>
-                    </ErrorBoundary>
-                  )}
+                  </CardContent>
+                </Card>
+              </section>
 
-                  {/* Payments Overview */}
-                  <div className="active:scale-[0.98] transition-transform duration-150 shadow-sm shadow-black/10 hover:shadow-md hover:border-white/10">
-                    <CombinedPaymentsCard
-                      pendingPayments={dashboardData.moneyOverview.pendingPayments}
-                      pendingBrandCount={dashboardData.moneyOverview.pendingBrandCount}
-                      dueThisWeek={dashboardData.moneyOverview.dueThisWeek}
-                      dueThisWeekCount={dashboardData.moneyOverview.dueThisWeekCount}
+              {/* Actions & Alerts */}
+              <section className="mb-12">
+                <h2 className="text-2xl font-semibold text-white mb-6">Actions & Alerts</h2>
+                  <ErrorBoundary>
+                  <div className="rounded-2xl overflow-hidden">
+                    <ActionCenter
+                      urgentActions={dashboardData.urgentActions || []}
                       brandDeals={brandDeals}
-                      isLoading={isLoadingBrandDeals}
                       onSendReminder={(dealId) => {
                         const deal = brandDeals?.find(d => d.id === dealId);
                         if (deal) {
@@ -788,198 +874,75 @@ const CreatorDashboard = () => {
                           setIsSendPaymentReminderDialogOpen(true);
                         }
                       }}
+                      onEscalate={() => toast.info('Escalation feature coming soon!')}
+                      onAnalyzeContract={(dealId) => {
+                        const deal = brandDeals?.find(d => d.id === dealId);
+                        if (deal?.contract_file_url) {
+                          setSelectedContractForAIScan(deal.contract_file_url);
+                          setIsAIScanDialogOpen(true);
+                        }
+                      }}
                     />
                   </div>
+                  </ErrorBoundary>
+                </section>
+
+              {/* More Insights */}
+              <section className="mb-12">
+                <h2 className="text-2xl font-semibold text-white mb-6">More Insights</h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                  {/* Analytics & Performance */}
+                  <Card 
+                    variant="default" 
+                    interactive
+                    onClick={() => navigate('/insights')}
+                    className="cursor-pointer bg-white/[0.06] backdrop-blur-[40px] border-white/10 hover:bg-white/[0.08] hover:border-white/20 transition-all rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.3)]"
+                  >
+                    <CardContent className="p-6">
+                      <div className="flex items-center gap-4">
+                        <div className="h-12 w-12 rounded-2xl flex items-center justify-center bg-[#FF4DAA]/20 backdrop-blur-sm border border-[#FF4DAA]/30">
+                          <TrendingUpIcon className="h-6 w-6 text-[#FF4DAA]" />
                 </div>
-                
-                {/* Section Separator */}
-                <div className="relative my-8">
-                  <div className="absolute inset-0 flex items-center">
-                    <div className="w-full border-t border-gradient-to-r from-transparent via-white/10 to-transparent"></div>
+                        <div className="flex-1">
+                          <h3 className="text-base font-semibold text-white mb-1">Analytics & Performance</h3>
+                          <p className="text-sm text-white/50">Weekly performance, projections, goals</p>
+                </div>
+                        <ArrowRight className="h-5 w-5 text-white/40" />
+                </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Payments & Recovery */}
+                  <Card 
+                    variant="default" 
+                    interactive
+                    onClick={() => navigate('/creator-payments')}
+                    className="cursor-pointer bg-white/[0.06] backdrop-blur-[40px] border-white/10 hover:bg-white/[0.08] hover:border-white/20 transition-all rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.3)]"
+                  >
+                    <CardContent className="p-6">
+                      <div className="flex items-center gap-4">
+                        <div className="h-12 w-12 rounded-2xl flex items-center justify-center bg-green-500/20 backdrop-blur-sm border border-green-500/30">
+                          <DollarSign className="h-6 w-6 text-green-400" />
+                </div>
+                        <div className="flex-1">
+                          <h3 className="text-base font-semibold text-white mb-1">Payments & Recovery</h3>
+                          <p className="text-sm text-white/50">Track payments, send reminders</p>
+                    </div>
+                        <ArrowRight className="h-5 w-5 text-white/40" />
                   </div>
-                  <div className="relative flex justify-center">
-                    <span className="bg-[#0B111B] px-4 text-xs text-white/30">●</span>
-                  </div>
+                    </CardContent>
+                  </Card>
                 </div>
               </section>
 
               {/* ============================================ */}
-              {/* SECTION 3: Campaigns */}
+              {/* FOOTER */}
               {/* ============================================ */}
-              <section id="campaigns" className="mt-8 space-y-3">
-                {/* Section Header */}
-                <div className="flex items-center gap-1.5 mb-2">
-                  <Target className="h-3.5 w-3.5 text-white/50 opacity-40" />
-                  <h2 className="text-xs font-medium text-white/50 uppercase tracking-wide">Campaigns</h2>
-                </div>
-                
-                {/* Section Content */}
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
-                  {/* Active Campaigns & Completed - Secondary Card */}
-                      <div className="active:scale-[0.98] transition-transform duration-150 shadow-sm shadow-black/10 hover:shadow-md hover:border-white/10">
-                        <MoneyOverview
-                          pendingPayments={0}
-                          pendingBrandCount={0}
-                          dueThisWeek={0}
-                          dueThisWeekCount={0}
-                          activeCampaigns={dashboardData.moneyOverview.activeCampaigns}
-                          deliverablesDue={dashboardData.moneyOverview.deliverablesDue}
-                          completed={dashboardData.moneyOverview.completed}
-                          onTimeRate={dashboardData.moneyOverview.onTimeRate}
-                          brandDeals={brandDeals}
-                          isLoading={isLoadingBrandDeals}
-                          onSendReminder={() => {}}
-                          onAddCampaign={handleAddBrandDeal}
-                        />
-                      </div>
-                  {/* Coming Up / Upcoming Deadlines - Tertiary Card */}
-                  <div className="active:scale-[0.98] transition-transform duration-150 shadow-sm shadow-black/5 hover:shadow-sm hover:border-white/5">
-                    <UpcomingDeadlines deadlines={dashboardData.upcomingDeadlines} />
-                  </div>
-                </div>
-                
-                {/* Section Separator */}
-                <div className="relative my-8">
-                  <div className="absolute inset-0 flex items-center">
-                    <div className="w-full border-t border-gradient-to-r from-transparent via-white/10 to-transparent"></div>
-                  </div>
-                  <div className="relative flex justify-center">
-                    <span className="bg-[#0B111B] px-4 text-xs text-white/30">●</span>
-                  </div>
-                </div>
-              </section>
-
-              {/* ============================================ */}
-              {/* SECTION 5: Insights & Scores */}
-              {/* ============================================ */}
-              <section id="insights" className="mt-8 space-y-3">
-                {/* Section Header */}
-                <div className="flex items-center gap-1.5 mb-2">
-                  <TrendingUp className="h-3.5 w-3.5 text-white/50 opacity-40" />
-                  <h2 className="text-xs font-medium text-white/50 uppercase tracking-wide">Insights & Scores</h2>
-                </div>
-                
-                {/* Section Content */}
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
-                  <div className="active:scale-[0.98] transition-transform duration-150 shadow-sm shadow-black/10 hover:shadow-md hover:border-white/10">
-                    <BrandInterestScore brandDeals={brandDeals} profile={profile} />
-                  </div>
-                  <div className="active:scale-[0.98] transition-transform duration-150 shadow-sm shadow-black/10 hover:shadow-md hover:border-white/10">
-                    <WeeklyPerformance brandDeals={brandDeals} />
-                  </div>
-                  <div className="active:scale-[0.98] transition-transform duration-150 shadow-sm shadow-black/10 hover:shadow-md hover:border-white/10">
-                    <LegalHealthScore brandDeals={brandDeals} />
-                  </div>
-                </div>
-                
-                {/* Section Separator */}
-                <div className="relative my-8">
-                  <div className="absolute inset-0 flex items-center">
-                    <div className="w-full border-t border-gradient-to-r from-transparent via-white/10 to-transparent"></div>
-                  </div>
-                  <div className="relative flex justify-center">
-                    <span className="bg-[#0B111B] px-4 text-xs text-white/30">●</span>
-                  </div>
-                </div>
-              </section>
-
-              {/* Divider: Insights → More Tools */}
-              <div className="border-b border-white/5 my-6"></div>
-
-              {/* ============================================ */}
-              {/* COLLAPSIBLE SECTION: Additional Insights & Tools */}
-              {/* ============================================ */}
-              <Collapsible open={isCollapsibleOpen} onOpenChange={setIsCollapsibleOpen} className="w-full">
-                <CollapsibleTrigger className="flex items-center justify-between w-full group hover:bg-white/5 rounded-lg p-4 transition-all duration-200 -mx-2">
-                  <div>
-                    <h2 className="text-lg font-semibold text-white/80 group-hover:text-white/90 transition-colors">
-                      More Insights & Tools
-                    </h2>
-                    <p className="text-xs text-white/50 mt-1">AI insights, partner program, account settings, and more</p>
-                  </div>
-                  <ChevronDown className={cn("h-5 w-5 text-white/60 group-hover:text-white/80 transition-transform duration-200", isCollapsibleOpen && "rotate-180")} />
-                </CollapsibleTrigger>
-                <CollapsibleContent className="mt-6 space-y-8">
-                  {/* AI Insights & Actions */}
-                  <div>
-                    <h3 className="text-base font-medium text-white/70 mb-4">AI Insights</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 xl:gap-6">
-                      <AIInsights brandDeals={brandDeals} />
-                      <TopActionNeeded brandDeals={brandDeals} />
-                      <AITaxAdvice brandDeals={brandDeals} />
-                      <AILegalRiskMeter brandDeals={brandDeals} />
-                      <ContentScannerQueue />
-                      <GSTImpactSummary brandDeals={brandDeals} />
-                    </div>
-                  </div>
-
-                  {/* Divider */}
-                  <div className="border-b border-white/5"></div>
-
-                  {/* Deals & Performance */}
-                  <div>
-                    <h3 className="text-base font-medium text-white/70 mb-4">Deals & Performance</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 xl:gap-6">
-                      <QuickStats
-                        dealsClosed={dashboardData.quickStats.dealsClosed}
-                        dealsChange={dashboardData.quickStats.dealsChange}
-                        avgDealValue={dashboardData.quickStats.avgDealValue}
-                        paymentCollectionRate={dashboardData.quickStats.paymentCollectionRate}
-                        pitchesSent={dashboardData.quickStats.pitchesSent}
-                        takedownsSuccessful={dashboardData.quickStats.takedownsSuccessful}
-                      />
-                      <ProjectedEarnings brandDeals={brandDeals} />
-                      <TopPayingBrands brandDeals={brandDeals} />
-                      <GoalProgressAnnual brandDeals={brandDeals} />
-                      <ContentMetrics />
-                      <ThisWeeksSummary brandDeals={brandDeals} />
-                    </div>
-                  </div>
-
-                  {/* Divider */}
-                  <div className="border-b border-white/5"></div>
-
-                  {/* Partner Program */}
-                  <div>
-                    <h3 className="text-base font-medium text-white/70 mb-4">Partner Program</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 xl:gap-6">
-                      <ReferAndEarn />
-                      <ReferralEarningsPreview />
-                    </div>
-                  </div>
-
-                  {/* Divider */}
-                  <div className="border-b border-white/5"></div>
-
-                  {/* Tasks & Finance */}
-                  <div>
-                    <h3 className="text-base font-medium text-white/70 mb-4">Tasks & Finance</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 xl:gap-6">
-                      <TaskManager />
-                      <TaxFinanceSummary brandDeals={brandDeals} />
-                      <RiskAlerts brandDeals={brandDeals} />
-                      <SmartSuggestions brandDeals={brandDeals} />
-                      <AudienceAnalyticsPreview profile={profile} />
-                      <CreatorScoreBadge brandDeals={brandDeals} />
-                    </div>
-                  </div>
-
-                  {/* Divider */}
-                  <div className="border-b border-white/5"></div>
-
-                  {/* Account & System */}
-                  <div>
-                    <h3 className="text-base font-medium text-white/70 mb-4">Account & System</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 xl:gap-6">
-                      <CreatorBadge profile={profile} />
-                      <CreatorProfessionalTeam onSendMessage={handleOpenMessageDialog} />
-                      <RecentActivity brandDeals={brandDeals} />
-                      <AccountSummary />
-                      <UploadCenter brandDeals={brandDeals} />
-                    </div>
-                  </div>
-                </CollapsibleContent>
-              </Collapsible>
+              <footer className="mt-6 pb-6 text-center">
+                <p className="text-[10px] sm:text-xs text-white/30">
+                  Powered by NoticeBazaar • Secure Legal Portal ©2025
+                </p>
+              </footer>
             </>
           )}
 
@@ -987,70 +950,53 @@ const CreatorDashboard = () => {
           {activeTab === 'deals' && (
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <h2 className="text-xl font-bold">Deals</h2>
-                <Button onClick={handleAddBrandDeal} className="bg-blue-600 hover:bg-blue-700">
+                <h2 className="text-xl font-bold text-white">Deals</h2>
+                <Button 
+                  onClick={handleAddBrandDeal} 
+                  className="bg-white/20 backdrop-blur-[20px] border border-white/30 text-white hover:bg-white/30 active:scale-[0.98] rounded-2xl px-6 py-3 font-medium shadow-[0_4px_16px_rgba(0,0,0,0.2)] transition-all duration-200"
+                >
                   <Briefcase className="w-4 h-4 mr-2" /> Add New Deal
                 </Button>
               </div>
 
-              <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
-                <button
+              <div className="flex gap-3 flex-wrap">
+                <PillTabButton
+                  label="All"
+                  isActive={quickFilter === null}
                   onClick={() => setQuickFilter(null)}
-                  className={cn(
-                    "px-4 py-1.5 rounded-full text-sm whitespace-nowrap transition-all",
-                    quickFilter === null
-                      ? "bg-blue-600 text-white shadow-[0_0_10px_rgba(59,130,246,0.6)]"
-                      : "text-muted-foreground border border-border/30 hover:bg-muted/20"
-                  )}
-                >
-                  All ({brandDeals?.length || 0})
-                </button>
-                <button
+                  count={brandDeals?.length || 0}
+                />
+                <PillTabButton
+                  label="Active"
+                  isActive={quickFilter === 'active'}
                   onClick={() => setQuickFilter('active')}
-                  className={cn(
-                    "px-4 py-1.5 rounded-full text-sm whitespace-nowrap transition-all",
-                    quickFilter === 'active'
-                      ? "bg-blue-600 text-white shadow-[0_0_10px_rgba(59,130,246,0.6)]"
-                      : "text-muted-foreground border border-border/30 hover:bg-muted/20"
-                  )}
-                >
-                  Active ({brandDeals?.filter(d => d.status === 'Approved' || d.status === 'Drafting').length || 0})
-                </button>
-                <button
+                  count={brandDeals?.filter(d => d.status === 'Approved' || d.status === 'Drafting').length || 0}
+                />
+                <PillTabButton
+                  label="Pending Payment"
+                  isActive={quickFilter === 'pending_payment'}
                   onClick={() => setQuickFilter('pending_payment')}
-                  className={cn(
-                    "px-4 py-1.5 rounded-full text-sm whitespace-nowrap transition-all",
-                    quickFilter === 'pending_payment'
-                      ? "bg-blue-600 text-white shadow-[0_0_10px_rgba(59,130,246,0.6)]"
-                      : "text-muted-foreground border border-border/30 hover:bg-muted/20"
-                  )}
-                >
-                  Pending Payment ({brandDeals?.filter(d => d.status === 'Payment Pending').length || 0})
-                </button>
-                <button
+                  count={brandDeals?.filter(d => d.status === 'Payment Pending').length || 0}
+                />
+                <PillTabButton
+                  label="Completed"
+                  isActive={quickFilter === 'completed'}
                   onClick={() => setQuickFilter('completed')}
-                  className={cn(
-                    "px-4 py-1.5 rounded-full text-sm whitespace-nowrap transition-all",
-                    quickFilter === 'completed'
-                      ? "bg-blue-600 text-white shadow-[0_0_10px_rgba(59,130,246,0.6)]"
-                      : "text-muted-foreground border border-border/30 hover:bg-muted/20"
-                  )}
-                >
-                  Completed ({brandDeals?.filter(d => d.status === 'Completed').length || 0})
-                </button>
+                  count={brandDeals?.filter(d => d.status === 'Completed').length || 0}
+                />
               </div>
 
               <Input
                 placeholder="Search deals..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="max-w-md"
+                className="max-w-md bg-white/5 backdrop-blur-[20px] border border-white/10 text-white placeholder:text-white/40 focus:border-white/30 focus:bg-white/8 rounded-2xl px-4 py-3 transition-all duration-200"
               />
 
               <div className="space-y-3">
                 {filteredDeals.length === 0 ? (
-                  <Card className="p-8 text-center">
-                    <p className="text-gray-400">No deals found</p>
+                  <Card className="p-8 text-center bg-white/[0.06] backdrop-blur-[40px] border-white/10 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.3)]">
+                    <p className="text-white/50">No deals found</p>
                   </Card>
                 ) : (
                   filteredDeals.map((deal) => {
@@ -1084,10 +1030,8 @@ const CreatorDashboard = () => {
 
           {/* Payments Tab */}
           {activeTab === 'payments' && (
-            <div className="space-y-3 md:space-y-4 relative min-h-[600px]">
-              {/* Soft background gradient */}
-              <div className="absolute inset-0 bg-[radial-gradient(circle_at_bottom,rgba(68,0,255,0.25),transparent_60%)] pointer-events-none -z-10" />
-              <div className="relative z-10 space-y-3 md:space-y-4">
+            <div className="space-y-4 relative min-h-[600px]">
+              <div className="relative z-10 space-y-4">
               {/* Summary Cards */}
               <FinancialOverviewHeader allDeals={brandDeals || []} />
 
@@ -1108,14 +1052,14 @@ const CreatorDashboard = () => {
                   placeholder="Search payments..."
                   value={paymentSearchTerm}
                   onChange={(e) => setPaymentSearchTerm(e.target.value)}
-                  className="pl-10 rounded-xl shadow-inner shadow-black/20 border border-white/5 text-sm"
+                  className="pl-10 rounded-2xl bg-white/5 backdrop-blur-[20px] border border-white/10 text-white placeholder:text-white/40 focus:border-white/30 focus:bg-white/8 transition-all duration-200"
                 />
               </div>
 
               {/* Payments List Header */}
               <div className="flex items-center justify-between flex-wrap gap-2 mb-1">
-                <div className="text-xs text-white/40 tracking-wide">Payments List — {filteredPayments.length} items</div>
-                <div className="px-3 py-1 rounded-full bg-white/5 backdrop-blur border border-white/10 text-xs text-gray-400">
+                <div className="text-xs text-white/60 tracking-wide">Payments List — {filteredPayments.length} items</div>
+                <div className="px-3 py-1 rounded-full bg-white/5 backdrop-blur-sm border border-white/10 text-xs text-white/50">
                   Sort: Due date
                 </div>
               </div>
@@ -1123,8 +1067,8 @@ const CreatorDashboard = () => {
               {/* Payments List */}
               <div className="space-y-4">
                 {filteredPayments.length === 0 ? (
-                  <Card className="p-8 text-center">
-                    <p className="text-gray-400">No payments found</p>
+                  <Card className="p-8 text-center bg-white/[0.06] backdrop-blur-[40px] border-white/10 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.3)]">
+                    <p className="text-white/60">No payments found</p>
                   </Card>
                 ) : (
                   filteredPayments.map((deal) => {

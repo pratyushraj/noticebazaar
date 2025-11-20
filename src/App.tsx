@@ -57,6 +57,9 @@ import ContractAnalyzer from "./pages/ContractAnalyzer";
 import RateCalculator from "./pages/RateCalculator";
 import PartnerProgram from "./pages/PartnerProgram";
 import ReferralLanding from "./pages/ReferralLanding";
+import CreatorProfessionalTeamPage from "./pages/CreatorProfessionalTeam";
+import DocumentsVault from "./pages/DocumentsVault";
+import InsightsPage from "./pages/InsightsPage";
 
 
 const queryClient = new QueryClient();
@@ -138,6 +141,8 @@ const App = () => {
               <Route path="/creator-payments" element={<ProtectedLayout allowedRoles={['creator']}><CreatorPaymentsAndRecovery /></ProtectedLayout>} />
               <Route path="/creator-content-protection" element={<ProtectedLayout allowedRoles={['creator']}><CreatorContentProtection /></ProtectedLayout>} />
               <Route path="/creator-tax-compliance" element={<ProtectedLayout allowedRoles={['creator']}><CreatorTaxCompliancePage /></ProtectedLayout>} />
+              <Route path="/documents-vault" element={<ProtectedLayout allowedRoles={['creator']}><DocumentsVault /></ProtectedLayout>} />
+              <Route path="/insights" element={<ProtectedLayout allowedRoles={['creator']}><InsightsPage /></ProtectedLayout>} />
               {/* NEW: Creator tools */}
               <Route path="/brand-directory" element={<ProtectedLayout allowedRoles={['creator']}><BrandDirectory /></ProtectedLayout>} />
               <Route path="/contract-analyzer" element={<ProtectedLayout allowedRoles={['creator']}><ContractAnalyzer /></ProtectedLayout>} />

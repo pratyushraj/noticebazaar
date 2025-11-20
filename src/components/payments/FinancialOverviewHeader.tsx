@@ -2,7 +2,7 @@
 
 import React, { useMemo } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { AlertTriangle, Clock, TrendingUp, CheckCircle } from 'lucide-react';
+import { AlertTriangle, Clock, TrendingUp, CheckCircle, Wallet } from 'lucide-react';
 import { BrandDeal } from '@/types';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
@@ -86,6 +86,39 @@ const FinancialOverviewHeader: React.FC<FinancialOverviewHeaderProps> = ({ allDe
 
   return (
     <div className="space-y-3 mt-2">
+      {/* Premium Icon Graphic */}
+      <div className="flex justify-center mb-6 py-6 md:py-8 overflow-visible">
+        <div className="relative w-48 h-48 md:w-64 md:h-64 flex items-center justify-center">
+          {/* Glow Effect */}
+          <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/20 via-green-500/20 to-amber-500/20 rounded-full blur-3xl animate-pulse opacity-60"></div>
+          
+          {/* Icon Container */}
+          <div className="relative z-10 w-full h-full flex items-center justify-center">
+            {/* Premium Icon - Large Wallet Icon with decorative elements */}
+            <div className="relative">
+              {/* Wallet Box Icon */}
+              <div className="w-32 h-32 md:w-40 md:h-40 bg-gradient-to-br from-emerald-500 via-green-600 to-amber-600 rounded-2xl shadow-2xl shadow-emerald-500/40 flex items-center justify-center transform rotate-[-8deg] hover:rotate-[-5deg] transition-transform duration-300">
+                <Wallet className="w-16 h-16 md:w-20 md:h-20 text-white drop-shadow-lg" />
+              </div>
+              
+              {/* Decorative Elements */}
+              <div className="absolute -top-4 -right-4 w-12 h-12 md:w-16 md:h-16 bg-gradient-to-br from-amber-400 to-orange-500 rounded-full shadow-xl shadow-amber-500/50 flex items-center justify-center transform rotate-12 animate-bounce" style={{ animationDuration: '3s' }}>
+                <span className="text-2xl md:text-3xl">💰</span>
+              </div>
+              
+              <div className="absolute -bottom-4 -left-4 w-10 h-10 md:w-14 md:h-14 bg-gradient-to-br from-amber-400 to-orange-500 rounded-full shadow-xl shadow-amber-500/50 flex items-center justify-center transform -rotate-12 animate-bounce" style={{ animationDuration: '2.5s', animationDelay: '0.5s' }}>
+                <span className="text-xl md:text-2xl">💵</span>
+              </div>
+              
+              {/* Arrow pointing up */}
+              <div className="absolute -right-8 top-1/2 transform -translate-y-1/2 translate-x-4">
+                <TrendingUp className="w-12 h-12 md:w-16 md:h-16 text-emerald-400 animate-pulse" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* Key Metrics */}
       <div className="space-y-3">
         {/* Pending Card - Full Width */}

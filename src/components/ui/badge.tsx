@@ -16,6 +16,8 @@ const badgeVariants = cva(
         outline: "text-foreground",
         success: // New success variant for "Approved" status
           "border-transparent bg-success text-success-foreground hover:bg-success/80",
+        pink: "border-transparent bg-gradient-to-r from-[#E879F9] to-[#F472B6] text-white hover:from-[#F0A5FF] hover:to-[#FF8FAB]",
+        "pink-outline": "border border-[#F472B6] bg-[#F472B6]/10 text-[#F472B6] hover:bg-[#F472B6]/20",
       },
     },
     defaultVariants: {

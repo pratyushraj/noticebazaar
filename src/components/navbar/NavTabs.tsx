@@ -50,18 +50,18 @@ const NavTabs: React.FC<NavTabsProps> = ({ tabs, role }) => {
             className={cn(
               "relative flex items-center space-x-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200",
               active
-                ? "text-blue-400"
-                : "text-gray-400 hover:text-gray-200 hover:bg-white/5"
+                ? "text-[#FF4DAA]"
+                : "text-white/60 hover:text-white/80"
             )}
           >
             <Icon className="h-4 w-4" />
             <span>{tab.label}</span>
             
-            {/* Active indicator with glow */}
+            {/* Active indicator with pink underline */}
             {active && (
               <motion.div
                 layoutId="activeTab"
-                className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-400 via-blue-500 to-blue-400 rounded-full shadow-[0_0_8px_rgba(59,130,246,0.6)]"
+                className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#FF4DAA] rounded-full"
                 initial={false}
                 transition={{
                   type: "spring",

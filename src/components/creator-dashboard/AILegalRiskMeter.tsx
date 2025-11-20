@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useMemo } from 'react';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Shield, AlertTriangle } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
@@ -115,42 +115,47 @@ const AILegalRiskMeter: React.FC<AILegalRiskMeterProps> = ({ brandDeals = [] }) 
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.35 }}
+      transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
     >
-      <Card className={cn("bg-gradient-to-br", colors.bg, "border", colors.border, "hover:border-opacity-60 transition-all shadow-inner")}>
-        <CardContent className="p-4">
+      <Card variant="default" interactive className={cn("bg-gradient-to-br", colors.bg, "border", colors.border)}>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-xl flex items-center justify-center bg-purple-500/10 border border-purple-500/20">
+                <Shield className="h-5 w-5 text-purple-400" />
+              </div>
+              <CardTitle>AI Legal Risk Meter</CardTitle>
+            </div>
+            <span className={cn("text-2xl font-bold number-large", colors.text)}>
+              {riskData.score}
+            </span>
+          </div>
+        </CardHeader>
+        <CardContent>
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
-                <div className="cursor-help">
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center gap-2">
-                      <Shield className="h-4 w-4 text-muted-foreground" />
-                      <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Legal Risk Meter</span>
-                    </div>
-                    <span className={cn("text-lg font-bold", colors.text)}>
-                      {riskData.score}
-                    </span>
-                  </div>
-
+                <div className="cursor-help space-y-4">
                   {/* Risk Meter */}
-                  <div className="relative h-2 bg-gray-800/50 rounded-full overflow-hidden mb-2">
-                    <div
-                      className={cn("absolute inset-y-0 left-0 rounded-full transition-all duration-500", colors.meter)}
-                      style={{ width: `${meterWidth}%` }}
+                  <div className="relative h-3 bg-white/10 rounded-full overflow-hidden">
+                    <motion.div
+                      initial={{ width: 0 }}
+                      animate={{ width: `${meterWidth}%` }}
+                      transition={{ duration: 1.2, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
+                      className={cn("absolute inset-y-0 left-0 rounded-full", colors.meter)}
                     />
                   </div>
 
                   <div className="flex items-center justify-between">
-                    <span className={cn("text-sm font-semibold", colors.text)}>
+                    <span className={cn("text-body font-semibold", colors.text)}>
                       {riskData.label} Risk
                     </span>
-                    <AlertTriangle className={cn("h-4 w-4", colors.text)} />
+                    <AlertTriangle className={cn("h-5 w-5", colors.text)} />
                   </div>
                 </div>
               </TooltipTrigger>
               <TooltipContent className="bg-card text-foreground border-border">
-                <p className="text-xs">{riskData.tooltip}</p>
+                <p className="text-small">{riskData.tooltip}</p>
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>

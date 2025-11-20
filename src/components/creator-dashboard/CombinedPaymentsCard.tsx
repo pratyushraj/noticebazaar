@@ -81,7 +81,7 @@ const CombinedPaymentsCard: React.FC<CombinedPaymentsCardProps> = ({
 
   if (isLoading) {
     return (
-      <Card variant="metric">
+          <Card variant="secondary">
         <CardContent>
           <Skeleton className="h-32 w-full" />
         </CardContent>
@@ -91,7 +91,7 @@ const CombinedPaymentsCard: React.FC<CombinedPaymentsCardProps> = ({
 
   if (totalAmount === 0 && !isLoading) {
     return (
-      <Card variant="metric" interactive onClick={() => navigate('/creator-payments')}>
+          <Card variant="secondary" interactive onClick={() => navigate('/creator-payments')}>
         <CardContent>
           <EmptyState
             icon={Wallet}
@@ -113,7 +113,7 @@ const CombinedPaymentsCard: React.FC<CombinedPaymentsCardProps> = ({
       className="relative group"
     >
       <Card
-        variant={hasOverdue ? "attention" : "metric"}
+            variant={hasOverdue ? "attention" : "secondary"}
         interactive
         onClick={() => navigate('/creator-payments')}
         className="relative overflow-hidden"

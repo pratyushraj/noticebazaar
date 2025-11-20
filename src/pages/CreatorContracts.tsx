@@ -365,59 +365,6 @@ const CreatorContracts = () => {
         </div>
       )}
 
-      {/* Old Quick Filter Chips - Keep for backward compatibility */}
-      {allBrandDeals && allBrandDeals.length > 0 && (
-        <div className="mb-4 flex flex-wrap gap-2">
-          <Button
-            variant={dateRangeFilter === 'due_soon' ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => {
-              setDateRangeFilter(dateRangeFilter === 'due_soon' ? 'All' : 'due_soon');
-              setCurrentPage(1);
-            }}
-            className="text-xs h-7"
-          >
-            Expiring Soon
-          </Button>
-          <Button
-            variant={dateRangeFilter === 'overdue' ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => {
-              setDateRangeFilter(dateRangeFilter === 'overdue' ? 'All' : 'overdue');
-              setCurrentPage(1);
-            }}
-            className="text-xs h-7"
-          >
-            Overdue
-          </Button>
-          <Button
-            variant={statusFilter === 'deliverables_due' ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => {
-              setStatusFilter(statusFilter === 'deliverables_due' ? 'All' : 'deliverables_due');
-              setCurrentPage(1);
-            }}
-            className="text-xs h-7"
-          >
-            Deliverables Due
-          </Button>
-          <Button
-            variant={statusFilter === 'draft' || statusFilter === 'in_progress' ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => {
-              if (statusFilter === 'draft' || statusFilter === 'in_progress') {
-                setStatusFilter('All');
-              } else {
-                setStatusFilter('in_progress');
-              }
-              setCurrentPage(1);
-            }}
-            className="text-xs h-7"
-          >
-            In Progress
-          </Button>
-        </div>
-      )}
 
       {/* Main Content Card */}
       <Card className="bg-card border-border/40 shadow-sm">

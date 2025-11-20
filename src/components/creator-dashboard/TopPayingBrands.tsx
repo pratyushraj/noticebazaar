@@ -4,6 +4,8 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Trophy, Award, Medal } from 'lucide-react';
 import { BrandDeal } from '@/types';
+import { motion } from 'framer-motion';
+import { EmptyState } from '@/components/ui/empty-state';
 
 interface TopPayingBrandsProps {
   brandDeals?: BrandDeal[];
@@ -47,48 +49,59 @@ const TopPayingBrands: React.FC<TopPayingBrandsProps> = ({ brandDeals = [] }) =>
 
   if (topBrands.length === 0) {
     return (
-      <Card className="bg-[#0F121A]/80 backdrop-blur-xl border border-white/5 rounded-2xl">
-        <CardHeader className="pb-3">
-          <CardTitle className="text-lg font-semibold text-white flex items-center gap-2">
+      <Card variant="default">
+        <CardHeader>
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-10 rounded-xl flex items-center justify-center bg-yellow-500/10 border border-yellow-500/20">
             <Trophy className="h-5 w-5 text-yellow-400" />
-            Top Paying Brands
-          </CardTitle>
+            </div>
+            <CardTitle>Top Paying Brands</CardTitle>
+          </div>
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-white/60 text-center py-4">No brand data available yet</p>
+          <EmptyState
+            icon={Trophy}
+            title="No brand data yet"
+            description="Complete deals with brands to see your top revenue sources here."
+          />
         </CardContent>
       </Card>
     );
   }
 
   return (
-    <Card className="bg-[#0F121A]/80 backdrop-blur-xl border border-white/5 rounded-2xl">
-      <CardHeader className="pb-3">
-        <CardTitle className="text-lg font-semibold text-white flex items-center gap-2">
+    <Card variant="default" interactive>
+      <CardHeader>
+        <div className="flex items-center gap-3">
+          <div className="h-10 w-10 rounded-xl flex items-center justify-center bg-yellow-500/10 border border-yellow-500/20">
           <Trophy className="h-5 w-5 text-yellow-400" />
-          Top Paying Brands
-        </CardTitle>
+          </div>
+          <CardTitle>Top Paying Brands</CardTitle>
+        </div>
       </CardHeader>
       <CardContent className="space-y-3">
         {topBrands.map((brand, index) => (
-          <div
+          <motion.div
             key={brand.name}
-            className="flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 transition-colors"
+            initial={{ opacity: 0, x: -10 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.3, delay: index * 0.1 }}
+            className="flex items-center gap-3 p-4 rounded-xl bg-white/5 hover:bg-white/10 border border-white/5 hover:border-white/10 transition-smooth card-interactive"
           >
             <div className="flex-shrink-0">
               {getRankIcon(index + 1)}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold text-white truncate">{brand.name}</p>
-              <p className="text-xs text-white/60">
+              <p className="text-body font-semibold text-white truncate">{brand.name}</p>
+              <p className="text-small text-white/60">
                 {brand.dealCount} deal{brand.dealCount !== 1 ? 's' : ''}
               </p>
             </div>
             <div className="text-right">
-              <p className="text-lg font-bold text-white">₹{brand.totalAmount.toLocaleString('en-IN')}</p>
-              <p className="text-xs text-white/40">total</p>
+              <p className="text-xl font-bold text-white number-large">₹{brand.totalAmount.toLocaleString('en-IN')}</p>
+              <p className="text-small text-white/40">total</p>
             </div>
-          </div>
+          </motion.div>
         ))}
       </CardContent>
     </Card>
