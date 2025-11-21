@@ -58,6 +58,7 @@ import BrandDirectory from "./pages/BrandDirectory";
 import ContractAnalyzer from "./pages/ContractAnalyzer";
 import RateCalculator from "./pages/RateCalculator";
 import PartnerProgram from "./pages/PartnerProgram";
+import AIPitchGenerator from "./pages/AIPitchGenerator";
 import ReferralLanding from "./pages/ReferralLanding";
 import CreatorProfessionalTeamPage from "./pages/CreatorProfessionalTeam";
 import DocumentsVault from "./pages/DocumentsVault";
@@ -151,6 +152,7 @@ const App = () => {
               <Route path="/brand-directory" element={<ProtectedLayout allowedRoles={['creator']}><BrandDirectory /></ProtectedLayout>} />
               <Route path="/contract-analyzer" element={<ProtectedLayout allowedRoles={['creator']}><ContractAnalyzer /></ProtectedLayout>} />
               <Route path="/rate-calculator" element={<ProtectedLayout allowedRoles={['creator']}><RateCalculator /></ProtectedLayout>} />
+              <Route path="/ai-pitch-generator" element={<ProtectedLayout allowedRoles={['creator']}><AIPitchGenerator /></ProtectedLayout>} />
 
               {/* Shared routes (accessible by client, admin, and CA) */}
               <Route path="/messages" element={<ProtectedLayout allowedRoles={['client', 'admin', 'chartered_accountant', 'creator']}><MessagesPage /></ProtectedLayout>} /> {/* Added creator role */}

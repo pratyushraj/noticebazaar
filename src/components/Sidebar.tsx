@@ -12,6 +12,7 @@ import {
   Settings,
   Search,
   ChevronRight,
+  MessageSquare,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
@@ -204,6 +205,13 @@ const Sidebar: React.FC<SidebarProps> = ({ className, profileRole }) => {
           icon: FileText, 
           path: "/creator-dashboard?tab=invoices", 
           iconColor: "#30D158",
+          roles: ['creator'] 
+        },
+        { 
+          name: "AI Pitch Generator", 
+          icon: MessageSquare, 
+          path: "/ai-pitch-generator", 
+          iconColor: "#FF6B9D",
           roles: ['creator'] 
         },
       ]
