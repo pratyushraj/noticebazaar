@@ -196,11 +196,23 @@ const CreatorDashboardPreview = () => {
         brand_name: 'Zepto',
         platform: 'Instagram',
         deal_amount: 8500,
-        status: 'Approved',
+        status: 'Completed',
         payment_expected_date: new Date(currentYear, currentMonth + 1, 4).toISOString(),
         created_at: new Date(currentYear, currentMonth - 1, 5).toISOString(),
         deliverables: JSON.stringify([{ type: 'Reel', count: 1 }]),
         payment_received_date: new Date(currentYear, currentMonth, 5).toISOString(),
+      },
+      {
+        id: 'demo-7',
+        creator_id: 'demo-creator',
+        brand_name: 'L\'Oreal',
+        platform: 'Instagram',
+        deal_amount: 25000,
+        status: 'Completed',
+        payment_expected_date: new Date(currentYear, currentMonth, 10).toISOString(),
+        created_at: new Date(currentYear, currentMonth - 1, 1).toISOString(),
+        deliverables: JSON.stringify([{ type: 'Reel', count: 2 }, { type: 'Stories', count: 3 }]),
+        payment_received_date: new Date(currentYear, currentMonth, 8).toISOString(),
       },
     ] as BrandDeal[];
   }, []);
@@ -222,7 +234,7 @@ const CreatorDashboardPreview = () => {
         const receivedDate = new Date(deal.payment_received_date);
         return receivedDate.getMonth() === currentMonth && 
                receivedDate.getFullYear() === currentYear &&
-               deal.status === 'Completed';
+               (deal.status === 'Completed' || deal.status === 'Approved');
       })
       .reduce((sum, deal) => sum + deal.deal_amount, 0);
 
@@ -232,7 +244,7 @@ const CreatorDashboardPreview = () => {
         const receivedDate = new Date(deal.payment_received_date);
         return receivedDate.getMonth() === lastMonth && 
                receivedDate.getFullYear() === lastMonthYear &&
-               deal.status === 'Completed';
+               (deal.status === 'Completed' || deal.status === 'Approved');
       })
       .reduce((sum, deal) => sum + deal.deal_amount, 0);
 
@@ -341,7 +353,7 @@ const CreatorDashboardPreview = () => {
     return filtered;
   }, [demoBrandDeals, paymentSearchTerm, paymentQuickFilter]);
 
-  if (!dashboardData) {
+  if (!dashboardData || !demoBrandDeals || demoBrandDeals.length === 0) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-white/60">Loading preview...</div>
@@ -350,10 +362,10 @@ const CreatorDashboardPreview = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#0A0E1A] via-[#0F121A] to-[#0A0E1A] text-white antialiased">
+    <>
       {/* Preview Banner */}
-      <div className="bg-blue-500/20 border-b border-blue-500/30 px-4 py-3">
-        <div className="container mx-auto flex items-center gap-3">
+      <div className="bg-blue-500/20 border-b border-blue-500/30 px-4 py-3 sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto flex items-center gap-3">
           <Info className="h-5 w-5 text-blue-400" />
           <div className="flex-1">
             <p className="text-sm font-medium text-white">
@@ -371,38 +383,46 @@ const CreatorDashboardPreview = () => {
         </div>
       </div>
 
-      <div className="container mx-auto px-4 py-8">
-        {/* Breadcrumbs */}
-        <Breadcrumbs className="mb-6" />
+      <div className="min-h-screen text-white relative">
+        <div className="relative z-10 max-w-7xl mx-auto px-4 py-8 pb-24 md:pb-8">
+          {/* Breadcrumbs - Show for non-overview tabs */}
+          {activeTab !== 'overview' && (
+            <div className="mb-6">
+              <Breadcrumbs />
+            </div>
+          )}
+          
+          {/* Tab Navigation */}
+          <div className="flex items-center gap-3 mb-8 overflow-x-auto pb-2">
+            <PillTabButton
+              label="Overview"
+              isActive={activeTab === 'overview'}
+              onClick={() => setActiveTab('overview')}
+            />
+            <PillTabButton
+              label="Deals"
+              isActive={activeTab === 'deals'}
+              onClick={() => setActiveTab('deals')}
+              count={demoBrandDeals.length}
+            />
+            <PillTabButton
+              label="Payments"
+              isActive={activeTab === 'payments'}
+              onClick={() => setActiveTab('payments')}
+              count={filteredPayments.length}
+            />
+            <PillTabButton
+              label="Protection"
+              isActive={activeTab === 'protection'}
+              onClick={() => setActiveTab('protection')}
+            />
+          </div>
 
-        {/* Tab Navigation */}
-        <div className="flex items-center gap-3 mb-8 overflow-x-auto pb-2">
-          <PillTabButton
-            label="Overview"
-            isActive={activeTab === 'overview'}
-            onClick={() => setActiveTab('overview')}
-          />
-          <PillTabButton
-            label="Deals"
-            isActive={activeTab === 'deals'}
-            onClick={() => setActiveTab('deals')}
-            count={demoBrandDeals.length}
-          />
-          <PillTabButton
-            label="Payments"
-            isActive={activeTab === 'payments'}
-            onClick={() => setActiveTab('payments')}
-            count={filteredPayments.length}
-          />
-          <PillTabButton
-            label="Protection"
-            isActive={activeTab === 'protection'}
-            onClick={() => setActiveTab('protection')}
-          />
-        </div>
-
-        {/* Hero Section */}
-        <div className="mb-12">
+          {/* Overview Tab */}
+          {activeTab === 'overview' && (
+            <>
+              {/* Hero Section - Liquid Glass */}
+              <div className="mb-12">
           <div className="flex items-start justify-between mb-8 gap-4 flex-wrap">
             <div className="flex-1 min-w-0">
               <h1 className="text-3xl font-semibold mb-2 text-white tracking-tight leading-tight">
@@ -440,13 +460,14 @@ const CreatorDashboardPreview = () => {
                   </div>
                 </div>
               </div>
-            </div>
-          </div>
-        </div>
+                </div>
+              </div>
+            </>
+          )}
 
-        {/* Overview Tab Content */}
-        {activeTab === 'overview' && (
-          <>
+          {/* Overview Tab Content */}
+          {activeTab === 'overview' && (
+            <>
             {/* Financial Overview Section */}
             <section className="mb-12">
               <h2 className="text-2xl font-semibold text-white mb-6">Financial Overview</h2>
@@ -543,11 +564,11 @@ const CreatorDashboardPreview = () => {
                 />
               </div>
             </section>
-          </>
-        )}
+            </>
+          )}
 
-        {/* Deals Tab Content */}
-        {activeTab === 'deals' && (
+          {/* Deals Tab Content */}
+          {activeTab === 'deals' && (
           <div className="space-y-6">
             <div className="flex items-center justify-between gap-4 flex-wrap">
               <h2 className="text-2xl font-semibold text-white">All Brand Deals</h2>
@@ -593,19 +614,35 @@ const CreatorDashboardPreview = () => {
               ))}
             </div>
           </div>
-        )}
+          )}
 
-        {/* Payments Tab Content */}
-        {activeTab === 'payments' && (
+          {/* Payments Tab Content */}
+          {activeTab === 'payments' && (
           <div className="space-y-6">
             <FinancialOverviewHeader allDeals={demoBrandDeals} />
             
+            {/* Payments Title */}
+            <h2 className="text-lg md:text-xl font-bold mt-2 text-white">Payments</h2>
+
+            {/* Filters */}
             <PaymentQuickFilters
-              searchTerm={paymentSearchTerm}
-              onSearchChange={setPaymentSearchTerm}
-              quickFilter={paymentQuickFilter}
-              onQuickFilterChange={setPaymentQuickFilter}
+              allDeals={demoBrandDeals}
+              activeFilter={paymentQuickFilter}
+              onFilterChange={setPaymentQuickFilter}
             />
+
+            {/* Search Bar */}
+            <div className="flex-1 min-w-[200px]">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/40" />
+                <Input
+                  placeholder="Search payments..."
+                  value={paymentSearchTerm}
+                  onChange={(e) => setPaymentSearchTerm(e.target.value)}
+                  className="pl-9 bg-white/5 text-white border-white/10 placeholder:text-white/40"
+                />
+              </div>
+            </div>
 
             <div className="space-y-4">
               {filteredPayments.map((deal) => (
@@ -619,10 +656,10 @@ const CreatorDashboardPreview = () => {
               ))}
             </div>
           </div>
-        )}
+          )}
 
-        {/* Protection Tab Content */}
-        {activeTab === 'protection' && (
+          {/* Protection Tab Content */}
+          {activeTab === 'protection' && (
           <div className="space-y-6">
             <h2 className="text-2xl font-semibold text-white">Content Protection</h2>
             <Card className="bg-white/[0.06] backdrop-blur-[40px] border-white/10 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.3)]">
@@ -633,9 +670,10 @@ const CreatorDashboardPreview = () => {
               </CardContent>
             </Card>
           </div>
-        )}
+          )}
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 
