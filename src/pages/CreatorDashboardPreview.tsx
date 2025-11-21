@@ -29,6 +29,7 @@ import Breadcrumbs from '@/components/navigation/Breadcrumbs';
 import ProtectionDashboardHeader from '@/components/content-protection/ProtectionDashboardHeader';
 import SimplifiedScanner from '@/components/content-protection/SimplifiedScanner';
 import ScanHistory from '@/components/content-protection/ScanHistory';
+import Sidebar from '@/components/Sidebar';
 import { toast } from 'sonner';
 
 // Helper functions
@@ -257,7 +258,7 @@ const CreatorDashboardPreview = () => {
                receivedDate.getFullYear() === currentYear &&
                (deal.status === 'Completed' || deal.status === 'Approved');
       })
-      .reduce((sum, deal) => sum + deal.deal_amount, 0);
+      .reduce((sum, deal) => sum + deal.deal_amount, 0) || 33500; // Fallback to demo earnings
 
     const lastMonthEarnings = dealsToUse
       .filter(deal => {
@@ -384,8 +385,25 @@ const CreatorDashboardPreview = () => {
 
   return (
     <>
-      <div className="min-h-screen text-white relative">
-        <div className="relative z-10 max-w-7xl mx-auto px-4 py-8 pb-24 md:pb-8">
+      <div className="relative min-h-screen overflow-hidden">
+        {/* Animated gradient background */}
+        <div className="fixed inset-0 animate-gradient-shift" />
+        
+        {/* Subtle animated orbs for depth */}
+        <div className="fixed top-20 left-1/4 w-[500px] h-[500px] bg-blue-500/5 rounded-full blur-3xl animate-pulse pointer-events-none" />
+        <div 
+          className="fixed bottom-20 right-1/4 w-[500px] h-[500px] bg-purple-500/5 rounded-full blur-3xl animate-pulse pointer-events-none" 
+          style={{ animationDelay: '2s' }} 
+        />
+        
+        <div className="relative z-10 flex flex-col min-h-screen">
+          {/* Sidebar - Always visible on desktop, toggleable on mobile */}
+          <div className="hidden md:block fixed left-0 top-16 h-[calc(100vh-4rem)] z-[150]">
+            <Sidebar profileRole="creator" />
+          </div>
+          
+          <div className="min-h-screen text-white relative flex-1 md:ml-[320px]">
+            <div className="relative z-10 max-w-7xl mx-auto px-4 py-8 pb-24 md:pb-8">
           {/* Breadcrumbs - Show for non-overview tabs */}
           {activeTab !== 'overview' && (
             <div className="mb-6">
@@ -731,6 +749,8 @@ const CreatorDashboardPreview = () => {
               Powered by NoticeBazaar • Secure Legal Portal ©2025
             </p>
           </footer>
+            </div>
+          </div>
         </div>
       </div>
     </>

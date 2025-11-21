@@ -390,12 +390,13 @@ const Sidebar: React.FC<SidebarProps> = ({ className, profileRole }) => {
               stiffness: 200
             }}
             className={cn(
-              "fixed top-16 left-0 h-[calc(100vh-4rem)] w-[320px] max-w-[85vw] overflow-y-auto",
+              "h-[calc(100vh-4rem)] w-[320px] max-w-[85vw] overflow-y-auto",
               "bg-[#0B0F1A] backdrop-blur-xl border-r border-white/5",
               "shadow-[0_0_40px_rgba(0,0,0,0.35)]",
               "z-[150]",
               "md:static md:h-full md:top-0 md:rounded-none",
               "rounded-r-2xl md:rounded-none",
+              isOpen ? "fixed top-16 left-0" : "hidden md:block",
               className
             )}
           >
