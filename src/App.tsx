@@ -53,6 +53,7 @@ import DashboardWhitePreview from "./pages/DashboardWhitePreview";
 import CreatorContentProtection from "./pages/CreatorContentProtection";
 import CreatorTaxCompliancePage from "./pages/CreatorTaxCompliancePage";
 import CreatorOnboarding from "./pages/CreatorOnboarding"; // NEW: Import CreatorOnboarding
+import CreatorDashboardPreview from "./pages/CreatorDashboardPreview"; // NEW: Import CreatorDashboardPreview
 import BrandDirectory from "./pages/BrandDirectory";
 import ContractAnalyzer from "./pages/ContractAnalyzer";
 import RateCalculator from "./pages/RateCalculator";
@@ -105,6 +106,7 @@ const App = () => {
               
               {/* Preview Routes */}
               <Route path="/dashboard-white-preview" element={<DashboardWhitePreview />} />
+              <Route path="/dashboard-preview" element={<CreatorDashboardPreview />} />
               
               {/* Referral Landing */}
               <Route path="/p/:code" element={<ReferralLanding />} />

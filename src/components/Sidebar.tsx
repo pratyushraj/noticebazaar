@@ -1,135 +1,434 @@
 "use client";
 
-import React from 'react';
-import { Link } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
+import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import {
+  Calendar,
+  FolderOpen,
+  AlertTriangle,
+  FileText,
+  Receipt,
+  Sparkles,
+  Settings,
+  Search,
+  ChevronRight,
+} from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
-import { Users, Briefcase, FileText, CalendarDays, MessageSquare, Activity, CreditCard, LayoutDashboard, Settings, Home, FolderOpen, LogOut, Calculator, ShieldCheck, DollarSign, Bell } from 'lucide-react'; // Import LogOut, Calculator, ShieldCheck, DollarSign, Bell icons
+import { useSidebar } from '@/contexts/SidebarContext';
 import { useSession } from '@/contexts/SessionContext';
-import { useSignOut } from '@/lib/hooks/useAuth';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { getInitials, DEFAULT_AVATAR_URL } from '@/lib/utils/avatar';
+
+interface SidebarItem {
+  name: string;
+  icon: React.ElementType;
+  path: string;
+  iconColor: string;
+  roles?: string[];
+}
+
+interface SidebarSection {
+  title: string;
+  items: SidebarItem[];
+}
 
 interface SidebarProps {
   className?: string;
+  profileRole?: string | null;
 }
 
-const Sidebar = ({ className }: SidebarProps) => {
-  const { profile, isAdmin, isCreator } = useSession(); // Get profile to check role
-  const signOutMutation = useSignOut();
-
-  const adminMainNavItems = [
-    { to: "/admin-dashboard", icon: <LayoutDashboard className="h-4 w-4" />, label: "Dashboard" },
-    { to: "/admin-clients", icon: <Users className="h-4 w-4" />, label: "Clients" },
-    { to: "/admin-cases", icon: <Briefcase className="h-4 w-4" />, label: "Cases" },
-    { to: "/admin-documents", icon: <FileText className="h-4 w-4" />, label: "Documents" },
-    { to: "/admin-consultations", icon: <CalendarDays className="h-4 w-4" />, label: "Consultations" },
-    { to: "/admin-subscriptions", icon: <CreditCard className="h-4 w-4" />, label: "Subscriptions" },
-    { to: "/messages", icon: <MessageSquare className="h-4 w-4" />, label: "Messages" },
-    { to: "/admin-activity-log", icon: <Activity className="h-4 w-4" />, label: "Activity Log" },
-  ];
-  const adminProfileSettingsItem = { to: "/admin-profile", icon: <Settings className="h-4 w-4" />, label: "Profile Settings" };
-
-  const clientMainNavItems = [
-    { to: "/client-dashboard", icon: <LayoutDashboard className="h-4 w-4" />, label: "Dashboard" },
-    { to: "/client-subscription", icon: <CreditCard className="h-4 w-4" />, label: "Subscription" },
-    { to: "/client-cases", icon: <Briefcase className="h-4 w-4" />, label: "Cases" },
-    { to: "/client-documents", icon: <FileText className="h-4 w-4" />, label: "Documents" },
-    { to: "/client-consultations", icon: <CalendarDays className="h-4 w-4" />, label: "Consultations" },
-    { to: "/messages", icon: <MessageSquare className="h-4 w-4" />, label: "Messages" },
-    { to: "/client-activity-log", icon: <Activity className="h-4 w-4" />, label: "Activity Log" },
-  ];
-  const clientProfileSettingsItem = { to: "/client-profile", icon: <Settings className="h-4 w-4" />, label: "Profile Settings" };
-
-  const caMainNavItems = [
-    { to: "/ca-dashboard", icon: <LayoutDashboard className="h-4 w-4" />, label: "Dashboard" },
-    { to: "/admin-clients", icon: <Users className="h-4 w-4" />, label: "Clients" },
-    { to: "/admin-documents", icon: <FileText className="h-4 w-4" />, label: "Documents" },
-    { to: "/messages", icon: <MessageSquare className="h-4 w-4" />, label: "Messages" },
-    { to: "/admin-activity-log", icon: <Activity className="h-4 w-4" />, label: "Activity Log" },
-  ];
-  const caProfileSettingsItem = { to: "/admin-profile", icon: <Settings className="h-4 w-4" />, label: "Profile Settings" };
-
-  const creatorMainNavItems = [ // New navigation items for Creator
-    { to: "/creator-dashboard", icon: <LayoutDashboard className="h-4 w-4" />, label: "Dashboard" },
-    { to: "/creator-contracts", icon: <FileText className="h-4 w-4" />, label: "Brand Deals" },
-    { to: "/creator-payments", icon: <DollarSign className="h-4 w-4" />, label: "Payments & Recovery" },
-    { to: "/creator-content-protection", icon: <ShieldCheck className="h-4 w-4" />, label: "Content Protection" },
-    { to: "/creator-tax-compliance", icon: <Calculator className="h-4 w-4" />, label: "Taxes & Compliance" },
-    { to: "/partner-program", icon: <Gift className="h-4 w-4" />, label: "Partner Program" },
-    { to: "/messages", icon: <MessageSquare className="h-4 w-4" />, label: "Messages" },
-    { to: "/creator-support", icon: <Bell className="h-4 w-4" />, label: "Support" }, // Placeholder for support page
-  ];
-  const creatorProfileSettingsItem = { to: "/creator-profile", icon: <Settings className="h-4 w-4" />, label: "Profile Settings" };
-
-  let mainNavItems;
-  let profileSettingsItem;
-
-  if (profile?.role === 'admin') {
-    mainNavItems = adminMainNavItems;
-    profileSettingsItem = adminProfileSettingsItem;
-  } else if (profile?.role === 'chartered_accountant') {
-    mainNavItems = caMainNavItems;
-    profileSettingsItem = caProfileSettingsItem;
-  } else if (profile?.role === 'creator') { // Conditional for Creator role
-    mainNavItems = creatorMainNavItems;
-    profileSettingsItem = creatorProfileSettingsItem;
-  } else {
-    mainNavItems = clientMainNavItems;
-    profileSettingsItem = clientProfileSettingsItem;
-  }
-
-  const handleLogout = async () => {
-    await signOutMutation.mutateAsync();
-  };
-
+// SearchBar Component
+const SearchBar: React.FC<{ 
+  searchQuery: string; 
+  setSearchQuery: (query: string) => void;
+}> = ({ searchQuery, setSearchQuery }) => {
   return (
-    <div className={cn("flex h-full flex-col space-y-4 border-r border-border bg-sidebar p-4", className)}>
-      {/* Main navigation items */}
-      <div className="flex-1 space-y-3">
-        {mainNavItems.map((item) => (
-          <Button
-            key={item.to}
-            variant="ghost"
-            className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-            asChild
-          >
-            <Link to={item.to}>
-              <span className="flex items-center">
-                <span className="mr-2 h-4 w-4 flex items-center justify-center">{item.icon}</span>
-                {item.label}
-              </span>
-            </Link>
-          </Button>
-        ))}
-      </div>
-
-      {/* Profile Settings and Logout items, pushed to the bottom */}
-      <div className="mt-auto space-y-3">
-        <Button
-          key={profileSettingsItem.to}
-          variant="ghost"
-          className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-          asChild
-        >
-          <Link to={profileSettingsItem.to}>
-            <span className="flex items-center">
-              <span className="mr-2 h-4 w-4 flex items-center justify-center">{profileSettingsItem.icon}</span>
-              {profileSettingsItem.label}
-            </span>
-          </Link>
-        </Button>
-        <Button
-          variant="ghost"
-          className="w-full justify-start text-sidebar-foreground hover:bg-destructive hover:text-destructive-foreground"
-          onClick={handleLogout}
-          disabled={signOutMutation.isPending}
-        >
-          <span className="flex items-center">
-            <LogOut className="mr-2 h-4 w-4" />
-            Log out
-          </span>
-        </Button>
+    <div className="sticky top-0 bg-[#0B0F1A]/95 backdrop-blur-xl border-b border-white/5 z-10 px-4 pt-4 pb-3">
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#7B7F8A]" />
+        <input
+          type="text"
+          placeholder="Search"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="w-full pl-9 pr-3 py-2.5 bg-white/5 border border-white/10 rounded-xl text-sm text-white placeholder:text-[#7B7F8A] focus:outline-none focus:border-white/20 focus:bg-white/10 transition-all duration-200 ease-in-out"
+        />
       </div>
     </div>
+  );
+};
+
+// UserCard Component
+const UserCard: React.FC<{ 
+  name: string; 
+  email?: string;
+  avatarUrl?: string | null;
+}> = ({ name, email, avatarUrl }) => {
+  return (
+    <div className="px-4 py-4 border-b border-white/5">
+      <div className="flex items-center gap-3">
+        <Avatar className="h-12 w-12 ring-2 ring-white/10">
+          <AvatarImage 
+            src={avatarUrl || DEFAULT_AVATAR_URL} 
+            alt={name} 
+          />
+          <AvatarFallback className="bg-blue-500/20 text-blue-400 text-sm font-medium">
+            {getInitials(name.split(' ')[0], name.split(' ')[1])}
+          </AvatarFallback>
+        </Avatar>
+        <div className="flex-1 min-w-0">
+          <div className="text-sm font-semibold text-white truncate">
+            {name}
+          </div>
+          {email && (
+            <div className="text-xs text-[#7B7F8A] truncate">
+              {email}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// SidebarItem Component
+const SidebarItem: React.FC<{
+  item: SidebarItem;
+  isActive: boolean;
+  onClick: () => void;
+}> = ({ item, isActive, onClick }) => {
+  const Icon = item.icon;
+  
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={cn(
+        "w-full flex items-center gap-3 px-[14px] h-[54px] rounded-[14px] transition-all duration-200 ease-in-out relative group",
+        "hover:bg-[#1C2233]",
+        isActive && "bg-[#1C2233]"
+      )}
+    >
+      {/* Icon with colored circle background */}
+      <div 
+        className="w-[22px] h-[22px] flex items-center justify-center rounded-full flex-shrink-0"
+        style={{ backgroundColor: `${item.iconColor}26` }} // 15% opacity
+      >
+        <Icon 
+          className="w-[22px] h-[22px]" 
+          style={{ color: item.iconColor }}
+        />
+      </div>
+      
+      {/* Label */}
+      <span className={cn(
+        "text-[15px] flex-1 text-left font-medium",
+        isActive ? "text-white" : "text-white/90"
+      )}>
+        {item.name}
+      </span>
+      
+      {/* Chevron */}
+      <ChevronRight className={cn(
+        "w-4 h-4 flex-shrink-0 transition-colors",
+        isActive ? "text-white/60" : "text-white/30"
+      )} />
+    </button>
+  );
+};
+
+// SidebarSection Component
+const SidebarSection: React.FC<{
+  section: SidebarSection;
+  isActive: (path: string) => boolean;
+  onItemClick: (path: string) => void;
+}> = ({ section, isActive, onItemClick }) => {
+  return (
+    <div className="mb-6">
+      {/* Section Header */}
+      <div className="px-4 mb-1.5 mt-[18px] first:mt-2">
+        <h3 className="text-[12px] font-semibold text-[#7B7F8A] uppercase tracking-wider leading-none">
+          {section.title}
+        </h3>
+      </div>
+      
+      {/* Section Items */}
+      <div className="px-2 space-y-1">
+        {section.items.map((item) => (
+          <SidebarItem
+            key={item.path}
+            item={item}
+            isActive={isActive(item.path)}
+            onClick={() => onItemClick(item.path)}
+          />
+        ))}
+      </div>
+    </div>
+  );
+};
+
+// Main Sidebar Component
+const Sidebar: React.FC<SidebarProps> = ({ className, profileRole }) => {
+  const { isOpen, setIsOpen } = useSidebar();
+  const { profile, user } = useSession();
+  const sidebarRef = useRef<HTMLDivElement>(null);
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [searchQuery, setSearchQuery] = useState('');
+
+  // Define menu sections with macOS/iOS Settings structure
+  const menuSections: SidebarSection[] = [
+    {
+      title: "TOOLS",
+      items: [
+        { 
+          name: "Calendar Sync", 
+          icon: Calendar, 
+          path: "/creator-dashboard?tab=calendar", 
+          iconColor: "#0A84FF",
+          roles: ['creator'] 
+        },
+        { 
+          name: "Documents Vault", 
+          icon: FolderOpen, 
+          path: "/documents-vault", 
+          iconColor: "#BF5AF2",
+          roles: ['creator'] 
+        },
+        { 
+          name: "Invoice Generator", 
+          icon: FileText, 
+          path: "/creator-dashboard?tab=invoices", 
+          iconColor: "#30D158",
+          roles: ['creator'] 
+        },
+      ]
+    },
+    {
+      title: "SUPPORT",
+      items: [
+        { 
+          name: "Disputes Center", 
+          icon: AlertTriangle, 
+          path: "/creator-dashboard?tab=disputes", 
+          iconColor: "#FF453A",
+          roles: ['creator'] 
+        },
+      ]
+    },
+    {
+      title: "BUSINESS",
+      items: [
+        { 
+          name: "Tax Summary", 
+          icon: Receipt, 
+          path: "/creator-tax-compliance", 
+          iconColor: "#FFD60A",
+          roles: ['creator'] 
+        },
+        { 
+          name: "Partner Program", 
+          icon: Sparkles, 
+          path: "/partner-program", 
+          iconColor: "#5E5CE6",
+          roles: ['creator'] 
+        },
+      ]
+    },
+    {
+      title: "SETTINGS",
+      items: [
+        { 
+          name: "Settings", 
+          icon: Settings, 
+          path: "/settings", 
+          iconColor: "#8E8E93",
+          roles: ['creator'] 
+        },
+      ]
+    }
+  ];
+
+  // Filter sections and items based on role
+  const visibleSections = menuSections.map(section => ({
+    ...section,
+    items: section.items.filter(item => {
+      if (!item.roles) return true;
+      return item.roles.includes(profileRole || '');
+    })
+  })).filter(section => section.items.length > 0);
+
+  // Filter items by search query
+  const filteredSections = searchQuery
+    ? visibleSections.map(section => ({
+        ...section,
+        items: section.items.filter(item =>
+          item.name.toLowerCase().includes(searchQuery.toLowerCase())
+        )
+      })).filter(section => section.items.length > 0)
+    : visibleSections;
+
+  // Close sidebar when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        isOpen &&
+        sidebarRef.current &&
+        !sidebarRef.current.contains(event.target as Node)
+      ) {
+        setIsOpen(false);
+      }
+    };
+
+    // Close on escape key
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && isOpen) {
+        setIsOpen(false);
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener('keydown', handleEscape);
+      document.body.style.overflow = 'hidden';
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleEscape);
+      document.body.style.overflow = '';
+    };
+  }, [isOpen, setIsOpen]);
+
+  // Handle item click
+  const handleItemClick = (path: string) => {
+    // Close sidebar on mobile
+    if (window.innerWidth < 768) {
+      setIsOpen(false);
+    }
+
+    // Handle query params for tab navigation
+    if (path.includes('?')) {
+      const [basePath, query] = path.split('?');
+      navigate(`${basePath}?${query}`, { replace: false });
+      
+      // For dashboard tabs, scroll to the appropriate section after a small delay
+      if (basePath === '/creator-dashboard') {
+        setTimeout(() => {
+          const tab = query.split('=')[1];
+          if (tab) {
+            const sectionMap: Record<string, string> = {
+              insights: '[data-section="ai-insights"]',
+              calendar: '[data-section="calendar-sync"]',
+              documents: '[data-section="documents-vault"]',
+              disputes: '[data-section="disputes-center"]',
+              invoices: '[data-section="invoice-generator"]',
+            };
+            
+            const selector = sectionMap[tab];
+            if (selector) {
+              const element = document.querySelector(selector);
+              if (element) {
+                element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              }
+            }
+          }
+        }, 300);
+      }
+    } else {
+      navigate(path, { replace: false });
+    }
+  };
+
+  // Check if path is active
+  const isActive = (path: string) => {
+    const currentPath = location.pathname;
+    const basePath = path.split('?')[0];
+    
+    if (basePath === '/creator-dashboard') {
+      const currentTab = new URLSearchParams(location.search).get('tab');
+      const pathTab = path.split('tab=')[1];
+      return currentPath === basePath && (currentTab === pathTab || (!currentTab && !pathTab));
+    }
+    return currentPath === basePath || currentPath.startsWith(basePath + '/');
+  };
+
+  // Get user display name and email
+  const userName = profile 
+    ? `${profile.first_name || ''} ${profile.last_name || ''}`.trim() || 'User'
+    : 'User';
+  const userEmail = user?.email || undefined;
+
+  return (
+    <>
+      {/* Backdrop for mobile */}
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="fixed inset-0 bg-black/40 backdrop-blur-md z-[140] md:hidden"
+            onClick={() => setIsOpen(false)}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Sidebar */}
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            ref={sidebarRef}
+            initial={{ opacity: 0, x: '-100%' }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: '-100%' }}
+            transition={{
+              type: "spring",
+              damping: 25,
+              stiffness: 200
+            }}
+            className={cn(
+              "fixed top-16 left-0 h-[calc(100vh-4rem)] w-[320px] max-w-[85vw] overflow-y-auto",
+              "bg-[#0B0F1A] backdrop-blur-xl border-r border-white/5",
+              "shadow-[0_0_40px_rgba(0,0,0,0.35)]",
+              "z-[150]",
+              "md:static md:h-full md:top-0 md:rounded-none",
+              "rounded-r-2xl md:rounded-none",
+              className
+            )}
+          >
+            {/* Search Bar */}
+            <SearchBar 
+              searchQuery={searchQuery} 
+              setSearchQuery={setSearchQuery} 
+            />
+
+            {/* User Card */}
+            {profile && (
+              <UserCard 
+                name={userName}
+                email={userEmail}
+                avatarUrl={profile.avatar_url}
+              />
+            )}
+
+            {/* Menu Sections */}
+            <div className="px-2 py-2">
+              {filteredSections.map((section) => (
+                <SidebarSection
+                  key={section.title}
+                  section={section}
+                  isActive={isActive}
+                  onItemClick={handleItemClick}
+                />
+              ))}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </>
   );
 };
 
