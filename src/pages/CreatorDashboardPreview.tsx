@@ -31,6 +31,7 @@ import SimplifiedScanner from '@/components/content-protection/SimplifiedScanner
 import ScanHistory from '@/components/content-protection/ScanHistory';
 import Sidebar from '@/components/Sidebar';
 import Navbar from '@/components/navbar/Navbar';
+import CreatorBottomNav from '@/components/creator-dashboard/CreatorBottomNav';
 import { useSidebar } from '@/contexts/SidebarContext';
 import { toast } from 'sonner';
 
@@ -764,6 +765,9 @@ const CreatorDashboardPreview = () => {
           </footer>
               </div>
             </main>
+            
+            {/* Bottom Navigation - Primary navigation for creators (all screen sizes) */}
+            <CreatorBottomNav />
           </div>
         </div>
       </div>
