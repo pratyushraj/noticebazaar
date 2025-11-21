@@ -331,14 +331,14 @@ const CreatorPaymentsAndRecovery = () => {
       )}
 
       {/* Payment Tracking - Mobile cards, desktop table */}
-      <section className="bg-card p-4 md:p-6 rounded-[12px] shadow-sm shadow-black/20 border border-border/40">
-        <h2 className="text-lg md:text-xl font-semibold text-foreground mb-4">Payment Tracking</h2>
+      <section className="bg-[#1C1C1E] p-4 md:p-6 rounded-2xl shadow-2xl border border-white/5">
+        <h2 className="text-lg md:text-xl font-semibold text-white mb-4">Payment Tracking</h2>
         <div className="flex flex-col sm:flex-row gap-3 md:gap-4 mb-4">
           <div className="relative flex-1">
-            <IndianRupee className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <IndianRupee className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/60" />
               <Input
                 placeholder="Search by brand, invoice, or amount..."
-                className="pl-9 pr-3 bg-background text-foreground border-border/40 focus:border-primary/50 h-[42px] md:h-10 rounded-[14px] md:rounded-md text-sm placeholder:text-muted-foreground/70"
+                className="pl-9 pr-3 bg-white/5 text-white border-white/10 focus:border-blue-400/50 h-[42px] md:h-10 rounded-xl text-sm placeholder:text-white/40"
                 value={searchTerm}
                 onChange={(e) => {
                   setSearchTerm(e.target.value);
@@ -352,10 +352,10 @@ const CreatorPaymentsAndRecovery = () => {
               setStatusFilter(value);
               setCurrentPage(1);
             }} value={statusFilter}>
-              <SelectTrigger className="w-full sm:w-[180px] bg-background text-foreground border-border/40 h-[42px] md:h-10 rounded-[14px] md:rounded-md">
+              <SelectTrigger className="w-full sm:w-[180px] bg-white/5 text-white border-white/10 h-[42px] md:h-10 rounded-xl">
                 <SelectValue placeholder="Filter by Status" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="bg-[#1C1C1E] border-white/5 text-white">
                 <SelectItem value="All">All Statuses</SelectItem>
                 <SelectItem value="Payment Pending">Payment Pending</SelectItem>
                 <SelectItem value="Completed">Completed</SelectItem>
@@ -367,10 +367,10 @@ const CreatorPaymentsAndRecovery = () => {
               setSortBy(value);
               setCurrentPage(1);
             }} value={sortBy}>
-              <SelectTrigger className="w-full sm:w-[180px] bg-background text-foreground border-border/40 h-[42px] md:h-10 rounded-[14px] md:rounded-md">
+              <SelectTrigger className="w-full sm:w-[180px] bg-white/5 text-white border-white/10 h-[42px] md:h-10 rounded-xl">
                 <SelectValue placeholder="Sort" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="bg-[#1C1C1E] border-white/5 text-white">
                 <SelectItem value="due_date">Due Date (Soonest)</SelectItem>
                 <SelectItem value="amount_desc">Highest Amount</SelectItem>
                 <SelectItem value="amount_asc">Lowest Amount</SelectItem>
@@ -418,18 +418,18 @@ const CreatorPaymentsAndRecovery = () => {
                   variant="outline"
                   onClick={handlePreviousPage}
                   disabled={currentPage === 1 || isLoadingBrandDeals}
-                  className="w-full md:w-auto"
+                  className="w-full md:w-auto bg-white/5 border-white/10 text-white hover:bg-white/10 disabled:opacity-50"
                 >
                   Previous
                 </Button>
-                <span className="text-sm text-muted-foreground">
+                <span className="text-sm text-white/60">
                   Page {currentPage} of {calculatedTotalPages}
                 </span>
                 <Button
                   variant="outline"
                   onClick={handleNextPage}
                   disabled={currentPage === calculatedTotalPages || isLoadingBrandDeals}
-                  className="w-full md:w-auto"
+                  className="w-full md:w-auto bg-white/5 border-white/10 text-white hover:bg-white/10 disabled:opacity-50"
                 >
                   Next
                 </Button>
@@ -438,11 +438,12 @@ const CreatorPaymentsAndRecovery = () => {
           </>
         ) : (
           <div className="text-center py-12">
-            <p className="text-muted-foreground mb-4">No payment records found matching your criteria.</p>
+            <p className="text-white/60 mb-4">No payment records found matching your criteria.</p>
             {quickFilter && (
               <Button
                 variant="outline"
                 onClick={() => setQuickFilter(null)}
+                className="bg-white/5 border-white/10 text-white hover:bg-white/10"
               >
                 Clear Filters
               </Button>
@@ -471,42 +472,43 @@ const CreatorPaymentsAndRecovery = () => {
 
       <Dialog open={isReminderDialogOpen} onOpenChange={setIsReminderDialogOpen}>
         <DialogContent 
-          className="sm:max-w-[425px] bg-card text-foreground border-border"
+          className="sm:max-w-[425px] bg-[#1C1C1E] text-white border-white/5 rounded-2xl shadow-2xl"
           aria-labelledby="send-reminder-title"
           aria-describedby="send-reminder-description"
         >
           <DialogHeader>
-            <DialogTitle id="send-reminder-title">Send Payment Reminder</DialogTitle>
-            <DialogDescription id="send-reminder-description" className="text-muted-foreground">
+            <DialogTitle id="send-reminder-title" className="text-white">Send Payment Reminder</DialogTitle>
+            <DialogDescription id="send-reminder-description" className="text-white/60">
               Send a reminder to <strong>{selectedDealForReminder?.brand_name}</strong> for <strong>₹{selectedDealForReminder?.deal_amount.toLocaleString('en-IN')}</strong>.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div>
-              <Label htmlFor="messageType">Delivery Method</Label>
+              <Label htmlFor="messageType" className="text-white">Delivery Method</Label>
               <Select onValueChange={(value: 'email' | 'whatsapp') => setMessageType(value)} value={messageType}>
-                <SelectTrigger id="messageType">
+                <SelectTrigger id="messageType" className="bg-white/5 text-white border-white/10">
                   <SelectValue placeholder="Select method" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-[#1C1C1E] border-white/5 text-white">
                   <SelectItem value="email">Email (Default Template)</SelectItem>
                   <SelectItem value="whatsapp" disabled>WhatsApp (Coming Soon)</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div>
-              <Label htmlFor="customMessage">Custom Message (Optional)</Label>
+              <Label htmlFor="customMessage" className="text-white">Custom Message (Optional)</Label>
               <Input
                 id="customMessage"
                 value={customMessage}
                 onChange={(e) => setCustomMessage(e.target.value)}
                 placeholder="Enter a personalized message..."
                 disabled={sendPaymentReminderMutation.isPending}
+                className="bg-white/5 text-white border-white/10 placeholder:text-white/40"
               />
-              <p className="text-xs text-muted-foreground mt-1">If left blank, a default template will be used.</p>
+              <p className="text-xs text-white/60 mt-1">If left blank, a default template will be used.</p>
             </div>
             {selectedDealForReminder && (
-              <p className="text-sm text-muted-foreground flex items-center">
+              <p className="text-sm text-white/60 flex items-center">
                 <Mail className="h-4 w-4 mr-2" /> Recipient: {selectedDealForReminder.brand_email || 'NoticeBazaar Support'}
               </p>
             )}
@@ -525,7 +527,7 @@ const CreatorPaymentsAndRecovery = () => {
             </Button>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsReminderDialogOpen(false)}>Close</Button>
+            <Button variant="outline" onClick={() => setIsReminderDialogOpen(false)} className="bg-white/5 border-white/10 text-white hover:bg-white/10">Close</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

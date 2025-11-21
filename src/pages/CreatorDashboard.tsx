@@ -12,10 +12,9 @@ import {
   DollarSign,
   ArrowRight,
   TrendingUp as TrendingUpIcon,
-  Bell,
-  Menu,
   Calendar,
-  AlertTriangle
+  AlertTriangle,
+  FileText
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useCreatorDashboardData } from '@/lib/hooks/useCreatorDashboardData';
@@ -794,39 +793,56 @@ const CreatorDashboard = () => {
                 <h2 className="text-2xl font-semibold text-white mb-6">Recent Activity</h2>
                 <Card className="bg-white/[0.06] backdrop-blur-[40px] border-white/10 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.3)]">
                   <CardContent className="space-y-4 p-6">
-                    {brandDeals && brandDeals.length > 0 ? (
-                      <div className="space-y-3">
-                        {brandDeals
-                          .filter(deal => deal.status === 'Approved' || deal.status === 'Completed')
-                          .slice(0, 3)
-                          .map((deal) => {
-                            const isCompleted = deal.status === 'Completed';
-                            const timeAgo = deal.payment_received_date 
-                              ? new Date(deal.payment_received_date)
-                              : new Date(deal.created_at);
-                            const hoursAgo = Math.floor((Date.now() - timeAgo.getTime()) / (1000 * 60 * 60));
-                            
-                            return (
-                              <div key={deal.id} className="flex items-center gap-3 p-4 rounded-2xl bg-white/5 backdrop-blur-sm hover:bg-white/10 transition-all border border-white/10">
-                                <div className="h-10 w-10 rounded-xl bg-green-500/20 backdrop-blur-sm flex items-center justify-center border border-green-500/30">
-                                  <CheckCircle className="h-5 w-5 text-green-400" />
+                    {(() => {
+                      // Filter for approved/completed deals
+                      const approvedDeals = brandDeals?.filter(deal => deal.status === 'Approved' || deal.status === 'Completed') || [];
+                      
+                      // Show real data if we have approved/completed deals, otherwise show demo
+                      if (approvedDeals.length > 0) {
+                        const dealsToShow = approvedDeals.slice(0, 3);
+                        return (
+                          <div className="space-y-2 bg-white/5 rounded-2xl p-2 border border-white/5">
+                            {dealsToShow.map((deal, index) => {
+                              const isCompleted = deal.status === 'Completed';
+                              const timeAgo = deal.payment_received_date 
+                                ? new Date(deal.payment_received_date)
+                                : new Date(deal.created_at);
+                              const hoursAgo = Math.floor((Date.now() - timeAgo.getTime()) / (1000 * 60 * 60));
+                              
+                              return (
+                                <div 
+                                  key={deal.id} 
+                                  className={cn(
+                                    "flex items-center gap-3 p-3 rounded-xl transition-all hover:bg-white/5",
+                                    index < dealsToShow.length - 1 && "border-b border-white/5"
+                                  )}
+                                >
+                                  <div className="h-10 w-10 rounded-xl bg-green-500/20 backdrop-blur-sm flex items-center justify-center border border-green-500/30">
+                                    <CheckCircle className="h-5 w-5 text-green-400" />
+                                  </div>
+                                  <div className="flex-1">
+                                    <p className="text-sm font-medium text-white">
+                                      {deal.brand_name} collaboration agreement
+                                    </p>
+                                    <p className="text-xs text-white/60">
+                                      {isCompleted ? 'Approved' : 'Contract Reviewed'} • {hoursAgo} hours ago
+                                    </p>
+                                  </div>
                                 </div>
-                                <div className="flex-1">
-                                  <p className="text-sm font-medium text-white">
-                                    {deal.brand_name} collaboration agreement
-                                  </p>
-                                  <p className="text-xs text-white/60">
-                                    {isCompleted ? 'Approved' : 'Contract Reviewed'} • {hoursAgo} hours ago
-                                  </p>
-                                </div>
-                              </div>
-                            );
-                          })}
-                      </div>
-                    ) : (
-                      <div className="space-y-3">
-                        {/* Demo Activity Items */}
-                        <div className="flex items-center gap-3 p-4 rounded-2xl bg-white/5 backdrop-blur-sm hover:bg-white/10 transition-all border border-white/10">
+                              );
+                            })}
+                          </div>
+                        );
+                      }
+                      
+                      // Show demo data when no approved/completed deals
+                      return (
+                        <div className="space-y-2 bg-white/5 rounded-2xl p-2 border border-white/5">
+                          {/* Demo Activity Items */}
+                        <div className={cn(
+                          "flex items-center gap-3 p-3 rounded-xl transition-all hover:bg-white/5",
+                          "border-b border-white/5"
+                        )}>
                           <div className="h-10 w-10 rounded-xl bg-green-500/20 backdrop-blur-sm flex items-center justify-center border border-green-500/30">
                             <CheckCircle className="h-5 w-5 text-green-400" />
                           </div>
@@ -839,7 +855,10 @@ const CreatorDashboard = () => {
                             </p>
                           </div>
                         </div>
-                        <div className="flex items-center gap-3 p-4 rounded-2xl bg-white/5 backdrop-blur-sm hover:bg-white/10 transition-all border border-white/10">
+                        <div className={cn(
+                          "flex items-center gap-3 p-3 rounded-xl transition-all hover:bg-white/5",
+                          "border-b border-white/5"
+                        )}>
                           <div className="h-10 w-10 rounded-xl bg-blue-500/20 backdrop-blur-sm flex items-center justify-center border border-blue-500/30">
                             <Briefcase className="h-5 w-5 text-blue-400" />
                           </div>
@@ -852,7 +871,10 @@ const CreatorDashboard = () => {
                             </p>
                           </div>
                         </div>
-                        <div className="flex items-center gap-3 p-4 rounded-2xl bg-white/5 backdrop-blur-sm hover:bg-white/10 transition-all border border-white/10">
+                        <div className={cn(
+                          "flex items-center gap-3 p-3 rounded-xl transition-all hover:bg-white/5",
+                          "border-b border-white/5"
+                        )}>
                           <div className="h-10 w-10 rounded-xl bg-purple-500/20 backdrop-blur-sm flex items-center justify-center border border-purple-500/30">
                             <DollarSign className="h-5 w-5 text-purple-400" />
                           </div>
@@ -865,8 +887,38 @@ const CreatorDashboard = () => {
                             </p>
                           </div>
                         </div>
+                        <div className={cn(
+                          "flex items-center gap-3 p-3 rounded-xl transition-all hover:bg-white/5",
+                          "border-b border-white/5"
+                        )}>
+                          <div className="h-10 w-10 rounded-xl bg-yellow-500/20 backdrop-blur-sm flex items-center justify-center border border-yellow-500/30">
+                            <FileText className="h-5 w-5 text-yellow-400" />
+                          </div>
+                          <div className="flex-1">
+                            <p className="text-sm font-medium text-white">
+                              Contract draft sent to L'Oreal
+                            </p>
+                            <p className="text-xs text-white/60">
+                              Pending Review • 3 days ago
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-3 p-3 rounded-xl transition-all hover:bg-white/5">
+                          <div className="h-10 w-10 rounded-xl bg-indigo-500/20 backdrop-blur-sm flex items-center justify-center border border-indigo-500/30">
+                            <TrendingUpIcon className="h-5 w-5 text-indigo-400" />
+                          </div>
+                          <div className="flex-1">
+                            <p className="text-sm font-medium text-white">
+                              New brand inquiry from Nykaa
+                            </p>
+                            <p className="text-xs text-white/60">
+                              Received • 4 days ago
+                            </p>
+                          </div>
+                        </div>
                       </div>
-                    )}
+                      );
+                    })()}
                   </CardContent>
                 </Card>
               </section>

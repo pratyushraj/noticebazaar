@@ -52,33 +52,37 @@ const ScanHistory: React.FC<ScanHistoryProps> = ({ scans }) => {
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.4 }}
     >
-      <Card className="bg-card border-border/40">
+      <Card className="bg-[#1C1C1E] border-white/5 shadow-2xl rounded-2xl">
         <CardHeader>
-          <CardTitle className="text-lg font-semibold flex items-center gap-2">
-            <Calendar className="w-5 h-5 text-purple-500" />
+          <CardTitle className="text-lg font-semibold flex items-center gap-2 text-white">
+            <Calendar className="w-5 h-5 text-purple-400" />
             Recent Scans
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="space-y-3">
+          <div className="space-y-2 bg-white/5 rounded-2xl p-2 border border-white/5">
             {scans.slice(0, 5).map((scan, index) => (
               <motion.div
                 key={scan.id}
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: index * 0.1 }}
-                className="flex items-center justify-between p-3 rounded-lg border border-border/40 hover:bg-muted/50 transition-all"
+                className={cn(
+                  "flex items-center justify-between p-3 rounded-xl transition-all",
+                  index < scans.slice(0, 5).length - 1 && "border-b border-white/5",
+                  "hover:bg-white/5"
+                )}
               >
                 <div className="flex items-center gap-3 flex-1 min-w-0">
                   {getStatusIcon(scan.status)}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
-                      <span className="text-sm font-medium text-foreground truncate">
+                      <span className="text-sm font-medium text-white truncate">
                         {scan.platform} Scan
                       </span>
                       {getStatusBadge(scan.status)}
                     </div>
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <div className="flex items-center gap-2 text-xs text-white/60">
                       <Calendar className="w-3 h-3" />
                       <span>{new Date(scan.date).toLocaleDateString('en-IN', {
                         day: 'numeric',

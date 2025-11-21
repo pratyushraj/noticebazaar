@@ -72,12 +72,13 @@ const QuickActionsFAB: React.FC<QuickActionsFABProps> = ({
   ];
 
   return (
-    <div className="fixed bottom-20 right-6 z-[60]">
+    <div className="fixed bottom-20 right-6 z-[60] md:bottom-6 md:right-6">
       <motion.div
         initial={{ scale: 0, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         transition={{ delay: 0.5, type: "spring", stiffness: 200 }}
         className="relative"
+        style={{ transformOrigin: 'center' }}
       >
         {/* Quick actions menu */}
         <AnimatePresence>
@@ -132,7 +133,10 @@ const QuickActionsFAB: React.FC<QuickActionsFABProps> = ({
           whileTap={{ scale: 0.95 }}
           onClick={() => setShowQuickActions(!showQuickActions)}
           className="w-14 h-14 bg-blue-600 rounded-full shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 flex items-center justify-center text-white transition-all relative"
-          style={{ boxShadow: '0 0 15px rgba(59,130,246,0.5), 0 4px 6px rgba(0,0,0,0.1)' }}
+          style={{ 
+            boxShadow: '0 0 15px rgba(59,130,246,0.5), 0 4px 6px rgba(0,0,0,0.1)',
+            transformOrigin: 'center'
+          }}
           aria-label="Quick Actions"
         >
           <motion.div

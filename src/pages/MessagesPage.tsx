@@ -132,7 +132,7 @@ function AdvisorListScoped({
 // --- ChatHeader (scoped) ---
 function ChatHeaderScoped({ advisor }: { advisor?: Advisor | null }) {
   return (
-    <div className="flex items-center justify-between px-3 md:px-4 py-2 md:py-3 border-b border-border/30 bg-card/50 backdrop-blur-sm flex-shrink-0">
+    <div className="flex items-center justify-between px-3 md:px-4 py-2 md:py-3 border-b border-white/5 bg-[#1C1C1E]/95 backdrop-blur-xl flex-shrink-0">
       <div className="flex items-center gap-2 md:gap-3 flex-1 min-w-0">
         <LocalAvatar size="sm" src={advisor?.avatarUrl} alt={advisor?.name || 'Advisor'} />
         <div className="leading-tight flex-1 min-w-0">
@@ -310,17 +310,17 @@ function ChatWindowScoped({
       <ScrollArea className="flex-1 min-h-0">
         <div className="p-4 md:p-6">
           {!hasMessages ? (
-            <div className="h-full min-h-[calc(100vh-400px)] md:min-h-[60vh] flex flex-col items-center justify-center text-center text-muted-foreground gap-6">
-              <MessageSquare size={48} className="opacity-10" />
+            <div className="h-full min-h-[calc(100vh-400px)] md:min-h-[60vh] flex flex-col items-center justify-center text-center text-white/60 gap-6">
+              <MessageSquare size={48} className="opacity-10 text-white/20" />
               <div className="space-y-2">
-                <div className="text-base font-medium text-foreground">No messages yet</div>
-                <div className="text-sm text-muted-foreground">Start the conversation with your advisor</div>
+                <div className="text-base font-medium text-white">No messages yet</div>
+                <div className="text-sm text-white/60">Start the conversation with your advisor</div>
               </div>
               
               {/* Suggestions */}
               <div className="w-full max-w-md space-y-3 mt-4">
-                <p className="text-xs text-muted-foreground uppercase tracking-wide">Common Topics</p>
-                <div className="grid grid-cols-2 gap-2">
+                <p className="text-[11px] text-white/50 uppercase tracking-wider font-semibold">COMMON TOPICS</p>
+                <div className="grid grid-cols-2 gap-2 bg-white/5 rounded-2xl p-3 border border-white/5">
                   {[
                     { label: 'Contract Review', icon: '📄' },
                     { label: 'Payment Questions', icon: '💰' },
@@ -330,7 +330,7 @@ function ChatWindowScoped({
                     <button
                       key={topic.label}
                       onClick={() => onSend?.(`I need help with ${topic.label.toLowerCase()}`)}
-                      className="flex items-center gap-2 px-3 py-2 rounded-lg border border-border/40 bg-muted/20 hover:bg-muted/40 transition-colors text-sm text-foreground"
+                      className="flex items-center gap-2 px-3 py-2 rounded-xl border border-white/5 bg-white/5 hover:bg-white/10 transition-colors text-sm text-white active:bg-white/15"
                     >
                       <span>{topic.icon}</span>
                       <span className="truncate">{topic.label}</span>
@@ -343,7 +343,7 @@ function ChatWindowScoped({
               <div className="mt-4">
                 <button
                   onClick={() => onSend?.("I need help")}
-                  className="text-xs text-blue-500 hover:text-blue-600 underline"
+                  className="text-xs text-blue-400 hover:text-blue-300 underline"
                 >
                   Need Help? Click here
                 </button>
@@ -575,7 +575,7 @@ export default function MessagesPage() {
   return (
     <div className="w-full h-[calc(100vh-12rem)] md:h-screen flex flex-col antialiased overflow-hidden -mx-4 md:mx-0 md:p-6 md:min-h-screen md:pb-0 pb-16 md:pb-0">
       {/* Mobile: Compact header */}
-      <div className="flex items-center justify-between px-4 py-2.5 md:py-3 border-b border-border/40 bg-card md:border-0 md:bg-transparent md:px-0 md:py-0 md:mb-6 flex-shrink-0">
+      <div className="flex items-center justify-between px-4 py-2.5 md:py-3 border-b border-white/5 bg-[#1C1C1E]/95 backdrop-blur-xl md:border-0 md:bg-transparent md:px-0 md:py-0 md:mb-6 flex-shrink-0">
         <div className="flex items-center gap-2 md:gap-3">
           {isMobile && (
             <Sheet open={isMobileSheetOpen} onOpenChange={setIsMobileSheetOpen}>

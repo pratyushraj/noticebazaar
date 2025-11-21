@@ -290,24 +290,24 @@ const ActionCenter: React.FC<ActionCenterProps> = ({
       </div>
       <div className="space-y-4 p-6">
         <Tabs defaultValue="urgent" className="w-full">
-          <TabsList className="grid w-full grid-cols-3 bg-white/5 backdrop-blur-[20px] p-1 rounded-2xl border border-white/10 shadow-[0_2px_8px_rgba(0,0,0,0.15)]">
+          <TabsList className="grid w-full grid-cols-3 bg-white/5 backdrop-blur-[20px] saturate-[120%] p-1 rounded-2xl border border-white/10 shadow-[0_2px_8px_rgba(0,0,0,0.15)] gap-1">
             <TabsTrigger 
               value="urgent" 
-              className="data-[state=active]:bg-white/20 data-[state=active]:text-white transition-all text-sm font-medium rounded-xl flex items-center gap-1.5"
+              className="data-[state=active]:bg-white/20 data-[state=active]:text-white data-[state=inactive]:text-white/60 transition-all text-sm font-medium rounded-xl flex items-center gap-1.5 py-2"
             >
               <span>Urgent</span>
               {totalUrgent > 0 && <span className="px-1.5 py-0.5 rounded-full bg-white/20 text-white text-xs font-semibold whitespace-nowrap">{totalUrgent}</span>}
             </TabsTrigger>
             <TabsTrigger 
               value="warnings" 
-              className="data-[state=active]:bg-white/20 data-[state=active]:text-white transition-all text-sm font-medium rounded-xl flex items-center gap-1.5"
+              className="data-[state=active]:bg-white/20 data-[state=active]:text-white data-[state=inactive]:text-white/60 transition-all text-sm font-medium rounded-xl flex items-center gap-1.5 py-2"
             >
               <span>Warnings</span>
               {totalWarnings > 0 && <span className="px-1.5 py-0.5 rounded-full bg-white/20 text-white text-xs font-semibold whitespace-nowrap">{totalWarnings}</span>}
             </TabsTrigger>
             <TabsTrigger 
               value="suggestions" 
-              className="data-[state=active]:bg-white/20 data-[state=active]:text-white transition-all text-sm font-medium rounded-xl flex items-center gap-1.5"
+              className="data-[state=active]:bg-white/20 data-[state=active]:text-white data-[state=inactive]:text-white/60 transition-all text-sm font-medium rounded-xl flex items-center gap-1.5 py-2"
             >
               <span>Suggestions</span>
               {totalSuggestions > 0 && <span className="px-1.5 py-0.5 rounded-full bg-white/20 text-white text-xs font-semibold whitespace-nowrap">{totalSuggestions}</span>}

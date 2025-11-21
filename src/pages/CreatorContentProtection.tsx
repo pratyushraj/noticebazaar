@@ -233,7 +233,7 @@ const CreatorContentProtection = () => {
     return (
       <div className="min-h-[300px] flex flex-col items-center justify-center bg-background">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        <p className="mt-3 text-muted-foreground">Loading content protection...</p>
+        <p className="mt-3 text-white/60">Loading content protection...</p>
       </div>
     );
   }
@@ -289,10 +289,10 @@ const CreatorContentProtection = () => {
       )}
 
       {/* Registered Original Content Section */}
-      <Card className="bg-card p-6 rounded-lg shadow-sm border border-border mb-6">
+      <Card className="bg-[#1C1C1E] p-6 rounded-2xl shadow-2xl border border-white/5 mb-6">
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-semibold text-foreground flex items-center">
-            <ShieldCheck className="h-5 w-5 mr-2 text-purple-500" /> Registered Original Content
+          <h2 className="text-xl font-semibold text-white flex items-center">
+            <ShieldCheck className="h-5 w-5 mr-2 text-purple-400" /> Registered Original Content
           </h2>
           <Button onClick={() => setIsContentFormOpen(true)} className="bg-primary text-primary-foreground hover:bg-primary/90">
             <PlusCircle className="mr-2 h-4 w-4" /> Register New Content
@@ -325,12 +325,12 @@ const CreatorContentProtection = () => {
               <ShieldCheck className="w-10 h-10 text-purple-500" />
             </div>
             <div className="space-y-3">
-              <h3 className="text-lg font-semibold text-foreground">Protect Your First Video</h3>
+              <h3 className="text-lg font-semibold text-white">Protect Your First Video</h3>
               <div className="space-y-2 max-w-md mx-auto">
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm text-white/60">
                   Creators recover <span className="font-semibold text-emerald-400">₹2.5L annually</span> from content theft
                 </p>
-                <div className="flex flex-wrap justify-center gap-2 text-xs text-muted-foreground">
+                <div className="flex flex-wrap justify-center gap-2 text-xs text-white/60">
                   <span className="px-2 py-1 bg-muted rounded-full">Auto-scan</span>
                   <span className="px-2 py-1 bg-muted rounded-full">Takedown assistance</span>
                   <span className="px-2 py-1 bg-muted rounded-full">Legal templates</span>
@@ -349,10 +349,10 @@ const CreatorContentProtection = () => {
 
       {/* --- 2. Scan and Matches View --- */}
       {selectedContent && (
-        <Card className="bg-card p-6 rounded-lg shadow-sm border border-border">
-          <div className="flex justify-between items-center mb-4 border-b border-border pb-4">
-            <h2 className="text-xl font-semibold text-foreground">
-              Matches for: <span className="text-primary">{selectedContent.platform} Content</span>
+        <Card className="bg-[#1C1C1E] p-6 rounded-2xl shadow-2xl border border-white/5">
+          <div className="flex justify-between items-center mb-4 border-b border-white/5 pb-4">
+            <h2 className="text-xl font-semibold text-white">
+              Matches for: <span className="text-blue-400">{selectedContent.platform} Content</span>
             </h2>
             <Button
               onClick={() => handleStartScan(selectedContent.id)}
@@ -374,17 +374,17 @@ const CreatorContentProtection = () => {
           {isLoadingMatches ? (
             <div className="flex justify-center items-center py-8">
               <Loader2 className="h-8 w-8 animate-spin text-primary" />
-              <p className="ml-3 text-lg text-muted-foreground">Loading matches...</p>
+              <p className="ml-3 text-lg text-white/60">Loading matches...</p>
             </div>
           ) : matches && matches.length > 0 ? (
             <Table>
               <TableHeader>
-                <TableRow className="border-border">
-                  <TableHead className="text-muted-foreground">Platform</TableHead>
-                  <TableHead className="text-muted-foreground">Similarity</TableHead>
-                  <TableHead className="text-muted-foreground">Matched URL</TableHead>
-                  <TableHead className="text-muted-foreground">Last Action</TableHead>
-                  <TableHead className="text-right text-muted-foreground">Actions</TableHead>
+                <TableRow className="border-white/5">
+                  <TableHead className="text-white/50">Platform</TableHead>
+                  <TableHead className="text-white/50">Similarity</TableHead>
+                  <TableHead className="text-white/50">Matched URL</TableHead>
+                  <TableHead className="text-white/50">Last Action</TableHead>
+                  <TableHead className="text-right text-white/50">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -395,15 +395,15 @@ const CreatorContentProtection = () => {
                   const isHighRisk = match.similarity_score > 80;
 
                   return (
-                    <TableRow key={match.id} className={cn("border-border", isHighRisk && 'bg-red-500/10')}>
-                      <TableCell className="font-medium text-foreground">{match.platform}</TableCell>
+                    <TableRow key={match.id} className={cn("border-white/5", isHighRisk && 'bg-red-500/10')}>
+                      <TableCell className="font-medium text-white">{match.platform}</TableCell>
                       <TableCell>
                         <Badge variant={isHighRisk ? 'destructive' : match.similarity_score > 50 ? 'default' : 'secondary'}>
                           {match.similarity_score}%
                         </Badge>
                       </TableCell>
-                      <TableCell className="text-muted-foreground">
-                        <a href={match.matched_url} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+                      <TableCell className="text-white/60">
+                        <a href={match.matched_url} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300 hover:underline">
                           {match.matched_url.substring(0, 40)}...
                         </a>
                       </TableCell>

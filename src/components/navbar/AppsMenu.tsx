@@ -36,7 +36,7 @@ interface AppsMenuProps {
 const AppsMenu: React.FC<AppsMenuProps> = ({ profileRole }) => {
   const { isOpen, setIsOpen } = useSidebar();
   const menuRef = useRef<HTMLDivElement>(null);
-  const buttonRef = useRef<HTMLDivElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -219,15 +219,15 @@ const AppsMenu: React.FC<AppsMenuProps> = ({ profileRole }) => {
             </div>
 
             {/* iOS-style Menu List */}
-            <div className="px-3 py-2">
+            <div className="px-4 py-3">
               {visibleSections.map((section, sectionIndex) => (
                 <div key={section.title} className={cn(
                   "mb-6",
                   sectionIndex === 0 && "mt-2"
                 )}>
                   {/* iOS-style Section Header */}
-                  <div className="px-3 py-2 mb-1">
-                    <h3 className="text-[11px] font-semibold text-white/50 uppercase tracking-wider">
+                  <div className="px-3 py-2.5 mb-2">
+                    <h3 className="text-[11px] font-semibold text-white/50 uppercase tracking-wider leading-none">
                       {section.title}
                     </h3>
                   </div>

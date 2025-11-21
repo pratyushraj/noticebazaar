@@ -35,7 +35,7 @@ const Layout = ({ children }: LayoutProps) => {
         
         <div className="flex flex-1">
           <main className={cn(
-            "flex-1 w-full py-6 px-4 md:px-6 lg:px-8 pb-24 transition-all duration-300 ease-in-out",
+            "flex-1 w-full py-6 px-4 md:px-6 lg:px-8 pb-20 md:pb-24 transition-all duration-300 ease-in-out",
             isOpen && "md:ml-[280px]"
           )}>
             {children}
@@ -45,8 +45,8 @@ const Layout = ({ children }: LayoutProps) => {
         {/* Bottom Navigation - Primary navigation for creators (all screen sizes) */}
         {isCreator && <CreatorBottomNav />}
         
-        {/* Footer - Only visible when content is scrolled to bottom - Mobile: text-[10px], reduced padding */}
-        <div className="text-center py-3 md:py-8 text-[10px] md:text-sm text-white/30 mt-auto">
+        {/* Footer - Hidden on mobile, shown on desktop */}
+        <div className="hidden md:block text-center py-8 text-sm text-white/30 mt-auto">
           <a href="#" className="hover:underline">Legal Resources</a> | <MadeWithDyad />
         </div>
       </div>

@@ -50,10 +50,10 @@ const FiltersBar: React.FC<FiltersBarProps> = ({
     <div className={cn("space-y-4 hidden md:block", className)}>
       {/* Search Bar - Desktop only */}
       <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/60" />
         <Input
           placeholder="Search by brand, deliverables, or amount..."
-          className="pl-9 bg-background text-foreground border-border/40 focus:border-primary/50 h-10"
+          className="pl-9 bg-white/5 text-white border-white/10 focus:border-blue-400/50 h-10 placeholder:text-white/40"
           value={searchTerm}
           onChange={(e) => onSearchChange(e.target.value)}
           aria-label="Search brand deals"
@@ -64,10 +64,10 @@ const FiltersBar: React.FC<FiltersBarProps> = ({
       <div className="flex flex-wrap items-center gap-3">
         {/* Brand Filter */}
         <Select value={brandFilter} onValueChange={onBrandFilterChange}>
-          <SelectTrigger className="w-[160px] bg-background text-foreground border-border/40 h-9">
+          <SelectTrigger className="w-[160px] bg-white/5 text-white border-white/10 h-9">
             <SelectValue placeholder="All Brands" />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className="bg-[#1C1C1E] border-white/5 text-white">
             <SelectItem value="All">All Brands</SelectItem>
             {uniqueBrands.map(brand => (
               <SelectItem key={brand} value={brand}>{brand}</SelectItem>
@@ -128,7 +128,7 @@ const FiltersBar: React.FC<FiltersBarProps> = ({
               variant="ghost"
               size="sm"
               onClick={onClearFilters}
-              className="text-muted-foreground hover:text-foreground h-9"
+              className="text-white/60 hover:text-white h-9"
             >
               <X className="mr-2 h-4 w-4" />
               Clear Filters

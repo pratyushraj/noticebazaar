@@ -328,9 +328,9 @@ const CreatorContracts = () => {
 
   if (sessionLoading || isLoadingBrandDeals) {
     return (
-      <div className="min-h-[300px] flex flex-col items-center justify-center bg-background">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        <p className="mt-3 text-muted-foreground">Loading brand deals...</p>
+      <div className="min-h-[300px] flex flex-col items-center justify-center bg-[#1C1C1E]">
+        <Loader2 className="h-8 w-8 animate-spin text-blue-400" />
+        <p className="mt-3 text-white/60">Loading brand deals...</p>
       </div>
     );
   }
@@ -364,11 +364,11 @@ const CreatorContracts = () => {
 
 
       {/* Main Content Card */}
-      <Card className="bg-card border-border/40 shadow-sm">
-        <CardContent className="p-4 md:p-6">
+      <Card className="bg-white/[0.06] backdrop-blur-[40px] border-white/10 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.3)]">
+        <CardContent className="p-4 md:p-6 space-y-4">
           {/* Header Section - text-lg on mobile per design system */}
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mt-4 md:mt-8 mb-4">
-            <h2 className="text-lg md:text-xl font-semibold text-foreground">
+            <h2 className="text-lg md:text-xl font-semibold text-white">
               All Brand Deals ({filteredAndSearchedDeals.length})
             </h2>
             <Button 
@@ -456,11 +456,11 @@ const CreatorContracts = () => {
             />
           ) : paginatedDeals.length === 0 ? (
             <div className="text-center py-12">
-              <p className="text-muted-foreground">No brand deals found matching your criteria.</p>
+              <p className="text-white/60">No brand deals found matching your criteria.</p>
               <Button
                 variant="outline"
                 onClick={handleClearFilters}
-                className="mt-4"
+                className="mt-4 bg-white/5 border-white/10 text-white hover:bg-white/10"
               >
                 Clear Filters
               </Button>
@@ -481,7 +481,6 @@ const CreatorContracts = () => {
                       key={deal.id}
                       deal={deal}
                       stage={stage}
-                      paymentStatus={paymentStatus}
                       onView={handleViewDeal}
                       onEdit={handleEditBrandDeal}
                       onManageDeliverables={(deal) => {
@@ -503,8 +502,6 @@ const CreatorContracts = () => {
                           toast.error(error);
                         });
                       }}
-                      onDelete={handleDeleteBrandDeal}
-                      isDeleting={deleteBrandDealMutation.isPending && deleteBrandDealMutation.variables?.id === deal.id}
                     />
                   );
                 })}
@@ -515,14 +512,14 @@ const CreatorContracts = () => {
               <div className="w-full overflow-x-auto" data-desktop-view="true">
                 <Table>
                   <TableHeader>
-                    <TableRow className="border-border/40 hover:bg-transparent">
-                      <TableHead className="text-sm font-semibold text-muted-foreground h-12 px-4">Brand</TableHead>
-                      <TableHead className="text-sm font-semibold text-muted-foreground h-12 px-4">Amount</TableHead>
-                      <TableHead className="text-sm font-semibold text-muted-foreground h-12 px-4 hidden md:table-cell">Platform</TableHead>
-                      <TableHead className="text-sm font-semibold text-muted-foreground h-12 px-4 hidden lg:table-cell">Deliverables</TableHead>
-                      <TableHead className="text-sm font-semibold text-muted-foreground h-12 px-4">Stage</TableHead>
-                      <TableHead className="text-sm font-semibold text-muted-foreground h-12 px-4 hidden sm:table-cell">Due Date Status</TableHead>
-                      <TableHead className="text-sm font-semibold text-muted-foreground h-12 px-4 text-right">Actions</TableHead>
+                    <TableRow className="border-white/5 hover:bg-transparent">
+                      <TableHead className="text-sm font-semibold text-white/50 h-12 px-4">Brand</TableHead>
+                      <TableHead className="text-sm font-semibold text-white/50 h-12 px-4">Amount</TableHead>
+                      <TableHead className="text-sm font-semibold text-white/50 h-12 px-4 hidden md:table-cell">Platform</TableHead>
+                      <TableHead className="text-sm font-semibold text-white/50 h-12 px-4 hidden lg:table-cell">Deliverables</TableHead>
+                      <TableHead className="text-sm font-semibold text-white/50 h-12 px-4">Stage</TableHead>
+                      <TableHead className="text-sm font-semibold text-white/50 h-12 px-4 hidden sm:table-cell">Due Date Status</TableHead>
+                      <TableHead className="text-sm font-semibold text-white/50 h-12 px-4 text-right">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -536,8 +533,8 @@ const CreatorContracts = () => {
                         <TableRow 
                           key={deal.id} 
                           className={cn(
-                            "border-border/40 cursor-pointer hover:bg-accent/20 transition-colors",
-                            isOverdue && 'bg-red-500/5'
+                            "border-white/5 cursor-pointer hover:bg-white/5 transition-colors",
+                            isOverdue && 'bg-red-500/10'
                           )}
                           onClick={() => handleViewDeal(deal)}
                         >
@@ -548,15 +545,15 @@ const CreatorContracts = () => {
                                 brandLogo={null}
                                 size="sm"
                               />
-                              <span className="font-medium text-base text-foreground">{deal.brand_name}</span>
+                              <span className="font-medium text-base text-white">{deal.brand_name}</span>
                             </div>
                           </TableCell>
                           <TableCell className="px-4 py-4">
-                            <span className="text-base font-semibold text-foreground">
+                            <span className="text-base font-semibold text-white">
                               ₹{deal.deal_amount.toLocaleString('en-IN')}
                             </span>
                           </TableCell>
-                          <TableCell className="px-4 py-4 text-muted-foreground hidden md:table-cell">
+                          <TableCell className="px-4 py-4 text-white/60 hidden md:table-cell">
                             <span className="text-sm">{deal.platform || 'N/A'}</span>
                           </TableCell>
                           <TableCell className="px-4 py-4 hidden lg:table-cell">
@@ -614,18 +611,18 @@ const CreatorContracts = () => {
                     variant="outline"
                     onClick={handlePreviousPage}
                     disabled={currentPage === 1 || isLoadingBrandDeals}
-                    className="w-full md:w-auto"
+                    className="w-full md:w-auto bg-white/5 border-white/10 text-white hover:bg-white/10 disabled:opacity-50"
                   >
                     Previous
                   </Button>
-                  <span className="text-sm text-muted-foreground">
+                  <span className="text-sm text-white/60">
                     Page {currentPage} of {totalPages}
                   </span>
                   <Button
                     variant="outline"
                     onClick={handleNextPage}
                     disabled={currentPage === totalPages || isLoadingBrandDeals}
-                    className="w-full md:w-auto"
+                    className="w-full md:w-auto bg-white/5 border-white/10 text-white hover:bg-white/10 disabled:opacity-50"
                   >
                     Next
                   </Button>
@@ -639,15 +636,15 @@ const CreatorContracts = () => {
       {/* Brand Deal Form Dialog */}
       <Dialog open={isBrandDealFormOpen} onOpenChange={setIsBrandDealFormOpen}>
         <DialogContent 
-          className="sm:max-w-[600px] bg-card text-foreground border-border/40 rounded-xl shadow-lg backdrop-blur-sm h-[90vh] flex flex-col"
+          className="sm:max-w-[600px] bg-[#1C1C1E] text-white border-white/5 rounded-2xl shadow-2xl backdrop-blur-xl h-[90vh] flex flex-col"
           aria-labelledby="brand-deal-form-title"
           aria-describedby="brand-deal-form-description"
         >
           <DialogHeader className="space-y-2">
-            <DialogTitle id="brand-deal-form-title" className="text-xl font-semibold">
+            <DialogTitle id="brand-deal-form-title" className="text-xl font-semibold text-white">
               {editingBrandDeal ? 'Edit Brand Deal' : 'Add New Brand Deal'}
             </DialogTitle>
-            <DialogDescription id="brand-deal-form-description" className="text-sm text-muted-foreground">
+            <DialogDescription id="brand-deal-form-description" className="text-sm text-white/60">
               {editingBrandDeal ? 'Update the details for this brand collaboration.' : 'Enter the details for your new brand collaboration.'}
             </DialogDescription>
           </DialogHeader>
