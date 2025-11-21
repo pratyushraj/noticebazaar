@@ -52,7 +52,7 @@ const ScanHistory: React.FC<ScanHistoryProps> = ({ scans }) => {
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.4 }}
     >
-      <Card className="bg-[#1C1C1E] border-white/5 shadow-2xl rounded-2xl">
+      <Card className="bg-white/[0.06] backdrop-blur-[40px] border-white/10 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.3)]">
         <CardHeader>
           <CardTitle className="text-lg font-semibold flex items-center gap-2 text-white">
             <Calendar className="w-5 h-5 text-purple-400" />

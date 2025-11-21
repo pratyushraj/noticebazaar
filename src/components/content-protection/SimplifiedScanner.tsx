@@ -86,7 +86,7 @@ const SimplifiedScanner: React.FC<SimplifiedScannerProps> = ({
   };
 
   return (
-    <Card className="bg-[#1C1C1E] border-white/5 shadow-2xl rounded-2xl">
+    <Card className="bg-white/[0.06] backdrop-blur-[40px] border-white/10 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.3)]">
       <CardContent className="p-6">
         <div className="flex items-center gap-2 mb-4">
           <Search className="w-5 h-5 text-purple-400" />

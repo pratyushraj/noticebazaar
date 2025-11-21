@@ -331,7 +331,7 @@ const CreatorPaymentsAndRecovery = () => {
       )}
 
       {/* Payment Tracking - Mobile cards, desktop table */}
-      <section className="bg-[#1C1C1E] p-4 md:p-6 rounded-2xl shadow-2xl border border-white/5">
+      <section className="bg-white/[0.06] backdrop-blur-[40px] border-white/10 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.3)] p-4 md:p-6">
         <h2 className="text-lg md:text-xl font-semibold text-white mb-4">Payment Tracking</h2>
         <div className="flex flex-col sm:flex-row gap-3 md:gap-4 mb-4">
           <div className="relative flex-1">

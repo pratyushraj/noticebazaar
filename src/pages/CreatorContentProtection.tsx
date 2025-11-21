@@ -289,7 +289,7 @@ const CreatorContentProtection = () => {
       )}
 
       {/* Registered Original Content Section */}
-      <Card className="bg-[#1C1C1E] p-6 rounded-2xl shadow-2xl border border-white/5 mb-6">
+      <Card className="bg-white/[0.06] backdrop-blur-[40px] border-white/10 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.3)] p-6 mb-6">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-semibold text-white flex items-center">
             <ShieldCheck className="h-5 w-5 mr-2 text-purple-400" /> Registered Original Content
@@ -349,7 +349,7 @@ const CreatorContentProtection = () => {
 
       {/* --- 2. Scan and Matches View --- */}
       {selectedContent && (
-        <Card className="bg-[#1C1C1E] p-6 rounded-2xl shadow-2xl border border-white/5">
+        <Card className="bg-white/[0.06] backdrop-blur-[40px] border-white/10 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.3)] p-6">
           <div className="flex justify-between items-center mb-4 border-b border-white/5 pb-4">
             <h2 className="text-xl font-semibold text-white">
               Matches for: <span className="text-blue-400">{selectedContent.platform} Content</span>
