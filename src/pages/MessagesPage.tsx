@@ -132,12 +132,12 @@ function AdvisorListScoped({
 // --- ChatHeader (scoped) ---
 function ChatHeaderScoped({ advisor }: { advisor?: Advisor | null }) {
   return (
-    <div className="flex items-center justify-between px-3 md:px-4 py-2 md:py-3 border-b border-white/5 bg-[#1C1C1E]/95 backdrop-blur-xl flex-shrink-0">
+    <div className="flex items-center justify-between px-3 md:px-4 py-2 md:py-3 border-b border-white/5 bg-white/[0.06] backdrop-blur-[40px] flex-shrink-0">
       <div className="flex items-center gap-2 md:gap-3 flex-1 min-w-0">
         <LocalAvatar size="sm" src={advisor?.avatarUrl} alt={advisor?.name || 'Advisor'} />
         <div className="leading-tight flex-1 min-w-0">
-          <div className="text-sm font-semibold text-foreground truncate">{advisor?.name ?? 'Select an advisor'}</div>
-          <div className="text-xs text-muted-foreground truncate">{advisor?.role ?? ''}</div>
+          <div className="text-sm font-semibold text-white truncate">{advisor?.name ?? 'Select an advisor'}</div>
+          <div className="text-xs text-white/60 truncate">{advisor?.role ?? ''}</div>
         </div>
       </div>
 
@@ -320,7 +320,8 @@ function ChatWindowScoped({
               {/* Suggestions */}
               <div className="w-full max-w-md space-y-3 mt-4">
                 <p className="text-[11px] text-white/50 uppercase tracking-wider font-semibold">COMMON TOPICS</p>
-                <div className="grid grid-cols-2 gap-2 bg-white/5 rounded-2xl p-3 border border-white/5">
+                <div className="bg-white/[0.06] backdrop-blur-[40px] border-white/10 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.3)] p-4">
+                  <div className="grid grid-cols-2 gap-2">
                   {[
                     { label: 'Contract Review', icon: '📄' },
                     { label: 'Payment Questions', icon: '💰' },
@@ -336,6 +337,7 @@ function ChatWindowScoped({
                       <span className="truncate">{topic.label}</span>
                     </button>
                   ))}
+                  </div>
                 </div>
               </div>
 
