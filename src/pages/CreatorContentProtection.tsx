@@ -294,7 +294,7 @@ const CreatorContentProtection = () => {
           <h2 className="text-xl font-semibold text-white flex items-center">
             <ShieldCheck className="h-5 w-5 mr-2 text-purple-400" /> Registered Original Content
           </h2>
-          <Button onClick={() => setIsContentFormOpen(true)} className="bg-primary text-primary-foreground hover:bg-primary/90">
+          <Button onClick={() => setIsContentFormOpen(true)} className="bg-primary text-primary-foreground hover:bg-primary/90 whitespace-nowrap">
             <PlusCircle className="mr-2 h-4 w-4" /> Register New Content
           </Button>
         </div>
@@ -437,7 +437,13 @@ const CreatorContentProtection = () => {
               </TableBody>
             </Table>
           ) : (
-            <p className="text-muted-foreground text-center py-8">No copyright matches found in the latest scan.</p>
+            <div className="flex flex-col items-center justify-center py-12">
+              <div className="w-16 h-16 rounded-full bg-white/5 backdrop-blur-sm flex items-center justify-center border border-white/10 mb-4">
+                <CheckCircle className="w-8 h-8 text-green-400" />
+              </div>
+              <p className="text-white font-medium mb-1">No matches found</p>
+              <p className="text-sm text-white/60 text-center">Your content is protected. No copyright violations detected.</p>
+            </div>
           )}
         </Card>
       )}

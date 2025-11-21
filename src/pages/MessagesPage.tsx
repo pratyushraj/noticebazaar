@@ -179,10 +179,10 @@ function MessageInputScoped({ onSend, isLoading }: { onSend?: (text: string) => 
   };
 
   return (
-    <div className="w-full px-3 md:px-4 py-2 md:py-3 bg-card border-t border-border/40 flex-shrink-0">
-      <div className="flex items-center gap-2 bg-muted/20 border border-border/40 rounded-full px-2 md:px-3 py-1.5 md:py-2 shadow-sm transition-all duration-150">
+    <div className="w-full px-3 md:px-4 py-2 md:py-2.5 bg-white/[0.06] backdrop-blur-[40px] border-t border-white/5 flex-shrink-0">
+      <div className="flex items-center gap-2 bg-white/5 border border-white/10 rounded-full px-2 md:px-3 py-1.5 md:py-2 transition-all duration-150">
         <button 
-          className="p-1.5 md:p-2 rounded-full hover:bg-muted/40 transition text-muted-foreground hover:text-foreground flex-shrink-0" 
+          className="p-1.5 md:p-2 rounded-full hover:bg-white/10 transition text-white/60 hover:text-white flex-shrink-0" 
           type="button"
           onClick={() => {
             // TODO: Implement attachment functionality
@@ -198,7 +198,7 @@ function MessageInputScoped({ onSend, isLoading }: { onSend?: (text: string) => 
           onKeyDown={handleKeyDown}
           placeholder="Type your secure message…"
           disabled={isLoading}
-          className="resize-none overflow-hidden bg-transparent flex-1 text-sm outline-none placeholder:text-muted-foreground/70 text-foreground disabled:opacity-50 max-h-[120px]"
+          className="resize-none overflow-hidden bg-transparent flex-1 text-sm outline-none placeholder:text-white/40 text-white disabled:opacity-50 max-h-[120px]"
           rows={1}
         />
 

@@ -127,7 +127,7 @@ const FinancialOverviewHeader: React.FC<FinancialOverviewHeaderProps> = ({ allDe
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
         >
-          <Card className="relative overflow-hidden rounded-2xl px-5 py-4 border border-white/5 transition-all hover:scale-[1.02] bg-gradient-to-br from-[#0E121A] to-[#111827] shadow-[0px_4px_24px_rgba(0,0,0,0.25)]">
+          <Card className="bg-white/[0.06] backdrop-blur-[40px] border-white/10 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.3)] px-5 py-4 transition-all hover:border-white/20">
             <CardContent className="p-0">
               <div className="flex items-start justify-between">
                 <div className="flex items-start gap-3 md:gap-4 flex-1">
@@ -152,7 +152,7 @@ const FinancialOverviewHeader: React.FC<FinancialOverviewHeaderProps> = ({ allDe
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
           >
-            <Card className="relative overflow-hidden rounded-2xl px-5 py-4 border border-white/5 transition-all hover:scale-[1.02] bg-gradient-to-br from-[#210909] to-[#3A0F0F] shadow-[0px_4px_24px_rgba(0,0,0,0.25)]">
+            <Card className="bg-white/[0.06] backdrop-blur-[40px] border-white/10 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.3)] px-5 py-4 transition-all hover:border-white/20">
               <CardContent className="p-0">
                 <div className="flex items-start justify-between">
                   <div className="flex items-start gap-3 md:gap-4 flex-1">
@@ -175,7 +175,7 @@ const FinancialOverviewHeader: React.FC<FinancialOverviewHeaderProps> = ({ allDe
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
           >
-            <Card className="relative overflow-hidden rounded-2xl px-5 py-4 border border-white/5 transition-all hover:scale-[1.02] bg-gradient-to-br from-emerald-900/30 to-emerald-950/30 shadow-[0px_4px_24px_rgba(0,0,0,0.25)]">
+            <Card className="bg-white/[0.06] backdrop-blur-[40px] border-white/10 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.3)] px-5 py-4 transition-all hover:border-white/20">
               <CardContent className="p-0">
                 <div className="flex items-start justify-between">
                   <div className="flex items-start gap-3 md:gap-4 flex-1">
