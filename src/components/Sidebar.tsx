@@ -176,6 +176,10 @@ const Sidebar: React.FC<SidebarProps> = ({ className, profileRole }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const [searchQuery, setSearchQuery] = useState('');
+  
+  // For preview mode, always show sidebar on desktop
+  const isPreview = location.pathname === '/dashboard-preview';
+  const shouldShowOnDesktop = isPreview || isOpen;
 
   // Define menu sections with macOS/iOS Settings structure
   const menuSections: SidebarSection[] = [
@@ -377,13 +381,13 @@ const Sidebar: React.FC<SidebarProps> = ({ className, profileRole }) => {
       </AnimatePresence>
 
       {/* Sidebar */}
-      <AnimatePresence mode="wait">
-        {(isOpen || window.innerWidth >= 768) && (
+      <AnimatePresence>
+        {(shouldShowOnDesktop || isOpen) && (
           <motion.div
             ref={sidebarRef}
-            initial={{ opacity: 0, x: window.innerWidth >= 768 ? 0 : '-100%' }}
+            initial={{ opacity: 0, x: isPreview && window.innerWidth >= 768 ? 0 : '-100%' }}
             animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: window.innerWidth >= 768 ? 0 : '-100%' }}
+            exit={{ opacity: 0, x: isPreview && window.innerWidth >= 768 ? 0 : '-100%' }}
             transition={{
               type: "spring",
               damping: 25,
@@ -394,9 +398,11 @@ const Sidebar: React.FC<SidebarProps> = ({ className, profileRole }) => {
               "bg-[#0B0F1A] backdrop-blur-xl border-r border-white/5",
               "shadow-[0_0_40px_rgba(0,0,0,0.35)]",
               "z-[150]",
-              "md:static md:h-full md:top-0 md:rounded-none md:block",
+              "md:static md:h-full md:top-0 md:rounded-none",
               "rounded-r-2xl md:rounded-none",
-              window.innerWidth >= 768 ? "fixed top-16 left-0 md:relative md:top-0" : (isOpen ? "fixed top-16 left-0" : "hidden"),
+              isPreview && window.innerWidth >= 768 
+                ? "fixed top-16 left-0 md:relative md:top-0 md:block" 
+                : (isOpen ? "fixed top-16 left-0" : "hidden md:block"),
               className
             )}
           >
