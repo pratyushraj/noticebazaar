@@ -81,7 +81,7 @@ const EnhancedPaymentCard: React.FC<EnhancedPaymentCardProps> = ({
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.2 }}
     >
-      <Card className="bg-[#0F121A]/80 backdrop-blur-xl border border-white/5 rounded-2xl p-4 md:p-5 hover:border-white/10 transition-all shadow-[0_0_25px_-6px_rgba(0,0,0,0.45)]">
+      <Card className="bg-white/[0.06] backdrop-blur-[40px] border-white/10 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.3)] p-4 md:p-5 hover:border-white/20 transition-all">
         {/* Top Badge */}
         {displayDaysLeft !== null && (
           <div className={cn(
