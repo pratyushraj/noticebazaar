@@ -179,7 +179,6 @@ const Sidebar: React.FC<SidebarProps> = ({ className, profileRole }) => {
   
   // For preview mode, always show sidebar on desktop
   const isPreview = location.pathname === '/dashboard-preview';
-  const shouldShowOnDesktop = isPreview || isOpen;
 
   // Define menu sections with macOS/iOS Settings structure
   const menuSections: SidebarSection[] = [
