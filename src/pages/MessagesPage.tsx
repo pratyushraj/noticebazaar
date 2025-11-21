@@ -6,7 +6,7 @@
 
 import { useEffect, useRef, useState, useMemo } from 'react';
 import clsx from 'clsx';
-import { Menu, Lock, MessageSquare, Paperclip, ArrowUp, Loader2, ChevronRight } from 'lucide-react';
+import { Lock, MessageSquare, Paperclip, ArrowUp, Loader2, ChevronRight, FileText } from 'lucide-react';
 import { useSession } from '@/contexts/SessionContext';
 import { toast } from 'sonner';
 import { useProfiles } from '@/lib/hooks/useProfiles';
@@ -14,8 +14,6 @@ import { useMessages, useSendMessage } from '@/lib/hooks/useMessages';
 import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useSampleChatHistory } from '@/lib/hooks/useSampleChatHistory';
-import { Button } from '@/components/ui/button';
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { generateAvatarUrl } from '@/lib/utils/avatar';
 
@@ -179,10 +177,10 @@ function MessageInputScoped({ onSend, isLoading }: { onSend?: (text: string) => 
   };
 
   return (
-    <div className="w-full px-3 md:px-4 py-2 md:py-2.5 bg-white/[0.06] backdrop-blur-[40px] border-t border-white/5 flex-shrink-0">
-      <div className="flex items-center gap-2 bg-white/5 border border-white/10 rounded-full px-2 md:px-3 py-1.5 md:py-2 transition-all duration-150">
+    <div className="w-full px-3 md:px-4 py-1.5 bg-white/[0.06] backdrop-blur-[40px] border-t border-white/5 flex-shrink-0">
+      <div className="flex items-center gap-2 bg-white/5 border border-white/10 rounded-full px-2 md:px-3 py-1 transition-all duration-150 focus-within:border-blue-400/50 focus-within:ring-1 focus-within:ring-blue-400/20">
         <button 
-          className="p-1.5 md:p-2 rounded-full hover:bg-white/10 transition text-white/60 hover:text-white flex-shrink-0" 
+          className="p-1.5 rounded-full hover:bg-white/10 transition text-white/60 hover:text-white flex-shrink-0" 
           type="button"
           onClick={() => {
             // TODO: Implement attachment functionality
@@ -198,7 +196,7 @@ function MessageInputScoped({ onSend, isLoading }: { onSend?: (text: string) => 
           onKeyDown={handleKeyDown}
           placeholder="Type your secure message…"
           disabled={isLoading}
-          className="resize-none overflow-hidden bg-transparent flex-1 text-sm outline-none placeholder:text-white/40 text-white disabled:opacity-50 max-h-[120px]"
+          className="resize-none overflow-hidden bg-transparent flex-1 text-sm outline-none placeholder:text-white/40 text-white disabled:opacity-50 max-h-[96px]"
           rows={1}
         />
 
@@ -206,8 +204,8 @@ function MessageInputScoped({ onSend, isLoading }: { onSend?: (text: string) => 
           onClick={handleSend}
           disabled={!value.trim() || isLoading}
           className={clsx(
-            "ml-1 md:ml-2 p-1.5 md:p-2 rounded-full bg-blue-600 hover:bg-blue-700 transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0",
-            value.trim() && "hover:shadow-[0_8px_24px_rgba(59,130,246,0.12)]"
+            "ml-1 md:ml-2 w-8 h-8 md:w-9 md:h-9 rounded-full bg-blue-600 hover:bg-blue-700 transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0 flex items-center justify-center border border-blue-400/30 shadow-[0_0_0_1px_rgba(59,130,246,0.2)]",
+            value.trim() && "hover:shadow-[0_0_0_2px_rgba(59,130,246,0.3),0_4px_12px_rgba(59,130,246,0.2)]"
           )}
           aria-label="Send message"
           type="button"
@@ -304,44 +302,58 @@ function ChatWindowScoped({
   }, [messages]);
 
   return (
-    <div className="flex-1 flex flex-col rounded-xl md:border md:border-border/40 overflow-hidden bg-card md:shadow-sm h-full">
+    <div className="flex-1 flex flex-col rounded-xl md:border md:border-white/10 overflow-hidden bg-white/[0.06] backdrop-blur-[40px] md:shadow-[0_8px_32px_rgba(0,0,0,0.3)] h-full">
       <ChatHeaderScoped advisor={advisor} />
 
       <ScrollArea className="flex-1 min-h-0">
         <div className="p-4 md:p-6">
           {!hasMessages ? (
-            <div className="h-full min-h-[calc(100vh-400px)] md:min-h-[60vh] flex flex-col items-center justify-center text-center px-4">
-              {/* iOS Messages style empty state */}
-              <div className="flex flex-col items-center gap-4 max-w-sm">
-                {/* Large icon */}
-                <div className="w-20 h-20 rounded-full bg-white/5 backdrop-blur-sm flex items-center justify-center border border-white/10">
-                  <MessageSquare size={40} className="text-white/40" />
-                </div>
-                
-                {/* Title and subtitle */}
-                <div className="space-y-1">
-                  <div className="text-lg font-semibold text-white">No Messages</div>
-                  <div className="text-sm text-white/60">Tap a topic below to start a conversation</div>
-                </div>
-                
-                {/* iOS-style suggestion buttons */}
-                <div className="w-full space-y-2 mt-2">
-                  {[
-                    { label: 'Contract Review', icon: '📄' },
-                    { label: 'Payment Questions', icon: '💰' },
-                    { label: 'Legal Advice', icon: '⚖️' },
-                    { label: 'Tax Compliance', icon: '📊' },
-                  ].map((topic) => (
-                    <button
-                      key={topic.label}
-                      onClick={() => onSend?.(`I need help with ${topic.label.toLowerCase()}`)}
-                      className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl bg-white/[0.06] backdrop-blur-[20px] border border-white/10 hover:bg-white/[0.1] hover:border-white/20 transition-all text-left active:scale-[0.98]"
-                    >
-                      <span className="text-xl">{topic.icon}</span>
-                      <span className="text-sm font-medium text-white flex-1">{topic.label}</span>
-                      <ChevronRight className="w-4 h-4 text-white/40" />
-                    </button>
-                  ))}
+            <div className="h-full min-h-[calc(100vh-400px)] md:min-h-[60vh] flex flex-col items-center justify-center text-center px-4 py-6">
+              {/* Glassmorphism panel for empty state */}
+              <div className="w-full max-w-md bg-white/[0.06] backdrop-blur-[40px] border border-white/10 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.3)] p-6 md:p-8">
+                <div className="flex flex-col items-center gap-4">
+                  {/* Lighter icon */}
+                  <div className="w-16 h-16 rounded-full bg-white/5 backdrop-blur-sm flex items-center justify-center border border-white/10">
+                    <MessageSquare size={32} className="text-white/60" />
+                  </div>
+                  
+                  {/* Title and subtitle */}
+                  <div className="space-y-1">
+                    <div className="text-lg font-semibold text-white">No Messages Yet</div>
+                    <div className="text-sm text-white/60">Start by selecting a topic below</div>
+                  </div>
+                  
+                  {/* Secondary action - Upload Contract */}
+                  <button
+                    onClick={() => {
+                      // TODO: Implement upload contract functionality
+                      toast.info('Upload contract feature coming soon');
+                    }}
+                    className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-purple-500/10 border border-purple-400/20 hover:bg-purple-500/20 hover:border-purple-400/30 transition-all text-sm font-medium text-white"
+                  >
+                    <FileText className="w-4 h-4" />
+                    Upload a Contract
+                  </button>
+                  
+                  {/* iOS-style suggestion buttons */}
+                  <div className="w-full space-y-2 mt-2">
+                    {[
+                      { label: 'Contract Review', icon: '📄' },
+                      { label: 'Payment Questions', icon: '💰' },
+                      { label: 'Legal Advice', icon: '⚖️' },
+                      { label: 'Tax Compliance', icon: '📊' },
+                    ].map((topic) => (
+                      <button
+                        key={topic.label}
+                        onClick={() => onSend?.(`I need help with ${topic.label.toLowerCase()}`)}
+                        className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl bg-white/[0.06] backdrop-blur-[20px] border border-white/10 hover:bg-white/[0.1] hover:border-white/20 transition-all text-left active:scale-[0.98]"
+                      >
+                        <span className="text-xl">{topic.icon}</span>
+                        <span className="text-sm font-medium text-white flex-1">{topic.label}</span>
+                        <ChevronRight className="w-4 h-4 text-white/40" />
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>
@@ -373,7 +385,6 @@ function ChatWindowScoped({
 export default function MessagesPage() {
   const { loading: sessionLoading, profile, isAdmin, user } = useSession();
   const [selectedAdvisorId, setSelectedAdvisorId] = useState<string | null>(null);
-  const [isMobileSheetOpen, setIsMobileSheetOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const queryClient = useQueryClient();
 
@@ -522,9 +533,6 @@ export default function MessagesPage() {
 
   const handleSelectAdvisor = (advisor: Advisor) => {
     setSelectedAdvisorId(advisor.id);
-    if (isMobile) {
-      setIsMobileSheetOpen(false);
-    }
   };
 
   const handleSend = async (text: string) => {
@@ -580,21 +588,28 @@ export default function MessagesPage() {
                 const caAdvisor = advisors.find(a => a.role === 'Chartered Accountant');
                 if (caAdvisor) {
                   handleSelectAdvisor(caAdvisor);
-                  if (isMobile) setIsMobileSheetOpen(false);
                 }
               }}
               className={clsx(
-                "bg-white/[0.06] backdrop-blur-[40px] border-white/10 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.3)] p-4 cursor-pointer transition-all hover:border-white/20 hover:bg-white/[0.08]",
-                selectedAdvisorId === caProfile.id && "border-blue-400/50 bg-blue-500/10"
+                "bg-white/[0.06] backdrop-blur-[40px] border rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.3)] p-3 cursor-pointer transition-all hover:border-white/20 hover:bg-white/[0.08] h-[72px] flex items-center",
+                selectedAdvisorId === caProfile.id 
+                  ? "border-blue-400/50 bg-blue-500/10 shadow-[0_0_0_1px_rgba(59,130,246,0.3),0_8px_32px_rgba(0,0,0,0.3)]" 
+                  : "border-white/10"
               )}
             >
-              <div className="flex items-center gap-3">
+              <div className="relative flex-shrink-0">
                 <LocalAvatar size="sm" src={caProfile.avatar_url || generateAvatarUrl(caProfile.first_name, caProfile.last_name)} alt={`${caProfile.first_name} ${caProfile.last_name}`} />
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-white truncate">{caProfile.first_name} {caProfile.last_name}</p>
+                <span className="absolute right-0 bottom-0 inline-block w-2.5 h-2.5 bg-green-400 rounded-full ring-2 ring-background" />
+              </div>
+              <div className="flex-1 min-w-0 ml-3">
+                <p className="text-sm font-semibold text-white truncate">{caProfile.first_name} {caProfile.last_name}</p>
+                <div className="flex items-center gap-1.5 mt-0.5">
                   <p className="text-xs text-white/60">Chartered Accountant</p>
+                  <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-white/5 border border-white/10">
+                    <Lock className="h-2.5 w-2.5 text-green-400" />
+                    <span className="text-[10px] text-white/50">Private</span>
+                  </span>
                 </div>
-                <Lock className="h-4 w-4 text-green-400 flex-shrink-0" />
               </div>
             </div>
           )}
@@ -606,21 +621,28 @@ export default function MessagesPage() {
                 const legalAdvisor = advisors.find(a => a.role === 'Legal Advisor');
                 if (legalAdvisor) {
                   handleSelectAdvisor(legalAdvisor);
-                  if (isMobile) setIsMobileSheetOpen(false);
                 }
               }}
               className={clsx(
-                "bg-white/[0.06] backdrop-blur-[40px] border-white/10 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.3)] p-4 cursor-pointer transition-all hover:border-white/20 hover:bg-white/[0.08]",
-                selectedAdvisorId === adminProfile.id && "border-blue-400/50 bg-blue-500/10"
+                "bg-white/[0.06] backdrop-blur-[40px] border rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.3)] p-3 cursor-pointer transition-all hover:border-white/20 hover:bg-white/[0.08] h-[72px] flex items-center",
+                selectedAdvisorId === adminProfile.id 
+                  ? "border-blue-400/50 bg-blue-500/10 shadow-[0_0_0_1px_rgba(59,130,246,0.3),0_8px_32px_rgba(0,0,0,0.3)]" 
+                  : "border-white/10"
               )}
             >
-              <div className="flex items-center gap-3">
+              <div className="relative flex-shrink-0">
                 <LocalAvatar size="sm" src={adminProfile.avatar_url || generateAvatarUrl(adminProfile.first_name, adminProfile.last_name)} alt={`${adminProfile.first_name} ${adminProfile.last_name}`} />
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-white truncate">{adminProfile.first_name} {adminProfile.last_name}</p>
+                <span className="absolute right-0 bottom-0 inline-block w-2.5 h-2.5 bg-green-400 rounded-full ring-2 ring-background" />
+              </div>
+              <div className="flex-1 min-w-0 ml-3">
+                <p className="text-sm font-semibold text-white truncate">{adminProfile.first_name} {adminProfile.last_name}</p>
+                <div className="flex items-center gap-1.5 mt-0.5">
                   <p className="text-xs text-white/60">Legal Advisor</p>
+                  <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-white/5 border border-white/10">
+                    <Lock className="h-2.5 w-2.5 text-green-400" />
+                    <span className="text-[10px] text-white/50">Private</span>
+                  </span>
                 </div>
-                <Lock className="h-4 w-4 text-green-400 flex-shrink-0" />
               </div>
             </div>
           )}

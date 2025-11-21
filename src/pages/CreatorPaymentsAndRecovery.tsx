@@ -293,8 +293,8 @@ const CreatorPaymentsAndRecovery = () => {
           className="mb-6"
         >
           <Card className="bg-gradient-to-br from-blue-900/20 to-indigo-900/20 border border-blue-700/40">
-            <CardContent className="p-4">
-              <p className="text-sm text-muted-foreground text-center">
+            <CardContent className="p-6 py-5">
+              <p className="text-sm text-muted-foreground text-center leading-relaxed">
                 Creators like you get paid every <span className="font-semibold text-foreground">32–40 days</span> on average.
               </p>
             </CardContent>

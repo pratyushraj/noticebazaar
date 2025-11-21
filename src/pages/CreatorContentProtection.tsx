@@ -289,37 +289,45 @@ const CreatorContentProtection = () => {
       )}
 
       {/* Registered Original Content Section */}
-      <Card className="bg-white/[0.06] backdrop-blur-[40px] border-white/10 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.3)] p-6 mb-6">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-semibold text-white flex items-center">
-            <ShieldCheck className="h-5 w-5 mr-2 text-purple-400" /> Registered Original Content
-          </h2>
-          <Button onClick={() => setIsContentFormOpen(true)} className="bg-primary text-primary-foreground hover:bg-primary/90 whitespace-nowrap">
-            <PlusCircle className="mr-2 h-4 w-4" /> Register New Content
-          </Button>
-        </div>
-
-        {originalContentList && originalContentList.length > 0 ? (
-          <div className="space-y-4">
-            <Label htmlFor="contentSelector">Select Content to Scan/View Matches</Label>
-            <Select
-              onValueChange={setSelectedContentId}
-              value={selectedContentId || ''}
-              disabled={!originalContentList || originalContentList.length === 0}
+      <Card className="relative bg-white/[0.06] backdrop-blur-[40px] border border-white/10 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.3)] p-6 mb-6 overflow-hidden">
+        <div className="relative">
+          <div className="flex justify-between items-start mb-4">
+            <div className="flex-1">
+              <h2 className="text-sm font-bold text-white uppercase tracking-wider flex items-center mb-2">
+                <ShieldCheck className="h-4 w-4 mr-2 text-purple-400" /> Registered Original Content
+              </h2>
+              <p className="text-xs text-white/60 leading-relaxed">
+                Manage and monitor your protected content.
+              </p>
+            </div>
+            <Button 
+              onClick={() => setIsContentFormOpen(true)} 
+              className="bg-blue-600 text-white hover:bg-blue-700 whitespace-nowrap text-sm px-3 py-1.5 h-auto rounded-lg shadow-md transition-all"
             >
-              <SelectTrigger id="contentSelector">
-                <SelectValue placeholder="Choose content to manage" />
-              </SelectTrigger>
-              <SelectContent>
-                {originalContentList.map((content) => (
-                  <SelectItem key={content.id} value={content.id}>
-                    {content.platform} - {content.original_url.substring(0, 50)}...
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+              <PlusCircle className="mr-1.5 h-3.5 w-3.5" /> Register New
+            </Button>
           </div>
-        ) : (
+
+          {originalContentList && originalContentList.length > 0 ? (
+            <div className="mt-4">
+              <Select
+                onValueChange={setSelectedContentId}
+                value={selectedContentId || ''}
+                disabled={!originalContentList || originalContentList.length === 0}
+              >
+                <SelectTrigger id="contentSelector" className="bg-white/5 text-white border-white/10 hover:border-white/20 focus:border-blue-400/50 rounded-xl h-11 w-full">
+                  <SelectValue placeholder="Choose content to manage" />
+                </SelectTrigger>
+                <SelectContent className="bg-[#1C1C1E] border-white/5 text-white">
+                  {originalContentList.map((content) => (
+                    <SelectItem key={content.id} value={content.id}>
+                      {content.platform} - {content.original_url.substring(0, 50)}...
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          ) : (
           <div className="text-center py-12 space-y-6">
             <div className="w-20 h-20 mx-auto rounded-full bg-purple-500/10 flex items-center justify-center">
               <ShieldCheck className="w-10 h-10 text-purple-500" />
@@ -345,31 +353,36 @@ const CreatorContentProtection = () => {
             </Button>
           </div>
         )}
+        </div>
       </Card>
 
       {/* --- 2. Scan and Matches View --- */}
       {selectedContent && (
-        <Card className="bg-white/[0.06] backdrop-blur-[40px] border-white/10 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.3)] p-6">
-          <div className="flex justify-between items-center mb-4 border-b border-white/5 pb-4">
-            <h2 className="text-xl font-semibold text-white">
-              Matches for: <span className="text-blue-400">{selectedContent.platform} Content</span>
-            </h2>
-            <Button
-              onClick={() => handleStartScan(selectedContent.id)}
-              disabled={startScanMutation.isPending}
-              className="bg-accent-gold text-accent-gold-foreground hover:bg-accent-gold/90"
-            >
-              {startScanMutation.isPending ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Scanning...
-                </>
-              ) : (
-                <>
-                  <Search className="mr-2 h-4 w-4" /> Run New Scan
-                </>
-              )}
-            </Button>
-          </div>
+        <Card className="relative bg-white/[0.06] backdrop-blur-[40px] border border-white/10 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.3)] p-6 overflow-hidden">
+          <div className="relative">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-sm font-semibold text-white">
+                Matches for: <span className="text-blue-400">{selectedContent.platform} Content</span>
+              </h2>
+              <div className="flex items-center gap-3">
+                <p className="text-xs text-white/40">Last Scanned: 2min</p>
+                <Button
+                  onClick={() => handleStartScan(selectedContent.id)}
+                  disabled={startScanMutation.isPending}
+                  className="bg-blue-600 text-white hover:bg-blue-700 rounded-lg shadow-md transition-all text-sm px-3 py-1.5 h-auto"
+                >
+                  {startScanMutation.isPending ? (
+                    <>
+                      <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" /> Scanning...
+                    </>
+                  ) : (
+                    <>
+                      <Search className="mr-1.5 h-3.5 w-3.5" /> Run New Scan
+                    </>
+                  )}
+                </Button>
+              </div>
+            </div>
 
           {isLoadingMatches ? (
             <div className="flex justify-center items-center py-8">
@@ -437,14 +450,19 @@ const CreatorContentProtection = () => {
               </TableBody>
             </Table>
           ) : (
-            <div className="flex flex-col items-center justify-center py-12">
-              <div className="w-16 h-16 rounded-full bg-white/5 backdrop-blur-sm flex items-center justify-center border border-white/10 mb-4">
-                <CheckCircle className="w-8 h-8 text-green-400" />
+            <div className="flex flex-col items-center justify-center py-12 space-y-4">
+              <div className="relative w-20 h-20 rounded-full bg-white/5 backdrop-blur-sm flex items-center justify-center border border-white/10">
+                {/* Soft green glow effect */}
+                <div className="absolute inset-0 rounded-full bg-green-400/30 blur-2xl" />
+                <CheckCircle className="w-10 h-10 text-green-400 relative z-10" />
               </div>
-              <p className="text-white font-medium mb-1">No matches found</p>
-              <p className="text-sm text-white/60 text-center">Your content is protected. No copyright violations detected.</p>
+              <div className="space-y-1 text-center">
+                <p className="text-white font-semibold text-base">No matches found</p>
+                <p className="text-sm text-white/60">Your content is protected. No copyright violations detected.</p>
+              </div>
             </div>
           )}
+          </div>
         </Card>
       )}
 
