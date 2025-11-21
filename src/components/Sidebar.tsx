@@ -377,13 +377,13 @@ const Sidebar: React.FC<SidebarProps> = ({ className, profileRole }) => {
       </AnimatePresence>
 
       {/* Sidebar */}
-      <AnimatePresence>
-        {isOpen && (
+      <AnimatePresence mode="wait">
+        {(isOpen || window.innerWidth >= 768) && (
           <motion.div
             ref={sidebarRef}
-            initial={{ opacity: 0, x: '-100%' }}
+            initial={{ opacity: 0, x: window.innerWidth >= 768 ? 0 : '-100%' }}
             animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: '-100%' }}
+            exit={{ opacity: 0, x: window.innerWidth >= 768 ? 0 : '-100%' }}
             transition={{
               type: "spring",
               damping: 25,
@@ -396,7 +396,7 @@ const Sidebar: React.FC<SidebarProps> = ({ className, profileRole }) => {
               "z-[150]",
               "md:static md:h-full md:top-0 md:rounded-none md:block",
               "rounded-r-2xl md:rounded-none",
-              isOpen ? "fixed top-16 left-0" : "hidden",
+              window.innerWidth >= 768 ? "fixed top-16 left-0 md:relative md:top-0" : (isOpen ? "fixed top-16 left-0" : "hidden"),
               className
             )}
           >
