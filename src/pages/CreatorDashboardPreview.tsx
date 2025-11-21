@@ -556,9 +556,15 @@ const CreatorDashboardPreview = () => {
                 <ActionCenter
                   urgentActions={dashboardData.urgentActions || []}
                   brandDeals={demoBrandDeals}
-                  onSendReminder={() => {}}
-                  onEscalate={() => {}}
-                  onAnalyzeContract={() => {}}
+                  onSendReminder={(dealId) => {
+                    toast.info('Payment reminder feature available after sign in');
+                  }}
+                  onEscalate={() => {
+                    toast.info('Escalation feature available after sign in');
+                  }}
+                  onAnalyzeContract={(dealId) => {
+                    toast.info('AI contract analysis available after sign in');
+                  }}
                 />
               </div>
             </section>
