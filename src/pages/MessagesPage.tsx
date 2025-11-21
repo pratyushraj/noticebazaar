@@ -6,7 +6,7 @@
 
 import { useEffect, useRef, useState, useMemo } from 'react';
 import clsx from 'clsx';
-import { Menu, Lock, MessageSquare, Paperclip, ArrowUp, Loader2 } from 'lucide-react';
+import { Menu, Lock, MessageSquare, Paperclip, ArrowUp, Loader2, ChevronRight } from 'lucide-react';
 import { useSession } from '@/contexts/SessionContext';
 import { toast } from 'sonner';
 import { useProfiles } from '@/lib/hooks/useProfiles';
@@ -310,18 +310,22 @@ function ChatWindowScoped({
       <ScrollArea className="flex-1 min-h-0">
         <div className="p-4 md:p-6">
           {!hasMessages ? (
-            <div className="h-full min-h-[calc(100vh-400px)] md:min-h-[60vh] flex flex-col items-center justify-center text-center text-white/60 gap-6">
-              <MessageSquare size={48} className="opacity-10 text-white/20" />
-              <div className="space-y-2">
-                <div className="text-base font-medium text-white">No messages yet</div>
-                <div className="text-sm text-white/60">Start the conversation with your advisor</div>
-              </div>
-              
-              {/* Suggestions */}
-              <div className="w-full max-w-md space-y-3 mt-4">
-                <p className="text-[11px] text-white/50 uppercase tracking-wider font-semibold">COMMON TOPICS</p>
-                <div className="bg-white/[0.06] backdrop-blur-[40px] border-white/10 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.3)] p-4">
-                  <div className="grid grid-cols-2 gap-2">
+            <div className="h-full min-h-[calc(100vh-400px)] md:min-h-[60vh] flex flex-col items-center justify-center text-center px-4">
+              {/* iOS Messages style empty state */}
+              <div className="flex flex-col items-center gap-4 max-w-sm">
+                {/* Large icon */}
+                <div className="w-20 h-20 rounded-full bg-white/5 backdrop-blur-sm flex items-center justify-center border border-white/10">
+                  <MessageSquare size={40} className="text-white/40" />
+                </div>
+                
+                {/* Title and subtitle */}
+                <div className="space-y-1">
+                  <div className="text-lg font-semibold text-white">No Messages</div>
+                  <div className="text-sm text-white/60">Tap a topic below to start a conversation</div>
+                </div>
+                
+                {/* iOS-style suggestion buttons */}
+                <div className="w-full space-y-2 mt-2">
                   {[
                     { label: 'Contract Review', icon: '📄' },
                     { label: 'Payment Questions', icon: '💰' },
@@ -331,24 +335,14 @@ function ChatWindowScoped({
                     <button
                       key={topic.label}
                       onClick={() => onSend?.(`I need help with ${topic.label.toLowerCase()}`)}
-                      className="flex items-center gap-2 px-3 py-2 rounded-xl border border-white/5 bg-white/5 hover:bg-white/10 transition-colors text-sm text-white active:bg-white/15"
+                      className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl bg-white/[0.06] backdrop-blur-[20px] border border-white/10 hover:bg-white/[0.1] hover:border-white/20 transition-all text-left active:scale-[0.98]"
                     >
-                      <span>{topic.icon}</span>
-                      <span className="truncate">{topic.label}</span>
+                      <span className="text-xl">{topic.icon}</span>
+                      <span className="text-sm font-medium text-white flex-1">{topic.label}</span>
+                      <ChevronRight className="w-4 h-4 text-white/40" />
                     </button>
                   ))}
-                  </div>
                 </div>
-              </div>
-
-              {/* Help Access */}
-              <div className="mt-4">
-                <button
-                  onClick={() => onSend?.("I need help")}
-                  className="text-xs text-blue-400 hover:text-blue-300 underline"
-                >
-                  Need Help? Click here
-                </button>
               </div>
             </div>
           ) : (

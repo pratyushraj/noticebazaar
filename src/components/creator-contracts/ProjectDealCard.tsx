@@ -168,8 +168,8 @@ const ProjectDealCard: React.FC<ProjectDealCardProps> = ({
     >
       <Card
         className={cn(
-          "bg-gradient-to-br from-card to-card/50 border rounded-xl p-4 hover:shadow-lg transition-all cursor-pointer group",
-          stage === 'deliverables_due' && 'border-orange-500/30 bg-orange-500/5'
+          "bg-white/[0.06] backdrop-blur-[40px] border-white/10 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.3)] p-4 hover:border-white/20 hover:bg-white/[0.08] transition-all cursor-pointer group",
+          stage === 'deliverables_due' && 'border-orange-500/30 bg-orange-500/10'
         )}
         onClick={() => onView(deal)}
       >
