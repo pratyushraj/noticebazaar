@@ -36,7 +36,17 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
       .single();
 
     // If error is due to missing columns (400 or 42703), try with fewer fields
-    if (error && ((error as any).code === '42703' || (error as any).code === 'P0001' || (error as any).message?.includes('column') || (error as any).status === 400)) {
+    // Check for various error indicators: PostgreSQL column errors, HTTP 400, or column-related messages
+    const isColumnError = error && (
+      (error as any).code === '42703' || 
+      (error as any).code === 'P0001' || 
+      (error as any).message?.includes('column') || 
+      (error as any).status === 400 ||
+      (error as any).statusCode === 400 ||
+      (error as any).hint?.includes('column')
+    );
+    
+    if (isColumnError) {
       // Silently handle missing columns - expected if migrations haven't run yet
       
       // Retry with basic + trial fields only
@@ -46,7 +56,14 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
         .eq('id', user.id)
         .single();
 
-      if (trialError && ((trialError as any).code === '42703' || (trialError as any).status === 400)) {
+      const isTrialColumnError = trialError && (
+        (trialError as any).code === '42703' || 
+        (trialError as any).status === 400 ||
+        (trialError as any).statusCode === 400 ||
+        (trialError as any).message?.includes('column')
+      );
+      
+      if (isTrialColumnError) {
         // If trial fields also don't exist, try with just core basic fields (no social media)
         const { data: basicData, error: basicError } = await supabase
           .from('profiles')
@@ -54,7 +71,14 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
           .eq('id', user.id)
           .single();
 
-        if (basicError && ((basicError as any).code === '42703' || (basicError as any).status === 400)) {
+        const isBasicColumnError = basicError && (
+          (basicError as any).code === '42703' || 
+          (basicError as any).status === 400 ||
+          (basicError as any).statusCode === 400 ||
+          (basicError as any).message?.includes('column')
+        );
+        
+        if (isBasicColumnError) {
           // If even basic fields are missing, try absolute minimum
           const { data: minimalData, error: minimalError } = await supabase
             .from('profiles')
@@ -63,7 +87,14 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
             .single();
 
           if (minimalError && (minimalError as any).code !== 'PGRST116') {
-            console.error('SessionContext: Error fetching profile:', minimalError);
+            // Only log non-column errors (PGRST116 is "not found", which is fine)
+            const isMinimalColumnError = (minimalError as any).code === '42703' || 
+              (minimalError as any).status === 400 ||
+              (minimalError as any).statusCode === 400 ||
+              (minimalError as any).message?.includes('column');
+            if (!isMinimalColumnError) {
+              console.error('SessionContext: Error fetching profile:', minimalError);
+            }
             return null;
           }
 

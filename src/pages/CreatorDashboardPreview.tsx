@@ -10,9 +10,10 @@ import {
   Calendar,
   AlertTriangle,
   FileText,
-  Info
+  TrendingUp as TrendingUpIcon,
 } from 'lucide-react';
 import ActionCenter from '@/components/creator-dashboard/ActionCenter';
+import QuickActionsFAB from '@/components/creator-dashboard/QuickActionsFAB';
 import { Card, CardContent } from '@/components/ui/card';
 import { BrandDeal } from '@/types';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -25,7 +26,10 @@ import EnhancedPaymentCard from '@/components/payments/EnhancedPaymentCard';
 import FinancialOverviewHeader from '@/components/payments/FinancialOverviewHeader';
 import PaymentQuickFilters from '@/components/payments/PaymentQuickFilters';
 import Breadcrumbs from '@/components/navigation/Breadcrumbs';
-import { Link } from 'react-router-dom';
+import ProtectionDashboardHeader from '@/components/content-protection/ProtectionDashboardHeader';
+import SimplifiedScanner from '@/components/content-protection/SimplifiedScanner';
+import ScanHistory from '@/components/content-protection/ScanHistory';
+import { toast } from 'sonner';
 
 // Helper functions
 const getDealStage = (deal: BrandDeal): DealStage => {
@@ -380,26 +384,6 @@ const CreatorDashboardPreview = () => {
 
   return (
     <>
-      {/* Preview Banner */}
-      <div className="bg-blue-500/20 border-b border-blue-500/30 px-4 py-3 sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto flex items-center gap-3">
-          <Info className="h-5 w-5 text-blue-400" />
-          <div className="flex-1">
-            <p className="text-sm font-medium text-white">
-              Dashboard Preview
-            </p>
-            <p className="text-xs text-white/60">
-              This is a demo version. <Link to="/login" className="underline hover:text-white">Sign in</Link> to access your real dashboard.
-            </p>
-          </div>
-          <Link to="/login">
-            <Button className="bg-blue-600 hover:bg-blue-700 text-white">
-              Sign In
-            </Button>
-          </Link>
-        </div>
-      </div>
-
       <div className="min-h-screen text-white relative">
         <div className="relative z-10 max-w-7xl mx-auto px-4 py-8 pb-24 md:pb-8">
           {/* Breadcrumbs - Show for non-overview tabs */}
@@ -697,16 +681,50 @@ const CreatorDashboardPreview = () => {
           {/* Protection Tab Content */}
           {activeTab === 'protection' && (
           <div className="space-y-6">
-            <h2 className="text-2xl font-semibold text-white">Content Protection</h2>
+            <ProtectionDashboardHeader
+              originalContent={[]}
+              matches={[]}
+              scansThisMonth={0}
+            />
+            
+            <SimplifiedScanner
+              onScan={() => {
+                toast.info('Content scanning available after sign in');
+              }}
+              isScanning={false}
+            />
+            
+            <ScanHistory scans={[]} />
+            
             <Card className="bg-white/[0.06] backdrop-blur-[40px] border-white/10 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.3)]">
               <CardContent className="p-6">
-                <p className="text-white/60">
-                  Content protection features are available after signing in.
-                </p>
+                <div className="text-center py-8">
+                  <p className="text-white/60 mb-4">
+                    Register your content to start protecting it from copyright violations.
+                  </p>
+                  <Button
+                    onClick={() => {
+                      toast.info('Content registration available after sign in');
+                    }}
+                    className="bg-blue-600 hover:bg-blue-700 text-white"
+                  >
+                    Register New Content
+                  </Button>
+                </div>
               </CardContent>
             </Card>
           </div>
           )}
+          
+          {/* Quick Actions FAB */}
+          <QuickActionsFAB />
+          
+          {/* Footer */}
+          <footer className="mt-6 pb-6 text-center">
+            <p className="text-[10px] sm:text-xs text-white/30">
+              Powered by NoticeBazaar • Secure Legal Portal ©2025
+            </p>
+          </footer>
         </div>
       </div>
     </>
