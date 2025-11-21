@@ -133,10 +133,21 @@ const CreatorDashboardPreview = () => {
     const currentMonth = now.getMonth();
     const currentYear = now.getFullYear();
     
+    const baseDeal = {
+      creator_id: 'demo-creator',
+      organization_id: 'demo-org',
+      brand_email: null,
+      contact_person: null,
+      contract_file_url: null,
+      invoice_file_url: null,
+      updated_at: null,
+      utr_number: null,
+    };
+    
     return [
       {
+        ...baseDeal,
         id: 'demo-1',
-        creator_id: 'demo-creator',
         brand_name: 'Levi\'s',
         platform: 'Instagram',
         deal_amount: 1000,
@@ -145,10 +156,11 @@ const CreatorDashboardPreview = () => {
         created_at: new Date(currentYear, currentMonth, 15).toISOString(),
         deliverables: JSON.stringify([{ type: 'Reel', count: 1 }]),
         due_date: new Date(currentYear, currentMonth, 25).toISOString(),
+        payment_received_date: null,
       },
       {
+        ...baseDeal,
         id: 'demo-2',
-        creator_id: 'demo-creator',
         brand_name: 'Ajio',
         platform: 'Instagram',
         deal_amount: 14500,
@@ -156,10 +168,12 @@ const CreatorDashboardPreview = () => {
         payment_expected_date: new Date(currentYear, currentMonth, 22).toISOString(),
         created_at: new Date(currentYear, currentMonth - 1, 20).toISOString(),
         deliverables: JSON.stringify([{ type: 'Reel', count: 1 }, { type: 'Stories', count: 3 }]),
+        due_date: new Date(currentYear, currentMonth, 22).toISOString(),
+        payment_received_date: null,
       },
       {
+        ...baseDeal,
         id: 'demo-3',
-        creator_id: 'demo-creator',
         brand_name: 'Nike',
         platform: 'YouTube',
         deal_amount: 20000,
@@ -167,10 +181,12 @@ const CreatorDashboardPreview = () => {
         payment_expected_date: new Date(currentYear, currentMonth, 30).toISOString(),
         created_at: new Date(currentYear, currentMonth - 1, 15).toISOString(),
         deliverables: JSON.stringify([{ type: 'Integration', count: 1 }]),
+        due_date: new Date(currentYear, currentMonth, 30).toISOString(),
+        payment_received_date: null,
       },
       {
+        ...baseDeal,
         id: 'demo-4',
-        creator_id: 'demo-creator',
         brand_name: 'Mamaearth',
         platform: 'Instagram',
         deal_amount: 4254,
@@ -178,10 +194,12 @@ const CreatorDashboardPreview = () => {
         payment_expected_date: new Date(currentYear, currentMonth, 20).toISOString(),
         created_at: new Date(currentYear, currentMonth - 1, 10).toISOString(),
         deliverables: JSON.stringify([{ type: 'Carousel', count: 1 }, { type: 'Stories', count: 1 }]),
+        due_date: new Date(currentYear, currentMonth, 20).toISOString(),
+        payment_received_date: null,
       },
       {
+        ...baseDeal,
         id: 'demo-5',
-        creator_id: 'demo-creator',
         brand_name: 'boAt',
         platform: 'Instagram',
         deal_amount: 12000,
@@ -189,10 +207,12 @@ const CreatorDashboardPreview = () => {
         payment_expected_date: new Date(currentYear, currentMonth - 1, 10).toISOString(), // Overdue
         created_at: new Date(currentYear, currentMonth - 2, 15).toISOString(),
         deliverables: JSON.stringify([{ type: 'Reel', count: 1 }, { type: 'Stories', count: 2 }]),
+        due_date: new Date(currentYear, currentMonth - 1, 10).toISOString(),
+        payment_received_date: null,
       },
       {
+        ...baseDeal,
         id: 'demo-6',
-        creator_id: 'demo-creator',
         brand_name: 'Zepto',
         platform: 'Instagram',
         deal_amount: 8500,
@@ -200,11 +220,12 @@ const CreatorDashboardPreview = () => {
         payment_expected_date: new Date(currentYear, currentMonth + 1, 4).toISOString(),
         created_at: new Date(currentYear, currentMonth - 1, 5).toISOString(),
         deliverables: JSON.stringify([{ type: 'Reel', count: 1 }]),
+        due_date: new Date(currentYear, currentMonth + 1, 4).toISOString(),
         payment_received_date: new Date(currentYear, currentMonth, 5).toISOString(),
       },
       {
+        ...baseDeal,
         id: 'demo-7',
-        creator_id: 'demo-creator',
         brand_name: 'L\'Oreal',
         platform: 'Instagram',
         deal_amount: 25000,
@@ -212,6 +233,7 @@ const CreatorDashboardPreview = () => {
         payment_expected_date: new Date(currentYear, currentMonth, 10).toISOString(),
         created_at: new Date(currentYear, currentMonth - 1, 1).toISOString(),
         deliverables: JSON.stringify([{ type: 'Reel', count: 2 }, { type: 'Stories', count: 3 }]),
+        due_date: new Date(currentYear, currentMonth, 10).toISOString(),
         payment_received_date: new Date(currentYear, currentMonth, 8).toISOString(),
       },
     ] as BrandDeal[];
@@ -309,7 +331,7 @@ const CreatorDashboardPreview = () => {
     if (searchTerm) {
       filtered = filtered.filter(deal =>
         deal.brand_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        deal.platform.toLowerCase().includes(searchTerm.toLowerCase())
+        (deal.platform && deal.platform.toLowerCase().includes(searchTerm.toLowerCase()))
       );
     }
 
@@ -423,51 +445,48 @@ const CreatorDashboardPreview = () => {
             <>
               {/* Hero Section - Liquid Glass */}
               <div className="mb-12">
-          <div className="flex items-start justify-between mb-8 gap-4 flex-wrap">
-            <div className="flex-1 min-w-0">
-              <h1 className="text-3xl font-semibold mb-2 text-white tracking-tight leading-tight">
-                Hey, Creator! 👋
-              </h1>
-              <p className="text-base text-white/60">
-                Content Creator
-              </p>
-            </div>
-          </div>
+                <div className="flex items-start justify-between mb-8 gap-4 flex-wrap">
+                  <div className="flex-1 min-w-0">
+                    <h1 className="text-3xl font-semibold mb-2 text-white tracking-tight leading-tight">
+                      Hey, Creator! 👋
+                    </h1>
+                    <p className="text-base text-white/60">
+                      Content Creator
+                    </p>
+                  </div>
+                </div>
 
-          {/* Earnings Card */}
-          <div className="flex justify-center">
-            <div className="relative w-full max-w-lg">
-              <div className="relative bg-white/[0.08] backdrop-blur-[40px] border border-white/20 rounded-3xl p-8 shadow-[0_8px_32px_rgba(0,0,0,0.4)] overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-br from-white/[0.1] via-transparent to-transparent pointer-events-none" />
-                
-                <div className="relative z-10">
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="h-12 w-12 rounded-2xl bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center">
-                      <DollarSign className="h-6 w-6 text-white" />
+                {/* Earnings Card */}
+                <div className="flex justify-center">
+                  <div className="relative w-full max-w-lg">
+                    <div className="relative bg-white/[0.08] backdrop-blur-[40px] border border-white/20 rounded-3xl p-8 shadow-[0_8px_32px_rgba(0,0,0,0.4)] overflow-hidden">
+                      <div className="absolute inset-0 bg-gradient-to-br from-white/[0.1] via-transparent to-transparent pointer-events-none" />
+                      
+                      <div className="relative z-10">
+                        <div className="flex items-center gap-3 mb-4">
+                          <div className="h-12 w-12 rounded-2xl bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center">
+                            <DollarSign className="h-6 w-6 text-white" />
+                          </div>
+                          <span className="text-sm font-medium text-white/80">Earnings</span>
+                        </div>
+                        <div className="text-5xl font-semibold text-white mb-3 tracking-tight">
+                          ₹{dashboardData.earnings.current.toLocaleString('en-IN')}
+                        </div>
+                        <div className="text-base text-white/60">
+                          This Month
+                          {dashboardData.earnings.previous > 0 && (
+                            <span className="ml-2 text-[#FF4DAA] font-medium">
+                              +{Math.round(((dashboardData.earnings.current - dashboardData.earnings.previous) / dashboardData.earnings.previous) * 100)}%
+                            </span>
+                          )}
+                        </div>
+                      </div>
                     </div>
-                    <span className="text-sm font-medium text-white/80">Earnings</span>
-                  </div>
-                  <div className="text-5xl font-semibold text-white mb-3 tracking-tight">
-                    ₹{dashboardData.earnings.current.toLocaleString('en-IN')}
-                  </div>
-                  <div className="text-base text-white/60">
-                    This Month
-                    {dashboardData.earnings.previous > 0 && (
-                      <span className="ml-2 text-[#FF4DAA] font-medium">
-                        +{Math.round(((dashboardData.earnings.current - dashboardData.earnings.previous) / dashboardData.earnings.previous) * 100)}%
-                      </span>
-                    )}
                   </div>
                 </div>
               </div>
-                </div>
-              </div>
-            </>
-          )}
 
-          {/* Overview Tab Content */}
-          {activeTab === 'overview' && (
-            <>
+              {/* Financial Overview Section */}
             {/* Financial Overview Section */}
             <section className="mb-12">
               <h2 className="text-2xl font-semibold text-white mb-6">Financial Overview</h2>
@@ -609,7 +628,10 @@ const CreatorDashboardPreview = () => {
                   stage={getDealStage(deal)}
                   onView={() => {}}
                   onEdit={() => {}}
-                  onDelete={() => {}}
+                  onManageDeliverables={() => {}}
+                  onUploadContent={() => {}}
+                  onContactBrand={() => {}}
+                  onViewContract={() => {}}
                 />
               ))}
             </div>
@@ -645,15 +667,34 @@ const CreatorDashboardPreview = () => {
             </div>
 
             <div className="space-y-4">
-              {filteredPayments.map((deal) => (
-                <EnhancedPaymentCard
-                  key={deal.id}
-                  deal={deal}
-                  paymentStatus={getPaymentStatus(deal)}
-                  onSendReminder={() => {}}
-                  onMarkPaid={() => {}}
-                />
-              ))}
+              {filteredPayments.map((deal) => {
+                const paymentStatus = getPaymentStatus(deal);
+                const now = new Date();
+                const dueDate = deal.payment_expected_date ? new Date(deal.payment_expected_date) : null;
+                const daysOverdue = dueDate && dueDate < now ? Math.ceil((now.getTime() - dueDate.getTime()) / (1000 * 60 * 60 * 24)) : undefined;
+                const daysLeft = dueDate && dueDate > now ? Math.ceil((dueDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)) : undefined;
+                
+                let status: 'overdue' | 'pending' | 'upcoming' | 'paid' = 'pending';
+                if (paymentStatus === 'paid') {
+                  status = 'paid';
+                } else if (paymentStatus === 'overdue') {
+                  status = 'overdue';
+                } else if (paymentStatus === 'pending') {
+                  status = daysLeft && daysLeft <= 7 ? 'upcoming' : 'pending';
+                }
+                
+                return (
+                  <EnhancedPaymentCard
+                    key={deal.id}
+                    deal={deal}
+                    status={status}
+                    daysOverdue={daysOverdue}
+                    daysLeft={daysLeft}
+                    onSendReminder={() => {}}
+                    onMarkPaid={() => {}}
+                  />
+                );
+              })}
             </div>
           </div>
           )}
