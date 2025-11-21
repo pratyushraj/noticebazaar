@@ -2,10 +2,12 @@
 
 import React, { useMemo } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { AlertTriangle, Clock, TrendingUp, CheckCircle, Wallet } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { AlertTriangle, Clock, TrendingUp, CheckCircle, Wallet, Download } from 'lucide-react';
 import { BrandDeal } from '@/types';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
+import { toast } from 'sonner';
 
 interface FinancialOverviewHeaderProps {
   allDeals: BrandDeal[];
@@ -84,8 +86,60 @@ const FinancialOverviewHeader: React.FC<FinancialOverviewHeaderProps> = ({ allDe
     };
   }, [allDeals]);
 
+  const handleExportPDF = () => {
+    // Generate PDF summary
+    const pdfContent = `
+Financial Summary Report
+Generated: ${new Date().toLocaleDateString('en-IN')}
+
+PENDING PAYMENTS
+Amount: ₹${stats.pending.amount.toLocaleString('en-IN')}
+Count: ${stats.pending.count} payments
+
+OVERDUE PAYMENTS
+Amount: ₹${stats.overdue.amount.toLocaleString('en-IN')}
+Count: ${stats.overdue.count} payments
+
+RECEIVED THIS MONTH
+Amount: ₹${stats.received.amount.toLocaleString('en-IN')}
+Count: ${stats.received.count} payments
+
+COLLECTION SUCCESS RATE
+${stats.collectionRate}%
+    `.trim();
+
+    // Create blob and download
+    const blob = new Blob([pdfContent], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `financial-summary-${new Date().toISOString().split('T')[0]}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    
+    toast.success('Financial summary exported!', {
+      description: 'A text file has been downloaded. PDF export coming soon.',
+    });
+  };
+
   return (
     <div className="space-y-3 mt-2">
+      {/* Export Button */}
+      <div className="flex justify-end">
+        <Button
+          onClick={handleExportPDF}
+          variant="outline"
+          size="sm"
+          className="bg-white/5 border-white/10 text-white hover:bg-white/10 min-h-[44px]"
+          aria-label="Export financial summary as PDF"
+        >
+          <Download className="w-4 h-4 mr-2" />
+          Export Summary
+        </Button>
+      </div>
+
       {/* Premium Icon Graphic */}
       <div className="flex justify-center mb-6 py-6 md:py-8 overflow-visible">
         <div className="relative w-48 h-48 md:w-64 md:h-64 flex items-center justify-center">
@@ -175,22 +229,40 @@ const FinancialOverviewHeader: React.FC<FinancialOverviewHeaderProps> = ({ allDe
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
           >
-            <Card className="bg-white/[0.06] backdrop-blur-[40px] border-white/10 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.3)] px-5 py-4 transition-all hover:border-white/20">
-              <CardContent className="p-0">
-                <div className="flex items-start justify-between">
-                  <div className="flex items-start gap-3 md:gap-4 flex-1">
-                    <div className="p-2 md:p-2.5 rounded-xl bg-emerald-500/20">
-                      <CheckCircle className="w-4 h-4 md:w-5 md:h-5 text-emerald-400" />
+            {stats.received.amount > 0 ? (
+              <Card className="bg-white/[0.06] backdrop-blur-[40px] border-white/10 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.3)] px-5 py-4 transition-all hover:border-white/20">
+                <CardContent className="p-0">
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-start gap-3 md:gap-4 flex-1">
+                      <div className="p-2 md:p-2.5 rounded-xl bg-emerald-500/20">
+                        <CheckCircle className="w-4 h-4 md:w-5 md:h-5 text-emerald-400" />
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-xs text-white/50 mb-1 md:mb-2">Received</p>
+                        <p className="text-lg md:text-xl font-semibold text-emerald-400 tabular-nums">₹{stats.received.amount.toLocaleString('en-IN')}</p>
+                      </div>
                     </div>
-                    <div className="flex-1">
-                      <p className="text-xs text-white/50 mb-1 md:mb-2">Received</p>
-                      <p className="text-lg md:text-xl font-semibold text-emerald-400 tabular-nums">₹{stats.received.amount.toLocaleString('en-IN')}</p>
+                    <span className="text-xs text-white/40 text-right">{stats.received.count || 0} payments</span>
+                  </div>
+                </CardContent>
+              </Card>
+            ) : (
+              <Card className="bg-white/[0.06] backdrop-blur-[40px] border-white/10 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.3)] px-5 py-4 transition-all hover:border-white/20">
+                <CardContent className="p-0">
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-start gap-3 md:gap-4 flex-1">
+                      <div className="p-2 md:p-2.5 rounded-xl bg-blue-500/20">
+                        <TrendingUp className="w-4 h-4 md:w-5 md:h-5 text-blue-400" />
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-xs text-white/50 mb-1 md:mb-2">Received</p>
+                        <p className="text-sm text-white/60 italic">Keep going! Payments will appear here once received.</p>
+                      </div>
                     </div>
                   </div>
-                  <span className="text-xs text-white/40 text-right">{stats.received.count || 0} payments</span>
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            )}
           </motion.div>
         </div>
       </div>

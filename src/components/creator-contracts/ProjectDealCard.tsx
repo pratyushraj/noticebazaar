@@ -260,8 +260,8 @@ const ProjectDealCard: React.FC<ProjectDealCardProps> = ({
           </div>
         </div>
 
-        {/* Action Buttons - Compact */}
-        <div className="flex flex-wrap gap-1.5 pt-3 border-t border-border/30" onClick={(e) => e.stopPropagation()}>
+        {/* Action Buttons - Accessibility: 44x44px minimum touch target */}
+        <div className="flex flex-wrap gap-2 pt-3 border-t border-border/30" onClick={(e) => e.stopPropagation()}>
           {primaryActions.slice(0, 2).map((action, index) => {
             const Icon = action.icon;
             return (
@@ -270,9 +270,10 @@ const ProjectDealCard: React.FC<ProjectDealCardProps> = ({
                 size="sm"
                 variant={index === 0 ? "default" : "outline"}
                 onClick={action.onClick}
-                className="flex-1 text-xs h-8 px-2"
+                className="flex-1 min-h-[44px] min-w-[44px] text-sm px-4 py-3"
+                aria-label={action.label}
               >
-                <Icon className="w-3 h-3 mr-1" />
+                <Icon className="w-4 h-4 mr-1.5" />
                 <span className="hidden sm:inline">{action.label}</span>
                 <span className="sm:hidden">{action.label.split(' ')[0]}</span>
               </Button>
@@ -282,9 +283,11 @@ const ProjectDealCard: React.FC<ProjectDealCardProps> = ({
             size="sm"
             variant="ghost"
             onClick={() => onView(deal)}
-            className="text-xs h-8 px-2"
+            className="min-h-[44px] min-w-[44px] text-sm px-4 py-3"
+            aria-label="View deal details"
           >
-            <ChevronRight className="w-3 h-3" />
+            <ChevronRight className="w-4 h-4" />
+            <span className="sr-only">View</span>
           </Button>
         </div>
       </Card>

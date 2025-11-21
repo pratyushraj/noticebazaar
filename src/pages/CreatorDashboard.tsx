@@ -48,6 +48,7 @@ import UpgradeModal from '@/components/trial/UpgradeModal';
 import { useDashboardShortcuts } from '@/hooks/useKeyboardShortcuts';
 import { ErrorBoundary } from '@/components/ui/error-boundary';
 import { QuickSearch } from '@/components/dashboard/QuickSearch';
+import { Sparkline } from '@/components/ui/sparkline';
 import Breadcrumbs from '@/components/navigation/Breadcrumbs';
 
 // Helper functions
@@ -725,8 +726,27 @@ const CreatorDashboard = () => {
                           </div>
                           <span className="text-sm font-medium text-white/80">Earnings</span>
                         </div>
-                        <div className="text-5xl font-semibold text-white mb-3 tracking-tight">
-                          ₹{dashboardData?.earnings.current.toLocaleString('en-IN') || '0'}
+                        <div className="flex items-center justify-between mb-3">
+                          <div className="text-5xl font-semibold text-white tracking-tight">
+                            ₹{dashboardData?.earnings.current.toLocaleString('en-IN') || '0'}
+                          </div>
+                          {(() => {
+                            // Generate earnings trend data for sparkline
+                            const earningsHistory = brandDeals?.slice(0, 7).map((deal) => {
+                              if (deal.status === 'Completed' && deal.payment_received_date) {
+                                return deal.deal_amount;
+                              }
+                              return 0;
+                            }) || [10000, 15000, 12000, 18000, 22000, 20000, 25000];
+                            return earningsHistory.length > 0 ? (
+                              <Sparkline
+                                data={earningsHistory}
+                                width={60}
+                                height={20}
+                                color="rgb(34, 197, 94)"
+                              />
+                            ) : null;
+                          })()}
                         </div>
                         <div className="text-base text-white/60">
                           This Month
@@ -790,7 +810,24 @@ const CreatorDashboard = () => {
 
               {/* Recent Activity Section */}
               <section className="mb-12">
-                <h2 className="text-2xl font-semibold text-white mb-6">Recent Activity</h2>
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-2xl font-semibold text-white">Recent Activity</h2>
+                  {(() => {
+                    // Generate activity trend data for sparkline
+                    const activityData = brandDeals?.slice(0, 7).map((deal) => {
+                      const daysAgo = Math.floor((Date.now() - new Date(deal.created_at).getTime()) / (1000 * 60 * 60 * 24));
+                      return Math.max(0, 7 - daysAgo) * 10 + (deal.status === 'Completed' ? 20 : 10);
+                    }) || [10, 15, 20, 18, 25, 22, 30];
+                    return activityData.length > 0 ? (
+                      <Sparkline
+                        data={activityData}
+                        width={80}
+                        height={24}
+                        color="rgb(34, 197, 94)"
+                      />
+                    ) : null;
+                  })()}
+                </div>
                 <Card className="bg-white/[0.06] backdrop-blur-[40px] border-white/10 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.3)]">
                   <CardContent className="space-y-4 p-6">
                     {(() => {

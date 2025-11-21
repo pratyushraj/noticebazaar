@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useSession } from '@/contexts/SessionContext';
 import { Button } from '@/components/ui/button';
-import { Loader2, IndianRupee, Mail } from 'lucide-react';
+import { Loader2, IndianRupee, Mail, TrendingUp } from 'lucide-react';
 import { useBrandDeals } from '@/lib/hooks/useBrandDeals';
 import { usePagination } from '@/lib/hooks/usePagination';
 import { BrandDeal } from '@/types';
@@ -257,7 +257,7 @@ const CreatorPaymentsAndRecovery = () => {
     setDealToMarkPaid(null);
   };
 
-  const handleEscalate = (deal: BrandDeal) => {
+  const handleEscalate = (_deal: BrandDeal) => {
     toast.info('Escalation feature coming soon!');
   };
 
@@ -281,26 +281,32 @@ const CreatorPaymentsAndRecovery = () => {
 
   return (
     <div className="w-full max-w-full overflow-x-hidden pb-[80px] px-4 md:px-6 antialiased">
-      {/* New Financial Overview Header */}
-      <FinancialOverviewHeader allDeals={allBrandDeals} />
-
-      {/* Payment Frequency Insights */}
+      {/* Payment Cycle Insight - Pinned to Top */}
       {allBrandDeals.length > 0 && (
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.25 }}
+          transition={{ delay: 0.1 }}
           className="mb-6"
         >
           <Card className="bg-gradient-to-br from-blue-900/20 to-indigo-900/20 border border-blue-700/40">
             <CardContent className="p-6 py-5">
-              <p className="text-sm text-muted-foreground text-center leading-relaxed">
-                Creators like you get paid every <span className="font-semibold text-foreground">32–40 days</span> on average.
-              </p>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-white/60 mb-1">Payment Cycle Insight</p>
+                  <p className="text-lg font-bold text-white">
+                    Creators like you get paid every <span className="text-blue-400">32–40 days</span> on average
+                  </p>
+                </div>
+                <TrendingUp className="w-8 h-8 text-blue-400/60" />
+              </div>
             </CardContent>
           </Card>
         </motion.div>
       )}
+
+      {/* New Financial Overview Header */}
+      <FinancialOverviewHeader allDeals={allBrandDeals} />
 
       {/* Top Invoices Due Soon */}
       {allBrandDeals.length > 0 && (

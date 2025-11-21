@@ -323,10 +323,10 @@ const ActionCenter: React.FC<ActionCenterProps> = ({
                     key={index}
                     initial={{ opacity: 0, y: 8 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="relative p-5 rounded-2xl bg-white/[0.06] backdrop-blur-[30px] border border-red-500/20 shadow-[0_4px_24px_rgba(0,0,0,0.2)] overflow-hidden"
+                    className="relative p-5 rounded-2xl bg-white/[0.06] backdrop-blur-[30px] border border-red-500/15 shadow-[0_2px_12px_rgba(0,0,0,0.15)] overflow-hidden"
                   >
-                    {/* Subtle gradient overlay */}
-                    <div className="absolute inset-0 bg-gradient-to-br from-red-500/[0.05] via-transparent to-transparent pointer-events-none" />
+                    {/* Subtle gradient overlay - reduced intensity */}
+                    <div className="absolute inset-0 bg-gradient-to-br from-red-500/[0.03] via-transparent to-transparent pointer-events-none" />
                     
                     {/* Header */}
                     <div className="flex items-start justify-between gap-3 relative z-10 mb-4">
@@ -356,17 +356,19 @@ const ActionCenter: React.FC<ActionCenterProps> = ({
                       </p>
                     </div>
 
-                    {/* Actions */}
+                    {/* Actions - Accessibility: 44x44px minimum touch target */}
                     <div className="flex gap-2 relative z-10">
                       <button
                         onClick={() => onSendReminder?.(action.dealId!)}
-                        className="flex-1 py-2.5 rounded-xl bg-white/20 backdrop-blur-[20px] border border-white/30 hover:bg-white/30 active:scale-[0.98] text-white font-medium text-sm transition-all"
+                        className="flex-1 min-h-[44px] py-3 rounded-xl bg-white/20 backdrop-blur-[20px] border border-white/30 hover:bg-white/30 active:scale-[0.98] text-white font-medium text-base transition-all"
+                        aria-label="Send payment reminder"
                       >
                         Send Reminder
                       </button>
                       <button
                         onClick={() => onEscalate?.(action.dealId!)}
-                        className="flex-1 py-2.5 rounded-xl bg-white/10 backdrop-blur-[20px] hover:bg-white/15 text-white font-medium text-sm transition-all border border-white/20"
+                        className="flex-1 min-h-[44px] py-3 rounded-xl bg-white/10 backdrop-blur-[20px] hover:bg-white/15 text-white font-medium text-base transition-all border border-white/20"
+                        aria-label="Escalate payment issue"
                       >
                         Escalate
                       </button>

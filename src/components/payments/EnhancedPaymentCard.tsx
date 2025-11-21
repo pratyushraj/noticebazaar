@@ -170,7 +170,7 @@ const EnhancedPaymentCard: React.FC<EnhancedPaymentCardProps> = ({
           </div>
         </div>
 
-        {/* Bottom Actions */}
+        {/* Bottom Actions - Accessibility: 44x44px minimum touch target */}
         <div className="flex flex-col gap-2" onClick={(e) => e.stopPropagation()}>
           {reminderConfig.show && (
             <Button
@@ -181,9 +181,10 @@ const EnhancedPaymentCard: React.FC<EnhancedPaymentCardProps> = ({
                 }
               }}
               variant="outline"
-              className="w-full px-4 py-2.5 bg-white/5 hover:bg-white/10 rounded-xl font-medium flex items-center justify-center gap-2 transition-all border border-white/10 hover:border-white/20 text-white/80"
+              className="w-full min-h-[44px] px-4 py-3 bg-white/5 hover:bg-white/10 rounded-xl font-medium text-base flex items-center justify-center gap-2 transition-all border border-white/10 hover:border-white/20 text-white/80"
+              aria-label={`Send payment reminder to ${deal.brand_name}`}
             >
-              <Send className="w-4 h-4" />
+              <Send className="w-5 h-5" />
               Send Reminder
             </Button>
           )}
@@ -193,7 +194,8 @@ const EnhancedPaymentCard: React.FC<EnhancedPaymentCardProps> = ({
                 e.stopPropagation();
                 onMarkPaid(deal);
               }}
-              className="w-full py-3 rounded-xl font-semibold flex items-center justify-center gap-2 bg-gradient-to-br from-emerald-600 to-emerald-700 hover:from-emerald-500 hover:to-emerald-600 shadow-xl shadow-emerald-900/40 border border-emerald-500/30 text-white transition-all duration-300 ease-out hover:scale-[1.02]"
+              className="w-full min-h-[44px] py-3 rounded-xl font-semibold text-base flex items-center justify-center gap-2 bg-gradient-to-br from-emerald-600 to-emerald-700 hover:from-emerald-500 hover:to-emerald-600 shadow-xl shadow-emerald-900/40 border border-emerald-500/30 text-white transition-all duration-300 ease-out hover:scale-[1.02]"
+              aria-label={`Mark payment from ${deal.brand_name} as paid`}
             >
               <span className="opacity-90 text-lg">✔</span>
               Mark Paid

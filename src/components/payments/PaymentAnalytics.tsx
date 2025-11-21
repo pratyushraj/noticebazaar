@@ -128,12 +128,17 @@ const PaymentAnalytics: React.FC<PaymentAnalyticsProps> = ({ allDeals }) => {
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
-          {/* Average Payment Time */}
-          <div>
-            <div className="text-sm text-white/60 mb-1">Average Payment Time</div>
-            <div className="text-2xl font-bold text-white">{analytics.avgPaymentTime} days</div>
-            <div className="text-xs text-white/60 mt-1">
-              Fastest: {analytics.fastestBrand.name} ({analytics.fastestBrand.days} days) | 
+          {/* Average Payment Time - Pinned to Top */}
+          <div className="p-4 bg-blue-500/10 rounded-xl border border-blue-500/20 mb-4">
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-2">
+                <TrendingUp className="w-5 h-5 text-blue-400" />
+                <div className="text-sm font-semibold text-white">Payment Cycle Insight</div>
+              </div>
+            </div>
+            <div className="text-3xl font-bold text-blue-400 mb-1">{analytics.avgPaymentTime} days</div>
+            <div className="text-xs text-white/60">
+              Average time from deal to payment • Fastest: {analytics.fastestBrand.name} ({analytics.fastestBrand.days} days) | 
               Slowest: {analytics.slowestBrand.name} ({analytics.slowestBrand.days} days)
             </div>
           </div>

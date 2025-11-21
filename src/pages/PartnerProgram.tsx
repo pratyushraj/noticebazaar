@@ -141,7 +141,6 @@ const DEMO_DATA = {
 const PartnerProgram: React.FC = () => {
   const { user, profile } = useSession();
   const navigate = useNavigate();
-  const [copied, setCopied] = useState(false);
   const [showQR, setShowQR] = useState(false);
   const [useDemoData, setUseDemoData] = useState(false);
   const [showRewardHistory, setShowRewardHistory] = useState(false);
@@ -198,11 +197,9 @@ const PartnerProgram: React.FC = () => {
     const link = useDemoData ? DEMO_DATA.referralLink.url : formatReferralLink(displayReferralLink);
     try {
       await navigator.clipboard.writeText(link);
-      setCopied(true);
       setCopyAnimation(true);
       toast.success('Referral link copied!');
       setTimeout(() => {
-        setCopied(false);
         setCopyAnimation(false);
       }, 1500);
     } catch (err) {
@@ -620,9 +617,76 @@ const PartnerProgram: React.FC = () => {
                           </div>
                           {/* In production, use: <QRCodeSVG value={...} size={192} /> */}
                         </div>
-                        <p className="text-xs text-gray-600 text-center max-w-xs">
+                        <p className="text-xs text-gray-600 text-center max-w-xs mb-4">
                           Scan this QR code to share your referral link
                         </p>
+                        
+                        {/* Social Media Auto-Post Buttons */}
+                        <div className="w-full space-y-2 pt-4 border-t border-gray-200">
+                          <p className="text-xs font-semibold text-gray-700 mb-2">Share to Social Media</p>
+                          <div className="grid grid-cols-2 gap-2">
+                            <Button
+                              onClick={() => {
+                                const link = useDemoData ? DEMO_DATA.referralLink.url : formatReferralLink(displayReferralLink);
+                                const text = encodeURIComponent(`Join NoticeBazaar and get legal & CA services for creators! Use my referral link: ${link}`);
+                                window.open(`https://twitter.com/intent/tweet?text=${text}`, '_blank');
+                                toast.success('Opening Twitter...');
+                              }}
+                              variant="outline"
+                              size="sm"
+                              className="w-full bg-white hover:bg-gray-50 border-gray-300 text-gray-700 min-h-[44px]"
+                              aria-label="Share to Twitter"
+                            >
+                              <Twitter className="w-4 h-4 mr-1.5" />
+                              Twitter
+                            </Button>
+                            <Button
+                              onClick={() => {
+                                const link = useDemoData ? DEMO_DATA.referralLink.url : formatReferralLink(displayReferralLink);
+                                const text = encodeURIComponent(`Join NoticeBazaar - Legal & CA services for creators! ${link}`);
+                                window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(link)}&quote=${text}`, '_blank');
+                                toast.success('Opening Facebook...');
+                              }}
+                              variant="outline"
+                              size="sm"
+                              className="w-full bg-white hover:bg-gray-50 border-gray-300 text-gray-700 min-h-[44px]"
+                              aria-label="Share to Facebook"
+                            >
+                              <MessageCircle className="w-4 h-4 mr-1.5" />
+                              Facebook
+                            </Button>
+                            <Button
+                              onClick={() => {
+                                const link = useDemoData ? DEMO_DATA.referralLink.url : formatReferralLink(displayReferralLink);
+                                const text = encodeURIComponent(`Join NoticeBazaar - Legal & CA services for creators! ${link}`);
+                                // Instagram doesn't support direct sharing, so copy to clipboard
+                                navigator.clipboard.writeText(`${text}\n${link}`);
+                                toast.success('Link copied! Paste it in your Instagram story or post.');
+                              }}
+                              variant="outline"
+                              size="sm"
+                              className="w-full bg-white hover:bg-gray-50 border-gray-300 text-gray-700 min-h-[44px]"
+                              aria-label="Share to Instagram"
+                            >
+                              <Instagram className="w-4 h-4 mr-1.5" />
+                              Instagram
+                            </Button>
+                            <Button
+                              onClick={() => {
+                                const link = useDemoData ? DEMO_DATA.referralLink.url : formatReferralLink(displayReferralLink);
+                                navigator.clipboard.writeText(link);
+                                toast.success('Referral link copied to clipboard!');
+                              }}
+                              variant="outline"
+                              size="sm"
+                              className="w-full bg-white hover:bg-gray-50 border-gray-300 text-gray-700 min-h-[44px]"
+                              aria-label="Copy referral link"
+                            >
+                              <Copy className="w-4 h-4 mr-1.5" />
+                              Copy Link
+                            </Button>
+                          </div>
+                        </div>
                       </div>
                     </motion.div>
                   )}
