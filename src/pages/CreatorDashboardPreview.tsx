@@ -30,6 +30,7 @@ import ProtectionDashboardHeader from '@/components/content-protection/Protectio
 import SimplifiedScanner from '@/components/content-protection/SimplifiedScanner';
 import ScanHistory from '@/components/content-protection/ScanHistory';
 import Sidebar from '@/components/Sidebar';
+import Navbar from '@/components/navbar/Navbar';
 import { useSidebar } from '@/contexts/SidebarContext';
 import { toast } from 'sonner';
 
@@ -406,11 +407,16 @@ const CreatorDashboardPreview = () => {
         />
         
         <div className="relative z-10 flex flex-col min-h-screen">
-          {/* Sidebar */}
-          <Sidebar profileRole="creator" />
+          {/* Navbar */}
+          <Navbar />
           
-          <div className="min-h-screen text-white relative flex-1 md:ml-[320px]">
-            <div className="relative z-10 max-w-7xl mx-auto px-4 py-8 pb-24 md:pb-8">
+          <div className="flex flex-1">
+            {/* Sidebar */}
+            <Sidebar profileRole="creator" />
+            
+            {/* Main Content */}
+            <main className="flex-1 w-full py-6 px-4 md:px-6 lg:px-8 pb-20 md:pb-24 md:ml-[320px] transition-all duration-300 ease-in-out">
+              <div className="max-w-7xl mx-auto">
           {/* Breadcrumbs - Show for non-overview tabs */}
           {activeTab !== 'overview' && (
             <div className="mb-6">

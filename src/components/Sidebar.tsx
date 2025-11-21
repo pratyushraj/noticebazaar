@@ -407,11 +407,11 @@ const Sidebar: React.FC<SidebarProps> = ({ className, profileRole }) => {
             />
 
             {/* User Card */}
-            {profile && (
+            {(profile || (!profile && !user)) && (
               <UserCard 
-                name={userName}
-                email={userEmail}
-                avatarUrl={profile.avatar_url}
+                name={profile ? userName : 'Demo Creator'}
+                email={profile ? userEmail : 'demo@noticebazaar.com'}
+                avatarUrl={profile?.avatar_url || null}
               />
             )}
 

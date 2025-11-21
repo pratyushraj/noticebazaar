@@ -27,8 +27,11 @@ const Navbar: React.FC = () => {
     profilePath = "/creator-profile";
   }
 
-  if (!user) {
-    return null; // Don't render navbar if not logged in
+  // For preview mode, show navbar even without user
+  const isPreview = window.location.pathname === '/dashboard-preview';
+  
+  if (!user && !isPreview) {
+    return null; // Don't render navbar if not logged in (except in preview)
   }
 
   return (
