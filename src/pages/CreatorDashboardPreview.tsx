@@ -1,27 +1,23 @@
 "use client";
 
 import { useEffect, useState, useMemo } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import { 
   Search, 
   Briefcase,
   CheckCircle,
   DollarSign,
-  ArrowRight,
-  TrendingUp as TrendingUpIcon,
   Calendar,
   AlertTriangle,
   FileText,
   Info
 } from 'lucide-react';
 import ActionCenter from '@/components/creator-dashboard/ActionCenter';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { BrandDeal } from '@/types';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
 import ProjectDealCard from '@/components/creator-contracts/ProjectDealCard';
 import { DealStage, PaymentStatus } from '@/components/creator-contracts/DealStatusBadge';
@@ -99,7 +95,6 @@ const PillTabButton = ({
 };
 
 const CreatorDashboardPreview = () => {
-  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   
   // URL-based tab navigation
