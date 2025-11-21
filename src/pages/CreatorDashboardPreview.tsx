@@ -30,6 +30,7 @@ import ProtectionDashboardHeader from '@/components/content-protection/Protectio
 import SimplifiedScanner from '@/components/content-protection/SimplifiedScanner';
 import ScanHistory from '@/components/content-protection/ScanHistory';
 import Sidebar from '@/components/Sidebar';
+import { useSidebar } from '@/contexts/SidebarContext';
 import { toast } from 'sonner';
 
 // Helper functions
@@ -101,6 +102,14 @@ const PillTabButton = ({
 
 const CreatorDashboardPreview = () => {
   const [searchParams, setSearchParams] = useSearchParams();
+  const { setIsOpen } = useSidebar();
+  
+  // Open sidebar by default on desktop
+  useEffect(() => {
+    if (window.innerWidth >= 768) {
+      setIsOpen(true);
+    }
+  }, [setIsOpen]);
   
   // URL-based tab navigation
   const validTabs: Array<'overview' | 'deals' | 'payments' | 'protection'> = ['overview', 'deals', 'payments', 'protection'];
@@ -397,10 +406,8 @@ const CreatorDashboardPreview = () => {
         />
         
         <div className="relative z-10 flex flex-col min-h-screen">
-          {/* Sidebar - Always visible on desktop, toggleable on mobile */}
-          <div className="hidden md:block fixed left-0 top-16 h-[calc(100vh-4rem)] z-[150]">
-            <Sidebar profileRole="creator" />
-          </div>
+          {/* Sidebar */}
+          <Sidebar profileRole="creator" />
           
           <div className="min-h-screen text-white relative flex-1 md:ml-[320px]">
             <div className="relative z-10 max-w-7xl mx-auto px-4 py-8 pb-24 md:pb-8">
