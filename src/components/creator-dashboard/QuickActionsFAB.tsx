@@ -72,7 +72,7 @@ const QuickActionsFAB: React.FC<QuickActionsFABProps> = ({
   ];
 
   return (
-    <div className="fixed bottom-6 right-6 z-50">
+    <div className="fixed bottom-20 right-6 z-[60]">
       <motion.div
         initial={{ scale: 0, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}

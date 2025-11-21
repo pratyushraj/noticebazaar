@@ -16,7 +16,6 @@ const FacebookPixelTracker = () => {
   useEffect(() => {
     // Check if the fbq function is available (i.e., the script loaded)
     if (window.fbq) {
-      console.log('FB Pixel: Tracking PageView for:', location.pathname);
       // Fire the PageView event on every route change
       window.fbq('track', 'PageView');
     }

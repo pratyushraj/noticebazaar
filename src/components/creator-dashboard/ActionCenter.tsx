@@ -293,21 +293,24 @@ const ActionCenter: React.FC<ActionCenterProps> = ({
           <TabsList className="grid w-full grid-cols-3 bg-white/5 backdrop-blur-[20px] p-1 rounded-2xl border border-white/10 shadow-[0_2px_8px_rgba(0,0,0,0.15)]">
             <TabsTrigger 
               value="urgent" 
-              className="data-[state=active]:bg-white/20 data-[state=active]:text-white transition-all text-sm font-medium rounded-xl"
+              className="data-[state=active]:bg-white/20 data-[state=active]:text-white transition-all text-sm font-medium rounded-xl flex items-center gap-1.5"
             >
-              Urgent {totalUrgent > 0 && <span className="ml-1.5 px-1.5 py-0.5 rounded-full bg-white/20 text-white text-xs font-semibold">({totalUrgent})</span>}
+              <span>Urgent</span>
+              {totalUrgent > 0 && <span className="px-1.5 py-0.5 rounded-full bg-white/20 text-white text-xs font-semibold whitespace-nowrap">{totalUrgent}</span>}
             </TabsTrigger>
             <TabsTrigger 
               value="warnings" 
-              className="data-[state=active]:bg-white/20 data-[state=active]:text-white transition-all text-sm font-medium rounded-xl"
+              className="data-[state=active]:bg-white/20 data-[state=active]:text-white transition-all text-sm font-medium rounded-xl flex items-center gap-1.5"
             >
-              Warnings {totalWarnings > 0 && <span className="ml-1.5 px-1.5 py-0.5 rounded-full bg-white/20 text-white text-xs font-semibold">({totalWarnings})</span>}
+              <span>Warnings</span>
+              {totalWarnings > 0 && <span className="px-1.5 py-0.5 rounded-full bg-white/20 text-white text-xs font-semibold whitespace-nowrap">{totalWarnings}</span>}
             </TabsTrigger>
             <TabsTrigger 
               value="suggestions" 
-              className="data-[state=active]:bg-white/20 data-[state=active]:text-white transition-all text-sm font-medium rounded-xl"
+              className="data-[state=active]:bg-white/20 data-[state=active]:text-white transition-all text-sm font-medium rounded-xl flex items-center gap-1.5"
             >
-              Suggestions {totalSuggestions > 0 && <span className="ml-1.5 px-1.5 py-0.5 rounded-full bg-white/20 text-white text-xs font-semibold">({totalSuggestions})</span>}
+              <span>Suggestions</span>
+              {totalSuggestions > 0 && <span className="px-1.5 py-0.5 rounded-full bg-white/20 text-white text-xs font-semibold whitespace-nowrap">{totalSuggestions}</span>}
             </TabsTrigger>
           </TabsList>
 
@@ -320,46 +323,50 @@ const ActionCenter: React.FC<ActionCenterProps> = ({
                     key={index}
                     initial={{ opacity: 0, y: 8 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="relative p-6 rounded-3xl bg-white/[0.06] backdrop-blur-[30px] saturate-[150%] border border-red-500/20 
-                              space-y-4 shadow-[0_4px_24px_rgba(0,0,0,0.2)] overflow-hidden"
+                    className="relative p-5 rounded-2xl bg-white/[0.06] backdrop-blur-[30px] border border-red-500/20 shadow-[0_4px_24px_rgba(0,0,0,0.2)] overflow-hidden"
                   >
                     {/* Subtle gradient overlay */}
                     <div className="absolute inset-0 bg-gradient-to-br from-red-500/[0.05] via-transparent to-transparent pointer-events-none" />
                     
-                    <div className="flex items-center gap-3 relative z-10">
-                      <div className="w-12 h-12 rounded-2xl bg-red-500/20 backdrop-blur-sm 
-                                    flex items-center justify-center border border-red-500/30 shadow-[0_2px_8px_rgba(220,38,38,0.2)]">
-                        <Icon className="w-6 h-6 text-red-400" />
+                    {/* Header */}
+                    <div className="flex items-start justify-between gap-3 relative z-10 mb-4">
+                      <div className="flex items-center gap-3 flex-1 min-w-0">
+                        <div className="w-10 h-10 rounded-xl bg-red-500/20 backdrop-blur-sm flex items-center justify-center border border-red-500/30 flex-shrink-0">
+                          <Icon className="w-5 h-5 text-red-400" />
                       </div>
-                      <div className="flex-1">
-                        <h3 className="text-sm font-semibold text-white">
-                          {action.brand || 'Payment'} • Payment Overdue
+                        <div className="flex-1 min-w-0">
+                          <h3 className="text-sm font-semibold text-white truncate">
+                            {action.brand || 'Payment'} Payment Overdue
                         </h3>
-                        <p className="text-xs text-white/50">
-                          Due since: {action.daysOverdue || 0} {action.daysOverdue === 1 ? 'day' : 'days'}
+                          <p className="text-xs text-white/50 mt-0.5">
+                            Due since {action.daysOverdue || 0} {action.daysOverdue === 1 ? 'day' : 'days'}
                         </p>
+                        </div>
                       </div>
-                      <span className="px-2 py-1 rounded-full bg-red-500/10 text-red-500 text-xs font-semibold border border-red-500/20">
+                      <span className="px-2 py-1 rounded-lg bg-red-500/10 text-red-400 text-xs font-semibold border border-red-500/20 flex-shrink-0">
                         Overdue
                       </span>
                     </div>
-                    <div className="bg-white/5 backdrop-blur-sm saturate-[120%] rounded-2xl p-4 border border-white/10 shadow-[0_2px_8px_rgba(0,0,0,0.15)] relative z-10">
-                      <p className="text-xl font-semibold text-white">₹{action.amount?.toLocaleString('en-IN')}</p>
+
+                    {/* Amount */}
+                    <div className="bg-white/5 backdrop-blur-sm rounded-xl p-3 border border-white/10 relative z-10 mb-4">
+                      <p className="text-lg font-semibold text-white">₹{action.amount?.toLocaleString('en-IN')}</p>
                       <p className="text-xs text-white/50 mt-1">
-                        Due: {action.dueDate ? new Date(action.dueDate).toLocaleDateString('en-IN') : 'N/A'}
+                        Due: {action.dueDate ? new Date(action.dueDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : 'N/A'}
                       </p>
                     </div>
-                    <div className="flex gap-3 relative z-10">
+
+                    {/* Actions */}
+                    <div className="flex gap-2 relative z-10">
                       <button
                         onClick={() => onSendReminder?.(action.dealId!)}
-                        className="flex-1 py-3 rounded-2xl bg-white/20 backdrop-blur-[20px] saturate-[150%] border border-white/30 hover:bg-white/30 active:scale-[0.98] 
-                                 text-white font-semibold text-sm transition-all shadow-[0_4px_16px_rgba(0,0,0,0.2)] hover:shadow-[0_6px_20px_rgba(0,0,0,0.3)]"
+                        className="flex-1 py-2.5 rounded-xl bg-white/20 backdrop-blur-[20px] border border-white/30 hover:bg-white/30 active:scale-[0.98] text-white font-medium text-sm transition-all"
                       >
                         Send Reminder
                       </button>
                       <button
                         onClick={() => onEscalate?.(action.dealId!)}
-                        className="flex-1 py-3 rounded-2xl bg-white/10 backdrop-blur-[20px] saturate-[120%] hover:bg-white/15 text-white font-semibold text-sm transition-all border border-white/20 shadow-[0_2px_8px_rgba(0,0,0,0.15)]"
+                        className="flex-1 py-2.5 rounded-xl bg-white/10 backdrop-blur-[20px] hover:bg-white/15 text-white font-medium text-sm transition-all border border-white/20"
                       >
                         Escalate
                       </button>

@@ -37,7 +37,7 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
 
     // If error is due to missing columns (400 or 42703), try with fewer fields
     if (error && ((error as any).code === '42703' || (error as any).code === 'P0001' || (error as any).message?.includes('column') || (error as any).status === 400)) {
-      console.warn('SessionContext: Some columns not found, trying with basic fields. Please run the migration for full functionality:', error);
+      // Silently handle missing columns - expected if migrations haven't run yet
       
       // Retry with basic + trial fields only
       const { data: trialData, error: trialError } = await supabase

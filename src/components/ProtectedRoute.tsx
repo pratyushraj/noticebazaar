@@ -18,17 +18,6 @@ const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
   const { session, loading, profile, isAdmin, isCreator } = useSession(); // Added isCreator
 
   useEffect(() => {
-    console.log('ProtectedRoute useEffect triggered:', {
-      loading,
-      sessionExists: !!session,
-      profileExists: !!profile,
-      isAdmin,
-      isCreator, // Log isCreator
-      profileRole: profile?.role,
-      pathname: location.pathname,
-      allowedRoles
-    });
-
     if (loading) {
       return;
     }
@@ -43,7 +32,6 @@ const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
         // NEW: Creator Onboarding Check
         if (!profile.onboarding_complete && location.pathname !== '/creator-onboarding') {
           targetDashboard = '/creator-onboarding';
-          console.log(`ProtectedRoute: Creator needs onboarding, redirecting to ${targetDashboard}`);
           navigate(targetDashboard, { replace: true });
           return;
         }
@@ -51,13 +39,11 @@ const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
       }
 
       if (location.pathname === '/login' || location.pathname === '/') {
-        console.log(`ProtectedRoute: Authenticated on ${location.pathname}, redirecting to ${targetDashboard}`);
         navigate(targetDashboard, { replace: true });
         return;
       }
 
       if (allowedRoles && !allowedRoles.includes(profile.role)) {
-        console.log(`ProtectedRoute: Redirecting from ${location.pathname} to ${targetDashboard} (role not allowed)`);
         navigate(targetDashboard, { replace: true });
         return;
       }
@@ -66,7 +52,6 @@ const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
       const isLoginPage = location.pathname === '/login';
 
       if (!isRootPath && !isLoginPage) {
-        console.log('ProtectedRoute: Not authenticated, redirecting to /login');
         navigate('/login', { replace: true });
       }
     }

@@ -5,6 +5,8 @@ import { MadeWithDyad } from '@/components/made-with-dyad';
 import Navbar from '@/components/navbar/Navbar';
 import CreatorBottomNav from '@/components/creator-dashboard/CreatorBottomNav';
 import { useSession } from '@/contexts/SessionContext';
+import { useSidebar } from '@/contexts/SidebarContext';
+import { cn } from '@/lib/utils';
 
 interface LayoutProps {
   children: ReactNode;
@@ -13,6 +15,7 @@ interface LayoutProps {
 const Layout = ({ children }: LayoutProps) => {
   const { profile } = useSession();
   const isCreator = profile?.role === 'creator';
+  const { isOpen } = useSidebar();
 
   return (
     <div className="relative min-h-screen overflow-hidden">
@@ -31,13 +34,15 @@ const Layout = ({ children }: LayoutProps) => {
         <Navbar />
         
         <div className="flex flex-1">
-          {/* Sidebar hidden - navigation now in top navbar */}
-          <main className="flex-1 w-full py-6 px-4 md:px-6 lg:px-8 pb-24 md:pb-6">
+          <main className={cn(
+            "flex-1 w-full py-6 px-4 md:px-6 lg:px-8 pb-24 transition-all duration-300 ease-in-out",
+            isOpen && "md:ml-[280px]"
+          )}>
             {children}
           </main>
         </div>
         
-        {/* Bottom Navigation - Only for creators on mobile */}
+        {/* Bottom Navigation - Primary navigation for creators (all screen sizes) */}
         {isCreator && <CreatorBottomNav />}
         
         {/* Footer - Only visible when content is scrolled to bottom - Mobile: text-[10px], reduced padding */}

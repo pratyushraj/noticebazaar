@@ -2,7 +2,6 @@
 
 import { useEffect, useState, useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import IOSSegmentedControl from '@/components/navigation/IOSSegmentedControl';
 import { useSession } from '@/contexts/SessionContext';
 import { 
   Search, 
@@ -132,10 +131,6 @@ const CreatorDashboard = () => {
   const tabFromUrl = searchParams.get('tab') as 'overview' | 'deals' | 'payments' | 'protection' | null;
   const activeTab = (tabFromUrl && validTabs.includes(tabFromUrl)) ? tabFromUrl : 'overview';
   
-  // Debug: Log tab changes (remove in production)
-  useEffect(() => {
-    console.log('[CreatorDashboard] Tab from URL:', tabFromUrl, 'Active tab:', activeTab);
-  }, [tabFromUrl, activeTab]);
   
   const setActiveTab = (tab: 'overview' | 'deals' | 'payments' | 'protection') => {
     setSearchParams({ tab }, { replace: true });
@@ -714,17 +709,6 @@ const CreatorDashboard = () => {
                       Content Creator
                         </p>
                       </div>
-                  <div className="flex items-center gap-3 shrink-0">
-                    <div className="relative">
-                      <Bell className="h-5 w-5 text-white/70 cursor-pointer hover:text-white transition-colors" />
-                      {dashboardData?.urgentActions && dashboardData.urgentActions.length > 0 && (
-                        <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-red-500 text-white text-[10px] flex items-center justify-center font-semibold">
-                          {dashboardData.urgentActions.length}
-                        </span>
-                      )}
-                      </div>
-                    <Menu className="h-5 w-5 text-white/70 cursor-pointer hover:text-white transition-colors" />
-                    </div>
                   </div>
 
                 {/* Liquid Glass Earnings Card */}
@@ -761,19 +745,6 @@ const CreatorDashboard = () => {
             </>
           )}
 
-          {/* iOS-style Segmented Control */}
-          <div className="mb-12 flex justify-center">
-            <IOSSegmentedControl
-              segments={[
-                { label: "Overview", value: "overview" },
-                { label: "Deals", value: "deals" },
-                { label: "Payments", value: "payments" },
-                { label: "Protection", value: "protection" },
-              ]}
-              value={activeTab}
-              onChange={(value) => setActiveTab(value as 'overview' | 'deals' | 'payments' | 'protection')}
-            />
-          </div>
 
           {/* Overview Tab Content */}
           {activeTab === 'overview' && (
@@ -822,10 +793,10 @@ const CreatorDashboard = () => {
               <section className="mb-12">
                 <h2 className="text-2xl font-semibold text-white mb-6">Recent Activity</h2>
                 <Card className="bg-white/[0.06] backdrop-blur-[40px] border-white/10 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.3)]">
-                  <CardContent className="p-6">
-                    <div className="space-y-3">
-                      {brandDeals && brandDeals.length > 0 ? (
-                        brandDeals
+                  <CardContent className="space-y-4 p-6">
+                    {brandDeals && brandDeals.length > 0 ? (
+                      <div className="space-y-3">
+                        {brandDeals
                           .filter(deal => deal.status === 'Approved' || deal.status === 'Completed')
                           .slice(0, 3)
                           .map((deal) => {
@@ -839,7 +810,7 @@ const CreatorDashboard = () => {
                               <div key={deal.id} className="flex items-center gap-3 p-4 rounded-2xl bg-white/5 backdrop-blur-sm hover:bg-white/10 transition-all border border-white/10">
                                 <div className="h-10 w-10 rounded-xl bg-green-500/20 backdrop-blur-sm flex items-center justify-center border border-green-500/30">
                                   <CheckCircle className="h-5 w-5 text-green-400" />
-                    </div>
+                                </div>
                                 <div className="flex-1">
                                   <p className="text-sm font-medium text-white">
                                     {deal.brand_name} collaboration agreement
@@ -850,11 +821,52 @@ const CreatorDashboard = () => {
                                 </div>
                               </div>
                             );
-                          })
-                      ) : (
-                        <p className="text-sm text-white/60 text-center py-4">No recent activity</p>
+                          })}
+                      </div>
+                    ) : (
+                      <div className="space-y-3">
+                        {/* Demo Activity Items */}
+                        <div className="flex items-center gap-3 p-4 rounded-2xl bg-white/5 backdrop-blur-sm hover:bg-white/10 transition-all border border-white/10">
+                          <div className="h-10 w-10 rounded-xl bg-green-500/20 backdrop-blur-sm flex items-center justify-center border border-green-500/30">
+                            <CheckCircle className="h-5 w-5 text-green-400" />
+                          </div>
+                          <div className="flex-1">
+                            <p className="text-sm font-medium text-white">
+                              Mamaearth collaboration agreement
+                            </p>
+                            <p className="text-xs text-white/60">
+                              Approved • 2 hours ago
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-3 p-4 rounded-2xl bg-white/5 backdrop-blur-sm hover:bg-white/10 transition-all border border-white/10">
+                          <div className="h-10 w-10 rounded-xl bg-blue-500/20 backdrop-blur-sm flex items-center justify-center border border-blue-500/30">
+                            <Briefcase className="h-5 w-5 text-blue-400" />
+                          </div>
+                          <div className="flex-1">
+                            <p className="text-sm font-medium text-white">
+                              boAt brand deal signed
+                            </p>
+                            <p className="text-xs text-white/60">
+                              Contract Reviewed • 5 hours ago
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-3 p-4 rounded-2xl bg-white/5 backdrop-blur-sm hover:bg-white/10 transition-all border border-white/10">
+                          <div className="h-10 w-10 rounded-xl bg-purple-500/20 backdrop-blur-sm flex items-center justify-center border border-purple-500/30">
+                            <DollarSign className="h-5 w-5 text-purple-400" />
+                          </div>
+                          <div className="flex-1">
+                            <p className="text-sm font-medium text-white">
+                              Payment received from Zepto
+                            </p>
+                            <p className="text-xs text-white/60">
+                              Completed • 1 day ago
+                            </p>
+                          </div>
+                        </div>
+                      </div>
                     )}
-                  </div>
                   </CardContent>
                 </Card>
               </section>

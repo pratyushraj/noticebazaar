@@ -11,7 +11,6 @@ import { useParallax } from '@/lib/hooks/useParallax'; // Import the new hook
 import LeadCaptureForm from '@/components/LeadCaptureForm'; // Import the new component
 import NewsletterSignup from '@/components/NewsletterSignup'; // Import the new component
 import CaseStudyCard from '@/components/CaseStudyCard'; // Import the new component
-import { PLAN_DETAILS } from '@/data/planDetails'; // Import SME plan details
 import { CREATOR_PLAN_DETAILS, CreatorPlanName } from '@/data/creatorPlanDetails'; // Import Creator plan details
 
 // The Google Forms URL provided by the user (kept for other CTAs)
@@ -99,7 +98,6 @@ const MarketingHome = () => {
           <DialogTitle className="text-2xl font-bold text-white">Menu</DialogTitle>
         </DialogHeader>
         <nav className="flex flex-col space-y-4 text-lg text-gray-300 flex-1">
-          <a href="#for-businesses" onClick={() => setIsMenuOpen(false)} className="hover:text-white py-2 border-b border-white/5">For Businesses</a>
           <a href="#for-creators" onClick={() => setIsMenuOpen(false)} className="hover:text-white py-2 border-b border-white/5">For Creators</a>
           <Link to="/pricing-comparison" onClick={() => setIsMenuOpen(false)} className="hover:text-white py-2 border-b border-white/5">Pricing</Link>
           <a href="#testimonials" onClick={() => setIsMenuOpen(false)} className="hover:text-white py-2 border-b border-white/5">Clients</a>
@@ -217,7 +215,6 @@ const MarketingHome = () => {
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center gap-6 text-sm text-gray-300">
-            <a href="#for-businesses" className="hover:text-white">For Businesses</a>
             <a href="#for-creators" className="hover:text-white">For Creators</a>
             <Link to="/pricing-comparison" className="hover:text-white">Pricing</Link>
             <a href="#testimonials" className="hover:text-white">Clients</a>
@@ -290,31 +287,13 @@ const MarketingHome = () => {
           </div>
         </section>
         
-        {/* SECTION 2 — Split Selector Cards (Very Important) */}
+        {/* SECTION 2 — Creator Focus */}
         <section className="py-16" data-aos="fade-up">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold">Who are you building for?</h2>
-            <p className="text-gray-400 mt-2 max-w-2xl mx-auto text-lg">Select your business type to see how NoticeBazaar can help you thrive.</p>
+            <h2 className="text-3xl font-bold">Built for Content Creators & Influencers</h2>
+            <p className="text-gray-400 mt-2 max-w-2xl mx-auto text-lg">Everything you need to protect your brand deals, recover payments, and grow your creator business.</p>
           </div>
-          <div className="grid md:grid-cols-2 gap-8">
-            {/* FOR BUSINESSES (SMEs / Startups) */}
-            <Link to="/pricing-comparison" id="for-businesses" className="card p-8 rounded-xl shadow-lg border border-blue-500/30 hover:border-blue-500 transition-all duration-300 hover:scale-[1.02] flex flex-col justify-between">
-              <div>
-                <h3 className="text-3xl font-bold text-blue-400 mb-4">For Businesses</h3>
-                <ul className="space-y-2 text-gray-300 text-lg">
-                  <li className="flex items-center"><Check className="h-5 w-5 text-green-400 mr-2" /> GST, TDS, Payroll</li>
-                  <li className="flex items-center"><Check className="h-5 w-5 text-green-400 mr-2" /> Dispute management</li>
-                  <li className="flex items-center"><Check className="h-5 w-5 text-green-400 mr-2" /> Vendor agreements</li>
-                  <li className="flex items-center"><Check className="h-5 w-5 text-green-400 mr-2" /> Debt recovery</li>
-                  <li className="flex items-center"><Check className="h-5 w-5 text-green-400 mr-2" /> Annual compliance</li>
-                </ul>
-              </div>
-              <Button className="cta-secondary mt-8 py-3 px-6 rounded-lg font-bold text-lg">
-                Explore SME Plans <ArrowRight className="h-5 w-5 ml-2" />
-              </Button>
-            </Link>
-
-            {/* FOR CREATORS & INFLUENCERS */}
+          <div className="max-w-2xl mx-auto">
             <Link to="/pricing-comparison" id="for-creators" className="card p-8 rounded-xl shadow-lg border border-purple-500/30 hover:border-purple-500 transition-all duration-300 hover:scale-[1.02] flex flex-col justify-between">
               <div>
                 <h3 className="text-3xl font-bold text-purple-400 mb-4">For Creators & Influencers</h3>
@@ -324,9 +303,10 @@ const MarketingHome = () => {
                   <li className="flex items-center"><Check className="h-5 w-5 text-green-400 mr-2" /> Copyright protection</li>
                   <li className="flex items-center"><Check className="h-5 w-5 text-green-400 mr-2" /> Defamation support</li>
                   <li className="flex items-center"><Check className="h-5 w-5 text-green-400 mr-2" /> UGC contract negotiation</li>
+                  <li className="flex items-center"><Check className="h-5 w-5 text-green-400 mr-2" /> Tax filing & compliance</li>
                 </ul>
               </div>
-              <Button className="cta-primary mt-8 py-3 px-6 rounded-lg font-bold text-lg">
+              <Button className="cta-primary mt-8 py-3 px-6 rounded-lg font-bold text-lg w-full">
                 Explore Creator Plans <ArrowRight className="h-5 w-5 ml-2" />
               </Button>
             </Link>
@@ -523,68 +503,6 @@ const MarketingHome = () => {
           </div>
         </section>
 
-        {/* SECTION 8 — SME Product Sections */}
-        <section className="py-16" data-aos="fade-up">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold">For Businesses: Simplify Your Legal & CA</h2>
-            <p className="text-gray-400 mt-2 max-w-2xl mx-auto text-lg">Dedicated legal and financial support for SMEs and startups.</p>
-          </div>
-          <div className="grid md:grid-cols-3 gap-6">
-            <div className="card p-6 rounded-xl transition-all duration-300 hover:shadow-xl hover:scale-[1.02] hover:border-blue-500" data-aos="fade-up">
-              <LayoutDashboard className="h-8 w-8 text-blue-400 mb-3" />
-              <h3 className="font-semibold text-xl mb-2 text-blue-400">Compliance Dashboard</h3>
-              <p className="text-gray-300">Track all your GST, TDS, and ROC filings in one intuitive dashboard. Never miss a deadline.</p>
-            </div>
-            <div className="card p-6 rounded-xl transition-all duration-300 hover:shadow-xl hover:scale-[1.02] hover:border-blue-500" data-aos="fade-up" data-aos-delay="80">
-              <IndianRupee className="h-8 w-8 text-yellow-400 mb-3" />
-              <h3 className="font-semibold text-xl mb-2 text-blue-400">Debt Recovery</h3>
-              <p className="text-gray-300">Accelerate payment recovery with professional legal notices and follow-ups from our advocates.</p>
-            </div>
-            <div className="card p-6 rounded-xl transition-all duration-300 hover:shadow-xl hover:scale-[1.02] hover:border-blue-500" data-aos="fade-up" data-aos-delay="160">
-              <Calculator className="h-8 w-8 text-green-400 mb-3" />
-              <h3 className="font-semibold text-xl mb-2 text-blue-400">Payroll & Tax</h3>
-              <p className="text-gray-300">Seamless payroll management, GST, and income tax filing handled by dedicated Chartered Accountants.</p>
-            </div>
-          </div>
-        </section>
-
-        {/* SECTION 9 — SME Pricing Cards */}
-        <section className="py-16">
-          <div className="text-center mb-12" data-aos="fade-up">
-            <h2 className="text-3xl font-bold">SME Plans</h2>
-            <p className="text-gray-400 text-lg">Comprehensive legal and CA support for your business growth.</p>
-          </div>
-
-          <div className="grid lg:grid-cols-3 gap-6">
-            {Object.values(PLAN_DETAILS).map((plan, index) => (
-              <div key={plan.name} className={cn("card p-6 rounded-xl flex flex-col", plan.isPopular && 'border-2 border-blue-500 shadow-2xl')} data-aos="fade-up" data-aos-delay={index * 80}>
-                {plan.isPopular && <div className="absolute -top-4 right-6 bg-blue-600 px-3 py-1 rounded-full text-xs font-bold">⭐ MOST POPULAR</div>}
-                <h3 className="text-xl font-bold text-blue-300">{plan.name}</h3>
-                <div className="mt-4">
-                  <div className="text-4xl font-extrabold">{getPrice(parseInt(plan.price.replace('₹', '').replace('/mo', '').replace(',', '')))}<span className="text-gray-400 text-base">{getPriceSuffix()}</span></div>
-                  <p className="text-gray-400 mt-2 text-base">{plan.tagline}</p>
-                </div>
-                <ul className="mt-6 space-y-3 flex-grow">
-                  {plan.included.slice(0, 4).map((item, idx) => ( // Show first 4 included items
-                    <li key={idx} className="flex items-start text-base text-gray-100">
-                      <Check className="h-5 w-5 text-green-400 mr-2 flex-shrink-0 mt-1" />
-                      {item}
-                    </li>
-                  ))}
-                  {plan.included.length > 4 && (
-                    <li className="text-sm text-gray-400 italic">...and more</li>
-                  )}
-                </ul>
-                <div className="mt-6">
-                  <Link to={plan.link} className={cn("w-full inline-flex justify-center py-3 rounded-lg font-semibold text-lg", plan.isPopular ? 'cta-primary' : 'cta-secondary')}>
-                    Get Started
-                  </Link>
-                  <Link to={`/plan/${plan.name.toLowerCase().replace(' ', '-')}`} className="text-blue-400 hover:text-blue-300 font-medium text-sm mt-2 block text-center">[See All Features ↓]</Link>
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
 
         {/* SECTION 10 — WhatsApp Legal Vault (New Highlight) */}
         <section className="py-16 bg-card rounded-xl shadow-lg border border-white/5" data-aos="fade-up">
@@ -654,7 +572,7 @@ const MarketingHome = () => {
             <div className="md:col-span-2 space-y-6">
               <div className="font-bold text-white text-xl">NoticeBazaar</div>
               <p className="text-gray-500 text-sm max-w-xs">
-                India's first subscription-based legal and CA team, making expert compliance and advisory accessible to SMEs nationwide.
+                India's first subscription-based legal and CA team for content creators and influencers. Expert contract review, payment recovery, and tax compliance.
               </p>
               <NewsletterSignup />
             </div>
@@ -663,10 +581,10 @@ const MarketingHome = () => {
             <div>
               <div className="font-semibold text-white">Services</div>
               <div className="mt-2"><Link to="/pricing-comparison" className="hover:text-white">Pricing</Link></div>
-              <div className="mt-1"><a href="#for-businesses" className="hover:text-white">Legal Advisory (SME)</a></div>
               <div className="mt-1"><a href="#for-creators" className="hover:text-white">Creator Legal</a></div>
-              <div className="mt-1"><a href="#for-businesses" className="hover:text-white">Tax & Compliance</a></div>
-              <div className="mt-1"><a href="#for-businesses" className="hover:text-white">Payment Recovery</a></div>
+              <div className="mt-1"><a href="#for-creators" className="hover:text-white">Tax & Compliance</a></div>
+              <div className="mt-1"><a href="#for-creators" className="hover:text-white">Payment Recovery</a></div>
+              <div className="mt-1"><a href="#for-creators" className="hover:text-white">Contract Review</a></div>
             </div>
 
             {/* Column 4: Company */}

@@ -26,3 +26,5 @@ dist-ssr
 # Supabase
 supabase/.temp/
 ADD_FACEBOOK_SECRETS.md
+.vercel
+cursor_mac_id_modifier.sh

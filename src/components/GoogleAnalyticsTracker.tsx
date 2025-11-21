@@ -18,7 +18,6 @@ const GoogleAnalyticsTracker = () => {
   useEffect(() => {
     // Check if gtag function is available
     if (window.gtag) {
-      console.log('GA4: Tracking Page View for:', location.pathname + location.search);
       // Send a page view event for client-side navigation
       window.gtag('event', 'page_view', {
         page_title: document.title,

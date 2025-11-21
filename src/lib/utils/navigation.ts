@@ -71,13 +71,30 @@ export interface BreadcrumbItem {
 /**
  * Generate breadcrumbs for creator routes
  */
-export const generateBreadcrumbs = (pathname: string, searchParams?: URLSearchParams): BreadcrumbItem[] => {
+export const generateBreadcrumbs = (pathname: string, searchParams?: URLSearchParams | null): BreadcrumbItem[] => {
   const breadcrumbs: BreadcrumbItem[] = [
     { label: 'Dashboard', path: CREATOR_ROUTES.dashboard },
   ];
 
   if (pathname.startsWith(CREATOR_ROUTES.dashboard)) {
-    const tab = searchParams?.get('tab');
+    // Safely get tab from searchParams, handling case where searchParams might not be a URLSearchParams object
+    let tab: string | null = null;
+    try {
+      // Double-check that searchParams is actually a URLSearchParams instance
+      if (searchParams && 
+          typeof searchParams === 'object' && 
+          searchParams instanceof URLSearchParams) {
+        tab = searchParams.get('tab');
+      } else if (searchParams && 
+                 typeof searchParams === 'object' && 
+                 typeof (searchParams as any).get === 'function') {
+        // Fallback for objects that have a get method but aren't URLSearchParams
+        tab = (searchParams as any).get('tab');
+      }
+    } catch (e) {
+      // Silently handle any errors getting the tab
+      tab = null;
+    }
     if (tab && tab !== 'overview') {
       breadcrumbs.push({
         label: tab.charAt(0).toUpperCase() + tab.slice(1),

@@ -260,9 +260,10 @@ export const useCopyrightMatches = (options: UseCopyrightMatchesOptions) => {
           const errorStr = String(error.message || error || '').toLowerCase();
           const errorStatus = (error as any).status || (error as any).statusCode;
           
-          // Check if Edge Function doesn't exist (404) or network error
+          // Check if Edge Function doesn't exist (404) or network/CORS error
           const isEdgeFunctionError = 
             errorStatus === 404 ||
+            errorStatus === 0 || // Network error
             errorStr.includes('404') ||
             errorStr.includes('not found') ||
             errorStr.includes('failed to send') ||
@@ -270,10 +271,15 @@ export const useCopyrightMatches = (options: UseCopyrightMatchesOptions) => {
             errorStr.includes('network') ||
             errorStr.includes('fetch failed') ||
             errorStr.includes('could not resolve') ||
-            errorStr.includes('timeout');
+            errorStr.includes('timeout') ||
+            errorStr.includes('cors') ||
+            errorStr.includes('preflight') ||
+            errorStr.includes('access-control') ||
+            errorStr.includes('blocked by cors policy') ||
+            errorStr.includes('err_failed');
           
           if (isEdgeFunctionError) {
-            // Edge Function not deployed yet or network issue - return empty array silently
+            // Edge Function not deployed yet, network issue, or CORS error - return empty array silently
             return [];
           }
           throw new Error(error.message);
@@ -292,12 +298,13 @@ export const useCopyrightMatches = (options: UseCopyrightMatchesOptions) => {
 
         return (data as { matches: CopyrightMatch[] })?.matches || [];
       } catch (err: any) {
-        // Catch network errors and return empty array to prevent UI crashes
+        // Catch network errors, CORS errors, and return empty array to prevent UI crashes
         const errorStr = String(err?.message || err || '').toLowerCase();
         const errorStatus = (err as any)?.status || (err as any)?.statusCode;
         
         const isEdgeFunctionError = 
           errorStatus === 404 ||
+          errorStatus === 0 || // Network error
           errorStr.includes('404') ||
           errorStr.includes('not found') ||
           errorStr.includes('edge function') ||
@@ -305,6 +312,11 @@ export const useCopyrightMatches = (options: UseCopyrightMatchesOptions) => {
           errorStr.includes('network') ||
           errorStr.includes('fetch failed') ||
           errorStr.includes('could not resolve') ||
+          errorStr.includes('cors') ||
+          errorStr.includes('preflight') ||
+          errorStr.includes('access-control') ||
+          errorStr.includes('blocked by cors policy') ||
+          errorStr.includes('err_failed') ||
           errorStr.includes('timeout');
         
         if (isEdgeFunctionError) {

@@ -42,7 +42,7 @@ export function useDashboardShortcuts() {
       metaKey: true,
       action: () => {
         // Open search - you can add a search modal here
-        console.log('Open search');
+        // TODO: Implement search modal
       },
       description: 'Open search',
     },

@@ -3,23 +3,19 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
-  Home,
-  Briefcase,
-  Wallet,
-  TrendingUp,
   Calendar,
   FolderOpen,
   AlertTriangle,
-  Shield,
   FileText,
   Receipt,
   Sparkles,
   Settings,
   X,
+  Menu,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
-import AppsGridIcon from '@/components/icons/AppsGridIcon';
+import { useSidebar } from '@/contexts/SidebarContext';
 
 interface MenuItem {
   name: string;
@@ -28,38 +24,61 @@ interface MenuItem {
   roles?: string[];
 }
 
+interface MenuSection {
+  title: string;
+  items: MenuItem[];
+}
+
 interface AppsMenuProps {
   profileRole?: string | null;
 }
 
 const AppsMenu: React.FC<AppsMenuProps> = ({ profileRole }) => {
-  const [isOpen, setIsOpen] = useState(false);
+  const { isOpen, setIsOpen } = useSidebar();
   const menuRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Define all menu items
-  const allMenuItems: MenuItem[] = [
-    { name: "Dashboard", icon: Home, path: "/creator-dashboard", roles: ['creator'] },
-    { name: "Deals", icon: Briefcase, path: "/creator-contracts", roles: ['creator'] },
-    { name: "Payments", icon: Wallet, path: "/creator-payments", roles: ['creator'] },
-    { name: "Insights", icon: TrendingUp, path: "/insights", roles: ['creator'] },
+  // Define menu sections with secondary items only (primary items are in bottom nav)
+  const menuSections: MenuSection[] = [
+    {
+      title: "Tools",
+      items: [
     { name: "Calendar Sync", icon: Calendar, path: "/creator-dashboard?tab=calendar", roles: ['creator'] },
     { name: "Documents Vault", icon: FolderOpen, path: "/documents-vault", roles: ['creator'] },
+        { name: "Invoice Generator", icon: FileText, path: "/creator-dashboard?tab=invoices", roles: ['creator'] },
+      ]
+    },
+    {
+      title: "Support",
+      items: [
     { name: "Disputes Center", icon: AlertTriangle, path: "/creator-dashboard?tab=disputes", roles: ['creator'] },
-    { name: "Protection", icon: Shield, path: "/creator-content-protection", roles: ['creator'] },
-    { name: "Invoice Generator", icon: FileText, path: "/creator-dashboard?tab=invoices", roles: ['creator'] },
+      ]
+    },
+    {
+      title: "Business",
+      items: [
     { name: "Tax Summary", icon: Receipt, path: "/creator-tax-compliance", roles: ['creator'] },
     { name: "Partner Program", icon: Sparkles, path: "/partner-program", roles: ['creator'] },
-    { name: "Settings", icon: Settings, path: "/creator-profile" },
+      ]
+    },
+    {
+      title: "Settings",
+      items: [
+    { name: "Settings", icon: Settings, path: "/settings", roles: ['creator'] },
+      ]
+    }
   ];
 
-  // Filter menu items based on role
-  const menuItems = allMenuItems.filter(item => {
+  // Filter sections and items based on role
+  const visibleSections = menuSections.map(section => ({
+    ...section,
+    items: section.items.filter(item => {
     if (!item.roles) return true;
     return item.roles.includes(profileRole || '');
-  });
+    })
+  })).filter(section => section.items.length > 0);
 
   // Close menu when clicking outside
   useEffect(() => {
@@ -146,14 +165,15 @@ const AppsMenu: React.FC<AppsMenuProps> = ({ profileRole }) => {
 
   return (
     <div className="relative">
-      {/* Trigger Button */}
-      <div
+      {/* Hamburger Menu Trigger Button */}
+      <button
         ref={buttonRef}
         onClick={() => setIsOpen(!isOpen)}
         className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-white/10 transition-all duration-200 cursor-pointer active:scale-95"
+        aria-label="Open menu"
       >
-        <AppsGridIcon />
-      </div>
+        <Menu className="w-5 h-5 text-white/70" />
+      </button>
 
       {/* Backdrop */}
       <AnimatePresence>
@@ -163,109 +183,102 @@ const AppsMenu: React.FC<AppsMenuProps> = ({ profileRole }) => {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="fixed inset-0 bg-black/40 backdrop-blur-md z-[150]"
+            className="fixed inset-0 bg-black/40 backdrop-blur-md z-[140] md:hidden"
             onClick={() => setIsOpen(false)}
           />
         )}
       </AnimatePresence>
 
-      {/* Premium Menu Panel - Slide up from bottom */}
+      {/* Left Sidebar - iOS Style */}
       <AnimatePresence>
         {isOpen && (
           <motion.div
             ref={menuRef}
-            initial={{ opacity: 0, y: 100, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 100, scale: 0.95 }}
+            initial={{ opacity: 0, x: '-100%' }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: '-100%' }}
             transition={{
               type: "spring",
-              stiffness: 300,
-              damping: 30,
-              mass: 0.8,
+              damping: 25,
+              stiffness: 200
             }}
-            className="fixed top-14 right-4 sm:right-6 w-[340px] max-w-[calc(100vw-2rem)] max-h-[85vh] overflow-y-auto bg-white/[0.08] backdrop-blur-[40px] saturate-[180%] rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.4)] border border-white/10 p-5 z-[200] relative"
+            className="fixed top-16 left-0 h-[calc(100vh-4rem)] w-[280px] max-w-[85vw] overflow-y-auto bg-[#1C1C1E] border-r border-white/5 shadow-2xl z-[150]"
           >
-            {/* Subtle gradient overlay */}
-            <div className="absolute inset-0 bg-gradient-to-br from-white/[0.1] via-transparent to-transparent pointer-events-none" />
-            
-            {/* Header with Title and Close Button */}
-            <div className="flex items-center justify-between mb-5 pb-4 border-b border-white/10 relative z-10">
+            {/* iOS-style Header */}
+            <div className="sticky top-0 bg-[#1C1C1E]/95 backdrop-blur-xl border-b border-white/5 px-4 py-3 z-10">
+              <div className="flex items-center justify-between">
               <h2 className="text-lg font-semibold text-white">Menu</h2>
               <button
                 onClick={() => setIsOpen(false)}
-                className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/10 active:scale-95 transition-all duration-200 backdrop-blur-sm"
+                  className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/10 active:bg-white/20 transition-colors"
                 aria-label="Close menu"
               >
-                <X className="w-5 h-5 text-white/70" />
+                  <X className="w-5 h-5 text-white/80" />
               </button>
+              </div>
             </div>
 
-            {/* Premium 3x4 Grid Layout */}
-            <div className="grid grid-cols-3 gap-4 relative z-10 pb-2">
-              {menuItems.map((item, index) => {
+            {/* iOS-style Menu List */}
+            <div className="px-3 py-2">
+              {visibleSections.map((section, sectionIndex) => (
+                <div key={section.title} className={cn(
+                  "mb-6",
+                  sectionIndex === 0 && "mt-2"
+                )}>
+                  {/* iOS-style Section Header */}
+                  <div className="px-3 py-2 mb-1">
+                    <h3 className="text-[11px] font-semibold text-white/50 uppercase tracking-wider">
+                      {section.title}
+                    </h3>
+                  </div>
+                  
+                  {/* iOS-style List Items */}
+                  <div className="bg-white/5 rounded-2xl overflow-hidden border border-white/5">
+                    {section.items.map((item, itemIndex) => {
                 const Icon = item.icon;
                 const active = isActive(item.path);
+                      const isLast = itemIndex === section.items.length - 1;
 
                 return (
-                  <motion.button
+                        <button
                     key={item.path}
                     type="button"
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{
-                      delay: index * 0.03,
-                      duration: 0.2,
-                      ease: "easeOut",
-                    }}
                     onClick={(e) => {
                       e.preventDefault();
                       e.stopPropagation();
                       handleItemClick(item.path, item.name);
                     }}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' || e.key === ' ') {
-                        e.preventDefault();
-                        handleItemClick(item.path, item.name);
-                      }
-                    }}
                     className={cn(
-                      "flex flex-col items-center gap-2 group relative",
-                      "focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:ring-offset-2 focus:ring-offset-[#1A1A1C] rounded-xl",
-                      "cursor-pointer"
-                    )}
-                    aria-label={`Navigate to ${item.name}`}
-                  >
-                    {/* Premium Icon Card - Equal size (80-90px) */}
-                    <div
-                      className={cn(
-                        "w-20 h-20 rounded-2xl flex items-center justify-center",
-                        "transition-all duration-200 backdrop-blur-xl border",
-                        "active:scale-[0.98]",
-                        active
-                          ? "bg-white/20 backdrop-blur-[20px] saturate-[150%] border-white/30 shadow-[0_4px_16px_rgba(255,255,255,0.2)]"
-                          : "bg-white/5 backdrop-blur-[20px] saturate-[120%] border-white/10 shadow-[0_4px_12px_rgba(0,0,0,0.2)] hover:bg-white/10 hover:border-white/20 hover:shadow-[0_6px_16px_rgba(0,0,0,0.3)]"
-                      )}
-                    >
-                      <Icon
-                        className={cn(
-                          "w-7 h-7 transition-colors duration-200",
-                          active ? "text-white" : "text-white/70 group-hover:text-white"
-                        )}
-                      />
+                            "w-full flex items-center gap-3 px-4 py-3.5 transition-colors relative",
+                            "active:bg-white/10",
+                            !isLast && "border-b border-white/5",
+                            active && "bg-white/5"
+                          )}
+                        >
+                          <div className={cn(
+                            "w-6 h-6 flex items-center justify-center rounded-md",
+                            active ? "bg-white/10" : "bg-white/5"
+                          )}>
+                            <Icon className={cn(
+                              "w-4 h-4",
+                              active ? "text-white" : "text-white/70"
+                            )} />
                     </div>
-
-                    {/* Label - 14px text */}
-                    <span
-                      className={cn(
-                        "text-sm font-medium transition-colors duration-200 text-center leading-tight",
-                        active ? "text-white" : "text-white/70 group-hover:text-white"
-                      )}
-                    >
+                          <span className={cn(
+                            "text-[15px] flex-1 text-left",
+                            active ? "text-white font-medium" : "text-white/90"
+                          )}>
                       {item.name}
                     </span>
-                  </motion.button>
+                          {active && (
+                            <div className="w-1.5 h-1.5 rounded-full bg-blue-500" />
+                          )}
+                        </button>
                 );
               })}
+                  </div>
+                </div>
+              ))}
             </div>
           </motion.div>
         )}

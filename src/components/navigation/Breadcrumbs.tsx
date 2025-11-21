@@ -13,8 +13,25 @@ interface BreadcrumbsProps {
 
 const Breadcrumbs: React.FC<BreadcrumbsProps> = ({ className, showHome = true }) => {
   const location = useLocation();
-  const searchParams = useSearchParams();
-  const breadcrumbs = generateBreadcrumbs(location.pathname, searchParams);
+  const [searchParams] = useSearchParams();
+  
+  // Safely extract URLSearchParams - ensure we have the actual URLSearchParams object
+  // useSearchParams() returns [URLSearchParams, Function], so searchParams should be URLSearchParams
+  // But add defensive check in case of edge cases
+  let safeSearchParams: URLSearchParams | null = null;
+  try {
+    if (searchParams instanceof URLSearchParams) {
+      safeSearchParams = searchParams;
+    } else if (searchParams && typeof searchParams === 'object' && typeof (searchParams as any).get === 'function') {
+      // Fallback: if it has a get method, treat it as URLSearchParams-like
+      safeSearchParams = searchParams as URLSearchParams;
+    }
+  } catch (e) {
+    // If anything goes wrong, just pass null
+    safeSearchParams = null;
+  }
+  
+  const breadcrumbs = generateBreadcrumbs(location.pathname, safeSearchParams);
 
   if (breadcrumbs.length <= 1) {
     return null; // Don't show breadcrumbs if we're at the root

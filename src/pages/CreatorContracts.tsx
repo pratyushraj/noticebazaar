@@ -108,8 +108,6 @@ const CreatorContracts = () => {
       const width = window.innerWidth;
       const mobile = width < 768;
       setIsMobile(mobile);
-      // Debug log (remove in production if needed)
-      console.log(`[CreatorContracts] Screen width: ${width}px, isMobile: ${mobile}`);
     };
     // Check immediately
     checkMobile();
@@ -279,7 +277,6 @@ const CreatorContracts = () => {
       setTimeout(() => {
         const mobileView = document.querySelector('[data-mobile-view="true"]');
         const desktopView = document.querySelector('[data-desktop-view="true"]');
-        console.log(`[CreatorContracts Debug] isMobile=${isMobile}, Mobile view: ${mobileView ? 'RENDERED' : 'NOT RENDERED'}, Desktop view: ${desktopView ? 'RENDERED' : 'NOT RENDERED'}`);
       }, 100);
     }
   }, [isMobile, paginatedDeals.length]);

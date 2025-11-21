@@ -38,6 +38,7 @@ import FreeLegalCheck from "./pages/FreeLegalCheck";
 import ThankYou from "./pages/ThankYou";
 import GstComplianceChecklist from "./pages/blog/GstComplianceChecklist"; // Import new article component
 import { SessionContextProvider } from "./contexts/SessionContext";
+import { SidebarProvider } from "./contexts/SidebarContext";
 import ProtectedLayout from "./components/ProtectedLayout";
 import ProtectedRoute from "./components/ProtectedRoute";
 import AppToaster from "./components/AppToaster";
@@ -75,6 +76,7 @@ const App = () => {
           <FacebookPixelTracker />
           <GoogleAnalyticsTracker /> {/* Add GA4 tracker here */}
           <SessionContextProvider>
+            <SidebarProvider>
             <Routes>
               {/* Root route: Renders MarketingHome. ProtectedRoute handles redirection if authenticated. */}
               <Route path="/" element={<ProtectedRoute><MarketingHome /></ProtectedRoute>} />
@@ -154,6 +156,7 @@ const App = () => {
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
+            </SidebarProvider>
           </SessionContextProvider>
         </BrowserRouter>
       </TooltipProvider>

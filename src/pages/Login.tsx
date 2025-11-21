@@ -17,7 +17,6 @@ const Login = () => {
   useEffect(() => {
     // If session loading is finished and a session exists, redirect.
     if (!loading && session) {
-      console.log('Login: Session detected, navigating to / to let ProtectedRoute handle redirection.');
       navigate('/', { replace: true });
     }
   }, [session, loading, navigate]);

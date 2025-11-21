@@ -47,7 +47,7 @@ const CreatorBottomNav = () => {
   };
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-50 bg-white/[0.08] backdrop-blur-[40px] saturate-[180%] border-t border-white/10 shadow-[0_-4px_24px_rgba(0,0,0,0.2)] md:hidden safe-area-inset-bottom">
+    <div className="fixed bottom-0 left-0 right-0 z-50 bg-white/[0.08] backdrop-blur-[40px] saturate-[180%] border-t border-white/10 shadow-[0_-4px_24px_rgba(0,0,0,0.2)] safe-area-inset-bottom">
       {/* iOS-style safe area for notched devices */}
       <div className="h-safe-area-inset-bottom bg-white/[0.08]" />
       
