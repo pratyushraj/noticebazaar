@@ -762,7 +762,8 @@ const CreatorDashboardPreview = () => {
               Powered by NoticeBazaar • Secure Legal Portal ©2025
             </p>
           </footer>
-            </div>
+              </div>
+            </main>
           </div>
         </div>
       </div>
