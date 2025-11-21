@@ -109,18 +109,18 @@ const PaymentAnalytics: React.FC<PaymentAnalyticsProps> = ({ allDeals }) => {
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.5 }}
     >
-      <Card className="bg-card border-border/40">
+      <Card className="bg-white/[0.06] backdrop-blur-[40px] border-white/10 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.3)]">
         <CardHeader className="pb-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <BarChart3 className="w-5 h-5 text-purple-500" />
-              <CardTitle className="text-lg font-semibold">Payment Insights</CardTitle>
+              <BarChart3 className="w-5 h-5 text-purple-400" />
+              <CardTitle className="text-lg font-semibold text-white">Payment Insights</CardTitle>
             </div>
             <Button
               variant="ghost"
               size="sm"
               onClick={() => navigate('/creator-payments?analytics=true')}
-              className="text-xs"
+              className="text-xs text-white/60 hover:text-white hover:bg-white/10"
             >
               View Full
               <ChevronRight className="w-3 h-3 ml-1" />
@@ -130,9 +130,9 @@ const PaymentAnalytics: React.FC<PaymentAnalyticsProps> = ({ allDeals }) => {
         <CardContent className="space-y-4">
           {/* Average Payment Time */}
           <div>
-            <div className="text-sm text-muted-foreground mb-1">Average Payment Time</div>
-            <div className="text-2xl font-bold text-foreground">{analytics.avgPaymentTime} days</div>
-            <div className="text-xs text-muted-foreground mt-1">
+            <div className="text-sm text-white/60 mb-1">Average Payment Time</div>
+            <div className="text-2xl font-bold text-white">{analytics.avgPaymentTime} days</div>
+            <div className="text-xs text-white/60 mt-1">
               Fastest: {analytics.fastestBrand.name} ({analytics.fastestBrand.days} days) | 
               Slowest: {analytics.slowestBrand.name} ({analytics.slowestBrand.days} days)
             </div>
@@ -140,11 +140,11 @@ const PaymentAnalytics: React.FC<PaymentAnalyticsProps> = ({ allDeals }) => {
 
           {/* Payment Success Rate */}
           <div>
-            <div className="flex items-center justify-between text-sm text-muted-foreground mb-2">
+            <div className="flex items-center justify-between text-sm text-white/60 mb-2">
               <span>Payment Success Rate</span>
-              <span className="font-semibold text-foreground">{analytics.successRate}%</span>
+              <span className="font-semibold text-white">{analytics.successRate}%</span>
             </div>
-            <div className="relative h-2 bg-muted rounded-full overflow-hidden">
+            <div className="relative h-2 bg-white/5 rounded-full overflow-hidden">
               <motion.div
                 initial={{ width: 0 }}
                 animate={{ width: `${analytics.successRate}%` }}
@@ -157,11 +157,11 @@ const PaymentAnalytics: React.FC<PaymentAnalyticsProps> = ({ allDeals }) => {
           {/* Total Recovered */}
           {analytics.recoveredAmount > 0 && (
             <div className="p-3 bg-emerald-500/10 rounded-lg border border-emerald-500/20">
-              <div className="text-sm text-muted-foreground mb-1">Total Recovered</div>
-              <div className="text-lg font-bold text-emerald-500">
+              <div className="text-sm text-white/60 mb-1">Total Recovered</div>
+              <div className="text-lg font-bold text-emerald-400">
                 ₹{analytics.recoveredAmount.toLocaleString('en-IN')}
               </div>
-              <div className="text-xs text-muted-foreground mt-1">
+              <div className="text-xs text-white/60 mt-1">
                 (through reminders)
               </div>
             </div>
@@ -170,7 +170,7 @@ const PaymentAnalytics: React.FC<PaymentAnalyticsProps> = ({ allDeals }) => {
           {/* Brands to Watch */}
           {analytics.brandsToWatch.length > 0 && (
             <div>
-              <div className="text-sm font-medium text-foreground mb-2">Brands to Watch</div>
+              <div className="text-sm font-medium text-white mb-2">Brands to Watch</div>
               <div className="space-y-2">
                 {analytics.brandsToWatch.map((brand, idx) => (
                   <div
@@ -183,13 +183,13 @@ const PaymentAnalytics: React.FC<PaymentAnalyticsProps> = ({ allDeals }) => {
                   >
                     <div className="flex items-center gap-2">
                       {brand.lateCount > 1 ? (
-                        <AlertTriangle className="w-4 h-4 text-red-500" />
+                        <AlertTriangle className="w-4 h-4 text-red-400" />
                       ) : (
-                        <CheckCircle className="w-4 h-4 text-yellow-500" />
+                        <CheckCircle className="w-4 h-4 text-yellow-400" />
                       )}
-                      <span className="text-sm font-medium text-foreground">{brand.brand}</span>
+                      <span className="text-sm font-medium text-white">{brand.brand}</span>
                     </div>
-                    <div className="text-xs text-muted-foreground">
+                    <div className="text-xs text-white/60">
                       {brand.lateCount > 1 ? `${brand.lateCount} late payments` : 'Reliable payer'} 
                       {' '}(avg {brand.avgDays} days)
                     </div>

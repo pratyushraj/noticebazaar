@@ -574,32 +574,60 @@ export default function MessagesPage() {
 
   return (
     <div className="w-full h-[calc(100vh-12rem)] md:h-screen flex flex-col antialiased overflow-hidden -mx-4 md:mx-0 md:p-6 md:min-h-screen md:pb-0 pb-16 md:pb-0">
-      {/* Mobile: Compact header */}
-      <div className="flex items-center justify-between px-4 py-2.5 md:py-3 border-b border-white/5 bg-[#1C1C1E]/95 backdrop-blur-xl md:border-0 md:bg-transparent md:px-0 md:py-0 md:mb-6 flex-shrink-0">
-        <div className="flex items-center gap-2 md:gap-3">
-          {isMobile && (
-            <Sheet open={isMobileSheetOpen} onOpenChange={setIsMobileSheetOpen}>
-              <SheetTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-8 w-8 md:hidden">
-                  <Menu className="h-4 w-4" />
-                </Button>
-              </SheetTrigger>
-              <SheetContent side="left" className="w-[85%] sm:w-[280px] p-0">
-                <div className="h-full">
-                  <AdvisorListScoped
-                    advisors={advisors}
-                    selectedId={selectedAdvisorId}
-                    onSelect={handleSelectAdvisor}
-                    isLoading={isLoadingAdvisors}
-                  />
+      {/* Advisor Selection Cards - CA and Legal Advisor */}
+      <div className="px-4 md:px-0 mb-4 md:mb-6 flex-shrink-0">
+        <div className="grid grid-cols-2 gap-3 md:gap-4">
+          {/* CA Card */}
+          {caProfile && (
+            <div
+              onClick={() => {
+                const caAdvisor = advisors.find(a => a.role === 'Chartered Accountant');
+                if (caAdvisor) {
+                  handleSelectAdvisor(caAdvisor);
+                  if (isMobile) setIsMobileSheetOpen(false);
+                }
+              }}
+              className={clsx(
+                "bg-white/[0.06] backdrop-blur-[40px] border-white/10 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.3)] p-4 cursor-pointer transition-all hover:border-white/20 hover:bg-white/[0.08]",
+                selectedAdvisorId === caProfile.id && "border-blue-400/50 bg-blue-500/10"
+              )}
+            >
+              <div className="flex items-center gap-3">
+                <LocalAvatar size="sm" src={caProfile.avatar_url || generateAvatarUrl(caProfile.first_name, caProfile.last_name)} alt={`${caProfile.first_name} ${caProfile.last_name}`} />
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold text-white truncate">{caProfile.first_name} {caProfile.last_name}</p>
+                  <p className="text-xs text-white/60">Chartered Accountant</p>
                 </div>
-              </SheetContent>
-            </Sheet>
+                <Lock className="h-4 w-4 text-green-400 flex-shrink-0" />
+              </div>
+            </div>
           )}
-          <h1 className="text-xl md:text-3xl font-semibold flex items-center gap-2 md:gap-3">
-            Secure Messages
-            <Lock className="h-4 w-4 md:h-5 md:w-5 text-green-500" />
-          </h1>
+          
+          {/* Legal Advisor Card */}
+          {adminProfile && (
+            <div
+              onClick={() => {
+                const legalAdvisor = advisors.find(a => a.role === 'Legal Advisor');
+                if (legalAdvisor) {
+                  handleSelectAdvisor(legalAdvisor);
+                  if (isMobile) setIsMobileSheetOpen(false);
+                }
+              }}
+              className={clsx(
+                "bg-white/[0.06] backdrop-blur-[40px] border-white/10 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.3)] p-4 cursor-pointer transition-all hover:border-white/20 hover:bg-white/[0.08]",
+                selectedAdvisorId === adminProfile.id && "border-blue-400/50 bg-blue-500/10"
+              )}
+            >
+              <div className="flex items-center gap-3">
+                <LocalAvatar size="sm" src={adminProfile.avatar_url || generateAvatarUrl(adminProfile.first_name, adminProfile.last_name)} alt={`${adminProfile.first_name} ${adminProfile.last_name}`} />
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold text-white truncate">{adminProfile.first_name} {adminProfile.last_name}</p>
+                  <p className="text-xs text-white/60">Legal Advisor</p>
+                </div>
+                <Lock className="h-4 w-4 text-green-400 flex-shrink-0" />
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
