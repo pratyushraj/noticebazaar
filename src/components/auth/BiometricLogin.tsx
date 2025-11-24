@@ -46,7 +46,6 @@ const BiometricLogin: React.FC<BiometricLoginProps> = ({
 }) => {
   const [isAuthenticating, setIsAuthenticating] = useState(false);
   const { session, user } = useSession();
-  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 
   const handleRegisterPasskey = async () => {
     if (!window.PublicKeyCredential) {
@@ -72,20 +71,28 @@ const BiometricLogin: React.FC<BiometricLoginProps> = ({
         return;
       }
 
-      // Get challenge from backend
-      const challengeResponse = await fetch(`${supabaseUrl}/functions/v1/passkey-challenge`, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
-          'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
-        },
+      // Get challenge from backend using Supabase client
+      // For GET requests, we pass an empty body
+      const { data: challengeData, error: challengeError } = await supabase.functions.invoke('passkey-challenge', {
+        body: {},
       });
 
-      if (!challengeResponse.ok) {
-        throw new Error('Failed to get challenge');
+      if (challengeError) {
+        const errorStr = String(challengeError.message || challengeError || '').toLowerCase();
+        const errorStatus = (challengeError as any).status || (challengeError as any).statusCode;
+        
+        if (errorStatus === 404 || errorStr.includes('not found') || errorStr.includes('404')) {
+          throw new Error('Passkey registration is not available yet. Please try again later.');
+        }
+        
+        throw new Error(challengeError.message || 'Failed to get registration challenge');
       }
 
-      const { challenge: challengeBase64, rpId } = await challengeResponse.json();
+      if (!challengeData || (challengeData as any).error) {
+        throw new Error((challengeData as any).error || 'Failed to get challenge');
+      }
+
+      const { challenge: challengeBase64, rpId } = challengeData as any;
       const challenge = base64URLToArrayBuffer(challengeBase64);
 
       // Get user ID as Uint8Array
@@ -136,25 +143,29 @@ const BiometricLogin: React.FC<BiometricLoginProps> = ({
         },
       };
 
-      // Register passkey with backend
-      const registerResponse = await fetch(`${supabaseUrl}/functions/v1/passkey-register`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
-          'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
+      // Register passkey with backend using Supabase client
+      const { data: registerData, error: registerError } = await supabase.functions.invoke('passkey-register', {
+        body: {
           credential: credentialData,
           deviceName: navigator.userAgent.includes('iPhone') ? 'iPhone' : 
                      navigator.userAgent.includes('iPad') ? 'iPad' :
                      navigator.userAgent.includes('Android') ? 'Android Device' : 'Desktop',
-        }),
+        },
       });
 
-      if (!registerResponse.ok) {
-        const error = await registerResponse.json();
-        throw new Error(error.error || 'Failed to register passkey');
+      if (registerError) {
+        const errorStr = String(registerError.message || registerError || '').toLowerCase();
+        const errorStatus = (registerError as any).status || (registerError as any).statusCode;
+        
+        if (errorStatus === 404 || errorStr.includes('not found') || errorStr.includes('404')) {
+          throw new Error('Passkey registration is not available yet. Please try again later.');
+        }
+        
+        throw new Error(registerError.message || 'Failed to register passkey');
+      }
+
+      if (!registerData || (registerData as any).error) {
+        throw new Error((registerData as any).error || 'Failed to register passkey');
       }
 
       triggerHaptic(HapticPatterns.success);
@@ -197,22 +208,32 @@ const BiometricLogin: React.FC<BiometricLoginProps> = ({
     triggerHaptic(HapticPatterns.medium);
 
     try {
-      // Get challenge and allowed credentials from backend
-      const challengeResponse = await fetch(`${supabaseUrl}/functions/v1/passkey-challenge`, {
-        method: 'POST',
-        headers: {
-          'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email }),
+      // Get challenge and allowed credentials from backend using Supabase client
+      const { data: challengeData, error: challengeError } = await supabase.functions.invoke('passkey-challenge', {
+        body: { email: email.trim() },
       });
 
-      if (!challengeResponse.ok) {
-        const error = await challengeResponse.json();
-        throw new Error(error.error || 'Failed to get challenge');
+      if (challengeError) {
+        // Check if Edge Function is not deployed
+        const errorStr = String(challengeError.message || challengeError || '').toLowerCase();
+        const errorStatus = (challengeError as any).status || (challengeError as any).statusCode;
+        
+        if (errorStatus === 404 || errorStr.includes('not found') || errorStr.includes('404')) {
+          throw new Error('Passkey authentication is not available yet. Please sign in with Google or email.');
+        }
+        
+        if (errorStr.includes('user not found') || errorStr.includes('404')) {
+          throw new Error('No account found with this email. Please sign up first.');
+        }
+        
+        throw new Error(challengeError.message || 'Failed to get authentication challenge');
       }
 
-      const { challenge: challengeBase64, rpId, allowCredentials } = await challengeResponse.json();
+      if (!challengeData || (challengeData as any).error) {
+        throw new Error((challengeData as any).error || 'Failed to get challenge');
+      }
+
+      const { challenge: challengeBase64, rpId, allowCredentials } = challengeData as any;
       const challenge = base64URLToArrayBuffer(challengeBase64);
 
       // Convert allowCredentials to ArrayBuffer format
@@ -256,25 +277,34 @@ const BiometricLogin: React.FC<BiometricLoginProps> = ({
         },
       };
 
-      // Authenticate with backend
-      const authResponse = await fetch(`${supabaseUrl}/functions/v1/passkey-authenticate`, {
-        method: 'POST',
-        headers: {
-          'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
+      // Authenticate with backend using Supabase client
+      const { data: authData, error: authError } = await supabase.functions.invoke('passkey-authenticate', {
+        body: {
           credential: credentialData,
-          email,
-        }),
+          email: email.trim(),
+        },
       });
 
-      if (!authResponse.ok) {
-        const error = await authResponse.json();
-        throw new Error(error.error || 'Authentication failed');
+      if (authError) {
+        const errorStr = String(authError.message || authError || '').toLowerCase();
+        const errorStatus = (authError as any).status || (authError as any).statusCode;
+        
+        if (errorStatus === 404 || errorStr.includes('not found') || errorStr.includes('404')) {
+          throw new Error('Passkey authentication is not available yet. Please sign in with Google or email.');
+        }
+        
+        if (errorStr.includes('invalid passkey') || errorStr.includes('401')) {
+          throw new Error('Passkey verification failed. Please try again or use another sign-in method.');
+        }
+        
+        throw new Error(authError.message || 'Authentication failed');
       }
 
-      const { userId, email: userEmail } = await authResponse.json();
+      if (!authData || (authData as any).error) {
+        throw new Error((authData as any).error || 'Authentication failed');
+      }
+
+      const { userId, email: userEmail } = authData as any;
 
       // Create a session by signing in with passwordless OTP
       // This will send a magic link to the user's email

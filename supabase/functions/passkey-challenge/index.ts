@@ -36,8 +36,12 @@ serve(async (req) => {
   }
 
   try {
-    if (req.method === 'GET') {
-      // Generate challenge for registration
+    // Handle both GET and POST - check if email is provided
+    const body = req.method === 'POST' ? await req.json() : {};
+    const { email } = body;
+
+    if (!email) {
+      // Generate challenge for registration (no email = registration mode)
       const challenge = generateChallenge();
       const challengeBase64 = base64URLEncode(challenge);
 
@@ -51,8 +55,8 @@ serve(async (req) => {
       });
     }
 
-    if (req.method === 'POST') {
-      const { email } = await req.json();
+    // Authentication mode (email provided)
+    if (email) {
       
       if (!email) {
         return new Response(JSON.stringify({ error: 'Missing email' }), {
