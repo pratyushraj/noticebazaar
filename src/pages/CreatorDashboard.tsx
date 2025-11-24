@@ -80,7 +80,6 @@ import BiometricLogin from '@/components/auth/BiometricLogin';
 import { supabase } from '@/integrations/supabase/client';
 // New UI features
 import MoneyRain from '@/components/celebrations/MoneyRain';
-import PaymentCountdownBanner from '@/components/payments/PaymentCountdownBanner';
 import ChaseAllOverduesButton from '@/components/payments/ChaseAllOverduesButton';
 import EarningsHeatmap from '@/components/earnings/EarningsHeatmap';
 import TaxSeasonMonster from '@/components/tax/TaxSeasonMonster';
@@ -844,7 +843,6 @@ const CreatorDashboard = () => {
               {activeTab === 'overview' && (
                 <>
                   <TrialBanner />
-                  <PaymentCountdownBanner brandDeals={brandDeals} />
                   <TaxSeasonMonster />
 
               {/* Hero Section - Liquid Glass */}

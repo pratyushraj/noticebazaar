@@ -27,7 +27,6 @@ interface ProfileDropdownProps {
 
 const ProfileDropdown: React.FC<ProfileDropdownProps> = ({ profilePath }) => {
   const { profile, user } = useSession();
-  const navigate = useNavigate();
   const signOutMutation = useSignOut();
   const [showPasskeyDialog, setShowPasskeyDialog] = useState(false);
 
@@ -55,70 +54,70 @@ const ProfileDropdown: React.FC<ProfileDropdownProps> = ({ profilePath }) => {
               alt={profile?.first_name || "User"} 
             />
             <AvatarFallback className="bg-blue-500/20 text-blue-400 text-sm font-medium">
-              {getInitials(profile?.first_name, profile?.last_name)}
+              {getInitials(profile?.first_name || null, profile?.last_name || null)}
             </AvatarFallback>
           </Avatar>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent
-        className="w-56 bg-[#0F121A]/95 backdrop-blur-xl border border-white/10 shadow-2xl rounded-xl"
+        className="w-56 bg-gradient-to-br from-[#1C1C1E] to-[#0A0A0C] backdrop-blur-xl border border-white/10 shadow-2xl rounded-2xl overflow-hidden"
         align="end"
       >
-        <DropdownMenuLabel className="font-normal">
+        <DropdownMenuLabel className="font-normal px-3 py-3">
           <div className="flex flex-col space-y-1">
-            <p className="text-sm font-medium leading-none text-white">
+            <p className="text-sm font-semibold leading-none text-white">
               {profile?.first_name} {profile?.last_name}
             </p>
-            <p className="text-xs leading-none text-gray-400 truncate">
+            <p className="text-xs leading-none text-white/50 truncate">
               {user?.email}
             </p>
           </div>
         </DropdownMenuLabel>
-        <DropdownMenuSeparator className="bg-white/10" />
+        <DropdownMenuSeparator className="bg-white/5" />
         
-        <DropdownMenuItem asChild className="cursor-pointer hover:bg-white/5">
-          <Link to={profilePath} className="flex items-center">
-            <User className="mr-2 h-4 w-4 text-gray-400" />
-            <span className="text-gray-300">View Profile</span>
+        <DropdownMenuItem asChild className="cursor-pointer px-3 py-2.5 hover:bg-white/5 active:bg-white/10 transition-colors">
+          <Link to={profilePath} className="flex items-center w-full">
+            <User className="mr-3 h-4 w-4 text-white/60" />
+            <span className="text-[15px] text-white/90">View Profile</span>
           </Link>
         </DropdownMenuItem>
 
         {isCreator && (
           <DropdownMenuItem 
             asChild
-            className="cursor-pointer hover:bg-white/5"
+            className="cursor-pointer px-3 py-2.5 hover:bg-white/5 active:bg-white/10 transition-colors"
           >
-            <Link to="/partner-program" className="flex items-center">
-              <Sparkles className="mr-2 h-4 w-4 text-gray-400" />
-              <span className="text-gray-300">Partner Program</span>
+            <Link to="/partner-program" className="flex items-center w-full">
+              <Sparkles className="mr-3 h-4 w-4 text-white/60" />
+              <span className="text-[15px] text-white/90">Partner Program</span>
             </Link>
           </DropdownMenuItem>
         )}
 
-        <DropdownMenuItem asChild className="cursor-pointer hover:bg-white/5">
-          <Link to={profilePath} className="flex items-center">
-            <Settings className="mr-2 h-4 w-4 text-gray-400" />
-            <span className="text-gray-300">Settings</span>
+        <DropdownMenuItem asChild className="cursor-pointer px-3 py-2.5 hover:bg-white/5 active:bg-white/10 transition-colors">
+          <Link to={profilePath} className="flex items-center w-full">
+            <Settings className="mr-3 h-4 w-4 text-white/60" />
+            <span className="text-[15px] text-white/90">Settings</span>
           </Link>
         </DropdownMenuItem>
 
         <DropdownMenuItem 
           onClick={() => setShowPasskeyDialog(true)}
-          className="cursor-pointer hover:bg-white/5"
+          className="cursor-pointer px-3 py-2.5 hover:bg-white/5 active:bg-white/10 transition-colors"
         >
-          <Fingerprint className="mr-2 h-4 w-4 text-gray-400" />
-          <span className="text-gray-300">Register Passkey</span>
+          <Fingerprint className="mr-3 h-4 w-4 text-white/60" />
+          <span className="text-[15px] text-white/90">Register Passkey</span>
         </DropdownMenuItem>
 
-        <DropdownMenuSeparator className="bg-white/10" />
+        <DropdownMenuSeparator className="bg-white/5 my-1" />
         
         <DropdownMenuItem
           onClick={handleLogout}
           disabled={signOutMutation.isPending}
-          className="cursor-pointer text-red-400 focus:text-red-300 hover:bg-red-500/10 focus:bg-red-500/10"
+          className="cursor-pointer px-3 py-2.5 text-red-400 focus:text-red-300 hover:bg-red-500/10 focus:bg-red-500/10 active:bg-red-500/15 transition-colors"
         >
-          <LogOut className="mr-2 h-4 w-4" />
-          <span>Logout</span>
+          <LogOut className="mr-3 h-4 w-4" />
+          <span className="text-[15px]">Logout</span>
         </DropdownMenuItem>
       </DropdownMenuContent>
 

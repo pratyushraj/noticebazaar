@@ -39,7 +39,6 @@ import { motion } from 'framer-motion';
 import CountUp from 'react-countup';
 // New UI features
 import MoneyRain from '@/components/celebrations/MoneyRain';
-import PaymentCountdownBanner from '@/components/payments/PaymentCountdownBanner';
 import ChaseAllOverduesButton from '@/components/payments/ChaseAllOverduesButton';
 import EarningsHeatmap from '@/components/earnings/EarningsHeatmap';
 import TaxSeasonMonster from '@/components/tax/TaxSeasonMonster';
@@ -485,7 +484,6 @@ const CreatorDashboardPreview = () => {
           {/* Overview Tab */}
           {activeTab === 'overview' && (
             <>
-              <PaymentCountdownBanner brandDeals={demoBrandDeals} />
               <TaxSeasonMonster />
               {/* Hero Section - Liquid Glass */}
               <div className="mb-12">

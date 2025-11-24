@@ -260,7 +260,7 @@ const AppsMenu: React.FC<AppsMenuProps> = ({ profileRole }) => {
             )}
 
             {/* iOS-style Menu List */}
-            <div className="py-2">
+            <div className="py-2 bg-gradient-to-br from-[#3B82F6]/10 via-[#8B5CF6]/10 to-[#3B82F6]/5">
               {filteredSections.map((section, sectionIndex) => (
                 <div key={section.title} className={cn(
                   "mb-6",
