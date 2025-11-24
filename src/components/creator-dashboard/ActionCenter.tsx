@@ -15,7 +15,7 @@ import {
 } from 'lucide-react';
 import { BrandDeal } from '@/types';
 import { useNavigate } from 'react-router-dom';
-import { cn } from '@/lib/utils';
+import { cn, formatDate } from '@/lib/utils';
 import { motion } from 'framer-motion';
 
 interface UrgentAction {
@@ -275,67 +275,67 @@ const ActionCenter: React.FC<ActionCenterProps> = ({
 
   return (
     <div className="relative bg-white/[0.06] backdrop-blur-[40px] border border-white/10 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.3)] overflow-hidden">
-      <div className="flex flex-col space-y-2 p-6 pb-4 border-b border-white/10">
-        <div className="flex items-center gap-3">
-          <div className="h-12 w-12 rounded-2xl bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center shadow-[0_2px_8px_rgba(0,0,0,0.2)]">
-            <AlertCircle className="h-6 w-6 text-white" />
+      <div className="flex flex-col space-y-2 p-4 md:p-6 pb-3 md:pb-4 border-b border-white/10">
+        <div className="flex items-center gap-2 md:gap-3">
+          <div className="h-10 w-10 md:h-12 md:w-12 rounded-2xl bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center shadow-[0_2px_8px_rgba(0,0,0,0.2)]">
+            <AlertCircle className="h-5 w-5 md:h-6 md:w-6 text-white" />
           </div>
           <div className="flex-1">
-            <h3 className="text-xl font-semibold text-white tracking-tight flex items-center gap-2">
+            <h3 className="text-lg md:text-xl font-semibold text-white tracking-tight flex items-center gap-2">
               Action Center
             </h3>
-            <p className="text-sm text-white/60 mt-1">Urgent items, warnings, and suggestions</p>
+            <p className="text-xs md:text-sm text-white/60 mt-1">Urgent items, warnings, and suggestions</p>
           </div>
         </div>
       </div>
-      <div className="space-y-4 p-6">
+      <div className="space-y-4 p-4 md:p-6">
         <Tabs defaultValue="urgent" className="w-full">
-          <TabsList className="grid w-full grid-cols-3 bg-white/5 backdrop-blur-[20px] saturate-[120%] p-1 rounded-2xl border border-white/10 shadow-[0_2px_8px_rgba(0,0,0,0.15)] gap-1">
+          <TabsList className="grid w-full grid-cols-3 bg-white/5 backdrop-blur-[20px] saturate-[120%] p-1 rounded-2xl border border-white/10 shadow-[0_2px_8px_rgba(0,0,0,0.15)] gap-0.5 md:gap-1">
             <TabsTrigger 
               value="urgent" 
-              className="data-[state=active]:bg-white/20 data-[state=active]:text-white data-[state=inactive]:text-white/60 transition-all text-sm font-medium rounded-xl flex items-center gap-1.5 py-2"
+              className="data-[state=active]:bg-white/20 data-[state=active]:text-white data-[state=inactive]:text-white/60 transition-all text-xs md:text-sm font-medium rounded-xl flex items-center gap-1 py-1.5 md:py-2 px-1 md:px-2"
             >
-              <span>Urgent</span>
-              {totalUrgent > 0 && <span className="px-1.5 py-0.5 rounded-full bg-white/20 text-white text-xs font-semibold whitespace-nowrap">{totalUrgent}</span>}
+              <span className="truncate">Urgent</span>
+              {totalUrgent > 0 && <span className="px-1 md:px-1.5 py-0.5 rounded-full bg-white/20 text-white text-[10px] md:text-xs font-semibold whitespace-nowrap flex-shrink-0">{totalUrgent}</span>}
             </TabsTrigger>
             <TabsTrigger 
               value="warnings" 
-              className="data-[state=active]:bg-white/20 data-[state=active]:text-white data-[state=inactive]:text-white/60 transition-all text-sm font-medium rounded-xl flex items-center gap-1.5 py-2"
+              className="data-[state=active]:bg-white/20 data-[state=active]:text-white data-[state=inactive]:text-white/60 transition-all text-xs md:text-sm font-medium rounded-xl flex items-center gap-1 py-1.5 md:py-2 px-1 md:px-2"
             >
-              <span>Warnings</span>
-              {totalWarnings > 0 && <span className="px-1.5 py-0.5 rounded-full bg-white/20 text-white text-xs font-semibold whitespace-nowrap">{totalWarnings}</span>}
+              <span className="truncate">Warnings</span>
+              {totalWarnings > 0 && <span className="px-1 md:px-1.5 py-0.5 rounded-full bg-white/20 text-white text-[10px] md:text-xs font-semibold whitespace-nowrap flex-shrink-0">{totalWarnings}</span>}
             </TabsTrigger>
             <TabsTrigger 
               value="suggestions" 
-              className="data-[state=active]:bg-white/20 data-[state=active]:text-white data-[state=inactive]:text-white/60 transition-all text-sm font-medium rounded-xl flex items-center gap-1.5 py-2"
+              className="data-[state=active]:bg-white/20 data-[state=active]:text-white data-[state=inactive]:text-white/60 transition-all text-xs md:text-sm font-medium rounded-xl flex items-center gap-1 py-1.5 md:py-2 px-1 md:px-2"
             >
-              <span>Suggestions</span>
-              {totalSuggestions > 0 && <span className="px-1.5 py-0.5 rounded-full bg-white/20 text-white text-xs font-semibold whitespace-nowrap">{totalSuggestions}</span>}
+              <span className="truncate">Suggestions</span>
+              {totalSuggestions > 0 && <span className="px-1 md:px-1.5 py-0.5 rounded-full bg-white/20 text-white text-[10px] md:text-xs font-semibold whitespace-nowrap flex-shrink-0">{totalSuggestions}</span>}
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="urgent" className="mt-6 space-y-4">
+          <TabsContent value="urgent" className="mt-4 md:mt-6 space-y-4">
             {paymentOverdueActions.length > 0 && (
-              paymentOverdueActions.slice(0, 1).map((action, index) => {
+              paymentOverdueActions.slice(0, 1).map((action) => {
                 const Icon = getActionIcon(action.type);
                 return (
                   <motion.div
-                    key={index}
+                    key={action.dealId || `overdue-${action.brand}-${action.amount}`}
                     initial={{ opacity: 0, y: 8 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="relative p-5 rounded-2xl bg-white/[0.06] backdrop-blur-[30px] border border-red-500/15 shadow-[0_2px_12px_rgba(0,0,0,0.15)] overflow-hidden"
+                    className="relative p-4 md:p-5 rounded-2xl bg-white/[0.06] backdrop-blur-[30px] border border-orange-500/20 shadow-[0_2px_12px_rgba(0,0,0,0.15)] overflow-hidden"
                   >
-                    {/* Subtle gradient overlay - reduced intensity */}
-                    <div className="absolute inset-0 bg-gradient-to-br from-red-500/[0.03] via-transparent to-transparent pointer-events-none" />
+                    {/* Subtle gradient overlay - orange instead of red */}
+                    <div className="absolute inset-0 bg-gradient-to-br from-orange-500/[0.03] via-transparent to-transparent pointer-events-none" />
                     
                     {/* Header */}
-                    <div className="flex items-start justify-between gap-3 relative z-10 mb-4">
-                      <div className="flex items-center gap-3 flex-1 min-w-0">
-                        <div className="w-10 h-10 rounded-xl bg-red-500/20 backdrop-blur-sm flex items-center justify-center border border-red-500/30 flex-shrink-0">
-                          <Icon className="w-5 h-5 text-red-400" />
+                    <div className="flex items-start justify-between gap-2 md:gap-3 relative z-10 mb-3 md:mb-4">
+                      <div className="flex items-center gap-2 md:gap-3 flex-1 min-w-0">
+                        <div className="w-9 h-9 md:w-10 md:h-10 rounded-xl bg-orange-500/20 backdrop-blur-sm flex items-center justify-center border border-orange-500/30 flex-shrink-0">
+                          <Icon className="w-4 h-4 md:w-5 md:h-5 text-orange-400" />
                       </div>
                         <div className="flex-1 min-w-0">
-                          <h3 className="text-sm font-semibold text-white truncate">
+                          <h3 className="text-sm md:text-base font-semibold text-white truncate">
                             {action.brand || 'Payment'} Payment Overdue
                         </h3>
                           <p className="text-xs text-white/50 mt-0.5">
@@ -343,31 +343,31 @@ const ActionCenter: React.FC<ActionCenterProps> = ({
                         </p>
                         </div>
                       </div>
-                      <span className="px-2 py-1 rounded-lg bg-red-500/10 text-red-400 text-xs font-semibold border border-red-500/20 flex-shrink-0">
+                      <span className="px-2 py-1 rounded-lg bg-orange-500/10 text-orange-400 text-[10px] md:text-xs font-semibold border border-orange-500/20 flex-shrink-0 whitespace-nowrap">
                         Overdue
                       </span>
                     </div>
 
                     {/* Amount */}
-                    <div className="bg-white/5 backdrop-blur-sm rounded-xl p-3 border border-white/10 relative z-10 mb-4">
-                      <p className="text-lg font-semibold text-white">₹{action.amount?.toLocaleString('en-IN')}</p>
+                    <div className="bg-white/5 backdrop-blur-sm rounded-xl p-3 md:p-4 border border-white/10 relative z-10 mb-3 md:mb-4">
+                      <p className="text-xl md:text-2xl font-semibold text-white">₹{action.amount?.toLocaleString('en-IN')}</p>
                       <p className="text-xs text-white/50 mt-1">
-                        Due: {action.dueDate ? new Date(action.dueDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : 'N/A'}
+                        Due: {formatDate(action.dueDate)}
                       </p>
                     </div>
 
-                    {/* Actions - Accessibility: 44x44px minimum touch target */}
-                    <div className="flex gap-2 relative z-10">
+                    {/* Actions - Full width on mobile, side-by-side on desktop */}
+                    <div className="flex flex-col sm:flex-row gap-2 relative z-10">
                       <button
                         onClick={() => onSendReminder?.(action.dealId!)}
-                        className="flex-1 min-h-[44px] py-3 rounded-xl bg-white/20 backdrop-blur-[20px] border border-white/30 hover:bg-white/30 active:scale-[0.98] text-white font-medium text-base transition-all"
+                        className="flex-1 min-h-[48px] py-3 rounded-xl bg-white/20 backdrop-blur-[20px] border border-white/30 hover:bg-white/30 active:scale-[0.98] text-white font-medium text-sm md:text-base transition-all"
                         aria-label="Send payment reminder"
                       >
                         Send Reminder
                       </button>
                       <button
                         onClick={() => onEscalate?.(action.dealId!)}
-                        className="flex-1 min-h-[44px] py-3 rounded-xl bg-white/10 backdrop-blur-[20px] hover:bg-white/15 text-white font-medium text-base transition-all border border-white/20"
+                        className="flex-1 min-h-[48px] py-3 rounded-xl bg-white/10 backdrop-blur-[20px] hover:bg-white/15 text-white font-medium text-sm md:text-base transition-all border border-white/20"
                         aria-label="Escalate payment issue"
                       >
                         Escalate
@@ -377,7 +377,7 @@ const ActionCenter: React.FC<ActionCenterProps> = ({
                 );
               })
             )}
-            {otherUrgentActions.map((action, index) => {
+            {otherUrgentActions.map((action, idx) => {
               const Icon = getActionIcon(action.type);
               const actionBorderColor = action.type === 'contract_review' 
                 ? 'border-[#FFD89B]/40' 
@@ -390,10 +390,10 @@ const ActionCenter: React.FC<ActionCenterProps> = ({
                 : 'text-[#F472B6]';
               return (
                 <motion.div
-                  key={index}
+                  key={action.dealId || `urgent-${action.type}-${action.brand || action.title}`}
                   initial={{ opacity: 0, x: -10 }}
                   animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.3, delay: index * 0.1 }}
+                  transition={{ duration: 0.3, delay: idx * 0.1 }}
                   className={cn(
                     "bg-white/[0.06] backdrop-blur-[30px] border border-white/10 rounded-3xl p-5 hover:bg-white/[0.08] transition-all cursor-pointer shadow-[0_4px_24px_rgba(0,0,0,0.2)]",
                     actionBorderColor
@@ -442,7 +442,7 @@ const ActionCenter: React.FC<ActionCenterProps> = ({
             )}
           </TabsContent>
 
-          <TabsContent value="warnings" className="mt-6 space-y-3">
+          <TabsContent value="warnings" className="mt-4 md:mt-6 space-y-3">
             {warnings.map((alert, index) => (
               <motion.div
                 key={alert.id}
@@ -472,7 +472,7 @@ const ActionCenter: React.FC<ActionCenterProps> = ({
             )}
           </TabsContent>
 
-          <TabsContent value="suggestions" className="mt-6 space-y-3">
+          <TabsContent value="suggestions" className="mt-4 md:mt-6 space-y-3">
             {suggestions.map((suggestion, index) => (
               <motion.div
                 key={suggestion.id}

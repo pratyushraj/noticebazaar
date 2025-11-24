@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import { ErrorBoundary } from '@/components/ui/error-boundary';
 import { 
   Search, 
   Briefcase,
@@ -395,7 +396,7 @@ const CreatorDashboardPreview = () => {
   }
 
   return (
-    <>
+    <ErrorBoundary>
       <div className="relative min-h-screen overflow-hidden">
         {/* Animated gradient background */}
         <div className="fixed inset-0 animate-gradient-shift" />
@@ -771,7 +772,7 @@ const CreatorDashboardPreview = () => {
           </div>
         </div>
       </div>
-    </>
+    </ErrorBoundary>
   );
 };
 

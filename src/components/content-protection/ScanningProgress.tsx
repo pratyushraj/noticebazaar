@@ -4,7 +4,6 @@ import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Loader2, CheckCircle, AlertCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { cn } from '@/lib/utils';
 
 interface ScanningProgressProps {
   isScanning: boolean;
@@ -12,6 +11,8 @@ interface ScanningProgressProps {
   currentPlatform?: string;
   matchesFound?: number;
   contentPreview?: string;
+  onRetry?: () => void;
+  error?: string | null;
 }
 
 const ScanningProgress: React.FC<ScanningProgressProps> = ({
@@ -20,8 +21,39 @@ const ScanningProgress: React.FC<ScanningProgressProps> = ({
   currentPlatform,
   matchesFound = 0,
   contentPreview,
+  onRetry,
+  error,
 }) => {
-  if (!isScanning) return null;
+  if (!isScanning && !error) return null;
+
+  // Show error state with retry button
+  if (error) {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -20 }}
+      >
+        <Card className="bg-card border-red-500/40">
+          <CardContent className="p-6">
+            <div className="flex items-center gap-3 mb-4">
+              <AlertCircle className="w-6 h-6 text-red-500" />
+              <h3 className="text-lg font-semibold text-foreground">Scan Failed</h3>
+            </div>
+            <p className="text-sm text-muted-foreground mb-4">{error}</p>
+            {onRetry && (
+              <button
+                onClick={onRetry}
+                className="px-4 py-2 bg-purple-500 hover:bg-purple-600 text-white rounded-lg transition-colors"
+              >
+                Retry Scan
+              </button>
+            )}
+          </CardContent>
+        </Card>
+      </motion.div>
+    );
+  }
 
   return (
     <motion.div

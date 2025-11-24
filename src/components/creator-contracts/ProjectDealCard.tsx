@@ -1,7 +1,7 @@
 
 "use client";
 
-import React from 'react';
+import React, { useState } from 'react';
 import { BrandDeal } from '@/types';
 import BrandLogo from './BrandLogo';
 import DealStatusBadge, { DealStage } from './DealStatusBadge';
@@ -20,8 +20,10 @@ import {
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
+import BrandMoodBoard from '@/components/deals/BrandMoodBoard';
+import { categorizeDeal, getCategoryStyle } from '@/lib/utils/dealCategories';
 
-interface ProjectDealCardProps {
+export interface ProjectDealCardProps {
   deal: BrandDeal;
   stage: DealStage;
   onView: (deal: BrandDeal) => void;
@@ -158,8 +160,12 @@ const ProjectDealCard: React.FC<ProjectDealCardProps> = ({
   };
 
   const primaryActions = getPrimaryActions();
+  const [showMoodBoard, setShowMoodBoard] = useState(false);
+  const category = categorizeDeal(deal.brand_name);
+  const categoryStyle = getCategoryStyle(category);
 
   return (
+    <div className="relative" onMouseEnter={() => setShowMoodBoard(true)} onMouseLeave={() => setShowMoodBoard(false)}>
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
@@ -168,8 +174,9 @@ const ProjectDealCard: React.FC<ProjectDealCardProps> = ({
     >
       <Card
         className={cn(
-          "bg-white/[0.06] backdrop-blur-[40px] border-white/10 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.3)] p-4 hover:border-white/20 hover:bg-white/[0.08] transition-all cursor-pointer group",
-          stage === 'deliverables_due' && 'border-orange-500/30 bg-orange-500/10'
+          "bg-white/[0.08] backdrop-blur-lg border-l-4 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.08)] p-4 transition-all cursor-pointer group hover:shadow-2xl hover:border-purple-500/30 hover:-translate-y-0.5",
+          stage === 'deliverables_due' && 'border-orange-500/30 bg-orange-500/10',
+          categoryStyle.borderColor
         )}
         onClick={() => onView(deal)}
       >
@@ -190,7 +197,7 @@ const ProjectDealCard: React.FC<ProjectDealCardProps> = ({
                 {PlatformIcon && (
                   <PlatformIcon className="w-3.5 h-3.5 text-muted-foreground" />
                 )}
-                <span className="text-xs text-muted-foreground">
+                <span className="text-xs px-1.5 py-0.5 rounded-full bg-white/5 border border-white/10 text-muted-foreground font-medium">
                   {deal.platform || 'N/A'}
                 </span>
               </div>
@@ -292,6 +299,13 @@ const ProjectDealCard: React.FC<ProjectDealCardProps> = ({
         </div>
       </Card>
     </motion.div>
+    <BrandMoodBoard
+      brandName={deal.brand_name}
+      platform={deal.platform || undefined}
+      isVisible={showMoodBoard}
+      onClose={() => setShowMoodBoard(false)}
+    />
+    </div>
   );
 };
 

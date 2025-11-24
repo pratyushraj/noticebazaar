@@ -5,6 +5,15 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
+// Re-export currency utilities
+export { formatCurrency, formatIndianCurrency } from './utils/currency';
+
+// Re-export date utilities
+export { formatDate, formatDateTime, formatRelativeTime, sortByDueDate } from './utils/date';
+
+// Re-export haptic utilities
+export { triggerHaptic, HapticPatterns } from './utils/haptics';
+
 /**
  * Safely opens a contract file URL with error handling
  * @param url - The contract file URL to open

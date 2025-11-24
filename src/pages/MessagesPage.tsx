@@ -6,7 +6,7 @@
 
 import { useEffect, useRef, useState, useMemo } from 'react';
 import clsx from 'clsx';
-import { Lock, MessageSquare, Paperclip, ArrowUp, Loader2, ChevronRight, FileText } from 'lucide-react';
+import { Lock, MessageSquare, Paperclip, ArrowUp, Loader2, ChevronRight, FileText, Mic, MicOff } from 'lucide-react';
 import { useSession } from '@/contexts/SessionContext';
 import { toast } from 'sonner';
 import { useProfiles } from '@/lib/hooks/useProfiles';
@@ -152,13 +152,64 @@ function ChatHeaderScoped({ advisor }: { advisor?: Advisor | null }) {
 // --- MessageInput (scoped) ---
 function MessageInputScoped({ onSend, isLoading }: { onSend?: (text: string) => void; isLoading?: boolean }) {
   const [value, setValue] = useState('');
+  const [isListening, setIsListening] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+  const recognitionRef = useRef<any>(null); // SpeechRecognition type
 
   useEffect(() => {
     if (!textareaRef.current) return;
     textareaRef.current.style.height = 'auto';
     textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 120)}px`;
   }, [value]);
+
+  // Voice-to-text setup
+  useEffect(() => {
+    if (typeof window !== 'undefined' && ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) {
+      const SpeechRecognition = (window as any).webkitSpeechRecognition || (window as any).SpeechRecognition;
+      const recognition = new SpeechRecognition();
+      recognition.continuous = false;
+      recognition.interimResults = false;
+      recognition.lang = 'en-US';
+
+      recognition.onresult = (event: any) => {
+        const transcript = event.results[0][0].transcript;
+        setValue(prev => prev + (prev ? ' ' : '') + transcript);
+        setIsListening(false);
+      };
+
+      recognition.onerror = () => {
+        setIsListening(false);
+        toast.error('Speech recognition error. Please try again.');
+      };
+
+      recognition.onend = () => {
+        setIsListening(false);
+      };
+
+      recognitionRef.current = recognition;
+    }
+
+    return () => {
+      if (recognitionRef.current) {
+        recognitionRef.current.stop();
+      }
+    };
+  }, []);
+
+  const handleVoiceToggle = () => {
+    if (!recognitionRef.current) {
+      toast.error('Speech recognition not supported in your browser.');
+      return;
+    }
+
+    if (isListening) {
+      recognitionRef.current.stop();
+      setIsListening(false);
+    } else {
+      recognitionRef.current.start();
+      setIsListening(true);
+    }
+  };
 
   const handleSend = () => {
     if (!value.trim() || isLoading) return;
@@ -187,6 +238,25 @@ function MessageInputScoped({ onSend, isLoading }: { onSend?: (text: string) => 
           }}
         >
           <Paperclip size={16} className="md:w-[18px] md:h-[18px]" />
+        </button>
+
+        {/* Voice-to-text button */}
+        <button
+          onClick={handleVoiceToggle}
+          className={clsx(
+            "p-1.5 rounded-full transition flex-shrink-0 min-h-[44px] min-w-[44px] flex items-center justify-center",
+            isListening 
+              ? "bg-red-500/20 text-red-400 hover:bg-red-500/30 animate-pulse" 
+              : "hover:bg-white/10 text-white/60 hover:text-white"
+          )}
+          type="button"
+          aria-label={isListening ? "Stop recording" : "Start voice input"}
+        >
+          {isListening ? (
+            <MicOff size={16} className="md:w-[18px] md:h-[18px]" />
+          ) : (
+            <Mic size={16} className="md:w-[18px] md:h-[18px]" />
+          )}
         </button>
 
         <textarea
@@ -321,8 +391,8 @@ function ChatWindowScoped({
                   <div className="space-y-1">
                     <div className="text-lg font-semibold text-white">No Messages Yet</div>
                     <div className="text-sm text-white/60">Start by selecting a topic below</div>
-                  </div>
-                  
+              </div>
+              
                   {/* Secondary action - Upload Contract */}
                   <button
                     onClick={() => {
@@ -337,24 +407,24 @@ function ChatWindowScoped({
                   
                   {/* iOS-style suggestion buttons */}
                   <div className="w-full space-y-2 mt-2">
-                    {[
-                      { label: 'Contract Review', icon: '📄' },
-                      { label: 'Payment Questions', icon: '💰' },
-                      { label: 'Legal Advice', icon: '⚖️' },
-                      { label: 'Tax Compliance', icon: '📊' },
-                    ].map((topic) => (
-                      <button
-                        key={topic.label}
-                        onClick={() => onSend?.(`I need help with ${topic.label.toLowerCase()}`)}
+                  {[
+                    { label: 'Contract Review', icon: '📄' },
+                    { label: 'Payment Questions', icon: '💰' },
+                    { label: 'Legal Advice', icon: '⚖️' },
+                    { label: 'Tax Compliance', icon: '📊' },
+                  ].map((topic) => (
+                    <button
+                      key={topic.label}
+                      onClick={() => onSend?.(`I need help with ${topic.label.toLowerCase()}`)}
                         className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl bg-white/[0.06] backdrop-blur-[20px] border border-white/10 hover:bg-white/[0.1] hover:border-white/20 transition-all text-left active:scale-[0.98]"
-                      >
+                    >
                         <span className="text-xl">{topic.icon}</span>
                         <span className="text-sm font-medium text-white flex-1">{topic.label}</span>
                         <ChevronRight className="w-4 h-4 text-white/40" />
-                      </button>
-                    ))}
-                  </div>
+                    </button>
+                  ))}
                 </div>
+              </div>
               </div>
             </div>
           ) : (

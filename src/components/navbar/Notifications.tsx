@@ -87,11 +87,12 @@ const Notifications: React.FC = () => {
         <Button
           variant="ghost"
           size="icon"
-          className="relative h-9 w-9 text-gray-400/80 hover:text-gray-200 hover:bg-white/5 transition-all duration-200"
+          className="relative h-9 w-9 text-gray-400/80 hover:text-gray-200 hover:bg-white/5 transition-all duration-200 focus-visible:ring-4 focus-visible:ring-purple-400/50 focus-visible:outline-none"
+          aria-label={`Notifications${unreadCount > 0 ? `, ${unreadCount} unread` : ''}`}
         >
-          <Bell className="h-4 w-4 opacity-80" />
+          <Bell className="h-4 w-4 opacity-80" aria-hidden="true" />
           {unreadCount > 0 && (
-            <span className="absolute top-1.5 right-1.5 flex h-2 w-2">
+            <span className="absolute top-1.5 right-1.5 flex h-2 w-2" aria-hidden="true">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-500 opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
             </span>

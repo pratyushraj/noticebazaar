@@ -6,6 +6,24 @@
   html {
     scroll-behavior: smooth;
   }
+
+  /* Safe area insets for notched devices */
+  :root {
+    --safe-area-inset-top: env(safe-area-inset-top, 0px);
+    --safe-area-inset-right: env(safe-area-inset-right, 0px);
+    --safe-area-inset-bottom: env(safe-area-inset-bottom, 0px);
+    --safe-area-inset-left: env(safe-area-inset-left, 0px);
+  }
+
+  /* Progressive blur on scroll */
+  .progressive-blur {
+    backdrop-filter: blur(0px);
+    transition: backdrop-filter 0.3s ease;
+  }
+
+  .progressive-blur.scrolled {
+    backdrop-filter: blur(40px);
+  }
 }
 
 @layer base {
@@ -477,4 +495,81 @@
 
 .h-safe-area-inset-top {
   height: env(safe-area-inset-top);
+}
+
+/* ============================================ */
+/* WEEKEND MODE */
+/* ============================================ */
+.weekend-mode {
+  --weekend-overlay: rgba(255, 200, 100, 0.03);
+}
+
+.weekend-mode .bg-white\/\[0\.06\] {
+  background: rgba(255, 255, 255, 0.08) !important;
+}
+
+.weekend-mode .bg-white\/\[0\.08\] {
+  background: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Weekend banner */
+.weekend-banner {
+  background: linear-gradient(135deg, rgba(255, 200, 100, 0.1), rgba(255, 150, 50, 0.05));
+  border: 1px solid rgba(255, 200, 100, 0.2);
+  color: rgba(255, 220, 150, 0.9);
+}
+
+/* ============================================ */
+/* PRINT STYLES */
+/* ============================================ */
+@media print {
+  /* Hide non-essential UI elements */
+  .no-print,
+  nav,
+  button:not(.print-visible),
+  .fixed,
+  .sticky,
+  footer,
+  .fab,
+  [role="dialog"],
+  [role="menu"] {
+    display: none !important;
+  }
+
+  /* Ensure content is visible */
+  body {
+    background: white !important;
+    color: black !important;
+  }
+
+  /* Optimize card layouts for print */
+  .bg-white\/\[0\.06\],
+  .bg-white\/\[0\.08\],
+  .backdrop-blur-\[40px\] {
+    background: white !important;
+    border: 1px solid #e5e7eb !important;
+    box-shadow: none !important;
+  }
+
+  /* Ensure text is readable */
+  .text-white,
+  .text-white\/60,
+  .text-white\/80 {
+    color: black !important;
+  }
+
+  /* Page breaks */
+  .page-break-after {
+    page-break-after: always;
+  }
+
+  .page-break-before {
+    page-break-before: always;
+  }
+
+  /* Avoid breaking inside cards */
+  .card,
+  [class*="Card"] {
+    page-break-inside: avoid;
+  }
 }

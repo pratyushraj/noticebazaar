@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -10,6 +10,8 @@ import { DialogFooter } from '@/components/ui/dialog';
 import { BrandDeal } from '@/types';
 import { useUpdateBrandDeal } from '@/lib/hooks/useBrandDeals';
 import { useSession } from '@/contexts/SessionContext';
+import { triggerConfetti } from '@/lib/utils/confetti';
+import { triggerHaptic } from '@/lib/utils/haptics';
 
 interface MarkPaymentReceivedDialogProps {
   deal: BrandDeal;
@@ -50,6 +52,8 @@ const MarkPaymentReceivedDialog: React.FC<MarkPaymentReceivedDialogProps> = ({ d
       });
       
       toast.success(`Payment for ${deal.brand_name} marked as received!`);
+      triggerConfetti({ type: 'celebration' });
+      triggerHaptic([50, 30, 50]);
       onSaveSuccess();
       onClose();
     } catch (error) {

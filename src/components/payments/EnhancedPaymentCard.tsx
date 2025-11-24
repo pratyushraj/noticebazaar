@@ -9,6 +9,7 @@ import {
   Calendar,
   Send,
 } from 'lucide-react';
+import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
 
@@ -81,7 +82,19 @@ const EnhancedPaymentCard: React.FC<EnhancedPaymentCardProps> = ({
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.2 }}
     >
-      <Card className="bg-white/[0.06] backdrop-blur-[40px] border-white/10 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.3)] p-4 md:p-5 hover:border-white/20 transition-all">
+      <Card 
+        className="bg-white/[0.08] backdrop-blur-lg border border-white/20 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.08)] p-4 md:p-5 transition-all hover:shadow-2xl hover:border-purple-500/30 hover:-translate-y-0.5"
+        onContextMenu={(e) => {
+          e.preventDefault();
+          // Generate shareable invoice link
+          const invoiceId = deal.id.slice(0, 8); // Use first 8 chars of deal ID
+          const shareableLink = `${window.location.origin}/i/${invoiceId}`;
+          navigator.clipboard.writeText(shareableLink);
+          toast.success('Invoice link copied!', {
+            description: 'Share this link with the brand',
+          });
+        }}
+      >
         {/* Top Badge */}
         {displayDaysLeft !== null && (
           <div className={cn(

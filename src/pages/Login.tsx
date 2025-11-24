@@ -3,12 +3,13 @@
 import { Auth } from '@supabase/auth-ui-react';
 import { ThemeSupa } from '@supabase/auth-ui-shared';
 import { supabase } from '@/integrations/supabase/client';
-import { MadeWithDyad } from '@/components/made-with-dyad';
 import { Scale, ArrowLeft } from 'lucide-react'; // Import ArrowLeft icon
 import { useNavigate, Link } from 'react-router-dom'; // Import Link
 import { useSession } from '@/contexts/SessionContext';
 import { useEffect } from 'react';
 import { Button } from '@/components/ui/button'; // Import Button component
+import BiometricLogin from '@/components/auth/BiometricLogin';
+import { toast } from 'sonner';
 
 const Login = () => {
   const navigate = useNavigate();
@@ -38,6 +39,27 @@ const Login = () => {
           appearance={{ theme: ThemeSupa }}
           theme="dark"
         />
+        
+        {/* Biometric Login */}
+        <div className="mt-6">
+          <div className="relative mb-4">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t border-white/20" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-transparent px-2 text-blue-200">Or continue with</span>
+            </div>
+          </div>
+          <BiometricLogin 
+            onSuccess={async () => {
+              // For now, this is a demo - in production you'd verify the credential
+              // and then authenticate with Supabase
+              toast.success('Biometric authentication successful!');
+              // Navigate to dashboard - actual auth would happen via Supabase
+              navigate('/', { replace: true });
+            }} 
+          />
+        </div>
         
         <div className="mt-6">
           <Button variant="link" asChild className="w-full text-blue-200 hover:text-white">

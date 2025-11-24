@@ -51,6 +51,9 @@ const CreatorContentProtection = () => {
   const [isQuickScanning, setIsQuickScanning] = useState(false);
   const [quickScanProgress, setQuickScanProgress] = useState(0);
   const [quickScanPlatform, setQuickScanPlatform] = useState<string | undefined>(undefined);
+  const [quickScanError, setQuickScanError] = useState<string | null>(null);
+  const [lastScanQuery, setLastScanQuery] = useState<string>('');
+  const [lastScanPlatforms, setLastScanPlatforms] = useState<string[]>([]);
 
   // --- Hooks ---
   const { data: originalContentList, isLoading: isLoadingContent, refetch: refetchContent } = useOriginalContent({
@@ -143,10 +146,19 @@ const CreatorContentProtection = () => {
     }
   };
 
+  const handleRetryScan = () => {
+    if (lastScanQuery && lastScanPlatforms.length > 0) {
+      handleQuickScan(lastScanQuery, lastScanPlatforms);
+    }
+  };
+
   const handleQuickScan = async (query: string, platforms: string[]) => {
     setIsQuickScanning(true);
     setQuickScanProgress(0);
     setQuickScanPlatform(undefined);
+    setQuickScanError(null);
+    setLastScanQuery(query);
+    setLastScanPlatforms(platforms);
 
     try {
       // Simulate progress
@@ -193,10 +205,11 @@ const CreatorContentProtection = () => {
           toast.success('Scan completed. No matches found.');
         }
       }, 1000);
-    } catch (error) {
+    } catch (error: any) {
       setIsQuickScanning(false);
       setQuickScanProgress(0);
       setQuickScanPlatform(undefined);
+      setQuickScanError(error?.message || 'Scan failed. Please try again.');
       // Error handled by hook
     }
   };
@@ -264,6 +277,8 @@ const CreatorContentProtection = () => {
             currentPlatform={quickScanPlatform}
             matchesFound={0}
             contentPreview={undefined}
+            error={quickScanError}
+            onRetry={quickScanError ? handleRetryScan : undefined}
           />
         </div>
       )}

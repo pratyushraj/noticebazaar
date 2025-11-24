@@ -35,6 +35,7 @@ import { useSendPaymentReminder } from '@/lib/hooks/useSendPaymentReminder';
 import { useSendTakedownNotice } from '@/lib/hooks/useSendTakedownNotice';
 import { cn } from '@/lib/utils';
 import ProjectDealCard from '@/components/creator-contracts/ProjectDealCard';
+import SwipeableDealCard from '@/components/creator-contracts/SwipeableDealCard';
 import { DealStage, PaymentStatus } from '@/components/creator-contracts/DealStatusBadge';
 import EnhancedPaymentCard from '@/components/payments/EnhancedPaymentCard';
 import FinancialOverviewHeader from '@/components/payments/FinancialOverviewHeader';
@@ -50,6 +51,30 @@ import { ErrorBoundary } from '@/components/ui/error-boundary';
 import { QuickSearch } from '@/components/dashboard/QuickSearch';
 import { Sparkline } from '@/components/ui/sparkline';
 import Breadcrumbs from '@/components/navigation/Breadcrumbs';
+import { motion } from 'framer-motion';
+import CountUp from 'react-countup';
+import { usePrefersReducedMotion } from '@/hooks/usePrefersReducedMotion';
+import NextPayoutWidget from '@/components/creator-dashboard/NextPayoutWidget';
+import { useDynamicFavicon } from '@/hooks/useDynamicFavicon';
+import { useWeekendMode } from '@/hooks/useWeekendMode';
+import { triggerHaptic, HapticPatterns } from '@/lib/utils/haptics';
+import OnboardingChecklist from '@/components/onboarding/OnboardingChecklist';
+import EmptyState from '@/components/ui/EmptyState';
+import AchievementBadges from '@/components/achievements/AchievementBadges';
+import ShareEarningsCard from '@/components/earnings/ShareEarningsCard';
+import FocusModeToggle from '@/components/focus-mode/FocusModeToggle';
+import CreatorEasterEgg from '@/components/easter-egg/CreatorEasterEgg';
+import { useSoundEffects } from '@/hooks/useSoundEffects';
+import { Wallet, Briefcase as BriefcaseIcon } from 'lucide-react';
+import PullToRefresh from '@/components/mobile/PullToRefresh';
+import BottomSheet from '@/components/mobile/BottomSheet';
+import AddToHomeScreen from '@/components/mobile/AddToHomeScreen';
+import OfflineBanner from '@/components/mobile/OfflineBanner';
+import LongPressMenu from '@/components/mobile/LongPressMenu';
+import { useKeyboardAware } from '@/hooks/useKeyboardAware';
+import { useSwipeBack } from '@/hooks/useSwipeBack';
+import { useNativeShare } from '@/hooks/useNativeShare';
+import { usePushNotifications } from '@/hooks/usePushNotifications';
 
 // Helper functions
 const getDealStage = (deal: BrandDeal): DealStage => {
@@ -125,6 +150,7 @@ const CreatorDashboard = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const { profile, loading: sessionLoading, isCreator, trialStatus } = useSession();
   const [showExpiredModal, setShowExpiredModal] = useState(false);
+  const prefersReducedMotion = usePrefersReducedMotion();
   
   // URL-based tab navigation
   const validTabs: Array<'overview' | 'deals' | 'payments' | 'protection'> = ['overview', 'deals', 'payments', 'protection'];
@@ -177,6 +203,40 @@ const CreatorDashboard = () => {
   const [messageReceiverId, setMessageReceiverId] = useState<string | null>(null);
   const [messageReceiverName, setMessageReceiverName] = useState<string>('');
   const [isQuickSearchOpen, setIsQuickSearchOpen] = useState(false);
+  const [focusMode, setFocusMode] = useState(false);
+  const { keyboardHeight, isKeyboardVisible } = useKeyboardAware();
+  const { share } = useNativeShare();
+  const { requestPermission: requestPushPermission } = usePushNotifications();
+  
+  // Enable swipe back navigation
+  useSwipeBack();
+  
+  // Progressive blur on scroll
+  useEffect(() => {
+    const handleScroll = () => {
+      const header = document.querySelector('header');
+      if (header) {
+        if (window.scrollY > 50) {
+          header.classList.add('scrolled');
+        } else {
+          header.classList.remove('scrolled');
+        }
+      }
+    };
+    
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+  
+  // Request push notification permission on 2nd visit
+  useEffect(() => {
+    const visitCount = parseInt(localStorage.getItem('visit_count') || '0', 10);
+    if (visitCount === 2) {
+      setTimeout(() => {
+        requestPushPermission();
+      }, 5000);
+    }
+  }, [requestPushPermission]);
 
   // Filter states for deals tab
   const [searchTerm, setSearchTerm] = useState('');
@@ -195,6 +255,12 @@ const CreatorDashboard = () => {
     creatorId: profile?.id,
     enabled: !sessionLoading && isCreator && !!profile?.id,
   });
+
+  // Dynamic favicon based on payment status
+  useDynamicFavicon(brandDeals);
+  
+  // Weekend mode styling
+  useWeekendMode();
 
   const scanContractMutation = useAIScanContractReview();
   const sendPaymentReminderMutation = useSendPaymentReminder();
@@ -681,11 +747,25 @@ const CreatorDashboard = () => {
     );
   }
 
+  const handleRefresh = async () => {
+    await refetchBrandDeals();
+    if (dashboardData) {
+      // Trigger any other refresh logic here
+    }
+  };
+
   return (
     <>
+      <CreatorEasterEgg onTrigger={() => playSound('whoosh')} />
+      <AddToHomeScreen />
+      <OfflineBanner onRetry={handleRefresh} />
       <div className="min-h-screen text-white relative">
         {/* Header removed - now using Navbar from Layout component */}
-        <div className="relative z-10 max-w-7xl mx-auto px-4 py-8 pb-24 md:pb-8">
+        <PullToRefresh onRefresh={handleRefresh}>
+        <div 
+          className="relative z-10 max-w-7xl mx-auto px-4 py-8 pb-24 md:pb-8"
+          style={{ paddingBottom: isKeyboardVisible ? `${keyboardHeight + 96}px` : undefined }}
+        >
           {/* Breadcrumbs - Show for non-overview tabs */}
           {activeTab !== 'overview' && (
             <div className="mb-6">
@@ -699,20 +779,57 @@ const CreatorDashboard = () => {
                   <TrialBanner />
 
               {/* Hero Section - Liquid Glass */}
-              <div className="mb-12">
+              <section aria-labelledby="dashboard-hero" className="mb-12">
                 <div className="flex items-start justify-between mb-8 gap-4 flex-wrap">
                       <div className="flex-1 min-w-0">
-                    <h1 className="text-3xl font-semibold mb-2 text-white tracking-tight leading-tight">
-                      Hey, {profile?.first_name || 'Creator'}! 👋
+                    <h1 id="dashboard-hero" className="text-3xl font-semibold mb-2 text-white tracking-tight leading-tight">
+                      {(() => {
+                        const hour = new Date().getHours();
+                        const greeting = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
+                        return (
+                          <>
+                            {greeting}, <span className="bg-gradient-to-r from-purple-400 via-pink-400 to-purple-400 bg-clip-text text-transparent">{profile?.first_name || 'Creator'}</span>! 👋
+                          </>
+                        );
+                      })()}
                     </h1>
-                    <p className="text-base text-white/60">
+                    <div className="flex items-center gap-3 flex-wrap">
+                    <p className="text-base text-white/80">
                       Content Creator
-                        </p>
+                      </p>
+                      {(() => {
+                        // Calculate win streak (days without overdue payments)
+                        const now = new Date();
+                        const overduePayments = brandDeals?.filter(deal => {
+                          if (deal.status !== 'Payment Pending') return false;
+                          const dueDate = new Date(deal.payment_expected_date);
+                          return dueDate < now;
+                        }) || [];
+                        
+                        if (overduePayments.length === 0 && brandDeals && brandDeals.length > 0) {
+                          // Calculate days since last overdue (simplified - in real app, track this)
+                          const completedDeals = brandDeals.filter(d => d.status === 'Completed' && d.payment_received_date);
+                          if (completedDeals.length > 0) {
+                            const lastPayment = new Date(Math.max(...completedDeals.map(d => new Date(d.payment_received_date!).getTime())));
+                            const daysSince = Math.floor((now.getTime() - lastPayment.getTime()) / (1000 * 60 * 60 * 24));
+                            if (daysSince >= 7) {
+                              return (
+                                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-orange-500/20 border border-orange-500/30 text-orange-400 text-xs font-semibold">
+                                  <span>🔥</span>
+                                  <span>{Math.min(daysSince, 30)} day streak</span>
+                                </span>
+                              );
+                            }
+                          }
+                        }
+                        return null;
+                      })()}
+                    </div>
                       </div>
                   </div>
 
                 {/* Liquid Glass Earnings Card */}
-                <div className="flex justify-center">
+                <section aria-labelledby="earnings-heading" className="flex justify-center">
                   <div className="relative w-full max-w-lg">
                     <div className="relative bg-white/[0.08] backdrop-blur-[40px] border border-white/20 rounded-3xl p-8 shadow-[0_8px_32px_rgba(0,0,0,0.4)] overflow-hidden">
                       {/* Subtle gradient overlay */}
@@ -724,11 +841,29 @@ const CreatorDashboard = () => {
                           <div className="h-12 w-12 rounded-2xl bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center">
                             <DollarSign className="h-6 w-6 text-white" />
                           </div>
-                          <span className="text-sm font-medium text-white/80">Earnings</span>
+                          <span id="earnings-heading" className="text-sm font-medium text-white/80">Earnings</span>
                         </div>
                         <div className="flex items-center justify-between mb-3">
-                          <div className="text-5xl font-semibold text-white tracking-tight">
-                            ₹{dashboardData?.earnings.current.toLocaleString('en-IN') || '0'}
+                          <div 
+                            className="text-5xl font-semibold text-white tracking-tight"
+                            aria-label={`Earnings this month: ${(() => {
+                              const amount = dashboardData?.earnings.current || 0;
+                              if (amount >= 100000) {
+                                const lakhs = (amount / 100000).toFixed(2);
+                                return `${lakhs} lakh rupees`;
+                              }
+                              return `${amount.toLocaleString('en-IN')} rupees`;
+                            })()}`}
+                          >
+                            <CountUp
+                              start={0}
+                              end={dashboardData?.earnings.current || 0}
+                              duration={prefersReducedMotion ? 0 : 1.8}
+                              separator=","
+                              prefix="₹"
+                              decimals={0}
+                              onEnd={() => {}}
+                            />
                           </div>
                           {(() => {
                             // Generate earnings trend data for sparkline
@@ -759,8 +894,8 @@ const CreatorDashboard = () => {
                       </div>
                     </div>
                   </div>
-                </div>
-              </div>
+                </section>
+              </section>
             </>
           )}
 
@@ -768,12 +903,40 @@ const CreatorDashboard = () => {
           {/* Overview Tab Content */}
           {activeTab === 'overview' && (
             <>
+              {/* Next Payout Widget */}
+              <section className="mb-8">
+                <NextPayoutWidget brandDeals={brandDeals} />
+              </section>
+
+              {/* Weekend Banner */}
+              {(() => {
+                const now = new Date();
+                const dayOfWeek = now.getDay();
+                const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+                return isWeekend ? (
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="mb-6 p-4 rounded-2xl weekend-banner backdrop-blur-sm"
+                  >
+                    <p className="text-sm font-medium text-center">
+                      🌅 Weekend vibes – no rush. Take your time! ✨
+                    </p>
+                  </motion.div>
+                ) : null;
+              })()}
+
               {/* Financial Overview Section */}
               <section className="mb-12">
                 <h2 className="text-2xl font-semibold text-white mb-6">Financial Overview</h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                   {/* Pending Invoices */}
-                  <Card className="bg-white/[0.06] backdrop-blur-[40px] border-white/10 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.3)] hover:bg-white/[0.08] transition-all">
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.4, delay: 0.1 }}
+                  >
+                    <Card className="bg-white/[0.08] backdrop-blur-lg border border-white/20 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.08)] hover:shadow-2xl hover:border-purple-500/30 hover:-translate-y-0.5 transition-all">
                     <CardContent className="p-6">
                       <div className="flex items-center justify-between">
                         <div>
@@ -788,23 +951,30 @@ const CreatorDashboard = () => {
                       </div>
                     </CardContent>
                   </Card>
+                  </motion.div>
 
                   {/* Tax Liability */}
-                  <Card className="bg-white/[0.06] backdrop-blur-[40px] border-white/10 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.3)] hover:bg-white/[0.08] transition-all">
-                    <CardContent className="p-6">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="text-xs text-white/50 mb-2 font-medium">Tax Liability (Q3)</p>
-                          <p className="text-2xl font-semibold text-white">
-                            ₹85,000
-                          </p>
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.4, delay: 0.2 }}
+                  >
+                    <Card className="bg-white/[0.08] backdrop-blur-lg border border-white/20 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.08)] hover:shadow-2xl hover:border-purple-500/30 hover:-translate-y-0.5 transition-all">
+                      <CardContent className="p-6">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="text-xs text-white/50 mb-2 font-medium">Tax Liability (Q3)</p>
+                            <p className="text-2xl font-semibold text-white">
+                              ₹85,000
+                            </p>
+                          </div>
+                          <div className="h-12 w-12 rounded-2xl bg-orange-500/20 backdrop-blur-sm border border-orange-500/30 flex items-center justify-center">
+                            <Calendar className="h-5 w-5 text-orange-400" />
+                          </div>
                         </div>
-                        <div className="h-12 w-12 rounded-2xl bg-orange-500/20 backdrop-blur-sm border border-orange-500/30 flex items-center justify-center">
-                          <Calendar className="h-5 w-5 text-orange-400" />
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
                 </div>
               </section>
 
@@ -850,11 +1020,15 @@ const CreatorDashboard = () => {
                                 <div 
                                   key={deal.id} 
                                   className={cn(
-                                    "flex items-center gap-3 p-3 rounded-xl transition-all hover:bg-white/5",
+                                    "flex items-center gap-3 p-3 rounded-xl transition-all hover:bg-white/5 relative",
                                     index < dealsToShow.length - 1 && "border-b border-white/5"
                                   )}
                                 >
-                                  <div className="h-10 w-10 rounded-xl bg-green-500/20 backdrop-blur-sm flex items-center justify-center border border-green-500/30">
+                                  {/* Timeline dot */}
+                                  {index < dealsToShow.length - 1 && (
+                                    <div className="absolute left-5 top-0 bottom-0 w-px bg-gradient-to-b from-green-400/50 via-purple-400/30 to-transparent" />
+                                  )}
+                                  <div className="relative z-10 h-10 w-10 rounded-xl bg-green-500/20 backdrop-blur-sm flex items-center justify-center border-2 border-green-400/50 shadow-[0_0_8px_rgba(34,197,94,0.3)]">
                                     <CheckCircle className="h-5 w-5 text-green-400" />
                                   </div>
                                   <div className="flex-1">
@@ -877,10 +1051,11 @@ const CreatorDashboard = () => {
                         <div className="space-y-2 bg-white/5 rounded-2xl p-2 border border-white/5">
                           {/* Demo Activity Items */}
                         <div className={cn(
-                          "flex items-center gap-3 p-3 rounded-xl transition-all hover:bg-white/5",
+                          "flex items-center gap-3 p-3 rounded-xl transition-all hover:bg-white/5 relative",
                           "border-b border-white/5"
                         )}>
-                          <div className="h-10 w-10 rounded-xl bg-green-500/20 backdrop-blur-sm flex items-center justify-center border border-green-500/30">
+                          <div className="absolute left-5 top-0 bottom-0 w-px bg-gradient-to-b from-green-400/50 via-blue-400/30 to-transparent" />
+                          <div className="relative z-10 h-10 w-10 rounded-xl bg-green-500/20 backdrop-blur-sm flex items-center justify-center border-2 border-green-400/50 shadow-[0_0_8px_rgba(34,197,94,0.3)]">
                             <CheckCircle className="h-5 w-5 text-green-400" />
                           </div>
                           <div className="flex-1">
@@ -893,10 +1068,11 @@ const CreatorDashboard = () => {
                           </div>
                         </div>
                         <div className={cn(
-                          "flex items-center gap-3 p-3 rounded-xl transition-all hover:bg-white/5",
+                          "flex items-center gap-3 p-3 rounded-xl transition-all hover:bg-white/5 relative",
                           "border-b border-white/5"
                         )}>
-                          <div className="h-10 w-10 rounded-xl bg-blue-500/20 backdrop-blur-sm flex items-center justify-center border border-blue-500/30">
+                          <div className="absolute left-5 top-0 bottom-0 w-px bg-gradient-to-b from-blue-400/50 via-purple-400/30 to-transparent" />
+                          <div className="relative z-10 h-10 w-10 rounded-xl bg-blue-500/20 backdrop-blur-sm flex items-center justify-center border-2 border-blue-400/50 shadow-[0_0_8px_rgba(59,130,246,0.3)]">
                             <Briefcase className="h-5 w-5 text-blue-400" />
                           </div>
                           <div className="flex-1">
@@ -909,10 +1085,9 @@ const CreatorDashboard = () => {
                           </div>
                         </div>
                         <div className={cn(
-                          "flex items-center gap-3 p-3 rounded-xl transition-all hover:bg-white/5",
-                          "border-b border-white/5"
+                          "flex items-center gap-3 p-3 rounded-xl transition-all hover:bg-white/5 relative"
                         )}>
-                          <div className="h-10 w-10 rounded-xl bg-purple-500/20 backdrop-blur-sm flex items-center justify-center border border-purple-500/30">
+                          <div className="relative z-10 h-10 w-10 rounded-xl bg-purple-500/20 backdrop-blur-sm flex items-center justify-center border-2 border-purple-400/50 shadow-[0_0_8px_rgba(168,85,247,0.3)]">
                             <DollarSign className="h-5 w-5 text-purple-400" />
                           </div>
                           <div className="flex-1">
@@ -969,13 +1144,17 @@ const CreatorDashboard = () => {
                       urgentActions={dashboardData.urgentActions || []}
                       brandDeals={brandDeals}
                       onSendReminder={(dealId) => {
+                        triggerHaptic(HapticPatterns.medium);
                         const deal = brandDeals?.find(d => d.id === dealId);
                         if (deal) {
                           setSelectedDealForReminder(deal);
                           setIsSendPaymentReminderDialogOpen(true);
                         }
                       }}
-                      onEscalate={() => toast.info('Escalation feature coming soon!')}
+                      onEscalate={() => {
+                        triggerHaptic(HapticPatterns.medium);
+                        toast.info('Escalation feature coming soon!');
+                      }}
                       onAnalyzeContract={(dealId) => {
                         const deal = brandDeals?.find(d => d.id === dealId);
                         if (deal?.contract_file_url) {
@@ -1102,20 +1281,58 @@ const CreatorDashboard = () => {
                 ) : (
                   filteredDeals.map((deal) => {
                     const stage = getDealStage(deal);
+                    const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+                    
+                    if (isMobile) {
+                      return (
+                        <SwipeableDealCard
+                          key={deal.id}
+                          deal={deal}
+                          stage={stage}
+                          onView={(d: BrandDeal) => navigate(`/creator-contracts/${d.id}`)}
+                          onEdit={(d: BrandDeal) => {
+                            setEditingBrandDeal(d);
+                            setIsBrandDealFormOpen(true);
+                          }}
+                          onManageDeliverables={() => toast.info('Deliverables management coming soon!')}
+                          onUploadContent={() => toast.info('Content upload coming soon!')}
+                          onContactBrand={() => navigate('/messages')}
+                          onViewContract={async (d: BrandDeal) => {
+                            const { openContractFile } = await import('@/lib/utils');
+                            openContractFile(d.contract_file_url, (error) => {
+                              toast.error(error);
+                            });
+                          }}
+                          onSwipeLeft={(d: BrandDeal) => {
+                            // Chase Payment
+                            navigate('/creator-dashboard?tab=payments');
+                            toast.info(`Opening payment details for ${d.brand_name}`);
+                          }}
+                          onSwipeRight={(d: BrandDeal) => {
+                            // Mark Delivered
+                            if (d.status === 'Payment Pending') {
+                              toast.info(`Marking ${d.brand_name} as delivered`);
+                              // In real app, this would trigger the mark as paid flow
+                            }
+                          }}
+                        />
+                      );
+                    }
+                    
                     return (
                       <ProjectDealCard
                         key={deal.id}
                         deal={deal}
                         stage={stage}
-                        onView={(d) => navigate(`/creator-contracts/${d.id}`)}
-                        onEdit={(d) => {
+                        onView={(d: BrandDeal) => navigate(`/creator-contracts/${d.id}`)}
+                        onEdit={(d: BrandDeal) => {
                           setEditingBrandDeal(d);
                           setIsBrandDealFormOpen(true);
                         }}
                         onManageDeliverables={() => toast.info('Deliverables management coming soon!')}
                         onUploadContent={() => toast.info('Content upload coming soon!')}
                         onContactBrand={() => navigate('/messages')}
-                        onViewContract={async (d) => {
+                        onViewContract={async (d: BrandDeal) => {
                           const { openContractFile } = await import('@/lib/utils');
                           openContractFile(d.contract_file_url, (error) => {
                             toast.error(error);
@@ -1235,6 +1452,7 @@ const CreatorDashboard = () => {
           }}
           onCalculateRate={() => navigate('/rate-calculator')}
         />
+        </PullToRefresh>
       </div>
 
       {/* Dialogs - Same as before */}

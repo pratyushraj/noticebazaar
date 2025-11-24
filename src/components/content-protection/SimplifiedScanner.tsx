@@ -52,24 +52,46 @@ const SimplifiedScanner: React.FC<SimplifiedScannerProps> = ({
     setIsDragging(false);
   };
 
+  const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+
+  const validateFile = (file: File): boolean => {
+    if (file.size > MAX_FILE_SIZE) {
+      toast.error(`File size exceeds 5MB limit. Please upload a smaller file.`);
+      return false;
+    }
+    const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'video/mp4', 'video/webm'];
+    if (!validTypes.includes(file.type)) {
+      toast.error('Invalid file type. Please upload an image or video file.');
+      return false;
+    }
+    return true;
+  };
+
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     setIsDragging(false);
     
     const files = Array.from(e.dataTransfer.files);
     if (files.length > 0) {
-      // Handle file upload
       const file = files[0];
-      // In a real app, you'd upload the file and get a URL
-      toast.info('File upload feature coming soon!');
+      if (validateFile(file)) {
+        // Handle file upload
+        // In a real app, you'd upload the file and get a URL
+        toast.info('File upload feature coming soon!');
+      }
     }
   };
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (files && files.length > 0) {
-      // Handle file upload
-      toast.info('File upload feature coming soon!');
+      const file = files[0];
+      if (validateFile(file)) {
+        // Handle file upload
+        toast.info('File upload feature coming soon!');
+      }
+      // Reset input to allow selecting the same file again
+      e.target.value = '';
     }
   };
 
@@ -127,6 +149,7 @@ const SimplifiedScanner: React.FC<SimplifiedScannerProps> = ({
               accept="image/*,video/*"
               onChange={handleFileSelect}
               className="hidden"
+              aria-label="Upload file for content scanning"
             />
             <Button
               variant="outline"

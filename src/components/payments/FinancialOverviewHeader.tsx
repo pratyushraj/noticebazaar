@@ -181,7 +181,7 @@ ${stats.collectionRate}%
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
         >
-          <Card className="bg-white/[0.06] backdrop-blur-[40px] border-white/10 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.3)] px-5 py-4 transition-all hover:border-white/20">
+          <Card className="bg-white/[0.08] backdrop-blur-lg border border-white/20 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.08)] px-5 py-4 transition-all hover:shadow-2xl hover:border-purple-500/30 hover:-translate-y-0.5">
             <CardContent className="p-0">
               <div className="flex items-start justify-between">
                 <div className="flex items-start gap-3 md:gap-4 flex-1">
@@ -206,7 +206,7 @@ ${stats.collectionRate}%
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
           >
-            <Card className="bg-white/[0.06] backdrop-blur-[40px] border-white/10 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.3)] px-5 py-4 transition-all hover:border-white/20">
+            <Card className="bg-white/[0.08] backdrop-blur-lg border border-white/20 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.08)] px-5 py-4 transition-all hover:shadow-2xl hover:border-purple-500/30 hover:-translate-y-0.5">
               <CardContent className="p-0">
                 <div className="flex items-start justify-between">
                   <div className="flex items-start gap-3 md:gap-4 flex-1">
@@ -230,7 +230,7 @@ ${stats.collectionRate}%
             transition={{ delay: 0.3 }}
           >
             {stats.received.amount > 0 ? (
-              <Card className="bg-white/[0.06] backdrop-blur-[40px] border-white/10 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.3)] px-5 py-4 transition-all hover:border-white/20">
+              <Card className="bg-white/[0.08] backdrop-blur-lg border border-white/20 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.08)] px-5 py-4 transition-all hover:shadow-2xl hover:border-purple-500/30 hover:-translate-y-0.5">
                 <CardContent className="p-0">
                   <div className="flex items-start justify-between">
                     <div className="flex items-start gap-3 md:gap-4 flex-1">
@@ -247,7 +247,7 @@ ${stats.collectionRate}%
                 </CardContent>
               </Card>
             ) : (
-              <Card className="bg-white/[0.06] backdrop-blur-[40px] border-white/10 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.3)] px-5 py-4 transition-all hover:border-white/20">
+              <Card className="bg-white/[0.08] backdrop-blur-lg border border-white/20 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.08)] px-5 py-4 transition-all hover:shadow-2xl hover:border-purple-500/30 hover:-translate-y-0.5">
                 <CardContent className="p-0">
                   <div className="flex items-start justify-between">
                     <div className="flex items-start gap-3 md:gap-4 flex-1">

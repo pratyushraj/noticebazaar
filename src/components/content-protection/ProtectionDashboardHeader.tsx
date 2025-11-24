@@ -178,15 +178,23 @@ const ProtectionDashboardHeader: React.FC<ProtectionDashboardHeaderProps> = ({
         >
           <Card className="bg-gradient-to-br from-purple-900/20 to-purple-950/20 border border-white/5">
             <CardContent className="p-5">
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center gap-2">
-                  <TrendingUp className="w-5 h-5 text-purple-500" />
-                  <span className="text-sm font-medium text-foreground">Protection Score</span>
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <TrendingUp className="w-5 h-5 text-purple-500" />
+                    <span className="text-sm font-medium text-foreground">Protection Score</span>
+                  </div>
+                  <div className="relative">
+                    {stats.protectionScore === 100 && (
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <div className="absolute w-16 h-16 rounded-full border-2 border-purple-500/50 animate-ping" />
+                        <div className="absolute w-16 h-16 rounded-full border-2 border-purple-400/30 animate-pulse" />
+                      </div>
+                    )}
+                    <span className={cn("text-2xl font-bold relative z-10", getScoreColor(stats.protectionScore))}>
+                      {stats.protectionScore}%
+                    </span>
+                  </div>
                 </div>
-                <span className={cn("text-2xl font-bold", getScoreColor(stats.protectionScore))}>
-                  {stats.protectionScore}%
-                </span>
-              </div>
               <div className="relative h-3 bg-gray-800/50 rounded-full overflow-hidden mb-2">
                 <motion.div
                   initial={{ width: 0 }}

@@ -1,10 +1,11 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, X, DollarSign, Shield, FileText, Calculator, Briefcase } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
+import { triggerHaptic, HapticPatterns } from '@/lib/utils/haptics';
 
 interface QuickActionsFABProps {
   onAddDeal?: () => void;
@@ -22,57 +23,120 @@ const QuickActionsFAB: React.FC<QuickActionsFABProps> = ({
   onCalculateRate,
 }) => {
   const [showQuickActions, setShowQuickActions] = useState(false);
+  const [showRadialMenu, setShowRadialMenu] = useState(false);
+  const longPressTimer = useRef<NodeJS.Timeout | null>(null);
   const navigate = useNavigate();
 
   const actions = [
     {
       icon: Briefcase,
       label: 'Add New Deal',
+      color: 'from-blue-400 to-blue-600',
       onClick: () => {
         onAddDeal?.();
         setShowQuickActions(false);
+        setShowRadialMenu(false);
+        triggerHaptic(HapticPatterns.medium);
       },
     },
     {
       icon: DollarSign,
       label: 'Log Payment',
+      color: 'from-green-400 to-green-600',
       onClick: () => {
         onLogPayment?.();
         setShowQuickActions(false);
+        setShowRadialMenu(false);
         navigate('/creator-payments');
+        triggerHaptic(HapticPatterns.medium);
       },
     },
     {
       icon: Shield,
       label: 'Scan Content',
+      color: 'from-purple-400 to-purple-600',
       onClick: () => {
         onScanContent?.();
         setShowQuickActions(false);
+        setShowRadialMenu(false);
         navigate('/creator-content-protection');
+        triggerHaptic(HapticPatterns.medium);
       },
     },
     {
       icon: FileText,
       label: 'Upload Contract',
+      color: 'from-yellow-400 to-yellow-600',
       onClick: () => {
         onUploadContract?.();
         setShowQuickActions(false);
+        setShowRadialMenu(false);
         navigate('/contract-analyzer');
+        triggerHaptic(HapticPatterns.medium);
       },
     },
     {
       icon: Calculator,
       label: 'Calculate Rate',
+      color: 'from-orange-400 to-orange-600',
       onClick: () => {
         onCalculateRate?.();
         setShowQuickActions(false);
+        setShowRadialMenu(false);
         navigate('/rate-calculator');
+        triggerHaptic(HapticPatterns.medium);
       },
     },
   ];
 
+  // Long-press handler for radial menu
+  const handleMouseDown = () => {
+    longPressTimer.current = setTimeout(() => {
+      setShowRadialMenu(true);
+      setShowQuickActions(false);
+      triggerHaptic(HapticPatterns.heavy);
+    }, 500); // 500ms for long press
+  };
+
+  const handleMouseUp = () => {
+    if (longPressTimer.current) {
+      clearTimeout(longPressTimer.current);
+      longPressTimer.current = null;
+    }
+  };
+
+  const handleTouchStart = () => {
+    longPressTimer.current = setTimeout(() => {
+      setShowRadialMenu(true);
+      setShowQuickActions(false);
+      triggerHaptic(HapticPatterns.heavy);
+    }, 500);
+  };
+
+  const handleTouchEnd = () => {
+    if (longPressTimer.current) {
+      clearTimeout(longPressTimer.current);
+      longPressTimer.current = null;
+    }
+  };
+
+  useEffect(() => {
+    return () => {
+      if (longPressTimer.current) {
+        clearTimeout(longPressTimer.current);
+      }
+    };
+  }, []);
+
+  // One-handed mode: position FAB higher on large screens
+  const isLargeScreen = typeof window !== 'undefined' && window.innerWidth >= 1024;
+  
   return (
-    <div className="fixed bottom-20 right-6 z-[60] md:bottom-6 md:right-6">
+    <div className={cn(
+      "fixed z-[60]",
+      isLargeScreen ? "bottom-24 right-8" : "bottom-20 right-6",
+      "md:bottom-6 md:right-6"
+    )}>
       <motion.div
         initial={{ scale: 0, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
@@ -131,19 +195,30 @@ const QuickActionsFAB: React.FC<QuickActionsFABProps> = ({
         <motion.button
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
-          onClick={() => setShowQuickActions(!showQuickActions)}
-          className="w-14 h-14 bg-blue-600 rounded-full shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 flex items-center justify-center text-white transition-all relative"
+          onMouseDown={handleMouseDown}
+          onMouseUp={handleMouseUp}
+          onMouseLeave={handleMouseUp}
+          onTouchStart={handleTouchStart}
+          onTouchEnd={handleTouchEnd}
+          onClick={() => {
+            if (!showRadialMenu) {
+              setShowQuickActions(!showQuickActions);
+              triggerHaptic(HapticPatterns.light);
+            }
+          }}
+          className="w-14 h-14 bg-blue-600 rounded-full shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 flex items-center justify-center text-white transition-all relative focus-visible:ring-4 focus-visible:ring-purple-400/50 focus-visible:outline-none min-h-[56px] min-w-[56px]"
           style={{ 
             boxShadow: '0 0 15px rgba(59,130,246,0.5), 0 4px 6px rgba(0,0,0,0.1)',
             transformOrigin: 'center'
           }}
-          aria-label="Quick Actions"
+          aria-label={showQuickActions || showRadialMenu ? "Close quick actions menu" : "Open quick actions menu (long press for radial menu)"}
+          aria-expanded={showQuickActions || showRadialMenu}
         >
           <motion.div
-            animate={{ rotate: showQuickActions ? 0 : 0 }}
+            animate={{ rotate: (showQuickActions || showRadialMenu) ? 45 : 0 }}
             transition={{ duration: 0.2 }}
           >
-            {showQuickActions ? (
+            {(showQuickActions || showRadialMenu) ? (
               <X className="w-6 h-6" />
             ) : (
               <Plus className="w-6 h-6" />

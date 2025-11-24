@@ -19,6 +19,14 @@ const Layout = ({ children }: LayoutProps) => {
 
   return (
     <div className="relative min-h-screen overflow-hidden">
+      {/* Skip to main content link */}
+      <a 
+        href="#main" 
+        className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[300] focus:bg-purple-600 focus:text-white focus:p-4 focus:rounded-lg focus:shadow-lg focus:outline-none focus:ring-4 focus:ring-purple-400/50"
+      >
+        Skip to main content
+      </a>
+
       {/* Animated gradient background */}
       <div className="fixed inset-0 animate-gradient-shift" />
       
@@ -34,10 +42,13 @@ const Layout = ({ children }: LayoutProps) => {
         <Navbar />
         
         <div className="flex flex-1">
-          <main className={cn(
-            "flex-1 w-full py-6 px-4 md:px-6 lg:px-8 pb-20 md:pb-24 transition-all duration-300 ease-in-out",
-            isOpen && "md:ml-[280px]"
-          )}>
+          <main 
+            id="main"
+            className={cn(
+              "flex-1 w-full py-6 px-4 md:px-6 lg:px-8 pb-20 md:pb-24 transition-all duration-300 ease-in-out",
+              isOpen && "md:ml-[280px]"
+            )}
+          >
             {children}
           </main>
         </div>
