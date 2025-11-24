@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Fingerprint, FaceId } from 'lucide-react';
+import { Fingerprint, ScanLine } from 'lucide-react';
 import { toast } from 'sonner';
 import { triggerHaptic, HapticPatterns } from '@/lib/utils/haptics';
 
@@ -70,7 +70,7 @@ const BiometricLogin: React.FC<BiometricLoginProps> = ({ onSuccess }) => {
   };
 
   const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-  const Icon = isIOS ? FaceId : Fingerprint;
+  const Icon = isIOS ? ScanLine : Fingerprint;
 
   return (
     <Button
