@@ -522,6 +522,7 @@ const Sidebar: React.FC<SidebarProps> = ({ className, profileRole }) => {
           </motion.div>
         )}
       </AnimatePresence>
+        </>
       )}
     </>
   );
