@@ -2,6 +2,14 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "rewrites": [
     {
+      "source": "/dashboard-preview",
+      "destination": "/api/dashboard-preview"
+    },
+    {
+      "source": "/dashboard-preview/:path*",
+      "destination": "/api/dashboard-preview"
+    },
+    {
       "source": "/assets/:path*",
       "destination": "/assets/:path*"
     },
