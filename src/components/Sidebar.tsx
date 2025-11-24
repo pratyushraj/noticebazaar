@@ -429,30 +429,70 @@ const Sidebar: React.FC<SidebarProps> = ({ className, profileRole }) => {
           </div>
         </div>
       ) : (
-        // Normal behavior with animations for mobile/authenticated users
-        <AnimatePresence>
-          {isOpen && (
-            <motion.div
-              ref={sidebarRef}
-              initial={{ opacity: 0, x: '-100%' }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: '-100%' }}
-              transition={{
-                type: "spring",
-                damping: 25,
-                stiffness: 200
-              }}
-              className={cn(
-                "h-[calc(100vh-4rem)] w-[320px] max-w-[85vw] overflow-y-auto",
-                "bg-[#1C1C1E] backdrop-blur-xl border-r border-white/10",
-                "shadow-[0_0_40px_rgba(0,0,0,0.35)]",
-                "z-[150]",
-                "md:static md:h-full md:top-0 md:rounded-none",
-                "rounded-r-2xl md:rounded-none",
-                "fixed top-16 left-0",
-                className
-              )}
-            >
+        // Normal behavior: always visible on desktop, slide-in on mobile
+        <>
+          {/* Desktop: Always visible */}
+          <div
+            ref={sidebarRef}
+            className={cn(
+              "hidden md:flex flex-shrink-0 flex-col",
+              "h-[calc(100vh-4rem)] w-[320px] overflow-y-auto",
+              "bg-[#1C1C1E] backdrop-blur-xl border-r border-white/10",
+              "shadow-[0_0_40px_rgba(0,0,0,0.35)]",
+              "relative z-10",
+              className
+            )}
+          >
+            {/* Search Bar */}
+            <SearchBar 
+              searchQuery={searchQuery} 
+              setSearchQuery={setSearchQuery} 
+            />
+
+            {/* User Card */}
+            {(profile || (!profile && !user)) && (
+              <UserCard 
+                name={profile ? userName : 'Demo Creator'}
+                email={profile ? userEmail : 'demo@noticebazaar.com'}
+                avatarUrl={profile?.avatar_url || null}
+              />
+            )}
+
+            {/* Menu Sections */}
+            <div className="px-2 py-2">
+              {filteredSections.map((section) => (
+                <SidebarSection
+                  key={section.title}
+                  section={section}
+                  isActive={isActive}
+                  onItemClick={handleItemClick}
+                />
+              ))}
+            </div>
+          </div>
+
+          {/* Mobile: Slide-in when open */}
+          <AnimatePresence>
+            {isOpen && (
+              <motion.div
+                ref={sidebarRef}
+                initial={{ opacity: 0, x: '-100%' }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: '-100%' }}
+                transition={{
+                  type: "spring",
+                  damping: 25,
+                  stiffness: 200
+                }}
+                className={cn(
+                  "md:hidden fixed top-16 left-0 flex flex-col",
+                  "h-[calc(100vh-4rem)] w-[320px] max-w-[85vw] overflow-y-auto",
+                  "bg-[#1C1C1E] backdrop-blur-xl border-r border-white/10",
+                  "shadow-[0_0_40px_rgba(0,0,0,0.35)]",
+                  "z-[150] rounded-r-2xl",
+                  className
+                )}
+              >
             {/* Search Bar */}
             <SearchBar 
               searchQuery={searchQuery} 

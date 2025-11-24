@@ -205,7 +205,7 @@ const AppsMenu: React.FC<AppsMenuProps> = ({ profileRole }) => {
         )}
       </AnimatePresence>
 
-      {/* Left Sidebar - iOS Style */}
+      {/* Left Sidebar - iOS Style (Mobile Only) */}
       <AnimatePresence>
         {isOpen && (
           <motion.div
@@ -218,7 +218,7 @@ const AppsMenu: React.FC<AppsMenuProps> = ({ profileRole }) => {
               damping: 25,
               stiffness: 200
             }}
-            className="fixed top-16 left-0 h-[calc(100vh-4rem)] w-[280px] max-w-[85vw] overflow-y-auto bg-[#1C1C1E] border-r border-white/5 shadow-2xl z-[150]"
+            className="fixed top-16 left-0 h-[calc(100vh-4rem)] w-[280px] max-w-[85vw] overflow-y-auto bg-[#1C1C1E] border-r border-white/5 shadow-2xl z-[150] md:hidden"
           >
             {/* iOS-style Search Bar */}
             <div className="sticky top-0 bg-[#1C1C1E]/95 backdrop-blur-xl border-b border-white/5 z-10 px-4 pt-4 pb-3">
