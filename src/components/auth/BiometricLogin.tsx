@@ -217,16 +217,32 @@ const BiometricLogin: React.FC<BiometricLoginProps> = ({
         // Check if Edge Function is not deployed
         const errorStr = String(challengeError.message || challengeError || '').toLowerCase();
         const errorStatus = (challengeError as any).status || (challengeError as any).statusCode;
+        const errorContext = (challengeError as any).context;
+        
+        // Try to extract more detailed error message
+        let errorMessage = challengeError.message || 'Failed to get authentication challenge';
+        if (errorContext?.body) {
+          try {
+            const body = typeof errorContext.body === 'string' ? JSON.parse(errorContext.body) : errorContext.body;
+            errorMessage = body.error || body.message || errorMessage;
+          } catch (e) {
+            // Ignore parse errors
+          }
+        }
         
         if (errorStatus === 404 || errorStr.includes('not found') || errorStr.includes('404')) {
           throw new Error('Passkey authentication is not available yet. Please sign in with Google or email.');
         }
         
-        if (errorStr.includes('user not found') || errorStr.includes('404')) {
+        if (errorStatus === 404 || errorStr.includes('user not found')) {
           throw new Error('No account found with this email. Please sign up first.');
         }
         
-        throw new Error(challengeError.message || 'Failed to get authentication challenge');
+        if (errorStatus === 500 || errorStr.includes('server error') || errorStr.includes('configuration')) {
+          throw new Error('Server error. Please try again later or use another sign-in method.');
+        }
+        
+        throw new Error(errorMessage);
       }
 
       if (!challengeData || (challengeData as any).error) {

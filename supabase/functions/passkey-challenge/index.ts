@@ -37,17 +37,28 @@ serve(async (req) => {
 
   try {
     // Handle both GET and POST - check if email is provided
-    const body = req.method === 'POST' ? await req.json() : {};
-    const { email } = body;
+    let body = {};
+    if (req.method === 'POST') {
+      try {
+        body = await req.json();
+      } catch (e) {
+        // If body is empty or invalid, treat as registration mode
+        body = {};
+      }
+    }
+    
+    const { email } = body as { email?: string };
 
-    if (!email) {
+    if (!email || !email.trim()) {
       // Generate challenge for registration (no email = registration mode)
       const challenge = generateChallenge();
       const challengeBase64 = base64URLEncode(challenge);
+      const supabaseUrl = Deno.env.get('SUPABASE_URL') || '';
+      const rpId = supabaseUrl ? new URL(supabaseUrl).hostname : 'localhost';
 
       return new Response(JSON.stringify({ 
         challenge: challengeBase64,
-        rpId: new URL(Deno.env.get('SUPABASE_URL') || '').hostname,
+        rpId: rpId,
         userId: null, // Will be set by client for registration
       }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -56,18 +67,22 @@ serve(async (req) => {
     }
 
     // Authentication mode (email provided)
-    if (email) {
-      
-      if (!email) {
-        return new Response(JSON.stringify({ error: 'Missing email' }), {
+    if (email && email.trim()) {
+
+      const supabaseUrl = Deno.env.get('SUPABASE_URL');
+      const supabaseServiceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+
+      if (!supabaseUrl || !supabaseServiceRoleKey) {
+        console.error('Missing Supabase environment variables');
+        return new Response(JSON.stringify({ error: 'Server configuration error' }), {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          status: 400,
+          status: 500,
         });
       }
 
       const supabaseAdmin = createClient(
-        Deno.env.get('SUPABASE_URL') ?? '',
-        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
+        supabaseUrl,
+        supabaseServiceRoleKey,
         {
           auth: {
             autoRefreshToken: false,
@@ -79,13 +94,14 @@ serve(async (req) => {
       // Find user by email
       const { data: { users }, error: userError } = await supabaseAdmin.auth.admin.listUsers();
       if (userError) {
-        return new Response(JSON.stringify({ error: 'Failed to find user' }), {
+        console.error('Error listing users:', userError);
+        return new Response(JSON.stringify({ error: 'Failed to find user', details: userError.message }), {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
           status: 500,
         });
       }
 
-      const user = users.find(u => u.email === email);
+      const user = users.find(u => u.email?.toLowerCase() === email.trim().toLowerCase());
       if (!user) {
         return new Response(JSON.stringify({ error: 'User not found' }), {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -117,9 +133,11 @@ serve(async (req) => {
         type: 'public-key',
       })) || [];
 
+      const rpId = supabaseUrl ? new URL(supabaseUrl).hostname : 'localhost';
+
       return new Response(JSON.stringify({ 
         challenge: challengeBase64,
-        rpId: new URL(Deno.env.get('SUPABASE_URL') || '').hostname,
+        rpId: rpId,
         allowCredentials: allowCredentials,
         userId: user.id,
       }), {
