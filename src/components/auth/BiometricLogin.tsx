@@ -92,11 +92,18 @@ const BiometricLogin: React.FC<BiometricLoginProps> = ({
         throw new Error((challengeData as any).error || 'Failed to get challenge');
       }
 
-      const { challenge: challengeBase64, rpId } = challengeData as any;
+      const { challenge: challengeBase64 } = challengeData as any;
       const challenge = base64URLToArrayBuffer(challengeBase64);
 
       // Get user ID as Uint8Array
       const userIdBytes = new TextEncoder().encode(user.id);
+
+      // Use current origin's hostname as RPID (must match where app is running)
+      // Remove port if present (WebAuthn doesn't allow ports in RPID except for localhost)
+      const currentHostname = window.location.hostname;
+      const rpId = currentHostname.includes(':') && !currentHostname.includes('localhost') 
+        ? currentHostname.split(':')[0] 
+        : currentHostname;
 
       // Create credential
       const credential = await navigator.credentials.create({
@@ -104,7 +111,7 @@ const BiometricLogin: React.FC<BiometricLoginProps> = ({
           challenge,
           rp: {
             name: 'NoticeBazaar',
-            id: rpId || window.location.hostname,
+            id: rpId, // Always use current origin, not server-provided
           },
           user: {
             id: userIdBytes,
@@ -251,7 +258,7 @@ const BiometricLogin: React.FC<BiometricLoginProps> = ({
         throw new Error((challengeData as any).error || 'Failed to get challenge');
       }
 
-      const { challenge: challengeBase64, rpId, allowCredentials } = challengeData as any;
+      const { challenge: challengeBase64, allowCredentials } = challengeData as any;
       const challenge = base64URLToArrayBuffer(challengeBase64);
 
       // Convert allowCredentials to ArrayBuffer format
@@ -260,11 +267,18 @@ const BiometricLogin: React.FC<BiometricLoginProps> = ({
         type: cred.type,
       })) || [];
 
+      // Use current origin's hostname as RPID (must match where app is running)
+      // Remove port if present (WebAuthn doesn't allow ports in RPID except for localhost)
+      const currentHostname = window.location.hostname;
+      const rpId = currentHostname.includes(':') && !currentHostname.includes('localhost') 
+        ? currentHostname.split(':')[0] 
+        : currentHostname;
+
       // Get credential (authentication)
       const credential = await navigator.credentials.get({
         publicKey: {
           challenge,
-          rpId: rpId || window.location.hostname,
+          rpId: rpId, // Always use current origin, not server-provided
           allowCredentials: allowCredentialsArray,
           userVerification: 'required',
           timeout: 60000,

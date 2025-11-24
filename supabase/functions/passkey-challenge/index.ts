@@ -53,8 +53,33 @@ serve(async (req) => {
       // Generate challenge for registration (no email = registration mode)
       const challenge = generateChallenge();
       const challengeBase64 = base64URLEncode(challenge);
-      const supabaseUrl = Deno.env.get('SUPABASE_URL') || '';
-      const rpId = supabaseUrl ? new URL(supabaseUrl).hostname : 'localhost';
+      
+      // Get RPID from request origin or use a default
+      // RPID must match the origin where the app is running
+      const origin = req.headers.get('origin') || req.headers.get('referer') || '';
+      let rpId = 'localhost';
+      
+      if (origin) {
+        try {
+          const originUrl = new URL(origin);
+          rpId = originUrl.hostname;
+          // Remove port for production (WebAuthn doesn't allow ports in RPID)
+          if (rpId.includes(':') && !rpId.includes('localhost')) {
+            rpId = rpId.split(':')[0];
+          }
+        } catch (e) {
+          // If origin parsing fails, try to extract from referer
+          console.warn('Failed to parse origin:', origin);
+        }
+      }
+      
+      // Fallback: use environment variable or default
+      if (rpId === 'localhost' || !rpId) {
+        const customRpId = Deno.env.get('PASSKEY_RPID');
+        if (customRpId) {
+          rpId = customRpId;
+        }
+      }
 
       return new Response(JSON.stringify({ 
         challenge: challengeBase64,
@@ -158,7 +183,32 @@ serve(async (req) => {
         type: 'public-key',
       })) || [];
 
-      const rpId = supabaseUrl ? new URL(supabaseUrl).hostname : 'localhost';
+      // Get RPID from request origin or use a default
+      // RPID must match the origin where the app is running
+      const origin = req.headers.get('origin') || req.headers.get('referer') || '';
+      let rpId = 'localhost';
+      
+      if (origin) {
+        try {
+          const originUrl = new URL(origin);
+          rpId = originUrl.hostname;
+          // Remove port for production (WebAuthn doesn't allow ports in RPID)
+          if (rpId.includes(':') && !rpId.includes('localhost')) {
+            rpId = rpId.split(':')[0];
+          }
+        } catch (e) {
+          // If origin parsing fails, try to extract from referer
+          console.warn('Failed to parse origin:', origin);
+        }
+      }
+      
+      // Fallback: use environment variable or default
+      if (rpId === 'localhost' || !rpId) {
+        const customRpId = Deno.env.get('PASSKEY_RPID');
+        if (customRpId) {
+          rpId = customRpId;
+        }
+      }
 
       return new Response(JSON.stringify({ 
         challenge: challengeBase64,
