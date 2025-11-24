@@ -1,11 +1,24 @@
-import type { VercelRequest, VercelResponse } from '@vercel/node';
+// Vercel Serverless Function for SSR of dashboard-preview
+// This provides server-side rendering for the preview page
+
 import { readFileSync } from 'fs';
 import { join } from 'path';
 
-/**
- * Vercel Serverless Function for SSR of dashboard-preview
- * This provides server-side rendering for the preview page
- */
+// Type definitions for Vercel (available at runtime)
+type VercelRequest = {
+  url?: string;
+  query?: Record<string, string | string[]>;
+  method?: string;
+  headers?: Record<string, string>;
+  body?: any;
+};
+
+type VercelResponse = {
+  status: (code: number) => VercelResponse;
+  send: (body: string) => void;
+  setHeader: (name: string, value: string) => void;
+};
+
 export default async function handler(
   req: VercelRequest,
   res: VercelResponse
@@ -89,4 +102,3 @@ export default async function handler(
     `);
   }
 }
-

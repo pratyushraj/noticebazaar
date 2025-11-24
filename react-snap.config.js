@@ -18,8 +18,11 @@ module.exports = {
   removeStyleTags: false,
   removeScriptTags: false,
   // Wait for React to hydrate
-  waitFor: 2000,
+  waitFor: 3000,
   // Crawl from these routes
   crawlFrom: "/dashboard-preview",
+  // Don't remove data attributes
+  removeDataAttributes: false,
+  // Keep inline styles
+  inlineCss: false,
 };
-
