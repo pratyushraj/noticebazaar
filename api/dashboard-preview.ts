@@ -23,22 +23,50 @@ export default async function handler(
   req: VercelRequest,
   res: VercelResponse
 ) {
+  console.log('SSR Function called:', req.url, req.query);
+  
   try {
-    // Get the HTML template
-    // In Vercel, the dist folder is available at process.cwd()
-    const htmlPath = join(process.cwd(), 'dist', 'index.html');
+    // Try multiple possible paths for the HTML file
+    // Vercel may use different paths depending on build output
+    const possiblePaths = [
+      join(process.cwd(), 'dist', 'index.html'),
+      join(process.cwd(), '.vercel', 'output', 'static', 'index.html'),
+      join(process.cwd(), '.next', 'static', 'index.html'),
+      join(process.cwd(), 'index.html'),
+      // Vercel's serverless function environment
+      join('/var/task', 'dist', 'index.html'),
+      join('/var/task', 'index.html'),
+    ];
     
-    let html: string;
-    try {
-      html = readFileSync(htmlPath, 'utf-8');
-    } catch (error) {
-      // Fallback: return a basic HTML structure if file not found
+    let html: string | null = null;
+    let htmlPath: string | null = null;
+    
+    for (const path of possiblePaths) {
+      try {
+        html = readFileSync(path, 'utf-8');
+        htmlPath = path;
+        console.log('Found HTML at:', path);
+        break;
+      } catch (error) {
+        // Try next path
+        continue;
+      }
+    }
+    
+    if (!html) {
+      console.log('HTML file not found in any expected location, using fallback');
+      // Fallback HTML with proper meta tags
       html = `<!DOCTYPE html>
 <html lang="en-IN">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>NoticeBazaar Dashboard Preview</title>
+  <meta name="description" content="Preview the NoticeBazaar Creator Dashboard - Manage deals, payments, and content protection" />
+  <meta property="og:title" content="NoticeBazaar Creator Dashboard Preview" />
+  <meta property="og:description" content="Preview the NoticeBazaar Creator Dashboard" />
+  <meta property="og:type" content="website" />
+  <meta name="robots" content="index, follow" />
   <style>
     body { 
       margin: 0; 
@@ -67,18 +95,21 @@ export default async function handler(
   <script type="module" src="/assets/index.js"></script>
 </body>
 </html>`;
-    }
-    
-    // Inject meta tags for better SEO/crawling
-    const metaTags = `
+    } else {
+      // Inject meta tags for better SEO/crawling
+      const metaTags = `
     <meta name="description" content="Preview the NoticeBazaar Creator Dashboard - Manage deals, payments, and content protection" />
     <meta property="og:title" content="NoticeBazaar Creator Dashboard Preview" />
     <meta property="og:description" content="Preview the NoticeBazaar Creator Dashboard" />
     <meta property="og:type" content="website" />
     <meta name="robots" content="index, follow" />
     `;
-    
-    html = html.replace('</head>', `${metaTags}</head>`);
+      
+      // Only add meta tags if they don't already exist
+      if (!html.includes('og:title')) {
+        html = html.replace('</head>', `${metaTags}</head>`);
+      }
+    }
     
     // Ensure the root div exists
     if (!html.includes('<div id="root">')) {
@@ -93,10 +124,14 @@ export default async function handler(
     res.status(500).send(`
       <!DOCTYPE html>
       <html>
-      <head><title>Error</title></head>
+      <head>
+        <title>Error</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      </head>
       <body>
         <h1>Server Error</h1>
         <p>Unable to render dashboard preview. Please try again later.</p>
+        <p>Error: ${error instanceof Error ? error.message : 'Unknown error'}</p>
       </body>
       </html>
     `);

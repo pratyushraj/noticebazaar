@@ -18,6 +18,11 @@
       "destination": "/index.html"
     }
   ],
+  "functions": {
+    "api/dashboard-preview.ts": {
+      "includeFiles": "dist/**"
+    }
+  },
   "headers": [
     {
       "source": "/(.*)",
