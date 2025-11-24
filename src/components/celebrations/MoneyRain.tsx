@@ -4,7 +4,6 @@ import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import confetti from 'canvas-confetti';
 import { IndianRupee } from 'lucide-react';
-import { cn } from '@/lib/utils';
 
 interface MoneyRainProps {
   lifetimeEarnings: number;

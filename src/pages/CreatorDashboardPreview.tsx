@@ -447,7 +447,7 @@ const CreatorDashboardPreview = () => {
             <Sidebar profileRole="creator" />
             
             {/* Main Content */}
-            <main className="flex-1 w-full py-6 px-4 md:px-6 lg:px-8 pb-20 md:pb-24 md:ml-[320px] transition-all duration-300 ease-in-out">
+            <main className="flex-1 w-full py-6 px-4 md:px-6 lg:px-8 pb-20 md:pb-24 transition-all duration-300 ease-in-out">
               <div className="max-w-7xl mx-auto">
           {/* Breadcrumbs - Show for non-overview tabs */}
           {activeTab !== 'overview' && (

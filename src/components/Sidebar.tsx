@@ -45,7 +45,7 @@ const SearchBar: React.FC<{
   setSearchQuery: (query: string) => void;
 }> = ({ searchQuery, setSearchQuery }) => {
   return (
-    <div className="sticky top-0 bg-[#0B0F1A]/95 backdrop-blur-xl border-b border-white/5 z-10 px-4 pt-4 pb-3">
+    <div className="sticky top-0 bg-[#1C1C1E]/95 backdrop-blur-xl border-b border-white/10 z-10 px-4 pt-4 pb-3">
       <div className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#7B7F8A]" />
         <input
@@ -388,16 +388,16 @@ const Sidebar: React.FC<SidebarProps> = ({ className, profileRole }) => {
       </AnimatePresence>
 
       {/* Sidebar */}
-      {isPreview && window.innerWidth >= 768 ? (
-        // Always visible on desktop for preview
+      {isPreview ? (
+        // Always visible on desktop for preview - use static positioning
         <div
           ref={sidebarRef}
           className={cn(
+            "hidden md:flex flex-shrink-0 flex-col",
             "h-[calc(100vh-4rem)] w-[320px] overflow-y-auto",
-            "bg-[#0B0F1A] backdrop-blur-xl border-r border-white/5",
+            "bg-[#1C1C1E] backdrop-blur-xl border-r border-white/10",
             "shadow-[0_0_40px_rgba(0,0,0,0.35)]",
-            "z-[150]",
-            "md:static md:h-full md:top-0 md:rounded-none",
+            "relative z-10",
             className
           )}
         >
@@ -444,7 +444,7 @@ const Sidebar: React.FC<SidebarProps> = ({ className, profileRole }) => {
               }}
               className={cn(
                 "h-[calc(100vh-4rem)] w-[320px] max-w-[85vw] overflow-y-auto",
-                "bg-[#0B0F1A] backdrop-blur-xl border-r border-white/5",
+                "bg-[#1C1C1E] backdrop-blur-xl border-r border-white/10",
                 "shadow-[0_0_40px_rgba(0,0,0,0.35)]",
                 "z-[150]",
                 "md:static md:h-full md:top-0 md:rounded-none",

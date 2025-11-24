@@ -4,7 +4,6 @@ import React, { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { Clock, TrendingUp } from 'lucide-react';
 import { BrandDeal } from '@/types';
-import { cn } from '@/lib/utils';
 
 interface PaymentCountdownBannerProps {
   brandDeals: BrandDeal[] | undefined;

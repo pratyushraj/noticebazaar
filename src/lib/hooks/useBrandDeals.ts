@@ -344,7 +344,7 @@ export const useAddBrandDeal = () => {
           payment_received_date,
       };
       
-      console.log('DEBUG: Brand Deal Insert Payload:', insertPayload); // <-- DEBUG LOG
+      // Debug logging removed for production
 
       const { error: insertError } = await supabase
         .from('brand_deals')

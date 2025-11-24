@@ -4,7 +4,7 @@ import React, { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { BrandDeal } from '@/types';
-import { BrandLogo } from '@/components/ui/BrandLogo';
+import BrandLogo from '@/components/creator-contracts/BrandLogo';
 import { cn } from '@/lib/utils';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 
