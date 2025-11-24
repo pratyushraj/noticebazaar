@@ -13,7 +13,7 @@ import { Loader2 } from 'lucide-react';
 import { BrandDeal } from '@/types';
 import BrandLogo from '@/components/creator-contracts/BrandLogo';
 import DealStatusBadge, { DealStage } from '@/components/creator-contracts/DealStatusBadge';
-import { cn } from '@/lib/utils';
+import { cn, openContractFile } from '@/lib/utils';
 import MarkPaymentReceivedDialog from '@/components/creator-contracts/MarkPaymentReceivedDialog';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { toast } from 'sonner';
@@ -371,7 +371,7 @@ const DealDetailPage: React.FC = () => {
                     variant="outline" 
                     size="sm"
                     onClick={async () => {
-                      const { openContractFile } = await import('@/lib/utils');
+                      // openContractFile is now statically imported
                       openContractFile(deal.contract_file_url, (error) => {
                         toast.error(error);
                       });
