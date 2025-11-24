@@ -360,11 +360,13 @@ const BiometricLogin: React.FC<BiometricLoginProps> = ({
       if (requiresEmailSignIn || !magicLink) {
         // Create a session by signing in with passwordless OTP
         // This will send a magic link to the user's email
+        // Use current origin to ensure redirect works on mobile/production
+        const redirectUrl = `${window.location.origin}/`;
         const { error: signInError } = await supabase.auth.signInWithOtp({
           email: userEmail || email,
           options: {
             shouldCreateUser: false,
-            emailRedirectTo: `${window.location.origin}/`,
+            emailRedirectTo: redirectUrl,
           },
         });
 

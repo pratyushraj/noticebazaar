@@ -83,22 +83,43 @@ serve(async (req) => {
       })
       .eq('id', passkey.id);
 
-    // Get frontend URL from request origin or environment variable
+    // Get frontend URL - prioritize request origin over environment variable
+    // This ensures the redirect URL matches where the user is actually accessing the app
     const origin = req.headers.get('origin') || req.headers.get('referer') || '';
-    let frontendUrl = Deno.env.get('FRONTEND_URL');
+    let frontendUrl: string | null = null;
     
-    if (!frontendUrl && origin) {
+    // First, try to extract from request origin (most reliable)
+    if (origin) {
       try {
         const originUrl = new URL(origin);
-        frontendUrl = `${originUrl.protocol}//${originUrl.host}`;
+        // Remove port for production (except localhost)
+        const hostname = originUrl.hostname;
+        const protocol = originUrl.protocol;
+        if (hostname === 'localhost' || hostname.includes('127.0.0.1')) {
+          // Keep port for localhost
+          frontendUrl = `${protocol}//${originUrl.host}`;
+        } else {
+          // Remove port for production domains
+          frontendUrl = `${protocol}//${hostname}`;
+        }
+        console.log('Using request origin as frontend URL:', frontendUrl);
       } catch (e) {
-        console.warn('Failed to parse origin:', origin);
+        console.warn('Failed to parse origin:', origin, e);
       }
     }
     
-    // Fallback to localhost only for development
+    // Fallback to environment variable
+    if (!frontendUrl) {
+      frontendUrl = Deno.env.get('FRONTEND_URL') || null;
+      if (frontendUrl) {
+        console.log('Using FRONTEND_URL env var:', frontendUrl);
+      }
+    }
+    
+    // Last resort: localhost (development only)
     if (!frontendUrl) {
       frontendUrl = 'http://localhost:32100';
+      console.warn('No frontend URL detected, using localhost fallback');
     }
 
     // Generate a magic link that will automatically sign the user in

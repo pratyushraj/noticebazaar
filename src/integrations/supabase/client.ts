@@ -8,4 +8,24 @@ if (!supabaseUrl || !supabaseAnonKey) {
   console.error('Supabase URL or Anon Key is missing. Please check your .env file.');
 }
 
-export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey);
+// Get the current origin for redirect URLs (works in browser)
+const getRedirectUrl = () => {
+  if (typeof window !== 'undefined') {
+    return window.location.origin;
+  }
+  // Fallback for SSR or Edge Functions
+  return import.meta.env.VITE_APP_URL || 'http://localhost:32100';
+};
+
+export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    // Use current origin as default redirect URL
+    redirectTo: getRedirectUrl(),
+    // Auto-refresh tokens
+    autoRefreshToken: true,
+    // Persist session
+    persistSession: true,
+    // Detect session from URL hash
+    detectSessionInUrl: true,
+  },
+});
