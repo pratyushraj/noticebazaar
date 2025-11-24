@@ -248,6 +248,19 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
   useEffect(() => {
     const initializeSession = async () => {
       try {
+        // Handle hash fragments from magic links (e.g., #access_token=...)
+        // Supabase automatically handles this, but we ensure it's processed
+        const hashParams = new URLSearchParams(window.location.hash.substring(1));
+        if (hashParams.get('access_token') || hashParams.get('type') === 'magiclink') {
+          // Supabase will automatically process this via onAuthStateChange
+          // But we can clean up the URL after processing
+          setTimeout(() => {
+            if (window.location.hash.includes('access_token')) {
+              window.history.replaceState(null, '', window.location.pathname + window.location.search);
+            }
+          }, 1000);
+        }
+
         const { data: { session: currentSession }, error } = await supabase.auth.getSession();
         
         if (error) {
@@ -265,12 +278,17 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
 
     initializeSession();
 
-    // Listen for auth state changes
+    // Listen for auth state changes (this handles hash fragments automatically)
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (_event, session) => {
+      async (event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
         setInitialLoadComplete(true); // Ensure this is set after any auth change
+        
+        // Clean up URL hash after successful sign-in
+        if (event === 'SIGNED_IN' && window.location.hash.includes('access_token')) {
+          window.history.replaceState(null, '', window.location.pathname + window.location.search);
+        }
       }
     );
 
