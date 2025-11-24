@@ -271,6 +271,13 @@ const CreatorDashboardPreview = () => {
     ] as BrandDeal[];
   }, []);
 
+  // Calculate lifetime earnings
+  const lifetimeEarnings = useMemo(() => {
+    return demoBrandDeals
+      .filter(deal => deal.status === 'Completed' && deal.payment_received_date)
+      .reduce((sum, deal) => sum + (deal.deal_amount || 0), 0);
+  }, [demoBrandDeals]);
+
   // Calculate dashboard data
   const dashboardData = useMemo(() => {
     const dealsToUse = demoBrandDeals;
