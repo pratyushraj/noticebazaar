@@ -375,12 +375,17 @@ const BiometricLogin: React.FC<BiometricLoginProps> = ({
 
   const isDisabled = isAuthenticating || (mode === 'authenticate' && !isEmailValid);
 
+  // For authentication mode, make it more prominent (primary button style)
+  const buttonClass = mode === 'authenticate' 
+    ? "w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold min-h-[56px] disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-blue-500/30 transition-all"
+    : "w-full bg-white/5 border-white/10 text-white hover:bg-white/10 min-h-[56px] disabled:opacity-50 disabled:cursor-not-allowed";
+
   return (
     <Button
       onClick={handleBiometricAuth}
       disabled={isDisabled}
-      variant="outline"
-      className="w-full bg-white/5 border-white/10 text-white hover:bg-white/10 min-h-[56px] disabled:opacity-50 disabled:cursor-not-allowed"
+      variant={mode === 'authenticate' ? 'default' : 'outline'}
+      className={buttonClass}
     >
       <Icon className="w-5 h-5 mr-2" />
       {isAuthenticating 
