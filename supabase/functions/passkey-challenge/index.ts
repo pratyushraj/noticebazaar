@@ -117,9 +117,34 @@ serve(async (req) => {
         .eq('is_active', true);
 
       if (passkeyError) {
-        return new Response(JSON.stringify({ error: 'Failed to fetch passkeys' }), {
+        console.error('Error fetching passkeys:', passkeyError);
+        // Check if it's a table not found error
+        if (passkeyError.code === '42P01' || passkeyError.message?.includes('does not exist')) {
+          return new Response(JSON.stringify({ 
+            error: 'Passkeys table not found',
+            details: 'Please ensure the database migration has been applied'
+          }), {
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            status: 500,
+          });
+        }
+        return new Response(JSON.stringify({ 
+          error: 'Failed to fetch passkeys',
+          details: passkeyError.message 
+        }), {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
           status: 500,
+        });
+      }
+
+      // Check if user has any passkeys registered
+      if (!passkeys || passkeys.length === 0) {
+        return new Response(JSON.stringify({ 
+          error: 'No passkey registered',
+          details: 'Please register a passkey first by signing in and clicking "Register Passkey"'
+        }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 404,
         });
       }
 

@@ -230,12 +230,14 @@ const BiometricLogin: React.FC<BiometricLoginProps> = ({
           }
         }
         
-        if (errorStatus === 404 || errorStr.includes('not found') || errorStr.includes('404')) {
+        if (errorStatus === 404) {
+          if (errorStr.includes('no passkey registered') || errorStr.includes('no passkey')) {
+            throw new Error('No passkey registered for this account. Please sign in first and register a passkey.');
+          }
+          if (errorStr.includes('user not found')) {
+            throw new Error('No account found with this email. Please sign up first.');
+          }
           throw new Error('Passkey authentication is not available yet. Please sign in with Google or email.');
-        }
-        
-        if (errorStatus === 404 || errorStr.includes('user not found')) {
-          throw new Error('No account found with this email. Please sign up first.');
         }
         
         if (errorStatus === 500 || errorStr.includes('server error') || errorStr.includes('configuration')) {
