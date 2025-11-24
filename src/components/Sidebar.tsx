@@ -314,8 +314,8 @@ const Sidebar: React.FC<SidebarProps> = ({ className, profileRole }) => {
 
   // Handle item click
   const handleItemClick = (path: string) => {
-    // Close sidebar on mobile
-    if (window.innerWidth < 768) {
+    // Close sidebar on mobile/tablet (only keep open on desktop)
+    if (window.innerWidth < 1024) {
       setIsOpen(false);
     }
 
@@ -381,7 +381,7 @@ const Sidebar: React.FC<SidebarProps> = ({ className, profileRole }) => {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="fixed inset-0 bg-black/40 backdrop-blur-md z-[140] md:hidden"
+            className="fixed inset-0 bg-black/40 backdrop-blur-md z-[140] lg:hidden"
             onClick={() => setIsOpen(false)}
           />
         )}
