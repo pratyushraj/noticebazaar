@@ -393,7 +393,7 @@ const Sidebar: React.FC<SidebarProps> = ({ className, profileRole }) => {
         <div
           ref={sidebarRef}
           className={cn(
-            "hidden md:flex flex-shrink-0 flex-col",
+            "flex flex-shrink-0 flex-col",
             "h-[calc(100vh-4rem)] w-[320px] overflow-y-auto",
             "bg-[#1C1C1E] backdrop-blur-xl border-r border-white/10",
             "shadow-[0_0_40px_rgba(0,0,0,0.35)]",
@@ -435,7 +435,7 @@ const Sidebar: React.FC<SidebarProps> = ({ className, profileRole }) => {
           <div
             ref={sidebarRef}
             className={cn(
-              "hidden md:flex flex-shrink-0 flex-col",
+              "flex flex-shrink-0 flex-col",
               "h-[calc(100vh-4rem)] w-[320px] overflow-y-auto",
               "bg-[#1C1C1E] backdrop-blur-xl border-r border-white/10",
               "shadow-[0_0_40px_rgba(0,0,0,0.35)]",

@@ -80,7 +80,6 @@ import BiometricLogin from '@/components/auth/BiometricLogin';
 import { supabase } from '@/integrations/supabase/client';
 // New UI features
 import MoneyRain from '@/components/celebrations/MoneyRain';
-import ChaseAllOverduesButton from '@/components/payments/ChaseAllOverduesButton';
 import EarningsHeatmap from '@/components/earnings/EarningsHeatmap';
 import TaxSeasonMonster from '@/components/tax/TaxSeasonMonster';
 import CreatorScoreBadge from '@/components/creator/CreatorScoreBadge';
@@ -824,7 +823,6 @@ const CreatorDashboard = () => {
       <CreatorEasterEgg onTrigger={() => {}} />
       <AddToHomeScreen />
       <OfflineBanner onRetry={handleRefresh} />
-      <ChaseAllOverduesButton brandDeals={brandDeals} />
       <div className="min-h-screen text-white relative">
         {/* Header removed - now using Navbar from Layout component */}
         <PullToRefresh onRefresh={handleRefresh}>

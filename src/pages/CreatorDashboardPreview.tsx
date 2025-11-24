@@ -39,7 +39,6 @@ import { motion } from 'framer-motion';
 import CountUp from 'react-countup';
 // New UI features
 import MoneyRain from '@/components/celebrations/MoneyRain';
-import ChaseAllOverduesButton from '@/components/payments/ChaseAllOverduesButton';
 import EarningsHeatmap from '@/components/earnings/EarningsHeatmap';
 import TaxSeasonMonster from '@/components/tax/TaxSeasonMonster';
 import CreatorScoreBadge from '@/components/creator/CreatorScoreBadge';
@@ -425,7 +424,6 @@ const CreatorDashboardPreview = () => {
     <ErrorBoundary>
       <MoneyRain lifetimeEarnings={lifetimeEarnings} />
       <PratyushModeOverlay isActive={isPratyushMode} />
-      <ChaseAllOverduesButton brandDeals={demoBrandDeals} />
       <div className="relative min-h-screen overflow-hidden">
         {/* Animated gradient background */}
         <div className="fixed inset-0 animate-gradient-shift" />
