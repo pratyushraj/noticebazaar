@@ -24,7 +24,6 @@ export default defineConfig(() => ({
       include: [/node_modules/],
       transformMixedEsModules: true,
     },
-    },
   },
   plugins: [
     react({
