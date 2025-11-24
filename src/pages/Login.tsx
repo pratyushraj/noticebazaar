@@ -79,16 +79,31 @@ const Login = () => {
             
             {!showPasskeyAuth ? (
               <div className="space-y-3">
-                <Input
-                  type="email"
-                  placeholder="Enter your email"
-                  value={passkeyEmail}
-                  onChange={(e) => setPasskeyEmail(e.target.value)}
-                  className="bg-white/5 border-white/10 text-white placeholder:text-white/40"
-                />
+                <div>
+                  <Input
+                    type="email"
+                    placeholder="Enter your email"
+                    value={passkeyEmail}
+                    onChange={(e) => setPasskeyEmail(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && passkeyEmail.trim()) {
+                        // Allow Enter key to trigger authentication if email is valid
+                        e.preventDefault();
+                        const button = e.currentTarget.nextElementSibling?.querySelector('button');
+                        button?.click();
+                      }
+                    }}
+                    className="bg-white/5 border-white/10 text-white placeholder:text-white/40"
+                    aria-label="Email address for passkey authentication"
+                    required
+                  />
+                  {passkeyEmail && !passkeyEmail.includes('@') && (
+                    <p className="text-xs text-red-400 mt-1">Please enter a valid email address</p>
+                  )}
+                </div>
                 <BiometricLogin 
                   mode="authenticate"
-                  email={passkeyEmail}
+                  email={passkeyEmail.trim()}
                   onSuccess={handlePasskeyAuthSuccess}
                 />
                 <Button

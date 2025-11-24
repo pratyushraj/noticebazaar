@@ -176,8 +176,20 @@ const BiometricLogin: React.FC<BiometricLoginProps> = ({
       return;
     }
 
-    if (!email) {
-      toast.error('Email is required for authentication');
+    // Validate email format
+    if (!email || !email.trim()) {
+      toast.error('Email is required for authentication', {
+        description: 'Please enter your email address to sign in with Face ID',
+      });
+      return;
+    }
+
+    // Basic email format validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email.trim())) {
+      toast.error('Please enter a valid email address', {
+        description: 'The email format is incorrect',
+      });
       return;
     }
 
@@ -308,12 +320,19 @@ const BiometricLogin: React.FC<BiometricLoginProps> = ({
   const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
   const Icon = isIOS ? ScanLine : Fingerprint;
 
+  // For authentication mode, check if email is valid
+  const isEmailValid = mode === 'authenticate' 
+    ? email && email.trim() && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())
+    : true;
+
+  const isDisabled = isAuthenticating || (mode === 'authenticate' && !isEmailValid);
+
   return (
     <Button
       onClick={handleBiometricAuth}
-      disabled={isAuthenticating}
+      disabled={isDisabled}
       variant="outline"
-      className="w-full bg-white/5 border-white/10 text-white hover:bg-white/10 min-h-[56px]"
+      className="w-full bg-white/5 border-white/10 text-white hover:bg-white/10 min-h-[56px] disabled:opacity-50 disabled:cursor-not-allowed"
     >
       <Icon className="w-5 h-5 mr-2" />
       {isAuthenticating 
