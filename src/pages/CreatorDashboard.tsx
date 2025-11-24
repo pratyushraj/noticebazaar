@@ -78,6 +78,20 @@ import { useNativeShare } from '@/hooks/useNativeShare';
 import { usePushNotifications } from '@/hooks/usePushNotifications';
 import BiometricLogin from '@/components/auth/BiometricLogin';
 import { supabase } from '@/integrations/supabase/client';
+// New UI features
+import MoneyRain from '@/components/celebrations/MoneyRain';
+import PaymentCountdownBanner from '@/components/payments/PaymentCountdownBanner';
+import ChaseAllOverduesButton from '@/components/payments/ChaseAllOverduesButton';
+import EarningsHeatmap from '@/components/earnings/EarningsHeatmap';
+import TaxSeasonMonster from '@/components/tax/TaxSeasonMonster';
+import CreatorScoreBadge from '@/components/creator/CreatorScoreBadge';
+import ForexTicker from '@/components/forex/ForexTicker';
+import NightOwlBadge from '@/components/achievements/NightOwlBadge';
+import DealStreakCounter from '@/components/deals/DealStreakCounter';
+import TopBrandsCarousel from '@/components/brands/TopBrandsCarousel';
+import ExportMonthlyReport from '@/components/reports/ExportMonthlyReport';
+import DealKanban from '@/components/deals/DealKanban';
+import { usePratyushMode, PratyushModeOverlay } from '@/components/easter-egg/PratyushMode';
 
 // Helper functions
 const getDealStage = (deal: BrandDeal): DealStage => {
@@ -154,6 +168,7 @@ const CreatorDashboard = () => {
   const { profile, loading: sessionLoading, isCreator, trialStatus } = useSession();
   const [showExpiredModal, setShowExpiredModal] = useState(false);
   const prefersReducedMotion = usePrefersReducedMotion();
+  const { isActive: isPratyushMode } = usePratyushMode();
   
   // URL-based tab navigation
   const validTabs: Array<'overview' | 'deals' | 'payments' | 'protection'> = ['overview', 'deals', 'payments', 'protection'];
@@ -281,6 +296,7 @@ const CreatorDashboard = () => {
   // Filter states for deals tab
   const [searchTerm, setSearchTerm] = useState('');
   const [quickFilter, setQuickFilter] = useState<string | null>(null);
+  const [dealsView, setDealsView] = useState<'list' | 'kanban'>('list');
   
   // Filter states for payments tab
   const [paymentSearchTerm, setPaymentSearchTerm] = useState('');
@@ -295,6 +311,14 @@ const CreatorDashboard = () => {
     creatorId: profile?.id,
     enabled: !sessionLoading && isCreator && !!profile?.id,
   });
+
+  // Calculate lifetime earnings
+  const lifetimeEarnings = useMemo(() => {
+    if (!brandDeals) return 0;
+    return brandDeals
+      .filter(deal => deal.status === 'Completed' && deal.payment_received_date)
+      .reduce((sum, deal) => sum + (deal.deal_amount || 0), 0);
+  }, [brandDeals]);
 
   // Dynamic favicon based on payment status
   useDynamicFavicon(brandDeals);
@@ -796,9 +820,12 @@ const CreatorDashboard = () => {
 
   return (
     <>
-      <CreatorEasterEgg onTrigger={() => playSound('whoosh')} />
+      <MoneyRain lifetimeEarnings={lifetimeEarnings} />
+      <PratyushModeOverlay isActive={isPratyushMode} />
+      <CreatorEasterEgg onTrigger={() => {}} />
       <AddToHomeScreen />
       <OfflineBanner onRetry={handleRefresh} />
+      <ChaseAllOverduesButton brandDeals={brandDeals} />
       <div className="min-h-screen text-white relative">
         {/* Header removed - now using Navbar from Layout component */}
         <PullToRefresh onRefresh={handleRefresh}>
@@ -817,6 +844,8 @@ const CreatorDashboard = () => {
               {activeTab === 'overview' && (
                 <>
                   <TrialBanner />
+                  <PaymentCountdownBanner brandDeals={brandDeals} />
+                  <TaxSeasonMonster />
 
               {/* Hero Section - Liquid Glass */}
               <section aria-labelledby="dashboard-hero" className="mb-12">
@@ -837,6 +866,8 @@ const CreatorDashboard = () => {
                     <p className="text-base text-white/80">
                       Content Creator
                       </p>
+                      <NightOwlBadge />
+                      <DealStreakCounter brandDeals={brandDeals} />
                       {(() => {
                         // Calculate win streak (days without overdue payments)
                         const now = new Date();
@@ -1302,15 +1333,36 @@ const CreatorDashboard = () => {
           {/* Deals Tab */}
           {activeTab === 'deals' && (
             <div className="space-y-4">
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between flex-wrap gap-4">
                 <h2 className="text-xl font-bold text-white">Deals</h2>
-                <Button 
-                  onClick={handleAddBrandDeal} 
-                  className="bg-white/20 backdrop-blur-[20px] border border-white/30 text-white hover:bg-white/30 active:scale-[0.98] rounded-2xl px-6 py-3 font-medium shadow-[0_4px_16px_rgba(0,0,0,0.2)] transition-all duration-200"
-                >
-                  <Briefcase className="w-4 h-4 mr-2" /> Add New Deal
-                </Button>
+                <div className="flex items-center gap-3">
+                  <Button
+                    onClick={() => setDealsView(prev => prev === 'list' ? 'kanban' : 'list')}
+                    variant="outline"
+                    className="bg-white/5 border-white/10 text-white hover:bg-white/10"
+                  >
+                    {dealsView === 'list' ? 'Kanban View' : 'List View'}
+                  </Button>
+                  <Button 
+                    onClick={handleAddBrandDeal} 
+                    className="bg-white/20 backdrop-blur-[20px] border border-white/30 text-white hover:bg-white/30 active:scale-[0.98] rounded-2xl px-6 py-3 font-medium shadow-[0_4px_16px_rgba(0,0,0,0.2)] transition-all duration-200"
+                  >
+                    <Briefcase className="w-4 h-4 mr-2" /> Add New Deal
+                  </Button>
+                </div>
               </div>
+              
+              {dealsView === 'kanban' ? (
+                <DealKanban 
+                  brandDeals={brandDeals}
+                  onDealUpdate={async (dealId, newStatus) => {
+                    // TODO: Update deal status in database
+                    toast.success('Deal updated!');
+                    await refetchBrandDeals();
+                  }}
+                />
+              ) : (
+                <>
 
               <div className="flex gap-3 flex-wrap">
                 <PillTabButton
@@ -1416,6 +1468,8 @@ const CreatorDashboard = () => {
                   })
                 )}
               </div>
+                </>
+              )}
             </div>
           )}
 
@@ -1424,7 +1478,17 @@ const CreatorDashboard = () => {
             <div className="space-y-4 relative min-h-[600px]">
               <div className="relative z-10 space-y-4">
               {/* Summary Cards */}
-              <FinancialOverviewHeader allDeals={brandDeals || []} />
+              <div className="flex items-center justify-between mb-4 flex-wrap gap-4">
+                <div className="flex-1">
+                  <FinancialOverviewHeader allDeals={brandDeals || []} />
+                </div>
+                <ExportMonthlyReport
+                  brandDeals={brandDeals}
+                  earnings={dashboardData?.earnings.current || 0}
+                  month={new Date().toLocaleString('en-IN', { month: 'long' })}
+                  year={new Date().getFullYear()}
+                />
+              </div>
 
               {/* Payments Title */}
               <h2 className="text-lg md:text-xl font-bold mt-2">Payments</h2>

@@ -35,6 +35,22 @@ import Navbar from '@/components/navbar/Navbar';
 import CreatorBottomNav from '@/components/creator-dashboard/CreatorBottomNav';
 import { useSidebar } from '@/contexts/SidebarContext';
 import { toast } from 'sonner';
+import { motion } from 'framer-motion';
+import CountUp from 'react-countup';
+// New UI features
+import MoneyRain from '@/components/celebrations/MoneyRain';
+import PaymentCountdownBanner from '@/components/payments/PaymentCountdownBanner';
+import ChaseAllOverduesButton from '@/components/payments/ChaseAllOverduesButton';
+import EarningsHeatmap from '@/components/earnings/EarningsHeatmap';
+import TaxSeasonMonster from '@/components/tax/TaxSeasonMonster';
+import CreatorScoreBadge from '@/components/creator/CreatorScoreBadge';
+import ForexTicker from '@/components/forex/ForexTicker';
+import NightOwlBadge from '@/components/achievements/NightOwlBadge';
+import DealStreakCounter from '@/components/deals/DealStreakCounter';
+import TopBrandsCarousel from '@/components/brands/TopBrandsCarousel';
+import ExportMonthlyReport from '@/components/reports/ExportMonthlyReport';
+import DealKanban from '@/components/deals/DealKanban';
+import { usePratyushMode, PratyushModeOverlay } from '@/components/easter-egg/PratyushMode';
 
 // Helper functions
 const getDealStage = (deal: BrandDeal): DealStage => {
@@ -138,6 +154,17 @@ const CreatorDashboardPreview = () => {
   // Filter states for payments tab
   const [paymentSearchTerm, setPaymentSearchTerm] = useState('');
   const [paymentQuickFilter, setPaymentQuickFilter] = useState<string | null>(null);
+  const [dealsView, setDealsView] = useState<'list' | 'kanban'>('list');
+  
+  // Pratyush mode
+  const { isActive: isPratyushMode } = usePratyushMode();
+  
+  // Calculate lifetime earnings
+  const lifetimeEarnings = useMemo(() => {
+    return demoBrandDeals
+      .filter(deal => deal.status === 'Completed' && deal.payment_received_date)
+      .reduce((sum, deal) => sum + (deal.deal_amount || 0), 0);
+  }, [demoBrandDeals]);
 
   // Demo brand deals data
   const demoBrandDeals: BrandDeal[] = useMemo(() => {
@@ -397,6 +424,9 @@ const CreatorDashboardPreview = () => {
 
   return (
     <ErrorBoundary>
+      <MoneyRain lifetimeEarnings={lifetimeEarnings} />
+      <PratyushModeOverlay isActive={isPratyushMode} />
+      <ChaseAllOverduesButton brandDeals={demoBrandDeals} />
       <div className="relative min-h-screen overflow-hidden">
         {/* Animated gradient background */}
         <div className="fixed inset-0 animate-gradient-shift" />
@@ -455,6 +485,8 @@ const CreatorDashboardPreview = () => {
           {/* Overview Tab */}
           {activeTab === 'overview' && (
             <>
+              <PaymentCountdownBanner brandDeals={demoBrandDeals} />
+              <TaxSeasonMonster />
               {/* Hero Section - Liquid Glass */}
               <div className="mb-12">
                 <div className="flex items-start justify-between mb-8 gap-4 flex-wrap">
@@ -462,9 +494,13 @@ const CreatorDashboardPreview = () => {
                     <h1 className="text-3xl font-semibold mb-2 text-white tracking-tight leading-tight">
                       Hey, Creator! 👋
                     </h1>
-                    <p className="text-base text-white/60">
-                      Content Creator
-                    </p>
+                    <div className="flex items-center gap-3 flex-wrap">
+                      <p className="text-base text-white/60">
+                        Content Creator
+                      </p>
+                      <NightOwlBadge />
+                      <DealStreakCounter brandDeals={demoBrandDeals} />
+                    </div>
                   </div>
                 </div>
 
@@ -482,7 +518,14 @@ const CreatorDashboardPreview = () => {
                           <span className="text-sm font-medium text-white/80">Earnings</span>
                         </div>
                         <div className="text-5xl font-semibold text-white mb-3 tracking-tight">
-                          ₹{dashboardData.earnings.current.toLocaleString('en-IN')}
+                          <CountUp
+                            start={0}
+                            end={dashboardData.earnings.current}
+                            duration={1.8}
+                            separator=","
+                            prefix="₹"
+                            decimals={0}
+                          />
                         </div>
                         <div className="text-base text-white/60">
                           This Month
@@ -601,6 +644,31 @@ const CreatorDashboardPreview = () => {
                 />
               </div>
             </section>
+
+            {/* New UI Features */}
+            <section aria-labelledby="creator-score-heading" className="mb-12">
+              <h2 id="creator-score-heading" className="sr-only">Creator Score</h2>
+              <CreatorScoreBadge 
+                brandDeals={demoBrandDeals}
+                protectionScore={85}
+                taxFiled={false}
+              />
+            </section>
+
+            <section aria-labelledby="earnings-heatmap-heading" className="mb-12">
+              <h2 id="earnings-heatmap-heading" className="sr-only">Earnings Heatmap</h2>
+              <EarningsHeatmap brandDeals={demoBrandDeals} />
+            </section>
+
+            <section aria-labelledby="top-brands-heading" className="mb-12">
+              <h2 id="top-brands-heading" className="sr-only">Top Brands</h2>
+              <TopBrandsCarousel brandDeals={demoBrandDeals} />
+            </section>
+
+            <section aria-labelledby="forex-ticker-heading" className="mb-12">
+              <h2 id="forex-ticker-heading" className="sr-only">Forex Ticker</h2>
+              <ForexTicker brandDeals={demoBrandDeals} />
+            </section>
             </>
           )}
 
@@ -609,7 +677,24 @@ const CreatorDashboardPreview = () => {
           <div className="space-y-6">
             <div className="flex items-center justify-between gap-4 flex-wrap">
               <h2 className="text-2xl font-semibold text-white">All Brand Deals</h2>
+              <Button
+                onClick={() => setDealsView(prev => prev === 'list' ? 'kanban' : 'list')}
+                variant="outline"
+                className="bg-white/5 border-white/10 text-white hover:bg-white/10"
+              >
+                {dealsView === 'list' ? 'Kanban View' : 'List View'}
+              </Button>
             </div>
+            
+            {dealsView === 'kanban' ? (
+              <DealKanban 
+                brandDeals={demoBrandDeals}
+                onDealUpdate={async () => {
+                  toast.info('Deal updates available after sign in');
+                }}
+              />
+            ) : (
+              <>
 
             {/* Filters */}
             <div className="flex items-center gap-4 flex-wrap">
@@ -653,13 +738,25 @@ const CreatorDashboardPreview = () => {
                 />
               ))}
             </div>
+              </>
+            )}
           </div>
           )}
 
           {/* Payments Tab Content */}
           {activeTab === 'payments' && (
           <div className="space-y-6">
-            <FinancialOverviewHeader allDeals={demoBrandDeals} />
+            <div className="flex items-center justify-between mb-4 flex-wrap gap-4">
+              <div className="flex-1">
+                <FinancialOverviewHeader allDeals={demoBrandDeals} />
+              </div>
+              <ExportMonthlyReport
+                brandDeals={demoBrandDeals}
+                earnings={dashboardData.earnings.current}
+                month={new Date().toLocaleString('en-IN', { month: 'long' })}
+                year={new Date().getFullYear()}
+              />
+            </div>
             
             {/* Payments Title */}
             <h2 className="text-lg md:text-xl font-bold mt-2 text-white">Payments</h2>

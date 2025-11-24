@@ -16,6 +16,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useSampleChatHistory } from '@/lib/hooks/useSampleChatHistory';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { generateAvatarUrl } from '@/lib/utils/avatar';
+import SmartInboxZero from '@/components/messages/SmartInboxZero';
 
 // --- Types (local to this file) ---
 type Advisor = {
