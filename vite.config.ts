@@ -13,7 +13,28 @@ export default defineConfig(() => ({
     assetsDir: 'assets',
     rollupOptions: {
       output: {
-        manualChunks: undefined, // Let Vite handle chunking automatically
+        manualChunks: (id) => {
+          // Split vendor chunks to avoid circular dependency issues
+          if (id.includes('node_modules')) {
+            if (id.includes('react') || id.includes('react-dom')) {
+              return 'vendor-react';
+            }
+            if (id.includes('framer-motion')) {
+              return 'vendor-motion';
+            }
+            if (id.includes('@tanstack')) {
+              return 'vendor-query';
+            }
+            if (id.includes('supabase')) {
+              return 'vendor-supabase';
+            }
+            return 'vendor';
+          }
+          // Keep utils together but separate from main bundle
+          if (id.includes('/lib/utils')) {
+            return 'utils';
+          }
+        },
         assetFileNames: 'assets/[name].[ext]',
         chunkFileNames: 'assets/[name]-[hash].js',
         entryFileNames: 'assets/[name]-[hash].js',
