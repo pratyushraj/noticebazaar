@@ -14,7 +14,8 @@ import {
   TrendingUp as TrendingUpIcon,
   Calendar,
   AlertTriangle,
-  FileText
+  FileText,
+  Fingerprint
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useCreatorDashboardData } from '@/lib/hooks/useCreatorDashboardData';
@@ -75,6 +76,8 @@ import { useKeyboardAware } from '@/hooks/useKeyboardAware';
 import { useSwipeBack } from '@/hooks/useSwipeBack';
 import { useNativeShare } from '@/hooks/useNativeShare';
 import { usePushNotifications } from '@/hooks/usePushNotifications';
+import BiometricLogin from '@/components/auth/BiometricLogin';
+import { supabase } from '@/integrations/supabase/client';
 
 // Helper functions
 const getDealStage = (deal: BrandDeal): DealStage => {
@@ -204,6 +207,8 @@ const CreatorDashboard = () => {
   const [messageReceiverName, setMessageReceiverName] = useState<string>('');
   const [isQuickSearchOpen, setIsQuickSearchOpen] = useState(false);
   const [focusMode, setFocusMode] = useState(false);
+  const [hasPasskey, setHasPasskey] = useState<boolean | null>(null);
+  const [showPasskeyDialog, setShowPasskeyDialog] = useState(false);
   const { keyboardHeight, isKeyboardVisible } = useKeyboardAware();
   const { share } = useNativeShare();
   const { requestPermission: requestPushPermission } = usePushNotifications();
@@ -237,6 +242,41 @@ const CreatorDashboard = () => {
       }, 5000);
     }
   }, [requestPushPermission]);
+
+  // Check if user has a passkey registered
+  useEffect(() => {
+    const checkPasskey = async () => {
+      if (!profile?.id) return;
+      
+      try {
+        const { data, error } = await supabase
+          .from('passkeys')
+          .select('id')
+          .eq('user_id', profile.id)
+          .eq('is_active', true)
+          .limit(1);
+        
+        if (error && error.code !== '42P01') { // Ignore table not found errors
+          console.error('Error checking passkey:', error);
+          setHasPasskey(null);
+          return;
+        }
+        
+        setHasPasskey(data && data.length > 0);
+      } catch (err) {
+        // Table might not exist yet, treat as no passkey
+        setHasPasskey(false);
+      }
+    };
+    
+    checkPasskey();
+  }, [profile?.id]);
+
+  const handlePasskeyRegisterSuccess = () => {
+    toast.success('Passkey registered! You can now use Face ID to sign in.');
+    setShowPasskeyDialog(false);
+    setHasPasskey(true);
+  };
 
   // Filter states for deals tab
   const [searchTerm, setSearchTerm] = useState('');
@@ -907,6 +947,39 @@ const CreatorDashboard = () => {
               <section className="mb-8">
                 <NextPayoutWidget brandDeals={brandDeals} />
               </section>
+
+              {/* Passkey Registration Card */}
+              {hasPasskey === false && (
+                <motion.section
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.2 }}
+                  className="mb-8"
+                >
+                  <Card className="bg-gradient-to-br from-blue-500/10 to-purple-500/10 backdrop-blur-lg border border-blue-500/20 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.3)] hover:shadow-2xl hover:border-blue-500/30 hover:-translate-y-0.5 transition-all">
+                    <CardContent className="p-6">
+                      <div className="flex items-start gap-4">
+                        <div className="h-12 w-12 rounded-2xl bg-blue-500/20 backdrop-blur-sm border border-blue-500/30 flex items-center justify-center flex-shrink-0">
+                          <Fingerprint className="h-6 w-6 text-blue-400" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h3 className="text-lg font-semibold text-white mb-1">Secure Your Account with Face ID</h3>
+                          <p className="text-sm text-white/60 mb-4">
+                            Register a passkey for faster, more secure sign-ins. No more passwords!
+                          </p>
+                          <Button
+                            onClick={() => setShowPasskeyDialog(true)}
+                            className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold"
+                          >
+                            <Fingerprint className="h-4 w-4 mr-2" />
+                            Register Passkey
+                          </Button>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </motion.section>
+              )}
 
               {/* Weekend Banner */}
               {(() => {
@@ -1671,6 +1744,24 @@ const CreatorDashboard = () => {
               />
             </div>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Passkey Registration Dialog */}
+      <Dialog open={showPasskeyDialog} onOpenChange={setShowPasskeyDialog}>
+        <DialogContent className="sm:max-w-[425px] bg-[#0F121A]/95 backdrop-blur-xl border border-white/10 text-white">
+          <DialogHeader>
+            <DialogTitle className="text-white">Register Passkey</DialogTitle>
+            <DialogDescription className="text-gray-400">
+              Register a passkey for faster, more secure sign-ins using Face ID or Touch ID.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="mt-4">
+            <BiometricLogin 
+              mode="register"
+              onSuccess={handlePasskeyRegisterSuccess}
+            />
+          </div>
         </DialogContent>
       </Dialog>
 
