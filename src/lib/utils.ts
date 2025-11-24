@@ -5,14 +5,22 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-// Re-export currency utilities
-export { formatCurrency, formatIndianCurrency } from './utils/currency';
+// Import and re-export currency utilities (explicit imports to avoid circular deps)
+import * as currencyUtils from './utils/currency';
+export const formatCurrency = currencyUtils.formatCurrency;
+export const formatIndianCurrency = currencyUtils.formatIndianCurrency;
 
-// Re-export date utilities
-export { formatDate, formatDateTime, formatRelativeTime, sortByDueDate } from './utils/date';
+// Import and re-export date utilities (explicit imports to avoid circular deps)
+import * as dateUtils from './utils/date';
+export const formatDate = dateUtils.formatDate;
+export const formatDateTime = dateUtils.formatDateTime;
+export const formatRelativeTime = dateUtils.formatRelativeTime;
+export const sortByDueDate = dateUtils.sortByDueDate;
 
-// Re-export haptic utilities
-export { triggerHaptic, HapticPatterns } from './utils/haptics';
+// Import and re-export haptic utilities (explicit imports to avoid circular deps)
+import * as hapticUtils from './utils/haptics';
+export const triggerHaptic = hapticUtils.triggerHaptic;
+export const HapticPatterns = hapticUtils.HapticPatterns;
 
 /**
  * Safely opens a contract file URL with error handling
