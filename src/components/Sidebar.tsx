@@ -471,7 +471,7 @@ const Sidebar: React.FC<SidebarProps> = ({ className, profileRole }) => {
             </div>
           </div>
 
-          {/* Mobile: Slide-in when open */}
+          {/* Mobile: Slide-in when open (only on small screens) */}
           <AnimatePresence>
             {isOpen && (
               <motion.div
@@ -485,7 +485,7 @@ const Sidebar: React.FC<SidebarProps> = ({ className, profileRole }) => {
                   stiffness: 200
                 }}
                 className={cn(
-                  "md:hidden fixed top-16 left-0 flex flex-col",
+                  "lg:hidden fixed top-16 left-0 flex flex-col",
                   "h-[calc(100vh-4rem)] w-[320px] max-w-[85vw] overflow-y-auto",
                   "bg-[#1C1C1E] backdrop-blur-xl border-r border-white/10",
                   "shadow-[0_0_40px_rgba(0,0,0,0.35)]",
