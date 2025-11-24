@@ -336,27 +336,40 @@ const BiometricLogin: React.FC<BiometricLoginProps> = ({
         throw new Error((authData as any).error || 'Authentication failed');
       }
 
-      const { userId, email: userEmail } = authData as any;
+      const { userId, email: userEmail, magicLink, requiresEmailSignIn } = authData as any;
 
-      // Create a session by signing in with passwordless OTP
-      // This will send a magic link to the user's email
-      const { error: signInError } = await supabase.auth.signInWithOtp({
-        email: userEmail || email,
-        options: {
-          shouldCreateUser: false,
-          emailRedirectTo: `${window.location.origin}/`,
-        },
-      });
-
-      if (signInError) {
-        console.error('Sign in error:', signInError);
-        // Still show success since passkey was verified
-        toast.success('Passkey verified! Please check your email to complete sign-in.');
-      } else {
+      // If magic link is provided, use it directly
+      if (magicLink) {
         triggerHaptic(HapticPatterns.success);
-        toast.success('Passkey verified! Please check your email to complete sign-in.');
-        // Wait a moment for the email to be sent
-        await new Promise(resolve => setTimeout(resolve, 500));
+        // Redirect to magic link to complete sign-in
+        window.location.href = magicLink;
+        return;
+      }
+
+      // If email sign-in is required, send OTP
+      if (requiresEmailSignIn || !magicLink) {
+        // Create a session by signing in with passwordless OTP
+        // This will send a magic link to the user's email
+        const { error: signInError } = await supabase.auth.signInWithOtp({
+          email: userEmail || email,
+          options: {
+            shouldCreateUser: false,
+            emailRedirectTo: `${window.location.origin}/`,
+          },
+        });
+
+        if (signInError) {
+          console.error('Sign in error:', signInError);
+          // Still show success since passkey was verified
+          toast.success('Passkey verified! Please check your email to complete sign-in.');
+        } else {
+          triggerHaptic(HapticPatterns.success);
+          toast.success('Passkey verified! Please check your email to complete sign-in.');
+          // Wait a moment for the email to be sent
+          await new Promise(resolve => setTimeout(resolve, 500));
+        }
+        setIsAuthenticating(false);
+        return;
       }
       
       // Call onSuccess to allow the parent component to handle navigation

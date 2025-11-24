@@ -83,12 +83,37 @@ serve(async (req) => {
       })
       .eq('id', passkey.id);
 
-    // Return success with user info
-    // The client will handle creating a session via Supabase auth
+    // Generate a magic link that will automatically sign the user in
+    // This is more secure than creating a session directly
+    const { data: sessionData, error: sessionError } = await supabaseAdmin.auth.admin.generateLink({
+      type: 'magiclink',
+      email: user.email!,
+      options: {
+        redirectTo: `${Deno.env.get('FRONTEND_URL') || 'http://localhost:32100'}/`,
+      },
+    });
+
+    if (sessionError || !sessionData) {
+      console.error('Error generating session link:', sessionError);
+      // Fallback: return user info and let client handle session creation
+      return new Response(JSON.stringify({ 
+        success: true,
+        userId: user.id,
+        email: user.email,
+        message: 'Passkey authentication successful. Please sign in with your email to complete authentication.',
+        requiresEmailSignIn: true
+      }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 200,
+      });
+    }
+
+    // Return success with magic link
     return new Response(JSON.stringify({ 
       success: true,
       userId: user.id,
       email: user.email,
+      magicLink: sessionData.properties?.action_link || null,
       message: 'Passkey authentication successful'
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
