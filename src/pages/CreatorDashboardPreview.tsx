@@ -159,13 +159,6 @@ const CreatorDashboardPreview = () => {
   // Pratyush mode
   const { isActive: isPratyushMode } = usePratyushMode();
   
-  // Calculate lifetime earnings
-  const lifetimeEarnings = useMemo(() => {
-    return demoBrandDeals
-      .filter(deal => deal.status === 'Completed' && deal.payment_received_date)
-      .reduce((sum, deal) => sum + (deal.deal_amount || 0), 0);
-  }, [demoBrandDeals]);
-
   // Demo brand deals data
   const demoBrandDeals: BrandDeal[] = useMemo(() => {
     const now = new Date();
