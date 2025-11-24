@@ -34,7 +34,7 @@ import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useSendPaymentReminder } from '@/lib/hooks/useSendPaymentReminder';
 import { useSendTakedownNotice } from '@/lib/hooks/useSendTakedownNotice';
-import { cn } from '@/lib/utils';
+import { cn, openContractFile } from '@/lib/utils';
 import ProjectDealCard from '@/components/creator-contracts/ProjectDealCard';
 import SwipeableDealCard from '@/components/creator-contracts/SwipeableDealCard';
 import { DealStage, PaymentStatus } from '@/components/creator-contracts/DealStatusBadge';
@@ -1423,7 +1423,7 @@ const CreatorDashboard = () => {
                           onUploadContent={() => toast.info('Content upload coming soon!')}
                           onContactBrand={() => navigate('/messages')}
                           onViewContract={async (d: BrandDeal) => {
-                            const { openContractFile } = await import('@/lib/utils');
+                            // openContractFile is now statically imported
                             openContractFile(d.contract_file_url, (error) => {
                               toast.error(error);
                             });
