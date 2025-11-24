@@ -12,6 +12,8 @@ import { toast } from 'sonner';
 interface SimplifiedScannerProps {
   onScan: (query: string, platforms: string[]) => void;
   isScanning?: boolean;
+  scanProgress?: number;
+  currentPlatform?: string;
 }
 
 const PLATFORMS = [
@@ -26,6 +28,8 @@ const PLATFORMS = [
 const SimplifiedScanner: React.FC<SimplifiedScannerProps> = ({
   onScan,
   isScanning = false,
+  scanProgress,
+  currentPlatform,
 }) => {
   const [query, setQuery] = useState('');
   const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>(['Instagram', 'YouTube', 'TikTok']);
@@ -116,19 +120,22 @@ const SimplifiedScanner: React.FC<SimplifiedScannerProps> = ({
         </div>
 
         {/* Input Area */}
-        <div
+          <div
           ref={dropZoneRef}
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}
           className={cn(
-            "relative border-2 border-dashed rounded-xl p-6 mb-4 transition-all",
+            "relative border-2 border-dashed rounded-xl p-6 mb-4 transition-all duration-200",
             isDragging
-              ? "border-purple-400 bg-purple-500/10"
+              ? "border-purple-400 bg-purple-500/20 shadow-[0_0_20px_rgba(168,85,247,0.5)] scale-[1.02]"
               : "border-white/10 hover:border-purple-400/50 bg-white/5"
           )}
         >
-          <div className="flex flex-col items-center justify-center gap-4">
+          {isDragging && (
+            <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-purple-500/20 via-blue-500/20 to-purple-500/20 animate-pulse" />
+          )}
+          <div className="flex flex-col items-center justify-center gap-4 relative z-10">
             <div className="flex items-center gap-2 w-full">
               <Link className="w-5 h-5 text-white/60" />
               <Input
@@ -141,7 +148,13 @@ const SimplifiedScanner: React.FC<SimplifiedScannerProps> = ({
               />
             </div>
             <div className="text-sm text-white/60 text-center">
-              Or drag & drop image/video here
+              {isDragging ? (
+                <p className="text-sm font-semibold text-purple-400 animate-pulse">
+                  Drop to scan
+                </p>
+              ) : (
+                <p>Or drag & drop image/video here</p>
+              )}
             </div>
             <input
               ref={fileInputRef}
@@ -225,6 +238,27 @@ const SimplifiedScanner: React.FC<SimplifiedScannerProps> = ({
               </>
             )}
           </Button>
+          {/* Live Scan Progress Bar */}
+          {isScanning && scanProgress !== undefined && (
+            <div className="mt-4 space-y-2 w-full">
+              <div className="flex items-center justify-between text-sm text-white/60 mb-1">
+                <span>
+                  {currentPlatform ? `Scanning ${currentPlatform}...` : 'Scanning...'}
+                </span>
+                <span className="font-semibold text-purple-400">{scanProgress}%</span>
+              </div>
+              <div className="relative h-2 bg-white/10 rounded-full overflow-hidden">
+                <motion.div
+                  initial={{ width: 0 }}
+                  animate={{ width: `${scanProgress}%` }}
+                  transition={{ duration: 0.3 }}
+                  className="absolute inset-y-0 left-0 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full"
+                >
+                  <div className="absolute inset-0 bg-white/20 animate-pulse"></div>
+                </motion.div>
+              </div>
+            </div>
+          )}
           <Button
             variant="outline"
             onClick={() => setShowAdvanced(!showAdvanced)}

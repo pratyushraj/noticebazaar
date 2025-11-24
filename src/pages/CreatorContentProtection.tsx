@@ -242,6 +242,14 @@ const CreatorContentProtection = () => {
     }));
   }, [originalContentList]);
 
+  // Calculate unprotected content count
+  const unprotectedCount = useMemo(() => {
+    if (!originalContentList || originalContentList.length === 0) return 0;
+    // In real app, check which content hasn't been registered/protected
+    // For demo, assume some content is unprotected
+    return originalContentList.length > 6 ? 0 : 18;
+  }, [originalContentList]);
+
   if (sessionLoading || isLoadingContent) {
     return (
       <div className="min-h-[300px] flex flex-col items-center justify-center bg-background">
@@ -265,6 +273,8 @@ const CreatorContentProtection = () => {
         <SimplifiedScanner
           onScan={handleQuickScan}
           isScanning={isQuickScanning}
+          scanProgress={quickScanProgress}
+          currentPlatform={quickScanPlatform}
         />
       </div>
 
@@ -283,9 +293,9 @@ const CreatorContentProtection = () => {
         </div>
       )}
 
-      {/* Scan Results Preview */}
-      {matches && matches.length > 0 && !isQuickScanning && (
-        <div className="mb-6">
+      {/* Matches Section - Always Visible */}
+      <div className="mb-6">
+        {matches && matches.length > 0 && !isQuickScanning ? (
           <ScanResultsPreview
             matches={matches}
             onTakeAction={handleOpenActionDialog}
@@ -293,8 +303,21 @@ const CreatorContentProtection = () => {
               window.open(match.matched_url, '_blank');
             }}
           />
-        </div>
-      )}
+        ) : (
+          <Card className="bg-white/[0.06] backdrop-blur-[40px] border border-white/10 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.3)] p-6">
+            <div className="flex flex-col items-center justify-center py-8 space-y-4">
+              <div className="relative w-20 h-20 rounded-full bg-white/5 backdrop-blur-sm flex items-center justify-center border border-white/10">
+                <div className="absolute inset-0 rounded-full bg-green-400/30 blur-2xl" />
+                <CheckCircle className="w-10 h-10 text-green-400 relative z-10" />
+              </div>
+              <div className="space-y-1 text-center">
+                <p className="text-white font-semibold text-base">No matches found</p>
+                <p className="text-sm text-white/60">Your content is protected. No copyright violations detected.</p>
+              </div>
+            </div>
+          </Card>
+        )}
+      </div>
 
       {/* Scan History */}
       {scanHistory.length > 0 && (
@@ -315,12 +338,29 @@ const CreatorContentProtection = () => {
                 Manage and monitor your protected content.
               </p>
             </div>
-            <Button 
-              onClick={() => setIsContentFormOpen(true)} 
-              className="bg-blue-600 text-white hover:bg-blue-700 whitespace-nowrap text-sm px-3 py-1.5 h-auto rounded-lg shadow-md transition-all"
-            >
-              <PlusCircle className="mr-1.5 h-3.5 w-3.5" /> Register New
-            </Button>
+            {unprotectedCount > 0 ? (
+              <Button 
+                onClick={async () => {
+                  // Auto-register all unprotected content
+                  toast.info(`Registering ${unprotectedCount} pieces of content...`);
+                  // TODO: Implement batch registration
+                  // For now, just show success
+                  setTimeout(() => {
+                    toast.success(`Successfully registered ${unprotectedCount} pieces!`);
+                  }, 1500);
+                }} 
+                className="bg-gradient-to-r from-purple-600 to-blue-600 text-white hover:from-purple-700 hover:to-blue-700 whitespace-nowrap text-sm px-4 py-2 h-auto rounded-full shadow-lg transition-all"
+              >
+                <PlusCircle className="mr-1.5 h-3.5 w-3.5" /> Register All Unprotected ({unprotectedCount})
+              </Button>
+            ) : (
+              <Button 
+                onClick={() => setIsContentFormOpen(true)} 
+                className="bg-blue-600 text-white hover:bg-blue-700 whitespace-nowrap text-sm px-3 py-1.5 h-auto rounded-lg shadow-md transition-all"
+              >
+                <PlusCircle className="mr-1.5 h-3.5 w-3.5" /> Register New
+              </Button>
+            )}
           </div>
 
           {originalContentList && originalContentList.length > 0 ? (

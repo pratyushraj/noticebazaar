@@ -131,6 +131,14 @@
   display: none; /* Chrome, Safari, Opera */
 }
 
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
 /* Base gradient for all Creator Dashboard cards */
 .creator-card-base {
   background: linear-gradient(180deg, #131F3B 0%, #0E1629 100%); /* Card gradient */

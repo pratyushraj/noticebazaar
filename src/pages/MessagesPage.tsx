@@ -6,7 +6,7 @@
 
 import { useEffect, useRef, useState, useMemo } from 'react';
 import clsx from 'clsx';
-import { Lock, MessageSquare, Paperclip, ArrowUp, Loader2, ChevronRight, FileText, Mic, MicOff } from 'lucide-react';
+import { Lock, MessageSquare, ArrowUp, Loader2, ChevronRight, FileText, Mic, MicOff } from 'lucide-react';
 import { useSession } from '@/contexts/SessionContext';
 import { toast } from 'sonner';
 import { useProfiles } from '@/lib/hooks/useProfiles';
@@ -16,7 +16,6 @@ import { supabase } from '@/integrations/supabase/client';
 import { useSampleChatHistory } from '@/lib/hooks/useSampleChatHistory';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { generateAvatarUrl } from '@/lib/utils/avatar';
-import SmartInboxZero from '@/components/messages/SmartInboxZero';
 
 // --- Types (local to this file) ---
 type Advisor = {
@@ -25,6 +24,9 @@ type Advisor = {
   role: string;
   avatarUrl?: string;
   online?: boolean;
+  lastMessage?: string;
+  unreadCount?: number;
+  isTyping?: boolean;
 };
 
 type Message = {
@@ -58,9 +60,11 @@ function AdvisorCardScoped({ advisor, selected, onClick }: { advisor: Advisor; s
       type="button"
       onClick={() => onClick?.(advisor)}
       className={clsx(
-        'w-full text-left rounded-xl p-3 flex items-center gap-3 transition-all duration-150 ease-in-out',
-        'border border-border/40',
-        selected ? 'bg-muted/40 ring-1 ring-blue-400/30 shadow-[0_6px_20px_rgba(59,130,246,0.06)]' : 'hover:bg-muted/30'
+        'w-full text-left rounded-xl flex items-center gap-3 transition-all duration-150 ease-in-out',
+        'border',
+        selected 
+          ? 'bg-blue-500/20 ring-2 ring-blue-400/50 border-blue-400/50 shadow-[0_6px_20px_rgba(59,130,246,0.15)] p-3.5 scale-[1.02]' 
+          : 'border-border/40 p-3 hover:bg-muted/30'
       )}
     >
       <div className="relative flex-shrink-0">
@@ -68,11 +72,32 @@ function AdvisorCardScoped({ advisor, selected, onClick }: { advisor: Advisor; s
         {advisor.online && (
           <span className="absolute right-0 bottom-0 inline-block w-2.5 h-2.5 bg-green-400 rounded-full ring-2 ring-background" />
         )}
+        {/* Unread dot */}
+        {advisor.unreadCount && advisor.unreadCount > 0 && (
+          <span className="absolute -top-1 -right-1 inline-flex items-center justify-center w-5 h-5 bg-red-500 rounded-full text-[10px] font-semibold text-white ring-2 ring-background">
+            {advisor.unreadCount > 9 ? '9+' : advisor.unreadCount}
+          </span>
+        )}
       </div>
 
       <div className="flex-1 min-w-0">
-        <div className="text-sm font-medium text-foreground truncate">{advisor.name}</div>
+        <div className="flex items-center gap-2">
+          <div className="text-sm font-medium text-foreground truncate">{advisor.name}</div>
+          {advisor.isTyping && (
+            <div className="flex gap-1">
+              <span className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+              <span className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+              <span className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+            </div>
+          )}
+        </div>
         <div className="text-xs text-muted-foreground truncate">{advisor.role}</div>
+        {/* Last message preview */}
+        {advisor.lastMessage && (
+          <div className="text-xs text-muted-foreground/70 truncate mt-0.5">
+            {advisor.lastMessage}
+          </div>
+        )}
       </div>
 
       <div className={clsx('p-1 rounded-md flex-shrink-0', selected ? 'text-blue-400' : 'text-muted-foreground/40')}>
@@ -154,8 +179,18 @@ function ChatHeaderScoped({ advisor }: { advisor?: Advisor | null }) {
 function MessageInputScoped({ onSend, isLoading }: { onSend?: (text: string) => void; isLoading?: boolean }) {
   const [value, setValue] = useState('');
   const [isListening, setIsListening] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
-  const recognitionRef = useRef<any>(null); // SpeechRecognition type
+  const recognitionRef = useRef<any>(null);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
+
+  // Quick reply templates
+  const quickReplies = [
+    "Can you review this contract?",
+    "When is payment due?",
+    "Is this clause safe?"
+  ];
 
   useEffect(() => {
     if (!textareaRef.current) return;
@@ -212,6 +247,49 @@ function MessageInputScoped({ onSend, isLoading }: { onSend?: (text: string) => 
     }
   };
 
+  // Hold-to-record voice message
+  const handleMicMouseDown = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mediaRecorder = new MediaRecorder(stream);
+      mediaRecorderRef.current = mediaRecorder;
+      audioChunksRef.current = [];
+
+      mediaRecorder.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          audioChunksRef.current.push(event.data);
+        }
+      };
+
+      mediaRecorder.onstop = () => {
+        // Create audio blob for future upload
+        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+        // TODO: Upload audio blob and send URL
+        // For now, we just show a toast - audioBlob will be used when upload is implemented
+        console.log('Voice message recorded:', audioBlob.size, 'bytes');
+        toast.info('Voice message recorded! (Upload functionality coming soon)');
+        stream.getTracks().forEach(track => track.stop());
+      };
+
+      mediaRecorder.start();
+      setIsRecording(true);
+    } catch (error) {
+      toast.error('Microphone access denied');
+    }
+  };
+
+  const handleMicMouseUp = () => {
+    if (mediaRecorderRef.current && isRecording) {
+      mediaRecorderRef.current.stop();
+      setIsRecording(false);
+    }
+  };
+
+  const handleQuickReply = (text: string) => {
+    setValue(text);
+    textareaRef.current?.focus();
+  };
+
   const handleSend = () => {
     if (!value.trim() || isLoading) return;
     onSend?.(value.trim());
@@ -229,60 +307,83 @@ function MessageInputScoped({ onSend, isLoading }: { onSend?: (text: string) => 
   };
 
   return (
-    <div className="w-full px-3 md:px-4 py-1.5 bg-white/[0.06] backdrop-blur-[40px] border-t border-white/5 flex-shrink-0">
-      <div className="flex items-center gap-2 bg-white/5 border border-white/10 rounded-full px-2 md:px-3 py-1 transition-all duration-150 focus-within:border-blue-400/50 focus-within:ring-1 focus-within:ring-blue-400/20">
-        <button 
-          className="p-1.5 rounded-full hover:bg-white/10 transition text-white/60 hover:text-white flex-shrink-0" 
-          type="button"
-          onClick={() => {
-            // TODO: Implement attachment functionality
-          }}
-        >
-          <Paperclip size={16} className="md:w-[18px] md:h-[18px]" />
-        </button>
+    <div className="w-full flex flex-col">
+      {/* Quick reply templates */}
+      <div className="px-3 md:px-4 py-2 flex gap-2 overflow-x-auto scrollbar-hide">
+        {quickReplies.map((reply) => (
+          <button
+            key={reply}
+            onClick={() => handleQuickReply(reply)}
+            className="flex-shrink-0 px-3 py-1.5 text-xs rounded-full bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 transition-all text-white/70 hover:text-white"
+          >
+            {reply}
+          </button>
+        ))}
+      </div>
 
-        {/* Voice-to-text button */}
-        <button
-          onClick={handleVoiceToggle}
-          className={clsx(
-            "p-1.5 rounded-full transition flex-shrink-0 min-h-[44px] min-w-[44px] flex items-center justify-center",
-            isListening 
-              ? "bg-red-500/20 text-red-400 hover:bg-red-500/30 animate-pulse" 
-              : "hover:bg-white/10 text-white/60 hover:text-white"
-          )}
-          type="button"
-          aria-label={isListening ? "Stop recording" : "Start voice input"}
-        >
-          {isListening ? (
-            <MicOff size={16} className="md:w-[18px] md:h-[18px]" />
-          ) : (
+      <div className="w-full px-3 md:px-4 py-1.5 bg-white/[0.06] backdrop-blur-[40px] border-t border-white/5 flex-shrink-0">
+        <div className="flex items-center gap-2 bg-white/5 border border-white/10 rounded-full px-2 md:px-3 py-1 transition-all duration-150 focus-within:border-blue-400/50 focus-within:ring-1 focus-within:ring-blue-400/20">
+          {/* Voice message button (hold to record) */}
+          <button 
+            className={clsx(
+              "p-1.5 rounded-full transition flex-shrink-0 min-h-[44px] min-w-[44px] flex items-center justify-center",
+              isRecording
+                ? "bg-red-500/30 text-red-400 animate-pulse"
+                : "hover:bg-white/10 text-white/60 hover:text-white"
+            )}
+            type="button"
+            onMouseDown={handleMicMouseDown}
+            onMouseUp={handleMicMouseUp}
+            onTouchStart={handleMicMouseDown}
+            onTouchEnd={handleMicMouseUp}
+            aria-label="Hold to record voice message"
+          >
             <Mic size={16} className="md:w-[18px] md:h-[18px]" />
-          )}
-        </button>
+          </button>
 
-        <textarea
-          ref={textareaRef}
-          value={value}
-          onChange={(e) => setValue(e.target.value)}
-          onKeyDown={handleKeyDown}
-          placeholder="Type your secure message…"
-          disabled={isLoading}
-          className="resize-none overflow-hidden bg-transparent flex-1 text-sm outline-none placeholder:text-white/40 text-white disabled:opacity-50 max-h-[96px]"
-          rows={1}
-        />
+          {/* Voice-to-text button (tap to start) */}
+          <button
+            onClick={handleVoiceToggle}
+            className={clsx(
+              "p-1.5 rounded-full transition flex-shrink-0 min-h-[44px] min-w-[44px] flex items-center justify-center",
+              isListening 
+                ? "bg-blue-500/20 text-blue-400 hover:bg-blue-500/30 animate-pulse" 
+                : "hover:bg-white/10 text-white/60 hover:text-white"
+            )}
+            type="button"
+            aria-label={isListening ? "Stop voice input" : "Start voice input"}
+          >
+            {isListening ? (
+              <MicOff size={16} className="md:w-[18px] md:h-[18px]" />
+            ) : (
+              <Mic size={16} className="md:w-[18px] md:h-[18px]" />
+            )}
+          </button>
 
-        <button
-          onClick={handleSend}
-          disabled={!value.trim() || isLoading}
-          className={clsx(
-            "ml-1 md:ml-2 w-8 h-8 md:w-9 md:h-9 rounded-full bg-blue-600 hover:bg-blue-700 transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0 flex items-center justify-center border border-blue-400/30 shadow-[0_0_0_1px_rgba(59,130,246,0.2)]",
-            value.trim() && "hover:shadow-[0_0_0_2px_rgba(59,130,246,0.3),0_4px_12px_rgba(59,130,246,0.2)]"
-          )}
-          aria-label="Send message"
-          type="button"
-        >
-          <ArrowUp size={14} className="md:w-4 md:h-4 text-white" />
-        </button>
+          <textarea
+            ref={textareaRef}
+            value={value}
+            onChange={(e) => setValue(e.target.value)}
+            onKeyDown={handleKeyDown}
+            placeholder="Type your secure message…"
+            disabled={isLoading}
+            className="resize-none overflow-hidden bg-transparent flex-1 text-sm outline-none placeholder:text-white/40 text-white disabled:opacity-50 max-h-[96px]"
+            rows={1}
+          />
+
+          <button
+            onClick={handleSend}
+            disabled={!value.trim() || isLoading}
+            className={clsx(
+              "ml-1 md:ml-2 w-8 h-8 md:w-9 md:h-9 rounded-full bg-blue-600 hover:bg-blue-700 transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0 flex items-center justify-center border border-blue-400/30 shadow-[0_0_0_1px_rgba(59,130,246,0.2)]",
+              value.trim() && "hover:shadow-[0_0_0_2px_rgba(59,130,246,0.3),0_4px_12px_rgba(59,130,246,0.2)]"
+            )}
+            aria-label="Send message"
+            type="button"
+          >
+            <ArrowUp size={14} className="md:w-4 md:h-4 text-white" />
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -380,24 +481,20 @@ function ChatWindowScoped({
         <div className="p-4 md:p-6">
           {!hasMessages ? (
             <div className="h-full min-h-[calc(100vh-400px)] md:min-h-[60vh] flex flex-col items-center justify-center text-center px-4 py-6">
-              {/* Glassmorphism panel for empty state */}
               <div className="w-full max-w-md bg-white/[0.06] backdrop-blur-[40px] border border-white/10 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.3)] p-6 md:p-8">
                 <div className="flex flex-col items-center gap-4">
-                  {/* Lighter icon */}
-                  <div className="w-16 h-16 rounded-full bg-white/5 backdrop-blur-sm flex items-center justify-center border border-white/10">
-                    <MessageSquare size={32} className="text-white/60" />
+                  {/* Cute illustration */}
+                  <div className="w-20 h-20 rounded-full bg-gradient-to-br from-purple-500/20 to-blue-500/20 backdrop-blur-sm flex items-center justify-center border border-white/10">
+                    <MessageSquare size={40} className="text-white/70" />
                   </div>
                   
-                  {/* Title and subtitle */}
                   <div className="space-y-1">
-                    <div className="text-lg font-semibold text-white">No Messages Yet</div>
-                    <div className="text-sm text-white/60">Start by selecting a topic below</div>
-              </div>
-              
-                  {/* Secondary action - Upload Contract */}
+                    <div className="text-lg font-semibold text-white">Start Secure Conversation</div>
+                    <div className="text-sm text-white/60">Begin chatting with your advisor</div>
+                  </div>
+                  
                   <button
                     onClick={() => {
-                      // TODO: Implement upload contract functionality
                       toast.info('Upload contract feature coming soon');
                     }}
                     className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-purple-500/10 border border-purple-400/20 hover:bg-purple-500/20 hover:border-purple-400/30 transition-all text-sm font-medium text-white"
@@ -406,26 +503,25 @@ function ChatWindowScoped({
                     Upload a Contract
                   </button>
                   
-                  {/* iOS-style suggestion buttons */}
                   <div className="w-full space-y-2 mt-2">
-                  {[
-                    { label: 'Contract Review', icon: '📄' },
-                    { label: 'Payment Questions', icon: '💰' },
-                    { label: 'Legal Advice', icon: '⚖️' },
-                    { label: 'Tax Compliance', icon: '📊' },
-                  ].map((topic) => (
-                    <button
-                      key={topic.label}
-                      onClick={() => onSend?.(`I need help with ${topic.label.toLowerCase()}`)}
+                    {[
+                      { label: 'Contract Review', icon: '📄' },
+                      { label: 'Payment Questions', icon: '💰' },
+                      { label: 'Legal Advice', icon: '⚖️' },
+                      { label: 'Tax Compliance', icon: '📊' },
+                    ].map((topic) => (
+                      <button
+                        key={topic.label}
+                        onClick={() => onSend?.(`I need help with ${topic.label.toLowerCase()}`)}
                         className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl bg-white/[0.06] backdrop-blur-[20px] border border-white/10 hover:bg-white/[0.1] hover:border-white/20 transition-all text-left active:scale-[0.98]"
-                    >
+                      >
                         <span className="text-xl">{topic.icon}</span>
                         <span className="text-sm font-medium text-white flex-1">{topic.label}</span>
                         <ChevronRight className="w-4 h-4 text-white/40" />
-                    </button>
-                  ))}
+                      </button>
+                    ))}
+                  </div>
                 </div>
-              </div>
               </div>
             </div>
           ) : (
@@ -457,6 +553,7 @@ export default function MessagesPage() {
   const { loading: sessionLoading, profile, isAdmin, user } = useSession();
   const [selectedAdvisorId, setSelectedAdvisorId] = useState<string | null>(null);
   const [isMobile, setIsMobile] = useState(false);
+  const [typingAdvisors, setTypingAdvisors] = useState<Set<string>>(new Set());
   const queryClient = useQueryClient();
 
   const currentUserId = user?.id;
@@ -495,7 +592,7 @@ export default function MessagesPage() {
   });
   const caProfile = caProfilesData?.data?.[0] || null;
 
-  // Convert profiles to Advisor format
+  // Convert profiles to Advisor format (deduplicated by ID)
   const advisors: Advisor[] = useMemo(() => {
     if (isAdmin) {
       return clientProfiles.map(p => ({
@@ -504,25 +601,38 @@ export default function MessagesPage() {
         role: 'Client',
         avatarUrl: p.avatar_url || generateAvatarUrl(p.first_name, p.last_name),
         online: false, // TODO: Implement online status
+        lastMessage: undefined,
+        unreadCount: 0,
+        isTyping: false,
       }));
     } else {
       const result: Advisor[] = [];
-      if (adminProfile) {
+      const seenIds = new Set<string>();
+      
+      if (adminProfile && !seenIds.has(adminProfile.id)) {
+        seenIds.add(adminProfile.id);
         result.push({
           id: adminProfile.id,
           name: `${adminProfile.first_name} ${adminProfile.last_name}`,
           role: 'Legal Advisor',
           avatarUrl: adminProfile.avatar_url || generateAvatarUrl(adminProfile.first_name, adminProfile.last_name),
           online: false,
+          lastMessage: undefined,
+          unreadCount: 0,
+          isTyping: false,
         });
       }
-      if (caProfile) {
+      if (caProfile && !seenIds.has(caProfile.id)) {
+        seenIds.add(caProfile.id);
         result.push({
           id: caProfile.id,
           name: `${caProfile.first_name} ${caProfile.last_name}`,
           role: 'Chartered Accountant',
           avatarUrl: caProfile.avatar_url || generateAvatarUrl(caProfile.first_name, caProfile.last_name),
           online: false,
+          lastMessage: undefined,
+          unreadCount: 0,
+          isTyping: false,
         });
       }
       return result;
@@ -571,6 +681,47 @@ export default function MessagesPage() {
       createdAt: msg.sent_at,
     }));
   }, [realMessages, selectedAdvisorId, currentUserId, isClient, sampleHistory]);
+
+  // Compute last message and unread count for each advisor
+  const advisorsWithMetadata = useMemo(() => {
+    return advisors.map(advisor => {
+      const advisorMessages = messages.filter(m => m.advisorId === advisor.id);
+      const lastMessage = advisorMessages.length > 0 
+        ? advisorMessages[advisorMessages.length - 1]
+        : null;
+      
+      // Get last message preview text
+      let lastMessageText: string | undefined;
+      if (lastMessage) {
+        const prefix = lastMessage.author === 'user' ? 'You: ' : `${advisor.name.split(' ')[0]}: `;
+        lastMessageText = prefix + (lastMessage.text.length > 40 
+          ? lastMessage.text.substring(0, 40) + '...' 
+          : lastMessage.text);
+      }
+
+      // Calculate unread count (messages from advisor that user hasn't seen)
+      // TODO: Implement proper unread tracking with seen_at timestamp
+      const unreadCount = advisorMessages.filter(m => m.author === 'advisor').length;
+
+      return {
+        ...advisor,
+        lastMessage: lastMessageText,
+        unreadCount: unreadCount > 0 ? unreadCount : undefined,
+        isTyping: typingAdvisors.has(advisor.id),
+      };
+    });
+  }, [advisors, messages, typingAdvisors]);
+
+  // Simulate typing indicator (for demo - replace with real-time updates later)
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (selectedAdvisorId && Math.random() > 0.7) {
+        setTypingAdvisors(new Set([selectedAdvisorId]));
+        setTimeout(() => setTypingAdvisors(new Set()), 2000);
+      }
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [selectedAdvisorId]);
 
   // Real-time subscription
   useEffect(() => {
@@ -725,7 +876,7 @@ export default function MessagesPage() {
         {/* Desktop: Fixed sidebar */}
         {!isMobile && (
           <AdvisorListScoped
-            advisors={advisors}
+            advisors={advisorsWithMetadata}
             selectedId={selectedAdvisorId}
             onSelect={handleSelectAdvisor}
             isLoading={isLoadingAdvisors}

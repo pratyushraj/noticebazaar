@@ -1,11 +1,12 @@
 "use client";
 
-import React, { useMemo } from 'react';
+import React, { useMemo, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Shield, Search, CheckCircle, TrendingUp } from 'lucide-react';
 import { OriginalContent, CopyrightMatch } from '@/types';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
+import confetti from 'canvas-confetti';
 
 interface ProtectionDashboardHeaderProps {
   originalContent: OriginalContent[];
@@ -60,6 +61,56 @@ const ProtectionDashboardHeader: React.FC<ProtectionDashboardHeaderProps> = ({
     if (score >= 60) return 'Good protection, room for improvement';
     return 'Start protecting your content';
   };
+
+  // Calculate protection streak
+  const protectionStreak = useMemo(() => {
+    // In real app, fetch from database - days with 100% score
+    return stats.protectionScore === 100 ? 28 : 0;
+  }, [stats.protectionScore]);
+
+  // 100% Score Celebration
+  useEffect(() => {
+    if (stats.protectionScore === 100) {
+      // Haptic feedback
+      if (navigator.vibrate) {
+        navigator.vibrate([100, 50, 100]);
+      }
+
+      // Confetti burst
+      confetti({
+        particleCount: 100,
+        spread: 70,
+        origin: { y: 0.6 },
+        colors: ['#A855F7', '#3B82F6', '#10B981', '#F59E0B'],
+      });
+
+      // Money-shield rain
+      const duration = 3000;
+      const end = Date.now() + duration;
+      const interval = setInterval(() => {
+        if (Date.now() > end) {
+          clearInterval(interval);
+          return;
+        }
+        confetti({
+          particleCount: 2,
+          angle: 60,
+          spread: 55,
+          origin: { x: 0 },
+          colors: ['#A855F7', '#F59E0B'],
+          shapes: ['circle', 'square'],
+        });
+        confetti({
+          particleCount: 2,
+          angle: 120,
+          spread: 55,
+          origin: { x: 1 },
+          colors: ['#A855F7', '#F59E0B'],
+          shapes: ['circle', 'square'],
+        });
+      }, 200);
+    }
+  }, [stats.protectionScore]);
 
   return (
     <div className="space-y-6 mb-6">
@@ -193,6 +244,13 @@ const ProtectionDashboardHeader: React.FC<ProtectionDashboardHeaderProps> = ({
                     <span className={cn("text-2xl font-bold relative z-10", getScoreColor(stats.protectionScore))}>
                       {stats.protectionScore}%
                     </span>
+                    {/* Protection Streak Badge */}
+                    {protectionStreak > 0 && (
+                      <div className="absolute -top-2 -right-2 flex items-center gap-1 px-2 py-1 bg-gradient-to-r from-orange-500/20 to-red-500/20 border border-orange-500/30 rounded-full text-xs font-semibold text-orange-400 backdrop-blur-sm z-20">
+                        <span className="text-sm">🔥</span>
+                        <span>{protectionStreak}-day streak</span>
+                      </div>
+                    )}
                   </div>
                 </div>
               <div className="relative h-3 bg-gray-800/50 rounded-full overflow-hidden mb-2">
