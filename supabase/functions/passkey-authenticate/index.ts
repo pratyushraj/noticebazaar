@@ -83,13 +83,31 @@ serve(async (req) => {
       })
       .eq('id', passkey.id);
 
+    // Get frontend URL from request origin or environment variable
+    const origin = req.headers.get('origin') || req.headers.get('referer') || '';
+    let frontendUrl = Deno.env.get('FRONTEND_URL');
+    
+    if (!frontendUrl && origin) {
+      try {
+        const originUrl = new URL(origin);
+        frontendUrl = `${originUrl.protocol}//${originUrl.host}`;
+      } catch (e) {
+        console.warn('Failed to parse origin:', origin);
+      }
+    }
+    
+    // Fallback to localhost only for development
+    if (!frontendUrl) {
+      frontendUrl = 'http://localhost:32100';
+    }
+
     // Generate a magic link that will automatically sign the user in
     // This is more secure than creating a session directly
     const { data: sessionData, error: sessionError } = await supabaseAdmin.auth.admin.generateLink({
       type: 'magiclink',
       email: user.email!,
       options: {
-        redirectTo: `${Deno.env.get('FRONTEND_URL') || 'http://localhost:32100'}/`,
+        redirectTo: `${frontendUrl}/`,
       },
     });
 

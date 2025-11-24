@@ -340,9 +340,19 @@ const BiometricLogin: React.FC<BiometricLoginProps> = ({
 
       // If magic link is provided, use it directly
       if (magicLink) {
-        triggerHaptic(HapticPatterns.success);
-        // Redirect to magic link to complete sign-in
-        window.location.href = magicLink;
+        // Check if magic link points to localhost and we're not on localhost
+        const magicLinkUrl = new URL(magicLink);
+        const currentOrigin = window.location.origin;
+        
+        // If magic link is localhost but we're not, replace it with current origin
+        if (magicLinkUrl.hostname === 'localhost' && !currentOrigin.includes('localhost')) {
+          const fixedMagicLink = magicLink.replace(magicLinkUrl.origin, currentOrigin);
+          triggerHaptic(HapticPatterns.success);
+          window.location.href = fixedMagicLink;
+        } else {
+          triggerHaptic(HapticPatterns.success);
+          window.location.href = magicLink;
+        }
         return;
       }
 
