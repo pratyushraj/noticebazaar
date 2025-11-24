@@ -24,6 +24,12 @@ export default defineConfig(() => ({
       include: [/node_modules/],
       transformMixedEsModules: true,
     },
+    minify: 'terser',
+    terserOptions: {
+      compress: {
+        passes: 1,
+      },
+    },
   },
   plugins: [
     react({
