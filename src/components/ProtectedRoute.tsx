@@ -35,12 +35,15 @@ const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
     }
 
     if (session && profile) {
-      let targetDashboard = '/client-dashboard';
+      // Default to Creator Dashboard for all users (unless specific role)
+      let targetDashboard = '/creator-dashboard';
       if (profile.role === 'admin') {
         targetDashboard = '/admin-dashboard';
       } else if (profile.role === 'chartered_accountant') {
         targetDashboard = '/ca-dashboard';
-      } else if (profile.role === 'creator') {
+      } else if (profile.role === 'client') {
+        targetDashboard = '/client-dashboard';
+      } else if (profile.role === 'creator' || !profile.role) {
         // NEW: Creator Onboarding Check
         if (!profile.onboarding_complete && location.pathname !== '/creator-onboarding') {
           targetDashboard = '/creator-onboarding';
