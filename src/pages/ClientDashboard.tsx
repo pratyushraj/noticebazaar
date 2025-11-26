@@ -2,8 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { useSession } from '@/contexts/SessionContext';
 import { useNavigate, Link } from 'react-router-dom';
 import { Card, CardTitle } from '@/components/ui/card';
-import { FolderOpen, Paperclip, MessageSquare, CalendarDays, Plus, CheckCircle, Bot } from 'lucide-react'; // Changed FileUp to Paperclip
+import { FolderOpen, Paperclip, MessageSquare, CalendarDays, Plus, CheckCircle, Bot, LogOut, Loader2 } from 'lucide-react'; // Changed FileUp to Paperclip
 import { toast } from 'sonner';
+import { useSignOut } from '@/lib/hooks/useAuth';
 import { useCases } from '@/lib/hooks/useCases';
 import { Button } from '@/components/ui/button';
 import {
@@ -29,6 +30,7 @@ const ClientDashboard = () => {
   const { profile } = useSession();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const signOutMutation = useSignOut();
   const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false);
   const [isConsultationBookingDialogOpen, setIsConsultationBookingDialogOpen] = useState(false);
   const [isMessageDialogOpen, setIsMessageDialogOpen] = useState(false);
