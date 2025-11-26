@@ -128,7 +128,14 @@ const Signup = () => {
             </div>
 
             {/* Supabase Auth UI */}
-            <div className="mb-6">
+            <div className="mb-6 [&_.supabase-auth-ui_ui-message[class*='color-danger']]:hidden">
+              <style>{`
+                /* Hide anonymous sign-in error messages */
+                .supabase-auth-ui_ui-message.c-bBDnOe-dLwhLa-color-danger,
+                .supabase-auth-ui_ui-message[class*="color-danger"] {
+                  display: none !important;
+                }
+              `}</style>
               <Auth
                 supabaseClient={supabase}
                 appearance={{

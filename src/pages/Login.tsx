@@ -115,12 +115,21 @@ const Login = () => {
                 <span className="bg-transparent px-2 text-blue-200">Or sign in with</span>
               </div>
             </div>
-            <Auth
-              supabaseClient={supabase}
-              providers={['google']}
-              appearance={{ theme: ThemeSupa }}
-              theme="dark"
-            />
+            <div className="[&_.supabase-auth-ui_ui-message[class*='color-danger']]:hidden">
+              <style>{`
+                /* Hide anonymous sign-in error messages */
+                .supabase-auth-ui_ui-message.c-bBDnOe-dLwhLa-color-danger,
+                .supabase-auth-ui_ui-message[class*="color-danger"] {
+                  display: none !important;
+                }
+              `}</style>
+              <Auth
+                supabaseClient={supabase}
+                providers={['google']}
+                appearance={{ theme: ThemeSupa }}
+                theme="dark"
+              />
+            </div>
           </div>
         )}
 

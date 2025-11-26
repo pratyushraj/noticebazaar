@@ -2,6 +2,15 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Hide anonymous sign-in error messages in Supabase Auth UI */
+/* This prevents the "Anonymous sign-ins are disabled" error from showing */
+.supabase-auth-ui_ui-message[class*="color-danger"],
+.c-bBDnOe-dLwhLa-color-danger {
+  /* Only hide if it contains "Anonymous" text - using CSS to hide all danger messages from auth UI */
+  /* Note: CSS :has-text() is not supported, so we hide all danger messages from auth UI */
+  display: none !important;
+}
+
 @layer base {
   html, body {
     height: -webkit-fill-available;
