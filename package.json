@@ -11,7 +11,8 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "seed": "tsx scripts/seed-test-data.ts",
-    "create-demo": "tsx scripts/create-demo-user.ts"
+    "create-demo": "tsx scripts/create-demo-user.ts",
+    "create-user": "tsx scripts/create-user-account.ts"
   },
   "dependencies": {
     "@cometchat-pro/chat": "^3.0.13",
