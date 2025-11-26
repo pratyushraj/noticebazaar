@@ -1,11 +1,12 @@
-import React, { useState, useEffect } from 'react';
-import { ArrowLeft, Camera, User, Mail, Phone, MapPin, Briefcase, Instagram, Youtube, Twitter, Globe, Edit, Bell, Lock, CreditCard, Shield, HelpCircle, FileText, LogOut, ChevronRight, Check, X, Upload, Download, Trash2, Star, TrendingUp, Award, Target, MessageCircle, Loader2 } from 'lucide-react';
+import { useState, useEffect, useMemo } from 'react';
+import { ArrowLeft, Camera, User, Mail, Phone, MapPin, Instagram, Youtube, Twitter, Globe, Edit, Bell, Lock, CreditCard, Shield, HelpCircle, FileText, LogOut, ChevronRight, Check, X, Download, Trash2, Star, TrendingUp, Award, MessageCircle, Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useSession } from '@/contexts/SessionContext';
 import { useUpdateProfile } from '@/lib/hooks/useProfiles';
 import { useSignOut } from '@/lib/hooks/useAuth';
+import { useBrandDeals } from '@/lib/hooks/useBrandDeals';
+import { usePartnerStats } from '@/lib/hooks/usePartnerProgram';
 import { toast } from 'sonner';
-import { supabase } from '@/integrations/supabase/client';
 import { getInitials } from '@/lib/utils/avatar';
 import { logger } from '@/lib/utils/logger';
 import {
@@ -35,6 +36,14 @@ const ProfileSettings = () => {
     marketing: false
   });
 
+  // Fetch real data for stats
+  const { data: brandDeals = [] } = useBrandDeals({
+    creatorId: profile?.id,
+    enabled: !!profile?.id,
+  });
+
+  const { data: partnerStats } = usePartnerStats(profile?.id);
+
   // Form state
   const [formData, setFormData] = useState({
     name: "",
@@ -59,6 +68,27 @@ const ProfileSettings = () => {
     }
   }, [profile, user]);
 
+  // Calculate real stats from brand deals
+  const calculatedStats = useMemo(() => {
+    const totalDeals = brandDeals.length;
+    const totalEarnings = brandDeals
+      .filter(deal => deal.status === 'Completed' && deal.payment_received_date)
+      .reduce((sum, deal) => sum + (deal.deal_amount || 0), 0);
+    const activeDeals = brandDeals.filter(deal => 
+      deal.status !== 'Completed' && deal.status !== 'Drafting'
+    ).length;
+    const protectionScore = 85; // TODO: Calculate from content protection data
+      const streak = (partnerStats as any)?.streak_days ? Math.floor((partnerStats as any).streak_days / 7) : 0;
+
+    return {
+      totalDeals,
+      totalEarnings,
+      activeDeals,
+      protectionScore,
+      streak
+    };
+  }, [brandDeals, partnerStats]);
+
   const userData = {
     name: formData.name,
     displayName: formData.displayName,
@@ -67,16 +97,10 @@ const ProfileSettings = () => {
     location: formData.location,
     bio: formData.bio,
     userType: "Content Creator",
-    memberSince: profile?.created_at ? new Date(profile.created_at).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) : "Oct 2024",
+    memberSince: profile?.updated_at ? new Date(profile.updated_at).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) : "Oct 2024",
     avatar: getInitials(profile?.first_name || null, profile?.last_name || null),
     verified: true,
-    stats: {
-      totalDeals: 12,
-      totalEarnings: 850000,
-      activeDeals: 3,
-      protectionScore: 85,
-      streak: 2
-    },
+    stats: calculatedStats,
     platforms: [
       { name: "YouTube", handle: "@noticebazaar", followers: "125K", connected: true, color: "bg-red-500" },
       { name: "Instagram", handle: "@noticebazaar", followers: "45K", connected: true, color: "bg-pink-500" },
@@ -134,10 +158,11 @@ const ProfileSettings = () => {
         id: profile.id,
         first_name: firstName,
         last_name: lastName,
+        avatar_url: profile.avatar_url,
+        instagram_handle: formData.displayName ? `@${formData.displayName.replace('@', '')}` : profile.instagram_handle,
         phone: formData.phone || null,
         location: formData.location || null,
         bio: formData.bio || null,
-        instagram_handle: formData.displayName ? `@${formData.displayName.replace('@', '')}` : profile.instagram_handle,
       });
 
       await refetchProfile();
@@ -194,39 +219,6 @@ const ProfileSettings = () => {
     navigate('/');
     return null;
   }
-
-  const settingsSections = [
-    {
-      id: 'profile',
-      title: 'Profile',
-      icon: User,
-      items: [
-        { id: 'basic', label: 'Basic Information', icon: User },
-        { id: 'platforms', label: 'Social Platforms', icon: Globe },
-        { id: 'achievements', label: 'Achievements', icon: Award }
-      ]
-    },
-    {
-      id: 'account',
-      title: 'Account',
-      icon: Lock,
-      items: [
-        { id: 'notifications', label: 'Notifications', icon: Bell },
-        { id: 'security', label: 'Security & Privacy', icon: Lock },
-        { id: 'billing', label: 'Billing & Subscription', icon: CreditCard }
-      ]
-    },
-    {
-      id: 'support',
-      title: 'Support',
-      icon: HelpCircle,
-      items: [
-        { id: 'help', label: 'Help Center', icon: HelpCircle },
-        { id: 'legal', label: 'Legal & Privacy', icon: FileText },
-        { id: 'logout', label: 'Log Out', icon: LogOut, danger: true }
-      ]
-    }
-  ];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 text-white">
@@ -305,7 +297,20 @@ const ProfileSettings = () => {
             </div>
 
             {/* Bio */}
-            <p className="text-sm text-purple-200 leading-relaxed mb-4">{userData.bio}</p>
+            {editMode ? (
+              <textarea
+                value={formData.bio}
+                onChange={(e) => setFormData(prev => ({ ...prev, bio: e.target.value }))}
+                rows={3}
+                placeholder="Tell us about yourself..."
+                maxLength={500}
+                className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-white placeholder-purple-400 outline-none resize-none transition-colors focus:border-purple-500 focus:bg-white/10 mb-4"
+              />
+            ) : (
+              <p className="text-sm text-purple-200 leading-relaxed mb-4">
+                {userData.bio || 'No bio yet. Tap Edit to add one!'}
+              </p>
+            )}
 
             {/* Stats Grid */}
             <div className="grid grid-cols-4 gap-3">

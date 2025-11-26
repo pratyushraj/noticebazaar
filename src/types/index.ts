@@ -36,6 +36,12 @@ export type Profile = Tables<'profiles'> & {
   tiktok_followers?: number | null;
   twitter_followers?: number | null;
   facebook_followers?: number | null;
+  // NEW: Profile fields for onboarding and settings
+  phone?: string | null;
+  location?: string | null;
+  bio?: string | null;
+  platforms?: string[] | null; // Array of platform IDs (youtube, instagram, etc.)
+  goals?: string[] | null; // Array of goal IDs (protect, earnings, etc.)
 };
 
 export type Message = Tables<'messages'> & {

@@ -86,7 +86,7 @@ function AdvisorCardScoped({ advisor, selected, onClick }: { advisor: Advisor; s
 
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
-          <div className="text-sm font-medium text-foreground truncate">{advisor.name}</div>
+          <div className="text-[15px] font-semibold text-foreground truncate">{advisor.name}</div>
           {advisor.isTyping && (
             <div className="flex gap-1">
               <span className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
@@ -95,10 +95,10 @@ function AdvisorCardScoped({ advisor, selected, onClick }: { advisor: Advisor; s
             </div>
           )}
         </div>
-        <div className="text-xs text-muted-foreground truncate">{advisor.role}</div>
+        <div className="text-[13px] text-muted-foreground truncate">{advisor.role}</div>
         {/* Last message preview */}
         {advisor.lastMessage && (
-          <div className="text-xs text-muted-foreground/70 truncate mt-0.5">
+          <div className="text-[13px] text-muted-foreground/70 truncate mt-0.5">
             {advisor.lastMessage}
           </div>
         )}
@@ -272,8 +272,8 @@ function MessageInputScoped({ onSend, isLoading }: { onSend?: (text: string) => 
 
   return (
     <div className="w-full flex flex-col flex-shrink-0">
-      {/* Glassmorphism input container with modern iOS styling */}
-      <div className="w-full px-3 md:px-4 py-2 md:py-3 flex items-center justify-between gap-2 md:gap-3 bg-white/10 backdrop-blur-xl rounded-[20px] md:rounded-2xl border border-white/20 shadow-[0_8px_32px_rgba(0,0,0,0.3),0_0_0_1px_rgba(255,255,255,0.1)] min-h-[50px] md:min-h-[54px] transition-all duration-300 ease-out focus-within:border-purple-400/40 focus-within:shadow-[0_8px_32px_rgba(0,0,0,0.4),0_0_0_2px_rgba(168,85,247,0.2)]">
+      {/* iOS 17 Capsule Input - Larger radius, stronger blur, proper shadows */}
+      <div className="w-full px-4 md:px-5 py-3 md:py-3.5 flex items-center justify-between gap-2.5 md:gap-3 bg-white/[0.08] backdrop-blur-[40px] saturate-[180%] rounded-[24px] md:rounded-[28px] border border-white/20 shadow-[0_8px_32px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.1)] min-h-[52px] md:min-h-[56px] transition-all duration-300 ease-out focus-within:border-purple-400/50 focus-within:shadow-[0_12px_40px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.15),0_0_0_2px_rgba(168,85,247,0.2)]">
         {/* Voice message button (hold to record) */}
         <button 
           className={clsx(
@@ -304,20 +304,20 @@ function MessageInputScoped({ onSend, isLoading }: { onSend?: (text: string) => 
           rows={1}
         />
 
-        {/* Send button - circular, glowing, elevated */}
+        {/* Send button - iOS 17 style, brighter when active */}
         <button
           onClick={handleSend}
           disabled={!value.trim() || isLoading}
           className={clsx(
-            "flex-shrink-0 w-10 h-10 md:w-11 md:h-11 rounded-full flex items-center justify-center transition-all duration-300 ease-out disabled:opacity-40 disabled:cursor-not-allowed active:scale-95",
+            "flex-shrink-0 w-11 h-11 md:w-12 md:h-12 rounded-full flex items-center justify-center transition-all duration-300 ease-out disabled:opacity-40 disabled:cursor-not-allowed active:scale-95 touch-manipulation",
             value.trim()
-              ? "bg-gradient-to-br from-purple-500 to-purple-600 hover:from-purple-400 hover:to-purple-500 text-white shadow-[0_4px_16px_rgba(168,85,247,0.4),0_0_0_1px_rgba(168,85,247,0.2)] hover:shadow-[0_6px_20px_rgba(168,85,247,0.5),0_0_0_2px_rgba(168,85,247,0.3)]"
-              : "bg-white/10 text-white/40 hover:bg-white/15"
+              ? "bg-gradient-to-br from-[#A855F7] to-[#9333EA] hover:from-[#9333EA] hover:to-[#7E22CE] text-white shadow-[0_4px_16px_rgba(168,85,247,0.5),0_0_0_1px_rgba(168,85,247,0.3)] hover:shadow-[0_6px_24px_rgba(168,85,247,0.6),0_0_0_2px_rgba(168,85,247,0.4)]"
+              : "bg-white/[0.08] text-white/40 hover:bg-white/[0.12]"
           )}
           aria-label="Send message"
           type="button"
         >
-          <ArrowUp size={18} className="md:w-5 md:h-5" />
+          <ArrowUp size={20} className="md:w-6 md:h-6" />
         </button>
       </div>
     </div>
@@ -357,10 +357,10 @@ function MessageBubbleScoped({
       
       <div
         className={clsx(
-          'inline-block text-sm p-3 rounded-2xl shadow-sm max-w-[75%]',
+          'inline-block text-[15px] leading-[1.4] p-3.5 md:p-4 rounded-[20px] md:rounded-[24px] shadow-[0_2px_8px_rgba(0,0,0,0.15)] max-w-[75%]',
           isCurrentUser
-            ? 'bg-blue-600 text-white rounded-br-md'
-            : 'bg-muted/30 text-foreground rounded-bl-md'
+            ? 'bg-gradient-to-br from-[#007AFF] to-[#0051D5] text-white rounded-br-[4px] shadow-[0_4px_12px_rgba(0,122,255,0.3)]'
+            : 'bg-white/[0.08] backdrop-blur-[20px] text-white rounded-bl-[4px] border border-white/10'
         )}
       >
         <p className="leading-relaxed break-words">{message.text}</p>
@@ -411,7 +411,7 @@ function ChatWindowScoped({
   }, [messages]);
 
   return (
-    <div className="flex flex-col rounded-none md:rounded-xl md:border md:border-white/10 bg-white/[0.06] backdrop-blur-[40px] md:shadow-[0_8px_32px_rgba(0,0,0,0.3)] flex-1 min-h-0">
+    <div className="flex flex-col rounded-none md:rounded-[24px] md:border md:border-white/10 bg-white/[0.06] backdrop-blur-[40px] saturate-[180%] md:shadow-[0_8px_32px_rgba(0,0,0,0.3)] flex-1 min-h-0">
       <ChatHeaderScoped advisor={advisor} advisors={advisors} onSwitchAdvisor={onSwitchAdvisor} />
 
       <div className="flex-1 overflow-y-auto min-h-0">
@@ -419,20 +419,20 @@ function ChatWindowScoped({
           {!hasMessages ? (
             <div className="flex flex-col items-center justify-center text-center gap-4">
               {/* Cute illustration */}
-              <div className="w-14 h-14 md:w-20 md:h-20 rounded-full bg-gradient-to-br from-purple-500/20 to-blue-500/20 backdrop-blur-sm flex items-center justify-center border border-white/10">
-                <MessageSquare size={28} className="md:w-10 md:h-10 text-white/70" />
+              <div className="w-16 h-16 md:w-24 md:h-24 rounded-full bg-gradient-to-br from-purple-500/20 to-blue-500/20 backdrop-blur-[20px] saturate-[150%] flex items-center justify-center border border-white/20 shadow-[0_4px_16px_rgba(0,0,0,0.2)]">
+                <MessageSquare size={32} className="md:w-12 md:h-12 text-white/80" />
               </div>
               
-              <div className="space-y-0.5 md:space-y-1">
-                <div className="text-sm md:text-lg font-semibold text-white">Start Secure Conversation</div>
-                <div className="text-xs md:text-sm text-white/60">Begin chatting with your advisor</div>
+              <div className="space-y-1 md:space-y-1.5">
+                <div className="text-[17px] md:text-[20px] font-semibold text-white">Start Secure Conversation</div>
+                <div className="text-[13px] md:text-[15px] text-white/70 leading-relaxed">Begin chatting with your advisor</div>
               </div>
               
               <button
                 onClick={() => {
                   toast.info('Upload contract feature coming soon');
                 }}
-                className="w-full flex items-center justify-center gap-2 px-3 md:px-4 py-2 md:py-2.5 rounded-xl bg-purple-500/10 border border-purple-400/20 hover:bg-purple-500/20 hover:border-purple-400/30 transition-all text-xs md:text-sm font-medium text-white"
+                className="w-full flex items-center justify-center gap-2 px-4 md:px-5 py-3 md:py-3.5 rounded-[20px] md:rounded-[24px] bg-gradient-to-br from-purple-500/15 to-purple-600/10 border border-purple-400/30 hover:from-purple-500/25 hover:to-purple-600/15 hover:border-purple-400/40 transition-all text-[15px] md:text-[17px] font-semibold text-white shadow-[0_4px_12px_rgba(168,85,247,0.2)] active:scale-95"
               >
                 <FileText className="w-3.5 h-3.5 md:w-4 md:h-4" />
                 Upload a Contract
@@ -448,7 +448,7 @@ function ChatWindowScoped({
                   <button
                     key={topic.label}
                     onClick={() => onSend?.(`I need help with ${topic.label.toLowerCase()}`)}
-                    className="w-full flex items-center gap-2 md:gap-3 px-3 md:px-4 py-2 md:py-3 rounded-xl md:rounded-2xl bg-white/[0.06] backdrop-blur-[20px] border border-white/10 hover:bg-white/[0.1] hover:border-white/20 transition-all text-left active:scale-[0.98]"
+                    className="w-full flex items-center gap-3 md:gap-4 px-4 md:px-5 py-3 md:py-4 rounded-[20px] md:rounded-[24px] bg-white/[0.08] backdrop-blur-[30px] saturate-[150%] border border-white/15 hover:bg-white/[0.12] hover:border-white/25 transition-all text-left active:scale-[0.97] shadow-[0_2px_8px_rgba(0,0,0,0.15)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.2)]"
                   >
                     <span className="text-base md:text-xl">{topic.icon}</span>
                     <span className="text-xs md:text-sm font-medium text-white flex-1">{topic.label}</span>
@@ -778,9 +778,9 @@ export default function MessagesPage() {
   }
 
   return (
-    <div className="flex flex-col h-[100dvh] md:p-6">
-      {/* Scrollable content */}
-      <div className="flex-1 overflow-y-auto min-h-0 px-0 pb-[90px] md:pb-0">
+    <div className="flex flex-col h-[100dvh] h-[100svh] md:p-6 overflow-hidden">
+      {/* Scrollable content - shrinks when keyboard opens */}
+      <div className="flex-1 overflow-y-auto min-h-0 px-0 pb-0 md:pb-0" style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
         <div className="w-full max-w-[460px] mx-auto md:mx-0 md:max-w-none">
           {/* Back to Dashboard Button */}
           <div className="flex justify-start mb-4">
@@ -794,7 +794,7 @@ export default function MessagesPage() {
           </div>
 
           {/* Main content area */}
-          <div className="flex gap-6">
+          <div className="flex gap-6 h-full">
             {/* Desktop: Fixed sidebar */}
             {!isMobile && (
               <AdvisorListScoped
@@ -831,10 +831,13 @@ export default function MessagesPage() {
         </div>
       </div>
 
-      {/* FIXED input bar - floats above keyboard with glassmorphism */}
+      {/* FIXED input bar - iOS style, docks to keyboard */}
       <div 
-        className="fixed bottom-0 left-0 right-0 md:relative md:bottom-auto md:left-auto md:right-auto w-full max-w-[460px] mx-auto md:max-w-none md:mx-0 px-3 md:px-4 pt-2 md:pb-3 flex-shrink-0 z-[60] bg-gradient-to-t from-[#140e31]/95 via-[#140e31]/90 to-transparent md:bg-transparent transition-all duration-300 ease-out"
-        style={{ paddingBottom: `max(12px, env(safe-area-inset-bottom, 12px))` }}
+        className="fixed bottom-0 left-0 right-0 md:relative md:bottom-auto md:left-auto md:right-auto w-full max-w-[460px] mx-auto md:max-w-none md:mx-0 px-4 md:px-5 pt-3 md:pb-3 flex-shrink-0 z-[60] bg-white/[0.08] backdrop-blur-[40px] saturate-[180%] border-t border-white/10 md:border-t-0 md:bg-transparent transition-all duration-300 ease-out safe-area-inset-bottom"
+        style={{ 
+          paddingBottom: `max(12px, env(safe-area-inset-bottom, 12px))`,
+          paddingTop: '12px'
+        }}
       >
         <MessageInputScoped
           onSend={handleSend}

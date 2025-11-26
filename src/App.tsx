@@ -64,6 +64,8 @@ import ReferralLanding from "./pages/ReferralLanding";
 import CreatorProfessionalTeamPage from "./pages/CreatorProfessionalTeam";
 import DocumentsVault from "./pages/DocumentsVault";
 import InsightsPage from "./pages/InsightsPage";
+import ContractUploadFlow from "./pages/ContractUploadFlow";
+import ContractComparison from "./pages/ContractComparison";
 
 
 const queryClient = new QueryClient();
@@ -153,6 +155,8 @@ const App = () => {
               {/* NEW: Creator tools */}
               <Route path="/brand-directory" element={<ProtectedLayout allowedRoles={['creator']}><BrandDirectory /></ProtectedLayout>} />
               <Route path="/contract-analyzer" element={<ProtectedLayout allowedRoles={['creator']}><ContractAnalyzer /></ProtectedLayout>} />
+              <Route path="/contract-upload" element={<ProtectedLayout allowedRoles={['creator']}><ContractUploadFlow /></ProtectedLayout>} />
+              <Route path="/contract-comparison" element={<ProtectedLayout allowedRoles={['creator']}><ContractComparison /></ProtectedLayout>} />
               <Route path="/rate-calculator" element={<ProtectedLayout allowedRoles={['creator']}><RateCalculator /></ProtectedLayout>} />
               <Route path="/ai-pitch-generator" element={<ProtectedLayout allowedRoles={['creator']}><AIPitchGenerator /></ProtectedLayout>} />
 

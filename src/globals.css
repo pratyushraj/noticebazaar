@@ -33,6 +33,22 @@
   .progressive-blur.scrolled {
     backdrop-filter: blur(40px);
   }
+
+  /* Fade in animation */
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .animate-fadeIn {
+    animation: fadeIn 0.5s ease-in;
+  }
 }
 
 @layer base {
@@ -215,6 +231,210 @@
 
 .animate-pulse-slow {
   animation: pulse-slow 6s ease-in-out infinite;
+}
+
+/* ============================================ */
+/* iOS 17 DESIGN SYSTEM TOKENS & UTILITIES */
+/* ============================================ */
+
+/* iOS 17 Color System */
+:root {
+  /* Primary Colors */
+  --ios-primary: #007AFF;
+  --ios-purple: #A855F7;
+  --ios-blue: #3B82F6;
+  --ios-indigo: #6366F1;
+  
+  /* Background Colors */
+  --ios-background: #000000;
+  --ios-surface: rgba(255, 255, 255, 0.05);
+  --ios-surface-elevated: rgba(255, 255, 255, 0.08);
+  --ios-surface-high: rgba(255, 255, 255, 0.12);
+  
+  /* Text Colors */
+  --ios-text-primary: rgba(255, 255, 255, 0.95);
+  --ios-text-secondary: rgba(255, 255, 255, 0.7);
+  --ios-text-tertiary: rgba(255, 255, 255, 0.5);
+  
+  /* Border Colors */
+  --ios-border: rgba(255, 255, 255, 0.1);
+  --ios-border-strong: rgba(255, 255, 255, 0.2);
+  
+  /* Shadow System (iOS Soft Drop Shadows) */
+  --ios-shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.15);
+  --ios-shadow-md: 0 4px 16px rgba(0, 0, 0, 0.2);
+  --ios-shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.3);
+  --ios-shadow-xl: 0 12px 48px rgba(0, 0, 0, 0.4);
+  --ios-shadow-2xl: 0 16px 64px rgba(0, 0, 0, 0.5);
+  
+  /* Blur System (iOS Frosted Glass) */
+  --ios-blur-sm: blur(20px) saturate(150%);
+  --ios-blur-md: blur(40px) saturate(180%);
+  --ios-blur-lg: blur(60px) saturate(200%);
+  
+  /* Border Radius (iOS 17 Style) */
+  --ios-radius-sm: 12px;
+  --ios-radius-md: 20px;
+  --ios-radius-lg: 24px;
+  --ios-radius-xl: 28px;
+  --ios-radius-full: 9999px;
+  
+  /* Spacing Scale (8px Grid) */
+  --ios-space-1: 4px;
+  --ios-space-2: 8px;
+  --ios-space-3: 12px;
+  --ios-space-4: 16px;
+  --ios-space-5: 20px;
+  --ios-space-6: 24px;
+  --ios-space-8: 32px;
+  --ios-space-10: 40px;
+  --ios-space-12: 48px;
+  
+  /* Typography Scale (iOS 17) */
+  --ios-text-xs: 11px;
+  --ios-text-sm: 13px;
+  --ios-text-base: 15px;
+  --ios-text-lg: 17px;
+  --ios-text-xl: 20px;
+  --ios-text-2xl: 24px;
+  --ios-text-3xl: 30px;
+  --ios-text-4xl: 34px;
+}
+
+/* iOS 17 Gradient System */
+.ios-gradient-primary {
+  background: linear-gradient(135deg, #3B82F6 0%, #8B5CF6 100%);
+}
+
+.ios-gradient-surface {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 100%);
+}
+
+.ios-gradient-card {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.03) 100%);
+}
+
+/* iOS 17 Shadow Utilities */
+.ios-shadow-sm {
+  box-shadow: var(--ios-shadow-sm);
+}
+
+.ios-shadow-md {
+  box-shadow: var(--ios-shadow-md);
+}
+
+.ios-shadow-lg {
+  box-shadow: var(--ios-shadow-lg);
+}
+
+.ios-shadow-xl {
+  box-shadow: var(--ios-shadow-xl);
+}
+
+.ios-shadow-2xl {
+  box-shadow: var(--ios-shadow-2xl);
+}
+
+/* iOS 17 Blur Utilities */
+.ios-blur-sm {
+  backdrop-filter: var(--ios-blur-sm);
+  -webkit-backdrop-filter: var(--ios-blur-sm);
+}
+
+.ios-blur-md {
+  backdrop-filter: var(--ios-blur-md);
+  -webkit-backdrop-filter: var(--ios-blur-md);
+}
+
+.ios-blur-lg {
+  backdrop-filter: var(--ios-blur-lg);
+  -webkit-backdrop-filter: var(--ios-blur-lg);
+}
+
+/* iOS 17 Card Base Style */
+.ios-card {
+  background: var(--ios-surface-elevated);
+  backdrop-filter: var(--ios-blur-md);
+  -webkit-backdrop-filter: var(--ios-blur-md);
+  border: 1px solid var(--ios-border);
+  border-radius: var(--ios-radius-lg);
+  box-shadow: var(--ios-shadow-lg);
+  padding: var(--ios-space-4);
+  transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.ios-card-interactive {
+  @apply ios-card cursor-pointer;
+}
+
+.ios-card-interactive:hover {
+  transform: translateY(-2px) scale(1.01);
+  box-shadow: var(--ios-shadow-xl);
+  background: var(--ios-surface-high);
+}
+
+.ios-card-interactive:active {
+  transform: translateY(0) scale(0.98);
+}
+
+/* iOS 17 Button Base Style */
+.ios-button {
+  border-radius: var(--ios-radius-md);
+  padding: var(--ios-space-3) var(--ios-space-5);
+  font-size: var(--ios-text-base);
+  font-weight: 600;
+  transition: all 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  min-height: 44px; /* iOS minimum touch target */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--ios-space-2);
+}
+
+.ios-button:active {
+  transform: scale(0.96);
+}
+
+/* iOS 17 Input Base Style */
+.ios-input {
+  border-radius: var(--ios-radius-lg);
+  padding: var(--ios-space-3) var(--ios-space-4);
+  font-size: var(--ios-text-base);
+  background: var(--ios-surface);
+  backdrop-filter: var(--ios-blur-sm);
+  -webkit-backdrop-filter: var(--ios-blur-sm);
+  border: 1px solid var(--ios-border);
+  color: var(--ios-text-primary);
+  transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.ios-input:focus {
+  outline: none;
+  border-color: var(--ios-primary);
+  box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1);
+  background: var(--ios-surface-elevated);
+}
+
+/* iOS 17 Message Bubble Style */
+.ios-message-bubble {
+  border-radius: var(--ios-radius-lg);
+  padding: var(--ios-space-3) var(--ios-space-4);
+  font-size: var(--ios-text-base);
+  line-height: 1.4;
+  max-width: 75%;
+  word-wrap: break-word;
+}
+
+.ios-message-bubble-user {
+  background: var(--ios-primary);
+  color: white;
+  border-bottom-right-radius: 4px;
+}
+
+.ios-message-bubble-other {
+  background: var(--ios-surface-elevated);
+  color: var(--ios-text-primary);
+  border-bottom-left-radius: 4px;
 }
 
 /* ============================================ */

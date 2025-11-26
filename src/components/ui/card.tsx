@@ -14,7 +14,7 @@ const Card = React.forwardRef<HTMLDivElement, CardProps>(
     // Premium card system: 3 main types + legacy variants
     // Elevation system: card-elevation-2 (default), card-elevation-3 (hover)
     // Radius: rounded-2xl for all cards
-    const baseClasses = "rounded-3xl backdrop-blur-[40px] border relative overflow-hidden transition-smooth";
+    const baseClasses = "rounded-[24px] md:rounded-[28px] backdrop-blur-[40px] saturate-[180%] border relative overflow-hidden transition-all duration-200 shadow-[0_8px_32px_rgba(0,0,0,0.3)]";
     const interactiveClasses = interactive 
       ? "card-interactive hover:card-elevation-3 focus-ring" 
       : "";

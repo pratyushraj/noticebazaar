@@ -1,118 +1,143 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { CheckCircle, Circle, Instagram, FileText, Shield, UserPlus } from 'lucide-react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { cn } from '@/lib/utils';
-import { fireRealisticConfetti } from '@/lib/utils/confetti';
-import { useNavigate } from 'react-router-dom';
+import { CheckCircle, Circle, Briefcase, FileText, MessageCircle, Shield, TrendingUp, Sparkles, X } from 'lucide-react';
 import { useSession } from '@/contexts/SessionContext';
 import { useBrandDeals } from '@/lib/hooks/useBrandDeals';
-import { useOriginalContent } from '@/lib/hooks/useCopyrightScanner';
+import { useNavigate } from 'react-router-dom';
 
 interface ChecklistItem {
   id: string;
-  label: string;
-  icon: React.ElementType;
-  path: string;
+  title: string;
+  description: string;
+  icon: React.ComponentType<{ className?: string }>;
+  route?: string;
   checkFn: () => boolean;
+  color: string;
 }
 
-const OnboardingChecklist: React.FC = () => {
-  const { profile, user } = useSession();
+const OnboardingChecklist = () => {
+  const { profile } = useSession();
+  const { data: brandDeals = [] } = useBrandDeals({ creatorId: profile?.id, enabled: !!profile?.id });
   const navigate = useNavigate();
-  const [isCompleted, setIsCompleted] = useState(false);
-  const [hasShownConfetti, setHasShownConfetti] = useState(false);
-  
-  const { data: brandDeals } = useBrandDeals({
-    creatorId: profile?.id,
-    enabled: !!profile?.id,
-  });
-  
-  const { data: originalContent } = useOriginalContent({
-    creatorId: profile?.id,
-    enabled: !!profile?.id,
-  });
-
-  // Check if user has completed onboarding
-  const hasCompletedOnboarding = localStorage.getItem('onboarding_completed') === 'true';
-  
-  // Don't show if already completed
-  if (hasCompletedOnboarding) return null;
+  const [isVisible, setIsVisible] = useState(true);
+  const [completedItems, setCompletedItems] = useState<Set<string>>(new Set());
 
   const checklistItems: ChecklistItem[] = [
     {
-      id: 'connect-instagram',
-      label: 'Connect Instagram',
-      icon: Instagram,
-      path: '/creator-profile?tab=social',
-      checkFn: () => {
-        return !!(profile?.instagram_handle || profile?.instagram_followers);
-      },
+      id: 'add-deal',
+      title: 'Add Your First Deal',
+      description: 'Upload a contract to get started',
+      icon: Briefcase,
+      route: '/contract-upload',
+      checkFn: () => brandDeals.length > 0,
+      color: 'text-blue-400'
     },
     {
       id: 'upload-contract',
-      label: 'Upload first contract',
+      title: 'Review a Contract',
+      description: 'Get AI-powered contract analysis',
       icon: FileText,
-      path: '/creator-contracts',
-      checkFn: () => {
-        return !!(brandDeals && brandDeals.length > 0 && brandDeals.some(d => d.contract_file_url));
-      },
+      route: '/contract-upload',
+      checkFn: () => brandDeals.some(deal => deal.status !== 'Drafting'),
+      color: 'text-purple-400'
     },
     {
-      id: 'run-scan',
-      label: 'Run protection scan',
+      id: 'chat-advisor',
+      title: 'Chat with Advisor',
+      description: 'Connect with your legal advisor',
+      icon: MessageCircle,
+      route: '/messages',
+      checkFn: () => false, // TODO: Check if user has sent a message
+      color: 'text-green-400'
+    },
+    {
+      id: 'protect-content',
+      title: 'Protect Your Content',
+      description: 'Register your original content',
       icon: Shield,
-      path: '/creator-content-protection',
-      checkFn: () => {
-        return !!(originalContent && originalContent.length > 0);
-      },
+      route: '/creator-content-protection',
+      checkFn: () => false, // TODO: Check if user has protected content
+      color: 'text-orange-400'
     },
     {
-      id: 'invite-friend',
-      label: 'Invite friend',
-      icon: UserPlus,
-      path: '/partner-program',
-      checkFn: () => {
-        // Check if user has shared referral link (stored in localStorage)
-        return localStorage.getItem('referral_shared') === 'true';
-      },
-    },
+      id: 'track-earnings',
+      title: 'Track Your Earnings',
+      description: 'View your payment dashboard',
+      icon: TrendingUp,
+      route: '/creator-payments',
+      checkFn: () => brandDeals.some(deal => deal.payment_received_date),
+      color: 'text-pink-400'
+    }
   ];
 
-  const completedCount = checklistItems.filter(item => item.checkFn()).length;
-  const allCompleted = completedCount === checklistItems.length;
-
   useEffect(() => {
-    if (allCompleted && !isCompleted && !hasShownConfetti) {
-      setIsCompleted(true);
-      setHasShownConfetti(true);
-      fireRealisticConfetti();
-      localStorage.setItem('onboarding_completed', 'true');
-    }
-  }, [allCompleted, isCompleted, hasShownConfetti]);
+    const completed = new Set<string>();
+    checklistItems.forEach(item => {
+      if (item.checkFn()) {
+        completed.add(item.id);
+      }
+    });
+    setCompletedItems(completed);
+  }, [brandDeals]);
+
+  const completionPercentage = (completedItems.size / checklistItems.length) * 100;
+  const allCompleted = completedItems.size === checklistItems.length;
+
+  if (!isVisible || allCompleted) {
+    return null;
+  }
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="mb-8"
-    >
-      <Card className="bg-gradient-to-br from-purple-500/20 via-blue-500/20 to-pink-500/20 backdrop-blur-[40px] border border-white/20 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.3)] overflow-hidden relative">
-        <div className="absolute inset-0 bg-gradient-to-br from-white/[0.08] to-transparent pointer-events-none" />
-        <CardHeader className="relative z-10">
-          <CardTitle className="text-xl font-semibold text-white flex items-center justify-between">
-            <span>Get Started</span>
-            <span className="text-sm font-medium text-white/60">
-              {completedCount}/{checklistItems.length}
-            </span>
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="relative z-10 space-y-3">
+    <AnimatePresence>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -20 }}
+        className="bg-white/[0.08] backdrop-blur-[40px] saturate-[180%] rounded-[24px] p-6 border border-white/15 shadow-[0_8px_32px_rgba(0,0,0,0.3)] mb-6"
+      >
+        <div className="flex items-start justify-between mb-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500/20 to-indigo-500/20 flex items-center justify-center">
+              <Sparkles className="w-5 h-5 text-purple-400" />
+            </div>
+            <div>
+              <h3 className="font-semibold text-[17px] text-white mb-1">Getting Started Checklist</h3>
+              <p className="text-[13px] text-purple-200">
+                {completedItems.size} of {checklistItems.length} completed
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={() => setIsVisible(false)}
+            className="p-1 hover:bg-white/10 rounded-lg transition-colors"
+            aria-label="Dismiss checklist"
+          >
+            <X className="w-4 h-4 text-purple-300" />
+          </button>
+        </div>
+
+        {/* Progress Bar */}
+        <div className="mb-4">
+          <div className="w-full bg-white/10 rounded-full h-2 mb-2">
+            <motion.div
+              initial={{ width: 0 }}
+              animate={{ width: `${completionPercentage}%` }}
+              transition={{ duration: 0.5 }}
+              className="bg-gradient-to-r from-purple-500 to-indigo-500 h-2 rounded-full"
+            />
+          </div>
+          <p className="text-[13px] text-purple-300 text-right">
+            {Math.round(completionPercentage)}% Complete
+          </p>
+        </div>
+
+        {/* Checklist Items */}
+        <div className="space-y-2">
           {checklistItems.map((item, index) => {
             const Icon = item.icon;
-            const isItemCompleted = item.checkFn();
+            const isCompleted = completedItems.has(item.id);
             
             return (
               <motion.button
@@ -120,52 +145,52 @@ const OnboardingChecklist: React.FC = () => {
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: index * 0.1 }}
-                onClick={() => navigate(item.path)}
-                className={cn(
-                  "w-full flex items-center gap-3 p-4 rounded-xl transition-all text-left",
-                  isItemCompleted
-                    ? "bg-green-500/10 border border-green-500/20 hover:bg-green-500/15"
-                    : "bg-white/5 border border-white/10 hover:bg-white/10"
-                )}
+                onClick={() => item.route && navigate(item.route)}
+                disabled={isCompleted}
+                className={`w-full flex items-center gap-3 p-3 rounded-xl transition-all text-left ${
+                  isCompleted
+                    ? 'bg-green-500/10 border border-green-500/20 cursor-default'
+                    : 'bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 cursor-pointer'
+                }`}
               >
-                {isItemCompleted ? (
-                  <CheckCircle className="w-5 h-5 text-green-400 flex-shrink-0" />
+                {isCompleted ? (
+                  <CheckCircle className={`w-5 h-5 ${item.color} flex-shrink-0`} />
                 ) : (
-                  <Circle className="w-5 h-5 text-white/40 flex-shrink-0" />
+                  <Circle className="w-5 h-5 text-purple-400/50 flex-shrink-0" />
                 )}
-                <Icon className={cn(
-                  "w-5 h-5 flex-shrink-0",
-                  isItemCompleted ? "text-green-400" : "text-white/60"
-                )} />
-                <span className={cn(
-                  "flex-1 font-medium",
-                  isItemCompleted ? "text-white line-through" : "text-white/80"
-                )}>
-                  {item.label}
-                </span>
-                {!isItemCompleted && (
-                  <span className="text-xs text-white/40">→</span>
+                <Icon className={`w-5 h-5 ${item.color} flex-shrink-0`} />
+                <div className="flex-1 min-w-0">
+                  <div className={`font-medium text-[15px] ${isCompleted ? 'text-green-400 line-through' : 'text-white'}`}>
+                    {item.title}
+                  </div>
+                  <div className="text-[13px] text-purple-200">{item.description}</div>
+                </div>
+                {!isCompleted && item.route && (
+                  <motion.div
+                    whileHover={{ x: 4 }}
+                    className="text-purple-400"
+                  >
+                    →
+                  </motion.div>
                 )}
               </motion.button>
             );
           })}
-          
-          {allCompleted && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="mt-4 p-4 bg-green-500/20 border border-green-500/30 rounded-xl text-center"
-            >
-              <p className="text-sm font-semibold text-green-400">
-                🎉 All set! You're ready to go!
-              </p>
-            </motion.div>
-          )}
-        </CardContent>
-      </Card>
-    </motion.div>
+        </div>
+
+        {allCompleted && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="mt-4 p-4 bg-gradient-to-r from-green-500/20 to-emerald-500/20 rounded-xl border border-green-500/30 text-center"
+          >
+            <CheckCircle className="w-8 h-8 text-green-400 mx-auto mb-2" />
+            <p className="font-semibold text-green-400">All set! You're ready to go! 🎉</p>
+          </motion.div>
+        )}
+      </motion.div>
+    </AnimatePresence>
   );
 };
 
 export default OnboardingChecklist;
-

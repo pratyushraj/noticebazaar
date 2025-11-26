@@ -28,7 +28,8 @@ export const useProfiles = (options?: UseProfilesOptions) => {
   // Memoize the queryFn to ensure referential stability
   const queryFn = useCallback(async () => {
     // Try with full select statement first, fallback to basic fields if columns don't exist
-    const fullSelectStatement = 'id, first_name, last_name, avatar_url, role, updated_at, instagram_handle, youtube_channel_id, tiktok_handle, facebook_profile_url, twitter_handle, pan';
+    // Removed 'pan' as it may not exist in all database schemas
+    const fullSelectStatement = 'id, first_name, last_name, avatar_url, role, updated_at, instagram_handle, youtube_channel_id, tiktok_handle, facebook_profile_url, twitter_handle';
     const basicSelectStatement = 'id, first_name, last_name, avatar_url, role, updated_at';
 
     let query = supabase
@@ -54,8 +55,17 @@ export const useProfiles = (options?: UseProfilesOptions) => {
 
     let { data, error, count } = await query;
 
-    // If error is due to missing columns, retry with basic select
-    if (error && (error.message.includes('column') || error.code === '42703')) {
+    // If error is due to missing columns (400, 42703, or column-related messages), retry with basic select
+    const isColumnError = error && (
+      (error as any).code === '42703' ||
+      (error as any).status === 400 ||
+      (error as any).statusCode === 400 ||
+      error.message?.includes('column') ||
+      error.message?.includes('does not exist') ||
+      String(error.message || '').toLowerCase().includes('bad request')
+    );
+    
+    if (isColumnError) {
       query = supabase
         .from('profiles')
         .select(basicSelectStatement, { count: 'exact' })
@@ -110,7 +120,8 @@ export const useProfileById = (profileId: string | undefined, options?: { enable
       throw new Error('Profile ID is required');
     }
     
-    const fullSelect = 'id, first_name, last_name, avatar_url, role, instagram_handle, youtube_channel_id, tiktok_handle, facebook_profile_url, twitter_handle, pan';
+    // Removed 'pan' as it may not exist in all database schemas
+    const fullSelect = 'id, first_name, last_name, avatar_url, role, instagram_handle, youtube_channel_id, tiktok_handle, facebook_profile_url, twitter_handle';
     const basicSelect = 'id, first_name, last_name, avatar_url, role';
     
     let { data, error } = await supabase
@@ -119,8 +130,17 @@ export const useProfileById = (profileId: string | undefined, options?: { enable
       .eq('id', profileId)
       .single();
 
-    // If error is due to missing columns, retry with basic select
-    if (error && (error.message.includes('column') || error.code === '42703')) {
+    // If error is due to missing columns (400, 42703, or column-related messages), retry with basic select
+    const isColumnError = error && (
+      (error as any).code === '42703' ||
+      (error as any).status === 400 ||
+      (error as any).statusCode === 400 ||
+      error.message?.includes('column') ||
+      error.message?.includes('does not exist') ||
+      String(error.message || '').toLowerCase().includes('bad request')
+    );
+    
+    if (isColumnError) {
       const retryResult = await supabase
         .from('profiles')
         .select(basicSelect)
@@ -182,6 +202,12 @@ interface UpdateProfileVariables {
   tiktok_followers?: number | null;
   twitter_followers?: number | null;
   facebook_followers?: number | null;
+  // NEW: Profile fields
+  phone?: string | null;
+  location?: string | null;
+  bio?: string | null;
+  platforms?: string[] | null;
+  goals?: string[] | null;
 }
 
 export const useUpdateProfile = () => {
@@ -222,6 +248,12 @@ export const useUpdateProfile = () => {
       tiktok_followers,
       twitter_followers,
       facebook_followers,
+      // NEW: Profile fields
+      phone,
+      location,
+      bio,
+      platforms,
+      goals,
     }) => {
       const updateData: { 
         first_name: string; 
@@ -255,6 +287,11 @@ export const useUpdateProfile = () => {
         tiktok_followers?: number | null;
         twitter_followers?: number | null;
         facebook_followers?: number | null;
+        phone?: string | null;
+        location?: string | null;
+        bio?: string | null;
+        platforms?: string[] | null;
+        goals?: string[] | null;
       } = {
         first_name,
         last_name,
@@ -342,6 +379,21 @@ export const useUpdateProfile = () => {
       }
       if (facebook_followers !== undefined) {
         updateData.facebook_followers = facebook_followers;
+      }
+      if (phone !== undefined) {
+        updateData.phone = phone;
+      }
+      if (location !== undefined) {
+        updateData.location = location;
+      }
+      if (bio !== undefined) {
+        updateData.bio = bio;
+      }
+      if (platforms !== undefined) {
+        updateData.platforms = platforms;
+      }
+      if (goals !== undefined) {
+        updateData.goals = goals;
       }
 
       const { error } = await supabase
