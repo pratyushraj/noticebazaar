@@ -125,9 +125,11 @@ const Login = () => {
               `}</style>
               <Auth
                 supabaseClient={supabase}
-                providers={['google']}
+                providers={['google', 'github']}
                 appearance={{ theme: ThemeSupa }}
                 theme="dark"
+                redirectTo={window.location.origin}
+                onlyThirdPartyProviders={false}
               />
             </div>
           </div>

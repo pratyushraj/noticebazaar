@@ -205,6 +205,8 @@ const Signup = () => {
                 view="sign_up"
                 redirectTo={`${window.location.origin}/creator-onboarding`}
                 magicLink={true}
+                // Only show providers that are configured
+                onlyThirdPartyProviders={false}
               />
             </div>
 
