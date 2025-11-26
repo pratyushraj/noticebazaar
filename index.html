@@ -69,12 +69,34 @@
     </script>
 
     <!-- Google tag (gtag.js) - Google Analytics -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-PYTGVWEEVP"></script>
     <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-      gtag('config', 'G-PYTGVWEEVP'); // REPLACE G-XXXXXXXXXX with your GA4 Measurement ID
+      // Load Google Analytics with error handling
+      (function() {
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        window.gtag = gtag;
+        gtag('js', new Date());
+        
+        // Try to load the script, but handle errors gracefully
+        const script = document.createElement('script');
+        script.async = true;
+        script.src = 'https://www.googletagmanager.com/gtag/js?id=G-PYTGVWEEVP';
+        script.onerror = function() {
+          console.warn('Google Analytics failed to load. This may be due to an ad blocker or network issue.');
+          // Initialize gtag with a no-op function if script fails
+          window.gtag = function() {
+            // Silently fail - analytics is not critical for app functionality
+          };
+        };
+        document.head.appendChild(script);
+        
+        // Configure GA4 (will work even if script fails to load)
+        try {
+          gtag('config', 'G-PYTGVWEEVP');
+        } catch (e) {
+          console.warn('Google Analytics configuration failed:', e);
+        }
+      })();
     </script>
 
     <script src="https://assets.calendly.com/assets/external/widget.js" type="text/javascript" async></script>
