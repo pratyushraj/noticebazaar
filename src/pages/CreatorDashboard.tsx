@@ -684,30 +684,61 @@ const CreatorDashboard = () => {
                   </button>
                 </div>
               </div>
+
+              {/* Quick Logout Option - Also available in main menu */}
+              <div className="mt-4 pt-4 border-t border-white/10">
+                <button 
+                  onClick={() => {
+                    triggerHaptic('light');
+                    setShowMenu(false);
+                    setShowLogoutDialog(true);
+                  }}
+                  disabled={signOutMutation.isPending}
+                  className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl hover:bg-red-500/10 active:bg-red-500/15 border border-red-500/20 text-red-400 transition-all text-left active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
+                  aria-label="Log out"
+                >
+                  <LogOut className="w-4 h-4" />
+                  <span className="text-sm font-medium">Log Out</span>
+                </button>
+              </div>
             </div>
 
-            {/* Logout - Pinned at bottom */}
-            <div className="flex-shrink-0 p-4 border-t border-white/10 bg-purple-900/80">
+            {/* Logout - Prominent at bottom with better visibility */}
+            <div className="mt-auto flex-shrink-0 p-4 border-t-2 border-red-500/20 bg-gradient-to-br from-red-500/10 via-red-600/5 to-transparent">
+              <div className="mb-2">
+                <p className="text-xs text-red-300/70 font-medium px-1">Account</p>
+              </div>
               <button 
                 onClick={() => {
-                  triggerHaptic('light');
+                  triggerHaptic('medium');
                   setShowLogoutDialog(true);
                 }}
                 disabled={signOutMutation.isPending}
-                className="w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-red-500/20 hover:bg-red-500/30 border border-red-500/30 text-red-400 transition-all text-left active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed min-h-[48px] touch-manipulation focus:outline-none focus:ring-2 focus:ring-red-400/50 focus:ring-offset-2 focus:ring-offset-purple-900"
+                className="w-full flex items-center justify-between gap-3 px-4 py-3.5 rounded-xl bg-red-500/20 hover:bg-red-500/30 active:bg-red-500/40 border-2 border-red-500/40 hover:border-red-500/60 text-red-400 transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed min-h-[52px] touch-manipulation focus:outline-none focus:ring-2 focus:ring-red-400/50 focus:ring-offset-2 focus:ring-offset-purple-900 shadow-lg hover:shadow-xl hover:shadow-red-500/20 group"
                 aria-label="Log out of your account"
                 aria-describedby="sidebar-logout-description"
               >
-                {signOutMutation.isPending ? (
-                  <>
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                    <span className="text-sm font-semibold">Logging out...</span>
-                  </>
-                ) : (
-                  <>
-                    <LogOut className="w-5 h-5" />
-                    <span className="text-sm font-semibold">Log Out</span>
-                  </>
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-red-500/20 group-hover:bg-red-500/30 flex items-center justify-center transition-colors">
+                    {signOutMutation.isPending ? (
+                      <Loader2 className="w-5 h-5 animate-spin text-red-400" />
+                    ) : (
+                      <LogOut className="w-5 h-5 text-red-400 group-hover:scale-110 transition-transform" />
+                    )}
+                  </div>
+                  <div className="text-left">
+                    {signOutMutation.isPending ? (
+                      <span className="text-sm font-semibold text-red-400">Logging out...</span>
+                    ) : (
+                      <>
+                        <span className="text-sm font-bold text-red-400 block">Log Out</span>
+                        <span className="text-xs text-red-300/70">Sign out of your account</span>
+                      </>
+                    )}
+                  </div>
+                </div>
+                {!signOutMutation.isPending && (
+                  <ChevronRight className="w-4 h-4 text-red-400/50 group-hover:text-red-400 group-hover:translate-x-1 transition-all" />
                 )}
               </button>
               <p id="sidebar-logout-description" className="sr-only">
