@@ -229,7 +229,7 @@ ${stats.collectionRate}%
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
           >
-            {stats.received.amount > 0 ? (
+            {stats.received.amount > 0 && (
               <Card className="bg-white/[0.08] backdrop-blur-lg border border-white/20 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.08)] px-5 py-4 transition-all hover:shadow-2xl hover:border-purple-500/30 hover:-translate-y-0.5">
                 <CardContent className="p-0">
                   <div className="flex items-start justify-between">
@@ -243,22 +243,6 @@ ${stats.collectionRate}%
                       </div>
                     </div>
                     <span className="text-xs text-white/40 text-right">{stats.received.count || 0} payments</span>
-                  </div>
-                </CardContent>
-              </Card>
-            ) : (
-              <Card className="bg-white/[0.08] backdrop-blur-lg border border-white/20 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.08)] px-5 py-4 transition-all hover:shadow-2xl hover:border-purple-500/30 hover:-translate-y-0.5">
-                <CardContent className="p-0">
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-start gap-3 md:gap-4 flex-1">
-                      <div className="p-2 md:p-2.5 rounded-xl bg-blue-500/20">
-                        <TrendingUp className="w-4 h-4 md:w-5 md:h-5 text-blue-400" />
-                      </div>
-                      <div className="flex-1">
-                        <p className="text-xs text-white/50 mb-1 md:mb-2">Received</p>
-                        <p className="text-sm text-white/60 italic">Keep going! Payments will appear here once received.</p>
-                      </div>
-                    </div>
                   </div>
                 </CardContent>
               </Card>

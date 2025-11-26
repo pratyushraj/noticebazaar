@@ -1,670 +1,228 @@
 "use client";
 
-import { useState, useEffect, useMemo } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
-import { useSession } from '@/contexts/SessionContext';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Button } from '@/components/ui/button';
-import { Loader2, PlusCircle } from 'lucide-react';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from '@/components/ui/dialog';
-import { Badge } from '@/components/ui/badge';
-import { useBrandDeals, useDeleteBrandDeal } from '@/lib/hooks/useBrandDeals';
-import { usePagination } from '@/lib/hooks/usePagination';
-import { BrandDeal } from '@/types';
-import BrandDealForm from '@/components/forms/BrandDealForm';
-import { toast } from 'sonner';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { cn, openContractFile } from '@/lib/utils';
-import { Card, CardContent } from '@/components/ui/card';
-import DealStatusBadge, { DealStage } from '@/components/creator-contracts/DealStatusBadge';
-import DealActionsMenu from '@/components/creator-contracts/DealActionsMenu';
-import BrandLogo from '@/components/creator-contracts/BrandLogo';
-import DeliverablesBadge from '@/components/creator-contracts/DeliverablesBadge';
-import FiltersBar from '@/components/creator-contracts/FiltersBar';
-import MobileFiltersAccordion from '@/components/creator-contracts/MobileFiltersAccordion';
-import DealsHeader from '@/components/creator-contracts/DealsHeader';
-import QuickFilterChips from '@/components/creator-contracts/QuickFilterChips';
-import ProjectDealCard from '@/components/creator-contracts/ProjectDealCard';
-import EmptyDealsState from '@/components/creator-contracts/EmptyDealsState';
-import { PaymentStatus } from '@/components/creator-contracts/DealStatusBadge';
-
-// Helper function to map old status to new project-focused stage
-const getDealStage = (deal: BrandDeal): DealStage => {
-  // Project-focused stages
-  if (deal.status === 'Drafting') return 'draft';
-  if (deal.status === 'Approved' && !deal.payment_received_date) {
-    // Check if deliverables are due
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const dueDate = new Date(deal.due_date || deal.payment_expected_date);
-    dueDate.setHours(0, 0, 0, 0);
-    const daysUntilDue = Math.ceil((dueDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
-    
-    if (daysUntilDue <= 0) return 'deliverables_due';
-    if (daysUntilDue <= 7) return 'deliverables_due';
-    return 'in_progress';
-  }
-  // If payment is pending but deliverables are done, it's in review
-  if (deal.status === 'Payment Pending' && deal.payment_received_date === null) {
-    return 'review_pending';
-  }
-  if (deal.status === 'Completed' || deal.payment_received_date) return 'completed';
-  return 'draft';
-};
-
-// Helper to get payment status (secondary info)
-const getPaymentStatus = (deal: BrandDeal): PaymentStatus => {
-  if (deal.payment_received_date) return 'paid';
-  if (deal.status === 'Payment Pending') {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const dueDate = new Date(deal.payment_expected_date);
-    dueDate.setHours(0, 0, 0, 0);
-    return dueDate < today ? 'overdue' : 'pending';
-  }
-  return 'not_due';
-};
-
-// Helper to calculate days until due or overdue
-const getDueDateStatus = (dueDate: string): string => {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const due = new Date(dueDate);
-  due.setHours(0, 0, 0, 0);
-  const diffTime = due.getTime() - today.getTime();
-  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-  if (diffDays < 0) {
-    return `${Math.abs(diffDays)} days overdue`;
-  } else if (diffDays === 0) {
-    return 'Due today';
-  } else {
-    return `${diffDays} days left`;
-  }
-};
+import React, { useState } from 'react';
+import { Briefcase, TrendingUp, Clock, CheckCircle, AlertCircle, DollarSign, Calendar, FileText, ChevronRight } from 'lucide-react';
 
 const CreatorContracts = () => {
-  const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
-  const { profile, loading: sessionLoading, isCreator } = useSession();
-  const creatorId = profile?.id;
-  
-  // Mobile detection - initialize with actual window width if available
-  const [isMobile, setIsMobile] = useState(() => {
-    if (typeof window !== 'undefined') {
-      return window.innerWidth < 768;
+  const [activeFilter, setActiveFilter] = useState('all');
+
+  const deals = [
+    {
+      id: 1,
+      title: "TechGear Pro Sponsorship",
+      brand: "TechGear",
+      value: 150000,
+      status: "negotiation",
+      progress: 60,
+      deadline: "Dec 15, 2024",
+      platform: "YouTube",
+      type: "Sponsored Video",
+      lastUpdate: "2 hours ago",
+      nextStep: "Review contract terms"
+    },
+    {
+      id: 2,
+      title: "Fashion Nova Campaign",
+      brand: "Fashion Nova",
+      value: 85000,
+      status: "active",
+      progress: 100,
+      deadline: "Jan 10, 2025",
+      platform: "Instagram",
+      type: "Brand Partnership",
+      lastUpdate: "1 day ago",
+      nextStep: "Create content"
+    },
+    {
+      id: 3,
+      title: "SkillShare Course Promo",
+      brand: "SkillShare",
+      value: 45000,
+      status: "pending",
+      progress: 30,
+      deadline: "Nov 30, 2024",
+      platform: "YouTube",
+      type: "Affiliate Deal",
+      lastUpdate: "3 days ago",
+      nextStep: "Awaiting brand approval"
+    },
+    {
+      id: 4,
+      title: "Coffee Brand Collab",
+      brand: "BrewMasters",
+      value: 120000,
+      status: "completed",
+      progress: 100,
+      deadline: "Nov 20, 2024",
+      platform: "Instagram + YouTube",
+      type: "Product Review",
+      lastUpdate: "5 days ago",
+      nextStep: "Payment processing"
     }
-    return false;
-  });
-  
-  useEffect(() => {
-    const checkMobile = () => {
-      const width = window.innerWidth;
-      const mobile = width < 768;
-      setIsMobile(mobile);
-    };
-    // Check immediately
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
+  ];
 
-  
-  const [isBrandDealFormOpen, setIsBrandDealFormOpen] = useState(false);
-  const [editingBrandDeal, setEditingBrandDeal] = useState<BrandDeal | null>(null);
-  
-  // Filter states
-  const [searchTerm, setSearchTerm] = useState('');
-  const [brandFilter, setBrandFilter] = useState<string>('All');
-  const [statusFilter, setStatusFilter] = useState<DealStage | 'All'>('All');
-  const [platformFilter, setPlatformFilter] = useState<string>('All');
-  const [dateRangeFilter, setDateRangeFilter] = useState<string>('All');
-  const [quickFilter, setQuickFilter] = useState<string | null>(null);
-  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
-  
-  const pageSize = 10;
-
-  // --- Data Hooks ---
-  const { data: allBrandDeals, isLoading: isLoadingBrandDeals, error: brandDealsError, refetch: refetchBrandDeals } = useBrandDeals({
-    creatorId: creatorId,
-    enabled: !sessionLoading && isCreator && !!creatorId,
-  });
-
-  // Check if edit param is in URL
-  useEffect(() => {
-    const editId = searchParams.get('edit');
-    if (editId && allBrandDeals) {
-      const deal = allBrandDeals.find(d => d.id === editId);
-      if (deal) {
-        setEditingBrandDeal(deal);
-        setIsBrandDealFormOpen(true);
-      }
-    }
-  }, [searchParams, allBrandDeals]);
-
-  const deleteBrandDealMutation = useDeleteBrandDeal();
-
-  useEffect(() => {
-    if (brandDealsError) {
-      toast.error('Error fetching brand deals', { description: brandDealsError.message });
-    }
-  }, [brandDealsError]);
-
-  // --- Filtering Logic ---
-  const filteredAndSearchedDeals = useMemo(() => {
-    if (!allBrandDeals) return [];
-
-    let filtered = [...allBrandDeals];
-
-    // Quick filter (applied first)
-    if (quickFilter) {
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      
-      switch (quickFilter) {
-        case 'active':
-          filtered = filtered.filter(deal => {
-            const stage = getDealStage(deal);
-            return stage === 'in_progress' || stage === 'awaiting_approval';
-          });
-          break;
-        case 'pending_payment':
-          filtered = filtered.filter(deal => {
-            const paymentStatus = getPaymentStatus(deal);
-            return paymentStatus === 'pending' || paymentStatus === 'overdue';
-          });
-          break;
-        case 'expiring_soon':
-          const sevenDaysFromNow = new Date(today);
-          sevenDaysFromNow.setDate(sevenDaysFromNow.getDate() + 7);
-          filtered = filtered.filter(deal => {
-            const dueDate = new Date(deal.payment_expected_date || deal.due_date);
-            dueDate.setHours(0, 0, 0, 0);
-            return dueDate >= today && dueDate <= sevenDaysFromNow;
-          });
-          break;
-        case 'completed':
-          filtered = filtered.filter(deal => {
-            const stage = getDealStage(deal);
-            return stage === 'completed';
-          });
-          break;
-        default:
-          break;
-      }
-    }
-
-    // Search filter
-    if (searchTerm) {
-      const searchLower = searchTerm.toLowerCase();
-      filtered = filtered.filter(deal => 
-        deal.brand_name.toLowerCase().includes(searchLower) ||
-        deal.deliverables.toLowerCase().includes(searchLower) ||
-        deal.deal_amount.toString().includes(searchLower)
-      );
-    }
-
-    // Brand filter
-    if (brandFilter !== 'All') {
-      filtered = filtered.filter(deal => deal.brand_name === brandFilter);
-    }
-
-    // Status filter (using new stage system)
-    if (statusFilter !== 'All') {
-      filtered = filtered.filter(deal => getDealStage(deal) === statusFilter);
-    }
-
-    // Platform filter
-    if (platformFilter !== 'All') {
-      filtered = filtered.filter(deal => deal.platform === platformFilter);
-    }
-
-    // Date range filter
-    if (dateRangeFilter !== 'All') {
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      
-      filtered = filtered.filter(deal => {
-        const dueDate = new Date(deal.payment_expected_date || deal.due_date);
-        dueDate.setHours(0, 0, 0, 0);
-        
-        switch (dateRangeFilter) {
-          case 'today':
-            return dueDate.getTime() === today.getTime();
-          case 'this_week':
-            const weekFromNow = new Date(today);
-            weekFromNow.setDate(weekFromNow.getDate() + 7);
-            return dueDate >= today && dueDate <= weekFromNow;
-          case 'this_month':
-            const monthFromNow = new Date(today);
-            monthFromNow.setMonth(monthFromNow.getMonth() + 1);
-            return dueDate >= today && dueDate <= monthFromNow;
-          case 'this_quarter':
-            const quarterFromNow = new Date(today);
-            quarterFromNow.setMonth(quarterFromNow.getMonth() + 3);
-            return dueDate >= today && dueDate <= quarterFromNow;
-          case 'overdue':
-            return dueDate < today;
-          case 'due_soon':
-            const sevenDaysFromNow = new Date(today);
-            sevenDaysFromNow.setDate(sevenDaysFromNow.getDate() + 7);
-            return dueDate >= today && dueDate <= sevenDaysFromNow;
-          default:
-            return true;
-        }
-      });
-    }
-
-    return filtered;
-  }, [allBrandDeals, searchTerm, brandFilter, statusFilter, platformFilter, dateRangeFilter, quickFilter]);
-
-  const { currentPage, totalPages, handlePreviousPage, handleNextPage, setCurrentPage } = usePagination({
-    totalCount: filteredAndSearchedDeals.length,
-    pageSize: pageSize,
-  });
-
-  const paginatedDeals = filteredAndSearchedDeals.slice((currentPage - 1) * pageSize, currentPage * pageSize);
-
-  // Debug: Check what's actually rendered after state updates
-  useEffect(() => {
-    if (paginatedDeals.length > 0) {
-      setTimeout(() => {
-        const mobileView = document.querySelector('[data-mobile-view="true"]');
-        const desktopView = document.querySelector('[data-desktop-view="true"]');
-      }, 100);
-    }
-  }, [isMobile, paginatedDeals.length]);
-
-  // --- Handlers ---
-  const handleAddBrandDeal = () => {
-    setEditingBrandDeal(null);
-    setIsBrandDealFormOpen(true);
+  const stats = {
+    total: 12,
+    active: 3,
+    pending: 4,
+    totalValue: 850000,
+    thisMonth: 285000
   };
 
-  const handleEditBrandDeal = (deal: BrandDeal) => {
-    setEditingBrandDeal(deal);
-    setIsBrandDealFormOpen(true);
+  const statusConfig = {
+    pending: { color: 'bg-yellow-500', label: 'Pending', icon: Clock },
+    negotiation: { color: 'bg-blue-500', label: 'Negotiation', icon: TrendingUp },
+    active: { color: 'bg-green-500', label: 'Active', icon: CheckCircle },
+    completed: { color: 'bg-purple-500', label: 'Completed', icon: CheckCircle }
   };
 
-  const handleViewDeal = (deal: BrandDeal) => {
-    navigate(`/creator-contracts/${deal.id}`);
-  };
+  const filters = [
+    { id: 'all', label: 'All Deals', count: 12 },
+    { id: 'active', label: 'Active', count: 3 },
+    { id: 'pending', label: 'Pending', count: 4 },
+    { id: 'completed', label: 'Completed', count: 5 }
+  ];
 
-  const handleDeleteBrandDeal = async (deal: BrandDeal) => {
-    if (!creatorId) return;
-    try {
-      await deleteBrandDealMutation.mutateAsync({ 
-        id: deal.id, 
-        creator_id: creatorId, 
-        contract_file_url: deal.contract_file_url,
-        invoice_file_url: deal.invoice_file_url,
-      });
-      refetchBrandDeals();
-      toast.success('Deal deleted successfully');
-    } catch (error) {
-      // Handled by hook
-    }
-  };
-
-  const handleClearFilters = () => {
-    setSearchTerm('');
-    setBrandFilter('All');
-    setStatusFilter('All');
-    setPlatformFilter('All');
-    setDateRangeFilter('All');
-    setQuickFilter(null);
-    setCurrentPage(1);
-  };
-
-  const handleExport = () => {
-    toast.info('Export feature coming soon!');
-  };
-
-  if (sessionLoading || isLoadingBrandDeals) {
-    return (
-      <div className="min-h-[300px] flex flex-col items-center justify-center bg-[#1C1C1E]">
-        <Loader2 className="h-8 w-8 animate-spin text-blue-400" />
-        <p className="mt-3 text-white/60">Loading brand deals...</p>
-      </div>
-    );
-  }
-
+  const filteredDeals = activeFilter === 'all' 
+    ? deals 
+    : deals.filter(deal => deal.status === activeFilter);
 
   return (
-    <div className="w-full max-w-full overflow-x-hidden pb-[80px] px-4 md:px-6 antialiased">
-      {/* New Header with Quick Stats */}
+    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 text-white p-4 pb-24">
+      {/* Header */}
       <div className="mb-6">
-        <DealsHeader
-          allDeals={allBrandDeals || []}
-          onAddDeal={handleAddBrandDeal}
-          onExport={handleExport}
-          onFilterClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
-        />
+        <h1 className="text-3xl font-bold mb-2">Brand Deals</h1>
+        <p className="text-purple-200">Track and manage your partnerships</p>
       </div>
 
-      {/* Quick Filter Chips */}
-      {allBrandDeals && allBrandDeals.length > 0 && (
-        <div className="mb-6">
-          <QuickFilterChips
-            allDeals={allBrandDeals}
-            activeFilter={quickFilter}
-            onFilterChange={(filter) => {
-              setQuickFilter(filter);
-              setCurrentPage(1);
-            }}
-          />
+      {/* Stats Overview */}
+      <div className="grid grid-cols-2 gap-3 mb-6">
+        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/10">
+          <div className="flex items-center gap-2 mb-2">
+            <Briefcase className="w-5 h-5 text-purple-300" />
+            <span className="text-sm text-purple-200">Total Deals</span>
+          </div>
+          <div className="text-2xl font-bold">{stats.total}</div>
+          <div className="text-xs text-green-400 mt-1">+3 this month</div>
+        </div>
+
+        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/10">
+          <div className="flex items-center gap-2 mb-2">
+            <DollarSign className="w-5 h-5 text-purple-300" />
+            <span className="text-sm text-purple-200">Total Value</span>
+          </div>
+          <div className="text-2xl font-bold">₹{(stats.totalValue / 1000).toFixed(0)}K</div>
+          <div className="text-xs text-purple-300 mt-1">Across all deals</div>
+        </div>
+      </div>
+
+      {/* Filter Pills */}
+      <div className="flex gap-2 mb-6 overflow-x-auto pb-2 scrollbar-hide">
+        {filters.map(filter => (
+          <button
+            key={filter.id}
+            onClick={() => setActiveFilter(filter.id)}
+            className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all ${
+              activeFilter === filter.id
+                ? 'bg-purple-600 text-white shadow-lg'
+                : 'bg-white/10 text-purple-200 hover:bg-white/15'
+            }`}
+          >
+            {filter.label} ({filter.count})
+          </button>
+        ))}
+      </div>
+
+      {/* Deals List */}
+      <div className="space-y-3">
+        {filteredDeals.map(deal => {
+          const StatusIcon = statusConfig[deal.status].icon;
+          
+          return (
+            <div
+              key={deal.id}
+              className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/10 hover:bg-white/15 transition-all cursor-pointer"
+            >
+              {/* Deal Header */}
+              <div className="flex items-start justify-between mb-3">
+                <div className="flex-1">
+                  <h3 className="font-semibold text-lg mb-1">{deal.title}</h3>
+                  <div className="flex items-center gap-2 text-sm text-purple-200">
+                    <span>{deal.brand}</span>
+                    <span>•</span>
+                    <span>{deal.platform}</span>
+                  </div>
+                </div>
+                <ChevronRight className="w-5 h-5 text-purple-300 flex-shrink-0 ml-2" />
+              </div>
+
+              {/* Deal Value */}
+              <div className="flex items-center gap-2 mb-3">
+                <div className="bg-green-500/20 text-green-400 px-3 py-1 rounded-lg text-sm font-semibold">
+                  ₹{(deal.value / 1000).toFixed(0)}K
+                </div>
+                <div className="text-xs text-purple-300">{deal.type}</div>
+              </div>
+
+              {/* Progress Bar */}
+              <div className="mb-3">
+                <div className="flex items-center justify-between text-xs text-purple-200 mb-1">
+                  <span>Progress</span>
+                  <span>{deal.progress}%</span>
+                </div>
+                <div className="w-full bg-white/10 rounded-full h-2">
+                  <div
+                    className={`h-2 rounded-full transition-all ${
+                      deal.status === 'completed' ? 'bg-green-500' :
+                      deal.status === 'active' ? 'bg-blue-500' :
+                      deal.status === 'negotiation' ? 'bg-purple-500' :
+                      'bg-yellow-500'
+                    }`}
+                    style={{ width: `${deal.progress}%` }}
+                  />
+                </div>
+              </div>
+
+              {/* Status and Deadline */}
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <StatusIcon className="w-4 h-4" />
+                  <span className="text-sm font-medium">{statusConfig[deal.status].label}</span>
+                </div>
+                <div className="flex items-center gap-1 text-xs text-purple-200">
+                  <Calendar className="w-3 h-3" />
+                  <span>{deal.deadline}</span>
+                </div>
+              </div>
+
+              {/* Next Step */}
+              <div className="mt-3 pt-3 border-t border-white/10">
+                <div className="flex items-center gap-2 text-sm">
+                  <AlertCircle className="w-4 h-4 text-purple-300" />
+                  <span className="text-purple-200">Next: </span>
+                  <span className="text-white">{deal.nextStep}</span>
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Empty State (shown when no deals match filter) */}
+      {filteredDeals.length === 0 && (
+        <div className="text-center py-12">
+          <Briefcase className="w-16 h-16 text-purple-300 mx-auto mb-4 opacity-50" />
+          <h3 className="text-xl font-semibold mb-2">No deals found</h3>
+          <p className="text-purple-200 mb-4">Try adjusting your filters</p>
         </div>
       )}
 
-
-      {/* Main Content Card */}
-      <Card className="bg-white/[0.06] backdrop-blur-[40px] border-white/10 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.3)]">
-        <CardContent className="p-4 md:p-6 space-y-4">
-          {/* Header Section - text-lg on mobile per design system */}
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mt-4 md:mt-8 mb-4">
-            <h2 className="text-lg md:text-xl font-semibold text-white">
-              All Brand Deals ({filteredAndSearchedDeals.length})
-            </h2>
-            <Button 
-              onClick={handleAddBrandDeal} 
-              className="bg-primary text-primary-foreground hover:bg-primary/90 w-full md:w-auto"
-            >
-              <PlusCircle className="mr-2 h-4 w-4" /> Add New Deal
-            </Button>
-          </div>
-
-          {/* Mobile Filters Accordion (< 768px) - gap-4 spacing */}
-          {isMobile && (
-          <div className="mb-4">
-            <MobileFiltersAccordion
-              searchTerm={searchTerm}
-              onSearchChange={(value) => {
-                setSearchTerm(value);
-                setCurrentPage(1);
-              }}
-              brandFilter={brandFilter}
-              onBrandFilterChange={(value) => {
-                setBrandFilter(value);
-                setCurrentPage(1);
-              }}
-              statusFilter={statusFilter}
-              onStatusFilterChange={(value) => {
-                setStatusFilter(value);
-                setCurrentPage(1);
-              }}
-              platformFilter={platformFilter}
-              onPlatformFilterChange={(value) => {
-                setPlatformFilter(value);
-                setCurrentPage(1);
-              }}
-              dateRangeFilter={dateRangeFilter}
-              onDateRangeFilterChange={(value) => {
-                setDateRangeFilter(value);
-                setCurrentPage(1);
-              }}
-              allDeals={allBrandDeals || []}
-              onClearFilters={handleClearFilters}
-            />
-          </div>
-          )}
-
-          {/* Desktop Filters Bar (>= 768px) - gap-4 spacing */}
-          {!isMobile && (
-          <div className="mb-4">
-            <FiltersBar
-              searchTerm={searchTerm}
-              onSearchChange={(value) => {
-                setSearchTerm(value);
-                setCurrentPage(1);
-              }}
-              brandFilter={brandFilter}
-              onBrandFilterChange={(value) => {
-                setBrandFilter(value);
-                setCurrentPage(1);
-              }}
-              statusFilter={statusFilter}
-              onStatusFilterChange={(value) => {
-                setStatusFilter(value);
-                setCurrentPage(1);
-              }}
-              platformFilter={platformFilter}
-              onPlatformFilterChange={(value) => {
-                setPlatformFilter(value);
-                setCurrentPage(1);
-              }}
-              dateRangeFilter={dateRangeFilter}
-              onDateRangeFilterChange={(value) => {
-                setDateRangeFilter(value);
-                setCurrentPage(1);
-              }}
-              allDeals={allBrandDeals || []}
-              onClearFilters={handleClearFilters}
-            />
-          </div>
-          )}
-
-          {/* Empty State */}
-          {paginatedDeals.length === 0 && allBrandDeals && allBrandDeals.length === 0 ? (
-            <EmptyDealsState
-              onAddDeal={handleAddBrandDeal}
-            />
-          ) : paginatedDeals.length === 0 ? (
-            <div className="text-center py-12">
-              <p className="text-white/60">No brand deals found matching your criteria.</p>
-              <Button
-                variant="outline"
-                onClick={handleClearFilters}
-                className="mt-4 bg-white/5 border-white/10 text-white hover:bg-white/10"
-              >
-                Clear Filters
-              </Button>
-            </div>
-          ) : (
-            <>
-              {/* Project-Focused Deal Cards - Grid Layout */}
-              <div className={cn(
-                "grid gap-4 mb-6",
-                isMobile ? "grid-cols-1" : "grid-cols-1 md:grid-cols-2 lg:grid-cols-3"
-              )}>
-                {paginatedDeals.map((deal) => {
-                  const stage = getDealStage(deal);
-                  const paymentStatus = getPaymentStatus(deal);
-
-                  return (
-                    <ProjectDealCard
-                      key={deal.id}
-                      deal={deal}
-                      stage={stage}
-                      onView={handleViewDeal}
-                      onEdit={handleEditBrandDeal}
-                      onManageDeliverables={(deal) => {
-                        toast.info('Deliverables management coming soon!');
-                        // Navigate to deal detail page with deliverables tab
-                        navigate(`/creator-contracts/${deal.id}?tab=deliverables`);
-                      }}
-                      onUploadContent={(deal) => {
-                        toast.info('Content upload coming soon!');
-                        // Navigate to deal detail page with upload tab
-                        navigate(`/creator-contracts/${deal.id}?tab=upload`);
-                      }}
-                      onContactBrand={(deal) => {
-                        navigate('/messages');
-                        toast.info(`Opening messages to contact ${deal.brand_name}`);
-                      }}
-                      onViewContract={(deal) => {
-                        openContractFile(deal.contract_file_url, (error) => {
-                          toast.error(error);
-                        });
-                      }}
-                    />
-                  );
-                })}
-              </div>
-
-              {/* Desktop Table Layout - visible on screens >= 768px */}
-              {!isMobile ? (
-              <div className="w-full overflow-x-auto" data-desktop-view="true">
-                <Table>
-                  <TableHeader>
-                    <TableRow className="border-white/5 hover:bg-transparent">
-                      <TableHead className="text-sm font-semibold text-white/50 h-12 px-4">Brand</TableHead>
-                      <TableHead className="text-sm font-semibold text-white/50 h-12 px-4">Amount</TableHead>
-                      <TableHead className="text-sm font-semibold text-white/50 h-12 px-4 hidden md:table-cell">Platform</TableHead>
-                      <TableHead className="text-sm font-semibold text-white/50 h-12 px-4 hidden lg:table-cell">Deliverables</TableHead>
-                      <TableHead className="text-sm font-semibold text-white/50 h-12 px-4">Stage</TableHead>
-                      <TableHead className="text-sm font-semibold text-white/50 h-12 px-4 hidden sm:table-cell">Due Date Status</TableHead>
-                      <TableHead className="text-sm font-semibold text-white/50 h-12 px-4 text-right">Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {paginatedDeals.map((deal) => {
-                      const stage = getDealStage(deal);
-                      const paymentStatus = getPaymentStatus(deal);
-                      const dueDateStatus = getDueDateStatus(deal.payment_expected_date || deal.due_date);
-                      const isOverdue = paymentStatus === 'overdue';
-
-                      return (
-                        <TableRow 
-                          key={deal.id} 
-                          className={cn(
-                            "border-white/5 cursor-pointer hover:bg-white/5 transition-colors",
-                            isOverdue && 'bg-red-500/10'
-                          )}
-                          onClick={() => handleViewDeal(deal)}
-                        >
-                          <TableCell className="px-4 py-4">
-                            <div className="flex items-center gap-3">
-                              <BrandLogo 
-                                brandName={deal.brand_name} 
-                                brandLogo={null}
-                                size="sm"
-                              />
-                              <span className="font-medium text-base text-white">{deal.brand_name}</span>
-                            </div>
-                          </TableCell>
-                          <TableCell className="px-4 py-4">
-                            <span className="text-base font-semibold text-white">
-                              ₹{deal.deal_amount.toLocaleString('en-IN')}
-                            </span>
-                          </TableCell>
-                          <TableCell className="px-4 py-4 text-white/60 hidden md:table-cell">
-                            <span className="text-sm">{deal.platform || 'N/A'}</span>
-                          </TableCell>
-                          <TableCell className="px-4 py-4 hidden lg:table-cell">
-                            <DeliverablesBadge deliverables={deal.deliverables} maxDisplay={2} />
-                          </TableCell>
-                          <TableCell className="px-4 py-4 overflow-visible">
-                            <DealStatusBadge stage={stage} />
-                          </TableCell>
-                          <TableCell className="px-4 py-4 hidden sm:table-cell">
-                            <Badge 
-                              variant={isOverdue ? 'destructive' : 'secondary'}
-                              className="text-xs"
-                            >
-                              {dueDateStatus}
-                            </Badge>
-                          </TableCell>
-                          <TableCell className="px-4 py-4 text-right" onClick={(e) => e.stopPropagation()}>
-                            <DealActionsMenu
-                              deal={deal}
-                              onView={handleViewDeal}
-                              onEdit={handleEditBrandDeal}
-                              onManageDeliverables={(deal) => {
-                                toast.info('Deliverables management coming soon!');
-                                navigate(`/creator-contracts/${deal.id}?tab=deliverables`);
-                              }}
-                              onUploadContent={(deal) => {
-                                toast.info('Content upload coming soon!');
-                                navigate(`/creator-contracts/${deal.id}?tab=upload`);
-                              }}
-                              onContactBrand={(deal) => {
-                                navigate('/messages');
-                                toast.info('Opening messages to contact brand');
-                              }}
-                              onViewContract={(deal) => {
-                                openContractFile(deal.contract_file_url, (error) => {
-                                  toast.error(error);
-                                });
-                              }}
-                              onDelete={handleDeleteBrandDeal}
-                              isDeleting={deleteBrandDealMutation.isPending && deleteBrandDealMutation.variables?.id === deal.id}
-                            />
-                          </TableCell>
-                        </TableRow>
-                      );
-                    })}
-                  </TableBody>
-                </Table>
-              </div>
-              ) : null}
-
-              {/* Pagination - Load More or Previous/Next */}
-              {totalPages > 1 && (
-                <div className="flex flex-col md:flex-row justify-center items-center gap-3 mt-6">
-                  <Button
-                    variant="outline"
-                    onClick={handlePreviousPage}
-                    disabled={currentPage === 1 || isLoadingBrandDeals}
-                    className="w-full md:w-auto bg-white/5 border-white/10 text-white hover:bg-white/10 disabled:opacity-50"
-                  >
-                    Previous
-                  </Button>
-                  <span className="text-sm text-white/60">
-                    Page {currentPage} of {totalPages}
-                  </span>
-                  <Button
-                    variant="outline"
-                    onClick={handleNextPage}
-                    disabled={currentPage === totalPages || isLoadingBrandDeals}
-                    className="w-full md:w-auto bg-white/5 border-white/10 text-white hover:bg-white/10 disabled:opacity-50"
-                  >
-                    Next
-                  </Button>
-                </div>
-              )}
-            </>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Brand Deal Form Dialog */}
-      <Dialog open={isBrandDealFormOpen} onOpenChange={setIsBrandDealFormOpen}>
-        <DialogContent 
-          className="sm:max-w-[600px] bg-[#1C1C1E] text-white border-white/5 rounded-2xl shadow-2xl backdrop-blur-xl h-[90vh] flex flex-col"
-          aria-labelledby="brand-deal-form-title"
-          aria-describedby="brand-deal-form-description"
-        >
-          <DialogHeader className="space-y-2">
-            <DialogTitle id="brand-deal-form-title" className="text-xl font-semibold text-white">
-              {editingBrandDeal ? 'Edit Brand Deal' : 'Add New Brand Deal'}
-            </DialogTitle>
-            <DialogDescription id="brand-deal-form-description" className="text-sm text-white/60">
-              {editingBrandDeal ? 'Update the details for this brand collaboration.' : 'Enter the details for your new brand collaboration.'}
-            </DialogDescription>
-          </DialogHeader>
-          <ScrollArea className="flex-1 p-4">
-            <BrandDealForm
-              initialData={editingBrandDeal}
-              onSaveSuccess={() => {
-                refetchBrandDeals();
-                setIsBrandDealFormOpen(false);
-                setEditingBrandDeal(null);
-              }}
-              onClose={() => {
-                setIsBrandDealFormOpen(false);
-                setEditingBrandDeal(null);
-              }}
-            />
-          </ScrollArea>
-        </DialogContent>
-      </Dialog>
-
+      {/* FAB - Add New Deal */}
+      <button className="fixed bottom-24 right-6 bg-blue-600 hover:bg-blue-700 text-white rounded-full p-4 shadow-2xl transition-transform hover:scale-110 active:scale-95">
+        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+        </svg>
+      </button>
     </div>
   );
 };

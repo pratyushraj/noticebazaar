@@ -206,7 +206,7 @@ const QuickActionsFAB: React.FC<QuickActionsFABProps> = ({
               triggerHaptic(HapticPatterns.light);
             }
           }}
-          className="w-14 h-14 bg-blue-600 rounded-full shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 flex items-center justify-center text-white transition-all relative focus-visible:ring-4 focus-visible:ring-purple-400/50 focus-visible:outline-none min-h-[56px] min-w-[56px]"
+          className="w-14 h-14 bg-blue-600 rounded-full shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 flex items-center justify-center text-white transition-all relative focus-visible:ring-4 focus-visible:ring-purple-400/50 focus-visible:outline-none min-h-[56px] min-w-[56px] group"
           style={{ 
             boxShadow: '0 0 15px rgba(59,130,246,0.5), 0 4px 6px rgba(0,0,0,0.1)',
             transformOrigin: 'center'
@@ -225,10 +225,32 @@ const QuickActionsFAB: React.FC<QuickActionsFABProps> = ({
             )}
           </motion.div>
           
-          {/* Notification badge */}
-          <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center text-xs font-bold">
+          {/* Notification badge with pulse animation */}
+          <motion.span
+            animate={{
+              scale: [1, 1.2, 1],
+            }}
+            transition={{
+              duration: 2,
+              repeat: Infinity,
+              ease: "easeInOut"
+            }}
+            className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center text-xs font-bold shadow-lg shadow-red-500/50"
+          >
             3
-          </span>
+          </motion.span>
+
+          {/* Tooltip on hover */}
+          {!showQuickActions && !showRadialMenu && (
+            <motion.div
+              initial={{ opacity: 0, x: 10 }}
+              animate={{ opacity: 1, x: 0 }}
+              className="absolute right-full mr-3 px-3 py-2 bg-black/80 backdrop-blur-xl rounded-lg text-xs text-white whitespace-nowrap pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+            >
+              Quick Actions
+              <div className="absolute left-full top-1/2 -translate-y-1/2 border-4 border-transparent border-l-black/80" />
+            </motion.div>
+          )}
         </motion.button>
       </motion.div>
     </div>

@@ -28,12 +28,14 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
   const profileQueryFn = useCallback(async () => { // Memoize queryFn here
     if (!user?.id) return null; // Don't fetch if no user ID
     
-    // Try to fetch with all fields first (including new creator profile fields)
-    let { data, error } = await supabase
-      .from('profiles')
-      .select('id, first_name, last_name, avatar_url, role, updated_at, business_name, gstin, business_entity_type, onboarding_complete, organization_id, is_trial, trial_started_at, trial_expires_at, trial_locked, creator_category, pricing_min, pricing_avg, pricing_max, bank_account_name, bank_account_number, bank_ifsc, bank_upi, gst_number, pan_number, referral_code, instagram_followers, youtube_subs, tiktok_followers, twitter_followers, facebook_followers, instagram_handle, youtube_channel_id, tiktok_handle, facebook_profile_url, twitter_handle')
-      .eq('id', user.id)
-      .single();
+    try {
+      // Try to fetch with all fields first (including new creator profile fields)
+      // Use type assertion to avoid TypeScript errors with dynamic column selection
+      let { data, error } = await (supabase
+        .from('profiles')
+        .select('id, first_name, last_name, avatar_url, role, updated_at, business_name, gstin, business_entity_type, onboarding_complete, organization_id, is_trial, trial_started_at, trial_expires_at, trial_locked, creator_category, pricing_min, pricing_avg, pricing_max, bank_account_name, bank_account_number, bank_ifsc, bank_upi, gst_number, pan_number, referral_code, instagram_followers, youtube_subs, tiktok_followers, twitter_followers, facebook_followers, instagram_handle, youtube_channel_id, tiktok_handle, facebook_profile_url, twitter_handle') as any)
+        .eq('id', user.id)
+        .single();
 
     // If error is due to missing columns (400 or 42703), try with fewer fields
     // Check for various error indicators: PostgreSQL column errors, HTTP 400, or column-related messages
@@ -41,18 +43,23 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
       (error as any).code === '42703' || 
       (error as any).code === 'P0001' || 
       (error as any).message?.includes('column') || 
+      (error as any).message?.includes('does not exist') ||
       (error as any).status === 400 ||
       (error as any).statusCode === 400 ||
-      (error as any).hint?.includes('column')
+      (error as any).hint?.includes('column') ||
+      // Check if error message contains "Bad Request" or HTTP 400 indicators
+      String((error as any).message || '').toLowerCase().includes('bad request') ||
+      // Check response status if available
+      ((error as any).response?.status === 400)
     );
     
     if (isColumnError) {
       // Silently handle missing columns - expected if migrations haven't run yet
       
       // Retry with basic + trial fields only
-      const { data: trialData, error: trialError } = await supabase
+      const { data: trialData, error: trialError } = await (supabase
         .from('profiles')
-        .select('id, first_name, last_name, avatar_url, role, updated_at, business_name, gstin, business_entity_type, onboarding_complete, organization_id, is_trial, trial_started_at, trial_expires_at, trial_locked, instagram_handle, youtube_channel_id, tiktok_handle, facebook_profile_url, twitter_handle')
+        .select('id, first_name, last_name, avatar_url, role, updated_at, business_name, gstin, business_entity_type, onboarding_complete, organization_id, is_trial, trial_started_at, trial_expires_at, trial_locked, instagram_handle, youtube_channel_id, tiktok_handle, facebook_profile_url, twitter_handle') as any)
         .eq('id', user.id)
         .single();
 
@@ -60,14 +67,17 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
         (trialError as any).code === '42703' || 
         (trialError as any).status === 400 ||
         (trialError as any).statusCode === 400 ||
-        (trialError as any).message?.includes('column')
+        (trialError as any).message?.includes('column') ||
+        (trialError as any).message?.includes('does not exist') ||
+        String((trialError as any).message || '').toLowerCase().includes('bad request') ||
+        ((trialError as any).response?.status === 400)
       );
       
       if (isTrialColumnError) {
         // If trial fields also don't exist, try with just core basic fields (no social media)
-        const { data: basicData, error: basicError } = await supabase
+        const { data: basicData, error: basicError } = await (supabase
           .from('profiles')
-          .select('id, first_name, last_name, avatar_url, role, updated_at, business_name, gstin, business_entity_type, onboarding_complete, organization_id')
+          .select('id, first_name, last_name, avatar_url, role, updated_at, business_name, gstin, business_entity_type, onboarding_complete, organization_id') as any)
           .eq('id', user.id)
           .single();
 
@@ -75,14 +85,17 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
           (basicError as any).code === '42703' || 
           (basicError as any).status === 400 ||
           (basicError as any).statusCode === 400 ||
-          (basicError as any).message?.includes('column')
+          (basicError as any).message?.includes('column') ||
+          (basicError as any).message?.includes('does not exist') ||
+          String((basicError as any).message || '').toLowerCase().includes('bad request') ||
+          ((basicError as any).response?.status === 400)
         );
         
         if (isBasicColumnError) {
           // If even basic fields are missing, try absolute minimum
-          const { data: minimalData, error: minimalError } = await supabase
+          const { data: minimalData, error: minimalError } = await (supabase
             .from('profiles')
-            .select('id, first_name, last_name, avatar_url, role')
+            .select('id, first_name, last_name, avatar_url, role') as any)
             .eq('id', user.id)
             .single();
 
@@ -204,11 +217,22 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
       } as Profile | null;
     }
 
-    if (error && (error as any).code !== 'PGRST116') { // PGRST116 means no rows found, which is fine
-      console.error('SessionContext: Error fetching profile:', error);
+      if (error && (error as any).code !== 'PGRST116') { // PGRST116 means no rows found, which is fine
+        console.error('SessionContext: Error fetching profile:', error);
+        return null;
+      }
+      return data as Profile | null;
+    } catch (err: any) {
+      // Catch any unexpected errors (network, parsing, etc.)
+      // Check if it's a 400 error (column doesn't exist)
+      if (err?.status === 400 || err?.statusCode === 400 || err?.message?.includes('Bad Request')) {
+        // Silently handle - will fall through to basic query
+        console.warn('SessionContext: Column error detected, using fallback query');
+      } else {
+        console.error('SessionContext: Unexpected error fetching profile:', err);
+      }
       return null;
     }
-    return data as Profile | null;
   }, [user?.id]); // Dependency for useCallback
 
   const { data: profileData, isLoading: isLoadingProfile, refetch: refetchProfileQuery } = useSupabaseQuery<Profile | null, Error>( // Destructure refetch

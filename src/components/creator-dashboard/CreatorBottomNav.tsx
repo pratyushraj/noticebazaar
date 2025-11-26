@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { LayoutDashboard, Briefcase, Wallet, Shield, MessageSquare } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -7,6 +8,7 @@ import { cn } from '@/lib/utils';
 const CreatorBottomNav = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const [isKeyboardOpen, setIsKeyboardOpen] = useState(false);
 
   // iOS-style: 4-5 main tabs max
   const navItems = [
@@ -46,8 +48,91 @@ const CreatorBottomNav = () => {
     return item.matchPaths.some(path => location.pathname.startsWith(path));
   };
 
+  // Detect keyboard open/close using multiple methods
+  useEffect(() => {
+    // Only run on mobile devices
+    const isMobile = window.innerWidth < 768;
+    if (!isMobile) return;
+
+    let initialHeight = window.innerHeight;
+    let viewportInitialHeight = window.visualViewport?.height || window.innerHeight;
+
+    const handleViewportResize = () => {
+      if (!window.visualViewport) {
+        // Fallback: use window height comparison
+        const currentHeight = window.innerHeight;
+        const heightDiff = initialHeight - currentHeight;
+        // If height decreased by more than 150px, keyboard is likely open
+        setIsKeyboardOpen(heightDiff > 150);
+        return;
+      }
+
+      const viewport = window.visualViewport;
+      const currentViewportHeight = viewport.height;
+      
+      // More sensitive threshold: if viewport height is less than 60% of initial, or
+      // if the difference is more than 200px, keyboard is open
+      const threshold1 = viewportInitialHeight * 0.6;
+      const threshold2 = viewportInitialHeight - 200;
+      const keyboardOpen = currentViewportHeight < Math.max(threshold1, threshold2);
+
+      setIsKeyboardOpen(keyboardOpen);
+    };
+
+    // Also detect input focus/blur as additional signal
+    const handleInputFocus = () => {
+      // Small delay to let viewport adjust
+      setTimeout(() => {
+        handleViewportResize();
+      }, 100);
+    };
+
+    const handleInputBlur = () => {
+      // Delay to check if keyboard actually closed
+      setTimeout(() => {
+        handleViewportResize();
+      }, 300);
+    };
+
+    // Initial check
+    handleViewportResize();
+
+    // Listen to visual viewport resize events
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener('resize', handleViewportResize);
+      window.visualViewport.addEventListener('scroll', handleViewportResize);
+    }
+
+    // Fallback: window resize
+    window.addEventListener('resize', handleViewportResize);
+
+    // Listen to input focus/blur events
+    const inputs = document.querySelectorAll('input, textarea');
+    inputs.forEach(input => {
+      input.addEventListener('focus', handleInputFocus);
+      input.addEventListener('blur', handleInputBlur);
+    });
+
+    return () => {
+      if (window.visualViewport) {
+        window.visualViewport.removeEventListener('resize', handleViewportResize);
+        window.visualViewport.removeEventListener('scroll', handleViewportResize);
+      }
+      window.removeEventListener('resize', handleViewportResize);
+      inputs.forEach(input => {
+        input.removeEventListener('focus', handleInputFocus);
+        input.removeEventListener('blur', handleInputBlur);
+      });
+    };
+  }, [location.pathname]); // Re-run when route changes to catch new inputs
+
   return (
-      <div className="fixed bottom-0 left-0 right-0 z-50 bg-white/[0.08] backdrop-blur-[40px] saturate-[180%] border-t border-white/10 shadow-[0_-4px_24px_rgba(0,0,0,0.2)] progressive-blur">
+      <div 
+        className={cn(
+          "fixed bottom-0 left-0 right-0 z-50 bg-white/[0.08] backdrop-blur-[40px] saturate-[180%] border-t border-white/10 shadow-[0_-4px_24px_rgba(0,0,0,0.2)] progressive-blur transition-transform duration-300 ease-in-out",
+          isKeyboardOpen && "translate-y-full"
+        )}
+      >
         <nav 
           className="flex justify-around h-14 items-center px-2"
           style={{ paddingBottom: `max(8px, env(safe-area-inset-bottom))` }}

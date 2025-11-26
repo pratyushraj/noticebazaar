@@ -3,8 +3,17 @@
 @tailwind utilities;
 
 @layer base {
+  html, body {
+    height: -webkit-fill-available;
+  }
+
   html {
     scroll-behavior: smooth;
+  }
+
+  body {
+    min-height: 100vh;
+    min-height: -webkit-fill-available;
   }
 
   /* Safe area insets for notched devices */
@@ -118,6 +127,11 @@
   body {
     @apply bg-background text-foreground;
     line-height: 1.45; /* Increased line height globally */
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  html {
+    padding-bottom: env(safe-area-inset-bottom);
   }
 }
 

@@ -1,607 +1,404 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from 'react';
-import { useSession } from '@/contexts/SessionContext';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Button } from '@/components/ui/button';
-import { Loader2, ShieldCheck, Search, Send, AlertTriangle, Youtube, Instagram, Globe, Facebook, PlusCircle, Trash2, Play, FileText, Mail, CheckCircle, XCircle, Eye } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
-import { toast } from 'sonner';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-} from '@/components/ui/dialog';
-import { Label } from '@/components/ui/label';
-import { Card, CardContent } from '@/components/ui/card';
-import { cn } from '@/lib/utils';
-import { OriginalContent, CopyrightMatch, CopyrightAction } from '@/types';
-import { useOriginalContent, useAddOriginalContent, useDeleteOriginalContent, useStartCopyrightScan, useCopyrightMatches, usePerformCopyrightAction } from '@/lib/hooks/useCopyrightScanner';
-import CreatorCopyrightScanner from '@/components/creator-dashboard/CreatorCopyrightScanner';
-import ProtectionDashboardHeader from '@/components/content-protection/ProtectionDashboardHeader';
-import SimplifiedScanner from '@/components/content-protection/SimplifiedScanner';
-import ScanningProgress from '@/components/content-protection/ScanningProgress';
-import ScanResultsPreview from '@/components/content-protection/ScanResultsPreview';
-import ScanHistory from '@/components/content-protection/ScanHistory';
-import { usePerformCopyrightScan } from '@/lib/hooks/usePerformCopyrightScan';
-
-const PLATFORM_OPTIONS = ['YouTube', 'Instagram', 'TikTok', 'Facebook', 'Other Web'];
-const ACTION_TYPE_LABELS: Record<CopyrightAction['action_type'], string> = {
-  takedown: 'Takedown Notice',
-  email: 'Infringement Email',
-  ignored: 'Ignored',
-};
+import React, { useState } from 'react';
+import { Shield, FileText, AlertTriangle, CheckCircle, Clock, Lock, Eye, Download, Upload, AlertCircle, Calendar, User, TrendingUp, Zap, ChevronRight, MoreVertical } from 'lucide-react';
 
 const CreatorContentProtection = () => {
-  const { profile, loading: sessionLoading, isCreator } = useSession();
-  const creatorId = profile?.id;
+  const [activeTab, setActiveTab] = useState('contracts');
 
-  // --- State Management ---
-  const [isContentFormOpen, setIsContentFormOpen] = useState(false);
-  const [newContent, setNewContent] = useState({ platform: '', url: '', watermark: '' });
-  const [selectedContentId, setSelectedContentId] = useState<string | undefined>(undefined);
-  const [isActionDialogOpen, setIsActionDialogOpen] = useState(false);
-  const [selectedMatch, setSelectedMatch] = useState<CopyrightMatch | null>(null);
-  const [actionType, setActionType] = useState<CopyrightAction['action_type']>('takedown');
-  const [isQuickScanning, setIsQuickScanning] = useState(false);
-  const [quickScanProgress, setQuickScanProgress] = useState(0);
-  const [quickScanPlatform, setQuickScanPlatform] = useState<string | undefined>(undefined);
-  const [quickScanError, setQuickScanError] = useState<string | null>(null);
-  const [lastScanQuery, setLastScanQuery] = useState<string>('');
-  const [lastScanPlatforms, setLastScanPlatforms] = useState<string[]>([]);
+  const protectionScore = 85;
 
-  // --- Hooks ---
-  const { data: originalContentList, isLoading: isLoadingContent, refetch: refetchContent } = useOriginalContent({
-    creatorId,
-    enabled: !sessionLoading && isCreator,
-  });
-  const addContentMutation = useAddOriginalContent();
-  const deleteContentMutation = useDeleteOriginalContent();
-  const startScanMutation = useStartCopyrightScan();
-  const performActionMutation = usePerformCopyrightAction();
-  const performQuickScanMutation = usePerformCopyrightScan();
-
-  const { data: matches, isLoading: isLoadingMatches, refetch: refetchMatches } = useCopyrightMatches({
-    contentId: selectedContentId,
-    enabled: !!selectedContentId,
-  });
-
-  // --- Effects ---
-  useEffect(() => {
-    if (originalContentList && originalContentList.length > 0 && !selectedContentId) {
-      setSelectedContentId(originalContentList[0].id);
-    }
-  }, [originalContentList, selectedContentId]);
-
-  // --- Handlers ---
-
-  const handleRegisterContent = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!creatorId || !newContent.platform || !newContent.url) {
-      toast.error('Platform and URL are required.');
-      return;
-    }
-    try {
-      const result = await addContentMutation.mutateAsync({
-        user_id: creatorId,
-        platform: newContent.platform,
-        original_url: newContent.url,
-        watermark_text: newContent.watermark || undefined,
-      });
-      setNewContent({ platform: '', url: '', watermark: '' });
-      setIsContentFormOpen(false);
-      setSelectedContentId(result.id); // Select the newly added content
-    } catch (error) {
-      // Handled by hook
-    }
-  };
-
-  const handleDeleteContent = async (contentId: string) => {
-    if (!creatorId) return;
-    try {
-      await deleteContentMutation.mutateAsync({ id: contentId, user_id: creatorId });
-      if (selectedContentId === contentId) {
-        setSelectedContentId(undefined);
+  const contracts = [
+    {
+      id: 1,
+      title: "TechGear Pro Sponsorship Agreement",
+      brand: "TechGear",
+      status: "active",
+      risk: "low",
+      uploaded: "Nov 20, 2024",
+      expiry: "Dec 31, 2024",
+      value: 150000,
+      reviewed: true,
+      issues: 0,
+      clauses: {
+        payment: "verified",
+        termination: "verified",
+        ip_rights: "verified",
+        exclusivity: "warning"
       }
-      refetchContent();
-    } catch (error) {
-      // Handled by hook
+    },
+    {
+      id: 2,
+      title: "Fashion Nova Brand Partnership",
+      brand: "Fashion Nova",
+      status: "pending_review",
+      risk: "medium",
+      uploaded: "Nov 24, 2024",
+      expiry: "Jan 31, 2025",
+      value: 85000,
+      reviewed: false,
+      issues: 2,
+      clauses: {
+        payment: "verified",
+        termination: "issue",
+        ip_rights: "warning",
+        exclusivity: "verified"
+      }
+    },
+    {
+      id: 3,
+      title: "SkillShare Affiliate Agreement",
+      brand: "SkillShare",
+      status: "needs_attention",
+      risk: "high",
+      uploaded: "Nov 22, 2024",
+      expiry: "Nov 30, 2024",
+      value: 45000,
+      reviewed: true,
+      issues: 3,
+      clauses: {
+        payment: "issue",
+        termination: "issue",
+        ip_rights: "verified",
+        exclusivity: "warning"
+      }
     }
+  ];
+
+  const alerts = [
+    {
+      id: 1,
+      type: "urgent",
+      title: "Contract Expiring Soon",
+      description: "SkillShare agreement expires in 6 days",
+      action: "Review & Renew",
+      time: "2 hours ago"
+    },
+    {
+      id: 2,
+      type: "warning",
+      title: "Payment Terms Need Review",
+      description: "Fashion Nova contract has unclear payment schedule",
+      action: "Get Legal Review",
+      time: "1 day ago"
+    },
+    {
+      id: 3,
+      type: "info",
+      title: "IP Rights Protection Available",
+      description: "Upgrade to protect your content rights across all deals",
+      action: "Learn More",
+      time: "3 days ago"
+    }
+  ];
+
+  const protectionFeatures = [
+    {
+      id: 1,
+      icon: FileText,
+      title: "Contract Review",
+      description: "AI-powered analysis of terms",
+      status: "active"
+    },
+    {
+      id: 2,
+      icon: Lock,
+      title: "IP Rights Protection",
+      description: "Safeguard your content ownership",
+      status: "active"
+    },
+    {
+      id: 3,
+      icon: AlertTriangle,
+      title: "Risk Monitoring",
+      description: "Real-time alerts for issues",
+      status: "active"
+    },
+    {
+      id: 4,
+      icon: TrendingUp,
+      title: "Payment Protection",
+      description: "Ensure you get paid on time",
+      status: "premium"
+    }
+  ];
+
+  const riskConfig = {
+    low: { color: 'bg-green-500', label: 'Low Risk', textColor: 'text-green-400', bgColor: 'bg-green-500/20' },
+    medium: { color: 'bg-yellow-500', label: 'Medium Risk', textColor: 'text-yellow-400', bgColor: 'bg-yellow-500/20' },
+    high: { color: 'bg-red-500', label: 'High Risk', textColor: 'text-red-400', bgColor: 'bg-red-500/20' }
   };
 
-  const handleStartScan = async (contentId: string) => {
-    try {
-      await startScanMutation.mutateAsync({ original_content_id: contentId });
-      refetchMatches(); // Refetch matches after scan completes
-    } catch (error) {
-      // Handled by hook
-    }
+  const statusConfig = {
+    active: { icon: CheckCircle, label: 'Active', color: 'text-green-400' },
+    pending_review: { icon: Clock, label: 'Pending Review', color: 'text-yellow-400' },
+    needs_attention: { icon: AlertCircle, label: 'Needs Attention', color: 'text-red-400' }
   };
 
-  const handleOpenActionDialog = (match: CopyrightMatch) => {
-    setSelectedMatch(match);
-    setIsActionDialogOpen(true);
-    setActionType('takedown'); // Default action
+  const alertConfig = {
+    urgent: { icon: AlertTriangle, bgColor: 'bg-red-500/20', iconColor: 'text-red-400', borderColor: 'border-red-500/30' },
+    warning: { icon: AlertCircle, bgColor: 'bg-yellow-500/20', iconColor: 'text-yellow-400', borderColor: 'border-yellow-500/30' },
+    info: { icon: Zap, bgColor: 'bg-blue-500/20', iconColor: 'text-blue-400', borderColor: 'border-blue-500/30' }
   };
-
-  const handlePerformAction = async () => {
-    if (!selectedMatch || !selectedContentId) return;
-
-    try {
-      await performActionMutation.mutateAsync({
-        match_id: selectedMatch.id,
-        action_type: actionType,
-        original_content_id: selectedContentId,
-      });
-      setIsActionDialogOpen(false);
-      setSelectedMatch(null);
-      refetchMatches();
-    } catch (error) {
-      // Handled by hook
-    }
-  };
-
-  const handleRetryScan = () => {
-    if (lastScanQuery && lastScanPlatforms.length > 0) {
-      handleQuickScan(lastScanQuery, lastScanPlatforms);
-    }
-  };
-
-  const handleQuickScan = async (query: string, platforms: string[]) => {
-    setIsQuickScanning(true);
-    setQuickScanProgress(0);
-    setQuickScanPlatform(undefined);
-    setQuickScanError(null);
-    setLastScanQuery(query);
-    setLastScanPlatforms(platforms);
-
-    try {
-      // Simulate progress
-      const progressInterval = setInterval(() => {
-        setQuickScanProgress(prev => {
-          if (prev >= 90) {
-            clearInterval(progressInterval);
-            return 90;
-          }
-          return prev + 10;
-        });
-      }, 500);
-
-      // Simulate platform scanning
-      let platformIndex = 0;
-      const platformInterval = setInterval(() => {
-        if (platformIndex < platforms.length) {
-          setQuickScanPlatform(platforms[platformIndex]);
-          platformIndex++;
-        } else {
-          clearInterval(platformInterval);
-        }
-      }, 1000);
-
-      // Perform actual scan
-      const result = await performQuickScanMutation.mutateAsync({
-        query,
-        platforms,
-      });
-
-      clearInterval(progressInterval);
-      clearInterval(platformInterval);
-      setQuickScanProgress(100);
-      setQuickScanPlatform(undefined);
-
-      // Wait a bit then reset
-      setTimeout(() => {
-        setIsQuickScanning(false);
-        setQuickScanProgress(0);
-        // If matches found, show them
-        if (result.alerts && result.alerts.length > 0) {
-          toast.success(`Found ${result.alerts.length} potential matches!`);
-        } else {
-          toast.success('Scan completed. No matches found.');
-        }
-      }, 1000);
-    } catch (error: any) {
-      setIsQuickScanning(false);
-      setQuickScanProgress(0);
-      setQuickScanPlatform(undefined);
-      setQuickScanError(error?.message || 'Scan failed. Please try again.');
-      // Error handled by hook
-    }
-  };
-
-  const selectedContent = originalContentList?.find(c => c.id === selectedContentId);
-
-  // Calculate scans this month (mock - in real app, fetch from copyright_scans table)
-  // MUST be before any conditional returns (Rules of Hooks)
-  const scansThisMonth = useMemo(() => {
-    // If we have demo data (6 items) or less, return demo stats
-    if (!originalContentList || originalContentList.length === 0 || originalContentList.length <= 6) {
-      return 42; // Demo: 42 scans this month
-    }
-    // Mock calculation - in real app, count scans from this month
-    return Math.floor((originalContentList.length || 0) * 7);
-  }, [originalContentList]);
-
-  // Generate scan history (mock - in real app, fetch from copyright_scans table)
-  // MUST be before any conditional returns (Rules of Hooks)
-  const scanHistory = useMemo(() => {
-    if (!originalContentList || originalContentList.length === 0) return [];
-    
-    return originalContentList.slice(0, 5).map((content, index) => ({
-      id: content.id,
-      date: new Date(Date.now() - index * 24 * 60 * 60 * 1000).toISOString(),
-      status: index % 3 === 0 ? 'completed' as const : index % 3 === 1 ? 'pending' as const : 'failed' as const,
-      matchesFound: index % 2 === 0 ? Math.floor(Math.random() * 5) : 0,
-      platform: content.platform,
-      contentUrl: content.original_url,
-    }));
-  }, [originalContentList]);
-
-  // Calculate unprotected content count
-  const unprotectedCount = useMemo(() => {
-    if (!originalContentList || originalContentList.length === 0) return 0;
-    // In real app, check which content hasn't been registered/protected
-    // For demo, assume some content is unprotected
-    return originalContentList.length > 6 ? 0 : 18;
-  }, [originalContentList]);
-
-  if (sessionLoading || isLoadingContent) {
-    return (
-      <div className="min-h-[300px] flex flex-col items-center justify-center bg-background">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        <p className="mt-3 text-white/60">Loading content protection...</p>
-      </div>
-    );
-  }
 
   return (
-    <div className="w-full max-w-full overflow-x-hidden pb-[80px] px-4 md:px-6 antialiased">
-      {/* Protection Dashboard Header */}
-      <ProtectionDashboardHeader
-        originalContent={originalContentList || []}
-        matches={matches || []}
-        scansThisMonth={scansThisMonth}
-      />
-
-      {/* Simplified Scanner */}
+    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 text-white p-4 pb-24">
+      {/* Header */}
       <div className="mb-6">
-        <SimplifiedScanner
-          onScan={handleQuickScan}
-          isScanning={isQuickScanning}
-          scanProgress={quickScanProgress}
-          currentPlatform={quickScanPlatform}
-        />
+        <h1 className="text-3xl font-bold mb-2">Protection</h1>
+        <p className="text-purple-200">Safeguard your deals & rights</p>
       </div>
 
-      {/* Scanning Progress */}
-      {isQuickScanning && (
-        <div className="mb-6">
-          <ScanningProgress
-            isScanning={isQuickScanning}
-            progress={quickScanProgress}
-            currentPlatform={quickScanPlatform}
-            matchesFound={0}
-            contentPreview={undefined}
-            error={quickScanError}
-            onRetry={quickScanError ? handleRetryScan : undefined}
-          />
-        </div>
-      )}
-
-      {/* Matches Section - Always Visible */}
-      <div className="mb-6">
-        {matches && matches.length > 0 && !isQuickScanning ? (
-          <ScanResultsPreview
-            matches={matches}
-            onTakeAction={handleOpenActionDialog}
-            onViewDetails={(match) => {
-              window.open(match.matched_url, '_blank');
-            }}
-          />
-        ) : (
-          <Card className="bg-white/[0.06] backdrop-blur-[40px] border border-white/10 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.3)] p-6">
-            <div className="flex flex-col items-center justify-center py-8 space-y-4">
-              <div className="relative w-20 h-20 rounded-full bg-white/5 backdrop-blur-sm flex items-center justify-center border border-white/10">
-                <div className="absolute inset-0 rounded-full bg-green-400/30 blur-2xl" />
-                <CheckCircle className="w-10 h-10 text-green-400 relative z-10" />
-              </div>
-              <div className="space-y-1 text-center">
-                <p className="text-white font-semibold text-base">No matches found</p>
-                <p className="text-sm text-white/60">Your content is protected. No copyright violations detected.</p>
-              </div>
-            </div>
-          </Card>
-        )}
-      </div>
-
-      {/* Scan History */}
-      {scanHistory.length > 0 && (
-        <div className="mb-6">
-          <ScanHistory scans={scanHistory} />
-        </div>
-      )}
-
-      {/* Registered Original Content Section */}
-      <Card className="relative bg-white/[0.06] backdrop-blur-[40px] border border-white/10 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.3)] p-6 mb-6 overflow-hidden">
-        <div className="relative">
-          <div className="flex justify-between items-start mb-4">
-            <div className="flex-1">
-              <h2 className="text-sm font-bold text-white uppercase tracking-wider flex items-center mb-2">
-                <ShieldCheck className="h-4 w-4 mr-2 text-purple-400" /> Registered Original Content
-              </h2>
-              <p className="text-xs text-white/60 leading-relaxed">
-                Manage and monitor your protected content.
-              </p>
-            </div>
-            {unprotectedCount > 0 ? (
-              <Button 
-                onClick={async () => {
-                  // Auto-register all unprotected content
-                  toast.info(`Registering ${unprotectedCount} pieces of content...`);
-                  // TODO: Implement batch registration
-                  // For now, just show success
-                  setTimeout(() => {
-                    toast.success(`Successfully registered ${unprotectedCount} pieces!`);
-                  }, 1500);
-                }} 
-                className="bg-gradient-to-r from-purple-600 to-blue-600 text-white hover:from-purple-700 hover:to-blue-700 whitespace-nowrap text-sm px-4 py-2 h-auto rounded-full shadow-lg transition-all"
-              >
-                <PlusCircle className="mr-1.5 h-3.5 w-3.5" /> Register All Unprotected ({unprotectedCount})
-              </Button>
-            ) : (
-              <Button 
-                onClick={() => setIsContentFormOpen(true)} 
-                className="bg-blue-600 text-white hover:bg-blue-700 whitespace-nowrap text-sm px-3 py-1.5 h-auto rounded-lg shadow-md transition-all"
-              >
-                <PlusCircle className="mr-1.5 h-3.5 w-3.5" /> Register New
-              </Button>
-            )}
+      {/* Protection Score Card */}
+      <div className="bg-white/10 backdrop-blur-md rounded-2xl p-5 border border-white/10 mb-6">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2">
+            <Shield className="w-6 h-6 text-green-400" />
+            <span className="font-semibold">Protection Score</span>
           </div>
+          <button className="text-sm text-purple-300 hover:text-white transition-colors">
+            How it works?
+          </button>
+        </div>
 
-          {originalContentList && originalContentList.length > 0 ? (
-            <div className="mt-4">
-              <Select
-                onValueChange={setSelectedContentId}
-                value={selectedContentId || ''}
-                disabled={!originalContentList || originalContentList.length === 0}
+        <div className="flex items-end gap-4 mb-4">
+          <div className="text-5xl font-bold text-green-400">{protectionScore}</div>
+          <div className="text-sm text-purple-200 mb-2">out of 100</div>
+        </div>
+
+        <div className="w-full bg-white/10 rounded-full h-3 mb-3">
+          <div
+            className="bg-gradient-to-r from-green-500 to-green-400 h-3 rounded-full transition-all"
+            style={{ width: `${protectionScore}%` }}
+          />
+        </div>
+
+        <div className="text-sm text-purple-200">
+          <span className="text-green-400 font-medium">Great job!</span> Your contracts are well-protected. Review 2 pending items to reach 100.
+        </div>
+      </div>
+
+      {/* Tabs */}
+      <div className="flex gap-2 mb-6 overflow-x-auto pb-2 scrollbar-hide">
+        <button
+          onClick={() => setActiveTab('contracts')}
+          className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all ${
+            activeTab === 'contracts'
+              ? 'bg-purple-600 text-white shadow-lg'
+              : 'bg-white/10 text-purple-200 hover:bg-white/15'
+          }`}
+        >
+          Contracts ({contracts.length})
+        </button>
+        <button
+          onClick={() => setActiveTab('alerts')}
+          className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all ${
+            activeTab === 'alerts'
+              ? 'bg-purple-600 text-white shadow-lg'
+              : 'bg-white/10 text-purple-200 hover:bg-white/15'
+          }`}
+        >
+          Alerts ({alerts.length})
+        </button>
+        <button
+          onClick={() => setActiveTab('features')}
+          className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all ${
+            activeTab === 'features'
+              ? 'bg-purple-600 text-white shadow-lg'
+              : 'bg-white/10 text-purple-200 hover:bg-white/15'
+          }`}
+        >
+          Features
+        </button>
+      </div>
+
+      {/* Contracts Tab */}
+      {activeTab === 'contracts' && (
+        <div className="space-y-3">
+          {contracts.map(contract => {
+            const StatusIcon = statusConfig[contract.status].icon;
+            
+            return (
+              <div
+                key={contract.id}
+                className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/10 hover:bg-white/15 transition-all cursor-pointer"
               >
-                <SelectTrigger id="contentSelector" className="bg-white/5 text-white border-white/10 hover:border-white/20 focus:border-blue-400/50 rounded-xl h-11 w-full">
-                  <SelectValue placeholder="Choose content to manage" />
-                </SelectTrigger>
-                <SelectContent className="bg-[#1C1C1E] border-white/5 text-white">
-                  {originalContentList.map((content) => (
-                    <SelectItem key={content.id} value={content.id}>
-                      {content.platform} - {content.original_url.substring(0, 50)}...
-                    </SelectItem>
+                {/* Contract Header */}
+                <div className="flex items-start justify-between mb-3">
+                  <div className="flex items-start gap-3 flex-1">
+                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 ${riskConfig[contract.risk].bgColor}`}>
+                      <FileText className={`w-6 h-6 ${riskConfig[contract.risk].textColor}`} />
+                    </div>
+                    
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-semibold mb-1 leading-tight">{contract.title}</h3>
+                      <div className="flex items-center gap-2 text-sm text-purple-200">
+                        <span>{contract.brand}</span>
+                        <span>•</span>
+                        <span>₹{(contract.value / 1000).toFixed(0)}K</span>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <ChevronRight className="w-5 h-5 text-purple-300 flex-shrink-0 ml-2" />
+                </div>
+
+                {/* Status and Risk Badges */}
+                <div className="flex items-center gap-2 mb-3">
+                  <div className={`flex items-center gap-1 text-xs ${statusConfig[contract.status].color}`}>
+                    <StatusIcon className="w-4 h-4" />
+                    <span>{statusConfig[contract.status].label}</span>
+                  </div>
+                  <div className={`px-2 py-1 rounded-lg text-xs font-medium ${riskConfig[contract.risk].bgColor} ${riskConfig[contract.risk].textColor}`}>
+                    {riskConfig[contract.risk].label}
+                  </div>
+                  {contract.issues > 0 && (
+                    <div className="px-2 py-1 bg-red-500/20 text-red-400 rounded-lg text-xs font-medium">
+                      {contract.issues} {contract.issues === 1 ? 'Issue' : 'Issues'}
+                    </div>
+                  )}
+                </div>
+
+                {/* Key Clauses Check */}
+                <div className="grid grid-cols-2 gap-2 mb-3">
+                  {Object.entries(contract.clauses).map(([key, status]) => (
+                    <div key={key} className="flex items-center gap-2 text-xs">
+                      {status === 'verified' ? (
+                        <CheckCircle className="w-3 h-3 text-green-400" />
+                      ) : status === 'warning' ? (
+                        <AlertCircle className="w-3 h-3 text-yellow-400" />
+                      ) : (
+                        <AlertTriangle className="w-3 h-3 text-red-400" />
+                      )}
+                      <span className="text-purple-200 capitalize">{key.replace('_', ' ')}</span>
+                    </div>
                   ))}
-                </SelectContent>
-              </Select>
-            </div>
-          ) : (
-          <div className="text-center py-12 space-y-6">
-            <div className="w-20 h-20 mx-auto rounded-full bg-purple-500/10 flex items-center justify-center">
-              <ShieldCheck className="w-10 h-10 text-purple-500" />
-            </div>
-            <div className="space-y-3">
-              <h3 className="text-lg font-semibold text-white">Protect Your First Video</h3>
-              <div className="space-y-2 max-w-md mx-auto">
-                <p className="text-sm text-white/60">
-                  Creators recover <span className="font-semibold text-emerald-400">₹2.5L annually</span> from content theft
-                </p>
-                <div className="flex flex-wrap justify-center gap-2 text-xs text-white/60">
-                  <span className="px-2 py-1 bg-muted rounded-full">Auto-scan</span>
-                  <span className="px-2 py-1 bg-muted rounded-full">Takedown assistance</span>
-                  <span className="px-2 py-1 bg-muted rounded-full">Legal templates</span>
+                </div>
+
+                {/* Contract Info */}
+                <div className="flex items-center justify-between pt-3 border-t border-white/10 text-xs text-purple-200">
+                  <div className="flex items-center gap-1">
+                    <Calendar className="w-3 h-3" />
+                    <span>Expires: {contract.expiry}</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <Upload className="w-3 h-3" />
+                    <span>Uploaded: {contract.uploaded}</span>
+                  </div>
                 </div>
               </div>
-            </div>
-            <Button 
-              onClick={() => setIsContentFormOpen(true)} 
-              className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-2"
-            >
-              <PlusCircle className="mr-2 h-4 w-4" /> Protect Your First Video
-            </Button>
-          </div>
-        )}
+            );
+          })}
+
+          {/* Upload New Contract */}
+          <button className="w-full bg-white/10 backdrop-blur-md rounded-2xl p-6 border-2 border-dashed border-white/20 hover:bg-white/15 transition-all">
+            <Upload className="w-8 h-8 text-purple-300 mx-auto mb-2" />
+            <div className="text-sm font-medium mb-1">Upload New Contract</div>
+            <div className="text-xs text-purple-300">Get instant AI-powered review</div>
+          </button>
         </div>
-      </Card>
-
-      {/* --- 2. Scan and Matches View --- */}
-      {selectedContent && (
-        <Card className="relative bg-white/[0.06] backdrop-blur-[40px] border border-white/10 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.3)] p-6 overflow-hidden">
-          <div className="relative">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-sm font-semibold text-white">
-                Matches for: <span className="text-blue-400">{selectedContent.platform} Content</span>
-              </h2>
-              <div className="flex items-center gap-3">
-                <p className="text-xs text-white/40">Last Scanned: 2min</p>
-                <Button
-                  onClick={() => handleStartScan(selectedContent.id)}
-                  disabled={startScanMutation.isPending}
-                  className="bg-blue-600 text-white hover:bg-blue-700 rounded-lg shadow-md transition-all text-sm px-3 py-1.5 h-auto"
-                >
-                  {startScanMutation.isPending ? (
-                    <>
-                      <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" /> Scanning...
-                    </>
-                  ) : (
-                    <>
-                      <Search className="mr-1.5 h-3.5 w-3.5" /> Run New Scan
-                    </>
-                  )}
-                </Button>
-              </div>
-            </div>
-
-          {isLoadingMatches ? (
-            <div className="flex justify-center items-center py-8">
-              <Loader2 className="h-8 w-8 animate-spin text-primary" />
-              <p className="ml-3 text-lg text-white/60">Loading matches...</p>
-            </div>
-          ) : matches && matches.length > 0 ? (
-            <Table>
-              <TableHeader>
-                <TableRow className="border-white/5">
-                  <TableHead className="text-white/50">Platform</TableHead>
-                  <TableHead className="text-white/50">Similarity</TableHead>
-                  <TableHead className="text-white/50">Matched URL</TableHead>
-                  <TableHead className="text-white/50">Last Action</TableHead>
-                  <TableHead className="text-right text-white/50">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {matches.map((match) => {
-                  const lastAction = match.copyright_actions?.[0];
-                  const isIgnored = lastAction?.action_type === 'ignored';
-                  const isTakedownSent = lastAction?.action_type === 'takedown';
-                  const isHighRisk = match.similarity_score > 80;
-
-                  return (
-                    <TableRow key={match.id} className={cn("border-white/5", isHighRisk && 'bg-red-500/10')}>
-                      <TableCell className="font-medium text-white">{match.platform}</TableCell>
-                      <TableCell>
-                        <Badge variant={isHighRisk ? 'destructive' : match.similarity_score > 50 ? 'default' : 'secondary'}>
-                          {match.similarity_score}%
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-white/60">
-                        <a href={match.matched_url} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300 hover:underline">
-                          {match.matched_url.substring(0, 40)}...
-                        </a>
-                      </TableCell>
-                      <TableCell>
-                        {lastAction ? (
-                          <Badge variant={isIgnored ? 'secondary' : isTakedownSent ? 'default' : 'outline'}>
-                            {ACTION_TYPE_LABELS[lastAction.action_type]}
-                          </Badge>
-                        ) : (
-                          <Badge variant="outline">No Action</Badge>
-                        )}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <Button variant="outline" size="sm" asChild className="mr-2">
-                          <a href={match.screenshot_url || '#'} target="_blank" rel="noopener noreferrer">
-                            <Eye className="h-4 w-4" />
-                          </a>
-                        </Button>
-                        <Button
-                          variant={isHighRisk ? 'destructive' : 'default'}
-                          size="sm"
-                          onClick={() => handleOpenActionDialog(match)}
-                          disabled={isIgnored || isTakedownSent || performActionMutation.isPending}
-                        >
-                          <Send className="h-4 w-4 mr-1" /> Action
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
-          ) : (
-            <div className="flex flex-col items-center justify-center py-12 space-y-4">
-              <div className="relative w-20 h-20 rounded-full bg-white/5 backdrop-blur-sm flex items-center justify-center border border-white/10">
-                {/* Soft green glow effect */}
-                <div className="absolute inset-0 rounded-full bg-green-400/30 blur-2xl" />
-                <CheckCircle className="w-10 h-10 text-green-400 relative z-10" />
-              </div>
-              <div className="space-y-1 text-center">
-                <p className="text-white font-semibold text-base">No matches found</p>
-                <p className="text-sm text-white/60">Your content is protected. No copyright violations detected.</p>
-              </div>
-            </div>
-          )}
-          </div>
-        </Card>
       )}
 
-      {/* --- Dialogs --- */}
+      {/* Alerts Tab */}
+      {activeTab === 'alerts' && (
+        <div className="space-y-3">
+          {alerts.map(alert => {
+            const AlertIcon = alertConfig[alert.type].icon;
+            
+            return (
+              <div
+                key={alert.id}
+                className={`bg-white/10 backdrop-blur-md rounded-2xl p-4 border ${alertConfig[alert.type].borderColor} hover:bg-white/15 transition-all cursor-pointer`}
+              >
+                <div className="flex items-start gap-3">
+                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${alertConfig[alert.type].bgColor}`}>
+                    <AlertIcon className={`w-5 h-5 ${alertConfig[alert.type].iconColor}`} />
+                  </div>
+                  
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-start justify-between mb-2">
+                      <h3 className="font-semibold">{alert.title}</h3>
+                      <span className="text-xs text-purple-300 whitespace-nowrap ml-2">{alert.time}</span>
+                    </div>
+                    
+                    <p className="text-sm text-purple-200 mb-3">{alert.description}</p>
+                    
+                    <button className={`text-sm font-medium ${alertConfig[alert.type].iconColor} hover:underline`}>
+                      {alert.action} →
+                    </button>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
 
-      {/* Register Content Dialog */}
-      <Dialog open={isContentFormOpen} onOpenChange={setIsContentFormOpen}>
-        <DialogContent className="sm:max-w-[425px] bg-card text-foreground border-border">
-          <DialogHeader>
-            <DialogTitle>Register Original Content</DialogTitle>
-            <DialogDescription>
-              Add a piece of your original content to start monitoring for infringement.
-            </DialogDescription>
-          </DialogHeader>
-          <form onSubmit={handleRegisterContent} className="space-y-4">
-            <div>
-              <Label htmlFor="platform">Platform *</Label>
-              <Select onValueChange={(value) => setNewContent(prev => ({ ...prev, platform: value }))} value={newContent.platform} disabled={addContentMutation.isPending}>
-                <SelectTrigger id="platform">
-                  <SelectValue placeholder="Select platform" />
-                </SelectTrigger>
-                <SelectContent>
-                  {PLATFORM_OPTIONS.map((platform) => (
-                    <SelectItem key={platform} value={platform}>{platform}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label htmlFor="url">Original Content URL *</Label>
-              <Input id="url" type="url" value={newContent.url} onChange={(e) => setNewContent(prev => ({ ...prev, url: e.target.value }))} disabled={addContentMutation.isPending} placeholder="e.g., https://youtube.com/watch?v=..." />
-            </div>
-            <div>
-              <Label htmlFor="watermark">Watermark/Signature Text (Optional)</Label>
-              <Input id="watermark" value={newContent.watermark} onChange={(e) => setNewContent(prev => ({ ...prev, watermark: e.target.value }))} disabled={addContentMutation.isPending} placeholder="e.g., @myusername" />
-            </div>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setIsContentFormOpen(false)} disabled={addContentMutation.isPending}>Cancel</Button>
-              <Button type="submit" disabled={addContentMutation.isPending || !newContent.platform || !newContent.url}>
-                {addContentMutation.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Register Content'}
-              </Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
+      {/* Features Tab */}
+      {activeTab === 'features' && (
+        <div className="space-y-3">
+          {protectionFeatures.map(feature => {
+            const FeatureIcon = feature.icon;
+            
+            return (
+              <div
+                key={feature.id}
+                className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/10 hover:bg-white/15 transition-all cursor-pointer"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-xl bg-purple-500/20 flex items-center justify-center flex-shrink-0">
+                    <FeatureIcon className="w-6 h-6 text-purple-400" />
+                  </div>
+                  
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-1">
+                      <h3 className="font-semibold">{feature.title}</h3>
+                      {feature.status === 'active' ? (
+                        <span className="px-2 py-0.5 bg-green-500/20 text-green-400 text-xs rounded-full">Active</span>
+                      ) : (
+                        <span className="px-2 py-0.5 bg-yellow-500/20 text-yellow-400 text-xs rounded-full">Premium</span>
+                      )}
+                    </div>
+                    <p className="text-sm text-purple-200">{feature.description}</p>
+                  </div>
+                  
+                  <ChevronRight className="w-5 h-5 text-purple-300" />
+                </div>
+              </div>
+            );
+          })}
 
-      {/* Perform Action Dialog */}
-      <Dialog open={isActionDialogOpen} onOpenChange={setIsActionDialogOpen}>
-        <DialogContent className="sm:max-w-[425px] bg-card text-foreground border-border">
-          <DialogHeader>
-            <DialogTitle>Perform Action on Match</DialogTitle>
-            <DialogDescription>
-              Select the action to take for the infringing content found at: <span className="font-semibold">{selectedMatch?.matched_url.substring(0, 30)}...</span>
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div>
-              <Label htmlFor="actionType">Action Type</Label>
-              <Select onValueChange={(value: CopyrightAction['action_type']) => setActionType(value)} value={actionType} disabled={performActionMutation.isPending}>
-                <SelectTrigger id="actionType">
-                  <SelectValue placeholder="Select action" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="takedown">Formal Takedown Notice (Legal)</SelectItem>
-                  <SelectItem value="email">Infringement Email (Soft)</SelectItem>
-                  <SelectItem value="ignored">Ignore Match</SelectItem>
-                </SelectContent>
-              </Select>
+          {/* Upgrade Card */}
+          <div className="bg-gradient-to-br from-purple-600 to-indigo-600 rounded-2xl p-6 border border-purple-400/30">
+            <div className="flex items-start gap-3 mb-4">
+              <Shield className="w-8 h-8 text-white" />
+              <div>
+                <h3 className="font-bold text-lg mb-1">Premium Protection</h3>
+                <p className="text-sm text-purple-100">Get advanced features and priority legal support</p>
+              </div>
             </div>
-            {actionType === 'takedown' && (
-              <Card className="bg-red-500/10 border-red-500/30 p-3 text-sm text-destructive flex items-center">
-                <AlertTriangle className="h-4 w-4 mr-2 flex-shrink-0" />
-                This action triggers a formal legal notice.
-              </Card>
-            )}
+            
+            <ul className="space-y-2 mb-4 text-sm">
+              <li className="flex items-center gap-2">
+                <CheckCircle className="w-4 h-4 text-green-300" />
+                <span>24/7 Legal advisor access</span>
+              </li>
+              <li className="flex items-center gap-2">
+                <CheckCircle className="w-4 h-4 text-green-300" />
+                <span>Payment guarantee protection</span>
+              </li>
+              <li className="flex items-center gap-2">
+                <CheckCircle className="w-4 h-4 text-green-300" />
+                <span>Unlimited contract reviews</span>
+              </li>
+            </ul>
+            
+            <button className="w-full bg-white text-purple-700 font-semibold py-3 rounded-xl hover:bg-purple-50 transition-colors">
+              Upgrade to Premium
+            </button>
           </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsActionDialogOpen(false)} disabled={performActionMutation.isPending}>Cancel</Button>
-            <Button onClick={handlePerformAction} disabled={performActionMutation.isPending}>
-              {performActionMutation.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : `Confirm ${ACTION_TYPE_LABELS[actionType]}`}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+        </div>
+      )}
     </div>
   );
 };

@@ -1,1851 +1,1293 @@
 "use client";
 
-import { useEffect, useState, useMemo } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useState, useEffect, useMemo } from 'react';
+import { Home, Briefcase, CreditCard, Shield, MessageCircle, TrendingUp, DollarSign, Calendar, FileText, AlertCircle, Clock, ChevronRight, Plus, Bell, Search, User, Menu, X, Target, BarChart3, RefreshCw, LogOut, Loader2, Sparkles, XCircle } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
+import { useNavigate } from 'react-router-dom';
+import { useSignOut } from '@/lib/hooks/useAuth';
 import { useSession } from '@/contexts/SessionContext';
-import { 
-  Search, 
-  Loader2,
-  Bot,
-  Briefcase,
-  CheckCircle,
-  DollarSign,
-  ArrowRight,
-  TrendingUp as TrendingUpIcon,
-  Calendar,
-  AlertTriangle,
-  FileText,
-  Fingerprint
-} from 'lucide-react';
-import { toast } from 'sonner';
-import { useCreatorDashboardData } from '@/lib/hooks/useCreatorDashboardData';
-import ActionCenter from '@/components/creator-dashboard/ActionCenter';
-import QuickActionsFAB from '@/components/creator-dashboard/QuickActionsFAB';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
-import BrandDealForm from '@/components/forms/BrandDealForm';
 import { useBrandDeals } from '@/lib/hooks/useBrandDeals';
-import { useAIScanContractReview } from '@/lib/hooks/useAIScanContractReview';
-import { BrandDeal } from '@/types';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { useSendPaymentReminder } from '@/lib/hooks/useSendPaymentReminder';
-import { useSendTakedownNotice } from '@/lib/hooks/useSendTakedownNotice';
-import { cn, openContractFile } from '@/lib/utils';
-import ProjectDealCard from '@/components/creator-contracts/ProjectDealCard';
-import SwipeableDealCard from '@/components/creator-contracts/SwipeableDealCard';
-import { DealStage, PaymentStatus } from '@/components/creator-contracts/DealStatusBadge';
-import EnhancedPaymentCard from '@/components/payments/EnhancedPaymentCard';
-import FinancialOverviewHeader from '@/components/payments/FinancialOverviewHeader';
-import PaymentQuickFilters from '@/components/payments/PaymentQuickFilters';
-import CreatorCopyrightScanner from '@/components/creator-dashboard/CreatorCopyrightScanner';
-import ProtectionDashboardHeader from '@/components/content-protection/ProtectionDashboardHeader';
-import { useOriginalContent, useCopyrightMatches } from '@/lib/hooks/useCopyrightScanner';
-import ChatWindow from '@/components/ChatWindow';
-import TrialBanner from '@/components/trial/TrialBanner';
-import UpgradeModal from '@/components/trial/UpgradeModal';
-import { useDashboardShortcuts } from '@/hooks/useKeyboardShortcuts';
-import { ErrorBoundary } from '@/components/ui/error-boundary';
-import { QuickSearch } from '@/components/dashboard/QuickSearch';
-import { Sparkline } from '@/components/ui/sparkline';
-import Breadcrumbs from '@/components/navigation/Breadcrumbs';
-import { motion } from 'framer-motion';
-import CountUp from 'react-countup';
-import { usePrefersReducedMotion } from '@/hooks/usePrefersReducedMotion';
-import NextPayoutWidget from '@/components/creator-dashboard/NextPayoutWidget';
-import { useDynamicFavicon } from '@/hooks/useDynamicFavicon';
-import { useWeekendMode } from '@/hooks/useWeekendMode';
-import { triggerHaptic, HapticPatterns } from '@/lib/utils/haptics';
-import OnboardingChecklist from '@/components/onboarding/OnboardingChecklist';
-import EmptyState from '@/components/ui/EmptyState';
-import AchievementBadges from '@/components/achievements/AchievementBadges';
-import ShareEarningsCard from '@/components/earnings/ShareEarningsCard';
-import FocusModeToggle from '@/components/focus-mode/FocusModeToggle';
-import CreatorEasterEgg from '@/components/easter-egg/CreatorEasterEgg';
-import { useSoundEffects } from '@/hooks/useSoundEffects';
-import { Wallet, Briefcase as BriefcaseIcon } from 'lucide-react';
-import PullToRefresh from '@/components/mobile/PullToRefresh';
-import BottomSheet from '@/components/mobile/BottomSheet';
-import AddToHomeScreen from '@/components/mobile/AddToHomeScreen';
-import OfflineBanner from '@/components/mobile/OfflineBanner';
-import LongPressMenu from '@/components/mobile/LongPressMenu';
-import { useKeyboardAware } from '@/hooks/useKeyboardAware';
-import { useSwipeBack } from '@/hooks/useSwipeBack';
-import { useNativeShare } from '@/hooks/useNativeShare';
-import { usePushNotifications } from '@/hooks/usePushNotifications';
-import BiometricLogin from '@/components/auth/BiometricLogin';
-import { supabase } from '@/integrations/supabase/client';
-// New UI features
-import MoneyRain from '@/components/celebrations/MoneyRain';
-import EarningsHeatmap from '@/components/earnings/EarningsHeatmap';
-import TaxSeasonMonster from '@/components/tax/TaxSeasonMonster';
-import CreatorScoreBadge from '@/components/creator/CreatorScoreBadge';
-import ForexTicker from '@/components/forex/ForexTicker';
-import NightOwlBadge from '@/components/achievements/NightOwlBadge';
-import DealStreakCounter from '@/components/deals/DealStreakCounter';
-import TopBrandsCarousel from '@/components/brands/TopBrandsCarousel';
-import ExportMonthlyReport from '@/components/reports/ExportMonthlyReport';
-import DealKanban from '@/components/deals/DealKanban';
-import { usePratyushMode, PratyushModeOverlay } from '@/components/easter-egg/PratyushMode';
-
-// Helper functions
-const getDealStage = (deal: BrandDeal): DealStage => {
-  if (deal.status === 'Drafting') return 'draft';
-  if (deal.status === 'Approved' && !deal.payment_received_date) {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const dueDate = new Date(deal.due_date || deal.payment_expected_date);
-    dueDate.setHours(0, 0, 0, 0);
-    const daysUntilDue = Math.ceil((dueDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
-    if (daysUntilDue <= 0) return 'deliverables_due';
-    if (daysUntilDue <= 7) return 'deliverables_due';
-    return 'in_progress';
-  }
-  if (deal.status === 'Payment Pending' && deal.payment_received_date === null) {
-    return 'review_pending';
-  }
-  if (deal.status === 'Completed' || deal.payment_received_date) return 'completed';
-  return 'draft';
-};
-
-const getPaymentStatus = (deal: BrandDeal): PaymentStatus => {
-  if (deal.payment_received_date) return 'paid';
-  if (deal.status === 'Payment Pending') {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const dueDate = new Date(deal.payment_expected_date);
-    dueDate.setHours(0, 0, 0, 0);
-    return dueDate < today ? 'overdue' : 'pending';
-  }
-  return 'not_due';
-};
-
-// Pill Tab Button Component - Clean & Organized
-const PillTabButton = ({ 
-  label, 
-  isActive, 
-  onClick, 
-  count 
-}: { 
-  label: string; 
-  isActive: boolean; 
-  onClick: () => void;
-  count?: number;
-}) => {
-  return (
-    <button
-      onClick={onClick}
-      className={cn(
-        "relative px-6 py-3 text-base font-medium transition-all duration-300 border-b-2 border-transparent",
-        isActive
-          ? "text-white border-white"
-          : "text-white/60 hover:text-white/80"
-      )}
-    >
-      {label}
-      {count !== undefined && count > 0 && (
-        <span className={cn(
-          "ml-2 px-2.5 py-1 rounded-full text-xs font-semibold backdrop-blur-sm",
-          isActive 
-            ? "bg-white/20 text-white border border-white/30" 
-            : "bg-white/5 text-white/50 border border-white/10"
-        )}>
-          {count}
-        </span>
-      )}
-    </button>
-  );
-};
+import { usePartnerStats } from '@/lib/hooks/usePartnerProgram';
+import { logger } from '@/lib/utils/logger';
+import { getInitials } from '@/lib/utils/avatar';
+import { motion, AnimatePresence } from 'framer-motion';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 const CreatorDashboard = () => {
   const navigate = useNavigate();
-  const [searchParams, setSearchParams] = useSearchParams();
-  const { profile, loading: sessionLoading, isCreator, trialStatus } = useSession();
-  const [showExpiredModal, setShowExpiredModal] = useState(false);
-  const prefersReducedMotion = usePrefersReducedMotion();
-  const { isActive: isPratyushMode } = usePratyushMode();
-  
-  // URL-based tab navigation
-  const validTabs: Array<'overview' | 'deals' | 'payments' | 'protection'> = ['overview', 'deals', 'payments', 'protection'];
-  const tabFromUrl = searchParams.get('tab') as 'overview' | 'deals' | 'payments' | 'protection' | null;
-  const activeTab = (tabFromUrl && validTabs.includes(tabFromUrl)) ? tabFromUrl : 'overview';
-  
-  
-  const setActiveTab = (tab: 'overview' | 'deals' | 'payments' | 'protection') => {
-    setSearchParams({ tab }, { replace: true });
-  };
-  
-  // Sync URL on mount if no tab param or invalid tab
-  useEffect(() => {
-    const currentTab = searchParams.get('tab');
-    // Only set default if there's no tab or an invalid tab
-    if (!currentTab || !validTabs.includes(currentTab as any)) {
-      setSearchParams({ tab: 'overview' }, { replace: true });
-    }
-  }, []); // Only run once on mount to set default
-  
-  // Keyboard shortcuts
-  useDashboardShortcuts();
-  
-  // Handle Cmd+K for quick search
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
-        e.preventDefault();
-        setIsQuickSearchOpen(true);
-      }
-    };
-    
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
-  
-  // Dialog states
-  const [isBrandDealFormOpen, setIsBrandDealFormOpen] = useState(false);
-  const [editingBrandDeal, setEditingBrandDeal] = useState<BrandDeal | null>(null);
-  const [isAIScanDialogOpen, setIsAIScanDialogOpen] = useState(false);
-  const [selectedContractForAIScan, setSelectedContractForAIScan] = useState<string | null>(null);
-  const [aiScanResults, setAiScanResults] = useState<any>(null);
-  const [isSendPaymentReminderDialogOpen, setIsSendPaymentReminderDialogOpen] = useState(false);
-  const [selectedDealForReminder, setSelectedDealForReminder] = useState<BrandDeal | null>(null);
-  const [isSendTakedownNoticeDialogOpen, setIsSendTakedownNoticeDialogOpen] = useState(false);
-  const [takedownNoticeDetails, setTakedownNoticeDetails] = useState({
-    contentUrl: '', platform: '', infringingUrl: '', infringingUser: ''
+  const signOutMutation = useSignOut();
+  const { profile, user, loading: sessionLoading } = useSession();
+  const [activeTab, setActiveTab] = useState('home');
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [showMenu, setShowMenu] = useState(false);
+  const [showLogoutDialog, setShowLogoutDialog] = useState(false);
+  const [showWelcomeBanner, setShowWelcomeBanner] = useState(false);
+  const [timeframe, setTimeframe] = useState<'month' | 'lastMonth' | 'allTime'>('month');
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  // Fetch real data
+  const { data: brandDeals = [], isLoading: isLoadingDeals } = useBrandDeals({
+    creatorId: profile?.id,
+    enabled: !sessionLoading && !!profile?.id,
   });
-  const [isMessageDialogOpen, setIsMessageDialogOpen] = useState(false);
-  const [messageReceiverId, setMessageReceiverId] = useState<string | null>(null);
-  const [messageReceiverName, setMessageReceiverName] = useState<string>('');
-  const [isQuickSearchOpen, setIsQuickSearchOpen] = useState(false);
-  const [focusMode, setFocusMode] = useState(false);
-  const [hasPasskey, setHasPasskey] = useState<boolean | null>(null);
-  const [showPasskeyDialog, setShowPasskeyDialog] = useState(false);
-  const { keyboardHeight, isKeyboardVisible } = useKeyboardAware();
-  const { share } = useNativeShare();
-  const { requestPermission: requestPushPermission } = usePushNotifications();
-  
-  // Enable swipe back navigation
-  useSwipeBack();
-  
-  // Progressive blur on scroll
+
+  const { data: partnerStats } = usePartnerStats(profile?.id);
+
+  // Check if user just completed onboarding (show welcome banner)
   useEffect(() => {
-    const handleScroll = () => {
-      const header = document.querySelector('header');
-      if (header) {
-        if (window.scrollY > 50) {
-          header.classList.add('scrolled');
-        } else {
-          header.classList.remove('scrolled');
+    if (profile?.onboarding_complete) {
+      // Check if onboarding was completed recently (within last 24 hours)
+      const onboardingDate = profile.updated_at ? new Date(profile.updated_at) : null;
+      if (onboardingDate) {
+        const hoursSinceOnboarding = (Date.now() - onboardingDate.getTime()) / (1000 * 60 * 60);
+        if (hoursSinceOnboarding < 24) {
+          setShowWelcomeBanner(true);
+          // Auto-hide after 10 seconds
+          const timer = setTimeout(() => setShowWelcomeBanner(false), 10000);
+          return () => clearTimeout(timer);
         }
       }
-    };
-    
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-  
-  // Request push notification permission on 2nd visit
-  useEffect(() => {
-    const visitCount = parseInt(localStorage.getItem('visit_count') || '0', 10);
-    if (visitCount === 2) {
-      setTimeout(() => {
-        requestPushPermission();
-      }, 5000);
     }
-  }, [requestPushPermission]);
+  }, [profile]);
 
-  // Check if user has a passkey registered
-  useEffect(() => {
-    const checkPasskey = async () => {
-      if (!profile?.id) return;
-      
-      try {
-        const { data, error } = await supabase
-          .from('passkeys')
-          .select('id')
-          .eq('user_id', profile.id)
-          .eq('is_active', true)
-          .limit(1);
-        
-        if (error && error.code !== '42P01') { // Ignore table not found errors
-          console.error('Error checking passkey:', error);
-          setHasPasskey(null);
-          return;
-        }
-        
-        setHasPasskey(data && data.length > 0);
-      } catch (err) {
-        // Table might not exist yet, treat as no passkey
-        setHasPasskey(false);
-      }
-    };
-    
-    checkPasskey();
-  }, [profile?.id]);
+  const isInitialLoading = sessionLoading || isLoadingDeals;
 
-  const handlePasskeyRegisterSuccess = () => {
-    toast.success('Passkey registered! You can now use Face ID to sign in.');
-    setShowPasskeyDialog(false);
-    setHasPasskey(true);
+  // Haptic feedback helper
+  const triggerHaptic = (pattern: 'light' | 'medium' | 'heavy' = 'light') => {
+    if (navigator.vibrate) {
+      const patterns = {
+        light: [10],
+        medium: [20],
+        heavy: [30, 10, 30]
+      };
+      navigator.vibrate(patterns[pattern]);
+    }
   };
 
-  // Filter states for deals tab
-  const [searchTerm, setSearchTerm] = useState('');
-  const [quickFilter, setQuickFilter] = useState<string | null>(null);
-  const [dealsView, setDealsView] = useState<'list' | 'kanban'>('list');
-  
-  // Filter states for payments tab
-  const [paymentSearchTerm, setPaymentSearchTerm] = useState('');
-  const [paymentQuickFilter, setPaymentQuickFilter] = useState<string | null>(null);
+  // Pull to refresh
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    triggerHaptic('medium');
+    // Simulate data refresh
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    setIsRefreshing(false);
+    triggerHaptic('light');
+  };
 
-  // Fetch data
-  const { data: mockDashboardData, isLoading: isLoadingMocks, error: mockError } = useCreatorDashboardData(
-    !sessionLoading && isCreator
-  );
+  // User data from session
+  const userData = useMemo(() => ({
+    name: `${profile?.first_name || ''} ${profile?.last_name || ''}`.trim() || 'Creator',
+    displayName: profile?.instagram_handle?.replace('@', '') || user?.email?.split('@')[0] || 'creator',
+    userType: "Content Creator",
+    streak: 0, // TODO: Calculate from actual streak data when available
+    avatar: getInitials(profile?.first_name || null, profile?.last_name || null)
+  }), [profile, user, partnerStats]);
 
-  const { data: brandDeals, isLoading: isLoadingBrandDeals, error: brandDealsError, refetch: refetchBrandDeals } = useBrandDeals({
-    creatorId: profile?.id,
-    enabled: !sessionLoading && isCreator && !!profile?.id,
-  });
-
-  // Calculate lifetime earnings
-  const lifetimeEarnings = useMemo(() => {
-    if (!brandDeals) return 0;
-    return brandDeals
-      .filter(deal => deal.status === 'Completed' && deal.payment_received_date)
-      .reduce((sum, deal) => sum + (deal.deal_amount || 0), 0);
-  }, [brandDeals]);
-
-  // Dynamic favicon based on payment status
-  useDynamicFavicon(brandDeals);
-  
-  // Weekend mode styling
-  useWeekendMode();
-
-  const scanContractMutation = useAIScanContractReview();
-  const sendPaymentReminderMutation = useSendPaymentReminder();
-  const sendTakedownNoticeMutation = useSendTakedownNotice();
-
-  // Content protection data
-  const { data: originalContentList } = useOriginalContent({
-    creatorId: profile?.id,
-    enabled: !sessionLoading && isCreator && !!profile?.id,
-  });
-  const { data: copyrightMatches } = useCopyrightMatches({
-    contentId: originalContentList?.[0]?.id,
-    enabled: !!originalContentList?.[0]?.id,
-  });
-
-  useEffect(() => {
-    if (mockError) {
-      toast.error('Failed to load creator dashboard data', { description: mockError.message });
-    }
-    if (brandDealsError) {
-      toast.error('Failed to load brand deals', { description: brandDealsError.message });
-    }
-  }, [mockError, brandDealsError]);
-
-  // Check if trial is locked and redirect to billing or show modal
-  useEffect(() => {
-    if (!sessionLoading && profile && trialStatus.trialLocked) {
-      // Redirect to billing page if trial is locked
-      navigate('/creator-profile?tab=billing', { replace: true });
-      setShowExpiredModal(true);
-    }
-  }, [sessionLoading, profile, trialStatus.trialLocked, navigate]);
-
-
-  // Demo data for when brandDeals is empty
-  const demoBrandDeals: BrandDeal[] = useMemo(() => {
-    const now = new Date();
-    const currentMonth = now.getMonth();
-    const currentYear = now.getFullYear();
-    
-    return [
-      {
-        id: 'demo-1',
-        creator_id: profile?.id || '',
-        brand_name: 'Levi\'s',
-        platform: 'Instagram',
-        deal_amount: 1000,
-        status: 'Drafting',
-        payment_expected_date: new Date(currentYear, currentMonth, 25).toISOString(),
-        created_at: new Date(currentYear, currentMonth, 15).toISOString(),
-        deliverables: JSON.stringify([{ type: 'Reel', count: 1 }]),
-        due_date: new Date(currentYear, currentMonth, 25).toISOString(),
-      },
-      {
-        id: 'demo-2',
-        creator_id: profile?.id || '',
-        brand_name: 'Ajio',
-        platform: 'Instagram',
-        deal_amount: 14500,
-        status: 'Payment Pending',
-        payment_expected_date: new Date(currentYear, currentMonth, 22).toISOString(),
-        created_at: new Date(currentYear, currentMonth - 1, 20).toISOString(),
-        deliverables: JSON.stringify([{ type: 'Reel', count: 1 }, { type: 'Stories', count: 3 }]),
-      },
-      {
-        id: 'demo-3',
-        creator_id: profile?.id || '',
-        brand_name: 'Nike',
-        platform: 'YouTube',
-        deal_amount: 20000,
-        status: 'Payment Pending',
-        payment_expected_date: new Date(currentYear, currentMonth, 30).toISOString(),
-        created_at: new Date(currentYear, currentMonth - 1, 15).toISOString(),
-        deliverables: JSON.stringify([{ type: 'Integration', count: 1 }]),
-      },
-      {
-        id: 'demo-4',
-        creator_id: profile?.id || '',
-        brand_name: 'Mamaearth',
-        platform: 'Instagram',
-        deal_amount: 4254,
-        status: 'Payment Pending',
-        payment_expected_date: new Date(currentYear, currentMonth, 20).toISOString(),
-        created_at: new Date(currentYear, currentMonth - 1, 10).toISOString(),
-        deliverables: JSON.stringify([{ type: 'Carousel', count: 1 }, { type: 'Stories', count: 1 }]),
-      },
-      {
-        id: 'demo-5',
-        creator_id: profile?.id || '',
-        brand_name: 'boAt',
-        platform: 'Instagram',
-        deal_amount: 12000,
-        status: 'Payment Pending',
-        payment_expected_date: new Date(currentYear, currentMonth - 1, 10).toISOString(), // Overdue
-        created_at: new Date(currentYear, currentMonth - 2, 15).toISOString(),
-        deliverables: JSON.stringify([{ type: 'Reel', count: 1 }, { type: 'Stories', count: 2 }]),
-      },
-      {
-        id: 'demo-6',
-        creator_id: profile?.id || '',
-        brand_name: 'Zepto',
-        platform: 'Instagram',
-        deal_amount: 8500,
-        status: 'Payment Pending',
-        payment_expected_date: new Date(currentYear, currentMonth + 1, 4).toISOString(),
-        created_at: new Date(currentYear, currentMonth - 1, 5).toISOString(),
-        deliverables: JSON.stringify([{ type: 'Reel', count: 1 }]),
-      },
-    ] as BrandDeal[];
-  }, [profile?.id]);
-
-  // Calculate dashboard data
-  const dashboardData = useMemo(() => {
-    // Use demo data if brandDeals is empty or has very few items
-    const dealsToUse = (!brandDeals || brandDeals.length < 3) ? demoBrandDeals : brandDeals;
-    if (!dealsToUse || dealsToUse.length === 0) return null;
-
+  // Calculate real stats from brand deals
+  const calculatedStats = useMemo(() => {
     const now = new Date();
     const currentMonth = now.getMonth();
     const currentYear = now.getFullYear();
     const lastMonth = currentMonth === 0 ? 11 : currentMonth - 1;
     const lastMonthYear = currentMonth === 0 ? currentYear - 1 : currentYear;
 
-    const currentMonthEarnings = dealsToUse
-      .filter(deal => {
+    // Filter deals by timeframe
+    const getDealsByTimeframe = (timeframe: 'month' | 'lastMonth' | 'allTime') => {
+      if (timeframe === 'allTime') return brandDeals;
+      
+      const targetMonth = timeframe === 'month' ? currentMonth : lastMonth;
+      const targetYear = timeframe === 'month' ? currentYear : lastMonthYear;
+      
+      return brandDeals.filter(deal => {
         if (!deal.payment_received_date) return false;
-        const receivedDate = new Date(deal.payment_received_date);
-        return receivedDate.getMonth() === currentMonth && 
-               receivedDate.getFullYear() === currentYear &&
-               deal.status === 'Completed';
-      })
-      .reduce((sum, deal) => sum + deal.deal_amount, 0);
-
-    const lastMonthEarnings = dealsToUse
-      .filter(deal => {
-        if (!deal.payment_received_date) return false;
-        const receivedDate = new Date(deal.payment_received_date);
-        return receivedDate.getMonth() === lastMonth && 
-               receivedDate.getFullYear() === lastMonthYear &&
-               deal.status === 'Completed';
-      })
-      .reduce((sum, deal) => sum + deal.deal_amount, 0);
-
-    const urgentActions: Array<{
-      type: 'payment_overdue' | 'contract_review' | 'content_stolen';
-      title: string;
-      amount?: number;
-      daysOverdue?: number;
-      dueDate?: string;
-      brand?: string;
-      receivedDays?: number;
-      hasRedFlags?: boolean;
-      matches?: number;
-      topThief?: string;
-      views?: number;
-      platform?: string;
-      dealId?: string;
-      lastReminderSentDays?: number;
-    }> = [];
-    
-    const overduePayments = dealsToUse.filter(deal => {
-      if (deal.status !== 'Payment Pending') return false;
-      const dueDate = new Date(deal.payment_expected_date);
-      const daysDiff = Math.floor((now.getTime() - dueDate.getTime()) / (1000 * 60 * 60 * 24));
-      return daysDiff > 0;
-    });
-    
-    overduePayments.forEach(deal => {
-      const dueDate = new Date(deal.payment_expected_date);
-      const daysOverdue = Math.floor((now.getTime() - dueDate.getTime()) / (1000 * 60 * 60 * 24));
-      // Demo: Calculate last reminder sent days (in real app, fetch from payment_reminders table)
-      // For demo, assume a reminder was sent 5 days ago if overdue for more than 7 days
-      const lastReminderSentDays = daysOverdue > 7 ? 5 : undefined;
-      urgentActions.push({
-        type: 'payment_overdue' as const,
-        title: `${deal.brand_name} Payment Overdue`,
-        amount: deal.deal_amount,
-        daysOverdue,
-        dueDate: deal.payment_expected_date,
-        brand: deal.brand_name,
-        dealId: deal.id,
-        platform: deal.platform || 'N/A',
-        lastReminderSentDays,
+        const date = new Date(deal.payment_received_date);
+        return date.getMonth() === targetMonth && date.getFullYear() === targetYear;
       });
-    });
+    };
 
-    const contractsNeedingReview = dealsToUse.filter(deal => 
-      deal.status === 'Drafting' && deal.contract_file_url
-    );
-    
-    contractsNeedingReview.forEach(deal => {
-      const createdDate = new Date(deal.created_at);
-      const daysSince = Math.floor((now.getTime() - createdDate.getTime()) / (1000 * 60 * 60 * 24));
-      urgentActions.push({
-        type: 'contract_review' as const,
-        title: `${deal.brand_name} Contract Needs Review`,
-        receivedDays: daysSince,
-        hasRedFlags: true,
-        dealId: deal.id,
-      });
-    });
+    const currentDeals = getDealsByTimeframe('month');
+    const lastMonthDeals = getDealsByTimeframe('lastMonth');
+    const allTimeDeals = getDealsByTimeframe('allTime');
 
-    const pendingPayments = dealsToUse
-      .filter(deal => deal.status === 'Payment Pending')
-      .reduce((sum, deal) => sum + deal.deal_amount, 0);
+    // Calculate earnings
+    const currentEarnings = currentDeals
+      .filter(deal => deal.payment_received_date)
+      .reduce((sum, deal) => sum + (deal.deal_amount || 0), 0);
     
-    const pendingBrandCount = new Set(
-      dealsToUse
-        .filter(deal => deal.status === 'Payment Pending')
-        .map(deal => deal.brand_name)
-    ).size;
+    const lastMonthEarnings = lastMonthDeals
+      .filter(deal => deal.payment_received_date)
+      .reduce((sum, deal) => sum + (deal.deal_amount || 0), 0);
 
-    const oneWeekFromNow = new Date(now);
-    oneWeekFromNow.setDate(oneWeekFromNow.getDate() + 7);
-    
-    const dueThisWeek = dealsToUse
-      .filter(deal => {
-        if (deal.status !== 'Payment Pending') return false;
-        const dueDate = new Date(deal.payment_expected_date);
-        return dueDate >= now && dueDate <= oneWeekFromNow;
-      })
-      .reduce((sum, deal) => sum + deal.deal_amount, 0);
-    
-    const dueThisWeekCount = dealsToUse.filter(deal => {
-      if (deal.status !== 'Payment Pending') return false;
-      const dueDate = new Date(deal.payment_expected_date);
-      return dueDate >= now && dueDate <= oneWeekFromNow;
-    }).length;
+    const allTimeEarnings = allTimeDeals
+      .filter(deal => deal.payment_received_date)
+      .reduce((sum, deal) => sum + (deal.deal_amount || 0), 0);
 
-    const activeCampaigns = dealsToUse.filter(deal => 
-      deal.status === 'Approved' || deal.status === 'Drafting'
+    // Calculate growth
+    const monthlyGrowth = lastMonthEarnings > 0 
+      ? ((currentEarnings - lastMonthEarnings) / lastMonthEarnings) * 100 
+      : currentEarnings > 0 ? 100 : 0;
+
+    // Calculate pending payments
+    const pendingPayments = brandDeals
+      .filter(deal => deal.status === 'Payment Pending' && !deal.payment_received_date)
+      .reduce((sum, deal) => sum + (deal.deal_amount || 0), 0);
+
+    // Get next payout (earliest pending payment)
+    const nextPayoutDeal = brandDeals
+      .filter(deal => deal.status === 'Payment Pending' && deal.payment_expected_date)
+      .sort((a, b) => {
+        const dateA = new Date(a.payment_expected_date!).getTime();
+        const dateB = new Date(b.payment_expected_date!).getTime();
+        return dateA - dateB;
+      })[0];
+
+    // Active deals (not completed, not drafting)
+    const activeDeals = brandDeals.filter(deal => 
+      deal.status !== 'Completed' && deal.status !== 'Drafting'
     ).length;
 
-    const deliverablesDue = dealsToUse.filter(deal => {
-      return deal.status === 'Approved';
-    }).length;
-
-    const completedThisMonth = dealsToUse.filter(deal => {
-      if (deal.status !== 'Completed' || !deal.payment_received_date) return false;
-      const receivedDate = new Date(deal.payment_received_date);
-      return receivedDate.getMonth() === currentMonth && 
-             receivedDate.getFullYear() === currentYear;
-    }).length;
-
-    const dealsClosedThisMonth = completedThisMonth;
-    const dealsClosedLastMonth = dealsToUse.filter(deal => {
-      if (deal.status !== 'Completed' || !deal.payment_received_date) return false;
-      const receivedDate = new Date(deal.payment_received_date);
-      return receivedDate.getMonth() === lastMonth && 
-             receivedDate.getFullYear() === lastMonthYear;
-    }).length;
-
-    const         avgDealValue = completedThisMonth > 0
-      ? dealsToUse
-          .filter(deal => {
-            if (deal.status !== 'Completed' || !deal.payment_received_date) return false;
-            const receivedDate = new Date(deal.payment_received_date);
-            return receivedDate.getMonth() === currentMonth && 
-                   receivedDate.getFullYear() === currentYear;
-          })
-          .reduce((sum, deal) => sum + deal.deal_amount, 0) / completedThisMonth
-      : 0;
-
-    const upcomingDeadlines = dealsToUse
-      .filter(deal => {
-        if (deal.status === 'Completed') return false;
-        const dueDate = new Date(deal.payment_expected_date);
-        return dueDate >= now;
-      })
-      .slice(0, 3)
-      .map(deal => ({
-        date: deal.payment_expected_date,
-        task: `${deal.brand_name} payment due`,
-      }))
-      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-
     return {
-      earnings: {
-        current: currentMonthEarnings || 285700,
-        previous: lastMonthEarnings || 255200,
-        goal: 350000,
+      month: {
+        earnings: currentEarnings,
+        monthlyGrowth,
+        goal: currentEarnings * 1.5, // Dynamic goal based on current earnings
       },
-      urgentActions: urgentActions.slice(0, 3),
-      moneyOverview: {
-        pendingPayments,
-        pendingBrandCount,
-        dueThisWeek,
-        dueThisWeekCount,
-        activeCampaigns,
-        deliverablesDue,
-        completed: completedThisMonth,
-        onTimeRate: 100,
+      lastMonth: {
+        earnings: lastMonthEarnings,
+        monthlyGrowth: 0,
+        goal: lastMonthEarnings * 1.5,
       },
-      quickStats: {
-        dealsClosed: dealsClosedThisMonth || 4,
-        dealsChange: dealsClosedThisMonth - dealsClosedLastMonth,
-        avgDealValue: Math.round(avgDealValue) || 71425,
-        paymentCollectionRate: 92,
-        pitchesSent: 2,
-        takedownsSuccessful: 8,
+      allTime: {
+        earnings: allTimeEarnings,
+        monthlyGrowth: monthlyGrowth,
+        goal: allTimeEarnings * 1.2,
       },
-      upcomingDeadlines,
+      totalDeals: brandDeals.length,
+      activeDeals,
+      pendingPayments,
+      nextPayout: nextPayoutDeal?.deal_amount || 0,
+      payoutDate: nextPayoutDeal?.payment_expected_date || null,
+      protectionScore: 85, // TODO: Calculate from content protection data
     };
-  }, [brandDeals, demoBrandDeals]);
+  }, [brandDeals, timeframe]);
 
-  // Filter deals for deals tab
-  const filteredDeals = useMemo(() => {
-    if (!brandDeals) return [];
-    let filtered = [...brandDeals];
+  const stats = {
+    ...calculatedStats[timeframe],
+    totalDeals: calculatedStats.totalDeals,
+    activeDeals: calculatedStats.activeDeals,
+    pendingPayments: calculatedStats.pendingPayments,
+    nextPayout: calculatedStats.nextPayout,
+    payoutDate: calculatedStats.payoutDate,
+    protectionScore: calculatedStats.protectionScore,
+  };
 
-    if (searchTerm) {
-      const searchLower = searchTerm.toLowerCase();
-      filtered = filtered.filter(deal => 
-        deal.brand_name.toLowerCase().includes(searchLower) ||
-        deal.deliverables?.toLowerCase().includes(searchLower)
-      );
-    }
+  const earningsProgress = stats.goal > 0 ? (stats.earnings / stats.goal) * 100 : 0;
+  
+  // Check if user has no data (new user)
+  const hasNoData = brandDeals.length === 0;
 
-    if (quickFilter) {
-      const now = new Date();
-      now.setHours(0, 0, 0, 0);
-      switch (quickFilter) {
-        case 'active':
-          filtered = filtered.filter(deal => 
-            deal.status === 'Approved' || deal.status === 'Drafting'
-          );
-          break;
-        case 'pending_payment':
-          filtered = filtered.filter(deal => deal.status === 'Payment Pending');
-          break;
-        case 'expiring_soon':
-          const sevenDaysFromNow = new Date(now);
-          sevenDaysFromNow.setDate(sevenDaysFromNow.getDate() + 7);
-          filtered = filtered.filter(deal => {
-            const dueDate = new Date(deal.payment_expected_date);
-            return dueDate >= now && dueDate <= sevenDaysFromNow;
-          });
-          break;
-        case 'completed':
-          filtered = filtered.filter(deal => deal.status === 'Completed');
-          break;
+  // Recent activity from real deals
+  const recentActivity = useMemo(() => {
+    if (hasNoData) return [];
+    
+    const activities: Array<{
+      id: string;
+      type: string;
+      title: string;
+      description: string;
+      time: string;
+      icon: typeof DollarSign;
+      color: string;
+      bgColor: string;
+    }> = [];
+
+    // Get recent payments
+    const recentPayments = brandDeals
+      .filter(deal => deal.payment_received_date)
+      .sort((a, b) => {
+        const dateA = new Date(a.payment_received_date!).getTime();
+        const dateB = new Date(b.payment_received_date!).getTime();
+        return dateB - dateA;
+      })
+      .slice(0, 2);
+
+    recentPayments.forEach(deal => {
+      const date = new Date(deal.payment_received_date!);
+      const hoursAgo = Math.floor((Date.now() - date.getTime()) / (1000 * 60 * 60));
+      activities.push({
+        id: `payment-${deal.id}`,
+        type: "payment_received",
+        title: "Payment Received",
+        description: `${deal.brand_name} - ₹${deal.deal_amount.toLocaleString('en-IN')}`,
+        time: hoursAgo < 24 ? `${hoursAgo} hours ago` : `${Math.floor(hoursAgo / 24)} days ago`,
+        icon: DollarSign,
+        color: "text-green-400",
+        bgColor: "bg-green-500/20"
+      });
+    });
+
+    // Get upcoming due dates
+    const upcomingDue = brandDeals
+      .filter(deal => deal.due_date && !deal.payment_received_date)
+      .sort((a, b) => {
+        const dateA = new Date(a.due_date!).getTime();
+        const dateB = new Date(b.due_date!).getTime();
+        return dateA - dateB;
+      })
+      .slice(0, 1);
+
+    upcomingDue.forEach(deal => {
+      const date = new Date(deal.due_date!);
+      const daysUntil = Math.ceil((date.getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+      if (daysUntil <= 7) {
+        activities.push({
+          id: `due-${deal.id}`,
+          type: "contract_alert",
+          title: daysUntil < 0 ? "Overdue" : "Due Soon",
+          description: `${deal.brand_name} ${daysUntil < 0 ? 'overdue' : `due in ${daysUntil} days`}`,
+          time: daysUntil < 0 ? "Overdue" : `${daysUntil} days left`,
+          icon: AlertCircle,
+          color: daysUntil < 0 ? "text-red-400" : "text-yellow-400",
+          bgColor: daysUntil < 0 ? "bg-red-500/20" : "bg-yellow-500/20"
+        });
       }
+    });
+
+    return activities.slice(0, 3);
+  }, [brandDeals, hasNoData]);
+
+  // Active deals preview from real data
+  const activeDealsPreview = useMemo(() => {
+    if (hasNoData) return [];
+    
+    return brandDeals
+      .filter(deal => deal.status !== 'Completed' && deal.status !== 'Drafting')
+      .sort((a, b) => {
+        const dateA = new Date(a.due_date || a.created_at).getTime();
+        const dateB = new Date(b.due_date || b.created_at).getTime();
+        return dateB - dateA;
+      })
+      .slice(0, 2)
+      .map(deal => ({
+        id: deal.id,
+        brand: deal.brand_name,
+        amount: deal.deal_amount,
+        status: deal.status,
+        dueDate: deal.due_date,
+        progress: deal.status === 'Completed' ? 100 : deal.status === 'Payment Pending' ? 75 : 50
+      }));
+  }, [brandDeals, hasNoData]);
+
+  // Active deals formatted for display
+  const activeDeals = activeDealsPreview.map(deal => ({
+    id: deal.id,
+    title: `${deal.brand} Deal`,
+    brand: deal.brand,
+    value: deal.amount,
+    progress: deal.progress,
+    status: deal.status === 'Payment Pending' ? 'active' : 'negotiation',
+    deadline: deal.dueDate ? new Date(deal.dueDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'TBD'
+  }));
+
+  // Upcoming payments
+  const upcomingPayments = [
+    {
+      id: 1,
+      title: "TechGear Pro Sponsorship",
+      amount: 75000,
+      date: "Nov 30, 2024",
+      status: "pending"
+    },
+    {
+      id: 2,
+      title: "SkillShare Affiliate",
+      amount: 45000,
+      date: "Dec 5, 2024",
+      status: "processing"
     }
+  ];
 
-    return filtered;
-  }, [brandDeals, searchTerm, quickFilter]);
-
-  // Filter payments for payments tab
-  const filteredPayments = useMemo(() => {
-    if (!brandDeals) return [];
-    let filtered = brandDeals.filter(deal => 
-      deal.status === 'Payment Pending' || (deal.status === 'Completed' && deal.payment_received_date)
-    );
-
-    if (paymentQuickFilter === 'overdue') {
-      const now = new Date();
-      now.setHours(0, 0, 0, 0);
-      filtered = filtered.filter(deal => {
-        if (deal.status !== 'Payment Pending') return false;
-        const dueDate = new Date(deal.payment_expected_date);
-        return dueDate < now;
-      });
-    } else if (paymentQuickFilter === 'due_this_week') {
-      const now = new Date();
-      now.setHours(0, 0, 0, 0);
-      const sevenDaysFromNow = new Date(now);
-      sevenDaysFromNow.setDate(sevenDaysFromNow.getDate() + 7);
-      filtered = filtered.filter(deal => {
-        if (deal.status !== 'Payment Pending') return false;
-        const dueDate = new Date(deal.payment_expected_date);
-        return dueDate >= now && dueDate <= sevenDaysFromNow;
-      });
-    } else if (paymentQuickFilter === 'pending') {
-      const now = new Date();
-      now.setHours(0, 0, 0, 0);
-      filtered = filtered.filter(deal => {
-        if (deal.status !== 'Payment Pending') return false;
-        const dueDate = new Date(deal.payment_expected_date);
-        return dueDate >= now;
-      });
-    } else if (paymentQuickFilter === 'paid') {
-      filtered = filtered.filter(deal => 
-        deal.status === 'Completed' && deal.payment_received_date
-      );
+  // Quick actions
+  const quickActions = [
+    {
+      id: 1,
+      icon: FileText,
+      label: "Upload Contract",
+      color: "bg-purple-500/20",
+      iconColor: "text-purple-400"
+    },
+    {
+      id: 2,
+      icon: Plus,
+      label: "Add Deal",
+      color: "bg-blue-500/20",
+      iconColor: "text-blue-400"
+    },
+    {
+      id: 3,
+      icon: MessageCircle,
+      label: "Message Advisor",
+      color: "bg-green-500/20",
+      iconColor: "text-green-400"
+    },
+    {
+      id: 4,
+      icon: Calendar,
+      label: "Schedule Call",
+      color: "bg-orange-500/20",
+      iconColor: "text-orange-400"
     }
+  ];
 
-    // Apply search filter
-    if (paymentSearchTerm) {
-      const searchLower = paymentSearchTerm.toLowerCase();
-      filtered = filtered.filter(deal => 
-        deal.brand_name.toLowerCase().includes(searchLower) ||
-        deal.platform?.toLowerCase().includes(searchLower) ||
-        deal.deal_amount.toString().includes(searchLower)
-      );
+  // Notifications
+  const notifications = [
+    {
+      id: 1,
+      title: "New message from Anjali Sharma",
+      time: "5 min ago",
+      unread: true
+    },
+    {
+      id: 2,
+      title: "Contract review completed",
+      time: "1 hour ago",
+      unread: true
+    },
+    {
+      id: 3,
+      title: "Payment reminder: ₹75K due today",
+      time: "2 hours ago",
+      unread: false
     }
+  ];
 
-    return filtered;
-  }, [brandDeals, paymentQuickFilter, paymentSearchTerm]);
-
-  const handleAddBrandDeal = () => {
-    setEditingBrandDeal(null);
-    setIsBrandDealFormOpen(true);
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return "Good morning";
+    if (hour < 18) return "Good afternoon";
+    return "Good evening";
   };
 
-  const handlePerformAIScan = async () => {
-    if (!selectedContractForAIScan) {
-      toast.error('Please select a contract to scan.');
-      return;
-    }
-    const selectedDeal = brandDeals?.find(deal => deal.contract_file_url === selectedContractForAIScan);
-    if (!selectedDeal) {
-      toast.error('Selected contract not found.');
-      return;
-    }
-
-    try {
-      const results = await scanContractMutation.mutateAsync({
-        contract_file_url: selectedContractForAIScan,
-        brand_name: selectedDeal.brand_name,
-      });
-      setAiScanResults(results);
-      toast.success('AI scan completed successfully!');
-    } catch (error: any) {
-      toast.error('AI scan failed', { description: error.message });
-    }
-  };
-
-  const handleSendReminderFromDialog = async () => {
-    if (!selectedDealForReminder) return;
-
-    try {
-      await sendPaymentReminderMutation.mutateAsync({ brandDealId: selectedDealForReminder.id });
-      toast.success('Payment reminder sent!');
-      setIsSendPaymentReminderDialogOpen(false);
-      setSelectedDealForReminder(null);
-      refetchBrandDeals();
-    } catch (error: any) {
-      toast.error('Failed to send reminder', { description: error.message });
-    }
-  };
-
-  const handleSendTakedownFromDialog = async () => {
-    if (!takedownNoticeDetails.contentUrl.trim() || !takedownNoticeDetails.platform.trim() || !takedownNoticeDetails.infringingUrl.trim()) {
-      toast.error('Please fill in all required fields for the takedown notice.');
-      return;
-    }
-
-    try {
-      await sendTakedownNoticeMutation.mutateAsync({
-        contentUrl: takedownNoticeDetails.contentUrl.trim(),
-        platform: takedownNoticeDetails.platform.trim(),
-        infringingUrl: takedownNoticeDetails.infringingUrl.trim(),
-        infringingUser: takedownNoticeDetails.infringingUser.trim() || undefined,
-      });
-      toast.success('Takedown notice sent successfully!');
-      setIsSendTakedownNoticeDialogOpen(false);
-      setTakedownNoticeDetails({ contentUrl: '', platform: '', infringingUrl: '', infringingUser: '' });
-    } catch (error: any) {
-      toast.error('Failed to send takedown notice', { description: error.message });
-    }
-  };
-
-
-  const handleCloseMessageDialog = () => {
-    setIsMessageDialogOpen(false);
-    setMessageReceiverId(null);
-    setMessageReceiverName('');
-  };
-
-  if (sessionLoading || isLoadingMocks || isLoadingBrandDeals) {
-    return (
-      <div className="min-h-[300px] flex flex-col items-center justify-center bg-background">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        <p className="mt-3 text-muted-foreground">Loading Creator Dashboard...</p>
+  // Skeleton Loading Component
+  const DashboardSkeleton = () => (
+    <div className="p-4 pb-24 space-y-6">
+      {/* Greeting Skeleton */}
+      <div className="mb-6">
+        <Skeleton className="h-10 w-64 mb-2" />
+        <Skeleton className="h-6 w-48" />
       </div>
-    );
-  }
 
-  if (!mockDashboardData || !dashboardData) {
-    return (
-      <div className="min-h-[300px] flex flex-col items-center justify-center bg-background">
-        <p className="text-destructive">No dashboard data available.</p>
+      {/* Quick Stats Skeleton */}
+      <div className="grid grid-cols-3 gap-3 mb-4">
+        {[1, 2, 3].map((i) => (
+          <div key={i} className="bg-white/10 backdrop-blur-md rounded-xl p-3 border border-white/10">
+            <Skeleton className="h-4 w-16 mb-2" />
+            <Skeleton className="h-8 w-20" />
+          </div>
+        ))}
       </div>
-    );
-  }
 
-  const handleRefresh = async () => {
-    await refetchBrandDeals();
-    if (dashboardData) {
-      // Trigger any other refresh logic here
-    }
-  };
+      {/* Main Earnings Card Skeleton */}
+      <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/10">
+        <Skeleton className="h-6 w-32 mb-4" />
+        <Skeleton className="h-12 w-40 mb-2" />
+        <Skeleton className="h-4 w-48 mb-4" />
+        <Skeleton className="h-3 w-full rounded-full" />
+      </div>
+
+      {/* Stats Grid Skeleton */}
+      <div className="grid grid-cols-2 gap-3">
+        {[1, 2, 3, 4].map((i) => (
+          <div key={i} className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/10">
+            <Skeleton className="h-4 w-24 mb-2" />
+            <Skeleton className="h-8 w-20 mb-1" />
+            <Skeleton className="h-3 w-16" />
+          </div>
+        ))}
+      </div>
+
+      {/* Quick Actions Skeleton */}
+      <div>
+        <Skeleton className="h-6 w-32 mb-3" />
+        <div className="grid grid-cols-2 gap-3">
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/10">
+              <Skeleton className="h-12 w-12 rounded-xl mb-3" />
+              <Skeleton className="h-4 w-24" />
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Active Deals Skeleton */}
+      <div>
+        <Skeleton className="h-6 w-32 mb-3" />
+        <div className="space-y-3">
+          {[1, 2].map((i) => (
+            <div key={i} className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/10">
+              <Skeleton className="h-5 w-48 mb-2" />
+              <Skeleton className="h-4 w-32 mb-3" />
+              <Skeleton className="h-2 w-full rounded-full" />
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
 
   return (
-    <>
-      <MoneyRain lifetimeEarnings={lifetimeEarnings} />
-      <PratyushModeOverlay isActive={isPratyushMode} />
-      <CreatorEasterEgg onTrigger={() => {}} />
-      <AddToHomeScreen />
-      <OfflineBanner onRetry={handleRefresh} />
-      <div className="min-h-screen text-white relative">
-        {/* Header removed - now using Navbar from Layout component */}
-        <PullToRefresh onRefresh={handleRefresh}>
-        <div 
-          className="relative z-10 max-w-7xl mx-auto px-4 py-8 pb-24 md:pb-8"
-          style={{ paddingBottom: isKeyboardVisible ? `${keyboardHeight + 96}px` : undefined }}
-        >
-          {/* Breadcrumbs - Show for non-overview tabs */}
-          {activeTab !== 'overview' && (
-            <div className="mb-6">
-              <Breadcrumbs />
-            </div>
-          )}
+    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 text-white">
+      {/* Top Header */}
+      <div className="sticky top-0 z-50 bg-purple-900/90 backdrop-blur-lg border-b border-white/10">
+        <div className="flex items-center justify-between p-4">
+          <button 
+            onClick={() => {
+              setShowMenu(!showMenu);
+              triggerHaptic('light');
+            }}
+            className="p-2 hover:bg-white/10 rounded-lg transition-colors active:scale-95"
+            aria-label={showMenu ? "Close menu" : "Open menu"}
+          >
+            {showMenu ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+          </button>
           
-          {/* Overview Tab */}
-              {activeTab === 'overview' && (
-                <>
-                  <TrialBanner />
-                  <TaxSeasonMonster />
-
-              {/* Hero Section - Liquid Glass */}
-              <section aria-labelledby="dashboard-hero" className="mb-12">
-                <div className="flex items-start justify-between mb-8 gap-4 flex-wrap">
-                      <div className="flex-1 min-w-0">
-                    <h1 id="dashboard-hero" className="text-3xl font-semibold mb-2 text-white tracking-tight leading-tight">
-                      {(() => {
-                        const hour = new Date().getHours();
-                        const greeting = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
-                        return (
-                          <>
-                            {greeting}, <span className="bg-gradient-to-r from-purple-400 via-pink-400 to-purple-400 bg-clip-text text-transparent">{profile?.first_name || 'Creator'}</span>! 👋
-                          </>
-                        );
-                      })()}
-                    </h1>
-                    <div className="flex items-center gap-3 flex-wrap">
-                    <p className="text-base text-white/80">
-                      Content Creator
-                      </p>
-                      <NightOwlBadge />
-                      <DealStreakCounter brandDeals={brandDeals} />
-                      {(() => {
-                        // Calculate win streak (days without overdue payments)
-                        const now = new Date();
-                        const overduePayments = brandDeals?.filter(deal => {
-                          if (deal.status !== 'Payment Pending') return false;
-                          const dueDate = new Date(deal.payment_expected_date);
-                          return dueDate < now;
-                        }) || [];
-                        
-                        if (overduePayments.length === 0 && brandDeals && brandDeals.length > 0) {
-                          // Calculate days since last overdue (simplified - in real app, track this)
-                          const completedDeals = brandDeals.filter(d => d.status === 'Completed' && d.payment_received_date);
-                          if (completedDeals.length > 0) {
-                            const lastPayment = new Date(Math.max(...completedDeals.map(d => new Date(d.payment_received_date!).getTime())));
-                            const daysSince = Math.floor((now.getTime() - lastPayment.getTime()) / (1000 * 60 * 60 * 24));
-                            if (daysSince >= 7) {
-                              return (
-                                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-orange-500/20 border border-orange-500/30 text-orange-400 text-xs font-semibold">
-                                  <span>🔥</span>
-                                  <span>{Math.min(daysSince, 30)} day streak</span>
-                                </span>
-                              );
-                            }
-                          }
-                        }
-                        return null;
-                      })()}
-                    </div>
-                      </div>
-                  </div>
-
-                {/* Liquid Glass Earnings Card */}
-                <section aria-labelledby="earnings-heading" className="flex justify-center">
-                  <div className="relative w-full max-w-lg">
-                    <div className="relative bg-white/[0.08] backdrop-blur-[40px] border border-white/20 rounded-3xl p-8 shadow-[0_8px_32px_rgba(0,0,0,0.4)] overflow-hidden">
-                      {/* Subtle gradient overlay */}
-                      <div className="absolute inset-0 bg-gradient-to-br from-white/[0.1] via-transparent to-transparent pointer-events-none" />
-                      
-                      {/* Content */}
-                      <div className="relative z-10">
-                        <div className="flex items-center gap-3 mb-4">
-                          <div className="h-12 w-12 rounded-2xl bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center">
-                            <DollarSign className="h-6 w-6 text-white" />
-                          </div>
-                          <span id="earnings-heading" className="text-sm font-medium text-white/80">Earnings</span>
-                        </div>
-                        <div className="flex items-center justify-between mb-3">
-                          <div 
-                            className="text-5xl font-semibold text-white tracking-tight"
-                            aria-label={`Earnings this month: ${(() => {
-                              const amount = dashboardData?.earnings.current || 0;
-                              if (amount >= 100000) {
-                                const lakhs = (amount / 100000).toFixed(2);
-                                return `${lakhs} lakh rupees`;
-                              }
-                              return `${amount.toLocaleString('en-IN')} rupees`;
-                            })()}`}
-                          >
-                            <CountUp
-                              start={0}
-                              end={dashboardData?.earnings.current || 0}
-                              duration={prefersReducedMotion ? 0 : 1.8}
-                              separator=","
-                              prefix="₹"
-                              decimals={0}
-                              onEnd={() => {}}
-                            />
-                          </div>
-                          {(() => {
-                            // Generate earnings trend data for sparkline
-                            const earningsHistory = brandDeals?.slice(0, 7).map((deal) => {
-                              if (deal.status === 'Completed' && deal.payment_received_date) {
-                                return deal.deal_amount;
-                              }
-                              return 0;
-                            }) || [10000, 15000, 12000, 18000, 22000, 20000, 25000];
-                            return earningsHistory.length > 0 ? (
-                              <Sparkline
-                                data={earningsHistory}
-                                width={60}
-                                height={20}
-                                color="rgb(34, 197, 94)"
-                              />
-                            ) : null;
-                          })()}
-                        </div>
-                        <div className="text-base text-white/60">
-                          This Month
-                          {dashboardData?.earnings.previous && (
-                            <span className="ml-2 text-[#FF4DAA] font-medium">
-                              +{Math.round(((dashboardData.earnings.current - dashboardData.earnings.previous) / dashboardData.earnings.previous) * 100)}%
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </section>
-              </section>
-            </>
-          )}
-
-
-          {/* Overview Tab Content */}
-          {activeTab === 'overview' && (
-            <>
-              {/* Next Payout Widget */}
-              <section className="mb-8">
-                <NextPayoutWidget brandDeals={brandDeals} />
-              </section>
-
-              {/* Passkey Registration Card */}
-              {hasPasskey === false && (
-                <motion.section
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.2 }}
-                  className="mb-8"
-                >
-                  <Card className="bg-gradient-to-br from-blue-500/10 to-purple-500/10 backdrop-blur-lg border border-blue-500/20 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.3)] hover:shadow-2xl hover:border-blue-500/30 hover:-translate-y-0.5 transition-all">
-                    <CardContent className="p-6">
-                      <div className="flex items-start gap-4">
-                        <div className="h-12 w-12 rounded-2xl bg-blue-500/20 backdrop-blur-sm border border-blue-500/30 flex items-center justify-center flex-shrink-0">
-                          <Fingerprint className="h-6 w-6 text-blue-400" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <h3 className="text-lg font-semibold text-white mb-1">Secure Your Account with Face ID</h3>
-                          <p className="text-sm text-white/60 mb-4">
-                            Register a passkey for faster, more secure sign-ins. No more passwords!
-                          </p>
-                          <Button
-                            onClick={() => setShowPasskeyDialog(true)}
-                            className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold"
-                          >
-                            <Fingerprint className="h-4 w-4 mr-2" />
-                            Register Passkey
-                          </Button>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </motion.section>
-              )}
-
-              {/* Weekend Banner */}
-              {(() => {
-                const now = new Date();
-                const dayOfWeek = now.getDay();
-                const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
-                return isWeekend ? (
-                  <motion.div
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="mb-6 p-4 rounded-2xl weekend-banner backdrop-blur-sm"
-                  >
-                    <p className="text-sm font-medium text-center">
-                      🌅 Weekend vibes – no rush. Take your time! ✨
-                    </p>
-                  </motion.div>
-                ) : null;
-              })()}
-
-              {/* Financial Overview Section */}
-              <section className="mb-12">
-                <h2 className="text-2xl font-semibold text-white mb-6">Financial Overview</h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                  {/* Pending Invoices */}
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.4, delay: 0.1 }}
-                  >
-                    <Card className="bg-white/[0.08] backdrop-blur-lg border border-white/20 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.08)] hover:shadow-2xl hover:border-purple-500/30 hover:-translate-y-0.5 transition-all">
-                    <CardContent className="p-6">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="text-xs text-white/50 mb-2 font-medium">Pending Invoices</p>
-                          <p className="text-2xl font-semibold text-white">
-                            ₹{dashboardData?.moneyOverview.pendingPayments.toLocaleString('en-IN') || '0'}
-                          </p>
-                        </div>
-                        <div className="h-12 w-12 rounded-2xl bg-yellow-500/20 backdrop-blur-sm border border-yellow-500/30 flex items-center justify-center">
-                          <AlertTriangle className="h-5 w-5 text-yellow-400" />
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                  </motion.div>
-
-                  {/* Tax Liability */}
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.4, delay: 0.2 }}
-                  >
-                    <Card className="bg-white/[0.08] backdrop-blur-lg border border-white/20 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.08)] hover:shadow-2xl hover:border-purple-500/30 hover:-translate-y-0.5 transition-all">
-                      <CardContent className="p-6">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <p className="text-xs text-white/50 mb-2 font-medium">Tax Liability (Q3)</p>
-                            <p className="text-2xl font-semibold text-white">
-                              ₹85,000
-                            </p>
-                          </div>
-                          <div className="h-12 w-12 rounded-2xl bg-orange-500/20 backdrop-blur-sm border border-orange-500/30 flex items-center justify-center">
-                            <Calendar className="h-5 w-5 text-orange-400" />
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </motion.div>
-                </div>
-              </section>
-
-              {/* Recent Activity Section */}
-              <section className="mb-12">
-                <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-2xl font-semibold text-white">Recent Activity</h2>
-                  {(() => {
-                    // Generate activity trend data for sparkline
-                    const activityData = brandDeals?.slice(0, 7).map((deal) => {
-                      const daysAgo = Math.floor((Date.now() - new Date(deal.created_at).getTime()) / (1000 * 60 * 60 * 24));
-                      return Math.max(0, 7 - daysAgo) * 10 + (deal.status === 'Completed' ? 20 : 10);
-                    }) || [10, 15, 20, 18, 25, 22, 30];
-                    return activityData.length > 0 ? (
-                      <Sparkline
-                        data={activityData}
-                        width={80}
-                        height={24}
-                        color="rgb(34, 197, 94)"
-                      />
-                    ) : null;
-                  })()}
-                </div>
-                <Card className="bg-white/[0.06] backdrop-blur-[40px] border-white/10 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.3)]">
-                  <CardContent className="space-y-4 p-6">
-                    {(() => {
-                      // Filter for approved/completed deals
-                      const approvedDeals = brandDeals?.filter(deal => deal.status === 'Approved' || deal.status === 'Completed') || [];
-                      
-                      // Show real data if we have approved/completed deals, otherwise show demo
-                      if (approvedDeals.length > 0) {
-                        const dealsToShow = approvedDeals.slice(0, 3);
-                        return (
-                          <div className="space-y-2 bg-white/5 rounded-2xl p-2 border border-white/5">
-                            {dealsToShow.map((deal, index) => {
-                              const isCompleted = deal.status === 'Completed';
-                              const timeAgo = deal.payment_received_date 
-                                ? new Date(deal.payment_received_date)
-                                : new Date(deal.created_at);
-                              const hoursAgo = Math.floor((Date.now() - timeAgo.getTime()) / (1000 * 60 * 60));
-                              
-                              return (
-                                <div 
-                                  key={deal.id} 
-                                  className={cn(
-                                    "flex items-center gap-3 p-3 rounded-xl transition-all hover:bg-white/5 relative",
-                                    index < dealsToShow.length - 1 && "border-b border-white/5"
-                                  )}
-                                >
-                                  {/* Timeline dot */}
-                                  {index < dealsToShow.length - 1 && (
-                                    <div className="absolute left-5 top-0 bottom-0 w-px bg-gradient-to-b from-green-400/50 via-purple-400/30 to-transparent" />
-                                  )}
-                                  <div className="relative z-10 h-10 w-10 rounded-xl bg-green-500/20 backdrop-blur-sm flex items-center justify-center border-2 border-green-400/50 shadow-[0_0_8px_rgba(34,197,94,0.3)]">
-                                    <CheckCircle className="h-5 w-5 text-green-400" />
-                                  </div>
-                                  <div className="flex-1">
-                                    <p className="text-sm font-medium text-white">
-                                      {deal.brand_name} collaboration agreement
-                                    </p>
-                                    <p className="text-xs text-white/60">
-                                      {isCompleted ? 'Approved' : 'Contract Reviewed'} • {hoursAgo} hours ago
-                                    </p>
-                                  </div>
-                                </div>
-                              );
-                            })}
-                          </div>
-                        );
-                      }
-                      
-                      // Show demo data when no approved/completed deals
-                      return (
-                        <div className="space-y-2 bg-white/5 rounded-2xl p-2 border border-white/5">
-                          {/* Demo Activity Items */}
-                        <div className={cn(
-                          "flex items-center gap-3 p-3 rounded-xl transition-all hover:bg-white/5 relative",
-                          "border-b border-white/5"
-                        )}>
-                          <div className="absolute left-5 top-0 bottom-0 w-px bg-gradient-to-b from-green-400/50 via-blue-400/30 to-transparent" />
-                          <div className="relative z-10 h-10 w-10 rounded-xl bg-green-500/20 backdrop-blur-sm flex items-center justify-center border-2 border-green-400/50 shadow-[0_0_8px_rgba(34,197,94,0.3)]">
-                            <CheckCircle className="h-5 w-5 text-green-400" />
-                          </div>
-                          <div className="flex-1">
-                            <p className="text-sm font-medium text-white">
-                              Mamaearth collaboration agreement
-                            </p>
-                            <p className="text-xs text-white/60">
-                              Approved • 2 hours ago
-                            </p>
-                          </div>
-                        </div>
-                        <div className={cn(
-                          "flex items-center gap-3 p-3 rounded-xl transition-all hover:bg-white/5 relative",
-                          "border-b border-white/5"
-                        )}>
-                          <div className="absolute left-5 top-0 bottom-0 w-px bg-gradient-to-b from-blue-400/50 via-purple-400/30 to-transparent" />
-                          <div className="relative z-10 h-10 w-10 rounded-xl bg-blue-500/20 backdrop-blur-sm flex items-center justify-center border-2 border-blue-400/50 shadow-[0_0_8px_rgba(59,130,246,0.3)]">
-                            <Briefcase className="h-5 w-5 text-blue-400" />
-                          </div>
-                          <div className="flex-1">
-                            <p className="text-sm font-medium text-white">
-                              boAt brand deal signed
-                            </p>
-                            <p className="text-xs text-white/60">
-                              Contract Reviewed • 5 hours ago
-                            </p>
-                          </div>
-                        </div>
-                        <div className={cn(
-                          "flex items-center gap-3 p-3 rounded-xl transition-all hover:bg-white/5 relative"
-                        )}>
-                          <div className="relative z-10 h-10 w-10 rounded-xl bg-purple-500/20 backdrop-blur-sm flex items-center justify-center border-2 border-purple-400/50 shadow-[0_0_8px_rgba(168,85,247,0.3)]">
-                            <DollarSign className="h-5 w-5 text-purple-400" />
-                          </div>
-                          <div className="flex-1">
-                            <p className="text-sm font-medium text-white">
-                              Payment received from Zepto
-                            </p>
-                            <p className="text-xs text-white/60">
-                              Completed • 1 day ago
-                            </p>
-                          </div>
-                        </div>
-                        <div className={cn(
-                          "flex items-center gap-3 p-3 rounded-xl transition-all hover:bg-white/5",
-                          "border-b border-white/5"
-                        )}>
-                          <div className="h-10 w-10 rounded-xl bg-yellow-500/20 backdrop-blur-sm flex items-center justify-center border border-yellow-500/30">
-                            <FileText className="h-5 w-5 text-yellow-400" />
-                          </div>
-                          <div className="flex-1">
-                            <p className="text-sm font-medium text-white">
-                              Contract draft sent to L'Oreal
-                            </p>
-                            <p className="text-xs text-white/60">
-                              Pending Review • 3 days ago
-                            </p>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-3 p-3 rounded-xl transition-all hover:bg-white/5">
-                          <div className="h-10 w-10 rounded-xl bg-indigo-500/20 backdrop-blur-sm flex items-center justify-center border border-indigo-500/30">
-                            <TrendingUpIcon className="h-5 w-5 text-indigo-400" />
-                          </div>
-                          <div className="flex-1">
-                            <p className="text-sm font-medium text-white">
-                              New brand inquiry from Nykaa
-                            </p>
-                            <p className="text-xs text-white/60">
-                              Received • 4 days ago
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                      );
-                    })()}
-                  </CardContent>
-                </Card>
-              </section>
-
-              {/* Actions & Alerts */}
-              <section className="mb-12">
-                <h2 className="text-2xl font-semibold text-white mb-6">Actions & Alerts</h2>
-                  <ErrorBoundary>
-                  <div className="rounded-2xl overflow-hidden">
-                    <ActionCenter
-                      urgentActions={dashboardData.urgentActions || []}
-                      brandDeals={brandDeals}
-                      onSendReminder={(dealId) => {
-                        triggerHaptic(HapticPatterns.medium);
-                        const deal = brandDeals?.find(d => d.id === dealId);
-                        if (deal) {
-                          setSelectedDealForReminder(deal);
-                          setIsSendPaymentReminderDialogOpen(true);
-                        }
-                      }}
-                      onEscalate={() => {
-                        triggerHaptic(HapticPatterns.medium);
-                        toast.info('Escalation feature coming soon!');
-                      }}
-                      onAnalyzeContract={(dealId) => {
-                        const deal = brandDeals?.find(d => d.id === dealId);
-                        if (deal?.contract_file_url) {
-                          setSelectedContractForAIScan(deal.contract_file_url);
-                          setIsAIScanDialogOpen(true);
-                        }
-                      }}
-                    />
-                  </div>
-                  </ErrorBoundary>
-                </section>
-
-              {/* More Insights */}
-              <section className="mb-12">
-                <h2 className="text-2xl font-semibold text-white mb-6">More Insights</h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                  {/* Analytics & Performance */}
-                  <Card 
-                    variant="default" 
-                    interactive
-                    onClick={() => navigate('/insights')}
-                    className="cursor-pointer bg-white/[0.06] backdrop-blur-[40px] border-white/10 hover:bg-white/[0.08] hover:border-white/20 transition-all rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.3)]"
-                  >
-                    <CardContent className="p-6">
-                      <div className="flex items-center gap-4">
-                        <div className="h-12 w-12 rounded-2xl flex items-center justify-center bg-[#FF4DAA]/20 backdrop-blur-sm border border-[#FF4DAA]/30">
-                          <TrendingUpIcon className="h-6 w-6 text-[#FF4DAA]" />
-                </div>
-                        <div className="flex-1">
-                          <h3 className="text-base font-semibold text-white mb-1">Analytics & Performance</h3>
-                          <p className="text-sm text-white/50">Weekly performance, projections, goals</p>
-                </div>
-                        <ArrowRight className="h-5 w-5 text-white/40" />
-                </div>
-                    </CardContent>
-                  </Card>
-
-                  {/* Payments & Recovery */}
-                  <Card 
-                    variant="default" 
-                    interactive
-                    onClick={() => navigate('/creator-payments')}
-                    className="cursor-pointer bg-white/[0.06] backdrop-blur-[40px] border-white/10 hover:bg-white/[0.08] hover:border-white/20 transition-all rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.3)]"
-                  >
-                    <CardContent className="p-6">
-                      <div className="flex items-center gap-4">
-                        <div className="h-12 w-12 rounded-2xl flex items-center justify-center bg-green-500/20 backdrop-blur-sm border border-green-500/30">
-                          <DollarSign className="h-6 w-6 text-green-400" />
-                </div>
-                        <div className="flex-1">
-                          <h3 className="text-base font-semibold text-white mb-1">Payments & Recovery</h3>
-                          <p className="text-sm text-white/50">Track payments, send reminders</p>
-                    </div>
-                        <ArrowRight className="h-5 w-5 text-white/40" />
-                  </div>
-                    </CardContent>
-                  </Card>
-                </div>
-              </section>
-
-              {/* ============================================ */}
-              {/* FOOTER */}
-              {/* ============================================ */}
-              <footer className="mt-6 pb-6 text-center">
-                <p className="text-[10px] sm:text-xs text-white/30">
-                  Powered by NoticeBazaar • Secure Legal Portal ©2025
-                </p>
-              </footer>
-            </>
-          )}
-
-          {/* Deals Tab */}
-          {activeTab === 'deals' && (
-            <div className="space-y-4">
-              <div className="flex items-center justify-between flex-wrap gap-4">
-                <h2 className="text-xl font-bold text-white">Deals</h2>
-                <div className="flex items-center gap-3">
-                  <Button
-                    onClick={() => setDealsView(prev => prev === 'list' ? 'kanban' : 'list')}
-                    variant="outline"
-                    className="bg-white/5 border-white/10 text-white hover:bg-white/10"
-                  >
-                    {dealsView === 'list' ? 'Kanban View' : 'List View'}
-                  </Button>
-                  <Button 
-                    onClick={handleAddBrandDeal} 
-                    className="bg-white/20 backdrop-blur-[20px] border border-white/30 text-white hover:bg-white/30 active:scale-[0.98] rounded-2xl px-6 py-3 font-medium shadow-[0_4px_16px_rgba(0,0,0,0.2)] transition-all duration-200"
-                  >
-                    <Briefcase className="w-4 h-4 mr-2" /> Add New Deal
-                  </Button>
-                </div>
-              </div>
-              
-              {dealsView === 'kanban' ? (
-                <DealKanban 
-                  brandDeals={brandDeals}
-                  onDealUpdate={async (dealId, newStatus) => {
-                    // TODO: Update deal status in database
-                    toast.success('Deal updated!');
-                    await refetchBrandDeals();
-                  }}
-                />
-              ) : (
-                <>
-
-              <div className="flex gap-3 flex-wrap">
-                <PillTabButton
-                  label="All"
-                  isActive={quickFilter === null}
-                  onClick={() => setQuickFilter(null)}
-                  count={brandDeals?.length || 0}
-                />
-                <PillTabButton
-                  label="Active"
-                  isActive={quickFilter === 'active'}
-                  onClick={() => setQuickFilter('active')}
-                  count={brandDeals?.filter(d => d.status === 'Approved' || d.status === 'Drafting').length || 0}
-                />
-                <PillTabButton
-                  label="Pending Payment"
-                  isActive={quickFilter === 'pending_payment'}
-                  onClick={() => setQuickFilter('pending_payment')}
-                  count={brandDeals?.filter(d => d.status === 'Payment Pending').length || 0}
-                />
-                <PillTabButton
-                  label="Completed"
-                  isActive={quickFilter === 'completed'}
-                  onClick={() => setQuickFilter('completed')}
-                  count={brandDeals?.filter(d => d.status === 'Completed').length || 0}
-                />
-              </div>
-
-              <Input
-                placeholder="Search deals..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="max-w-md bg-white/5 backdrop-blur-[20px] border border-white/10 text-white placeholder:text-white/40 focus:border-white/30 focus:bg-white/8 rounded-2xl px-4 py-3 transition-all duration-200"
-              />
-
-              <div className="space-y-3">
-                {filteredDeals.length === 0 ? (
-                  <Card className="p-8 text-center bg-white/[0.06] backdrop-blur-[40px] border-white/10 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.3)]">
-                    <p className="text-white/50">No deals found</p>
-                  </Card>
-                ) : (
-                  filteredDeals.map((deal) => {
-                    const stage = getDealStage(deal);
-                    const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
-                    
-                    if (isMobile) {
-                      return (
-                        <SwipeableDealCard
-                          key={deal.id}
-                          deal={deal}
-                          stage={stage}
-                          onView={(d: BrandDeal) => navigate(`/creator-contracts/${d.id}`)}
-                          onEdit={(d: BrandDeal) => {
-                            setEditingBrandDeal(d);
-                            setIsBrandDealFormOpen(true);
-                          }}
-                          onManageDeliverables={() => toast.info('Deliverables management coming soon!')}
-                          onUploadContent={() => toast.info('Content upload coming soon!')}
-                          onContactBrand={() => navigate('/messages')}
-                          onViewContract={async (d: BrandDeal) => {
-                            // openContractFile is now statically imported
-                            openContractFile(d.contract_file_url, (error) => {
-                              toast.error(error);
-                            });
-                          }}
-                          onSwipeLeft={(d: BrandDeal) => {
-                            // Chase Payment
-                            navigate('/creator-dashboard?tab=payments');
-                            toast.info(`Opening payment details for ${d.brand_name}`);
-                          }}
-                          onSwipeRight={(d: BrandDeal) => {
-                            // Mark Delivered
-                            if (d.status === 'Payment Pending') {
-                              toast.info(`Marking ${d.brand_name} as delivered`);
-                              // In real app, this would trigger the mark as paid flow
-                            }
-                          }}
-                        />
-                      );
-                    }
-                    
-                    return (
-                      <ProjectDealCard
-                        key={deal.id}
-                        deal={deal}
-                        stage={stage}
-                        onView={(d: BrandDeal) => navigate(`/creator-contracts/${d.id}`)}
-                        onEdit={(d: BrandDeal) => {
-                          setEditingBrandDeal(d);
-                          setIsBrandDealFormOpen(true);
-                        }}
-                        onManageDeliverables={() => toast.info('Deliverables management coming soon!')}
-                        onUploadContent={() => toast.info('Content upload coming soon!')}
-                        onContactBrand={() => navigate('/messages')}
-                        onViewContract={async (d: BrandDeal) => {
-                          const { openContractFile } = await import('@/lib/utils');
-                          openContractFile(d.contract_file_url, (error) => {
-                            toast.error(error);
-                          });
-                        }}
-                      />
-                    );
-                  })
-                )}
-              </div>
-                </>
-              )}
-            </div>
-          )}
-
-          {/* Payments Tab */}
-          {activeTab === 'payments' && (
-            <div className="space-y-4 relative min-h-[600px]">
-              <div className="relative z-10 space-y-4">
-              {/* Summary Cards */}
-              <div className="flex items-center justify-between mb-4 flex-wrap gap-4">
-                <div className="flex-1">
-                  <FinancialOverviewHeader allDeals={brandDeals || []} />
-                </div>
-                <ExportMonthlyReport
-                  brandDeals={brandDeals}
-                  earnings={dashboardData?.earnings.current || 0}
-                  month={new Date().toLocaleString('en-IN', { month: 'long' })}
-                  year={new Date().getFullYear()}
-                />
-              </div>
-
-              {/* Payments Title */}
-              <h2 className="text-lg md:text-xl font-bold mt-2">Payments</h2>
-
-              {/* Filters */}
-              <PaymentQuickFilters
-                allDeals={brandDeals || []}
-                activeFilter={paymentQuickFilter}
-                onFilterChange={setPaymentQuickFilter}
-              />
-
-              {/* Search Bar */}
-              <div className="relative w-full md:max-w-md">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/50 pointer-events-none" />
-                <Input
-                  placeholder="Search payments..."
-                  value={paymentSearchTerm}
-                  onChange={(e) => setPaymentSearchTerm(e.target.value)}
-                  className="pl-10 rounded-2xl bg-white/5 backdrop-blur-[20px] border border-white/10 text-white placeholder:text-white/40 focus:border-white/30 focus:bg-white/8 transition-all duration-200"
-                />
-              </div>
-
-              {/* Payments List Header */}
-              <div className="flex items-center justify-between flex-wrap gap-2 mb-1">
-                <div className="text-xs text-white/60 tracking-wide">Payments List — {filteredPayments.length} items</div>
-                <div className="px-3 py-1 rounded-full bg-white/5 backdrop-blur-sm border border-white/10 text-xs text-white/50">
-                  Sort: Due date
-                </div>
-              </div>
-
-              {/* Payments List */}
-              <div className="space-y-4">
-                {filteredPayments.length === 0 ? (
-                  <Card className="p-8 text-center bg-white/[0.06] backdrop-blur-[40px] border-white/10 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.3)]">
-                    <p className="text-white/60">No payments found</p>
-                  </Card>
-                ) : (
-                  filteredPayments.map((deal) => {
-                    const paymentStatus = getPaymentStatus(deal);
-                    // Map PaymentStatus to EnhancedPaymentCard status
-                    const status: 'overdue' | 'pending' | 'upcoming' | 'paid' = 
-                      paymentStatus === 'paid' ? 'paid' :
-                      paymentStatus === 'overdue' ? 'overdue' :
-                      paymentStatus === 'pending' ? 'pending' : 'upcoming';
-                    
-                    const now = new Date();
-                    now.setHours(0, 0, 0, 0);
-                    const dueDate = new Date(deal.payment_expected_date);
-                    dueDate.setHours(0, 0, 0, 0);
-                    const diffTime = dueDate.getTime() - now.getTime();
-                    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                    const daysOverdue = diffDays < 0 ? Math.abs(diffDays) : undefined;
-                    const daysLeft = diffDays >= 0 ? diffDays : undefined;
-
-                    return (
-                      <EnhancedPaymentCard
-                        key={deal.id}
-                        deal={deal}
-                        status={status}
-                        daysOverdue={daysOverdue}
-                        daysLeft={daysLeft}
-                        onSendReminder={(d) => {
-                          setSelectedDealForReminder(d);
-                          setIsSendPaymentReminderDialogOpen(true);
-                        }}
-                        onMarkPaid={(d) => toast.info(`Mark ${d.brand_name} as paid coming soon!`)}
-                        onViewDetails={(d) => navigate(`/creator-contracts/${d.id}`)}
-                      />
-                    );
-                  })
-                )}
-              </div>
-              </div>
-            </div>
-          )}
-
-          {/* Protection Tab */}
-          {activeTab === 'protection' && (
-            <div className="space-y-4">
-              <ProtectionDashboardHeader 
-                originalContent={originalContentList || []}
-                matches={copyrightMatches || []}
-                scansThisMonth={0}
-              />
-              <CreatorCopyrightScanner />
-            </div>
-          )}
-
+          <div className="text-lg font-bold">NoticeBazaar</div>
+          
+          <div className="flex items-center gap-2">
+            <button 
+              onClick={handleRefresh}
+              disabled={isRefreshing}
+              className={`p-2 hover:bg-white/10 rounded-lg transition-all active:scale-95 ${isRefreshing ? 'animate-spin' : ''}`}
+              aria-label="Refresh data"
+            >
+              <RefreshCw className="w-5 h-5" />
+            </button>
+            <button 
+              className="p-2 hover:bg-white/10 rounded-lg transition-colors active:scale-95"
+              aria-label="Search"
+            >
+              <Search className="w-5 h-5" />
+            </button>
+            <button 
+              onClick={() => {
+                setShowNotifications(!showNotifications);
+                triggerHaptic('light');
+              }}
+              className="p-2 hover:bg-white/10 rounded-lg transition-colors relative active:scale-95 min-w-[44px] min-h-[44px] flex items-center justify-center"
+              aria-label={`Notifications (${notifications.filter(n => n.unread).length} unread)`}
+            >
+              <Bell className="w-5 h-5" />
+              <span className="absolute top-0.5 right-0.5 bg-red-500 text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center border-2 border-purple-900 animate-pulse">
+                {notifications.filter(n => n.unread).length}
+              </span>
+            </button>
+            <button 
+              onClick={() => {
+                navigate('/creator-profile');
+                triggerHaptic('light');
+              }}
+              className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center font-semibold active:scale-95 transition-transform hover:bg-blue-700 hover:scale-105"
+              aria-label="View profile settings"
+            >
+              {userData.avatar}
+            </button>
+          </div>
         </div>
-
-        <QuickActionsFAB
-          onAddDeal={handleAddBrandDeal}
-          onLogPayment={() => navigate('/creator-payments')}
-          onScanContent={() => setActiveTab('protection')}
-          onUploadContract={() => {
-            setEditingBrandDeal(null);
-            setIsBrandDealFormOpen(true);
-          }}
-          onCalculateRate={() => navigate('/rate-calculator')}
-        />
-        </PullToRefresh>
       </div>
 
-      {/* Dialogs - Same as before */}
-      <Dialog open={isBrandDealFormOpen} onOpenChange={setIsBrandDealFormOpen}>
-        <DialogContent className="sm:max-w-[600px] bg-card text-foreground border-border h-[90vh] flex flex-col">
-          <DialogHeader>
-            <DialogTitle>{editingBrandDeal ? 'Edit Brand Deal' : 'Add New Brand Deal'}</DialogTitle>
-            <DialogDescription>
-              {editingBrandDeal ? 'Update the details for this brand collaboration.' : 'Enter the details for your new brand collaboration.'}
-            </DialogDescription>
-          </DialogHeader>
-          <ScrollArea className="flex-1 p-4 -mx-4">
-            <BrandDealForm
-              initialData={editingBrandDeal}
-              onSaveSuccess={() => {
-                refetchBrandDeals();
-                setIsBrandDealFormOpen(false);
-                setEditingBrandDeal(null);
-              }}
-              onClose={() => {
-                setIsBrandDealFormOpen(false);
-                setEditingBrandDeal(null);
-              }}
-            />
-          </ScrollArea>
-        </DialogContent>
-      </Dialog>
-
-      <Dialog open={isAIScanDialogOpen} onOpenChange={setIsAIScanDialogOpen}>
-        <DialogContent className="sm:max-w-[600px] bg-card text-foreground border-border">
-          <DialogHeader>
-            <DialogTitle>AI Contract Scan</DialogTitle>
-            <DialogDescription>Select a contract to analyze for potential risks and insights.</DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div>
-              <Label htmlFor="selectContract">Select Contract to Scan</Label>
-              <Select
-                onValueChange={setSelectedContractForAIScan}
-                value={selectedContractForAIScan || ''}
-                disabled={scanContractMutation.isPending || !brandDeals || brandDeals.length === 0}
+      {/* Sidebar Menu */}
+      {showMenu && (
+        <>
+          {/* Backdrop */}
+          <div 
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 transition-opacity"
+            onClick={() => {
+              setShowMenu(false);
+              triggerHaptic('light');
+            }}
+          />
+          
+          {/* Sidebar */}
+          <div className="fixed top-0 left-0 bottom-0 w-80 bg-gradient-to-b from-purple-900/95 via-purple-800/95 to-indigo-900/95 backdrop-blur-lg border-r border-white/10 shadow-2xl z-50 flex flex-col max-h-screen">
+            {/* Sidebar Header */}
+            <div className="p-6 border-b border-white/10">
+              <div className="flex items-center justify-between mb-4">
+                <div className="text-xl font-bold">Menu</div>
+                <button
+                  onClick={() => {
+                    setShowMenu(false);
+                    triggerHaptic('light');
+                  }}
+                  className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+                  aria-label="Close menu"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              
+              {/* User Profile */}
+              <button
+                onClick={() => {
+                  navigate('/creator-profile');
+                  setShowMenu(false);
+                  triggerHaptic('light');
+                }}
+                className="flex items-center gap-3 w-full hover:bg-white/5 rounded-lg p-2 transition-colors"
               >
-                <SelectTrigger id="selectContract">
-                  <SelectValue placeholder="Choose a contract" />
-                </SelectTrigger>
-                <SelectContent>
-                  {brandDeals?.filter(deal => deal.contract_file_url).map((deal) => (
-                    <SelectItem key={deal.id} value={deal.contract_file_url!}>
-                      {deal.brand_name} - {deal.deliverables}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                <div className="w-12 h-12 rounded-full bg-blue-600 flex items-center justify-center font-bold text-lg">
+                  {userData.avatar}
+                </div>
+                <div className="flex-1 text-left">
+                  <div className="font-semibold">{userData.name}</div>
+                  <div className="text-sm text-purple-300">@{userData.displayName}</div>
+                </div>
+                <ChevronRight className="w-5 h-5 text-purple-400" />
+              </button>
             </div>
-            <Button
-              onClick={handlePerformAIScan}
-              disabled={!selectedContractForAIScan || scanContractMutation.isPending}
-              className="w-full"
+
+            {/* Navigation Links - Scrollable area */}
+            <div className="flex-1 overflow-y-auto">
+              <div className="p-4 space-y-1">
+              <button
+                onClick={() => {
+                  setActiveTab('home');
+                  setShowMenu(false);
+                  triggerHaptic('light');
+                }}
+                className="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10 transition-all text-left"
+              >
+                <Home className="w-5 h-5 text-purple-300" />
+                <span className="font-medium">Home</span>
+              </button>
+              
+              <button
+                onClick={() => {
+                  setActiveTab('deals');
+                  setShowMenu(false);
+                  triggerHaptic('light');
+                }}
+                className="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10 transition-all text-left"
+              >
+                <Briefcase className="w-5 h-5 text-purple-300" />
+                <span className="font-medium">Brand Deals</span>
+              </button>
+              
+              <button
+                onClick={() => {
+                  setActiveTab('payments');
+                  setShowMenu(false);
+                  triggerHaptic('light');
+                }}
+                className="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10 transition-all text-left"
+              >
+                <CreditCard className="w-5 h-5 text-purple-300" />
+                <span className="font-medium">Payments</span>
+              </button>
+              
+              <button
+                onClick={() => {
+                  setActiveTab('protection');
+                  setShowMenu(false);
+                  triggerHaptic('light');
+                }}
+                className="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10 transition-all text-left"
+              >
+                <Shield className="w-5 h-5 text-purple-300" />
+                <span className="font-medium">Content Protection</span>
+              </button>
+              
+              <button
+                onClick={() => {
+                  setActiveTab('messages');
+                  setShowMenu(false);
+                  triggerHaptic('light');
+                }}
+                className="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10 transition-all text-left"
+              >
+                <MessageCircle className="w-5 h-5 text-purple-300" />
+                <div className="flex items-center justify-between flex-1">
+                  <span className="font-medium">Messages</span>
+                  <span className="bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">3</span>
+                </div>
+              </button>
+            </div>
+
+            {/* Quick Actions */}
+            <div className="p-4 border-t border-white/10">
+              <div className="text-sm font-semibold text-purple-300 mb-3 px-4">Quick Actions</div>
+              <div className="space-y-1">
+                <button className="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10 transition-all text-left">
+                  <FileText className="w-5 h-5 text-purple-400" />
+                  <span className="text-sm">Upload Contract</span>
+                </button>
+                <button className="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10 transition-all text-left">
+                  <Plus className="w-5 h-5 text-blue-400" />
+                  <span className="text-sm">Add New Deal</span>
+                </button>
+                <button className="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10 transition-all text-left">
+                  <Calendar className="w-5 h-5 text-green-400" />
+                  <span className="text-sm">Schedule Call</span>
+                </button>
+              </div>
+            </div>
+
+              {/* Settings & Help */}
+              <div className="p-4 border-t border-white/10">
+                <div className="space-y-1">
+                  <button 
+                    onClick={() => {
+                      navigate('/creator-profile');
+                      setShowMenu(false);
+                      triggerHaptic('light');
+                    }}
+                    className="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10 transition-all text-left"
+                  >
+                    <User className="w-5 h-5 text-purple-300" />
+                    <span className="text-sm">Profile Settings</span>
+                  </button>
+                  <button className="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10 transition-all text-left">
+                    <Bell className="w-5 h-5 text-purple-300" />
+                    <span className="text-sm">Notifications</span>
+                  </button>
+                  <button className="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10 transition-all text-left">
+                    <FileText className="w-5 h-5 text-purple-300" />
+                    <span className="text-sm">Help & Support</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Logout - Pinned at bottom */}
+            <div className="flex-shrink-0 p-4 border-t border-white/10 bg-purple-900/80">
+              <button 
+                onClick={() => {
+                  triggerHaptic('light');
+                  setShowLogoutDialog(true);
+                }}
+                disabled={signOutMutation.isPending}
+                className="w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-red-500/20 hover:bg-red-500/30 border border-red-500/30 text-red-400 transition-all text-left active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed min-h-[48px] touch-manipulation focus:outline-none focus:ring-2 focus:ring-red-400/50 focus:ring-offset-2 focus:ring-offset-purple-900"
+                aria-label="Log out of your account"
+                aria-describedby="sidebar-logout-description"
+              >
+                {signOutMutation.isPending ? (
+                  <>
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    <span className="text-sm font-semibold">Logging out...</span>
+                  </>
+                ) : (
+                  <>
+                    <LogOut className="w-5 h-5" />
+                    <span className="text-sm font-semibold">Log Out</span>
+                  </>
+                )}
+              </button>
+              <p id="sidebar-logout-description" className="sr-only">
+                Log out of your account. This will sign you out and require you to sign in again.
+              </p>
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* Logout Confirmation Dialog */}
+      <AlertDialog open={showLogoutDialog} onOpenChange={setShowLogoutDialog}>
+        <AlertDialogContent className="bg-gradient-to-br from-purple-900/95 via-purple-800/95 to-indigo-900/95 backdrop-blur-xl border border-white/10 text-white">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-white text-xl flex items-center gap-2">
+              <LogOut className="w-5 h-5 text-red-400" />
+              Confirm Logout
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-purple-200">
+              Are you sure you want to log out? You'll need to sign in again to access your account.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="gap-2 sm:gap-0">
+            <AlertDialogCancel 
+              onClick={() => {
+                triggerHaptic('light');
+              }}
+              className="bg-white/10 text-white border-white/20 hover:bg-white/20 focus:ring-2 focus:ring-purple-400/50"
             >
-              {scanContractMutation.isPending ? (
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={async () => {
+                try {
+                  triggerHaptic('medium');
+                  
+                  // Analytics tracking
+                  if (typeof window !== 'undefined' && (window as any).gtag) {
+                    (window as any).gtag('event', 'logout', {
+                      event_category: 'engagement',
+                      event_label: 'user_logout',
+                      method: 'dashboard_sidebar'
+                    });
+                  }
+                  
+                  logger.info('User logging out from dashboard');
+                  await signOutMutation.mutateAsync();
+                  setShowMenu(false);
+                  setShowLogoutDialog(false);
+                } catch (error: any) {
+                  logger.error('Logout failed', error);
+                }
+              }}
+              disabled={signOutMutation.isPending}
+              className="bg-red-500/20 hover:bg-red-500/30 text-red-400 border border-red-500/40 focus:ring-2 focus:ring-red-400/50 disabled:opacity-50"
+            >
+              {signOutMutation.isPending ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Scanning...
+                  <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                  Logging out...
                 </>
               ) : (
                 <>
-                  <Bot className="mr-2 h-4 w-4" /> Perform AI Scan
+                  <LogOut className="w-4 h-4 mr-2" />
+                  Log Out
                 </>
               )}
-            </Button>
-            {aiScanResults && (
-              <Card className="bg-secondary p-4 rounded-lg border border-border mt-4">
-                <CardHeader className="p-0 mb-3">
-                  <CardTitle className="text-lg font-semibold flex items-center">
-                    <CheckCircle className="h-5 w-5 text-green-500 mr-2" /> AI Scan Results
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="p-0 space-y-3">
-                  <p className="text-sm text-muted-foreground">{aiScanResults.summary}</p>
-                </CardContent>
-              </Card>
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Notifications Dropdown */}
+      {showNotifications && (
+        <div className="fixed top-16 right-4 w-80 bg-purple-800/95 backdrop-blur-lg rounded-2xl border border-white/10 shadow-2xl z-50 max-h-96 overflow-y-auto">
+          <div className="p-4 border-b border-white/10">
+            <h3 className="font-semibold">Notifications</h3>
+          </div>
+          <div className="divide-y divide-white/10">
+            {notifications.map(notif => (
+              <div key={notif.id} className={`p-4 hover:bg-white/5 cursor-pointer ${notif.unread ? 'bg-white/5' : ''}`}>
+                <div className="flex items-start gap-3">
+                  {notif.unread && <div className="w-2 h-2 bg-blue-500 rounded-full mt-2"></div>}
+                  <div className="flex-1">
+                    <p className="text-sm font-medium mb-1">{notif.title}</p>
+                    <p className="text-xs text-purple-300">{notif.time}</p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Welcome Banner for New Users */}
+      <AnimatePresence>
+        {showWelcomeBanner && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="sticky top-16 z-40 mx-4 mt-4 mb-4"
+          >
+            <div className="bg-gradient-to-r from-purple-600/90 to-indigo-600/90 backdrop-blur-xl rounded-2xl p-4 border border-white/20 shadow-xl">
+              <div className="flex items-start justify-between gap-4">
+                <div className="flex items-start gap-3 flex-1">
+                  <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
+                    <Sparkles className="w-5 h-5 text-white" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="font-semibold text-white mb-1">Welcome to NoticeBazaar! 🎉</h3>
+                    <p className="text-sm text-white/90">
+                      Your dashboard is ready. Start by adding your first brand deal to track payments and contracts.
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShowWelcomeBanner(false)}
+                  className="p-1 hover:bg-white/20 rounded-lg transition-colors flex-shrink-0"
+                  aria-label="Dismiss welcome banner"
+                >
+                  <XCircle className="w-5 h-5 text-white/80" />
+                </button>
+              </div>
+              <div className="mt-3 flex gap-2">
+                <button
+                  onClick={() => {
+                    navigate('/creator-contracts');
+                    setShowWelcomeBanner(false);
+                  }}
+                  className="px-4 py-2 bg-white/20 hover:bg-white/30 text-white text-sm font-medium rounded-lg transition-colors"
+                >
+                  Add Your First Deal
+                </button>
+                <button
+                  onClick={() => setShowWelcomeBanner(false)}
+                  className="px-4 py-2 bg-white/10 hover:bg-white/20 text-white/90 text-sm font-medium rounded-lg transition-colors"
+                >
+                  Explore Dashboard
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Main Content */}
+      <div className="p-4 pb-24">
+        {/* Home Tab */}
+        {activeTab === 'home' && (
+          <>
+            {isInitialLoading ? (
+              <DashboardSkeleton />
+            ) : hasNoData ? (
+              // Empty State for New Users
+              <div className="space-y-6">
+                {/* Greeting */}
+                <div className="mb-6">
+                  <h1 className="text-3xl font-bold mb-2">
+                    {getGreeting()}, {userData.name}! 👋
+                  </h1>
+                  <p className="text-purple-200">Let's get you started with your first brand deal.</p>
+                </div>
+
+                {/* Empty State Card */}
+                <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/10 text-center">
+                  <motion.div
+                    initial={{ scale: 0.8, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    className="w-24 h-24 rounded-full bg-gradient-to-br from-purple-500/20 to-indigo-500/20 flex items-center justify-center mx-auto mb-6"
+                  >
+                    <Briefcase className="w-12 h-12 text-purple-400" />
+                  </motion.div>
+                  <h2 className="text-2xl font-bold text-white mb-3">Welcome to Your Dashboard!</h2>
+                  <p className="text-purple-200 mb-6 max-w-md mx-auto">
+                    Start tracking your brand deals, payments, and contracts. Add your first deal to see your earnings and activity here.
+                  </p>
+                  <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                    <button
+                      onClick={() => navigate('/creator-contracts')}
+                      className="px-6 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-semibold rounded-xl transition-all flex items-center justify-center gap-2 active:scale-95"
+                    >
+                      <Plus className="w-5 h-5" />
+                      Add Your First Deal
+                    </button>
+                    <button
+                      onClick={() => navigate('/brand-directory')}
+                      className="px-6 py-3 bg-white/10 hover:bg-white/20 text-white font-semibold rounded-xl transition-all flex items-center justify-center gap-2 active:scale-95 border border-white/20"
+                    >
+                      <Briefcase className="w-5 h-5" />
+                      Explore Brands
+                    </button>
+                  </div>
+                </div>
+
+                {/* Quick Start Guide */}
+                <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/10">
+                  <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+                    <Target className="w-5 h-5 text-purple-400" />
+                    Quick Start Guide
+                  </h3>
+                  <div className="grid md:grid-cols-3 gap-4">
+                    <div className="p-4 bg-white/5 rounded-xl">
+                      <div className="w-10 h-10 rounded-lg bg-purple-500/20 flex items-center justify-center mb-3">
+                        <Briefcase className="w-5 h-5 text-purple-400" />
+                      </div>
+                      <h4 className="font-semibold text-white mb-1">Add Brand Deals</h4>
+                      <p className="text-sm text-purple-200">Track your partnerships and contracts</p>
+                    </div>
+                    <div className="p-4 bg-white/5 rounded-xl">
+                      <div className="w-10 h-10 rounded-lg bg-green-500/20 flex items-center justify-center mb-3">
+                        <CreditCard className="w-5 h-5 text-green-400" />
+                      </div>
+                      <h4 className="font-semibold text-white mb-1">Track Payments</h4>
+                      <p className="text-sm text-purple-200">Monitor incoming and pending payments</p>
+                    </div>
+                    <div className="p-4 bg-white/5 rounded-xl">
+                      <div className="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center mb-3">
+                        <Shield className="w-5 h-5 text-blue-400" />
+                      </div>
+                      <h4 className="font-semibold text-white mb-1">Protect Content</h4>
+                      <p className="text-sm text-purple-200">Register and monitor your content</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-6">
+            {/* Greeting */}
+            <div className="mb-6">
+              <h1 className="text-3xl font-bold mb-2">
+                {getGreeting()}, <br />
+                <span className="bg-gradient-to-r from-purple-400 to-pink-400 text-transparent bg-clip-text">
+                  {userData.displayName}!
+                </span> 👋
+              </h1>
+              <div className="flex items-center gap-3 text-sm text-purple-200">
+                <span>{userData.userType}</span>
+                <span className="px-3 py-1 bg-orange-500/20 text-orange-400 rounded-full flex items-center gap-1">
+                  🔥 {userData.streak} weeks streak
+                </span>
+              </div>
+            </div>
+
+            {/* Quick Stats Row */}
+            <div className="grid grid-cols-3 gap-3 mb-4">
+              <div className="bg-white/10 backdrop-blur-md rounded-xl p-3 border border-white/10">
+                <div className="flex items-center gap-2 mb-1">
+                  <Briefcase className="w-4 h-4 text-blue-400" />
+                  <span className="text-xs text-purple-300">Total Deals</span>
+                </div>
+                <div className="text-xl font-bold">{stats.totalDeals}</div>
+              </div>
+              <div className="bg-white/10 backdrop-blur-md rounded-xl p-3 border border-white/10">
+                <div className="flex items-center gap-2 mb-1">
+                  <BarChart3 className="w-4 h-4 text-green-400" />
+                  <span className="text-xs text-purple-300">Active</span>
+                </div>
+                <div className="text-xl font-bold">{stats.activeDeals}</div>
+              </div>
+              <div className="bg-white/10 backdrop-blur-md rounded-xl p-3 border border-white/10">
+                <div className="flex items-center gap-2 mb-1">
+                  <CreditCard className="w-4 h-4 text-orange-400" />
+                  <span className="text-xs text-purple-300">Pending</span>
+                </div>
+                <div className="text-xl font-bold">₹{(stats.pendingPayments / 1000).toFixed(0)}K</div>
+              </div>
+            </div>
+
+            {/* Main Earnings Card */}
+            <button 
+              onClick={() => {
+                triggerHaptic('medium');
+                // Navigate to detailed earnings view
+              }}
+              className="w-full bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/10 relative overflow-hidden hover:bg-white/15 transition-all active:scale-[0.99] text-left"
+              aria-label="View earnings details"
+            >
+              <div className="absolute top-0 right-0 w-32 h-32 bg-purple-500/10 rounded-full blur-3xl"></div>
+              
+              <div className="relative">
+                {/* Timeframe Selector */}
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-2">
+                    <div className="w-10 h-10 rounded-full bg-purple-500/20 flex items-center justify-center">
+                      <DollarSign className="w-5 h-5 text-purple-300" />
+                    </div>
+                    <span className="text-purple-200 font-medium">Earnings</span>
+                  </div>
+                  <div className="flex gap-1 bg-white/5 rounded-lg p-1">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setTimeframe('month');
+                        triggerHaptic('light');
+                      }}
+                      className={`px-3 py-1 text-xs rounded transition-all ${
+                        timeframe === 'month'
+                          ? 'bg-purple-600 text-white'
+                          : 'text-purple-300 hover:text-white'
+                      }`}
+                      aria-label="View this month's earnings"
+                    >
+                      This Month
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setTimeframe('lastMonth');
+                        triggerHaptic('light');
+                      }}
+                      className={`px-3 py-1 text-xs rounded transition-all ${
+                        timeframe === 'lastMonth'
+                          ? 'bg-purple-600 text-white'
+                          : 'text-purple-300 hover:text-white'
+                      }`}
+                      aria-label="View last month's earnings"
+                    >
+                      Last Month
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setTimeframe('allTime');
+                        triggerHaptic('light');
+                      }}
+                      className={`px-3 py-1 text-xs rounded transition-all ${
+                        timeframe === 'allTime'
+                          ? 'bg-purple-600 text-white'
+                          : 'text-purple-300 hover:text-white'
+                      }`}
+                      aria-label="View all time earnings"
+                    >
+                      All Time
+                    </button>
+                  </div>
+                </div>
+                
+                <div className="flex items-end justify-between mb-4">
+                  <div>
+                    <div className="text-4xl font-bold mb-2">₹{(stats.earnings / 1000).toFixed(1)}K</div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-green-400 text-sm flex items-center gap-1">
+                        <TrendingUp className="w-4 h-4" />
+                        +{stats.monthlyGrowth}%
+                      </span>
+                      <span className="text-purple-300 text-sm">
+                        {timeframe === 'month' ? 'vs last month' : timeframe === 'lastMonth' ? 'vs previous' : 'growth'}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-1 text-purple-300 text-sm">
+                    <span>View Details</span>
+                    <ChevronRight className="w-4 h-4" />
+                  </div>
+                </div>
+
+                {/* Goal Progress bar with labels */}
+                <div className="mb-2">
+                  <div className="flex items-center justify-between text-xs text-purple-300 mb-1.5">
+                    <span className="flex items-center gap-1">
+                      <Target className="w-3 h-3" />
+                      Progress to Goal
+                    </span>
+                    <span className="font-semibold text-white">{earningsProgress.toFixed(0)}%</span>
+                  </div>
+                  <div className="relative w-full bg-white/10 rounded-full h-3">
+                    <div 
+                      className="bg-gradient-to-r from-teal-500 to-cyan-500 h-3 rounded-full transition-all duration-500 shadow-lg shadow-teal-500/30" 
+                      style={{ width: `${Math.min(earningsProgress, 100)}%` }}
+                    ></div>
+                  </div>
+                  <div className="flex items-center justify-between text-xs text-purple-300 mt-1">
+                    <span>₹{(stats.earnings / 1000).toFixed(0)}K earned</span>
+                    <span>Goal: ₹{(stats.goal / 1000).toFixed(0)}K</span>
+                  </div>
+                </div>
+              </div>
+            </button>
+
+            {/* Stats Grid */}
+            <div className="grid grid-cols-2 gap-3">
+              <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/10">
+                <div className="text-purple-200 text-sm mb-2">Next Payout</div>
+                <div className="text-2xl font-bold mb-1">₹{(stats.nextPayout / 1000).toFixed(0)}K</div>
+                <div className="text-xs text-purple-300">{stats.payoutDate}</div>
+              </div>
+
+              <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/10">
+                <div className="text-purple-200 text-sm mb-2">Active Deals</div>
+                <div className="text-2xl font-bold mb-1">{stats.activeDeals}</div>
+                <div className="text-xs text-green-400">+2 this week</div>
+              </div>
+
+              <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/10">
+                <div className="text-purple-200 text-sm mb-2">Pending</div>
+                <div className="text-2xl font-bold mb-1">₹{(stats.pendingPayments / 1000).toFixed(0)}K</div>
+                <div className="text-xs text-yellow-400">4 payments</div>
+              </div>
+
+              <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/10">
+                <div className="text-purple-200 text-sm mb-2">Protection</div>
+                <div className="text-2xl font-bold mb-1">{stats.protectionScore}</div>
+                <div className="text-xs text-green-400">Excellent</div>
+              </div>
+            </div>
+
+            {/* Quick Actions */}
+            <div>
+              <h2 className="font-semibold text-lg mb-3">Quick Actions</h2>
+              <div className="grid grid-cols-2 gap-3">
+                {quickActions.map(action => {
+                  const Icon = action.icon;
+                  return (
+                    <button
+                      key={action.id}
+                      className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/10 hover:bg-white/15 transition-all text-left"
+                    >
+                      <div className={`w-12 h-12 rounded-xl ${action.color} flex items-center justify-center mb-3`}>
+                        <Icon className={`w-6 h-6 ${action.iconColor}`} />
+                      </div>
+                      <div className="text-sm font-medium">{action.label}</div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Active Deals Preview */}
+            <div>
+              <div className="flex items-center justify-between mb-3">
+                <h2 className="font-semibold text-lg">Active Deals</h2>
+                <button className="text-sm text-purple-300 hover:text-white transition-colors">
+                  View All →
+                </button>
+              </div>
+              <div className="space-y-3">
+                {activeDeals.map(deal => (
+                  <div
+                    key={deal.id}
+                    className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/10 hover:bg-white/15 transition-all cursor-pointer"
+                  >
+                    <div className="flex items-start justify-between mb-3">
+                      <div>
+                        <h3 className="font-semibold mb-1">{deal.title}</h3>
+                        <div className="text-sm text-purple-200">{deal.brand}</div>
+                      </div>
+                      <div className="text-lg font-bold text-green-400">
+                        ₹{(deal.value / 1000).toFixed(0)}K
+                      </div>
+                    </div>
+                    
+                    <div className="mb-2">
+                      <div className="flex items-center justify-between text-xs text-purple-200 mb-1">
+                        <span>Progress</span>
+                        <span>{deal.progress}%</span>
+                      </div>
+                      <div className="w-full bg-white/10 rounded-full h-2">
+                        <div
+                          className="bg-gradient-to-r from-blue-500 to-purple-500 h-2 rounded-full"
+                          style={{ width: `${deal.progress}%` }}
+                        ></div>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center justify-between text-xs text-purple-300">
+                      <span>{deal.status === 'active' ? '✅ Active' : '🔵 Negotiation'}</span>
+                      <span>Due: {deal.deadline}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Recent Activity */}
+            <div>
+              <h2 className="font-semibold text-lg mb-3">Recent Activity</h2>
+              <div className="space-y-3">
+                {recentActivity.map(activity => {
+                  const Icon = activity.icon;
+                  return (
+                    <div
+                      key={activity.id}
+                      className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/10 hover:bg-white/15 transition-all cursor-pointer"
+                    >
+                      <div className="flex items-start gap-3">
+                        <div className={`w-10 h-10 rounded-xl ${activity.bgColor} flex items-center justify-center flex-shrink-0`}>
+                          <Icon className={`w-5 h-5 ${activity.color}`} />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-semibold mb-1">{activity.title}</h3>
+                          <p className="text-sm text-purple-200 mb-1">{activity.description}</p>
+                          <p className="text-xs text-purple-300">{activity.time}</p>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Upcoming Payments */}
+            <div>
+              <div className="flex items-center justify-between mb-3">
+                <h2 className="font-semibold text-lg">Upcoming Payments</h2>
+                <button className="text-sm text-purple-300 hover:text-white transition-colors">
+                  View All →
+                </button>
+              </div>
+              <div className="space-y-3">
+                {upcomingPayments.map(payment => (
+                  <div
+                    key={payment.id}
+                    className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/10 hover:bg-white/15 transition-all cursor-pointer"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex-1">
+                        <h3 className="font-semibold mb-1">{payment.title}</h3>
+                        <div className="flex items-center gap-2 text-xs text-purple-200">
+                          <Clock className="w-3 h-3" />
+                          <span>Expected: {payment.date}</span>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-lg font-bold text-green-400">
+                          ₹{(payment.amount / 1000).toFixed(0)}K
+                        </div>
+                        <div className={`text-xs ${payment.status === 'pending' ? 'text-yellow-400' : 'text-blue-400'}`}>
+                          {payment.status === 'pending' ? '⏰ Pending' : '🔵 Processing'}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+              </div>
             )}
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsAIScanDialogOpen(false)}>Close</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          </>
+        )}
+      </div>
 
-      <Dialog open={isSendPaymentReminderDialogOpen} onOpenChange={setIsSendPaymentReminderDialogOpen}>
-        <DialogContent className="sm:max-w-[425px] bg-card text-foreground border-border">
-          <DialogHeader>
-            <DialogTitle>Send Payment Reminder</DialogTitle>
-            <DialogDescription>Select a brand deal to send a payment reminder for.</DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div>
-              <Label htmlFor="selectDealForReminder">Select Deal</Label>
-              <Select
-                onValueChange={(value) => setSelectedDealForReminder(brandDeals?.find(deal => deal.id === value) || null)}
-                value={selectedDealForReminder?.id || ''}
-                disabled={sendPaymentReminderMutation.isPending || !brandDeals || brandDeals.length === 0}
-              >
-                <SelectTrigger id="selectDealForReminder">
-                  <SelectValue placeholder="Choose a deal" />
-                </SelectTrigger>
-                <SelectContent>
-                  {brandDeals?.filter(deal => deal.status === 'Payment Pending').map((deal) => (
-                    <SelectItem key={deal.id} value={deal.id}>
-                      {deal.brand_name} - ₹{deal.deal_amount.toLocaleString('en-IN')} (Due: {new Date(deal.payment_expected_date).toLocaleDateString()})
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <Button
-              onClick={handleSendReminderFromDialog}
-              disabled={!selectedDealForReminder || sendPaymentReminderMutation.isPending}
-              className="w-full"
-            >
-              {sendPaymentReminderMutation.isPending ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Sending...
-                </>
-              ) : (
-                'Send Reminder'
-              )}
-            </Button>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsSendPaymentReminderDialogOpen(false)}>Close</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      {/* Bottom Navigation */}
+      <div className="fixed bottom-0 left-0 right-0 bg-purple-900/90 backdrop-blur-lg border-t border-white/10 z-50">
+        <div className="flex justify-around items-center py-3 px-4">
+          <button
+            onClick={() => setActiveTab('home')}
+            className={`flex flex-col items-center gap-1 transition-colors ${
+              activeTab === 'home' ? 'text-white' : 'text-purple-300 hover:text-white'
+            }`}
+          >
+            <Home className="w-6 h-6" />
+            <span className="text-xs font-medium">Home</span>
+          </button>
 
-      <Dialog open={isSendTakedownNoticeDialogOpen} onOpenChange={setIsSendTakedownNoticeDialogOpen}>
-        <DialogContent className="sm:max-w-[600px] bg-card text-foreground border-border">
-          <DialogHeader>
-            <DialogTitle>Send Takedown Notice</DialogTitle>
-            <DialogDescription>Fill in details to send a formal DMCA takedown notice.</DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div>
-              <Label htmlFor="takedownContentUrl">Your Original Content URL *</Label>
-              <Input
-                id="takedownContentUrl"
-                type="url"
-                value={takedownNoticeDetails.contentUrl}
-                onChange={(e) => setTakedownNoticeDetails(prev => ({ ...prev, contentUrl: e.target.value }))}
-                placeholder="e.g., https://youtube.com/watch?v=your_original_video_id"
-              />
-            </div>
-            <div>
-              <Label htmlFor="takedownPlatform">Platform of Infringement *</Label>
-              <Select
-                onValueChange={(value) => setTakedownNoticeDetails(prev => ({ ...prev, platform: value }))}
-                value={takedownNoticeDetails.platform}
-              >
-                <SelectTrigger id="takedownPlatform">
-                  <SelectValue placeholder="Select platform" />
-                </SelectTrigger>
-                <SelectContent>
-                  {['YouTube', 'Instagram', 'TikTok', 'Facebook', 'Other Web'].map((platform) => (
-                    <SelectItem key={platform} value={platform}>{platform}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label htmlFor="takedownInfringingUrl">Infringing Content URL *</Label>
-              <Input
-                id="takedownInfringingUrl"
-                type="url"
-                value={takedownNoticeDetails.infringingUrl}
-                onChange={(e) => setTakedownNoticeDetails(prev => ({ ...prev, infringingUrl: e.target.value }))}
-                placeholder="e.g., https://youtube.com/watch?v=infringing_video_id"
-              />
-            </div>
-            <Button
-              onClick={handleSendTakedownFromDialog}
-              disabled={!takedownNoticeDetails.contentUrl.trim() || !takedownNoticeDetails.platform.trim() || !takedownNoticeDetails.infringingUrl.trim() || sendTakedownNoticeMutation.isPending}
-              className="w-full"
-            >
-              {sendTakedownNoticeMutation.isPending ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Sending...
-                </>
-              ) : (
-                'Send Takedown Notice'
-              )}
-            </Button>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsSendTakedownNoticeDialogOpen(false)}>Cancel</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          <button
+            onClick={() => setActiveTab('deals')}
+            className={`flex flex-col items-center gap-1 transition-colors ${
+              activeTab === 'deals' ? 'text-white' : 'text-purple-300 hover:text-white'
+            }`}
+          >
+            <Briefcase className="w-6 h-6" />
+            <span className="text-xs font-medium">Deals</span>
+          </button>
 
-      {/* Message Dialog */}
-      <Dialog open={isMessageDialogOpen} onOpenChange={handleCloseMessageDialog}>
-        <DialogContent 
-          className="sm:max-w-[600px] h-[80vh] flex flex-col bg-card text-foreground border-border"
-          aria-labelledby="send-message-title"
-          aria-describedby="send-message-description"
-        >
-          <DialogHeader>
-            <DialogTitle id="send-message-title">Send Message</DialogTitle>
-            <DialogDescription id="send-message-description" className="text-muted-foreground">
-              Start a secure conversation with {messageReceiverName}.
-            </DialogDescription>
-          </DialogHeader>
-          {messageReceiverId && (
-            <div className="flex-1 overflow-hidden">
-              <ChatWindow
-                receiverId={messageReceiverId}
-                receiverName={messageReceiverName}
-              />
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
+          <button
+            onClick={() => setActiveTab('payments')}
+            className={`flex flex-col items-center gap-1 transition-colors ${
+              activeTab === 'payments' ? 'text-white' : 'text-purple-300 hover:text-white'
+            }`}
+          >
+            <CreditCard className="w-6 h-6" />
+            <span className="text-xs font-medium">Payments</span>
+          </button>
 
-      {/* Passkey Registration Dialog */}
-      <Dialog open={showPasskeyDialog} onOpenChange={setShowPasskeyDialog}>
-        <DialogContent className="sm:max-w-[425px] bg-[#0F121A]/95 backdrop-blur-xl border border-white/10 text-white">
-          <DialogHeader>
-            <DialogTitle className="text-white">Register Passkey</DialogTitle>
-            <DialogDescription className="text-gray-400">
-              Register a passkey for faster, more secure sign-ins using Face ID or Touch ID.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="mt-4">
-            <BiometricLogin 
-              mode="register"
-              onSuccess={handlePasskeyRegisterSuccess}
-            />
-          </div>
-        </DialogContent>
-      </Dialog>
+          <button
+            onClick={() => setActiveTab('protection')}
+            className={`flex flex-col items-center gap-1 transition-colors ${
+              activeTab === 'protection' ? 'text-white' : 'text-purple-300 hover:text-white'
+            }`}
+          >
+            <Shield className="w-6 h-6" />
+            <span className="text-xs font-medium">Protection</span>
+          </button>
 
-      {/* Trial Expired Modal */}
-      <UpgradeModal
-        open={showExpiredModal}
-        onOpenChange={setShowExpiredModal}
-        reason="trial_expired"
-      />
-
-      {/* Quick Search Modal - Controlled by Cmd+K */}
-      <QuickSearch
-        isOpen={isQuickSearchOpen}
-        onClose={() => setIsQuickSearchOpen(false)}
-        onSelect={(result) => {
-          if (result.type === 'deal') {
-            navigate(`/creator-contracts/${result.id}`);
-          } else if (result.type === 'payment') {
-            navigate('/creator-payments');
-          }
-          setIsQuickSearchOpen(false);
-        }}
-      />
-    </>
+          <button
+            onClick={() => setActiveTab('messages')}
+            className={`flex flex-col items-center gap-1 transition-colors relative ${
+              activeTab === 'messages' ? 'text-white' : 'text-purple-300 hover:text-white'
+            }`}
+          >
+            <MessageCircle className="w-6 h-6" />
+            <span className="text-xs font-medium">Messages</span>
+            <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+              3
+            </span>
+          </button>
+        </div>
+      </div>
+    </div>
   );
 };
 

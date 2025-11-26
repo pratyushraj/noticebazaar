@@ -33,4 +33,20 @@ const CreatorAnalyticsPage: React.FC = () => {
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => navigate('/creator-dashb
+              onClick={() => navigate('/creator-dashboard')}
+              className="mb-4 text-white/70 hover:text-white hover:bg-white/10"
+            >
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back to Dashboard
+            </Button>
+          </div>
+
+          {/* Analytics Content */}
+          <ContentAnalytics />
+        </div>
+      </div>
+    </ProtectedRoute>
+  );
+};
+
+export default CreatorAnalyticsPage;

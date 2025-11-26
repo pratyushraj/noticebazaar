@@ -4,6 +4,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import NotFound from "./pages/NotFound";
 import Login from "./pages/Login";
 import MarketingHome from "./pages/MarketingHome";
+import HomePage from "./pages/HomePage";
 import ClientDashboard from "./pages/ClientDashboard";
 import AdminDashboard from "./pages/AdminDashboard";
 import CADashboard from "./pages/CADashboard";
@@ -80,8 +81,9 @@ const App = () => {
           <SessionContextProvider>
             <SidebarProvider>
             <Routes>
-              {/* Root route: Renders MarketingHome. ProtectedRoute handles redirection if authenticated. */}
-              <Route path="/" element={<ProtectedRoute><MarketingHome /></ProtectedRoute>} />
+              {/* Root route: Renders HomePage. ProtectedRoute handles redirection if authenticated. */}
+              <Route path="/" element={<ProtectedRoute><HomePage /></ProtectedRoute>} />
+              <Route path="/old-home" element={<ProtectedRoute><MarketingHome /></ProtectedRoute>} />
               
               {/* Login route: Accessible directly, not protected */}
               <Route path="/login" element={<Login />} />

@@ -11,10 +11,48 @@ export default defineConfig(() => ({
   build: {
     sourcemap: false, // Disable source maps in production to avoid 404 errors
     assetsDir: 'assets',
+    chunkSizeWarningLimit: 1000, // Increase warning limit to 1000 kB
     rollupOptions: {
       output: {
-        // Use default chunking to avoid circular dependency issues
-        manualChunks: undefined,
+        // Optimized manual chunks to reduce bundle size
+        manualChunks: (id) => {
+          // React core libraries
+          if (id.includes('node_modules/react/') || id.includes('node_modules/react-dom/')) {
+            return 'react-vendor';
+          }
+          // React Router
+          if (id.includes('node_modules/react-router-dom/')) {
+            return 'router';
+          }
+          // Supabase libraries
+          if (id.includes('node_modules/@supabase/')) {
+            return 'supabase';
+          }
+          // Radix UI components (large library)
+          if (id.includes('node_modules/@radix-ui/')) {
+            return 'radix-ui';
+          }
+          // React Query
+          if (id.includes('node_modules/@tanstack/react-query/')) {
+            return 'react-query';
+          }
+          // Framer Motion
+          if (id.includes('node_modules/framer-motion/')) {
+            return 'framer-motion';
+          }
+          // Lucide React icons
+          if (id.includes('node_modules/lucide-react/')) {
+            return 'icons';
+          }
+          // CometChat
+          if (id.includes('node_modules/@cometchat')) {
+            return 'cometchat';
+          }
+          // Other large dependencies
+          if (id.includes('node_modules/html2canvas/') || id.includes('node_modules/jspdf/')) {
+            return 'pdf-tools';
+          }
+        },
         assetFileNames: 'assets/[name].[ext]',
         chunkFileNames: 'assets/[name]-[hash].js',
         entryFileNames: 'assets/[name]-[hash].js',

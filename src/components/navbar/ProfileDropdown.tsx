@@ -12,7 +12,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
-import { User, Settings, LogOut, Sparkles, Fingerprint } from 'lucide-react';
+import { User, Settings, LogOut, Sparkles, Fingerprint, Loader2 } from 'lucide-react';
 import { useSignOut } from '@/lib/hooks/useAuth';
 import { getInitials, DEFAULT_AVATAR_URL } from '@/lib/utils/avatar';
 import { useSession } from '@/contexts/SessionContext';
@@ -60,7 +60,7 @@ const ProfileDropdown: React.FC<ProfileDropdownProps> = ({ profilePath }) => {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent
-        className="w-56 bg-gradient-to-br from-[#1C1C1E] to-[#0A0A0C] backdrop-blur-xl border border-white/10 shadow-2xl rounded-2xl overflow-hidden"
+        className="w-56 bg-gradient-to-br from-[#3B82F6]/10 via-[#8B5CF6]/10 to-[#3B82F6]/5 backdrop-blur-xl border border-white/10 shadow-2xl rounded-2xl overflow-hidden"
         align="end"
       >
         <DropdownMenuLabel className="font-normal px-3 py-3">
@@ -112,12 +112,38 @@ const ProfileDropdown: React.FC<ProfileDropdownProps> = ({ profilePath }) => {
         <DropdownMenuSeparator className="bg-white/5 my-1" />
         
         <DropdownMenuItem
-          onClick={handleLogout}
+          onClick={async () => {
+            // Haptic feedback
+            if (navigator.vibrate) {
+              navigator.vibrate(30);
+            }
+            
+            // Analytics tracking
+            if (typeof window !== 'undefined' && (window as any).gtag) {
+              (window as any).gtag('event', 'logout', {
+                event_category: 'engagement',
+                event_label: 'user_logout',
+                method: 'profile_dropdown'
+              });
+            }
+            
+            await handleLogout();
+          }}
           disabled={signOutMutation.isPending}
-          className="cursor-pointer px-3 py-2.5 text-red-400 focus:text-red-300 hover:bg-red-500/10 focus:bg-red-500/10 active:bg-red-500/15 transition-colors"
+          className="cursor-pointer px-3 py-2.5 text-red-400 focus:text-red-300 hover:bg-red-500/10 focus:bg-red-500/10 active:bg-red-500/15 transition-colors min-h-[44px] touch-manipulation focus:outline-none focus:ring-2 focus:ring-red-400/50"
+          aria-label="Log out of your account"
         >
-          <LogOut className="mr-3 h-4 w-4" />
-          <span className="text-[15px]">Logout</span>
+          {signOutMutation.isPending ? (
+            <>
+              <Loader2 className="mr-3 h-4 w-4 animate-spin" />
+              <span className="text-[15px]">Logging out...</span>
+            </>
+          ) : (
+            <>
+              <LogOut className="mr-3 h-4 w-4" />
+              <span className="text-[15px]">Logout</span>
+            </>
+          )}
         </DropdownMenuItem>
       </DropdownMenuContent>
 

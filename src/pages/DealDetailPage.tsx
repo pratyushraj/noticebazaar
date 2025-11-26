@@ -1,444 +1,576 @@
 "use client";
 
-import React, { useState, useMemo } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { useSession } from '@/contexts/SessionContext';
-import { useBrandDeals } from '@/lib/hooks/useBrandDeals';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Edit, IndianRupee, FileText, ReceiptText, CheckCircle2 } from 'lucide-react';
-import { Loader2 } from 'lucide-react';
-import { BrandDeal } from '@/types';
-import BrandLogo from '@/components/creator-contracts/BrandLogo';
-import DealStatusBadge, { DealStage } from '@/components/creator-contracts/DealStatusBadge';
-import { cn, openContractFile } from '@/lib/utils';
-import MarkPaymentReceivedDialog from '@/components/creator-contracts/MarkPaymentReceivedDialog';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import { toast } from 'sonner';
+import React, { useState } from 'react';
+import { ArrowLeft, MoreVertical, Building2, DollarSign, Calendar, FileText, MessageCircle, AlertCircle, CheckCircle, Clock, TrendingUp, User, MapPin, Mail, Phone, ExternalLink, Upload, Download, Edit, Trash2, Share2, Flag, Eye, Lock } from 'lucide-react';
 
-// Helper function to map old status to new stage
-const getDealStage = (deal: BrandDeal): DealStage => {
-  if (deal.status === 'Drafting') return 'draft';
-  if (deal.status === 'Approved') return 'active';
-  if (deal.status === 'Payment Pending') {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const dueDate = new Date(deal.payment_expected_date);
-    dueDate.setHours(0, 0, 0, 0);
-    return dueDate < today ? 'overdue' : 'payment_pending';
-  }
-  if (deal.status === 'Completed') return 'completed';
-  if (deal.payment_received_date) return 'paid';
-  return 'draft';
-};
+const DealDetailPage = () => {
+  const [activeTab, setActiveTab] = useState('overview');
+  const [showMenu, setShowMenu] = useState(false);
 
-// Helper to calculate days until due or overdue
-const getDueDateStatus = (dueDate: string): { text: string; variant: 'default' | 'destructive' | 'secondary' } => {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const due = new Date(dueDate);
-  due.setHours(0, 0, 0, 0);
-  const diffTime = due.getTime() - today.getTime();
-  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-  if (diffDays < 0) {
-    return { text: `${Math.abs(diffDays)} days overdue`, variant: 'destructive' };
-  } else if (diffDays === 0) {
-    return { text: 'Due today', variant: 'destructive' };
-  } else if (diffDays <= 7) {
-    return { text: `${diffDays} days left`, variant: 'secondary' };
-  } else {
-    return { text: `${diffDays} days left`, variant: 'default' };
-  }
-};
-
-const DealDetailPage: React.FC = () => {
-  const { dealId } = useParams<{ dealId: string }>();
-  const navigate = useNavigate();
-  const { profile, isCreator } = useSession();
-  const creatorId = profile?.id;
-
-  const [isMarkPaymentDialogOpen, setIsMarkPaymentDialogOpen] = useState(false);
-
-  const { data: allBrandDeals, isLoading, refetch } = useBrandDeals({
-    creatorId: creatorId,
-    enabled: !!creatorId && isCreator,
-  });
-
-  const deal = useMemo(() => {
-    return allBrandDeals?.find(d => d.id === dealId) || null;
-  }, [allBrandDeals, dealId]);
-
-  const stage = deal ? getDealStage(deal) : 'draft';
-  const dueDateStatus = deal ? getDueDateStatus(deal.payment_expected_date || deal.due_date) : null;
-
-  // Parse deliverables
-  const deliverables = useMemo(() => {
-    if (!deal) return [];
-    try {
-      if (typeof deal.deliverables === 'string') {
-        const parsed = JSON.parse(deal.deliverables);
-        return Array.isArray(parsed) ? parsed : [deal.deliverables];
+  const dealData = {
+    id: 1,
+    title: "TechGear Pro Sponsorship Agreement",
+    brand: {
+      name: "TechGear",
+      logo: "TG",
+      industry: "Technology",
+      location: "San Francisco, CA",
+      contact: {
+        name: "Sarah Johnson",
+        email: "sarah@techgear.com",
+        phone: "+1 (555) 123-4567"
       }
-      return Array.isArray(deal.deliverables) ? deal.deliverables : [deal.deliverables];
-    } catch {
-      return typeof deal.deliverables === 'string' 
-        ? deal.deliverables.split(',').map(d => d.trim())
-        : [];
-    }
-  }, [deal]);
-
-  if (isLoading) {
-    return (
-      <div className="min-h-[300px] flex flex-col items-center justify-center bg-background">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        <p className="mt-3 text-muted-foreground">Loading deal details...</p>
-      </div>
-    );
-  }
-
-  if (!deal) {
-    return (
-      <div className="min-h-[300px] flex flex-col items-center justify-center bg-background">
-        <p className="text-muted-foreground">Deal not found</p>
-        <Button onClick={() => navigate('/creator-contracts')} className="mt-4">
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Back to Deals
-        </Button>
-      </div>
-    );
-  }
-
-  const handlePaymentSuccess = () => {
-    refetch();
-    setIsMarkPaymentDialogOpen(false);
-    toast.success('Payment marked as received');
+    },
+    value: 150000,
+    currency: "INR",
+    status: "negotiation",
+    risk: "low",
+    progress: 60,
+    created: "Nov 10, 2024",
+    updated: "Nov 24, 2024",
+    deadline: "Dec 15, 2024",
+    startDate: "Dec 1, 2024",
+    endDate: "Feb 28, 2025",
+    platform: "YouTube",
+    type: "Sponsored Video Series",
+    deliverables: [
+      {
+        id: 1,
+        title: "Product Review Video (10-15 min)",
+        status: "pending",
+        dueDate: "Dec 10, 2024",
+        payment: 50000
+      },
+      {
+        id: 2,
+        title: "Unboxing & Setup Tutorial",
+        status: "pending",
+        dueDate: "Dec 20, 2024",
+        payment: 50000
+      },
+      {
+        id: 3,
+        title: "30-day Follow-up Review",
+        status: "pending",
+        dueDate: "Jan 15, 2025",
+        payment: 50000
+      }
+    ],
+    paymentSchedule: [
+      {
+        id: 1,
+        amount: 50000,
+        milestone: "Contract signing",
+        status: "pending",
+        dueDate: "Dec 1, 2024"
+      },
+      {
+        id: 2,
+        amount: 50000,
+        milestone: "First video published",
+        status: "pending",
+        dueDate: "Dec 12, 2024"
+      },
+      {
+        id: 3,
+        amount: 50000,
+        milestone: "Campaign completion",
+        status: "pending",
+        dueDate: "Jan 20, 2025"
+      }
+    ],
+    contract: {
+      uploaded: true,
+      fileName: "TechGear_Agreement_2024.pdf",
+      uploadDate: "Nov 20, 2024",
+      reviewStatus: "reviewed",
+      issues: []
+    },
+    timeline: [
+      {
+        id: 1,
+        event: "Deal Created",
+        date: "Nov 10, 2024",
+        time: "10:30 AM",
+        user: "You",
+        type: "create"
+      },
+      {
+        id: 2,
+        event: "Contract Uploaded",
+        date: "Nov 20, 2024",
+        time: "2:15 PM",
+        user: "You",
+        type: "document"
+      },
+      {
+        id: 3,
+        event: "Brand Responded",
+        date: "Nov 22, 2024",
+        time: "11:45 AM",
+        user: "TechGear",
+        type: "message"
+      },
+      {
+        id: 4,
+        event: "Counter Proposal Sent",
+        date: "Nov 24, 2024",
+        time: "4:20 PM",
+        user: "You",
+        type: "update"
+      }
+    ],
+    notes: "Brand is interested in long-term partnership. Negotiating exclusivity terms. They want 30-day exclusivity window after each video."
   };
 
+  const statusConfig = {
+    negotiation: { 
+      color: 'bg-blue-500', 
+      label: 'In Negotiation', 
+      icon: Clock, 
+      textColor: 'text-blue-400',
+      bgColor: 'bg-blue-500/20'
+    },
+    active: { 
+      color: 'bg-green-500', 
+      label: 'Active', 
+      icon: CheckCircle, 
+      textColor: 'text-green-400',
+      bgColor: 'bg-green-500/20'
+    },
+    pending: { 
+      color: 'bg-yellow-500', 
+      label: 'Pending', 
+      icon: Clock, 
+      textColor: 'text-yellow-400',
+      bgColor: 'bg-yellow-500/20'
+    },
+    completed: { 
+      color: 'bg-purple-500', 
+      label: 'Completed', 
+      icon: CheckCircle, 
+      textColor: 'text-purple-400',
+      bgColor: 'bg-purple-500/20'
+    }
+  };
+
+  const riskConfig = {
+    low: { color: 'bg-green-500', label: 'Low Risk', textColor: 'text-green-400' },
+    medium: { color: 'bg-yellow-500', label: 'Medium Risk', textColor: 'text-yellow-400' },
+    high: { color: 'bg-red-500', label: 'High Risk', textColor: 'text-red-400' }
+  };
+
+  const StatusIcon = statusConfig[dealData.status].icon;
+
   return (
-    <div className="space-y-6">
+    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 text-white">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div className="flex items-center gap-4 flex-1 min-w-0">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => navigate('/creator-contracts')}
-            className="text-muted-foreground hover:text-foreground flex-shrink-0"
+      <div className="sticky top-0 z-50 bg-purple-900/90 backdrop-blur-lg border-b border-white/10">
+        <div className="flex items-center justify-between p-4">
+          <button className="p-2 hover:bg-white/10 rounded-lg transition-colors">
+            <ArrowLeft className="w-6 h-6" />
+          </button>
+          
+          <div className="text-lg font-semibold">Deal Details</div>
+          
+          <button 
+            onClick={() => setShowMenu(!showMenu)}
+            className="p-2 hover:bg-white/10 rounded-lg transition-colors relative"
           >
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            <span className="hidden sm:inline">Back</span>
-          </Button>
-          <div className="flex items-center gap-3 min-w-0 flex-1">
-            <BrandLogo brandName={deal.brand_name} brandLogo={null} size="lg" className="flex-shrink-0" />
-            <div className="min-w-0 flex-1">
-              <h1 className="text-xl sm:text-2xl font-bold text-foreground truncate">{deal.brand_name}</h1>
-              <div className="flex items-center gap-2 mt-1 flex-wrap">
-                <DealStatusBadge stage={stage} />
-                {dueDateStatus && (
-                  <Badge variant={dueDateStatus.variant} className="text-xs">
-                    {dueDateStatus.text}
-                  </Badge>
-                )}
+            <MoreVertical className="w-6 h-6" />
+          </button>
+        </div>
+
+        {/* Action Menu Dropdown */}
+        {showMenu && (
+          <div className="absolute top-16 right-4 w-56 bg-purple-800/95 backdrop-blur-lg rounded-2xl border border-white/10 shadow-2xl z-50 overflow-hidden">
+            <button className="w-full flex items-center gap-3 px-4 py-3 hover:bg-white/10 transition-colors text-left">
+              <Edit className="w-4 h-4" />
+              <span className="text-sm">Edit Deal</span>
+            </button>
+            <button className="w-full flex items-center gap-3 px-4 py-3 hover:bg-white/10 transition-colors text-left">
+              <Share2 className="w-4 h-4" />
+              <span className="text-sm">Share</span>
+            </button>
+            <button className="w-full flex items-center gap-3 px-4 py-3 hover:bg-white/10 transition-colors text-left">
+              <Download className="w-4 h-4" />
+              <span className="text-sm">Download Contract</span>
+            </button>
+            <button className="w-full flex items-center gap-3 px-4 py-3 hover:bg-white/10 transition-colors text-left">
+              <Flag className="w-4 h-4" />
+              <span className="text-sm">Report Issue</span>
+            </button>
+            <div className="border-t border-white/10"></div>
+            <button className="w-full flex items-center gap-3 px-4 py-3 hover:bg-red-500/10 text-red-400 transition-colors text-left">
+              <Trash2 className="w-4 h-4" />
+              <span className="text-sm">Delete Deal</span>
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* Content */}
+      <div className="p-4 pb-24">
+        {/* Deal Header */}
+        <div className="mb-6">
+          <div className="flex items-start gap-3 mb-4">
+            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-2xl font-bold flex-shrink-0">
+              {dealData.brand.logo}
+            </div>
+            <div className="flex-1 min-w-0">
+              <h1 className="text-2xl font-bold mb-2 leading-tight">{dealData.title}</h1>
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className={`px-3 py-1 rounded-full text-xs font-medium ${statusConfig[dealData.status].bgColor} ${statusConfig[dealData.status].textColor} flex items-center gap-1`}>
+                  <StatusIcon className="w-3 h-3" />
+                  {statusConfig[dealData.status].label}
+                </span>
+                <span className={`px-3 py-1 rounded-full text-xs font-medium bg-green-500/20 text-green-400`}>
+                  {riskConfig[dealData.risk].label}
+                </span>
               </div>
             </div>
           </div>
+
+          {/* Deal Value Card */}
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-5 border border-white/10 mb-4">
+            <div className="flex items-center justify-between mb-3">
+              <div>
+                <div className="text-sm text-purple-200 mb-1">Total Deal Value</div>
+                <div className="text-3xl font-bold text-green-400">₹{(dealData.value / 1000).toFixed(0)}K</div>
+              </div>
+              <div className="w-16 h-16 rounded-xl bg-green-500/20 flex items-center justify-center">
+                <DollarSign className="w-8 h-8 text-green-400" />
+              </div>
+            </div>
+            
+            <div className="mb-3">
+              <div className="flex items-center justify-between text-xs text-purple-200 mb-2">
+                <span>Deal Progress</span>
+                <span>{dealData.progress}%</span>
+              </div>
+              <div className="w-full bg-white/10 rounded-full h-3">
+                <div
+                  className="bg-gradient-to-r from-blue-500 to-purple-500 h-3 rounded-full transition-all"
+                  style={{ width: `${dealData.progress}%` }}
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3 text-sm">
+              <div>
+                <div className="text-purple-300 text-xs mb-1">Start Date</div>
+                <div className="font-medium">{dealData.startDate}</div>
+              </div>
+              <div>
+                <div className="text-purple-300 text-xs mb-1">End Date</div>
+                <div className="font-medium">{dealData.endDate}</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Key Info Grid */}
+          <div className="grid grid-cols-2 gap-3 mb-4">
+            <div className="bg-white/10 backdrop-blur-md rounded-xl p-3 border border-white/10">
+              <div className="text-xs text-purple-300 mb-1">Platform</div>
+              <div className="font-semibold">{dealData.platform}</div>
+            </div>
+            <div className="bg-white/10 backdrop-blur-md rounded-xl p-3 border border-white/10">
+              <div className="text-xs text-purple-300 mb-1">Type</div>
+              <div className="font-semibold text-sm">{dealData.type}</div>
+            </div>
+            <div className="bg-white/10 backdrop-blur-md rounded-xl p-3 border border-white/10">
+              <div className="text-xs text-purple-300 mb-1">Created</div>
+              <div className="font-semibold">{dealData.created}</div>
+            </div>
+            <div className="bg-white/10 backdrop-blur-md rounded-xl p-3 border border-white/10">
+              <div className="text-xs text-purple-300 mb-1">Deadline</div>
+              <div className="font-semibold">{dealData.deadline}</div>
+            </div>
+          </div>
         </div>
-        <Button
-          onClick={() => navigate(`/creator-contracts?edit=${deal.id}`)}
-          className="bg-primary text-primary-foreground hover:bg-primary/90 w-full sm:w-auto flex-shrink-0"
-        >
-          <Edit className="mr-2 h-4 w-4" />
-          Edit Deal
-        </Button>
-      </div>
 
-      {/* Key Metrics */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="bg-card border-border/50">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Deal Amount</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-foreground">
-              ₹{deal.deal_amount.toLocaleString('en-IN')}
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="bg-card border-border/50">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Payment Due</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-lg font-semibold text-foreground">
-              {new Date(deal.payment_expected_date || deal.due_date).toLocaleDateString('en-IN', {
-                day: 'numeric',
-                month: 'short',
-                year: 'numeric',
-              })}
-            </div>
-            {dueDateStatus && (
-              <Badge variant={dueDateStatus.variant} className="mt-2 text-xs">
-                {dueDateStatus.text}
-              </Badge>
-            )}
-          </CardContent>
-        </Card>
-        <Card className="bg-card border-border/50">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Platform</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-lg font-semibold text-foreground">
-              {deal.platform || 'N/A'}
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="bg-card border-border/50">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Created</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-lg font-semibold text-foreground">
-              {new Date(deal.created_at).toLocaleDateString('en-IN', {
-                day: 'numeric',
-                month: 'short',
-                year: 'numeric',
-              })}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+        {/* Tabs */}
+        <div className="flex gap-2 mb-6 overflow-x-auto pb-2 scrollbar-hide">
+          <button
+            onClick={() => setActiveTab('overview')}
+            className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all ${
+              activeTab === 'overview'
+                ? 'bg-purple-600 text-white shadow-lg'
+                : 'bg-white/10 text-purple-200 hover:bg-white/15'
+            }`}
+          >
+            Overview
+          </button>
+          <button
+            onClick={() => setActiveTab('deliverables')}
+            className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all ${
+              activeTab === 'deliverables'
+                ? 'bg-purple-600 text-white shadow-lg'
+                : 'bg-white/10 text-purple-200 hover:bg-white/15'
+            }`}
+          >
+            Deliverables
+          </button>
+          <button
+            onClick={() => setActiveTab('payments')}
+            className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all ${
+              activeTab === 'payments'
+                ? 'bg-purple-600 text-white shadow-lg'
+                : 'bg-white/10 text-purple-200 hover:bg-white/15'
+            }`}
+          >
+            Payments
+          </button>
+          <button
+            onClick={() => setActiveTab('timeline')}
+            className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all ${
+              activeTab === 'timeline'
+                ? 'bg-purple-600 text-white shadow-lg'
+                : 'bg-white/10 text-purple-200 hover:bg-white/15'
+            }`}
+          >
+            Timeline
+          </button>
+        </div>
 
-      {/* Tabs */}
-      <Tabs defaultValue="overview" className="space-y-4">
-        <TabsList className="bg-muted/50">
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="deliverables">Deliverables</TabsTrigger>
-          <TabsTrigger value="payment">Payment History</TabsTrigger>
-          <TabsTrigger value="contract">Contract</TabsTrigger>
-          <TabsTrigger value="notes">Notes</TabsTrigger>
-        </TabsList>
-
-        {/* Overview Tab */}
-        <TabsContent value="overview" className="space-y-4">
-          <Card className="bg-card border-border/50">
-            <CardHeader>
-              <CardTitle>Deal Information</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">Brand Name</label>
-                  <p className="text-foreground font-semibold mt-1">{deal.brand_name}</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">Contact Person</label>
-                  <p className="text-foreground font-semibold mt-1">{deal.contact_person || 'N/A'}</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">Brand Email</label>
-                  <p className="text-foreground font-semibold mt-1">{deal.brand_email || 'N/A'}</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">Platform</label>
-                  <p className="text-foreground font-semibold mt-1">{deal.platform || 'N/A'}</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">Deal Amount</label>
-                  <p className="text-foreground font-semibold mt-1">
-                    ₹{deal.deal_amount.toLocaleString('en-IN')}
-                  </p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">Status</label>
-                  <div className="mt-1">
-                    <DealStatusBadge stage={stage} />
+        {/* Tab Content */}
+        {activeTab === 'overview' && (
+          <div className="space-y-4">
+            {/* Brand Contact */}
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-5 border border-white/10">
+              <h2 className="font-semibold text-lg mb-4 flex items-center gap-2">
+                <Building2 className="w-5 h-5" />
+                Brand Contact
+              </h2>
+              <div className="space-y-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-purple-500/20 flex items-center justify-center">
+                    <User className="w-5 h-5 text-purple-400" />
+                  </div>
+                  <div>
+                    <div className="font-medium">{dealData.brand.contact.name}</div>
+                    <div className="text-sm text-purple-300">{dealData.brand.industry}</div>
                   </div>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
+                
+                <div className="pt-3 border-t border-white/10 space-y-2 text-sm">
+                  <div className="flex items-center gap-2 text-purple-200">
+                    <Mail className="w-4 h-4" />
+                    <a href={`mailto:${dealData.brand.contact.email}`} className="hover:text-white transition-colors">
+                      {dealData.brand.contact.email}
+                    </a>
+                  </div>
+                  <div className="flex items-center gap-2 text-purple-200">
+                    <Phone className="w-4 h-4" />
+                    <span>{dealData.brand.contact.phone}</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-purple-200">
+                    <MapPin className="w-4 h-4" />
+                    <span>{dealData.brand.location}</span>
+                  </div>
+                </div>
 
-        {/* Deliverables Tab */}
-        <TabsContent value="deliverables" className="space-y-4">
-          <Card className="bg-card border-border/50">
-            <CardHeader>
-              <CardTitle>Deliverables</CardTitle>
-              <CardDescription>List of deliverables for this deal</CardDescription>
-            </CardHeader>
-            <CardContent>
-              {deliverables.length > 0 ? (
-                <div className="space-y-2">
-                  {deliverables.map((item, index) => (
-                    <div key={index} className="flex items-center gap-2 p-3 rounded-lg bg-muted/30">
-                      <CheckCircle2 className="h-4 w-4 text-green-500 flex-shrink-0" />
-                      <span className="text-foreground">{item}</span>
+                <button className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 rounded-xl transition-colors flex items-center justify-center gap-2">
+                  <MessageCircle className="w-4 h-4" />
+                  Message Brand
+                </button>
+              </div>
+            </div>
+
+            {/* Contract Status */}
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-5 border border-white/10">
+              <h2 className="font-semibold text-lg mb-4 flex items-center gap-2">
+                <FileText className="w-5 h-5" />
+                Contract
+              </h2>
+              
+              {dealData.contract.uploaded ? (
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-green-500/20 flex items-center justify-center">
+                        <CheckCircle className="w-5 h-5 text-green-400" />
+                      </div>
+                      <div>
+                        <div className="font-medium">{dealData.contract.fileName}</div>
+                        <div className="text-xs text-purple-300">Uploaded {dealData.contract.uploadDate}</div>
+                      </div>
                     </div>
-                  ))}
+                  </div>
+                  
+                  <div className="flex gap-2">
+                    <button className="flex-1 bg-white/10 hover:bg-white/15 font-medium py-2.5 rounded-lg transition-colors flex items-center justify-center gap-2 text-sm">
+                      <Eye className="w-4 h-4" />
+                      View
+                    </button>
+                    <button className="flex-1 bg-white/10 hover:bg-white/15 font-medium py-2.5 rounded-lg transition-colors flex items-center justify-center gap-2 text-sm">
+                      <Download className="w-4 h-4" />
+                      Download
+                    </button>
+                  </div>
                 </div>
               ) : (
-                <p className="text-muted-foreground">No deliverables specified</p>
+                <button className="w-full bg-white/10 hover:bg-white/15 border-2 border-dashed border-white/20 font-medium py-8 rounded-xl transition-colors flex flex-col items-center justify-center gap-2">
+                  <Upload className="w-8 h-8 text-purple-300" />
+                  <span>Upload Contract</span>
+                  <span className="text-xs text-purple-300">PDF, DOCX up to 10MB</span>
+                </button>
               )}
-            </CardContent>
-          </Card>
-        </TabsContent>
+            </div>
 
-        {/* Payment History Tab */}
-        <TabsContent value="payment" className="space-y-4">
-          <Card className="bg-card border-border/50">
-            <CardHeader>
-              <CardTitle>Payment History</CardTitle>
-              <CardDescription>Payment details and transaction history</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-3">
-                <div className="flex items-center justify-between p-4 rounded-lg bg-muted/30">
-                  <div>
-                    <p className="font-semibold text-foreground">Expected Payment</p>
-                    <p className="text-sm text-muted-foreground">
-                      {new Date(deal.payment_expected_date || deal.due_date).toLocaleDateString('en-IN')}
-                    </p>
-                  </div>
-                  <div className="text-right">
-                    <p className="font-semibold text-foreground">
-                      ₹{deal.deal_amount.toLocaleString('en-IN')}
-                    </p>
-                    <Badge variant={stage === 'paid' || stage === 'completed' ? 'default' : 'secondary'}>
-                      {stage === 'paid' || stage === 'completed' ? 'Paid' : 'Pending'}
-                    </Badge>
-                  </div>
-                </div>
+            {/* Notes */}
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-5 border border-white/10">
+              <h2 className="font-semibold text-lg mb-3">Notes</h2>
+              <p className="text-sm text-purple-200 leading-relaxed">{dealData.notes}</p>
+              <button className="mt-3 text-sm text-purple-300 hover:text-white transition-colors flex items-center gap-1">
+                <Edit className="w-3 h-3" />
+                Edit Notes
+              </button>
+            </div>
+          </div>
+        )}
 
-                {deal.payment_received_date && (
-                  <div className="flex items-center justify-between p-4 rounded-lg bg-green-500/10 border border-green-500/20">
-                    <div>
-                      <p className="font-semibold text-foreground">Payment Received</p>
-                      <p className="text-sm text-muted-foreground">
-                        {new Date(deal.payment_received_date).toLocaleDateString('en-IN')}
-                      </p>
-                      {deal.utr_number && (
-                        <p className="text-xs text-muted-foreground mt-1">UTR: {deal.utr_number}</p>
+        {activeTab === 'deliverables' && (
+          <div className="space-y-3">
+            {dealData.deliverables.map((item, index) => (
+              <div key={item.id} className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/10">
+                <div className="flex items-start gap-3">
+                  <div className="w-8 h-8 rounded-full bg-purple-500/20 flex items-center justify-center flex-shrink-0 font-semibold text-sm">
+                    {index + 1}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-semibold mb-2">{item.title}</h3>
+                    <div className="flex items-center gap-3 text-sm text-purple-200 mb-3">
+                      <div className="flex items-center gap-1">
+                        <Calendar className="w-3 h-3" />
+                        <span>Due: {item.dueDate}</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <DollarSign className="w-3 h-3" />
+                        <span>₹{(item.payment / 1000).toFixed(0)}K</span>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {item.status === 'completed' ? (
+                        <span className="px-3 py-1 bg-green-500/20 text-green-400 rounded-full text-xs font-medium flex items-center gap-1">
+                          <CheckCircle className="w-3 h-3" />
+                          Completed
+                        </span>
+                      ) : item.status === 'in_progress' ? (
+                        <span className="px-3 py-1 bg-blue-500/20 text-blue-400 rounded-full text-xs font-medium flex items-center gap-1">
+                          <TrendingUp className="w-3 h-3" />
+                          In Progress
+                        </span>
+                      ) : (
+                        <span className="px-3 py-1 bg-yellow-500/20 text-yellow-400 rounded-full text-xs font-medium flex items-center gap-1">
+                          <Clock className="w-3 h-3" />
+                          Pending
+                        </span>
                       )}
                     </div>
-                    <div className="text-right">
-                      <p className="font-semibold text-green-400">
-                        ₹{deal.deal_amount.toLocaleString('en-IN')}
-                      </p>
-                      <Badge className="bg-green-500/20 text-green-400 border-green-500/30">
-                        <CheckCircle2 className="h-3 w-3 mr-1" />
-                        Paid
-                      </Badge>
-                    </div>
                   </div>
-                )}
-
-                {stage === 'payment_pending' || stage === 'overdue' ? (
-                  <Button
-                    onClick={() => setIsMarkPaymentDialogOpen(true)}
-                    className="w-full bg-green-600 hover:bg-green-700 text-white"
-                  >
-                    <IndianRupee className="mr-2 h-4 w-4" />
-                    Mark Payment as Received
-                  </Button>
-                ) : null}
+                </div>
               </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
+            ))}
+            
+            <button className="w-full bg-white/10 hover:bg-white/15 backdrop-blur-md rounded-2xl p-4 border border-white/10 transition-all flex items-center justify-center gap-2 text-sm font-medium">
+              <Upload className="w-4 h-4" />
+              Submit Deliverable
+            </button>
+          </div>
+        )}
 
-        {/* Contract Tab */}
-        <TabsContent value="contract" className="space-y-4">
-          <Card className="bg-card border-border/50">
-            <CardHeader>
-              <CardTitle>Contract Documents</CardTitle>
-              <CardDescription>Contract and invoice files</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {deal.contract_file_url ? (
-                <div className="flex items-center justify-between p-4 rounded-lg bg-muted/30">
-                  <div className="flex items-center gap-3">
-                    <FileText className="h-5 w-5 text-primary" />
+        {activeTab === 'payments' && (
+          <div className="space-y-3">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-5 border border-white/10 mb-4">
+              <div className="text-sm text-purple-200 mb-2">Total Payment Received</div>
+              <div className="text-3xl font-bold text-green-400 mb-1">₹0</div>
+              <div className="text-sm text-purple-300">₹{(dealData.value / 1000).toFixed(0)}K remaining</div>
+            </div>
+
+            {dealData.paymentSchedule.map((payment, index) => (
+              <div key={payment.id} className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/10">
+                <div className="flex items-start justify-between mb-3">
+                  <div className="flex items-start gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-green-500/20 flex items-center justify-center flex-shrink-0">
+                      <DollarSign className="w-5 h-5 text-green-400" />
+                    </div>
                     <div>
-                      <p className="font-semibold text-foreground">Contract Document</p>
-                      <p className="text-sm text-muted-foreground">View or download the contract</p>
+                      <div className="font-semibold mb-1">Payment #{index + 1}</div>
+                      <div className="text-sm text-purple-200 mb-2">{payment.milestone}</div>
+                      <div className="text-xs text-purple-300 flex items-center gap-1">
+                        <Calendar className="w-3 h-3" />
+                        Due: {payment.dueDate}
+                      </div>
                     </div>
                   </div>
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={async () => {
-                      // openContractFile is now statically imported
-                      openContractFile(deal.contract_file_url, (error) => {
-                        toast.error(error);
-                      });
-                    }}
-                  >
-                    View
-                  </Button>
-                </div>
-              ) : (
-                <p className="text-muted-foreground">No contract document uploaded</p>
-              )}
-
-              {deal.invoice_file_url ? (
-                <div className="flex items-center justify-between p-4 rounded-lg bg-muted/30">
-                  <div className="flex items-center gap-3">
-                    <ReceiptText className="h-5 w-5 text-primary" />
-                    <div>
-                      <p className="font-semibold text-foreground">Invoice Document</p>
-                      <p className="text-sm text-muted-foreground">View or download the invoice</p>
+                  <div className="text-right">
+                    <div className="text-xl font-bold text-green-400">
+                      ₹{(payment.amount / 1000).toFixed(0)}K
                     </div>
+                    <span className={`px-2 py-1 rounded-full text-xs font-medium mt-1 inline-block ${
+                      payment.status === 'completed' ? 'bg-green-500/20 text-green-400' :
+                      payment.status === 'processing' ? 'bg-blue-500/20 text-blue-400' :
+                      'bg-yellow-500/20 text-yellow-400'
+                    }`}>
+                      {payment.status === 'completed' ? '✓ Paid' :
+                       payment.status === 'processing' ? '○ Processing' :
+                       '○ Pending'}
+                    </span>
                   </div>
-                  <Button variant="outline" size="sm" asChild>
-                    <a href={deal.invoice_file_url} target="_blank" rel="noopener noreferrer">
-                      View
-                    </a>
-                  </Button>
                 </div>
-              ) : (
-                <p className="text-muted-foreground">No invoice document uploaded</p>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
+              </div>
+            ))}
+          </div>
+        )}
 
-        {/* Notes Tab */}
-        <TabsContent value="notes" className="space-y-4">
-          <Card className="bg-card border-border/50">
-            <CardHeader>
-              <CardTitle>Notes</CardTitle>
-              <CardDescription>Additional notes and comments about this deal</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground">Notes feature coming soon...</p>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+        {activeTab === 'timeline' && (
+          <div className="space-y-4">
+            {dealData.timeline.map((event, index) => (
+              <div key={event.id} className="flex gap-3">
+                <div className="flex flex-col items-center">
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${
+                    event.type === 'create' ? 'bg-purple-500/20' :
+                    event.type === 'document' ? 'bg-blue-500/20' :
+                    event.type === 'message' ? 'bg-green-500/20' :
+                    'bg-yellow-500/20'
+                  }`}>
+                    {event.type === 'create' ? <CheckCircle className="w-5 h-5 text-purple-400" /> :
+                     event.type === 'document' ? <FileText className="w-5 h-5 text-blue-400" /> :
+                     event.type === 'message' ? <MessageCircle className="w-5 h-5 text-green-400" /> :
+                     <TrendingUp className="w-5 h-5 text-yellow-400" />}
+                  </div>
+                  {index < dealData.timeline.length - 1 && (
+                    <div className="w-0.5 h-12 bg-white/10"></div>
+                  )}
+                </div>
+                
+                <div className="flex-1 bg-white/10 backdrop-blur-md rounded-xl p-4 border border-white/10">
+                  <div className="font-semibold mb-1">{event.event}</div>
+                  <div className="text-sm text-purple-200 mb-2">by {event.user}</div>
+                  <div className="text-xs text-purple-300">{event.date} at {event.time}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
 
-      {/* Mark Payment Dialog */}
-      <Dialog open={isMarkPaymentDialogOpen} onOpenChange={setIsMarkPaymentDialogOpen}>
-        <DialogContent className="sm:max-w-[425px] bg-card text-foreground border-border">
-          <DialogHeader>
-            <DialogTitle>Mark Payment Received</DialogTitle>
-            <DialogDescription className="text-muted-foreground">
-              Confirm the payment details for this deal.
-            </DialogDescription>
-          </DialogHeader>
-          <MarkPaymentReceivedDialog
-            deal={deal}
-            onSaveSuccess={handlePaymentSuccess}
-            onClose={() => setIsMarkPaymentDialogOpen(false)}
-          />
-        </DialogContent>
-      </Dialog>
+      {/* Bottom Action Bar */}
+      <div className="fixed bottom-0 left-0 right-0 bg-purple-900/90 backdrop-blur-lg border-t border-white/10 p-4">
+        <div className="flex gap-3">
+          <button className="flex-1 bg-white/10 hover:bg-white/15 font-semibold py-3 rounded-xl transition-colors flex items-center justify-center gap-2">
+            <MessageCircle className="w-5 h-5" />
+            Message
+          </button>
+          <button className="flex-1 bg-green-600 hover:bg-green-700 font-semibold py-3 rounded-xl transition-colors flex items-center justify-center gap-2">
+            <CheckCircle className="w-5 h-5" />
+            Update Status
+          </button>
+        </div>
+      </div>
     </div>
   );
 };
 
 export default DealDetailPage;
-

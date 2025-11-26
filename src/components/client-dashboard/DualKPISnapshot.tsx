@@ -15,12 +15,36 @@ const DualKPISnapshot = () => {
   const { user, profile, loading: sessionLoading } = useSession();
   const isDemoUser = user?.email === DEMO_USER_EMAIL;
 
+  // FIX: Call all hooks unconditionally at top level (React Rules of Hooks)
+  const { data: casesData, isLoading: isLoadingCases } = useCases({
+    clientId: profile?.id,
+    enabled: !isDemoUser && !!profile?.id, // Only fetch for non-demo users
+    limit: 100, // Fetch all for counting
+    joinProfile: false,
+  });
+
+  const { data: documentsAwaitingReviewData, isLoading: isLoadingDocuments } = useDocuments({
+    clientId: profile?.id,
+    statusFilter: 'Awaiting Review',
+    enabled: !isDemoUser && !!profile?.id, // Only fetch for non-demo users
+    limit: 100, // Fetch all for counting
+    joinProfile: false,
+  });
+
+  const { data: pendingConsultationsData, isLoading: isLoadingConsultations } = useConsultations({
+    clientId: profile?.id,
+    status: 'Pending',
+    enabled: !isDemoUser && !!profile?.id, // Only fetch for non-demo users
+    limit: 100, // Fetch all for counting
+    joinProfile: false,
+  });
+
+  // Calculate values based on demo vs real data
   let activeCasesCount = 0;
   let documentsAwaitingReviewCount = 0;
   let pendingConsultationsCount = 0;
   let nextGSTFilingDateStr = "2025-10-26"; // Default placeholder
   let tdsPaymentDueDateStr = "2025-11-08"; // Default placeholder
-  let isLoading = sessionLoading;
 
   if (isDemoUser) {
     // --- Mock Data for Demo User ---
@@ -39,46 +63,18 @@ const DualKPISnapshot = () => {
     const twentyDaysAway = new Date(today);
     twentyDaysAway.setDate(today.getDate() + 20);
     tdsPaymentDueDateStr = twentyDaysAway.toISOString().split('T')[0];
-
-    isLoading = sessionLoading; // Only rely on session loading
   } else {
-    // --- Real Data Fetching for Standard Users ---
-    
-    // Fetch active cases
-    const { data: casesData, isLoading: isLoadingCases } = useCases({
-      clientId: profile?.id,
-      enabled: !!profile?.id,
-      disablePagination: true,
-      joinProfile: false,
-    });
+    // --- Real Data for Standard Users ---
     activeCasesCount = casesData?.data?.filter(c => c.status === 'In Progress' || c.status === 'Awaiting Review' || c.status === 'On Hold').length || 0;
-
-    // Fetch documents awaiting review
-    const { data: documentsAwaitingReviewData, isLoading: isLoadingDocuments } = useDocuments({
-      clientId: profile?.id,
-      statusFilter: 'Awaiting Review',
-      enabled: !!profile?.id,
-      disablePagination: true,
-      joinProfile: false,
-    });
     documentsAwaitingReviewCount = documentsAwaitingReviewData?.data?.length || 0;
-
-    // Fetch pending consultations
-    const { data: pendingConsultationsData, isLoading: isLoadingConsultations } = useConsultations({
-      clientId: profile?.id,
-      status: 'Pending',
-      enabled: !!profile?.id,
-      disablePagination: true,
-      joinProfile: false,
-    });
     pendingConsultationsCount = pendingConsultationsData?.data?.length || 0;
-
-    isLoading = sessionLoading || isLoadingCases || isLoadingDocuments || isLoadingConsultations;
     
     // Use hardcoded dates for non-demo users if real compliance data isn't available
     nextGSTFilingDateStr = "2025-10-26"; 
     tdsPaymentDueDateStr = "2025-11-08";
   }
+
+  const isLoading = sessionLoading || (!isDemoUser && (isLoadingCases || isLoadingDocuments || isLoadingConsultations));
 
 
   const calculateUrgency = (dateString: string) => {

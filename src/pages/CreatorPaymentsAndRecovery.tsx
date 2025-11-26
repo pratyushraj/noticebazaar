@@ -1,542 +1,321 @@
 "use client";
 
-import { useState, useEffect, useMemo } from 'react';
-import { useSession } from '@/contexts/SessionContext';
-import { Button } from '@/components/ui/button';
-import { Loader2, IndianRupee, Mail, TrendingUp } from 'lucide-react';
-import { useBrandDeals } from '@/lib/hooks/useBrandDeals';
-import { usePagination } from '@/lib/hooks/usePagination';
-import { BrandDeal } from '@/types';
-import { toast } from 'sonner';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Input } from '@/components/ui/input';
-import { useSendPaymentReminder } from '@/lib/hooks/useSendPaymentReminder';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-} from '@/components/ui/dialog';
-import { Label } from '@/components/ui/label';
-import { cn } from '@/lib/utils';
-import FinancialOverviewHeader from '@/components/payments/FinancialOverviewHeader';
-import PaymentQuickFilters from '@/components/payments/PaymentQuickFilters';
-import PaymentTimeline from '@/components/payments/PaymentTimeline';
-import EnhancedPaymentCard from '@/components/payments/EnhancedPaymentCard';
-import PaymentAnalytics from '@/components/payments/PaymentAnalytics';
-import TaxSummaryCard from '@/components/payments/TaxSummaryCard';
-import MarkPaymentReceivedDialog from '@/components/creator-contracts/MarkPaymentReceivedDialog';
-import TopInvoicesDueSoon from '@/components/payments/TopInvoicesDueSoon';
-import { motion } from 'framer-motion';
-import { Card, CardContent } from '@/components/ui/card';
-
-type SortOption = 'due_date' | 'amount_desc' | 'amount_asc' | 'brand_asc' | 'overdue_first' | 'platform';
+import React, { useState } from 'react';
+import { Wallet, TrendingUp, Download, Filter, Search, CheckCircle, Clock, XCircle, AlertCircle, Calendar, CreditCard, ArrowUpRight, ArrowDownRight, MoreVertical } from 'lucide-react';
 
 const CreatorPaymentsAndRecovery = () => {
-  const { profile, loading: sessionLoading, isCreator } = useSession();
-  const [statusFilter, setStatusFilter] = useState<BrandDeal['status'] | 'All'>('All');
-  const [searchTerm, setSearchTerm] = useState('');
-  const [quickFilter, setQuickFilter] = useState<string | null>(null);
-  const [sortBy, setSortBy] = useState<SortOption>('due_date');
-  const [isReminderDialogOpen, setIsReminderDialogOpen] = useState(false);
-  const [selectedDealForReminder, setSelectedDealForReminder] = useState<BrandDeal | null>(null);
-  const [messageType, setMessageType] = useState<'email' | 'whatsapp'>('email');
-  const [customMessage, setCustomMessage] = useState('');
-  const [isMarkPaymentDialogOpen, setIsMarkPaymentDialogOpen] = useState(false);
-  const [dealToMarkPaid, setDealToMarkPaid] = useState<BrandDeal | null>(null);
-  
-  // Mobile detection - MUST be before any conditional returns
-  const [isMobile, setIsMobile] = useState(() => {
-    if (typeof window !== 'undefined') {
-      return window.innerWidth < 768;
+  const [activeFilter, setActiveFilter] = useState('all');
+  const [selectedMonth, setSelectedMonth] = useState('november');
+
+  const stats = {
+    totalReceived: 285700,
+    pending: 145000,
+    thisMonth: 285700,
+    nextPayout: 20000,
+    payoutDate: "Dec 1, 2024"
+  };
+
+  const transactions = [
+    {
+      id: 1,
+      title: "Fashion Nova Campaign",
+      brand: "Fashion Nova",
+      amount: 85000,
+      type: "received",
+      status: "completed",
+      date: "Nov 22, 2024",
+      method: "Bank Transfer",
+      invoice: "INV-2024-1122",
+      platform: "Instagram",
+      tax: 15300
+    },
+    {
+      id: 2,
+      title: "YouTube Partner Revenue",
+      brand: "YouTube",
+      amount: 120000,
+      type: "received",
+      status: "completed",
+      date: "Nov 15, 2024",
+      method: "Direct Deposit",
+      invoice: "INV-2024-1115",
+      platform: "YouTube",
+      tax: 21600
+    },
+    {
+      id: 3,
+      title: "TechGear Pro Sponsorship",
+      brand: "TechGear",
+      amount: 75000,
+      type: "pending",
+      status: "pending",
+      date: "Expected: Nov 30",
+      method: "Bank Transfer",
+      invoice: "INV-2024-1130",
+      platform: "YouTube",
+      tax: 13500
+    },
+    {
+      id: 4,
+      title: "SkillShare Affiliate",
+      brand: "SkillShare",
+      amount: 45000,
+      type: "pending",
+      status: "processing",
+      date: "Expected: Dec 5",
+      method: "PayPal",
+      invoice: "INV-2024-1205",
+      platform: "YouTube",
+      tax: 8100
+    },
+    {
+      id: 5,
+      title: "Coffee Brand Collaboration",
+      brand: "BrewMasters",
+      amount: 5700,
+      type: "expense",
+      status: "completed",
+      date: "Nov 18, 2024",
+      method: "Credit Card",
+      invoice: "EXP-2024-1118",
+      platform: "Production",
+      tax: 0,
+      category: "Equipment"
+    },
+    {
+      id: 6,
+      title: "Instagram Brand Deal",
+      brand: "StyleHub",
+      amount: 25000,
+      type: "pending",
+      status: "pending",
+      date: "Expected: Dec 10",
+      method: "Bank Transfer",
+      invoice: "INV-2024-1210",
+      platform: "Instagram",
+      tax: 4500
     }
-    return false;
-  });
+  ];
 
-  useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
-
-  const pageSize = 10;
-
-  const { currentPage, handlePreviousPage, handleNextPage, setCurrentPage } = usePagination({
-    totalCount: undefined,
-    pageSize: pageSize,
-  });
-
-  const { data: brandDealsData, isLoading: isLoadingBrandDeals, error: brandDealsError, refetch: refetchBrandDeals } = useBrandDeals({
-    creatorId: profile?.id,
-    enabled: !sessionLoading && isCreator && !!profile?.id,
-    statusFilter: statusFilter,
-    sortBy: 'payment_expected_date',
-    sortOrder: 'asc',
-  });
-
-  const allBrandDeals = brandDealsData || [];
-
-  // Helper to determine payment status
-  const getPaymentStatus = (deal: BrandDeal): 'overdue' | 'pending' | 'upcoming' | 'paid' => {
-    if (deal.status === 'Completed' && deal.payment_received_date) return 'paid';
-    
-    if (deal.status === 'Payment Pending') {
-      const now = new Date();
-      now.setHours(0, 0, 0, 0);
-      const dueDate = new Date(deal.payment_expected_date);
-      dueDate.setHours(0, 0, 0, 0);
-      
-      if (dueDate < now) return 'overdue';
-      const diffTime = dueDate.getTime() - now.getTime();
-      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-      return diffDays <= 7 ? 'pending' : 'upcoming';
-    }
-    
-    return 'upcoming';
+  const statusConfig = {
+    completed: { color: 'bg-green-500', label: 'Completed', icon: CheckCircle, textColor: 'text-green-400' },
+    pending: { color: 'bg-yellow-500', label: 'Pending', icon: Clock, textColor: 'text-yellow-400' },
+    processing: { color: 'bg-blue-500', label: 'Processing', icon: AlertCircle, textColor: 'text-blue-400' },
+    failed: { color: 'bg-red-500', label: 'Failed', icon: XCircle, textColor: 'text-red-400' }
   };
 
-  // Helper to calculate days
-  const getDaysInfo = (deal: BrandDeal) => {
-    const now = new Date();
-    now.setHours(0, 0, 0, 0);
-    const dueDate = new Date(deal.payment_expected_date);
-    dueDate.setHours(0, 0, 0, 0);
-    const diffTime = dueDate.getTime() - now.getTime();
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    
-    if (diffDays < 0) {
-      return { daysOverdue: Math.abs(diffDays), daysLeft: undefined };
-    }
-    return { daysOverdue: undefined, daysLeft: diffDays };
-  };
+  const filters = [
+    { id: 'all', label: 'All' },
+    { id: 'received', label: 'Received' },
+    { id: 'pending', label: 'Pending' },
+    { id: 'expense', label: 'Expenses' }
+  ];
 
-  const filteredAndSearchedDeals = useMemo(() => {
-    let filtered = [...allBrandDeals];
+  const filteredTransactions = activeFilter === 'all' 
+    ? transactions 
+    : transactions.filter(t => t.type === activeFilter);
 
-    // Quick filter
-    if (quickFilter) {
-      const now = new Date();
-      now.setHours(0, 0, 0, 0);
-      const sevenDaysFromNow = new Date(now);
-      sevenDaysFromNow.setDate(sevenDaysFromNow.getDate() + 7);
+  const totalReceived = transactions
+    .filter(t => t.type === 'received' && t.status === 'completed')
+    .reduce((sum, t) => sum + t.amount, 0);
 
-      switch (quickFilter) {
-        case 'overdue':
-          filtered = filtered.filter(deal => {
-            if (deal.status !== 'Payment Pending') return false;
-            const dueDate = new Date(deal.payment_expected_date);
-            return dueDate < now;
-          });
-          break;
-        case 'due_this_week':
-          filtered = filtered.filter(deal => {
-            if (deal.status !== 'Payment Pending') return false;
-            const dueDate = new Date(deal.payment_expected_date);
-            return dueDate >= now && dueDate <= sevenDaysFromNow;
-          });
-          break;
-        case 'pending':
-          filtered = filtered.filter(deal => {
-            if (deal.status !== 'Payment Pending') return false;
-            const dueDate = new Date(deal.payment_expected_date);
-            return dueDate >= now;
-          });
-          break;
-        case 'paid':
-          filtered = filtered.filter(deal => 
-            deal.status === 'Completed' && deal.payment_received_date
-          );
-          break;
-        default:
-          break;
-      }
-    }
-
-    // Status filter
-    if (statusFilter !== 'All') {
-      filtered = filtered.filter(deal => deal.status === statusFilter);
-    }
-
-    // Search filter
-    if (searchTerm) {
-      const searchLower = searchTerm.toLowerCase();
-      filtered = filtered.filter(deal => 
-        deal.brand_name.toLowerCase().includes(searchLower) ||
-        deal.deal_amount.toString().includes(searchLower)
-      );
-    }
-
-    // Sort
-    const now = new Date();
-    now.setHours(0, 0, 0, 0);
-    
-    filtered.sort((a, b) => {
-      switch (sortBy) {
-        case 'due_date':
-          const dueA = new Date(a.payment_expected_date);
-          const dueB = new Date(b.payment_expected_date);
-          return dueA.getTime() - dueB.getTime();
-        
-        case 'amount_desc':
-          return b.deal_amount - a.deal_amount;
-        
-        case 'amount_asc':
-          return a.deal_amount - b.deal_amount;
-        
-        case 'brand_asc':
-          return a.brand_name.localeCompare(b.brand_name);
-        
-        case 'overdue_first':
-          const overdueA = new Date(a.payment_expected_date) < now ? 1 : 0;
-          const overdueB = new Date(b.payment_expected_date) < now ? 1 : 0;
-          if (overdueA !== overdueB) return overdueB - overdueA;
-          return new Date(a.payment_expected_date).getTime() - new Date(b.payment_expected_date).getTime();
-        
-        case 'platform':
-          return (a.platform || '').localeCompare(b.platform || '');
-        
-        default:
-          return 0;
-      }
-    });
-
-    return filtered;
-  }, [allBrandDeals, searchTerm, statusFilter, quickFilter, sortBy]);
-
-  const paginatedDeals = filteredAndSearchedDeals.slice((currentPage - 1) * pageSize, currentPage * pageSize);
-  const totalFilteredCount = filteredAndSearchedDeals.length;
-  const calculatedTotalPages = Math.ceil(totalFilteredCount / pageSize);
-
-  useEffect(() => {
-    if (brandDealsError) {
-      toast.error('Error fetching brand deals', { description: brandDealsError.message });
-    }
-  }, [brandDealsError]);
-
-  const sendPaymentReminderMutation = useSendPaymentReminder();
-
-  const handleOpenReminderDialog = (deal: BrandDeal) => {
-    setSelectedDealForReminder(deal);
-    setMessageType('email'); // Reset to default
-    setCustomMessage(''); // Reset custom message
-    setIsReminderDialogOpen(true);
-  };
-
-  const handleSendReminder = async () => {
-    if (!selectedDealForReminder) return;
-
-    try {
-      await sendPaymentReminderMutation.mutateAsync({ 
-        brandDealId: selectedDealForReminder.id,
-        messageType: messageType,
-        customMessage: customMessage.trim() || undefined,
-      });
-      setIsReminderDialogOpen(false);
-      setSelectedDealForReminder(null);
-      setCustomMessage('');
-      setMessageType('email');
-      refetchBrandDeals();
-    } catch (error: any) {
-      // Error handled by hook
-    }
-  };
-
-  const handleMarkPaymentReceived = (deal: BrandDeal) => {
-    setDealToMarkPaid(deal);
-    setIsMarkPaymentDialogOpen(true);
-  };
-
-  const handlePaymentSuccess = () => {
-    refetchBrandDeals();
-    setIsMarkPaymentDialogOpen(false);
-    setDealToMarkPaid(null);
-  };
-
-  const handleEscalate = (_deal: BrandDeal) => {
-    toast.info('Escalation feature coming soon!');
-  };
-
-  const handleViewDetails = (deal: BrandDeal) => {
-    // Navigate to deal details page
-    window.location.href = `/creator-contracts/${deal.id}`;
-  };
-
-  const handleAddNote = (_deal: BrandDeal) => {
-    toast.info('Add note feature coming soon!');
-  };
-
-  if (sessionLoading || isLoadingBrandDeals) {
-    return (
-      <div className="min-h-[300px] flex flex-col items-center justify-center bg-background">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        <p className="mt-3 text-muted-foreground">Loading payments and recovery data...</p>
-      </div>
-    );
-  }
+  const totalPending = transactions
+    .filter(t => t.type === 'pending' || t.status === 'pending')
+    .reduce((sum, t) => sum + t.amount, 0);
 
   return (
-    <div className="w-full max-w-full overflow-x-hidden pb-[80px] px-4 md:px-6 antialiased">
-      {/* Payment Cycle Insight - Pinned to Top */}
-      {allBrandDeals.length > 0 && (
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="mb-6"
-        >
-          <Card className="bg-gradient-to-br from-blue-900/20 to-indigo-900/20 border border-blue-700/40">
-            <CardContent className="p-6 py-5">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-white/60 mb-1">Payment Cycle Insight</p>
-                  <p className="text-lg font-bold text-white">
-                    Creators like you get paid every <span className="text-blue-400">32–40 days</span> on average
-                  </p>
-                </div>
-                <TrendingUp className="w-8 h-8 text-blue-400/60" />
-              </div>
-            </CardContent>
-          </Card>
-        </motion.div>
-      )}
-
-      {/* New Financial Overview Header */}
-      <FinancialOverviewHeader allDeals={allBrandDeals} />
-
-      {/* Top Invoices Due Soon */}
-      {allBrandDeals.length > 0 && (
-        <div className="mb-6">
-          <TopInvoicesDueSoon brandDeals={allBrandDeals} />
+    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 text-white p-4 pb-24">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h1 className="text-3xl font-bold mb-1">Payments</h1>
+          <p className="text-purple-200">Track your income & expenses</p>
         </div>
-      )}
-
-      {/* Quick Filter Chips */}
-      {allBrandDeals.length > 0 && (
-        <div className="mb-6">
-          <PaymentQuickFilters
-            allDeals={allBrandDeals}
-            activeFilter={quickFilter}
-            onFilterChange={(filter) => {
-              setQuickFilter(filter);
-              setCurrentPage(1);
-            }}
-          />
-        </div>
-      )}
-
-      {/* Payment Timeline */}
-      {allBrandDeals.length > 0 && (
-        <div className="mb-6">
-          <PaymentTimeline allDeals={allBrandDeals} />
-        </div>
-      )}
-
-      {/* Payment Tracking - Mobile cards, desktop table */}
-      <section className="bg-white/[0.06] backdrop-blur-[40px] border-white/10 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.3)] p-4 md:p-6">
-        <h2 className="text-lg md:text-xl font-semibold text-white mb-4">Payment Tracking</h2>
-        <div className="flex flex-col sm:flex-row gap-3 md:gap-4 mb-4">
-          <div className="relative flex-1">
-            <IndianRupee className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/60" />
-              <Input
-                placeholder="Search by brand, invoice, or amount..."
-                className="pl-9 pr-3 bg-white/5 text-white border-white/10 focus:border-blue-400/50 h-[42px] md:h-10 rounded-xl text-sm placeholder:text-white/40"
-                value={searchTerm}
-                onChange={(e) => {
-                  setSearchTerm(e.target.value);
-                  setCurrentPage(1);
-                }}
-                aria-label="Search payments"
-              />
-          </div>
-          <div className="flex flex-col sm:flex-row gap-3">
-            <Select onValueChange={(value: BrandDeal['status'] | 'All') => {
-              setStatusFilter(value);
-              setCurrentPage(1);
-            }} value={statusFilter}>
-              <SelectTrigger className="w-full sm:w-[180px] bg-white/5 text-white border-white/10 h-[42px] md:h-10 rounded-xl">
-                <SelectValue placeholder="Filter by Status" />
-              </SelectTrigger>
-              <SelectContent className="bg-[#1C1C1E] border-white/5 text-white">
-                <SelectItem value="All">All Statuses</SelectItem>
-                <SelectItem value="Payment Pending">Payment Pending</SelectItem>
-                <SelectItem value="Completed">Completed</SelectItem>
-                <SelectItem value="Approved">Approved</SelectItem>
-                <SelectItem value="Cancelled">Cancelled</SelectItem>
-              </SelectContent>
-            </Select>
-            <Select onValueChange={(value: SortOption) => {
-              setSortBy(value);
-              setCurrentPage(1);
-            }} value={sortBy}>
-              <SelectTrigger className="w-full sm:w-[180px] bg-white/5 text-white border-white/10 h-[42px] md:h-10 rounded-xl">
-                <SelectValue placeholder="Sort" />
-              </SelectTrigger>
-              <SelectContent className="bg-[#1C1C1E] border-white/5 text-white">
-                <SelectItem value="due_date">Due Date (Soonest)</SelectItem>
-                <SelectItem value="amount_desc">Highest Amount</SelectItem>
-                <SelectItem value="amount_asc">Lowest Amount</SelectItem>
-                <SelectItem value="brand_asc">Brand Name A–Z</SelectItem>
-                <SelectItem value="overdue_first">Overdue First</SelectItem>
-                <SelectItem value="platform">Platform</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-
-        {paginatedDeals.length > 0 ? (
-          <>
-            {/* Enhanced Payment Cards - Grid Layout */}
-            <div className={cn(
-              "grid gap-4 mb-6",
-              isMobile ? "grid-cols-1" : "grid-cols-1 md:grid-cols-2 lg:grid-cols-3"
-            )}>
-              {paginatedDeals.map((deal) => {
-                const paymentStatus = getPaymentStatus(deal);
-                const daysInfo = getDaysInfo(deal);
-
-                return (
-                  <EnhancedPaymentCard
-                    key={deal.id}
-                    deal={deal}
-                    status={paymentStatus}
-                    daysOverdue={daysInfo.daysOverdue}
-                    daysLeft={daysInfo.daysLeft}
-                    onSendReminder={handleOpenReminderDialog}
-                    onEscalate={handleEscalate}
-                    onMarkPaid={handleMarkPaymentReceived}
-                    onViewDetails={handleViewDetails}
-                    onAddNote={handleAddNote}
-                  />
-                );
-              })}
-            </div>
-
-
-            {/* Pagination */}
-            {calculatedTotalPages > 1 && (
-              <div className="flex flex-col md:flex-row justify-center items-center gap-3 mt-6">
-                <Button
-                  variant="outline"
-                  onClick={handlePreviousPage}
-                  disabled={currentPage === 1 || isLoadingBrandDeals}
-                  className="w-full md:w-auto bg-white/5 border-white/10 text-white hover:bg-white/10 disabled:opacity-50"
-                >
-                  Previous
-                </Button>
-                <span className="text-sm text-white/60">
-                  Page {currentPage} of {calculatedTotalPages}
-                </span>
-                <Button
-                  variant="outline"
-                  onClick={handleNextPage}
-                  disabled={currentPage === calculatedTotalPages || isLoadingBrandDeals}
-                  className="w-full md:w-auto bg-white/5 border-white/10 text-white hover:bg-white/10 disabled:opacity-50"
-                >
-                  Next
-                </Button>
-              </div>
-            )}
-          </>
-        ) : (
-          <div className="text-center py-12">
-            <p className="text-white/60 mb-4">No payment records found matching your criteria.</p>
-            {quickFilter && (
-              <Button
-                variant="outline"
-                onClick={() => setQuickFilter(null)}
-                className="bg-white/5 border-white/10 text-white hover:bg-white/10"
-              >
-                Clear Filters
-              </Button>
-            )}
-          </div>
-        )}
-      </section>
-
-      {/* Payment Analytics & Tax Summary */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-        <PaymentAnalytics allDeals={allBrandDeals} />
-        <TaxSummaryCard allDeals={allBrandDeals} />
+        <button className="bg-white/10 hover:bg-white/15 backdrop-blur-md rounded-xl p-2.5 border border-white/10 transition-all">
+          <Download className="w-5 h-5" />
+        </button>
       </div>
 
-      {/* Mark Payment Received Dialog */}
-      {dealToMarkPaid && isMarkPaymentDialogOpen && (
-        <MarkPaymentReceivedDialog
-          deal={dealToMarkPaid}
-          onSaveSuccess={handlePaymentSuccess}
-          onClose={() => {
-            setIsMarkPaymentDialogOpen(false);
-            setDealToMarkPaid(null);
-          }}
-        />
-      )}
-
-      <Dialog open={isReminderDialogOpen} onOpenChange={setIsReminderDialogOpen}>
-        <DialogContent 
-          className="sm:max-w-[425px] bg-[#1C1C1E] text-white border-white/5 rounded-2xl shadow-2xl"
-          aria-labelledby="send-reminder-title"
-          aria-describedby="send-reminder-description"
-        >
-          <DialogHeader>
-            <DialogTitle id="send-reminder-title" className="text-white">Send Payment Reminder</DialogTitle>
-            <DialogDescription id="send-reminder-description" className="text-white/60">
-              Send a reminder to <strong>{selectedDealForReminder?.brand_name}</strong> for <strong>₹{selectedDealForReminder?.deal_amount.toLocaleString('en-IN')}</strong>.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div>
-              <Label htmlFor="messageType" className="text-white">Delivery Method</Label>
-              <Select onValueChange={(value: 'email' | 'whatsapp') => setMessageType(value)} value={messageType}>
-                <SelectTrigger id="messageType" className="bg-white/5 text-white border-white/10">
-                  <SelectValue placeholder="Select method" />
-                </SelectTrigger>
-                <SelectContent className="bg-[#1C1C1E] border-white/5 text-white">
-                  <SelectItem value="email">Email (Default Template)</SelectItem>
-                  <SelectItem value="whatsapp" disabled>WhatsApp (Coming Soon)</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label htmlFor="customMessage" className="text-white">Custom Message (Optional)</Label>
-              <Input
-                id="customMessage"
-                value={customMessage}
-                onChange={(e) => setCustomMessage(e.target.value)}
-                placeholder="Enter a personalized message..."
-                disabled={sendPaymentReminderMutation.isPending}
-                className="bg-white/5 text-white border-white/10 placeholder:text-white/40"
-              />
-              <p className="text-xs text-white/60 mt-1">If left blank, a default template will be used.</p>
-            </div>
-            {selectedDealForReminder && (
-              <p className="text-sm text-white/60 flex items-center">
-                <Mail className="h-4 w-4 mr-2" /> Recipient: {selectedDealForReminder.brand_email || 'NoticeBazaar Support'}
-              </p>
-            )}
-            <Button
-              onClick={handleSendReminder}
-              disabled={!selectedDealForReminder || sendPaymentReminderMutation.isPending}
-              className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
-            >
-              {sendPaymentReminderMutation.isPending ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Sending...
-                </>
-              ) : (
-                'Send Reminder'
-              )}
-            </Button>
+      {/* Stats Overview */}
+      <div className="bg-white/10 backdrop-blur-md rounded-2xl p-5 border border-white/10 mb-6">
+        <div className="flex items-center gap-2 mb-4">
+          <Wallet className="w-6 h-6 text-purple-300" />
+          <span className="text-sm text-purple-200">This Month</span>
+        </div>
+        
+        <div className="mb-4">
+          <div className="text-4xl font-bold mb-1">₹{(totalReceived / 1000).toFixed(1)}K</div>
+          <div className="flex items-center gap-2 text-sm">
+            <span className="text-green-400 flex items-center gap-1">
+              <TrendingUp className="w-4 h-4" />
+              +12% from last month
+            </span>
           </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsReminderDialogOpen(false)} className="bg-white/5 border-white/10 text-white hover:bg-white/10">Close</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+        </div>
+
+        <div className="grid grid-cols-2 gap-4 pt-4 border-t border-white/10">
+          <div>
+            <div className="text-purple-200 text-xs mb-1">Pending</div>
+            <div className="text-xl font-semibold">₹{(totalPending / 1000).toFixed(0)}K</div>
+          </div>
+          <div>
+            <div className="text-purple-200 text-xs mb-1">Next Payout</div>
+            <div className="text-xl font-semibold">₹{(stats.nextPayout / 1000).toFixed(0)}K</div>
+            <div className="text-xs text-purple-300">{stats.payoutDate}</div>
+          </div>
+        </div>
+      </div>
+
+      {/* Quick Actions */}
+      <div className="grid grid-cols-3 gap-3 mb-6">
+        <button className="bg-white/10 hover:bg-white/15 backdrop-blur-md rounded-xl p-3 border border-white/10 transition-all">
+          <div className="bg-green-500/20 w-10 h-10 rounded-full flex items-center justify-center mb-2 mx-auto">
+            <ArrowDownRight className="w-5 h-5 text-green-400" />
+          </div>
+          <div className="text-xs font-medium">Request Payment</div>
+        </button>
+        
+        <button className="bg-white/10 hover:bg-white/15 backdrop-blur-md rounded-xl p-3 border border-white/10 transition-all">
+          <div className="bg-blue-500/20 w-10 h-10 rounded-full flex items-center justify-center mb-2 mx-auto">
+            <CreditCard className="w-5 h-5 text-blue-400" />
+          </div>
+          <div className="text-xs font-medium">Add Expense</div>
+        </button>
+        
+        <button className="bg-white/10 hover:bg-white/15 backdrop-blur-md rounded-xl p-3 border border-white/10 transition-all">
+          <div className="bg-purple-500/20 w-10 h-10 rounded-full flex items-center justify-center mb-2 mx-auto">
+            <Download className="w-5 h-5 text-purple-400" />
+          </div>
+          <div className="text-xs font-medium">Export Report</div>
+        </button>
+      </div>
+
+      {/* Search and Filter */}
+      <div className="flex gap-3 mb-4">
+        <div className="flex-1 bg-white/10 backdrop-blur-md rounded-xl border border-white/10 flex items-center px-4 py-2.5">
+          <Search className="w-4 h-4 text-purple-300 mr-2" />
+          <input 
+            type="text" 
+            placeholder="Search transactions..." 
+            className="bg-transparent text-white placeholder-purple-300 outline-none w-full text-sm"
+          />
+        </div>
+        <button className="bg-white/10 hover:bg-white/15 backdrop-blur-md rounded-xl p-2.5 border border-white/10 transition-all">
+          <Filter className="w-5 h-5" />
+        </button>
+      </div>
+
+      {/* Filter Pills */}
+      <div className="flex gap-2 mb-6 overflow-x-auto pb-2 scrollbar-hide">
+        {filters.map(filter => (
+          <button
+            key={filter.id}
+            onClick={() => setActiveFilter(filter.id)}
+            className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all ${
+              activeFilter === filter.id
+                ? 'bg-purple-600 text-white shadow-lg'
+                : 'bg-white/10 text-purple-200 hover:bg-white/15'
+            }`}
+          >
+            {filter.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Transactions List */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="font-semibold text-lg">Recent Transactions</h2>
+          <button className="text-sm text-purple-300 hover:text-white transition-colors">View All</button>
+        </div>
+
+        {filteredTransactions.map(transaction => {
+          const StatusIcon = statusConfig[transaction.status].icon;
+          
+          return (
+            <div
+              key={transaction.id}
+              className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/10 hover:bg-white/15 transition-all cursor-pointer"
+            >
+              <div className="flex items-start justify-between mb-3">
+                <div className="flex items-start gap-3 flex-1">
+                  {/* Icon */}
+                  <div className={`w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 ${
+                    transaction.type === 'received' ? 'bg-green-500/20' :
+                    transaction.type === 'pending' ? 'bg-yellow-500/20' :
+                    'bg-red-500/20'
+                  }`}>
+                    {transaction.type === 'expense' ? (
+                      <ArrowUpRight className={`w-6 h-6 text-red-400`} />
+                    ) : (
+                      <ArrowDownRight className={`w-6 h-6 ${
+                        transaction.type === 'received' ? 'text-green-400' : 'text-yellow-400'
+                      }`} />
+                    )}
+                  </div>
+
+                  {/* Transaction Details */}
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-semibold mb-1">{transaction.title}</h3>
+                    <div className="flex items-center gap-2 text-sm text-purple-200 mb-2">
+                      <span>{transaction.brand}</span>
+                      <span>•</span>
+                      <span>{transaction.platform}</span>
+                    </div>
+                    
+                    <div className="flex items-center gap-2">
+                      <StatusIcon className={`w-4 h-4 ${statusConfig[transaction.status].textColor}`} />
+                      <span className={`text-xs ${statusConfig[transaction.status].textColor}`}>
+                        {statusConfig[transaction.status].label}
+                      </span>
+                      <span className="text-xs text-purple-300">• {transaction.date}</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Amount */}
+                <div className="text-right ml-4">
+                  <div className={`text-xl font-bold mb-1 ${
+                    transaction.type === 'expense' ? 'text-red-400' : 'text-green-400'
+                  }`}>
+                    {transaction.type === 'expense' ? '-' : '+'}₹{(transaction.amount / 1000).toFixed(1)}K
+                  </div>
+                  <button className="text-purple-300 hover:text-white transition-colors">
+                    <MoreVertical className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Additional Info */}
+              <div className="flex items-center justify-between pt-3 border-t border-white/10">
+                <div className="flex items-center gap-4 text-xs text-purple-200">
+                  <div className="flex items-center gap-1">
+                    <CreditCard className="w-3 h-3" />
+                    <span>{transaction.method}</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <span>Invoice: {transaction.invoice}</span>
+                  </div>
+                </div>
+                {transaction.tax > 0 && (
+                  <div className="text-xs text-purple-300">
+                    Tax: ₹{(transaction.tax / 1000).toFixed(1)}K
+                  </div>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Empty State */}
+      {filteredTransactions.length === 0 && (
+        <div className="text-center py-12">
+          <Wallet className="w-16 h-16 text-purple-300 mx-auto mb-4 opacity-50" />
+          <h3 className="text-xl font-semibold mb-2">No transactions found</h3>
+          <p className="text-purple-200 mb-4">Try adjusting your filters</p>
+        </div>
+      )}
     </div>
   );
 };

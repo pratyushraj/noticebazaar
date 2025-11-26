@@ -18,7 +18,7 @@ const Layout = ({ children }: LayoutProps) => {
   const { isOpen } = useSidebar();
 
   return (
-    <div className="relative min-h-screen overflow-hidden">
+    <div className="relative min-h-screen bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 text-white">
       {/* Skip to main content link */}
       <a 
         href="#main" 
@@ -26,16 +26,6 @@ const Layout = ({ children }: LayoutProps) => {
       >
         Skip to main content
       </a>
-
-      {/* Animated gradient background */}
-      <div className="fixed inset-0 animate-gradient-shift" />
-      
-      {/* Subtle animated orbs for depth */}
-      <div className="fixed top-20 left-1/4 w-[500px] h-[500px] bg-blue-500/5 rounded-full blur-3xl animate-pulse pointer-events-none" />
-      <div 
-        className="fixed bottom-20 right-1/4 w-[500px] h-[500px] bg-purple-500/5 rounded-full blur-3xl animate-pulse pointer-events-none" 
-        style={{ animationDelay: '2s' }} 
-      />
       
       <div className="relative z-10 flex flex-col min-h-screen">
         {/* Modern Navbar */}
