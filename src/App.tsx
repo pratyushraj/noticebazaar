@@ -3,6 +3,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import NotFound from "./pages/NotFound";
 import Login from "./pages/Login";
+import Signup from "./pages/Signup";
 import MarketingHome from "./pages/MarketingHome";
 import HomePage from "./pages/HomePage";
 import ClientDashboard from "./pages/ClientDashboard";
@@ -87,8 +88,9 @@ const App = () => {
               <Route path="/" element={<ProtectedRoute><HomePage /></ProtectedRoute>} />
               <Route path="/old-home" element={<ProtectedRoute><MarketingHome /></ProtectedRoute>} />
               
-              {/* Login route: Accessible directly, not protected */}
+              {/* Auth routes: Accessible directly, not protected */}
               <Route path="/login" element={<Login />} />
+              <Route path="/signup" element={<Signup />} />
 
               {/* Public routes */}
               <Route path="/blog" element={<Blog />} />
