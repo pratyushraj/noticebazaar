@@ -15,11 +15,23 @@ interface ProtectedRouteProps {
 const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { session, loading, profile, isAdmin, isCreator } = useSession(); // Added isCreator
+  const { session, loading, profile, isAdmin, isCreator, refetchProfile, user } = useSession(); // Added refetchProfile and user
 
   useEffect(() => {
     if (loading) {
       return;
+    }
+
+    // If user has session but no profile yet, wait a bit for profile to be created by trigger
+    if (session && !profile && user) {
+      // Give it a moment for the database trigger to create the profile
+      const timer = setTimeout(() => {
+        // Profile should be created by now, refetch it
+        if (refetchProfile) {
+          refetchProfile();
+        }
+      }, 1000);
+      return () => clearTimeout(timer);
     }
 
     if (session && profile) {
@@ -55,7 +67,7 @@ const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
         navigate('/login', { replace: true });
       }
     }
-  }, [session, loading, profile, isAdmin, isCreator, allowedRoles, navigate, location.pathname]);
+  }, [session, loading, profile, isAdmin, isCreator, allowedRoles, navigate, location.pathname, user, refetchProfile]);
 
   if (loading) {
     return (

@@ -19,9 +19,18 @@ const Signup = () => {
   useEffect(() => {
     // If session loading is finished and a session exists, redirect.
     if (!loading && session) {
-      navigate('/', { replace: true });
+      // Wait a moment for profile to be created by database trigger
+      const timer = setTimeout(() => {
+        // Check if we have a profile now
+        if (user) {
+          // Profile should be created by trigger, navigate based on role
+          // The ProtectedRoute will handle the actual routing
+          navigate('/', { replace: true });
+        }
+      }, 500);
+      return () => clearTimeout(timer);
     }
-  }, [session, loading, navigate]);
+  }, [session, loading, navigate, user]);
 
   const features = [
     {
