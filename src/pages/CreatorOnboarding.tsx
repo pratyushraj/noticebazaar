@@ -297,7 +297,7 @@ const CreatorOnboarding = () => {
 
               <button
                 onClick={handleNextWelcome}
-                className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 px-8 py-4 rounded-xl font-semibold transition-all flex items-center gap-2"
+                className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 px-6 py-3 rounded-xl font-semibold transition-all flex items-center gap-2"
               >
                 Next <ArrowRight className="w-5 h-5" />
               </button>
@@ -348,7 +348,7 @@ const CreatorOnboarding = () => {
                 </button>
                 <button
                   onClick={handleNextWelcome}
-                  className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 px-8 py-3 rounded-xl font-semibold transition-all flex items-center gap-2"
+                  className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 px-6 py-3 rounded-xl font-semibold transition-all flex items-center gap-2"
                 >
                   Next <ArrowRight className="w-5 h-5" />
                 </button>
@@ -399,7 +399,7 @@ const CreatorOnboarding = () => {
                 </button>
                 <button
                   onClick={handleNextWelcome}
-                  className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 px-8 py-3 rounded-xl font-semibold transition-all flex items-center gap-2"
+                  className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 px-6 py-3 rounded-xl font-semibold transition-all flex items-center gap-2"
                 >
                   Next <ArrowRight className="w-5 h-5" />
                 </button>
@@ -461,7 +461,7 @@ const CreatorOnboarding = () => {
                 </button>
                 <button
                   onClick={handleNextWelcome}
-                  className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 px-8 py-3 rounded-xl font-semibold transition-all flex items-center gap-2"
+                  className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 px-6 py-3 rounded-xl font-semibold transition-all flex items-center gap-2"
                 >
                   Get Started <ArrowRight className="w-5 h-5" />
                 </button>
@@ -516,13 +516,13 @@ const CreatorOnboarding = () => {
                 autoFocus
               />
 
-              <button
-                onClick={handleNameNext}
-                disabled={!onboardingData.name.trim()}
-                className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed px-8 py-4 rounded-xl font-semibold transition-all flex items-center justify-center gap-2"
-              >
-                Continue <ArrowRight className="w-5 h-5" />
-              </button>
+                <button
+                  onClick={handleNameNext}
+                  disabled={!onboardingData.name.trim()}
+                  className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed px-6 py-3 rounded-xl font-semibold transition-all flex items-center justify-center gap-2"
+                >
+                  Continue <ArrowRight className="w-5 h-5" />
+                </button>
             </motion.div>
           )}
 
@@ -582,7 +582,7 @@ const CreatorOnboarding = () => {
                 <button
                   onClick={handleTypeNext}
                   disabled={!onboardingData.userType}
-                  className="flex-1 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed px-8 py-3 rounded-xl font-semibold transition-all flex items-center justify-center gap-2"
+                  className="flex-1 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed px-6 py-3 rounded-xl font-semibold transition-all flex items-center justify-center gap-2"
                 >
                   Continue <ArrowRight className="w-5 h-5" />
                 </button>
@@ -653,7 +653,7 @@ const CreatorOnboarding = () => {
                 <button
                   onClick={handlePlatformsNext}
                   disabled={onboardingData.platforms.length === 0}
-                  className="flex-1 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed px-8 py-3 rounded-xl font-semibold transition-all flex items-center justify-center gap-2"
+                  className="flex-1 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed px-6 py-3 rounded-xl font-semibold transition-all flex items-center justify-center gap-2"
                 >
                   Continue <ArrowRight className="w-5 h-5" />
                 </button>
@@ -777,7 +777,7 @@ const CreatorOnboarding = () => {
 
               <button
                 onClick={() => navigate('/creator-dashboard')}
-                className="w-full bg-gradient-to-r from-purple-600 via-pink-600 to-indigo-600 hover:from-purple-500 hover:via-pink-500 hover:to-indigo-500 px-8 py-4 rounded-xl font-semibold transition-all flex items-center justify-center gap-2"
+                className="w-full bg-gradient-to-r from-purple-600 via-pink-600 to-indigo-600 hover:from-purple-500 hover:via-pink-500 hover:to-indigo-500 px-6 py-3 rounded-xl font-semibold transition-all flex items-center justify-center gap-2"
               >
                 <Sparkles className="w-5 h-5" />
                 Start Protecting My Deals
