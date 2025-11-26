@@ -110,10 +110,50 @@ const ClientDashboard = () => {
       boxShadow: '0 6px 18px rgba(3,7,18,0.6)',
       marginBottom: '2rem' // Add margin bottom to separate from footer/nav
     }}>
-      <h1 className="text-3xl font-bold text-foreground mb-2">
-        Welcome back, {profile?.first_name || 'Client'} 👋
-      </h1>
-      <p className="text-muted-foreground -mt-8">Here's what's happening with your legal and financial matters today.</p>
+      <div className="flex items-start justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-foreground mb-2">
+            Welcome back, {profile?.first_name || 'Client'} 👋
+          </h1>
+          <p className="text-muted-foreground -mt-8">Here's what's happening with your legal and financial matters today.</p>
+        </div>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={async () => {
+            // Haptic feedback
+            if (navigator.vibrate) {
+              navigator.vibrate(30);
+            }
+            
+            // Analytics tracking
+            if (typeof window !== 'undefined' && (window as any).gtag) {
+              (window as any).gtag('event', 'logout', {
+                event_category: 'engagement',
+                event_label: 'user_logout',
+                method: 'client_dashboard'
+              });
+            }
+            
+            await signOutMutation.mutateAsync();
+          }}
+          disabled={signOutMutation.isPending}
+          className="text-muted-foreground hover:text-foreground hover:bg-destructive/10 flex items-center gap-2 min-w-[100px]"
+          aria-label="Log out of your account"
+        >
+          {signOutMutation.isPending ? (
+            <>
+              <Loader2 className="w-4 h-4 animate-spin" />
+              <span className="text-sm">Logging out...</span>
+            </>
+          ) : (
+            <>
+              <LogOut className="w-4 h-4" />
+              <span className="text-sm">Logout</span>
+            </>
+          )}
+        </Button>
+      </div>
 
       {/* Quick Action Cards */}
       <section className="grid grid-cols-1 md:grid-cols-3 gap-4">
