@@ -1,6 +1,6 @@
 "use client";
 
-import React, { ReactNode, useEffect } from 'react';
+import { ReactNode, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useSession } from '@/contexts/SessionContext';
 import { Loader2 } from 'lucide-react';
