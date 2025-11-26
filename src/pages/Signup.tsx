@@ -135,6 +135,16 @@ const Signup = () => {
                 .supabase-auth-ui_ui-message[class*="color-danger"] {
                   display: none !important;
                 }
+                /* Style the email confirmation message to be more prominent */
+                .supabase-auth-ui_ui-message.c-bBDnOe {
+                  background: rgba(59, 130, 246, 0.1);
+                  border: 1px solid rgba(59, 130, 246, 0.3);
+                  border-radius: 12px;
+                  padding: 12px 16px;
+                  margin-top: 16px;
+                  color: rgba(255, 255, 255, 0.9);
+                  font-size: 14px;
+                }
               `}</style>
               <Auth
                 supabaseClient={supabase}
