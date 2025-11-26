@@ -10,7 +10,8 @@
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
     "preview": "vite preview",
-    "seed": "tsx scripts/seed-test-data.ts"
+    "seed": "tsx scripts/seed-test-data.ts",
+    "create-demo": "tsx scripts/create-demo-user.ts"
   },
   "dependencies": {
     "@cometchat-pro/chat": "^3.0.13",
