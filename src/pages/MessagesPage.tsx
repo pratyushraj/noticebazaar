@@ -850,5 +850,3 @@ export default function MessagesPage() {
     </ContextualTipsProvider>
   );
 }
-
-export default MessagesPage;

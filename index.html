@@ -83,10 +83,7 @@
         script.async = true;
         script.src = 'https://www.googletagmanager.com/gtag/js?id=G-PYTGVWEEVP';
         script.onerror = function() {
-          // Only log warning in development mode
-          if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-            console.warn('Google Analytics failed to load. This may be due to an ad blocker or network issue.');
-          }
+          // Silently handle Google Analytics load failure (common with ad blockers)
           // Initialize gtag with a no-op function if script fails
           window.gtag = function() {
             // Silently fail - analytics is not critical for app functionality
