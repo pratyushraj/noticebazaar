@@ -27,7 +27,7 @@ import { PlatformsStep } from '@/components/onboarding/setup/PlatformsStep';
 import { GoalsStep } from '@/components/onboarding/setup/GoalsStep';
 import { SuccessStep } from '@/components/onboarding/setup/SuccessStep';
 
-type WelcomeStep = 0 | 1 | 2 | 3;
+type WelcomeStep = 0 | 1 | 2 | 3 | 4;
 type SetupStep = 'name' | 'type' | 'platforms' | 'goals' | 'success';
 
 type UserType = 'creator' | 'freelancer' | 'entrepreneur';
