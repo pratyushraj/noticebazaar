@@ -23,8 +23,11 @@ export const OnboardingProgressDots: React.FC<OnboardingProgressDotsProps> = ({
   return (
     <div
       className={cn(
-        "absolute top-6 left-1/2 -translate-x-1/2 z-50",
+        "absolute left-1/2 -translate-x-1/2 z-50",
         "flex gap-2 items-center",
+        // Mobile: Account for safe area + extra space, Desktop: standard spacing
+        "top-[max(60px,calc(env(safe-area-inset-top,0px)+36px))]",
+        "md:top-6",
         className
       )}
     >

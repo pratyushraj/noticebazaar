@@ -351,13 +351,15 @@ const CreatorOnboarding = () => {
 
   return (
     <OnboardingContainer>
-      <div className="max-w-2xl mx-auto p-4 pt-10 pb-16">
-        {/* Progress Bar */}
+      <div className="max-w-2xl mx-auto p-4 pb-16">
+        {/* Progress Bar - Add top padding on mobile to account for safe area */}
         {setupStep !== 'success' && (
-          <OnboardingProgressBar
-            currentStep={getStepNumber()}
-            totalSteps={4}
-          />
+          <div className="pt-[max(60px,calc(env(safe-area-inset-top,0px)+36px))] md:pt-10">
+            <OnboardingProgressBar
+              currentStep={getStepNumber()}
+              totalSteps={4}
+            />
+          </div>
         )}
 
         <AnimatePresence mode="wait">
