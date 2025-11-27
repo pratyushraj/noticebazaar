@@ -10,7 +10,6 @@ import { startTrialOnSignup } from '@/lib/trial';
 import { supabase } from '@/integrations/supabase/client';
 import { AnimatePresence } from 'framer-motion';
 import { onboardingAnalytics } from '@/lib/onboarding/analytics';
-import { useSwipeGesture } from '@/components/onboarding/useSwipeGesture';
 
 // Import new components
 import { OnboardingContainer } from '@/components/onboarding/OnboardingContainer';
@@ -62,40 +61,6 @@ const CreatorOnboarding = () => {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [stepStartTime, setStepStartTime] = useState<number>(Date.now());
-
-  // Swipe gesture support for all screens
-  useSwipeGesture({
-    onSwipeLeft: () => {
-      // Welcome screens
-      if (setupStep === 'name' && welcomeStep < 3) {
-        handleNextWelcome();
-      }
-      // Setup steps - navigate forward
-      else if (setupStep === 'name') {
-        if (onboardingData.name.trim()) handleNameNext();
-      } else if (setupStep === 'type') {
-        if (onboardingData.userType) handleTypeNext();
-      } else if (setupStep === 'platforms') {
-        if (onboardingData.platforms.length > 0) handlePlatformsNext();
-      } else if (setupStep === 'goals') {
-        if (onboardingData.goals.length > 0) handleGoalsNext();
-      }
-    },
-    onSwipeRight: () => {
-      // Welcome screens
-      if (setupStep === 'name' && welcomeStep > 0) {
-        handleBackWelcome();
-      }
-      // Setup steps - navigate back
-      else if (setupStep === 'type') {
-        setSetupStep('name');
-      } else if (setupStep === 'platforms') {
-        setSetupStep('type');
-      } else if (setupStep === 'goals') {
-        setSetupStep('platforms');
-      }
-    },
-  });
 
   // Auto-save onboarding data
   useEffect(() => {
@@ -154,31 +119,10 @@ const CreatorOnboarding = () => {
     setSetupStep('name');
   };
 
-  const handleSkipSetup = () => {
-    // Skip to completion with default values
-    onboardingAnalytics.track('setup_skipped', { step: setupStep });
-    
-    // Set defaults if missing
-    const defaultData: OnboardingData = {
-      name: onboardingData.name || 'Creator',
-      userType: onboardingData.userType || 'creator',
-      platforms: onboardingData.platforms.length > 0 ? onboardingData.platforms : ['youtube'],
-      goals: onboardingData.goals.length > 0 ? onboardingData.goals : ['protect'],
-    };
-    
-    setOnboardingData(defaultData);
-    
-    // Complete onboarding with defaults
-    handleOnboardingComplete();
-  };
-
   const handleNextWelcome = () => {
     if (welcomeStep < 3) {
       setWelcomeStep((prev) => (prev + 1) as WelcomeStep);
     } else {
-      // Move from welcome screens to setup steps
-      // Set welcomeStep to 4 so the welcome screen condition becomes false
-      setWelcomeStep(4 as WelcomeStep);
       setSetupStep('name');
     }
   };
@@ -288,11 +232,6 @@ const CreatorOnboarding = () => {
         onboarding_complete: true,
       });
       
-      // Save completion to localStorage
-      localStorage.setItem('onboarding-complete', 'true');
-      localStorage.setItem('onboarding-completed-at', Date.now().toString());
-      localStorage.removeItem('onboarding-data'); // Clean up
-      
       refetchProfile();
       setSetupStep('success');
     } catch (error: any) {
@@ -302,7 +241,7 @@ const CreatorOnboarding = () => {
   };
 
   // Welcome Screens
-  if (setupStep === 'name' && welcomeStep < 4 && !onboardingData.name) {
+  if (setupStep === 'name' && welcomeStep < 4) {
     return (
       <OnboardingContainer>
         <SkipButton onClick={handleSkipWelcome} />
@@ -370,7 +309,6 @@ const CreatorOnboarding = () => {
                 setOnboardingData((prev) => ({ ...prev, name }))
               }
               onNext={handleNameNext}
-              onSkip={handleSkipSetup}
             />
           )}
 
@@ -384,7 +322,6 @@ const CreatorOnboarding = () => {
               }
               onNext={handleTypeNext}
               onBack={() => setSetupStep('name')}
-              onSkip={handleSkipSetup}
             />
           )}
 
@@ -403,7 +340,6 @@ const CreatorOnboarding = () => {
               }}
               onNext={handlePlatformsNext}
               onBack={() => setSetupStep('type')}
-              onSkip={handleSkipSetup}
             />
           )}
 
@@ -423,7 +359,6 @@ const CreatorOnboarding = () => {
               onNext={handleGoalsNext}
               onBack={() => setSetupStep('platforms')}
               isSubmitting={isSubmitting}
-              onSkip={handleSkipSetup}
             />
           )}
 

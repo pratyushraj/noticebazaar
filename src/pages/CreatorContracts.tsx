@@ -7,6 +7,7 @@ import { useSession } from '@/contexts/SessionContext';
 import { useBrandDeals } from '@/lib/hooks/useBrandDeals';
 import { SegmentedControl } from '@/components/ui/segmented-control';
 import { motion } from 'framer-motion';
+import { ContextualTipsProvider } from '@/components/contextual-tips/ContextualTipsProvider';
 
 const CreatorContracts = () => {
   const navigate = useNavigate();
@@ -161,6 +162,7 @@ const CreatorContracts = () => {
     : deals.filter(deal => deal.status === activeFilter);
 
   return (
+    <ContextualTipsProvider currentView="deals">
     <div className="min-h-screen bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 text-white p-4 pb-24">
       {/* Header */}
       <div className="mb-6">
@@ -298,6 +300,7 @@ const CreatorContracts = () => {
         <Plus className="w-6 h-6" />
       </button>
     </div>
+    </ContextualTipsProvider>
   );
 };
 

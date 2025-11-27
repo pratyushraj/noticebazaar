@@ -6,6 +6,7 @@ import { useSession } from '@/contexts/SessionContext';
 import { useBrandDeals } from '@/lib/hooks/useBrandDeals';
 import { toast } from 'sonner';
 import { SegmentedControl } from '@/components/ui/segmented-control';
+import { ContextualTipsProvider } from '@/components/contextual-tips/ContextualTipsProvider';
 
 const CreatorPaymentsAndRecovery = () => {
   const { profile } = useSession();
@@ -181,6 +182,7 @@ const CreatorPaymentsAndRecovery = () => {
   );
 
   return (
+    <ContextualTipsProvider currentView="payments">
     <div className="min-h-screen bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 text-white p-4 pb-24">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
@@ -385,6 +387,7 @@ const CreatorPaymentsAndRecovery = () => {
         </div>
       )}
     </div>
+    </ContextualTipsProvider>
   );
 };
 

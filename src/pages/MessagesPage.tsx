@@ -20,6 +20,7 @@ import { generateAvatarUrl } from '@/lib/utils/avatar';
 import { useCometChat } from '@/lib/cometchat/useCometChat';
 import { COMETCHAT_CONFIG } from '@/lib/cometchat/config';
 import { AdvisorModeSwitch } from '@/components/AdvisorModeSwitch';
+import { ContextualTipsProvider } from '@/components/contextual-tips/ContextualTipsProvider';
 
 // --- Types (local to this file) ---
 type Advisor = {
@@ -64,7 +65,7 @@ function AdvisorCardScoped({ advisor, selected, onClick }: { advisor: Advisor; s
       type="button"
       onClick={() => onClick?.(advisor)}
       className={clsx(
-        'w-full text-left rounded-xl flex items-center gap-3 transition-all duration-150 ease-in-out',
+        'w-full text-left rounded-[20px] flex items-center gap-3 transition-all duration-150 ease-in-out',
         'border',
         selected 
           ? 'bg-blue-500/20 ring-2 ring-blue-400/50 border-blue-400/50 shadow-[0_6px_20px_rgba(59,130,246,0.15)] p-3.5 scale-[1.02]' 
@@ -177,7 +178,7 @@ function ChatHeaderScoped({
   };
   
   return (
-    <div className="flex items-center justify-between px-2 md:px-4 py-1.5 md:py-3 border-b border-white/5 bg-white/[0.06] backdrop-blur-[40px] flex-shrink-0">
+    <div className="flex items-center justify-between px-2 md:px-4 py-1.5 md:py-3 border-b border-white/10 bg-white/[0.08] backdrop-blur-[40px] saturate-[180%] flex-shrink-0">
       <div className="flex items-center gap-2 md:gap-3 flex-1 min-w-0">
         <LocalAvatar size="sm" src={advisor?.avatarUrl} alt={advisor?.name || 'Advisor'} />
         <div className="leading-tight flex-1 min-w-0">
@@ -273,7 +274,7 @@ function MessageInputScoped({ onSend, isLoading }: { onSend?: (text: string) => 
   return (
     <div className="w-full flex flex-col flex-shrink-0">
       {/* iOS 17 Capsule Input - Larger radius, stronger blur, proper shadows */}
-      <div className="w-full px-4 md:px-5 py-3 md:py-3.5 flex items-center justify-between gap-2.5 md:gap-3 bg-white/[0.08] backdrop-blur-[40px] saturate-[180%] rounded-[24px] md:rounded-[28px] border border-white/20 shadow-[0_8px_32px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.1)] min-h-[52px] md:min-h-[56px] transition-all duration-300 ease-out focus-within:border-purple-400/50 focus-within:shadow-[0_12px_40px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.15),0_0_0_2px_rgba(168,85,247,0.2)]">
+      <div className="w-full px-4 md:px-5 py-3 flex items-center justify-between gap-2.5 md:gap-3 bg-white/[0.08] backdrop-blur-[40px] saturate-[180%] rounded-[20px] border border-white/20 shadow-[0_8px_32px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.1)] min-h-[52px] md:min-h-[56px] transition-all duration-300 ease-out focus-within:border-purple-400/50 focus-within:shadow-[0_12px_40px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.15),0_0_0_2px_rgba(168,85,247,0.2)]">
         {/* Voice message button (hold to record) */}
         <button 
           className={clsx(
@@ -300,7 +301,7 @@ function MessageInputScoped({ onSend, isLoading }: { onSend?: (text: string) => 
           onKeyDown={handleKeyDown}
           placeholder="Type your secure message…"
           disabled={isLoading}
-          className="resize-none overflow-hidden bg-transparent flex-1 text-[16px] md:text-[15px] py-2.5 md:py-3 outline-none placeholder:text-white/50 text-white disabled:opacity-50 max-h-[96px] leading-relaxed"
+          className="resize-none overflow-hidden bg-transparent flex-1 text-[16px] md:text-[15px] py-2.5 outline-none placeholder:text-white/50 text-white disabled:opacity-50 max-h-[96px] leading-relaxed"
           rows={1}
         />
 
@@ -357,7 +358,7 @@ function MessageBubbleScoped({
       
       <div
         className={clsx(
-          'inline-block text-[15px] leading-[1.4] p-3.5 md:p-4 rounded-[20px] md:rounded-[24px] shadow-[0_2px_8px_rgba(0,0,0,0.15)] max-w-[75%]',
+          'inline-block text-[15px] leading-[1.4] p-3.5 md:p-4 rounded-[20px] shadow-[0_2px_8px_rgba(0,0,0,0.15)] max-w-[75%]',
           isCurrentUser
             ? 'bg-gradient-to-br from-[#007AFF] to-[#0051D5] text-white rounded-br-[4px] shadow-[0_4px_12px_rgba(0,122,255,0.3)]'
             : 'bg-white/[0.08] backdrop-blur-[20px] text-white rounded-bl-[4px] border border-white/10'
@@ -411,7 +412,7 @@ function ChatWindowScoped({
   }, [messages]);
 
   return (
-    <div className="flex flex-col rounded-none md:rounded-[24px] md:border md:border-white/10 bg-white/[0.06] backdrop-blur-[40px] saturate-[180%] md:shadow-[0_8px_32px_rgba(0,0,0,0.3)] flex-1 min-h-0">
+    <div className="flex flex-col rounded-none md:rounded-[20px] md:border md:border-white/15 bg-white/[0.08] backdrop-blur-[40px] saturate-[180%] md:shadow-[0_8px_32px_rgba(0,0,0,0.3)] flex-1 min-h-0">
       <ChatHeaderScoped advisor={advisor} advisors={advisors} onSwitchAdvisor={onSwitchAdvisor} />
 
       <div className="flex-1 overflow-y-auto min-h-0">
@@ -432,7 +433,7 @@ function ChatWindowScoped({
                 onClick={() => {
                   toast.info('Upload contract feature coming soon');
                 }}
-                className="w-full flex items-center justify-center gap-2 px-4 md:px-5 py-3 md:py-3.5 rounded-[20px] md:rounded-[24px] bg-gradient-to-br from-purple-500/15 to-purple-600/10 border border-purple-400/30 hover:from-purple-500/25 hover:to-purple-600/15 hover:border-purple-400/40 transition-all text-[15px] md:text-[17px] font-semibold text-white shadow-[0_4px_12px_rgba(168,85,247,0.2)] active:scale-95"
+                className="w-full flex items-center justify-center gap-2 px-4 md:px-5 py-3 rounded-[20px] bg-gradient-to-br from-purple-500/15 to-purple-600/10 border border-purple-400/30 hover:from-purple-500/25 hover:to-purple-600/15 hover:border-purple-400/40 transition-all text-[15px] md:text-[17px] font-semibold text-white shadow-[0_4px_12px_rgba(168,85,247,0.2)] active:scale-95"
               >
                 <FileText className="w-3.5 h-3.5 md:w-4 md:h-4" />
                 Upload a Contract
@@ -448,7 +449,7 @@ function ChatWindowScoped({
                   <button
                     key={topic.label}
                     onClick={() => onSend?.(`I need help with ${topic.label.toLowerCase()}`)}
-                    className="w-full flex items-center gap-3 md:gap-4 px-4 md:px-5 py-3 md:py-4 rounded-[20px] md:rounded-[24px] bg-white/[0.08] backdrop-blur-[30px] saturate-[150%] border border-white/15 hover:bg-white/[0.12] hover:border-white/25 transition-all text-left active:scale-[0.97] shadow-[0_2px_8px_rgba(0,0,0,0.15)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.2)]"
+                    className="w-full flex items-center gap-3 md:gap-4 px-4 md:px-5 py-3 rounded-[20px] bg-white/[0.08] backdrop-blur-[30px] saturate-[150%] border border-white/15 hover:bg-white/[0.12] hover:border-white/25 transition-all text-left active:scale-[0.97] shadow-[0_2px_8px_rgba(0,0,0,0.15)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.2)]"
                   >
                     <span className="text-base md:text-xl">{topic.icon}</span>
                     <span className="text-xs md:text-sm font-medium text-white flex-1">{topic.label}</span>
@@ -778,7 +779,8 @@ export default function MessagesPage() {
   }
 
   return (
-    <div className="flex flex-col h-[100dvh] h-[100svh] md:p-6 overflow-hidden">
+    <ContextualTipsProvider currentView="messages">
+    <div className="flex flex-col h-[100dvh] md:h-screen md:p-6 overflow-hidden">
       {/* Scrollable content - shrinks when keyboard opens */}
       <div className="flex-1 overflow-y-auto min-h-0 px-0 pb-0 md:pb-0" style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
         <div className="w-full max-w-[460px] mx-auto md:mx-0 md:max-w-none">
@@ -786,7 +788,7 @@ export default function MessagesPage() {
           <div className="flex justify-start mb-4">
             <button
               onClick={() => navigate('/creator-dashboard')}
-              className="flex items-center gap-2 px-3 md:px-4 py-2 md:py-2.5 rounded-xl bg-white/[0.06] backdrop-blur-[20px] border border-white/10 hover:bg-white/[0.1] hover:border-white/20 transition-all text-sm font-medium text-white"
+              className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/[0.08] backdrop-blur-[20px] border border-white/15 hover:bg-white/[0.12] hover:border-white/20 transition-all text-sm font-medium text-white"
             >
               <ArrowLeft className="w-4 h-4" />
               <span>Back to Dashboard</span>
@@ -845,5 +847,8 @@ export default function MessagesPage() {
         />
       </div>
     </div>
+    </ContextualTipsProvider>
   );
 }
+
+export default MessagesPage;

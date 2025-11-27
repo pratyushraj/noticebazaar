@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { Shield, FileText, AlertTriangle, CheckCircle, Clock, Lock, Upload, AlertCircle, Calendar, TrendingUp, Zap, ChevronRight } from 'lucide-react';
 import { SegmentedControl } from '@/components/ui/segmented-control';
+import { ContextualTipsProvider } from '@/components/contextual-tips/ContextualTipsProvider';
 
 const CreatorContentProtection = () => {
   const [activeTab, setActiveTab] = useState('contracts');
@@ -147,6 +148,7 @@ const CreatorContentProtection = () => {
   };
 
   return (
+    <ContextualTipsProvider currentView="protection">
     <div className="min-h-screen bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 text-white p-4 pb-24">
       {/* Header */}
       <div className="mb-6">
@@ -386,6 +388,7 @@ const CreatorContentProtection = () => {
         </div>
       )}
     </div>
+    </ContextualTipsProvider>
   );
 };
 

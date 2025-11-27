@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { ArrowLeft, Camera, User, Mail, Phone, MapPin, Instagram, Youtube, Twitter, Globe, Edit, Bell, Lock, CreditCard, Shield, HelpCircle, FileText, LogOut, ChevronRight, Check, X, Download, Trash2, Star, TrendingUp, Award, MessageCircle, Loader2 } from 'lucide-react';
+import { ArrowLeft, Camera, User, Mail, Phone, MapPin, Instagram, Youtube, Twitter, Globe, Edit, Bell, Lock, CreditCard, Shield, HelpCircle, FileText, LogOut, ChevronRight, Check, X, Download, Trash2, Star, TrendingUp, Award, MessageCircle, Loader2, Sparkles } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useSession } from '@/contexts/SessionContext';
 import { useUpdateProfile } from '@/lib/hooks/useProfiles';
@@ -672,6 +672,31 @@ const ProfileSettings = () => {
                     <div className="text-left">
                       <div className="font-medium">Contact Support</div>
                       <div className="text-xs text-purple-300">Chat with our team</div>
+                    </div>
+                  </div>
+                  <ChevronRight className="w-5 h-5 text-purple-400" />
+                </button>
+
+                <button 
+                  onClick={() => {
+                    if (profile?.id) {
+                      // Clear tutorial state
+                      localStorage.removeItem(`dashboard-tutorial-completed-${profile.id}`);
+                      localStorage.removeItem(`dashboard-tutorial-dismissed-${profile.id}`);
+                      toast.success('Tutorial has been reset! It will appear on your next dashboard visit.');
+                      // Navigate to dashboard to trigger tutorial
+                      setTimeout(() => {
+                        navigate('/creator-dashboard');
+                      }, 1000);
+                    }
+                  }}
+                  className="w-full flex items-center justify-between p-3 bg-white/5 rounded-xl border border-white/10 hover:bg-white/10 transition-colors"
+                >
+                  <div className="flex items-center gap-3">
+                    <Sparkles className="w-5 h-5 text-purple-400" />
+                    <div className="text-left">
+                      <div className="font-medium">Restart Dashboard Tutorial</div>
+                      <div className="text-xs text-purple-300">Show the guided tour again</div>
                     </div>
                   </div>
                   <ChevronRight className="w-5 h-5 text-purple-400" />

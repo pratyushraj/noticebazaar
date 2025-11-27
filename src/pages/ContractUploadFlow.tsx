@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { ArrowLeft, Upload, FileText, CheckCircle, AlertTriangle, XCircle, Loader, Sparkles, Shield, Eye, Download, IndianRupee, Calendar } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { ContextualTipsProvider } from '@/components/contextual-tips/ContextualTipsProvider';
 
 type RiskLevel = 'low' | 'medium' | 'high';
 
@@ -173,6 +174,7 @@ const ContractUploadFlow = () => {
   const RiskIcon = riskConfig[analysisResults.overallRisk as RiskLevel].icon;
 
   return (
+    <ContextualTipsProvider currentView="upload">
     <div className="min-h-screen bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 text-white">
       {/* Header */}
       <div className="sticky top-0 z-50 bg-purple-900/90 backdrop-blur-lg border-b border-white/10">
@@ -543,6 +545,7 @@ const ContractUploadFlow = () => {
         )}
       </div>
     </div>
+    </ContextualTipsProvider>
   );
 };
 

@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Profile } from '@/types';
 import { useSupabaseQuery } from '@/lib/hooks/useSupabaseQuery'; // Import useSupabaseQuery
 import { lockTrialIfExpired, getTrialStatus, TrialStatus } from '@/lib/trial';
+import { analytics } from '@/utils/analytics';
 
 interface SessionContextType {
   session: Session | null;
@@ -302,7 +303,12 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
           console.error("Error getting session:", error.message);
         } else {
           setSession(currentSession);
-          setUser(currentSession?.user ?? null);
+          const currentUser = currentSession?.user ?? null;
+          setUser(currentUser);
+          // Initialize analytics with user ID
+          if (currentUser?.id) {
+            analytics.setUserId(currentUser.id);
+          }
         }
       } catch (e: any) {
         console.error("Critical error initializing session:", e.message);
@@ -317,8 +323,16 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         setSession(session);
-        setUser(session?.user ?? null);
+        const currentUser = session?.user ?? null;
+        setUser(currentUser);
         setInitialLoadComplete(true); // Ensure this is set after any auth change
+        
+        // Initialize analytics with user ID
+        if (currentUser?.id) {
+          analytics.setUserId(currentUser.id);
+        } else if (event === 'SIGNED_OUT') {
+          analytics.clearUserId();
+        }
         
         // Clean up URL hash after successful sign-in
         if (event === 'SIGNED_IN' && window.location.hash.includes('access_token')) {

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from 'react';
-import { Home, Briefcase, CreditCard, Shield, MessageCircle, TrendingUp, DollarSign, Calendar, FileText, AlertCircle, Clock, ChevronRight, Plus, Bell, Search, User, Menu, X, Target, BarChart3, RefreshCw, LogOut, Loader2, Sparkles, XCircle } from 'lucide-react';
+import { Home, Briefcase, CreditCard, Shield, MessageCircle, TrendingUp, DollarSign, Calendar, FileText, AlertCircle, Clock, ChevronRight, Plus, Bell, Search, User, Menu, X, Target, BarChart3, RefreshCw, LogOut, Loader2, Sparkles, XCircle, LineChart } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useNavigate } from 'react-router-dom';
 import { useSignOut } from '@/lib/hooks/useAuth';
@@ -11,12 +11,15 @@ import { usePartnerStats } from '@/lib/hooks/usePartnerProgram';
 import { logger } from '@/lib/utils/logger';
 import { getInitials } from '@/lib/utils/avatar';
 import { motion, AnimatePresence } from 'framer-motion';
-import OnboardingChecklist from '@/components/onboarding/OnboardingChecklist';
-import InteractiveTutorial from '@/components/onboarding/InteractiveTutorial';
-import { AchievementBadge, AchievementDisplay } from '@/components/onboarding/AchievementBadge';
-import FeedbackCollector from '@/components/onboarding/FeedbackCollector';
-import { onboardingAnalytics } from '@/lib/onboarding/analytics';
-import type { AchievementId } from '@/components/onboarding/AchievementBadge';
+// Onboarding components - commented out if not currently used
+// import OnboardingChecklist from '@/components/onboarding/OnboardingChecklist';
+// import InteractiveTutorial from '@/components/onboarding/InteractiveTutorial';
+// import { AchievementBadge, AchievementDisplay } from '@/components/onboarding/AchievementBadge';
+// import FeedbackCollector from '@/components/onboarding/FeedbackCollector';
+// import { onboardingAnalytics } from '@/lib/onboarding/analytics';
+// import type { AchievementId } from '@/components/onboarding/AchievementBadge';
+import DashboardTutorial from '@/components/onboarding/DashboardTutorial';
+import { ContextualTipsProvider } from '@/components/contextual-tips/ContextualTipsProvider';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -39,6 +42,7 @@ const CreatorDashboard = () => {
   const [showWelcomeBanner, setShowWelcomeBanner] = useState(false);
   const [timeframe, setTimeframe] = useState<'month' | 'lastMonth' | 'allTime'>('month');
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [showTutorial, setShowTutorial] = useState(false);
 
   // Fetch real data
   const { data: brandDeals = [], isLoading: isLoadingDeals } = useBrandDeals({
@@ -64,6 +68,33 @@ const CreatorDashboard = () => {
       }
     }
   }, [profile]);
+
+  // Show tutorial after onboarding completion
+  useEffect(() => {
+    if (profile?.onboarding_complete && !sessionLoading && profile?.id) {
+      // Check if tutorial was already completed or dismissed
+      const tutorialCompleted = localStorage.getItem(`dashboard-tutorial-completed-${profile.id}`);
+      const tutorialDismissed = localStorage.getItem(`dashboard-tutorial-dismissed-${profile.id}`);
+      
+      // Show tutorial if:
+      // 1. Just completed onboarding (within 24 hours)
+      // 2. Haven't completed tutorial
+      // 3. Haven't dismissed tutorial
+      if (!tutorialCompleted && !tutorialDismissed) {
+        const onboardingDate = profile.updated_at ? new Date(profile.updated_at) : null;
+        if (onboardingDate) {
+          const hoursSinceOnboarding = (Date.now() - onboardingDate.getTime()) / (1000 * 60 * 60);
+          if (hoursSinceOnboarding < 24) {
+            // Show tutorial after 2 seconds delay
+            const timer = setTimeout(() => {
+              setShowTutorial(true);
+            }, 2000);
+            return () => clearTimeout(timer);
+          }
+        }
+      }
+    }
+  }, [profile, sessionLoading]);
 
   const isInitialLoading = sessionLoading || isLoadingDeals;
 
@@ -402,7 +433,7 @@ const CreatorDashboard = () => {
       {/* Quick Stats Skeleton */}
       <div className="grid grid-cols-3 gap-3 mb-4">
         {[1, 2, 3].map((i) => (
-          <div key={i} className="bg-white/10 backdrop-blur-md rounded-xl p-3 border border-white/10">
+          <div key={i} className="bg-white/[0.08] backdrop-blur-[40px] saturate-[180%] rounded-[20px] p-4 border border-white/15 shadow-[0_4px_16px_rgba(0,0,0,0.2)]">
             <Skeleton className="h-4 w-16 mb-2" />
             <Skeleton className="h-8 w-20" />
           </div>
@@ -410,7 +441,7 @@ const CreatorDashboard = () => {
       </div>
 
       {/* Main Earnings Card Skeleton */}
-      <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/10">
+      <div className="bg-white/[0.08] backdrop-blur-[40px] saturate-[180%] rounded-[20px] p-5 border border-white/15 shadow-[0_8px_32px_rgba(0,0,0,0.3)]">
         <Skeleton className="h-6 w-32 mb-4" />
         <Skeleton className="h-12 w-40 mb-2" />
         <Skeleton className="h-4 w-48 mb-4" />
@@ -420,7 +451,7 @@ const CreatorDashboard = () => {
       {/* Stats Grid Skeleton */}
       <div className="grid grid-cols-2 gap-3">
         {[1, 2, 3, 4].map((i) => (
-          <div key={i} className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/10">
+          <div key={i} className="bg-white/[0.08] backdrop-blur-[40px] saturate-[180%] rounded-[20px] p-5 border border-white/15 shadow-[0_4px_16px_rgba(0,0,0,0.2)]">
             <Skeleton className="h-4 w-24 mb-2" />
             <Skeleton className="h-8 w-20 mb-1" />
             <Skeleton className="h-3 w-16" />
@@ -433,7 +464,7 @@ const CreatorDashboard = () => {
         <Skeleton className="h-6 w-32 mb-3" />
         <div className="grid grid-cols-2 gap-3">
           {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/10">
+            <div key={i} className="bg-white/[0.08] backdrop-blur-[40px] saturate-[180%] rounded-[20px] p-5 border border-white/15 shadow-[0_4px_16px_rgba(0,0,0,0.2)]">
               <Skeleton className="h-12 w-12 rounded-xl mb-3" />
               <Skeleton className="h-4 w-24" />
             </div>
@@ -446,7 +477,7 @@ const CreatorDashboard = () => {
         <Skeleton className="h-6 w-32 mb-3" />
         <div className="space-y-3">
           {[1, 2].map((i) => (
-            <div key={i} className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/10">
+            <div key={i} className="bg-white/[0.08] backdrop-blur-[40px] saturate-[180%] rounded-[20px] p-5 border border-white/15 shadow-[0_4px_16px_rgba(0,0,0,0.2)]">
               <Skeleton className="h-5 w-48 mb-2" />
               <Skeleton className="h-4 w-32 mb-3" />
               <Skeleton className="h-2 w-full rounded-full" />
@@ -458,6 +489,7 @@ const CreatorDashboard = () => {
   );
 
   return (
+    <ContextualTipsProvider currentView="dashboard">
     <div className="min-h-screen bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 text-white">
       {/* Top Header */}
       <div className="sticky top-0 z-50 bg-purple-900/90 backdrop-blur-lg border-b border-white/10">
@@ -530,7 +562,7 @@ const CreatorDashboard = () => {
           />
           
           {/* Sidebar */}
-          <div className="fixed top-0 left-0 bottom-0 w-80 bg-gradient-to-b from-purple-900/95 via-purple-800/95 to-indigo-900/95 backdrop-blur-lg border-r border-white/10 shadow-2xl z-50 flex flex-col max-h-screen">
+          <div className="fixed top-0 left-0 bottom-0 w-80 bg-gradient-to-b from-purple-900/95 via-purple-800/95 to-indigo-900/95 backdrop-blur-lg border-r border-white/10 shadow-2xl z-50 flex flex-col max-h-screen pb-20 md:pb-0">
             {/* Sidebar Header */}
             <div className="p-6 border-b border-white/10">
               <div className="flex items-center justify-between mb-4">
@@ -682,29 +714,23 @@ const CreatorDashboard = () => {
                     <FileText className="w-5 h-5 text-purple-300" />
                     <span className="text-sm">Help & Support</span>
                   </button>
+                  <button 
+                    onClick={() => {
+                      navigate('/creator-analytics');
+                      setShowMenu(false);
+                      triggerHaptic('light');
+                    }}
+                    className="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10 transition-all text-left"
+                  >
+                    <LineChart className="w-5 h-5 text-purple-300" />
+                    <span className="text-sm">Analytics</span>
+                  </button>
                 </div>
-              </div>
-
-              {/* Quick Logout Option - Also available in main menu */}
-              <div className="mt-4 pt-4 border-t border-white/10">
-                <button 
-                  onClick={() => {
-                    triggerHaptic('light');
-                    setShowMenu(false);
-                    setShowLogoutDialog(true);
-                  }}
-                  disabled={signOutMutation.isPending}
-                  className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl hover:bg-red-500/10 active:bg-red-500/15 border border-red-500/20 text-red-400 transition-all text-left active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
-                  aria-label="Log out"
-                >
-                  <LogOut className="w-4 h-4" />
-                  <span className="text-sm font-medium">Log Out</span>
-                </button>
               </div>
             </div>
 
             {/* Logout - Prominent at bottom with better visibility */}
-            <div className="mt-auto flex-shrink-0 p-4 border-t-2 border-red-500/20 bg-gradient-to-br from-red-500/10 via-red-600/5 to-transparent">
+            <div className="mt-auto flex-shrink-0 p-4 pb-6 md:pb-4 border-t-2 border-red-500/20 bg-gradient-to-br from-red-500/10 via-red-600/5 to-transparent">
               <div className="mb-2">
                 <p className="text-xs text-red-300/70 font-medium px-1">Account</p>
               </div>
@@ -904,7 +930,7 @@ const CreatorDashboard = () => {
                 </div>
 
                 {/* Empty State Card */}
-                <div className="bg-white/[0.08] backdrop-blur-[40px] saturate-[180%] rounded-[24px] p-8 md:p-10 border border-white/15 shadow-[0_8px_32px_rgba(0,0,0,0.3)] text-center">
+                <div className="bg-white/[0.08] backdrop-blur-[40px] saturate-[180%] rounded-[20px] p-6 md:p-8 border border-white/15 shadow-[0_8px_32px_rgba(0,0,0,0.3)] text-center">
                   <motion.div
                     initial={{ scale: 0.8, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
@@ -919,14 +945,14 @@ const CreatorDashboard = () => {
                   <div className="flex flex-col sm:flex-row gap-3 justify-center">
                     <button
                       onClick={() => navigate('/creator-contracts')}
-                      className="px-6 py-3.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-semibold rounded-[20px] md:rounded-[24px] transition-all flex items-center justify-center gap-2 active:scale-95 shadow-[0_4px_16px_rgba(168,85,247,0.4)] hover:shadow-[0_6px_24px_rgba(168,85,247,0.5)]"
+                      className="px-6 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-semibold rounded-xl transition-all flex items-center justify-center gap-2 active:scale-95 shadow-[0_4px_16px_rgba(168,85,247,0.4)] hover:shadow-[0_6px_24px_rgba(168,85,247,0.5)]"
                     >
                       <Plus className="w-5 h-5" />
                       Add Your First Deal
                     </button>
                     <button
                       onClick={() => navigate('/brand-directory')}
-                      className="px-6 py-3.5 bg-white/[0.08] backdrop-blur-[30px] hover:bg-white/[0.12] text-white font-semibold rounded-[20px] md:rounded-[24px] transition-all flex items-center justify-center gap-2 active:scale-95 border border-white/20 shadow-[0_2px_8px_rgba(0,0,0,0.15)]"
+                      className="px-6 py-3 bg-white/[0.08] backdrop-blur-[30px] hover:bg-white/[0.12] text-white font-semibold rounded-xl transition-all flex items-center justify-center gap-2 active:scale-95 border border-white/20 shadow-[0_2px_8px_rgba(0,0,0,0.15)]"
                     >
                       <Briefcase className="w-5 h-5" />
                       Explore Brands
@@ -935,7 +961,7 @@ const CreatorDashboard = () => {
                 </div>
 
                 {/* Quick Start Guide */}
-                <div className="bg-white/[0.08] backdrop-blur-[40px] saturate-[180%] rounded-[24px] p-6 md:p-8 border border-white/15 shadow-[0_8px_32px_rgba(0,0,0,0.3)]">
+                <div className="bg-white/[0.08] backdrop-blur-[40px] saturate-[180%] rounded-[20px] p-5 md:p-6 border border-white/15 shadow-[0_8px_32px_rgba(0,0,0,0.3)]">
                   <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
                     <Target className="w-5 h-5 text-purple-400" />
                     Quick Start Guide
@@ -984,22 +1010,22 @@ const CreatorDashboard = () => {
             </div>
 
             {/* Quick Stats Row */}
-            <div className="grid grid-cols-3 gap-3 mb-4">
-              <div className="bg-white/[0.08] backdrop-blur-[40px] saturate-[180%] rounded-[20px] p-4 border border-white/15 shadow-[0_4px_16px_rgba(0,0,0,0.2)]">
+            <div data-tutorial="stats-grid" className="grid grid-cols-3 gap-3 mb-4">
+              <div className="bg-white/[0.08] backdrop-blur-[40px] saturate-[180%] rounded-[20px] p-5 border border-white/15 shadow-[0_4px_16px_rgba(0,0,0,0.2)]">
                 <div className="flex items-center gap-2 mb-1">
                   <Briefcase className="w-4 h-4 text-blue-400" />
                   <span className="text-xs text-purple-300">Total Deals</span>
                 </div>
                 <div className="text-xl font-bold">{stats.totalDeals}</div>
               </div>
-              <div className="bg-white/[0.08] backdrop-blur-[40px] saturate-[180%] rounded-[20px] p-4 border border-white/15 shadow-[0_4px_16px_rgba(0,0,0,0.2)]">
+              <div className="bg-white/[0.08] backdrop-blur-[40px] saturate-[180%] rounded-[20px] p-5 border border-white/15 shadow-[0_4px_16px_rgba(0,0,0,0.2)]">
                 <div className="flex items-center gap-2 mb-1">
                   <BarChart3 className="w-4 h-4 text-green-400" />
                   <span className="text-xs text-purple-300">Active</span>
                 </div>
                 <div className="text-xl font-bold">{stats.activeDeals}</div>
               </div>
-              <div className="bg-white/[0.08] backdrop-blur-[40px] saturate-[180%] rounded-[20px] p-4 border border-white/15 shadow-[0_4px_16px_rgba(0,0,0,0.2)]">
+              <div className="bg-white/[0.08] backdrop-blur-[40px] saturate-[180%] rounded-[20px] p-5 border border-white/15 shadow-[0_4px_16px_rgba(0,0,0,0.2)]">
                 <div className="flex items-center gap-2 mb-1">
                   <CreditCard className="w-4 h-4 text-orange-400" />
                   <span className="text-xs text-purple-300">Pending</span>
@@ -1010,12 +1036,13 @@ const CreatorDashboard = () => {
 
             {/* Main Earnings Card */}
             <button 
+              data-tutorial="earnings-card"
               onClick={() => {
                 triggerHaptic('medium');
-                // Navigate to detailed earnings view
+                navigate('/creator-analytics');
               }}
-              className="w-full bg-white/[0.08] backdrop-blur-[40px] saturate-[180%] rounded-[24px] p-6 md:p-8 border border-white/15 shadow-[0_8px_32px_rgba(0,0,0,0.3)] relative overflow-hidden hover:bg-white/[0.12] hover:shadow-[0_12px_40px_rgba(0,0,0,0.4)] transition-all duration-200 active:scale-[0.98] text-left"
-              aria-label="View earnings details"
+              className="w-full bg-white/[0.08] backdrop-blur-[40px] saturate-[180%] rounded-[20px] p-5 md:p-6 border border-white/15 shadow-[0_8px_32px_rgba(0,0,0,0.3)] relative overflow-hidden hover:bg-white/[0.12] hover:shadow-[0_12px_40px_rgba(0,0,0,0.4)] transition-all duration-200 active:scale-[0.98] text-left"
+              aria-label="View analytics"
             >
               <div className="absolute top-0 right-0 w-32 h-32 bg-purple-500/10 rounded-full blur-3xl"></div>
               
@@ -1121,25 +1148,25 @@ const CreatorDashboard = () => {
 
             {/* Stats Grid */}
             <div className="grid grid-cols-2 gap-3">
-              <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/10">
+              <div className="bg-white/[0.08] backdrop-blur-[40px] saturate-[180%] rounded-[20px] p-5 border border-white/15 shadow-[0_4px_16px_rgba(0,0,0,0.2)]">
                 <div className="text-purple-200 text-sm mb-2">Next Payout</div>
                 <div className="text-2xl font-bold mb-1">₹{(stats.nextPayout / 1000).toFixed(0)}K</div>
                 <div className="text-xs text-purple-300">{stats.payoutDate}</div>
               </div>
 
-              <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/10">
+              <div className="bg-white/[0.08] backdrop-blur-[40px] saturate-[180%] rounded-[20px] p-5 border border-white/15 shadow-[0_4px_16px_rgba(0,0,0,0.2)]">
                 <div className="text-purple-200 text-sm mb-2">Active Deals</div>
                 <div className="text-2xl font-bold mb-1">{stats.activeDeals}</div>
                 <div className="text-xs text-green-400">+2 this week</div>
               </div>
 
-              <div className="bg-white/[0.08] backdrop-blur-[40px] saturate-[180%] rounded-[24px] p-5 border border-white/15 shadow-[0_8px_32px_rgba(0,0,0,0.3)]">
+              <div className="bg-white/[0.08] backdrop-blur-[40px] saturate-[180%] rounded-[20px] p-5 border border-white/15 shadow-[0_4px_16px_rgba(0,0,0,0.2)]">
                 <div className="text-purple-200 text-sm mb-2">Pending</div>
                 <div className="text-2xl font-bold mb-1">₹{(stats.pendingPayments / 1000).toFixed(0)}K</div>
                 <div className="text-xs text-yellow-400">4 payments</div>
               </div>
 
-              <div className="bg-white/[0.08] backdrop-blur-[40px] saturate-[180%] rounded-[24px] p-5 border border-white/15 shadow-[0_8px_32px_rgba(0,0,0,0.3)]">
+              <div className="bg-white/[0.08] backdrop-blur-[40px] saturate-[180%] rounded-[20px] p-5 border border-white/15 shadow-[0_4px_16px_rgba(0,0,0,0.2)]">
                 <div className="text-purple-200 text-sm mb-2">Protection</div>
                 <div className="text-2xl font-bold mb-1">{stats.protectionScore}</div>
                 <div className="text-xs text-green-400">Excellent</div>
@@ -1156,7 +1183,7 @@ const CreatorDashboard = () => {
                     <button
                       key={action.id}
                       onClick={action.onClick}
-                      className="bg-white/[0.08] backdrop-blur-[40px] saturate-[180%] rounded-[24px] p-5 border border-white/15 shadow-[0_8px_32px_rgba(0,0,0,0.3)] hover:bg-white/[0.12] hover:shadow-[0_12px_40px_rgba(0,0,0,0.4)] transition-all duration-200 text-left active:scale-95"
+                      className="bg-white/[0.08] backdrop-blur-[40px] saturate-[180%] rounded-[20px] p-5 border border-white/15 shadow-[0_4px_16px_rgba(0,0,0,0.2)] hover:bg-white/[0.12] hover:shadow-[0_8px_24px_rgba(0,0,0,0.3)] transition-all duration-200 text-left active:scale-95"
                     >
                       <div className={`w-12 h-12 rounded-xl ${action.color} flex items-center justify-center mb-3`}>
                         <Icon className={`w-6 h-6 ${action.iconColor}`} />
@@ -1185,7 +1212,7 @@ const CreatorDashboard = () => {
                     transition={{ delay: index * 0.1, duration: 0.3 }}
                     whileHover={{ scale: 1.01, y: -2 }}
                     whileTap={{ scale: 0.98 }}
-                    className="bg-white/[0.08] backdrop-blur-[40px] saturate-[180%] rounded-[24px] p-5 border border-white/15 shadow-[0_8px_32px_rgba(0,0,0,0.3)] hover:bg-white/[0.12] hover:shadow-[0_12px_40px_rgba(0,0,0,0.4)] transition-all duration-200 cursor-pointer"
+                    className="bg-white/[0.08] backdrop-blur-[40px] saturate-[180%] rounded-[20px] p-5 border border-white/15 shadow-[0_4px_16px_rgba(0,0,0,0.2)] hover:bg-white/[0.12] hover:shadow-[0_8px_24px_rgba(0,0,0,0.3)] transition-all duration-200 cursor-pointer"
                   >
                     <div className="flex items-start justify-between mb-3">
                       <div>
@@ -1233,7 +1260,7 @@ const CreatorDashboard = () => {
                       transition={{ delay: index * 0.1, duration: 0.3 }}
                       whileHover={{ scale: 1.01, y: -2 }}
                       whileTap={{ scale: 0.98 }}
-                      className="bg-white/[0.08] backdrop-blur-[40px] saturate-[180%] rounded-[24px] p-5 border border-white/15 shadow-[0_8px_32px_rgba(0,0,0,0.3)] hover:bg-white/[0.12] hover:shadow-[0_12px_40px_rgba(0,0,0,0.4)] transition-all duration-200 cursor-pointer"
+                      className="bg-white/[0.08] backdrop-blur-[40px] saturate-[180%] rounded-[20px] p-5 border border-white/15 shadow-[0_4px_16px_rgba(0,0,0,0.2)] hover:bg-white/[0.12] hover:shadow-[0_8px_24px_rgba(0,0,0,0.3)] transition-all duration-200 cursor-pointer"
                     >
                       <div className="flex items-start gap-3">
                         <div className={`w-10 h-10 rounded-xl ${activity.bgColor} flex items-center justify-center flex-shrink-0`}>
@@ -1263,7 +1290,7 @@ const CreatorDashboard = () => {
                 {upcomingPayments.map(payment => (
                   <div
                     key={payment.id}
-                    className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/10 hover:bg-white/15 transition-all cursor-pointer"
+                    className="bg-white/[0.08] backdrop-blur-[40px] saturate-[180%] rounded-[20px] p-5 border border-white/15 shadow-[0_4px_16px_rgba(0,0,0,0.2)] hover:bg-white/[0.12] hover:shadow-[0_8px_24px_rgba(0,0,0,0.3)] transition-all duration-200 cursor-pointer"
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex-1">
@@ -1292,6 +1319,18 @@ const CreatorDashboard = () => {
         )}
       </div>
 
+      {/* Tutorial Component */}
+      {showTutorial && (
+        <DashboardTutorial
+          onComplete={() => {
+            setShowTutorial(false);
+          }}
+          onSkip={() => {
+            setShowTutorial(false);
+          }}
+        />
+      )}
+
       {/* Bottom Navigation */}
       <div className="fixed bottom-0 left-0 right-0 bg-purple-900/90 backdrop-blur-lg border-t border-white/10 z-50">
         <div className="flex justify-around items-center py-3 px-4">
@@ -1306,6 +1345,7 @@ const CreatorDashboard = () => {
           </button>
 
           <button
+            data-tutorial="deals-nav"
             onClick={() => setActiveTab('deals')}
             className={`flex flex-col items-center gap-1 transition-colors ${
               activeTab === 'deals' ? 'text-white' : 'text-purple-300 hover:text-white'
@@ -1316,6 +1356,7 @@ const CreatorDashboard = () => {
           </button>
 
           <button
+            data-tutorial="payments-nav"
             onClick={() => setActiveTab('payments')}
             className={`flex flex-col items-center gap-1 transition-colors ${
               activeTab === 'payments' ? 'text-white' : 'text-purple-300 hover:text-white'
@@ -1326,6 +1367,7 @@ const CreatorDashboard = () => {
           </button>
 
           <button
+            data-tutorial="protection-nav"
             onClick={() => setActiveTab('protection')}
             className={`flex flex-col items-center gap-1 transition-colors ${
               activeTab === 'protection' ? 'text-white' : 'text-purple-300 hover:text-white'
@@ -1336,6 +1378,7 @@ const CreatorDashboard = () => {
           </button>
 
           <button
+            data-tutorial="messages-nav"
             onClick={() => setActiveTab('messages')}
             className={`flex flex-col items-center gap-1 transition-colors relative ${
               activeTab === 'messages' ? 'text-white' : 'text-purple-300 hover:text-white'
@@ -1349,7 +1392,21 @@ const CreatorDashboard = () => {
           </button>
         </div>
       </div>
+
+      {/* Upload FAB for Tutorial */}
+      <button
+        data-tutorial="upload-fab"
+        onClick={() => {
+          navigate('/contract-upload');
+          triggerHaptic('light');
+        }}
+        className="fixed bottom-24 right-6 bg-blue-600 text-white rounded-full p-4 shadow-2xl z-40 hover:bg-blue-700 transition-all active:scale-95"
+        aria-label="Upload contract"
+      >
+        <FileText className="w-6 h-6" />
+      </button>
     </div>
+    </ContextualTipsProvider>
   );
 };
 

@@ -129,7 +129,7 @@ const CreatorBottomNav = () => {
   return (
       <div 
         className={cn(
-          "fixed bottom-0 left-0 right-0 z-50 bg-white/[0.12] backdrop-blur-[60px] saturate-[200%] border-t border-white/20 shadow-[0_-8px_32px_rgba(0,0,0,0.4)] rounded-t-[20px] md:rounded-t-[24px] progressive-blur transition-transform duration-300 ease-in-out",
+          "fixed bottom-0 left-0 right-0 z-50 bg-white/[0.08] backdrop-blur-[60px] saturate-[200%] border-t border-white/15 shadow-[0_-8px_32px_rgba(0,0,0,0.3)] rounded-t-[20px] progressive-blur transition-transform duration-300 ease-in-out",
           isKeyboardOpen && "translate-y-full"
         )}
       >
@@ -166,7 +166,7 @@ const CreatorBottomNav = () => {
               {/* iOS 17 Active State - Glowing indicator */}
               {active && (
                 <>
-                  <div className="absolute inset-0 bg-white/[0.08] rounded-t-[20px]" />
+                  <div className="absolute inset-0 bg-white/[0.06] rounded-t-[20px]" />
                   <div className="absolute top-0 left-1/2 -translate-x-1/2 w-14 h-1 bg-gradient-to-r from-blue-400 to-purple-500 rounded-full shadow-[0_0_12px_rgba(59,130,246,0.8)]" />
                   {/* Glowing dot indicator */}
                   <div className="absolute bottom-2 left-1/2 -translate-x-1/2 w-2 h-2 bg-purple-500 rounded-full shadow-[0_0_8px_rgba(168,85,247,1)] animate-pulse" />

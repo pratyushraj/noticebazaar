@@ -25,6 +25,34 @@
     min-height: -webkit-fill-available;
   }
 
+  /* Tutorial Highlight Effect */
+  .tutorial-highlight {
+    position: relative;
+    z-index: 10000 !important;
+    outline: 4px solid rgb(168, 85, 247) !important; /* purple-500 */
+    outline-offset: 2px;
+    box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.6) !important;
+    border-radius: 0.75rem;
+    animation: tutorial-pulse 2s ease-in-out infinite;
+  }
+
+  @keyframes tutorial-pulse {
+    0%, 100% {
+      outline-width: 4px;
+      box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.6), 0 0 20px rgba(168, 85, 247, 0.5);
+    }
+    50% {
+      outline-width: 6px;
+      box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.6), 0 0 30px rgba(168, 85, 247, 0.8);
+    }
+  }
+
+  /* Ensure highlighted elements are clickable during tutorial */
+  .tutorial-highlight.interactive {
+    cursor: pointer !important;
+    pointer-events: auto !important;
+  }
+
   /* Safe area insets for notched devices */
   :root {
     --safe-area-inset-top: env(safe-area-inset-top, 0px);

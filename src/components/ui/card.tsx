@@ -13,8 +13,8 @@ const Card = React.forwardRef<HTMLDivElement, CardProps>(
   ({ className, variant = "default", interactive = false, ...props }, ref) => {
     // Premium card system: 3 main types + legacy variants
     // Elevation system: card-elevation-2 (default), card-elevation-3 (hover)
-    // Radius: rounded-2xl for all cards
-    const baseClasses = "rounded-[24px] md:rounded-[28px] backdrop-blur-[40px] saturate-[180%] border relative overflow-hidden transition-all duration-200 shadow-[0_8px_32px_rgba(0,0,0,0.3)]";
+    // Radius: rounded-[20px] for all cards (iOS 17 standard)
+    const baseClasses = "rounded-[20px] backdrop-blur-[40px] saturate-[180%] border relative overflow-hidden transition-all duration-200 shadow-[0_8px_32px_rgba(0,0,0,0.3)]";
     const interactiveClasses = interactive 
       ? "card-interactive hover:card-elevation-3 focus-ring" 
       : "";
@@ -23,13 +23,13 @@ const Card = React.forwardRef<HTMLDivElement, CardProps>(
       // 3 Main Premium Types
       primary: "bg-gradient-to-br from-blue-500/20 via-blue-500/10 to-transparent border-blue-500/30", // Bold gradient + high contrast
       secondary: "bg-gradient-to-br from-emerald-500/15 via-emerald-500/8 to-emerald-500/5 border-emerald-500/20", // Subtle gradient + soft border
-      tertiary: "bg-transparent border-white/10", // Transparent background + border only
+      tertiary: "bg-transparent border-white/15", // Transparent background + border only
       // Legacy variants (for backwards compatibility)
-      default: "bg-white/[0.05] border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.3)]", // Liquid glass default
+      default: "bg-white/[0.08] border-white/15 shadow-[0_8px_32px_rgba(0,0,0,0.3)]", // Liquid glass default (iOS 17 standard)
       metric: "bg-gradient-to-br from-emerald-500/20 via-emerald-500/10 to-emerald-500/5 border-emerald-500/20",
       attention: "bg-gradient-to-br from-red-500/20 via-red-500/10 to-red-500/5 border-red-500/20",
       partner: "bg-gradient-to-br from-purple-500/20 via-purple-500/10 to-purple-500/5 border-purple-500/20",
-      profile: "bg-gradient-to-br from-slate-500/20 via-slate-500/10 to-transparent border-white/5",
+      profile: "bg-gradient-to-br from-slate-500/20 via-slate-500/10 to-transparent border-white/15",
       // Pink theme variants
       pink: "bg-[#2A1F2E] border-[#4A3A4F] hover:bg-[#3D2A3F] hover:border-[#5A4A5F]", // Soft pink card
       "pink-gradient": "bg-gradient-to-br from-[#E879F9] via-[#F472B6] to-[#FB7185] border-[#FF6B9D]/30", // Pink gradient card
@@ -104,7 +104,7 @@ const CardFooter = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <div
     ref={ref}
-    className={cn("flex items-center pt-4 border-t border-white/5", className)}
+    className={cn("flex items-center pt-4 border-t border-white/10", className)}
     {...props}
   />
 ));
