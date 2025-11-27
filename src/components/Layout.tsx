@@ -1,6 +1,7 @@
 "use client";
 
 import { ReactNode } from 'react';
+import { useLocation } from 'react-router-dom';
 import { MadeWithDyad } from '@/components/made-with-dyad';
 import Navbar from '@/components/navbar/Navbar';
 import CreatorBottomNav from '@/components/creator-dashboard/CreatorBottomNav';
@@ -14,8 +15,13 @@ interface LayoutProps {
 
 const Layout = ({ children }: LayoutProps) => {
   const { profile } = useSession();
+  const location = useLocation();
   const isCreator = profile?.role === 'creator';
   const { isOpen } = useSidebar();
+  
+  // Hide bottom nav during onboarding
+  const isOnboarding = location.pathname === '/creator-onboarding';
+  const shouldShowBottomNav = isCreator && !isOnboarding;
 
   return (
     <div className="relative min-h-screen bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 text-white">
@@ -44,7 +50,7 @@ const Layout = ({ children }: LayoutProps) => {
         </div>
         
         {/* Bottom Navigation - Primary navigation for creators (all screen sizes) */}
-        {isCreator && <CreatorBottomNav />}
+        {shouldShowBottomNav && <CreatorBottomNav />}
         
         {/* Footer - Hidden on mobile, shown on desktop */}
         <div className="hidden md:block text-center py-8 text-sm text-white/30 mt-auto">
