@@ -421,6 +421,7 @@ const CreatorDashboard = () => {
     return "Good evening";
   };
 
+  // Import enhanced skeleton (fallback to inline if import fails)
   // Skeleton Loading Component
   const DashboardSkeleton = () => (
     <div className="p-4 pb-24 space-y-6">
@@ -917,7 +918,7 @@ const CreatorDashboard = () => {
         {activeTab === 'home' && (
           <>
             {isInitialLoading ? (
-              <DashboardSkeleton />
+              <EnhancedDashboardSkeleton />
             ) : hasNoData ? (
               // Empty State for New Users
               <div className="space-y-6">

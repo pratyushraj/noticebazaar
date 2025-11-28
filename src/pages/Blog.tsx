@@ -137,24 +137,13 @@ const Blog = () => {
         {filteredPosts.map((post) => (
           <Card key={post.slug} className="bg-card shadow-lg border border-border transition-transform duration-300 hover:scale-[1.02] flex flex-col">
             {/* Featured Image */}
-            <div className="h-40 overflow-hidden rounded-t-xl bg-secondary">
-              <img 
-                src={post.image} 
-                alt={post.title} 
-                className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
-                loading="lazy"
-                // Add onError handler to use local fallback if external image fails
-                onError={(e) => {
-                  const target = e.target as HTMLImageElement;
-                  // Only replace if the image failed to load and we haven't already replaced it
-                  if (target.src !== post.image && target.src !== FALLBACK_IMAGE_URL) {
-                    target.src = FALLBACK_IMAGE_URL;
-                    target.style.objectFit = 'contain'; // Adjust fit for placeholder
-                    target.style.backgroundColor = 'var(--secondary)'; // Ensure background is set
-                  }
-                }}
-              />
-            </div>
+            <ImageWithPlaceholder
+              src={post.image}
+              alt={post.title}
+              fallback={FALLBACK_IMAGE_URL}
+              aspectRatio="video"
+              className="h-40 rounded-t-xl"
+            />
             <CardHeader className="pb-3 pt-4">
               <Badge variant={getCategoryBadgeVariant(post.category)} className="w-fit mb-2">
                 {post.category}

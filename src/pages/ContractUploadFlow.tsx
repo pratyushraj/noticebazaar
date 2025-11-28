@@ -316,7 +316,7 @@ const ContractUploadFlow = () => {
         {/* Uploading Step */}
         {step === 'uploading' && (
           <div className="flex items-center justify-center min-h-[60vh]">
-            <div className="text-center">
+            <div className="text-center w-full max-w-md">
               <div className="w-24 h-24 rounded-full bg-purple-500/20 flex items-center justify-center mx-auto mb-6 relative">
                 <Upload className="w-12 h-12 text-purple-400" />
                 <div className="absolute inset-0 rounded-full border-4 border-purple-500/30 border-t-purple-500 animate-spin"></div>
@@ -325,16 +325,40 @@ const ContractUploadFlow = () => {
               <h2 className="text-2xl font-bold mb-2">Uploading Contract...</h2>
               <p className="text-purple-300 mb-6">{fileName}</p>
               
-              <div className="w-full max-w-xs mx-auto">
+              {/* Enhanced Progress Bar */}
+              <div className="w-full max-w-xs mx-auto mb-6">
                 <div className="flex items-center justify-between text-sm mb-2">
-                  <span className="text-purple-300">{uploadProgress}%</span>
+                  <span className="text-purple-300 font-medium">{uploadProgress}%</span>
                   <span className="text-purple-300">{fileSize}</span>
                 </div>
-                <div className="w-full bg-white/10 rounded-full h-3">
+                <div className="w-full bg-white/10 rounded-full h-3 overflow-hidden">
                   <div
-                    className="bg-gradient-to-r from-purple-500 to-blue-500 h-3 rounded-full transition-all duration-300"
+                    className="bg-gradient-to-r from-purple-500 to-blue-500 h-3 rounded-full transition-all duration-300 relative"
                     style={{ width: `${uploadProgress}%` }}
-                  />
+                  >
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-shimmer" />
+                  </div>
+                </div>
+              </div>
+
+              {/* Stage Indicators */}
+              <div className="space-y-3 bg-white/5 rounded-xl p-4 border border-white/10">
+                <div className="flex items-center gap-3 text-left">
+                  <div className={`w-2 h-2 rounded-full transition-all ${
+                    uploadProgress > 0 ? 'bg-green-400 scale-125' : 'bg-white/20'
+                  }`} />
+                  <div className="flex-1">
+                    <div className="text-sm font-medium text-white">Uploading file...</div>
+                    <div className="text-xs text-purple-300">
+                      {uploadProgress > 0 ? `Transferred ${(uploadProgress / 100 * parseFloat(fileSize)).toFixed(2)} MB` : 'Preparing upload...'}
+                    </div>
+                  </div>
+                  {uploadProgress > 0 && uploadProgress < 100 && (
+                    <Loader className="w-4 h-4 animate-spin text-purple-400" />
+                  )}
+                  {uploadProgress === 100 && (
+                    <CheckCircle className="w-4 h-4 text-green-400" />
+                  )}
                 </div>
               </div>
             </div>
@@ -344,7 +368,7 @@ const ContractUploadFlow = () => {
         {/* Scanning Step */}
         {step === 'scanning' && (
           <div className="flex items-center justify-center min-h-[60vh]">
-            <div className="text-center">
+            <div className="text-center w-full max-w-md">
               <div className="w-24 h-24 rounded-full bg-blue-500/20 flex items-center justify-center mx-auto mb-6 relative">
                 <FileText className="w-12 h-12 text-blue-400" />
                 <div className="absolute inset-0 rounded-full border-4 border-blue-500/30 border-t-blue-500 animate-spin"></div>
@@ -353,23 +377,40 @@ const ContractUploadFlow = () => {
               <h2 className="text-2xl font-bold mb-2">Scanning Document...</h2>
               <p className="text-purple-300 mb-6">Reading contract clauses</p>
               
-              <div className="w-full max-w-xs mx-auto">
+              {/* Enhanced Progress Bar */}
+              <div className="w-full max-w-xs mx-auto mb-6">
                 <div className="flex items-center justify-between text-sm mb-2">
-                  <span className="text-purple-300">{scanProgress}%</span>
+                  <span className="text-purple-300 font-medium">{scanProgress}%</span>
                   <span className="text-purple-300">12 pages</span>
                 </div>
-                <div className="w-full bg-white/10 rounded-full h-3">
+                <div className="w-full bg-white/10 rounded-full h-3 overflow-hidden">
                   <div
-                    className="bg-gradient-to-r from-blue-500 to-cyan-500 h-3 rounded-full transition-all duration-300"
+                    className="bg-gradient-to-r from-blue-500 to-cyan-500 h-3 rounded-full transition-all duration-300 relative"
                     style={{ width: `${scanProgress}%` }}
-                  />
+                  >
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-shimmer" />
+                  </div>
                 </div>
               </div>
-              
-              <div className="mt-8 space-y-2 text-sm text-purple-300">
-                <div className="flex items-center justify-center gap-2">
-                  <Loader className="w-4 h-4 animate-spin" />
-                  <span>Extracting text from PDF...</span>
+
+              {/* Stage Indicators */}
+              <div className="space-y-3 bg-white/5 rounded-xl p-4 border border-white/10">
+                <div className="flex items-center gap-3 text-left">
+                  <div className={`w-2 h-2 rounded-full transition-all ${
+                    scanProgress > 0 ? 'bg-green-400 scale-125' : 'bg-white/20'
+                  }`} />
+                  <div className="flex-1">
+                    <div className="text-sm font-medium text-white">Extracting text from PDF...</div>
+                    <div className="text-xs text-purple-300">
+                      {scanProgress > 0 ? `Processed ${Math.round(scanProgress / 100 * 12)} of 12 pages` : 'Initializing scanner...'}
+                    </div>
+                  </div>
+                  {scanProgress > 0 && scanProgress < 100 && (
+                    <Loader className="w-4 h-4 animate-spin text-blue-400" />
+                  )}
+                  {scanProgress === 100 && (
+                    <CheckCircle className="w-4 h-4 text-green-400" />
+                  )}
                 </div>
               </div>
             </div>
