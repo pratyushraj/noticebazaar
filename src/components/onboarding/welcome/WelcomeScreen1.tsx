@@ -47,7 +47,7 @@ export const WelcomeScreen1: React.FC<WelcomeScreen1Props> = ({ onNext }) => {
         initial={{ opacity: 0, scale: 0.8 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-        className="mb-8"
+        className="mb-4 md:mb-8"
       >
         <IconBubble
           icon={Sparkles}
@@ -66,7 +66,7 @@ export const WelcomeScreen1: React.FC<WelcomeScreen1Props> = ({ onNext }) => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
-        className="text-3xl font-bold leading-tight mb-4"
+        className="text-2xl md:text-3xl font-bold leading-tight mb-3 md:mb-4"
       >
         Welcome to NoticeBazaar
       </motion.h1>
@@ -76,13 +76,13 @@ export const WelcomeScreen1: React.FC<WelcomeScreen1Props> = ({ onNext }) => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
-        className="text-xl font-semibold text-white/80 mb-12"
+        className="text-lg md:text-xl font-semibold text-white/80 mb-6 md:mb-12"
       >
         Legal & Tax Services Built for Content Creators
       </motion.p>
 
       {/* Features Grid - Staggered animations */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-3xl w-full mb-12">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4 max-w-3xl w-full mb-6 md:mb-12">
         {features.map((feature, index) => {
           const Icon = feature.icon;
           return (
@@ -111,14 +111,14 @@ export const WelcomeScreen1: React.FC<WelcomeScreen1Props> = ({ onNext }) => {
         })}
       </div>
 
-      {/* CTA Button - Slide up */}
+      {/* CTA Button - Slide up - Always visible at bottom */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, delay: 0.5, ease: [0.22, 1, 0.36, 1] }}
-        className="mt-auto"
+        className="mt-6 md:mt-auto w-full max-w-md"
       >
-        <PrimaryButton onClick={onNext}>Next</PrimaryButton>
+        <PrimaryButton onClick={onNext} className="w-full">Next</PrimaryButton>
       </motion.div>
     </OnboardingSlide>
   );

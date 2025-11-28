@@ -39,21 +39,21 @@ export const WelcomeScreen3: React.FC<WelcomeScreen3Props> = ({ onNext, onBack }
           animate: { scale: [1, 1.1, 1] },
           transition: { duration: 2, repeat: Infinity },
         }}
-        className="mb-8"
+        className="mb-6 md:mb-8"
       />
 
       {/* Title */}
-      <h1 className="text-3xl font-bold leading-tight mb-4">
+      <h1 className="text-2xl md:text-3xl font-bold leading-tight mb-3 md:mb-4">
         Track Every Rupee
       </h1>
 
       {/* Subtitle */}
-      <p className="text-xl font-semibold text-white/80 mb-12">
+      <p className="text-lg md:text-xl font-semibold text-white/80 mb-6 md:mb-12">
         Financial Dashboard Benefits
       </p>
 
       {/* Benefits List */}
-      <div className="space-y-3 max-w-md w-full mb-12">
+      <div className="space-y-3 max-w-md w-full mb-6 md:mb-12">
         {benefits.map((benefit, index) => (
           <GradientCard key={index} padding="sm">
             <div className="flex items-center gap-3">

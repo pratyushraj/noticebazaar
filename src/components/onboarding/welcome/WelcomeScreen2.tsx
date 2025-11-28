@@ -34,21 +34,21 @@ export const WelcomeScreen2: React.FC<WelcomeScreen2Props> = ({ onNext, onBack }
         size="lg"
         color="green"
         animated
-        className="mb-8"
+        className="mb-6 md:mb-8"
       />
 
       {/* Title */}
-      <h1 className="text-3xl font-bold leading-tight mb-4">
+      <h1 className="text-2xl md:text-3xl font-bold leading-tight mb-3 md:mb-4">
         Never Sign a Bad Deal Again
       </h1>
 
       {/* Subtitle */}
-      <p className="text-xl font-semibold text-white/80 mb-12">
+      <p className="text-lg md:text-xl font-semibold text-white/80 mb-6 md:mb-12">
         AI-Powered Contract Protection
       </p>
 
       {/* Stats Cards */}
-      <div className="space-y-4 max-w-md w-full mb-12">
+      <div className="space-y-3 md:space-y-4 max-w-md w-full mb-6 md:mb-12">
         {stats.map((stat, index) => (
           <GradientCard key={index} padding="md">
             <div className="text-3xl font-bold text-green-400 mb-2">

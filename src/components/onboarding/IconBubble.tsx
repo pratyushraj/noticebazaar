@@ -50,7 +50,7 @@ export const IconBubble: React.FC<IconBubbleProps> = ({
 
   const defaultAnimation: MotionProps = animated
     ? {
-        animate: { y: [0, -10, 0] },
+        animate: { y: [0, -6, 0] }, // Reduced from -10 to -6 to prevent overlap
         transition: { duration: 1.5, repeat: Infinity, ease: 'easeInOut' },
       }
     : {};

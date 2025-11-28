@@ -72,9 +72,8 @@ export const OnboardingContainer: React.FC<OnboardingContainerProps> = ({
         "overscroll-none",
         "touch-pan-y",
         
-        // Hide scrollbar
-        "overflow-hidden",
-        "scrollbar-hide",
+        // Allow scrolling on slides (handled by OnboardingSlide)
+        "overflow-hidden", // Container doesn't scroll, but children can
         
         className
       )}

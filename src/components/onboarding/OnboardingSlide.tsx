@@ -41,11 +41,11 @@ export const OnboardingSlide: React.FC<OnboardingSlideProps> = ({
       key={slideKey}
       {...(animationProps || defaultAnimation)}
       className={cn(
-        "flex flex-col items-center justify-center",
-        "flex-1 w-full", // Fill container, no viewport conflicts
-        "p-6 pt-10 pb-16", // Safe padding, bottom CTA space
+        "flex flex-col items-center",
+        "flex-1 w-full min-h-0", // Fill container, allow shrinking
+        "p-4 md:p-6 pt-10 pb-20 md:pb-16", // More bottom padding on mobile for CTA
         "text-center",
-        "overflow-y-auto", // Allow scrolling if needed
+        "overflow-y-auto overscroll-contain", // Allow scrolling, prevent bounce
         "scrollbar-hide", // Hide scrollbar
         className
       )}
