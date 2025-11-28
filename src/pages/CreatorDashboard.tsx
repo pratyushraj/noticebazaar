@@ -22,6 +22,7 @@ import DashboardTutorial from '@/components/onboarding/DashboardTutorial';
 import { ContextualTipsProvider } from '@/components/contextual-tips/ContextualTipsProvider';
 import { DashboardSkeleton as EnhancedDashboardSkeleton } from '@/components/skeletons/DashboardSkeleton';
 import { NotificationDropdown } from '@/components/notifications/NotificationDropdown';
+import { QuickSearch } from '@/components/dashboard/QuickSearch';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -44,6 +45,7 @@ const CreatorDashboard = () => {
   const [timeframe, setTimeframe] = useState<'month' | 'lastMonth' | 'allTime'>('month');
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [showTutorial, setShowTutorial] = useState(false);
+  const [showSearch, setShowSearch] = useState(false);
 
   // Fetch real data
   const { data: brandDeals = [], isLoading: isLoadingDeals } = useBrandDeals({
@@ -432,10 +434,18 @@ const CreatorDashboard = () => {
               <RefreshCw className="w-5 h-5" />
             </button>
             <button 
+              onClick={() => setShowSearch(true)}
               className="p-2 hover:bg-white/10 rounded-lg transition-colors active:scale-95"
               aria-label="Search"
             >
               <Search className="w-5 h-5" />
+            </button>
+            <button 
+              onClick={() => navigate('/calendar')}
+              className="p-2 hover:bg-white/10 rounded-lg transition-colors active:scale-95"
+              aria-label="Calendar"
+            >
+              <Calendar className="w-5 h-5" />
             </button>
             <NotificationDropdown />
             <button 
@@ -566,6 +576,18 @@ const CreatorDashboard = () => {
                   <span className="font-medium">Messages</span>
                   <span className="bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">3</span>
                 </div>
+              </button>
+              
+              <button
+                onClick={() => {
+                  navigate('/calendar');
+                  setShowMenu(false);
+                  triggerHaptic('light');
+                }}
+                className="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10 transition-all text-left"
+              >
+                <Calendar className="w-5 h-5 text-purple-300" />
+                <span className="font-medium">Calendar</span>
               </button>
             </div>
 
@@ -1287,6 +1309,17 @@ const CreatorDashboard = () => {
       >
         <FileText className="w-6 h-6" />
       </button>
+
+      {/* Global Search */}
+      <QuickSearch
+        isOpen={showSearch}
+        onClose={() => setShowSearch(false)}
+        onSelect={(result) => {
+          if (result.url) {
+            navigate(result.url);
+          }
+        }}
+      />
     </div>
     </ContextualTipsProvider>
   );

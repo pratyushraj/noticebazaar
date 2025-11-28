@@ -9,12 +9,14 @@ import { SegmentedControl } from '@/components/ui/segmented-control';
 import { ContextualTipsProvider } from '@/components/contextual-tips/ContextualTipsProvider';
 import { FilteredNoMatchesEmptyState, NoPaymentsEmptyState, SearchNoResultsEmptyState } from '@/components/empty-states/PreconfiguredEmptyStates';
 import { useNavigate } from 'react-router-dom';
+import { PaymentRequestFlow } from '@/components/payments/PaymentRequestFlow';
 
 const CreatorPaymentsAndRecovery = () => {
   const navigate = useNavigate();
   const { profile } = useSession();
   const [activeFilter, setActiveFilter] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const [showPaymentRequest, setShowPaymentRequest] = useState(false);
   
   // Fetch real brand deals data
   const { data: brandDeals = [] } = useBrandDeals({
@@ -22,95 +24,67 @@ const CreatorPaymentsAndRecovery = () => {
     enabled: !!profile?.id,
   });
 
-  const stats = {
-    totalReceived: 285700,
-    pending: 145000,
-    thisMonth: 285700,
-    nextPayout: 20000,
-    payoutDate: "Dec 1, 2024"
-  };
-
-  const transactions = [
-    {
-      id: 1,
-      title: "Fashion Nova Campaign",
-      brand: "Fashion Nova",
-      amount: 85000,
-      type: "received",
-      status: "completed",
-      date: "Nov 22, 2024",
-      method: "Bank Transfer",
-      invoice: "INV-2024-1122",
-      platform: "Instagram",
-      tax: 15300
-    },
-    {
-      id: 2,
-      title: "YouTube Partner Revenue",
-      brand: "YouTube",
-      amount: 120000,
-      type: "received",
-      status: "completed",
-      date: "Nov 15, 2024",
-      method: "Direct Deposit",
-      invoice: "INV-2024-1115",
-      platform: "YouTube",
-      tax: 21600
-    },
-    {
-      id: 3,
-      title: "TechGear Pro Sponsorship",
-      brand: "TechGear",
-      amount: 75000,
-      type: "pending",
-      status: "pending",
-      date: "Expected: Nov 30",
-      method: "Bank Transfer",
-      invoice: "INV-2024-1130",
-      platform: "YouTube",
-      tax: 13500
-    },
-    {
-      id: 4,
-      title: "SkillShare Affiliate",
-      brand: "SkillShare",
-      amount: 45000,
-      type: "pending",
-      status: "processing",
-      date: "Expected: Dec 5",
-      method: "PayPal",
-      invoice: "INV-2024-1205",
-      platform: "YouTube",
-      tax: 8100
-    },
-    {
-      id: 5,
-      title: "Coffee Brand Collaboration",
-      brand: "BrewMasters",
-      amount: 5700,
-      type: "expense",
-      status: "completed",
-      date: "Nov 18, 2024",
-      method: "Credit Card",
-      invoice: "EXP-2024-1118",
-      platform: "Production",
-      tax: 0,
-      category: "Equipment"
-    },
-    {
-      id: 6,
-      title: "Instagram Brand Deal",
-      brand: "StyleHub",
-      amount: 25000,
-      type: "pending",
-      status: "pending",
-      date: "Expected: Dec 10",
-      method: "Bank Transfer",
-      invoice: "INV-2024-1210",
-      platform: "Instagram",
-      tax: 4500
-    }
-  ];
+  // Calculate stats from real brand deals data
+  const stats = useMemo(() => {
+    const now = new Date();
+    const currentMonth = now.getMonth();
+    const currentYear = now.getFullYear();
+    
+    // Calculate this month's earnings
+    const thisMonthEarnings = brandDeals
+      .filter(deal => {
+        if (!deal.payment_received_date) return false;
+        const date = new Date(deal.payment_received_date);
+        return date.getMonth() === currentMonth && date.getFullYear() === currentYear;
+      })
+      .reduce((sum, deal) => sum + (deal.deal_amount || 0), 0);
+    
+    // Calculate last month's earnings for growth
+    const lastMonth = currentMonth === 0 ? 11 : currentMonth - 1;
+    const lastMonthYear = currentMonth === 0 ? currentYear - 1 : currentYear;
+    const lastMonthEarnings = brandDeals
+      .filter(deal => {
+        if (!deal.payment_received_date) return false;
+        const date = new Date(deal.payment_received_date);
+        return date.getMonth() === lastMonth && date.getFullYear() === lastMonthYear;
+      })
+      .reduce((sum, deal) => sum + (deal.deal_amount || 0), 0);
+    
+    // Calculate total received (all time)
+    const totalReceived = brandDeals
+      .filter(deal => deal.payment_received_date)
+      .reduce((sum, deal) => sum + (deal.deal_amount || 0), 0);
+    
+    // Calculate pending payments
+    const pending = brandDeals
+      .filter(deal => deal.status === 'Payment Pending' && !deal.payment_received_date)
+      .reduce((sum, deal) => sum + (deal.deal_amount || 0), 0);
+    
+    // Get next payout (earliest pending payment)
+    const nextPayoutDeal = brandDeals
+      .filter(deal => deal.status === 'Payment Pending' && deal.payment_expected_date)
+      .sort((a, b) => {
+        const dateA = new Date(a.payment_expected_date!).getTime();
+        const dateB = new Date(b.payment_expected_date!).getTime();
+        return dateA - dateB;
+      })[0];
+    
+    // Calculate growth percentage
+    const growthPercentage = lastMonthEarnings > 0 
+      ? ((thisMonthEarnings - lastMonthEarnings) / lastMonthEarnings) * 100 
+      : thisMonthEarnings > 0 ? 100 : 0;
+    
+    return {
+      totalReceived,
+      pending,
+      thisMonth: thisMonthEarnings,
+      nextPayout: nextPayoutDeal?.deal_amount || 0,
+      payoutDate: nextPayoutDeal?.payment_expected_date 
+        ? new Date(nextPayoutDeal.payment_expected_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+        : 'TBD',
+      growthPercentage
+    };
+  }, [brandDeals]);
 
   type TransactionStatus = 'completed' | 'pending' | 'processing' | 'failed';
   
@@ -130,7 +104,8 @@ const CreatorPaymentsAndRecovery = () => {
 
   // Transform brand deals to transactions
   const allTransactions = useMemo(() => {
-    const dealTransactions = brandDeals
+    // Only use real data from brand deals (no demo data)
+    return brandDeals
       .filter(deal => deal.payment_received_date || deal.status === 'Payment Pending')
       .map(deal => ({
         id: deal.id,
@@ -149,9 +124,6 @@ const CreatorPaymentsAndRecovery = () => {
         platform: deal.platform || 'Multiple',
         tax: Math.round((deal.deal_amount || 0) * 0.18) // 18% GST estimate
       }));
-
-    // Combine with demo expense transactions
-    return [...dealTransactions, ...transactions.filter(t => t.type === 'expense')];
   }, [brandDeals]);
 
   const filteredTransactions = useMemo(() => {
@@ -211,12 +183,21 @@ const CreatorPaymentsAndRecovery = () => {
         </div>
         
         <div className="mb-4">
-          <div className="text-4xl font-bold mb-1">₹{(totalReceived / 1000).toFixed(1)}K</div>
+          <div className="text-4xl font-bold mb-1">₹{(stats.thisMonth / 1000).toFixed(1)}K</div>
           <div className="flex items-center gap-2 text-sm">
-            <span className="text-green-400 flex items-center gap-1">
-              <TrendingUp className="w-4 h-4" />
-              +12% from last month
-            </span>
+            {stats.growthPercentage > 0 ? (
+              <span className="text-green-400 flex items-center gap-1">
+                <TrendingUp className="w-4 h-4" />
+                +{stats.growthPercentage.toFixed(0)}% from last month
+              </span>
+            ) : stats.growthPercentage < 0 ? (
+              <span className="text-red-400 flex items-center gap-1">
+                <TrendingUp className="w-4 h-4 rotate-180" />
+                {stats.growthPercentage.toFixed(0)}% from last month
+              </span>
+            ) : (
+              <span className="text-purple-300 text-sm">No change from last month</span>
+            )}
           </div>
         </div>
 
@@ -236,7 +217,7 @@ const CreatorPaymentsAndRecovery = () => {
       {/* Quick Actions */}
       <div className="grid grid-cols-3 gap-3 mb-6">
         <button 
-          onClick={() => toast.info('Request payment functionality coming soon!')}
+          onClick={() => setShowPaymentRequest(true)}
           className="bg-white/[0.08] backdrop-blur-[40px] saturate-[180%] rounded-[20px] p-4 border border-white/15 shadow-[0_4px_16px_rgba(0,0,0,0.2)] hover:bg-white/[0.12] hover:shadow-[0_6px_20px_rgba(0,0,0,0.3)] transition-all duration-200 active:scale-95"
         >
           <div className="bg-green-500/20 w-10 h-10 rounded-full flex items-center justify-center mb-2 mx-auto">
@@ -296,13 +277,14 @@ const CreatorPaymentsAndRecovery = () => {
       </div>
 
       {/* Transactions List */}
-      <div className="space-y-3">
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="font-semibold text-lg">Recent Transactions</h2>
-          <button className="text-sm text-purple-300 hover:text-white transition-colors">View All</button>
-        </div>
+      {filteredTransactions.length > 0 && (
+        <div className="space-y-3">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="font-semibold text-lg">Recent Transactions</h2>
+            <button className="text-sm text-purple-300 hover:text-white transition-colors">View All</button>
+          </div>
 
-        {filteredTransactions.map(transaction => {
+          {filteredTransactions.map(transaction => {
           const StatusIcon = statusConfig[transaction.status as TransactionStatus].icon;
           
           return (
@@ -378,8 +360,9 @@ const CreatorPaymentsAndRecovery = () => {
               </div>
             </div>
           );
-        })}
-      </div>
+          })}
+        </div>
+      )}
 
       {/* Empty State */}
       {filteredTransactions.length === 0 && (

@@ -70,6 +70,8 @@ import InsightsPage from "./pages/InsightsPage";
 import ContractUploadFlow from "./pages/ContractUploadFlow";
 import ContractComparison from "./pages/ContractComparison";
 import MaintenancePage from "./pages/MaintenancePage";
+import SearchResults from "./pages/SearchResults";
+import CalendarPage from "./pages/CalendarPage";
 import { ErrorBoundary } from "./components/ui/error-boundary";
 import NetworkStatusWrapper from "./components/NetworkStatusWrapper";
 
@@ -175,7 +177,9 @@ const App = () => {
               <Route path="/creator-dashboard" element={<ProtectedLayout allowedRoles={['creator']}><CreatorDashboard /></ProtectedLayout>} /> {/* New: Creator Dashboard Route */}
               <Route path="/creator-profile" element={<ProtectedLayout allowedRoles={['creator']}><CreatorProfile /></ProtectedLayout>} />
                   <Route path="/creator-analytics" element={<ProtectedLayout allowedRoles={['creator']}><CreatorAnalytics /></ProtectedLayout>} />
-                  <Route path="/notifications" element={<ProtectedLayout allowedRoles={['creator']}><NotificationCenter /></ProtectedLayout>} />
+                  <Route path="/notifications" element={<ProtectedLayout allowedRoles={['client', 'admin', 'chartered_accountant', 'creator']}><NotificationCenter /></ProtectedLayout>} />
+                  <Route path="/search" element={<ProtectedLayout allowedRoles={['client', 'admin', 'chartered_accountant', 'creator']}><SearchResults /></ProtectedLayout>} />
+                  <Route path="/calendar" element={<ProtectedLayout allowedRoles={['creator']}><CalendarPage /></ProtectedLayout>} />
                   <Route path="/partner-program" element={<ProtectedLayout allowedRoles={['creator']}><PartnerProgram /></ProtectedLayout>} />
               {/* NEW: Creator-specific pages */}
               <Route path="/creator-contracts" element={<ProtectedLayout allowedRoles={['creator']}><CreatorContracts /></ProtectedLayout>} />

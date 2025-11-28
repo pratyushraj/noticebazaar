@@ -203,11 +203,19 @@ export const useBrandDeals = (options: UseBrandDealsOptions) => {
         return [];
       }
 
-      // If no data and no error, return demo data for preview/demo purposes
-      // Also return demo data if there are fewer than 6 deals (for demo/preview purposes)
-      if (creatorId && (!data || data.length < 6)) {
-        // Return demo data when table is empty or has fewer than expected deals
-        // This provides a full preview experience for onboarding/demo
+      // Only return demo data in preview/demo mode (not for real users)
+      const isPreviewMode = typeof window !== 'undefined' && (
+        window.location.pathname.includes('/dashboard-preview') ||
+        window.location.pathname.includes('/dashboard-white-preview')
+      );
+
+      // For real users with no data, return empty array (shows empty state)
+      if (!isPreviewMode && (!data || data.length === 0)) {
+        return [];
+      }
+
+      // Only use demo data in preview mode
+      if (isPreviewMode && creatorId && (!data || data.length < 6)) {
         return getDemoBrandDeals(creatorId);
       }
 

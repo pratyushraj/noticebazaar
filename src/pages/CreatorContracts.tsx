@@ -23,58 +23,9 @@ const CreatorContracts = () => {
 
   // Transform brand deals to match UI format
   const deals = useMemo(() => {
+    // Return empty array for new users (empty state will handle it)
     if (!brandDeals.length) {
-      // Return demo data if no real data
-      return [
-        {
-          id: 1,
-          title: "TechGear Pro Sponsorship",
-          brand: "TechGear",
-          value: 150000,
-          status: "negotiation",
-          progress: 60,
-          deadline: "Dec 15, 2024",
-          platform: "YouTube",
-          type: "Sponsored Video",
-          nextStep: "Review contract terms"
-        },
-        {
-          id: 2,
-          title: "Fashion Nova Campaign",
-          brand: "Fashion Nova",
-          value: 85000,
-          status: "active",
-          progress: 100,
-          deadline: "Jan 10, 2025",
-          platform: "Instagram",
-          type: "Brand Partnership",
-          nextStep: "Create content"
-        },
-        {
-          id: 3,
-          title: "SkillShare Course Promo",
-          brand: "SkillShare",
-          value: 45000,
-          status: "pending",
-          progress: 30,
-          deadline: "Nov 30, 2024",
-          platform: "YouTube",
-          type: "Affiliate Deal",
-          nextStep: "Awaiting brand approval"
-        },
-        {
-          id: 4,
-          title: "Coffee Brand Collab",
-          brand: "BrewMasters",
-          value: 120000,
-          status: "completed",
-          progress: 100,
-          deadline: "Nov 20, 2024",
-          platform: "Instagram + YouTube",
-          type: "Product Review",
-          nextStep: "Payment processing"
-        }
-      ];
+      return [];
     }
 
     return brandDeals.map(deal => {
@@ -118,11 +69,11 @@ const CreatorContracts = () => {
 
   // Calculate stats from real data
   const stats = useMemo(() => {
-    const total = brandDeals.length || 12;
-    const active = brandDeals.filter(d => d.status !== 'Completed' && d.status !== 'Drafting').length || 3;
-    const pending = brandDeals.filter(d => d.status === 'Drafting' || !d.status).length || 4;
-    const completed = brandDeals.filter(d => d.status === 'Completed').length || 5;
-    const totalValue = brandDeals.reduce((sum, d) => sum + (d.deal_amount || 0), 0) || 850000;
+    const total = brandDeals.length;
+    const active = brandDeals.filter(d => d.status !== 'Completed' && d.status !== 'Drafting').length;
+    const pending = brandDeals.filter(d => d.status === 'Drafting' || !d.status).length;
+    const completed = brandDeals.filter(d => d.status === 'Completed').length;
+    const totalValue = brandDeals.reduce((sum, d) => sum + (d.deal_amount || 0), 0);
     
     // Calculate this month's deals
     const now = new Date();
@@ -130,7 +81,7 @@ const CreatorContracts = () => {
       if (!d.created_at) return false;
       const created = new Date(d.created_at);
       return created.getMonth() === now.getMonth() && created.getFullYear() === now.getFullYear();
-    }).length || 3;
+    }).length;
 
     return {
       total,
