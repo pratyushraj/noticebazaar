@@ -2,9 +2,8 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, ArrowRight, ArrowLeft, Sparkles, Upload, Home, Briefcase, CreditCard, Shield, MessageCircle } from 'lucide-react';
+import { Sparkles } from 'lucide-react';
 import { useSession } from '@/contexts/SessionContext';
-import { useNavigate } from 'react-router-dom';
 import { analytics } from '@/utils/analytics';
 import { useBrandDeals } from '@/lib/hooks/useBrandDeals';
 
@@ -26,8 +25,7 @@ interface DashboardTutorialProps {
 }
 
 const DashboardTutorial: React.FC<DashboardTutorialProps> = ({ onComplete, onSkip }) => {
-  const { profile, user } = useSession();
-  const navigate = useNavigate();
+  const { profile } = useSession();
   const [currentStep, setCurrentStep] = useState(0);
   const [showTutorial, setShowTutorial] = useState(true);
   const [startTime] = useState(Date.now());
@@ -322,6 +320,7 @@ const DashboardTutorial: React.FC<DashboardTutorialProps> = ({ onComplete, onSki
   if (!showTutorial) return null;
 
   const step = tutorialSteps[currentStep];
+  const progressPercentage = ((currentStep + 1) / tutorialSteps.length) * 100;
 
   return (
     <>
@@ -334,98 +333,136 @@ const DashboardTutorial: React.FC<DashboardTutorialProps> = ({ onComplete, onSki
       />
 
       {/* Tutorial Tooltip */}
-      <motion.div
-        initial={{ opacity: 0, scale: 0.9, y: 20 }}
-        animate={{ opacity: 1, scale: 1, y: 0 }}
-        exit={{ opacity: 0, scale: 0.9, y: 20 }}
-        transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-        className={`fixed z-[9999] ${
-          step.position === 'center'
-            ? 'top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2'
-            : step.position === 'top'
-            ? 'top-1/4 left-1/2 -translate-x-1/2'
-            : 'bottom-32 left-1/2 -translate-x-1/2'
-        }`}
-      >
-        <div className="relative max-w-lg mx-4">
-          {/* Pointer Arrow */}
-          {step.pointer === 'top' && (
-            <div className="absolute -top-3 left-1/2 -translate-x-1/2 w-0 h-0 border-l-8 border-r-8 border-b-8 border-l-transparent border-r-transparent border-b-purple-600"></div>
-          )}
-          {step.pointer === 'bottom' && (
-            <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 w-0 h-0 border-l-8 border-r-8 border-t-8 border-l-transparent border-r-transparent border-t-purple-600"></div>
-          )}
-
-          {/* Tooltip Card */}
-          <div className="bg-gradient-to-br from-purple-600 to-indigo-600 rounded-2xl p-8 shadow-2xl border border-purple-400 relative">
-            {/* Celebration Sparkle */}
-            {step.celebration && (
-              <motion.div
-                initial={{ scale: 0, rotate: -180 }}
-                animate={{ scale: 1, rotate: 0 }}
-                transition={{ type: 'spring', stiffness: 200, damping: 15 }}
-                className="absolute -top-4 -right-4 w-16 h-16 bg-gradient-to-br from-yellow-400 to-orange-400 rounded-full flex items-center justify-center shadow-lg"
-              >
-                <Sparkles className="w-8 h-8 text-white" />
-              </motion.div>
-            )}
-
-            {/* Header */}
-            <div className="flex items-start justify-between mb-4">
-              <h3 className="text-2xl font-bold pr-8 text-white">{step.title}</h3>
-              <button
-                onClick={handleSkip}
-                className="p-1 hover:bg-white/20 rounded-lg transition-colors flex-shrink-0"
-                aria-label="Skip tutorial"
-              >
-                <X className="w-5 h-5 text-white" />
-              </button>
-            </div>
-
-            {/* Description */}
-            <p className="text-lg text-purple-100 leading-relaxed mb-4">{step.description}</p>
-
-            {/* Progress Dots */}
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex gap-1">
-                {tutorialSteps.map((_, index) => (
-                  <div
-                    key={index}
-                    className={`h-1 rounded-full transition-all ${
-                      index === currentStep ? 'w-8 bg-white' : 'w-1 bg-white/30'
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={currentStep}
+          initial={{ opacity: 0, scale: 0.95, y: 10 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          exit={{ opacity: 0, scale: 0.95, y: -10 }}
+          transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+          className={`fixed z-[9999] ${
+            step.position === 'center'
+              ? 'top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2'
+              : step.position === 'top'
+              ? 'top-1/4 left-1/2 -translate-x-1/2'
+              : 'bottom-32 left-1/2 -translate-x-1/2'
+          }`}
+        >
+          <div className="relative w-[88%] max-w-[340px] mx-auto">
+            {/* Glassmorphic Card */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+              className="relative rounded-[26px] p-6 pb-5 bg-white/12 backdrop-blur-xl border border-white/15 shadow-[0px_16px_40px_rgba(0,0,0,0.35)] text-white"
+            >
+              {/* Center Arrow */}
+              {step.pointer && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 0.2 }}
+                  className={`absolute left-1/2 -translate-x-1/2 ${
+                    step.pointer === 'top' ? '-top-3' : '-bottom-3'
+                  }`}
+                >
+                  <motion.div
+                    animate={{
+                      scale: [1, 1.1, 1],
+                    }}
+                    transition={{
+                      duration: 2,
+                      repeat: Infinity,
+                      ease: 'easeInOut',
+                    }}
+                    className={`w-0 h-0 backdrop-blur-xl ${
+                      step.pointer === 'top'
+                        ? 'border-l-[12px] border-l-transparent border-r-[12px] border-r-transparent border-b-[12px] border-b-white/20'
+                        : 'border-l-[12px] border-l-transparent border-r-[12px] border-r-transparent border-t-[12px] border-t-white/20'
                     }`}
                   />
-                ))}
-              </div>
-              <span className="text-sm text-purple-200">
-                {currentStep + 1} of {tutorialSteps.length}
-              </span>
-            </div>
-
-            {/* Actions */}
-            <div className="flex gap-3">
-              {currentStep > 0 && (
-                <button
-                  onClick={handlePrevious}
-                  className="flex-1 bg-white/20 hover:bg-white/30 font-semibold py-3 rounded-xl transition-colors text-white"
-                >
-                  <ArrowLeft className="w-4 h-4 inline mr-2" />
-                  Back
-                </button>
+                </motion.div>
               )}
-              <button
-                onClick={step.interactive ? handleInteractiveClick : handleNext}
-                className="flex-1 bg-white hover:bg-purple-50 text-purple-600 font-semibold py-3 rounded-xl transition-colors flex items-center justify-center gap-2"
-              >
-                {step.action || (currentStep === tutorialSteps.length - 1 ? 'Finish' : 'Next')}
-                {currentStep < tutorialSteps.length - 1 && !step.action && (
-                  <ArrowRight className="w-5 h-5" />
+
+              {/* Celebration Sparkle */}
+              {step.celebration && (
+                <motion.div
+                  initial={{ scale: 0, rotate: -180 }}
+                  animate={{ scale: 1, rotate: 0 }}
+                  transition={{ type: 'spring', stiffness: 200, damping: 15 }}
+                  className="absolute -top-4 -right-4 w-16 h-16 bg-gradient-to-br from-yellow-400 to-orange-400 rounded-full flex items-center justify-center shadow-lg"
+                >
+                  <Sparkles className="w-8 h-8 text-white" />
+                </motion.div>
+              )}
+
+              {/* Header row */}
+              <div className="flex items-start justify-between mb-3">
+                <h2 className="text-[22px] font-semibold leading-tight">
+                  {step.title}
+                </h2>
+                <button
+                  onClick={handleNext}
+                  className="text-white/70 hover:text-white transition active:scale-95"
+                  aria-label="Skip this step"
+                >
+                  ✕
+                </button>
+              </div>
+
+              {/* Description */}
+              <p className="text-[15px] text-white/80 leading-relaxed mb-6">
+                {step.description}
+              </p>
+
+              {/* Progress */}
+              <div className="w-full mb-1">
+                <div className="w-full h-[6px] bg-white/10 rounded-full overflow-hidden">
+                  <motion.div
+                    initial={{ width: 0 }}
+                    animate={{ width: `${progressPercentage}%` }}
+                    transition={{ duration: 0.3, ease: 'easeOut' }}
+                    className="h-full rounded-full bg-gradient-to-r from-purple-400 to-blue-400"
+                  />
+                </div>
+              </div>
+
+              <div className="text-center text-sm text-white/60 mb-4">
+                {currentStep + 1} / {tutorialSteps.length}
+              </div>
+
+              {/* Buttons */}
+              <div className="flex items-center justify-between">
+                {currentStep > 0 ? (
+                  <button
+                    onClick={handlePrevious}
+                    className="px-5 py-2.5 rounded-full bg-white/10 border border-white/20 text-white/80 flex items-center gap-2 text-[15px] active:scale-95 transition"
+                  >
+                    <span className="text-lg">←</span> Back
+                  </button>
+                ) : (
+                  <button
+                    onClick={handleNext}
+                    className="px-5 py-2.5 rounded-full bg-white/10 border border-white/20 text-white/80 flex items-center gap-2 text-[15px] active:scale-95 transition"
+                  >
+                    Later
+                  </button>
                 )}
-              </button>
-            </div>
+
+                <button
+                  onClick={step.interactive ? handleInteractiveClick : handleNext}
+                  className="px-6 py-2.5 rounded-full bg-gradient-to-r from-purple-500 to-blue-500 shadow-[0_4px_14px_rgba(0,0,0,0.3)] text-white font-medium flex items-center gap-2 text-[15px] active:scale-95 transition"
+                >
+                  {step.action || (currentStep === tutorialSteps.length - 1 ? 'Finish' : 'Next')}
+                  {currentStep < tutorialSteps.length - 1 && !step.action && (
+                    <span className="text-lg">→</span>
+                  )}
+                </button>
+              </div>
+            </motion.div>
           </div>
-        </div>
-      </motion.div>
+        </motion.div>
+      </AnimatePresence>
 
       {/* Confetti Animation (Final Step) */}
       {step.celebration && (
@@ -463,4 +500,3 @@ const DashboardTutorial: React.FC<DashboardTutorialProps> = ({ onComplete, onSki
 };
 
 export default DashboardTutorial;
-
