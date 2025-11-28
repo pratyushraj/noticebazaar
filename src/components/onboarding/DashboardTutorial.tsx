@@ -347,7 +347,7 @@ const DashboardTutorial: React.FC<DashboardTutorialProps> = ({ onComplete, onSki
             : 'bottom-32 left-1/2 -translate-x-1/2'
         }`}
       >
-        <div className="relative max-w-sm mx-4">
+        <div className="relative max-w-lg mx-4">
           {/* Pointer Arrow */}
           {step.pointer === 'top' && (
             <div className="absolute -top-3 left-1/2 -translate-x-1/2 w-0 h-0 border-l-8 border-r-8 border-b-8 border-l-transparent border-r-transparent border-b-purple-600"></div>
@@ -357,7 +357,7 @@ const DashboardTutorial: React.FC<DashboardTutorialProps> = ({ onComplete, onSki
           )}
 
           {/* Tooltip Card */}
-          <div className="bg-gradient-to-br from-purple-600 to-indigo-600 rounded-2xl p-6 shadow-2xl border border-purple-400 relative">
+          <div className="bg-gradient-to-br from-purple-600 to-indigo-600 rounded-2xl p-8 shadow-2xl border border-purple-400 relative">
             {/* Celebration Sparkle */}
             {step.celebration && (
               <motion.div
@@ -371,8 +371,8 @@ const DashboardTutorial: React.FC<DashboardTutorialProps> = ({ onComplete, onSki
             )}
 
             {/* Header */}
-            <div className="flex items-start justify-between mb-3">
-              <h3 className="text-xl font-bold pr-8 text-white">{step.title}</h3>
+            <div className="flex items-start justify-between mb-4">
+              <h3 className="text-2xl font-bold pr-8 text-white">{step.title}</h3>
               <button
                 onClick={handleSkip}
                 className="p-1 hover:bg-white/20 rounded-lg transition-colors flex-shrink-0"
@@ -383,7 +383,7 @@ const DashboardTutorial: React.FC<DashboardTutorialProps> = ({ onComplete, onSki
             </div>
 
             {/* Description */}
-            <p className="text-purple-100 leading-relaxed mb-4">{step.description}</p>
+            <p className="text-lg text-purple-100 leading-relaxed mb-4">{step.description}</p>
 
             {/* Progress Dots */}
             <div className="flex items-center justify-between mb-4">
