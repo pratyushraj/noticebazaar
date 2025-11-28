@@ -4,6 +4,7 @@ import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { FilteredNoMatchesEmptyState, SearchNoResultsEmptyState } from '@/components/empty-states/PreconfiguredEmptyStates';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -454,24 +455,35 @@ const BrandDirectory = () => {
 
       {/* Empty State */}
       {filteredBrands.length === 0 && (
-        <div className="text-center py-12">
-          <Search className="w-16 h-16 text-muted-foreground mx-auto mb-4 opacity-50" />
-          <h3 className="text-xl font-bold text-foreground mb-2">No brands found</h3>
-          <p className="text-sm text-muted-foreground mb-6">
-            Try adjusting your search or filters
-          </p>
-          <Button
-            variant="outline"
-            onClick={() => {
-              setIndustryFilter('all');
-              setRatingFilter('all');
-              setPaymentFilter('all');
-              setBookmarkedOnly(false);
-              setSearchTerm('');
-            }}
-          >
-            Clear All Filters
-          </Button>
+        <div className="py-8">
+          {searchTerm ? (
+            <SearchNoResultsEmptyState
+              searchTerm={searchTerm}
+              onClearFilters={() => {
+                setIndustryFilter('all');
+                setRatingFilter('all');
+                setPaymentFilter('all');
+                setBookmarkedOnly(false);
+                setSearchTerm('');
+              }}
+            />
+          ) : (
+            <FilteredNoMatchesEmptyState
+              onClearFilters={() => {
+                setIndustryFilter('all');
+                setRatingFilter('all');
+                setPaymentFilter('all');
+                setBookmarkedOnly(false);
+                setSearchTerm('');
+              }}
+              filterCount={
+                (industryFilter !== 'all' ? 1 : 0) +
+                (ratingFilter !== 'all' ? 1 : 0) +
+                (paymentFilter !== 'all' ? 1 : 0) +
+                (bookmarkedOnly ? 1 : 0)
+              }
+            />
+          )}
         </div>
       )}
     </div>

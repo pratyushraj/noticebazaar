@@ -8,6 +8,7 @@ import { useBrandDeals } from '@/lib/hooks/useBrandDeals';
 import { SegmentedControl } from '@/components/ui/segmented-control';
 import { motion } from 'framer-motion';
 import { ContextualTipsProvider } from '@/components/contextual-tips/ContextualTipsProvider';
+import { FilteredNoMatchesEmptyState, NoDealsEmptyState } from '@/components/empty-states/PreconfiguredEmptyStates';
 
 const CreatorContracts = () => {
   const navigate = useNavigate();
@@ -282,12 +283,20 @@ const CreatorContracts = () => {
         })}
       </div>
 
-      {/* Empty State (shown when no deals match filter) */}
+      {/* Empty State */}
       {filteredDeals.length === 0 && (
-        <div className="text-center py-12">
-          <Briefcase className="w-16 h-16 text-purple-300 mx-auto mb-4 opacity-50" />
-          <h3 className="text-xl font-semibold mb-2">No deals found</h3>
-          <p className="text-purple-200 mb-4">Try adjusting your filters</p>
+        <div className="py-8">
+          {deals.length === 0 ? (
+            <NoDealsEmptyState
+              onAddDeal={() => navigate('/contract-upload')}
+              onExploreBrands={() => navigate('/brand-directory')}
+            />
+          ) : (
+            <FilteredNoMatchesEmptyState
+              onClearFilters={() => setActiveFilter('all')}
+              filterCount={activeFilter !== 'all' ? 1 : 0}
+            />
+          )}
         </div>
       )}
 

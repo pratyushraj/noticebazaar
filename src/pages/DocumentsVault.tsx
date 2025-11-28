@@ -344,24 +344,30 @@ const DocumentsVault: React.FC = () => {
 
           {/* Documents Grid */}
           {filteredDocuments.length === 0 ? (
-            <Card className="bg-[#0F121A]/50 border-white/10">
-              <CardContent className="p-12 text-center">
-                <FolderOpen className="w-16 h-16 text-white/20 mx-auto mb-4" />
-                <h3 className="text-lg font-semibold text-white mb-2">No documents found</h3>
-                <p className="text-sm text-white/60 mb-4">
-                  {searchTerm || selectedCategory !== 'All' || selectedTag !== 'All'
-                    ? 'Try adjusting your filters'
-                    : 'Upload your first document to get started'}
-                </p>
-                <Button
-                  onClick={() => setIsUploadOpen(true)}
-                  className="bg-blue-600 hover:bg-blue-700 text-white"
-                >
-                  <Upload className="w-4 h-4 mr-2" />
-                  Upload Document
-                </Button>
-              </CardContent>
-            </Card>
+            <div className="py-8">
+              {documents.length === 0 ? (
+                <NoContractsEmptyState
+                  onUpload={() => setIsUploadOpen(true)}
+                />
+              ) : searchTerm ? (
+                <SearchNoResultsEmptyState
+                  searchTerm={searchTerm}
+                  onClearFilters={() => setSearchTerm('')}
+                />
+              ) : (
+                <FilteredNoMatchesEmptyState
+                  onClearFilters={() => {
+                    setSelectedCategory('All');
+                    setSelectedTag('All');
+                    setSearchTerm('');
+                  }}
+                  filterCount={
+                    (selectedCategory !== 'All' ? 1 : 0) +
+                    (selectedTag !== 'All' ? 1 : 0)
+                  }
+                />
+              )}
+            </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {filteredDocuments.map((doc, index) => {

@@ -7,8 +7,11 @@ import { useBrandDeals } from '@/lib/hooks/useBrandDeals';
 import { toast } from 'sonner';
 import { SegmentedControl } from '@/components/ui/segmented-control';
 import { ContextualTipsProvider } from '@/components/contextual-tips/ContextualTipsProvider';
+import { FilteredNoMatchesEmptyState, NoPaymentsEmptyState, SearchNoResultsEmptyState } from '@/components/empty-states/PreconfiguredEmptyStates';
+import { useNavigate } from 'react-router-dom';
 
 const CreatorPaymentsAndRecovery = () => {
+  const navigate = useNavigate();
   const { profile } = useSession();
   const [activeFilter, setActiveFilter] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
@@ -380,10 +383,25 @@ const CreatorPaymentsAndRecovery = () => {
 
       {/* Empty State */}
       {filteredTransactions.length === 0 && (
-        <div className="text-center py-12">
-          <Wallet className="w-16 h-16 text-purple-300 mx-auto mb-4 opacity-50" />
-          <h3 className="text-xl font-semibold mb-2">No transactions found</h3>
-          <p className="text-purple-200 mb-4">Try adjusting your filters</p>
+        <div className="py-8">
+          {allTransactions.length === 0 ? (
+            <NoPaymentsEmptyState
+              onAddDeal={() => navigate('/contract-upload')}
+            />
+          ) : searchQuery ? (
+            <SearchNoResultsEmptyState
+              searchTerm={searchQuery}
+              onClearFilters={() => setSearchQuery('')}
+            />
+          ) : (
+            <FilteredNoMatchesEmptyState
+              onClearFilters={() => {
+                setActiveFilter('all');
+                setSearchQuery('');
+              }}
+              filterCount={activeFilter !== 'all' ? 1 : 0}
+            />
+          )}
         </div>
       )}
     </div>

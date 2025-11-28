@@ -21,6 +21,7 @@ import { useCometChat } from '@/lib/cometchat/useCometChat';
 import { COMETCHAT_CONFIG } from '@/lib/cometchat/config';
 import { AdvisorModeSwitch } from '@/components/AdvisorModeSwitch';
 import { ContextualTipsProvider } from '@/components/contextual-tips/ContextualTipsProvider';
+import { NoMessagesEmptyState } from '@/components/empty-states/PreconfiguredEmptyStates';
 
 // --- Types (local to this file) ---
 type Advisor = {
@@ -418,46 +419,13 @@ function ChatWindowScoped({
       <div className="flex-1 overflow-y-auto min-h-0">
         <div className="p-4 md:p-6 lg:p-8">
           {!hasMessages ? (
-            <div className="flex flex-col items-center justify-center text-center gap-4">
-              {/* Cute illustration */}
-              <div className="w-16 h-16 md:w-24 md:h-24 rounded-full bg-gradient-to-br from-purple-500/20 to-blue-500/20 backdrop-blur-[20px] saturate-[150%] flex items-center justify-center border border-white/20 shadow-[0_4px_16px_rgba(0,0,0,0.2)]">
-                <MessageSquare size={32} className="md:w-12 md:h-12 text-white/80" />
-              </div>
-              
-              <div className="space-y-1 md:space-y-1.5">
-                <div className="text-[17px] md:text-[20px] font-semibold text-white">Start Secure Conversation</div>
-                <div className="text-[13px] md:text-[15px] text-white/70 leading-relaxed">Begin chatting with your advisor</div>
-              </div>
-              
-              <button
-                onClick={() => {
-                  toast.info('Upload contract feature coming soon');
-                }}
-                className="w-full flex items-center justify-center gap-2 px-4 md:px-5 py-3 rounded-[20px] bg-gradient-to-br from-purple-500/15 to-purple-600/10 border border-purple-400/30 hover:from-purple-500/25 hover:to-purple-600/15 hover:border-purple-400/40 transition-all text-[15px] md:text-[17px] font-semibold text-white shadow-[0_4px_12px_rgba(168,85,247,0.2)] active:scale-95"
-              >
-                <FileText className="w-3.5 h-3.5 md:w-4 md:h-4" />
-                Upload a Contract
-              </button>
-              
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 justify-center mt-4 w-full">
-                {[
-                  { label: 'Contract Review', icon: '📄' },
-                  { label: 'Payment Questions', icon: '💰' },
-                  { label: 'Legal Advice', icon: '⚖️' },
-                  { label: 'Tax Compliance', icon: '📊' },
-                ].map((topic) => (
-                  <button
-                    key={topic.label}
-                    onClick={() => onSend?.(`I need help with ${topic.label.toLowerCase()}`)}
-                    className="w-full flex items-center gap-3 md:gap-4 px-4 md:px-5 py-3 rounded-[20px] bg-white/[0.08] backdrop-blur-[30px] saturate-[150%] border border-white/15 hover:bg-white/[0.12] hover:border-white/25 transition-all text-left active:scale-[0.97] shadow-[0_2px_8px_rgba(0,0,0,0.15)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.2)]"
-                  >
-                    <span className="text-base md:text-xl">{topic.icon}</span>
-                    <span className="text-xs md:text-sm font-medium text-white flex-1">{topic.label}</span>
-                    <ChevronRight className="w-3.5 h-3.5 md:w-4 md:h-4 text-white/40" />
-                  </button>
-                ))}
-              </div>
-            </div>
+            <NoMessagesEmptyState
+              onStartChat={() => onSend?.('Hello! I need help.')}
+              onUploadContract={() => {
+                toast.info('Upload contract feature coming soon');
+                navigate('/contract-upload');
+              }}
+            />
           ) : (
             <div className="space-y-4">
               {messages!.map((m) => (
