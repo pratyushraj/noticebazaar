@@ -34,7 +34,7 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
       // Use type assertion to avoid TypeScript errors with dynamic column selection
       let { data, error } = await (supabase
         .from('profiles')
-        .select('id, first_name, last_name, avatar_url, role, updated_at, business_name, gstin, business_entity_type, onboarding_complete, organization_id, is_trial, trial_started_at, trial_expires_at, trial_locked, bank_account_name, bank_account_number, bank_ifsc, bank_upi, gst_number, pan_number, referral_code, instagram_followers, youtube_subs, tiktok_followers, twitter_followers, facebook_followers, instagram_handle, youtube_channel_id, tiktok_handle, facebook_profile_url, twitter_handle, phone, location, bio, platforms, goals') as any)
+        .select('id, first_name, last_name, avatar_url, role, updated_at, business_name, gstin, business_entity_type, onboarding_complete, organization_id, is_trial, trial_started_at, trial_expires_at, trial_locked, gst_number, pan_number, referral_code, instagram_followers, youtube_subs, tiktok_followers, twitter_followers, facebook_followers, instagram_handle, youtube_channel_id, tiktok_handle, facebook_profile_url, twitter_handle, phone, location, bio, platforms, goals') as any)
         .eq('id', user.id)
         .single();
 
@@ -57,7 +57,7 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
     if (isColumnError) {
       // Silently handle missing columns - expected if migrations haven't run yet
       
-      // Retry with basic + trial fields only
+      // Retry with basic + trial fields only (excluding bank fields that may not exist)
       const { data: trialData, error: trialError } = await (supabase
         .from('profiles')
           .select('id, first_name, last_name, avatar_url, role, updated_at, business_name, gstin, business_entity_type, onboarding_complete, organization_id, is_trial, trial_started_at, trial_expires_at, trial_locked, instagram_handle, youtube_channel_id, tiktok_handle, facebook_profile_url, twitter_handle, phone, location, bio, platforms, goals') as any)

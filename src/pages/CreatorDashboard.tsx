@@ -20,6 +20,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 // import type { AchievementId } from '@/components/onboarding/AchievementBadge';
 import DashboardTutorial from '@/components/onboarding/DashboardTutorial';
 import { ContextualTipsProvider } from '@/components/contextual-tips/ContextualTipsProvider';
+import { DashboardSkeleton as EnhancedDashboardSkeleton } from '@/components/skeletons/DashboardSkeleton';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -422,72 +423,6 @@ const CreatorDashboard = () => {
   };
 
   // Import enhanced skeleton (fallback to inline if import fails)
-  // Skeleton Loading Component
-  const DashboardSkeleton = () => (
-    <div className="p-4 pb-24 space-y-6">
-      {/* Greeting Skeleton */}
-      <div className="mb-6">
-        <Skeleton className="h-10 w-64 mb-2" />
-        <Skeleton className="h-6 w-48" />
-      </div>
-
-      {/* Quick Stats Skeleton */}
-      <div className="grid grid-cols-3 gap-3 mb-4">
-        {[1, 2, 3].map((i) => (
-          <div key={i} className="bg-white/[0.08] backdrop-blur-[40px] saturate-[180%] rounded-[20px] p-4 border border-white/15 shadow-[0_4px_16px_rgba(0,0,0,0.2)]">
-            <Skeleton className="h-4 w-16 mb-2" />
-            <Skeleton className="h-8 w-20" />
-          </div>
-        ))}
-      </div>
-
-      {/* Main Earnings Card Skeleton */}
-      <div className="bg-white/[0.08] backdrop-blur-[40px] saturate-[180%] rounded-[20px] p-5 border border-white/15 shadow-[0_8px_32px_rgba(0,0,0,0.3)]">
-        <Skeleton className="h-6 w-32 mb-4" />
-        <Skeleton className="h-12 w-40 mb-2" />
-        <Skeleton className="h-4 w-48 mb-4" />
-        <Skeleton className="h-3 w-full rounded-full" />
-      </div>
-
-      {/* Stats Grid Skeleton */}
-      <div className="grid grid-cols-2 gap-3">
-        {[1, 2, 3, 4].map((i) => (
-          <div key={i} className="bg-white/[0.08] backdrop-blur-[40px] saturate-[180%] rounded-[20px] p-5 border border-white/15 shadow-[0_4px_16px_rgba(0,0,0,0.2)]">
-            <Skeleton className="h-4 w-24 mb-2" />
-            <Skeleton className="h-8 w-20 mb-1" />
-            <Skeleton className="h-3 w-16" />
-          </div>
-        ))}
-      </div>
-
-      {/* Quick Actions Skeleton */}
-      <div>
-        <Skeleton className="h-6 w-32 mb-3" />
-        <div className="grid grid-cols-2 gap-3">
-          {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="bg-white/[0.08] backdrop-blur-[40px] saturate-[180%] rounded-[20px] p-5 border border-white/15 shadow-[0_4px_16px_rgba(0,0,0,0.2)]">
-              <Skeleton className="h-12 w-12 rounded-xl mb-3" />
-              <Skeleton className="h-4 w-24" />
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Active Deals Skeleton */}
-      <div>
-        <Skeleton className="h-6 w-32 mb-3" />
-        <div className="space-y-3">
-          {[1, 2].map((i) => (
-            <div key={i} className="bg-white/[0.08] backdrop-blur-[40px] saturate-[180%] rounded-[20px] p-5 border border-white/15 shadow-[0_4px_16px_rgba(0,0,0,0.2)]">
-              <Skeleton className="h-5 w-48 mb-2" />
-              <Skeleton className="h-4 w-32 mb-3" />
-              <Skeleton className="h-2 w-full rounded-full" />
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
 
   return (
     <ContextualTipsProvider currentView="dashboard">
