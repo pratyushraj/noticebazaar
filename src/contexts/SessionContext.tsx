@@ -283,7 +283,7 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
           if (accessToken) {
             // Supabase will automatically process this via onAuthStateChange
             // But we ensure the session is set up correctly
-            console.log('Processing authentication tokens from URL hash');
+            logger.debug('Processing authentication tokens from URL hash');
           }
           
           // Clean up the URL after processing (Supabase handles the session)
@@ -297,7 +297,7 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
         const { data: { session: currentSession }, error } = await supabase.auth.getSession();
         
         if (error) {
-          console.error("Error getting session:", error.message);
+          logger.error("Error getting session", error);
         } else {
           setSession(currentSession);
           const currentUser = currentSession?.user ?? null;
@@ -308,7 +308,7 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
           }
         }
       } catch (e: any) {
-        console.error("Critical error initializing session:", e.message);
+        logger.error("Critical error initializing session", e);
       } finally {
         setInitialLoadComplete(true); // Mark initial load as complete
       }
