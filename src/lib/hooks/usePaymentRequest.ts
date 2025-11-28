@@ -8,6 +8,7 @@ import { useMutation } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useSession } from '@/contexts/SessionContext';
 import { toast } from 'sonner';
+import { logger } from '@/lib/utils/logger';
 import { BrandDeal } from '@/types';
 import { generateInvoicePDF, uploadInvoiceToStorage, generateInvoiceNumber, InvoiceData } from '@/lib/services/invoiceService';
 
@@ -81,11 +82,11 @@ export function usePaymentRequest() {
             .eq('creator_id', profile.id);
 
           if (updateError) {
-            console.error('Failed to update deal with invoice URL:', updateError);
+            logger.error('Failed to update deal with invoice URL', updateError);
             // Continue anyway - invoice is uploaded
           }
         } catch (error: any) {
-          console.error('Failed to generate invoice:', error);
+          logger.error('Failed to generate invoice', error);
           // Continue without invoice if generation fails
         }
       }

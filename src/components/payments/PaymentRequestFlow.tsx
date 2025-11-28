@@ -18,6 +18,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSession } from '@/contexts/SessionContext';
 import { useBrandDeals } from '@/lib/hooks/useBrandDeals';
+import { logger } from '@/lib/utils/logger';
 import { usePaymentRequest } from '@/lib/hooks/usePaymentRequest';
 import { generateInvoiceNumber, downloadInvoice, InvoiceData } from '@/lib/services/invoiceService';
 import { Card, CardContent } from '@/components/ui/card';
@@ -114,7 +115,7 @@ export function PaymentRequestFlow({ onClose, initialDealId }: PaymentRequestFlo
       setCurrentStep('success');
     } catch (error: any) {
       // Error is handled by the hook
-      console.error('Payment request error:', error);
+      logger.error('Payment request error', error);
     }
   };
 

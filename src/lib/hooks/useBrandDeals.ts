@@ -4,6 +4,7 @@ import { BrandDeal } from '@/types';
 import { useSupabaseQuery } from './useSupabaseQuery';
 import { useSupabaseMutation } from './useSupabaseMutation';
 import { CREATOR_ASSETS_BUCKET, extractFilePathFromUrl } from '@/lib/constants/storage';
+import { logger } from '@/lib/utils/logger';
 
 // Demo data for Brand Deals (used when database table doesn't exist or for preview)
 // Updated to match Payments page requirements exactly
@@ -198,7 +199,7 @@ export const useBrandDeals = (options: UseBrandDealsOptions) => {
         }
 
         // Log the error but return an empty array to prevent crashing the UI
-        console.error('Supabase Error in useBrandDeals:', error.message);
+        // Error is logged via useSupabaseQuery error handling
         // NOTE: We return [] here instead of throwing to handle missing tables gracefully.
         return [];
       }
@@ -426,7 +427,7 @@ export const useUpdateBrandDeal = () => {
           const oldFilePath = extractFilePathFromUrl(original_contract_file_url, CREATOR_ASSETS_BUCKET);
           if (oldFilePath) {
             const { error: deleteError } = await supabase.storage.from(CREATOR_ASSETS_BUCKET).remove([oldFilePath]);
-            if (deleteError) console.warn('Failed to delete old contract file:', deleteError.message);
+            if (deleteError) logger.warn('Failed to delete old contract file', { error: deleteError.message });
           }
         }
         if (contract_file) {
@@ -446,7 +447,7 @@ export const useUpdateBrandDeal = () => {
           const oldFilePath = extractFilePathFromUrl(original_invoice_file_url, CREATOR_ASSETS_BUCKET);
           if (oldFilePath) {
             const { error: deleteError } = await supabase.storage.from(CREATOR_ASSETS_BUCKET).remove([oldFilePath]);
-            if (deleteError) console.warn('Failed to delete old invoice file:', deleteError.message);
+            if (deleteError) logger.warn('Failed to delete old invoice file', { error: deleteError.message });
           }
         }
         if (invoice_file) {
@@ -517,7 +518,7 @@ export const useDeleteBrandDeal = () => {
         const filePath = extractFilePathFromUrl(contract_file_url, CREATOR_ASSETS_BUCKET);
         if (filePath) {
           const { error: storageError } = await supabase.storage.from(CREATOR_ASSETS_BUCKET).remove([filePath]);
-          if (storageError) { console.warn('Failed to delete contract file from storage:', storageError.message); }
+          if (storageError) { logger.warn('Failed to delete contract file from storage', { error: storageError.message }); }
         }
       }
       // Delete invoice file from storage
@@ -525,7 +526,7 @@ export const useDeleteBrandDeal = () => {
         const filePath = extractFilePathFromUrl(invoice_file_url, CREATOR_ASSETS_BUCKET);
         if (filePath) {
           const { error: storageError } = await supabase.storage.from(CREATOR_ASSETS_BUCKET).remove([filePath]);
-          if (storageError) { console.warn('Failed to delete invoice file from storage:', storageError.message); }
+          if (storageError) { logger.warn('Failed to delete invoice file from storage', { error: storageError.message }); }
         }
       }
 

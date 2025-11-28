@@ -64,7 +64,7 @@ export const useNotifications = (options: UseNotificationsOptions = {}) => {
       const { data, error } = await query;
 
       if (error) {
-        console.error('Error fetching notifications:', error);
+        // Error is handled by useSupabaseQuery
         throw error;
       }
 

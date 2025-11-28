@@ -4,6 +4,8 @@
  * Manages recent searches in localStorage
  */
 
+import { logger } from './logger';
+
 const SEARCH_HISTORY_KEY = 'noticebazaar_search_history';
 const MAX_HISTORY_ITEMS = 10;
 
@@ -25,7 +27,7 @@ export function getSearchHistory(userId?: string): SearchHistoryItem[] {
     const history = JSON.parse(stored) as SearchHistoryItem[];
     return history.sort((a, b) => b.timestamp - a.timestamp); // Most recent first
   } catch (error) {
-    console.error('Error reading search history:', error);
+    logger.error('Error reading search history', error);
     return [];
   }
 }
@@ -55,7 +57,7 @@ export function addToSearchHistory(query: string, userId?: string, resultCount?:
     const updated = [newItem, ...filtered].slice(0, MAX_HISTORY_ITEMS);
     localStorage.setItem(key, JSON.stringify(updated));
   } catch (error) {
-    console.error('Error saving search history:', error);
+    logger.error('Error saving search history', error);
   }
 }
 
@@ -67,7 +69,7 @@ export function clearSearchHistory(userId?: string): void {
     const key = userId ? `${SEARCH_HISTORY_KEY}_${userId}` : SEARCH_HISTORY_KEY;
     localStorage.removeItem(key);
   } catch (error) {
-    console.error('Error clearing search history:', error);
+    logger.error('Error clearing search history', error);
   }
 }
 
@@ -83,7 +85,7 @@ export function removeFromSearchHistory(query: string, userId?: string): void {
     );
     localStorage.setItem(key, JSON.stringify(filtered));
   } catch (error) {
-    console.error('Error removing from search history:', error);
+    logger.error('Error removing from search history', error);
   }
 }
 

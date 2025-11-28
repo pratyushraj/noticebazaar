@@ -7,6 +7,7 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { CreateNotificationInput, Notification } from '@/types/notifications';
+import { logger } from '@/lib/utils/logger';
 
 class NotificationService {
   /**
@@ -34,7 +35,7 @@ class NotificationService {
       .single();
 
     if (error) {
-      console.error('Error creating notification:', error);
+      logger.error('Error creating notification', error);
       throw error;
     }
 
@@ -66,7 +67,7 @@ class NotificationService {
       .select();
 
     if (error) {
-      console.error('Error creating notifications:', error);
+      logger.error('Error creating notifications', error);
       throw error;
     }
 

@@ -8,6 +8,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useSession } from '@/contexts/SessionContext';
 import { NotificationPreferences, CategoryPreference } from '@/types/notifications';
+import { logger } from '@/lib/utils/logger';
 import { toast } from 'sonner';
 
 export const useNotificationPreferences = () => {
@@ -32,7 +33,7 @@ export const useNotificationPreferences = () => {
         .single();
 
       if (error && error.code !== 'PGRST116') {
-        console.error('Error fetching notification preferences:', error);
+        logger.error('Error fetching notification preferences', error);
         throw error;
       }
 
@@ -51,7 +52,7 @@ export const useNotificationPreferences = () => {
           .single();
 
         if (createError) {
-          console.error('Error creating notification preferences:', createError);
+          logger.error('Error creating notification preferences', createError);
           throw createError;
         }
 
