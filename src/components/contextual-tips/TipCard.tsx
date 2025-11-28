@@ -41,7 +41,7 @@ export const TipCard: React.FC<TipCardProps> = ({ tip, onDismiss, onAction }) =>
   const Icon = tip.icon;
 
   const positionClasses = {
-    top: 'top-24 left-1/2 -translate-x-1/2',
+    top: 'top-[140px] md:top-24 left-1/2 -translate-x-1/2', // Push down on mobile to avoid welcome banner overlap
     center: 'top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2',
     bottom: 'bottom-24 left-1/2 -translate-x-1/2',
   };
@@ -55,7 +55,7 @@ export const TipCard: React.FC<TipCardProps> = ({ tip, onDismiss, onAction }) =>
         transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
         className={`fixed z-[100] ${positionClasses[tip.position]}`}
       >
-        <div className="relative max-w-sm mx-4">
+        <div className="relative w-[calc(100%-2rem)] max-w-sm mx-4">
           {/* Glow effect */}
           <div
             className={`absolute inset-0 bg-gradient-to-r ${tip.color} opacity-20 blur-2xl rounded-2xl`}

@@ -20,6 +20,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 // import type { AchievementId } from '@/components/onboarding/AchievementBadge';
 import DashboardTutorial from '@/components/onboarding/DashboardTutorial';
 import { ContextualTipsProvider } from '@/components/contextual-tips/ContextualTipsProvider';
+import { useContextualTips } from '@/hooks/useContextualTips';
 import { DashboardSkeleton as EnhancedDashboardSkeleton } from '@/components/skeletons/DashboardSkeleton';
 import { NotificationDropdown } from '@/components/notifications/NotificationDropdown';
 import { QuickSearch } from '@/components/dashboard/QuickSearch';
@@ -46,6 +47,9 @@ const CreatorDashboard = () => {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [showTutorial, setShowTutorial] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
+
+  // Check for contextual tips to avoid overlap
+  const { currentTip } = useContextualTips('dashboard');
 
   // Fetch real data
   const { data: brandDeals = [], isLoading: isLoadingDeals } = useBrandDeals({
@@ -765,7 +769,7 @@ const CreatorDashboard = () => {
 
       {/* Welcome Banner for New Users */}
       <AnimatePresence>
-        {showWelcomeBanner && (
+        {showWelcomeBanner && !currentTip && (
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
