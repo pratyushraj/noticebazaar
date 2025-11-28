@@ -252,24 +252,6 @@ const DashboardTutorial: React.FC<DashboardTutorialProps> = ({ onComplete, onSki
     }
   };
 
-  const handleSkip = () => {
-    if (profile?.id) {
-      const step = tutorialSteps[currentStep];
-      localStorage.setItem(`dashboard-tutorial-dismissed-${profile.id}`, 'true');
-      
-      // Track dismissal
-      analytics.track('tutorial_dismissed', {
-        category: 'tutorial',
-        step: step?.id,
-        step_number: currentStep + 1,
-        total_steps: tutorialSteps.length,
-        userId: profile.id,
-        time_spent: Date.now() - startTime,
-      });
-    }
-    setShowTutorial(false);
-    onSkip?.();
-  };
 
   const handleComplete = () => {
     if (profile?.id) {
@@ -432,26 +414,28 @@ const DashboardTutorial: React.FC<DashboardTutorialProps> = ({ onComplete, onSki
               </div>
 
               {/* Buttons */}
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between gap-2">
                 {currentStep > 0 ? (
                   <button
                     onClick={handlePrevious}
-                    className="px-5 py-2.5 rounded-full bg-white/10 border border-white/20 text-white/80 flex items-center gap-2 text-[15px] active:scale-95 transition"
+                    className="px-4 py-2.5 rounded-full bg-white/10 border border-white/20 text-white/80 flex items-center gap-1.5 text-[15px] active:scale-95 transition flex-shrink-0"
                   >
                     <span className="text-lg">←</span> Back
                   </button>
                 ) : (
-                  <button
-                    onClick={handleNext}
-                    className="px-5 py-2.5 rounded-full bg-white/10 border border-white/20 text-white/80 flex items-center gap-2 text-[15px] active:scale-95 transition"
-                  >
-                    Later
-                  </button>
+                  <div className="flex-shrink-0" />
                 )}
+                
+                <button
+                  onClick={handleNext}
+                  className="px-5 py-2.5 rounded-full bg-white/10 border border-white/20 text-white/80 flex items-center gap-2 text-[15px] active:scale-95 transition flex-1"
+                >
+                  Later
+                </button>
 
                 <button
                   onClick={step.interactive ? handleInteractiveClick : handleNext}
-                  className="px-6 py-2.5 rounded-full bg-gradient-to-r from-purple-500 to-blue-500 shadow-[0_4px_14px_rgba(0,0,0,0.3)] text-white font-medium flex items-center gap-2 text-[15px] active:scale-95 transition"
+                  className="px-6 py-2.5 rounded-full bg-gradient-to-r from-purple-500 to-blue-500 shadow-[0_4px_14px_rgba(0,0,0,0.3)] text-white font-medium flex items-center gap-2 text-[15px] active:scale-95 transition flex-1"
                 >
                   {step.action || (currentStep === tutorialSteps.length - 1 ? 'Finish' : 'Next')}
                   {currentStep < tutorialSteps.length - 1 && !step.action && (
