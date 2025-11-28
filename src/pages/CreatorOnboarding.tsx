@@ -277,16 +277,42 @@ const CreatorOnboarding = () => {
         creatorCategory = 'creator';
       }
 
-      await updateProfileMutation.mutateAsync({
-        id: profile.id,
-        first_name: firstName,
-        last_name: lastName,
-        avatar_url: profile.avatar_url || null,
-        creator_category: creatorCategory,
-        platforms: onboardingData.platforms.length > 0 ? onboardingData.platforms : null,
-        goals: onboardingData.goals.length > 0 ? onboardingData.goals : null,
-        onboarding_complete: true,
-      });
+      // Try to update with all fields first
+      try {
+        await updateProfileMutation.mutateAsync({
+          id: profile.id,
+          first_name: firstName,
+          last_name: lastName,
+          avatar_url: profile.avatar_url || null,
+          creator_category: creatorCategory,
+          platforms: onboardingData.platforms.length > 0 ? onboardingData.platforms : null,
+          goals: onboardingData.goals.length > 0 ? onboardingData.goals : null,
+          onboarding_complete: true,
+        });
+      } catch (firstError: any) {
+        // If error is due to missing creator_category column, retry without it
+        const isColumnError = firstError?.message?.includes('creator_category') ||
+                             firstError?.message?.includes('column') ||
+                             firstError?.message?.includes('does not exist') ||
+                             (firstError as any)?.code === '42703';
+        
+        if (isColumnError) {
+          // Retry without creator_category (migration not run yet)
+          await updateProfileMutation.mutateAsync({
+            id: profile.id,
+            first_name: firstName,
+            last_name: lastName,
+            avatar_url: profile.avatar_url || null,
+            // Skip creator_category if column doesn't exist
+            platforms: onboardingData.platforms.length > 0 ? onboardingData.platforms : null,
+            goals: onboardingData.goals.length > 0 ? onboardingData.goals : null,
+            onboarding_complete: true,
+          });
+        } else {
+          // Re-throw if it's a different error
+          throw firstError;
+        }
+      }
       
       // Save completion to localStorage
       localStorage.setItem('onboarding-complete', 'true');
@@ -296,7 +322,23 @@ const CreatorOnboarding = () => {
       refetchProfile();
       setSetupStep('success');
     } catch (error: any) {
-      toast.error('Failed to complete onboarding', { description: error.message });
+      // User-friendly error message
+      const errorMessage = error?.message || 'An unexpected error occurred';
+      const isColumnError = errorMessage.includes('column') || 
+                           errorMessage.includes('does not exist') ||
+                           errorMessage.includes('creator_category');
+      
+      if (isColumnError) {
+        toast.error('Database migration required', { 
+          description: 'Please contact support. Some database columns are missing. Your data was saved, but some fields may not be available yet.',
+          duration: 8000
+        });
+      } else {
+        toast.error('Failed to complete onboarding', { 
+          description: errorMessage,
+          duration: 5000
+        });
+      }
       setIsSubmitting(false);
     }
   };

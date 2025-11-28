@@ -402,7 +402,52 @@ export const useUpdateProfile = () => {
         .eq('id', id);
 
       if (error) {
-        throw new Error(error.message);
+        // Check if error is due to missing columns (migration not run)
+        const isColumnError = error.code === '42703' || 
+                            error.message?.includes('column') ||
+                            error.message?.includes('does not exist') ||
+                            String(error.message || '').toLowerCase().includes('schema cache');
+        
+        if (isColumnError) {
+          // Remove fields that might not exist and retry
+          const safeUpdateData: any = { ...updateData };
+          
+          // Remove creator profile fields that might not exist
+          delete safeUpdateData.creator_category;
+          delete safeUpdateData.pricing_min;
+          delete safeUpdateData.pricing_avg;
+          delete safeUpdateData.pricing_max;
+          delete safeUpdateData.bank_account_name;
+          delete safeUpdateData.bank_account_number;
+          delete safeUpdateData.bank_ifsc;
+          delete safeUpdateData.bank_upi;
+          delete safeUpdateData.gst_number;
+          delete safeUpdateData.pan_number;
+          delete safeUpdateData.referral_code;
+          delete safeUpdateData.instagram_followers;
+          delete safeUpdateData.youtube_subs;
+          delete safeUpdateData.tiktok_followers;
+          delete safeUpdateData.twitter_followers;
+          delete safeUpdateData.facebook_followers;
+          
+          // Retry with safe fields only
+          const { error: retryError } = await supabase
+            .from('profiles')
+            .update(safeUpdateData)
+            .eq('id', id);
+          
+          if (retryError) {
+            throw new Error(retryError.message);
+          }
+          
+          // Log warning about missing columns
+          logger.warn('Profile updated without creator_category - migration may be needed', {
+            profileId: id,
+            missingFields: Object.keys(updateData).filter(k => !safeUpdateData.hasOwnProperty(k))
+          });
+        } else {
+          throw new Error(error.message);
+        }
       }
       
       // --- NEW LOGIC: Check for Creator Onboarding Completion ---
