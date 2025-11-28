@@ -412,7 +412,14 @@ export const useUpdateProfile = () => {
           // Remove fields that might not exist and retry
           const safeUpdateData: any = { ...updateData };
           
-          // Remove creator profile fields that might not exist
+          // Remove onboarding fields that might not exist (from 2025_11_26_add_profile_fields.sql)
+          delete safeUpdateData.platforms;
+          delete safeUpdateData.goals;
+          delete safeUpdateData.phone;
+          delete safeUpdateData.location;
+          delete safeUpdateData.bio;
+          
+          // Remove creator profile fields that might not exist (from 2025_11_21_add_creator_profile_fields.sql)
           delete safeUpdateData.creator_category;
           delete safeUpdateData.pricing_min;
           delete safeUpdateData.pricing_avg;
@@ -430,21 +437,25 @@ export const useUpdateProfile = () => {
           delete safeUpdateData.twitter_followers;
           delete safeUpdateData.facebook_followers;
           
-          // Retry with safe fields only
+          // Retry with safe fields only (core fields that should always exist)
           const { error: retryError } = await supabase
             .from('profiles')
             .update(safeUpdateData)
             .eq('id', id);
           
           if (retryError) {
+            // If retry also fails, it's likely a different error - throw it
             throw new Error(retryError.message);
           }
           
           // Log warning about missing columns
-          logger.warn('Profile updated without creator_category - migration may be needed', {
-            profileId: id,
-            missingFields: Object.keys(updateData).filter(k => !safeUpdateData.hasOwnProperty(k))
-          });
+          const missingFields = Object.keys(updateData).filter(k => !safeUpdateData.hasOwnProperty(k));
+          if (missingFields.length > 0) {
+            logger.warn('Profile updated without some fields - migrations may be needed', {
+              profileId: id,
+              missingFields
+            });
+          }
         } else {
           throw new Error(error.message);
         }
