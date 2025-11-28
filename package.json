@@ -13,7 +13,8 @@
     "seed": "tsx scripts/seed-test-data.ts",
     "create-demo": "tsx scripts/create-demo-user.ts",
     "create-user": "tsx scripts/create-user-account.ts",
-    "update-role": "tsx scripts/update-user-role.ts"
+    "update-role": "tsx scripts/update-user-role.ts",
+    "verify-migrations": "tsx scripts/verify-migrations.ts"
   },
   "dependencies": {
     "@cometchat-pro/chat": "^3.0.13",
