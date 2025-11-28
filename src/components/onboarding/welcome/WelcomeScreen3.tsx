@@ -30,17 +30,18 @@ export const WelcomeScreen3: React.FC<WelcomeScreen3Props> = ({ onNext, onBack }
   return (
     <OnboardingSlide>
       {/* Animated Icon */}
-      <IconBubble
-        icon={TrendingUp}
-        size="lg"
-        color="blue"
-        animated
-        animationProps={{
-          animate: { scale: [1, 1.1, 1] },
-          transition: { duration: 2, repeat: Infinity },
-        }}
-        className="mb-6 md:mb-8"
-      />
+      <div className="mt-12 md:mt-0 mb-8 md:mb-8">
+        <IconBubble
+          icon={TrendingUp}
+          size="lg"
+          color="blue"
+          animated
+          animationProps={{
+            animate: { scale: [1, 1.1, 1] },
+            transition: { duration: 2, repeat: Infinity },
+          }}
+        />
+      </div>
 
       {/* Title */}
       <h1 className="text-2xl md:text-3xl font-bold leading-tight mb-3 md:mb-4">

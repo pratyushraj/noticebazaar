@@ -43,7 +43,7 @@ export const OnboardingSlide: React.FC<OnboardingSlideProps> = ({
       className={cn(
         "flex flex-col items-center",
         "flex-1 w-full min-h-0", // Fill container, allow shrinking
-        "p-4 md:p-6 pt-10 pb-20 md:pb-16", // More bottom padding on mobile for CTA
+        "p-4 md:p-6 pt-16 md:pt-10 pb-20 md:pb-16", // More top padding on mobile to prevent overlap
         "text-center",
         "overflow-y-auto overscroll-contain", // Allow scrolling, prevent bounce
         "scrollbar-hide", // Hide scrollbar

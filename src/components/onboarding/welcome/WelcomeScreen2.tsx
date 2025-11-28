@@ -29,13 +29,14 @@ export const WelcomeScreen2: React.FC<WelcomeScreen2Props> = ({ onNext, onBack }
   return (
     <OnboardingSlide>
       {/* Animated Icon */}
-      <IconBubble
-        icon={Shield}
-        size="lg"
-        color="green"
-        animated
-        className="mb-6 md:mb-8"
-      />
+      <div className="mt-12 md:mt-0 mb-8 md:mb-8">
+        <IconBubble
+          icon={Shield}
+          size="lg"
+          color="green"
+          animated
+        />
+      </div>
 
       {/* Title */}
       <h1 className="text-2xl md:text-3xl font-bold leading-tight mb-3 md:mb-4">

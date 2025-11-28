@@ -47,7 +47,7 @@ export const WelcomeScreen1: React.FC<WelcomeScreen1Props> = ({ onNext }) => {
         initial={{ opacity: 0, scale: 0.8 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-        className="mb-4 md:mb-8"
+        className="mt-12 md:mt-0 mb-8 md:mb-8"
       >
         <IconBubble
           icon={Sparkles}
