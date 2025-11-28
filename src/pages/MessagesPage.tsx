@@ -6,7 +6,7 @@
 
 import { useEffect, useRef, useState, useMemo } from 'react';
 import clsx from 'clsx';
-import { Lock, MessageSquare, ArrowUp, Loader2, ChevronRight, FileText, Mic, ArrowLeft } from 'lucide-react';
+import { Lock, MessageSquare, ArrowUp, Loader2, Mic, ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useSession } from '@/contexts/SessionContext';
 import { toast } from 'sonner';
@@ -180,7 +180,7 @@ function ChatHeaderScoped({
   };
   
   return (
-    <div className="flex items-center justify-between px-2 md:px-4 py-1.5 md:py-3 border-b border-white/10 bg-white/[0.08] backdrop-blur-[40px] saturate-[180%] flex-shrink-0">
+    <div className="flex items-center justify-between px-2 md:px-4 py-1.5 md:py-3 border-b border-white/10 bg-white/[0.08] backdrop-blur-[40px] saturate-[180%] flex-shrink-0 mb-6 md:mb-8">
       <div className="flex items-center gap-2 md:gap-3 flex-1 min-w-0">
         <LocalAvatar size="sm" src={advisor?.avatarUrl} alt={advisor?.name || 'Advisor'} />
         <div className="leading-tight flex-1 min-w-0">
@@ -404,6 +404,7 @@ function ChatWindowScoped({
   currentUserAvatar?: string;
   currentUserName?: string;
 }) {
+  const navigate = useNavigate();
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const hasMessages = (messages ?? []).length > 0;
 
@@ -414,19 +415,21 @@ function ChatWindowScoped({
   }, [messages]);
 
   return (
-    <div className="flex flex-col rounded-none md:rounded-[20px] md:border md:border-white/15 bg-white/[0.08] backdrop-blur-[40px] saturate-[180%] md:shadow-[0_8px_32px_rgba(0,0,0,0.3)] flex-1 min-h-0">
+    <div className="flex flex-col rounded-none md:rounded-[20px] md:border md:border-white/15 bg-gradient-to-b from-white/5 to-transparent backdrop-blur-[40px] saturate-[180%] md:shadow-[0_8px_32px_rgba(0,0,0,0.3)] flex-1 min-h-0">
       <ChatHeaderScoped advisor={advisor} advisors={advisors} onSwitchAdvisor={onSwitchAdvisor} />
 
       <div className="flex-1 overflow-y-auto min-h-0">
         <div className="p-4 md:p-6 lg:p-8">
           {!hasMessages ? (
-            <NoMessagesEmptyState
-              onStartChat={() => onSend?.('Hello! I need help.')}
-              onUploadContract={() => {
-                toast.info('Upload contract feature coming soon');
-                navigate('/contract-upload');
-              }}
-            />
+            <div className="mb-6 md:mb-8">
+              <NoMessagesEmptyState
+                onStartChat={() => onSend?.('Hello! I need help.')}
+                onUploadContract={() => {
+                  toast.info('Upload contract feature coming soon');
+                  navigate('/contract-upload');
+                }}
+              />
+            </div>
           ) : (
             <div className="space-y-4">
               {messages!.map((m) => (

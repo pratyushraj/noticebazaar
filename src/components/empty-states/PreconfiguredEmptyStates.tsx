@@ -1,7 +1,7 @@
 "use client";
 
 import React from 'react';
-import { MessageSquare, FileText, Search, Filter, X, Upload, Briefcase, Wallet, Sparkles } from 'lucide-react';
+import { MessageSquare, FileText, Search, Filter, X, Upload, Briefcase, Wallet, Sparkles, Scale, BarChart3 } from 'lucide-react';
 import { EmptyState } from './EmptyState';
 import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
@@ -20,56 +20,74 @@ interface NoMessagesEmptyStateProps {
   variant?: 'default' | 'compact' | 'minimal';
 }
 
+// Helper component for action buttons
+const EmptyActionButton: React.FC<{
+  icon: React.ReactNode;
+  label: string;
+  onClick: () => void;
+}> = ({ icon, label, onClick }) => (
+  <button
+    onClick={onClick}
+    className="flex flex-col items-center justify-center py-4 rounded-2xl bg-white/8 border border-white/10 backdrop-blur-xl text-white/80 text-[14px] active:scale-[0.96] transition-all shadow-[0_4px_12px_rgba(0,0,0,0.15)] hover:bg-white/12 hover:border-white/15"
+  >
+    <div className="mb-2 text-white/70">{icon}</div>
+    <span className="font-medium">{label}</span>
+  </button>
+);
+
 export const NoMessagesEmptyState: React.FC<NoMessagesEmptyStateProps> = ({
   onStartChat,
   onUploadContract,
   variant = 'default',
 }) => {
   return (
-    <EmptyState
-      type="no-messages"
-      icon={MessageSquare}
-      title="No Messages Yet"
-      description="Start a conversation with your advisor to get help with contracts, payments, or legal questions."
-      primaryAction={onStartChat ? {
-        label: "Start Conversation",
-        onClick: onStartChat,
-        icon: MessageSquare,
-      } : undefined}
-      variant={variant}
-    >
-      {onUploadContract && (
-        <div className="mt-4 space-y-2">
-          <Button
+    <div className="flex flex-col items-center px-5 pt-6 pb-[calc(120px+env(safe-area-inset-bottom))]">
+      {/* Empty Icon */}
+      <div className="w-20 h-20 rounded-full bg-white/10 backdrop-blur-xl border border-white/15 flex items-center justify-center mb-4 shadow-[0_4px_12px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.1)]">
+        <MessageSquare className="w-10 h-10 text-white/60" />
+      </div>
+
+      {/* Title */}
+      <h2 className="text-[22px] font-semibold text-white mb-2">
+        No Messages Yet
+      </h2>
+
+      {/* Subtitle */}
+      <p className="text-center text-[15px] leading-relaxed text-white/70 mb-8 max-w-sm">
+        Start a conversation with your advisor to get help with contracts, payments, or legal questions.
+      </p>
+
+      {/* Action Buttons */}
+      <div className="grid grid-cols-2 gap-3 w-full max-w-md">
+        {onUploadContract && (
+          <EmptyActionButton
+            icon={<Upload className="w-5 h-5" />}
+            label="Upload a Contract"
             onClick={onUploadContract}
-            variant="outline"
-            size="sm"
-            className="w-full bg-white/10 border-white/20 text-white hover:bg-white/15"
-          >
-            <Upload className="w-4 h-4 mr-2" />
-            Upload a Contract
-          </Button>
-          
-          <div className="grid grid-cols-2 gap-2 mt-4">
-            {[
-              { label: 'Contract Review', icon: '📄' },
-              { label: 'Payment Questions', icon: '💰' },
-              { label: 'Legal Advice', icon: '⚖️' },
-              { label: 'Tax Compliance', icon: '📊' },
-            ].map((topic) => (
-              <button
-                key={topic.label}
-                onClick={() => onStartChat?.()}
-                className="flex items-center gap-2 px-3 py-2 rounded-xl bg-white/[0.08] border border-white/15 hover:bg-white/[0.12] transition-all text-left text-sm"
-              >
-                <span className="text-base">{topic.icon}</span>
-                <span className="text-white/80 font-medium">{topic.label}</span>
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
-    </EmptyState>
+          />
+        )}
+        <EmptyActionButton
+          icon={<FileText className="w-5 h-5" />}
+          label="Contract Review"
+          onClick={() => onStartChat?.()}
+        />
+        <EmptyActionButton
+          icon={<Wallet className="w-5 h-5" />}
+          label="Payment Questions"
+          onClick={() => onStartChat?.()}
+        />
+        <EmptyActionButton
+          icon={<Scale className="w-5 h-5" />}
+          label="Legal Advice"
+          onClick={() => onStartChat?.()}
+        />
+        <EmptyActionButton
+          icon={<BarChart3 className="w-5 h-5" />}
+          label="Tax Compliance"
+          onClick={() => onStartChat?.()}
+        />
+      </div>
+    </div>
   );
 };
 
