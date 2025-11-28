@@ -5,6 +5,7 @@ import { Profile } from '@/types';
 import { useSupabaseQuery } from '@/lib/hooks/useSupabaseQuery'; // Import useSupabaseQuery
 import { lockTrialIfExpired, getTrialStatus, TrialStatus } from '@/lib/trial';
 import { analytics } from '@/utils/analytics';
+import { logger } from '@/lib/utils/logger';
 
 interface SessionContextType {
   session: Session | null;
@@ -107,7 +108,7 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
               (minimalError as any).statusCode === 400 ||
               (minimalError as any).message?.includes('column');
             if (!isMinimalColumnError) {
-              console.error('SessionContext: Error fetching profile:', minimalError);
+              logger.error('SessionContext: Error fetching profile', minimalError);
             }
             return null;
           }
@@ -146,7 +147,7 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
         }
 
         if (basicError && (basicError as any).code !== 'PGRST116') {
-          console.error('SessionContext: Error fetching profile:', basicError);
+          logger.error('SessionContext: Error fetching profile', basicError);
           return null;
         }
         
@@ -182,7 +183,7 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
       }
 
       if (trialError && (trialError as any).code !== 'PGRST116') {
-        console.error('SessionContext: Error fetching profile:', trialError);
+        logger.error('SessionContext: Error fetching profile', trialError);
         return null;
       }
 
@@ -215,7 +216,7 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
     }
 
       if (error && (error as any).code !== 'PGRST116') { // PGRST116 means no rows found, which is fine
-        console.error('SessionContext: Error fetching profile:', error);
+        logger.error('SessionContext: Error fetching profile', error);
         return null;
       }
       return data as Profile | null;
@@ -224,9 +225,9 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
       // Check if it's a 400 error (column doesn't exist)
       if (err?.status === 400 || err?.statusCode === 400 || err?.message?.includes('Bad Request')) {
         // Silently handle - will fall through to basic query
-        console.warn('SessionContext: Column error detected, using fallback query');
+        logger.warn('SessionContext: Column error detected, using fallback query');
       } else {
-        console.error('SessionContext: Unexpected error fetching profile:', err);
+        logger.error('SessionContext: Unexpected error fetching profile', err);
       }
       return null;
     }

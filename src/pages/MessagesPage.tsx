@@ -22,6 +22,7 @@ import { COMETCHAT_CONFIG } from '@/lib/cometchat/config';
 import { AdvisorModeSwitch } from '@/components/AdvisorModeSwitch';
 import { ContextualTipsProvider } from '@/components/contextual-tips/ContextualTipsProvider';
 import { NoMessagesEmptyState } from '@/components/empty-states/PreconfiguredEmptyStates';
+import { logger } from '@/lib/utils/logger';
 
 // --- Types (local to this file) ---
 type Advisor = {
@@ -237,7 +238,7 @@ function MessageInputScoped({ onSend, isLoading }: { onSend?: (text: string) => 
         const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
         // TODO: Upload audio blob and send URL
         // For now, we just show a toast - audioBlob will be used when upload is implemented
-        console.log('Voice message recorded:', audioBlob.size, 'bytes');
+        logger.debug('Voice message recorded', { size: audioBlob.size, bytes: audioBlob.size });
         toast.info('Voice message recorded! (Upload functionality coming soon)');
         stream.getTracks().forEach(track => track.stop());
       };
