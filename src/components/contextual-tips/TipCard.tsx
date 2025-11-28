@@ -41,9 +41,9 @@ export const TipCard: React.FC<TipCardProps> = ({ tip, onDismiss, onAction }) =>
   const Icon = tip.icon;
 
   const positionClasses = {
-    top: 'top-[140px] md:top-24 left-1/2 -translate-x-1/2', // Push down on mobile to avoid welcome banner overlap
-    center: 'top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2',
-    bottom: 'bottom-24 left-1/2 -translate-x-1/2',
+    top: 'top-[140px] md:top-24 left-1/2 -translate-x-1/2 max-h-[calc(100vh-200px)]', // Push down on mobile to avoid welcome banner overlap
+    center: 'top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 max-h-[80vh]',
+    bottom: 'bottom-24 left-1/2 -translate-x-1/2 max-h-[calc(100vh-200px)]',
   };
 
   return (
@@ -53,7 +53,7 @@ export const TipCard: React.FC<TipCardProps> = ({ tip, onDismiss, onAction }) =>
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.9, y: 20 }}
         transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-        className={`fixed z-[100] ${positionClasses[tip.position]}`}
+        className={`fixed z-[100] ${positionClasses[tip.position]} overflow-y-auto`}
       >
         <div className="relative w-[calc(100%-2rem)] max-w-sm mx-4">
           {/* Glow effect */}
@@ -63,7 +63,7 @@ export const TipCard: React.FC<TipCardProps> = ({ tip, onDismiss, onAction }) =>
 
           {/* Card */}
           <div
-            className={`relative bg-gradient-to-br ${tip.color} rounded-2xl p-5 shadow-2xl border border-white/20`}
+            className={`relative bg-gradient-to-br ${tip.color} rounded-2xl p-5 shadow-2xl border border-white/20 max-h-full overflow-y-auto`}
           >
             {/* Celebration sparkles */}
             {tip.celebration && (
@@ -97,7 +97,7 @@ export const TipCard: React.FC<TipCardProps> = ({ tip, onDismiss, onAction }) =>
             </div>
 
             {/* Message */}
-            <p className="text-white/90 text-sm leading-relaxed mb-4">{tip.message}</p>
+            <p className="text-white/90 text-sm leading-relaxed mb-4 break-words">{tip.message}</p>
 
             {/* Details list */}
             {tip.details && (
