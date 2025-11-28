@@ -5,6 +5,7 @@ import { useSupabaseQuery } from './useSupabaseQuery';
 import { useSupabaseMutation } from './useSupabaseMutation';
 import { useMemo, useCallback } from 'react';
 import { useGenerateTaxFilings } from './useTaxFilings'; // NEW: Import the new hook
+import { logger } from '@/lib/utils/logger';
 
 interface UseProfilesOptions {
   role?: 'client' | 'admin' | 'chartered_accountant' | 'creator';
