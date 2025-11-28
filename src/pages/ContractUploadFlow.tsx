@@ -7,11 +7,14 @@ type RiskLevel = 'low' | 'medium' | 'high';
 
 const ContractUploadFlow = () => {
   const navigate = useNavigate();
-  const [step, setStep] = useState('upload'); // upload, uploading, scanning, analyzing, results
+  const [step, setStep] = useState('upload'); // upload, uploading, scanning, analyzing, results, upload-error, review-error
   const [uploadProgress, setUploadProgress] = useState(0);
   const [scanProgress, setScanProgress] = useState(0);
   const [fileName, setFileName] = useState('');
   const [fileSize, setFileSize] = useState('');
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const [reviewError, setReviewError] = useState<string | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Simulated contract analysis results
@@ -68,9 +71,20 @@ const ContractUploadFlow = () => {
     }
   };
 
-  // Simulate file upload
+  // Simulate file upload with error handling
   useEffect(() => {
     if (step === 'uploading') {
+      // Simulate potential upload failure (10% chance for demo)
+      const shouldFail = Math.random() < 0.1 && retryCount === 0;
+      
+      if (shouldFail) {
+        setTimeout(() => {
+          setUploadError('Upload failed. Network error occurred. Please check your connection and try again.');
+          setStep('upload-error');
+        }, 2000);
+        return;
+      }
+
       const interval = setInterval(() => {
         setUploadProgress(prev => {
           if (prev >= 100) {
@@ -83,7 +97,7 @@ const ContractUploadFlow = () => {
       }, 150);
       return () => clearInterval(interval);
     }
-  }, [step]);
+  }, [step, retryCount]);
 
   // Simulate scanning
   useEffect(() => {
@@ -102,12 +116,35 @@ const ContractUploadFlow = () => {
     }
   }, [step]);
 
-  // Simulate analysis
+  // Simulate analysis with error handling
   useEffect(() => {
     if (step === 'analyzing') {
+      // Simulate potential review failure (5% chance for demo)
+      const shouldFail = Math.random() < 0.05;
+      
+      if (shouldFail) {
+        setTimeout(() => {
+          setReviewError('Contract review failed. The AI service is temporarily unavailable. Please try again in a moment.');
+          setStep('review-error');
+        }, 2000);
+        return;
+      }
+
       setTimeout(() => setStep('results'), 3000);
     }
   }, [step]);
+
+  const handleRetryUpload = () => {
+    setUploadError(null);
+    setRetryCount(prev => prev + 1);
+    setUploadProgress(0);
+    setStep('uploading');
+  };
+
+  const handleRetryReview = () => {
+    setReviewError(null);
+    setStep('analyzing');
+  };
 
   const handleFileSelect = () => {
     fileInputRef.current?.click();
@@ -371,6 +408,92 @@ const ContractUploadFlow = () => {
                   <span className="text-purple-200">Liability terms</span>
                   <Loader className="w-4 h-4 text-blue-400 animate-spin" />
                 </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Upload Error Step */}
+        {step === 'upload-error' && (
+          <div className="flex items-center justify-center min-h-[60vh]">
+            <div className="text-center max-w-md">
+              <div className="w-24 h-24 rounded-full bg-red-500/20 flex items-center justify-center mx-auto mb-6">
+                <XCircle className="w-12 h-12 text-red-400" />
+              </div>
+              
+              <h2 className="text-2xl font-bold mb-2">Upload Failed</h2>
+              <p className="text-white/70 mb-6">{uploadError || 'An error occurred during upload. Please try again.'}</p>
+              
+              <div className="flex flex-col gap-3">
+                <button
+                  onClick={handleRetryUpload}
+                  className="bg-purple-600 hover:bg-purple-700 px-6 py-3 rounded-xl font-semibold transition-colors flex items-center justify-center gap-2"
+                >
+                  <Upload className="w-5 h-5" />
+                  Try Again
+                </button>
+                <button
+                  onClick={() => {
+                    setStep('upload');
+                    setUploadError(null);
+                    setRetryCount(0);
+                    setUploadProgress(0);
+                    setFileName('');
+                    setFileSize('');
+                  }}
+                  className="bg-white/10 hover:bg-white/15 px-6 py-3 rounded-xl font-medium transition-colors"
+                >
+                  Choose Different File
+                </button>
+                <button
+                  onClick={() => navigate('/creator-dashboard')}
+                  className="text-purple-300 hover:text-white text-sm transition-colors"
+                >
+                  Go Back to Dashboard
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Review Error Step */}
+        {step === 'review-error' && (
+          <div className="flex items-center justify-center min-h-[60vh]">
+            <div className="text-center max-w-md">
+              <div className="w-24 h-24 rounded-full bg-yellow-500/20 flex items-center justify-center mx-auto mb-6">
+                <AlertTriangle className="w-12 h-12 text-yellow-400" />
+              </div>
+              
+              <h2 className="text-2xl font-bold mb-2">Review Failed</h2>
+              <p className="text-white/70 mb-6">{reviewError || 'An error occurred during contract review. Please try again.'}</p>
+              
+              <div className="flex flex-col gap-3">
+                <button
+                  onClick={handleRetryReview}
+                  className="bg-purple-600 hover:bg-purple-700 px-6 py-3 rounded-xl font-semibold transition-colors flex items-center justify-center gap-2"
+                >
+                  <Sparkles className="w-5 h-5" />
+                  Retry Review
+                </button>
+                <button
+                  onClick={() => {
+                    setStep('upload');
+                    setReviewError(null);
+                    setUploadProgress(0);
+                    setScanProgress(0);
+                    setFileName('');
+                    setFileSize('');
+                  }}
+                  className="bg-white/10 hover:bg-white/15 px-6 py-3 rounded-xl font-medium transition-colors"
+                >
+                  Upload New Contract
+                </button>
+                <button
+                  onClick={() => navigate('/creator-dashboard')}
+                  className="text-purple-300 hover:text-white text-sm transition-colors"
+                >
+                  Go Back to Dashboard
+                </button>
               </div>
             </div>
           </div>

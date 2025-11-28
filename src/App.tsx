@@ -68,23 +68,51 @@ import DocumentsVault from "./pages/DocumentsVault";
 import InsightsPage from "./pages/InsightsPage";
 import ContractUploadFlow from "./pages/ContractUploadFlow";
 import ContractComparison from "./pages/ContractComparison";
+import MaintenancePage from "./pages/MaintenancePage";
+import { ErrorBoundary } from "./components/ui/error-boundary";
+import NetworkStatusWrapper from "./components/NetworkStatusWrapper";
 
 
-const queryClient = new QueryClient();
+// Configure React Query with timeout and retry settings
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: (failureCount, error: any) => {
+        // Don't retry on 4xx errors (client errors)
+        if (error?.status >= 400 && error?.status < 500) {
+          return false;
+        }
+        // Retry up to 2 times for network/server errors
+        return failureCount < 2;
+      },
+      retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      gcTime: 10 * 60 * 1000, // 10 minutes (formerly cacheTime)
+      refetchOnWindowFocus: false,
+      refetchOnReconnect: true,
+    },
+    mutations: {
+      retry: 1,
+      retryDelay: 1000,
+    },
+  },
+});
 
 const App = () => {
   // Removed the temporary useEffect block for role update
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <AppToaster />
-        <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-          <FacebookPixelTracker />
-          <GoogleAnalyticsTracker /> {/* Add GA4 tracker here */}
-          <SessionContextProvider>
-            <SidebarProvider>
-            <Routes>
+    <ErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <TooltipProvider>
+          <AppToaster />
+          <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+            <NetworkStatusWrapper>
+              <FacebookPixelTracker />
+              <GoogleAnalyticsTracker /> {/* Add GA4 tracker here */}
+              <SessionContextProvider>
+                <SidebarProvider>
+                <Routes>
               {/* Root route: Renders HomePage. ProtectedRoute handles redirection if authenticated. */}
               <Route path="/" element={<ProtectedRoute><HomePage /></ProtectedRoute>} />
               <Route path="/old-home" element={<ProtectedRoute><MarketingHome /></ProtectedRoute>} />
@@ -168,13 +196,16 @@ const App = () => {
               <Route path="/messages" element={<ProtectedLayout allowedRoles={['client', 'admin', 'chartered_accountant', 'creator']}><MessagesPage /></ProtectedLayout>} /> {/* Added creator role */}
 
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+              <Route path="/maintenance" element={<MaintenancePage />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
             </SidebarProvider>
           </SessionContextProvider>
+        </NetworkStatusWrapper>
         </BrowserRouter>
       </TooltipProvider>
     </QueryClientProvider>
+    </ErrorBoundary>
   );
 };
 
