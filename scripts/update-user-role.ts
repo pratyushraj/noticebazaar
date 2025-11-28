@@ -141,8 +141,13 @@ async function updateUserRole() {
       // If changing to creator and onboarding wasn't complete, keep it false
       // If changing from creator to another role, set onboarding_complete to true
       if (userRole === 'creator' && currentProfile.role !== 'creator') {
-        profileData.onboarding_complete = false;
+        // If user is switching TO creator, check if they want onboarding
+        // For fixing dashboard issues, set onboarding_complete to true
+        profileData.onboarding_complete = true; // Changed: set to true to skip onboarding
       } else if (userRole !== 'creator' && currentProfile.role === 'creator') {
+        profileData.onboarding_complete = true;
+      } else if (userRole === 'creator' && currentProfile.role === 'creator') {
+        // Already creator, ensure onboarding_complete is true
         profileData.onboarding_complete = true;
       }
     }

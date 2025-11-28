@@ -37,13 +37,16 @@ const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
     if (session && profile) {
       // Default to Creator Dashboard for all users (unless specific role)
       let targetDashboard = '/creator-dashboard';
+      
+      // Only redirect to specific dashboards for explicit roles
       if (profile.role === 'admin') {
         targetDashboard = '/admin-dashboard';
       } else if (profile.role === 'chartered_accountant') {
         targetDashboard = '/ca-dashboard';
       } else if (profile.role === 'client') {
         targetDashboard = '/client-dashboard';
-      } else if (profile.role === 'creator' || !profile.role) {
+      } else {
+        // Default: Creator Dashboard (for 'creator' role, null role, or any other role)
         // NEW: Creator Onboarding Check
         if (!profile.onboarding_complete && location.pathname !== '/creator-onboarding') {
           targetDashboard = '/creator-onboarding';
