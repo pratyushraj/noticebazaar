@@ -21,6 +21,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import DashboardTutorial from '@/components/onboarding/DashboardTutorial';
 import { ContextualTipsProvider } from '@/components/contextual-tips/ContextualTipsProvider';
 import { DashboardSkeleton as EnhancedDashboardSkeleton } from '@/components/skeletons/DashboardSkeleton';
+import { NotificationDropdown } from '@/components/notifications/NotificationDropdown';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -37,7 +38,6 @@ const CreatorDashboard = () => {
   const signOutMutation = useSignOut();
   const { profile, user, loading: sessionLoading } = useSession();
   const [activeTab, setActiveTab] = useState('home');
-  const [showNotifications, setShowNotifications] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
   const [showLogoutDialog, setShowLogoutDialog] = useState(false);
   const [showWelcomeBanner, setShowWelcomeBanner] = useState(false);
@@ -393,27 +393,6 @@ const CreatorDashboard = () => {
     }
   ];
 
-  // Notifications
-  const notifications = [
-    {
-      id: 1,
-      title: "New message from Anjali Sharma",
-      time: "5 min ago",
-      unread: true
-    },
-    {
-      id: 2,
-      title: "Contract review completed",
-      time: "1 hour ago",
-      unread: true
-    },
-    {
-      id: 3,
-      title: "Payment reminder: ₹75K due today",
-      time: "2 hours ago",
-      unread: false
-    }
-  ];
 
   const getGreeting = () => {
     const hour = new Date().getHours();
@@ -458,19 +437,7 @@ const CreatorDashboard = () => {
             >
               <Search className="w-5 h-5" />
             </button>
-            <button 
-              onClick={() => {
-                setShowNotifications(!showNotifications);
-                triggerHaptic('light');
-              }}
-              className="p-2 hover:bg-white/10 rounded-lg transition-colors relative active:scale-95 min-w-[44px] min-h-[44px] flex items-center justify-center"
-              aria-label={`Notifications (${notifications.filter(n => n.unread).length} unread)`}
-            >
-              <Bell className="w-5 h-5" />
-              <span className="absolute top-0.5 right-0.5 bg-red-500 text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center border-2 border-purple-900 animate-pulse">
-                {notifications.filter(n => n.unread).length}
-              </span>
-            </button>
+            <NotificationDropdown />
             <button 
               onClick={() => {
                 navigate('/creator-profile');
@@ -773,27 +740,6 @@ const CreatorDashboard = () => {
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* Notifications Dropdown */}
-      {showNotifications && (
-        <div className="fixed top-16 right-4 w-80 bg-purple-800/95 backdrop-blur-lg rounded-2xl border border-white/10 shadow-2xl z-50 max-h-96 overflow-y-auto">
-          <div className="p-4 border-b border-white/10">
-            <h3 className="font-semibold">Notifications</h3>
-          </div>
-          <div className="divide-y divide-white/10">
-            {notifications.map(notif => (
-              <div key={notif.id} className={`p-4 hover:bg-white/5 cursor-pointer ${notif.unread ? 'bg-white/5' : ''}`}>
-                <div className="flex items-start gap-3">
-                  {notif.unread && <div className="w-2 h-2 bg-blue-500 rounded-full mt-2"></div>}
-                  <div className="flex-1">
-                    <p className="text-sm font-medium mb-1">{notif.title}</p>
-                    <p className="text-xs text-purple-300">{notif.time}</p>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
 
       {/* Welcome Banner for New Users */}
       <AnimatePresence>

@@ -11,6 +11,7 @@ import AdminDashboard from "./pages/AdminDashboard";
 import CADashboard from "./pages/CADashboard";
 import CreatorDashboard from "./pages/CreatorDashboard";
 import CreatorAnalytics from "./pages/CreatorAnalytics"; // New: Import CreatorDashboard
+import NotificationCenter from "./pages/NotificationCenter";
 import AdminDocuments from "./pages/AdminDocuments";
 import AdminCases from "./pages/AdminCases";
 import AdminClients from "./pages/AdminClients";
@@ -173,8 +174,9 @@ const App = () => {
               <Route path="/creator-onboarding" element={<ProtectedLayout allowedRoles={['creator']}><CreatorOnboarding /></ProtectedLayout>} /> {/* NEW: Onboarding Route */}
               <Route path="/creator-dashboard" element={<ProtectedLayout allowedRoles={['creator']}><CreatorDashboard /></ProtectedLayout>} /> {/* New: Creator Dashboard Route */}
               <Route path="/creator-profile" element={<ProtectedLayout allowedRoles={['creator']}><CreatorProfile /></ProtectedLayout>} />
-              <Route path="/creator-analytics" element={<ProtectedLayout allowedRoles={['creator']}><CreatorAnalytics /></ProtectedLayout>} />
-              <Route path="/partner-program" element={<ProtectedLayout allowedRoles={['creator']}><PartnerProgram /></ProtectedLayout>} />
+                  <Route path="/creator-analytics" element={<ProtectedLayout allowedRoles={['creator']}><CreatorAnalytics /></ProtectedLayout>} />
+                  <Route path="/notifications" element={<ProtectedLayout allowedRoles={['creator']}><NotificationCenter /></ProtectedLayout>} />
+                  <Route path="/partner-program" element={<ProtectedLayout allowedRoles={['creator']}><PartnerProgram /></ProtectedLayout>} />
               {/* NEW: Creator-specific pages */}
               <Route path="/creator-contracts" element={<ProtectedLayout allowedRoles={['creator']}><CreatorContracts /></ProtectedLayout>} />
               <Route path="/brand-deals" element={<ProtectedLayout allowedRoles={['creator']}><CreatorContracts /></ProtectedLayout>} />

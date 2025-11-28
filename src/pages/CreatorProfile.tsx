@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { ArrowLeft, Camera, User, Mail, Phone, MapPin, Instagram, Youtube, Twitter, Globe, Edit, Bell, Lock, CreditCard, Shield, HelpCircle, FileText, LogOut, ChevronRight, Check, X, Download, Trash2, Star, TrendingUp, Award, MessageCircle, Loader2, Sparkles } from 'lucide-react';
+import NotificationPreferences from '@/components/notifications/NotificationPreferences';
 import { useNavigate } from 'react-router-dom';
 import { useSession } from '@/contexts/SessionContext';
 import { useUpdateProfile } from '@/lib/hooks/useProfiles';
@@ -534,37 +535,7 @@ const ProfileSettings = () => {
         {activeSection === 'account' && (
           <div className="space-y-4">
             {/* Notifications */}
-            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-5 border border-white/10">
-              <h2 className="font-semibold text-lg mb-4 flex items-center gap-2">
-                <Bell className="w-5 h-5" />
-                Notifications
-              </h2>
-              <div className="space-y-4">
-                {Object.entries(notificationsEnabled).map(([key, value]) => (
-                  <div key={key} className="flex items-center justify-between">
-                    <div>
-                      <div className="font-medium capitalize">{key.replace('_', ' ')}</div>
-                      <div className="text-sm text-purple-300">
-                        {key === 'deals' && 'Get notified about deal updates'}
-                        {key === 'payments' && 'Payment reminders and confirmations'}
-                        {key === 'contracts' && 'Contract reviews and expirations'}
-                        {key === 'marketing' && 'Product updates and tips'}
-                      </div>
-                    </div>
-                    <button
-                      onClick={() => setNotificationsEnabled({...notificationsEnabled, [key]: !value})}
-                      className={`w-12 h-7 rounded-full transition-colors relative ${
-                        value ? 'bg-green-500' : 'bg-white/20'
-                      }`}
-                    >
-                      <div className={`w-5 h-5 bg-white rounded-full absolute top-1 transition-all ${
-                        value ? 'right-1' : 'left-1'
-                      }`}></div>
-                    </button>
-                  </div>
-                ))}
-              </div>
-            </div>
+            <NotificationPreferences />
 
             {/* Security */}
             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-5 border border-white/10">

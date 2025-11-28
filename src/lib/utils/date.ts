@@ -1,75 +1,64 @@
 /**
- * Date formatting utilities for consistent date display across the app
+ * Date Utility Functions
+ * 
+ * Simple date formatting utilities (alternative to date-fns)
  */
 
 /**
- * Format a date to "MMM do, yyyy" format (e.g., "Nov 19, 2025")
+ * Format a date as "X time ago" (e.g., "2 hours ago", "3 days ago")
+ * Compatible with date-fns formatDistanceToNow API
  */
-export function formatDate(date: Date | string | null | undefined): string {
-  if (!date) return 'N/A';
-  
-  const dateObj = typeof date === 'string' ? new Date(date) : date;
-  if (isNaN(dateObj.getTime())) return 'N/A';
-  
-  return dateObj.toLocaleDateString('en-IN', {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
-  });
-}
-
-/**
- * Format a date to "MMM do, yyyy" format with time (e.g., "Nov 19, 2025, 2:30 PM")
- */
-export function formatDateTime(date: Date | string | null | undefined): string {
-  if (!date) return 'N/A';
-  
-  const dateObj = typeof date === 'string' ? new Date(date) : date;
-  if (isNaN(dateObj.getTime())) return 'N/A';
-  
-  return dateObj.toLocaleDateString('en-IN', {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
-    hour: 'numeric',
-    minute: '2-digit',
-  });
-}
-
-/**
- * Format relative time (e.g., "2 hours ago", "3 days ago")
- */
-export function formatRelativeTime(date: Date | string | null | undefined): string {
-  if (!date) return 'N/A';
-  
-  const dateObj = typeof date === 'string' ? new Date(date) : date;
-  if (isNaN(dateObj.getTime())) return 'N/A';
-  
+export function formatDistanceToNow(date: Date | string, options?: { addSuffix?: boolean }): string {
   const now = new Date();
-  const diffMs = now.getTime() - dateObj.getTime();
-  const diffMins = Math.floor(diffMs / (1000 * 60));
-  const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-  
-  if (diffMins < 1) return 'Just now';
-  if (diffMins < 60) return `${diffMins} ${diffMins === 1 ? 'minute' : 'minutes'} ago`;
-  if (diffHours < 24) return `${diffHours} ${diffHours === 1 ? 'hour' : 'hours'} ago`;
-  if (diffDays < 30) return `${diffDays} ${diffDays === 1 ? 'day' : 'days'} ago`;
-  
-  return formatDate(dateObj);
+  const then = typeof date === 'string' ? new Date(date) : date;
+  const diffMs = now.getTime() - then.getTime();
+  const diffSeconds = Math.floor(diffMs / 1000);
+  const diffMinutes = Math.floor(diffSeconds / 60);
+  const diffHours = Math.floor(diffMinutes / 60);
+  const diffDays = Math.floor(diffHours / 24);
+  const diffWeeks = Math.floor(diffDays / 7);
+  const diffMonths = Math.floor(diffDays / 30);
+  const diffYears = Math.floor(diffDays / 365);
+
+  let result: string;
+
+  if (diffSeconds < 60) {
+    result = 'just now';
+  } else if (diffMinutes < 60) {
+    result = `${diffMinutes} minute${diffMinutes > 1 ? 's' : ''} ago`;
+  } else if (diffHours < 24) {
+    result = `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
+  } else if (diffDays < 7) {
+    result = `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
+  } else if (diffWeeks < 4) {
+    result = `${diffWeeks} week${diffWeeks > 1 ? 's' : ''} ago`;
+  } else if (diffMonths < 12) {
+    result = `${diffMonths} month${diffMonths > 1 ? 's' : ''} ago`;
+  } else {
+    result = `${diffYears} year${diffYears > 1 ? 's' : ''} ago`;
+  }
+
+  return options?.addSuffix !== false ? result : result.replace(' ago', '');
 }
 
 /**
- * Sort deals by due date (ascending)
+ * Format a date as a readable string
  */
-export function sortByDueDate<T extends { payment_expected_date?: string | null }>(
-  deals: T[]
-): T[] {
-  return [...deals].sort((a, b) => {
-    if (!a.payment_expected_date && !b.payment_expected_date) return 0;
-    if (!a.payment_expected_date) return 1;
-    if (!b.payment_expected_date) return -1;
-    return new Date(a.payment_expected_date).getTime() - new Date(b.payment_expected_date).getTime();
-  });
-}
+export function format(date: Date | string, formatStr: string): string {
+  const d = typeof date === 'string' ? new Date(date) : date;
+  
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  const hours = String(d.getHours()).padStart(2, '0');
+  const minutes = String(d.getMinutes()).padStart(2, '0');
+  const seconds = String(d.getSeconds()).padStart(2, '0');
 
+  return formatStr
+    .replace('yyyy', String(year))
+    .replace('MM', month)
+    .replace('dd', day)
+    .replace('HH', hours)
+    .replace('mm', minutes)
+    .replace('ss', seconds);
+}
