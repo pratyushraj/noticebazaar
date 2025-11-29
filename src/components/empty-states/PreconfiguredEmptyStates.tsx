@@ -41,24 +41,24 @@ export const NoMessagesEmptyState: React.FC<NoMessagesEmptyStateProps> = ({
   variant = 'default',
 }) => {
   return (
-    <div className="flex flex-col items-center px-5 pt-6 pb-[calc(120px+env(safe-area-inset-bottom))]">
+    <div className="flex flex-col items-center px-5 pt-4 pb-4">
       {/* Empty Icon */}
-      <div className="w-20 h-20 rounded-full bg-white/10 backdrop-blur-xl border border-white/15 flex items-center justify-center mb-4 shadow-[0_4px_12px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.1)]">
-        <MessageSquare className="w-10 h-10 text-white/60" />
+      <div className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-white/10 backdrop-blur-xl border border-white/15 flex items-center justify-center mb-3 md:mb-4 shadow-[0_4px_12px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.1)]">
+        <MessageSquare className="w-8 h-8 md:w-10 md:h-10 text-white/60" />
       </div>
 
       {/* Title */}
-      <h2 className="text-[22px] font-semibold text-white mb-2">
+      <h2 className="text-[20px] md:text-[22px] font-semibold text-white mb-1 md:mb-2">
         No Messages Yet
       </h2>
 
       {/* Subtitle */}
-      <p className="text-center text-[15px] leading-relaxed text-white/70 mb-8 max-w-sm">
+      <p className="text-center text-[14px] md:text-[15px] leading-relaxed text-white/70 mb-4 md:mb-8 max-w-sm">
         Start a conversation with your advisor to get help with contracts, payments, or legal questions.
       </p>
 
       {/* Action Buttons */}
-      <div className="grid grid-cols-2 gap-3 w-full max-w-md">
+      <div className="grid grid-cols-2 gap-2 md:gap-3 w-full max-w-md">
         {onUploadContract && (
           <EmptyActionButton
             icon={<Upload className="w-5 h-5" />}

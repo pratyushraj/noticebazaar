@@ -82,7 +82,7 @@ const DashboardTutorial: React.FC<DashboardTutorialProps> = ({ onComplete, onSki
       id: 'earnings',
       title: 'Your Earnings at a Glance',
       description: 'See your total earnings this month. The green percentage shows how much you\'ve grown compared to last month!',
-      position: 'top',
+      position: 'center',
       highlight: 'earnings-card',
       pointer: 'top',
     },
@@ -90,7 +90,7 @@ const DashboardTutorial: React.FC<DashboardTutorialProps> = ({ onComplete, onSki
       id: 'stats',
       title: 'Quick Stats',
       description: 'Track your next payout, active deals, pending payments, and protection score - all in one place.',
-      position: 'top',
+      position: 'center',
       highlight: 'stats-grid',
       pointer: 'top',
     },
@@ -98,7 +98,7 @@ const DashboardTutorial: React.FC<DashboardTutorialProps> = ({ onComplete, onSki
       id: 'upload',
       title: 'Upload Your First Contract',
       description: 'Tap here to upload any brand contract. Our AI will review it in 30 seconds and tell you if it\'s safe to sign!',
-      position: 'bottom',
+      position: 'center',
       highlight: 'upload-fab',
       pointer: 'bottom',
       action: 'Try It Now',
@@ -108,7 +108,7 @@ const DashboardTutorial: React.FC<DashboardTutorialProps> = ({ onComplete, onSki
       id: 'deals-tab',
       title: 'Manage Your Deals',
       description: 'Tap here to see all your brand partnerships. Track progress, deadlines, and payments for each deal.',
-      position: 'bottom',
+      position: 'center',
       highlight: 'deals-nav',
       pointer: 'bottom',
     },
@@ -116,23 +116,15 @@ const DashboardTutorial: React.FC<DashboardTutorialProps> = ({ onComplete, onSki
       id: 'payments-tab',
       title: 'Track Every Payment',
       description: 'See all your income, pending payments, and expenses. Never miss a payment again!',
-      position: 'bottom',
+      position: 'center',
       highlight: 'payments-nav',
-      pointer: 'bottom',
-    },
-    {
-      id: 'protection-tab',
-      title: 'Stay Protected',
-      description: 'Your protection score shows how safe your contracts are. Upload contracts here for AI review.',
-      position: 'bottom',
-      highlight: 'protection-nav',
       pointer: 'bottom',
     },
     {
       id: 'messages-tab',
       title: 'Get Expert Help',
       description: 'Chat with our legal and tax advisors anytime. They understand creator businesses and can help with any questions!',
-      position: 'bottom',
+      position: 'center',
       highlight: 'messages-nav',
       pointer: 'bottom',
     },
@@ -170,14 +162,11 @@ const DashboardTutorial: React.FC<DashboardTutorialProps> = ({ onComplete, onSki
     // Always show payments tab
     steps.push(allTutorialSteps[5]);
 
-    // Always show protection tab
+    // Show messages tab only if advisor exists (or always for now)
     steps.push(allTutorialSteps[6]);
 
-    // Show messages tab only if advisor exists (or always for now)
-    steps.push(allTutorialSteps[7]);
-
     // Always show completion
-    steps.push(allTutorialSteps[8]);
+    steps.push(allTutorialSteps[7]);
 
     return steps;
   }, [userState]);
@@ -324,19 +313,21 @@ const DashboardTutorial: React.FC<DashboardTutorialProps> = ({ onComplete, onSki
           transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
           className={`fixed z-[9999] ${
             step.position === 'center'
-              ? 'top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2'
+              ? 'inset-0 flex items-center justify-center p-4'
               : step.position === 'top'
-              ? 'top-1/4 left-1/2 -translate-x-1/2'
-              : 'bottom-32 left-1/2 -translate-x-1/2'
+              ? 'top-1/4 left-1/2 -translate-x-1/2 w-[calc(100%-2rem)] max-w-[340px]'
+              : 'bottom-32 left-1/2 -translate-x-1/2 w-[calc(100%-2rem)] max-w-[340px]'
           }`}
         >
-          <div className="relative w-[88%] max-w-[340px] mx-auto">
+          <div className={`relative min-w-0 max-w-full ${
+            step.position === 'center' ? 'w-full max-w-[340px]' : 'w-full mx-auto'
+          }`}>
             {/* Glassmorphic Card */}
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-              className="relative rounded-[26px] p-6 pb-5 bg-white/12 backdrop-blur-xl border border-white/15 shadow-[0px_16px_40px_rgba(0,0,0,0.35)] text-white"
+              className="relative rounded-[26px] p-4 sm:p-6 pb-4 sm:pb-5 bg-white/12 backdrop-blur-xl border border-white/15 shadow-[0px_16px_40px_rgba(0,0,0,0.35)] text-white max-h-[calc(100vh-120px)] overflow-y-auto overflow-x-hidden min-w-0 max-w-full"
             >
               {/* Center Arrow */}
               {step.pointer && (
@@ -379,13 +370,13 @@ const DashboardTutorial: React.FC<DashboardTutorialProps> = ({ onComplete, onSki
               )}
 
               {/* Header row */}
-              <div className="flex items-start justify-between mb-3">
-                <h2 className="text-[22px] font-semibold leading-tight">
+              <div className="flex items-start justify-between mb-3 gap-2 min-w-0">
+                <h2 className="text-[22px] font-semibold leading-tight break-words flex-1 min-w-0">
                   {step.title}
                 </h2>
                 <button
                   onClick={handleNext}
-                  className="text-white/70 hover:text-white transition active:scale-95"
+                  className="text-white/70 hover:text-white transition active:scale-95 flex-shrink-0 ml-2"
                   aria-label="Skip this step"
                 >
                   ✕
@@ -393,7 +384,7 @@ const DashboardTutorial: React.FC<DashboardTutorialProps> = ({ onComplete, onSki
               </div>
 
               {/* Description */}
-              <p className="text-[15px] text-white/80 leading-relaxed mb-6">
+              <p className="text-[15px] text-white/80 leading-relaxed mb-6 break-words">
                 {step.description}
               </p>
 
@@ -414,32 +405,32 @@ const DashboardTutorial: React.FC<DashboardTutorialProps> = ({ onComplete, onSki
               </div>
 
               {/* Buttons */}
-              <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center justify-between gap-1.5 sm:gap-2 min-w-0">
                 {currentStep > 0 ? (
                   <button
                     onClick={handlePrevious}
-                    className="px-4 py-2.5 rounded-full bg-white/10 border border-white/20 text-white/80 flex items-center gap-1.5 text-[15px] active:scale-95 transition flex-shrink-0"
+                    className="px-2 sm:px-3 py-2 sm:py-2.5 rounded-full bg-white/10 border border-white/20 text-white/80 flex items-center gap-0.5 sm:gap-1 text-[13px] sm:text-[14px] active:scale-95 transition flex-shrink-0 min-w-0"
                   >
-                    <span className="text-lg">←</span> Back
+                    <span className="text-sm sm:text-base">←</span> <span className="hidden sm:inline">Back</span>
                   </button>
                 ) : (
-                  <div className="flex-shrink-0" />
+                  <div className="flex-shrink-0 w-0" />
                 )}
                 
                 <button
                   onClick={handleNext}
-                  className="px-5 py-2.5 rounded-full bg-white/10 border border-white/20 text-white/80 flex items-center gap-2 text-[15px] active:scale-95 transition flex-1"
+                  className="px-2 sm:px-3 py-2 sm:py-2.5 rounded-full bg-white/10 border border-white/20 text-white/80 flex items-center justify-center text-[13px] sm:text-[14px] active:scale-95 transition flex-1 min-w-0"
                 >
                   Later
                 </button>
 
                 <button
                   onClick={step.interactive ? handleInteractiveClick : handleNext}
-                  className="px-6 py-2.5 rounded-full bg-gradient-to-r from-purple-500 to-blue-500 shadow-[0_4px_14px_rgba(0,0,0,0.3)] text-white font-medium flex items-center gap-2 text-[15px] active:scale-95 transition flex-1"
+                  className="px-3 sm:px-4 py-2 sm:py-2.5 rounded-full bg-gradient-to-r from-purple-500 to-blue-500 shadow-[0_4px_14px_rgba(0,0,0,0.3)] text-white font-medium flex items-center justify-center gap-1 sm:gap-1.5 text-[13px] sm:text-[14px] active:scale-95 transition flex-1 min-w-0"
                 >
-                  {step.action || (currentStep === tutorialSteps.length - 1 ? 'Finish' : 'Next')}
+                  <span className="truncate">{step.action || (currentStep === tutorialSteps.length - 1 ? 'Finish' : 'Next')}</span>
                   {currentStep < tutorialSteps.length - 1 && !step.action && (
-                    <span className="text-lg">→</span>
+                    <span className="text-sm sm:text-base flex-shrink-0">→</span>
                   )}
                 </button>
               </div>

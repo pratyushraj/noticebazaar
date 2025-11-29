@@ -394,7 +394,8 @@ function ChatWindowScoped({
   onSend,
   onSwitchAdvisor,
   currentUserAvatar,
-  currentUserName
+  currentUserName,
+  isLoading
 }: { 
   advisor?: Advisor | null;
   advisors?: Advisor[];
@@ -403,6 +404,7 @@ function ChatWindowScoped({
   onSwitchAdvisor?: (advisorId: string) => void;
   currentUserAvatar?: string;
   currentUserName?: string;
+  isLoading?: boolean;
 }) {
   const navigate = useNavigate();
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -415,13 +417,13 @@ function ChatWindowScoped({
   }, [messages]);
 
   return (
-    <div className="flex flex-col rounded-none md:rounded-[20px] md:border md:border-white/15 bg-gradient-to-b from-white/5 to-transparent backdrop-blur-[40px] saturate-[180%] md:shadow-[0_8px_32px_rgba(0,0,0,0.3)] flex-1 min-h-0">
+    <div className="flex flex-col rounded-none md:rounded-[20px] md:border md:border-white/15 bg-gradient-to-b from-white/5 to-transparent backdrop-blur-[40px] saturate-[180%] md:shadow-[0_8px_32px_rgba(0,0,0,0.3)] flex-1 min-h-0 overflow-hidden">
       <ChatHeaderScoped advisor={advisor} advisors={advisors} onSwitchAdvisor={onSwitchAdvisor} />
 
-      <div className="flex-1 overflow-y-auto min-h-0">
+      <div className="flex-1 overflow-y-auto min-h-0 overflow-x-hidden overscroll-contain">
         <div className="p-4 md:p-6 lg:p-8">
           {!hasMessages ? (
-            <div className="mb-6 md:mb-8">
+            <div className="mb-2 md:mb-8">
               <NoMessagesEmptyState
                 onStartChat={() => onSend?.('Hello! I need help.')}
                 onUploadContract={() => {
@@ -429,6 +431,20 @@ function ChatWindowScoped({
                   navigate('/contract-upload');
                 }}
               />
+              
+              {/* Input bar inside empty state */}
+              <div 
+                className="mt-3 md:mt-8 px-0 pt-2 pb-2 flex-shrink-0 bg-transparent"
+                style={{ 
+                  paddingBottom: `max(8px, env(safe-area-inset-bottom, 8px))`,
+                  paddingTop: '8px'
+                }}
+              >
+                <MessageInputScoped
+                  onSend={onSend}
+                  isLoading={isLoading}
+                />
+              </div>
             </div>
           ) : (
             <div className="space-y-4">
@@ -448,6 +464,22 @@ function ChatWindowScoped({
           )}
         </div>
       </div>
+
+      {/* Input bar at bottom when there are messages */}
+      {hasMessages && (
+        <div 
+          className="px-4 md:px-6 lg:px-8 pt-3 pb-3 flex-shrink-0 bg-transparent border-t border-white/10 md:border-t-0"
+          style={{ 
+            paddingBottom: `max(12px, env(safe-area-inset-bottom, 12px))`,
+            paddingTop: '12px'
+          }}
+        >
+          <MessageInputScoped
+            onSend={onSend}
+            isLoading={isLoading}
+          />
+        </div>
+      )}
 
     </div>
   );
@@ -754,7 +786,7 @@ export default function MessagesPage() {
     <ContextualTipsProvider currentView="messages">
     <div className="flex flex-col h-[100dvh] md:h-screen md:p-6 overflow-hidden">
       {/* Scrollable content - shrinks when keyboard opens */}
-      <div className="flex-1 overflow-y-auto min-h-0 px-0 pb-0 md:pb-0" style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
+      <div className="flex-1 overflow-y-auto min-h-0 px-0 pb-0 md:pb-0 overflow-x-hidden" style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
         <div className="w-full max-w-[460px] mx-auto md:mx-0 md:max-w-none">
           {/* Back to Dashboard Button */}
           <div className="flex justify-start mb-4">
@@ -794,6 +826,7 @@ export default function MessagesPage() {
                 }}
                 currentUserAvatar={profile?.avatar_url || undefined}
                 currentUserName={currentUserName}
+                isLoading={sendMessageMutation.isPending || isLoadingMessages || cometChat.isLoading}
               />
             </div>
           </div>
@@ -803,20 +836,6 @@ export default function MessagesPage() {
             © 2025 NoticeBazaar — Secure Legal Portal
           </footer>
         </div>
-      </div>
-
-      {/* FIXED input bar - iOS style, docks to keyboard */}
-      <div 
-        className="fixed bottom-0 left-0 right-0 md:relative md:bottom-auto md:left-auto md:right-auto w-full max-w-[460px] mx-auto md:max-w-none md:mx-0 px-4 md:px-5 pt-3 md:pb-3 flex-shrink-0 z-[60] bg-white/[0.08] backdrop-blur-[40px] saturate-[180%] border-t border-white/10 md:border-t-0 md:bg-transparent transition-all duration-300 ease-out safe-area-inset-bottom"
-        style={{ 
-          paddingBottom: `max(12px, env(safe-area-inset-bottom, 12px))`,
-          paddingTop: '12px'
-        }}
-      >
-        <MessageInputScoped
-          onSend={handleSend}
-          isLoading={sendMessageMutation.isPending || isLoadingMessages || cometChat.isLoading}
-        />
       </div>
     </div>
     </ContextualTipsProvider>

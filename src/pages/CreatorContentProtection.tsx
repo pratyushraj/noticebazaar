@@ -1,98 +1,163 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Shield, FileText, AlertTriangle, CheckCircle, Clock, Lock, Upload, AlertCircle, Calendar, TrendingUp, Zap, ChevronRight } from 'lucide-react';
 import { SegmentedControl } from '@/components/ui/segmented-control';
 import { ContextualTipsProvider } from '@/components/contextual-tips/ContextualTipsProvider';
+import { useSession } from '@/contexts/SessionContext';
+import { useBrandDeals } from '@/lib/hooks/useBrandDeals';
+import { NoContractsEmptyState } from '@/components/empty-states/PreconfiguredEmptyStates';
+import { useNavigate } from 'react-router-dom';
 
 const CreatorContentProtection = () => {
   const [activeTab, setActiveTab] = useState('contracts');
+  const { profile } = useSession();
+  const navigate = useNavigate();
+  
+  const { data: brandDeals = [], isLoading } = useBrandDeals({
+    creatorId: profile?.id,
+    enabled: !!profile?.id,
+  });
 
-  const protectionScore = 85;
+  // Transform brand deals into contracts format
+  const contracts = useMemo(() => {
+    if (!brandDeals || brandDeals.length === 0) return [];
+    
+    return brandDeals
+      .filter(deal => deal.contract_file_url) // Only show deals with contracts
+      .map(deal => {
+        const uploadedDate = deal.created_at ? new Date(deal.created_at) : new Date();
+        const expiryDate = deal.due_date ? new Date(deal.due_date) : null;
+        const daysUntilExpiry = expiryDate ? Math.ceil((expiryDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24)) : null;
+        
+        // Determine risk level based on status and expiry
+        let risk: 'low' | 'medium' | 'high' = 'low';
+        let status: 'active' | 'pending_review' | 'needs_attention' = 'active';
+        let issues = 0;
+        
+        if (deal.status === 'Payment Pending' && deal.payment_expected_date) {
+          const paymentDue = new Date(deal.payment_expected_date);
+          const daysUntilPayment = Math.ceil((paymentDue.getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+          if (daysUntilPayment < 0) {
+            risk = 'high';
+            status = 'needs_attention';
+            issues++;
+          } else if (daysUntilPayment <= 7) {
+            risk = 'medium';
+            status = 'pending_review';
+          }
+        }
+        
+        if (daysUntilExpiry !== null && daysUntilExpiry <= 30) {
+          if (daysUntilExpiry <= 7) {
+            risk = 'high';
+            status = 'needs_attention';
+            issues++;
+          } else if (daysUntilExpiry <= 30) {
+            risk = risk === 'high' ? 'high' : 'medium';
+            if (status === 'active') status = 'pending_review';
+          }
+        }
+        
+        // Mock clause status (in real app, this would come from AI analysis)
+        const clauses = {
+          payment: deal.status === 'Completed' ? 'verified' : (risk === 'high' ? 'issue' : 'verified'),
+          termination: 'verified',
+          ip_rights: 'verified',
+          exclusivity: 'warning'
+        };
+        
+        // Count issues in clauses
+        if (clauses.payment === 'issue') issues++;
+        if (clauses.exclusivity === 'warning') issues++;
+        
+        return {
+          id: deal.id,
+          title: `${deal.brand_name} ${deal.platform || 'Partnership'} Agreement`,
+          brand: deal.brand_name,
+          status,
+          risk,
+          uploaded: uploadedDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+          expiry: expiryDate ? expiryDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'N/A',
+          value: deal.deal_amount || 0,
+          reviewed: !!deal.contract_file_url,
+          issues,
+          clauses,
+          dealId: deal.id,
+        };
+      });
+  }, [brandDeals]);
 
-  const contracts = [
-    {
-      id: 1,
-      title: "TechGear Pro Sponsorship Agreement",
-      brand: "TechGear",
-      status: "active",
-      risk: "low",
-      uploaded: "Nov 20, 2024",
-      expiry: "Dec 31, 2024",
-      value: 150000,
-      reviewed: true,
-      issues: 0,
-      clauses: {
-        payment: "verified",
-        termination: "verified",
-        ip_rights: "verified",
-        exclusivity: "warning"
+  // Calculate protection score from contracts
+  const protectionScore = useMemo(() => {
+    if (contracts.length === 0) return 0;
+    
+    const totalContracts = contracts.length;
+    const reviewedContracts = contracts.filter(c => c.reviewed).length;
+    const lowRiskContracts = contracts.filter(c => c.risk === 'low').length;
+    const contractsWithNoIssues = contracts.filter(c => c.issues === 0).length;
+    
+    // Score calculation: 40% reviewed, 30% low risk, 30% no issues
+    const reviewedScore = (reviewedContracts / totalContracts) * 40;
+    const riskScore = (lowRiskContracts / totalContracts) * 30;
+    const issuesScore = (contractsWithNoIssues / totalContracts) * 30;
+    
+    return Math.round(reviewedScore + riskScore + issuesScore);
+  }, [contracts]);
+
+  // Generate alerts from contracts
+  const alerts = useMemo(() => {
+    const alertList: Array<{
+      id: string;
+      type: 'urgent' | 'warning' | 'info';
+      title: string;
+      description: string;
+      action: string;
+      time: string;
+    }> = [];
+    
+    contracts.forEach(contract => {
+      const expiryDate = contract.expiry !== 'N/A' ? new Date(contract.expiry) : null;
+      if (expiryDate) {
+        const daysUntilExpiry = Math.ceil((expiryDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+        if (daysUntilExpiry <= 7 && daysUntilExpiry > 0) {
+          alertList.push({
+            id: `expiry-${contract.id}`,
+            type: 'urgent',
+            title: 'Contract Expiring Soon',
+            description: `${contract.brand} agreement expires in ${daysUntilExpiry} ${daysUntilExpiry === 1 ? 'day' : 'days'}`,
+            action: 'Review & Renew',
+            time: daysUntilExpiry === 1 ? 'Today' : `${daysUntilExpiry} days left`,
+          });
+        }
       }
-    },
-    {
-      id: 2,
-      title: "Fashion Nova Brand Partnership",
-      brand: "Fashion Nova",
-      status: "pending_review",
-      risk: "medium",
-      uploaded: "Nov 24, 2024",
-      expiry: "Jan 31, 2025",
-      value: 85000,
-      reviewed: false,
-      issues: 2,
-      clauses: {
-        payment: "verified",
-        termination: "issue",
-        ip_rights: "warning",
-        exclusivity: "verified"
+      
+      if (contract.issues > 0) {
+        alertList.push({
+          id: `issues-${contract.id}`,
+          type: 'warning',
+          title: 'Contract Needs Review',
+          description: `${contract.brand} contract has ${contract.issues} ${contract.issues === 1 ? 'issue' : 'issues'} that need attention`,
+          action: 'Get Legal Review',
+          time: 'Needs attention',
+        });
       }
-    },
-    {
-      id: 3,
-      title: "SkillShare Affiliate Agreement",
-      brand: "SkillShare",
-      status: "needs_attention",
-      risk: "high",
-      uploaded: "Nov 22, 2024",
-      expiry: "Nov 30, 2024",
-      value: 45000,
-      reviewed: true,
-      issues: 3,
-      clauses: {
-        payment: "issue",
-        termination: "issue",
-        ip_rights: "verified",
-        exclusivity: "warning"
-      }
+    });
+    
+    // Add info alert if no contracts
+    if (contracts.length === 0) {
+      alertList.push({
+        id: 'no-contracts',
+        type: 'info',
+        title: 'Upload Your First Contract',
+        description: 'Upload contracts to get AI-powered protection and risk analysis',
+        action: 'Upload Now',
+        time: 'Get started',
+      });
     }
-  ];
-
-  const alerts = [
-    {
-      id: 1,
-      type: "urgent",
-      title: "Contract Expiring Soon",
-      description: "SkillShare agreement expires in 6 days",
-      action: "Review & Renew",
-      time: "2 hours ago"
-    },
-    {
-      id: 2,
-      type: "warning",
-      title: "Payment Terms Need Review",
-      description: "Fashion Nova contract has unclear payment schedule",
-      action: "Get Legal Review",
-      time: "1 day ago"
-    },
-    {
-      id: 3,
-      type: "info",
-      title: "IP Rights Protection Available",
-      description: "Upgrade to protect your content rights across all deals",
-      action: "Learn More",
-      time: "3 days ago"
-    }
-  ];
+    
+    return alertList;
+  }, [contracts]);
 
   const protectionFeatures = [
     {
@@ -181,7 +246,18 @@ const CreatorContentProtection = () => {
         </div>
 
         <div className="text-[15px] text-purple-200 leading-relaxed">
-          <span className="text-green-400 font-semibold">Great job!</span> Your contracts are well-protected. Review 2 pending items to reach 100.
+          {contracts.length === 0 ? (
+            <span>Upload your first contract to get a protection score and AI-powered analysis.</span>
+          ) : protectionScore >= 80 ? (
+            <span className="text-green-400 font-semibold">Great job!</span>
+          ) : protectionScore >= 60 ? (
+            <span>Your contracts are mostly protected. Review pending items to improve your score.</span>
+          ) : (
+            <span>Upload contracts and review issues to improve your protection score.</span>
+          )}
+          {contracts.length > 0 && contracts.filter(c => c.issues > 0 || c.status === 'pending_review').length > 0 && (
+            <span> Review {contracts.filter(c => c.issues > 0 || c.status === 'pending_review').length} pending {contracts.filter(c => c.issues > 0 || c.status === 'pending_review').length === 1 ? 'item' : 'items'} to reach 100.</span>
+          )}
         </div>
       </div>
 
@@ -202,7 +278,14 @@ const CreatorContentProtection = () => {
       {/* Contracts Tab */}
       {activeTab === 'contracts' && (
         <div className="space-y-3">
-          {contracts.map(contract => {
+          {isLoading ? (
+            <div className="text-center py-12 text-purple-200">Loading contracts...</div>
+          ) : contracts.length === 0 ? (
+            <NoContractsEmptyState
+              onUpload={() => navigate('/contract-upload')}
+            />
+          ) : (
+            contracts.map(contract => {
             const StatusIcon = statusConfig[contract.status as ContractStatus].icon;
             
             return (
@@ -275,21 +358,35 @@ const CreatorContentProtection = () => {
                 </div>
               </div>
             );
-          })}
+          }))}
 
           {/* Upload New Contract */}
-          <button className="w-full bg-white/[0.08] backdrop-blur-[40px] saturate-[180%] rounded-[24px] p-6 md:p-8 border-2 border-dashed border-white/25 hover:bg-white/[0.12] hover:border-white/35 transition-all duration-200 active:scale-95 shadow-[0_4px_16px_rgba(0,0,0,0.2)]">
-            <Upload className="w-8 h-8 text-purple-300 mx-auto mb-2" />
-            <div className="text-sm font-medium mb-1">Upload New Contract</div>
-            <div className="text-xs text-purple-300">Get instant AI-powered review</div>
-          </button>
+          {contracts.length > 0 && (
+            <button 
+              onClick={() => navigate('/contract-upload')}
+              className="w-full bg-white/[0.08] backdrop-blur-[40px] saturate-[180%] rounded-[24px] p-6 md:p-8 border-2 border-dashed border-white/25 hover:bg-white/[0.12] hover:border-white/35 transition-all duration-200 active:scale-95 shadow-[0_4px_16px_rgba(0,0,0,0.2)]"
+            >
+              <Upload className="w-8 h-8 text-purple-300 mx-auto mb-2" />
+              <div className="text-sm font-medium mb-1">Upload New Contract</div>
+              <div className="text-xs text-purple-300">Get instant AI-powered review</div>
+            </button>
+          )}
         </div>
       )}
 
       {/* Alerts Tab */}
       {activeTab === 'alerts' && (
         <div className="space-y-3">
-          {alerts.map(alert => {
+          {isLoading ? (
+            <div className="text-center py-12 text-purple-200">Loading alerts...</div>
+          ) : alerts.length === 0 ? (
+            <div className="bg-white/[0.08] backdrop-blur-[40px] saturate-[180%] rounded-[24px] p-8 border border-white/15 shadow-[0_8px_32px_rgba(0,0,0,0.3)] text-center">
+              <CheckCircle className="w-12 h-12 text-green-400 mx-auto mb-4" />
+              <h3 className="text-xl font-semibold mb-2">All Clear!</h3>
+              <p className="text-purple-200">No alerts at the moment. Your contracts are in good shape.</p>
+            </div>
+          ) : (
+            alerts.map(alert => {
             const alertType = alert.type as AlertType;
             const AlertIcon = alertConfig[alertType].icon;
             
@@ -318,7 +415,7 @@ const CreatorContentProtection = () => {
                 </div>
               </div>
             );
-          })}
+          }))}
         </div>
       )}
 

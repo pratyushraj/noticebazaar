@@ -90,6 +90,183 @@ const ProfileSettings = () => {
     };
   }, [brandDeals, partnerStats]);
 
+  // Build platforms array from actual profile data
+  const platforms = useMemo(() => {
+    const platformList = [];
+    
+    if (profile?.youtube_channel_id) {
+      const followers = profile.youtube_subs || 0;
+      platformList.push({
+        name: "YouTube",
+        handle: profile.youtube_channel_id,
+        followers: followers >= 1000 ? `${(followers / 1000).toFixed(0)}K` : followers.toString(),
+        connected: true,
+        color: "bg-red-500"
+      });
+    }
+    
+    if (profile?.instagram_handle) {
+      const followers = profile.instagram_followers || 0;
+      platformList.push({
+        name: "Instagram",
+        handle: profile.instagram_handle,
+        followers: followers >= 1000 ? `${(followers / 1000).toFixed(0)}K` : followers.toString(),
+        connected: true,
+        color: "bg-pink-500"
+      });
+    }
+    
+    if (profile?.twitter_handle) {
+      const followers = profile.twitter_followers || 0;
+      platformList.push({
+        name: "Twitter",
+        handle: profile.twitter_handle,
+        followers: followers >= 1000 ? `${(followers / 1000).toFixed(0)}K` : followers.toString(),
+        connected: false,
+        color: "bg-blue-400"
+      });
+    }
+    
+    if (profile?.tiktok_handle) {
+      const followers = profile.tiktok_followers || 0;
+      platformList.push({
+        name: "TikTok",
+        handle: profile.tiktok_handle,
+        followers: followers >= 1000 ? `${(followers / 1000).toFixed(0)}K` : followers.toString(),
+        connected: false,
+        color: "bg-black"
+      });
+    }
+    
+    if (profile?.facebook_profile_url) {
+      const followers = profile.facebook_followers || 0;
+      platformList.push({
+        name: "Facebook",
+        handle: profile.facebook_profile_url,
+        followers: followers >= 1000 ? `${(followers / 1000).toFixed(0)}K` : followers.toString(),
+        connected: false,
+        color: "bg-blue-600"
+      });
+    }
+    
+    return platformList;
+  }, [profile]);
+
+  // Build achievements array from actual brand deals data
+  const achievements = useMemo(() => {
+    const achievementList = [];
+    const totalDeals = brandDeals.length;
+    const totalEarnings = brandDeals
+      .filter(deal => deal.status === 'Completed' && deal.payment_received_date)
+      .reduce((sum, deal) => sum + (deal.deal_amount || 0), 0);
+    const protectionScore = calculatedStats.protectionScore;
+    
+    // First Deal achievement
+    if (totalDeals >= 1) {
+      const firstDeal = brandDeals
+        .filter(deal => deal.status === 'Completed')
+        .sort((a, b) => {
+          const dateA = a.payment_received_date ? new Date(a.payment_received_date).getTime() : 0;
+          const dateB = b.payment_received_date ? new Date(b.payment_received_date).getTime() : 0;
+          return dateA - dateB;
+        })[0];
+      
+      const earnedDate = firstDeal?.payment_received_date 
+        ? new Date(firstDeal.payment_received_date).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
+        : profile?.updated_at 
+          ? new Date(profile.updated_at).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
+          : null;
+      
+      achievementList.push({
+        id: 1,
+        title: "First Deal",
+        icon: Star,
+        earned: true,
+        date: earnedDate || "Recently"
+      });
+    } else {
+      achievementList.push({
+        id: 1,
+        title: "First Deal",
+        icon: Star,
+        earned: false,
+        progress: 0
+      });
+    }
+    
+    // 10 Deals achievement
+    if (totalDeals >= 10) {
+      const tenthDeal = brandDeals
+        .filter(deal => deal.status === 'Completed')
+        .sort((a, b) => {
+          const dateA = a.payment_received_date ? new Date(a.payment_received_date).getTime() : 0;
+          const dateB = b.payment_received_date ? new Date(b.payment_received_date).getTime() : 0;
+          return dateA - dateB;
+        })[9];
+      
+      const earnedDate = tenthDeal?.payment_received_date 
+        ? new Date(tenthDeal.payment_received_date).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
+        : null;
+      
+      achievementList.push({
+        id: 2,
+        title: "10 Deals",
+        icon: TrendingUp,
+        earned: true,
+        date: earnedDate || "Recently"
+      });
+    } else {
+      achievementList.push({
+        id: 2,
+        title: "10 Deals",
+        icon: TrendingUp,
+        earned: false,
+        progress: Math.min(100, Math.round((totalDeals / 10) * 100))
+      });
+    }
+    
+    // ₹1M Earned achievement
+    const oneMillion = 1000000;
+    if (totalEarnings >= oneMillion) {
+      achievementList.push({
+        id: 3,
+        title: "₹1M Earned",
+        icon: Award,
+        earned: true,
+        date: "Recently"
+      });
+    } else {
+      achievementList.push({
+        id: 3,
+        title: "₹1M Earned",
+        icon: Award,
+        earned: false,
+        progress: Math.min(100, Math.round((totalEarnings / oneMillion) * 100))
+      });
+    }
+    
+    // 100% Protection achievement
+    if (protectionScore >= 100) {
+      achievementList.push({
+        id: 4,
+        title: "100% Protection",
+        icon: Shield,
+        earned: true,
+        date: "Recently"
+      });
+    } else {
+      achievementList.push({
+        id: 4,
+        title: "100% Protection",
+        icon: Shield,
+        earned: false,
+        progress: protectionScore
+      });
+    }
+    
+    return achievementList;
+  }, [brandDeals, calculatedStats.protectionScore, profile?.updated_at]);
+
   const userData = {
     name: formData.name,
     displayName: formData.displayName,
@@ -98,22 +275,12 @@ const ProfileSettings = () => {
     location: formData.location,
     bio: formData.bio,
     userType: "Content Creator",
-    memberSince: profile?.updated_at ? new Date(profile.updated_at).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) : "Oct 2024",
+    memberSince: profile?.updated_at ? new Date(profile.updated_at).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) : "Recently",
     avatar: getInitials(profile?.first_name || null, profile?.last_name || null),
     verified: true,
     stats: calculatedStats,
-    platforms: [
-      { name: "YouTube", handle: "@noticebazaar", followers: "125K", connected: true, color: "bg-red-500" },
-      { name: "Instagram", handle: "@noticebazaar", followers: "45K", connected: true, color: "bg-pink-500" },
-      { name: "Twitter", handle: "@noticebazaar", followers: "32K", connected: false, color: "bg-blue-400" },
-      { name: "Website", handle: "noticebazaar.com", followers: "10K/mo", connected: true, color: "bg-purple-500" }
-    ],
-    achievements: [
-      { id: 1, title: "First Deal", icon: Star, earned: true, date: "Oct 2024" },
-      { id: 2, title: "10 Deals", icon: TrendingUp, earned: true, date: "Nov 2024" },
-      { id: 3, title: "₹1M Earned", icon: Award, earned: false, progress: 85 },
-      { id: 4, title: "100% Protection", icon: Shield, earned: false, progress: 85 }
-    ],
+    platforms: platforms,
+    achievements: achievements,
     subscription: {
       plan: "Pro",
       status: "active",

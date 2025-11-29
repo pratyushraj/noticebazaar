@@ -411,10 +411,16 @@ const CreatorDashboard = () => {
 
   return (
     <ContextualTipsProvider currentView="dashboard">
-    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 text-white">
+    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 text-white overflow-x-hidden">
       {/* Top Header */}
       <div className="sticky top-0 z-50 bg-purple-900/90 backdrop-blur-lg border-b border-white/10">
-        <div className="flex items-center justify-between p-4">
+        <div
+          className="flex items-center justify-between gap-3 py-4 px-4 md:px-6"
+          style={{
+            paddingLeft: 'calc(16px + env(safe-area-inset-left, 0px))',
+            paddingRight: 'calc(16px + env(safe-area-inset-right, 0px))',
+          }}
+        >
           <button 
             onClick={() => {
               setShowMenu(!showMenu);
@@ -457,7 +463,7 @@ const CreatorDashboard = () => {
                 navigate('/creator-profile');
                 triggerHaptic('light');
               }}
-              className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center font-semibold active:scale-95 transition-transform hover:bg-blue-700 hover:scale-105"
+              className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center font-semibold flex-shrink-0 active:scale-95 transition-transform hover:bg-blue-700 hover:scale-105"
               aria-label="View profile settings"
             >
               {userData.avatar}
@@ -1300,19 +1306,6 @@ const CreatorDashboard = () => {
           </button>
         </div>
       </div>
-
-      {/* Upload FAB for Tutorial */}
-      <button
-        data-tutorial="upload-fab"
-        onClick={() => {
-          navigate('/contract-upload');
-          triggerHaptic('light');
-        }}
-        className="fixed bottom-24 right-6 bg-blue-600 text-white rounded-full p-4 shadow-2xl z-40 hover:bg-blue-700 transition-all active:scale-95"
-        aria-label="Upload contract"
-      >
-        <FileText className="w-6 h-6" />
-      </button>
 
       {/* Global Search */}
       <QuickSearch

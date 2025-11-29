@@ -9,13 +9,16 @@ import { useSession } from '@/contexts/SessionContext';
 import { useBrandDeals } from '@/lib/hooks/useBrandDeals';
 
 const STORAGE_KEY_PREFIX = 'contextual-tip-dismissed-';
+const TEMP_STORAGE_KEY_PREFIX = 'contextual-tip-temp-dismissed-';
+const TEMP_DISMISS_DURATION = 30 * 24 * 60 * 60 * 1000; // 30 days (effectively permanent)
 
 export const useContextualTips = (currentView?: string) => {
-  const { profile, user } = useSession();
+  const { profile } = useSession();
   const location = useLocation();
   const navigate = useNavigate();
   const [dismissedTips, setDismissedTips] = useState<string[]>([]);
   const [currentTip, setCurrentTip] = useState<Tip | null>(null);
+  const [temporaryDismissals, setTemporaryDismissals] = useState<Record<string, number>>({});
   const [userActions, setUserActions] = useState({
     checkedPayments: false,
     viewedDeals: false,
@@ -36,12 +39,12 @@ export const useContextualTips = (currentView?: string) => {
       .filter((deal) => deal.status === 'Completed' && deal.payment_received_date)
       .reduce((sum, deal) => sum + (deal.deal_amount || 0), 0);
     const protectionScore = 85; // TODO: Calculate from actual protection data
-    const daysActive = profile?.created_at
-      ? Math.floor((Date.now() - new Date(profile.created_at).getTime()) / (1000 * 60 * 60 * 24))
+    const daysActive = (profile as any)?.created_at
+      ? Math.floor((Date.now() - new Date((profile as any).created_at).getTime()) / (1000 * 60 * 60 * 24))
       : 0;
     const hasOverduePayment = brandDeals.some(
-      (deal) => deal.status === 'Payment Pending' && deal.payment_due_date
-        ? new Date(deal.payment_due_date) < new Date()
+      (deal) => deal.status === 'Payment Pending' && deal.payment_expected_date
+        ? new Date(deal.payment_expected_date) < new Date()
         : false
     );
     const hasExpiringContract = false; // TODO: Check for expiring contracts
@@ -72,6 +75,27 @@ export const useContextualTips = (currentView?: string) => {
           console.warn('Failed to parse dismissed tips', e);
         }
       }
+      const storedTemp = localStorage.getItem(`${TEMP_STORAGE_KEY_PREFIX}${profile.id}`);
+      if (storedTemp) {
+        try {
+          const tempDismissals = JSON.parse(storedTemp);
+          // Clean up expired dismissals
+          const now = Date.now();
+          const cleaned: Record<string, number> = {};
+          for (const [key, value] of Object.entries(tempDismissals)) {
+            if (typeof value === 'number' && value > now) {
+              cleaned[key] = value;
+            }
+          }
+          setTemporaryDismissals(cleaned);
+          // Update localStorage with cleaned data
+          if (Object.keys(cleaned).length !== Object.keys(tempDismissals).length) {
+            localStorage.setItem(`${TEMP_STORAGE_KEY_PREFIX}${profile.id}`, JSON.stringify(cleaned));
+          }
+        } catch (e) {
+          console.warn('Failed to parse temporary dismissed tips', e);
+        }
+      }
     }
   }, [profile?.id]);
 
@@ -81,6 +105,13 @@ export const useContextualTips = (currentView?: string) => {
       localStorage.setItem(`${STORAGE_KEY_PREFIX}${profile.id}`, JSON.stringify(dismissedTips));
     }
   }, [dismissedTips, profile?.id]);
+
+  // Save temporary dismissals
+  useEffect(() => {
+    if (profile?.id) {
+      localStorage.setItem(`${TEMP_STORAGE_KEY_PREFIX}${profile.id}`, JSON.stringify(temporaryDismissals));
+    }
+  }, [temporaryDismissals, profile?.id]);
 
   // Get view from location or prop
   const view = useMemo(() => {
@@ -101,11 +132,31 @@ export const useContextualTips = (currentView?: string) => {
     if (!view) return [];
 
     const allTips = getAllTips(userState);
+    const now = Date.now();
+    
+    // Get temporary dismissals from localStorage as well (for persistence)
+    let localStorageDismissals: Record<string, number> = {};
+    if (profile?.id) {
+      try {
+        const storedTemp = localStorage.getItem(`${TEMP_STORAGE_KEY_PREFIX}${profile.id}`);
+        if (storedTemp) {
+          localStorageDismissals = JSON.parse(storedTemp);
+        }
+      } catch (e) {
+        // Ignore parse errors
+      }
+    }
     
     return allTips
       .filter((tip) => {
         // Skip if dismissed
         if (dismissedTips.includes(tip.id)) return false;
+
+        // Skip if temporarily dismissed (check both state and localStorage)
+        const tempExpiry = temporaryDismissals[tip.id] || localStorageDismissals[tip.id];
+        if (tempExpiry && tempExpiry > now) {
+          return false;
+        }
 
         // Check view match
         if (tip.view && tip.view !== view) return false;
@@ -122,12 +173,56 @@ export const useContextualTips = (currentView?: string) => {
         const priority = { high: 3, medium: 2, low: 1 };
         return priority[b.priority] - priority[a.priority];
       });
-  }, [view, userState, dismissedTips]);
+  }, [view, userState, dismissedTips, temporaryDismissals, profile?.id]);
 
   // Show tip when view changes or applicable tips change
   useEffect(() => {
-    if (applicableTips.length > 0 && !currentTip) {
+    // Only show tip if there are applicable tips, no current tip, and view is stable
+    if (applicableTips.length > 0 && !currentTip && view) {
       const tip = applicableTips[0];
+      const now = Date.now();
+      
+      // Triple-check dismissal: state, localStorage, and permanent dismissal
+      // Check permanent dismissal first
+      if (dismissedTips.includes(tip.id)) {
+        return; // Don't show if permanently dismissed
+      }
+      
+      // Check temporary dismissal in state
+      const tempExpiry = temporaryDismissals[tip.id];
+      if (tempExpiry && tempExpiry > now) {
+        return; // Don't show if still temporarily dismissed in state
+      }
+      
+      // Check temporary dismissal in localStorage (most reliable check)
+      if (profile?.id) {
+        try {
+          const storedTemp = localStorage.getItem(`${TEMP_STORAGE_KEY_PREFIX}${profile.id}`);
+          if (storedTemp) {
+            const tempDismissals = JSON.parse(storedTemp);
+            const storedExpiry = tempDismissals[tip.id];
+            if (storedExpiry && storedExpiry > now) {
+              // Update state to match localStorage (sync state with localStorage)
+              setTemporaryDismissals((prev) => {
+                if (prev[tip.id] !== storedExpiry) {
+                  return { ...prev, [tip.id]: storedExpiry };
+                }
+                return prev;
+              });
+              return; // Don't show if temporarily dismissed in localStorage
+            }
+          }
+        } catch (e) {
+          // Ignore parse errors
+        }
+      }
+      
+      // Final check: make sure tip wasn't just dismissed (race condition protection)
+      // This prevents showing a tip that was just dismissed in the same render cycle
+      if (dismissedTips.includes(tip.id) || (temporaryDismissals[tip.id] && temporaryDismissals[tip.id] > now)) {
+        return;
+      }
+      
       setCurrentTip(tip);
       
       // Track tip view
@@ -142,36 +237,82 @@ export const useContextualTips = (currentView?: string) => {
         });
       }
     }
-  }, [applicableTips, currentTip, view, profile?.id]);
+  }, [applicableTips, currentTip, view, profile?.id, temporaryDismissals, dismissedTips]);
 
   // Handle tip dismissal
   const handleDismiss = useCallback(
     (permanent: boolean) => {
       if (currentTip) {
+        const tipId = currentTip.id;
+        
         if (permanent) {
-          setDismissedTips((prev) => [...prev, currentTip.id]);
+          // For permanent dismissal, clear tip and mark as dismissed
+          setCurrentTip(null);
+          setDismissedTips((prev) => {
+            if (prev.includes(tipId)) return prev;
+            return [...prev, tipId];
+          });
           
           // Track dismissal
           if (profile?.id) {
             analytics.track('contextual_tip_dismissed', {
               category: 'tips',
-              tip_id: currentTip.id,
+              tip_id: tipId,
               permanent: true,
               userId: profile.id,
             });
           }
         } else {
+          // Set temporary dismissal with expiry
+          const expiry = Date.now() + TEMP_DISMISS_DURATION;
+          
+          // Save to localStorage FIRST (synchronously) to prevent race conditions
+          // This ensures localStorage is updated before any re-renders
+          if (profile?.id) {
+            try {
+              const storedTemp = localStorage.getItem(`${TEMP_STORAGE_KEY_PREFIX}${profile.id}`);
+              const tempDismissals = storedTemp ? JSON.parse(storedTemp) : {};
+              tempDismissals[tipId] = expiry;
+              localStorage.setItem(`${TEMP_STORAGE_KEY_PREFIX}${profile.id}`, JSON.stringify(tempDismissals));
+            } catch (e) {
+              console.warn('Failed to save temporary dismissal', e);
+            }
+          }
+          
+          // Update state BEFORE clearing tip (so filter excludes it immediately)
+          setTemporaryDismissals((prev) => ({
+            ...prev,
+            [tipId]: expiry,
+          }));
+          
+          // Clear tip AFTER state is updated (prevents reappearance)
+          setCurrentTip(null);
+          
+          // Mark user actions based on tip type to prevent re-showing
+          // This makes conditions false so tips don't reappear
+          if (tipId === 'payments-first-view') {
+            setUserActions((prev) => ({ ...prev, checkedPayments: true }));
+          } else if (tipId === 'deals-empty' || tipId === 'deals-first-view' || tipId === 'deal-progress-tip') {
+            setUserActions((prev) => ({ ...prev, viewedDeals: true }));
+          } else if (tipId === 'messages-advisor-available') {
+            // Mark as having seen messages to prevent re-showing
+            setUserActions((prev) => ({ ...prev, messagesSent: prev.messagesSent > 0 ? prev.messagesSent : 1 }));
+          } else if (tipId === 'dashboard-welcome' || tipId === 'earnings-zero') {
+            // Mark as having viewed dashboard - this won't affect dashboard-welcome condition
+            // but the temporary dismissal will prevent it from showing
+            setUserActions((prev) => ({ ...prev, viewedDeals: true, checkedPayments: true }));
+          }
+          
           // Track "later" action
           if (profile?.id) {
             analytics.track('contextual_tip_dismissed', {
               category: 'tips',
-              tip_id: currentTip.id,
+              tip_id: tipId,
               permanent: false,
               userId: profile.id,
             });
           }
         }
-        setCurrentTip(null);
       }
     },
     [currentTip, profile?.id]
