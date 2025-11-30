@@ -14,7 +14,11 @@
     "create-demo": "tsx scripts/create-demo-user.ts",
     "create-user": "tsx scripts/create-user-account.ts",
     "update-role": "tsx scripts/update-user-role.ts",
-    "verify-migrations": "tsx scripts/verify-migrations.ts"
+    "verify-migrations": "tsx scripts/verify-migrations.ts",
+    "sync-brands": "tsx scripts/sync-brands.ts",
+    "validate-opportunities": "tsx scripts/validate-opportunities-db.ts",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui"
   },
   "dependencies": {
     "@cometchat-pro/chat": "^3.0.13",
@@ -73,6 +77,9 @@
     "tsx": "^4.20.6",
     "typescript": "^5.5.3",
     "typescript-eslint": "^8.0.1",
-    "vite": "^6.3.4"
+    "vite": "^6.3.4",
+    "cheerio": "^1.0.0-rc.12",
+    "playwright": "^1.40.0",
+    "@types/cheerio": "^0.22.31"
   }
 }
