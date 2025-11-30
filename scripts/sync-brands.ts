@@ -203,10 +203,10 @@ async function scrapeInfluencerIn(): Promise<OpportunitySource[]> {
   
   try {
     const browser = await chromium.launch({ headless: true });
-    const page = await browser.newPage();
-    
-    // Set user agent to avoid blocking
-    await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36');
+    const context = await browser.newContext({
+      userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+    });
+    const page = await context.newPage();
     
     // Navigate to campaigns page
     await page.goto('https://influencer.in/campaigns', { 
@@ -381,8 +381,10 @@ async function scrapeWinkl(): Promise<OpportunitySource[]> {
   
   try {
     const browser = await chromium.launch({ headless: true });
-    const page = await browser.newPage();
-    await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36');
+    const context = await browser.newContext({
+      userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+    });
+    const page = await context.newPage();
     
     await page.goto('https://winkl.co/campaigns', { 
       waitUntil: 'networkidle',
@@ -535,8 +537,10 @@ async function scrapeCollabstr(): Promise<OpportunitySource[]> {
   
   try {
     const browser = await chromium.launch({ headless: true });
-    const page = await browser.newPage();
-    await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36');
+    const context = await browser.newContext({
+      userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+    });
+    const page = await context.newPage();
     
     await page.goto('https://collabstr.com/campaigns', { 
       waitUntil: 'networkidle',
