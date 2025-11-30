@@ -1,0 +1,45 @@
+name: Sync Brands Daily
+
+on:
+  schedule:
+    # Run daily at 2:00 AM UTC (adjust timezone as needed)
+    - cron: '0 2 * * *'
+  workflow_dispatch: # Allows manual trigger from GitHub UI
+
+jobs:
+  sync-brands:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Run brand sync
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: npm run sync-brands
+
+      - name: Upload logs (on failure)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sync-logs
+          path: |
+            *.log
+            sync-*.txt
+          retention-days: 7
+
