@@ -19,11 +19,15 @@
 
 import { createClient } from '@supabase/supabase-js';
 import * as dotenv from 'dotenv';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { createRequire } from 'node:module';
 
 // Dynamic imports for optional dependencies
 let cheerio: any;
 let chromium: any;
 
+const require = createRequire(import.meta.url);
 try {
   cheerio = require('cheerio');
   const playwright = require('playwright');
@@ -1044,8 +1048,11 @@ async function syncBrands() {
   }
 }
 
-// Run if called directly
-if (require.main === module) {
+const __filename = fileURLToPath(import.meta.url);
+const entryFile = process.argv[1] ? path.resolve(process.argv[1]) : null;
+
+// Run if called directly via `node`/`tsx`
+if (entryFile && entryFile === __filename) {
   syncBrands();
 }
 
