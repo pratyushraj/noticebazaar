@@ -17,11 +17,6 @@ jobs:
         with:
           fetch-depth: 0  # Fetch all history to ensure latest commit
 
-      - name: Verify script exists
-        run: |
-          ls -la scripts/sync-brands.ts
-          echo "Script file verified"
-
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -33,18 +28,32 @@ jobs:
       - name: Install Playwright browsers
         run: npx playwright install --with-deps chromium
 
-      - name: Run brand sync
+      - name: Verify script exists and run sync
         env:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
         run: |
+          echo "=== Debugging Information ==="
           echo "Current directory: $(pwd)"
-          echo "Files in scripts/:"
-          ls -la scripts/
-          echo "Checking if file exists:"
-          test -f scripts/sync-brands.ts && echo "✅ File exists" || echo "❌ File NOT found"
-          echo "Running sync-brands..."
-          npx tsx scripts/sync-brands.ts
+          echo "Repository root contents:"
+          ls -la
+          echo ""
+          echo "Scripts directory contents:"
+          ls -la scripts/ || echo "❌ scripts/ directory does not exist!"
+          echo ""
+          echo "Checking for sync-brands.ts:"
+          if [ -f "scripts/sync-brands.ts" ]; then
+            echo "✅ File exists at: $(pwd)/scripts/sync-brands.ts"
+            echo "File size: $(stat -f%z scripts/sync-brands.ts 2>/dev/null || stat -c%s scripts/sync-brands.ts 2>/dev/null || echo 'unknown') bytes"
+            echo ""
+            echo "=== Running sync-brands script ==="
+            npx tsx scripts/sync-brands.ts
+          else
+            echo "❌ File NOT found at: $(pwd)/scripts/sync-brands.ts"
+            echo "Searching for file in repository:"
+            find . -name "sync-brands.ts" -type f 2>/dev/null || echo "File not found anywhere"
+            exit 1
+          fi
 
       - name: Upload logs (on failure)
         if: failure()
