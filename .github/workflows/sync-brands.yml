@@ -14,6 +14,13 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Fetch all history to ensure latest commit
+
+      - name: Verify script exists
+        run: |
+          ls -la scripts/sync-brands.ts
+          echo "Script file verified"
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -30,7 +37,12 @@ jobs:
         env:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
-        run: npm run sync-brands
+        run: |
+          echo "Current directory: $(pwd)"
+          echo "Files in scripts/:"
+          ls -la scripts/
+          echo "Running sync-brands..."
+          npm run sync-brands
 
       - name: Upload logs (on failure)
         if: failure()
