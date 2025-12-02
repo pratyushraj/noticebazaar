@@ -16,7 +16,10 @@ import { PaymentCard } from '@/components/payments/PaymentCard';
 import { SummaryCard } from '@/components/payments/SummaryCard';
 import { ActionTile } from '@/components/payments/ActionTile';
 import { extractTaxInfo, getTaxDisplayMessage, calculateFinalAmount } from '@/lib/utils/taxExtraction';
-import { spacing, typography, separators, iconSizes, scroll, sectionHeader, gradients, buttons } from '@/lib/design-system';
+import { spacing, typography, separators, iconSizes, scroll, sectionHeader, gradients, buttons, glass, shadows, spotlight, radius, vision, motion as motionTokens, animations, colors } from '@/lib/design-system';
+import { triggerHaptic, HapticPatterns } from '@/lib/utils/haptics';
+import { cn } from '@/lib/utils';
+import { motion } from 'framer-motion';
 
 const CreatorPaymentsAndRecovery = () => {
   const navigate = useNavigate();
@@ -26,17 +29,6 @@ const CreatorPaymentsAndRecovery = () => {
   const [showPaymentRequest, setShowPaymentRequest] = useState(false);
   const [showAddExpense, setShowAddExpense] = useState(false);
 
-  // Haptic feedback helper
-  const triggerHaptic = (pattern: 'light' | 'medium' | 'heavy' = 'light') => {
-    if (navigator.vibrate) {
-      const patterns = {
-        light: [10],
-        medium: [20],
-        heavy: [30, 10, 30]
-      };
-      navigator.vibrate(patterns[pattern]);
-    }
-  };
   
   // Fetch real brand deals data
   const { data: brandDeals = [], isLoading: isLoadingDeals, error: dealsError } = useBrandDeals({
@@ -414,15 +406,24 @@ const CreatorPaymentsAndRecovery = () => {
           <h1 className={typography.h1 + " mb-1"}>Payments</h1>
           <p className={typography.body + " font-medium"}>Track your income & expenses</p>
         </div>
-        <button 
+        <motion.button 
           onClick={() => {
-            triggerHaptic('light');
+            triggerHaptic(HapticPatterns.light);
             toast.info('Export report functionality coming soon!');
           }}
-          className={`${buttons.icon} bg-white/10 hover:bg-white/15 backdrop-blur-xl rounded-xl p-2.5 border border-white/15 shadow-lg shadow-black/10`}
+          whileTap={animations.microTap}
+          whileHover={window.innerWidth > 768 ? animations.microHover : undefined}
+          className={cn(
+            buttons.icon,
+            glass.apple,
+            radius.md,
+            spacing.cardPadding.tertiary,
+            shadows.lg
+          )}
+          aria-label="Export report"
         >
           <Download className={iconSizes.md} />
-        </button>
+        </motion.button>
       </div>
 
       {/* Stats Overview - Premium Summary Card */}
@@ -502,46 +503,71 @@ const CreatorPaymentsAndRecovery = () => {
 
       {/* Search Bar - Frosted Capsule */}
       <div className="mb-4">
-        <div className="relative bg-white/5 backdrop-blur-xl rounded-full border border-white/15 shadow-lg shadow-black/10 flex items-center px-5 py-3.5">
-          <Search className={`${iconSizes.sm} text-purple-300 mr-3 flex-shrink-0`} />
+        <motion.div 
+          initial={motionTokens.slide.up.initial}
+          animate={motionTokens.slide.up.animate}
+          transition={motionTokens.slide.up.transition}
+          className={cn(
+            "relative flex items-center",
+            glass.apple,
+            radius.full,
+            spacing.cardPadding.secondary,
+            shadows.lg
+          )}
+        >
+          {/* Spotlight */}
+          <div className={cn(vision.spotlight.base, "opacity-20")} />
+          
+          <Search className={cn(iconSizes.sm, "text-purple-300 mr-3 flex-shrink-0")} />
           <input 
             type="text" 
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search transactions..." 
-            className={`bg-transparent text-white placeholder:text-white/50 outline-none w-full ${typography.bodySmall} flex-1`}
+            className={cn(
+              "bg-transparent text-white placeholder:text-white/50 outline-none w-full",
+              typography.bodySmall,
+              "flex-1"
+            )}
           />
-          <button 
+          <motion.button 
             onClick={() => {
-              triggerHaptic('light');
+              triggerHaptic(HapticPatterns.light);
               toast.info('Filter options coming soon');
             }}
-            className={`ml-2 ${buttons.icon} flex-shrink-0`}
+            whileTap={animations.microTap}
+            className={cn("ml-2", buttons.icon, "flex-shrink-0")}
             aria-label="Filter transactions"
           >
-            <Filter className={`${iconSizes.sm} text-purple-300`} />
-          </button>
-        </div>
+            <Filter className={cn(iconSizes.sm, "text-purple-300")} />
+          </motion.button>
+        </motion.div>
       </div>
 
       {/* Filter Tabs - Pill Buttons */}
         <div className="mb-6">
         <div className={`flex gap-2 overflow-x-auto pb-2 ${scroll.container} scrollbar-hide`}>
           {filters.map((filter) => (
-            <button
+            <motion.button
               key={filter.id}
               onClick={() => {
-                triggerHaptic('light');
+                triggerHaptic(HapticPatterns.light);
                 setActiveFilter(filter.id);
               }}
-              className={`px-5 py-2.5 rounded-full ${typography.bodySmall} font-semibold transition-all duration-150 whitespace-nowrap active:scale-[0.97] ${
+              whileTap={animations.microTap}
+              whileHover={window.innerWidth > 768 ? animations.microHover : undefined}
+              className={cn(
+                spacing.cardPadding.secondary,
+                radius.full,
+                typography.bodySmall,
+                "font-semibold transition-all duration-150 whitespace-nowrap",
                 activeFilter === filter.id
                   ? 'bg-white/15 text-white ring-2 ring-white/20 shadow-lg shadow-white/10'
                   : 'bg-white/5 text-white/70 hover:bg-white/8'
-              }`}
+              )}
             >
               {filter.label}
-            </button>
+            </motion.button>
           ))}
         </div>
           </div>
@@ -554,15 +580,16 @@ const CreatorPaymentsAndRecovery = () => {
         <div className={spacing.card}>
           <div className={sectionHeader.base}>
             <h2 className={sectionHeader.title}>Recent Transactions</h2>
-            <button 
+            <motion.button 
               onClick={() => {
-                triggerHaptic('light');
+                triggerHaptic(HapticPatterns.light);
                 // Navigate to full transactions view
               }}
-              className={sectionHeader.action + " font-medium"}
+              whileTap={animations.microTap}
+              className={cn(sectionHeader.action, "font-medium")}
             >
               View All
-            </button>
+            </motion.button>
           </div>
 
           {filteredTransactions.map(transaction => (
