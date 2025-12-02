@@ -25,7 +25,8 @@ import { useSession } from "@/contexts/SessionContext";
 import { getInitials } from "@/lib/utils/avatar";
 import { cn } from "@/lib/utils";
 import { triggerHaptic, HapticPatterns } from "@/lib/utils/haptics";
-import { spacing, typography, iconSizes, separators, glass, animations } from "@/lib/design-system";
+import { spacing, typography, iconSizes, separators, glass, animations, shadows, spotlight, radius } from "@/lib/design-system";
+import { useMotionValue, useTransform, useSpring } from "framer-motion";
 import { AppsGridMenu } from "@/components/navigation/AppsGridMenu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { DEFAULT_AVATAR_URL } from "@/lib/utils/avatar";
@@ -80,28 +81,49 @@ function DrawerHeader({ userName, userHandle, userAvatar, userInitials, onProfil
     onProfileClick();
   };
 
+  // Parallax motion for avatar
+  const y = useMotionValue(0);
+  const avatarY = useTransform(y, [0, 100], [0, 20]);
+  const avatarScale = useTransform(y, [0, 100], [1, 0.95]);
+  const avatarSpring = useSpring(avatarY, { damping: 20, stiffness: 300 });
+
   return (
-    <div className={cn(spacing.cardPadding.tertiary, "pb-4")}>
+    <motion.div 
+      className={cn(spacing.cardPadding.tertiary, "pb-4 relative")}
+      onScroll={(e) => {
+        const target = e.currentTarget;
+        y.set(target.scrollTop);
+      }}
+    >
+      {/* Spotlight gradient */}
+      <div className={cn(spotlight.top, "opacity-60")} />
+      
       {/* Profile Section */}
-      <button
+      <motion.button
         onClick={handleProfileClick}
         className={cn(
-          "flex items-center gap-3 w-full mb-4",
-          "focus:outline-none focus-visible:ring-2 focus-visible:ring-white/30 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent",
-          "rounded-xl p-1 transition-all",
+          "flex items-center gap-3 w-full mb-4 relative",
+          "focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-white/30 focus-visible:outline-offset-2",
+          radius.md,
+          spacing.cardPadding.tertiary,
           animations.cardPress
         )}
         aria-label={`View profile for ${userName}`}
+        whileTap={animations.microTap}
       >
-        <Avatar className="h-12 w-12 ring-2 ring-white/10">
-          <AvatarImage 
-            src={userAvatar || DEFAULT_AVATAR_URL} 
-            alt={`${userName}'s avatar`} 
-          />
-          <AvatarFallback className="bg-gradient-to-br from-[#6EE7FF] to-[#8B5CF6] text-white text-sm font-semibold">
-            {userInitials}
-          </AvatarFallback>
-        </Avatar>
+        <motion.div
+          style={{ y: avatarSpring, scale: avatarScale }}
+        >
+          <Avatar className="h-12 w-12 ring-2 ring-white/10 shadow-[0_0_20px_rgba(110,231,255,0.3)]">
+            <AvatarImage 
+              src={userAvatar || DEFAULT_AVATAR_URL} 
+              alt={`${userName}'s avatar`} 
+            />
+            <AvatarFallback className="bg-gradient-to-br from-[#6EE7FF] to-[#8B5CF6] text-white text-sm font-semibold">
+              {userInitials}
+            </AvatarFallback>
+          </Avatar>
+        </motion.div>
         <div className="flex-1 text-left min-w-0">
           <p className={cn(typography.h4, "truncate")}>
             {userName}
@@ -111,7 +133,7 @@ function DrawerHeader({ userName, userHandle, userAvatar, userInitials, onProfil
           </p>
         </div>
         <ChevronRight className={cn(iconSizes.sm, "flex-shrink-0 text-white/70")} />
-      </button>
+      </motion.button>
 
       {/* Icon Buttons Row with AppsGridMenu */}
       <div className="flex items-center gap-2">
@@ -200,7 +222,7 @@ function DrawerHeader({ userName, userHandle, userAvatar, userInitials, onProfil
           <Search className={cn(iconSizes.md, "text-white/70")} />
         </button>
       </div>
-    </div>
+    </motion.div>
   );
 }
 
@@ -239,36 +261,43 @@ function DrawerItem({ item, isActive, onClick }: DrawerItemProps) {
   };
 
   return (
-    <button
+    <motion.button
       onClick={handleClick}
       aria-label={item.label}
       aria-current={isActive ? 'page' : undefined}
+      whileTap={animations.microTap}
+      whileHover={window.innerWidth > 768 ? animations.microHover : undefined}
       className={cn(
-        "relative flex items-center w-full rounded-[18px] transition-all duration-150",
+        "relative flex items-center w-full overflow-hidden transition-all duration-150",
+        radius.lg,
         spacing.cardPadding.tertiary,
-        animations.cardPress,
-        "focus:outline-none focus-visible:ring-2 focus-visible:ring-white/30 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent",
+        "focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-white/30 focus-visible:outline-offset-2",
         isActive
           ? "bg-gradient-to-r from-[#6EE7FF] to-[#8B5CF6] text-white shadow-lg"
           : cn(
-              glass.base,
+              glass.apple,
               "text-white/90 hover:bg-white/8"
             )
       )}
     >
-      <Icon className={cn(iconSizes.md, "flex-shrink-0 mr-3")} />
-      <span className={cn(typography.body, "flex-1 text-left")}>{item.label}</span>
+      {/* Spotlight gradient for active items */}
+      {isActive && <div className={cn(spotlight.top, "opacity-30")} />}
+      <Icon className={cn(iconSizes.md, "flex-shrink-0 mr-3 relative z-10")} />
+      <span className={cn(typography.body, "flex-1 text-left relative z-10")}>{item.label}</span>
       
       {item.badge && (
         <motion.span
           animate={{ scale: [1, 1.1, 1] }}
           transition={{ duration: 0.5, repeat: Infinity, repeatDelay: 2 }}
-          className="w-6 h-6 flex items-center justify-center text-xs font-semibold rounded-full bg-red-500 text-white ml-2"
+          className={cn(
+            "w-6 h-6 flex items-center justify-center text-xs font-semibold rounded-full bg-red-500 text-white ml-2 relative z-10",
+            radius.full
+          )}
         >
           {item.badge}
         </motion.span>
       )}
-    </button>
+    </motion.button>
   );
 }
 
@@ -288,27 +317,31 @@ function QuickActionButton({ item, onClick }: QuickActionButtonProps) {
   };
 
   return (
-    <button
+    <motion.button
       onClick={handleClick}
       aria-label={item.label}
+      whileTap={animations.microTap}
+      whileHover={window.innerWidth > 768 ? animations.microHover : undefined}
       className={cn(
-        "relative flex items-center w-full rounded-[18px] transition-all duration-150",
+        "relative flex items-center w-full overflow-hidden transition-all duration-150",
+        radius.lg,
         spacing.cardPadding.tertiary,
-        animations.cardPress,
-        "focus:outline-none focus-visible:ring-2 focus-visible:ring-white/30 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent",
+        "focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-white/30 focus-visible:outline-offset-2",
         isPrimary
           ? "bg-gradient-to-r from-[#6EE7FF] to-[#8B5CF6] text-white shadow-lg"
           : isAccent
           ? "bg-[rgba(16,185,129,0.15)] border border-[rgba(16,185,129,0.3)] text-[#10b981] hover:bg-[rgba(16,185,129,0.2)]"
           : cn(
-              glass.base,
+              glass.apple,
               "text-white/90 hover:bg-white/8"
             )
       )}
     >
-      <Icon className={cn(iconSizes.md, "flex-shrink-0 mr-3")} />
-      <span className={cn(typography.body, "flex-1 text-left")}>{item.label}</span>
-    </button>
+      {/* Spotlight gradient for primary actions */}
+      {isPrimary && <div className={cn(spotlight.top, "opacity-30")} />}
+      <Icon className={cn(iconSizes.md, "flex-shrink-0 mr-3 relative z-10")} />
+      <span className={cn(typography.body, "flex-1 text-left relative z-10")}>{item.label}</span>
+    </motion.button>
   );
 }
 
@@ -323,22 +356,24 @@ function LogoutButton({ onClick }: LogoutButtonProps) {
   };
 
   return (
-    <button
+    <motion.button
       onClick={handleClick}
       aria-label="Log out"
+      whileTap={animations.microTap}
+      whileHover={window.innerWidth > 768 ? animations.microHover : undefined}
       className={cn(
-        "w-full rounded-[18px] transition-all duration-150",
+        "w-full overflow-hidden transition-all duration-150",
         "flex items-center gap-3",
+        radius.lg,
         spacing.cardPadding.tertiary,
         "bg-[rgba(255,0,0,0.1)] border border-[rgba(255,0,0,0.25)]",
         "text-[#ff6b6b] hover:bg-[rgba(255,0,0,0.15)]",
-        animations.cardPress,
-        "focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500/30 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent"
+        "focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-red-500/30 focus-visible:outline-offset-2"
       )}
     >
-      <LogOut className={cn(iconSizes.md)} />
-      <span className={cn(typography.body, "flex-1 text-left")}>Log Out</span>
-    </button>
+      <LogOut className={cn(iconSizes.md, "relative z-10")} />
+      <span className={cn(typography.body, "flex-1 text-left relative z-10")}>Log Out</span>
+    </motion.button>
   );
 }
 
@@ -476,26 +511,21 @@ export default function PremiumDrawer({
             initial={{ x: '-100%', opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
             exit={{ x: '-100%', opacity: 0 }}
-            transition={{
-              type: "spring",
-              damping: 30,
-              stiffness: 300,
-              mass: 0.8,
-            }}
+            transition={animations.spring}
             className={cn(
-              "absolute left-0 top-0 h-full",
+              "absolute left-0 top-0 h-full relative",
               "w-[78%] max-w-[320px] md:w-[300px]",
-              "rounded-r-3xl",
-              glass.strong,
-              "shadow-[0_0_50px_rgba(0,0,0,0.4)]",
+              radius.xl,
+              glass.appleStrong,
+              shadows.depth,
               spacing.cardPadding.secondary,
               "flex flex-col",
               "text-white",
               // Hide scrollbar but keep scrolling
               "[&::-webkit-scrollbar]:w-0 [&::-webkit-scrollbar]:h-0",
               "overscroll-contain",
-              // Bouncy overscroll effect
-              "overscroll-y-contain"
+              // Inner border for depth
+              "shadow-[inset_0_1px_0_rgba(255,255,255,0.1)]"
             )}
             style={{
               background: 'linear-gradient(180deg, rgba(75, 12, 255, 0.95) 0%, rgba(45, 0, 79, 0.95) 100%)',
@@ -505,6 +535,8 @@ export default function PremiumDrawer({
             role="navigation"
             aria-label="Navigation menu"
           >
+            {/* Spotlight gradient at top */}
+            <div className={cn(spotlight.top, "opacity-40")} />
             {/* Header */}
             <DrawerHeader
               userName={userName}

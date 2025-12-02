@@ -105,7 +105,7 @@ export const mobile = {
 } as const;
 
 // ============================================
-// ANIMATIONS & INTERACTIONS
+// ANIMATIONS & INTERACTIONS (iOS 17 + visionOS)
 // ============================================
 
 export const animations = {
@@ -117,6 +117,32 @@ export const animations = {
     delay2: "stagger-2",
     delay3: "stagger-3",
   },
+  // iOS 17 elastic spring
+  spring: {
+    type: "spring",
+    damping: 18,
+    stiffness: 200,
+    mass: 0.7,
+  },
+  // Micro-interactions
+  microTap: {
+    scale: 0.97,
+    transition: { duration: 0.12, ease: "easeOut" },
+  },
+  microHover: {
+    scale: 1.02,
+    transition: { duration: 0.15, ease: "easeOut" },
+  },
+} as const;
+
+// ============================================
+// SPOTLIGHT GRADIENTS
+// ============================================
+
+export const spotlight = {
+  top: "absolute inset-x-0 top-0 h-20 bg-gradient-to-b from-white/10 to-transparent pointer-events-none",
+  bottom: "absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-white/10 to-transparent pointer-events-none",
+  center: "absolute inset-0 bg-gradient-radial from-white/10 via-transparent to-transparent pointer-events-none",
 } as const;
 
 // ============================================
@@ -143,13 +169,19 @@ export const badges = {
 } as const;
 
 // ============================================
-// GLASSMORPHISM
+// GLASSMORPHISM (iOS 17 + visionOS)
 // ============================================
 
 export const glass = {
   base: "bg-white/5 backdrop-blur-xl border border-white/10",
   strong: "bg-white/10 backdrop-blur-2xl border border-white/15",
   subtle: "bg-white/3 backdrop-blur-lg border border-white/5",
+  // Apple-grade frosted glass
+  apple: "bg-white/5 backdrop-blur-2xl border border-white/10",
+  appleStrong: "bg-white/10 backdrop-blur-2xl border border-white/15",
+  appleSubtle: "bg-black/5 backdrop-blur-xl border border-white/5",
+  // Inner borders for depth
+  withInner: "bg-white/5 backdrop-blur-2xl border border-white/10 shadow-[inset_0_1px_0_rgba(255,255,255,0.1)]",
 } as const;
 
 // ============================================
@@ -217,7 +249,7 @@ export const radius = {
 } as const;
 
 // ============================================
-// SHADOW TOKENS
+// SHADOW TOKENS (visionOS-like depth)
 // ============================================
 
 export const shadows = {
@@ -228,6 +260,10 @@ export const shadows = {
   card: "shadow-[0_8px_24px_rgba(0,0,0,0.25)]",
   drawer: "shadow-[0_0_50px_rgba(0,0,0,0.4)]",
   inner: "shadow-[inset_0_1px_0_rgba(255,255,255,0.1)]",
+  // visionOS-like depth shadows
+  depth: "shadow-[0_0_50px_-10px_rgba(0,0,0,0.45)]",
+  depthStrong: "shadow-[0_0_80px_-15px_rgba(0,0,0,0.5)]",
+  depthSubtle: "shadow-[0_0_30px_-5px_rgba(0,0,0,0.3)]",
 } as const;
 
 // ============================================
