@@ -9,7 +9,7 @@ import { SegmentedControl } from '@/components/ui/segmented-control';
 import { motion } from 'framer-motion';
 import { ContextualTipsProvider } from '@/components/contextual-tips/ContextualTipsProvider';
 import { FilteredNoMatchesEmptyState, NoDealsEmptyState } from '@/components/empty-states/PreconfiguredEmptyStates';
-import { sectionLayout, animations, spacing, typography, iconSizes, scroll, radius, shadows, zIndex, glass, vision, motion as motionTokens, colors } from '@/lib/design-system';
+import { sectionLayout, animations, spacing, typography, iconSizes, scroll, radius, shadows, zIndex, glass, vision, motion as motionTokens, gradients } from '@/lib/design-system';
 import { BaseCard, StatCard } from '@/components/ui/card-variants';
 import { CreatorNavigationWrapper } from '@/components/navigation/CreatorNavigationWrapper';
 import { Divider } from '@/components/ui/Divider';
