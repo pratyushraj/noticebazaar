@@ -22,6 +22,10 @@ import { AdvisorModeSwitch } from '@/components/AdvisorModeSwitch';
 import { ContextualTipsProvider } from '@/components/contextual-tips/ContextualTipsProvider';
 import { NoMessagesEmptyState } from '@/components/empty-states/PreconfiguredEmptyStates';
 import { logger } from '@/lib/utils/logger';
+import { spacing, typography, iconSizes, radius, shadows, glass, vision, motion as motionTokens, animations, buttons } from '@/lib/design-system';
+import { triggerHaptic, HapticPatterns } from '@/lib/utils/haptics';
+import { cn } from '@/lib/utils';
+import { motion } from 'framer-motion';
 
 // --- Types (local to this file) ---
 type Advisor = {
@@ -857,15 +861,29 @@ export default function MessagesPage() {
         WebkitOverflowScrolling: 'touch'
       }}>
         <div className="w-full max-w-[420px] mx-auto md:mx-0 md:max-w-none">
-          {/* Back to Dashboard Button */}
-          <div className="flex justify-start mb-4">
-            <button
-              onClick={() => navigate('/creator-dashboard')}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/[0.08] backdrop-blur-[20px] border border-white/15 hover:bg-white/[0.12] hover:border-white/20 transition-all text-sm font-medium text-white"
+          {/* Back to Dashboard Button - iOS 17 + visionOS */}
+          <div className={cn("flex justify-start", spacing.compact)}>
+            <motion.button
+              onClick={() => {
+                triggerHaptic(HapticPatterns.light);
+                navigate('/creator-dashboard');
+              }}
+              whileTap={animations.microTap}
+              whileHover={window.innerWidth > 768 ? animations.microHover : undefined}
+              className={cn(
+                "flex items-center gap-2",
+                spacing.cardPadding.secondary,
+                radius.md,
+                glass.apple,
+                shadows.sm,
+                typography.bodySmall,
+                "font-medium text-white",
+                "transition-all"
+              )}
             >
-              <ArrowLeft className="w-4 h-4" />
+              <ArrowLeft className={iconSizes.sm} />
               <span>Back to Dashboard</span>
-            </button>
+            </motion.button>
           </div>
 
           {/* Main content area */}

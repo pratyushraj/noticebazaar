@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Download, ExternalLink, MoreVertical } from 'lucide-react';
 import { DeadlineCalendar } from '@/components/calendar/DeadlineCalendar';
 import { CalendarViewMode } from '@/components/calendar/CalendarView';
@@ -10,10 +10,12 @@ import { useBrandDeals } from '@/lib/hooks/useBrandDeals';
 import { useTaxFilings } from '@/lib/hooks/useTaxFilings';
 import { downloadICalFile, openGoogleCalendar } from '@/lib/utils/calendarExport';
 import { CalendarEvent } from '@/components/calendar/CalendarView';
-import { useMemo } from 'react';
 import { toast } from 'sonner';
 import { BottomSheet } from '@/components/ui/bottom-sheet';
 import { motion } from 'framer-motion';
+import { spacing, typography, iconSizes, radius, shadows, glass, vision, motion as motionTokens, animations, gradients, buttons as buttonTokens } from '@/lib/design-system';
+import { triggerHaptic, HapticPatterns } from '@/lib/utils/haptics';
+import { cn } from '@/lib/utils';
 
 export default function CalendarPage() {
   const { profile } = useSession();
@@ -111,11 +113,11 @@ export default function CalendarPage() {
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -20 }}
-      transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-      className="min-h-screen bg-gradient-to-br from-[#0F121A] via-[#1A1D2E] to-[#0F121A] text-white"
+      initial={motionTokens.slide.up.initial}
+      animate={motionTokens.slide.up.animate}
+      exit={motionTokens.fade.out}
+      transition={motionTokens.slide.up.transition}
+      className={cn("min-h-screen text-white relative overflow-hidden", gradients.page)}
       style={{
         paddingTop: 'max(16px, env(safe-area-inset-top, 16px))',
         paddingBottom: 'calc(96px + env(safe-area-inset-bottom, 0px))',
@@ -124,14 +126,20 @@ export default function CalendarPage() {
         minHeight: '100dvh',
       }}
     >
-      <div className="max-w-7xl mx-auto px-3 md:px-6 py-4 md:py-6 space-y-3 md:space-y-6 overflow-hidden">
-        {/* Header - Premium Typography Hierarchy */}
-        <div className="flex items-start justify-between gap-3">
+      {/* Vision Pro depth elevation */}
+      <div className={vision.depth.elevation} />
+      
+      {/* Spotlight gradient */}
+      <div className={cn(vision.spotlight.base, "opacity-30")} />
+      
+      <div className={cn("max-w-7xl mx-auto", spacing.page, spacing.section, "overflow-hidden relative z-10")}>
+        {/* Header - iOS 17 + visionOS */}
+        <div className={cn("flex items-start justify-between gap-3")}>
           <div className="flex-1 min-w-0">
-            <h1 className="text-3xl md:text-4xl font-bold mb-2 bg-gradient-to-r from-white to-white/80 bg-clip-text text-transparent">
+            <h1 className={cn(typography.h1, "mb-2 bg-gradient-to-r from-white to-white/80 bg-clip-text text-transparent")}>
               Calendar
             </h1>
-            <p className="text-sm md:text-base text-white/60 leading-relaxed">
+            <p className={cn(typography.body, "text-white/60 leading-relaxed")}>
               View and manage all your deadlines in one place
             </p>
           </div>
