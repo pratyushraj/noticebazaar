@@ -512,11 +512,12 @@ export default function PremiumDrawer({
             animate={{ x: 0, opacity: 1 }}
             exit={{ x: '-100%', opacity: 0 }}
             transition={animations.spring}
+            // replaced-by-ultra-polish: Purple gradient drawer - remove bg-white/10 to show gradient fully
             className={cn(
               "absolute left-0 top-0 h-full relative",
               "w-[78%] max-w-[320px] md:w-[300px]",
               radius.xl,
-              glass.appleStrong,
+              "backdrop-blur-2xl border border-white/15", // Keep backdrop and border, remove bg-white/10
               shadows.depth,
               spacing.cardPadding.secondary,
               "flex flex-col",
