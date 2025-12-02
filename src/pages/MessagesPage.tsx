@@ -22,7 +22,7 @@ import { AdvisorModeSwitch } from '@/components/AdvisorModeSwitch';
 import { ContextualTipsProvider } from '@/components/contextual-tips/ContextualTipsProvider';
 import { NoMessagesEmptyState } from '@/components/empty-states/PreconfiguredEmptyStates';
 import { logger } from '@/lib/utils/logger';
-import { spacing, typography, iconSizes, radius, shadows, glass, vision, motion as motionTokens, animations, buttons } from '@/lib/design-system';
+import { spacing, typography, iconSizes, radius, shadows, glass, animations } from '@/lib/design-system';
 import { triggerHaptic, HapticPatterns } from '@/lib/utils/haptics';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';

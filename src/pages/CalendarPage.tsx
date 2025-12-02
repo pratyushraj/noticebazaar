@@ -13,7 +13,7 @@ import { CalendarEvent } from '@/components/calendar/CalendarView';
 import { toast } from 'sonner';
 import { BottomSheet } from '@/components/ui/bottom-sheet';
 import { motion } from 'framer-motion';
-import { spacing, typography, iconSizes, radius, shadows, glass, vision, motion as motionTokens, animations, gradients, buttons as buttonTokens } from '@/lib/design-system';
+import { spacing, typography, iconSizes, radius, shadows, glass, vision, motion as motionTokens, animations, gradients } from '@/lib/design-system';
 import { triggerHaptic, HapticPatterns } from '@/lib/utils/haptics';
 import { cn } from '@/lib/utils';
 
@@ -144,63 +144,113 @@ export default function CalendarPage() {
             </p>
           </div>
 
-          {/* Export Actions - Desktop: Buttons, Mobile: 3-dot Menu */}
-          <div className="hidden md:flex items-center gap-2 flex-shrink-0">
-            <Button
-              onClick={handleExportICal}
-              variant="outline"
-              size="sm"
-              className="bg-white/10 border-white/20 text-white hover:bg-white/20 h-auto py-2 px-3.5 text-sm transition-all active:scale-95"
+          {/* Export Actions - Desktop: Buttons, Mobile: 3-dot Menu - iOS 17 + visionOS */}
+          <div className={cn("hidden md:flex items-center gap-2 flex-shrink-0")}>
+            <motion.button
+              onClick={() => {
+                triggerHaptic(HapticPatterns.light);
+                handleExportICal();
+              }}
+              whileTap={animations.microTap}
+              whileHover={window.innerWidth > 768 ? animations.microHover : undefined}
+              className={cn(
+                glass.apple,
+                radius.md,
+                spacing.cardPadding.secondary,
+                typography.bodySmall,
+                "text-white transition-all",
+                shadows.sm
+              )}
             >
-              <Download className="w-3.5 h-3.5 mr-1.5" />
+              <Download className={cn(iconSizes.sm, "mr-1.5")} />
               Export iCal
-            </Button>
-            <Button
-              onClick={handleSyncGoogleCalendar}
-              variant="outline"
-              size="sm"
-              className="bg-white/10 border-white/20 text-white hover:bg-white/20 h-auto py-2 px-3.5 text-sm transition-all active:scale-95"
+            </motion.button>
+            <motion.button
+              onClick={() => {
+                triggerHaptic(HapticPatterns.light);
+                handleSyncGoogleCalendar();
+              }}
+              whileTap={animations.microTap}
+              whileHover={window.innerWidth > 768 ? animations.microHover : undefined}
+              className={cn(
+                glass.apple,
+                radius.md,
+                spacing.cardPadding.secondary,
+                typography.bodySmall,
+                "text-white transition-all",
+                shadows.sm
+              )}
             >
-              <ExternalLink className="w-3.5 h-3.5 mr-1.5" />
+              <ExternalLink className={cn(iconSizes.sm, "mr-1.5")} />
               Google Calendar
-            </Button>
+            </motion.button>
           </div>
 
-          {/* Mobile: 3-dot Menu Button */}
-          <Button
-            onClick={() => setShowExportSheet(true)}
-            variant="ghost"
-            size="sm"
-            className="md:hidden bg-white/10 border border-white/20 text-white hover:bg-white/20 h-10 w-10 p-0 rounded-xl transition-all active:scale-95"
+          {/* Mobile: 3-dot Menu Button - iOS 17 + visionOS */}
+          <motion.button
+            onClick={() => {
+              triggerHaptic(HapticPatterns.light);
+              setShowExportSheet(true);
+            }}
+            whileTap={animations.microTap}
+            className={cn(
+              "md:hidden",
+              glass.apple,
+              radius.md,
+              "text-white h-10 w-10 p-0 transition-all",
+              shadows.sm
+            )}
             aria-label="Export options"
           >
-            <MoreVertical className="w-5 h-5" />
-          </Button>
+            <MoreVertical className={iconSizes.md} />
+          </motion.button>
         </div>
 
         {/* Calendar View */}
         <DeadlineCalendar viewMode={viewMode} />
 
-        {/* Mobile Export Action Sheet */}
+        {/* Mobile Export Action Sheet - iOS 17 + visionOS */}
         <BottomSheet open={showExportSheet} onClose={() => setShowExportSheet(false)}>
-          <div className="px-4 py-6 space-y-3">
-            <h3 className="text-lg font-semibold text-white mb-4">Export Calendar</h3>
+          <div className={cn(spacing.page, spacing.card)}>
+            <h3 className={cn(typography.h3, "text-white mb-4")}>Export Calendar</h3>
             
-            <button
-              onClick={handleExportICal}
-              className="w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-white/10 border border-white/20 text-white hover:bg-white/15 transition-all active:scale-[0.98]"
+            <motion.button
+              onClick={() => {
+                triggerHaptic(HapticPatterns.light);
+                handleExportICal();
+              }}
+              whileTap={animations.microTap}
+              className={cn(
+                "w-full flex items-center gap-3",
+                glass.apple,
+                radius.lg,
+                spacing.cardPadding.secondary,
+                "text-white transition-all",
+                shadows.sm
+              )}
             >
-              <Download className="w-5 h-5" />
-              <span className="font-medium">Export iCal</span>
-            </button>
+              <Download className={iconSizes.md} />
+              <span className={cn(typography.body, "font-medium")}>Export iCal</span>
+            </motion.button>
 
-            <button
-              onClick={handleSyncGoogleCalendar}
-              className="w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-white/10 border border-white/20 text-white hover:bg-white/15 transition-all active:scale-[0.98]"
+            <motion.button
+              onClick={() => {
+                triggerHaptic(HapticPatterns.light);
+                handleSyncGoogleCalendar();
+              }}
+              whileTap={animations.microTap}
+              className={cn(
+                "w-full flex items-center gap-3",
+                glass.apple,
+                radius.lg,
+                spacing.cardPadding.secondary,
+                "text-white transition-all",
+                shadows.sm
+              )}
             >
-              <ExternalLink className="w-5 h-5" />
-              <span className="font-medium">Google Calendar</span>
-            </button>
+              <ExternalLink className={iconSizes.md} />
+              <span className={cn(typography.body, "font-medium")}>Google Calendar</span>
+            </motion.button>
           </div>
         </BottomSheet>
       </div>
