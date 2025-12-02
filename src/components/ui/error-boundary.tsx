@@ -1,13 +1,15 @@
 "use client";
 
 import React, { Component, ReactNode } from 'react';
-import { AlertTriangle, RefreshCw } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { ErrorFallback } from './ErrorFallback';
 
 interface Props {
   children: ReactNode;
   fallback?: ReactNode;
+  variant?: 'full' | 'inline' | 'modal';
+  title?: string;
+  description?: string;
+  onError?: (error: Error, errorInfo: React.ErrorInfo) => void;
 }
 
 interface State {
@@ -27,6 +29,16 @@ export class ErrorBoundary extends Component<Props, State> {
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
     console.error('Error caught by boundary:', error, errorInfo);
+    
+    // Call optional error handler
+    if (this.props.onError) {
+      this.props.onError(error, errorInfo);
+    }
+
+    // TODO: Log to error tracking service (e.g., Sentry)
+    // if (window.Sentry) {
+    //   window.Sentry.captureException(error, { contexts: { react: errorInfo } });
+    // }
   }
 
   handleReset = () => {
@@ -40,27 +52,13 @@ export class ErrorBoundary extends Component<Props, State> {
       }
 
       return (
-        <Card variant="attention" className="my-4">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-red-400">
-              <AlertTriangle className="h-5 w-5" />
-              Something went wrong
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-white/70 mb-4">
-              {this.state.error?.message || 'An unexpected error occurred'}
-            </p>
-            <Button
-              onClick={this.handleReset}
-              variant="outline"
-              className="rounded-[12px] bg-white/10 border-white/20 text-white hover:bg-white/15"
-            >
-              <RefreshCw className="h-4 w-4 mr-2" />
-              Try Again
-            </Button>
-          </CardContent>
-        </Card>
+        <ErrorFallback
+          error={this.state.error}
+          resetError={this.handleReset}
+          variant={this.props.variant || 'inline'}
+          title={this.props.title}
+          description={this.props.description}
+        />
       );
     }
 
