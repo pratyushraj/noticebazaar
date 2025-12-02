@@ -24,6 +24,11 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { useSession } from "@/contexts/SessionContext";
 import { getInitials } from "@/lib/utils/avatar";
 import { cn } from "@/lib/utils";
+import { triggerHaptic, HapticPatterns } from "@/lib/utils/haptics";
+import { spacing, typography, iconSizes, separators, glass, animations } from "@/lib/design-system";
+import { AppsGridMenu } from "@/components/navigation/AppsGridMenu";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { DEFAULT_AVATAR_URL } from "@/lib/utils/avatar";
 
 // ============================================================================
 // TYPES & INTERFACES
@@ -70,69 +75,129 @@ interface DrawerHeaderProps {
 }
 
 function DrawerHeader({ userName, userHandle, userAvatar, userInitials, onProfileClick }: DrawerHeaderProps) {
+  const handleProfileClick = () => {
+    triggerHaptic(HapticPatterns.light);
+    onProfileClick();
+  };
+
   return (
-    <div className="mb-6">
+    <div className={cn(spacing.cardPadding.tertiary, "pb-4")}>
       {/* Profile Section */}
       <button
-        onClick={onProfileClick}
-        className="flex items-center gap-3 w-full mb-4 focus:outline-none focus:ring-2 focus:ring-white/30 focus:ring-offset-2 focus:ring-offset-transparent rounded-xl p-1 transition-all active:scale-[0.98]"
+        onClick={handleProfileClick}
+        className={cn(
+          "flex items-center gap-3 w-full mb-4",
+          "focus:outline-none focus-visible:ring-2 focus-visible:ring-white/30 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent",
+          "rounded-xl p-1 transition-all",
+          animations.cardPress
+        )}
         aria-label={`View profile for ${userName}`}
-        role="button"
       >
-        {/* Avatar with gradient border */}
-        <div className="relative">
-          {userAvatar ? (
-            <img
-              src={userAvatar}
-              alt={`${userName}'s avatar`}
-              className="w-12 h-12 rounded-full object-cover border-2 border-transparent"
-              style={{
-                borderImage: 'linear-gradient(135deg, #6EE7FF, #8B5CF6) 1',
-              }}
-            />
-          ) : (
-            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#6EE7FF] to-[#8B5CF6] flex items-center justify-center text-lg font-semibold text-white border-2 border-transparent">
-              {userInitials}
-            </div>
-          )}
-        </div>
+        <Avatar className="h-12 w-12 ring-2 ring-white/10">
+          <AvatarImage 
+            src={userAvatar || DEFAULT_AVATAR_URL} 
+            alt={`${userName}'s avatar`} 
+          />
+          <AvatarFallback className="bg-gradient-to-br from-[#6EE7FF] to-[#8B5CF6] text-white text-sm font-semibold">
+            {userInitials}
+          </AvatarFallback>
+        </Avatar>
         <div className="flex-1 text-left min-w-0">
-          <p className="font-bold text-base leading-tight truncate text-white">
+          <p className={cn(typography.h4, "truncate")}>
             {userName}
           </p>
-          <p className="text-sm leading-tight truncate" style={{ color: '#ffffff90' }}>
+          <p className={cn(typography.bodySmall, "truncate")}>
             @{userHandle}
           </p>
         </div>
-        <ChevronRight className="w-4 h-4 flex-shrink-0" style={{ color: '#ffffff70' }} />
+        <ChevronRight className={cn(iconSizes.sm, "flex-shrink-0 text-white/70")} />
       </button>
 
-      {/* Icon Buttons Row */}
+      {/* Icon Buttons Row with AppsGridMenu */}
       <div className="flex items-center gap-2">
+        <AppsGridMenu
+          trigger={
+            <button
+              className={cn(
+                "w-10 h-10 rounded-xl",
+                glass.base,
+                "flex items-center justify-center transition-all",
+                animations.cardHover,
+                animations.cardPress
+              )}
+              aria-label="Open apps menu"
+            >
+              <svg 
+                width="20" 
+                height="20" 
+                viewBox="0 0 24 24" 
+                fill="none"
+                className="text-white/70"
+              >
+                <circle cx="4" cy="4" r="2.2" fill="currentColor"/>
+                <circle cx="12" cy="4" r="2.2" fill="currentColor"/>
+                <circle cx="20" cy="4" r="2.2" fill="currentColor"/>
+                <circle cx="4" cy="12" r="2.2" fill="currentColor"/>
+                <circle cx="12" cy="12" r="2.2" fill="currentColor"/>
+                <circle cx="20" cy="12" r="2.2" fill="currentColor"/>
+                <circle cx="4" cy="20" r="2.2" fill="currentColor"/>
+                <circle cx="12" cy="20" r="2.2" fill="currentColor"/>
+                <circle cx="20" cy="20" r="2.2" fill="currentColor"/>
+              </svg>
+            </button>
+          }
+        />
         <button
-          className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center transition-all hover:scale-95 hover:bg-white/10 active:scale-95"
+          className={cn(
+            "w-10 h-10 rounded-xl",
+            glass.base,
+            "flex items-center justify-center transition-all",
+            animations.cardHover,
+            animations.cardPress
+          )}
           aria-label="Refresh"
+          onClick={() => triggerHaptic(HapticPatterns.light)}
         >
-          <RefreshCw className="w-5 h-5" style={{ color: '#ffffff70' }} />
+          <RefreshCw className={cn(iconSizes.md, "text-white/70")} />
         </button>
         <button
-          className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center transition-all hover:scale-95 hover:bg-white/10 active:scale-95"
+          className={cn(
+            "w-10 h-10 rounded-xl",
+            glass.base,
+            "flex items-center justify-center transition-all",
+            animations.cardHover,
+            animations.cardPress
+          )}
           aria-label="Calendar"
+          onClick={() => triggerHaptic(HapticPatterns.light)}
         >
-          <Calendar className="w-5 h-5" style={{ color: '#ffffff70' }} />
+          <Calendar className={cn(iconSizes.md, "text-white/70")} />
         </button>
         <button
-          className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center transition-all hover:scale-95 hover:bg-white/10 active:scale-95 relative"
+          className={cn(
+            "w-10 h-10 rounded-xl relative",
+            glass.base,
+            "flex items-center justify-center transition-all",
+            animations.cardHover,
+            animations.cardPress
+          )}
           aria-label="Notifications"
+          onClick={() => triggerHaptic(HapticPatterns.light)}
         >
-          <Bell className="w-5 h-5" style={{ color: '#ffffff70' }} />
-          {/* Notification badge can be added here */}
+          <Bell className={cn(iconSizes.md, "text-white/70")} />
         </button>
         <button
-          className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center transition-all hover:scale-95 hover:bg-white/10 active:scale-95"
+          className={cn(
+            "w-10 h-10 rounded-xl",
+            glass.base,
+            "flex items-center justify-center transition-all",
+            animations.cardHover,
+            animations.cardPress
+          )}
           aria-label="Search"
+          onClick={() => triggerHaptic(HapticPatterns.light)}
         >
-          <Search className="w-5 h-5" style={{ color: '#ffffff70' }} />
+          <Search className={cn(iconSizes.md, "text-white/70")} />
         </button>
       </div>
     </div>
@@ -142,15 +207,17 @@ function DrawerHeader({ userName, userHandle, userAvatar, userInitials, onProfil
 interface DrawerSectionProps {
   title: string;
   children: React.ReactNode;
+  showSeparator?: boolean;
 }
 
-function DrawerSection({ title, children }: DrawerSectionProps) {
+function DrawerSection({ title, children, showSeparator = true }: DrawerSectionProps) {
   return (
     <div className="mt-5 first:mt-0">
-      <p className="text-xs uppercase tracking-wider mb-3 font-semibold" style={{ color: '#ffffff85' }}>
+      {showSeparator && <div className={separators.section} />}
+      <p className={cn(typography.label, "mb-3 px-1")}>
         {title}
       </p>
-      <div className="space-y-2">
+      <div className={spacing.compact}>
         {children}
       </div>
     </div>
@@ -166,30 +233,31 @@ interface DrawerItemProps {
 function DrawerItem({ item, isActive, onClick }: DrawerItemProps) {
   const Icon = item.icon;
 
+  const handleClick = () => {
+    triggerHaptic(HapticPatterns.light);
+    onClick();
+  };
+
   return (
     <button
-      onClick={onClick}
-      role="button"
+      onClick={handleClick}
       aria-label={item.label}
       aria-current={isActive ? 'page' : undefined}
       className={cn(
-        "relative flex items-center w-full px-4 rounded-[18px] transition-all duration-150",
-        "active:scale-[0.97]",
-        "focus:outline-none focus:ring-2 focus:ring-white/30 focus:ring-offset-2 focus:ring-offset-transparent",
+        "relative flex items-center w-full rounded-[18px] transition-all duration-150",
+        spacing.cardPadding.tertiary,
+        animations.cardPress,
+        "focus:outline-none focus-visible:ring-2 focus-visible:ring-white/30 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent",
         isActive
           ? "bg-gradient-to-r from-[#6EE7FF] to-[#8B5CF6] text-white shadow-lg"
           : cn(
-              "bg-[rgba(255,255,255,0.06)] border border-[rgba(255,255,255,0.1)] backdrop-blur-[12px]",
-              "text-white/90 hover:bg-[rgba(255,255,255,0.08)]"
+              glass.base,
+              "text-white/90 hover:bg-white/8"
             )
       )}
-      style={{
-        paddingTop: '14px',
-        paddingBottom: '14px',
-      }}
     >
-      <Icon className="w-[22px] h-[22px] flex-shrink-0 mr-3" />
-      <span className="font-medium text-sm flex-1 text-left">{item.label}</span>
+      <Icon className={cn(iconSizes.md, "flex-shrink-0 mr-3")} />
+      <span className={cn(typography.body, "flex-1 text-left")}>{item.label}</span>
       
       {item.badge && (
         <motion.span
@@ -214,31 +282,32 @@ function QuickActionButton({ item, onClick }: QuickActionButtonProps) {
   const isPrimary = item.variant === 'primary';
   const isAccent = item.variant === 'accent';
 
+  const handleClick = () => {
+    triggerHaptic(HapticPatterns.medium);
+    onClick();
+  };
+
   return (
     <button
-      onClick={onClick}
-      role="button"
+      onClick={handleClick}
       aria-label={item.label}
       className={cn(
-        "relative flex items-center w-full px-4 rounded-[18px] transition-all duration-150",
-        "active:scale-[0.97]",
-        "focus:outline-none focus:ring-2 focus:ring-white/30 focus:ring-offset-2 focus:ring-offset-transparent",
+        "relative flex items-center w-full rounded-[18px] transition-all duration-150",
+        spacing.cardPadding.tertiary,
+        animations.cardPress,
+        "focus:outline-none focus-visible:ring-2 focus-visible:ring-white/30 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent",
         isPrimary
           ? "bg-gradient-to-r from-[#6EE7FF] to-[#8B5CF6] text-white shadow-lg"
           : isAccent
           ? "bg-[rgba(16,185,129,0.15)] border border-[rgba(16,185,129,0.3)] text-[#10b981] hover:bg-[rgba(16,185,129,0.2)]"
           : cn(
-              "bg-[rgba(255,255,255,0.06)] border border-[rgba(255,255,255,0.1)] backdrop-blur-[12px]",
-              "text-white/90 hover:bg-[rgba(255,255,255,0.08)]"
+              glass.base,
+              "text-white/90 hover:bg-white/8"
             )
       )}
-      style={{
-        paddingTop: '14px',
-        paddingBottom: '14px',
-      }}
     >
-      <Icon className="w-[22px] h-[22px] flex-shrink-0 mr-3" />
-      <span className="font-medium text-sm flex-1 text-left">{item.label}</span>
+      <Icon className={cn(iconSizes.md, "flex-shrink-0 mr-3")} />
+      <span className={cn(typography.body, "flex-1 text-left")}>{item.label}</span>
     </button>
   );
 }
@@ -248,26 +317,27 @@ interface LogoutButtonProps {
 }
 
 function LogoutButton({ onClick }: LogoutButtonProps) {
+  const handleClick = () => {
+    triggerHaptic(HapticPatterns.medium);
+    onClick();
+  };
+
   return (
     <button
-      onClick={onClick}
-      role="button"
+      onClick={handleClick}
       aria-label="Log out"
       className={cn(
-        "w-full px-4 rounded-[18px] transition-all duration-150",
+        "w-full rounded-[18px] transition-all duration-150",
         "flex items-center gap-3",
+        spacing.cardPadding.tertiary,
         "bg-[rgba(255,0,0,0.1)] border border-[rgba(255,0,0,0.25)]",
         "text-[#ff6b6b] hover:bg-[rgba(255,0,0,0.15)]",
-        "active:scale-[0.97]",
-        "focus:outline-none focus:ring-2 focus:ring-red-500/30 focus:ring-offset-2 focus:ring-offset-transparent"
+        animations.cardPress,
+        "focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500/30 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent"
       )}
-      style={{
-        paddingTop: '14px',
-        paddingBottom: '14px',
-      }}
     >
-      <LogOut className="w-[22px] h-[22px]" />
-      <span className="font-medium text-sm flex-1 text-left">Log Out</span>
+      <LogOut className={cn(iconSizes.md)} />
+      <span className={cn(typography.body, "flex-1 text-left")}>Log Out</span>
     </button>
   );
 }
@@ -389,8 +459,8 @@ export default function PremiumDrawer({
   return (
     <AnimatePresence>
       {open && (
-        <div className="fixed inset-0 z-40 md:z-50">
-          {/* Backdrop */}
+        <div className="fixed inset-0 z-[9999]">
+          {/* Backdrop - covers bottom nav too */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -407,26 +477,32 @@ export default function PremiumDrawer({
             animate={{ x: 0, opacity: 1 }}
             exit={{ x: '-100%', opacity: 0 }}
             transition={{
-              duration: 0.25,
-              ease: [0.4, 0, 0.2, 1],
+              type: "spring",
+              damping: 30,
+              stiffness: 300,
+              mass: 0.8,
             }}
             className={cn(
               "absolute left-0 top-0 h-full",
               "w-[78%] max-w-[320px] md:w-[300px]",
-              "rounded-r-[30px]",
-              "backdrop-blur-md",
-              "shadow-[0_8px_32px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.1)]",
-              "p-6",
+              "rounded-r-3xl",
+              glass.strong,
+              "shadow-[0_0_50px_rgba(0,0,0,0.4)]",
+              spacing.cardPadding.secondary,
               "flex flex-col",
               "text-white",
-              // Custom scrollbar
-              "[&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-thumb]:bg-white/20 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-track]:bg-transparent"
+              // Hide scrollbar but keep scrolling
+              "[&::-webkit-scrollbar]:w-0 [&::-webkit-scrollbar]:h-0",
+              "overscroll-contain",
+              // Bouncy overscroll effect
+              "overscroll-y-contain"
             )}
             style={{
-              background: 'linear-gradient(180deg, #4b0cff 0%, #2d004f 100%)',
+              background: 'linear-gradient(180deg, rgba(75, 12, 255, 0.95) 0%, rgba(45, 0, 79, 0.95) 100%)',
+              scrollbarWidth: 'none',
+              msOverflowStyle: 'none',
             }}
-            role="dialog"
-            aria-modal="true"
+            role="navigation"
             aria-label="Navigation menu"
           >
             {/* Header */}
@@ -438,10 +514,24 @@ export default function PremiumDrawer({
               onProfileClick={handleProfileClick}
             />
 
-            {/* Scrollable Content */}
-            <div className="flex-1 overflow-y-auto overflow-x-hidden min-h-0 -mx-6 px-6">
+            {/* Scrollable Content - Hidden scrollbar */}
+            <div 
+              className={cn(
+                "flex-1 overflow-y-auto overflow-x-hidden min-h-0",
+                "-mx-5 px-5",
+                // Hide scrollbar
+                "[&::-webkit-scrollbar]:w-0 [&::-webkit-scrollbar]:h-0",
+                // Smooth overscroll
+                "overscroll-contain",
+                "overscroll-y-contain"
+              )}
+              style={{
+                scrollbarWidth: 'none',
+                msOverflowStyle: 'none',
+              }}
+            >
               {/* Main Section */}
-              <DrawerSection title="MAIN">
+              <DrawerSection title="MAIN" showSeparator={false}>
                 {menuData.main.map((item) => (
                   <DrawerItem
                     key={item.id}
@@ -477,7 +567,7 @@ export default function PremiumDrawer({
             </div>
 
             {/* Footer - Logout */}
-            <div className="mt-auto pt-4 border-t border-white/10">
+            <div className={cn("mt-auto pt-4 border-t border-white/10")}>
               <LogoutButton onClick={handleLogout} />
             </div>
           </motion.div>
