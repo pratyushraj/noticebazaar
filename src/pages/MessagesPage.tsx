@@ -78,9 +78,10 @@ function AdvisorCardScoped({ advisor, selected, onClick }: { advisor: Advisor; s
         'w-full text-left flex items-center gap-3 transition-all duration-150 ease-in-out relative overflow-hidden',
         radius.lg,
         'border',
+        // replaced-by-ultra-polish
         selected 
-          ? 'bg-blue-500/20 ring-2 ring-blue-400/50 border-blue-400/50 shadow-[0_6px_20px_rgba(59,130,246,0.15)] p-3.5 scale-[1.02]' 
-          : cn(glass.appleSubtle, 'border-white/10 p-3 hover:bg-white/10'),
+          ? cn(badges.info, 'ring-2 ring-blue-400/50 border-blue-400/50', shadows.sm, spacing.cardPadding.secondary, 'scale-[1.02]') 
+          : cn(glass.appleSubtle, 'border-white/10', spacing.cardPadding.tertiary, 'hover:bg-white/10'),
         spacing.cardPadding.secondary
       )}
     >
@@ -93,7 +94,8 @@ function AdvisorCardScoped({ advisor, selected, onClick }: { advisor: Advisor; s
         )}
         {/* Unread dot */}
         {advisor.unreadCount && advisor.unreadCount > 0 && (
-          <span className="absolute -top-1 -right-1 inline-flex items-center justify-center w-5 h-5 bg-red-500 rounded-full text-[10px] font-semibold text-white ring-2 ring-background">
+          {/* replaced-by-ultra-polish */}
+          <span className={cn("absolute -top-1 -right-1 inline-flex items-center justify-center", iconSizes.md, badges.danger, radius.full, typography.caption, "font-semibold ring-2 ring-background")}>
             {advisor.unreadCount > 9 ? '9+' : advisor.unreadCount}
           </span>
         )}
@@ -421,8 +423,9 @@ function MessageInputScoped({
             "h-10 w-10 md:w-11 md:h-11 flex items-center justify-center",
             radius.full,
             "border border-white/10 transition-all duration-200 relative z-10",
+            // replaced-by-ultra-polish
             isRecording
-              ? "bg-red-500/30 text-red-400 animate-pulse shadow-[0_0_12px_rgba(239,68,68,0.4)]"
+              ? cn(badges.danger, "animate-pulse", shadows.md)
               : cn(colors.bg.secondary, "text-white/70 hover:bg-white/20")
           )}
           whileTap={animations.microTap}
@@ -1037,7 +1040,8 @@ export default function MessagesPage() {
           </div>
 
           {/* Footer - hidden on mobile, shown on desktop */}
-          <footer className="hidden md:block mt-8 text-center text-[11px] opacity-40">
+          {/* replaced-by-ultra-polish */}
+          <footer className={cn("hidden md:block mt-8 text-center", typography.caption, "opacity-40")}>
             © 2025 NoticeBazaar — Secure Legal Portal
           </footer>
         </div>
