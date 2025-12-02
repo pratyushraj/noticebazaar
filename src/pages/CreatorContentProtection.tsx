@@ -9,7 +9,9 @@ import { useBrandDeals } from '@/lib/hooks/useBrandDeals';
 import { NoContractsEmptyState } from '@/components/empty-states/PreconfiguredEmptyStates';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { animations, spacing, typography, iconSizes, scroll, gradients, buttons, cardVariants } from '@/lib/design-system';
+import { animations, spacing, typography, iconSizes, scroll, gradients, buttons, glass, shadows, radius, vision, motion as motionTokens, colors, separators, sectionHeader } from '@/lib/design-system';
+import { triggerHaptic, HapticPatterns } from '@/lib/utils/haptics';
+import { cn } from '@/lib/utils';
 import { BaseCard } from '@/components/ui/card-variants';
 
 const CreatorContentProtection = () => {
@@ -215,16 +217,6 @@ const CreatorContentProtection = () => {
   };
 
   // Haptic feedback helper
-  const triggerHaptic = (pattern: 'light' | 'medium' | 'heavy' = 'light') => {
-    if (navigator.vibrate) {
-      const patterns = {
-        light: [10],
-        medium: [20],
-        heavy: [30, 10, 30]
-      };
-      navigator.vibrate(patterns[pattern]);
-    }
-  };
 
   return (
     <ContextualTipsProvider currentView="protection">
@@ -251,32 +243,47 @@ const CreatorContentProtection = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4, delay: 0.1 }}
             >
-              <BaseCard variant="secondary" className="p-5 md:p-6 mb-4">
-              <div className="relative z-10 flex items-center justify-between mb-4">
-                <div className="flex items-center gap-2.5">
-                  <Shield className={`${iconSizes.md} text-green-400`} />
-                  <span className={typography.bodySmall + " font-semibold"}>Protection Score</span>
+              <BaseCard variant="secondary" className={cn(spacing.cardPadding.secondary, "mb-4 relative overflow-hidden")}>
+                {/* Vision Pro depth elevation */}
+                <div className={vision.depth.elevation} />
+                
+                {/* Spotlight gradient */}
+                <div className={cn(vision.spotlight.base, "opacity-30")} />
+                
+                {/* Glare effect */}
+                <div className={vision.glare.soft} />
+                
+                <div className={cn("relative z-10 flex items-center justify-between", spacing.compact)}>
+                  <div className={cn("flex items-center gap-2.5")}>
+                    <Shield className={cn(iconSizes.md, "text-green-400")} />
+                    <span className={cn(typography.bodySmall, "font-semibold")}>Protection Score</span>
+                  </div>
+                  <motion.button 
+                    className={cn(buttons.tertiary, typography.bodySmall)}
+                    whileTap={animations.microTap}
+                  >
+                    How it works?
+                  </motion.button>
                 </div>
-                <button className={buttons.tertiary + " text-xs"}>
-                  How it works?
-                </button>
-              </div>
 
-              <div className="relative z-10 flex items-baseline gap-3 mb-4">
-                <div className="text-5xl md:text-6xl font-bold text-green-400 leading-none">{protectionScore}</div>
-                <div className="text-sm text-white/70 pb-1">out of 100</div>
-              </div>
+                <div className={cn("relative z-10 flex items-baseline gap-3", spacing.compact)}>
+                  <div className={cn(typography.amount, "text-green-400 leading-none")}>{protectionScore}</div>
+                  <div className={cn(typography.bodySmall, "text-white/70 pb-1")}>out of 100</div>
+                </div>
 
-              <div className="relative z-10 w-full bg-white/10 rounded-full h-2 mb-4">
-                <motion.div
-                  initial={{ width: 0 }}
-                  animate={{ width: `${protectionScore}%` }}
-                  transition={{ duration: 0.8, delay: 0.3 }}
-                  className="bg-gradient-to-r from-green-500 to-green-400 h-2 rounded-full"
-        />
-      </div>
+                <div className={cn("relative z-10 w-full", colors.bg.secondary, radius.full, "h-2 mb-4")}>
+                  <motion.div
+                    initial={{ width: 0 }}
+                    animate={{ width: `${protectionScore}%` }}
+                    transition={motionTokens.spring.gentle}
+                    className={cn(
+                      "bg-gradient-to-r from-green-500 to-green-400 h-2",
+                      radius.full
+                    )}
+                  />
+                </div>
 
-              <p className={`relative z-10 ${typography.bodySmall} leading-relaxed mb-4`}>
+                <p className={cn("relative z-10", typography.bodySmall, "leading-relaxed", spacing.compact)}>
                 {contracts.length === 0 ? (
                   <span>Upload your first contract to get a protection score and AI-powered analysis.</span>
                 ) : protectionScore >= 80 ? (
@@ -294,8 +301,8 @@ const CreatorContentProtection = () => {
               {/* Why is your score low? - Compact */}
               {protectionScore < 80 && contracts.length > 0 && (
                 <div className="relative z-10 mt-4 pt-4 border-t border-white/10">
-                  <h3 className={`${typography.caption} font-semibold mb-3 flex items-center gap-2`}>
-                    <AlertCircle className={`${iconSizes.sm} text-yellow-400`} />
+                  <h3 className={cn(typography.caption, "font-semibold mb-3 flex items-center gap-2")}>
+                    <AlertCircle className={cn(iconSizes.sm, "text-yellow-400")} />
                     Why is your score low?
                   </h3>
                   <div className={spacing.compact}>
@@ -330,7 +337,19 @@ const CreatorContentProtection = () => {
             </motion.div>
 
             {/* Sticky Tabs */}
-            <div className="sticky top-0 z-20 bg-gradient-to-b from-purple-900 via-purple-900/95 to-transparent pb-2 -mx-4 px-4 md:-mx-6 md:px-6 pt-2 mb-4">
+            <motion.div 
+              initial={motionTokens.fade.in.initial}
+              animate={motionTokens.fade.in.animate}
+              transition={motionTokens.fade.in.transition}
+              className={cn(
+                "sticky top-0",
+                zIndex.sticky,
+                glass.appleStrong,
+                "pb-2 -mx-4 px-4 md:-mx-6 md:px-6 pt-2 mb-4"
+              )}
+            >
+              {/* Spotlight */}
+              <div className={cn(vision.spotlight.base, "opacity-20")} />
               <SegmentedControl
                 options={[
                   { id: 'contracts', label: 'Contracts', count: contracts.length },
@@ -341,7 +360,7 @@ const CreatorContentProtection = () => {
                 onChange={(value) => setActiveTab(value as 'contracts' | 'alerts' | 'features')}
                 className="w-full"
               />
-        </div>
+            </motion.div>
 
             {/* Tab Content with smooth transitions */}
             <AnimatePresence mode="wait">
@@ -381,7 +400,7 @@ const CreatorContentProtection = () => {
                               variant="tertiary" 
                               className={`${animations.cardHover} ${animations.cardPress} cursor-pointer`}
                               onClick={() => {
-                                triggerHaptic('light');
+                                triggerHaptic(HapticPatterns.light);
                                 if (contract.dealId) {
                                   navigate(`/contract-protection/${contract.dealId}`);
                                 } else {
@@ -463,7 +482,7 @@ const CreatorContentProtection = () => {
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.3, delay: contracts.length * 0.05 }}
                         onClick={() => {
-                          triggerHaptic('medium');
+                          triggerHaptic(HapticPatterns.medium);
                           navigate('/contract-upload');
                         }}
                       >
@@ -471,7 +490,7 @@ const CreatorContentProtection = () => {
                           variant="tertiary" 
                           className="p-6 border-2 border-dashed border-white/15 cursor-pointer active:scale-[0.97] transition-all duration-150"
                           onClick={() => {
-                            triggerHaptic('medium');
+                            triggerHaptic(HapticPatterns.medium);
                             navigate('/contract-upload');
                           }}
                         >
@@ -523,7 +542,7 @@ const CreatorContentProtection = () => {
                           <BaseCard 
                             variant="tertiary" 
                             className={`${animations.cardHover} ${animations.cardPress} cursor-pointer`}
-                            onClick={() => triggerHaptic('light')}
+                            onClick={() => triggerHaptic(HapticPatterns.light)}
                           >
                           <div className="relative z-10 flex items-start gap-3">
                             <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${alertConfig[alert.type as AlertType].bgColor}`}>
@@ -575,7 +594,7 @@ const CreatorContentProtection = () => {
                         <BaseCard 
                           variant="tertiary" 
                           className={`${animations.cardHover} ${animations.cardPress} cursor-pointer`}
-                          onClick={() => triggerHaptic('light')}
+                          onClick={() => triggerHaptic(HapticPatterns.light)}
                         >
                         <div className="relative z-10 flex items-center gap-3">
                           <div className="w-11 h-11 rounded-xl bg-purple-500/20 flex items-center justify-center flex-shrink-0">
@@ -606,40 +625,67 @@ const CreatorContentProtection = () => {
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.3, delay: protectionFeatures.length * 0.05 }}
-                    className="relative bg-gradient-to-br from-purple-600/30 to-indigo-600/30 backdrop-blur-xl rounded-2xl p-6 border border-purple-400/30 shadow-[0_8px_30px_rgba(168,85,247,0.45)] before:absolute before:inset-0 before:bg-gradient-to-b before:from-white/10 before:to-transparent before:rounded-2xl before:pointer-events-none after:absolute after:-inset-1 after:bg-white/5 after:blur-xl after:rounded-3xl after:pointer-events-none"
+                    className={cn(
+                      "relative overflow-hidden",
+                      glass.appleStrong,
+                      radius.lg,
+                      spacing.cardPadding.primary,
+                      shadows.vision,
+                      "border-purple-400/30"
+                    )}
                   >
-                    <div className="relative z-10 flex items-start gap-3 mb-4">
-                      <Shield className="w-6 h-6 text-white" />
-            <div>
-                        <h3 className={`${typography.h4} mb-1`}>Premium Protection</h3>
-                        <p className="text-xs text-white/70">Get advanced features and priority legal support</p>
-                      </div>
-            </div>
+                    {/* Vision Pro depth elevation */}
+                    <div className={vision.depth.elevation} />
                     
-                    <ul className={`relative z-10 ${spacing.compact} mb-4 ${typography.bodySmall}`}>
-                      <li className="flex items-center gap-2 text-white/80">
-                        <CheckCircle className={`${iconSizes.sm} text-green-400 flex-shrink-0`} />
+                    {/* Spotlight gradient */}
+                    <div className={cn(vision.spotlight.base, "opacity-40")} />
+                    
+                    {/* Glare effect */}
+                    <div className={vision.glare.soft} />
+                    
+                    <div className={cn("relative z-10 flex items-start gap-3", spacing.compact)}>
+                      <Shield className={cn(iconSizes.lg, "text-white")} />
+                      <div>
+                        <h3 className={cn(typography.h4, "mb-1")}>Premium Protection</h3>
+                        <p className={cn(typography.bodySmall, "text-white/70")}>Get advanced features and priority legal support</p>
+                      </div>
+                    </div>
+                    
+                    <ul className={cn("relative z-10", spacing.compact, "mb-4", typography.bodySmall)}>
+                      <li className={cn("flex items-center gap-2", colors.text.secondary)}>
+                        <CheckCircle className={cn(iconSizes.sm, "text-green-400 flex-shrink-0")} />
                         <span>24/7 Legal advisor access</span>
                       </li>
-                      <li className="flex items-center gap-2 text-white/80">
-                        <CheckCircle className={`${iconSizes.sm} text-green-400 flex-shrink-0`} />
+                      <li className={cn("flex items-center gap-2", colors.text.secondary)}>
+                        <CheckCircle className={cn(iconSizes.sm, "text-green-400 flex-shrink-0")} />
                         <span>Payment guarantee protection</span>
                       </li>
-                      <li className="flex items-center gap-2 text-white/80">
-                        <CheckCircle className={`${iconSizes.sm} text-green-400 flex-shrink-0`} />
+                      <li className={cn("flex items-center gap-2", colors.text.secondary)}>
+                        <CheckCircle className={cn(iconSizes.sm, "text-green-400 flex-shrink-0")} />
                         <span>Unlimited contract reviews</span>
                       </li>
                     </ul>
                     
-                    <button 
+                    <motion.button 
                       onClick={() => {
-                        triggerHaptic('medium');
+                        triggerHaptic(HapticPatterns.medium);
                         // Navigate to premium upgrade
                       }}
-                      className={`relative z-10 w-full bg-white/10 hover:bg-white/15 text-white ${typography.bodySmall} font-semibold py-3 ${cardVariants.tertiary.radius} ${animations.cardPress} border border-white/20`}
+                      whileTap={animations.microTap}
+                      whileHover={window.innerWidth > 768 ? animations.microHover : undefined}
+                      className={cn(
+                        "relative z-10 w-full",
+                        colors.bg.secondary,
+                        "hover:bg-white/15 text-white",
+                        typography.bodySmall,
+                        "font-semibold",
+                        spacing.cardPadding.secondary,
+                        radius.md,
+                        "border border-white/20"
+                      )}
                     >
                       Upgrade to Premium
-                    </button>
+                    </motion.button>
                   </motion.div>
                 </motion.div>
               )}
