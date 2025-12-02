@@ -885,22 +885,48 @@ ON public.audit_logs(action_type, created_at DESC);
 ALTER TABLE public.audit_logs ENABLE ROW LEVEL SECURITY;
 
 -- Users can view their own audit logs
-CREATE POLICY "Users can view their own audit logs"
-ON public.audit_logs FOR SELECT
-TO authenticated
-USING (auth.uid() = user_id);
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1 FROM pg_policies 
+    WHERE schemaname = 'public' 
+    AND tablename = 'audit_logs' 
+    AND policyname = 'Users can view their own audit logs'
+  ) THEN
+    DROP POLICY "Users can view their own audit logs" ON public.audit_logs;
+  END IF;
+  
+  CREATE POLICY "Users can view their own audit logs"
+  ON public.audit_logs FOR SELECT
+  TO authenticated
+  USING (auth.uid() = user_id);
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- Service role can insert (for backend logging)
 -- Admins can view all
-CREATE POLICY "Admins can view all audit logs"
-ON public.audit_logs FOR SELECT
-TO authenticated
-USING (
-  EXISTS (
-    SELECT 1 FROM public.profiles
-    WHERE profiles.id = auth.uid() AND profiles.role = 'admin'
-  )
-);
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1 FROM pg_policies 
+    WHERE schemaname = 'public' 
+    AND tablename = 'audit_logs' 
+    AND policyname = 'Admins can view all audit logs'
+  ) THEN
+    DROP POLICY "Admins can view all audit logs" ON public.audit_logs;
+  END IF;
+  
+  CREATE POLICY "Admins can view all audit logs"
+  ON public.audit_logs FOR SELECT
+  TO authenticated
+  USING (
+    EXISTS (
+      SELECT 1 FROM public.profiles
+      WHERE profiles.id = auth.uid() AND profiles.role = 'admin'
+    )
+  );
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- ----------------------------------------------------------------------------
 -- 5.2 Create audit logging function
