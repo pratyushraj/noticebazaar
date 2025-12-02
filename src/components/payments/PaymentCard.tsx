@@ -1,6 +1,6 @@
 "use client";
 
-import React from 'react';
+import React, { memo } from 'react';
 import { ArrowDownRight, CheckCircle, Clock, AlertCircle, CreditCard, MoreVertical } from 'lucide-react';
 import { motion } from 'framer-motion';
 
@@ -26,7 +26,8 @@ interface PaymentCardProps {
   onClick?: () => void;
 }
 
-export const PaymentCard: React.FC<PaymentCardProps> = ({
+// replaced-by-ultra-polish: Memoized for performance
+export const PaymentCard: React.FC<PaymentCardProps> = memo(({
   title,
   dealName,
   platform,
@@ -103,6 +104,15 @@ export const PaymentCard: React.FC<PaymentCardProps> = ({
       whileTap={{ scale: 0.98 }}
       onClick={onClick}
       className="relative bg-white/5 backdrop-blur-xl rounded-3xl p-5 md:p-6 border border-white/10 cursor-pointer transition-all duration-200 hover:bg-white/7 hover:border-white/15 shadow-lg shadow-black/10 before:absolute before:inset-0 before:bg-gradient-to-b before:from-white/5 before:to-transparent before:rounded-3xl before:pointer-events-none"
+      role="button"
+      tabIndex={onClick ? 0 : undefined}
+      aria-label={`Payment card: ${title} - ${dealName} - ${paymentStatusConfig.label}`}
+      onKeyDown={onClick ? (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onClick();
+        }
+      } : undefined}
     >
       {/* Top Row */}
       <div className="flex items-start justify-between mb-4">
@@ -199,5 +209,7 @@ export const PaymentCard: React.FC<PaymentCardProps> = ({
       </div>
     </motion.div>
   );
-};
+});
+
+PaymentCard.displayName = 'PaymentCard';
 
