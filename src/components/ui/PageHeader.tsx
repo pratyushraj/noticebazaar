@@ -52,14 +52,18 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
     }
   };
 
+  // replaced-by-ultra-polish: Use drawer's purple gradient for header consistency
   return (
     <header
       className={cn(
         "sticky top-0 z-50 w-full",
-        "bg-purple-900/95 backdrop-blur-xl border-b border-white/10",
-        "shadow-lg",
+        "backdrop-blur-2xl border-b border-white/10",
+        shadows.depth, // Using depth shadow token
         className
       )}
+      style={{
+        background: 'linear-gradient(180deg, rgba(75, 12, 255, 0.95) 0%, rgba(45, 0, 79, 0.95) 100%)',
+      }}
       style={{
         paddingTop: 'max(16px, env(safe-area-inset-top, 16px))',
         paddingBottom: '16px',
