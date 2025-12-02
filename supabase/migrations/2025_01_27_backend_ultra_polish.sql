@@ -236,61 +236,67 @@ EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
 
 -- ----------------------------------------------------------------------------
--- 1.3 ISSUES - Verify and enhance RLS
+-- 1.3 ISSUES - Verify and enhance RLS (only if table exists)
 -- ----------------------------------------------------------------------------
 
-ALTER TABLE public.issues ENABLE ROW LEVEL SECURITY;
-
--- Ensure all policies exist
 DO $$
 BEGIN
-  IF NOT EXISTS (
-    SELECT 1 FROM pg_policies 
-    WHERE schemaname = 'public' 
-    AND tablename = 'issues' 
-    AND policyname = 'Users can view their own issues'
+  IF EXISTS (
+    SELECT 1 FROM information_schema.tables 
+    WHERE table_schema = 'public' 
+    AND table_name = 'issues'
   ) THEN
-    CREATE POLICY "Users can view their own issues"
-    ON public.issues FOR SELECT
-    TO authenticated
-    USING (auth.uid() = user_id);
-  END IF;
+    ALTER TABLE public.issues ENABLE ROW LEVEL SECURITY;
 
-  IF NOT EXISTS (
-    SELECT 1 FROM pg_policies 
-    WHERE schemaname = 'public' 
-    AND tablename = 'issues' 
-    AND policyname = 'Users can create their own issues'
-  ) THEN
-    CREATE POLICY "Users can create their own issues"
-    ON public.issues FOR INSERT
-    TO authenticated
-    WITH CHECK (auth.uid() = user_id);
-  END IF;
+    -- Ensure all policies exist
+    IF NOT EXISTS (
+      SELECT 1 FROM pg_policies 
+      WHERE schemaname = 'public' 
+      AND tablename = 'issues' 
+      AND policyname = 'Users can view their own issues'
+    ) THEN
+      CREATE POLICY "Users can view their own issues"
+      ON public.issues FOR SELECT
+      TO authenticated
+      USING (auth.uid() = user_id);
+    END IF;
 
-  IF NOT EXISTS (
-    SELECT 1 FROM pg_policies 
-    WHERE schemaname = 'public' 
-    AND tablename = 'issues' 
-    AND policyname = 'Users can update their own issues'
-  ) THEN
-    CREATE POLICY "Users can update their own issues"
-    ON public.issues FOR UPDATE
-    TO authenticated
-    USING (auth.uid() = user_id)
-    WITH CHECK (auth.uid() = user_id);
-  END IF;
+    IF NOT EXISTS (
+      SELECT 1 FROM pg_policies 
+      WHERE schemaname = 'public' 
+      AND tablename = 'issues' 
+      AND policyname = 'Users can create their own issues'
+    ) THEN
+      CREATE POLICY "Users can create their own issues"
+      ON public.issues FOR INSERT
+      TO authenticated
+      WITH CHECK (auth.uid() = user_id);
+    END IF;
 
-  IF NOT EXISTS (
-    SELECT 1 FROM pg_policies 
-    WHERE schemaname = 'public' 
-    AND tablename = 'issues' 
-    AND policyname = 'Users can delete their own issues'
-  ) THEN
-    CREATE POLICY "Users can delete their own issues"
-    ON public.issues FOR DELETE
-    TO authenticated
-    USING (auth.uid() = user_id);
+    IF NOT EXISTS (
+      SELECT 1 FROM pg_policies 
+      WHERE schemaname = 'public' 
+      AND tablename = 'issues' 
+      AND policyname = 'Users can update their own issues'
+    ) THEN
+      CREATE POLICY "Users can update their own issues"
+      ON public.issues FOR UPDATE
+      TO authenticated
+      USING (auth.uid() = user_id)
+      WITH CHECK (auth.uid() = user_id);
+    END IF;
+
+    IF NOT EXISTS (
+      SELECT 1 FROM pg_policies 
+      WHERE schemaname = 'public' 
+      AND tablename = 'issues' 
+      AND policyname = 'Users can delete their own issues'
+    ) THEN
+      CREATE POLICY "Users can delete their own issues"
+      ON public.issues FOR DELETE
+      TO authenticated
+      USING (auth.uid() = user_id);
+    END IF;
   END IF;
 END $$;
 
@@ -535,14 +541,23 @@ ON public.contract_issues(severity)
 WHERE severity = 'high';
 
 -- ----------------------------------------------------------------------------
--- 2.3 ISSUES - Performance indexes
+-- 2.3 ISSUES - Performance indexes (only if table exists)
 -- ----------------------------------------------------------------------------
 
-CREATE INDEX IF NOT EXISTS idx_issues_user_status 
-ON public.issues(user_id, status);
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1 FROM information_schema.tables 
+    WHERE table_schema = 'public' 
+    AND table_name = 'issues'
+  ) THEN
+    CREATE INDEX IF NOT EXISTS idx_issues_user_status 
+    ON public.issues(user_id, status);
 
-CREATE INDEX IF NOT EXISTS idx_issues_created_at 
-ON public.issues(created_at DESC);
+    CREATE INDEX IF NOT EXISTS idx_issues_created_at 
+    ON public.issues(created_at DESC);
+  END IF;
+END $$;
 
 -- ----------------------------------------------------------------------------
 -- 2.4 NOTIFICATIONS - Performance indexes
