@@ -16,7 +16,7 @@ import { PaymentCard } from '@/components/payments/PaymentCard';
 import { SummaryCard } from '@/components/payments/SummaryCard';
 import { ActionTile } from '@/components/payments/ActionTile';
 import { extractTaxInfo, getTaxDisplayMessage, calculateFinalAmount } from '@/lib/utils/taxExtraction';
-import { spacing, typography, separators, iconSizes, scroll, sectionHeader, gradients, buttons, glass, shadows, spotlight, radius, vision, motion as motionTokens, animations, colors } from '@/lib/design-system';
+import { spacing, typography, separators, iconSizes, scroll, sectionHeader, gradients, buttons, glass, shadows, radius, vision, motion as motionTokens, animations } from '@/lib/design-system';
 import { triggerHaptic, HapticPatterns } from '@/lib/utils/haptics';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
@@ -446,7 +446,7 @@ const CreatorPaymentsAndRecovery = () => {
           icon={ArrowDownRight}
           label="Request Payment"
           onClick={() => {
-            triggerHaptic('light');
+            triggerHaptic(HapticPatterns.light);
             setShowPaymentRequest(true);
           }}
           iconBgColor="bg-green-500/20"
@@ -457,7 +457,7 @@ const CreatorPaymentsAndRecovery = () => {
           icon={CreditCard}
           label="Add Expense"
           onClick={() => {
-            triggerHaptic('light');
+            triggerHaptic(HapticPatterns.light);
             setShowAddExpense(true);
           }}
           iconBgColor="bg-blue-500/20"
@@ -468,7 +468,7 @@ const CreatorPaymentsAndRecovery = () => {
           icon={Download}
           label="Export Report"
           onClick={async () => {
-            triggerHaptic('medium');
+            triggerHaptic(HapticPatterns.medium);
             try {
               const now = new Date();
               const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
