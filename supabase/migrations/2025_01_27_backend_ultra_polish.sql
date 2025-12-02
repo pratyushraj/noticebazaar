@@ -17,43 +17,113 @@ ALTER TABLE public.brand_deals ENABLE ROW LEVEL SECURITY;
 
 -- Drop existing policies to recreate with proper structure
 DROP POLICY IF EXISTS "Creators can view and manage their own brand deals." ON public.brand_deals;
+DROP POLICY IF EXISTS "Creators can view their own brand deals" ON public.brand_deals;
 DROP POLICY IF EXISTS "Creators can view their own brand deals." ON public.brand_deals;
+DROP POLICY IF EXISTS "Creators can insert their own brand deals" ON public.brand_deals;
 DROP POLICY IF EXISTS "Creators can insert their own brand deals." ON public.brand_deals;
+DROP POLICY IF EXISTS "Creators can update their own brand deals" ON public.brand_deals;
 DROP POLICY IF EXISTS "Creators can update their own brand deals." ON public.brand_deals;
+DROP POLICY IF EXISTS "Creators can delete their own brand deals" ON public.brand_deals;
 DROP POLICY IF EXISTS "Creators can delete their own brand deals." ON public.brand_deals;
 
--- Recreate with explicit USING and WITH CHECK
-CREATE POLICY "Creators can view their own brand deals"
-ON public.brand_deals FOR SELECT
-TO authenticated
-USING (auth.uid() = creator_id);
+-- Recreate with explicit USING and WITH CHECK (using DO block to avoid errors if exists)
+DO $$
+BEGIN
+  -- Drop and recreate SELECT policy
+  IF EXISTS (
+    SELECT 1 FROM pg_policies 
+    WHERE schemaname = 'public' 
+    AND tablename = 'brand_deals' 
+    AND policyname = 'Creators can view their own brand deals'
+  ) THEN
+    DROP POLICY "Creators can view their own brand deals" ON public.brand_deals;
+  END IF;
+  
+  CREATE POLICY "Creators can view their own brand deals"
+  ON public.brand_deals FOR SELECT
+  TO authenticated
+  USING (auth.uid() = creator_id);
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
-CREATE POLICY "Creators can insert their own brand deals"
-ON public.brand_deals FOR INSERT
-TO authenticated
-WITH CHECK (auth.uid() = creator_id);
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1 FROM pg_policies 
+    WHERE schemaname = 'public' 
+    AND tablename = 'brand_deals' 
+    AND policyname = 'Creators can insert their own brand deals'
+  ) THEN
+    DROP POLICY "Creators can insert their own brand deals" ON public.brand_deals;
+  END IF;
+  
+  CREATE POLICY "Creators can insert their own brand deals"
+  ON public.brand_deals FOR INSERT
+  TO authenticated
+  WITH CHECK (auth.uid() = creator_id);
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
-CREATE POLICY "Creators can update their own brand deals"
-ON public.brand_deals FOR UPDATE
-TO authenticated
-USING (auth.uid() = creator_id)
-WITH CHECK (auth.uid() = creator_id);
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1 FROM pg_policies 
+    WHERE schemaname = 'public' 
+    AND tablename = 'brand_deals' 
+    AND policyname = 'Creators can update their own brand deals'
+  ) THEN
+    DROP POLICY "Creators can update their own brand deals" ON public.brand_deals;
+  END IF;
+  
+  CREATE POLICY "Creators can update their own brand deals"
+  ON public.brand_deals FOR UPDATE
+  TO authenticated
+  USING (auth.uid() = creator_id)
+  WITH CHECK (auth.uid() = creator_id);
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
-CREATE POLICY "Creators can delete their own brand deals"
-ON public.brand_deals FOR DELETE
-TO authenticated
-USING (auth.uid() = creator_id);
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1 FROM pg_policies 
+    WHERE schemaname = 'public' 
+    AND tablename = 'brand_deals' 
+    AND policyname = 'Creators can delete their own brand deals'
+  ) THEN
+    DROP POLICY "Creators can delete their own brand deals" ON public.brand_deals;
+  END IF;
+  
+  CREATE POLICY "Creators can delete their own brand deals"
+  ON public.brand_deals FOR DELETE
+  TO authenticated
+  USING (auth.uid() = creator_id);
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- Admin policy for support
-CREATE POLICY "Admins can view all brand deals"
-ON public.brand_deals FOR SELECT
-TO authenticated
-USING (
-  EXISTS (
-    SELECT 1 FROM public.profiles
-    WHERE profiles.id = auth.uid() AND profiles.role = 'admin'
-  )
-);
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1 FROM pg_policies 
+    WHERE schemaname = 'public' 
+    AND tablename = 'brand_deals' 
+    AND policyname = 'Admins can view all brand deals'
+  ) THEN
+    DROP POLICY "Admins can view all brand deals" ON public.brand_deals;
+  END IF;
+  
+  CREATE POLICY "Admins can view all brand deals"
+  ON public.brand_deals FOR SELECT
+  TO authenticated
+  USING (
+    EXISTS (
+      SELECT 1 FROM public.profiles
+      WHERE profiles.id = auth.uid() AND profiles.role = 'admin'
+    )
+  );
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- ----------------------------------------------------------------------------
 -- 1.2 CONTRACT_ISSUES - Verify and enhance RLS
@@ -61,50 +131,109 @@ USING (
 
 ALTER TABLE public.contract_issues ENABLE ROW LEVEL SECURITY;
 
--- Ensure all policies exist
-DROP POLICY IF EXISTS "Creators can view their own contract issues" ON public.contract_issues;
-DROP POLICY IF EXISTS "Creators can insert their own contract issues" ON public.contract_issues;
-DROP POLICY IF EXISTS "Creators can update their own contract issues" ON public.contract_issues;
-DROP POLICY IF EXISTS "Creators can delete their own contract issues" ON public.contract_issues;
-DROP POLICY IF EXISTS "Admins can view all contract issues" ON public.contract_issues;
+-- Ensure all policies exist (using DO blocks to handle existing policies)
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1 FROM pg_policies 
+    WHERE schemaname = 'public' 
+    AND tablename = 'contract_issues' 
+    AND policyname = 'Creators can view their own contract issues'
+  ) THEN
+    DROP POLICY "Creators can view their own contract issues" ON public.contract_issues;
+  END IF;
+  
+  CREATE POLICY "Creators can view their own contract issues"
+  ON public.contract_issues FOR SELECT
+  TO authenticated
+  USING (auth.uid() = creator_id);
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
-CREATE POLICY "Creators can view their own contract issues"
-ON public.contract_issues FOR SELECT
-TO authenticated
-USING (auth.uid() = creator_id);
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1 FROM pg_policies 
+    WHERE schemaname = 'public' 
+    AND tablename = 'contract_issues' 
+    AND policyname = 'Creators can insert their own contract issues'
+  ) THEN
+    DROP POLICY "Creators can insert their own contract issues" ON public.contract_issues;
+  END IF;
+  
+  CREATE POLICY "Creators can insert their own contract issues"
+  ON public.contract_issues FOR INSERT
+  TO authenticated
+  WITH CHECK (
+    auth.uid() = creator_id
+    AND EXISTS (
+      SELECT 1 FROM public.brand_deals
+      WHERE brand_deals.id = contract_issues.deal_id
+      AND brand_deals.creator_id = auth.uid()
+    )
+  );
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
-CREATE POLICY "Creators can insert their own contract issues"
-ON public.contract_issues FOR INSERT
-TO authenticated
-WITH CHECK (
-  auth.uid() = creator_id
-  AND EXISTS (
-    SELECT 1 FROM public.brand_deals
-    WHERE brand_deals.id = contract_issues.deal_id
-    AND brand_deals.creator_id = auth.uid()
-  )
-);
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1 FROM pg_policies 
+    WHERE schemaname = 'public' 
+    AND tablename = 'contract_issues' 
+    AND policyname = 'Creators can update their own contract issues'
+  ) THEN
+    DROP POLICY "Creators can update their own contract issues" ON public.contract_issues;
+  END IF;
+  
+  CREATE POLICY "Creators can update their own contract issues"
+  ON public.contract_issues FOR UPDATE
+  TO authenticated
+  USING (auth.uid() = creator_id)
+  WITH CHECK (auth.uid() = creator_id);
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
-CREATE POLICY "Creators can update their own contract issues"
-ON public.contract_issues FOR UPDATE
-TO authenticated
-USING (auth.uid() = creator_id)
-WITH CHECK (auth.uid() = creator_id);
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1 FROM pg_policies 
+    WHERE schemaname = 'public' 
+    AND tablename = 'contract_issues' 
+    AND policyname = 'Creators can delete their own contract issues'
+  ) THEN
+    DROP POLICY "Creators can delete their own contract issues" ON public.contract_issues;
+  END IF;
+  
+  CREATE POLICY "Creators can delete their own contract issues"
+  ON public.contract_issues FOR DELETE
+  TO authenticated
+  USING (auth.uid() = creator_id);
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
-CREATE POLICY "Creators can delete their own contract issues"
-ON public.contract_issues FOR DELETE
-TO authenticated
-USING (auth.uid() = creator_id);
-
-CREATE POLICY "Admins can view all contract issues"
-ON public.contract_issues FOR SELECT
-TO authenticated
-USING (
-  EXISTS (
-    SELECT 1 FROM public.profiles
-    WHERE profiles.id = auth.uid() AND profiles.role = 'admin'
-  )
-);
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1 FROM pg_policies 
+    WHERE schemaname = 'public' 
+    AND tablename = 'contract_issues' 
+    AND policyname = 'Admins can view all contract issues'
+  ) THEN
+    DROP POLICY "Admins can view all contract issues" ON public.contract_issues;
+  END IF;
+  
+  CREATE POLICY "Admins can view all contract issues"
+  ON public.contract_issues FOR SELECT
+  TO authenticated
+  USING (
+    EXISTS (
+      SELECT 1 FROM public.profiles
+      WHERE profiles.id = auth.uid() AND profiles.role = 'admin'
+    )
+  );
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- ----------------------------------------------------------------------------
 -- 1.3 ISSUES - Verify and enhance RLS
