@@ -22,7 +22,7 @@ import { AdvisorModeSwitch } from '@/components/AdvisorModeSwitch';
 import { ContextualTipsProvider } from '@/components/contextual-tips/ContextualTipsProvider';
 import { NoMessagesEmptyState } from '@/components/empty-states/PreconfiguredEmptyStates';
 import { logger } from '@/lib/utils/logger';
-import { spacing, typography, iconSizes, radius, shadows, glass, animations } from '@/lib/design-system';
+import { spacing, typography, iconSizes, radius, shadows, glass, animations, vision, motion as motionTokens, colors } from '@/lib/design-system';
 import { triggerHaptic, HapticPatterns } from '@/lib/utils/haptics';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
@@ -63,20 +63,29 @@ function LocalAvatar({ src, alt, size = 'md' }: { src?: string; alt?: string; si
   );
 }
 
-// --- AdvisorCard (scoped, not exported) ---
+// --- AdvisorCard (scoped, not exported) - iOS 17 + visionOS ---
 function AdvisorCardScoped({ advisor, selected, onClick }: { advisor: Advisor; selected?: boolean; onClick?: (a: Advisor) => void }) {
   return (
-    <button
+    <motion.button
       type="button"
-      onClick={() => onClick?.(advisor)}
-      className={clsx(
-        'w-full text-left rounded-[20px] flex items-center gap-3 transition-all duration-150 ease-in-out',
+      onClick={() => {
+        triggerHaptic(HapticPatterns.light);
+        onClick?.(advisor);
+      }}
+      whileTap={animations.microTap}
+      whileHover={window.innerWidth > 768 ? animations.microHover : undefined}
+      className={cn(
+        'w-full text-left flex items-center gap-3 transition-all duration-150 ease-in-out relative overflow-hidden',
+        radius.lg,
         'border',
         selected 
           ? 'bg-blue-500/20 ring-2 ring-blue-400/50 border-blue-400/50 shadow-[0_6px_20px_rgba(59,130,246,0.15)] p-3.5 scale-[1.02]' 
-          : 'border-border/40 p-3 hover:bg-muted/30'
+          : cn(glass.appleSubtle, 'border-white/10 p-3 hover:bg-white/10'),
+        spacing.cardPadding.secondary
       )}
     >
+      {/* Spotlight on hover */}
+      {!selected && <div className={cn(vision.spotlight.hover, "opacity-0 group-hover:opacity-100")} />}
       <div className="relative flex-shrink-0">
         <LocalAvatar size="sm" src={advisor.avatarUrl} alt={advisor.name} />
         {advisor.online && (
@@ -90,30 +99,30 @@ function AdvisorCardScoped({ advisor, selected, onClick }: { advisor: Advisor; s
         )}
       </div>
 
-      <div className="flex-1 min-w-0">
+      <div className="flex-1 min-w-0 relative z-10">
         <div className="flex items-center gap-2">
-          <div className="text-[15px] font-semibold text-foreground truncate">{advisor.name}</div>
+          <div className={cn(typography.body, "font-semibold text-white truncate")}>{advisor.name}</div>
           {advisor.isTyping && (
             <div className="flex gap-1">
-              <span className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-              <span className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-              <span className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+              <span className={cn("w-1.5 h-1.5 bg-blue-400", radius.full, "animate-bounce")} style={{ animationDelay: '0ms' }} />
+              <span className={cn("w-1.5 h-1.5 bg-blue-400", radius.full, "animate-bounce")} style={{ animationDelay: '150ms' }} />
+              <span className={cn("w-1.5 h-1.5 bg-blue-400", radius.full, "animate-bounce")} style={{ animationDelay: '300ms' }} />
             </div>
           )}
         </div>
-        <div className="text-[13px] text-muted-foreground truncate">{advisor.role}</div>
+        <div className={cn(typography.bodySmall, "text-white/60 truncate")}>{advisor.role}</div>
         {/* Last message preview */}
         {advisor.lastMessage && (
-          <div className="text-[13px] text-muted-foreground/70 truncate mt-0.5">
+          <div className={cn(typography.bodySmall, "text-white/50 truncate mt-0.5")}>
             {advisor.lastMessage}
           </div>
         )}
       </div>
 
-      <div className={clsx('p-1 rounded-md flex-shrink-0', selected ? 'text-blue-400' : 'text-muted-foreground/40')}>
-        <MessageSquare size={16} />
+      <div className={cn('p-1', radius.md, "flex-shrink-0 relative z-10", selected ? 'text-blue-400' : 'text-white/40')}>
+        <MessageSquare className={iconSizes.sm} />
       </div>
-    </button>
+    </motion.button>
   );
 }
 
@@ -131,29 +140,59 @@ function AdvisorListScoped({
 }) {
   if (isLoading) {
     return (
-      <aside className="w-[280px] min-w-[260px] max-w-[280px] p-4 rounded-xl bg-card border border-border/40 shadow-sm flex flex-col items-center justify-center min-h-[200px]">
-        <Loader2 className="h-6 w-6 animate-spin text-primary" />
-        <p className="mt-3 text-xs text-muted-foreground">Loading advisors...</p>
+      <aside className={cn(
+        "w-[280px] min-w-[260px] max-w-[280px]",
+        spacing.cardPadding.tertiary,
+        radius.lg,
+        glass.apple,
+        shadows.sm,
+        "flex flex-col items-center justify-center min-h-[200px] relative overflow-hidden"
+      )}>
+        {/* Spotlight */}
+        <div className={cn(vision.spotlight.base, "opacity-20")} />
+        <Loader2 className={cn(iconSizes.lg, "animate-spin text-purple-400 relative z-10")} />
+        <p className={cn("mt-3", typography.bodySmall, "text-white/60 relative z-10")}>Loading advisors...</p>
       </aside>
     );
   }
 
   if (advisors.length === 0) {
     return (
-      <aside className="w-[280px] min-w-[260px] max-w-[280px] p-4 rounded-xl bg-card border border-border/40 shadow-sm flex flex-col items-center justify-center min-h-[200px]">
-        <p className="text-xs text-muted-foreground text-center">No advisors available.</p>
+      <aside className={cn(
+        "w-[280px] min-w-[260px] max-w-[280px]",
+        spacing.cardPadding.tertiary,
+        radius.lg,
+        glass.apple,
+        shadows.sm,
+        "flex flex-col items-center justify-center min-h-[200px] relative overflow-hidden"
+      )}>
+        {/* Spotlight */}
+        <div className={cn(vision.spotlight.base, "opacity-20")} />
+        <p className={cn(typography.bodySmall, "text-white/60 text-center relative z-10")}>No advisors available.</p>
       </aside>
     );
   }
 
   return (
-    <aside className="w-[280px] min-w-[260px] max-w-[280px] rounded-xl bg-card border border-border/40 shadow-sm shadow-[inset_0_1px_2px_0_rgba(0,0,0,0.05)] flex flex-col overflow-hidden">
-      <div className="px-4 py-3 border-b border-border/40 bg-muted/20">
-        <div className="text-[10px] text-muted-foreground tracking-wide uppercase">Select Advisor</div>
+    <aside className={cn(
+      "w-[280px] min-w-[260px] max-w-[280px]",
+      radius.lg,
+      glass.apple,
+      shadows.sm,
+      "flex flex-col overflow-hidden relative"
+    )}>
+      {/* Vision Pro depth elevation */}
+      <div className={vision.depth.elevation} />
+      
+      {/* Spotlight gradient */}
+      <div className={cn(vision.spotlight.base, "opacity-30")} />
+      
+      <div className={cn("px-4 py-3 border-b border-white/10", colors.bg.secondary, "relative z-10")}>
+        <div className={cn(typography.label, "text-white/60")}>Select Advisor</div>
       </div>
 
-      <ScrollArea className="flex-1">
-        <div className="p-3 flex flex-col gap-2">
+      <ScrollArea className="flex-1 relative z-10">
+        <div className={cn(spacing.cardPadding.tertiary, "flex flex-col gap-2")}>
           {advisors.map((a) => (
             <AdvisorCardScoped key={a.id} advisor={a} selected={selectedId === a.id} onClick={onSelect} />
           ))}
@@ -183,24 +222,46 @@ function ChatHeaderScoped({
   };
   
   return (
-    <div className="flex items-center justify-between px-4 py-3 border-b border-white/10 bg-gradient-to-r from-white/[0.08] to-white/[0.05] backdrop-blur-[40px] saturate-[180%] flex-shrink-0 mb-6 md:mb-8 rounded-t-2xl md:rounded-t-[20px]">
-      <div className="flex items-center gap-3 flex-1 min-w-0">
+    <div className={cn(
+      "flex items-center justify-between",
+      spacing.cardPadding.secondary,
+      "border-b border-white/10",
+      glass.appleStrong,
+      "flex-shrink-0 mb-6 md:mb-8",
+      radius.lg,
+      "relative overflow-hidden"
+    )}>
+      {/* Vision Pro depth elevation */}
+      <div className={vision.depth.elevation} />
+      
+      {/* Spotlight gradient */}
+      <div className={cn(vision.spotlight.base, "opacity-40")} />
+      
+      <div className={cn("flex items-center gap-3 flex-1 min-w-0 relative z-10")}>
         <LocalAvatar size="sm" src={advisor?.avatarUrl} alt={advisor?.name || 'Advisor'} />
         <div className="leading-tight flex-1 min-w-0">
-          <div className="text-sm font-semibold text-white truncate">{advisor?.name ?? 'Select an advisor'}</div>
-          <div className="text-xs text-white/60 truncate">{advisor?.role ?? ''}</div>
+          <div className={cn(typography.body, "font-semibold text-white truncate")}>{advisor?.name ?? 'Select an advisor'}</div>
+          <div className={cn(typography.bodySmall, "text-white/60 truncate")}>{advisor?.role ?? ''}</div>
         </div>
       </div>
 
-      <div className="flex items-center gap-2 flex-shrink-0 mr-2">
+      <div className={cn("flex items-center gap-2 flex-shrink-0 mr-2 relative z-10")}>
         {otherAdvisor && onSwitchAdvisor && (
           <AdvisorModeSwitch 
             mode={currentMode}
             onToggle={handleToggle}
           />
         )}
-        <div className="hidden md:inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-[10px] border border-border/40 bg-muted/20 text-muted-foreground">
-          <Lock size={12} />
+        <div className={cn(
+          "hidden md:inline-flex items-center gap-1.5",
+          radius.md,
+          spacing.cardPadding.tertiary,
+          "border border-white/10",
+          colors.bg.secondary,
+          typography.caption,
+          "text-white/60"
+        )}>
+          <Lock className={iconSizes.xs} />
           <span>End-to-end encrypted</span>
         </div>
       </div>
@@ -308,22 +369,36 @@ function MessageInputScoped({
 
   const wrapperClasses =
     variant === 'mobile-fixed'
-      ? clsx(
+      ? cn(
           "md:hidden fixed bottom-0 left-0 right-0 z-50 px-3",
-          "backdrop-blur-xl bg-gradient-to-t from-black/12 to-transparent border-t border-white/10",
-          "shadow-[0_-6px_24px_rgba(0,0,0,0.45)]",
-          "pb-[max(env(safe-area-inset-bottom,16px),16px)]"
+          glass.appleStrong,
+          "border-t border-white/10",
+          shadows.vision,
+          "pb-[max(env(safe-area-inset-bottom,16px),16px)] relative overflow-hidden"
         )
       : "w-full flex flex-col flex-shrink-0";
 
   const bubbleClasses =
     variant === 'mobile-fixed'
-      ? clsx(
-          "mx-auto w-[94%] max-w-md rounded-[24px] px-3 py-2 bg-white/6 border border-white/6 backdrop-blur-md",
-          "shadow-[0_6px_24px_rgba(0,0,0,0.36)] transition-all duration-200",
-          isFocused ? "translate-y-[-6px] shadow-[0_12px_32px_rgba(0,0,0,0.45)]" : ""
+      ? cn(
+          "mx-auto w-[94%] max-w-md",
+          radius.xl,
+          spacing.cardPadding.secondary,
+          glass.apple,
+          shadows.depth,
+          "transition-all duration-200 relative overflow-hidden",
+          isFocused ? "translate-y-[-6px]" : ""
         )
-      : "w-full px-3.5 py-2.5 flex items-end gap-2.5 bg-white/8 backdrop-blur-2xl saturate-[180%] rounded-[28px] border border-white/15 shadow-[0_12px_30px_rgba(0,0,0,0.45),inset_0_1px_0_rgba(255,255,255,0.12)] transition-all duration-300 ease-out focus-within:border-white/40 focus-within:shadow-[0_18px_40px_rgba(0,0,0,0.5),inset_0_1px_0_rgba(255,255,255,0.18)]";
+      : cn(
+          "w-full",
+          spacing.cardPadding.secondary,
+          "flex items-end gap-2.5",
+          glass.appleStrong,
+          radius.xl,
+          shadows.vision,
+          "transition-all duration-300 ease-out focus-within:border-white/40 focus-within:shadow-[0_18px_40px_rgba(0,0,0,0.5)]",
+          "relative overflow-hidden"
+        );
 
   const rowClasses =
     variant === 'mobile-fixed'
@@ -331,17 +406,26 @@ function MessageInputScoped({
       : "flex items-end gap-2.5 w-full";
 
   return (
-    <div className={clsx(wrapperClasses, className)}>
+    <div className={cn(wrapperClasses, className)}>
+      {/* Spotlight gradient for mobile */}
+      {variant === 'mobile-fixed' && <div className={cn(vision.spotlight.base, "opacity-30")} />}
+      
       <div className={bubbleClasses}>
+        {/* Spotlight gradient */}
+        <div className={cn(vision.spotlight.base, "opacity-20")} />
+        
         <div className={rowClasses}>
-        {/* Voice message button (hold to record) */}
-        <button 
-          className={clsx(
-            "h-10 w-10 md:w-11 md:h-11 flex items-center justify-center rounded-full border border-white/10 transition-all duration-200",
+        {/* Voice message button (hold to record) - iOS 17 + visionOS */}
+        <motion.button 
+          className={cn(
+            "h-10 w-10 md:w-11 md:h-11 flex items-center justify-center",
+            radius.full,
+            "border border-white/10 transition-all duration-200 relative z-10",
             isRecording
               ? "bg-red-500/30 text-red-400 animate-pulse shadow-[0_0_12px_rgba(239,68,68,0.4)]"
-              : "bg-white/10 text-white/70 hover:bg-white/20 active:scale-95"
+              : cn(colors.bg.secondary, "text-white/70 hover:bg-white/20")
           )}
+          whileTap={animations.microTap}
           style={{ touchAction: 'manipulation' }}
           type="button"
           onMouseDown={handleMicMouseDown}
@@ -350,10 +434,10 @@ function MessageInputScoped({
           onTouchEnd={handleMicMouseUp}
           aria-label="Hold to record voice message"
         >
-          <Mic size={16} className="md:w-5 md:h-5" />
-        </button>
+          <Mic className={cn(iconSizes.sm, "md:w-5 md:h-5")} />
+        </motion.button>
 
-        {/* Text input area */}
+        {/* Text input area - iOS 17 + visionOS */}
         <textarea
           ref={textareaRef}
           value={value}
@@ -364,30 +448,40 @@ function MessageInputScoped({
           disabled={isLoading}
           onFocus={handleFocus}
           onBlur={handleBlur}
-          className="bg-transparent resize-none overflow-hidden w-full flex-1 min-w-0 text-white text-[15px] leading-[20px] placeholder:text-white/40 outline-none border-none transition-all duration-200 disabled:opacity-50 max-h-[120px]"
+          className={cn(
+            "bg-transparent resize-none overflow-hidden w-full flex-1 min-w-0 text-white",
+            typography.body,
+            "leading-[20px] placeholder:text-white/40 outline-none border-none transition-all duration-200 disabled:opacity-50 max-h-[120px] relative z-10"
+          )}
           rows={1}
         />
 
-        {/* Send button */}
-        <button
-          onClick={handleSend}
+        {/* Send button - iOS 17 + visionOS */}
+        <motion.button
+          onClick={() => {
+            triggerHaptic(HapticPatterns.light);
+            handleSend();
+          }}
           disabled={!value.trim() || isLoading}
-          className={clsx(
-            "flex-shrink-0 h-10 w-10 md:w-11 md:h-11 rounded-full flex items-center justify-center transition-all duration-300 ease-out disabled:cursor-not-allowed active:scale-95 border border-white/10",
+          whileTap={animations.microTap}
+          className={cn(
+            "flex-shrink-0 h-10 w-10 md:w-11 md:h-11",
+            radius.full,
+            "flex items-center justify-center transition-all duration-300 ease-out disabled:cursor-not-allowed border border-white/10 relative z-10",
             value.trim()
-              ? "bg-gradient-to-br from-purple-500 to-indigo-500 text-white shadow-[0_6px_20px_rgba(139,92,246,0.35)]"
-              : "bg-white/10 text-white/30"
+              ? cn(gradients.primary, "text-white", shadows.md)
+              : cn(colors.bg.secondary, "text-white/30")
           )}
           style={{ touchAction: 'manipulation' }}
           aria-label="Send message"
           type="button"
         >
           {isLoading ? (
-            <Loader2 size={18} className="animate-spin" />
+            <Loader2 className={cn(iconSizes.md, "animate-spin")} />
           ) : (
-            <ArrowUp size={18} />
+            <ArrowUp className={iconSizes.md} />
           )}
-        </button>
+        </motion.button>
       </div>
     </div>
   </div>
@@ -416,7 +510,12 @@ function MessageBubbleScoped({
   });
 
   return (
-    <div className={clsx('flex items-end gap-2', isCurrentUser ? 'justify-end' : 'justify-start')}>
+    <motion.div 
+      initial={motionTokens.slide.up.initial}
+      animate={motionTokens.slide.up.animate}
+      transition={motionTokens.slide.up.transition}
+      className={cn('flex items-end gap-2', isCurrentUser ? 'justify-end' : 'justify-start')}
+    >
       {!isCurrentUser && (
         <LocalAvatar 
           size="sm" 
@@ -426,17 +525,24 @@ function MessageBubbleScoped({
       )}
       
       <div
-        className={clsx(
-          'inline-block text-[15px] leading-[1.4] p-3.5 md:p-4 rounded-[20px] shadow-[0_2px_8px_rgba(0,0,0,0.15)] max-w-[75%]',
+        className={cn(
+          'inline-block leading-[1.4] max-w-[75%] relative overflow-hidden',
+          typography.body,
+          spacing.cardPadding.secondary,
+          radius.lg,
           isCurrentUser
-            ? 'bg-gradient-to-br from-[#007AFF] to-[#0051D5] text-white rounded-br-[4px] shadow-[0_4px_12px_rgba(0,122,255,0.3)]'
-            : 'bg-white/[0.08] backdrop-blur-[20px] text-white rounded-bl-[4px] border border-white/10'
+            ? cn(gradients.primary, "text-white rounded-br-[4px]", shadows.md)
+            : cn(glass.apple, "text-white rounded-bl-[4px]")
         )}
       >
-        <p className="leading-relaxed break-words">{message.text}</p>
-        <div className={clsx(
-          "text-[11px] mt-1",
-          isCurrentUser ? "text-white/70" : "text-muted-foreground"
+        {/* Spotlight for advisor messages */}
+        {!isCurrentUser && <div className={cn(vision.spotlight.base, "opacity-10")} />}
+        
+        <p className={cn("leading-relaxed break-words relative z-10")}>{message.text}</p>
+        <div className={cn(
+          typography.caption,
+          "mt-1 relative z-10",
+          isCurrentUser ? "text-white/70" : "text-white/50"
         )}>
           {time}
         </div>
@@ -484,7 +590,19 @@ function ChatWindowScoped({
   }, [messages]);
 
   return (
-    <div className="flex flex-col rounded-none md:rounded-[20px] md:border md:border-white/15 bg-gradient-to-b from-white/5 to-transparent backdrop-blur-[40px] saturate-[180%] md:shadow-[0_8px_32px_rgba(0,0,0,0.3)] flex-1 min-h-0 overflow-hidden">
+    <div className={cn(
+      "flex flex-col flex-1 min-h-0 overflow-hidden relative",
+      "rounded-none md:rounded-[20px]",
+      glass.appleStrong,
+      "md:border md:border-white/15",
+      shadows.vision
+    )}>
+      {/* Vision Pro depth elevation */}
+      <div className={vision.depth.elevation} />
+      
+      {/* Spotlight gradient */}
+      <div className={cn(vision.spotlight.base, "opacity-30")} />
+      
       <ChatHeaderScoped advisor={advisor} advisors={advisors} onSwitchAdvisor={onSwitchAdvisor} />
 
       <div className="flex-1 overflow-y-auto min-h-0 overflow-x-hidden overscroll-contain">
