@@ -9,8 +9,14 @@ import { SegmentedControl } from '@/components/ui/segmented-control';
 import { motion } from 'framer-motion';
 import { ContextualTipsProvider } from '@/components/contextual-tips/ContextualTipsProvider';
 import { FilteredNoMatchesEmptyState, NoDealsEmptyState } from '@/components/empty-states/PreconfiguredEmptyStates';
-import { sectionLayout, animations, spacing, typography, separators, iconSizes, scroll, gradients, cardVariants } from '@/lib/design-system';
+import { sectionLayout, animations, spacing, typography, iconSizes, scroll, radius, shadows, zIndex } from '@/lib/design-system';
 import { BaseCard, StatCard } from '@/components/ui/card-variants';
+import { CreatorNavigationWrapper } from '@/components/navigation/CreatorNavigationWrapper';
+import { Divider } from '@/components/ui/Divider';
+import { triggerHaptic, HapticPatterns } from '@/lib/utils/haptics';
+import { ErrorBoundary } from '@/components/ui/error-boundary';
+import { SkeletonCard } from '@/components/ui/SkeletonCard';
+import { cn } from '@/lib/utils';
 
 const CreatorContracts = () => {
   const navigate = useNavigate();
@@ -115,26 +121,45 @@ const CreatorContracts = () => {
     ? deals 
     : deals.filter(deal => deal.status === activeFilter);
 
-  // Haptic feedback helper
-  const triggerHaptic = (pattern: 'light' | 'medium' | 'heavy' = 'light') => {
-    if (navigator.vibrate) {
-      const patterns = {
-        light: [10],
-        medium: [20],
-        heavy: [30, 10, 30]
-      };
-      navigator.vibrate(patterns[pattern]);
-    }
-  };
+  const { isLoading: isLoadingDeals } = useBrandDeals({
+    creatorId: profile?.id,
+    enabled: !!profile?.id,
+  });
 
   return (
-    <ContextualTipsProvider currentView="deals">
-    <div className={`min-h-screen ${gradients.page} text-white ${spacing.page} pb-24 ${scroll.container}`}>
-      {/* Header */}
-      <div className={sectionLayout.header}>
-        <h1 className={typography.h1 + " mb-2"}>Brand Deals</h1>
-        <p className={typography.body}>Track and manage your partnerships</p>
-      </div>
+    <ErrorBoundary>
+      <ContextualTipsProvider currentView="deals">
+        <CreatorNavigationWrapper
+          title="Brand Deals"
+          subtitle="Track and manage your partnerships"
+        >
+          <div className={cn(scroll.container, spacing.section)}>
+            {/* Stats Overview */}
+            {isLoadingDeals ? (
+              <div className={sectionLayout.grid.two}>
+                <SkeletonCard variant="secondary" />
+                <SkeletonCard variant="secondary" />
+              </div>
+            ) : (
+              <div className={sectionLayout.grid.two}>
+                <StatCard
+                  label="Total Deals"
+                  value={stats.total}
+                  icon={<Briefcase className={cn(iconSizes.md, "text-purple-300")} />}
+                  variant="secondary"
+                  className="text-left"
+                />
+                <StatCard
+                  label="Total Value"
+                  value={`₹${(stats.totalValue / 1000).toFixed(0)}K`}
+                  icon={<IndianRupee className={cn(iconSizes.md, "text-purple-300")} />}
+                  variant="secondary"
+                  className="text-left"
+                />
+              </div>
+            )}
+
+            <Divider variant="section" />
 
       {/* Stats Overview */}
       <div className={`${sectionLayout.grid.two} mb-6`}>
@@ -154,11 +179,8 @@ const CreatorContracts = () => {
         />
       </div>
 
-      {/* Section Separator */}
-      <div className={separators.section} />
-
-      {/* iOS Segmented Control */}
-      <div className="mb-6">
+            {/* iOS Segmented Control */}
+            <div className="mb-6">
         <SegmentedControl
           options={filters.map(f => ({ id: f.id, label: f.label, count: f.count }))}
           value={activeFilter}
@@ -185,66 +207,67 @@ const CreatorContracts = () => {
                 variant="secondary" 
                 className={`${animations.cardHover} ${animations.cardPress} cursor-pointer`}
                 onClick={() => {
-                  triggerHaptic('light');
+                  triggerHaptic(HapticPatterns.light);
                   navigate(`/creator-contracts/${deal.id}`);
                 }}
               >
               {/* Deal Header */}
-              <div className="flex items-start justify-between mb-3">
+              <div className={cn("flex items-start justify-between", spacing.compact)}>
                 <div className="flex-1">
-                  <h3 className={typography.h3 + " mb-1"}>{deal.title}</h3>
-                  <div className={`flex items-center gap-2 ${typography.bodySmall}`}>
+                  <h3 className={cn(typography.h4, "mb-1")}>{deal.title}</h3>
+                  <div className={cn("flex items-center gap-2", typography.bodySmall)}>
                     <span>{deal.brand}</span>
                     <span>•</span>
                     <span>{deal.platform}</span>
                   </div>
                 </div>
-                <ChevronRight className={`${iconSizes.lg} text-purple-300 flex-shrink-0 ml-2 transition-transform group-hover:translate-x-1`} />
+                <ChevronRight className={cn(iconSizes.lg, "text-purple-300 flex-shrink-0 ml-2 transition-transform group-hover:translate-x-1")} />
               </div>
 
               {/* Deal Value */}
-              <div className="flex items-center gap-2 mb-3">
-                <div className={`bg-green-500/20 text-green-400 px-3 py-1.5 ${cardVariants.tertiary.radius} ${typography.bodySmall} font-semibold`}>
+              <div className={cn("flex items-center gap-2", spacing.compact)}>
+                <div className={cn("bg-green-500/20 text-green-400", spacing.cardPadding.tertiary, radius.md, typography.bodySmall, "font-semibold")}>
                   ₹{(deal.value / 1000).toFixed(0)}K
                 </div>
-                <div className={`${typography.caption} text-purple-300`}>{deal.type}</div>
+                <div className={cn(typography.caption, "text-purple-300")}>{deal.type}</div>
               </div>
 
               {/* Progress Bar */}
-              <div className="mb-3">
-                <div className="flex items-center justify-between text-xs text-purple-200 mb-1">
+              <div className={spacing.compact}>
+                <div className={cn("flex items-center justify-between", typography.caption, "text-purple-200 mb-1")}>
                   <span>Progress</span>
                   <span>{deal.progress}%</span>
                 </div>
-                <div className="w-full bg-white/10 rounded-full h-2">
+                <div className={cn("w-full bg-white/10", radius.full, "h-2")}>
                   <div
-                    className={`h-2 rounded-full transition-all ${
+                    className={cn(
+                      "h-2 rounded-full transition-all",
                       deal.status === 'completed' ? 'bg-green-500' :
                       deal.status === 'active' ? 'bg-blue-500' :
                       deal.status === 'negotiation' ? 'bg-purple-500' :
                       'bg-yellow-500'
-                    }`}
+                    )}
                     style={{ width: `${deal.progress}%` }}
                   />
                 </div>
               </div>
 
               {/* Status and Deadline */}
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
+              <div className={cn("flex items-center justify-between", spacing.compact)}>
+                <div className={cn("flex items-center gap-2")}>
                   <StatusIcon className={iconSizes.sm} />
-                  <span className={`${typography.bodySmall} font-medium`}>{statusConfig[deal.status as DealStatus].label}</span>
+                  <span className={cn(typography.bodySmall, "font-medium")}>{statusConfig[deal.status as DealStatus].label}</span>
                 </div>
-                <div className={`flex items-center gap-1 ${typography.caption}`}>
+                <div className={cn("flex items-center gap-1", typography.caption)}>
                   <Calendar className={iconSizes.xs} />
                   <span>{deal.deadline}</span>
                 </div>
               </div>
 
               {/* Next Step */}
-              <div className="mt-3 pt-3 border-t border-white/10">
-                <div className={`flex items-center gap-2 ${typography.bodySmall}`}>
-                  <AlertCircle className={`${iconSizes.sm} text-purple-300`} />
+              <div className={cn("mt-3 pt-3 border-t border-white/10")}>
+                <div className={cn("flex items-center gap-2", typography.bodySmall)}>
+                  <AlertCircle className={cn(iconSizes.sm, "text-purple-300")} />
                   <span className="text-purple-200">Next: </span>
                   <span className="text-white">{deal.nextStep}</span>
                 </div>
@@ -272,19 +295,48 @@ const CreatorContracts = () => {
         </div>
       )}
 
-      {/* FAB - Add New Deal */}
-      <button 
-        onClick={() => {
-          triggerHaptic('medium');
-          navigate('/contract-upload');
-        }}
-        className="fixed bottom-24 right-6 bg-gradient-to-br from-blue-600 to-blue-700 hover:from-blue-500 hover:to-blue-600 text-white rounded-full p-5 shadow-[0_8px_32px_rgba(59,130,246,0.5)] hover:shadow-[0_12px_40px_rgba(59,130,246,0.6)] transition-all duration-200 hover:scale-110 active:scale-[0.97] z-50 backdrop-blur-[20px] border border-white/20"
-        aria-label="Add new deal"
-      >
-        <Plus className={iconSizes.lg} />
-      </button>
-    </div>
-    </ContextualTipsProvider>
+            {/* Empty State */}
+            {filteredDeals.length === 0 && (
+              <div className="py-8">
+                {deals.length === 0 ? (
+                  <NoDealsEmptyState
+                    onAddDeal={() => navigate('/contract-upload')}
+                    onExploreBrands={() => navigate('/brand-directory')}
+                  />
+                ) : (
+                  <FilteredNoMatchesEmptyState
+                    onClearFilters={() => setActiveFilter('all')}
+                    filterCount={activeFilter !== 'all' ? 1 : 0}
+                  />
+                )}
+              </div>
+            )}
+
+            {/* FAB - Add New Deal */}
+            <button 
+              onClick={() => {
+                triggerHaptic(HapticPatterns.medium);
+                navigate('/contract-upload');
+              }}
+              className={cn(
+                "fixed bottom-24 right-6",
+                "bg-gradient-to-br from-blue-600 to-blue-700 hover:from-blue-500 hover:to-blue-600",
+                "text-white rounded-full p-5",
+                shadows.xl,
+                "hover:shadow-[0_12px_40px_rgba(59,130,246,0.6)]",
+                "transition-all duration-200 hover:scale-110",
+                animations.cardPress,
+                zIndex.modal,
+                "backdrop-blur-[20px] border border-white/20"
+              )}
+              aria-label="Add new deal"
+            >
+              <Plus className={iconSizes.lg} />
+            </button>
+          </div>
+        </CreatorNavigationWrapper>
+      </ContextualTipsProvider>
+    </ErrorBoundary>
   );
 };
 
