@@ -598,9 +598,11 @@ BEGIN
     ON public.opportunities USING GIN (required_platforms);
 
     -- Composite index for open opportunities
+    -- Note: Cannot use CURRENT_DATE in index predicate (not immutable)
+    -- Filter by deadline in queries instead
     CREATE INDEX IF NOT EXISTS idx_opportunities_open_deadline 
     ON public.opportunities(status, deadline) 
-    WHERE status = 'open' AND deadline >= CURRENT_DATE;
+    WHERE status = 'open';
   END IF;
 END $$;
 
