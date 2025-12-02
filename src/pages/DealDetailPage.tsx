@@ -394,7 +394,7 @@ Best regards`;
           {/* Deal Value */}
           <div className="bg-white/5 rounded-xl p-4 mb-4">
             <div className="text-sm text-white/60 mb-1">Total Deal Value</div>
-            <div className="text-3xl font-bold text-green-400">₹{(dealAmount / 1000).toFixed(0)}K</div>
+            <div className="text-3xl font-bold text-green-400">₹{Math.round(dealAmount).toLocaleString('en-IN')}</div>
           </div>
 
           {/* Action Buttons */}

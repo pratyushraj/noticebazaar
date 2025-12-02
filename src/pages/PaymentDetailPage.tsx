@@ -492,7 +492,7 @@ const PaymentDetailPage = () => {
                 <div className="flex items-baseline gap-3 mb-4">
                   <IndianRupee className="w-8 h-8 text-white" />
                   <div className="text-4xl font-bold text-white">
-                    {(paymentData.amount / 1000).toFixed(1)}K
+                    ₹{paymentData.amount.toLocaleString('en-IN', { maximumFractionDigits: 0 })}
                   </div>
                 </div>
 

@@ -1,10 +1,11 @@
 "use client";
 
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { LayoutDashboard, Briefcase, Wallet, Shield, MessageSquare } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { iconSizes, animations, spotlight, shadows, glass, radius } from '@/lib/design-system';
+import { iconSizes, animations, spotlight, shadows, radius } from '@/lib/design-system';
 import { triggerHaptic, HapticPatterns } from '@/lib/utils/haptics';
 import { motion } from 'framer-motion';
 
@@ -131,20 +132,31 @@ const CreatorBottomNav = () => {
     };
   }, [location.pathname]); // Re-run when route changes to catch new inputs
 
-  return (
+  const bottomNavContent = (
       <motion.div 
         className={cn(
-          "fixed bottom-0 left-0 right-0 z-40 relative",
-          glass.appleStrong,
+          "fixed bottom-0 left-0 right-0 z-[100]",
+          "bg-gradient-to-br from-purple-900/95 via-purple-800/95 to-indigo-900/95",
+          "backdrop-blur-2xl",
           "border-t border-white/15",
           shadows.depth,
           radius.xl,
           "progressive-blur transition-transform duration-300 ease-in-out",
+          "pointer-events-auto",
           isKeyboardOpen && "translate-y-full"
         )}
         initial={{ y: 100, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={animations.spring}
+        style={{
+          position: 'fixed',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          zIndex: 100,
+          width: '100%',
+          pointerEvents: 'auto',
+        }}
       >
         {/* Spotlight gradient at top */}
         <div className={cn(spotlight.top, "opacity-50")} />
@@ -194,7 +206,6 @@ const CreatorBottomNav = () => {
                 {/* iOS 17 Active State - Glowing indicator */}
                 {active && (
                   <>
-                    <div className={cn("absolute inset-0 bg-white/[0.06]", radius.xl)} />
                     <div className={cn(
                       "absolute top-0 left-1/2 -translate-x-1/2 w-14 h-1",
                       "bg-gradient-to-r from-blue-400 to-purple-500",
@@ -240,6 +251,13 @@ const CreatorBottomNav = () => {
       </nav>
     </motion.div>
   );
+
+  // Render using portal to ensure it's always at viewport level (not affected by parent containers)
+  if (typeof window !== 'undefined') {
+    return createPortal(bottomNavContent, document.body);
+  }
+  
+  return bottomNavContent;
 };
 
 export default CreatorBottomNav;

@@ -82,6 +82,7 @@ interface StatCardProps {
     value: number;
     isPositive: boolean;
   };
+  subtitle?: string; // Additional info text below value (e.g., "+3 this month", "Across all deals")
   variant?: 'primary' | 'secondary' | 'tertiary';
   className?: string;
 }
@@ -91,23 +92,35 @@ export const StatCard = ({
   value, 
   icon, 
   trend, 
+  subtitle,
   variant = 'tertiary',
   className 
 }: StatCardProps) => {
   return (
-    <BaseCard variant={variant} className={cn("text-center", className)}>
+    <BaseCard variant={variant} className={cn("text-left", className)}>
+      {/* Icon at top */}
       {icon && (
-        <div className="flex justify-center mb-2">
+        <div className="flex items-center mb-3">
           <div className="p-2 rounded-xl bg-white/5">{icon}</div>
         </div>
       )}
-      <div className={typography.label + " mb-1"}>{label}</div>
-      <div className={typography.amount + " mb-1"}>
-        {typeof value === 'number' ? `₹${(value / 1000).toFixed(0)}K` : value}
+      
+      {/* Label */}
+      <div className={cn(typography.label, "mb-2 text-white/80")}>{label}</div>
+      
+      {/* Large Value */}
+      <div className={cn(typography.amount, "mb-2 text-white")}>
+        {typeof value === 'number' ? value.toLocaleString('en-IN') : value}
       </div>
-      {trend && (
+      
+      {/* Subtitle or Trend */}
+      {subtitle ? (
+        <div className={cn("text-xs font-medium", trend?.isPositive ? "text-green-400" : "text-white/70")}>
+          {subtitle}
+        </div>
+      ) : trend && (
         <div className={cn(
-          "text-xs font-medium mt-1",
+          "text-xs font-medium",
           trend.isPositive ? "text-green-400" : "text-red-400"
         )}>
           {trend.isPositive ? '+' : ''}{trend.value}%

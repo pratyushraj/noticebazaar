@@ -82,7 +82,41 @@ ON public.referrals FOR UPDATE
 USING (true);
 
 -- ================================================
--- 3. PARTNER_EARNINGS TABLE
+-- 3. PARTNER_MILESTONES TABLE (must be created before partner_earnings)
+-- ================================================
+CREATE TABLE IF NOT EXISTS public.partner_milestones (
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id uuid NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
+    milestone_name text NOT NULL,
+    reward_type text NOT NULL CHECK (reward_type IN ('voucher', 'credit')),
+    reward_value numeric NOT NULL,
+    achieved_at timestamp with time zone DEFAULT now() NOT NULL,
+    CONSTRAINT partner_milestones_user_milestone_unique UNIQUE (user_id, milestone_name)
+);
+
+-- Indexes
+CREATE INDEX IF NOT EXISTS idx_partner_milestones_user_id ON public.partner_milestones(user_id);
+CREATE INDEX IF NOT EXISTS idx_partner_milestones_achieved_at ON public.partner_milestones(achieved_at DESC);
+CREATE INDEX IF NOT EXISTS idx_partner_milestones_milestone_name ON public.partner_milestones(milestone_name);
+
+-- Enable RLS
+ALTER TABLE public.partner_milestones ENABLE ROW LEVEL SECURITY;
+
+-- Drop existing policies
+DROP POLICY IF EXISTS "Users can view their own milestones" ON public.partner_milestones;
+DROP POLICY IF EXISTS "System can insert milestones" ON public.partner_milestones;
+
+-- RLS Policies
+CREATE POLICY "Users can view their own milestones"
+ON public.partner_milestones FOR SELECT
+USING (auth.uid() = user_id);
+
+CREATE POLICY "System can insert milestones"
+ON public.partner_milestones FOR INSERT
+WITH CHECK (true);
+
+-- ================================================
+-- 4. PARTNER_EARNINGS TABLE
 -- ================================================
 CREATE TABLE IF NOT EXISTS public.partner_earnings (
     id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -122,7 +156,7 @@ ON public.partner_earnings FOR INSERT
 WITH CHECK (true);
 
 -- ================================================
--- 4. PARTNER_STATS TABLE
+-- 5. PARTNER_STATS TABLE
 -- ================================================
 CREATE TABLE IF NOT EXISTS public.partner_stats (
     user_id uuid PRIMARY KEY REFERENCES public.profiles(id) ON DELETE CASCADE,
@@ -155,40 +189,6 @@ USING (auth.uid() = user_id);
 CREATE POLICY "System can update partner stats"
 ON public.partner_stats FOR ALL
 USING (true)
-WITH CHECK (true);
-
--- ================================================
--- 5. PARTNER_MILESTONES TABLE
--- ================================================
-CREATE TABLE IF NOT EXISTS public.partner_milestones (
-    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id uuid NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
-    milestone_name text NOT NULL,
-    reward_type text NOT NULL CHECK (reward_type IN ('voucher', 'credit')),
-    reward_value numeric NOT NULL,
-    achieved_at timestamp with time zone DEFAULT now() NOT NULL,
-    CONSTRAINT partner_milestones_user_milestone_unique UNIQUE (user_id, milestone_name)
-);
-
--- Indexes
-CREATE INDEX IF NOT EXISTS idx_partner_milestones_user_id ON public.partner_milestones(user_id);
-CREATE INDEX IF NOT EXISTS idx_partner_milestones_achieved_at ON public.partner_milestones(achieved_at DESC);
-CREATE INDEX IF NOT EXISTS idx_partner_milestones_milestone_name ON public.partner_milestones(milestone_name);
-
--- Enable RLS
-ALTER TABLE public.partner_milestones ENABLE ROW LEVEL SECURITY;
-
--- Drop existing policies
-DROP POLICY IF EXISTS "Users can view their own milestones" ON public.partner_milestones;
-DROP POLICY IF EXISTS "System can insert milestones" ON public.partner_milestones;
-
--- RLS Policies
-CREATE POLICY "Users can view their own milestones"
-ON public.partner_milestones FOR SELECT
-USING (auth.uid() = user_id);
-
-CREATE POLICY "System can insert milestones"
-ON public.partner_milestones FOR INSERT
 WITH CHECK (true);
 
 -- ================================================

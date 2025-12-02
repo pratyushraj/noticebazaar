@@ -9,9 +9,8 @@ import { SegmentedControl } from '@/components/ui/segmented-control';
 import { motion } from 'framer-motion';
 import { ContextualTipsProvider } from '@/components/contextual-tips/ContextualTipsProvider';
 import { FilteredNoMatchesEmptyState, NoDealsEmptyState } from '@/components/empty-states/PreconfiguredEmptyStates';
-import { sectionLayout, animations, spacing, typography, iconSizes, scroll, radius, shadows, zIndex, glass, vision, motion as motionTokens, gradients } from '@/lib/design-system';
+import { sectionLayout, animations, spacing, typography, iconSizes, radius, shadows, zIndex, glass, vision, motion as motionTokens, gradients, separators, scroll } from '@/lib/design-system';
 import { BaseCard, StatCard } from '@/components/ui/card-variants';
-import { CreatorNavigationWrapper } from '@/components/navigation/CreatorNavigationWrapper';
 import { Divider } from '@/components/ui/Divider';
 import { triggerHaptic, HapticPatterns } from '@/lib/utils/haptics';
 import { ErrorBoundary } from '@/components/ui/error-boundary';
@@ -23,8 +22,8 @@ const CreatorContracts = () => {
   const { profile } = useSession();
   const [activeFilter, setActiveFilter] = useState('all');
   
-  // Fetch real brand deals data
-  const { data: brandDeals = [] } = useBrandDeals({
+  // Fetch real brand deals data (single call for both data and loading state)
+  const { data: brandDeals = [], isLoading: isLoadingDeals } = useBrandDeals({
     creatorId: profile?.id,
     enabled: !!profile?.id,
   });
@@ -121,171 +120,183 @@ const CreatorContracts = () => {
     ? deals 
     : deals.filter(deal => deal.status === activeFilter);
 
-  const { isLoading: isLoadingDeals } = useBrandDeals({
-    creatorId: profile?.id,
-    enabled: !!profile?.id,
-  });
-
   return (
     <ErrorBoundary>
       <ContextualTipsProvider currentView="deals">
-        <CreatorNavigationWrapper
-          title="Brand Deals"
-          subtitle="Track and manage your partnerships"
-        >
-          <div className={cn(scroll.container, spacing.section)}>
-            {/* Stats Overview */}
+        <div className={cn(`min-h-full ${gradients.page} text-white ${spacing.page} pb-24 safe-area-fix`)}>
+          {/* Header - Matching Payments Page */}
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h1 className={cn(typography.h1, "mb-1")}>Brand Deals</h1>
+              <p className={cn(typography.body, "font-medium")}>Track and manage your partnerships</p>
+            </div>
+          </div>
+
+          <div className={cn("min-h-[200px]", spacing.section)}>
+            {/* Stats Overview - Always visible */}
             {isLoadingDeals ? (
               <div className={sectionLayout.grid.two}>
                 <SkeletonCard variant="secondary" />
                 <SkeletonCard variant="secondary" />
               </div>
             ) : (
-              <div className={sectionLayout.grid.two}>
+              <div className={cn("grid grid-cols-2 gap-3 md:gap-5 mb-6")}>
                 <StatCard
                   label="Total Deals"
                   value={stats.total}
-                  icon={<Briefcase className={cn(iconSizes.md, "text-purple-300")} />}
+                  icon={<Briefcase className={cn(iconSizes.md, "text-white")} />}
                   variant="secondary"
-                  className="text-left"
+                  subtitle={stats.thisMonth > 0 ? `+${stats.thisMonth} this month` : undefined}
+                  trend={stats.thisMonth > 0 ? { value: stats.thisMonth, isPositive: true } : undefined}
                 />
                 <StatCard
                   label="Total Value"
-                  value={`₹${(stats.totalValue / 1000).toFixed(0)}K`}
-                  icon={<IndianRupee className={cn(iconSizes.md, "text-purple-300")} />}
+                  value={stats.totalValue}
+                  icon={<IndianRupee className={cn(iconSizes.md, "text-white")} />}
                   variant="secondary"
-                  className="text-left"
+                  subtitle="Across all deals"
                 />
               </div>
             )}
 
-            <Divider variant="section" />
+            {/* Section Separator - Matching Payments Page */}
+            <div className={cn("h-[1px] w-full bg-white/5 my-6")} />
 
-      {/* Stats Overview */}
-      <div className={`${sectionLayout.grid.two} mb-6`}>
-        <StatCard
-          label="Total Deals"
-          value={stats.total}
-          icon={<Briefcase className={`${iconSizes.md} text-purple-300`} />}
-          variant="secondary"
-          className="text-left"
-        />
-        <StatCard
-          label="Total Value"
-          value={`₹${(stats.totalValue / 1000).toFixed(0)}K`}
-          icon={<IndianRupee className={`${iconSizes.md} text-purple-300`} />}
-          variant="secondary"
-          className="text-left"
-        />
-      </div>
-
-            {/* iOS Segmented Control */}
-            <div className="mb-6">
-        <SegmentedControl
-          options={filters.map(f => ({ id: f.id, label: f.label, count: f.count }))}
-          value={activeFilter}
-          onChange={setActiveFilter}
-          className="w-full"
-        />
-      </div>
-
-      {/* Deals List */}
-      <div className={spacing.compact}>
-        {filteredDeals.map((deal, index) => {
-          const StatusIcon = statusConfig[deal.status as DealStatus].icon;
-          
-          return (
-            <motion.div
-              key={deal.id}
-              initial={motionTokens.slide.up.initial}
-              animate={motionTokens.slide.up.animate}
-              transition={{ ...motionTokens.slide.up.transition, delay: index * 0.05 }}
-              whileHover={window.innerWidth > 768 ? animations.microHover : undefined}
-              whileTap={animations.microTap}
-            >
-              <BaseCard 
-                variant="secondary" 
-                className={cn(
-                  animations.cardHover,
-                  "cursor-pointer relative overflow-hidden"
-                )}
-                onClick={() => {
-                  triggerHaptic(HapticPatterns.light);
-                  navigate(`/creator-contracts/${deal.id}`);
-                }}
-              >
-                {/* Spotlight on hover */}
-                <div className={cn(vision.spotlight.hover, "opacity-0 group-hover:opacity-100")} />
-              {/* Deal Header */}
-              <div className={cn("flex items-start justify-between", spacing.compact)}>
-                <div className="flex-1">
-                  <h3 className={cn(typography.h4, "mb-1")}>{deal.title}</h3>
-                  <div className={cn("flex items-center gap-2", typography.bodySmall)}>
-                    <span>{deal.brand}</span>
-                    <span>•</span>
-                    <span>{deal.platform}</span>
-                  </div>
-                </div>
-                <ChevronRight className={cn(iconSizes.lg, "text-purple-300 flex-shrink-0 ml-2 transition-transform group-hover:translate-x-1")} />
-              </div>
-
-              {/* Deal Value */}
-              <div className={cn("flex items-center gap-2", spacing.compact)}>
-                <div className={cn("bg-green-500/20 text-green-400", spacing.cardPadding.tertiary, radius.md, typography.bodySmall, "font-semibold")}>
-                  ₹{(deal.value / 1000).toFixed(0)}K
-                </div>
-                <div className={cn(typography.caption, "text-purple-300")}>{deal.type}</div>
-              </div>
-
-              {/* Progress Bar */}
-              <div className={spacing.compact}>
-                <div className={cn("flex items-center justify-between", typography.caption, "text-purple-200 mb-1")}>
-                  <span>Progress</span>
-                  <span>{deal.progress}%</span>
-                </div>
-                <div className={cn("w-full bg-white/10", radius.full, "h-2")}>
-                  <div
+            {/* Filter Tabs - Matching Payments Page Style */}
+            <div className={cn("flex items-center gap-2 overflow-x-auto pb-2 mb-6", scroll.container, "[&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]")}>
+              {filters.map((filter) => {
+                const isActive = activeFilter === filter.id;
+                return (
+                  <motion.button
+                    key={filter.id}
+                    onClick={() => {
+                      triggerHaptic(HapticPatterns.light);
+                      setActiveFilter(filter.id);
+                    }}
+                    whileTap={animations.microTap}
                     className={cn(
-                      "h-2 rounded-full transition-all",
-                      deal.status === 'completed' ? 'bg-green-500' :
-                      deal.status === 'active' ? 'bg-blue-500' :
-                      deal.status === 'negotiation' ? 'bg-purple-500' :
-                      'bg-yellow-500'
+                      "px-4 py-2 rounded-full text-sm font-semibold transition-all duration-200 whitespace-nowrap",
+                      isActive
+                        ? "bg-white/15 text-white border border-white/20"
+                        : "bg-white/5 text-white/70 border border-white/10 hover:bg-white/8"
                     )}
-                    style={{ width: `${deal.progress}%` }}
-                  />
-                </div>
-              </div>
+                  >
+                    {filter.label}
+                    {filter.count !== undefined && (
+                      <span className={cn(
+                        "ml-1.5 px-1.5 py-0.5 rounded-full text-xs",
+                        isActive ? "bg-white/25" : "bg-white/10"
+                      )}>
+                        {filter.count}
+                      </span>
+                    )}
+                  </motion.button>
+                );
+              })}
+            </div>
 
-              {/* Status and Deadline */}
-              <div className={cn("flex items-center justify-between", spacing.compact)}>
-                <div className={cn("flex items-center gap-2")}>
-                  <StatusIcon className={iconSizes.sm} />
-                  <span className={cn(typography.bodySmall, "font-medium")}>{statusConfig[deal.status as DealStatus].label}</span>
-                </div>
-                <div className={cn("flex items-center gap-1", typography.caption)}>
-                  <Calendar className={iconSizes.xs} />
-                  <span>{deal.deadline}</span>
-                </div>
-              </div>
+      {/* Loading State */}
+      {isLoadingDeals ? (
+        <div className={cn("py-12 text-center")}>
+          <div className="text-white/60">Loading deals...</div>
+        </div>
+      ) : filteredDeals.length > 0 ? (
+        /* Deals List - Matching Payments Page Card Style */
+        <div className={cn("space-y-4")}>
+          {filteredDeals.map((deal, index) => {
+            const StatusIcon = statusConfig[deal.status as DealStatus].icon;
+            
+            return (
+              <motion.div
+                key={deal.id}
+                initial={motionTokens.slide.up.initial}
+                animate={motionTokens.slide.up.animate}
+                transition={{ ...motionTokens.slide.up.transition, delay: index * 0.05 }}
+                whileHover={window.innerWidth > 768 ? animations.microHover : undefined}
+                whileTap={animations.microTap}
+              >
+                <BaseCard 
+                  variant="secondary" 
+                  className={cn(
+                    animations.cardHover,
+                    "cursor-pointer relative overflow-hidden"
+                  )}
+                  onClick={() => {
+                    triggerHaptic(HapticPatterns.light);
+                    navigate(`/creator-contracts/${deal.id}`);
+                  }}
+                >
+                  {/* Deal Header */}
+                  <div className={cn("flex items-start justify-between mb-3")}>
+                    <div className="flex-1">
+                      <h3 className={cn(typography.h4, "mb-1")}>{deal.title}</h3>
+                      <div className={cn("flex items-center gap-2", typography.bodySmall)}>
+                        <span>{deal.brand}</span>
+                        <span>•</span>
+                        <span>{deal.platform}</span>
+                      </div>
+                    </div>
+                    <ChevronRight className={cn(iconSizes.lg, "text-purple-300 flex-shrink-0 ml-2 transition-transform group-hover:translate-x-1")} />
+                  </div>
 
-              {/* Next Step */}
-              <div className={cn("mt-3 pt-3 border-t border-white/10")}>
-                <div className={cn("flex items-center gap-2", typography.bodySmall)}>
-                  <AlertCircle className={cn(iconSizes.sm, "text-purple-300")} />
-                  <span className="text-purple-200">Next: </span>
-                  <span className="text-white">{deal.nextStep}</span>
-                </div>
-              </div>
-              </BaseCard>
-            </motion.div>
-          );
-        })}
-      </div>
+                  {/* Deal Value */}
+                  <div className={cn("flex items-center gap-2 mb-4")}>
+                    <div className={cn("bg-green-500/20 text-green-400", spacing.cardPadding.tertiary, radius.md, typography.bodySmall, "font-semibold")}>
+                      ₹{Math.round(deal.value).toLocaleString('en-IN')}
+                    </div>
+                    <div className={cn(typography.caption, "text-purple-300")}>{deal.type}</div>
+                  </div>
 
-      {/* Empty State */}
-      {filteredDeals.length === 0 && (
-        <div className={cn("py-8")}>
+                  {/* Progress Bar - Matching Payments Style */}
+                  <div className="mb-4">
+                    <div className={cn("flex items-center justify-between", typography.caption, "text-purple-200 mb-1")}>
+                      <span>Progress</span>
+                      <span>{deal.progress}%</span>
+                    </div>
+                    <div className={cn("w-full bg-white/10", radius.full, "h-2")}>
+                      <motion.div
+                        initial={{ width: 0 }}
+                        animate={{ width: `${deal.progress}%` }}
+                        transition={{ duration: 0.6, ease: "easeOut" }}
+                        className={cn(
+                          "h-2 rounded-full transition-all",
+                          deal.status === 'completed' ? 'bg-green-500' :
+                          deal.status === 'active' ? 'bg-blue-500' :
+                          deal.status === 'negotiation' ? 'bg-purple-500' :
+                          'bg-yellow-500'
+                        )}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Status and Deadline */}
+                  <div className={cn("flex items-center justify-between mb-3")}>
+                    <div className={cn("flex items-center gap-2")}>
+                      <StatusIcon className={iconSizes.sm} />
+                      <span className={cn(typography.bodySmall, "font-medium")}>{statusConfig[deal.status as DealStatus].label}</span>
+                    </div>
+                    <div className={cn("flex items-center gap-1", typography.caption)}>
+                      <Calendar className={iconSizes.xs} />
+                      <span>{deal.deadline}</span>
+                    </div>
+                  </div>
+
+                  {/* Next Step */}
+                  <div className={cn("pt-3 border-t border-white/10")}>
+                    <div className={cn("flex items-center gap-2", typography.bodySmall)}>
+                      <AlertCircle className={cn(iconSizes.sm, "text-purple-300")} />
+                      <span className="text-purple-200">Next: </span>
+                      <span className="text-white">{deal.nextStep}</span>
+                    </div>
+                  </div>
+                </BaseCard>
+              </motion.div>
+            );
+          })}
+        </div>
+      ) : (
+        /* Empty State - Always show when no deals */
+        <div className={cn("py-12")}>
           {deals.length === 0 ? (
             <NoDealsEmptyState
               onAddDeal={() => navigate('/contract-upload')}
@@ -300,37 +311,8 @@ const CreatorContracts = () => {
         </div>
       )}
 
-            {/* FAB - Add New Deal - iOS 17 + visionOS */}
-            <motion.button 
-              onClick={() => {
-                triggerHaptic(HapticPatterns.medium);
-                navigate('/contract-upload');
-              }}
-              whileTap={animations.microTap}
-              whileHover={window.innerWidth > 768 ? animations.microHover : undefined}
-              className={cn(
-                "fixed bottom-24 right-6 relative overflow-hidden",
-                gradients.primary,
-                "text-white",
-                radius.full,
-                spacing.cardPadding.primary,
-                shadows.vision,
-                zIndex.modal,
-                glass.apple,
-                "transition-all duration-200"
-              )}
-              aria-label="Add new deal"
-            >
-              {/* Spotlight gradient */}
-              <div className={cn(vision.spotlight.base, "opacity-30")} />
-              
-              {/* Glare effect */}
-              <div className={vision.glare.soft} />
-              
-              <Plus className={cn(iconSizes.lg, "relative z-10")} />
-            </motion.button>
           </div>
-        </CreatorNavigationWrapper>
+        </div>
       </ContextualTipsProvider>
     </ErrorBoundary>
   );

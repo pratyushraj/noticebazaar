@@ -4,6 +4,7 @@ import { useState, useMemo, useEffect } from 'react';
 import { Download, Filter, Search, CreditCard, ArrowDownRight } from 'lucide-react';
 import { useSession } from '@/contexts/SessionContext';
 import { useBrandDeals } from '@/lib/hooks/useBrandDeals';
+import { BrandDeal } from '@/types';
 import { toast } from 'sonner';
 import { ContextualTipsProvider } from '@/components/contextual-tips/ContextualTipsProvider';
 import { FilteredNoMatchesEmptyState, NoPaymentsEmptyState, SearchNoResultsEmptyState } from '@/components/empty-states/PreconfiguredEmptyStates';
@@ -144,8 +145,10 @@ const CreatorPaymentsAndRecovery = () => {
   // replaced-by-ultra-polish: replaced any with BrandDeal type
   const getOrGenerateInvoiceNumber = (deal: BrandDeal): string => {
     // If invoice number already exists in database, use it
-    if (deal.invoice_number) {
-      return deal.invoice_number;
+    // Note: invoice_number may not exist on BrandDeal type, so we check safely
+    const invoiceNumber = (deal as any).invoice_number;
+    if (invoiceNumber) {
+      return invoiceNumber;
     }
 
     // Try to extract invoice number from contract text
@@ -183,8 +186,10 @@ const CreatorPaymentsAndRecovery = () => {
   const extractPaymentMethod = (deal: BrandDeal): string | null => {
     // Check if payment method is explicitly stored in deal data
     // This would be populated during contract analysis
-    if (deal.payment_method) {
-      return deal.payment_method;
+    // Note: payment_method may not exist on BrandDeal type, so we check safely
+    const paymentMethod = (deal as any).payment_method;
+    if (paymentMethod) {
+      return paymentMethod;
     }
 
     // Check contract file URL or deliverables for payment method keywords
@@ -401,7 +406,7 @@ const CreatorPaymentsAndRecovery = () => {
 
   return (
     <ContextualTipsProvider currentView="payments">
-    <div className={`min-h-screen ${gradients.page} text-white ${spacing.page} pb-24`}>
+    <div className={`min-h-full ${gradients.page} text-white ${spacing.page} pb-24 safe-area-fix`}>
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
@@ -548,7 +553,11 @@ const CreatorPaymentsAndRecovery = () => {
 
       {/* Filter Tabs - Pill Buttons */}
         <div className="mb-6">
-        <div className={`flex gap-2 overflow-x-auto pb-2 ${scroll.container} scrollbar-hide`}>
+        <div className={cn(
+          "flex gap-2 overflow-x-auto pb-2",
+          "px-1 -mx-1", // Add padding to prevent clipping of ring/shadow
+          "[&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
+        )}>
           {filters.map((filter) => (
             <motion.button
               key={filter.id}
@@ -562,10 +571,10 @@ const CreatorPaymentsAndRecovery = () => {
                 spacing.cardPadding.secondary,
                 radius.full,
                 typography.bodySmall,
-                "font-semibold transition-all duration-150 whitespace-nowrap",
+                "font-semibold transition-all duration-150 whitespace-nowrap flex-shrink-0",
                 activeFilter === filter.id
-                  ? 'bg-white/15 text-white ring-2 ring-white/20 shadow-lg shadow-white/10'
-                  : 'bg-white/5 text-white/70 hover:bg-white/8'
+                  ? 'bg-white/15 text-white border-2 border-white/20 shadow-lg shadow-white/10'
+                  : 'bg-white/5 text-white/70 border border-white/10 hover:bg-white/8'
               )}
             >
               {filter.label}
@@ -618,9 +627,9 @@ const CreatorPaymentsAndRecovery = () => {
         </div>
       )}
 
-      {/* Empty State */}
-      {filteredTransactions.length === 0 && (
-        <div className="py-8">
+      {/* Empty State - Always show when no transactions */}
+      {filteredTransactions.length === 0 && !isLoadingDeals && (
+        <div className="py-12">
           {allTransactions.length === 0 ? (
             <NoPaymentsEmptyState
               onAddDeal={() => navigate('/contract-upload')}
@@ -641,6 +650,13 @@ const CreatorPaymentsAndRecovery = () => {
             )}
           </div>
         )}
+      
+      {/* Loading State */}
+      {isLoadingDeals && (
+        <div className="py-12 text-center">
+          <div className="text-white/60">Loading payments...</div>
+        </div>
+      )}
 
       {/* Add Expense Dialog */}
       <AddExpenseDialog 

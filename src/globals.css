@@ -2,6 +2,33 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ============================================
+   MOBILE SCROLLING FIXES - NO NESTED SCROLL
+   ============================================ */
+
+html, body {
+  height: 100%;
+  overflow-x: hidden !important;
+  overscroll-behavior-y: none; /* Disable weird elastic scroll */
+}
+
+body {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Prevent nested scroll */
+* {
+  overscroll-behavior: contain;
+}
+
+/* iOS Safari Scrolling Fix (critical) */
+@supports (-webkit-touch-callout: none) {
+  .safe-area-fix {
+    padding-bottom: calc(96px + env(safe-area-inset-bottom));
+  }
+}
+
 /* Hide anonymous sign-in error messages in Supabase Auth UI */
 /* This prevents the "Anonymous sign-ins are disabled" error from showing */
 .supabase-auth-ui_ui-message[class*="color-danger"],
@@ -13,7 +40,9 @@
 
 @layer base {
   html, body {
-    height: -webkit-fill-available;
+    height: 100%;
+    overflow-x: hidden !important;
+    overscroll-behavior-y: none; /* Disable weird elastic scroll */
   }
 
   html {
@@ -21,8 +50,15 @@
   }
 
   body {
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
     min-height: 100vh;
     min-height: -webkit-fill-available;
+  }
+
+  /* Prevent nested scroll */
+  * {
+    overscroll-behavior: contain;
   }
 
   /* Tutorial Highlight Effect */
@@ -772,6 +808,17 @@
 /* ============================================ */
 /* iOS SAFE AREA SUPPORT */
 /* ============================================ */
+
+/* iOS Safari Scrolling Fix (critical) */
+@supports (-webkit-touch-callout: none) {
+  .safe-area-fix {
+    padding-bottom: calc(96px + env(safe-area-inset-bottom));
+  }
+  
+  .ios-safe-bottom {
+    padding-bottom: calc(env(safe-area-inset-bottom) + 140px) !important;
+  }
+}
 
 /* iOS Safe Area Support for notched devices */
 .safe-area-inset-bottom {

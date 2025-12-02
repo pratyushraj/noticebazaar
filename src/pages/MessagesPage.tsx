@@ -5,8 +5,7 @@
 
 import { useEffect, useRef, useState, useMemo } from 'react';
 import clsx from 'clsx';
-import { Lock, MessageSquare, ArrowUp, Loader2, Mic, ArrowLeft } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { Lock, MessageSquare, ArrowUp, Loader2, Mic } from 'lucide-react';
 import { useSession } from '@/contexts/SessionContext';
 import { toast } from 'sonner';
 import { useProfiles } from '@/lib/hooks/useProfiles';
@@ -14,7 +13,6 @@ import { useMessages, useSendMessage } from '@/lib/hooks/useMessages';
 import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useSampleChatHistory } from '@/lib/hooks/useSampleChatHistory';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { generateAvatarUrl } from '@/lib/utils/avatar';
 import { useCometChat } from '@/lib/cometchat/useCometChat';
 import { COMETCHAT_CONFIG } from '@/lib/cometchat/config';
@@ -22,7 +20,7 @@ import { AdvisorModeSwitch } from '@/components/AdvisorModeSwitch';
 import { ContextualTipsProvider } from '@/components/contextual-tips/ContextualTipsProvider';
 import { NoMessagesEmptyState } from '@/components/empty-states/PreconfiguredEmptyStates';
 import { logger } from '@/lib/utils/logger';
-import { spacing, typography, iconSizes, radius, shadows, glass, animations, vision, motion as motionTokens, colors, gradients } from '@/lib/design-system';
+import { spacing, typography, iconSizes, radius, shadows, glass, animations, vision, motion as motionTokens, colors, gradients, badges } from '@/lib/design-system';
 import { triggerHaptic, HapticPatterns } from '@/lib/utils/haptics';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
@@ -192,13 +190,13 @@ function AdvisorListScoped({
         <div className={cn(typography.label, "text-white/60")}>Select Advisor</div>
       </div>
 
-      <ScrollArea className="flex-1 relative z-10">
+      <div className="flex-1 relative z-10 overflow-visible">
         <div className={cn(spacing.cardPadding.tertiary, "flex flex-col gap-2")}>
           {advisors.map((a) => (
             <AdvisorCardScoped key={a.id} advisor={a} selected={selectedId === a.id} onClick={onSelect} />
           ))}
         </div>
-      </ScrollArea>
+      </div>
     </aside>
   );
 }
@@ -225,24 +223,24 @@ function ChatHeaderScoped({
   return (
     <div className={cn(
       "flex items-center justify-between",
-      spacing.cardPadding.secondary,
+      "px-3 py-3 md:px-5 md:py-4",
       "border-b border-white/10",
-      glass.appleStrong,
-      "flex-shrink-0 mb-6 md:mb-8",
-      radius.lg,
+      "bg-white/5 backdrop-blur-xl md:bg-white/10",
+      "flex-shrink-0 mb-3 md:mb-8",
+      "md:rounded-t-[20px]",
       "relative overflow-hidden"
     )}>
-      {/* Vision Pro depth elevation */}
-      <div className={vision.depth.elevation} />
+      {/* Vision Pro depth elevation - desktop only */}
+      <div className="hidden md:block">{vision.depth.elevation}</div>
       
-      {/* Spotlight gradient */}
-      <div className={cn(vision.spotlight.base, "opacity-40")} />
+      {/* Spotlight gradient - desktop only */}
+      <div className={cn("hidden md:block", vision.spotlight.base, "opacity-40")} />
       
-      <div className={cn("flex items-center gap-3 flex-1 min-w-0 relative z-10")}>
+      <div className={cn("flex items-center gap-2 md:gap-3 flex-1 min-w-0 relative z-10")}>
         <LocalAvatar size="sm" src={advisor?.avatarUrl} alt={advisor?.name || 'Advisor'} />
         <div className="leading-tight flex-1 min-w-0">
-          <div className={cn(typography.body, "font-semibold text-white truncate")}>{advisor?.name ?? 'Select an advisor'}</div>
-          <div className={cn(typography.bodySmall, "text-white/60 truncate")}>{advisor?.role ?? ''}</div>
+          <div className={cn("text-sm md:text-base font-semibold text-white truncate")}>{advisor?.name ?? 'Select an advisor'}</div>
+          <div className={cn("text-xs md:text-sm text-white/60 truncate")}>{advisor?.role ?? ''}</div>
         </div>
       </div>
 
@@ -294,11 +292,13 @@ function MessageInputScoped({
   useEffect(() => {
     if (!textareaRef.current) return;
     const textarea = textareaRef.current;
+    // Auto-resize for both mobile and desktop
     textarea.style.height = 'auto';
-    const nextHeight = Math.min(textarea.scrollHeight, 120);
+    const minHeight = variant === 'mobile-fixed' ? 44 : 40;
+    const nextHeight = Math.min(Math.max(textarea.scrollHeight, minHeight), 120);
     textarea.style.height = `${nextHeight}px`;
     textarea.style.overflowY = textarea.scrollHeight > 120 ? 'auto' : 'hidden';
-  }, [value]);
+  }, [value, variant]);
 
   // Hold-to-record voice message
   const handleMicMouseDown = async () => {
@@ -371,24 +371,41 @@ function MessageInputScoped({
   const wrapperClasses =
     variant === 'mobile-fixed'
       ? cn(
-          "md:hidden fixed bottom-0 left-0 right-0 z-50 px-3",
-          glass.appleStrong,
-          "border-t border-white/10",
-          shadows.vision,
-          "pb-[max(env(safe-area-inset-bottom,16px),16px)] relative overflow-hidden"
+          "md:hidden fixed left-0 right-0",
+          // Position above bottom nav (bottom nav is ~60px tall)
+          "bottom-[60px]",
+          // Highest z-index to be above bottom nav (bottom nav is z-[100])
+          "z-[9999]",
+          // Background transparent to let page show through
+          "bg-transparent",
+          // Safe area support
+          "pb-[calc(env(safe-area-inset-bottom,0px)+12px)]",
+          // Horizontal padding
+          "px-4"
         )
       : "w-full flex flex-col flex-shrink-0";
 
   const bubbleClasses =
     variant === 'mobile-fixed'
       ? cn(
-          "mx-auto w-[94%] max-w-md",
-          radius.xl,
-          spacing.cardPadding.secondary,
-          glass.apple,
-          shadows.depth,
-          "transition-all duration-200 relative overflow-hidden",
-          isFocused ? "translate-y-[-6px]" : ""
+          // Auto height to fit content
+          "min-h-[56px] sm:min-h-[64px]",
+          // Flex container with items centered
+          "flex items-center gap-2",
+          // Glass morphism
+          "bg-white/10 backdrop-blur-xl",
+          "border border-white/10",
+          "rounded-2xl",
+          // Padding
+          "py-2.5 px-3",
+          // Overflow visible to prevent clipping
+          "overflow-visible",
+          // Smooth transitions
+          "transition-all duration-300 ease-out",
+          // Focus state: subtle lift
+          isFocused 
+            ? "shadow-[0_8px_24px_rgba(138,60,255,0.3)] border-white/20" 
+            : ""
         )
       : cn(
           "w-full",
@@ -403,41 +420,66 @@ function MessageInputScoped({
 
   const rowClasses =
     variant === 'mobile-fixed'
-      ? "flex items-center gap-3 w-full min-h-[52px] flex-nowrap"
+      ? "flex items-center gap-2 w-full flex-nowrap"
       : "flex items-end gap-2.5 w-full";
 
   return (
     <div className={cn(wrapperClasses, className)}>
-      {/* Spotlight gradient for mobile */}
-      {variant === 'mobile-fixed' && <div className={cn(vision.spotlight.base, "opacity-30")} />}
-      
       <div className={bubbleClasses}>
-        {/* Spotlight gradient */}
-        <div className={cn(vision.spotlight.base, "opacity-20")} />
-        
         <div className={rowClasses}>
         {/* Voice message button (hold to record) - iOS 17 + visionOS */}
-        <motion.button 
-          className={cn(
-            "h-10 w-10 md:w-11 md:h-11 flex items-center justify-center",
-            radius.full,
-            "border border-white/10 transition-all duration-200 relative z-10",
-            // replaced-by-ultra-polish
-            isRecording
-              ? cn(badges.danger, "animate-pulse", shadows.md)
-              : cn(colors.bg.secondary, "text-white/70 hover:bg-white/20")
-          )}
-          whileTap={animations.microTap}
-          style={{ touchAction: 'manipulation' }}
-          type="button"
-          onMouseDown={handleMicMouseDown}
-          onMouseUp={handleMicMouseUp}
-          onTouchStart={handleMicMouseDown}
-          onTouchEnd={handleMicMouseUp}
-          aria-label="Hold to record voice message"
-        >
-          <Mic className={cn(iconSizes.sm, "md:w-5 md:h-5")} />
-        </motion.button>
+        {variant === 'mobile-fixed' ? (
+          <motion.button 
+            className={cn(
+              // Compact mobile button
+              "h-10 w-10 rounded-xl flex items-center justify-center flex-shrink-0",
+              "bg-white/10 backdrop-blur-xl",
+              "mr-2",
+              "transition-all duration-200",
+              // replaced-by-ultra-polish
+              isRecording
+                ? cn(badges.danger, "animate-pulse", shadows.md, "scale-110")
+                : "text-white/80 hover:bg-white/20 active:scale-95"
+            )}
+            whileTap={animations.microTap}
+            style={{ touchAction: 'manipulation' }}
+            type="button"
+            onMouseDown={handleMicMouseDown}
+            onMouseUp={handleMicMouseUp}
+            onTouchStart={handleMicMouseDown}
+            onTouchEnd={handleMicMouseUp}
+            aria-label="Hold to record voice message"
+          >
+            <Mic className="text-lg text-white/80" />
+          </motion.button>
+        ) : (
+          <motion.button 
+            className={cn(
+              // Desktop button
+              "h-11 w-11 md:w-12 md:h-12 flex items-center justify-center flex-shrink-0",
+              radius.full,
+              "border border-white/20 transition-all duration-200",
+              // replaced-by-ultra-polish
+              isRecording
+                ? cn(badges.danger, "animate-pulse", shadows.md, "scale-110")
+                : cn(
+                    "bg-white/10 text-white/80",
+                    "hover:bg-white/20 hover:scale-105",
+                    "active:scale-95"
+                  )
+            )}
+            whileTap={animations.microTap}
+            style={{ touchAction: 'manipulation' }}
+            type="button"
+            onMouseDown={handleMicMouseDown}
+            onMouseUp={handleMicMouseUp}
+            onTouchStart={handleMicMouseDown}
+            onTouchEnd={handleMicMouseUp}
+            aria-label="Hold to record voice message"
+          >
+            <Mic className={cn(iconSizes.sm, "md:w-5 md:h-5")} />
+          </motion.button>
+        )}
 
         {/* Text input area - iOS 17 + visionOS */}
         <textarea
@@ -451,39 +493,120 @@ function MessageInputScoped({
           onFocus={handleFocus}
           onBlur={handleBlur}
           className={cn(
-            "bg-transparent resize-none overflow-hidden w-full flex-1 min-w-0 text-white",
-            typography.body,
-            "leading-[20px] placeholder:text-white/40 outline-none border-none transition-all duration-200 disabled:opacity-50 max-h-[120px] relative z-10"
+            variant === 'mobile-fixed' 
+              ? cn(
+                  // Mobile-specific styling
+                  "flex-1 min-w-0 bg-transparent outline-none",
+                  "text-white text-[15px]",
+                  "placeholder:text-white/50",
+                  "leading-tight",
+                  "px-2 py-1",
+                  "resize-none",
+                  "overflow-visible",
+                  "h-auto",
+                  "min-h-[44px]",
+                  "max-h-[120px]",
+                  "disabled:opacity-50",
+                  "selection:bg-white/20 selection:text-white",
+                  "relative z-10",
+                  // Ensure visibility
+                  "opacity-100",
+                  "visible"
+                )
+              : cn(
+                  // Desktop styling
+                  "bg-transparent resize-none overflow-hidden w-full flex-1 min-w-0",
+                  "text-white",
+                  "text-[15px] leading-[20px]",
+                  "placeholder:text-white/50",
+                  "outline-none border-none",
+                  "transition-all duration-200",
+                  "disabled:opacity-50",
+                  "max-h-[120px]",
+                  "relative z-10",
+                  "px-2 py-2.5",
+                  "selection:bg-white/20 selection:text-white"
+                )
           )}
-          rows={1}
+          rows={variant === 'mobile-fixed' ? 1 : 1}
         />
 
         {/* Send button - iOS 17 + visionOS */}
-        <motion.button
-          onClick={() => {
-            triggerHaptic(HapticPatterns.light);
-            handleSend();
-          }}
-          disabled={!value.trim() || isLoading}
-          whileTap={animations.microTap}
-          className={cn(
-            "flex-shrink-0 h-10 w-10 md:w-11 md:h-11",
-            radius.full,
-            "flex items-center justify-center transition-all duration-300 ease-out disabled:cursor-not-allowed border border-white/10 relative z-10",
-            value.trim()
-              ? cn(gradients.primary, "text-white", shadows.md)
-              : cn(colors.bg.secondary, "text-white/30")
-          )}
-          style={{ touchAction: 'manipulation' }}
-          aria-label="Send message"
-          type="button"
-        >
-          {isLoading ? (
-            <Loader2 className={cn(iconSizes.md, "animate-spin")} />
-          ) : (
-            <ArrowUp className={iconSizes.md} />
-          )}
-        </motion.button>
+        {variant === 'mobile-fixed' ? (
+          <motion.button
+            onClick={() => {
+              triggerHaptic(HapticPatterns.light);
+              handleSend();
+            }}
+            disabled={!value.trim() || isLoading}
+            whileTap={animations.microTap}
+            className={cn(
+              // Compact mobile button
+              "flex-shrink-0 h-10 w-10 rounded-xl",
+              "flex items-center justify-center",
+              "bg-white/10 backdrop-blur-xl",
+              "ml-2",
+              "transition-all duration-300 ease-out",
+              "disabled:cursor-not-allowed",
+              value.trim()
+                ? cn(
+                    gradients.primary,
+                    "text-white",
+                    "hover:scale-105 active:scale-95"
+                  )
+                : "text-white/30"
+            )}
+            style={{ touchAction: 'manipulation' }}
+            aria-label="Send message"
+            type="button"
+          >
+            {isLoading ? (
+              <Loader2 className="text-lg animate-spin" />
+            ) : (
+              <ArrowUp className="text-lg text-white/80" />
+            )}
+          </motion.button>
+        ) : (
+          <motion.button
+            onClick={() => {
+              triggerHaptic(HapticPatterns.light);
+              handleSend();
+            }}
+            disabled={!value.trim() || isLoading}
+            whileTap={animations.microTap}
+            className={cn(
+              // Desktop button
+              "flex-shrink-0 h-11 w-11 md:w-12 md:h-12",
+              radius.full,
+              "flex items-center justify-center",
+              "transition-all duration-300 ease-out",
+              "disabled:cursor-not-allowed",
+              "border border-white/20",
+              "relative z-10",
+              value.trim()
+                ? cn(
+                    gradients.primary,
+                    "text-white",
+                    shadows.md,
+                    "hover:scale-105 active:scale-95",
+                    "shadow-[0_4px_16px_rgba(138,60,255,0.4)]"
+                  )
+                : cn(
+                    "bg-white/10 text-white/30",
+                    "hover:bg-white/15"
+                  )
+            )}
+            style={{ touchAction: 'manipulation' }}
+            aria-label="Send message"
+            type="button"
+          >
+            {isLoading ? (
+              <Loader2 className={cn(iconSizes.md, "animate-spin")} />
+            ) : (
+              <ArrowUp className={iconSizes.md} />
+            )}
+          </motion.button>
+        )}
       </div>
     </div>
   </div>
@@ -581,7 +704,6 @@ function ChatWindowScoped({
   currentUserName?: string;
   isLoading?: boolean;
 }) {
-  const navigate = useNavigate();
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const hasMessages = (messages ?? []).length > 0;
 
@@ -593,30 +715,27 @@ function ChatWindowScoped({
 
   return (
     <div className={cn(
-      "flex flex-col flex-1 min-h-0 overflow-hidden relative",
+      "flex flex-col flex-1 min-h-0 overflow-visible relative",
       "rounded-none md:rounded-[20px]",
-      glass.appleStrong,
+      "bg-transparent md:bg-white/5",
+      "backdrop-blur-none md:backdrop-blur-xl",
       "md:border md:border-white/15",
-      shadows.vision
+      "md:shadow-[0_0_50px_-10px_rgba(0,0,0,0.45)]"
     )}>
-      {/* Vision Pro depth elevation */}
-      <div className={vision.depth.elevation} />
+      {/* Vision Pro depth elevation - desktop only */}
+      <div className="hidden md:block">{vision.depth.elevation}</div>
       
-      {/* Spotlight gradient */}
-      <div className={cn(vision.spotlight.base, "opacity-30")} />
+      {/* Spotlight gradient - desktop only */}
+      <div className={cn("hidden md:block", vision.spotlight.base, "opacity-30")} />
       
       <ChatHeaderScoped advisor={advisor} advisors={advisors} onSwitchAdvisor={onSwitchAdvisor} />
 
-      <div className="flex-1 overflow-y-auto min-h-0 overflow-x-hidden overscroll-contain">
-        <div className="p-4 md:p-6 lg:p-8">
+      <div className="flex-1 min-h-0 overflow-visible">
+        <div className="p-2 md:p-6 lg:p-8">
           {!hasMessages ? (
-            <div className="mb-2 md:mb-8 pb-[140px] md:pb-0">
+            <div className="mb-0 md:mb-8 pb-[100px] md:pb-0">
               <NoMessagesEmptyState
                 onStartChat={() => onSend?.('Hello! I need help.')}
-                onUploadContract={() => {
-                  toast.info('Upload contract feature coming soon');
-                  navigate('/contract-upload');
-                }}
               />
               
               {/* Desktop input */}
@@ -629,7 +748,7 @@ function ChatWindowScoped({
               </div>
             </div>
           ) : (
-            <div className="space-y-4 pb-[140px] md:pb-0">
+            <div className="space-y-3 md:space-y-4 pb-[120px] md:pb-0">
               {messages!.map((m) => (
                 <MessageBubbleScoped
                   key={m.id}
@@ -663,21 +782,12 @@ function ChatWindowScoped({
         </div>
       )}
 
-      {/* Mobile fixed composer */}
-      <MessageInputScoped
-        onSend={onSend}
-        isLoading={isLoading}
-        variant="mobile-fixed"
-        className="md:hidden"
-      />
-
     </div>
   );
 }
 
 // --- Main MessagesPage Component ---
 export default function MessagesPage() {
-  const navigate = useNavigate();
   const { loading: sessionLoading, profile, isAdmin, user } = useSession();
   const [selectedAdvisorId, setSelectedAdvisorId] = useState<string | null>(null);
   const [isMobile, setIsMobile] = useState(false);
@@ -974,40 +1084,12 @@ export default function MessagesPage() {
 
   return (
     <ContextualTipsProvider currentView="messages">
-    <div className="flex flex-col h-[100dvh] md:h-screen md:p-6 overflow-hidden">
-      {/* Scrollable content - shrinks when keyboard opens */}
-      <div className="flex-1 overflow-y-auto min-h-0 px-4 md:px-0 overflow-x-hidden" style={{ 
-        paddingBottom: '0px',
-        WebkitOverflowScrolling: 'touch'
-      }}>
-        <div className="w-full max-w-[420px] mx-auto md:mx-0 md:max-w-none">
-          {/* Back to Dashboard Button - iOS 17 + visionOS */}
-          <div className={cn("flex justify-start", spacing.compact)}>
-            <motion.button
-              onClick={() => {
-                triggerHaptic(HapticPatterns.light);
-                navigate('/creator-dashboard');
-              }}
-              whileTap={animations.microTap}
-              whileHover={window.innerWidth > 768 ? animations.microHover : undefined}
-              className={cn(
-                "flex items-center gap-2",
-                spacing.cardPadding.secondary,
-                radius.md,
-                glass.apple,
-                shadows.sm,
-                typography.bodySmall,
-                "font-medium text-white",
-                "transition-all"
-              )}
-            >
-              <ArrowLeft className={iconSizes.sm} />
-              <span>Back to Dashboard</span>
-            </motion.button>
-          </div>
-
+    <div className="flex flex-col min-h-full md:h-screen md:p-6 overflow-visible bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 ios-safe-bottom">
+      {/* Content with safe area padding for bottom nav + input */}
+      <div className="flex-1 min-h-0 px-3 md:px-0 overflow-visible pb-[calc(120px+env(safe-area-inset-bottom,0px))]">
+        <div className="w-full max-w-[420px] mx-auto md:mx-0 md:max-w-none pt-2 md:pt-4">
           {/* Main content area */}
-          <div className="flex gap-6 h-full">
+          <div className="flex gap-6">
             {/* Desktop: Fixed sidebar */}
             {!isMobile && (
               <AdvisorListScoped
@@ -1019,7 +1101,7 @@ export default function MessagesPage() {
             )}
 
             {/* Chat Window */}
-            <div className="flex-1 min-w-0 flex flex-col min-h-0">
+            <div className="flex-1 min-w-0 flex flex-col min-h-0 -mx-3 md:mx-0">
               <ChatWindowScoped
                 advisor={selectedAdvisor}
                 advisors={advisors}
@@ -1045,6 +1127,14 @@ export default function MessagesPage() {
           </footer>
         </div>
       </div>
+
+      {/* Mobile fixed composer - rendered at page level for proper visibility */}
+      <MessageInputScoped
+        onSend={handleSend}
+        isLoading={sendMessageMutation.isPending || isLoadingMessages || cometChat.isLoading}
+        variant="mobile-fixed"
+        className="md:hidden"
+      />
     </div>
     </ContextualTipsProvider>
   );
