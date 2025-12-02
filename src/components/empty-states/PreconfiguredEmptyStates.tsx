@@ -28,10 +28,10 @@ const EmptyActionButton: React.FC<{
 }> = ({ icon, label, onClick }) => (
   <button
     onClick={onClick}
-    className="flex flex-col items-center justify-center py-4 rounded-2xl bg-white/8 border border-white/10 backdrop-blur-xl text-white/80 text-[14px] active:scale-[0.96] transition-all shadow-[0_4px_12px_rgba(0,0,0,0.15)] hover:bg-white/12 hover:border-white/15"
+    className="flex flex-col items-center justify-center h-14 rounded-xl bg-white/10 border border-white/10 backdrop-blur-xl text-white/80 text-[14px] font-medium active:scale-[0.96] transition-all shadow-[0_4px_12px_rgba(0,0,0,0.15)] hover:bg-white/20 hover:border-white/15"
   >
-    <div className="mb-2 text-white/70">{icon}</div>
-    <span className="font-medium">{label}</span>
+    <div className="mb-1.5 text-white/70">{icon}</div>
+    <span>{label}</span>
   </button>
 );
 
@@ -41,48 +41,48 @@ export const NoMessagesEmptyState: React.FC<NoMessagesEmptyStateProps> = ({
   variant = 'default',
 }) => {
   return (
-    <div className="flex flex-col items-center px-5 pt-4 pb-4">
+    <div className="flex flex-col items-center px-5 pt-4 pb-4 max-w-lg mx-auto w-full">
       {/* Empty Icon */}
-      <div className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-white/10 backdrop-blur-xl border border-white/15 flex items-center justify-center mb-3 md:mb-4 shadow-[0_4px_12px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.1)]">
+      <div className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-white/10 backdrop-blur-xl border border-white/15 flex items-center justify-center mb-4 shadow-[0_4px_12px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.1)]">
         <MessageSquare className="w-8 h-8 md:w-10 md:h-10 text-white/60" />
       </div>
 
       {/* Title */}
-      <h2 className="text-[20px] md:text-[22px] font-semibold text-white mb-1 md:mb-2">
+      <h2 className="text-[20px] md:text-[22px] font-semibold text-white mb-2 text-center">
         No Messages Yet
       </h2>
 
       {/* Subtitle */}
-      <p className="text-center text-[14px] md:text-[15px] leading-relaxed text-white/70 mb-4 md:mb-8 max-w-sm">
+      <p className="text-center text-[14px] md:text-[15px] leading-relaxed text-white/70 mb-6 max-w-sm">
         Start a conversation with your advisor to get help with contracts, payments, or legal questions.
       </p>
 
       {/* Action Buttons */}
-      <div className="grid grid-cols-2 gap-2 md:gap-3 w-full max-w-md">
+      <div className="grid grid-cols-2 gap-3 w-full max-w-md">
         {onUploadContract && (
           <EmptyActionButton
-            icon={<Upload className="w-5 h-5" />}
+            icon={<Upload className="w-4 h-4" />}
             label="Upload a Contract"
             onClick={onUploadContract}
           />
         )}
         <EmptyActionButton
-          icon={<FileText className="w-5 h-5" />}
+          icon={<FileText className="w-4 h-4" />}
           label="Contract Review"
           onClick={() => onStartChat?.()}
         />
         <EmptyActionButton
-          icon={<Wallet className="w-5 h-5" />}
+          icon={<Wallet className="w-4 h-4" />}
           label="Payment Questions"
           onClick={() => onStartChat?.()}
         />
         <EmptyActionButton
-          icon={<Scale className="w-5 h-5" />}
+          icon={<Scale className="w-4 h-4" />}
           label="Legal Advice"
           onClick={() => onStartChat?.()}
         />
         <EmptyActionButton
-          icon={<BarChart3 className="w-5 h-5" />}
+          icon={<BarChart3 className="w-4 h-4" />}
           label="Tax Compliance"
           onClick={() => onStartChat?.()}
         />
@@ -114,8 +114,8 @@ export const NoContractsEmptyState: React.FC<NoContractsEmptyStateProps> = ({
       }}
       variant={variant}
       illustration={
-        <div className="w-24 h-24 rounded-full bg-gradient-to-br from-purple-500/20 to-indigo-500/20 flex items-center justify-center mb-6">
-          <Sparkles className="w-12 h-12 text-purple-400" />
+        <div className="w-16 h-16 md:w-24 md:h-24 rounded-full bg-gradient-to-br from-purple-500/20 to-indigo-500/20 flex items-center justify-center mb-4 md:mb-6">
+          <Sparkles className="w-8 h-8 md:w-12 md:h-12 text-purple-400" />
         </div>
       }
     />

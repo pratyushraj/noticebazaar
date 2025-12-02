@@ -69,7 +69,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
   // Variant-specific classes
   const variantClasses = {
     default: 'py-16 px-6',
-    compact: 'py-8 px-4',
+    compact: 'py-4 md:py-8 px-4',
     minimal: 'py-4 px-2',
   };
 
@@ -162,8 +162,8 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
           animate={{ opacity: 1 }}
           transition={{ delay: 0.3 }}
           className={cn(
-            'text-white/60 mb-6 max-w-sm leading-relaxed',
-            variant === 'compact' ? 'text-sm' : 'text-base'
+            'text-white/60 max-w-sm leading-relaxed',
+            variant === 'compact' ? 'text-sm mb-4 md:mb-6' : 'text-base mb-6'
           )}
         >
           {description}

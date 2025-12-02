@@ -31,11 +31,11 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
     if (!user?.id) return null; // Don't fetch if no user ID
     
     try {
-      // Try to fetch with all fields first (including new creator profile fields)
-      // Use type assertion to avoid TypeScript errors with dynamic column selection
+      // Start with core fields that should always exist to avoid 400 errors
+      // Extended creator profile fields will be fetched separately if needed
       let { data, error } = await (supabase
         .from('profiles')
-        .select('id, first_name, last_name, avatar_url, role, updated_at, business_name, gstin, business_entity_type, onboarding_complete, organization_id, is_trial, trial_started_at, trial_expires_at, trial_locked, gst_number, pan_number, referral_code, instagram_followers, youtube_subs, tiktok_followers, twitter_followers, facebook_followers, instagram_handle, youtube_channel_id, tiktok_handle, facebook_profile_url, twitter_handle, phone, location, bio, platforms, goals') as any)
+        .select('id, first_name, last_name, avatar_url, role, updated_at, business_name, gstin, business_entity_type, onboarding_complete, organization_id, is_trial, trial_started_at, trial_expires_at, trial_locked') as any)
         .eq('id', user.id)
         .single();
 

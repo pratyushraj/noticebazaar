@@ -64,7 +64,19 @@ export const useNotifications = (options: UseNotificationsOptions = {}) => {
       const { data, error } = await query;
 
       if (error) {
-        // Error is handled by useSupabaseQuery
+        // If table doesn't exist (404), return empty array instead of throwing
+        const errorCode = (error as any)?.code;
+        const errorStatus = (error as any)?.status;
+        if (
+          errorCode === 'PGRST116' ||
+          errorCode === '42P01' ||
+          errorStatus === 404 ||
+          String(error.message || '').toLowerCase().includes('does not exist') ||
+          String(error.message || '').toLowerCase().includes('relation') ||
+          String(error.message || '').toLowerCase().includes('not found')
+        ) {
+          return [];
+        }
         throw error;
       }
 
@@ -92,13 +104,29 @@ export const useNotifications = (options: UseNotificationsOptions = {}) => {
   // Mark notification as read
   const markAsReadMutation = useMutation({
     mutationFn: async (notificationId: string) => {
+      if (!userId) return;
+      
       const { error } = await supabase
         .from('notifications')
         .update({ read: true, read_at: new Date().toISOString() })
         .eq('id', notificationId)
         .eq('user_id', userId);
 
-      if (error) throw error;
+      // Silently handle if table doesn't exist
+      if (error) {
+        const errorCode = (error as any)?.code;
+        const errorStatus = (error as any)?.status;
+        if (
+          errorCode === 'PGRST116' ||
+          errorCode === '42P01' ||
+          errorStatus === 404 ||
+          String(error.message || '').toLowerCase().includes('does not exist') ||
+          String(error.message || '').toLowerCase().includes('relation')
+        ) {
+          return; // Table doesn't exist, silently ignore
+        }
+        throw error;
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['notifications', userId] });
@@ -124,13 +152,29 @@ export const useNotifications = (options: UseNotificationsOptions = {}) => {
   // Delete notification
   const deleteNotificationMutation = useMutation({
     mutationFn: async (notificationId: string) => {
+      if (!userId) return;
+      
       const { error } = await supabase
         .from('notifications')
         .delete()
         .eq('id', notificationId)
         .eq('user_id', userId);
 
-      if (error) throw error;
+      // Silently handle if table doesn't exist
+      if (error) {
+        const errorCode = (error as any)?.code;
+        const errorStatus = (error as any)?.status;
+        if (
+          errorCode === 'PGRST116' ||
+          errorCode === '42P01' ||
+          errorStatus === 404 ||
+          String(error.message || '').toLowerCase().includes('does not exist') ||
+          String(error.message || '').toLowerCase().includes('relation')
+        ) {
+          return; // Table doesn't exist, silently ignore
+        }
+        throw error;
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['notifications', userId] });

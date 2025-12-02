@@ -64,18 +64,21 @@ export default defineConfig(() => ({
     },
   },
   plugins: [
-    react({
-      jsx: 'react-jsx',
-      // Explicitly include .tsx files for JSX transformation
-      include: "**/*.tsx",
-      // Exclude node_modules to prevent processing external libraries
-      exclude: "node_modules/**",
-    }),
+    react(),
     dyadComponentTagger()
   ],
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
+      // Force single React instance to prevent "Invalid hook call" errors
+      "react": path.resolve(__dirname, "./node_modules/react"),
+      "react-dom": path.resolve(__dirname, "./node_modules/react-dom"),
+      "react/jsx-runtime": path.resolve(__dirname, "./node_modules/react/jsx-runtime"),
     },
+    dedupe: ["react", "react-dom", "react/jsx-runtime"],
+  },
+  optimizeDeps: {
+    include: ["react", "react-dom"],
+    force: true, // Force re-optimization
   },
 }));

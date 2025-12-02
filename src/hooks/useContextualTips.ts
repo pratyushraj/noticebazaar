@@ -19,6 +19,7 @@ export const useContextualTips = (currentView?: string) => {
   const [dismissedTips, setDismissedTips] = useState<string[]>([]);
   const [currentTip, setCurrentTip] = useState<Tip | null>(null);
   const [temporaryDismissals, setTemporaryDismissals] = useState<Record<string, number>>({});
+  const [isInitialized, setIsInitialized] = useState(false);
   const [userActions, setUserActions] = useState({
     checkedPayments: false,
     viewedDeals: false,
@@ -64,17 +65,24 @@ export const useContextualTips = (currentView?: string) => {
     };
   }, [brandDeals, profile, userActions]);
 
-  // Load dismissed tips from localStorage
+  // Load dismissed tips from localStorage IMMEDIATELY when profile is available
   useEffect(() => {
-    if (profile?.id) {
+    if (profile?.id && !isInitialized) {
+      console.log('Initializing contextual tips for profile:', profile.id);
+      
+      // Load permanent dismissals
       const stored = localStorage.getItem(`${STORAGE_KEY_PREFIX}${profile.id}`);
       if (stored) {
         try {
-          setDismissedTips(JSON.parse(stored));
+          const parsed = JSON.parse(stored);
+          setDismissedTips(parsed);
+          console.log('Loaded permanent dismissals:', parsed);
         } catch (e) {
           console.warn('Failed to parse dismissed tips', e);
         }
       }
+      
+      // Load temporary dismissals
       const storedTemp = localStorage.getItem(`${TEMP_STORAGE_KEY_PREFIX}${profile.id}`);
       if (storedTemp) {
         try {
@@ -88,6 +96,7 @@ export const useContextualTips = (currentView?: string) => {
             }
           }
           setTemporaryDismissals(cleaned);
+          console.log('Loaded temporary dismissals:', cleaned);
           // Update localStorage with cleaned data
           if (Object.keys(cleaned).length !== Object.keys(tempDismissals).length) {
             localStorage.setItem(`${TEMP_STORAGE_KEY_PREFIX}${profile.id}`, JSON.stringify(cleaned));
@@ -96,8 +105,10 @@ export const useContextualTips = (currentView?: string) => {
           console.warn('Failed to parse temporary dismissed tips', e);
         }
       }
+      
+      setIsInitialized(true);
     }
-  }, [profile?.id]);
+  }, [profile?.id, isInitialized]);
 
   // Save dismissed tips to localStorage
   useEffect(() => {
@@ -134,10 +145,18 @@ export const useContextualTips = (currentView?: string) => {
     const allTips = getAllTips(userState);
     const now = Date.now();
     
-    // Get temporary dismissals from localStorage as well (for persistence)
+    // Get permanent and temporary dismissals from localStorage (for persistence)
+    let localStorageDismissed: string[] = [];
     let localStorageDismissals: Record<string, number> = {};
     if (profile?.id) {
       try {
+        // Load permanent dismissals
+        const storedPermanent = localStorage.getItem(`${STORAGE_KEY_PREFIX}${profile.id}`);
+        if (storedPermanent) {
+          localStorageDismissed = JSON.parse(storedPermanent);
+        }
+        
+        // Load temporary dismissals
         const storedTemp = localStorage.getItem(`${TEMP_STORAGE_KEY_PREFIX}${profile.id}`);
         if (storedTemp) {
           localStorageDismissals = JSON.parse(storedTemp);
@@ -149,8 +168,10 @@ export const useContextualTips = (currentView?: string) => {
     
     return allTips
       .filter((tip) => {
-        // Skip if dismissed
-        if (dismissedTips.includes(tip.id)) return false;
+        // Skip if permanently dismissed (check both state and localStorage)
+        if (dismissedTips.includes(tip.id) || localStorageDismissed.includes(tip.id)) {
+          return false;
+        }
 
         // Skip if temporarily dismissed (check both state and localStorage)
         const tempExpiry = temporaryDismissals[tip.id] || localStorageDismissals[tip.id];
@@ -177,24 +198,54 @@ export const useContextualTips = (currentView?: string) => {
 
   // Show tip when view changes or applicable tips change
   useEffect(() => {
-    // Only show tip if there are applicable tips, no current tip, and view is stable
+    // Only show tip if initialized, there are applicable tips, no current tip, and view is stable
+    if (!isInitialized) {
+      console.log('Not initialized yet, skipping tip display');
+      return;
+    }
+    
     if (applicableTips.length > 0 && !currentTip && view) {
       const tip = applicableTips[0];
       const now = Date.now();
       
-      // Triple-check dismissal: state, localStorage, and permanent dismissal
-      // Check permanent dismissal first
+      // Quadruple-check dismissal: state and localStorage for both permanent and temporary
+      // Check permanent dismissal in state
       if (dismissedTips.includes(tip.id)) {
-        return; // Don't show if permanently dismissed
+        console.log('Tip blocked by state dismissal:', tip.id);
+        return; // Don't show if permanently dismissed in state
+      }
+      
+      // Check permanent dismissal in localStorage (most reliable check)
+      if (profile?.id) {
+        try {
+          const storedPermanent = localStorage.getItem(`${STORAGE_KEY_PREFIX}${profile.id}`);
+          if (storedPermanent) {
+            const permanentDismissals: string[] = JSON.parse(storedPermanent);
+            if (permanentDismissals.includes(tip.id)) {
+              console.log('Tip blocked by localStorage permanent dismissal:', tip.id);
+              // Update state to match localStorage (sync state with localStorage)
+              setDismissedTips((prev) => {
+                if (!prev.includes(tip.id)) {
+                  return [...prev, tip.id];
+                }
+                return prev;
+              });
+              return; // Don't show if permanently dismissed in localStorage
+            }
+          }
+        } catch (e) {
+          // Ignore parse errors
+        }
       }
       
       // Check temporary dismissal in state
       const tempExpiry = temporaryDismissals[tip.id];
       if (tempExpiry && tempExpiry > now) {
+        console.log('Tip blocked by state temp dismissal:', tip.id);
         return; // Don't show if still temporarily dismissed in state
       }
       
-      // Check temporary dismissal in localStorage (most reliable check)
+      // Check temporary dismissal in localStorage
       if (profile?.id) {
         try {
           const storedTemp = localStorage.getItem(`${TEMP_STORAGE_KEY_PREFIX}${profile.id}`);
@@ -202,6 +253,7 @@ export const useContextualTips = (currentView?: string) => {
             const tempDismissals = JSON.parse(storedTemp);
             const storedExpiry = tempDismissals[tip.id];
             if (storedExpiry && storedExpiry > now) {
+              console.log('Tip blocked by localStorage temp dismissal:', tip.id);
               // Update state to match localStorage (sync state with localStorage)
               setTemporaryDismissals((prev) => {
                 if (prev[tip.id] !== storedExpiry) {
@@ -220,9 +272,11 @@ export const useContextualTips = (currentView?: string) => {
       // Final check: make sure tip wasn't just dismissed (race condition protection)
       // This prevents showing a tip that was just dismissed in the same render cycle
       if (dismissedTips.includes(tip.id) || (temporaryDismissals[tip.id] && temporaryDismissals[tip.id] > now)) {
+        console.log('Tip blocked by final check:', tip.id);
         return;
       }
       
+      console.log('Showing tip:', tip.id);
       setCurrentTip(tip);
       
       // Track tip view
@@ -237,21 +291,53 @@ export const useContextualTips = (currentView?: string) => {
         });
       }
     }
-  }, [applicableTips, currentTip, view, profile?.id, temporaryDismissals, dismissedTips]);
+  }, [applicableTips, currentTip, view, profile?.id, temporaryDismissals, dismissedTips, isInitialized]);
+
+  const oneTimeTipIds = useMemo(() => new Set([
+    'dashboard-welcome',
+    'earnings-zero',
+    'deals-empty',
+    'deal-progress-tip',
+    'payments-first-view',
+    'messages-advisor-available',
+  ]), []);
 
   // Handle tip dismissal
   const handleDismiss = useCallback(
     (permanent: boolean) => {
       if (currentTip) {
         const tipId = currentTip.id;
-        
-        if (permanent) {
-          // For permanent dismissal, clear tip and mark as dismissed
-          setCurrentTip(null);
+        const shouldForcePermanent = !permanent && (currentTip.trigger === 'view' || oneTimeTipIds.has(tipId));
+        const isPermanentDismissal = permanent || shouldForcePermanent;
+
+        console.log('Dismissing tip:', tipId, 'permanent:', isPermanentDismissal, 'shouldForcePermanent:', shouldForcePermanent);
+
+        if (isPermanentDismissal) {
+          // Save to localStorage FIRST (synchronously) to prevent race conditions
+          if (profile?.id) {
+            try {
+              const stored = localStorage.getItem(`${STORAGE_KEY_PREFIX}${profile.id}`);
+              const dismissed = stored ? JSON.parse(stored) : [];
+              if (!dismissed.includes(tipId)) {
+                dismissed.push(tipId);
+                localStorage.setItem(`${STORAGE_KEY_PREFIX}${profile.id}`, JSON.stringify(dismissed));
+                console.log('Saved permanent dismissal to localStorage:', dismissed);
+              }
+            } catch (e) {
+              console.warn('Failed to save permanent dismissal', e);
+            }
+          }
+          
+          // Update state AFTER localStorage
           setDismissedTips((prev) => {
             if (prev.includes(tipId)) return prev;
-            return [...prev, tipId];
+            const newDismissed = [...prev, tipId];
+            console.log('Updated dismissedTips state:', newDismissed);
+            return newDismissed;
           });
+          
+          // Clear tip AFTER state is updated
+          setCurrentTip(null);
           
           // Track dismissal
           if (profile?.id) {
@@ -315,7 +401,7 @@ export const useContextualTips = (currentView?: string) => {
         }
       }
     },
-    [currentTip, profile?.id]
+    [currentTip, profile?.id, oneTimeTipIds, setUserActions]
   );
 
   // Handle tip action

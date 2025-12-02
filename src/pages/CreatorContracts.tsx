@@ -9,6 +9,8 @@ import { SegmentedControl } from '@/components/ui/segmented-control';
 import { motion } from 'framer-motion';
 import { ContextualTipsProvider } from '@/components/contextual-tips/ContextualTipsProvider';
 import { FilteredNoMatchesEmptyState, NoDealsEmptyState } from '@/components/empty-states/PreconfiguredEmptyStates';
+import { sectionLayout, animations, spacing, typography, separators, iconSizes, scroll, gradients, cardVariants } from '@/lib/design-system';
+import { BaseCard, StatCard } from '@/components/ui/card-variants';
 
 const CreatorContracts = () => {
   const navigate = useNavigate();
@@ -113,35 +115,47 @@ const CreatorContracts = () => {
     ? deals 
     : deals.filter(deal => deal.status === activeFilter);
 
+  // Haptic feedback helper
+  const triggerHaptic = (pattern: 'light' | 'medium' | 'heavy' = 'light') => {
+    if (navigator.vibrate) {
+      const patterns = {
+        light: [10],
+        medium: [20],
+        heavy: [30, 10, 30]
+      };
+      navigator.vibrate(patterns[pattern]);
+    }
+  };
+
   return (
     <ContextualTipsProvider currentView="deals">
-    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 text-white p-4 pb-24">
+    <div className={`min-h-screen ${gradients.page} text-white ${spacing.page} pb-24 ${scroll.container}`}>
       {/* Header */}
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold mb-2">Brand Deals</h1>
-        <p className="text-purple-200">Track and manage your partnerships</p>
+      <div className={sectionLayout.header}>
+        <h1 className={typography.h1 + " mb-2"}>Brand Deals</h1>
+        <p className={typography.body}>Track and manage your partnerships</p>
       </div>
 
       {/* Stats Overview */}
-      <div className="grid grid-cols-2 gap-3 mb-6">
-        <div className="bg-white/[0.08] backdrop-blur-[40px] saturate-[180%] rounded-[24px] p-5 border border-white/15 shadow-[0_8px_32px_rgba(0,0,0,0.3)]">
-          <div className="flex items-center gap-2 mb-2">
-            <Briefcase className="w-5 h-5 text-purple-300" />
-            <span className="text-sm text-purple-200">Total Deals</span>
-          </div>
-          <div className="text-2xl font-bold">{stats.total}</div>
-          <div className="text-xs text-green-400 mt-1">+3 this month</div>
-        </div>
-
-        <div className="bg-white/[0.08] backdrop-blur-[40px] saturate-[180%] rounded-[24px] p-5 border border-white/15 shadow-[0_8px_32px_rgba(0,0,0,0.3)]">
-          <div className="flex items-center gap-2 mb-2">
-            <IndianRupee className="w-5 h-5 text-purple-300" />
-            <span className="text-sm text-purple-200">Total Value</span>
-          </div>
-          <div className="text-2xl font-bold">₹{(stats.totalValue / 1000).toFixed(0)}K</div>
-          <div className="text-xs text-purple-300 mt-1">Across all deals</div>
-        </div>
+      <div className={`${sectionLayout.grid.two} mb-6`}>
+        <StatCard
+          label="Total Deals"
+          value={stats.total}
+          icon={<Briefcase className={`${iconSizes.md} text-purple-300`} />}
+          variant="secondary"
+          className="text-left"
+        />
+        <StatCard
+          label="Total Value"
+          value={`₹${(stats.totalValue / 1000).toFixed(0)}K`}
+          icon={<IndianRupee className={`${iconSizes.md} text-purple-300`} />}
+          variant="secondary"
+          className="text-left"
+        />
       </div>
+
+      {/* Section Separator */}
+      <div className={separators.section} />
 
       {/* iOS Segmented Control */}
       <div className="mb-6">
@@ -154,40 +168,46 @@ const CreatorContracts = () => {
       </div>
 
       {/* Deals List */}
-      <div className="space-y-3">
+      <div className={spacing.compact}>
         {filteredDeals.map((deal, index) => {
           const StatusIcon = statusConfig[deal.status as DealStatus].icon;
           
           return (
             <motion.div
               key={deal.id}
-              onClick={() => navigate(`/creator-contracts/${deal.id}`)}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.05, duration: 0.3 }}
               whileHover={{ scale: 1.01, y: -2 }}
               whileTap={{ scale: 0.98 }}
-              className="bg-white/[0.08] backdrop-blur-[40px] saturate-[180%] rounded-[24px] p-5 md:p-6 border border-white/15 shadow-[0_8px_32px_rgba(0,0,0,0.3)] hover:bg-white/[0.12] hover:shadow-[0_12px_40px_rgba(0,0,0,0.4)] transition-all duration-200 cursor-pointer"
             >
+              <BaseCard 
+                variant="secondary" 
+                className={`${animations.cardHover} ${animations.cardPress} cursor-pointer`}
+                onClick={() => {
+                  triggerHaptic('light');
+                  navigate(`/creator-contracts/${deal.id}`);
+                }}
+              >
               {/* Deal Header */}
               <div className="flex items-start justify-between mb-3">
                 <div className="flex-1">
-                  <h3 className="font-semibold text-lg mb-1">{deal.title}</h3>
-                  <div className="flex items-center gap-2 text-sm text-purple-200">
+                  <h3 className={typography.h3 + " mb-1"}>{deal.title}</h3>
+                  <div className={`flex items-center gap-2 ${typography.bodySmall}`}>
                     <span>{deal.brand}</span>
                     <span>•</span>
                     <span>{deal.platform}</span>
                   </div>
                 </div>
-                <ChevronRight className="w-5 h-5 text-purple-300 flex-shrink-0 ml-2" />
+                <ChevronRight className={`${iconSizes.lg} text-purple-300 flex-shrink-0 ml-2 transition-transform group-hover:translate-x-1`} />
               </div>
 
               {/* Deal Value */}
               <div className="flex items-center gap-2 mb-3">
-                <div className="bg-green-500/20 text-green-400 px-3 py-1.5 rounded-[12px] text-[15px] font-semibold">
+                <div className={`bg-green-500/20 text-green-400 px-3 py-1.5 ${cardVariants.tertiary.radius} ${typography.bodySmall} font-semibold`}>
                   ₹{(deal.value / 1000).toFixed(0)}K
                 </div>
-                <div className="text-[13px] text-purple-300">{deal.type}</div>
+                <div className={`${typography.caption} text-purple-300`}>{deal.type}</div>
               </div>
 
               {/* Progress Bar */}
@@ -212,23 +232,24 @@ const CreatorContracts = () => {
               {/* Status and Deadline */}
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <StatusIcon className="w-4 h-4" />
-                  <span className="text-sm font-medium">{statusConfig[deal.status as DealStatus].label}</span>
+                  <StatusIcon className={iconSizes.sm} />
+                  <span className={`${typography.bodySmall} font-medium`}>{statusConfig[deal.status as DealStatus].label}</span>
                 </div>
-                <div className="flex items-center gap-1 text-xs text-purple-200">
-                  <Calendar className="w-3 h-3" />
+                <div className={`flex items-center gap-1 ${typography.caption}`}>
+                  <Calendar className={iconSizes.xs} />
                   <span>{deal.deadline}</span>
                 </div>
               </div>
 
               {/* Next Step */}
               <div className="mt-3 pt-3 border-t border-white/10">
-                <div className="flex items-center gap-2 text-sm">
-                  <AlertCircle className="w-4 h-4 text-purple-300" />
+                <div className={`flex items-center gap-2 ${typography.bodySmall}`}>
+                  <AlertCircle className={`${iconSizes.sm} text-purple-300`} />
                   <span className="text-purple-200">Next: </span>
                   <span className="text-white">{deal.nextStep}</span>
                 </div>
               </div>
+              </BaseCard>
             </motion.div>
           );
         })}
@@ -253,11 +274,14 @@ const CreatorContracts = () => {
 
       {/* FAB - Add New Deal */}
       <button 
-        onClick={() => navigate('/contract-upload')}
-        className="fixed bottom-24 right-6 bg-gradient-to-br from-blue-600 to-blue-700 hover:from-blue-500 hover:to-blue-600 text-white rounded-full p-5 shadow-[0_8px_32px_rgba(59,130,246,0.5)] hover:shadow-[0_12px_40px_rgba(59,130,246,0.6)] transition-all duration-200 hover:scale-110 active:scale-95 z-50 backdrop-blur-[20px] border border-white/20"
+        onClick={() => {
+          triggerHaptic('medium');
+          navigate('/contract-upload');
+        }}
+        className="fixed bottom-24 right-6 bg-gradient-to-br from-blue-600 to-blue-700 hover:from-blue-500 hover:to-blue-600 text-white rounded-full p-5 shadow-[0_8px_32px_rgba(59,130,246,0.5)] hover:shadow-[0_12px_40px_rgba(59,130,246,0.6)] transition-all duration-200 hover:scale-110 active:scale-[0.97] z-50 backdrop-blur-[20px] border border-white/20"
         aria-label="Add new deal"
       >
-        <Plus className="w-6 h-6" />
+        <Plus className={iconSizes.lg} />
       </button>
     </div>
     </ContextualTipsProvider>

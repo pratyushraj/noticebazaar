@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from 'react';
-import { Download, Calendar as CalendarIcon, ExternalLink } from 'lucide-react';
+import { Download, ExternalLink, MoreVertical } from 'lucide-react';
 import { DeadlineCalendar } from '@/components/calendar/DeadlineCalendar';
 import { CalendarViewMode } from '@/components/calendar/CalendarView';
 import { Button } from '@/components/ui/button';
@@ -12,10 +12,13 @@ import { downloadICalFile, openGoogleCalendar } from '@/lib/utils/calendarExport
 import { CalendarEvent } from '@/components/calendar/CalendarView';
 import { useMemo } from 'react';
 import { toast } from 'sonner';
+import { BottomSheet } from '@/components/ui/bottom-sheet';
+import { motion } from 'framer-motion';
 
 export default function CalendarPage() {
   const { profile } = useSession();
-  const [viewMode, setViewMode] = useState<CalendarViewMode>('month');
+  const [viewMode] = useState<CalendarViewMode>('month');
+  const [showExportSheet, setShowExportSheet] = useState(false);
 
   // Fetch deals
   const { data: brandDeals = [] } = useBrandDeals({
@@ -83,6 +86,7 @@ export default function CalendarPage() {
       toast.success('Calendar exported successfully!', {
         description: 'You can import this file into any calendar app.',
       });
+      setShowExportSheet(false);
     } catch (error: any) {
       toast.error('Failed to export calendar', {
         description: error.message,
@@ -93,6 +97,7 @@ export default function CalendarPage() {
   const handleSyncGoogleCalendar = () => {
     if (events.length === 0) {
       toast.info('No events to sync');
+      setShowExportSheet(false);
       return;
     }
 
@@ -101,45 +106,96 @@ export default function CalendarPage() {
     toast.info('Opening Google Calendar', {
       description: 'Add this event and repeat for other events, or export iCal file for bulk import.',
     });
+    setShowExportSheet(false);
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#0F121A] via-[#1A1D2E] to-[#0F121A] text-white p-4 md:p-6">
-      <div className="max-w-7xl mx-auto space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold mb-2">Calendar</h1>
-            <p className="text-white/60">
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -20 }}
+      transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+      className="min-h-screen bg-gradient-to-br from-[#0F121A] via-[#1A1D2E] to-[#0F121A] text-white"
+      style={{
+        paddingTop: 'max(16px, env(safe-area-inset-top, 16px))',
+        paddingBottom: 'calc(96px + env(safe-area-inset-bottom, 0px))',
+        paddingLeft: 'env(safe-area-inset-left, 0px)',
+        paddingRight: 'env(safe-area-inset-right, 0px)',
+        minHeight: '100dvh',
+      }}
+    >
+      <div className="max-w-7xl mx-auto px-3 md:px-6 py-4 md:py-6 space-y-3 md:space-y-6 overflow-hidden">
+        {/* Header - Premium Typography Hierarchy */}
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex-1 min-w-0">
+            <h1 className="text-3xl md:text-4xl font-bold mb-2 bg-gradient-to-r from-white to-white/80 bg-clip-text text-transparent">
+              Calendar
+            </h1>
+            <p className="text-sm md:text-base text-white/60 leading-relaxed">
               View and manage all your deadlines in one place
             </p>
           </div>
 
-          {/* Export Actions */}
-          <div className="flex items-center gap-2">
+          {/* Export Actions - Desktop: Buttons, Mobile: 3-dot Menu */}
+          <div className="hidden md:flex items-center gap-2 flex-shrink-0">
             <Button
               onClick={handleExportICal}
               variant="outline"
-              className="bg-white/10 border-white/20 text-white hover:bg-white/20"
+              size="sm"
+              className="bg-white/10 border-white/20 text-white hover:bg-white/20 h-auto py-2 px-3.5 text-sm transition-all active:scale-95"
             >
-              <Download className="w-4 h-4 mr-2" />
+              <Download className="w-3.5 h-3.5 mr-1.5" />
               Export iCal
             </Button>
             <Button
               onClick={handleSyncGoogleCalendar}
               variant="outline"
-              className="bg-white/10 border-white/20 text-white hover:bg-white/20"
+              size="sm"
+              className="bg-white/10 border-white/20 text-white hover:bg-white/20 h-auto py-2 px-3.5 text-sm transition-all active:scale-95"
             >
-              <ExternalLink className="w-4 h-4 mr-2" />
+              <ExternalLink className="w-3.5 h-3.5 mr-1.5" />
               Google Calendar
             </Button>
           </div>
+
+          {/* Mobile: 3-dot Menu Button */}
+          <Button
+            onClick={() => setShowExportSheet(true)}
+            variant="ghost"
+            size="sm"
+            className="md:hidden bg-white/10 border border-white/20 text-white hover:bg-white/20 h-10 w-10 p-0 rounded-xl transition-all active:scale-95"
+            aria-label="Export options"
+          >
+            <MoreVertical className="w-5 h-5" />
+          </Button>
         </div>
 
         {/* Calendar View */}
         <DeadlineCalendar viewMode={viewMode} />
+
+        {/* Mobile Export Action Sheet */}
+        <BottomSheet open={showExportSheet} onClose={() => setShowExportSheet(false)}>
+          <div className="px-4 py-6 space-y-3">
+            <h3 className="text-lg font-semibold text-white mb-4">Export Calendar</h3>
+            
+            <button
+              onClick={handleExportICal}
+              className="w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-white/10 border border-white/20 text-white hover:bg-white/15 transition-all active:scale-[0.98]"
+            >
+              <Download className="w-5 h-5" />
+              <span className="font-medium">Export iCal</span>
+            </button>
+
+            <button
+              onClick={handleSyncGoogleCalendar}
+              className="w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-white/10 border border-white/20 text-white hover:bg-white/15 transition-all active:scale-[0.98]"
+            >
+              <ExternalLink className="w-5 h-5" />
+              <span className="font-medium">Google Calendar</span>
+            </button>
+          </div>
+        </BottomSheet>
       </div>
-    </div>
+    </motion.div>
   );
 }
-

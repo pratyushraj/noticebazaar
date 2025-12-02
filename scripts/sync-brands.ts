@@ -2,7 +2,7 @@
  * Brand Directory Sync Script
  * 
  * This script syncs brands from various sources:
- * 1. Marketplace scraping (influencer.in, Winkl, Collabstr)
+ * 1. Marketplace scraping (influencer.in, Collabstr)
  * 2. Public brand data (web scraping)
  * 3. Self-signup brands (already in database)
  * 
@@ -98,7 +98,7 @@ interface OpportunitySource {
   campaign_start_date?: string;
   campaign_end_date?: string;
   deliverables_description?: string;
-  source: 'influencer.in' | 'winkl' | 'collabstr';
+  source: 'influencer.in' | 'collabstr';
   external_id: string;
   apply_url?: string; // URL to original marketplace where creator can apply
 }
@@ -214,8 +214,21 @@ async function scrapeInfluencerIn(): Promise<OpportunitySource[]> {
       timeout: 30000 
     });
     
-    // Wait a bit for dynamic content
-    await page.waitForTimeout(3000);
+    // Better wait for React/dynamic content
+    await page.waitForLoadState('networkidle', { timeout: 10000 });
+    await page.waitForTimeout(2000); // Extra buffer for React hydration
+    
+    // Wait for any content to appear
+    try {
+      await page.waitForSelector('body', { timeout: 5000 });
+      // Wait for any potential campaign-related element
+      await page.waitForFunction(
+        () => document.querySelectorAll('[class*="campaign"], [class*="card"], article').length > 0,
+        { timeout: 10000 }
+      );
+    } catch (e) {
+      console.warn('⚠️  Page loaded but no campaign elements detected yet');
+    }
     
     // Try multiple selectors for campaign cards
     const selectors = [
@@ -368,162 +381,6 @@ async function scrapeInfluencerIn(): Promise<OpportunitySource[]> {
 }
 
 /**
- * Scrape Winkl campaigns
- */
-async function scrapeWinkl(): Promise<OpportunitySource[]> {
-  if (!cheerio || !chromium) {
-    console.log('⏭️  Skipping Winkl (dependencies not installed)');
-    return [];
-  }
-  
-  console.log('🕷️  Scraping Winkl...');
-  const opportunities: OpportunitySource[] = [];
-  
-  try {
-    const browser = await chromium.launch({ headless: true });
-    const context = await browser.newContext({
-      userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
-    });
-    const page = await context.newPage();
-    
-    await page.goto('https://winkl.co/campaigns', { 
-      waitUntil: 'networkidle',
-      timeout: 30000 
-    });
-    
-    await page.waitForTimeout(3000);
-    
-    const selectors = [
-      '.campaign',
-      '[class*="campaign"]',
-      '[data-cy*="campaign"]',
-      'article',
-      '.card'
-    ];
-    
-    let found = false;
-    for (const selector of selectors) {
-      try {
-        await page.waitForSelector(selector, { timeout: 5000 });
-        found = true;
-        break;
-      } catch (e) {
-        // Try next selector
-      }
-    }
-    
-    if (!found) {
-      console.warn('⚠️  Could not find campaign elements on Winkl');
-      await browser.close();
-      return [];
-    }
-    
-    const content = await page.content();
-    const $ = cheerio.load(content);
-    
-    const campaignSelectors = [
-      '.campaign',
-      '[class*="campaign-item"]',
-      '[data-cy*="campaign"]',
-      'article',
-      '.card'
-    ];
-    
-    campaignSelectors.forEach(selector => {
-      $(selector).each((_: any, element: any) => {
-        try {
-          const $el = $(element);
-          const text = $el.text();
-          
-          if (text.length < 50) return;
-          
-          const brandName = $el.find('.brand, [class*="brand-name"], h2, h3').first().text().trim() || 
-                          text.match(/([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)/)?.[0] || 
-                          'Unknown Brand';
-          
-          const title = $el.find('.title, h2, h3, [class*="campaign-title"]').first().text().trim() || brandName;
-          const description = $el.find('.description, [class*="desc"], p').first().text().trim() || text.substring(0, 200);
-          
-          // Extract budget
-          const budgetText = $el.find('.budget, [class*="budget"], [class*="price"]').text() || text;
-          const budgetMatch = budgetText.match(/(?:₹|Rs\.?|INR|USD|\$)\s*(\d+(?:,\d+)*(?:K|k|L|l)?)\s*(?:-|to|–)\s*(?:₹|Rs\.?|INR|USD|\$)?\s*(\d+(?:,\d+)*(?:K|k|L|l)?)/i);
-          let payoutMin = 0;
-          let payoutMax = 0;
-          
-          if (budgetMatch) {
-            payoutMin = parseAmount(budgetMatch[1]);
-            payoutMax = parseAmount(budgetMatch[2] || budgetMatch[1]);
-          } else {
-            const singleMatch = budgetText.match(/(?:₹|Rs\.?|INR|USD|\$)\s*(\d+(?:,\d+)*(?:K|k|L|l)?)/i);
-            if (singleMatch) {
-              payoutMin = parseAmount(singleMatch[1]);
-              payoutMax = payoutMin;
-            }
-          }
-          
-          const deadlineText = $el.find('.deadline, [class*="deadline"], [class*="end-date"]').text() || text;
-          const deadline = extractDate(deadlineText) || addDays(new Date(), 30).toISOString().split('T')[0];
-          
-          const platforms: string[] = [];
-          const platformText = text.toLowerCase();
-          if (platformText.includes('instagram')) platforms.push('instagram');
-          if (platformText.includes('youtube')) platforms.push('youtube');
-          if (platformText.includes('tiktok')) platforms.push('tiktok');
-          
-          const deliverableType = extractDeliverableType(text);
-          
-          const link = $el.find('a').attr('href');
-          let applyUrl: string | undefined;
-          let externalId: string;
-          
-          if (link) {
-            const candidateUrl = link.startsWith('http') ? link : `https://winkl.co${link.startsWith('/') ? link : '/' + link}`;
-            if (isValidExternalUrl(candidateUrl)) {
-              applyUrl = candidateUrl;
-            } else {
-              console.warn(`⚠️  Skipping internal/blocked URL: ${candidateUrl}`);
-            }
-            externalId = `winkl_${link.split('/').pop()?.replace(/[^a-zA-Z0-9]/g, '_')}`;
-          } else {
-            externalId = `winkl_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-          }
-          
-          if (!applyUrl && title.length > 3) {
-            console.warn(`⚠️  No apply_url found for opportunity: ${title}`);
-          }
-          
-          if (brandName !== 'Unknown Brand' && title.length > 3) {
-            opportunities.push({
-              brand_name: brandName,
-              brand_industry: extractIndustry(brandName, description),
-              title,
-              description: description.length > 0 ? description : undefined,
-              deliverable_type: deliverableType,
-              payout_min: payoutMin,
-              payout_max: payoutMax || payoutMin,
-              deadline,
-              required_platforms: platforms.length > 0 ? platforms : undefined,
-              source: 'winkl',
-              external_id: externalId,
-              apply_url: applyUrl
-            });
-          }
-        } catch (error) {
-          // Skip this element
-        }
-      });
-    });
-    
-    await browser.close();
-    console.log(`✅ Found ${opportunities.length} campaigns from Winkl`);
-  } catch (error: any) {
-    console.error('❌ Error scraping Winkl:', error.message);
-  }
-  
-  return opportunities;
-}
-
-/**
  * Scrape Collabstr campaigns
  */
 async function scrapeCollabstr(): Promise<OpportunitySource[]> {
@@ -542,7 +399,7 @@ async function scrapeCollabstr(): Promise<OpportunitySource[]> {
     });
     const page = await context.newPage();
     
-    await page.goto('https://collabstr.com/campaigns', { 
+    await page.goto('https://collabstr.com/jobs', { 
       waitUntil: 'networkidle',
       timeout: 30000 
     });
@@ -556,8 +413,12 @@ async function scrapeCollabstr(): Promise<OpportunitySource[]> {
     await page.waitForTimeout(2000);
     
     const selectors = [
-      '.campaign-card',
-      '[class*="CampaignCard"]',
+      '.job-card',
+      '.listing-card',
+      '.campaign-item',
+      '.creator-card',
+      '[class*="JobCard"]',
+      '[class*="Listing"]',
       '[data-testid*="campaign"]',
       'article',
       '.card'
@@ -584,7 +445,12 @@ async function scrapeCollabstr(): Promise<OpportunitySource[]> {
     const $ = cheerio.load(content);
     
     const campaignSelectors = [
-      '.campaign-card',
+      '.job-card',
+      '.listing-card',
+      '.campaign-item',
+      '.creator-card',
+      '[class*="JobCard"]',
+      '[class*="Listing"]',
       '[class*="CampaignCard"]',
       '[class*="campaign-card"]',
       'article',
@@ -978,13 +844,12 @@ async function syncBrands() {
   
   try {
     // 1. Scrape opportunities from all platforms
-    const [influencerInOpps, winklOpps, collabstrOpps] = await Promise.all([
+    const [influencerInOpps, collabstrOpps] = await Promise.all([
       scrapeInfluencerIn(),
-      scrapeWinkl(),
       scrapeCollabstr()
     ]);
     
-    const allOpportunities = [...influencerInOpps, ...winklOpps, ...collabstrOpps];
+    const allOpportunities = [...influencerInOpps, ...collabstrOpps];
     console.log(`\n📊 Found ${allOpportunities.length} total opportunities\n`);
     
     // 2. Extract unique brands from opportunities

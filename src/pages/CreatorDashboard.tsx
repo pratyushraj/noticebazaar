@@ -1,9 +1,9 @@
 "use client";
 
 import { useState, useEffect, useMemo } from 'react';
-import { Home, Briefcase, CreditCard, Shield, MessageCircle, TrendingUp, DollarSign, Calendar, FileText, AlertCircle, Clock, ChevronRight, Plus, Bell, Search, User, Menu, X, Target, BarChart3, RefreshCw, LogOut, Loader2, Sparkles, XCircle, LineChart } from 'lucide-react';
-import { Skeleton } from '@/components/ui/skeleton';
-import { useNavigate } from 'react-router-dom';
+import { Home, Briefcase, CreditCard, Shield, MessageCircle, TrendingUp, DollarSign, Calendar, FileText, AlertCircle, Clock, ChevronRight, Plus, Search, Target, BarChart3, RefreshCw, LogOut, Loader2, Sparkles, XCircle } from 'lucide-react';
+import { BottomSheet } from '@/components/ui/bottom-sheet';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useSignOut } from '@/lib/hooks/useAuth';
 import { useSession } from '@/contexts/SessionContext';
 import { useBrandDeals } from '@/lib/hooks/useBrandDeals';
@@ -11,6 +11,9 @@ import { usePartnerStats } from '@/lib/hooks/usePartnerProgram';
 import { logger } from '@/lib/utils/logger';
 import { getInitials } from '@/lib/utils/avatar';
 import { motion, AnimatePresence } from 'framer-motion';
+import { getCardClasses, sectionLayout, animations, spacing, typography, separators, iconSizes, scroll, sectionHeader, gradients, buttons, cardVariants } from '@/lib/design-system';
+import { BaseCard, SectionCard, StatCard, ActionCard } from '@/components/ui/card-variants';
+import { AppsGridMenu } from '@/components/navigation/AppsGridMenu';
 // Onboarding components - commented out if not currently used
 // import OnboardingChecklist from '@/components/onboarding/OnboardingChecklist';
 // import InteractiveTutorial from '@/components/onboarding/InteractiveTutorial';
@@ -24,6 +27,7 @@ import { useContextualTips } from '@/hooks/useContextualTips';
 import { DashboardSkeleton as EnhancedDashboardSkeleton } from '@/components/skeletons/DashboardSkeleton';
 import { NotificationDropdown } from '@/components/notifications/NotificationDropdown';
 import { QuickSearch } from '@/components/dashboard/QuickSearch';
+import PremiumDrawer from '@/components/drawer/PremiumDrawer';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -37,6 +41,7 @@ import {
 
 const CreatorDashboard = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const signOutMutation = useSignOut();
   const { profile, user, loading: sessionLoading } = useSession();
   const [activeTab, setActiveTab] = useState('home');
@@ -47,6 +52,7 @@ const CreatorDashboard = () => {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [showTutorial, setShowTutorial] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
+  const [showQuickActionsSheet, setShowQuickActionsSheet] = useState(false);
 
   // Check for contextual tips to avoid overlap
   const { currentTip } = useContextualTips('dashboard');
@@ -409,306 +415,79 @@ const CreatorDashboard = () => {
 
   // Import enhanced skeleton (fallback to inline if import fails)
 
-  return (
+    return (
     <ContextualTipsProvider currentView="dashboard">
-    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 text-white overflow-x-hidden">
-      {/* Top Header */}
-      <div className="sticky top-0 z-50 bg-purple-900/90 backdrop-blur-lg border-b border-white/10">
+    <div className={`min-h-screen ${gradients.page} text-white overflow-x-hidden`}>
+      {/* Top Header - Enhanced Sticky */}
+      <div className="sticky top-0 z-50 bg-purple-900/95 backdrop-blur-xl border-b border-white/10 shadow-lg">
         <div
-          className="flex items-center justify-between gap-3 py-4 px-4 md:px-6"
+          className={`flex items-center justify-between gap-3 py-4 ${spacing.page}`}
           style={{
             paddingLeft: 'calc(16px + env(safe-area-inset-left, 0px))',
             paddingRight: 'calc(16px + env(safe-area-inset-right, 0px))',
           }}
         >
+          {/* Creator Avatar - Replaces Menu Icon */}
           <button 
             onClick={() => {
               setShowMenu(!showMenu);
               triggerHaptic('light');
             }}
-            className="p-2 hover:bg-white/10 rounded-lg transition-colors active:scale-95"
-            aria-label={showMenu ? "Close menu" : "Open menu"}
+            className={`w-10 h-10 rounded-full bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center ${typography.body} font-semibold flex-shrink-0 ${animations.cardPress} hover:scale-105 hover:shadow-lg hover:shadow-blue-500/30 border-2 border-white/20`}
+            aria-label={showMenu ? "Close menu" : "Open profile menu"}
           >
-            {showMenu ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            {userData.avatar}
           </button>
           
-          <div className="text-lg font-bold">NoticeBazaar</div>
+          <div className={typography.h4}>NoticeBazaar</div>
           
           <div className="flex items-center gap-2">
+            <AppsGridMenu className={`${buttons.icon}`} />
             <button 
               onClick={handleRefresh}
               disabled={isRefreshing}
-              className={`p-2 hover:bg-white/10 rounded-lg transition-all active:scale-95 ${isRefreshing ? 'animate-spin' : ''}`}
+              className={`${buttons.icon} ${isRefreshing ? 'animate-spin' : ''}`}
               aria-label="Refresh data"
             >
-              <RefreshCw className="w-5 h-5" />
-            </button>
-            <button 
-              onClick={() => setShowSearch(true)}
-              className="p-2 hover:bg-white/10 rounded-lg transition-colors active:scale-95"
-              aria-label="Search"
-            >
-              <Search className="w-5 h-5" />
-            </button>
-            <button 
-              onClick={() => navigate('/calendar')}
-              className="p-2 hover:bg-white/10 rounded-lg transition-colors active:scale-95"
-              aria-label="Calendar"
-            >
-              <Calendar className="w-5 h-5" />
+              <RefreshCw className={iconSizes.md} />
             </button>
             <NotificationDropdown />
             <button 
               onClick={() => {
-                navigate('/creator-profile');
+                setShowSearch(true);
                 triggerHaptic('light');
               }}
-              className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center font-semibold flex-shrink-0 active:scale-95 transition-transform hover:bg-blue-700 hover:scale-105"
-              aria-label="View profile settings"
+              className={buttons.icon}
+              aria-label="Search"
             >
-              {userData.avatar}
+              <Search className={iconSizes.md} />
             </button>
-          </div>
+      </div>
         </div>
       </div>
 
-      {/* Sidebar Menu */}
-      {showMenu && (
-        <>
-          {/* Backdrop */}
-          <div 
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 transition-opacity"
-            onClick={() => {
-              setShowMenu(false);
-              triggerHaptic('light');
-            }}
-          />
-          
-          {/* Sidebar */}
-          <div className="fixed top-0 left-0 bottom-0 w-80 bg-gradient-to-b from-purple-900/95 via-purple-800/95 to-indigo-900/95 backdrop-blur-lg border-r border-white/10 shadow-2xl z-50 flex flex-col max-h-screen pb-20 md:pb-0">
-            {/* Sidebar Header */}
-            <div className="p-6 border-b border-white/10">
-              <div className="flex items-center justify-between mb-4">
-                <div className="text-xl font-bold">Menu</div>
-                <button
-                  onClick={() => {
-                    setShowMenu(false);
-                    triggerHaptic('light');
-                  }}
-                  className="p-2 hover:bg-white/10 rounded-lg transition-colors"
-                  aria-label="Close menu"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-              
-              {/* User Profile */}
-              <button
-                onClick={() => {
-                  navigate('/creator-profile');
-                  setShowMenu(false);
-                  triggerHaptic('light');
-                }}
-                className="flex items-center gap-3 w-full hover:bg-white/5 rounded-lg p-2 transition-colors"
-              >
-                <div className="w-12 h-12 rounded-full bg-blue-600 flex items-center justify-center font-bold text-lg">
-                  {userData.avatar}
-                </div>
-                <div className="flex-1 text-left">
-                  <div className="font-semibold">{userData.name}</div>
-                  <div className="text-sm text-purple-300">@{userData.displayName}</div>
-                </div>
-                <ChevronRight className="w-5 h-5 text-purple-400" />
-              </button>
-            </div>
-
-            {/* Navigation Links - Scrollable area */}
-            <div className="flex-1 overflow-y-auto">
-              <div className="p-4 space-y-1">
-              <button
-                onClick={() => {
-                  setActiveTab('home');
-                  setShowMenu(false);
-                  triggerHaptic('light');
-                }}
-                className="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10 transition-all text-left"
-              >
-                <Home className="w-5 h-5 text-purple-300" />
-                <span className="font-medium">Home</span>
-              </button>
-              
-              <button
-                onClick={() => {
-                  setActiveTab('deals');
-                  setShowMenu(false);
-                  triggerHaptic('light');
-                }}
-                className="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10 transition-all text-left"
-              >
-                <Briefcase className="w-5 h-5 text-purple-300" />
-                <span className="font-medium">Brand Deals</span>
-              </button>
-              
-              <button
-                onClick={() => {
-                  setActiveTab('payments');
-                  setShowMenu(false);
-                  triggerHaptic('light');
-                }}
-                className="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10 transition-all text-left"
-              >
-                <CreditCard className="w-5 h-5 text-purple-300" />
-                <span className="font-medium">Payments</span>
-              </button>
-              
-              <button
-                onClick={() => {
-                  setActiveTab('protection');
-                  setShowMenu(false);
-                  triggerHaptic('light');
-                }}
-                className="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10 transition-all text-left"
-              >
-                <Shield className="w-5 h-5 text-purple-300" />
-                <span className="font-medium">Content Protection</span>
-              </button>
-              
-              <button
-                onClick={() => {
-                  setActiveTab('messages');
-                  setShowMenu(false);
-                  triggerHaptic('light');
-                }}
-                className="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10 transition-all text-left"
-              >
-                <MessageCircle className="w-5 h-5 text-purple-300" />
-                <div className="flex items-center justify-between flex-1">
-                  <span className="font-medium">Messages</span>
-                  <span className="bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">3</span>
-                </div>
-              </button>
-              
-              <button
-                onClick={() => {
-                  navigate('/calendar');
-                  setShowMenu(false);
-                  triggerHaptic('light');
-                }}
-                className="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10 transition-all text-left"
-              >
-                <Calendar className="w-5 h-5 text-purple-300" />
-                <span className="font-medium">Calendar</span>
-              </button>
-            </div>
-
-            {/* Quick Actions */}
-            <div className="p-4 border-t border-white/10">
-              <div className="text-sm font-semibold text-purple-300 mb-3 px-4">Quick Actions</div>
-              <div className="space-y-1">
-                <button 
-                  onClick={() => {
-                    navigate('/contract-upload');
-                    setShowMenu(false);
-                    triggerHaptic('light');
-                  }}
-                  className="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10 transition-all text-left"
-                >
-                  <FileText className="w-5 h-5 text-purple-400" />
-                  <span className="text-sm">Upload Contract</span>
-                </button>
-                <button className="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10 transition-all text-left">
-                  <Plus className="w-5 h-5 text-blue-400" />
-                  <span className="text-sm">Add New Deal</span>
-                </button>
-                <button className="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10 transition-all text-left">
-                  <Calendar className="w-5 h-5 text-green-400" />
-                  <span className="text-sm">Schedule Call</span>
-                </button>
-              </div>
-            </div>
-
-              {/* Settings & Help */}
-              <div className="p-4 border-t border-white/10">
-                <div className="space-y-1">
-                  <button 
-                    onClick={() => {
-                      navigate('/creator-profile');
-                      setShowMenu(false);
-                      triggerHaptic('light');
-                    }}
-                    className="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10 transition-all text-left"
-                  >
-                    <User className="w-5 h-5 text-purple-300" />
-                    <span className="text-sm">Profile Settings</span>
-                  </button>
-                  <button className="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10 transition-all text-left">
-                    <Bell className="w-5 h-5 text-purple-300" />
-                    <span className="text-sm">Notifications</span>
-                  </button>
-                  <button className="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10 transition-all text-left">
-                    <FileText className="w-5 h-5 text-purple-300" />
-                    <span className="text-sm">Help & Support</span>
-                  </button>
-                  <button 
-                    onClick={() => {
-                      navigate('/creator-analytics');
-                      setShowMenu(false);
-                      triggerHaptic('light');
-                    }}
-                    className="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10 transition-all text-left"
-                  >
-                    <LineChart className="w-5 h-5 text-purple-300" />
-                    <span className="text-sm">Analytics</span>
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            {/* Logout - Prominent at bottom with better visibility */}
-            <div className="mt-auto flex-shrink-0 p-4 pb-6 md:pb-4 border-t-2 border-red-500/20 bg-gradient-to-br from-red-500/10 via-red-600/5 to-transparent">
-              <div className="mb-2">
-                <p className="text-xs text-red-300/70 font-medium px-1">Account</p>
-              </div>
-              <button 
-                onClick={() => {
-                  triggerHaptic('medium');
-                  setShowLogoutDialog(true);
-                }}
-                disabled={signOutMutation.isPending}
-                className="w-full flex items-center justify-between gap-3 px-4 py-3.5 rounded-xl bg-red-500/20 hover:bg-red-500/30 active:bg-red-500/40 border-2 border-red-500/40 hover:border-red-500/60 text-red-400 transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed min-h-[52px] touch-manipulation focus:outline-none focus:ring-2 focus:ring-red-400/50 focus:ring-offset-2 focus:ring-offset-purple-900 shadow-lg hover:shadow-xl hover:shadow-red-500/20 group"
-                aria-label="Log out of your account"
-                aria-describedby="sidebar-logout-description"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-red-500/20 group-hover:bg-red-500/30 flex items-center justify-center transition-colors">
-                    {signOutMutation.isPending ? (
-                      <Loader2 className="w-5 h-5 animate-spin text-red-400" />
-                    ) : (
-                      <LogOut className="w-5 h-5 text-red-400 group-hover:scale-110 transition-transform" />
-                    )}
-                  </div>
-                  <div className="text-left">
-                    {signOutMutation.isPending ? (
-                      <span className="text-sm font-semibold text-red-400">Logging out...</span>
-                    ) : (
-                      <>
-                        <span className="text-sm font-bold text-red-400 block">Log Out</span>
-                        <span className="text-xs text-red-300/70">Sign out of your account</span>
-                      </>
-                    )}
-                  </div>
-                </div>
-                {!signOutMutation.isPending && (
-                  <ChevronRight className="w-4 h-4 text-red-400/50 group-hover:text-red-400 group-hover:translate-x-1 transition-all" />
-                )}
-              </button>
-              <p id="sidebar-logout-description" className="sr-only">
-                Log out of your account. This will sign you out and require you to sign in again.
-              </p>
-            </div>
-          </div>
-        </>
-      )}
+      {/* Premium Drawer */}
+      <PremiumDrawer
+        open={showMenu}
+        onClose={() => {
+          setShowMenu(false);
+          triggerHaptic('light');
+        }}
+        onNavigate={(path) => {
+          navigate(path);
+          triggerHaptic('light');
+        }}
+        onSetActiveTab={(tab) => {
+          setActiveTab(tab);
+          triggerHaptic('light');
+        }}
+        onLogout={() => {
+          triggerHaptic('medium');
+          setShowLogoutDialog(true);
+        }}
+        activeItem={activeTab}
+        counts={{ messages: 3 }}
+      />
 
       {/* Logout Confirmation Dialog */}
       <AlertDialog open={showLogoutDialog} onOpenChange={setShowLogoutDialog}>
@@ -780,7 +559,7 @@ const CreatorDashboard = () => {
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            className="sticky top-16 z-40 mx-4 mt-4 mb-4 max-h-[calc(100vh-120px)] overflow-y-auto"
+            className={`sticky top-16 z-40 ${spacing.page} mt-4 mb-4 max-h-[calc(100vh-120px)] ${scroll.container}`}
           >
             <div className="bg-gradient-to-r from-purple-600/90 to-indigo-600/90 backdrop-blur-xl rounded-2xl p-4 border border-white/20 shadow-xl overflow-hidden">
               <div className="flex items-start justify-between gap-4">
@@ -789,12 +568,12 @@ const CreatorDashboard = () => {
                     <Sparkles className="w-5 h-5 text-white" />
                   </div>
                   <div className="flex-1">
-                    <h3 className="font-semibold text-white mb-1">Welcome to NoticeBazaar! 🎉</h3>
-                    <p className="text-sm text-white/90 break-words">
+                    <h3 className={`${typography.h4} mb-1`}>Welcome to NoticeBazaar! 🎉</h3>
+                    <p className={`${typography.bodySmall} break-words`}>
                       Your dashboard is ready. Start by adding your first brand deal to track payments and contracts.
-                    </p>
-                  </div>
-                </div>
+                        </p>
+                      </div>
+                      </div>
                 <button
                   onClick={() => setShowWelcomeBanner(false)}
                   className="p-1 hover:bg-white/20 rounded-lg transition-colors flex-shrink-0"
@@ -802,151 +581,172 @@ const CreatorDashboard = () => {
                 >
                   <XCircle className="w-5 h-5 text-white/80" />
                 </button>
-              </div>
+                    </div>
               <div className="mt-3 flex gap-2">
                 <button
                   onClick={() => {
                     navigate('/creator-contracts');
                     setShowWelcomeBanner(false);
                   }}
-                  className="px-4 py-2 bg-white/20 hover:bg-white/30 text-white text-sm font-medium rounded-lg transition-colors"
+                  className={`px-4 py-2 bg-white/20 hover:bg-white/30 text-white ${typography.bodySmall} font-medium ${cardVariants.tertiary.radius} ${animations.cardPress}`}
                 >
                   Add Your First Deal
                 </button>
                 <button
                   onClick={() => setShowWelcomeBanner(false)}
-                  className="px-4 py-2 bg-white/10 hover:bg-white/20 text-white/90 text-sm font-medium rounded-lg transition-colors"
+                  className={`px-4 py-2 bg-white/10 hover:bg-white/20 text-white/90 ${typography.bodySmall} font-medium ${cardVariants.tertiary.radius} ${animations.cardPress}`}
                 >
                   Explore Dashboard
                 </button>
-              </div>
+                  </div>
             </div>
           </motion.div>
         )}
       </AnimatePresence>
 
+      {/* Skip to main content link for accessibility */}
+      <a 
+        href="#main-content" 
+        className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-purple-600 focus:text-white focus:rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400"
+      >
+        Skip to main content
+      </a>
+
       {/* Main Content */}
-      <div className="p-4 pb-24">
+      <main id="main-content" className={`${sectionLayout.container} ${scroll.container}`}>
         {/* Home Tab */}
         {activeTab === 'home' && (
           <>
             {isInitialLoading ? (
-              <EnhancedDashboardSkeleton />
+              <div className={sectionLayout.container}>
+                <EnhancedDashboardSkeleton />
+              </div>
             ) : hasNoData ? (
               // Empty State for New Users
               <div className="space-y-6">
                 {/* Greeting */}
-                <div className="mb-6">
-                  <h1 className="text-[30px] md:text-[34px] font-bold mb-2 leading-tight">
+                <div className={sectionLayout.header}>
+                  <h1 className={typography.h1 + " mb-2 leading-tight"}>
                     {getGreeting()}, {userData.name}! 👋
                   </h1>
-                  <p className="text-[15px] md:text-[17px] text-purple-200 leading-relaxed">Let's get you started with your first brand deal.</p>
+                  <p className={typography.body + " leading-relaxed"}>Let's get you started with your first brand deal.</p>
                 </div>
 
                 {/* Empty State Card */}
-                <div className="bg-white/[0.08] backdrop-blur-[40px] saturate-[180%] rounded-[20px] p-6 md:p-8 border border-white/15 shadow-[0_8px_32px_rgba(0,0,0,0.3)] text-center">
+                <BaseCard variant="primary" className="text-center p-6 md:p-8">
                   <motion.div
                     initial={{ scale: 0.8, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
                     className="w-24 h-24 rounded-full bg-gradient-to-br from-purple-500/20 to-indigo-500/20 flex items-center justify-center mx-auto mb-6"
                   >
-                    <Briefcase className="w-12 h-12 text-purple-400" />
+                    <Briefcase className={`${iconSizes.xl} text-purple-400`} />
                   </motion.div>
-                  <h2 className="text-2xl font-bold text-white mb-3">Welcome to Your Dashboard!</h2>
-                  <p className="text-purple-200 mb-6 max-w-md mx-auto">
+                  <h2 className={typography.h2 + " mb-3"}>Welcome to Your Dashboard!</h2>
+                  <p className={typography.body + " mb-6 max-w-md mx-auto"}>
                     Start tracking your brand deals, payments, and contracts. Add your first deal to see your earnings and activity here.
                   </p>
                   <div className="flex flex-col sm:flex-row gap-3 justify-center">
                     <button
-                      onClick={() => navigate('/creator-contracts')}
-                      className="px-6 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-semibold rounded-xl transition-all flex items-center justify-center gap-2 active:scale-95 shadow-[0_4px_16px_rgba(168,85,247,0.4)] hover:shadow-[0_6px_24px_rgba(168,85,247,0.5)]"
+                      onClick={() => {
+                        triggerHaptic('medium');
+                        navigate('/creator-contracts');
+                      }}
+                      className={`${buttons.primary} flex items-center justify-center gap-2`}
                     >
-                      <Plus className="w-5 h-5" />
+                      <Plus className={iconSizes.md} />
                       Add Your First Deal
                     </button>
                     <button
-                      onClick={() => navigate('/brand-directory')}
-                      className="px-6 py-3 bg-white/[0.08] backdrop-blur-[30px] hover:bg-white/[0.12] text-white font-semibold rounded-xl transition-all flex items-center justify-center gap-2 active:scale-95 border border-white/20 shadow-[0_2px_8px_rgba(0,0,0,0.15)]"
+                      onClick={() => {
+                        triggerHaptic('light');
+                        navigate('/brand-directory');
+                      }}
+                      className={`${buttons.secondary} flex items-center justify-center gap-2`}
                     >
-                      <Briefcase className="w-5 h-5" />
+                      <Briefcase className={iconSizes.md} />
                       Explore Brands
                     </button>
-                  </div>
-                </div>
+                          </div>
+                </BaseCard>
 
                 {/* Quick Start Guide */}
-                <div className="bg-white/[0.08] backdrop-blur-[40px] saturate-[180%] rounded-[20px] p-5 md:p-6 border border-white/15 shadow-[0_8px_32px_rgba(0,0,0,0.3)]">
-                  <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-                    <Target className="w-5 h-5 text-purple-400" />
-                    Quick Start Guide
-                  </h3>
+                <SectionCard 
+                  variant="secondary"
+                  title="Quick Start Guide"
+                  icon={<Target className="w-5 h-5 text-purple-400" />}
+                >
                   <div className="grid md:grid-cols-3 gap-4">
-                    <div className="p-4 bg-white/5 rounded-xl">
+                    <BaseCard variant="tertiary">
                       <div className="w-10 h-10 rounded-lg bg-purple-500/20 flex items-center justify-center mb-3">
-                        <Briefcase className="w-5 h-5 text-purple-400" />
-                      </div>
-                      <h4 className="font-semibold text-white mb-1">Add Brand Deals</h4>
-                      <p className="text-sm text-purple-200">Track your partnerships and contracts</p>
-                    </div>
-                    <div className="p-4 bg-white/5 rounded-xl">
+                        <Briefcase className={`${iconSizes.md} text-purple-400`} />
+                        </div>
+                      <h4 className={typography.h4 + " mb-1"}>Add Brand Deals</h4>
+                      <p className={typography.bodySmall}>Track your partnerships and contracts</p>
+                    </BaseCard>
+                    <BaseCard variant="tertiary">
                       <div className="w-10 h-10 rounded-lg bg-green-500/20 flex items-center justify-center mb-3">
-                        <CreditCard className="w-5 h-5 text-green-400" />
-                      </div>
-                      <h4 className="font-semibold text-white mb-1">Track Payments</h4>
-                      <p className="text-sm text-purple-200">Monitor incoming and pending payments</p>
-                    </div>
-                    <div className="p-4 bg-white/5 rounded-xl">
+                        <CreditCard className={`${iconSizes.md} text-green-400`} />
+                        </div>
+                      <h4 className={typography.h4 + " mb-1"}>Track Payments</h4>
+                      <p className={typography.bodySmall}>Monitor incoming and pending payments</p>
+                    </BaseCard>
+                    <BaseCard variant="tertiary">
                       <div className="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center mb-3">
-                        <Shield className="w-5 h-5 text-blue-400" />
+                        <Shield className={`${iconSizes.md} text-blue-400`} />
+                        </div>
+                      <h4 className={typography.h4 + " mb-1"}>Protect Content</h4>
+                      <p className={typography.bodySmall}>Register and monitor your content</p>
+                    </BaseCard>
                       </div>
-                      <h4 className="font-semibold text-white mb-1">Protect Content</h4>
-                      <p className="text-sm text-purple-200">Register and monitor your content</p>
+                </SectionCard>
                     </div>
-                  </div>
-                </div>
-              </div>
             ) : (
-              <div className="space-y-6">
+              <div className={spacing.section}>
             {/* Greeting */}
-            <div className="mb-6">
-              <h1 className="text-[30px] md:text-[34px] font-bold mb-2 leading-tight">
+            <div className={sectionLayout.header}>
+              <h1 className={typography.h1 + " mb-2 leading-tight"}>
                 {getGreeting()}, <br />
                 <span className="bg-gradient-to-r from-purple-400 to-pink-400 text-transparent bg-clip-text">
                   {userData.displayName}!
                 </span> 👋
               </h1>
-              <div className="flex items-center gap-3 text-[13px] md:text-[15px] text-purple-200">
-                <span>{userData.userType}</span>
-                <span className="px-3 py-1 bg-orange-500/20 text-orange-400 rounded-full flex items-center gap-1">
-                  🔥 {userData.streak} weeks streak
+              {/* Compact Summary Strip */}
+              <div className={`mt-3 flex flex-wrap items-center gap-2 ${typography.bodySmall}`}>
+                <span className="px-2.5 py-1 bg-orange-500/20 text-orange-400 rounded-full flex items-center gap-1.5 font-medium">
+                  🔥 {userData.streak}-week streak
                 </span>
-              </div>
-            </div>
+                <span className="text-purple-300/60">•</span>
+                <span className="px-2.5 py-1 bg-blue-500/20 text-blue-400 rounded-full flex items-center gap-1.5 font-medium">
+                  {stats.activeDeals} active {stats.activeDeals === 1 ? 'deal' : 'deals'}
+                </span>
+                <span className="text-purple-300/60">•</span>
+                <span className="px-2.5 py-1 bg-green-500/20 text-green-400 rounded-full flex items-center gap-1.5 font-medium">
+                  ₹{Math.round(calculatedStats.allTime.earnings / 1000)}K lifetime value
+                </span>
+                  </div>
+                </div>
 
             {/* Quick Stats Row */}
             <div data-tutorial="stats-grid" className="grid grid-cols-3 gap-3 mb-4">
-              <div className="bg-white/[0.08] backdrop-blur-[40px] saturate-[180%] rounded-[20px] p-5 border border-white/15 shadow-[0_4px_16px_rgba(0,0,0,0.2)]">
-                <div className="flex items-center gap-2 mb-1">
-                  <Briefcase className="w-4 h-4 text-blue-400" />
-                  <span className="text-xs text-purple-300">Total Deals</span>
-                </div>
-                <div className="text-xl font-bold">{stats.totalDeals}</div>
-              </div>
-              <div className="bg-white/[0.08] backdrop-blur-[40px] saturate-[180%] rounded-[20px] p-5 border border-white/15 shadow-[0_4px_16px_rgba(0,0,0,0.2)]">
-                <div className="flex items-center gap-2 mb-1">
-                  <BarChart3 className="w-4 h-4 text-green-400" />
-                  <span className="text-xs text-purple-300">Active</span>
-                </div>
-                <div className="text-xl font-bold">{stats.activeDeals}</div>
-              </div>
-              <div className="bg-white/[0.08] backdrop-blur-[40px] saturate-[180%] rounded-[20px] p-5 border border-white/15 shadow-[0_4px_16px_rgba(0,0,0,0.2)]">
-                <div className="flex items-center gap-2 mb-1">
-                  <CreditCard className="w-4 h-4 text-orange-400" />
-                  <span className="text-xs text-purple-300">Pending</span>
-                </div>
-                <div className="text-xl font-bold">₹{(stats.pendingPayments / 1000).toFixed(0)}K</div>
-              </div>
-            </div>
+              <StatCard
+                label="Total Deals"
+                value={stats.totalDeals}
+                icon={<Briefcase className={`${iconSizes.sm} text-blue-400`} />}
+                variant="tertiary"
+              />
+              <StatCard
+                label="Active"
+                value={stats.activeDeals}
+                icon={<BarChart3 className={`${iconSizes.sm} text-green-400`} />}
+                variant="tertiary"
+              />
+              <StatCard
+                label="Pending"
+                value={`₹${(stats.pendingPayments / 1000).toFixed(0)}K`}
+                icon={<CreditCard className={`${iconSizes.sm} text-orange-400`} />}
+                variant="tertiary"
+            />
+          </div>
 
             {/* Main Earnings Card */}
             <button 
@@ -955,7 +755,7 @@ const CreatorDashboard = () => {
                 triggerHaptic('medium');
                 navigate('/creator-analytics');
               }}
-              className="w-full bg-white/[0.08] backdrop-blur-[40px] saturate-[180%] rounded-[20px] p-5 md:p-6 border border-white/15 shadow-[0_8px_32px_rgba(0,0,0,0.3)] relative overflow-hidden hover:bg-white/[0.12] hover:shadow-[0_12px_40px_rgba(0,0,0,0.4)] transition-all duration-200 active:scale-[0.98] text-left"
+              className={`w-full ${getCardClasses('primary')} relative overflow-hidden ${animations.cardHover} ${animations.cardPress} text-left`}
               aria-label="View analytics"
             >
               <div className="absolute top-0 right-0 w-32 h-32 bg-purple-500/10 rounded-full blur-3xl"></div>
@@ -965,10 +765,10 @@ const CreatorDashboard = () => {
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-2">
                     <div className="w-10 h-10 rounded-full bg-purple-500/20 flex items-center justify-center">
-                      <DollarSign className="w-5 h-5 text-purple-300" />
-                    </div>
-                    <span className="text-purple-200 font-medium">Earnings</span>
-                  </div>
+                      <DollarSign className={`${iconSizes.md} text-purple-300`} />
+                        </div>
+                    <span className={typography.body + " font-medium"}>Earnings</span>
+                        </div>
                   <div className="flex gap-1 bg-white/5 rounded-lg p-1">
                     <button
                       onClick={(e) => {
@@ -1015,110 +815,131 @@ const CreatorDashboard = () => {
                     >
                       All Time
                     </button>
-                  </div>
+                      </div>
                 </div>
-                
+
                 <div className="flex items-end justify-between mb-4">
-                  <div>
-                    <div className="text-4xl font-bold mb-2">₹{(stats.earnings / 1000).toFixed(1)}K</div>
+                        <div>
+                    <div className={`${typography.amount} mb-2`}>₹{(stats.earnings / 1000).toFixed(1)}K</div>
                     <div className="flex items-center gap-2">
-                      <span className="text-green-400 text-sm flex items-center gap-1">
-                        <TrendingUp className="w-4 h-4" />
+                      <span className={`text-green-400 ${typography.bodySmall} flex items-center gap-1`}>
+                        <TrendingUp className={iconSizes.sm} />
                         +{stats.monthlyGrowth}%
                       </span>
-                      <span className="text-purple-300 text-sm">
+                      <span className={`text-purple-300 ${typography.bodySmall}`}>
                         {timeframe === 'month' ? 'vs last month' : timeframe === 'lastMonth' ? 'vs previous' : 'growth'}
                       </span>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-1 text-purple-300 text-sm">
+                        </div>
+                        </div>
+                  <div className={`flex items-center gap-1 text-purple-300 ${typography.bodySmall}`}>
                     <span>View Details</span>
-                    <ChevronRight className="w-4 h-4" />
-                  </div>
+                    <ChevronRight className={iconSizes.sm} />
+                      </div>
                 </div>
 
                 {/* Goal Progress bar with labels */}
                 <div className="mb-2">
-                  <div className="flex items-center justify-between text-xs text-purple-300 mb-1.5">
+                  <div className={`flex items-center justify-between ${typography.caption} mb-1.5`}>
                     <span className="flex items-center gap-1">
-                      <Target className="w-3 h-3" />
+                      <Target className={iconSizes.xs} />
                       Progress to Goal
                     </span>
-                    <span className="font-semibold text-white">{earningsProgress.toFixed(0)}%</span>
-                  </div>
-                  <div className="relative w-full bg-white/10 rounded-full h-3">
-                    <div 
-                      className="bg-gradient-to-r from-teal-500 to-cyan-500 h-3 rounded-full transition-all duration-500 shadow-lg shadow-teal-500/30" 
-                      style={{ width: `${Math.min(earningsProgress, 100)}%` }}
-                    ></div>
-                  </div>
-                  <div className="flex items-center justify-between text-xs text-purple-300 mt-1">
+                    <span className={`${typography.bodySmall} font-semibold`}>{earningsProgress.toFixed(0)}%</span>
+                    </div>
+                  <div className="relative w-full bg-white/10 rounded-full h-3 overflow-hidden">
+                    <motion.div 
+                      initial={{ width: 0 }}
+                      animate={{ width: `${Math.min(earningsProgress, 100)}%` }}
+                      transition={{ duration: 0.8, ease: "easeOut" }}
+                      className="bg-gradient-to-r from-teal-500 to-cyan-500 h-3 rounded-full shadow-lg shadow-teal-500/30"
+                    ></motion.div>
+                                </div>
+                  <div className={`flex items-center justify-between ${typography.caption} mt-1`}>
                     <span>₹{(stats.earnings / 1000).toFixed(0)}K earned</span>
                     <span>Goal: ₹{(stats.goal / 1000).toFixed(0)}K</span>
+                              </div>
                   </div>
-                </div>
               </div>
             </button>
 
-            {/* Stats Grid */}
-            <div className="grid grid-cols-2 gap-3">
-              <div className="bg-white/[0.08] backdrop-blur-[40px] saturate-[180%] rounded-[20px] p-5 border border-white/15 shadow-[0_4px_16px_rgba(0,0,0,0.2)]">
-                <div className="text-purple-200 text-sm mb-2">Next Payout</div>
-                <div className="text-2xl font-bold mb-1">₹{(stats.nextPayout / 1000).toFixed(0)}K</div>
-                <div className="text-xs text-purple-300">{stats.payoutDate}</div>
-              </div>
+            {/* Section Separator */}
+            <div className={separators.section} />
 
-              <div className="bg-white/[0.08] backdrop-blur-[40px] saturate-[180%] rounded-[20px] p-5 border border-white/15 shadow-[0_4px_16px_rgba(0,0,0,0.2)]">
-                <div className="text-purple-200 text-sm mb-2">Active Deals</div>
-                <div className="text-2xl font-bold mb-1">{stats.activeDeals}</div>
-                <div className="text-xs text-green-400">+2 this week</div>
-              </div>
-
-              <div className="bg-white/[0.08] backdrop-blur-[40px] saturate-[180%] rounded-[20px] p-5 border border-white/15 shadow-[0_4px_16px_rgba(0,0,0,0.2)]">
-                <div className="text-purple-200 text-sm mb-2">Pending</div>
-                <div className="text-2xl font-bold mb-1">₹{(stats.pendingPayments / 1000).toFixed(0)}K</div>
-                <div className="text-xs text-yellow-400">4 payments</div>
-              </div>
-
-              <div className="bg-white/[0.08] backdrop-blur-[40px] saturate-[180%] rounded-[20px] p-5 border border-white/15 shadow-[0_4px_16px_rgba(0,0,0,0.2)]">
-                <div className="text-purple-200 text-sm mb-2">Protection</div>
-                <div className="text-2xl font-bold mb-1">{stats.protectionScore}</div>
-                <div className="text-xs text-green-400">Excellent</div>
-              </div>
-            </div>
-
-            {/* Quick Actions */}
-            <div data-tutorial="quick-actions">
-              <h2 className="font-semibold text-[17px] md:text-[20px] mb-3">Quick Actions</h2>
-              <div className="grid grid-cols-2 gap-3">
-                {quickActions.map(action => {
+            {/* Quick Actions - Enhanced with spacing and animations */}
+            <div data-tutorial="quick-actions" className={spacing.loose}>
+              <div className={sectionHeader.base}>
+                <h2 className={sectionHeader.title}>Quick Actions</h2>
+                {/* Mobile: Show bottom sheet button */}
+                <button
+                  onClick={() => {
+                    triggerHaptic('light');
+                    setShowQuickActionsSheet(true);
+                  }}
+                  className={`${sectionHeader.action} md:hidden`}
+                >
+                  View All
+                </button>
+                </div>
+              <div className="grid grid-cols-2 gap-4 md:gap-5">
+                {quickActions.map((action, index) => {
                   const Icon = action.icon;
                   return (
-                    <button
+                    <motion.div
                       key={action.id}
-                      onClick={action.onClick}
-                      className="bg-white/[0.08] backdrop-blur-[40px] saturate-[180%] rounded-[20px] p-5 border border-white/15 shadow-[0_4px_16px_rgba(0,0,0,0.2)] hover:bg-white/[0.12] hover:shadow-[0_8px_24px_rgba(0,0,0,0.3)] transition-all duration-200 text-left active:scale-95"
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: index * 0.1, duration: 0.3 }}
                     >
-                      <div className={`w-12 h-12 rounded-xl ${action.color} flex items-center justify-center mb-3`}>
-                        <Icon className={`w-6 h-6 ${action.iconColor}`} />
-                      </div>
-                      <div className="text-sm font-medium">{action.label}</div>
-                    </button>
+                      <ActionCard
+                        icon={<Icon className={`${iconSizes.lg} ${action.iconColor}`} />}
+                        label={action.label}
+                        onClick={() => {
+                          triggerHaptic('light');
+                          action.onClick();
+                        }}
+                        variant="tertiary"
+                        className={`${action.color}`}
+                      />
+                    </motion.div>
                   );
                 })}
-              </div>
-            </div>
+                </div>
+                </div>
 
-            {/* Active Deals Preview */}
-            <div>
-              <div className="flex items-center justify-between mb-3">
-                <h2 className="font-semibold text-[17px] md:text-[20px]">Active Deals</h2>
-                <button className="text-sm text-purple-300 hover:text-white transition-colors">
+            {/* Section Separator */}
+            <div className={separators.section} />
+
+            {/* Active Deals Preview - Enhanced spacing */}
+            <div className={spacing.loose}>
+              <div className={sectionHeader.base}>
+                <h2 className={sectionHeader.title}>Active Deals</h2>
+                <button 
+                  onClick={() => {
+                    triggerHaptic('light');
+                    navigate('/creator-contracts');
+                  }}
+                  className={sectionHeader.action}
+                >
                   View All →
                 </button>
               </div>
-              <div className="space-y-3">
-                {activeDeals.map((deal, index) => (
+              {activeDeals.length === 0 ? (
+                <BaseCard variant="tertiary" className="p-8 text-center">
+                  <Briefcase className={`${iconSizes.xl} text-purple-400/50 mx-auto mb-3`} />
+                  <p className={typography.bodySmall}>No active deals yet</p>
+                  <button
+                    onClick={() => {
+                      triggerHaptic('light');
+                      navigate('/creator-contracts');
+                    }}
+                    className={`mt-4 ${sectionHeader.action}`}
+                  >
+                    View all deals →
+                  </button>
+                </BaseCard>
+              ) : (
+                <div className="space-y-4 md:space-y-5">
+                  {activeDeals.map((deal, index) => (
                   <motion.div
                     key={deal.id}
                     initial={{ opacity: 0, x: -20 }}
@@ -1126,47 +947,68 @@ const CreatorDashboard = () => {
                     transition={{ delay: index * 0.1, duration: 0.3 }}
                     whileHover={{ scale: 1.01, y: -2 }}
                     whileTap={{ scale: 0.98 }}
-                    className="bg-white/[0.08] backdrop-blur-[40px] saturate-[180%] rounded-[20px] p-5 border border-white/15 shadow-[0_4px_16px_rgba(0,0,0,0.2)] hover:bg-white/[0.12] hover:shadow-[0_8px_24px_rgba(0,0,0,0.3)] transition-all duration-200 cursor-pointer"
                   >
+                    <BaseCard 
+                      variant="tertiary" 
+                      className={`${animations.cardHover} ${animations.cardPress} cursor-pointer`}
+                      onClick={() => {
+                        triggerHaptic('light');
+                        navigate(`/creator-contracts/${deal.id}`);
+                      }}
+                    >
                     <div className="flex items-start justify-between mb-3">
                       <div>
-                        <h3 className="font-semibold mb-1">{deal.title}</h3>
-                        <div className="text-sm text-purple-200">{deal.brand}</div>
-                      </div>
-                      <div className="text-lg font-bold text-green-400">
+                        <h3 className={typography.h4 + " mb-1"}>{deal.title}</h3>
+                        <div className={typography.bodySmall}>{deal.brand}</div>
+                </div>
+                      <div className={`${typography.amountSmall} text-green-400`}>
                         ₹{(deal.value / 1000).toFixed(0)}K
-                      </div>
                     </div>
+                  </div>
                     
                     <div className="mb-2">
-                      <div className="flex items-center justify-between text-xs text-purple-200 mb-1">
+                      <div className={`flex items-center justify-between ${typography.caption} mb-1`}>
                         <span>Progress</span>
                         <span>{deal.progress}%</span>
-                      </div>
-                      <div className="w-full bg-white/10 rounded-full h-2">
-                        <div
+              </div>
+                      <div className="w-full bg-white/10 rounded-full h-2 overflow-hidden">
+                        <motion.div
+                          initial={{ width: 0 }}
+                          animate={{ width: `${deal.progress}%` }}
+                          transition={{ duration: 0.6, delay: index * 0.1, ease: "easeOut" }}
                           className="bg-gradient-to-r from-blue-500 to-purple-500 h-2 rounded-full"
-                          style={{ width: `${deal.progress}%` }}
-                        ></div>
+                        ></motion.div>
                       </div>
-                    </div>
-                    
-                    <div className="flex items-center justify-between text-xs text-purple-300">
+              </div>
+
+                    <div className={`flex items-center justify-between ${typography.caption}`}>
                       <span>{deal.status === 'active' ? '✅ Active' : '🔵 Negotiation'}</span>
                       <span>Due: {deal.deadline}</span>
-                    </div>
-                  </motion.div>
-                ))}
               </div>
+                    </BaseCard>
+                  </motion.div>
+                  ))}
             </div>
+          )}
+              </div>
 
-            {/* Recent Activity */}
-            <div>
-              <h2 className="font-semibold text-[17px] md:text-[20px] mb-3">Recent Activity</h2>
-              <div className="space-y-3">
+            {/* Section Separator */}
+            <div className={separators.section} />
+
+            {/* Recent Activity - Enhanced spacing */}
+            <div className={spacing.loose}>
+              <h2 className={`${sectionHeader.title} ${sectionHeader.base.split(' ')[0]} ${sectionHeader.base.split(' ')[1]} ${sectionHeader.base.split(' ')[2]}`}>Recent Activity</h2>
+              {recentActivity.length === 0 ? (
+                <BaseCard variant="tertiary" className="p-8 text-center">
+                  <Clock className={`${iconSizes.xl} text-purple-400/50 mx-auto mb-3`} />
+                  <p className={typography.bodySmall}>No recent activity</p>
+                  <p className={`${typography.caption} mt-1`}>Activity will appear here as you complete deals</p>
+                </BaseCard>
+              ) : (
+                <div className="space-y-4 md:space-y-5">
                 {recentActivity.map((activity, index) => {
                   const Icon = activity.icon;
-                  return (
+                    return (
                     <motion.div
                       key={activity.id}
                       initial={{ opacity: 0, x: -20 }}
@@ -1174,64 +1016,100 @@ const CreatorDashboard = () => {
                       transition={{ delay: index * 0.1, duration: 0.3 }}
                       whileHover={{ scale: 1.01, y: -2 }}
                       whileTap={{ scale: 0.98 }}
-                      className="bg-white/[0.08] backdrop-blur-[40px] saturate-[180%] rounded-[20px] p-5 border border-white/15 shadow-[0_4px_16px_rgba(0,0,0,0.2)] hover:bg-white/[0.12] hover:shadow-[0_8px_24px_rgba(0,0,0,0.3)] transition-all duration-200 cursor-pointer"
                     >
+                      <BaseCard 
+                        variant="tertiary" 
+                        className={`${animations.cardHover} ${animations.cardPress} cursor-pointer`}
+                        onClick={() => triggerHaptic('light')}
+                      >
                       <div className="flex items-start gap-3">
                         <div className={`w-10 h-10 rounded-xl ${activity.bgColor} flex items-center justify-center flex-shrink-0`}>
-                          <Icon className={`w-5 h-5 ${activity.color}`} />
-                        </div>
+                          <Icon className={`${iconSizes.md} ${activity.color}`} />
+              </div>
                         <div className="flex-1 min-w-0">
-                          <h3 className="font-semibold mb-1">{activity.title}</h3>
+                          <h3 className={`${typography.h4} mb-1`}>{activity.title}</h3>
                           <p className="text-sm text-purple-200 mb-1">{activity.description}</p>
                           <p className="text-xs text-purple-300">{activity.time}</p>
-                        </div>
-                      </div>
+              </div>
+            </div>
+                      </BaseCard>
                     </motion.div>
                   );
                 })}
-              </div>
             </div>
+          )}
+        </div>
+
+            {/* Section Separator */}
+            <div className={separators.section} />
 
             {/* Upcoming Payments */}
             <div>
-              <div className="flex items-center justify-between mb-3">
-                <h2 className="font-semibold text-lg">Upcoming Payments</h2>
-                <button className="text-sm text-purple-300 hover:text-white transition-colors">
+              <div className={sectionHeader.base}>
+                <h2 className={sectionHeader.title}>Upcoming Payments</h2>
+                <button 
+                  onClick={() => {
+                    triggerHaptic('light');
+                    navigate('/creator-payments');
+                  }}
+                  className={sectionHeader.action}
+                >
                   View All →
                 </button>
-              </div>
-              <div className="space-y-3">
-                {upcomingPayments.map(payment => (
-                  <div
+            </div>
+              <div className="space-y-4 md:space-y-5">
+                {upcomingPayments.map((payment, index) => (
+                  <motion.div
                     key={payment.id}
-                    className="bg-white/[0.08] backdrop-blur-[40px] saturate-[180%] rounded-[20px] p-5 border border-white/15 shadow-[0_4px_16px_rgba(0,0,0,0.2)] hover:bg-white/[0.12] hover:shadow-[0_8px_24px_rgba(0,0,0,0.3)] transition-all duration-200 cursor-pointer"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.1, duration: 0.3 }}
                   >
+                    <BaseCard 
+                      variant="tertiary" 
+                      className={`${animations.cardHover} ${animations.cardPress} cursor-pointer`}
+                      onClick={() => {
+                        triggerHaptic('light');
+                        navigate('/creator-payments');
+                      }}
+                    >
                     <div className="flex items-center justify-between">
                       <div className="flex-1">
-                        <h3 className="font-semibold mb-1">{payment.title}</h3>
-                        <div className="flex items-center gap-2 text-xs text-purple-200">
-                          <Clock className="w-3 h-3" />
+                        <h3 className={typography.h4 + " mb-1"}>{payment.title}</h3>
+                        <div className={`flex items-center gap-2 ${typography.bodySmall}`}>
+                          <Clock className={iconSizes.xs} />
                           <span>Expected: {payment.date}</span>
                         </div>
                       </div>
                       <div className="text-right">
-                        <div className="text-lg font-bold text-green-400">
+                        <div className={`${typography.amountSmall} text-green-400`}>
                           ₹{(payment.amount / 1000).toFixed(0)}K
                         </div>
-                        <div className={`text-xs ${payment.status === 'pending' ? 'text-yellow-400' : 'text-blue-400'}`}>
-                          {payment.status === 'pending' ? '⏰ Pending' : '🔵 Processing'}
-                        </div>
+                        <div className={`${typography.caption} flex items-center gap-1 ${payment.status === 'pending' ? 'text-yellow-400' : 'text-blue-400'}`}>
+                          {payment.status === 'pending' ? (
+                            <>
+                              <Clock className={iconSizes.xs} />
+                              <span>Pending</span>
+                </>
+              ) : (
+                <>
+                              <RefreshCw className={`${iconSizes.xs} animate-spin`} />
+                              <span>Processing</span>
+                            </>
+            )}
+          </div>
                       </div>
                     </div>
-                  </div>
+                    </BaseCard>
+                  </motion.div>
                 ))}
-              </div>
+            </div>
             </div>
               </div>
             )}
           </>
         )}
-      </div>
+          </main>
 
       {/* Tutorial Component */}
       {showTutorial && (
@@ -1249,56 +1127,108 @@ const CreatorDashboard = () => {
       <div className="fixed bottom-0 left-0 right-0 bg-purple-900/90 backdrop-blur-lg border-t border-white/10 z-50">
         <div className="flex justify-around items-center py-3 px-4">
           <button
-            onClick={() => setActiveTab('home')}
-            className={`flex flex-col items-center gap-1 transition-colors ${
-              activeTab === 'home' ? 'text-white' : 'text-purple-300 hover:text-white'
+            onClick={() => {
+              setActiveTab('home');
+              triggerHaptic('light');
+            }}
+            className={`flex flex-col items-center gap-1 transition-all duration-150 relative active:scale-[0.97] ${
+              activeTab === 'home' 
+                ? 'text-white' 
+                : 'text-purple-300 hover:text-white'
             }`}
           >
-            <Home className="w-6 h-6" />
+            {activeTab === 'home' && (
+              <motion.div
+                layoutId="activeTab"
+                className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-8 h-1 bg-gradient-to-r from-purple-400 to-pink-400 rounded-full"
+                initial={false}
+              />
+            )}
+            <Home className={iconSizes.lg} />
             <span className="text-xs font-medium">Home</span>
           </button>
 
           <button
             data-tutorial="deals-nav"
-            onClick={() => setActiveTab('deals')}
-            className={`flex flex-col items-center gap-1 transition-colors ${
+            onClick={() => {
+              setActiveTab('deals');
+              triggerHaptic('light');
+            }}
+            className={`flex flex-col items-center gap-1 transition-all duration-150 relative active:scale-[0.97] ${
               activeTab === 'deals' ? 'text-white' : 'text-purple-300 hover:text-white'
             }`}
           >
-            <Briefcase className="w-6 h-6" />
+            {activeTab === 'deals' && (
+              <motion.div
+                layoutId="activeTab"
+                className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-8 h-1 bg-gradient-to-r from-purple-400 to-pink-400 rounded-full"
+                initial={false}
+              />
+            )}
+            <Briefcase className={iconSizes.lg} />
             <span className="text-xs font-medium">Deals</span>
           </button>
 
           <button
             data-tutorial="payments-nav"
-            onClick={() => setActiveTab('payments')}
-            className={`flex flex-col items-center gap-1 transition-colors ${
+            onClick={() => {
+              setActiveTab('payments');
+              triggerHaptic('light');
+            }}
+            className={`flex flex-col items-center gap-1 transition-all duration-150 relative active:scale-[0.97] ${
               activeTab === 'payments' ? 'text-white' : 'text-purple-300 hover:text-white'
             }`}
           >
-            <CreditCard className="w-6 h-6" />
+            {activeTab === 'payments' && (
+              <motion.div
+                layoutId="activeTab"
+                className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-8 h-1 bg-gradient-to-r from-purple-400 to-pink-400 rounded-full"
+                initial={false}
+              />
+            )}
+            <CreditCard className={iconSizes.lg} />
             <span className="text-xs font-medium">Payments</span>
           </button>
 
           <button
             data-tutorial="protection-nav"
-            onClick={() => setActiveTab('protection')}
-            className={`flex flex-col items-center gap-1 transition-colors ${
+            onClick={() => {
+              setActiveTab('protection');
+              triggerHaptic('light');
+            }}
+            className={`flex flex-col items-center gap-1 transition-all duration-150 relative active:scale-[0.97] ${
               activeTab === 'protection' ? 'text-white' : 'text-purple-300 hover:text-white'
             }`}
           >
-            <Shield className="w-6 h-6" />
+            {activeTab === 'protection' && (
+              <motion.div
+                layoutId="activeTab"
+                className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-8 h-1 bg-gradient-to-r from-purple-400 to-pink-400 rounded-full"
+                initial={false}
+              />
+            )}
+            <Shield className={iconSizes.lg} />
             <span className="text-xs font-medium">Protection</span>
           </button>
 
           <button
             data-tutorial="messages-nav"
-            onClick={() => setActiveTab('messages')}
-            className={`flex flex-col items-center gap-1 transition-colors relative ${
-              activeTab === 'messages' ? 'text-white' : 'text-purple-300 hover:text-white'
+            onClick={() => {
+              navigate('/messages');
+              triggerHaptic('light');
+            }}
+            className={`flex flex-col items-center gap-1 transition-all duration-150 relative active:scale-[0.97] ${
+              location.pathname === '/messages' ? 'text-white' : 'text-purple-300 hover:text-white'
             }`}
           >
-            <MessageCircle className="w-6 h-6" />
+            {location.pathname === '/messages' && (
+              <motion.div
+                layoutId="activeTab"
+                className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-8 h-1 bg-gradient-to-r from-purple-400 to-pink-400 rounded-full"
+                initial={false}
+              />
+            )}
+            <MessageCircle className={iconSizes.lg} />
             <span className="text-xs font-medium">Messages</span>
             <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
               3
@@ -1317,6 +1247,40 @@ const CreatorDashboard = () => {
           }
         }}
       />
+
+      {/* Quick Actions Bottom Sheet (Mobile) */}
+      <BottomSheet
+        open={showQuickActionsSheet}
+        onClose={() => setShowQuickActionsSheet(false)}
+        title="Quick Actions"
+      >
+        <div className="grid grid-cols-2 gap-4 py-2">
+          {quickActions.map((action, index) => {
+            const Icon = action.icon;
+            return (
+              <motion.div
+                key={action.id}
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: index * 0.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <ActionCard
+                  icon={<Icon className={`w-6 h-6 ${action.iconColor}`} />}
+                  label={action.label}
+                  onClick={() => {
+                    triggerHaptic('medium');
+                    action.onClick();
+                    setShowQuickActionsSheet(false);
+                  }}
+                  variant="tertiary"
+                  className={`${action.color}`}
+                />
+              </motion.div>
+            );
+          })}
+        </div>
+      </BottomSheet>
     </div>
     </ContextualTipsProvider>
   );

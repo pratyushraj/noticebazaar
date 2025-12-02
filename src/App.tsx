@@ -59,6 +59,8 @@ import CreatorTaxCompliancePage from "./pages/CreatorTaxCompliancePage";
 import CreatorOnboarding from "./pages/CreatorOnboarding"; // NEW: Import CreatorOnboarding
 import CreatorDashboardPreview from "./pages/CreatorDashboardPreview"; // NEW: Import CreatorDashboardPreview
 import BrandDirectory from "./pages/BrandDirectory";
+import BrandDetails from "./pages/BrandDetails";
+import BrandOpportunities from "./pages/BrandOpportunities";
 import ContractAnalyzer from "./pages/ContractAnalyzer";
 import RateCalculator from "./pages/RateCalculator";
 import PartnerProgram from "./pages/PartnerProgram";
@@ -72,6 +74,8 @@ import ContractComparison from "./pages/ContractComparison";
 import MaintenancePage from "./pages/MaintenancePage";
 import SearchResults from "./pages/SearchResults";
 import CalendarPage from "./pages/CalendarPage";
+import ContractProtectionDetails from "./pages/ContractProtectionDetails";
+import PaymentDetailPage from "./pages/PaymentDetailPage";
 import { ErrorBoundary } from "./components/ui/error-boundary";
 import NetworkStatusWrapper from "./components/NetworkStatusWrapper";
 
@@ -186,15 +190,19 @@ const App = () => {
               <Route path="/brand-deals" element={<ProtectedLayout allowedRoles={['creator']}><CreatorContracts /></ProtectedLayout>} />
               <Route path="/creator-contracts/:dealId" element={<ProtectedLayout allowedRoles={['creator']}><DealDetailPage /></ProtectedLayout>} />
               <Route path="/creator-payments" element={<ProtectedLayout allowedRoles={['creator']}><CreatorPaymentsAndRecovery /></ProtectedLayout>} />
+              <Route path="/payment/:paymentId" element={<ProtectedLayout allowedRoles={['creator']}><PaymentDetailPage /></ProtectedLayout>} />
               <Route path="/creator-content-protection" element={<ProtectedLayout allowedRoles={['creator']}><CreatorContentProtection /></ProtectedLayout>} />
               <Route path="/creator-tax-compliance" element={<ProtectedLayout allowedRoles={['creator']}><CreatorTaxCompliancePage /></ProtectedLayout>} />
               <Route path="/documents-vault" element={<ProtectedLayout allowedRoles={['creator']}><DocumentsVault /></ProtectedLayout>} />
               <Route path="/insights" element={<ProtectedLayout allowedRoles={['creator']}><InsightsPage /></ProtectedLayout>} />
               {/* NEW: Creator tools */}
               <Route path="/brand-directory" element={<ProtectedLayout allowedRoles={['creator']}><BrandDirectory /></ProtectedLayout>} />
+              <Route path="/brands/:brandId" element={<ProtectedLayout allowedRoles={['creator']}><BrandDetails /></ProtectedLayout>} />
+              <Route path="/brands/:brandId/opportunities" element={<ProtectedLayout allowedRoles={['creator']}><BrandOpportunities /></ProtectedLayout>} />
               <Route path="/contract-analyzer" element={<ProtectedLayout allowedRoles={['creator']}><ContractAnalyzer /></ProtectedLayout>} />
               <Route path="/contract-upload" element={<ProtectedLayout allowedRoles={['creator']}><ContractUploadFlow /></ProtectedLayout>} />
               <Route path="/contract-comparison" element={<ProtectedLayout allowedRoles={['creator']}><ContractComparison /></ProtectedLayout>} />
+              <Route path="/contract-protection/:contractId" element={<ProtectedLayout allowedRoles={['creator']}><ContractProtectionDetails /></ProtectedLayout>} />
               <Route path="/rate-calculator" element={<ProtectedLayout allowedRoles={['creator']}><RateCalculator /></ProtectedLayout>} />
               <Route path="/ai-pitch-generator" element={<ProtectedLayout allowedRoles={['creator']}><AIPitchGenerator /></ProtectedLayout>} />
 

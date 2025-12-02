@@ -109,6 +109,227 @@ export type Database = {
           },
         ]
       }
+      brand_bookmarks: {
+        Row: {
+          brand_id: string
+          created_at: string
+          creator_id: string
+          id: string
+        }
+        Insert: {
+          brand_id: string
+          created_at?: string
+          creator_id: string
+          id?: string
+        }
+        Update: {
+          brand_id?: string
+          created_at?: string
+          creator_id?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "brand_bookmarks_brand_id_fkey"
+            columns: ["brand_id"]
+            isOneToOne: false
+            referencedRelation: "brands"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "brand_bookmarks_creator_id_fkey"
+            columns: ["creator_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      brand_reviews: {
+        Row: {
+          brand_id: string
+          communication_rating: number | null
+          created_at: string
+          creator_id: string
+          id: string
+          payment_rating: number | null
+          rating: number
+          review_text: string | null
+          updated_at: string
+        }
+        Insert: {
+          brand_id: string
+          communication_rating?: number | null
+          created_at?: string
+          creator_id: string
+          id?: string
+          payment_rating?: number | null
+          rating: number
+          review_text?: string | null
+          updated_at?: string
+        }
+        Update: {
+          brand_id?: string
+          communication_rating?: number | null
+          created_at?: string
+          creator_id?: string
+          id?: string
+          payment_rating?: number | null
+          rating?: number
+          review_text?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "brand_reviews_brand_id_fkey"
+            columns: ["brand_id"]
+            isOneToOne: false
+            referencedRelation: "brands"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "brand_reviews_creator_id_fkey"
+            columns: ["creator_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      brands: {
+        Row: {
+          avg_payment_time_days: number | null
+          budget_max: number | null
+          budget_min: number | null
+          created_at: string
+          description: string | null
+          external_id: string | null
+          id: string
+          industry: string
+          late_payment_reports: number
+          logo_url: string | null
+          name: string
+          source: string
+          status: string
+          updated_at: string
+          verified: boolean
+          website_url: string | null
+        }
+        Insert: {
+          avg_payment_time_days?: number | null
+          budget_max?: number | null
+          budget_min?: number | null
+          created_at?: string
+          description?: string | null
+          external_id?: string | null
+          id?: string
+          industry: string
+          late_payment_reports?: number
+          logo_url?: string | null
+          name: string
+          source?: string
+          status?: string
+          updated_at?: string
+          verified?: boolean
+          website_url?: string | null
+        }
+        Update: {
+          avg_payment_time_days?: number | null
+          budget_max?: number | null
+          budget_min?: number | null
+          created_at?: string
+          description?: string | null
+          external_id?: string | null
+          id?: string
+          industry?: string
+          late_payment_reports?: number
+          logo_url?: string | null
+          name?: string
+          source?: string
+          status?: string
+          updated_at?: string
+          verified?: boolean
+          website_url?: string | null
+        }
+        Relationships: []
+      }
+      opportunities: {
+        Row: {
+          application_count: number
+          apply_url: string | null
+          brand_id: string
+          campaign_end_date: string | null
+          campaign_start_date: string | null
+          created_at: string
+          deadline: string
+          deliverable_type: string
+          deliverables_description: string | null
+          description: string | null
+          filled_count: number
+          id: string
+          min_followers: number | null
+          payout_max: number
+          payout_min: number
+          required_categories: string[] | null
+          required_platforms: string[] | null
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          application_count?: number
+          apply_url?: string | null
+          brand_id: string
+          campaign_end_date?: string | null
+          campaign_start_date?: string | null
+          created_at?: string
+          deadline: string
+          deliverable_type: string
+          deliverables_description?: string | null
+          description?: string | null
+          filled_count?: number
+          id?: string
+          min_followers?: number | null
+          payout_max: number
+          payout_min: number
+          required_categories?: string[] | null
+          required_platforms?: string[] | null
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          application_count?: number
+          apply_url?: string | null
+          brand_id?: string
+          campaign_end_date?: string | null
+          campaign_start_date?: string | null
+          created_at?: string
+          deadline?: string
+          deliverable_type?: string
+          deliverables_description?: string | null
+          description?: string | null
+          filled_count?: number
+          id?: string
+          min_followers?: number | null
+          payout_max?: number
+          payout_min?: number
+          required_categories?: string[] | null
+          required_platforms?: string[] | null
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "opportunities_brand_id_fkey"
+            columns: ["brand_id"]
+            isOneToOne: false
+            referencedRelation: "brands"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       cases: {
         Row: {
           client_id: string
@@ -729,6 +950,153 @@ export type Database = {
             columns: ["creator_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      contract_issues: {
+        Row: {
+          id: string
+          created_at: string
+          updated_at: string
+          deal_id: string
+          creator_id: string
+          issue_type: 'exclusivity' | 'payment' | 'termination' | 'ip_rights' | 'timeline' | 'deliverables' | 'other'
+          severity: 'high' | 'medium' | 'low'
+          title: string
+          description: string | null
+          impact: Json | null
+          recommendation: string | null
+          status: 'open' | 'acknowledged' | 'resolved' | 'dismissed'
+          resolved_at: string | null
+          resolved_by: string | null
+          resolution_notes: string | null
+          metadata: Json | null
+        }
+        Insert: {
+          id?: string
+          created_at?: string
+          updated_at?: string
+          deal_id: string
+          creator_id: string
+          issue_type: 'exclusivity' | 'payment' | 'termination' | 'ip_rights' | 'timeline' | 'deliverables' | 'other'
+          severity: 'high' | 'medium' | 'low'
+          title: string
+          description?: string | null
+          impact?: Json | null
+          recommendation?: string | null
+          status?: 'open' | 'acknowledged' | 'resolved' | 'dismissed'
+          resolved_at?: string | null
+          resolved_by?: string | null
+          resolution_notes?: string | null
+          metadata?: Json | null
+        }
+        Update: {
+          id?: string
+          created_at?: string
+          updated_at?: string
+          deal_id?: string
+          creator_id?: string
+          issue_type?: 'exclusivity' | 'payment' | 'termination' | 'ip_rights' | 'timeline' | 'deliverables' | 'other'
+          severity?: 'high' | 'medium' | 'low'
+          title?: string
+          description?: string | null
+          impact?: Json | null
+          recommendation?: string | null
+          status?: 'open' | 'acknowledged' | 'resolved' | 'dismissed'
+          resolved_at?: string | null
+          resolved_by?: string | null
+          resolution_notes?: string | null
+          metadata?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contract_issues_deal_id_fkey"
+            columns: ["deal_id"]
+            isOneToOne: false
+            referencedRelation: "brand_deals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contract_issues_creator_id_fkey"
+            columns: ["creator_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lawyer_requests: {
+        Row: {
+          id: string
+          created_at: string
+          updated_at: string
+          creator_id: string
+          deal_id: string | null
+          subject: string
+          description: string
+          urgency: 'low' | 'medium' | 'high' | 'urgent'
+          category: 'contract_review' | 'payment_dispute' | 'termination' | 'ip_rights' | 'exclusivity' | 'other'
+          status: 'pending' | 'assigned' | 'in_progress' | 'resolved' | 'closed'
+          assigned_to: string | null
+          assigned_at: string | null
+          response_text: string | null
+          responded_at: string | null
+          responded_by: string | null
+          attachments: Json | null
+          metadata: Json | null
+        }
+        Insert: {
+          id?: string
+          created_at?: string
+          updated_at?: string
+          creator_id: string
+          deal_id?: string | null
+          subject: string
+          description: string
+          urgency?: 'low' | 'medium' | 'high' | 'urgent'
+          category?: 'contract_review' | 'payment_dispute' | 'termination' | 'ip_rights' | 'exclusivity' | 'other'
+          status?: 'pending' | 'assigned' | 'in_progress' | 'resolved' | 'closed'
+          assigned_to?: string | null
+          assigned_at?: string | null
+          response_text?: string | null
+          responded_at?: string | null
+          responded_by?: string | null
+          attachments?: Json | null
+          metadata?: Json | null
+        }
+        Update: {
+          id?: string
+          created_at?: string
+          updated_at?: string
+          creator_id?: string
+          deal_id?: string | null
+          subject?: string
+          description?: string
+          urgency?: 'low' | 'medium' | 'high' | 'urgent'
+          category?: 'contract_review' | 'payment_dispute' | 'termination' | 'ip_rights' | 'exclusivity' | 'other'
+          status?: 'pending' | 'assigned' | 'in_progress' | 'resolved' | 'closed'
+          assigned_to?: string | null
+          assigned_at?: string | null
+          response_text?: string | null
+          responded_at?: string | null
+          responded_by?: string | null
+          attachments?: Json | null
+          metadata?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lawyer_requests_creator_id_fkey"
+            columns: ["creator_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lawyer_requests_deal_id_fkey"
+            columns: ["deal_id"]
+            isOneToOne: false
+            referencedRelation: "brand_deals"
             referencedColumns: ["id"]
           },
         ]

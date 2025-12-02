@@ -233,7 +233,7 @@ export const useBrandDeals = (options: UseBrandDealsOptions) => {
 
 interface AddBrandDealVariables {
   creator_id: string;
-  organization_id: string; // NEW: Required field
+  organization_id: string | null; // NEW: Optional field (can be null if user doesn't have an organization)
   brand_name: string;
   deal_amount: number;
   deliverables: string;
@@ -335,9 +335,10 @@ export const useAddBrandDeal = () => {
           finalStatus = 'Completed';
       }
 
-      const insertPayload = {
+      // Build insert payload - only include organization_id if it's a valid UUID
+      // We explicitly omit it if null to avoid NOT NULL constraint violations
+      const insertPayload: any = {
           creator_id,
-          organization_id, // INCLUDE NEW FIELD
           brand_name,
           deal_amount,
           deliverables,
@@ -352,6 +353,20 @@ export const useAddBrandDeal = () => {
           brand_email,
           payment_received_date,
       };
+
+      // Only include organization_id if it's provided, not null, and is a valid UUID
+      // This avoids foreign key constraint violations if the user doesn't have an organization
+      // IMPORTANT: If organization_id is null, we don't include it in the payload at all
+      // This requires the database column to be nullable (run the migration first)
+      if (organization_id && organization_id.trim() !== '') {
+        // Validate it's a valid UUID format
+        const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+        if (uuidRegex.test(organization_id)) {
+          insertPayload.organization_id = organization_id;
+        } else {
+          console.warn('Invalid organization_id format, omitting from insert:', organization_id);
+        }
+      }
       
       // Debug logging removed for production
 
@@ -380,6 +395,11 @@ export const useAddBrandDeal = () => {
       onSuccess: (_, variables) => {
         // Invalidate all brand_deals queries for this creator to ensure fresh data
         queryClient.invalidateQueries({ 
+          queryKey: ['brand_deals'],
+          exact: false 
+        });
+        // Also refetch immediately to ensure UI updates
+        queryClient.refetchQueries({ 
           queryKey: ['brand_deals', variables.creator_id],
           exact: false 
         });
@@ -466,6 +486,11 @@ export const useUpdateBrandDeal = () => {
         updated_at: new Date().toISOString(),
       };
 
+      // Include invoice_number if provided
+      if (updates.invoice_number !== undefined) {
+        updatePayload.invoice_number = updates.invoice_number;
+      }
+
       // Only include file URLs if they were explicitly handled (i.e., file was uploaded or explicitly set to null)
       if (contract_file_url !== undefined) {
         updatePayload.contract_file_url = contract_file_url;
@@ -499,12 +524,55 @@ export const useUpdateBrandDeal = () => {
       onSuccess: (_, variables) => {
         // Invalidate all brand_deals queries for this creator to ensure fresh data
         queryClient.invalidateQueries({ 
+          queryKey: ['brand_deals'],
+          exact: false 
+        });
+        // Also refetch immediately to ensure UI updates
+        queryClient.refetchQueries({ 
           queryKey: ['brand_deals', variables.creator_id],
           exact: false 
         });
       },
       successMessage: 'Brand deal updated successfully!',
       errorMessage: 'Failed to update brand deal',
+    }
+  );
+};
+
+export const useBrandDealById = (dealId: string | undefined, creatorId: string | undefined) => {
+  return useSupabaseQuery<BrandDeal | null, Error>(
+    ['brand_deal', dealId, creatorId],
+    async () => {
+      if (!dealId || !creatorId) return null;
+
+      const { data, error } = await supabase
+        .from('brand_deals')
+        .select('*')
+        .eq('id', dealId)
+        .eq('creator_id', creatorId)
+        .single();
+
+      if (error) {
+        const isMissingTableError = 
+          error.code === 'PGRST116' || 
+          error.code === '42P01' || 
+          (error as any).status === 404 ||
+          error.message?.includes('does not exist') ||
+          error.message?.includes('relation') ||
+          error.message?.includes('not found');
+
+        if (isMissingTableError) {
+          return null;
+        }
+        throw error;
+      }
+
+      return data as BrandDeal | null;
+    },
+    {
+      enabled: !!dealId && !!creatorId,
+      errorMessage: 'Failed to fetch brand deal',
+      retry: false,
     }
   );
 };
@@ -541,7 +609,16 @@ export const useDeleteBrandDeal = () => {
     },
     {
       onSuccess: (_, variables) => {
-        queryClient.invalidateQueries({ queryKey: ['brand_deals', variables.creator_id] });
+        // Invalidate all brand_deals queries
+        queryClient.invalidateQueries({ 
+          queryKey: ['brand_deals'],
+          exact: false 
+        });
+        // Also refetch immediately to ensure UI updates
+        queryClient.refetchQueries({ 
+          queryKey: ['brand_deals', variables.creator_id],
+          exact: false 
+        });
       },
       successMessage: 'Brand deal deleted successfully!',
       errorMessage: 'Failed to delete brand deal',

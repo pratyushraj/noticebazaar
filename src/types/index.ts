@@ -159,3 +159,24 @@ export interface ComplianceDeadline {
   task: string;
   urgency: 'High' | 'Medium' | 'Low';
 }
+
+// Brand Directory Types
+export type Brand = Tables<'brands'> & {
+  // Computed fields from joins
+  rating?: number;
+  review_count?: number;
+  active_opportunities_count?: number;
+  is_bookmarked?: boolean;
+};
+
+export type Opportunity = Tables<'opportunities'> & {
+  // Relations
+  brand?: Brand;
+  // Computed/derived fields
+  apply_url?: string | null;
+};
+
+export type BrandReview = Tables<'brand_reviews'> & {
+  // Relations
+  creator?: Profile;
+};

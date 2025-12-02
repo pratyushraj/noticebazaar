@@ -1,0 +1,206 @@
+/**
+ * NoticeBazaar Design System
+ * 
+ * Consistent design tokens for premium UI across all dashboard pages
+ */
+
+// ============================================
+// CARD VARIANTS
+// ============================================
+
+export const cardVariants = {
+  primary: {
+    base: "bg-gradient-to-br from-[#1E263A] via-[#182133] to-[#121722] border border-white/10",
+    padding: "p-6",
+    radius: "rounded-2xl",
+    shadow: "shadow-[0_8px_24px_rgba(0,0,0,0.25)]",
+    backdrop: "backdrop-blur-xl",
+  },
+  secondary: {
+    base: "bg-gradient-to-br from-[#11121A] via-[#171822] to-[#12131A] border border-white/5",
+    padding: "p-5",
+    radius: "rounded-2xl",
+    shadow: "shadow-[0_8px_24px_rgba(0,0,0,0.25)]",
+    backdrop: "backdrop-blur-xl",
+  },
+  tertiary: {
+    base: "bg-white/5 border border-white/10",
+    padding: "p-4",
+    radius: "rounded-2xl",
+    shadow: "shadow-lg shadow-black/20",
+    backdrop: "backdrop-blur-xl",
+  },
+} as const;
+
+export const getCardClasses = (variant: keyof typeof cardVariants = 'tertiary') => {
+  const variantStyles = cardVariants[variant];
+  return `${variantStyles.base} ${variantStyles.padding} ${variantStyles.radius} ${variantStyles.shadow} ${variantStyles.backdrop}`;
+};
+
+// ============================================
+// SPACING HIERARCHY
+// ============================================
+
+export const spacing = {
+  section: "space-y-6", // 24px between major sections
+  card: "space-y-4", // 16px inside cards
+  compact: "space-y-2", // 8px for tight spacing
+  loose: "space-y-8", // 32px for loose spacing
+  page: "p-4 md:p-6", // Page padding
+  cardPadding: {
+    primary: "p-6",
+    secondary: "p-5",
+    tertiary: "p-4",
+  },
+} as const;
+
+// ============================================
+// TYPOGRAPHY
+// ============================================
+
+export const typography = {
+  h1: "text-2xl md:text-3xl font-bold text-white",
+  h2: "text-xl md:text-2xl font-semibold text-white",
+  h3: "text-lg md:text-xl font-semibold text-white",
+  h4: "text-base md:text-lg font-semibold text-white",
+  body: "text-sm md:text-base text-white/80",
+  bodySmall: "text-xs md:text-sm text-white/70",
+  label: "text-xs font-medium text-white/60 uppercase tracking-wider",
+  caption: "text-xs text-white/50",
+  amount: "text-2xl md:text-3xl font-bold tabular-nums",
+  amountSmall: "text-lg md:text-xl font-semibold tabular-nums",
+} as const;
+
+// ============================================
+// SECTION LAYOUT
+// ============================================
+
+export const sectionLayout = {
+  container: "space-y-6 p-4 md:p-6 pb-24",
+  header: "mb-6",
+  grid: {
+    two: "grid grid-cols-1 md:grid-cols-2 gap-6",
+    three: "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6",
+    four: "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4",
+  },
+} as const;
+
+// ============================================
+// MOBILE RESPONSIVE (320-425px)
+// ============================================
+
+export const mobile = {
+  padding: "px-3 py-4", // Reduced padding for small screens
+  text: {
+    h1: "text-xl", // Smaller on mobile
+    h2: "text-lg",
+    h3: "text-base",
+    body: "text-sm",
+  },
+  spacing: {
+    section: "space-y-4", // Tighter spacing on mobile
+    card: "space-y-3",
+  },
+  touchTarget: "min-h-[44px] min-w-[44px]", // iOS minimum touch target
+} as const;
+
+// ============================================
+// ANIMATIONS & INTERACTIONS
+// ============================================
+
+export const animations = {
+  cardHover: "transition-all duration-200 hover:scale-[1.02] hover:shadow-xl",
+  cardPress: "active:scale-[0.98] transition-all duration-150",
+  fadeIn: "animate-fadeIn",
+  stagger: {
+    delay1: "stagger-1",
+    delay2: "stagger-2",
+    delay3: "stagger-3",
+  },
+} as const;
+
+// ============================================
+// BUTTONS
+// ============================================
+
+export const buttons = {
+  primary: "bg-gradient-to-r from-[#6C4BFF] to-[#9A3DFF] text-white font-semibold rounded-xl py-3 px-6 shadow-lg shadow-purple-500/20 active:scale-[0.97] transition-all",
+  secondary: "bg-white/5 border border-white/10 text-white/70 hover:text-white/90 rounded-xl py-3 px-4 transition-all",
+  tertiary: "text-white/60 hover:text-white/90 transition-colors",
+  icon: "p-2 hover:bg-white/10 rounded-lg transition-colors active:scale-95",
+} as const;
+
+// ============================================
+// BADGES & PILLS
+// ============================================
+
+export const badges = {
+  success: "bg-green-500/20 text-green-400 border border-green-500/30",
+  warning: "bg-yellow-500/20 text-yellow-400 border border-yellow-500/30",
+  danger: "bg-red-500/20 text-red-400 border border-red-500/30",
+  info: "bg-blue-500/20 text-blue-400 border border-blue-500/30",
+  neutral: "bg-white/5 text-white/70 border border-white/10",
+} as const;
+
+// ============================================
+// GLASSMORPHISM
+// ============================================
+
+export const glass = {
+  base: "bg-white/5 backdrop-blur-xl border border-white/10",
+  strong: "bg-white/10 backdrop-blur-2xl border border-white/15",
+  subtle: "bg-white/3 backdrop-blur-lg border border-white/5",
+} as const;
+
+// ============================================
+// GRADIENT BACKGROUNDS
+// ============================================
+
+export const gradients = {
+  page: "bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900",
+  card: "bg-gradient-to-br from-[#11121A] via-[#171822] to-[#12131A]",
+  primary: "bg-gradient-to-r from-[#6C4BFF] to-[#9A3DFF]",
+  secondary: "bg-gradient-to-r from-blue-500 to-purple-600",
+} as const;
+
+// ============================================
+// SEPARATORS
+// ============================================
+
+export const separators = {
+  section: "h-[1px] w-full bg-white/5 my-6",
+  card: "h-[1px] w-full bg-white/10 my-4",
+  subtle: "h-[1px] w-full bg-white/3 my-3",
+} as const;
+
+// ============================================
+// ICON SIZES
+// ============================================
+
+export const iconSizes = {
+  xs: "w-3 h-3",
+  sm: "w-4 h-4",
+  md: "w-5 h-5",
+  lg: "w-6 h-6",
+  xl: "w-8 h-8",
+} as const;
+
+// ============================================
+// SCROLL BEHAVIOR
+// ============================================
+
+export const scroll = {
+  container: "overflow-y-auto overscroll-behavior-contain",
+  smooth: "scroll-smooth",
+} as const;
+
+// ============================================
+// SECTION HEADERS
+// ============================================
+
+export const sectionHeader = {
+  base: "flex items-center justify-between mb-4 md:mb-5",
+  title: "font-semibold text-[17px] md:text-[20px]",
+  action: "text-sm text-purple-300 hover:text-white transition-colors",
+} as const;
+

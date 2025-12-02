@@ -1,4 +1,3 @@
-"use client";
 
 // Notice Bazaar - Secure Messages (single-file safe snapshot)
 // IMPORTANT: This file is a self-contained React + TypeScript snapshot designed to avoid duplicate
@@ -180,8 +179,8 @@ function ChatHeaderScoped({
   };
   
   return (
-    <div className="flex items-center justify-between px-2 md:px-4 py-1.5 md:py-3 border-b border-white/10 bg-white/[0.08] backdrop-blur-[40px] saturate-[180%] flex-shrink-0 mb-6 md:mb-8">
-      <div className="flex items-center gap-2 md:gap-3 flex-1 min-w-0">
+    <div className="flex items-center justify-between px-4 py-3 border-b border-white/10 bg-gradient-to-r from-white/[0.08] to-white/[0.05] backdrop-blur-[40px] saturate-[180%] flex-shrink-0 mb-6 md:mb-8 rounded-t-2xl md:rounded-t-[20px]">
+      <div className="flex items-center gap-3 flex-1 min-w-0">
         <LocalAvatar size="sm" src={advisor?.avatarUrl} alt={advisor?.name || 'Advisor'} />
         <div className="leading-tight flex-1 min-w-0">
           <div className="text-sm font-semibold text-white truncate">{advisor?.name ?? 'Select an advisor'}</div>
@@ -189,7 +188,7 @@ function ChatHeaderScoped({
         </div>
       </div>
 
-      <div className="flex items-center gap-2 flex-shrink-0">
+      <div className="flex items-center gap-2 flex-shrink-0 mr-2">
         {otherAdvisor && onSwitchAdvisor && (
           <AdvisorModeSwitch 
             mode={currentMode}
@@ -206,17 +205,33 @@ function ChatHeaderScoped({
 }
 
 // --- MessageInput (scoped) ---
-function MessageInputScoped({ onSend, isLoading }: { onSend?: (text: string) => void; isLoading?: boolean }) {
+type MessageInputVariant = 'inline' | 'mobile-fixed';
+
+function MessageInputScoped({ 
+  onSend, 
+  isLoading,
+  variant = 'inline',
+  className,
+}: { 
+  onSend?: (text: string) => void; 
+  isLoading?: boolean;
+  variant?: MessageInputVariant;
+  className?: string;
+}) {
   const [value, setValue] = useState('');
   const [isRecording, setIsRecording] = useState(false);
+  const [isFocused, setIsFocused] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
 
   useEffect(() => {
     if (!textareaRef.current) return;
-    textareaRef.current.style.height = 'auto';
-    textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 120)}px`;
+    const textarea = textareaRef.current;
+    textarea.style.height = 'auto';
+    const nextHeight = Math.min(textarea.scrollHeight, 120);
+    textarea.style.height = `${nextHeight}px`;
+    textarea.style.overflowY = textarea.scrollHeight > 120 ? 'auto' : 'hidden';
   }, [value]);
 
   // Hold-to-record voice message
@@ -273,18 +288,57 @@ function MessageInputScoped({ onSend, isLoading }: { onSend?: (text: string) => 
     }
   };
 
+  const handleFocus = () => {
+    setIsFocused(true);
+    window.requestAnimationFrame(() => {
+      textareaRef.current?.scrollIntoView({
+        block: 'nearest',
+        behavior: 'smooth',
+      });
+    });
+  };
+
+  const handleBlur = () => {
+    setIsFocused(false);
+  };
+
+  const wrapperClasses =
+    variant === 'mobile-fixed'
+      ? clsx(
+          "md:hidden fixed bottom-0 left-0 right-0 z-50 px-3",
+          "backdrop-blur-xl bg-gradient-to-t from-black/12 to-transparent border-t border-white/10",
+          "shadow-[0_-6px_24px_rgba(0,0,0,0.45)]",
+          "pb-[max(env(safe-area-inset-bottom,16px),16px)]"
+        )
+      : "w-full flex flex-col flex-shrink-0";
+
+  const bubbleClasses =
+    variant === 'mobile-fixed'
+      ? clsx(
+          "mx-auto w-[94%] max-w-md rounded-[24px] px-3 py-2 bg-white/6 border border-white/6 backdrop-blur-md",
+          "shadow-[0_6px_24px_rgba(0,0,0,0.36)] transition-all duration-200",
+          isFocused ? "translate-y-[-6px] shadow-[0_12px_32px_rgba(0,0,0,0.45)]" : ""
+        )
+      : "w-full px-3.5 py-2.5 flex items-end gap-2.5 bg-white/8 backdrop-blur-2xl saturate-[180%] rounded-[28px] border border-white/15 shadow-[0_12px_30px_rgba(0,0,0,0.45),inset_0_1px_0_rgba(255,255,255,0.12)] transition-all duration-300 ease-out focus-within:border-white/40 focus-within:shadow-[0_18px_40px_rgba(0,0,0,0.5),inset_0_1px_0_rgba(255,255,255,0.18)]";
+
+  const rowClasses =
+    variant === 'mobile-fixed'
+      ? "flex items-center gap-3 w-full min-h-[52px] flex-nowrap"
+      : "flex items-end gap-2.5 w-full";
+
   return (
-    <div className="w-full flex flex-col flex-shrink-0">
-      {/* iOS 17 Capsule Input - Larger radius, stronger blur, proper shadows */}
-      <div className="w-full px-4 md:px-5 py-3 flex items-center justify-between gap-2.5 md:gap-3 bg-white/[0.08] backdrop-blur-[40px] saturate-[180%] rounded-[20px] border border-white/20 shadow-[0_8px_32px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.1)] min-h-[52px] md:min-h-[56px] transition-all duration-300 ease-out focus-within:border-purple-400/50 focus-within:shadow-[0_12px_40px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.15),0_0_0_2px_rgba(168,85,247,0.2)]">
+    <div className={clsx(wrapperClasses, className)}>
+      <div className={bubbleClasses}>
+        <div className={rowClasses}>
         {/* Voice message button (hold to record) */}
         <button 
           className={clsx(
-            "p-2 rounded-full transition-all duration-200 flex-shrink-0 w-10 h-10 md:w-11 md:h-11 flex items-center justify-center self-center",
+            "h-10 w-10 md:w-11 md:h-11 flex items-center justify-center rounded-full border border-white/10 transition-all duration-200",
             isRecording
               ? "bg-red-500/30 text-red-400 animate-pulse shadow-[0_0_12px_rgba(239,68,68,0.4)]"
-              : "bg-white/5 hover:bg-white/10 text-white/60 hover:text-white active:scale-95"
+              : "bg-white/10 text-white/70 hover:bg-white/20 active:scale-95"
           )}
+          style={{ touchAction: 'manipulation' }}
           type="button"
           onMouseDown={handleMicMouseDown}
           onMouseUp={handleMicMouseUp}
@@ -302,28 +356,37 @@ function MessageInputScoped({ onSend, isLoading }: { onSend?: (text: string) => 
           onChange={(e) => setValue(e.target.value)}
           onKeyDown={handleKeyDown}
           placeholder="Type your secure message…"
+          aria-label="Type your secure message"
           disabled={isLoading}
-          className="resize-none overflow-hidden bg-transparent flex-1 text-[16px] md:text-[15px] py-2.5 outline-none placeholder:text-white/50 text-white disabled:opacity-50 max-h-[96px] leading-relaxed"
+          onFocus={handleFocus}
+          onBlur={handleBlur}
+          className="bg-transparent resize-none overflow-hidden w-full flex-1 min-w-0 text-white text-[15px] leading-[20px] placeholder:text-white/40 outline-none border-none transition-all duration-200 disabled:opacity-50 max-h-[120px]"
           rows={1}
         />
 
-        {/* Send button - iOS 17 style, brighter when active */}
+        {/* Send button */}
         <button
           onClick={handleSend}
           disabled={!value.trim() || isLoading}
           className={clsx(
-            "flex-shrink-0 w-11 h-11 md:w-12 md:h-12 rounded-full flex items-center justify-center transition-all duration-300 ease-out disabled:opacity-40 disabled:cursor-not-allowed active:scale-95 touch-manipulation",
+            "flex-shrink-0 h-10 w-10 md:w-11 md:h-11 rounded-full flex items-center justify-center transition-all duration-300 ease-out disabled:cursor-not-allowed active:scale-95 border border-white/10",
             value.trim()
-              ? "bg-gradient-to-br from-[#A855F7] to-[#9333EA] hover:from-[#9333EA] hover:to-[#7E22CE] text-white shadow-[0_4px_16px_rgba(168,85,247,0.5),0_0_0_1px_rgba(168,85,247,0.3)] hover:shadow-[0_6px_24px_rgba(168,85,247,0.6),0_0_0_2px_rgba(168,85,247,0.4)]"
-              : "bg-white/[0.08] text-white/40 hover:bg-white/[0.12]"
+              ? "bg-gradient-to-br from-purple-500 to-indigo-500 text-white shadow-[0_6px_20px_rgba(139,92,246,0.35)]"
+              : "bg-white/10 text-white/30"
           )}
+          style={{ touchAction: 'manipulation' }}
           aria-label="Send message"
           type="button"
         >
-          <ArrowUp size={20} className="md:w-6 md:h-6" />
+          {isLoading ? (
+            <Loader2 size={18} className="animate-spin" />
+          ) : (
+            <ArrowUp size={18} />
+          )}
         </button>
       </div>
     </div>
+  </div>
   );
 }
 
@@ -423,7 +486,7 @@ function ChatWindowScoped({
       <div className="flex-1 overflow-y-auto min-h-0 overflow-x-hidden overscroll-contain">
         <div className="p-4 md:p-6 lg:p-8">
           {!hasMessages ? (
-            <div className="mb-2 md:mb-8">
+            <div className="mb-2 md:mb-8 pb-[140px] md:pb-0">
               <NoMessagesEmptyState
                 onStartChat={() => onSend?.('Hello! I need help.')}
                 onUploadContract={() => {
@@ -432,22 +495,17 @@ function ChatWindowScoped({
                 }}
               />
               
-              {/* Input bar inside empty state */}
-              <div 
-                className="mt-3 md:mt-8 px-0 pt-2 pb-2 flex-shrink-0 bg-transparent"
-                style={{ 
-                  paddingBottom: `max(8px, env(safe-area-inset-bottom, 8px))`,
-                  paddingTop: '8px'
-                }}
-              >
+              {/* Desktop input */}
+              <div className="hidden md:block mt-8">
                 <MessageInputScoped
                   onSend={onSend}
                   isLoading={isLoading}
+                  className="md:flex"
                 />
               </div>
             </div>
           ) : (
-            <div className="space-y-4">
+            <div className="space-y-4 pb-[140px] md:pb-0">
               {messages!.map((m) => (
                 <MessageBubbleScoped
                   key={m.id}
@@ -468,7 +526,7 @@ function ChatWindowScoped({
       {/* Input bar at bottom when there are messages */}
       {hasMessages && (
         <div 
-          className="px-4 md:px-6 lg:px-8 pt-3 pb-3 flex-shrink-0 bg-transparent border-t border-white/10 md:border-t-0"
+          className="hidden md:block px-4 md:px-6 lg:px-8 pt-3 flex-shrink-0 bg-transparent border-t border-white/10 md:border-t-0"
           style={{ 
             paddingBottom: `max(12px, env(safe-area-inset-bottom, 12px))`,
             paddingTop: '12px'
@@ -480,6 +538,14 @@ function ChatWindowScoped({
           />
         </div>
       )}
+
+      {/* Mobile fixed composer */}
+      <MessageInputScoped
+        onSend={onSend}
+        isLoading={isLoading}
+        variant="mobile-fixed"
+        className="md:hidden"
+      />
 
     </div>
   );
@@ -786,8 +852,11 @@ export default function MessagesPage() {
     <ContextualTipsProvider currentView="messages">
     <div className="flex flex-col h-[100dvh] md:h-screen md:p-6 overflow-hidden">
       {/* Scrollable content - shrinks when keyboard opens */}
-      <div className="flex-1 overflow-y-auto min-h-0 px-0 pb-0 md:pb-0 overflow-x-hidden" style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
-        <div className="w-full max-w-[460px] mx-auto md:mx-0 md:max-w-none">
+      <div className="flex-1 overflow-y-auto min-h-0 px-4 md:px-0 overflow-x-hidden" style={{ 
+        paddingBottom: '0px',
+        WebkitOverflowScrolling: 'touch'
+      }}>
+        <div className="w-full max-w-[420px] mx-auto md:mx-0 md:max-w-none">
           {/* Back to Dashboard Button */}
           <div className="flex justify-start mb-4">
             <button

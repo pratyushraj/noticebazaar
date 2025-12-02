@@ -1,6 +1,7 @@
 "use client";
 
 import React from 'react';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, ArrowRight, CheckCircle } from 'lucide-react';
 import { LucideIcon } from 'lucide-react';
@@ -39,6 +40,11 @@ interface TipCardProps {
 
 export const TipCard: React.FC<TipCardProps> = ({ tip, onDismiss, onAction }) => {
   const Icon = tip.icon;
+  const [mounted, setMounted] = React.useState(false);
+
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const positionClasses = {
     top: 'top-[140px] md:top-24 left-0 right-0 flex justify-center',
@@ -46,7 +52,7 @@ export const TipCard: React.FC<TipCardProps> = ({ tip, onDismiss, onAction }) =>
     bottom: 'bottom-24 left-0 right-0 flex justify-center',
   };
 
-  return (
+  const tipContent = (
     <AnimatePresence>
       <motion.div
         initial={{ opacity: 0, scale: 0.9, y: 20, rotate: -5 }}
@@ -55,6 +61,8 @@ export const TipCard: React.FC<TipCardProps> = ({ tip, onDismiss, onAction }) =>
         whileHover={{ rotate: [0, -2, 2, 0] }}
         transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
         className={`fixed z-[100] ${positionClasses[tip.position]} px-4`}
+        onClick={(e) => e.stopPropagation()}
+        onMouseDown={(e) => e.stopPropagation()}
       >
         <div className="relative w-full max-w-sm">
           {/* Glow effect */}
@@ -157,5 +165,9 @@ export const TipCard: React.FC<TipCardProps> = ({ tip, onDismiss, onAction }) =>
       </motion.div>
     </AnimatePresence>
   );
+
+  // Render using portal to avoid DOM nesting issues
+  if (!mounted) return null;
+  return createPortal(tipContent, document.body);
 };
 

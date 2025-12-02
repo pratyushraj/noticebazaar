@@ -37,12 +37,14 @@ export const useSupabaseQuery = <
       // Skip error handling for 404s on tables/functions that might not exist yet
       const partnerProgramTables = [
         'referral_links', 'referrals', 'partner_earnings', 'partner_stats', 
-        'partner_milestones', 'original_content', 'copyright_scans', 'copyright_matches'
+        'partner_milestones', 'original_content', 'copyright_scans', 'copyright_matches',
+        'brands', 'brand_reviews', 'brand_bookmarks', 'opportunities' // Brand directory tables
       ];
       const partnerProgramFunctions = [
         'get_or_create_referral_link', 'refresh_partner_stats', 'initialize_partner_stats',
         'record_referral_commission', 'issue_voucher_reward', 'check_and_award_milestones',
-        'add_free_month_credit', 'calculate_commission', 'update_partner_tier', 'apply_tds'
+        'add_free_month_credit', 'calculate_commission', 'update_partner_tier', 'apply_tds',
+        'get_brand_avg_rating', 'update_expired_opportunities' // Brand directory functions
       ];
       
       const isPartnerTableOrFunction = 

@@ -8,6 +8,9 @@ import { useSession } from '@/contexts/SessionContext';
 import { useBrandDeals } from '@/lib/hooks/useBrandDeals';
 import { NoContractsEmptyState } from '@/components/empty-states/PreconfiguredEmptyStates';
 import { useNavigate } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
+import { animations, spacing, typography, iconSizes, scroll, gradients, buttons, cardVariants } from '@/lib/design-system';
+import { BaseCard } from '@/components/ui/card-variants';
 
 const CreatorContentProtection = () => {
   const [activeTab, setActiveTab] = useState('contracts');
@@ -24,13 +27,12 @@ const CreatorContentProtection = () => {
     if (!brandDeals || brandDeals.length === 0) return [];
     
     return brandDeals
-      .filter(deal => deal.contract_file_url) // Only show deals with contracts
+      .filter(deal => deal.contract_file_url)
       .map(deal => {
         const uploadedDate = deal.created_at ? new Date(deal.created_at) : new Date();
         const expiryDate = deal.due_date ? new Date(deal.due_date) : null;
         const daysUntilExpiry = expiryDate ? Math.ceil((expiryDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24)) : null;
         
-        // Determine risk level based on status and expiry
         let risk: 'low' | 'medium' | 'high' = 'low';
         let status: 'active' | 'pending_review' | 'needs_attention' = 'active';
         let issues = 0;
@@ -59,7 +61,6 @@ const CreatorContentProtection = () => {
           }
         }
         
-        // Mock clause status (in real app, this would come from AI analysis)
         const clauses = {
           payment: deal.status === 'Completed' ? 'verified' : (risk === 'high' ? 'issue' : 'verified'),
           termination: 'verified',
@@ -67,7 +68,6 @@ const CreatorContentProtection = () => {
           exclusivity: 'warning'
         };
         
-        // Count issues in clauses
         if (clauses.payment === 'issue') issues++;
         if (clauses.exclusivity === 'warning') issues++;
         
@@ -88,7 +88,6 @@ const CreatorContentProtection = () => {
       });
   }, [brandDeals]);
 
-  // Calculate protection score from contracts
   const protectionScore = useMemo(() => {
     if (contracts.length === 0) return 0;
     
@@ -97,7 +96,6 @@ const CreatorContentProtection = () => {
     const lowRiskContracts = contracts.filter(c => c.risk === 'low').length;
     const contractsWithNoIssues = contracts.filter(c => c.issues === 0).length;
     
-    // Score calculation: 40% reviewed, 30% low risk, 30% no issues
     const reviewedScore = (reviewedContracts / totalContracts) * 40;
     const riskScore = (lowRiskContracts / totalContracts) * 30;
     const issuesScore = (contractsWithNoIssues / totalContracts) * 30;
@@ -105,7 +103,6 @@ const CreatorContentProtection = () => {
     return Math.round(reviewedScore + riskScore + issuesScore);
   }, [contracts]);
 
-  // Generate alerts from contracts
   const alerts = useMemo(() => {
     const alertList: Array<{
       id: string;
@@ -144,7 +141,6 @@ const CreatorContentProtection = () => {
       }
     });
     
-    // Add info alert if no contracts
     if (contracts.length === 0) {
       alertList.push({
         id: 'no-contracts',
@@ -212,278 +208,447 @@ const CreatorContentProtection = () => {
     info: { icon: Zap, bgColor: 'bg-blue-500/20', iconColor: 'text-blue-400', borderColor: 'border-blue-500/30' }
   };
 
+  const tabVariants = {
+    hidden: { opacity: 0, y: 4 },
+    visible: { opacity: 1, y: 0 },
+    exit: { opacity: 0, y: -4 }
+  };
+
+  // Haptic feedback helper
+  const triggerHaptic = (pattern: 'light' | 'medium' | 'heavy' = 'light') => {
+    if (navigator.vibrate) {
+      const patterns = {
+        light: [10],
+        medium: [20],
+        heavy: [30, 10, 30]
+      };
+      navigator.vibrate(patterns[pattern]);
+    }
+  };
+
   return (
     <ContextualTipsProvider currentView="protection">
-    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 text-white p-4 pb-24">
-      {/* Header */}
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold mb-2">Protection</h1>
-        <p className="text-purple-200">Safeguard your deals & rights</p>
-      </div>
+      <div className={`h-[100dvh] ${gradients.page} text-white overflow-hidden flex flex-col relative`}>
+        {/* Vignette overlay */}
+        <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_center,_transparent_40%,_rgba(0,0,0,0.5)_100%)]`}" />
+        {/* Scrollable content */}
+        <div className={`flex-1 ${scroll.container} min-h-0 relative z-10`}>
+          <div className={`${spacing.page} pb-24`}>
+            {/* Header - Improved spacing */}
+            <motion.div 
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3 }}
+              className="pt-6 pb-4"
+            >
+              <h1 className={typography.h1 + " mb-2"}>Protection</h1>
+              <p className={typography.bodySmall}>Safeguard your deals & rights</p>
+            </motion.div>
 
-      {/* Protection Score Card */}
-      <div className="bg-white/[0.08] backdrop-blur-[40px] saturate-[180%] rounded-[24px] p-6 md:p-8 border border-white/15 shadow-[0_8px_32px_rgba(0,0,0,0.3)] mb-6">
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2">
-            <Shield className="w-6 h-6 text-green-400" />
-            <span className="font-semibold">Protection Score</span>
-          </div>
-          <button className="text-sm text-purple-300 hover:text-white transition-colors">
-            How it works?
-          </button>
-        </div>
+            {/* Protection Score Card - iOS Glassmorphism */}
+            <motion.div 
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: 0.1 }}
+            >
+              <BaseCard variant="secondary" className="p-5 md:p-6 mb-4">
+              <div className="relative z-10 flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2.5">
+                  <Shield className={`${iconSizes.md} text-green-400`} />
+                  <span className={typography.bodySmall + " font-semibold"}>Protection Score</span>
+                </div>
+                <button className={buttons.tertiary + " text-xs"}>
+                  How it works?
+                </button>
+              </div>
 
-        <div className="flex items-end gap-4 mb-4">
-          <div className="text-5xl font-bold text-green-400">{protectionScore}</div>
-          <div className="text-sm text-purple-200 mb-2">out of 100</div>
-        </div>
+              <div className="relative z-10 flex items-baseline gap-3 mb-4">
+                <div className="text-5xl md:text-6xl font-bold text-green-400 leading-none">{protectionScore}</div>
+                <div className="text-sm text-white/70 pb-1">out of 100</div>
+              </div>
 
-        <div className="w-full bg-white/10 rounded-full h-3 mb-3">
-          <div
-            className="bg-gradient-to-r from-green-500 to-green-400 h-3 rounded-full transition-all"
-            style={{ width: `${protectionScore}%` }}
-          />
-        </div>
-
-        <div className="text-[15px] text-purple-200 leading-relaxed">
-          {contracts.length === 0 ? (
-            <span>Upload your first contract to get a protection score and AI-powered analysis.</span>
-          ) : protectionScore >= 80 ? (
-            <span className="text-green-400 font-semibold">Great job!</span>
-          ) : protectionScore >= 60 ? (
-            <span>Your contracts are mostly protected. Review pending items to improve your score.</span>
-          ) : (
-            <span>Upload contracts and review issues to improve your protection score.</span>
-          )}
-          {contracts.length > 0 && contracts.filter(c => c.issues > 0 || c.status === 'pending_review').length > 0 && (
-            <span> Review {contracts.filter(c => c.issues > 0 || c.status === 'pending_review').length} pending {contracts.filter(c => c.issues > 0 || c.status === 'pending_review').length === 1 ? 'item' : 'items'} to reach 100.</span>
-          )}
-        </div>
-      </div>
-
-      {/* iOS Segmented Control */}
-      <div className="mb-6">
-        <SegmentedControl
-          options={[
-            { id: 'contracts', label: 'Contracts', count: contracts.length },
-            { id: 'alerts', label: 'Alerts', count: alerts.length },
-            { id: 'features', label: 'Features' },
-          ]}
-          value={activeTab}
-          onChange={(value) => setActiveTab(value as 'contracts' | 'alerts' | 'features')}
-          className="w-full"
+              <div className="relative z-10 w-full bg-white/10 rounded-full h-2 mb-4">
+                <motion.div
+                  initial={{ width: 0 }}
+                  animate={{ width: `${protectionScore}%` }}
+                  transition={{ duration: 0.8, delay: 0.3 }}
+                  className="bg-gradient-to-r from-green-500 to-green-400 h-2 rounded-full"
         />
       </div>
 
-      {/* Contracts Tab */}
-      {activeTab === 'contracts' && (
-        <div className="space-y-3">
-          {isLoading ? (
-            <div className="text-center py-12 text-purple-200">Loading contracts...</div>
-          ) : contracts.length === 0 ? (
-            <NoContractsEmptyState
-              onUpload={() => navigate('/contract-upload')}
-            />
-          ) : (
-            contracts.map(contract => {
-            const StatusIcon = statusConfig[contract.status as ContractStatus].icon;
-            
-            return (
-              <div
-                key={contract.id}
-                className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/10 hover:bg-white/15 transition-all cursor-pointer"
-              >
-                {/* Contract Header */}
-                <div className="flex items-start justify-between mb-3">
-                  <div className="flex items-start gap-3 flex-1">
-                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 ${riskConfig[contract.risk as RiskLevel].bgColor}`}>
-                      <FileText className={`w-6 h-6 ${riskConfig[contract.risk as RiskLevel].textColor}`} />
-                    </div>
-                    
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-semibold mb-1 leading-tight">{contract.title}</h3>
-                      <div className="flex items-center gap-2 text-sm text-purple-200">
-                        <span>{contract.brand}</span>
-                        <span>•</span>
-                        <span>₹{(contract.value / 1000).toFixed(0)}K</span>
+              <p className={`relative z-10 ${typography.bodySmall} leading-relaxed mb-4`}>
+                {contracts.length === 0 ? (
+                  <span>Upload your first contract to get a protection score and AI-powered analysis.</span>
+                ) : protectionScore >= 80 ? (
+                  <span className="text-green-400 font-semibold">Great job!</span>
+                ) : protectionScore >= 60 ? (
+                  <span>Your contracts are mostly protected. Review pending items to improve your score.</span>
+                ) : (
+                  <span>Upload contracts and review issues to improve your protection score.</span>
+                )}
+                {contracts.length > 0 && contracts.filter(c => c.issues > 0 || c.status === 'pending_review').length > 0 && (
+                  <span> Review {contracts.filter(c => c.issues > 0 || c.status === 'pending_review').length} pending {contracts.filter(c => c.issues > 0 || c.status === 'pending_review').length === 1 ? 'item' : 'items'} to reach 100.</span>
+                )}
+              </p>
+
+              {/* Why is your score low? - Compact */}
+              {protectionScore < 80 && contracts.length > 0 && (
+                <div className="relative z-10 mt-4 pt-4 border-t border-white/10">
+                  <h3 className={`${typography.caption} font-semibold mb-3 flex items-center gap-2`}>
+                    <AlertCircle className={`${iconSizes.sm} text-yellow-400`} />
+                    Why is your score low?
+                  </h3>
+                  <div className={spacing.compact}>
+                    {contracts.filter(c => c.issues > 0).length > 0 && (
+                      <div className={`flex items-start gap-2 ${typography.caption}`}>
+                        <span className="text-red-400 mt-0.5">❗</span>
+                        <span>{contracts.filter(c => c.issues > 0).length} contract{contracts.filter(c => c.issues > 0).length === 1 ? ' has' : 's have'} unresolved issues</span>
                       </div>
-                    </div>
-                  </div>
-                  
-                  <ChevronRight className="w-5 h-5 text-purple-300 flex-shrink-0 ml-2" />
-                </div>
-
-                {/* Status and Risk Badges */}
-                <div className="flex items-center gap-2 mb-3">
-                  <div className={`flex items-center gap-1 text-xs ${statusConfig[contract.status as ContractStatus].color}`}>
-                    <StatusIcon className="w-4 h-4" />
-                    <span>{statusConfig[contract.status as ContractStatus].label}</span>
-                  </div>
-                  <div className={`px-2 py-1 rounded-lg text-xs font-medium ${riskConfig[contract.risk as RiskLevel].bgColor} ${riskConfig[contract.risk as RiskLevel].textColor}`}>
-                    {riskConfig[contract.risk as RiskLevel].label}
-                  </div>
-                  {contract.issues > 0 && (
-                    <div className="px-2 py-1 bg-red-500/20 text-red-400 rounded-lg text-xs font-medium">
-                      {contract.issues} {contract.issues === 1 ? 'Issue' : 'Issues'}
-                    </div>
-                  )}
-                </div>
-
-                {/* Key Clauses Check */}
-                <div className="grid grid-cols-2 gap-2 mb-3">
-                  {Object.entries(contract.clauses).map(([key, status]) => (
-                    <div key={key} className="flex items-center gap-2 text-xs">
-                      {status === 'verified' ? (
-                        <CheckCircle className="w-3 h-3 text-green-400" />
-                      ) : status === 'warning' ? (
-                        <AlertCircle className="w-3 h-3 text-yellow-400" />
-                      ) : (
-                        <AlertTriangle className="w-3 h-3 text-red-400" />
-                      )}
-                      <span className="text-purple-200 capitalize">{key.replace('_', ' ')}</span>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Contract Info */}
-                <div className="flex items-center justify-between pt-3 border-t border-white/10 text-xs text-purple-200">
-                  <div className="flex items-center gap-1">
-                    <Calendar className="w-3 h-3" />
-                    <span>Expires: {contract.expiry}</span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <Upload className="w-3 h-3" />
-                    <span>Uploaded: {contract.uploaded}</span>
-                  </div>
-                </div>
-              </div>
-            );
-          }))}
-
-          {/* Upload New Contract */}
-          {contracts.length > 0 && (
-            <button 
-              onClick={() => navigate('/contract-upload')}
-              className="w-full bg-white/[0.08] backdrop-blur-[40px] saturate-[180%] rounded-[24px] p-6 md:p-8 border-2 border-dashed border-white/25 hover:bg-white/[0.12] hover:border-white/35 transition-all duration-200 active:scale-95 shadow-[0_4px_16px_rgba(0,0,0,0.2)]"
-            >
-              <Upload className="w-8 h-8 text-purple-300 mx-auto mb-2" />
-              <div className="text-sm font-medium mb-1">Upload New Contract</div>
-              <div className="text-xs text-purple-300">Get instant AI-powered review</div>
-            </button>
-          )}
+                    )}
+                    {contracts.filter(c => !c.reviewed).length > 0 && (
+                      <div className={`flex items-start gap-2 ${typography.caption}`}>
+                        <span className="text-yellow-400 mt-0.5">⚠️</span>
+                        <span>{contracts.filter(c => !c.reviewed).length} contract{contracts.filter(c => !c.reviewed).length === 1 ? ' needs' : 's need'} review</span>
+                      </div>
+                    )}
+                    {contracts.filter(c => c.risk === 'high').length > 0 && (
+                      <div className={`flex items-start gap-2 ${typography.caption}`}>
+                        <span className="text-red-400 mt-0.5">⚠️</span>
+                        <span>{contracts.filter(c => c.risk === 'high').length} contract{contracts.filter(c => c.risk === 'high').length === 1 ? ' has' : 's have'} high risk terms</span>
         </div>
       )}
-
-      {/* Alerts Tab */}
-      {activeTab === 'alerts' && (
-        <div className="space-y-3">
-          {isLoading ? (
-            <div className="text-center py-12 text-purple-200">Loading alerts...</div>
-          ) : alerts.length === 0 ? (
-            <div className="bg-white/[0.08] backdrop-blur-[40px] saturate-[180%] rounded-[24px] p-8 border border-white/15 shadow-[0_8px_32px_rgba(0,0,0,0.3)] text-center">
-              <CheckCircle className="w-12 h-12 text-green-400 mx-auto mb-4" />
-              <h3 className="text-xl font-semibold mb-2">All Clear!</h3>
-              <p className="text-purple-200">No alerts at the moment. Your contracts are in good shape.</p>
-            </div>
-          ) : (
-            alerts.map(alert => {
-            const alertType = alert.type as AlertType;
-            const AlertIcon = alertConfig[alertType].icon;
-            
-            return (
-              <div
-                key={alert.id}
-                className={`bg-white/[0.08] backdrop-blur-[40px] saturate-[180%] rounded-[24px] p-5 md:p-6 border ${alertConfig[alert.type as AlertType].borderColor} shadow-[0_8px_32px_rgba(0,0,0,0.3)] hover:bg-white/[0.12] hover:shadow-[0_12px_40px_rgba(0,0,0,0.4)] transition-all duration-200 cursor-pointer active:scale-95`}
-              >
-                <div className="flex items-start gap-3">
-                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${alertConfig[alert.type as AlertType].bgColor}`}>
-                    <AlertIcon className={`w-5 h-5 ${alertConfig[alert.type as AlertType].iconColor}`} />
-                  </div>
-                  
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-start justify-between mb-2">
-                      <h3 className="font-semibold">{alert.title}</h3>
-                      <span className="text-xs text-purple-300 whitespace-nowrap ml-2">{alert.time}</span>
-                    </div>
-                    
-                    <p className="text-sm text-purple-200 mb-3">{alert.description}</p>
-                    
-                    <button className={`text-sm font-medium ${alertConfig[alertType].iconColor} hover:underline`}>
-                      {alert.action} →
-                    </button>
-                  </div>
-                </div>
-              </div>
-            );
-          }))}
+                    {contracts.filter(c => c.clauses.exclusivity === 'warning' || c.clauses.exclusivity === 'issue').length > 0 && (
+                      <div className={`flex items-start gap-2 ${typography.caption}`}>
+                        <span className="text-yellow-400 mt-0.5">⚠️</span>
+                        <span>Contract{contracts.filter(c => c.clauses.exclusivity === 'warning' || c.clauses.exclusivity === 'issue').length === 1 ? ' has' : 's have'} exclusivity risk</span>
         </div>
       )}
-
-      {/* Features Tab */}
-      {activeTab === 'features' && (
-        <div className="space-y-3">
-          {protectionFeatures.map(feature => {
-            const FeatureIcon = feature.icon;
-            
-            return (
-              <div
-                key={feature.id}
-                className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/10 hover:bg-white/15 transition-all cursor-pointer"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-xl bg-purple-500/20 flex items-center justify-center flex-shrink-0">
-                    <FeatureIcon className="w-6 h-6 text-purple-400" />
                   </div>
-                  
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-1">
-                      <h3 className="font-semibold">{feature.title}</h3>
-                      {feature.status === 'active' ? (
-                        <span className="px-2 py-0.5 bg-green-500/20 text-green-400 text-xs rounded-full">Active</span>
-                      ) : (
-                        <span className="px-2 py-0.5 bg-yellow-500/20 text-yellow-400 text-xs rounded-full">Premium</span>
-                      )}
-                    </div>
-                    <p className="text-sm text-purple-200">{feature.description}</p>
-                  </div>
-                  
-                  <ChevronRight className="w-5 h-5 text-purple-300" />
-                </div>
-              </div>
-            );
-          })}
+        </div>
+      )}
+              </BaseCard>
+            </motion.div>
 
-          {/* Upgrade Card */}
-          <div className="bg-gradient-to-br from-purple-600 to-indigo-600 rounded-[24px] md:rounded-[28px] p-6 md:p-8 border border-purple-400/40 shadow-[0_8px_32px_rgba(168,85,247,0.4)]">
-            <div className="flex items-start gap-3 mb-4">
-              <Shield className="w-8 h-8 text-white" />
-              <div>
-                <h3 className="font-bold text-lg mb-1">Premium Protection</h3>
-                <p className="text-sm text-purple-100">Get advanced features and priority legal support</p>
-              </div>
-            </div>
-            
-            <ul className="space-y-2 mb-4 text-sm">
-              <li className="flex items-center gap-2">
-                <CheckCircle className="w-4 h-4 text-green-300" />
-                <span>24/7 Legal advisor access</span>
-              </li>
-              <li className="flex items-center gap-2">
-                <CheckCircle className="w-4 h-4 text-green-300" />
-                <span>Payment guarantee protection</span>
-              </li>
-              <li className="flex items-center gap-2">
-                <CheckCircle className="w-4 h-4 text-green-300" />
-                <span>Unlimited contract reviews</span>
-              </li>
-            </ul>
-            
-            <button className="w-full bg-white text-purple-700 font-semibold py-3.5 rounded-[20px] md:rounded-[24px] hover:bg-purple-50 transition-all duration-200 active:scale-95 shadow-[0_4px_16px_rgba(255,255,255,0.2)]">
-              Upgrade to Premium
-            </button>
+            {/* Sticky Tabs */}
+            <div className="sticky top-0 z-20 bg-gradient-to-b from-purple-900 via-purple-900/95 to-transparent pb-2 -mx-4 px-4 md:-mx-6 md:px-6 pt-2 mb-4">
+              <SegmentedControl
+                options={[
+                  { id: 'contracts', label: 'Contracts', count: contracts.length },
+                  { id: 'alerts', label: 'Alerts', count: alerts.length },
+                  { id: 'features', label: 'Features' },
+                ]}
+                value={activeTab}
+                onChange={(value) => setActiveTab(value as 'contracts' | 'alerts' | 'features')}
+                className="w-full"
+              />
+        </div>
+
+            {/* Tab Content with smooth transitions */}
+            <AnimatePresence mode="wait">
+              {/* Contracts Tab */}
+              {activeTab === 'contracts' && (
+                <motion.div
+                  key="contracts"
+                  variants={tabVariants}
+                  initial="hidden"
+                  animate="visible"
+                  exit="exit"
+                  transition={{ duration: 0.3, ease: "easeOut" }}
+                  className="space-y-3"
+                >
+                  {isLoading ? (
+                    <div className="text-center py-12 text-white/60">Loading contracts...</div>
+                  ) : contracts.length === 0 ? (
+                    <div className="py-6">
+                      <NoContractsEmptyState
+                        onUpload={() => navigate('/contract-upload')}
+                        variant="compact"
+                      />
           </div>
+        ) : (
+                    <>
+                      {contracts.map((contract, index) => {
+                        const StatusIcon = statusConfig[contract.status as ContractStatus].icon;
+                        
+                        return (
+                          <motion.div
+                            key={contract.id}
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.3, delay: index * 0.05 }}
+                          >
+                            <BaseCard 
+                              variant="tertiary" 
+                              className={`${animations.cardHover} ${animations.cardPress} cursor-pointer`}
+                              onClick={() => {
+                                triggerHaptic('light');
+                                if (contract.dealId) {
+                                  navigate(`/contract-protection/${contract.dealId}`);
+                                } else {
+                                  navigate('/contract-analyzer');
+                                }
+                              }}
+                            >
+                            {/* Contract Header */}
+                            <div className="relative z-10 flex items-start justify-between mb-3">
+                              <div className="flex items-start gap-3 flex-1 min-w-0">
+                                <div className={`w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 ${riskConfig[contract.risk as RiskLevel].bgColor}`}>
+                                  <FileText className={`${iconSizes.md} ${riskConfig[contract.risk as RiskLevel].textColor}`} />
+            </div>
+                                
+                                <div className="flex-1 min-w-0">
+                                  <h3 className={`${typography.h4} mb-1 leading-tight`}>{contract.title}</h3>
+                                  <div className={`flex items-center gap-1.5 ${typography.caption}`}>
+                                    <span>{contract.brand}</span>
+                                    <span>•</span>
+                                    <span>₹{(contract.value / 1000).toFixed(0)}K</span>
+                </div>
+              </div>
+            </div>
+                              
+                              <ChevronRight className={`${iconSizes.md} text-white/40 flex-shrink-0 ml-2`} />
+                            </div>
+
+                            {/* Status and Risk Badges */}
+                            <div className="relative z-10 flex items-center gap-2 mb-3 flex-wrap">
+                              <div className={`flex items-center gap-1.5 ${typography.caption} ${statusConfig[contract.status as ContractStatus].color}`}>
+                                <StatusIcon className={iconSizes.xs} />
+                                <span>{statusConfig[contract.status as ContractStatus].label}</span>
+                              </div>
+                              <div className={`px-2 py-0.5 rounded-lg ${typography.caption} font-medium ${riskConfig[contract.risk as RiskLevel].bgColor} ${riskConfig[contract.risk as RiskLevel].textColor}`}>
+                                {riskConfig[contract.risk as RiskLevel].label}
+                              </div>
+                              {contract.issues > 0 && (
+                                <div className={`px-2 py-0.5 bg-red-500/20 text-red-400 rounded-lg ${typography.caption} font-medium`}>
+                                  {contract.issues} {contract.issues === 1 ? 'Issue' : 'Issues'}
+          </div>
+        )}
+                            </div>
+
+                            {/* Key Clauses Check */}
+                            <div className="relative z-10 grid grid-cols-2 gap-2 mb-3">
+                              {Object.entries(contract.clauses).map(([key, status]) => (
+                                <div key={key} className={`flex items-center gap-2 ${typography.caption}`}>
+                                  {status === 'verified' ? (
+                                    <CheckCircle className={`${iconSizes.xs} text-green-400 flex-shrink-0`} />
+                                  ) : status === 'warning' ? (
+                                    <AlertCircle className={`${iconSizes.xs} text-yellow-400 flex-shrink-0`} />
+                                  ) : (
+                                    <AlertTriangle className={`${iconSizes.xs} text-red-400 flex-shrink-0`} />
+                                  )}
+                                  <span className="text-white/70 capitalize">{key.replace('_', ' ')}</span>
+                                </div>
+                              ))}
+                            </div>
+
+                            {/* Contract Info */}
+                            <div className={`relative z-10 flex items-center justify-between pt-3 border-t border-white/10 ${typography.caption}`}>
+                              <div className="flex items-center gap-1.5">
+                                <Calendar className={iconSizes.xs} />
+                                <span>Expires: {contract.expiry}</span>
+                              </div>
+                              <div className="flex items-center gap-1.5">
+                                <Upload className={iconSizes.xs} />
+                                <span>Uploaded: {contract.uploaded}</span>
+                              </div>
+                            </div>
+                            </BaseCard>
+                          </motion.div>
+                        );
+                      })}
+
+                      {/* Upload New Contract */}
+                      <motion.button 
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.3, delay: contracts.length * 0.05 }}
+                        onClick={() => {
+                          triggerHaptic('medium');
+                          navigate('/contract-upload');
+                        }}
+                      >
+                        <BaseCard 
+                          variant="tertiary" 
+                          className="p-6 border-2 border-dashed border-white/15 cursor-pointer active:scale-[0.97] transition-all duration-150"
+                          onClick={() => {
+                            triggerHaptic('medium');
+                            navigate('/contract-upload');
+                          }}
+                        >
+                        <div className="relative z-10">
+                          <Upload className={`${iconSizes.lg} text-white/60 mx-auto mb-2`} />
+                          <div className={`${typography.bodySmall} font-medium mb-1`}>Upload New Contract</div>
+                          <div className={typography.caption}>Get instant AI-powered review</div>
+                        </div>
+                        </BaseCard>
+                      </motion.button>
+                    </>
+                  )}
+                </motion.div>
+              )}
+
+              {/* Alerts Tab */}
+              {activeTab === 'alerts' && (
+                <motion.div
+                  key="alerts"
+                  variants={tabVariants}
+                  initial="hidden"
+                  animate="visible"
+                  exit="exit"
+                  transition={{ duration: 0.3, ease: "easeOut" }}
+                  className="space-y-3"
+                >
+                  {isLoading ? (
+                    <div className="text-center py-12 text-white/60">Loading alerts...</div>
+                  ) : alerts.length === 0 ? (
+                    <BaseCard variant="secondary" className="p-8 text-center">
+                      <div className="relative z-10">
+                        <CheckCircle className="w-12 h-12 text-green-400 mx-auto mb-4" />
+                        <h3 className={`${typography.h3} mb-2`}>All Clear!</h3>
+                        <p className="text-sm text-white/70">No alerts at the moment. Your contracts are in good shape.</p>
+            </div>
+                    </BaseCard>
+                  ) : (
+                    alerts.map((alert, index) => {
+                      const alertType = alert.type as AlertType;
+                      const AlertIcon = alertConfig[alertType].icon;
+
+                  return (
+                        <motion.div
+                          key={alert.id}
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ duration: 0.3, delay: index * 0.05 }}
+                        >
+                          <BaseCard 
+                            variant="tertiary" 
+                            className={`${animations.cardHover} ${animations.cardPress} cursor-pointer`}
+                            onClick={() => triggerHaptic('light')}
+                          >
+                          <div className="relative z-10 flex items-start gap-3">
+                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${alertConfig[alert.type as AlertType].bgColor}`}>
+                              <AlertIcon className={`${iconSizes.md} ${alertConfig[alert.type as AlertType].iconColor}`} />
+                            </div>
+                            
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-start justify-between mb-2">
+                                <h3 className={`${typography.h4} text-white/90`}>{alert.title}</h3>
+                                <span className={`${typography.caption} whitespace-nowrap ml-2`}>{alert.time}</span>
+                              </div>
+                              
+                              <p className={`${typography.bodySmall} mb-3 leading-relaxed`}>{alert.description}</p>
+                              
+                              <button className={`${typography.bodySmall} font-medium ${alertConfig[alertType].iconColor} hover:underline`}>
+                                {alert.action} →
+                              </button>
+                            </div>
+                          </div>
+                          </BaseCard>
+                        </motion.div>
+                      );
+                    })
+                  )}
+                </motion.div>
+              )}
+
+              {/* Features Tab */}
+              {activeTab === 'features' && (
+                <motion.div
+                  key="features"
+                  variants={tabVariants}
+                  initial="hidden"
+                  animate="visible"
+                  exit="exit"
+                  transition={{ duration: 0.3, ease: "easeOut" }}
+                  className="space-y-3"
+                >
+                  {protectionFeatures.map((feature, index) => {
+                    const FeatureIcon = feature.icon;
+                    
+                    return (
+                      <motion.div
+                        key={feature.id}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.3, delay: index * 0.05 }}
+                      >
+                        <BaseCard 
+                          variant="tertiary" 
+                          className={`${animations.cardHover} ${animations.cardPress} cursor-pointer`}
+                          onClick={() => triggerHaptic('light')}
+                        >
+                        <div className="relative z-10 flex items-center gap-3">
+                          <div className="w-11 h-11 rounded-xl bg-purple-500/20 flex items-center justify-center flex-shrink-0">
+                            <FeatureIcon className={`${iconSizes.md} text-purple-400`} />
+            </div>
+                          
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-1">
+                              <h3 className={`${typography.h4} text-white/90`}>{feature.title}</h3>
+                              {feature.status === 'active' ? (
+                                <span className={`px-2 py-0.5 bg-green-500/20 text-green-400 ${typography.caption} rounded-full font-medium`}>Active</span>
+                              ) : (
+                                <span className={`px-2 py-0.5 bg-yellow-500/20 text-yellow-400 ${typography.caption} rounded-full font-medium`}>Premium</span>
+                              )}
+            </div>
+                            <p className={typography.caption}>{feature.description}</p>
+            </div>
+                          
+                          <ChevronRight className={`${iconSizes.md} text-white/40 flex-shrink-0`} />
+                        </div>
+                        </BaseCard>
+                      </motion.div>
+                    );
+                  })}
+
+                  {/* Upgrade Card */}
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3, delay: protectionFeatures.length * 0.05 }}
+                    className="relative bg-gradient-to-br from-purple-600/30 to-indigo-600/30 backdrop-blur-xl rounded-2xl p-6 border border-purple-400/30 shadow-[0_8px_30px_rgba(168,85,247,0.45)] before:absolute before:inset-0 before:bg-gradient-to-b before:from-white/10 before:to-transparent before:rounded-2xl before:pointer-events-none after:absolute after:-inset-1 after:bg-white/5 after:blur-xl after:rounded-3xl after:pointer-events-none"
+                  >
+                    <div className="relative z-10 flex items-start gap-3 mb-4">
+                      <Shield className="w-6 h-6 text-white" />
+            <div>
+                        <h3 className={`${typography.h4} mb-1`}>Premium Protection</h3>
+                        <p className="text-xs text-white/70">Get advanced features and priority legal support</p>
+                      </div>
+            </div>
+                    
+                    <ul className={`relative z-10 ${spacing.compact} mb-4 ${typography.bodySmall}`}>
+                      <li className="flex items-center gap-2 text-white/80">
+                        <CheckCircle className={`${iconSizes.sm} text-green-400 flex-shrink-0`} />
+                        <span>24/7 Legal advisor access</span>
+                      </li>
+                      <li className="flex items-center gap-2 text-white/80">
+                        <CheckCircle className={`${iconSizes.sm} text-green-400 flex-shrink-0`} />
+                        <span>Payment guarantee protection</span>
+                      </li>
+                      <li className="flex items-center gap-2 text-white/80">
+                        <CheckCircle className={`${iconSizes.sm} text-green-400 flex-shrink-0`} />
+                        <span>Unlimited contract reviews</span>
+                      </li>
+                    </ul>
+                    
+                    <button 
+                      onClick={() => {
+                        triggerHaptic('medium');
+                        // Navigate to premium upgrade
+                      }}
+                      className={`relative z-10 w-full bg-white/10 hover:bg-white/15 text-white ${typography.bodySmall} font-semibold py-3 ${cardVariants.tertiary.radius} ${animations.cardPress} border border-white/20`}
+                    >
+                      Upgrade to Premium
+                    </button>
+                  </motion.div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+
+          {/* Bottom gradient fade */}
+          <div className="sticky bottom-0 h-20 bg-gradient-to-t from-purple-900 to-transparent pointer-events-none -mt-20" />
         </div>
-      )}
     </div>
     </ContextualTipsProvider>
   );
