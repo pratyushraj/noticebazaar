@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { BrandDeal } from '@/types';
+import type { Database } from '@/types/supabase';
 import { useSupabaseQuery } from './useSupabaseQuery';
 import { useSupabaseMutation } from './useSupabaseMutation';
 import { CREATOR_ASSETS_BUCKET, extractFilePathFromUrl } from '@/lib/constants/storage';
@@ -337,7 +338,7 @@ export const useAddBrandDeal = () => {
 
       // Build insert payload - only include organization_id if it's a valid UUID
       // We explicitly omit it if null to avoid NOT NULL constraint violations
-      const insertPayload: any = {
+      const insertPayload: Database['public']['Tables']['brand_deals']['Insert'] = {
           creator_id,
           brand_name,
           deal_amount,
@@ -347,11 +348,11 @@ export const useAddBrandDeal = () => {
           status: finalStatus, // Use finalStatus
           contract_file_url,
           invoice_file_url,
-          contact_person,
-          platform,
-          utr_number,
-          brand_email,
-          payment_received_date,
+          contact_person: contact_person || null,
+          platform: platform || null,
+          utr_number: utr_number || null,
+          brand_email: brand_email || null,
+          payment_received_date: payment_received_date || null,
       };
 
       // Only include organization_id if it's provided, not null, and is a valid UUID
