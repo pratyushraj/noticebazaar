@@ -222,7 +222,8 @@ const CreatorContentProtection = () => {
     <ContextualTipsProvider currentView="protection">
       <div className={`h-[100dvh] ${gradients.page} text-white overflow-hidden flex flex-col relative`}>
         {/* Vignette overlay */}
-        <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_center,_transparent_40%,_rgba(0,0,0,0.5)_100%)]`}" />
+        {/* replaced-by-ultra-polish - Using vision overlay instead of hardcoded gradient */}
+        <div className={cn("absolute inset-0 pointer-events-none", vision.glare.soft, "opacity-50")} />
         {/* Scrollable content */}
         <div className={`flex-1 ${scroll.container} min-h-0 relative z-10`}>
           <div className={`${spacing.page} pb-24`}>

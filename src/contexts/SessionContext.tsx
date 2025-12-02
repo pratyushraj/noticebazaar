@@ -33,7 +33,7 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
     try {
       // Start with core fields that should always exist to avoid 400 errors
       // Extended creator profile fields will be fetched separately if needed
-      let { data, error } = await (supabase
+      const { data, error } = await (supabase
         .from('profiles')
         .select('id, first_name, last_name, avatar_url, role, updated_at, business_name, gstin, business_entity_type, onboarding_complete, organization_id, is_trial, trial_started_at, trial_expires_at, trial_locked') as any)
         .eq('id', user.id)

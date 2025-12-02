@@ -141,7 +141,8 @@ const CreatorPaymentsAndRecovery = () => {
 
   // Helper function to extract or generate invoice number
   // Format: INV-{year}-{short-contract-id}-{random4}
-  const getOrGenerateInvoiceNumber = (deal: any): string => {
+  // replaced-by-ultra-polish: replaced any with BrandDeal type
+  const getOrGenerateInvoiceNumber = (deal: BrandDeal): string => {
     // If invoice number already exists in database, use it
     if (deal.invoice_number) {
       return deal.invoice_number;
@@ -178,7 +179,8 @@ const CreatorPaymentsAndRecovery = () => {
 
   // Helper function to extract payment method from contract/deal data
   // Looks for payment method in contract text, deliverables, or deal metadata
-  const extractPaymentMethod = (deal: any): string | null => {
+  // replaced-by-ultra-polish: replaced any with BrandDeal type
+  const extractPaymentMethod = (deal: BrandDeal): string | null => {
     // Check if payment method is explicitly stored in deal data
     // This would be populated during contract analysis
     if (deal.payment_method) {

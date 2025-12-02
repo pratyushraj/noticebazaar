@@ -12,7 +12,7 @@ interface CreatorScoreBadgeProps {
 const CreatorScoreBadge: React.FC<CreatorScoreBadgeProps> = ({ brandDeals = [] }) => {
   const score = React.useMemo(() => {
     let points = 0;
-    let maxPoints = 100;
+    const maxPoints = 100;
 
     // On-time deliveries (40 points)
     const now = new Date();

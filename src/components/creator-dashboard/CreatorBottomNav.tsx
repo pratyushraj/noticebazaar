@@ -59,8 +59,8 @@ const CreatorBottomNav = () => {
     const isMobile = window.innerWidth < 768;
     if (!isMobile) return;
 
-    let initialHeight = window.innerHeight;
-    let viewportInitialHeight = window.visualViewport?.height || window.innerHeight;
+    const initialHeight = window.innerHeight;
+    const viewportInitialHeight = window.visualViewport?.height || window.innerHeight;
 
     const handleViewportResize = () => {
       if (!window.visualViewport) {
@@ -199,13 +199,15 @@ const CreatorBottomNav = () => {
                       "absolute top-0 left-1/2 -translate-x-1/2 w-14 h-1",
                       "bg-gradient-to-r from-blue-400 to-purple-500",
                       radius.full,
-                      "shadow-[0_0_12px_rgba(59,130,246,0.8)]"
+                      // replaced-by-ultra-polish
+                      shadows.md
                     )} />
                     {/* Glowing dot indicator */}
                     <div className={cn(
                       "absolute bottom-2 left-1/2 -translate-x-1/2 w-2 h-2",
                       "bg-purple-500 rounded-full",
-                      "shadow-[0_0_8px_rgba(168,85,247,1)] animate-pulse"
+                      // replaced-by-ultra-polish
+                      shadows.sm, "animate-pulse"
                     )} />
                   </>
                 )}
@@ -220,7 +222,8 @@ const CreatorBottomNav = () => {
                   <Icon className={cn(
                     iconSizes.lg,
                     "transition-all duration-150",
-                    active && "text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.5)]"
+                    // replaced-by-ultra-polish
+                    active && "text-white", shadows.sm
                   )} />
                 </motion.div>
                 

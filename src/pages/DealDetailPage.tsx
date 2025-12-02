@@ -99,7 +99,15 @@ function DealDetailPageContent() {
 
   // Transform action logs
   const actionLogEntries = useMemo(() => {
-    const entries: any[] = [];
+    // replaced-by-ultra-polish: replaced any[] with proper ActionLog type
+    interface ActionLogEntry {
+      id: string;
+      action_type: string;
+      description: string;
+      created_at: string;
+      metadata?: Record<string, unknown>;
+    }
+    const entries: ActionLogEntry[] = [];
     
     if (deal.created_at) {
       entries.push({
@@ -122,7 +130,8 @@ function DealDetailPageContent() {
     }
 
     if (logs && Array.isArray(logs)) {
-      logs.forEach((log: any) => {
+      // replaced-by-ultra-polish: replaced any with ActionLogEntry type
+      logs.forEach((log: ActionLogEntry) => {
         entries.push({
           id: log.id,
           action: log.event.replace(/_/g, ' ').replace(/\b\w/g, (l: string) => l.toUpperCase()),
