@@ -414,14 +414,15 @@ const CreatorDashboard = () => {
         initial={{ y: -100, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={animations.spring}
+        // replaced-by-ultra-polish: Use drawer's purple gradient for header consistency
         className={cn(
           "sticky top-0 relative",
           zIndex.sticky,
-          glass.appleStrong,
-          "border-b border-white/10",
+          "backdrop-blur-2xl border-b border-white/10",
           shadows.depth
         )}
         style={{
+          background: 'linear-gradient(180deg, rgba(75, 12, 255, 0.95) 0%, rgba(45, 0, 79, 0.95) 100%)',
           paddingTop: 'max(16px, env(safe-area-inset-top, 16px))',
           paddingBottom: '16px',
           paddingLeft: 'calc(16px + env(safe-area-inset-left, 0px))',
