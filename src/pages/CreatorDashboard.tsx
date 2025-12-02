@@ -13,9 +13,8 @@ import { getInitials } from '@/lib/utils/avatar';
 import { motion, AnimatePresence } from 'framer-motion';
 import { triggerHaptic, HapticPatterns } from '@/lib/utils/haptics';
 import { cn } from '@/lib/utils';
-import { sectionLayout, animations, spacing, typography, separators, iconSizes, scroll, sectionHeader, gradients, buttons, cardVariants, glass, shadows, spotlight, radius, zIndex, vision, motion as motionTokens, colors } from '@/lib/design-system';
+import { sectionLayout, animations, spacing, typography, separators, iconSizes, scroll, sectionHeader, gradients, buttons, glass, shadows, spotlight, radius, zIndex, vision, motion as motionTokens, colors } from '@/lib/design-system';
 import { PremiumButton } from '@/components/ui/PremiumButton';
-import { ErrorBoundary } from '@/components/ui/error-boundary';
 import { BaseCard, SectionCard, StatCard, ActionCard } from '@/components/ui/card-variants';
 import { AppsGridMenu } from '@/components/navigation/AppsGridMenu';
 // Onboarding components - commented out if not currently used
@@ -629,21 +628,21 @@ const CreatorDashboard = () => {
                 >
                   Add Your First Deal
                 </PremiumButton>
-                <button
+                <motion.button
                   onClick={() => setShowWelcomeBanner(false)}
+                  whileTap={animations.microTap}
                   className={cn(
                     spacing.cardPadding.tertiary,
                     "bg-white/10 hover:bg-white/20 text-white/90",
                     typography.bodySmall,
                     "font-medium",
-                    radius.md,
-                    animations.cardPress
+                    radius.md
                   )}
                 >
                   Explore Dashboard
-                </button>
-                  </div>
-            </div>
+                </motion.button>
+              </div>
+            </BaseCard>
           </motion.div>
         )}
       </AnimatePresence>
