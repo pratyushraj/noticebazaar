@@ -170,22 +170,27 @@ const CreatorBottomNav = () => {
           };
 
           return (
-            <Link
+            <motion.div
               key={item.to}
-              to={item.to}
-              tabIndex={0}
-              onKeyDown={handleKeyDown}
-              onClick={() => triggerHaptic(HapticPatterns.light)}
-              className={cn(
-                "flex flex-col items-center justify-center flex-1 h-full transition-all duration-150 relative focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-purple-400/50 focus-visible:rounded-lg min-h-[44px] min-w-[44px] touch-manipulation",
-                animations.cardPress,
-                active 
-                  ? "text-white" 
-                  : "text-white/70"
-              )}
-              aria-label={item.label}
-              aria-current={active ? 'page' : undefined}
+              className="flex-1"
+              whileTap={animations.microTap}
             >
+              <Link
+                to={item.to}
+                tabIndex={0}
+                onKeyDown={handleKeyDown}
+                onClick={() => triggerHaptic(HapticPatterns.light)}
+                className={cn(
+                  "flex flex-col items-center justify-center h-full transition-all duration-150 relative",
+                  "focus-visible:outline focus-visible:outline-2 focus-visible:outline-purple-400/70 focus-visible:outline-offset-2 focus-visible:rounded-lg",
+                  "min-h-[44px] min-w-[44px] touch-manipulation",
+                  active 
+                    ? "text-white" 
+                    : "text-white/70"
+                )}
+                aria-label={item.label}
+                aria-current={active ? 'page' : undefined}
+              >
                 {/* iOS 17 Active State - Glowing indicator */}
                 {active && (
                   <>
