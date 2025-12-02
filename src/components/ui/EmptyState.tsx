@@ -1,64 +1,70 @@
-"use client";
+/**
+ * Unified EmptyState Component
+ * 
+ * Consistent empty states across all pages using design system tokens
+ */
 
 import React from 'react';
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { motion } from 'framer-motion';
+import { BaseCard } from '@/components/ui/card-variants';
+import { typography, spacing, iconSizes, buttons } from '@/lib/design-system';
 
 interface EmptyStateProps {
-  icon?: React.ReactNode;
+  icon?: LucideIcon;
   title: string;
   description?: string;
-  actionLabel?: string;
-  onAction?: () => void;
+  action?: {
+    label: string;
+    onClick: () => void;
+  };
   className?: string;
 }
 
-const EmptyState: React.FC<EmptyStateProps> = ({
-  icon,
+export const EmptyState: React.FC<EmptyStateProps> = ({
+  icon: Icon,
   title,
   description,
-  actionLabel,
-  onAction,
+  action,
   className,
 }) => {
   return (
-    <Card className={cn(
-      "bg-white/[0.06] backdrop-blur-[40px] border-white/10 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.3)]",
-      className
-    )}>
-      <CardContent className="p-12 text-center">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.5 }}
-          className="flex flex-col items-center gap-4"
+    <BaseCard
+      variant="secondary"
+      className={cn(
+        "flex flex-col items-center justify-center text-center",
+        spacing.cardPadding.secondary,
+        "min-h-[200px]",
+        className
+      )}
+    >
+      {Icon && (
+        <div className={cn(
+          "w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mb-4",
+          "border border-white/10"
+        )}>
+          <Icon className={cn(iconSizes.xl, "text-white/50")} />
+        </div>
+      )}
+      
+      <h3 className={cn(typography.h4, "mb-2")}>
+        {title}
+      </h3>
+      
+      {description && (
+        <p className={cn(typography.bodySmall, "mb-6 max-w-md")}>
+          {description}
+        </p>
+      )}
+      
+      {action && (
+        <button
+          onClick={action.onClick}
+          className={cn(buttons.primary, "min-w-[120px]")}
         >
-          {icon && (
-            <div className="w-24 h-24 rounded-full bg-white/5 backdrop-blur-sm flex items-center justify-center border border-white/10 mb-2">
-              {icon}
-            </div>
-          )}
-          <div className="space-y-2">
-            <h3 className="text-xl font-semibold text-white">{title}</h3>
-            {description && (
-              <p className="text-sm text-white/60 max-w-md mx-auto">{description}</p>
-            )}
-          </div>
-          {actionLabel && onAction && (
-            <Button
-              onClick={onAction}
-              className="mt-4 bg-blue-600 hover:bg-blue-700 text-white"
-            >
-              {actionLabel}
-            </Button>
-          )}
-        </motion.div>
-      </CardContent>
-    </Card>
+          {action.label}
+        </button>
+      )}
+    </BaseCard>
   );
 };
-
-export default EmptyState;
-

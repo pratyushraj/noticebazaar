@@ -4,24 +4,15 @@ import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { LayoutDashboard, Briefcase, Wallet, Shield, MessageSquare } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { iconSizes } from '@/lib/design-system';
+import { iconSizes, zIndex, animations } from '@/lib/design-system';
+import { triggerHaptic, HapticPatterns } from '@/lib/utils/haptics';
 
 const CreatorBottomNav = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const [isKeyboardOpen, setIsKeyboardOpen] = useState(false);
 
-  // Haptic feedback helper
-  const triggerHaptic = (pattern: 'light' | 'medium' | 'heavy' = 'light') => {
-    if (navigator.vibrate) {
-      const patterns = {
-        light: [10],
-        medium: [20],
-        heavy: [30, 10, 30]
-      };
-      navigator.vibrate(patterns[pattern]);
-    }
-  };
+  // Use centralized haptic utility
 
   // iOS-style: 4-5 main tabs max
   const navItems = [
@@ -142,7 +133,7 @@ const CreatorBottomNav = () => {
   return (
       <div 
         className={cn(
-          "fixed bottom-0 left-0 right-0 z-50 bg-white/[0.08] backdrop-blur-[60px] saturate-[200%] border-t border-white/15 shadow-[0_-8px_32px_rgba(0,0,0,0.3)] rounded-t-[20px] progressive-blur transition-transform duration-300 ease-in-out",
+          "fixed bottom-0 left-0 right-0 z-40 bg-white/[0.08] backdrop-blur-[60px] saturate-[200%] border-t border-white/15 shadow-[0_-8px_32px_rgba(0,0,0,0.3)] rounded-t-[20px] progressive-blur transition-transform duration-300 ease-in-out",
           isKeyboardOpen && "translate-y-full"
         )}
       >
@@ -167,9 +158,10 @@ const CreatorBottomNav = () => {
               to={item.to}
               tabIndex={0}
               onKeyDown={handleKeyDown}
-              onClick={() => triggerHaptic('light')}
+              onClick={() => triggerHaptic(HapticPatterns.light)}
               className={cn(
-                "flex flex-col items-center justify-center flex-1 h-full transition-all duration-150 relative focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-purple-400/50 focus-visible:rounded-lg min-h-[44px] min-w-[44px] touch-manipulation active:scale-[0.97]",
+                "flex flex-col items-center justify-center flex-1 h-full transition-all duration-150 relative focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-purple-400/50 focus-visible:rounded-lg min-h-[44px] min-w-[44px] touch-manipulation",
+                animations.cardPress,
                 active 
                   ? "text-white" 
                   : "text-white/70"

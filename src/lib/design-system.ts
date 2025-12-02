@@ -204,3 +204,68 @@ export const sectionHeader = {
   action: "text-sm text-purple-300 hover:text-white transition-colors",
 } as const;
 
+// ============================================
+// RADIUS TOKENS
+// ============================================
+
+export const radius = {
+  sm: "rounded-lg",
+  md: "rounded-xl",
+  lg: "rounded-2xl",
+  xl: "rounded-3xl",
+  full: "rounded-full",
+} as const;
+
+// ============================================
+// SHADOW TOKENS
+// ============================================
+
+export const shadows = {
+  sm: "shadow-sm shadow-black/10",
+  md: "shadow-md shadow-black/20",
+  lg: "shadow-lg shadow-black/20",
+  xl: "shadow-xl shadow-black/30",
+  card: "shadow-[0_8px_24px_rgba(0,0,0,0.25)]",
+  drawer: "shadow-[0_0_50px_rgba(0,0,0,0.4)]",
+  inner: "shadow-[inset_0_1px_0_rgba(255,255,255,0.1)]",
+} as const;
+
+// ============================================
+// COLOR TOKENS
+// ============================================
+
+export const colors = {
+  text: {
+    primary: "text-white",
+    secondary: "text-white/80",
+    tertiary: "text-white/70",
+    muted: "text-white/60",
+    disabled: "text-white/50",
+  },
+  bg: {
+    primary: "bg-white/5",
+    secondary: "bg-white/10",
+    tertiary: "bg-white/3",
+    overlay: "bg-black/40",
+  },
+  border: {
+    primary: "border-white/10",
+    secondary: "border-white/5",
+    tertiary: "border-white/3",
+  },
+} as const;
+
+// ============================================
+// Z-INDEX TOKENS
+// ============================================
+
+export const zIndex = {
+  base: "z-0",
+  dropdown: "z-10",
+  sticky: "z-20",
+  overlay: "z-40",
+  modal: "z-50",
+  drawer: "z-[9999]",
+  toast: "z-[10000]",
+} as const;
+
