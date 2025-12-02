@@ -92,9 +92,8 @@ function AdvisorCardScoped({ advisor, selected, onClick }: { advisor: Advisor; s
         {advisor.online && (
           <span className="absolute right-0 bottom-0 inline-block w-2.5 h-2.5 bg-green-400 rounded-full ring-2 ring-background" />
         )}
-        {/* Unread dot */}
+        {/* Unread dot - replaced-by-ultra-polish */}
         {advisor.unreadCount && advisor.unreadCount > 0 && (
-          {/* replaced-by-ultra-polish */}
           <span className={cn("absolute -top-1 -right-1 inline-flex items-center justify-center", iconSizes.md, badges.danger, radius.full, typography.caption, "font-semibold ring-2 ring-background")}>
             {advisor.unreadCount > 9 ? '9+' : advisor.unreadCount}
           </span>
