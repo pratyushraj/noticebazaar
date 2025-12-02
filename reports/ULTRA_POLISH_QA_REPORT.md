@@ -125,46 +125,64 @@ The following files contain hardcoded values that should be tokenized in future 
 
 ## Step 3: Performance Hardening
 
-**Status:** ⏳ **PENDING**
+**Status:** ✅ **PARTIAL** (Started)
 
-**Planned Actions:**
-- Memoize stable components (StatCard, MessageBubble, AdvisorCard, PaymentCard)
-- Virtualize long lists (messages, deals, payments) using react-virtuoso
-- Lazy load heavy components/pages
+**Actions Taken:**
+- ✅ Memoized `PaymentCard` component with `React.memo`
+- ✅ Prevents unnecessary re-renders for payment list items
+
+**Remaining Work:**
+- ⏳ Memoize other stable components (StatCard, MessageBubble, AdvisorCard)
+- ⏳ Virtualize long lists (messages, deals, payments) using react-virtuoso
+- ⏳ Code split large bundle (1,248.41 kB main chunk) using dynamic imports
 
 **Current State:**
-- ⚠️ Large bundle size (1,248.61 kB main chunk)
-- ⚠️ No virtualization for long lists
-- ⚠️ No code splitting for heavy components
+- ⚠️ Large bundle size (1,248.41 kB main chunk) - needs code splitting
+- ⚠️ No virtualization for long lists yet
+- ✅ PaymentCard memoized
 
 ---
 
 ## Step 4: Accessibility Sweep
 
-**Status:** ⏳ **PENDING**
+**Status:** ✅ **PARTIAL** (Started)
 
-**Planned Actions:**
-- Add `aria-label` to all interactive elements
-- Ensure all images have `alt` attributes
-- Add focus trap for modals
-- Add skip link: `<a href="#main">Skip to main content</a>`
-- Run axe CLI audit
+**Actions Taken:**
+- ✅ Added skip-to-main-content link in `App.tsx`
+  - Hidden by default, visible on focus
+  - Links to `#main-content` (already exists in CreatorDashboard)
+- ✅ Added `aria-label` and keyboard support to `PaymentCard`
+  - Full keyboard navigation support (Enter/Space)
+  - Descriptive aria-labels
+- ✅ `CreatorBottomNav` already has proper aria-labels
+
+**Remaining Work:**
+- ⏳ Add `aria-label` to remaining icon-only buttons
+- ⏳ Ensure all images have `alt` attributes
+- ⏳ Add focus trap for modals (use focus-trap-react or shadcn Dialog)
+- ⏳ Run axe CLI audit for comprehensive a11y check
 
 ---
 
 ## Step 5: TypeScript Safety Sweep
 
-**Status:** ⏳ **PENDING**
+**Status:** ✅ **PARTIAL** (Critical fixes applied)
 
-**Planned Actions:**
-- Replace critical `any` types in `src/lib/hooks/*`
-- Replace critical `any` types in `src/pages/*`
-- Use Supabase `Database` typed tables
-- Run `pnpm tsc --noEmit` and fix errors
+**Actions Taken:**
+- ✅ `useGlobalSearch.ts`: Replaced `any[]` with proper document type
+- ✅ `CreatorPaymentsAndRecovery.tsx`: Replaced `any` with `BrandDeal` type (2 functions)
+- ✅ `DealDetailPage.tsx`: Replaced `any[]` with `ActionLogEntry` interface
+
+**Remaining Work:**
+- ⏳ Replace `any` types in error handlers (`useIssues.ts`, `useActionLogs.ts`, `useNotifications.ts`)
+- ⏳ Replace `as any` type assertions in `useOpportunities.ts` (needs Supabase types update)
+- ⏳ Replace `any` in catch blocks (`MessagesPage.tsx`, `CalendarPage.tsx`, `CreatorDashboard.tsx`)
+- ⏳ Use Supabase `Database` typed tables where possible
 
 **Current State:**
-- ⚠️ Lint shows `any` types in scripts/ (non-critical)
-- ⚠️ Need to audit src/ for `any` types
+- ✅ Critical `any` types in payment/deal pages fixed
+- ⚠️ Some `any` types remain in error handlers (lower priority)
+- ⚠️ `useOpportunities.ts` has many `as any` (needs Supabase schema update)
 
 ---
 
@@ -250,9 +268,55 @@ The following files contain hardcoded values that should be tokenized in future 
    - **Commit:** `ultra-polish: replace hardcoded styles with design-system tokens (MessagesPage.tsx)`
    - **Status:** ✅ Completed
 
+2. **src/components/creator-dashboard/CreatorBottomNav.tsx**
+   - Replaced hardcoded rgba shadows with design-system tokens
+   - **Commit:** `ultra-polish: Continue tokenization and TypeScript safety fixes`
+   - **Status:** ✅ Completed
+
+3. **src/pages/CreatorContentProtection.tsx**
+   - Replaced hardcoded radial gradient with vision.glare.soft token
+   - **Commit:** `ultra-polish: Continue tokenization and TypeScript safety fixes`
+   - **Status:** ✅ Completed
+
+### Step 3: Performance
+
+4. **src/components/payments/PaymentCard.tsx**
+   - Memoized with React.memo for performance
+   - **Commit:** `ultra-polish: Add accessibility improvements and performance optimizations`
+   - **Status:** ✅ Completed
+
+### Step 4: Accessibility
+
+5. **src/App.tsx**
+   - Added skip-to-main-content link
+   - **Commit:** `ultra-polish: Add accessibility improvements and performance optimizations`
+   - **Status:** ✅ Completed
+
+6. **src/components/payments/PaymentCard.tsx**
+   - Added aria-label and keyboard navigation
+   - **Commit:** `ultra-polish: Add accessibility improvements and performance optimizations`
+   - **Status:** ✅ Completed
+
+### Step 5: TypeScript Safety
+
+7. **src/lib/hooks/useGlobalSearch.ts**
+   - Replaced `any[]` with proper document type
+   - **Commit:** `ultra-polish: Continue tokenization and TypeScript safety fixes`
+   - **Status:** ✅ Completed
+
+8. **src/pages/CreatorPaymentsAndRecovery.tsx**
+   - Replaced `any` with `BrandDeal` type (2 functions)
+   - **Commit:** `ultra-polish: Continue tokenization and TypeScript safety fixes`
+   - **Status:** ✅ Completed
+
+9. **src/pages/DealDetailPage.tsx**
+   - Replaced `any[]` with `ActionLogEntry` interface
+   - **Commit:** `ultra-polish: Continue tokenization and TypeScript safety fixes`
+   - **Status:** ✅ Completed
+
 ### Step 6: Backend Migrations
 
-2. **supabase/migrations/2025_01_27_ultra_polish_down.sql**
+10. **supabase/migrations/2025_01_27_ultra_polish_down.sql**
    - Generated down-migration for rollback
    - Drops all policies, indexes, and functions
    - Includes verification queries
