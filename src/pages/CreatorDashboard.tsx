@@ -13,7 +13,7 @@ import { getInitials } from '@/lib/utils/avatar';
 import { motion, AnimatePresence } from 'framer-motion';
 import { triggerHaptic, HapticPatterns } from '@/lib/utils/haptics';
 import { cn } from '@/lib/utils';
-import { getCardClasses, sectionLayout, animations, spacing, typography, separators, iconSizes, scroll, sectionHeader, gradients, buttons, cardVariants, glass, shadows, spotlight, radius, zIndex, vision, ios, motion as motionTokens } from '@/lib/design-system';
+import { sectionLayout, animations, spacing, typography, separators, iconSizes, scroll, sectionHeader, gradients, buttons, cardVariants, glass, shadows, spotlight, radius, zIndex, vision, motion as motionTokens, colors } from '@/lib/design-system';
 import { PremiumButton } from '@/components/ui/PremiumButton';
 import { ErrorBoundary } from '@/components/ui/error-boundary';
 import { BaseCard, SectionCard, StatCard, ActionCard } from '@/components/ui/card-variants';
@@ -626,10 +626,9 @@ const CreatorDashboard = () => {
                     navigate('/creator-contracts');
                     setShowWelcomeBanner(false);
                   }}
-                  className={`px-4 py-2 bg-white/20 hover:bg-white/30 text-white ${typography.bodySmall} font-medium ${cardVariants.tertiary.radius} ${animations.cardPress}`}
                 >
                   Add Your First Deal
-                </button>
+                </PremiumButton>
                 <button
                   onClick={() => setShowWelcomeBanner(false)}
                   className={cn(
