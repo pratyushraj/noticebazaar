@@ -11,7 +11,11 @@ import { usePartnerStats } from '@/lib/hooks/usePartnerProgram';
 import { logger } from '@/lib/utils/logger';
 import { getInitials } from '@/lib/utils/avatar';
 import { motion, AnimatePresence } from 'framer-motion';
-import { getCardClasses, sectionLayout, animations, spacing, typography, separators, iconSizes, scroll, sectionHeader, gradients, buttons, cardVariants } from '@/lib/design-system';
+import { triggerHaptic, HapticPatterns } from '@/lib/utils/haptics';
+import { cn } from '@/lib/utils';
+import { getCardClasses, sectionLayout, animations, spacing, typography, separators, iconSizes, scroll, sectionHeader, gradients, buttons, cardVariants, glass, shadows, spotlight, radius, zIndex } from '@/lib/design-system';
+import { PremiumButton } from '@/components/ui/PremiumButton';
+import { ErrorBoundary } from '@/components/ui/error-boundary';
 import { BaseCard, SectionCard, StatCard, ActionCard } from '@/components/ui/card-variants';
 import { AppsGridMenu } from '@/components/navigation/AppsGridMenu';
 // Onboarding components - commented out if not currently used
@@ -111,26 +115,14 @@ const CreatorDashboard = () => {
 
   const isInitialLoading = sessionLoading || isLoadingDeals;
 
-  // Haptic feedback helper
-  const triggerHaptic = (pattern: 'light' | 'medium' | 'heavy' = 'light') => {
-    if (navigator.vibrate) {
-      const patterns = {
-        light: [10],
-        medium: [20],
-        heavy: [30, 10, 30]
-      };
-      navigator.vibrate(patterns[pattern]);
-    }
-  };
-
   // Pull to refresh
   const handleRefresh = async () => {
     setIsRefreshing(true);
-    triggerHaptic('medium');
+    triggerHaptic(HapticPatterns.medium);
     // Simulate data refresh
     await new Promise(resolve => setTimeout(resolve, 1500));
     setIsRefreshing(false);
-    triggerHaptic('light');
+    triggerHaptic(HapticPatterns.light);
   };
 
   // User data from session
@@ -384,7 +376,7 @@ const CreatorDashboard = () => {
       iconColor: "text-blue-400",
       onClick: () => {
         navigate('/contract-upload');
-        triggerHaptic('light');
+        triggerHaptic(HapticPatterns.light);
       }
     },
     {
@@ -418,71 +410,101 @@ const CreatorDashboard = () => {
     return (
     <ContextualTipsProvider currentView="dashboard">
     <div className={`min-h-screen ${gradients.page} text-white overflow-x-hidden`}>
-      {/* Top Header - Enhanced Sticky */}
-      <div className="sticky top-0 z-50 bg-purple-900/95 backdrop-blur-xl border-b border-white/10 shadow-lg">
-        <div
-          className={`flex items-center justify-between gap-3 py-4 ${spacing.page}`}
-          style={{
-            paddingLeft: 'calc(16px + env(safe-area-inset-left, 0px))',
-            paddingRight: 'calc(16px + env(safe-area-inset-right, 0px))',
-          }}
-        >
+      {/* Top Header - iOS 17 + visionOS Premium */}
+      <motion.header
+        initial={{ y: -100, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={animations.spring}
+        className={cn(
+          "sticky top-0 relative",
+          zIndex.sticky,
+          glass.appleStrong,
+          "border-b border-white/10",
+          shadows.depth
+        )}
+        style={{
+          paddingTop: 'max(16px, env(safe-area-inset-top, 16px))',
+          paddingBottom: '16px',
+          paddingLeft: 'calc(16px + env(safe-area-inset-left, 0px))',
+          paddingRight: 'calc(16px + env(safe-area-inset-right, 0px))',
+        }}
+      >
+        {/* Spotlight gradient */}
+        <div className={cn(spotlight.top, "opacity-40")} />
+        
+        {/* Inner border for depth */}
+        <div className="absolute inset-x-0 bottom-0 h-[1px] bg-white/10" />
+        
+        <div className={cn("flex items-center justify-between gap-3", spacing.cardPadding.tertiary, "py-3 relative z-10")}>
           {/* Creator Avatar - Replaces Menu Icon */}
-          <button 
+          <motion.button 
             onClick={() => {
               setShowMenu(!showMenu);
-              triggerHaptic('light');
+              triggerHaptic(HapticPatterns.light);
             }}
-            className={`w-10 h-10 rounded-full bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center ${typography.body} font-semibold flex-shrink-0 ${animations.cardPress} hover:scale-105 hover:shadow-lg hover:shadow-blue-500/30 border-2 border-white/20`}
+            whileTap={animations.microTap}
+            whileHover={window.innerWidth > 768 ? animations.microHover : undefined}
+            className={cn(
+              "w-10 h-10",
+              radius.full,
+              "bg-gradient-to-br from-blue-600 to-purple-600",
+              "flex items-center justify-center",
+              typography.body,
+              "font-semibold flex-shrink-0",
+              "border-2 border-white/20",
+              shadows.md
+            )}
             aria-label={showMenu ? "Close menu" : "Open profile menu"}
           >
             {userData.avatar}
-          </button>
+          </motion.button>
           
           <div className={typography.h4}>NoticeBazaar</div>
           
           <div className="flex items-center gap-2">
-            <AppsGridMenu className={`${buttons.icon}`} />
-            <button 
+            <AppsGridMenu className={buttons.icon} />
+            <motion.button 
               onClick={handleRefresh}
               disabled={isRefreshing}
-              className={`${buttons.icon} ${isRefreshing ? 'animate-spin' : ''}`}
+              whileTap={animations.microTap}
+              className={cn(buttons.icon, isRefreshing && 'animate-spin')}
               aria-label="Refresh data"
             >
               <RefreshCw className={iconSizes.md} />
-            </button>
+            </motion.button>
             <NotificationDropdown />
-            <button 
+            <motion.button 
               onClick={() => {
                 setShowSearch(true);
-                triggerHaptic('light');
+                triggerHaptic(HapticPatterns.light);
               }}
+              whileTap={animations.microTap}
               className={buttons.icon}
               aria-label="Search"
             >
               <Search className={iconSizes.md} />
-            </button>
-      </div>
+            </motion.button>
+          </div>
         </div>
-      </div>
+      </motion.header>
 
       {/* Premium Drawer */}
       <PremiumDrawer
         open={showMenu}
         onClose={() => {
           setShowMenu(false);
-          triggerHaptic('light');
+          triggerHaptic(HapticPatterns.light);
         }}
         onNavigate={(path) => {
           navigate(path);
-          triggerHaptic('light');
+          triggerHaptic(HapticPatterns.light);
         }}
         onSetActiveTab={(tab) => {
           setActiveTab(tab);
-          triggerHaptic('light');
+          triggerHaptic(HapticPatterns.light);
         }}
         onLogout={() => {
-          triggerHaptic('medium');
+          triggerHaptic(HapticPatterns.medium);
           setShowLogoutDialog(true);
         }}
         activeItem={activeTab}
@@ -504,7 +526,7 @@ const CreatorDashboard = () => {
           <AlertDialogFooter className="gap-2 sm:gap-0">
             <AlertDialogCancel 
               onClick={() => {
-                triggerHaptic('light');
+                triggerHaptic(HapticPatterns.light);
               }}
               className="bg-white/10 text-white border-white/20 hover:bg-white/20 focus:ring-2 focus:ring-purple-400/50"
             >
@@ -513,7 +535,7 @@ const CreatorDashboard = () => {
             <AlertDialogAction
               onClick={async () => {
                 try {
-                  triggerHaptic('medium');
+                  triggerHaptic(HapticPatterns.medium);
                   
                   // Analytics tracking
                   if (typeof window !== 'undefined' && (window as any).gtag) {
@@ -561,29 +583,45 @@ const CreatorDashboard = () => {
             exit={{ opacity: 0, y: -20 }}
             className={`sticky top-16 z-40 ${spacing.page} mt-4 mb-4 max-h-[calc(100vh-120px)] ${scroll.container}`}
           >
-            <div className="bg-gradient-to-r from-purple-600/90 to-indigo-600/90 backdrop-blur-xl rounded-2xl p-4 border border-white/20 shadow-xl overflow-hidden">
-              <div className="flex items-start justify-between gap-4">
-                <div className="flex items-start gap-3 flex-1">
-                  <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
-                    <Sparkles className="w-5 h-5 text-white" />
+            <BaseCard variant="primary" className={cn("relative overflow-hidden", glass.apple, shadows.depth)}>
+              {/* Spotlight gradient */}
+              <div className={cn(spotlight.top, "opacity-30")} />
+              
+              <div className={cn("flex items-start justify-between", spacing.compact)}>
+                <div className={cn("flex items-start gap-3 flex-1")}>
+                  <div className={cn(
+                    "w-10 h-10",
+                    radius.full,
+                    "bg-white/20 flex items-center justify-center flex-shrink-0",
+                    shadows.sm
+                  )}>
+                    <Sparkles className={cn(iconSizes.md, "text-white")} />
                   </div>
                   <div className="flex-1">
-                    <h3 className={`${typography.h4} mb-1`}>Welcome to NoticeBazaar! 🎉</h3>
-                    <p className={`${typography.bodySmall} break-words`}>
+                    <h3 className={cn(typography.h4, "mb-1")}>Welcome to NoticeBazaar! 🎉</h3>
+                    <p className={cn(typography.bodySmall, "break-words")}>
                       Your dashboard is ready. Start by adding your first brand deal to track payments and contracts.
-                        </p>
-                      </div>
-                      </div>
-                <button
+                    </p>
+                  </div>
+                </div>
+                <motion.button
                   onClick={() => setShowWelcomeBanner(false)}
-                  className="p-1 hover:bg-white/20 rounded-lg transition-colors flex-shrink-0"
+                  whileTap={animations.microTap}
+                  className={cn(
+                    spacing.cardPadding.tertiary,
+                    "hover:bg-white/20",
+                    radius.md,
+                    "transition-colors flex-shrink-0"
+                  )}
                   aria-label="Dismiss welcome banner"
                 >
-                  <XCircle className="w-5 h-5 text-white/80" />
-                </button>
-                    </div>
-              <div className="mt-3 flex gap-2">
-                <button
+                  <XCircle className={cn(iconSizes.md, "text-white/80")} />
+                </motion.button>
+              </div>
+              <div className={cn("mt-3 flex gap-2")}>
+                <PremiumButton
+                  variant="primary"
+                  size="sm"
                   onClick={() => {
                     navigate('/creator-contracts');
                     setShowWelcomeBanner(false);
@@ -594,7 +632,14 @@ const CreatorDashboard = () => {
                 </button>
                 <button
                   onClick={() => setShowWelcomeBanner(false)}
-                  className={`px-4 py-2 bg-white/10 hover:bg-white/20 text-white/90 ${typography.bodySmall} font-medium ${cardVariants.tertiary.radius} ${animations.cardPress}`}
+                  className={cn(
+                    spacing.cardPadding.tertiary,
+                    "bg-white/10 hover:bg-white/20 text-white/90",
+                    typography.bodySmall,
+                    "font-medium",
+                    radius.md,
+                    animations.cardPress
+                  )}
                 >
                   Explore Dashboard
                 </button>
@@ -648,7 +693,7 @@ const CreatorDashboard = () => {
                   <div className="flex flex-col sm:flex-row gap-3 justify-center">
                     <button
                       onClick={() => {
-                        triggerHaptic('medium');
+                        triggerHaptic(HapticPatterns.medium);
                         navigate('/creator-contracts');
                       }}
                       className={`${buttons.primary} flex items-center justify-center gap-2`}
@@ -658,7 +703,7 @@ const CreatorDashboard = () => {
                     </button>
                     <button
                       onClick={() => {
-                        triggerHaptic('light');
+                        triggerHaptic(HapticPatterns.light);
                         navigate('/brand-directory');
                       }}
                       className={`${buttons.secondary} flex items-center justify-center gap-2`}
@@ -752,7 +797,7 @@ const CreatorDashboard = () => {
             <button 
               data-tutorial="earnings-card"
               onClick={() => {
-                triggerHaptic('medium');
+                triggerHaptic(HapticPatterns.medium);
                 navigate('/creator-analytics');
               }}
               className={`w-full ${getCardClasses('primary')} relative overflow-hidden ${animations.cardHover} ${animations.cardPress} text-left`}
@@ -774,7 +819,7 @@ const CreatorDashboard = () => {
                       onClick={(e) => {
                         e.stopPropagation();
                         setTimeframe('month');
-                        triggerHaptic('light');
+                        triggerHaptic(HapticPatterns.light);
                       }}
                       className={`px-3 py-1 text-xs rounded transition-all ${
                         timeframe === 'month'
@@ -789,7 +834,7 @@ const CreatorDashboard = () => {
                       onClick={(e) => {
                         e.stopPropagation();
                         setTimeframe('lastMonth');
-                        triggerHaptic('light');
+                        triggerHaptic(HapticPatterns.light);
                       }}
                       className={`px-3 py-1 text-xs rounded transition-all ${
                         timeframe === 'lastMonth'
@@ -804,7 +849,7 @@ const CreatorDashboard = () => {
                       onClick={(e) => {
                         e.stopPropagation();
                         setTimeframe('allTime');
-                        triggerHaptic('light');
+                        triggerHaptic(HapticPatterns.light);
                       }}
                       className={`px-3 py-1 text-xs rounded transition-all ${
                         timeframe === 'allTime'
@@ -872,7 +917,7 @@ const CreatorDashboard = () => {
                 {/* Mobile: Show bottom sheet button */}
                 <button
                   onClick={() => {
-                    triggerHaptic('light');
+                    triggerHaptic(HapticPatterns.light);
                     setShowQuickActionsSheet(true);
                   }}
                   className={`${sectionHeader.action} md:hidden`}
@@ -894,7 +939,7 @@ const CreatorDashboard = () => {
                         icon={<Icon className={`${iconSizes.lg} ${action.iconColor}`} />}
                         label={action.label}
                         onClick={() => {
-                          triggerHaptic('light');
+                          triggerHaptic(HapticPatterns.light);
                           action.onClick();
                         }}
                         variant="tertiary"
@@ -915,7 +960,7 @@ const CreatorDashboard = () => {
                 <h2 className={sectionHeader.title}>Active Deals</h2>
                 <button 
                   onClick={() => {
-                    triggerHaptic('light');
+                    triggerHaptic(HapticPatterns.light);
                     navigate('/creator-contracts');
                   }}
                   className={sectionHeader.action}
@@ -929,7 +974,7 @@ const CreatorDashboard = () => {
                   <p className={typography.bodySmall}>No active deals yet</p>
                   <button
                     onClick={() => {
-                      triggerHaptic('light');
+                      triggerHaptic(HapticPatterns.light);
                       navigate('/creator-contracts');
                     }}
                     className={`mt-4 ${sectionHeader.action}`}
@@ -952,7 +997,7 @@ const CreatorDashboard = () => {
                       variant="tertiary" 
                       className={`${animations.cardHover} ${animations.cardPress} cursor-pointer`}
                       onClick={() => {
-                        triggerHaptic('light');
+                        triggerHaptic(HapticPatterns.light);
                         navigate(`/creator-contracts/${deal.id}`);
                       }}
                     >
@@ -1020,7 +1065,7 @@ const CreatorDashboard = () => {
                       <BaseCard 
                         variant="tertiary" 
                         className={`${animations.cardHover} ${animations.cardPress} cursor-pointer`}
-                        onClick={() => triggerHaptic('light')}
+                        onClick={() => triggerHaptic(HapticPatterns.light)}
                       >
                       <div className="flex items-start gap-3">
                         <div className={`w-10 h-10 rounded-xl ${activity.bgColor} flex items-center justify-center flex-shrink-0`}>
@@ -1049,7 +1094,7 @@ const CreatorDashboard = () => {
                 <h2 className={sectionHeader.title}>Upcoming Payments</h2>
                 <button 
                   onClick={() => {
-                    triggerHaptic('light');
+                    triggerHaptic(HapticPatterns.light);
                     navigate('/creator-payments');
                   }}
                   className={sectionHeader.action}
@@ -1069,7 +1114,7 @@ const CreatorDashboard = () => {
                       variant="tertiary" 
                       className={`${animations.cardHover} ${animations.cardPress} cursor-pointer`}
                       onClick={() => {
-                        triggerHaptic('light');
+                        triggerHaptic(HapticPatterns.light);
                         navigate('/creator-payments');
                       }}
                     >
@@ -1129,7 +1174,7 @@ const CreatorDashboard = () => {
           <button
             onClick={() => {
               setActiveTab('home');
-              triggerHaptic('light');
+              triggerHaptic(HapticPatterns.light);
             }}
             className={`flex flex-col items-center gap-1 transition-all duration-150 relative active:scale-[0.97] ${
               activeTab === 'home' 
@@ -1152,7 +1197,7 @@ const CreatorDashboard = () => {
             data-tutorial="deals-nav"
             onClick={() => {
               setActiveTab('deals');
-              triggerHaptic('light');
+              triggerHaptic(HapticPatterns.light);
             }}
             className={`flex flex-col items-center gap-1 transition-all duration-150 relative active:scale-[0.97] ${
               activeTab === 'deals' ? 'text-white' : 'text-purple-300 hover:text-white'
@@ -1173,7 +1218,7 @@ const CreatorDashboard = () => {
             data-tutorial="payments-nav"
             onClick={() => {
               setActiveTab('payments');
-              triggerHaptic('light');
+              triggerHaptic(HapticPatterns.light);
             }}
             className={`flex flex-col items-center gap-1 transition-all duration-150 relative active:scale-[0.97] ${
               activeTab === 'payments' ? 'text-white' : 'text-purple-300 hover:text-white'
@@ -1194,7 +1239,7 @@ const CreatorDashboard = () => {
             data-tutorial="protection-nav"
             onClick={() => {
               setActiveTab('protection');
-              triggerHaptic('light');
+              triggerHaptic(HapticPatterns.light);
             }}
             className={`flex flex-col items-center gap-1 transition-all duration-150 relative active:scale-[0.97] ${
               activeTab === 'protection' ? 'text-white' : 'text-purple-300 hover:text-white'
@@ -1215,7 +1260,7 @@ const CreatorDashboard = () => {
             data-tutorial="messages-nav"
             onClick={() => {
               navigate('/messages');
-              triggerHaptic('light');
+              triggerHaptic(HapticPatterns.light);
             }}
             className={`flex flex-col items-center gap-1 transition-all duration-150 relative active:scale-[0.97] ${
               location.pathname === '/messages' ? 'text-white' : 'text-purple-300 hover:text-white'
@@ -1269,7 +1314,7 @@ const CreatorDashboard = () => {
                   icon={<Icon className={`w-6 h-6 ${action.iconColor}`} />}
                   label={action.label}
                   onClick={() => {
-                    triggerHaptic('medium');
+                    triggerHaptic(HapticPatterns.medium);
                     action.onClick();
                     setShowQuickActionsSheet(false);
                   }}
