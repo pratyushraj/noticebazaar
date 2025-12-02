@@ -9,7 +9,7 @@ import { useBrandDeals } from '@/lib/hooks/useBrandDeals';
 import { NoContractsEmptyState } from '@/components/empty-states/PreconfiguredEmptyStates';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { animations, spacing, typography, iconSizes, scroll, gradients, buttons, glass, shadows, radius, vision, motion as motionTokens, colors, separators, sectionHeader } from '@/lib/design-system';
+import { animations, spacing, typography, iconSizes, scroll, gradients, buttons, glass, shadows, radius, vision, motion as motionTokens, colors, zIndex } from '@/lib/design-system';
 import { triggerHaptic, HapticPatterns } from '@/lib/utils/haptics';
 import { cn } from '@/lib/utils';
 import { BaseCard } from '@/components/ui/card-variants';
