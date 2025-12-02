@@ -9,7 +9,7 @@ import { SegmentedControl } from '@/components/ui/segmented-control';
 import { motion } from 'framer-motion';
 import { ContextualTipsProvider } from '@/components/contextual-tips/ContextualTipsProvider';
 import { FilteredNoMatchesEmptyState, NoDealsEmptyState } from '@/components/empty-states/PreconfiguredEmptyStates';
-import { sectionLayout, animations, spacing, typography, iconSizes, scroll, radius, shadows, zIndex } from '@/lib/design-system';
+import { sectionLayout, animations, spacing, typography, iconSizes, scroll, radius, shadows, zIndex, glass, vision, motion as motionTokens, colors } from '@/lib/design-system';
 import { BaseCard, StatCard } from '@/components/ui/card-variants';
 import { CreatorNavigationWrapper } from '@/components/navigation/CreatorNavigationWrapper';
 import { Divider } from '@/components/ui/Divider';
@@ -197,20 +197,25 @@ const CreatorContracts = () => {
           return (
             <motion.div
               key={deal.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.05, duration: 0.3 }}
-              whileHover={{ scale: 1.01, y: -2 }}
-              whileTap={{ scale: 0.98 }}
+              initial={motionTokens.slide.up.initial}
+              animate={motionTokens.slide.up.animate}
+              transition={{ ...motionTokens.slide.up.transition, delay: index * 0.05 }}
+              whileHover={window.innerWidth > 768 ? animations.microHover : undefined}
+              whileTap={animations.microTap}
             >
               <BaseCard 
                 variant="secondary" 
-                className={`${animations.cardHover} ${animations.cardPress} cursor-pointer`}
+                className={cn(
+                  animations.cardHover,
+                  "cursor-pointer relative overflow-hidden"
+                )}
                 onClick={() => {
                   triggerHaptic(HapticPatterns.light);
                   navigate(`/creator-contracts/${deal.id}`);
                 }}
               >
+                {/* Spotlight on hover */}
+                <div className={cn(vision.spotlight.hover, "opacity-0 group-hover:opacity-100")} />
               {/* Deal Header */}
               <div className={cn("flex items-start justify-between", spacing.compact)}>
                 <div className="flex-1">
@@ -280,7 +285,7 @@ const CreatorContracts = () => {
 
       {/* Empty State */}
       {filteredDeals.length === 0 && (
-        <div className="py-8">
+        <div className={cn("py-8")}>
           {deals.length === 0 ? (
             <NoDealsEmptyState
               onAddDeal={() => navigate('/contract-upload')}
@@ -295,44 +300,35 @@ const CreatorContracts = () => {
         </div>
       )}
 
-            {/* Empty State */}
-            {filteredDeals.length === 0 && (
-              <div className="py-8">
-                {deals.length === 0 ? (
-                  <NoDealsEmptyState
-                    onAddDeal={() => navigate('/contract-upload')}
-                    onExploreBrands={() => navigate('/brand-directory')}
-                  />
-                ) : (
-                  <FilteredNoMatchesEmptyState
-                    onClearFilters={() => setActiveFilter('all')}
-                    filterCount={activeFilter !== 'all' ? 1 : 0}
-                  />
-                )}
-              </div>
-            )}
-
-            {/* FAB - Add New Deal */}
-            <button 
+            {/* FAB - Add New Deal - iOS 17 + visionOS */}
+            <motion.button 
               onClick={() => {
                 triggerHaptic(HapticPatterns.medium);
                 navigate('/contract-upload');
               }}
+              whileTap={animations.microTap}
+              whileHover={window.innerWidth > 768 ? animations.microHover : undefined}
               className={cn(
-                "fixed bottom-24 right-6",
-                "bg-gradient-to-br from-blue-600 to-blue-700 hover:from-blue-500 hover:to-blue-600",
-                "text-white rounded-full p-5",
-                shadows.xl,
-                "hover:shadow-[0_12px_40px_rgba(59,130,246,0.6)]",
-                "transition-all duration-200 hover:scale-110",
-                animations.cardPress,
+                "fixed bottom-24 right-6 relative overflow-hidden",
+                gradients.primary,
+                "text-white",
+                radius.full,
+                spacing.cardPadding.primary,
+                shadows.vision,
                 zIndex.modal,
-                "backdrop-blur-[20px] border border-white/20"
+                glass.apple,
+                "transition-all duration-200"
               )}
               aria-label="Add new deal"
             >
-              <Plus className={iconSizes.lg} />
-            </button>
+              {/* Spotlight gradient */}
+              <div className={cn(vision.spotlight.base, "opacity-30")} />
+              
+              {/* Glare effect */}
+              <div className={vision.glare.soft} />
+              
+              <Plus className={cn(iconSizes.lg, "relative z-10")} />
+            </motion.button>
           </div>
         </CreatorNavigationWrapper>
       </ContextualTipsProvider>
