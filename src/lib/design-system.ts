@@ -264,6 +264,83 @@ export const shadows = {
   depth: "shadow-[0_0_50px_-10px_rgba(0,0,0,0.45)]",
   depthStrong: "shadow-[0_0_80px_-15px_rgba(0,0,0,0.5)]",
   depthSubtle: "shadow-[0_0_30px_-5px_rgba(0,0,0,0.3)]",
+  // Vision Pro depth system
+  vision: "shadow-[0_0_60px_rgba(0,0,0,0.45)]",
+} as const;
+
+// ============================================
+// VISIONOS TOKENS (Vision Pro depth system)
+// ============================================
+
+export const vision = {
+  spotlight: {
+    base: "absolute inset-x-0 top-0 h-20 bg-gradient-to-b from-white/10 to-transparent pointer-events-none",
+    hover: "absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-white/15 to-transparent pointer-events-none opacity-0 hover:opacity-100 transition-opacity duration-300",
+  },
+  glare: {
+    soft: "absolute inset-0 bg-gradient-radial from-white/5 via-transparent to-transparent pointer-events-none",
+  },
+  depth: {
+    elevation: "shadow-[0_0_60px_rgba(0,0,0,0.45)] backdrop-blur-[30px] bg-[rgba(255,255,255,0.08)]",
+  },
+} as const;
+
+// ============================================
+// iOS 17 GLASS TOKENS
+// ============================================
+
+export const ios = {
+  glass: {
+    bg: "bg-[rgba(255,255,255,0.08)]",
+    border: "border border-white/10",
+    shadow: "shadow-[0_0_60px_rgba(0,0,0,0.45)]",
+    full: "bg-[rgba(255,255,255,0.08)] backdrop-blur-[30px] border border-white/10 shadow-[0_0_60px_rgba(0,0,0,0.45)]",
+  },
+} as const;
+
+// ============================================
+// MOTION TOKENS (Framer Motion presets)
+// ============================================
+
+export const motion = {
+  spring: {
+    elastic: {
+      type: "spring",
+      damping: 18,
+      stiffness: 200,
+      mass: 0.7,
+    },
+    gentle: {
+      type: "spring",
+      damping: 25,
+      stiffness: 150,
+      mass: 0.8,
+    },
+  },
+  fade: {
+    in: {
+      initial: { opacity: 0 },
+      animate: { opacity: 1 },
+      transition: { duration: 0.2, ease: "easeOut" },
+    },
+    out: {
+      initial: { opacity: 1 },
+      animate: { opacity: 0 },
+      transition: { duration: 0.2, ease: "easeIn" },
+    },
+  },
+  slide: {
+    up: {
+      initial: { opacity: 0, y: 20 },
+      animate: { opacity: 1, y: 0 },
+      transition: animations.spring,
+    },
+    down: {
+      initial: { opacity: 0, y: -20 },
+      animate: { opacity: 1, y: 0 },
+      transition: animations.spring,
+    },
+  },
 } as const;
 
 // ============================================

@@ -13,7 +13,7 @@ import { getInitials } from '@/lib/utils/avatar';
 import { motion, AnimatePresence } from 'framer-motion';
 import { triggerHaptic, HapticPatterns } from '@/lib/utils/haptics';
 import { cn } from '@/lib/utils';
-import { getCardClasses, sectionLayout, animations, spacing, typography, separators, iconSizes, scroll, sectionHeader, gradients, buttons, cardVariants, glass, shadows, spotlight, radius, zIndex } from '@/lib/design-system';
+import { getCardClasses, sectionLayout, animations, spacing, typography, separators, iconSizes, scroll, sectionHeader, gradients, buttons, cardVariants, glass, shadows, spotlight, radius, zIndex, vision, ios, motion as motionTokens } from '@/lib/design-system';
 import { PremiumButton } from '@/components/ui/PremiumButton';
 import { ErrorBoundary } from '@/components/ui/error-boundary';
 import { BaseCard, SectionCard, StatCard, ActionCard } from '@/components/ui/card-variants';
@@ -793,119 +793,174 @@ const CreatorDashboard = () => {
             />
           </div>
 
-            {/* Main Earnings Card */}
-            <button 
+            {/* Main Earnings Card - iOS 17 + visionOS */}
+            <motion.button 
               data-tutorial="earnings-card"
               onClick={() => {
                 triggerHaptic(HapticPatterns.medium);
                 navigate('/creator-analytics');
               }}
-              className={`w-full ${getCardClasses('primary')} relative overflow-hidden ${animations.cardHover} ${animations.cardPress} text-left`}
+              whileTap={animations.microTap}
+              whileHover={window.innerWidth > 768 ? animations.microHover : undefined}
+              className={cn(
+                "w-full relative overflow-hidden text-left",
+                glass.apple,
+                shadows.vision,
+                radius.lg,
+                spacing.cardPadding.primary,
+                animations.cardHover,
+                "transition-all duration-200"
+              )}
               aria-label="View analytics"
             >
-              <div className="absolute top-0 right-0 w-32 h-32 bg-purple-500/10 rounded-full blur-3xl"></div>
+              {/* Vision Pro depth elevation */}
+              <div className={vision.depth.elevation} />
               
-              <div className="relative">
+              {/* Spotlight gradient */}
+              <div className={cn(vision.spotlight.base, "opacity-40")} />
+              
+              {/* Glare effect */}
+              <div className={vision.glare.soft} />
+              
+              {/* Background glow */}
+              <div className={cn("absolute top-0 right-0 w-32 h-32", radius.full, "bg-purple-500/10 blur-3xl")} />
+              
+              <div className="relative z-10">
                 {/* Timeframe Selector */}
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-2">
-                    <div className="w-10 h-10 rounded-full bg-purple-500/20 flex items-center justify-center">
-                      <DollarSign className={`${iconSizes.md} text-purple-300`} />
-                        </div>
-                    <span className={typography.body + " font-medium"}>Earnings</span>
-                        </div>
-                  <div className="flex gap-1 bg-white/5 rounded-lg p-1">
-                    <button
+                <div className={cn("flex items-center justify-between", spacing.compact)}>
+                  <div className={cn("flex items-center gap-2")}>
+                    <div className={cn(
+                      "w-10 h-10",
+                      radius.full,
+                      "bg-purple-500/20 flex items-center justify-center",
+                      shadows.sm
+                    )}>
+                      <DollarSign className={cn(iconSizes.md, "text-purple-300")} />
+                    </div>
+                    <span className={cn(typography.body, "font-medium")}>Earnings</span>
+                  </div>
+                  <div className={cn(
+                    "flex gap-1",
+                    glass.appleSubtle,
+                    radius.md,
+                    spacing.cardPadding.tertiary
+                  )}>
+                    <motion.button
                       onClick={(e) => {
                         e.stopPropagation();
                         setTimeframe('month');
                         triggerHaptic(HapticPatterns.light);
                       }}
-                      className={`px-3 py-1 text-xs rounded transition-all ${
+                      whileTap={animations.microTap}
+                      className={cn(
+                        spacing.cardPadding.tertiary,
+                        typography.bodySmall,
+                        radius.sm,
+                        "transition-all",
                         timeframe === 'month'
                           ? 'bg-purple-600 text-white'
                           : 'text-purple-300 hover:text-white'
-                      }`}
+                      )}
                       aria-label="View this month's earnings"
                     >
                       This Month
-                    </button>
-                    <button
+                    </motion.button>
+                    <motion.button
                       onClick={(e) => {
                         e.stopPropagation();
                         setTimeframe('lastMonth');
                         triggerHaptic(HapticPatterns.light);
                       }}
-                      className={`px-3 py-1 text-xs rounded transition-all ${
+                      whileTap={animations.microTap}
+                      className={cn(
+                        spacing.cardPadding.tertiary,
+                        typography.bodySmall,
+                        radius.sm,
+                        "transition-all",
                         timeframe === 'lastMonth'
                           ? 'bg-purple-600 text-white'
                           : 'text-purple-300 hover:text-white'
-                      }`}
+                      )}
                       aria-label="View last month's earnings"
                     >
                       Last Month
-                    </button>
-                    <button
+                    </motion.button>
+                    <motion.button
                       onClick={(e) => {
                         e.stopPropagation();
                         setTimeframe('allTime');
                         triggerHaptic(HapticPatterns.light);
                       }}
-                      className={`px-3 py-1 text-xs rounded transition-all ${
+                      whileTap={animations.microTap}
+                      className={cn(
+                        spacing.cardPadding.tertiary,
+                        typography.bodySmall,
+                        radius.sm,
+                        "transition-all",
                         timeframe === 'allTime'
                           ? 'bg-purple-600 text-white'
                           : 'text-purple-300 hover:text-white'
-                      }`}
+                      )}
                       aria-label="View all time earnings"
                     >
                       All Time
-                    </button>
-                      </div>
+                    </motion.button>
+                  </div>
                 </div>
 
-                <div className="flex items-end justify-between mb-4">
-                        <div>
-                    <div className={`${typography.amount} mb-2`}>₹{(stats.earnings / 1000).toFixed(1)}K</div>
-                    <div className="flex items-center gap-2">
-                      <span className={`text-green-400 ${typography.bodySmall} flex items-center gap-1`}>
+                <div className={cn("flex items-end justify-between", spacing.compact)}>
+                  <div>
+                    <div className={cn(typography.amount, "mb-2")}>₹{(stats.earnings / 1000).toFixed(1)}K</div>
+                    <div className={cn("flex items-center gap-2")}>
+                      <span className={cn("text-green-400", typography.bodySmall, "flex items-center gap-1")}>
                         <TrendingUp className={iconSizes.sm} />
                         +{stats.monthlyGrowth}%
                       </span>
-                      <span className={`text-purple-300 ${typography.bodySmall}`}>
+                      <span className={cn("text-purple-300", typography.bodySmall)}>
                         {timeframe === 'month' ? 'vs last month' : timeframe === 'lastMonth' ? 'vs previous' : 'growth'}
                       </span>
-                        </div>
-                        </div>
-                  <div className={`flex items-center gap-1 text-purple-300 ${typography.bodySmall}`}>
+                    </div>
+                  </div>
+                  <div className={cn("flex items-center gap-1 text-purple-300", typography.bodySmall)}>
                     <span>View Details</span>
                     <ChevronRight className={iconSizes.sm} />
-                      </div>
+                  </div>
                 </div>
 
                 {/* Goal Progress bar with labels */}
-                <div className="mb-2">
-                  <div className={`flex items-center justify-between ${typography.caption} mb-1.5`}>
-                    <span className="flex items-center gap-1">
+                <div className={cn("mt-4")}>
+                  <div className={cn("flex items-center justify-between", typography.caption, "mb-1.5")}>
+                    <span className={cn("flex items-center gap-1")}>
                       <Target className={iconSizes.xs} />
                       Progress to Goal
                     </span>
-                    <span className={`${typography.bodySmall} font-semibold`}>{earningsProgress.toFixed(0)}%</span>
-                    </div>
-                  <div className="relative w-full bg-white/10 rounded-full h-3 overflow-hidden">
+                    <span className={cn(typography.bodySmall, "font-semibold")}>{earningsProgress.toFixed(0)}%</span>
+                  </div>
+                  <div className={cn(
+                    "relative w-full",
+                    colors.bg.secondary,
+                    radius.full,
+                    "h-3 overflow-hidden"
+                  )}>
                     <motion.div 
                       initial={{ width: 0 }}
                       animate={{ width: `${Math.min(earningsProgress, 100)}%` }}
-                      transition={{ duration: 0.8, ease: "easeOut" }}
-                      className="bg-gradient-to-r from-teal-500 to-cyan-500 h-3 rounded-full shadow-lg shadow-teal-500/30"
-                    ></motion.div>
-                                </div>
-                  <div className={`flex items-center justify-between ${typography.caption} mt-1`}>
+                      transition={motionTokens.spring.gentle}
+                      className={cn(
+                        "bg-gradient-to-r from-teal-500 to-cyan-500 h-3",
+                        radius.full,
+                        shadows.lg,
+                        "shadow-teal-500/30"
+                      )}
+                    />
+                  </div>
+                  <div className={cn("flex items-center justify-between", typography.caption, "mt-1")}>
                     <span>₹{(stats.earnings / 1000).toFixed(0)}K earned</span>
                     <span>Goal: ₹{(stats.goal / 1000).toFixed(0)}K</span>
-                              </div>
                   </div>
+                </div>
               </div>
-            </button>
+            </motion.button>
 
             {/* Section Separator */}
             <div className={separators.section} />
@@ -931,19 +986,21 @@ const CreatorDashboard = () => {
                   return (
                     <motion.div
                       key={action.id}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: index * 0.1, duration: 0.3 }}
+                      initial={motionTokens.slide.up.initial}
+                      animate={motionTokens.slide.up.animate}
+                      transition={{ ...motionTokens.slide.up.transition, delay: index * 0.1 }}
+                      whileTap={animations.microTap}
+                      whileHover={window.innerWidth > 768 ? animations.microHover : undefined}
                     >
                       <ActionCard
-                        icon={<Icon className={`${iconSizes.lg} ${action.iconColor}`} />}
+                        icon={<Icon className={cn(iconSizes.lg, action.iconColor)} />}
                         label={action.label}
                         onClick={() => {
                           triggerHaptic(HapticPatterns.light);
                           action.onClick();
                         }}
                         variant="tertiary"
-                        className={`${action.color}`}
+                        className={action.color}
                       />
                     </motion.div>
                   );
@@ -969,171 +1026,217 @@ const CreatorDashboard = () => {
                 </button>
               </div>
               {activeDeals.length === 0 ? (
-                <BaseCard variant="tertiary" className="p-8 text-center">
-                  <Briefcase className={`${iconSizes.xl} text-purple-400/50 mx-auto mb-3`} />
+                <BaseCard variant="tertiary" className={cn(spacing.cardPadding.secondary, "text-center relative overflow-hidden")}>
+                  {/* Spotlight */}
+                  <div className={cn(vision.spotlight.base, "opacity-20")} />
+                  <Briefcase className={cn(iconSizes.xl, "text-purple-400/50 mx-auto mb-3")} />
                   <p className={typography.bodySmall}>No active deals yet</p>
-                  <button
+                  <motion.button
                     onClick={() => {
                       triggerHaptic(HapticPatterns.light);
                       navigate('/creator-contracts');
                     }}
-                    className={`mt-4 ${sectionHeader.action}`}
+                    whileTap={animations.microTap}
+                    className={cn("mt-4", sectionHeader.action)}
                   >
                     View all deals →
-                  </button>
+                  </motion.button>
                 </BaseCard>
               ) : (
-                <div className="space-y-4 md:space-y-5">
+                <div className={spacing.card}>
                   {activeDeals.map((deal, index) => (
                   <motion.div
                     key={deal.id}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: index * 0.1, duration: 0.3 }}
-                    whileHover={{ scale: 1.01, y: -2 }}
-                    whileTap={{ scale: 0.98 }}
+                    initial={motionTokens.slide.up.initial}
+                    animate={motionTokens.slide.up.animate}
+                    transition={{ ...motionTokens.slide.up.transition, delay: index * 0.1 }}
+                    whileHover={window.innerWidth > 768 ? animations.microHover : undefined}
+                    whileTap={animations.microTap}
                   >
                     <BaseCard 
                       variant="tertiary" 
-                      className={`${animations.cardHover} ${animations.cardPress} cursor-pointer`}
+                      className={cn(
+                        animations.cardHover,
+                        "cursor-pointer relative overflow-hidden"
+                      )}
                       onClick={() => {
                         triggerHaptic(HapticPatterns.light);
                         navigate(`/creator-contracts/${deal.id}`);
                       }}
                     >
-                    <div className="flex items-start justify-between mb-3">
-                      <div>
-                        <h3 className={typography.h4 + " mb-1"}>{deal.title}</h3>
-                        <div className={typography.bodySmall}>{deal.brand}</div>
-                </div>
-                      <div className={`${typography.amountSmall} text-green-400`}>
-                        ₹{(deal.value / 1000).toFixed(0)}K
-                    </div>
-                  </div>
-                    
-                    <div className="mb-2">
-                      <div className={`flex items-center justify-between ${typography.caption} mb-1`}>
-                        <span>Progress</span>
-                        <span>{deal.progress}%</span>
-              </div>
-                      <div className="w-full bg-white/10 rounded-full h-2 overflow-hidden">
-                        <motion.div
-                          initial={{ width: 0 }}
-                          animate={{ width: `${deal.progress}%` }}
-                          transition={{ duration: 0.6, delay: index * 0.1, ease: "easeOut" }}
-                          className="bg-gradient-to-r from-blue-500 to-purple-500 h-2 rounded-full"
-                        ></motion.div>
+                      {/* Spotlight on hover */}
+                      <div className={cn(vision.spotlight.hover, "opacity-0 group-hover:opacity-100")} />
+                      
+                      <div className={cn("flex items-start justify-between", spacing.compact)}>
+                        <div>
+                          <h3 className={cn(typography.h4, "mb-1")}>{deal.title}</h3>
+                          <div className={typography.bodySmall}>{deal.brand}</div>
+                        </div>
+                        <div className={cn(typography.amountSmall, "text-green-400")}>
+                          ₹{(deal.value / 1000).toFixed(0)}K
+                        </div>
                       </div>
-              </div>
+                      
+                      <div className={cn("mt-3")}>
+                        <div className={cn("flex items-center justify-between", typography.caption, "mb-1")}>
+                          <span>Progress</span>
+                          <span>{deal.progress}%</span>
+                        </div>
+                        <div className={cn(
+                          "w-full",
+                          colors.bg.secondary,
+                          radius.full,
+                          "h-2 overflow-hidden"
+                        )}>
+                          <motion.div
+                            initial={{ width: 0 }}
+                            animate={{ width: `${deal.progress}%` }}
+                            transition={motionTokens.spring.gentle}
+                            className={cn(
+                              "bg-gradient-to-r from-blue-500 to-purple-500 h-2",
+                              radius.full
+                            )}
+                          />
+                        </div>
+                      </div>
 
-                    <div className={`flex items-center justify-between ${typography.caption}`}>
-                      <span>{deal.status === 'active' ? '✅ Active' : '🔵 Negotiation'}</span>
-                      <span>Due: {deal.deadline}</span>
-              </div>
+                      <div className={cn("flex items-center justify-between", typography.caption, "mt-2")}>
+                        <span>{deal.status === 'active' ? '✅ Active' : '🔵 Negotiation'}</span>
+                        <span>Due: {deal.deadline}</span>
+                      </div>
                     </BaseCard>
                   </motion.div>
                   ))}
-            </div>
-          )}
+                </div>
+              )}
               </div>
 
             {/* Section Separator */}
             <div className={separators.section} />
 
-            {/* Recent Activity - Enhanced spacing */}
+            {/* Recent Activity - iOS 17 + visionOS */}
             <div className={spacing.loose}>
-              <h2 className={`${sectionHeader.title} ${sectionHeader.base.split(' ')[0]} ${sectionHeader.base.split(' ')[1]} ${sectionHeader.base.split(' ')[2]}`}>Recent Activity</h2>
+              <div className={sectionHeader.base}>
+                <h2 className={sectionHeader.title}>Recent Activity</h2>
+              </div>
               {recentActivity.length === 0 ? (
-                <BaseCard variant="tertiary" className="p-8 text-center">
-                  <Clock className={`${iconSizes.xl} text-purple-400/50 mx-auto mb-3`} />
+                <BaseCard variant="tertiary" className={cn(spacing.cardPadding.secondary, "text-center relative overflow-hidden")}>
+                  {/* Spotlight */}
+                  <div className={cn(vision.spotlight.base, "opacity-20")} />
+                  <Clock className={cn(iconSizes.xl, "text-purple-400/50 mx-auto mb-3")} />
                   <p className={typography.bodySmall}>No recent activity</p>
-                  <p className={`${typography.caption} mt-1`}>Activity will appear here as you complete deals</p>
+                  <p className={cn(typography.caption, "mt-1")}>Activity will appear here as you complete deals</p>
                 </BaseCard>
               ) : (
-                <div className="space-y-4 md:space-y-5">
-                {recentActivity.map((activity, index) => {
-                  const Icon = activity.icon;
+                <div className={spacing.card}>
+                  {recentActivity.map((activity, index) => {
+                    const Icon = activity.icon;
                     return (
-                    <motion.div
-                      key={activity.id}
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: index * 0.1, duration: 0.3 }}
-                      whileHover={{ scale: 1.01, y: -2 }}
-                      whileTap={{ scale: 0.98 }}
-                    >
-                      <BaseCard 
-                        variant="tertiary" 
-                        className={`${animations.cardHover} ${animations.cardPress} cursor-pointer`}
-                        onClick={() => triggerHaptic(HapticPatterns.light)}
+                      <motion.div
+                        key={activity.id}
+                        initial={motionTokens.slide.up.initial}
+                        animate={motionTokens.slide.up.animate}
+                        transition={{ ...motionTokens.slide.up.transition, delay: index * 0.1 }}
+                        whileHover={window.innerWidth > 768 ? animations.microHover : undefined}
+                        whileTap={animations.microTap}
                       >
-                      <div className="flex items-start gap-3">
-                        <div className={`w-10 h-10 rounded-xl ${activity.bgColor} flex items-center justify-center flex-shrink-0`}>
-                          <Icon className={`${iconSizes.md} ${activity.color}`} />
-              </div>
-                        <div className="flex-1 min-w-0">
-                          <h3 className={`${typography.h4} mb-1`}>{activity.title}</h3>
-                          <p className="text-sm text-purple-200 mb-1">{activity.description}</p>
-                          <p className="text-xs text-purple-300">{activity.time}</p>
-              </div>
+                        <BaseCard 
+                          variant="tertiary" 
+                          className={cn(
+                            animations.cardHover,
+                            "cursor-pointer relative overflow-hidden"
+                          )}
+                          onClick={() => triggerHaptic(HapticPatterns.light)}
+                        >
+                          {/* Spotlight on hover */}
+                          <div className={cn(vision.spotlight.hover, "opacity-0 group-hover:opacity-100")} />
+                          
+                          <div className={cn("flex items-start gap-3")}>
+                            <div className={cn(
+                              "w-10 h-10",
+                              radius.md,
+                              activity.bgColor,
+                              "flex items-center justify-center flex-shrink-0",
+                              shadows.sm
+                            )}>
+                              <Icon className={cn(iconSizes.md, activity.color)} />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <h3 className={cn(typography.h4, "mb-1")}>{activity.title}</h3>
+                              <p className={cn(typography.bodySmall, "text-purple-200 mb-1")}>{activity.description}</p>
+                              <p className={cn(typography.caption, "text-purple-300")}>{activity.time}</p>
+                            </div>
+                          </div>
+                        </BaseCard>
+                      </motion.div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
-                      </BaseCard>
-                    </motion.div>
-                  );
-                })}
-            </div>
-          )}
-        </div>
 
             {/* Section Separator */}
             <div className={separators.section} />
 
-            {/* Upcoming Payments */}
+            {/* Upcoming Payments - iOS 17 + visionOS */}
             <div>
               <div className={sectionHeader.base}>
                 <h2 className={sectionHeader.title}>Upcoming Payments</h2>
-                <button 
+                <motion.button 
                   onClick={() => {
                     triggerHaptic(HapticPatterns.light);
                     navigate('/creator-payments');
                   }}
+                  whileTap={animations.microTap}
                   className={sectionHeader.action}
                 >
                   View All →
-                </button>
-            </div>
-              <div className="space-y-4 md:space-y-5">
+                </motion.button>
+              </div>
+              <div className={spacing.card}>
                 {upcomingPayments.map((payment, index) => (
                   <motion.div
                     key={payment.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.1, duration: 0.3 }}
+                    initial={motionTokens.slide.up.initial}
+                    animate={motionTokens.slide.up.animate}
+                    transition={{ ...motionTokens.slide.up.transition, delay: index * 0.1 }}
+                    whileHover={window.innerWidth > 768 ? animations.microHover : undefined}
+                    whileTap={animations.microTap}
                   >
                     <BaseCard 
                       variant="tertiary" 
-                      className={`${animations.cardHover} ${animations.cardPress} cursor-pointer`}
+                      className={cn(
+                        animations.cardHover,
+                        "cursor-pointer relative overflow-hidden"
+                      )}
                       onClick={() => {
                         triggerHaptic(HapticPatterns.light);
                         navigate('/creator-payments');
                       }}
                     >
-                    <div className="flex items-center justify-between">
-                      <div className="flex-1">
-                        <h3 className={typography.h4 + " mb-1"}>{payment.title}</h3>
-                        <div className={`flex items-center gap-2 ${typography.bodySmall}`}>
-                          <Clock className={iconSizes.xs} />
-                          <span>Expected: {payment.date}</span>
+                      {/* Spotlight on hover */}
+                      <div className={cn(vision.spotlight.hover, "opacity-0 group-hover:opacity-100")} />
+                      
+                      <div className={cn("flex items-center justify-between")}>
+                        <div className="flex-1">
+                          <h3 className={cn(typography.h4, "mb-1")}>{payment.title}</h3>
+                          <div className={cn("flex items-center gap-2", typography.bodySmall)}>
+                            <Clock className={iconSizes.xs} />
+                            <span>Expected: {payment.date}</span>
+                          </div>
                         </div>
-                      </div>
-                      <div className="text-right">
-                        <div className={`${typography.amountSmall} text-green-400`}>
-                          ₹{(payment.amount / 1000).toFixed(0)}K
-                        </div>
-                        <div className={`${typography.caption} flex items-center gap-1 ${payment.status === 'pending' ? 'text-yellow-400' : 'text-blue-400'}`}>
-                          {payment.status === 'pending' ? (
-                            <>
-                              <Clock className={iconSizes.xs} />
+                        <div className="text-right">
+                          <div className={cn(typography.amountSmall, "text-green-400")}>
+                            ₹{(payment.amount / 1000).toFixed(0)}K
+                          </div>
+                          <div className={cn(
+                            typography.caption,
+                            "flex items-center gap-1",
+                            payment.status === 'pending' ? 'text-yellow-400' : 'text-blue-400'
+                          )}>
+                            {payment.status === 'pending' ? (
+                              <>
+                                <Clock className={iconSizes.xs} />
                               <span>Pending</span>
                 </>
               ) : (
