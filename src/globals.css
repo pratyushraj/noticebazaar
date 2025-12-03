@@ -24,16 +24,16 @@
 @keyframes fadeInApp {
   0% {
     opacity: 0;
-    backdrop-filter: blur(0px);
   }
   100% {
     opacity: 1;
-    backdrop-filter: blur(20px);
   }
 }
 
-.app-fade-in {
-  animation: fadeInApp 0.2s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+/* Prevent flicker by ensuring body has background color */
+body {
+  background: linear-gradient(to bottom right, #581c87, #4c1d95, #312e81);
+  min-height: 100vh;
 }
 
 /* Touch Feedback - Scale Animation */

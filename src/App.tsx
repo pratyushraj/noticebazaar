@@ -111,6 +111,7 @@ const App = () => {
   // Removed the temporary useEffect block for role update
   const [showSplash, setShowSplash] = useState(true);
   const [appLoaded, setAppLoaded] = useState(false);
+  const [splashComplete, setSplashComplete] = useState(false);
 
   // Preload critical routes
   useEffect(() => {
@@ -127,10 +128,22 @@ const App = () => {
     }
   }, [appLoaded]);
 
+  // Check if splash should be shown (only on first load)
+  useEffect(() => {
+    const hasSeenSplash = sessionStorage.getItem('hasSeenSplash');
+    if (hasSeenSplash) {
+      setShowSplash(false);
+      setSplashComplete(true);
+    }
+  }, []);
+
   const handleSplashComplete = () => {
     setShowSplash(false);
-    // Add fade-in class to main app
-    document.body.classList.add('app-fade-in');
+    sessionStorage.setItem('hasSeenSplash', 'true');
+    // Wait for splash to fully fade out before showing app
+    setTimeout(() => {
+      setSplashComplete(true);
+    }, 250); // Slightly longer than splash fade-out duration
   };
 
   return (
@@ -141,8 +154,9 @@ const App = () => {
           {/* Splash Screen */}
           {showSplash && <SplashScreen onComplete={handleSplashComplete} />}
           
-          {/* Main App */}
-          <div className={showSplash ? 'opacity-0' : 'opacity-100 transition-opacity duration-200'}>
+          {/* Main App - Only show after splash is completely gone */}
+          {splashComplete && (
+            <div className="opacity-0 animate-[fadeInApp_0.2s_ease-out_0.05s_forwards]">
             {/* replaced-by-ultra-polish: Skip to main content link for accessibility */}
             <a 
               href="#main-content" 
@@ -256,7 +270,8 @@ const App = () => {
           </SessionContextProvider>
         </NetworkStatusWrapper>
         </BrowserRouter>
-          </div>
+            </div>
+          )}
         </TooltipProvider>
       </QueryClientProvider>
     </ErrorBoundary>
