@@ -22,6 +22,7 @@ import { triggerHaptic, HapticPatterns } from '@/lib/utils/haptics';
 import { animations, iconSizes } from '@/lib/design-system';
 import { motion } from 'framer-motion';
 import { TrendingUp } from 'lucide-react';
+import { NativeLoadingSheet } from '@/components/mobile/NativeLoadingSheet';
 
 // Lazy load heavy components
 const ContractPreviewModal = lazy(() => import('@/components/deals/ContractPreviewModal').then(m => ({ default: m.ContractPreviewModal })));
@@ -411,9 +412,10 @@ Best regards`;
   // Loading state - EARLY RETURNS AFTER ALL HOOKS
   if (isLoadingDeal) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-white" />
-      </div>
+      <>
+        <div className="min-h-screen bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900" />
+        <NativeLoadingSheet isOpen={true} message="Loading deal details..." />
+      </>
     );
   }
 

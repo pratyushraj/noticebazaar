@@ -1,6 +1,8 @@
+import { useState, useEffect } from "react";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { SplashScreen } from "@/components/mobile/SplashScreen";
 import NotFound from "./pages/NotFound";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
@@ -107,27 +109,55 @@ const queryClient = new QueryClient({
 
 const App = () => {
   // Removed the temporary useEffect block for role update
+  const [showSplash, setShowSplash] = useState(true);
+  const [appLoaded, setAppLoaded] = useState(false);
+
+  // Preload critical routes
+  useEffect(() => {
+    if (!appLoaded) {
+      // Preload critical routes
+      const preloadRoutes = ['/creator-dashboard', '/creator-contracts', '/creator-payments'];
+      preloadRoutes.forEach((route) => {
+        const link = document.createElement('link');
+        link.rel = 'prefetch';
+        link.href = route;
+        document.head.appendChild(link);
+      });
+      setAppLoaded(true);
+    }
+  }, [appLoaded]);
+
+  const handleSplashComplete = () => {
+    setShowSplash(false);
+    // Add fade-in class to main app
+    document.body.classList.add('app-fade-in');
+  };
 
   return (
     <ErrorBoundary>
       <QueryClientProvider client={queryClient}>
         <TooltipProvider>
           <AppToaster />
-          {/* replaced-by-ultra-polish: Skip to main content link for accessibility */}
-          <a 
-            href="#main-content" 
-            className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-[10001] focus:px-4 focus:py-2 focus:bg-purple-600 focus:text-white focus:rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400"
-            aria-label="Skip to main content"
-          >
-            Skip to main content
-          </a>
-          <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-            <NetworkStatusWrapper>
-              <FacebookPixelTracker />
-              <GoogleAnalyticsTracker /> {/* Add GA4 tracker here */}
-              <SessionContextProvider>
-                <SidebarProvider>
-                <Routes>
+          {/* Splash Screen */}
+          {showSplash && <SplashScreen onComplete={handleSplashComplete} />}
+          
+          {/* Main App */}
+          <div className={showSplash ? 'opacity-0' : 'opacity-100 transition-opacity duration-200'}>
+            {/* replaced-by-ultra-polish: Skip to main content link for accessibility */}
+            <a 
+              href="#main-content" 
+              className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-[10001] focus:px-4 focus:py-2 focus:bg-purple-600 focus:text-white focus:rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400"
+              aria-label="Skip to main content"
+            >
+              Skip to main content
+            </a>
+            <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+              <NetworkStatusWrapper>
+                <FacebookPixelTracker />
+                <GoogleAnalyticsTracker /> {/* Add GA4 tracker here */}
+                <SessionContextProvider>
+                  <SidebarProvider>
+                  <Routes>
               {/* Root route: Renders HomePage. ProtectedRoute handles redirection if authenticated. */}
               <Route path="/" element={<ProtectedRoute><HomePage /></ProtectedRoute>} />
               <Route path="/old-home" element={<ProtectedRoute><MarketingHome /></ProtectedRoute>} />
@@ -226,8 +256,9 @@ const App = () => {
           </SessionContextProvider>
         </NetworkStatusWrapper>
         </BrowserRouter>
-      </TooltipProvider>
-    </QueryClientProvider>
+          </div>
+        </TooltipProvider>
+      </QueryClientProvider>
     </ErrorBoundary>
   );
 };

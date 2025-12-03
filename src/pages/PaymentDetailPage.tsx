@@ -15,6 +15,7 @@ import { PaymentStatusChip, type PaymentStatus } from '@/components/payments/Pay
 import { PaymentTimeline } from '@/components/payments/PaymentTimeline';
 import { FilePreview } from '@/components/payments/FilePreview';
 import { GlassButton } from '@/components/payments/GlassButton';
+import { NativeLoadingSheet } from '@/components/mobile/NativeLoadingSheet';
 
 const PaymentDetailPage = () => {
   const navigate = useNavigate();
@@ -306,9 +307,10 @@ const PaymentDetailPage = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 text-white flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-white" />
-      </div>
+      <>
+        <div className="min-h-screen bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900" />
+        <NativeLoadingSheet isOpen={true} message="Loading payment details..." />
+      </>
     );
   }
 

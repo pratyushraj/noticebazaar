@@ -3,6 +3,107 @@
 @tailwind utilities;
 
 /* ============================================
+   MOBILE NATIVE UI/UX ENHANCEMENTS
+   ============================================ */
+
+/* Shimmer Animation for Skeleton Loaders (300-400ms) */
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.animate-shimmer {
+  animation: shimmer 0.4s ease-in-out infinite;
+}
+
+/* Smooth App Transition (ease-out-quart) */
+@keyframes fadeInApp {
+  0% {
+    opacity: 0;
+    backdrop-filter: blur(0px);
+  }
+  100% {
+    opacity: 1;
+    backdrop-filter: blur(20px);
+  }
+}
+
+.app-fade-in {
+  animation: fadeInApp 0.2s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+/* Touch Feedback - Scale Animation */
+.touch-feedback {
+  transition: transform 80ms ease-out;
+}
+
+.touch-feedback:active {
+  transform: scale(0.98);
+}
+
+/* Android Ripple Effect */
+@keyframes ripple {
+  0% {
+    transform: scale(0);
+    opacity: 0.3;
+  }
+  100% {
+    transform: scale(4);
+    opacity: 0;
+  }
+}
+
+.ripple-effect {
+  position: relative;
+  overflow: hidden;
+}
+
+/* 60fps Transform Animations (No Layout Reflow) */
+.gpu-accelerated {
+  transform: translateZ(0);
+  will-change: transform;
+  -webkit-transform: translateZ(0);
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+}
+
+/* Safe Area Support - Global */
+.safe-area-top {
+  padding-top: env(safe-area-inset-top);
+}
+
+.safe-area-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.safe-area-left {
+  padding-left: env(safe-area-inset-left);
+}
+
+.safe-area-right {
+  padding-right: env(safe-area-inset-right);
+}
+
+.safe-area-all {
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+}
+
+/* Main Container Safe Area */
+.main-container {
+  padding-top: max(16px, env(safe-area-inset-top));
+  padding-bottom: max(16px, env(safe-area-inset-bottom));
+  padding-left: max(16px, env(safe-area-inset-left));
+  padding-right: max(16px, env(safe-area-inset-right));
+}
+
+/* ============================================
    MOBILE SCROLLING FIXES - NO NESTED SCROLL
    ============================================ */
 
@@ -670,7 +771,7 @@ body {
 }
 
 .animate-shimmer {
-  animation: shimmer 2s infinite;
+  animation: shimmer 0.4s ease-in-out infinite;
 }
 
 .skeleton {
