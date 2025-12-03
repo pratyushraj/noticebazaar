@@ -165,9 +165,22 @@ export const useBrandDeals = (options: UseBrandDealsOptions) => {
   return useSupabaseQuery<BrandDeal[], Error>(
     ['brand_deals', creatorId, statusFilter, platformFilter, sortBy, sortOrder, limit],
     async () => {
+      // Debug: Log creatorId
+      console.log('[useBrandDeals] Fetching deals for creatorId:', creatorId);
+      
       if (!creatorId) {
-        // Return empty array immediately if no creatorId
+        console.log('[useBrandDeals] No creatorId provided, returning empty array');
         return [];
+      }
+
+      // Get current session to verify auth.uid() matches creatorId
+      const { data: { session } } = await supabase.auth.getSession();
+      const authUserId = session?.user?.id;
+      
+      console.log('[useBrandDeals] Auth user ID:', authUserId, 'Creator ID:', creatorId);
+      
+      if (authUserId !== creatorId) {
+        console.warn('[useBrandDeals] WARNING: auth.uid() does not match creatorId. This may cause RLS issues.');
       }
 
       let query = supabase
@@ -190,7 +203,33 @@ export const useBrandDeals = (options: UseBrandDealsOptions) => {
 
       const { data, error } = await query;
 
+      // Debug: Log error details
       if (error) {
+        console.error('[useBrandDeals] Query error:', {
+          code: error.code,
+          message: error.message,
+          details: error.details,
+          hint: error.hint,
+          creatorId,
+          authUserId,
+        });
+        
+        // Check for RLS/permission errors
+        const isRLSError = 
+          error.code === '42501' || // Insufficient privilege
+          error.message?.includes('permission denied') ||
+          error.message?.includes('row-level security') ||
+          error.message?.toLowerCase().includes('policy');
+        
+        if (isRLSError) {
+          console.error('[useBrandDeals] RLS ERROR: Permission denied. Check RLS policies for brand_deals table.');
+          console.error('[useBrandDeals] RLS Error Details:', {
+            creatorId,
+            authUserId,
+            errorMessage: error.message,
+          });
+        }
+        
         // Check if error is due to missing table/relation (404, PGRST116, 42P01)
         const isMissingTableError = 
           error.code === 'PGRST116' || 
@@ -201,6 +240,7 @@ export const useBrandDeals = (options: UseBrandDealsOptions) => {
           error.message?.includes('not found');
 
         if (isMissingTableError && creatorId) {
+          console.log('[useBrandDeals] Table missing, returning demo data');
           // Return demo data when table doesn't exist
           return getDemoBrandDeals(creatorId);
         }
@@ -208,6 +248,27 @@ export const useBrandDeals = (options: UseBrandDealsOptions) => {
         // Log the error but return an empty array to prevent crashing the UI
         // Error is logged via useSupabaseQuery error handling
         // NOTE: We return [] here instead of throwing to handle missing tables gracefully.
+        console.log('[useBrandDeals] Returning empty array due to error');
+        return [];
+      }
+
+      // Debug: Log data
+      console.log('[useBrandDeals] Query successful:', {
+        dataLength: data?.length ?? 0,
+        dataIsNull: data === null,
+        dataIsArray: Array.isArray(data),
+        creatorId,
+      });
+
+      // Ensure Supabase always returns [] instead of null
+      if (!data) {
+        console.log('[useBrandDeals] Data is null, returning empty array');
+        return [];
+      }
+
+      // Ensure data is always an array
+      if (!Array.isArray(data)) {
+        console.warn('[useBrandDeals] Data is not an array, converting to array');
         return [];
       }
 
@@ -218,15 +279,18 @@ export const useBrandDeals = (options: UseBrandDealsOptions) => {
       );
 
       // For real users with no data, return empty array (shows empty state)
-      if (!isPreviewMode && (!data || data.length === 0)) {
+      if (!isPreviewMode && data.length === 0) {
+        console.log('[useBrandDeals] No deals found for user, returning empty array');
         return [];
       }
 
       // Only use demo data in preview mode
-      if (isPreviewMode && creatorId && (!data || data.length < 6)) {
+      if (isPreviewMode && creatorId && data.length < 6) {
+        console.log('[useBrandDeals] Preview mode with insufficient data, returning demo data');
         return getDemoBrandDeals(creatorId);
       }
 
+      console.log('[useBrandDeals] Returning', data.length, 'deals');
       return data as BrandDeal[];
     },
     {

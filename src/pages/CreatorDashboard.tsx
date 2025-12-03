@@ -45,7 +45,7 @@ const CreatorDashboard = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const signOutMutation = useSignOut();
-  const { profile, user, loading: sessionLoading } = useSession();
+  const { profile, user, loading: sessionLoading, session } = useSession();
   const [activeTab, setActiveTab] = useState('home');
   const [showMenu, setShowMenu] = useState(false);
   const [showLogoutDialog, setShowLogoutDialog] = useState(false);
@@ -60,10 +60,41 @@ const CreatorDashboard = () => {
   const { currentTip } = useContextualTips('dashboard');
 
   // Fetch real data
-  const { data: brandDeals = [], isLoading: isLoadingDeals } = useBrandDeals({
-    creatorId: profile?.id,
-    enabled: !sessionLoading && !!profile?.id,
+  // Ensure we use the authenticated user's ID to match RLS policies
+  // For new accounts, profile might not exist yet, so use session.user.id as fallback
+  const authenticatedUserId = session?.user?.id;
+  const creatorId = profile?.id || authenticatedUserId;
+  
+  // Debug: Log creator ID resolution
+  useEffect(() => {
+    console.log('[CreatorDashboard] Creator ID resolution:', {
+      profileId: profile?.id,
+      authenticatedUserId,
+      finalCreatorId: creatorId,
+      hasSession: !!session,
+      hasProfile: !!profile,
+    });
+  }, [profile?.id, authenticatedUserId, creatorId, session, profile]);
+  
+  const { data: brandDeals = [], isLoading: isLoadingDeals, error: brandDealsError } = useBrandDeals({
+    creatorId: creatorId,
+    enabled: !sessionLoading && !!creatorId,
   });
+  
+  // Debug: Log dashboard state
+  useEffect(() => {
+    console.log('[CreatorDashboard] State:', {
+      profileId: profile?.id,
+      authenticatedUserId,
+      creatorId,
+      brandDealsLength: brandDeals?.length ?? 0,
+      isLoadingDeals,
+      hasError: !!brandDealsError,
+      errorMessage: brandDealsError?.message,
+      brandDealsIsArray: Array.isArray(brandDeals),
+      brandDealsValue: brandDeals,
+    });
+  }, [profile?.id, authenticatedUserId, creatorId, brandDeals, isLoadingDeals, brandDealsError]);
 
   const { data: partnerStats } = usePartnerStats(profile?.id);
 
@@ -244,8 +275,25 @@ const CreatorDashboard = () => {
 
   const earningsProgress = stats.goal > 0 ? (stats.earnings / stats.goal) * 100 : 0;
   
-  // Check if user has no data (new user)
-  const hasNoData = brandDeals.length === 0;
+  // Safe check: Ensure brandDeals is an array and check length
+  // Only show empty state when:
+  // 1. Not loading
+  // 2. No error (or error is handled)
+  // 3. brandDeals is an empty array
+  const hasDeals = Array.isArray(brandDeals) && brandDeals.length > 0;
+  const hasNoData = !isLoadingDeals && !brandDealsError && Array.isArray(brandDeals) && brandDeals.length === 0;
+  
+  // Debug: Log empty state decision
+  useEffect(() => {
+    console.log('[CreatorDashboard] Empty state check:', {
+      hasDeals,
+      hasNoData,
+      isLoadingDeals,
+      hasError: !!brandDealsError,
+      brandDealsLength: brandDeals?.length ?? 0,
+      brandDealsIsArray: Array.isArray(brandDeals),
+    });
+  }, [hasDeals, hasNoData, isLoadingDeals, brandDealsError, brandDeals]);
 
   // Recent activity from real deals
   const recentActivity = useMemo(() => {
