@@ -144,7 +144,8 @@ const CreatorDashboard = () => {
 
   // Only show loading skeleton if we're actually loading data
   // Don't show loading if we're just waiting for profile (new accounts should see empty state)
-  const isInitialLoading = (sessionLoading && !session) || (isLoadingDeals && !!creatorId);
+  // Also don't show loading if there's an error (show empty state instead)
+  const isInitialLoading = (sessionLoading && !session) || (isLoadingDeals && !!creatorId && !brandDealsError);
 
   // Pull to refresh
   const handleRefresh = async () => {
@@ -280,13 +281,21 @@ const CreatorDashboard = () => {
   // Safe check: Ensure brandDeals is an array and check length
   // Only show empty state when:
   // 1. Not loading (or query is disabled because no creatorId yet)
-  // 2. No error (or error is handled)
+  // 2. No error (or error is handled - RLS errors are acceptable for new accounts)
   // 3. brandDeals is an empty array
   const hasDeals = Array.isArray(brandDeals) && brandDeals.length > 0;
   
   // For new accounts: if creatorId exists but query hasn't run yet, or query completed with empty array
+  // Also show empty state if there's an RLS error (new account might not have profile yet)
   const queryHasCompleted = !isLoadingDeals || !creatorId; // If no creatorId, query is disabled, so consider it "completed"
-  const hasNoData = queryHasCompleted && !brandDealsError && Array.isArray(brandDeals) && brandDeals.length === 0;
+  const isRLSError = brandDealsError?.message?.includes('permission') || 
+                     brandDealsError?.message?.includes('row-level security') ||
+                     brandDealsError?.code === '42501';
+  // Show empty state if: query completed AND (no error OR RLS error) AND empty array
+  const hasNoData = queryHasCompleted && 
+                    (!brandDealsError || isRLSError) && 
+                    Array.isArray(brandDeals) && 
+                    brandDeals.length === 0;
   
   // Debug: Log empty state decision
   useEffect(() => {
