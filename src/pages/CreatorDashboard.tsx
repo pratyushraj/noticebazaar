@@ -713,7 +713,7 @@ const CreatorDashboard = () => {
                 </div>
 
                 {/* Empty State Card */}
-                <BaseCard variant="secondary" className="text-center p-6 md:p-8">
+                <BaseCard variant="secondary" className="text-center p-6 md:p-8 relative">
                   <motion.div
                     initial={{ scale: 0.8, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
@@ -725,45 +725,71 @@ const CreatorDashboard = () => {
                   <p className={typography.body + " mb-6 max-w-md mx-auto"}>
                     Start tracking your brand deals, payments, and contracts. Add your first deal to see your earnings and activity here.
                   </p>
-                  <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                    <motion.button
+                  <div className="flex flex-col sm:flex-row gap-3 justify-center relative z-20 pointer-events-auto">
+                    <button
                       onClick={(e) => {
                         e.preventDefault();
                         e.stopPropagation();
                         triggerHaptic(HapticPatterns.medium);
                         navigate('/creator-contracts');
                       }}
-                      whileTap={animations.microTap}
+                      onMouseDown={(e) => {
+                        e.stopPropagation();
+                      }}
+                      onTouchStart={(e) => {
+                        e.stopPropagation();
+                      }}
                       className={cn(
                         buttons.primary,
                         "flex items-center justify-center gap-2",
                         "cursor-pointer",
-                        "relative z-10"
+                        "relative z-30",
+                        "pointer-events-auto",
+                        "touch-manipulation",
+                        "select-none"
                       )}
                       type="button"
+                      style={{ 
+                        pointerEvents: 'auto',
+                        WebkitTapHighlightColor: 'transparent',
+                        touchAction: 'manipulation'
+                      }}
                     >
                       <Plus className={iconSizes.md} />
                       Add Your First Deal
-                    </motion.button>
-                    <motion.button
+                    </button>
+                    <button
                       onClick={(e) => {
                         e.preventDefault();
                         e.stopPropagation();
                         triggerHaptic(HapticPatterns.light);
                         navigate('/brand-directory');
                       }}
-                      whileTap={animations.microTap}
+                      onMouseDown={(e) => {
+                        e.stopPropagation();
+                      }}
+                      onTouchStart={(e) => {
+                        e.stopPropagation();
+                      }}
                       className={cn(
                         buttons.secondary,
                         "flex items-center justify-center gap-2",
                         "cursor-pointer",
-                        "relative z-10"
+                        "relative z-30",
+                        "pointer-events-auto",
+                        "touch-manipulation",
+                        "select-none"
                       )}
                       type="button"
+                      style={{ 
+                        pointerEvents: 'auto',
+                        WebkitTapHighlightColor: 'transparent',
+                        touchAction: 'manipulation'
+                      }}
                     >
                       <Briefcase className={iconSizes.md} />
                       Explore Brands
-                    </motion.button>
+                    </button>
                   </div>
                 </BaseCard>
 
