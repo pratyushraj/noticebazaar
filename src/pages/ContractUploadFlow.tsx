@@ -17,6 +17,8 @@ type RiskLevel = 'low' | 'medium' | 'high';
 
 const ContractUploadFlow = () => {
   const navigate = useNavigate();
+  const { profile, session } = useSession();
+  const addDealMutation = useAddBrandDeal();
   const [step, setStep] = useState('upload'); // upload, uploading, scanning, analyzing, results, upload-error, review-error
   const [uploadProgress, setUploadProgress] = useState(0);
   const [scanProgress, setScanProgress] = useState(0);
@@ -25,6 +27,7 @@ const ContractUploadFlow = () => {
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [reviewError, setReviewError] = useState<string | null>(null);
   const [retryCount, setRetryCount] = useState(0);
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Simulated contract analysis results
@@ -178,6 +181,7 @@ const ContractUploadFlow = () => {
 
       setFileName(file.name);
       setFileSize((file.size / (1024 * 1024)).toFixed(2) + ' MB');
+      setUploadedFile(file);
       setStep('uploading');
     }
   };
@@ -208,6 +212,7 @@ const ContractUploadFlow = () => {
 
       setFileName(file.name);
       setFileSize((file.size / (1024 * 1024)).toFixed(2) + ' MB');
+      setUploadedFile(file);
       setStep('uploading');
     }
   };
@@ -708,11 +713,76 @@ const ContractUploadFlow = () => {
                 Get Legal Review
               </button>
               <button 
-                onClick={() => navigate('/creator-contracts')}
-                className="flex-1 bg-green-600 hover:bg-green-700 font-semibold py-4 rounded-xl transition-colors flex items-center justify-center gap-2"
+                onClick={async () => {
+                  // Get creator_id - use profile.id or fallback to session.user.id for new accounts
+                  const creatorId = profile?.id || session?.user?.id;
+                  
+                  if (!creatorId) {
+                    toast.error('Unable to create deal. Please log in again.');
+                    return;
+                  }
+
+                  if (!uploadedFile) {
+                    toast.error('Contract file is missing. Please upload again.');
+                    return;
+                  }
+
+                  try {
+                    // Extract deal value from keyTerms (remove ₹ and commas)
+                    const dealValueStr = analysisResults.keyTerms.dealValue.replace(/[₹,]/g, '').trim();
+                    const dealAmount = parseFloat(dealValueStr) || 0;
+
+                    // Calculate due date (30 days from now as default)
+                    const dueDate = new Date();
+                    dueDate.setDate(dueDate.getDate() + 30);
+                    const dueDateStr = dueDate.toISOString().split('T')[0];
+
+                    // Create deal
+                    await addDealMutation.mutateAsync({
+                      creator_id: creatorId,
+                      organization_id: null,
+                      brand_name: 'Contract Upload', // Default brand name, user can edit later
+                      deal_amount: dealAmount,
+                      deliverables: analysisResults.keyTerms.deliverables || 'As per contract',
+                      contract_file: uploadedFile,
+                      due_date: dueDateStr,
+                      payment_expected_date: dueDateStr,
+                      contact_person: null,
+                      platform: 'Other',
+                      status: 'Negotiation' as const,
+                      invoice_file: null,
+                      utr_number: null,
+                      brand_email: null,
+                      payment_received_date: null,
+                    });
+
+                    toast.success('Deal created successfully!', {
+                      description: 'Your contract has been added to your deals.',
+                    });
+
+                    // Navigate to deals page
+                    navigate('/creator-contracts');
+                  } catch (error: any) {
+                    console.error('[ContractUploadFlow] Error creating deal:', error);
+                    toast.error('Failed to create deal', {
+                      description: error?.message || 'Please try again or contact support.',
+                    });
+                  }
+                }}
+                disabled={addDealMutation.isPending || !uploadedFile}
+                className="flex-1 bg-green-600 hover:bg-green-700 font-semibold py-4 rounded-xl transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <CheckCircle className="w-5 h-5" />
-                Accept & Continue
+                {addDealMutation.isPending ? (
+                  <>
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    Creating Deal...
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle className="w-5 h-5" />
+                    Add to Dashboard
+                  </>
+                )}
               </button>
             </div>
           </div>
