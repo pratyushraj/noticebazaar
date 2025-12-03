@@ -201,21 +201,27 @@ const CreatorDashboard = () => {
       deal.status !== 'Completed'
     ).length;
 
+    // Set minimum goal of ₹10,000 if earnings are 0
+    const getGoal = (earnings: number, multiplier: number) => {
+      if (earnings === 0) return 10000; // Default minimum goal
+      return earnings * multiplier;
+    };
+
     return {
       month: {
         earnings: currentEarnings,
         monthlyGrowth,
-        goal: currentEarnings * 1.5, // Dynamic goal based on current earnings
+        goal: getGoal(currentEarnings, 1.5), // Dynamic goal with minimum fallback
       },
       lastMonth: {
         earnings: lastMonthEarnings,
         monthlyGrowth: 0,
-        goal: lastMonthEarnings * 1.5,
+        goal: getGoal(lastMonthEarnings, 1.5),
       },
       allTime: {
         earnings: allTimeEarnings,
         monthlyGrowth: monthlyGrowth,
-        goal: allTimeEarnings * 1.2,
+        goal: getGoal(allTimeEarnings, 1.2),
       },
       totalDeals: brandDeals.length,
       activeDeals,

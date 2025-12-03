@@ -2,7 +2,7 @@
 -- This column tracks the deal progress as a percentage (0-100)
 
 ALTER TABLE public.brand_deals 
-ADD COLUMN IF NOT EXISTS progress_percentage INTEGER DEFAULT 0 CHECK (progress_percentage >= 0 AND progress_percentage <= 100);
+ADD COLUMN IF NOT EXISTS progress_percentage numeric DEFAULT 0 NOT NULL CHECK (progress_percentage >= 0 AND progress_percentage <= 100);
 
 -- Update existing records based on their status
 UPDATE public.brand_deals

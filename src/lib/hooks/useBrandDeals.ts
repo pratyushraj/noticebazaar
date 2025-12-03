@@ -436,6 +436,7 @@ interface UpdateBrandDealVariables {
   utr_number?: string | null; // New: UTR number
   brand_email?: string | null; // New: brand email
   payment_received_date?: string | null; // New: payment received date
+  proof_of_payment_url?: string | null; // New: proof of payment URL
 }
 
 export const useUpdateBrandDeal = () => {
@@ -504,6 +505,11 @@ export const useUpdateBrandDeal = () => {
       }
       if (invoice_file_url !== undefined) {
         updatePayload.invoice_file_url = invoice_file_url;
+      }
+      
+      // Include proof_of_payment_url if provided
+      if (updates.proof_of_payment_url !== undefined) {
+        updatePayload.proof_of_payment_url = updates.proof_of_payment_url;
       }
       
       if (organization_id !== undefined) { // Include organization_id if provided

@@ -133,13 +133,24 @@ const CreatorContracts = () => {
     };
   }, [brandDeals]);
 
-  type DealStatus = 'pending' | 'negotiation' | 'active' | 'completed';
+  type DealStatus = 'pending' | 'negotiation' | 'active' | 'completed' | 'signed' | 'content_making' | 'content_delivered';
   
   const statusConfig: Record<DealStatus, { color: string; label: string; icon: typeof Clock }> = {
     pending: { color: 'bg-yellow-500', label: 'Pending', icon: Clock },
     negotiation: { color: 'bg-blue-500', label: 'Negotiation', icon: TrendingUp },
     active: { color: 'bg-green-500', label: 'Active', icon: CheckCircle },
-    completed: { color: 'bg-purple-500', label: 'Completed', icon: CheckCircle }
+    completed: { color: 'bg-purple-500', label: 'Completed', icon: CheckCircle },
+    signed: { color: 'bg-indigo-500', label: 'Signed', icon: CheckCircle },
+    content_making: { color: 'bg-orange-500', label: 'Content Making', icon: TrendingUp },
+    content_delivered: { color: 'bg-yellow-500', label: 'Content Delivered', icon: CheckCircle }
+  };
+  
+  // Helper to get status config with fallback
+  const getStatusConfig = (status: string) => {
+    const config = statusConfig[status as DealStatus];
+    if (config) return config;
+    // Fallback for unknown statuses
+    return { color: 'bg-gray-500', label: status, icon: Clock };
   };
 
   const filters = useMemo(() => [
@@ -242,7 +253,8 @@ const CreatorContracts = () => {
         /* Deals List - Matching Payments Page Card Style */
         <div className={cn("space-y-5 sm:space-y-6")}>
           {filteredDeals.map((deal, index) => {
-            const StatusIcon = statusConfig[deal.status as DealStatus].icon;
+            const statusInfo = getStatusConfig(deal.status);
+            const StatusIcon = statusInfo.icon;
             
             return (
               <motion.div
@@ -311,7 +323,7 @@ const CreatorContracts = () => {
                   <div className={cn("flex items-center justify-between mb-3")}>
                     <div className={cn("flex items-center gap-2")}>
                       <StatusIcon className={iconSizes.sm} />
-                      <span className={cn(typography.bodySmall, "font-medium")}>{statusConfig[deal.status as DealStatus].label}</span>
+                      <span className={cn(typography.bodySmall, "font-medium")}>{statusInfo.label}</span>
                     </div>
                     <div className={cn("flex items-center gap-1", typography.caption)}>
                       <Calendar className={iconSizes.xs} />

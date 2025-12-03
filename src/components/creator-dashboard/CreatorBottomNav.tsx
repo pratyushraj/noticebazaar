@@ -134,8 +134,9 @@ const CreatorBottomNav = () => {
 
   const bottomNavContent = (
       <motion.div 
+        data-bottom-nav="true"
         className={cn(
-          "fixed bottom-0 left-0 right-0 z-[100]",
+          "fixed bottom-0 left-0 right-0",
           "bg-gradient-to-br from-purple-900/95 via-purple-800/95 to-indigo-900/95",
           "backdrop-blur-2xl",
           "border-t border-white/15",
@@ -153,9 +154,14 @@ const CreatorBottomNav = () => {
           bottom: 0,
           left: 0,
           right: 0,
-          zIndex: 100,
+          zIndex: 9999, // Increased for Android browser compatibility
           width: '100%',
+          maxWidth: '100vw', // Ensure it doesn't overflow
           pointerEvents: 'auto',
+          // Android-specific fixes
+          WebkitTransform: 'translateZ(0)', // Force hardware acceleration
+          transform: 'translateZ(0)',
+          willChange: 'transform',
         }}
       >
         {/* Spotlight gradient at top */}
@@ -166,7 +172,12 @@ const CreatorBottomNav = () => {
         
         <nav 
           className="flex justify-around h-16 md:h-14 items-center px-2 relative z-10"
-          style={{ paddingBottom: `max(8px, env(safe-area-inset-bottom, 8px))`, paddingTop: '8px' }}
+          style={{ 
+            paddingBottom: `max(8px, env(safe-area-inset-bottom, 8px))`, 
+            paddingTop: '8px',
+            // Android browser fix: ensure nav is visible
+            minHeight: '64px',
+          }}
           role="navigation"
           aria-label="Bottom navigation"
         >

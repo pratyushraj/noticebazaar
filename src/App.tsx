@@ -51,6 +51,7 @@ import GoogleAnalyticsTracker from "./components/GoogleAnalyticsTracker"; // Imp
 // NEW: Import Creator-specific pages
 import CreatorContracts from "./pages/CreatorContracts";
 import DealDetailPage from "./pages/DealDetailPage";
+import CreateDealPage from "./pages/CreateDealPage";
 import CreatorPaymentsAndRecovery from "./pages/CreatorPaymentsAndRecovery";
 import DashboardWhitePreview from "./pages/DashboardWhitePreview";
 import CreatorContentProtection from "./pages/CreatorContentProtection";
@@ -195,6 +196,7 @@ const App = () => {
               {/* NEW: Creator-specific pages */}
               <Route path="/creator-contracts" element={<ProtectedLayout allowedRoles={['creator']}><CreatorContracts /></ProtectedLayout>} />
               <Route path="/brand-deals" element={<ProtectedLayout allowedRoles={['creator']}><CreatorContracts /></ProtectedLayout>} />
+              <Route path="/create-deal" element={<ProtectedLayout allowedRoles={['creator']}><CreateDealPage /></ProtectedLayout>} />
               <Route path="/creator-contracts/:dealId" element={<ProtectedLayout allowedRoles={['creator']}><DealDetailPage /></ProtectedLayout>} />
               <Route path="/creator-payments" element={<ProtectedLayout allowedRoles={['creator']}><CreatorPaymentsAndRecovery /></ProtectedLayout>} />
               <Route path="/payment/:paymentId" element={<ProtectedLayout allowedRoles={['creator']}><PaymentDetailPage /></ProtectedLayout>} />

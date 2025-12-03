@@ -46,6 +46,25 @@ body {
   }
 }
 
+/* Android Browser Bottom Nav Fix */
+/* Ensure bottom nav is always visible on Android browsers */
+body {
+  /* Prevent body from hiding fixed elements */
+  position: relative;
+}
+
+/* Force bottom nav to be on top layer */
+[data-bottom-nav] {
+  position: fixed !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  z-index: 9999 !important;
+  transform: translateZ(0) !important;
+  -webkit-transform: translateZ(0) !important;
+  will-change: transform !important;
+}
+
 /* Hide anonymous sign-in error messages in Supabase Auth UI */
 /* This prevents the "Anonymous sign-ins are disabled" error from showing */
 .supabase-auth-ui_ui-message[class*="color-danger"],

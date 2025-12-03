@@ -11,6 +11,7 @@ import { FilteredNoMatchesEmptyState, NoPaymentsEmptyState, SearchNoResultsEmpty
 import { useNavigate } from 'react-router-dom';
 import { PaymentRequestFlow } from '@/components/payments/PaymentRequestFlow';
 import { AddExpenseDialog } from '@/components/expenses/AddExpenseDialog';
+import { ExpenseCard } from '@/components/expenses/ExpenseCard';
 import { useExpenses } from '@/lib/hooks/useExpenses';
 import { exportPaymentsReport } from '@/lib/utils/exportPaymentsReport';
 import { PaymentCard } from '@/components/payments/PaymentCard';
@@ -378,23 +379,55 @@ const CreatorPaymentsAndRecovery = () => {
       });
   }, [brandDeals]);
 
+  // Transform expenses to transaction-like format for display
+  const expenseTransactions = useMemo(() => {
+    return expenses.map(expense => ({
+      id: expense.id,
+      title: expense.description || expense.category,
+      brand: expense.vendor_name || 'N/A',
+      platform: expense.category,
+      amount: expense.amount,
+      type: 'expense' as const,
+      paymentStatus: 'received' as const,
+      expectedDate: expense.expense_date,
+      daysInfo: undefined,
+      riskLevel: undefined,
+      method: expense.payment_method || undefined,
+      invoice: expense.receipt_file_url ? 'Receipt available' : 'No receipt',
+      tax: undefined,
+      taxInfo: undefined,
+      finalAmount: expense.amount,
+      expense: expense, // Include full expense object for ExpenseCard
+    }));
+  }, [expenses]);
+
   const filteredTransactions = useMemo(() => {
+    // Combine all transactions and expenses
+    const allItems = [...allTransactions, ...expenseTransactions];
+    
     let filtered = activeFilter === 'all' 
-      ? allTransactions 
+      ? allItems
       : activeFilter === 'expense'
-      ? [] // Expenses would come from expenses table, not transactions
-      : allTransactions.filter(t => t.type === activeFilter);
+      ? expenseTransactions
+      : allItems.filter(t => t.type === activeFilter);
     
     if (searchQuery) {
       filtered = filtered.filter(t => 
         t.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         t.brand.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        t.invoice.toLowerCase().includes(searchQuery.toLowerCase())
+        (t.invoice && t.invoice.toLowerCase().includes(searchQuery.toLowerCase()))
       );
     }
     
+    // Sort by date (newest first)
+    filtered.sort((a, b) => {
+      const dateA = a.expectedDate ? new Date(a.expectedDate).getTime() : 0;
+      const dateB = b.expectedDate ? new Date(b.expectedDate).getTime() : 0;
+      return dateB - dateA;
+    });
+    
     return filtered;
-  }, [allTransactions, activeFilter, searchQuery]);
+  }, [allTransactions, expenseTransactions, activeFilter, searchQuery]);
 
 
   const totalPending = useMemo(() => 
@@ -588,9 +621,11 @@ const CreatorPaymentsAndRecovery = () => {
 
       {/* Transactions List */}
       {filteredTransactions.length > 0 && (
-        <div className={spacing.card}>
+        <div className={spacing.card} data-section="transactions">
           <div className={sectionHeader.base}>
-            <h2 className={sectionHeader.title}>Recent Transactions</h2>
+            <h2 className={sectionHeader.title}>
+              {activeFilter === 'expense' ? 'Expenses' : 'Recent Transactions'}
+            </h2>
             <motion.button 
               onClick={() => {
                 triggerHaptic(HapticPatterns.light);
@@ -603,27 +638,39 @@ const CreatorPaymentsAndRecovery = () => {
             </motion.button>
           </div>
 
-          {filteredTransactions.map(transaction => (
-            <PaymentCard
-              key={transaction.id}
-              id={transaction.id}
-              title={transaction.title}
-              dealName={transaction.dealName}
-              platform={transaction.platform}
-              amount={transaction.amount}
-              type={transaction.type as 'received' | 'pending' | 'expense'}
-              paymentStatus={transaction.paymentStatus}
-              expectedDate={transaction.expectedDate}
-              daysInfo={transaction.daysInfo}
-              riskLevel={transaction.riskLevel}
-              method={transaction.method}
-              invoice={transaction.invoice}
-              tax={transaction.tax}
-              taxInfo={transaction.taxInfo}
-              finalAmount={transaction.finalAmount}
-              onClick={() => navigate(`/payment/${transaction.id}`)}
-            />
-          ))}
+          {filteredTransactions.map(transaction => {
+            // If it's an expense, use ExpenseCard
+            if (transaction.type === 'expense' && (transaction as any).expense) {
+              return (
+                <ExpenseCard
+                  key={transaction.id}
+                  expense={(transaction as any).expense}
+                />
+              );
+            }
+            // Otherwise use PaymentCard
+            return (
+              <PaymentCard
+                key={transaction.id}
+                id={transaction.id}
+                title={transaction.title}
+                dealName={transaction.brand}
+                platform={transaction.platform}
+                amount={transaction.amount}
+                type={transaction.type as 'received' | 'pending' | 'expense'}
+                paymentStatus={transaction.paymentStatus}
+                expectedDate={transaction.expectedDate}
+                daysInfo={transaction.daysInfo}
+                riskLevel={transaction.riskLevel}
+                method={transaction.method}
+                invoice={transaction.invoice}
+                tax={transaction.tax}
+                taxInfo={transaction.taxInfo}
+                finalAmount={transaction.finalAmount}
+                onClick={() => navigate(`/payment/${transaction.id}`)}
+              />
+            );
+          })}
         </div>
       )}
 
@@ -661,7 +708,19 @@ const CreatorPaymentsAndRecovery = () => {
       {/* Add Expense Dialog */}
       <AddExpenseDialog 
         open={showAddExpense} 
-        onClose={() => setShowAddExpense(false)} 
+        onClose={() => setShowAddExpense(false)}
+        onSuccess={() => {
+          // Switch to expense filter and scroll to expenses section
+          setActiveFilter('expense');
+          triggerHaptic(HapticPatterns.light);
+          // Scroll to expenses section
+          setTimeout(() => {
+            const expensesSection = document.querySelector('[data-section="transactions"]');
+            if (expensesSection) {
+              expensesSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+          }, 100);
+        }}
       />
 
       {/* Payment Request Flow */}
