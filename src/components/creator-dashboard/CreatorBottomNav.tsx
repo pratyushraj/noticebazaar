@@ -181,7 +181,6 @@ const CreatorBottomNav = () => {
           }}
           role="navigation"
           aria-label="Bottom navigation"
-          onClick={(e) => e.stopPropagation()}
         >
         {navItems.map((item) => {
           const Icon = item.icon;
@@ -195,9 +194,11 @@ const CreatorBottomNav = () => {
           };
 
           const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
-            e.preventDefault();
+            // Don't prevent default - let Link handle navigation naturally
+            // Only stop propagation to prevent event bubbling
             e.stopPropagation();
             triggerHaptic(HapticPatterns.light);
+            // navigate() is called as fallback, but Link should handle it
             navigate(item.to);
           };
 
