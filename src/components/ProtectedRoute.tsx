@@ -129,6 +129,7 @@ const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
         targetDashboard = '/creator-dashboard';
       }
 
+      // Only redirect from login or root - don't redirect if already on a valid route
       if (location.pathname === '/login' || location.pathname === '/') {
         navigate(targetDashboard, { replace: true });
         return;
@@ -138,12 +139,40 @@ const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
       // For new accounts, if role is null/undefined, default to 'creator' role
       const userRole = profile.role || 'creator';
       
+      // List of valid creator routes that should be accessible
+      const validCreatorRoutes = [
+        '/creator-dashboard',
+        '/creator-contracts',
+        '/creator-payments',
+        '/creator-content-protection',
+        '/messages',
+        '/calendar',
+        '/create-deal',
+        '/payment',
+        '/deal',
+      ];
+      
+      // Check if current path is a valid creator route
+      const isOnValidCreatorRoute = validCreatorRoutes.some(route => 
+        location.pathname === route || location.pathname.startsWith(route + '/')
+      );
+      
       if (allowedRoles && allowedRoles.length > 0) {
         // If profile role is null/undefined, treat as 'creator' for new accounts
         if (!allowedRoles.includes(userRole)) {
-          navigate(targetDashboard, { replace: true });
+          // Only redirect if not already on a valid creator route
+          // This prevents redirect loops when navigating between creator pages
+          if (!isOnValidCreatorRoute) {
+            navigate(targetDashboard, { replace: true });
+          }
           return;
         }
+      }
+      
+      // If user is on a valid creator route and has the right role, allow access
+      // Don't redirect if already on a valid route
+      if (isOnValidCreatorRoute && (allowedRoles?.includes(userRole) || !allowedRoles || allowedRoles.length === 0)) {
+        return; // Allow the route to render
       }
     } else if (!session) {
       const isRootPath = location.pathname === '/';
