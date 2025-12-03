@@ -9,7 +9,6 @@ import React from 'react';
 import { AlertTriangle, RefreshCw, Home } from 'lucide-react';
 import { BaseCard } from '@/components/ui/card-variants';
 import { typography, spacing, iconSizes, buttons, gradients } from '@/lib/design-system';
-import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 
 interface ErrorFallbackProps {
@@ -27,11 +26,11 @@ export const ErrorFallback: React.FC<ErrorFallbackProps> = ({
   title,
   description,
 }) => {
-  const navigate = useNavigate();
-
   const handleGoHome = () => {
     resetError();
-    navigate('/creator-dashboard');
+    // Use window.location instead of useNavigate to avoid Router context issues
+    // This works even when ErrorBoundary is rendered outside Router context
+    window.location.href = '/creator-dashboard';
   };
 
   const content = (

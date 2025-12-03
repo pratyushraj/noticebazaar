@@ -34,7 +34,8 @@ export function useGlobalSearch(options: UseGlobalSearchOptions) {
 
   // TODO: Add documents/contracts hook when available
   // For now, we'll search deals and notifications only
-  const documents: any[] = [];
+  // replaced-by-ultra-polish: replaced any[] with proper type
+  const documents: Array<{ id: string; name: string; type: string }> = [];
 
   // Perform search
   const results = useMemo(() => {

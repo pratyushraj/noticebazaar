@@ -17,10 +17,10 @@ export const cardVariants = {
     backdrop: "backdrop-blur-xl",
   },
   secondary: {
-    base: "bg-gradient-to-br from-[#11121A] via-[#171822] to-[#12131A] border border-white/5",
+    base: "bg-gradient-to-br from-purple-500/20 via-indigo-500/20 to-purple-600/20 border border-white/15 relative before:absolute before:inset-0 before:bg-gradient-to-b before:from-white/10 before:to-transparent before:rounded-[28px] before:pointer-events-none",
     padding: "p-5",
-    radius: "rounded-2xl",
-    shadow: "shadow-[0_8px_24px_rgba(0,0,0,0.25)]",
+    radius: "rounded-[28px]",
+    shadow: "shadow-lg shadow-black/10",
     backdrop: "backdrop-blur-xl",
   },
   tertiary: {
@@ -304,14 +304,21 @@ export const ios = {
 
 export const motion = {
   spring: {
+    // iOS 17 spec: stiffness: 220, damping: 28, mass: 0.9
+    ios17: {
+      type: "spring" as const,
+      stiffness: 220,
+      damping: 28,
+      mass: 0.9,
+    },
     elastic: {
-      type: "spring",
+      type: "spring" as const,
       damping: 18,
       stiffness: 200,
       mass: 0.7,
     },
     gentle: {
-      type: "spring",
+      type: "spring" as const,
       damping: 25,
       stiffness: 150,
       mass: 0.8,

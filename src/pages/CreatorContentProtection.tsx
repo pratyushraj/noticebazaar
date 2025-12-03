@@ -2,14 +2,13 @@
 
 import { useState, useMemo } from 'react';
 import { Shield, FileText, AlertTriangle, CheckCircle, Clock, Lock, Upload, AlertCircle, Calendar, TrendingUp, Zap, ChevronRight } from 'lucide-react';
-import { SegmentedControl } from '@/components/ui/segmented-control';
 import { ContextualTipsProvider } from '@/components/contextual-tips/ContextualTipsProvider';
 import { useSession } from '@/contexts/SessionContext';
 import { useBrandDeals } from '@/lib/hooks/useBrandDeals';
 import { NoContractsEmptyState } from '@/components/empty-states/PreconfiguredEmptyStates';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { animations, spacing, typography, iconSizes, scroll, gradients, buttons, glass, shadows, radius, vision, motion as motionTokens, colors, zIndex } from '@/lib/design-system';
+import { animations, spacing, typography, iconSizes, gradients, buttons, glass, shadows, radius, vision, motion as motionTokens, colors } from '@/lib/design-system';
 import { triggerHaptic, HapticPatterns } from '@/lib/utils/haptics';
 import { cn } from '@/lib/utils';
 import { BaseCard } from '@/components/ui/card-variants';
@@ -220,20 +219,21 @@ const CreatorContentProtection = () => {
 
   return (
     <ContextualTipsProvider currentView="protection">
-      <div className={`h-[100dvh] ${gradients.page} text-white overflow-hidden flex flex-col relative`}>
+      <div className={cn("min-h-full", gradients.page, "text-white overflow-x-hidden max-w-full flex flex-col relative safe-area-fix")}>
         {/* Vignette overlay */}
-        <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_center,_transparent_40%,_rgba(0,0,0,0.5)_100%)]`}" />
+        {/* replaced-by-ultra-polish - Using vision overlay instead of hardcoded gradient */}
+        <div className={cn("absolute inset-0 pointer-events-none", vision.glare.soft, "opacity-50")} />
         {/* Scrollable content */}
-        <div className={`flex-1 ${scroll.container} min-h-0 relative z-10`}>
-          <div className={`${spacing.page} pb-24`}>
+        <div className={cn("flex-1 min-h-0 relative z-10 overflow-visible")}>
+          <div className={cn(spacing.page, "pb-[calc(100px+env(safe-area-inset-bottom,0px))]")}>
             {/* Header - Improved spacing */}
             <motion.div 
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3 }}
-              className="pt-6 pb-4"
+              className="pt-4 pb-3 sm:pt-6 sm:pb-4"
             >
-              <h1 className={typography.h1 + " mb-2"}>Protection</h1>
+              <h1 className={cn("text-xl sm:text-2xl font-bold mb-2")}>Protection</h1>
               <p className={typography.bodySmall}>Safeguard your deals & rights</p>
             </motion.div>
 
@@ -243,7 +243,7 @@ const CreatorContentProtection = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4, delay: 0.1 }}
             >
-              <BaseCard variant="secondary" className={cn(spacing.cardPadding.secondary, "mb-4 relative overflow-hidden")}>
+              <BaseCard variant="secondary" className={cn("p-4 sm:p-6 mb-6 relative overflow-hidden rounded-2xl sm:rounded-[28px]")}>
                 {/* Vision Pro depth elevation */}
                 <div className={vision.depth.elevation} />
                 
@@ -256,7 +256,7 @@ const CreatorContentProtection = () => {
                 <div className={cn("relative z-10 flex items-center justify-between", spacing.compact)}>
                   <div className={cn("flex items-center gap-2.5")}>
                     <Shield className={cn(iconSizes.md, "text-green-400")} />
-                    <span className={cn(typography.bodySmall, "font-semibold")}>Protection Score</span>
+                    <span className={cn("text-lg sm:text-base font-semibold")}>Protection Score</span>
                   </div>
                   <motion.button 
                     className={cn(buttons.tertiary, typography.bodySmall)}
@@ -271,19 +271,19 @@ const CreatorContentProtection = () => {
                   <div className={cn(typography.bodySmall, "text-white/70 pb-1")}>out of 100</div>
                 </div>
 
-                <div className={cn("relative z-10 w-full", colors.bg.secondary, radius.full, "h-2 mb-4")}>
+                <div className={cn("relative z-10 w-full", colors.bg.secondary, radius.full, "h-1.5 sm:h-2 mb-4")}>
                   <motion.div
                     initial={{ width: 0 }}
                     animate={{ width: `${protectionScore}%` }}
                     transition={motionTokens.spring.gentle}
                     className={cn(
-                      "bg-gradient-to-r from-green-500 to-green-400 h-2",
+                      "bg-gradient-to-r from-green-500 to-green-400 h-1.5 sm:h-2",
                       radius.full
                     )}
                   />
                 </div>
 
-                <p className={cn("relative z-10", typography.bodySmall, "leading-relaxed", spacing.compact)}>
+                <p className={cn("relative z-10", typography.bodySmall, "leading-relaxed", "mt-2 sm:mt-3")}>
                 {contracts.length === 0 ? (
                   <span>Upload your first contract to get a protection score and AI-powered analysis.</span>
                 ) : protectionScore >= 80 ? (
@@ -300,12 +300,12 @@ const CreatorContentProtection = () => {
 
               {/* Why is your score low? - Compact */}
               {protectionScore < 80 && contracts.length > 0 && (
-                <div className="relative z-10 mt-4 pt-4 border-t border-white/10">
-                  <h3 className={cn(typography.caption, "font-semibold mb-3 flex items-center gap-2")}>
+                <div className="relative z-10 mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-white/10">
+                  <h3 className={cn(typography.caption, "font-semibold mb-2 sm:mb-3 flex items-center gap-2")}>
                     <AlertCircle className={cn(iconSizes.sm, "text-yellow-400")} />
                     Why is your score low?
                   </h3>
-                  <div className={spacing.compact}>
+                  <div className={cn("space-y-1.5 sm:space-y-2 pl-2 sm:pl-0")}>
                     {contracts.filter(c => c.issues > 0).length > 0 && (
                       <div className={`flex items-start gap-2 ${typography.caption}`}>
                         <span className="text-red-400 mt-0.5">❗</span>
@@ -336,31 +336,42 @@ const CreatorContentProtection = () => {
               </BaseCard>
             </motion.div>
 
-            {/* Sticky Tabs */}
-            <motion.div 
-              initial={motionTokens.fade.in.initial}
-              animate={motionTokens.fade.in.animate}
-              transition={motionTokens.fade.in.transition}
-              className={cn(
-                "sticky top-0",
-                zIndex.sticky,
-                glass.appleStrong,
-                "pb-2 -mx-4 px-4 md:-mx-6 md:px-6 pt-2 mb-4"
-              )}
-            >
-              {/* Spotlight */}
-              <div className={cn(vision.spotlight.base, "opacity-20")} />
-              <SegmentedControl
-                options={[
-                  { id: 'contracts', label: 'Contracts', count: contracts.length },
-                  { id: 'alerts', label: 'Alerts', count: alerts.length },
-                  { id: 'features', label: 'Features' },
-                ]}
-                value={activeTab}
-                onChange={(value) => setActiveTab(value as 'contracts' | 'alerts' | 'features')}
-                className="w-full"
-              />
-            </motion.div>
+            {/* Filter Tabs - Matching Deals Page Style */}
+            <div className={cn("flex items-center gap-2 overflow-x-auto pb-2 mb-6", "[&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]")}>
+              {[
+                { id: 'contracts', label: 'Contracts', count: contracts.length },
+                { id: 'alerts', label: 'Alerts', count: alerts.length },
+                { id: 'features', label: 'Features' },
+              ].map((tab) => {
+                const isActive = activeTab === tab.id;
+                return (
+                  <motion.button
+                    key={tab.id}
+                    onClick={() => {
+                      triggerHaptic(HapticPatterns.light);
+                      setActiveTab(tab.id as 'contracts' | 'alerts' | 'features');
+                    }}
+                    whileTap={animations.microTap}
+                    className={cn(
+                      "px-4 py-2 rounded-full text-sm font-semibold transition-all duration-200 whitespace-nowrap",
+                      isActive
+                        ? "bg-white/15 text-white border border-white/20"
+                        : "bg-white/5 text-white/70 border border-white/10 hover:bg-white/8"
+                    )}
+                  >
+                    {tab.label}
+                    {tab.count !== undefined && (
+                      <span className={cn(
+                        "ml-1.5 px-1.5 py-0.5 rounded-full text-xs",
+                        isActive ? "bg-white/25" : "bg-white/10"
+                      )}>
+                        {tab.count}
+                      </span>
+                    )}
+                  </motion.button>
+                );
+              })}
+            </div>
 
             {/* Tab Content with smooth transitions */}
             <AnimatePresence mode="wait">
@@ -373,7 +384,7 @@ const CreatorContentProtection = () => {
                   animate="visible"
                   exit="exit"
                   transition={{ duration: 0.3, ease: "easeOut" }}
-                  className="space-y-3"
+                  className="space-y-5 sm:space-y-6"
                 >
                   {isLoading ? (
                     <div className="text-center py-12 text-white/60">Loading contracts...</div>
@@ -398,7 +409,7 @@ const CreatorContentProtection = () => {
                           >
                             <BaseCard 
                               variant="tertiary" 
-                              className={`${animations.cardHover} ${animations.cardPress} cursor-pointer`}
+                              className={cn(`${animations.cardHover} ${animations.cardPress} cursor-pointer`, "p-4 sm:p-5 rounded-xl sm:rounded-2xl")}
                               onClick={() => {
                                 triggerHaptic(HapticPatterns.light);
                                 if (contract.dealId) {
@@ -410,9 +421,9 @@ const CreatorContentProtection = () => {
                             >
                             {/* Contract Header */}
                             <div className="relative z-10 flex items-start justify-between mb-3">
-                              <div className="flex items-start gap-3 flex-1 min-w-0">
-                                <div className={`w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 ${riskConfig[contract.risk as RiskLevel].bgColor}`}>
-                                  <FileText className={`${iconSizes.md} ${riskConfig[contract.risk as RiskLevel].textColor}`} />
+                              <div className="flex items-start gap-2 sm:gap-3 flex-1 min-w-0">
+                                <div className={cn("w-9 h-9 sm:w-11 sm:h-11 rounded-xl flex items-center justify-center flex-shrink-0", riskConfig[contract.risk as RiskLevel].bgColor)}>
+                                  <FileText className={cn("text-lg sm:text-xl", riskConfig[contract.risk as RiskLevel].textColor)} />
             </div>
                                 
                                 <div className="flex-1 min-w-0">
@@ -420,7 +431,7 @@ const CreatorContentProtection = () => {
                                   <div className={`flex items-center gap-1.5 ${typography.caption}`}>
                                     <span>{contract.brand}</span>
                                     <span>•</span>
-                                    <span>₹{(contract.value / 1000).toFixed(0)}K</span>
+                                    <span>₹{Math.round(contract.value).toLocaleString('en-IN')}</span>
                 </div>
               </div>
             </div>
@@ -429,16 +440,16 @@ const CreatorContentProtection = () => {
                             </div>
 
                             {/* Status and Risk Badges */}
-                            <div className="relative z-10 flex items-center gap-2 mb-3 flex-wrap">
-                              <div className={`flex items-center gap-1.5 ${typography.caption} ${statusConfig[contract.status as ContractStatus].color}`}>
+                            <div className="relative z-10 flex items-center gap-2 mb-3 flex-wrap gap-y-1">
+                              <div className={cn("flex items-center gap-1.5", typography.caption, statusConfig[contract.status as ContractStatus].color)}>
                                 <StatusIcon className={iconSizes.xs} />
                                 <span>{statusConfig[contract.status as ContractStatus].label}</span>
                               </div>
-                              <div className={`px-2 py-0.5 rounded-lg ${typography.caption} font-medium ${riskConfig[contract.risk as RiskLevel].bgColor} ${riskConfig[contract.risk as RiskLevel].textColor}`}>
+                              <div className={cn("text-[10px] sm:text-xs py-1 sm:py-1.5 px-2.5 sm:px-3 rounded-lg font-medium", riskConfig[contract.risk as RiskLevel].bgColor, riskConfig[contract.risk as RiskLevel].textColor)}>
                                 {riskConfig[contract.risk as RiskLevel].label}
                               </div>
                               {contract.issues > 0 && (
-                                <div className={`px-2 py-0.5 bg-red-500/20 text-red-400 rounded-lg ${typography.caption} font-medium`}>
+                                <div className={cn("text-[10px] sm:text-xs py-1 sm:py-1.5 px-2.5 sm:px-3 bg-red-500/20 text-red-400 rounded-lg font-medium")}>
                                   {contract.issues} {contract.issues === 1 ? 'Issue' : 'Issues'}
           </div>
         )}
@@ -475,32 +486,6 @@ const CreatorContentProtection = () => {
                           </motion.div>
                         );
                       })}
-
-                      {/* Upload New Contract */}
-                      <motion.button 
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.3, delay: contracts.length * 0.05 }}
-                        onClick={() => {
-                          triggerHaptic(HapticPatterns.medium);
-                          navigate('/contract-upload');
-                        }}
-                      >
-                        <BaseCard 
-                          variant="tertiary" 
-                          className="p-6 border-2 border-dashed border-white/15 cursor-pointer active:scale-[0.97] transition-all duration-150"
-                          onClick={() => {
-                            triggerHaptic(HapticPatterns.medium);
-                            navigate('/contract-upload');
-                          }}
-                        >
-                        <div className="relative z-10">
-                          <Upload className={`${iconSizes.lg} text-white/60 mx-auto mb-2`} />
-                          <div className={`${typography.bodySmall} font-medium mb-1`}>Upload New Contract</div>
-                          <div className={typography.caption}>Get instant AI-powered review</div>
-                        </div>
-                        </BaseCard>
-                      </motion.button>
                     </>
                   )}
                 </motion.div>
@@ -515,7 +500,7 @@ const CreatorContentProtection = () => {
                   animate="visible"
                   exit="exit"
                   transition={{ duration: 0.3, ease: "easeOut" }}
-                  className="space-y-3"
+                  className="space-y-5 sm:space-y-6"
                 >
                   {isLoading ? (
                     <div className="text-center py-12 text-white/60">Loading alerts...</div>
@@ -541,12 +526,12 @@ const CreatorContentProtection = () => {
                         >
                           <BaseCard 
                             variant="tertiary" 
-                            className={`${animations.cardHover} ${animations.cardPress} cursor-pointer`}
+                            className={cn(`${animations.cardHover} ${animations.cardPress} cursor-pointer`, "p-4 sm:p-5 rounded-xl sm:rounded-2xl")}
                             onClick={() => triggerHaptic(HapticPatterns.light)}
                           >
-                          <div className="relative z-10 flex items-start gap-3">
-                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${alertConfig[alert.type as AlertType].bgColor}`}>
-                              <AlertIcon className={`${iconSizes.md} ${alertConfig[alert.type as AlertType].iconColor}`} />
+                          <div className="relative z-10 flex items-start gap-2 sm:gap-3">
+                            <div className={cn("w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center flex-shrink-0", alertConfig[alert.type as AlertType].bgColor)}>
+                              <AlertIcon className={cn("text-lg sm:text-xl", alertConfig[alert.type as AlertType].iconColor)} />
                             </div>
                             
                             <div className="flex-1 min-w-0">
@@ -579,7 +564,7 @@ const CreatorContentProtection = () => {
                   animate="visible"
                   exit="exit"
                   transition={{ duration: 0.3, ease: "easeOut" }}
-                  className="space-y-3"
+                  className="space-y-5 sm:space-y-6"
                 >
                   {protectionFeatures.map((feature, index) => {
                     const FeatureIcon = feature.icon;
@@ -593,7 +578,7 @@ const CreatorContentProtection = () => {
                       >
                         <BaseCard 
                           variant="tertiary" 
-                          className={`${animations.cardHover} ${animations.cardPress} cursor-pointer`}
+                          className={cn(`${animations.cardHover} ${animations.cardPress} cursor-pointer`, "p-4 sm:p-5 rounded-xl sm:rounded-2xl")}
                           onClick={() => triggerHaptic(HapticPatterns.light)}
                         >
                         <div className="relative z-10 flex items-center gap-3">
@@ -692,8 +677,6 @@ const CreatorContentProtection = () => {
             </AnimatePresence>
           </div>
 
-          {/* Bottom gradient fade */}
-          <div className="sticky bottom-0 h-20 bg-gradient-to-t from-purple-900 to-transparent pointer-events-none -mt-20" />
         </div>
     </div>
     </ContextualTipsProvider>

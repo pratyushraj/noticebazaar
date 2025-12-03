@@ -3,8 +3,6 @@
 import React from 'react';
 import { MessageSquare, FileText, Search, Filter, X, Upload, Briefcase, Wallet, Sparkles, Scale, BarChart3 } from 'lucide-react';
 import { EmptyState } from './EmptyState';
-import { Button } from '@/components/ui/button';
-import { motion } from 'framer-motion';
 
 /**
  * Pre-configured empty states for common scenarios
@@ -16,7 +14,6 @@ import { motion } from 'framer-motion';
 // No Messages Empty State
 interface NoMessagesEmptyStateProps {
   onStartChat?: () => void;
-  onUploadContract?: () => void;
   variant?: 'default' | 'compact' | 'minimal';
 }
 
@@ -28,44 +25,35 @@ const EmptyActionButton: React.FC<{
 }> = ({ icon, label, onClick }) => (
   <button
     onClick={onClick}
-    className="flex flex-col items-center justify-center h-14 rounded-xl bg-white/10 border border-white/10 backdrop-blur-xl text-white/80 text-[14px] font-medium active:scale-[0.96] transition-all shadow-[0_4px_12px_rgba(0,0,0,0.15)] hover:bg-white/20 hover:border-white/15"
+    className="flex flex-col items-center justify-center h-12 md:h-14 rounded-xl bg-white/10 border border-white/10 backdrop-blur-xl text-white/80 text-[12px] md:text-[14px] font-medium active:scale-[0.96] transition-all shadow-[0_4px_12px_rgba(0,0,0,0.15)] hover:bg-white/20 hover:border-white/15"
   >
-    <div className="mb-1.5 text-white/70">{icon}</div>
-    <span>{label}</span>
+    <div className="mb-1 md:mb-1.5 text-white/70 scale-90 md:scale-100">{icon}</div>
+    <span className="leading-tight">{label}</span>
   </button>
 );
 
 export const NoMessagesEmptyState: React.FC<NoMessagesEmptyStateProps> = ({
   onStartChat,
-  onUploadContract,
-  variant = 'default',
 }) => {
   return (
-    <div className="flex flex-col items-center px-5 pt-4 pb-4 max-w-lg mx-auto w-full">
+    <div className="flex flex-col items-center px-4 pt-2 pb-2 max-w-lg mx-auto w-full">
       {/* Empty Icon */}
-      <div className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-white/10 backdrop-blur-xl border border-white/15 flex items-center justify-center mb-4 shadow-[0_4px_12px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.1)]">
-        <MessageSquare className="w-8 h-8 md:w-10 md:h-10 text-white/60" />
+      <div className="w-12 h-12 md:w-20 md:h-20 rounded-full bg-white/10 backdrop-blur-xl border border-white/15 flex items-center justify-center mb-3 md:mb-4 shadow-[0_4px_12px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.1)]">
+        <MessageSquare className="w-6 h-6 md:w-10 md:h-10 text-white/60" />
       </div>
 
       {/* Title */}
-      <h2 className="text-[20px] md:text-[22px] font-semibold text-white mb-2 text-center">
+      <h2 className="text-[18px] md:text-[22px] font-semibold text-white mb-1.5 md:mb-2 text-center">
         No Messages Yet
       </h2>
 
       {/* Subtitle */}
-      <p className="text-center text-[14px] md:text-[15px] leading-relaxed text-white/70 mb-6 max-w-sm">
+      <p className="text-center text-[12px] md:text-[15px] leading-snug md:leading-relaxed text-white/70 mb-4 md:mb-6 px-2 max-w-sm mx-auto">
         Start a conversation with your advisor to get help with contracts, payments, or legal questions.
       </p>
 
       {/* Action Buttons */}
-      <div className="grid grid-cols-2 gap-3 w-full max-w-md">
-        {onUploadContract && (
-          <EmptyActionButton
-            icon={<Upload className="w-4 h-4" />}
-            label="Upload a Contract"
-            onClick={onUploadContract}
-          />
-        )}
+      <div className="grid grid-cols-2 gap-2 md:gap-3 w-full max-w-md">
         <EmptyActionButton
           icon={<FileText className="w-4 h-4" />}
           label="Contract Review"

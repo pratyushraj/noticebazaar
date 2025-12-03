@@ -14,7 +14,8 @@ type AnalyticsEvent =
   | 'calendar_sync_added'
   | 'overdue_payment_reminder_sent'
   | 'deliverable_marked_completed'
-  | 'deal_duplicated';
+  | 'deal_duplicated'
+  | 'deal_progress_updated';
 
 interface AnalyticsProperties {
   [key: string]: string | number | boolean | null | undefined;

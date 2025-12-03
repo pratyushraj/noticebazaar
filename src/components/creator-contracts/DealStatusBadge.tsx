@@ -3,11 +3,10 @@
 import React from 'react';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
+import { DealStage, STAGE_LABELS } from '@/lib/hooks/useBrandDeals';
 
-// Project-focused stages (primary)
-export type DealStage = 'draft' | 'awaiting_approval' | 'in_progress' | 'deliverables_due' | 'review_pending' | 'completed';
-// Payment status (secondary, for reference)
-export type PaymentStatus = 'not_due' | 'pending' | 'overdue' | 'paid';
+// Re-export DealStage for backward compatibility
+export type { DealStage };
 
 interface DealStatusBadgeProps {
   stage: DealStage;
@@ -17,35 +16,29 @@ interface DealStatusBadgeProps {
 const DealStatusBadge: React.FC<DealStatusBadgeProps> = ({ stage, className }) => {
   const getStageConfig = (stage: DealStage) => {
     switch (stage) {
-      case 'draft':
+      case 'negotiation':
         return {
-          label: 'Draft',
-          shortLabel: 'Draft',
-          className: 'bg-gray-500/20 text-gray-400 border-gray-500/30',
-        };
-      case 'awaiting_approval':
-        return {
-          label: 'Awaiting Approval',
-          shortLabel: 'Pending',
+          label: 'Negotiation',
+          shortLabel: 'Negotiation',
           className: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
         };
-      case 'in_progress':
+      case 'signed':
         return {
-          label: 'In Progress',
-          shortLabel: 'Active',
+          label: 'Signed',
+          shortLabel: 'Signed',
           className: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
         };
-      case 'deliverables_due':
+      case 'content_making':
         return {
-          label: 'Deliverables Due',
-          shortLabel: 'Due',
-          className: 'bg-orange-500/20 text-orange-400 border-orange-500/30',
-        };
-      case 'review_pending':
-        return {
-          label: 'Review Pending',
-          shortLabel: 'Review',
+          label: 'Content Making',
+          shortLabel: 'Making',
           className: 'bg-purple-500/20 text-purple-400 border-purple-500/30',
+        };
+      case 'content_delivered':
+        return {
+          label: 'Content Delivered',
+          shortLabel: 'Delivered',
+          className: 'bg-indigo-500/20 text-indigo-400 border-indigo-500/30',
         };
       case 'completed':
         return {
@@ -55,8 +48,8 @@ const DealStatusBadge: React.FC<DealStatusBadgeProps> = ({ stage, className }) =
         };
       default:
         return {
-          label: stage,
-          shortLabel: stage,
+          label: STAGE_LABELS[stage] || stage,
+          shortLabel: STAGE_LABELS[stage] || stage,
           className: 'bg-gray-500/20 text-gray-400 border-gray-500/30',
         };
     }

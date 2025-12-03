@@ -16,7 +16,6 @@ import { cn } from '@/lib/utils';
 import { sectionLayout, animations, spacing, typography, separators, iconSizes, scroll, sectionHeader, gradients, buttons, glass, shadows, spotlight, radius, zIndex, vision, motion as motionTokens, colors } from '@/lib/design-system';
 import { PremiumButton } from '@/components/ui/PremiumButton';
 import { BaseCard, SectionCard, StatCard, ActionCard } from '@/components/ui/card-variants';
-import { AppsGridMenu } from '@/components/navigation/AppsGridMenu';
 // Onboarding components - commented out if not currently used
 // import OnboardingChecklist from '@/components/onboarding/OnboardingChecklist';
 // import InteractiveTutorial from '@/components/onboarding/InteractiveTutorial';
@@ -179,38 +178,50 @@ const CreatorDashboard = () => {
 
     // Calculate pending payments
     const pendingPayments = brandDeals
-      .filter(deal => deal.status === 'Payment Pending' && !deal.payment_received_date)
+      .filter(deal => {
+        const status = deal.status?.toLowerCase() || '';
+        return (status.includes('content_delivered') || status.includes('content delivered')) && !deal.payment_received_date;
+      })
       .reduce((sum, deal) => sum + (deal.deal_amount || 0), 0);
 
     // Get next payout (earliest pending payment)
     const nextPayoutDeal = brandDeals
-      .filter(deal => deal.status === 'Payment Pending' && deal.payment_expected_date)
+      .filter(deal => {
+        const status = deal.status?.toLowerCase() || '';
+        return (status.includes('content_delivered') || status.includes('content delivered')) && deal.payment_expected_date;
+      })
       .sort((a, b) => {
         const dateA = new Date(a.payment_expected_date!).getTime();
         const dateB = new Date(b.payment_expected_date!).getTime();
         return dateA - dateB;
       })[0];
 
-    // Active deals (not completed, not drafting)
+    // Active deals (not completed) - includes all deals that are in progress
     const activeDeals = brandDeals.filter(deal => 
-      deal.status !== 'Completed' && deal.status !== 'Drafting'
+      deal.status !== 'Completed'
     ).length;
+
+    // Set minimum goal of ₹10,000 if earnings are 0
+    const getGoal = (earnings: number, multiplier: number) => {
+      if (earnings === 0) return 10000; // Default minimum goal
+      return earnings * multiplier;
+    };
 
     return {
       month: {
         earnings: currentEarnings,
         monthlyGrowth,
-        goal: currentEarnings * 1.5, // Dynamic goal based on current earnings
+        goal: getGoal(currentEarnings, 1.5), // Dynamic goal with minimum fallback
       },
       lastMonth: {
         earnings: lastMonthEarnings,
         monthlyGrowth: 0,
-        goal: lastMonthEarnings * 1.5,
+        goal: getGoal(lastMonthEarnings, 1.5),
       },
       allTime: {
         earnings: allTimeEarnings,
         monthlyGrowth: monthlyGrowth,
-        goal: allTimeEarnings * 1.2,
+        goal: getGoal(allTimeEarnings, 1.2),
       },
       totalDeals: brandDeals.length,
       activeDeals,
@@ -307,15 +318,24 @@ const CreatorDashboard = () => {
   }, [brandDeals, hasNoData]);
 
   // Active deals preview from real data
+  // Active = not completed and not fully paid (payment_received_date is null or status is not 'Completed')
   const activeDealsPreview = useMemo(() => {
     if (hasNoData) return [];
     
     return brandDeals
-      .filter(deal => deal.status !== 'Completed' && deal.status !== 'Drafting')
+      .filter(deal => {
+        // Exclude only completed deals
+        if (deal.status === 'Completed') return false;
+        
+        // Include all other deals (Drafting, Payment Pending, Approved, etc.)
+        // This ensures we show deals that are in progress
+        return true;
+      })
       .sort((a, b) => {
+        // Sort by due date (most urgent first), then by created date (newest first)
         const dateA = new Date(a.due_date || a.created_at).getTime();
         const dateB = new Date(b.due_date || b.created_at).getTime();
-        return dateB - dateA;
+        return dateA - dateB; // Sort ascending (earliest due date first)
       })
       .slice(0, 2)
       .map(deal => ({
@@ -324,7 +344,7 @@ const CreatorDashboard = () => {
         amount: deal.deal_amount,
         status: deal.status,
         dueDate: deal.due_date,
-        progress: deal.status === 'Completed' ? 100 : deal.status === 'Payment Pending' ? 75 : 50
+        progress: deal.progress_percentage ?? (deal.status === 'Completed' ? 100 : deal.status === 'Content Delivered' ? 90 : deal.status === 'Content Making' ? 80 : deal.status === 'Signed' ? 70 : 30)
       }));
   }, [brandDeals, hasNoData]);
 
@@ -335,7 +355,7 @@ const CreatorDashboard = () => {
     brand: deal.brand,
     value: deal.amount,
     progress: deal.progress,
-    status: deal.status === 'Payment Pending' ? 'active' : 'negotiation',
+    status: (deal.status === 'Content Delivered' || deal.status === 'Content Making' || deal.status === 'Signed') ? 'active' : 'negotiation',
     deadline: deal.dueDate ? new Date(deal.dueDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'TBD'
   }));
 
@@ -408,33 +428,51 @@ const CreatorDashboard = () => {
 
     return (
     <ContextualTipsProvider currentView="dashboard">
-    <div className={`min-h-screen ${gradients.page} text-white overflow-x-hidden`}>
+    <div className={`min-h-full ${gradients.page} text-white overflow-x-hidden`}>
       {/* Top Header - iOS 17 + visionOS Premium */}
       <motion.header
         initial={{ y: -100, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        transition={animations.spring}
+        transition={motionTokens.spring.ios17}
         className={cn(
-          "sticky top-0 relative",
+          "sticky top-0 relative overflow-hidden",
           zIndex.sticky,
-          glass.appleStrong,
-          "border-b border-white/10",
-          shadows.depth
+          // iOS 17 glass with enhanced blur
+          "bg-white/8 backdrop-blur-3xl",
+          "border-b border-white/15",
+          shadows.depthStrong,
+          // Inner shadow for depth
+          "shadow-[inset_0_1px_0_rgba(255,255,255,0.15)]",
+          // Purple theme integration
+          "before:absolute before:inset-0 before:bg-gradient-to-b before:from-purple-500/10 before:to-transparent before:pointer-events-none"
         )}
         style={{
-          paddingTop: 'max(16px, env(safe-area-inset-top, 16px))',
+          paddingTop: 'max(20px, env(safe-area-inset-top, 20px))',
           paddingBottom: '16px',
           paddingLeft: 'calc(16px + env(safe-area-inset-left, 0px))',
           paddingRight: 'calc(16px + env(safe-area-inset-right, 0px))',
         }}
       >
-        {/* Spotlight gradient */}
-        <div className={cn(spotlight.top, "opacity-40")} />
+        {/* Enhanced spotlight gradient */}
+        <div className={cn(
+          "absolute inset-x-0 top-0 h-24",
+          "bg-gradient-to-b from-white/20 via-white/10 to-transparent",
+          "pointer-events-none"
+        )} />
         
-        {/* Inner border for depth */}
-        <div className="absolute inset-x-0 bottom-0 h-[1px] bg-white/10" />
+        {/* Inner border for depth - enhanced */}
+        <div className="absolute inset-x-0 bottom-0 h-[1px] bg-gradient-to-r from-transparent via-white/20 to-transparent" />
         
-        <div className={cn("flex items-center justify-between gap-3", spacing.cardPadding.tertiary, "py-3 relative z-10")}>
+        {/* Subtle purple glow at bottom */}
+        <div className="absolute inset-x-0 bottom-0 h-px bg-purple-400/30 blur-sm" />
+        
+        <div className={cn(
+          "flex items-center justify-between gap-3",
+          spacing.cardPadding.tertiary,
+          "py-3 relative z-10",
+          // Better spacing on mobile
+          "px-4 sm:px-5"
+        )}>
           {/* Creator Avatar - Replaces Menu Icon */}
           <motion.button 
             onClick={() => {
@@ -461,7 +499,6 @@ const CreatorDashboard = () => {
           <div className={typography.h4}>NoticeBazaar</div>
           
           <div className="flex items-center gap-2">
-            <AppsGridMenu className={buttons.icon} />
             <motion.button 
               onClick={handleRefresh}
               disabled={isRefreshing}
@@ -764,13 +801,13 @@ const CreatorDashboard = () => {
                 </span>
                 <span className="text-purple-300/60">•</span>
                 <span className="px-2.5 py-1 bg-green-500/20 text-green-400 rounded-full flex items-center gap-1.5 font-medium">
-                  ₹{Math.round(calculatedStats.allTime.earnings / 1000)}K lifetime value
+                  ₹{Math.round(calculatedStats.allTime.earnings).toLocaleString('en-IN')} lifetime value
                 </span>
                   </div>
                 </div>
 
             {/* Quick Stats Row */}
-            <div data-tutorial="stats-grid" className="grid grid-cols-3 gap-3 mb-4">
+            <div data-tutorial="stats-grid" className="grid grid-cols-3 gap-2 sm:gap-4 w-full max-w-full px-2 mb-4">
               <StatCard
                 label="Total Deals"
                 value={stats.totalDeals}
@@ -785,18 +822,25 @@ const CreatorDashboard = () => {
               />
               <StatCard
                 label="Pending"
-                value={`₹${(stats.pendingPayments / 1000).toFixed(0)}K`}
+                value={Math.round(stats.pendingPayments)}
                 icon={<CreditCard className={`${iconSizes.sm} text-orange-400`} />}
                 variant="tertiary"
-            />
-          </div>
+              />
+            </div>
 
             {/* Main Earnings Card - iOS 17 + visionOS */}
-            <motion.button 
+            <motion.div 
               data-tutorial="earnings-card"
               onClick={() => {
                 triggerHaptic(HapticPatterns.medium);
                 navigate('/creator-analytics');
+              }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  triggerHaptic(HapticPatterns.medium);
+                  navigate('/creator-analytics');
+                }
               }}
               whileTap={animations.microTap}
               whileHover={window.innerWidth > 768 ? animations.microHover : undefined}
@@ -805,10 +849,13 @@ const CreatorDashboard = () => {
                 glass.apple,
                 shadows.vision,
                 radius.lg,
-                spacing.cardPadding.primary,
+                "p-4 sm:p-6", // Smaller padding on mobile
                 animations.cardHover,
-                "transition-all duration-200"
+                "transition-all duration-200",
+                "cursor-pointer"
               )}
+              role="button"
+              tabIndex={0}
               aria-label="View analytics"
             >
               {/* Vision Pro depth elevation */}
@@ -824,8 +871,11 @@ const CreatorDashboard = () => {
               <div className={cn("absolute top-0 right-0 w-32 h-32", radius.full, "bg-purple-500/10 blur-3xl")} />
               
               <div className="relative z-10">
-                {/* Timeframe Selector */}
-                <div className={cn("flex items-center justify-between", spacing.compact)}>
+                {/* Timeframe Selector - Mobile: Stack, Desktop: Side by side */}
+                <div className={cn(
+                  "flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-2",
+                  spacing.compact
+                )}>
                   <div className={cn("flex items-center gap-2")}>
                     <div className={cn(
                       "w-10 h-10",
@@ -838,10 +888,12 @@ const CreatorDashboard = () => {
                     <span className={cn(typography.body, "font-medium")}>Earnings</span>
                   </div>
                   <div className={cn(
-                    "flex gap-1",
+                    "flex gap-1.5 sm:gap-1 w-full sm:w-auto",
                     glass.appleSubtle,
                     radius.md,
-                    spacing.cardPadding.tertiary
+                    "p-1.5 sm:p-2",
+                    "overflow-x-auto sm:overflow-visible", // Allow horizontal scroll on mobile if needed
+                    "[&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
                   )}>
                     <motion.button
                       onClick={(e) => {
@@ -851,10 +903,11 @@ const CreatorDashboard = () => {
                       }}
                       whileTap={animations.microTap}
                       className={cn(
-                        spacing.cardPadding.tertiary,
-                        typography.bodySmall,
+                        "px-3 py-2 sm:px-2 sm:py-1.5",
+                        "text-xs sm:text-sm",
                         radius.sm,
-                        "transition-all",
+                        "transition-all whitespace-nowrap",
+                        "min-h-[36px] sm:min-h-0", // Better touch target on mobile
                         timeframe === 'month'
                           ? 'bg-purple-600 text-white'
                           : 'text-purple-300 hover:text-white'
@@ -871,10 +924,11 @@ const CreatorDashboard = () => {
                       }}
                       whileTap={animations.microTap}
                       className={cn(
-                        spacing.cardPadding.tertiary,
-                        typography.bodySmall,
+                        "px-3 py-2 sm:px-2 sm:py-1.5",
+                        "text-xs sm:text-sm",
                         radius.sm,
-                        "transition-all",
+                        "transition-all whitespace-nowrap",
+                        "min-h-[36px] sm:min-h-0",
                         timeframe === 'lastMonth'
                           ? 'bg-purple-600 text-white'
                           : 'text-purple-300 hover:text-white'
@@ -891,10 +945,11 @@ const CreatorDashboard = () => {
                       }}
                       whileTap={animations.microTap}
                       className={cn(
-                        spacing.cardPadding.tertiary,
-                        typography.bodySmall,
+                        "px-3 py-2 sm:px-2 sm:py-1.5",
+                        "text-xs sm:text-sm",
                         radius.sm,
-                        "transition-all",
+                        "transition-all whitespace-nowrap",
+                        "min-h-[36px] sm:min-h-0",
                         timeframe === 'allTime'
                           ? 'bg-purple-600 text-white'
                           : 'text-purple-300 hover:text-white'
@@ -906,10 +961,17 @@ const CreatorDashboard = () => {
                   </div>
                 </div>
 
-                <div className={cn("flex items-end justify-between", spacing.compact)}>
-                  <div>
-                    <div className={cn(typography.amount, "mb-2")}>₹{(stats.earnings / 1000).toFixed(1)}K</div>
-                    <div className={cn("flex items-center gap-2")}>
+                {/* Earnings Amount and Growth - Mobile: Stack, Desktop: Side by side */}
+                <div className={cn(
+                  "flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 sm:gap-2",
+                  "mt-4 sm:mt-2"
+                )}>
+                  <div className="flex-1 min-w-0">
+                    <div className={cn(
+                      "text-3xl sm:text-4xl md:text-5xl font-bold tabular-nums mb-2",
+                      "leading-tight"
+                    )}>₹{stats.earnings.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</div>
+                    <div className={cn("flex flex-wrap items-center gap-2")}>
                       <span className={cn("text-green-400", typography.bodySmall, "flex items-center gap-1")}>
                         <TrendingUp className={iconSizes.sm} />
                         +{stats.monthlyGrowth}%
@@ -919,46 +981,66 @@ const CreatorDashboard = () => {
                       </span>
                     </div>
                   </div>
-                  <div className={cn("flex items-center gap-1 text-purple-300", typography.bodySmall)}>
+                  <div className={cn(
+                    "flex items-center gap-1 text-purple-300",
+                    typography.bodySmall,
+                    "self-start sm:self-end", // Align left on mobile, right on desktop
+                    "pt-1 sm:pt-0"
+                  )}>
                     <span>View Details</span>
                     <ChevronRight className={iconSizes.sm} />
                   </div>
                 </div>
 
-                {/* Goal Progress bar with labels */}
-                <div className={cn("mt-4")}>
-                  <div className={cn("flex items-center justify-between", typography.caption, "mb-1.5")}>
-                    <span className={cn("flex items-center gap-1")}>
-                      <Target className={iconSizes.xs} />
-                      Progress to Goal
+                {/* Goal Progress bar with labels - Mobile optimized */}
+                <div className={cn("mt-4 sm:mt-5")}>
+                  <div className={cn(
+                    "flex items-center justify-between",
+                    typography.caption,
+                    "mb-2 sm:mb-1.5",
+                    "text-xs sm:text-xs"
+                  )}>
+                    <span className={cn("flex items-center gap-1", "truncate")}>
+                      <Target className={cn(iconSizes.xs, "flex-shrink-0")} />
+                      <span className="truncate">Progress to Goal</span>
                     </span>
-                    <span className={cn(typography.bodySmall, "font-semibold")}>{earningsProgress.toFixed(0)}%</span>
+                    <span className={cn(
+                      typography.bodySmall,
+                      "font-semibold flex-shrink-0 ml-2",
+                      "text-xs sm:text-sm"
+                    )}>{earningsProgress.toFixed(0)}%</span>
                   </div>
                   <div className={cn(
                     "relative w-full",
                     colors.bg.secondary,
                     radius.full,
-                    "h-3 overflow-hidden"
+                    "h-2.5 sm:h-3 overflow-hidden"
                   )}>
                     <motion.div 
                       initial={{ width: 0 }}
                       animate={{ width: `${Math.min(earningsProgress, 100)}%` }}
                       transition={motionTokens.spring.gentle}
                       className={cn(
-                        "bg-gradient-to-r from-teal-500 to-cyan-500 h-3",
+                        "bg-gradient-to-r from-teal-500 to-cyan-500 h-2.5 sm:h-3",
                         radius.full,
                         shadows.lg,
                         "shadow-teal-500/30"
                       )}
                     />
                   </div>
-                  <div className={cn("flex items-center justify-between", typography.caption, "mt-1")}>
-                    <span>₹{(stats.earnings / 1000).toFixed(0)}K earned</span>
-                    <span>Goal: ₹{(stats.goal / 1000).toFixed(0)}K</span>
+                  <div className={cn(
+                    "flex items-center justify-between",
+                    typography.caption,
+                    "mt-1.5 sm:mt-1",
+                    "text-xs sm:text-xs",
+                    "gap-2"
+                  )}>
+                    <span className="truncate">₹{Math.round(stats.earnings).toLocaleString('en-IN')} earned</span>
+                    <span className="flex-shrink-0">Goal: ₹{Math.round(stats.goal).toLocaleString('en-IN')}</span>
                   </div>
                 </div>
               </div>
-            </motion.button>
+            </motion.div>
 
             {/* Section Separator */}
             <div className={separators.section} />
@@ -1071,7 +1153,7 @@ const CreatorDashboard = () => {
                           <div className={typography.bodySmall}>{deal.brand}</div>
                         </div>
                         <div className={cn(typography.amountSmall, "text-green-400")}>
-                          ₹{(deal.value / 1000).toFixed(0)}K
+                          ₹{Math.round(deal.value).toLocaleString('en-IN')}
                         </div>
                       </div>
                       
@@ -1225,7 +1307,7 @@ const CreatorDashboard = () => {
                         </div>
                         <div className="text-right">
                           <div className={cn(typography.amountSmall, "text-green-400")}>
-                            ₹{(payment.amount / 1000).toFixed(0)}K
+                            ₹{Math.round(payment.amount).toLocaleString('en-IN')}
                           </div>
                           <div className={cn(
                             typography.caption,
@@ -1269,119 +1351,6 @@ const CreatorDashboard = () => {
         />
       )}
 
-      {/* Bottom Navigation */}
-      <div className="fixed bottom-0 left-0 right-0 bg-purple-900/90 backdrop-blur-lg border-t border-white/10 z-50">
-        <div className="flex justify-around items-center py-3 px-4">
-          <button
-            onClick={() => {
-              setActiveTab('home');
-              triggerHaptic(HapticPatterns.light);
-            }}
-            className={`flex flex-col items-center gap-1 transition-all duration-150 relative active:scale-[0.97] ${
-              activeTab === 'home' 
-                ? 'text-white' 
-                : 'text-purple-300 hover:text-white'
-            }`}
-          >
-            {activeTab === 'home' && (
-              <motion.div
-                layoutId="activeTab"
-                className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-8 h-1 bg-gradient-to-r from-purple-400 to-pink-400 rounded-full"
-                initial={false}
-              />
-            )}
-            <Home className={iconSizes.lg} />
-            <span className="text-xs font-medium">Home</span>
-          </button>
-
-          <button
-            data-tutorial="deals-nav"
-            onClick={() => {
-              setActiveTab('deals');
-              triggerHaptic(HapticPatterns.light);
-            }}
-            className={`flex flex-col items-center gap-1 transition-all duration-150 relative active:scale-[0.97] ${
-              activeTab === 'deals' ? 'text-white' : 'text-purple-300 hover:text-white'
-            }`}
-          >
-            {activeTab === 'deals' && (
-              <motion.div
-                layoutId="activeTab"
-                className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-8 h-1 bg-gradient-to-r from-purple-400 to-pink-400 rounded-full"
-                initial={false}
-              />
-            )}
-            <Briefcase className={iconSizes.lg} />
-            <span className="text-xs font-medium">Deals</span>
-          </button>
-
-          <button
-            data-tutorial="payments-nav"
-            onClick={() => {
-              setActiveTab('payments');
-              triggerHaptic(HapticPatterns.light);
-            }}
-            className={`flex flex-col items-center gap-1 transition-all duration-150 relative active:scale-[0.97] ${
-              activeTab === 'payments' ? 'text-white' : 'text-purple-300 hover:text-white'
-            }`}
-          >
-            {activeTab === 'payments' && (
-              <motion.div
-                layoutId="activeTab"
-                className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-8 h-1 bg-gradient-to-r from-purple-400 to-pink-400 rounded-full"
-                initial={false}
-              />
-            )}
-            <CreditCard className={iconSizes.lg} />
-            <span className="text-xs font-medium">Payments</span>
-          </button>
-
-          <button
-            data-tutorial="protection-nav"
-            onClick={() => {
-              setActiveTab('protection');
-              triggerHaptic(HapticPatterns.light);
-            }}
-            className={`flex flex-col items-center gap-1 transition-all duration-150 relative active:scale-[0.97] ${
-              activeTab === 'protection' ? 'text-white' : 'text-purple-300 hover:text-white'
-            }`}
-          >
-            {activeTab === 'protection' && (
-              <motion.div
-                layoutId="activeTab"
-                className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-8 h-1 bg-gradient-to-r from-purple-400 to-pink-400 rounded-full"
-                initial={false}
-              />
-            )}
-            <Shield className={iconSizes.lg} />
-            <span className="text-xs font-medium">Protection</span>
-          </button>
-
-          <button
-            data-tutorial="messages-nav"
-            onClick={() => {
-              navigate('/messages');
-              triggerHaptic(HapticPatterns.light);
-            }}
-            className={`flex flex-col items-center gap-1 transition-all duration-150 relative active:scale-[0.97] ${
-              location.pathname === '/messages' ? 'text-white' : 'text-purple-300 hover:text-white'
-            }`}
-          >
-            {location.pathname === '/messages' && (
-              <motion.div
-                layoutId="activeTab"
-                className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-8 h-1 bg-gradient-to-r from-purple-400 to-pink-400 rounded-full"
-                initial={false}
-              />
-            )}
-            <MessageCircle className={iconSizes.lg} />
-            <span className="text-xs font-medium">Messages</span>
-            <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-              3
-            </span>
-          </button>
-        </div>
-      </div>
 
       {/* Global Search */}
       <QuickSearch

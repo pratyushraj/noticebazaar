@@ -4,12 +4,14 @@ import { useState, useMemo, useEffect } from 'react';
 import { Download, Filter, Search, CreditCard, ArrowDownRight } from 'lucide-react';
 import { useSession } from '@/contexts/SessionContext';
 import { useBrandDeals } from '@/lib/hooks/useBrandDeals';
+import { BrandDeal } from '@/types';
 import { toast } from 'sonner';
 import { ContextualTipsProvider } from '@/components/contextual-tips/ContextualTipsProvider';
 import { FilteredNoMatchesEmptyState, NoPaymentsEmptyState, SearchNoResultsEmptyState } from '@/components/empty-states/PreconfiguredEmptyStates';
 import { useNavigate } from 'react-router-dom';
 import { PaymentRequestFlow } from '@/components/payments/PaymentRequestFlow';
 import { AddExpenseDialog } from '@/components/expenses/AddExpenseDialog';
+import { ExpenseCard } from '@/components/expenses/ExpenseCard';
 import { useExpenses } from '@/lib/hooks/useExpenses';
 import { exportPaymentsReport } from '@/lib/utils/exportPaymentsReport';
 import { PaymentCard } from '@/components/payments/PaymentCard';
@@ -141,10 +143,13 @@ const CreatorPaymentsAndRecovery = () => {
 
   // Helper function to extract or generate invoice number
   // Format: INV-{year}-{short-contract-id}-{random4}
-  const getOrGenerateInvoiceNumber = (deal: any): string => {
+  // replaced-by-ultra-polish: replaced any with BrandDeal type
+  const getOrGenerateInvoiceNumber = (deal: BrandDeal): string => {
     // If invoice number already exists in database, use it
-    if (deal.invoice_number) {
-      return deal.invoice_number;
+    // Note: invoice_number may not exist on BrandDeal type, so we check safely
+    const invoiceNumber = (deal as any).invoice_number;
+    if (invoiceNumber) {
+      return invoiceNumber;
     }
 
     // Try to extract invoice number from contract text
@@ -178,11 +183,14 @@ const CreatorPaymentsAndRecovery = () => {
 
   // Helper function to extract payment method from contract/deal data
   // Looks for payment method in contract text, deliverables, or deal metadata
-  const extractPaymentMethod = (deal: any): string | null => {
+  // replaced-by-ultra-polish: replaced any with BrandDeal type
+  const extractPaymentMethod = (deal: BrandDeal): string | null => {
     // Check if payment method is explicitly stored in deal data
     // This would be populated during contract analysis
-    if (deal.payment_method) {
-      return deal.payment_method;
+    // Note: payment_method may not exist on BrandDeal type, so we check safely
+    const paymentMethod = (deal as any).payment_method;
+    if (paymentMethod) {
+      return paymentMethod;
     }
 
     // Check contract file URL or deliverables for payment method keywords
@@ -371,23 +379,55 @@ const CreatorPaymentsAndRecovery = () => {
       });
   }, [brandDeals]);
 
+  // Transform expenses to transaction-like format for display
+  const expenseTransactions = useMemo(() => {
+    return expenses.map(expense => ({
+      id: expense.id,
+      title: expense.description || expense.category,
+      brand: expense.vendor_name || 'N/A',
+      platform: expense.category,
+      amount: expense.amount,
+      type: 'expense' as const,
+      paymentStatus: 'received' as const,
+      expectedDate: expense.expense_date,
+      daysInfo: undefined,
+      riskLevel: undefined,
+      method: expense.payment_method || undefined,
+      invoice: expense.receipt_file_url ? 'Receipt available' : 'No receipt',
+      tax: undefined,
+      taxInfo: undefined,
+      finalAmount: expense.amount,
+      expense: expense, // Include full expense object for ExpenseCard
+    }));
+  }, [expenses]);
+
   const filteredTransactions = useMemo(() => {
+    // Combine all transactions and expenses
+    const allItems = [...allTransactions, ...expenseTransactions];
+    
     let filtered = activeFilter === 'all' 
-      ? allTransactions 
+      ? allItems
       : activeFilter === 'expense'
-      ? [] // Expenses would come from expenses table, not transactions
-      : allTransactions.filter(t => t.type === activeFilter);
+      ? expenseTransactions
+      : allItems.filter(t => t.type === activeFilter);
     
     if (searchQuery) {
       filtered = filtered.filter(t => 
         t.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         t.brand.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        t.invoice.toLowerCase().includes(searchQuery.toLowerCase())
+        (t.invoice && t.invoice.toLowerCase().includes(searchQuery.toLowerCase()))
       );
     }
     
+    // Sort by date (newest first)
+    filtered.sort((a, b) => {
+      const dateA = a.expectedDate ? new Date(a.expectedDate).getTime() : 0;
+      const dateB = b.expectedDate ? new Date(b.expectedDate).getTime() : 0;
+      return dateB - dateA;
+    });
+    
     return filtered;
-  }, [allTransactions, activeFilter, searchQuery]);
+  }, [allTransactions, expenseTransactions, activeFilter, searchQuery]);
 
 
   const totalPending = useMemo(() => 
@@ -399,7 +439,7 @@ const CreatorPaymentsAndRecovery = () => {
 
   return (
     <ContextualTipsProvider currentView="payments">
-    <div className={`min-h-screen ${gradients.page} text-white ${spacing.page} pb-24`}>
+    <div className={`min-h-full ${gradients.page} text-white ${spacing.page} pb-24 safe-area-fix`}>
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
@@ -546,7 +586,11 @@ const CreatorPaymentsAndRecovery = () => {
 
       {/* Filter Tabs - Pill Buttons */}
         <div className="mb-6">
-        <div className={`flex gap-2 overflow-x-auto pb-2 ${scroll.container} scrollbar-hide`}>
+        <div className={cn(
+          "flex gap-2 overflow-x-auto pb-2",
+          "px-1 -mx-1", // Add padding to prevent clipping of ring/shadow
+          "[&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
+        )}>
           {filters.map((filter) => (
             <motion.button
               key={filter.id}
@@ -560,10 +604,10 @@ const CreatorPaymentsAndRecovery = () => {
                 spacing.cardPadding.secondary,
                 radius.full,
                 typography.bodySmall,
-                "font-semibold transition-all duration-150 whitespace-nowrap",
+                "font-semibold transition-all duration-150 whitespace-nowrap flex-shrink-0",
                 activeFilter === filter.id
-                  ? 'bg-white/15 text-white ring-2 ring-white/20 shadow-lg shadow-white/10'
-                  : 'bg-white/5 text-white/70 hover:bg-white/8'
+                  ? 'bg-white/15 text-white border-2 border-white/20 shadow-lg shadow-white/10'
+                  : 'bg-white/5 text-white/70 border border-white/10 hover:bg-white/8'
               )}
             >
               {filter.label}
@@ -577,9 +621,11 @@ const CreatorPaymentsAndRecovery = () => {
 
       {/* Transactions List */}
       {filteredTransactions.length > 0 && (
-        <div className={spacing.card}>
+        <div className={spacing.card} data-section="transactions">
           <div className={sectionHeader.base}>
-            <h2 className={sectionHeader.title}>Recent Transactions</h2>
+            <h2 className={sectionHeader.title}>
+              {activeFilter === 'expense' ? 'Expenses' : 'Recent Transactions'}
+            </h2>
             <motion.button 
               onClick={() => {
                 triggerHaptic(HapticPatterns.light);
@@ -592,33 +638,45 @@ const CreatorPaymentsAndRecovery = () => {
             </motion.button>
           </div>
 
-          {filteredTransactions.map(transaction => (
-            <PaymentCard
-              key={transaction.id}
-              id={transaction.id}
-              title={transaction.title}
-              dealName={transaction.dealName}
-              platform={transaction.platform}
-              amount={transaction.amount}
-              type={transaction.type as 'received' | 'pending' | 'expense'}
-              paymentStatus={transaction.paymentStatus}
-              expectedDate={transaction.expectedDate}
-              daysInfo={transaction.daysInfo}
-              riskLevel={transaction.riskLevel}
-              method={transaction.method}
-              invoice={transaction.invoice}
-              tax={transaction.tax}
-              taxInfo={transaction.taxInfo}
-              finalAmount={transaction.finalAmount}
-              onClick={() => navigate(`/payment/${transaction.id}`)}
-            />
-          ))}
+          {filteredTransactions.map(transaction => {
+            // If it's an expense, use ExpenseCard
+            if (transaction.type === 'expense' && (transaction as any).expense) {
+              return (
+                <ExpenseCard
+                  key={transaction.id}
+                  expense={(transaction as any).expense}
+                />
+              );
+            }
+            // Otherwise use PaymentCard
+            return (
+              <PaymentCard
+                key={transaction.id}
+                id={transaction.id}
+                title={transaction.title}
+                dealName={transaction.brand}
+                platform={transaction.platform}
+                amount={transaction.amount}
+                type={transaction.type as 'received' | 'pending' | 'expense'}
+                paymentStatus={transaction.paymentStatus}
+                expectedDate={transaction.expectedDate}
+                daysInfo={transaction.daysInfo}
+                riskLevel={transaction.riskLevel}
+                method={transaction.method}
+                invoice={transaction.invoice}
+                tax={transaction.tax}
+                taxInfo={transaction.taxInfo}
+                finalAmount={transaction.finalAmount}
+                onClick={() => navigate(`/payment/${transaction.id}`)}
+              />
+            );
+          })}
         </div>
       )}
 
-      {/* Empty State */}
-      {filteredTransactions.length === 0 && (
-        <div className="py-8">
+      {/* Empty State - Always show when no transactions */}
+      {filteredTransactions.length === 0 && !isLoadingDeals && (
+        <div className="py-12">
           {allTransactions.length === 0 ? (
             <NoPaymentsEmptyState
               onAddDeal={() => navigate('/contract-upload')}
@@ -639,11 +697,30 @@ const CreatorPaymentsAndRecovery = () => {
             )}
           </div>
         )}
+      
+      {/* Loading State */}
+      {isLoadingDeals && (
+        <div className="py-12 text-center">
+          <div className="text-white/60">Loading payments...</div>
+        </div>
+      )}
 
       {/* Add Expense Dialog */}
       <AddExpenseDialog 
         open={showAddExpense} 
-        onClose={() => setShowAddExpense(false)} 
+        onClose={() => setShowAddExpense(false)}
+        onSuccess={() => {
+          // Switch to expense filter and scroll to expenses section
+          setActiveFilter('expense');
+          triggerHaptic(HapticPatterns.light);
+          // Scroll to expenses section
+          setTimeout(() => {
+            const expensesSection = document.querySelector('[data-section="transactions"]');
+            if (expensesSection) {
+              expensesSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+          }, 100);
+        }}
       />
 
       {/* Payment Request Flow */}

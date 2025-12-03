@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState } from 'react';
-import { Bell, Check, ExternalLink, ChevronRight, X } from 'lucide-react';
+import React from 'react';
+import { Bell, Check, ExternalLink, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -28,9 +28,16 @@ interface NotificationDropdownProps {
  */
 export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({ className }) => {
   const navigate = useNavigate();
-  const { notifications, unreadCount, markAsRead, markAllAsRead, isLoading } = useNotifications({
+  const { notifications, unreadCount, markAsRead, markAllAsRead, isLoading, error } = useNotifications({
     limit: 10,
   });
+
+  // Log errors for debugging
+  React.useEffect(() => {
+    if (error) {
+      console.error('[NotificationDropdown] Error:', error);
+    }
+  }, [error]);
 
   const handleNotificationClick = (notification: Notification) => {
     // Mark as read
@@ -136,7 +143,13 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({ clas
 
         {/* Notifications List */}
         <div className="overflow-y-auto max-h-[500px]">
-          {isLoading ? (
+          {error ? (
+            <div className="p-8 text-center">
+              <Bell className="w-12 h-12 text-red-400/50 mx-auto mb-3" />
+              <div className="text-red-400 text-sm mb-2">Error loading notifications</div>
+              <div className="text-white/40 text-xs">{String(error)}</div>
+            </div>
+          ) : isLoading ? (
             <div className="p-8 text-center">
               <div className="text-white/60 text-sm">Loading notifications...</div>
             </div>

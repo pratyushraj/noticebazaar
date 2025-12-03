@@ -1,10 +1,11 @@
 "use client";
 
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { LayoutDashboard, Briefcase, Wallet, Shield, MessageSquare } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { iconSizes, animations, spotlight, shadows, glass, radius } from '@/lib/design-system';
+import { iconSizes, animations, spotlight, shadows, radius } from '@/lib/design-system';
 import { triggerHaptic, HapticPatterns } from '@/lib/utils/haptics';
 import { motion } from 'framer-motion';
 
@@ -59,8 +60,8 @@ const CreatorBottomNav = () => {
     const isMobile = window.innerWidth < 768;
     if (!isMobile) return;
 
-    let initialHeight = window.innerHeight;
-    let viewportInitialHeight = window.visualViewport?.height || window.innerHeight;
+    const initialHeight = window.innerHeight;
+    const viewportInitialHeight = window.visualViewport?.height || window.innerHeight;
 
     const handleViewportResize = () => {
       if (!window.visualViewport) {
@@ -131,20 +132,37 @@ const CreatorBottomNav = () => {
     };
   }, [location.pathname]); // Re-run when route changes to catch new inputs
 
-  return (
+  const bottomNavContent = (
       <motion.div 
+        data-bottom-nav="true"
         className={cn(
-          "fixed bottom-0 left-0 right-0 z-40 relative",
-          glass.appleStrong,
+          "fixed bottom-0 left-0 right-0",
+          "bg-gradient-to-br from-purple-900/95 via-purple-800/95 to-indigo-900/95",
+          "backdrop-blur-2xl",
           "border-t border-white/15",
           shadows.depth,
           radius.xl,
           "progressive-blur transition-transform duration-300 ease-in-out",
+          "pointer-events-auto",
           isKeyboardOpen && "translate-y-full"
         )}
         initial={{ y: 100, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={animations.spring}
+        style={{
+          position: 'fixed',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          zIndex: 9999, // Increased for Android browser compatibility
+          width: '100%',
+          maxWidth: '100vw', // Ensure it doesn't overflow
+          pointerEvents: 'auto',
+          // Android-specific fixes
+          WebkitTransform: 'translateZ(0)', // Force hardware acceleration
+          transform: 'translateZ(0)',
+          willChange: 'transform',
+        }}
       >
         {/* Spotlight gradient at top */}
         <div className={cn(spotlight.top, "opacity-50")} />
@@ -154,7 +172,12 @@ const CreatorBottomNav = () => {
         
         <nav 
           className="flex justify-around h-16 md:h-14 items-center px-2 relative z-10"
-          style={{ paddingBottom: `max(8px, env(safe-area-inset-bottom, 8px))`, paddingTop: '8px' }}
+          style={{ 
+            paddingBottom: `max(8px, env(safe-area-inset-bottom, 8px))`, 
+            paddingTop: '8px',
+            // Android browser fix: ensure nav is visible
+            minHeight: '64px',
+          }}
           role="navigation"
           aria-label="Bottom navigation"
         >
@@ -194,18 +217,19 @@ const CreatorBottomNav = () => {
                 {/* iOS 17 Active State - Glowing indicator */}
                 {active && (
                   <>
-                    <div className={cn("absolute inset-0 bg-white/[0.06]", radius.xl)} />
                     <div className={cn(
                       "absolute top-0 left-1/2 -translate-x-1/2 w-14 h-1",
                       "bg-gradient-to-r from-blue-400 to-purple-500",
                       radius.full,
-                      "shadow-[0_0_12px_rgba(59,130,246,0.8)]"
+                      // replaced-by-ultra-polish
+                      shadows.md
                     )} />
                     {/* Glowing dot indicator */}
                     <div className={cn(
                       "absolute bottom-2 left-1/2 -translate-x-1/2 w-2 h-2",
                       "bg-purple-500 rounded-full",
-                      "shadow-[0_0_8px_rgba(168,85,247,1)] animate-pulse"
+                      // replaced-by-ultra-polish
+                      shadows.sm, "animate-pulse"
                     )} />
                   </>
                 )}
@@ -220,7 +244,8 @@ const CreatorBottomNav = () => {
                   <Icon className={cn(
                     iconSizes.lg,
                     "transition-all duration-150",
-                    active && "text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.5)]"
+                    // replaced-by-ultra-polish
+                    active && "text-white", shadows.sm
                   )} />
                 </motion.div>
                 
@@ -237,6 +262,13 @@ const CreatorBottomNav = () => {
       </nav>
     </motion.div>
   );
+
+  // Render using portal to ensure it's always at viewport level (not affected by parent containers)
+  if (typeof window !== 'undefined') {
+    return createPortal(bottomNavContent, document.body);
+  }
+  
+  return bottomNavContent;
 };
 
 export default CreatorBottomNav;

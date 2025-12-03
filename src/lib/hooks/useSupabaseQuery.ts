@@ -38,7 +38,11 @@ export const useSupabaseQuery = <
       const partnerProgramTables = [
         'referral_links', 'referrals', 'partner_earnings', 'partner_stats', 
         'partner_milestones', 'original_content', 'copyright_scans', 'copyright_matches',
-        'brands', 'brand_reviews', 'brand_bookmarks', 'opportunities' // Brand directory tables
+        'brands', 'brand_reviews', 'brand_bookmarks', 'opportunities', // Brand directory tables
+        'notifications', // Notifications table might not exist yet
+        'deal_action_logs', // Action logs table might not exist yet
+        'issues', // Issues table might not exist yet
+        'issue_history' // Issue history table might not exist yet
       ];
       const partnerProgramFunctions = [
         'get_or_create_referral_link', 'refresh_partner_stats', 'initialize_partner_stats',

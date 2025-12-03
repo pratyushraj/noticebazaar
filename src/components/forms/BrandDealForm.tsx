@@ -18,7 +18,7 @@ interface BrandDealFormProps {
 }
 
 const PLATFORM_OPTIONS = ['Instagram', 'YouTube', 'TikTok', 'Facebook', 'LinkedIn', 'Twitter', 'Other'];
-const DEAL_STATUS_OPTIONS = ['Drafting', 'Approved', 'Payment Pending', 'Completed', 'Cancelled'];
+const DEAL_STATUS_OPTIONS = ['Negotiation', 'Signed', 'Content Making', 'Content Delivered', 'Completed', 'Cancelled'];
 
 // Reusable Components - Purple Theme
 const SectionCard = ({ children, className = '' }: { children: React.ReactNode; className?: string }) => (
@@ -272,7 +272,7 @@ const BrandDealForm = ({ initialData, onSaveSuccess, onClose }: BrandDealFormPro
   const [paymentExpectedDate, setPaymentExpectedDate] = useState(initialData?.payment_expected_date || '');
   const [contactPerson, setContactPerson] = useState(initialData?.contact_person || '');
   const [platform, setPlatform] = useState(initialData?.platform || '');
-  const [status, setStatus] = useState<BrandDeal['status']>(initialData?.status || 'Drafting');
+  const [status, setStatus] = useState<BrandDeal['status']>(initialData?.status || 'Negotiation');
   const [brandEmail, setBrandEmail] = useState(initialData?.brand_email || '');
   const [invoiceFile, setInvoiceFile] = useState<File | null>(null);
   const [existingInvoiceFileUrl, setExistingInvoiceFileUrl] = useState(initialData?.invoice_file_url || null);
@@ -307,7 +307,7 @@ const BrandDealForm = ({ initialData, onSaveSuccess, onClose }: BrandDealFormPro
       setPaymentExpectedDate('');
       setContactPerson('');
       setPlatform('');
-      setStatus('Drafting');
+      setStatus('Negotiation');
       setBrandEmail('');
       setInvoiceFile(null);
       setExistingInvoiceFileUrl(null);

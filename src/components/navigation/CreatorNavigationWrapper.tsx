@@ -77,6 +77,7 @@ export const CreatorNavigationWrapper: React.FC<CreatorNavigationWrapperProps> =
           showMenuButton={!showBackButton}
           onMenuClick={() => setShowMenu(true)}
           rightActions={rightActions}
+          premium={location.pathname.startsWith('/creator-contracts')}
         />
       )}
 

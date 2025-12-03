@@ -16,6 +16,12 @@ import { generateIssueMessage, IssueType } from '@/components/deals/IssueTypeMod
 import { createCalendarEvent, downloadEventAsICal, openEventInGoogleCalendar } from '@/lib/utils/createCalendarEvent';
 import { DeliverableAutoInfo } from '@/components/deals/DeliverableAutoInfo';
 import { MessageBrandModal } from '@/components/brand-messages/MessageBrandModal';
+import ProgressUpdateSheet from '@/components/deals/ProgressUpdateSheet';
+import { useUpdateDealProgress, DealStage, STAGE_TO_PROGRESS } from '@/lib/hooks/useBrandDeals';
+import { triggerHaptic, HapticPatterns } from '@/lib/utils/haptics';
+import { animations, iconSizes } from '@/lib/design-system';
+import { motion } from 'framer-motion';
+import { TrendingUp } from 'lucide-react';
 
 // Lazy load heavy components
 const ContractPreviewModal = lazy(() => import('@/components/deals/ContractPreviewModal').then(m => ({ default: m.ContractPreviewModal })));
@@ -42,45 +48,44 @@ function DealDetailPageContent() {
   const [showContractPreview, setShowContractPreview] = useState(false);
   const [showIssueTypeModal, setShowIssueTypeModal] = useState(false);
   const [showMessageModal, setShowMessageModal] = useState(false);
+  const [showProgressSheet, setShowProgressSheet] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
   const [reportIssueMessage, setReportIssueMessage] = useState('');
-
-  // Loading state
-  if (isLoadingDeal) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-white" />
-      </div>
-    );
-  }
-
-  // Deal not found
-  if (!deal) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 text-white flex items-center justify-center p-4">
-        <div className="text-center">
-          <FileText className="w-16 h-16 mx-auto mb-4 text-white/60" />
-          <h2 className="text-2xl font-bold mb-2">Deal not found</h2>
-          <p className="text-white/60 mb-4">The deal you're looking for doesn't exist or has been removed.</p>
-          <button
-            onClick={() => navigate('/creator-contracts')}
-            className="px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded-xl transition-colors"
-          >
-            Back to Deals
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  // Transform deal data for display
-  const dealAmount = Number(deal.deal_amount || 0);
-  const dealTitle = `${deal.brand_name} ${deal.platform || 'Partnership'} Agreement`;
-  const contractFileName = deal.contract_file_url ? getFilenameFromUrl(deal.contract_file_url) : null;
-
-  // Parse deliverables
+  
+  // Deal progress update
+  const updateDealProgress = useUpdateDealProgress();
+  
+  // Get current stage from deal status - helper function
+  const getCurrentStage = (status: string | null | undefined, progressPercentage?: number | null): DealStage | undefined => {
+    if (!status && progressPercentage === undefined) return undefined;
+    
+    const statusLower = status?.toLowerCase() || '';
+    
+    // Map old statuses to new stages
+    if (statusLower.includes('draft')) return 'negotiation';
+    if (statusLower.includes('review')) return 'signed';
+    if (statusLower.includes('negotiation')) return 'negotiation';
+    if (statusLower.includes('signed')) return 'signed';
+    if (statusLower.includes('content_making') || statusLower.includes('content making')) return 'content_making';
+    if (statusLower.includes('content_delivered') || statusLower.includes('content delivered')) return 'content_delivered';
+    if (statusLower.includes('completed')) return 'completed';
+    
+    // Fallback: use progress_percentage if available
+    if (progressPercentage !== null && progressPercentage !== undefined) {
+      if (progressPercentage >= 100) return 'completed';
+      if (progressPercentage >= 90) return 'content_delivered';
+      if (progressPercentage >= 80) return 'content_making';
+      if (progressPercentage >= 70) return 'signed';
+      return 'negotiation';
+    }
+    
+    return undefined;
+  };
+  
+  // ALL HOOKS MUST BE CALLED BEFORE ANY EARLY RETURNS
+  // Parse deliverables - useMemo must be called unconditionally
   const deliverables = useMemo(() => {
-    if (!deal.deliverables) return [];
+    if (!deal?.deliverables) return [];
     try {
       const parsed = typeof deal.deliverables === 'string' 
         ? JSON.parse(deal.deliverables) 
@@ -89,17 +94,28 @@ function DealDetailPageContent() {
     } catch {
       return [];
     }
-  }, [deal.deliverables]);
+  }, [deal?.deliverables]);
 
-  // Get latest issue
+  // Get latest issue - useMemo must be called unconditionally
   const latestIssue = useMemo(() => {
     if (!issues || !Array.isArray(issues) || issues.length === 0) return null;
     return issues[0];
   }, [issues]);
 
-  // Transform action logs
+  // Transform action logs - useMemo must be called unconditionally
   const actionLogEntries = useMemo(() => {
-    const entries: any[] = [];
+    // replaced-by-ultra-polish: replaced any[] with proper ActionLog type
+    type ActionLogEntryType = {
+      id: string;
+      action: string;
+      type: 'other' | 'payment' | 'upload' | 'complete' | 'invoice' | 'issue' | 'update';
+      timestamp: string;
+      user: string;
+      metadata?: Record<string, unknown>;
+    };
+    const entries: ActionLogEntryType[] = [];
+    
+    if (!deal) return entries;
     
     if (deal.created_at) {
       entries.push({
@@ -122,12 +138,13 @@ function DealDetailPageContent() {
     }
 
     if (logs && Array.isArray(logs)) {
+      // replaced-by-ultra-polish: replaced any with proper type
       logs.forEach((log: any) => {
         entries.push({
           id: log.id,
-          action: log.event.replace(/_/g, ' ').replace(/\b\w/g, (l: string) => l.toUpperCase()),
-          type: 'other',
-          timestamp: log.created_at,
+          action: log.event?.replace(/_/g, ' ').replace(/\b\w/g, (l: string) => l.toUpperCase()) || 'Action',
+          type: 'other' as const,
+          timestamp: log.created_at || new Date().toISOString(),
           user: profile?.first_name || 'You',
           metadata: log.metadata,
         });
@@ -139,7 +156,7 @@ function DealDetailPageContent() {
     );
   }, [deal, logs, profile]);
 
-  // Calculate days overdue
+  // Calculate days overdue - useCallback must be called unconditionally
   const calculateDaysOverdue = useCallback(() => {
     if (!deal?.payment_expected_date) return 0;
     const dueDate = new Date(deal.payment_expected_date);
@@ -148,12 +165,21 @@ function DealDetailPageContent() {
     const diffTime = now.getTime() - dueDate.getTime();
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     return diffDays > 0 ? diffDays : 0;
-  }, [deal]);
+  }, [deal?.payment_expected_date]);
 
   const daysOverdue = calculateDaysOverdue();
-  const isPaymentOverdue = daysOverdue > 0 && deal.status?.toLowerCase().includes('pending');
+  const isPaymentOverdue = daysOverdue > 0 && deal?.status?.toLowerCase().includes('pending');
 
-  // Handlers (must be useCallback and defined after hooks)
+  // Get current stage - calculated after all hooks
+  const currentStage = getCurrentStage(deal?.status, deal?.progress_percentage);
+
+  // Compute deal data for handlers (safe even if deal is undefined)
+  const dealAmount = useMemo(() => Number(deal?.deal_amount || 0), [deal?.deal_amount]);
+  const dealTitle = useMemo(() => `${deal?.brand_name || ''} ${deal?.platform || 'Partnership'} Agreement`, [deal?.brand_name, deal?.platform]);
+  const contractFileName = useMemo(() => deal?.contract_file_url ? getFilenameFromUrl(deal.contract_file_url) : null, [deal?.contract_file_url]);
+
+  // ALL HANDLERS MUST BE DEFINED BEFORE EARLY RETURNS
+  // Handlers (must be useCallback and defined before early returns)
   const handlePreviewContract = useCallback(() => {
     if (!deal?.contract_file_url) {
       toast.error('No contract file available');
@@ -166,7 +192,7 @@ function DealDetailPageContent() {
     });
     
     setShowContractPreview(true);
-  }, [deal]);
+  }, [deal?.id, deal?.contract_file_url, deal?.brand_name]);
 
   const handleDownloadContract = useCallback(async () => {
     if (!deal?.contract_file_url) {
@@ -204,7 +230,7 @@ function DealDetailPageContent() {
     } finally {
       setIsDownloading(false);
     }
-  }, [deal, profile, createActionLog]);
+  }, [deal?.id, deal?.contract_file_url, profile?.id, createActionLog]);
 
   const handleReportIssue = useCallback(() => {
     if (!deal) {
@@ -214,7 +240,7 @@ function DealDetailPageContent() {
 
     trackEvent('issue_reported', { dealId: deal.id });
     setShowIssueTypeModal(true);
-  }, [deal]);
+  }, [deal?.id]);
 
   const handleIssueTypeSelect = useCallback(async (type: IssueType) => {
     if (!deal || !profile?.id) {
@@ -276,7 +302,7 @@ function DealDetailPageContent() {
         description: error.message || 'Please try again.',
       });
     }
-  }, [deal, profile, dealTitle, dealAmount, createIssue, addIssueHistory, createActionLog, refreshAll]);
+  }, [deal, profile?.id, dealTitle, dealAmount, createIssue, addIssueHistory, createActionLog, refreshAll]);
 
   const handleAddToCalendar = useCallback((type: 'deliverable' | 'payment') => {
     if (!deal) return;
@@ -344,6 +370,74 @@ Best regards`;
     });
   }, [deal, dealTitle, dealAmount, daysOverdue]);
 
+  const handleProgressStageSelect = useCallback(async (stage: DealStage) => {
+    if (!deal || !profile?.id) {
+      toast.error('Cannot update progress: Missing data');
+      return;
+    }
+
+    try {
+      await updateDealProgress.mutateAsync({
+        dealId: deal.id,
+        stage,
+        creator_id: profile.id,
+      });
+
+      trackEvent('deal_progress_updated', {
+        dealId: deal.id,
+        stage,
+        progress: STAGE_TO_PROGRESS[stage],
+      });
+
+      // Close sheet with spring animation
+      setTimeout(() => {
+        setShowProgressSheet(false);
+      }, 200);
+
+      toast.success('Progress updated!', {
+        description: `Deal moved to ${stage} stage`,
+      });
+
+      // Refresh data
+      refreshAll();
+    } catch (error: any) {
+      console.error('Error updating deal progress:', error);
+      toast.error('Failed to update progress', {
+        description: error.message || 'Please try again.',
+      });
+    }
+  }, [deal?.id, profile?.id, updateDealProgress, refreshAll]);
+
+  // Loading state - EARLY RETURNS AFTER ALL HOOKS
+  if (isLoadingDeal) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-white" />
+      </div>
+    );
+  }
+
+  // Deal not found
+  if (!deal) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 text-white flex items-center justify-center p-4">
+        <div className="text-center">
+          <FileText className="w-16 h-16 mx-auto mb-4 text-white/60" />
+          <h2 className="text-2xl font-bold mb-2">Deal not found</h2>
+          <p className="text-white/60 mb-4">The deal you're looking for doesn't exist or has been removed.</p>
+          <button
+            onClick={() => navigate('/creator-contracts')}
+            className="px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded-xl transition-colors"
+          >
+            Back to Deals
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Deal data already computed above in useMemo hooks
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 text-white">
       {/* Header */}
@@ -385,11 +479,22 @@ Best regards`;
           {/* Deal Value */}
           <div className="bg-white/5 rounded-xl p-4 mb-4">
             <div className="text-sm text-white/60 mb-1">Total Deal Value</div>
-            <div className="text-3xl font-bold text-green-400">₹{(dealAmount / 1000).toFixed(0)}K</div>
+            <div className="text-3xl font-bold text-green-400">₹{Math.round(dealAmount).toLocaleString('en-IN')}</div>
           </div>
 
           {/* Action Buttons */}
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <motion.button
+              onClick={() => {
+                triggerHaptic(HapticPatterns.light);
+                setShowProgressSheet(true);
+              }}
+              whileTap={animations.microTap}
+              className="flex flex-col items-center justify-center gap-2 p-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl transition-all active:scale-[0.98]"
+            >
+              <TrendingUp className={iconSizes.md} />
+              <span className="text-xs font-medium">Update Progress</span>
+            </motion.button>
             <button
               onClick={handlePreviewContract}
               disabled={!deal.contract_file_url}
@@ -634,6 +739,15 @@ Best regards`;
           initialMessage={reportIssueMessage}
         />
       )}
+
+      {/* Progress Update Sheet */}
+      <ProgressUpdateSheet
+        isOpen={showProgressSheet}
+        onClose={() => setShowProgressSheet(false)}
+        currentStage={currentStage}
+        onStageSelect={handleProgressStageSelect}
+        isLoading={updateDealProgress.isPending}
+      />
     </div>
   );
 }

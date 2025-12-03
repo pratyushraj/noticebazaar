@@ -12,9 +12,9 @@ import AppsMenu from './AppsMenu';
 const Navbar: React.FC = () => {
   const { user, profile } = useSession();
 
-  // Determine dashboard path based on role
-  let dashboardPath = "/client-dashboard";
-  let profilePath = "/client-profile";
+  // Determine dashboard path based on role (all non-admin/CA users use Creator Dashboard)
+  let dashboardPath = "/creator-dashboard";
+  let profilePath = "/creator-profile";
 
   if (profile?.role === 'admin') {
     dashboardPath = "/admin-dashboard";
@@ -22,7 +22,8 @@ const Navbar: React.FC = () => {
   } else if (profile?.role === 'chartered_accountant') {
     dashboardPath = "/ca-dashboard";
     profilePath = "/admin-profile";
-  } else if (profile?.role === 'creator') {
+  } else {
+    // Default: Creator Dashboard (for 'creator', 'client', or any other role)
     dashboardPath = "/creator-dashboard";
     profilePath = "/creator-profile";
   }

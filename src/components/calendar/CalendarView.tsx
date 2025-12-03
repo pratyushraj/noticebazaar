@@ -149,45 +149,47 @@ export function CalendarView({
   return (
     <div className="w-full space-y-4 overflow-hidden" {...swipeHandlers} style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
       {/* Sticky Header with Navigation */}
-      <div className="sticky top-0 z-10 bg-gradient-to-br from-[#0F121A] via-[#1A1D2E] to-[#0F121A] pb-4 backdrop-blur-xl">
-        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-3 mb-4">
-          <h2 className="text-xl md:text-2xl font-bold text-white w-full md:w-auto">Your Deadlines</h2>
-          
-          {/* Navigation Controls - Stack on mobile */}
-          <div className="flex items-center gap-1 md:gap-2 w-full md:w-auto">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={goToPreviousMonth}
-              className="text-white/60 hover:text-white hover:bg-white/10 flex-shrink-0 h-9 w-9 p-0 rounded-lg transition-all active:scale-95"
-            >
-              <ChevronLeft className="w-4 h-4" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={goToToday}
-              className="text-white/80 hover:text-white hover:bg-white/10 flex-shrink-0 text-xs md:text-sm px-2 md:px-3 h-9 rounded-lg transition-all active:scale-95"
-            >
-              Today
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={goToNextMonth}
-              className="text-white/60 hover:text-white hover:bg-white/10 flex-shrink-0 h-9 w-9 p-0 rounded-lg transition-all active:scale-95"
-            >
-              <ChevronRight className="w-4 h-4" />
-            </Button>
-            <div className="text-white font-semibold text-center flex-1 min-w-0 text-sm md:text-base px-2">
-              <span className="truncate block">{monthYearLabel}</span>
+      <div className="sticky top-0 z-10 pb-4 backdrop-blur-xl">
+        <div className="w-full rounded-2xl bg-white/5 backdrop-blur-xl p-4 sm:p-6 flex flex-col gap-4 mx-auto max-w-[900px]">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-2 sm:gap-3">
+            <h2 className="text-xl md:text-2xl font-bold text-white flex-shrink-0">Your Deadlines</h2>
+            
+            {/* Navigation Controls and Month/Year - All in one line */}
+            <div className="flex items-center gap-1 md:gap-2 w-full sm:w-auto justify-center sm:justify-end flex-wrap">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={goToPreviousMonth}
+                className="text-white/60 hover:text-white hover:bg-white/10 flex-shrink-0 h-9 w-9 p-0 rounded-lg transition-all active:scale-95"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={goToToday}
+                className="text-white/80 hover:text-white hover:bg-white/10 flex-shrink-0 text-xs md:text-sm px-2 md:px-3 h-9 rounded-lg transition-all active:scale-95"
+              >
+                Today
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={goToNextMonth}
+                className="text-white/60 hover:text-white hover:bg-white/10 flex-shrink-0 h-9 w-9 p-0 rounded-lg transition-all active:scale-95"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </Button>
+              <div className="text-white font-semibold text-sm md:text-base px-2 flex-shrink-0">
+                {monthYearLabel}
+              </div>
             </div>
           </div>
         </div>
 
         {/* Sticky View Mode Selector - Centered Segmented Control */}
         <div className="w-full flex justify-center pb-2">
-          <div className="flex items-center gap-2 bg-white/5 rounded-full p-1">
+          <div className="flex items-center gap-2 bg-white/5 rounded-2xl p-1.5 sm:p-2 mx-auto sm:mx-0">
             {viewModes.map((mode) => {
               const Icon = mode.icon;
               const isActive = viewMode === mode.value;
@@ -197,7 +199,7 @@ export function CalendarView({
                   key={mode.value}
                   onClick={() => setViewMode(mode.value)}
                   className={cn(
-                    "flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200",
+                    "flex items-center gap-1.5 px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl text-[12px] sm:text-sm font-medium transition-all duration-200",
                     "active:scale-95",
                     isActive
                       ? "bg-gradient-to-r from-[#7B2FF7] to-[#A855F7] text-white md:shadow-lg md:shadow-purple-500/20"
@@ -223,29 +225,20 @@ export function CalendarView({
             exit={{ opacity: 0, x: 20 }}
             transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
           >
-            <Card className="bg-[rgba(255,255,255,0.06)] backdrop-blur-xl border-0 md:border md:border-white/8 md:shadow-lg md:shadow-black/20 overflow-hidden rounded-none md:rounded-2xl">
-              <CardContent 
-                className="p-0 md:p-4" 
-                style={{ 
-                  paddingBottom: 'max(16px, calc(16px + env(safe-area-inset-bottom, 0px)))' 
-                }}
-              >
-                {/* Weekday Headers */}
-                <div className="grid grid-cols-7 mb-1 w-full">
-                  {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
-                    <div key={day} className="text-center text-[10px] md:text-sm font-semibold text-white/60 py-1.5 md:py-2">
-                      {day}
-                    </div>
-                  ))}
-                </div>
+            <div className="w-full">
+              {/* Weekday Headers */}
+              <div className="grid grid-cols-7 mb-1 w-full">
+                {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
+                  <div key={day} className="text-center text-[10px] md:text-sm font-semibold text-white/60 py-1.5 md:py-2">
+                    {day}
+                  </div>
+                ))}
+              </div>
 
-                {/* Calendar Grid - Mobile Optimized - Ensure last row visible */}
-                <div 
-                  className="grid grid-cols-7 gap-[2px] md:gap-2 w-full"
-                  style={{
-                    marginBottom: 'env(safe-area-inset-bottom, 0px)',
-                  }}
-                >
+              {/* Calendar Grid - Mobile Optimized - Ensure last row visible */}
+              <div 
+                className="calendar-grid w-full max-w-[900px] mx-auto grid grid-cols-7 gap-1.5 sm:gap-2 mt-4 px-1 sm:px-2 min-w-0"
+              >
                   {calendarDays.map((day, index) => {
                     const isCurrentMonth = day.getMonth() === currentDate.getMonth();
                     const isToday = 
@@ -259,13 +252,13 @@ export function CalendarView({
                       <div
                         key={index}
                         className={cn(
-                          "min-h-[72px] md:min-h-[80px] p-1 md:p-2 rounded-md md:rounded-[14px] border-0 md:border transition-all cursor-pointer relative flex flex-col",
+                          "aspect-square rounded-xl bg-white/5 backdrop-blur-md flex flex-col items-center justify-center min-w-0 text-[13px] sm:text-[15px] font-medium transition-all cursor-pointer relative",
                           "md:hover:bg-white/10",
                           isCurrentMonth 
-                            ? "bg-white/[0.07] md:border-white/10" 
-                            : "bg-white/[0.02] md:border-white/5 opacity-50",
-                          isToday && "border md:border-2 border-[#A855F7] bg-[rgba(168,85,247,0.15)]",
-                          isSelected && "border md:border-2 border-[#A855F7] bg-[rgba(168,85,247,0.15)]",
+                            ? "text-white" 
+                            : "text-white/40 opacity-50",
+                          isToday && "ring-2 ring-white/40 bg-white/10 shadow-lg shadow-black/20",
+                          isSelected && "ring-2 ring-white/40 bg-white/10 shadow-lg shadow-black/20",
                           dayEvents.length > 0 && "cursor-pointer"
                         )}
                         onClick={() => {
@@ -276,16 +269,16 @@ export function CalendarView({
                       >
                         {/* Date number */}
                         <div className={cn(
-                          "text-sm md:text-base font-semibold leading-tight mb-auto",
-                          isToday ? "text-[#A855F7]" : isCurrentMonth ? "text-white" : "text-white/40"
+                          "text-[13px] sm:text-[15px] font-medium",
+                          isToday ? "text-white" : isCurrentMonth ? "text-white" : "text-white/40"
                         )}>
                           {day.getDate()}
                         </div>
                         
                         {/* Mobile: Centered event dots */}
                         {dayEvents.length > 0 && (
-                          <div className="flex md:hidden items-center justify-center gap-1 mt-auto pt-1">
-                            {dayEvents.slice(0, 2).map((event, idx) => {
+                          <div className="flex gap-1 justify-center mt-1">
+                            {dayEvents.slice(0, 3).map((event, idx) => {
                               const colorMap: Record<string, string> = {
                                 payment: 'bg-green-400',
                                 deliverable: 'bg-blue-400',
@@ -296,17 +289,12 @@ export function CalendarView({
                                 <div
                                   key={idx}
                                   className={cn(
-                                    "w-2 h-2 rounded-full",
-                                    colorMap[event.type] || 'bg-purple-400'
+                                    "w-1.5 h-1.5 rounded-full",
+                                    colorMap[event.type] || 'bg-sky-400'
                                   )}
                                 />
                               );
                             })}
-                            {dayEvents.length > 2 && (
-                              <span className="text-[9px] text-white/70 font-semibold leading-none">
-                                +{dayEvents.length - 2}
-                              </span>
-                            )}
                           </div>
                         )}
                         
@@ -346,9 +334,8 @@ export function CalendarView({
                       </div>
                     );
                   })}
-                </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           </motion.div>
         )}
 
@@ -359,57 +346,61 @@ export function CalendarView({
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: 20 }}
             transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+            className="w-full max-w-[900px] mx-auto px-4 sm:px-6 min-w-0"
           >
-            <Card className="bg-[rgba(255,255,255,0.06)] backdrop-blur-xl border border-white/8 shadow-lg shadow-black/20">
-              <CardContent className="p-3 md:p-4">
-                <div className="grid grid-cols-7 gap-1.5 md:gap-2">
-                  {weekDays.map((day, index) => {
-                    const isToday = 
-                      day.getDate() === new Date().getDate() &&
-                      day.getMonth() === new Date().getMonth() &&
-                      day.getFullYear() === new Date().getFullYear();
-                    const dayEvents = getEventsForDate(day);
+            <div className="w-full rounded-2xl bg-white/5 backdrop-blur-xl p-4 sm:p-6 min-w-0 mx-auto">
+              {/* Week-day header row */}
+              <div className="grid grid-cols-7 w-full text-center text-sm sm:text-base font-medium min-w-0 mb-4">
+                {weekDays.map((day, index) => (
+                  <div key={index} className="py-2 min-w-0 truncate text-white/60">
+                    {day.toLocaleDateString('en-US', { weekday: 'short' })}
+                  </div>
+                ))}
+              </div>
 
-                    return (
-                      <div key={index} className="min-h-[300px] md:min-h-[400px]">
+              {/* Day-box grid */}
+              <div className="grid grid-cols-7 gap-2 w-full min-w-0">
+                {weekDays.map((day, index) => {
+                  const isToday = 
+                    day.getDate() === new Date().getDate() &&
+                    day.getMonth() === new Date().getMonth() &&
+                    day.getFullYear() === new Date().getFullYear();
+                  const dayEvents = getEventsForDate(day);
+
+                  return (
+                    <div key={index} className="min-h-[300px] md:min-h-[400px] flex flex-col">
+                      {/* Day header */}
+                      <div className={cn(
+                        "rounded-xl bg-white/5 backdrop-blur-md aspect-square flex flex-col justify-center items-center min-w-0 mb-2",
+                        isToday && "ring-2 ring-white/40 bg-white/10 shadow-lg shadow-black/20"
+                      )}>
                         <div className={cn(
-                          "text-center p-1.5 md:p-2 mb-2 rounded-lg",
-                          isToday ? "bg-purple-500/20 text-purple-400" : "text-white/60"
+                          "text-base md:text-lg font-bold",
+                          isToday ? "text-white" : "text-white/60"
                         )}>
-                          <div className="text-xs font-semibold">
-                            {day.toLocaleDateString('en-US', { weekday: 'short' })}
-                          </div>
-                          <div className="text-base md:text-lg font-bold">
-                            {day.getDate()}
-                          </div>
-                        </div>
-                        <div className="space-y-1.5 md:space-y-2">
-                          {dayEvents.map((event) => (
-                            <motion.div
-                              key={event.id}
-                              whileHover={{ scale: 1.02 }}
-                              whileTap={{ scale: 0.98 }}
-                              className={cn(
-                                "p-2 rounded-lg text-sm cursor-pointer hover:opacity-80 transition-opacity",
-                                event.color
-                              )}
-                              onClick={() => onEventClick?.(event)}
-                            >
-                              <div className="font-semibold truncate">{event.title}</div>
-                              {event.description && (
-                                <div className="text-xs opacity-80 mt-1 line-clamp-2">
-                                  {event.description}
-                                </div>
-                              )}
-                            </motion.div>
-                          ))}
+                          {day.getDate()}
                         </div>
                       </div>
-                    );
-                  })}
-                </div>
-              </CardContent>
-            </Card>
+                      
+                      {/* Events list */}
+                      <div className="space-y-1.5 md:space-y-2 flex-1">
+                        {dayEvents.map((event) => (
+                          <motion.div
+                            key={event.id}
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.98 }}
+                            className="bg-blue-500/20 text-blue-200 px-2 py-1 rounded-lg text-xs font-semibold min-w-0 truncate cursor-pointer hover:opacity-80 transition-opacity"
+                            onClick={() => onEventClick?.(event)}
+                          >
+                            {event.title}
+                          </motion.div>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
           </motion.div>
         )}
 

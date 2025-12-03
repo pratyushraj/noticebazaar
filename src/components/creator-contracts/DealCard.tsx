@@ -3,7 +3,8 @@
 import React from 'react';
 import { BrandDeal } from '@/types';
 import BrandLogo from './BrandLogo';
-import DealStatusBadge, { DealStage } from './DealStatusBadge';
+import DealStatusBadge from './DealStatusBadge';
+import { DealStage, DEAL_PROGRESS_STAGES } from '@/lib/hooks/useBrandDeals';
 import DeliverablesBadge from './DeliverablesBadge';
 import DealActionsMenu from './DealActionsMenu';
 import { Badge } from '@/components/ui/badge';
@@ -39,18 +40,22 @@ const DealCard: React.FC<DealCardProps> = ({
       ? deal.deliverables.split(',').map(d => d.trim()).filter(Boolean)
       : [];
 
-  // Calculate progress percentage based on stage
-  const getProgressPercentage = (stage: DealStage): number => {
-    switch (stage) {
-      case 'draft': return 10;
-      case 'active': return 40;
-      case 'payment_pending': return 70;
-      case 'paid': return 90;
-      case 'completed': return 100;
-      case 'overdue': return 70; // Same as payment_pending but visually different
-      default: return 0;
+  // Get progress percentage from deal object, fallback to stage-based calculation
+  const getProgressPercentage = (): number => {
+    // Use progress_percentage from deal if available
+    if (deal.progress_percentage !== null && deal.progress_percentage !== undefined && deal.progress_percentage >= 0) {
+      return deal.progress_percentage;
     }
+    
+    // Fallback to stage-based calculation using new DEAL_PROGRESS_STAGES
+    if (stage in DEAL_PROGRESS_STAGES) {
+      return DEAL_PROGRESS_STAGES[stage as keyof typeof DEAL_PROGRESS_STAGES].percent;
+    }
+    
+    return 0;
   };
+
+  const progressPercentage = getProgressPercentage();
 
   return (
     <article
@@ -93,20 +98,19 @@ const DealCard: React.FC<DealCardProps> = ({
       <div className="mt-2 mb-1">
         <div className="flex items-center justify-between text-[10px] text-muted-foreground mb-1">
           <span>Deal Progress</span>
-          <span>{getProgressPercentage(stage)}%</span>
+          <span>{progressPercentage}%</span>
         </div>
         <div className="h-1.5 bg-muted rounded-full overflow-hidden">
           <div 
             className={cn(
               "h-full transition-all duration-300",
-              stage === 'completed' ? 'bg-green-500' :
-              stage === 'paid' ? 'bg-blue-500' :
-              stage === 'payment_pending' ? 'bg-yellow-500' :
-              stage === 'overdue' ? 'bg-red-500' :
-              stage === 'active' ? 'bg-blue-400' :
+              progressPercentage === 100 ? 'bg-green-500' :
+              progressPercentage >= 90 ? 'bg-blue-500' :
+              progressPercentage >= 60 ? 'bg-yellow-500' :
+              progressPercentage >= 30 ? 'bg-blue-400' :
               'bg-gray-400'
             )}
-            style={{ width: `${getProgressPercentage(stage)}%` }}
+            style={{ width: `${progressPercentage}%` }}
           />
         </div>
       </div>

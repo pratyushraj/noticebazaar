@@ -119,9 +119,6 @@ export default function CalendarPage() {
       className={cn("min-h-screen text-white relative overflow-hidden", gradients.page)}
       style={{
         paddingTop: 'max(16px, env(safe-area-inset-top, 16px))',
-        paddingBottom: 'calc(96px + env(safe-area-inset-bottom, 0px))',
-        paddingLeft: 'env(safe-area-inset-left, 0px)',
-        paddingRight: 'env(safe-area-inset-right, 0px)',
         minHeight: '100dvh',
       }}
     >
@@ -131,7 +128,7 @@ export default function CalendarPage() {
       {/* Spotlight gradient */}
       <div className={cn(vision.spotlight.base, "opacity-30")} />
       
-      <div className={cn("max-w-7xl mx-auto", spacing.page, spacing.section, "overflow-hidden relative z-10")}>
+      <div className={cn("w-full max-w-[900px] mx-auto px-4 sm:px-6 pb-[calc(120px+env(safe-area-inset-bottom,0px))] relative z-10")}>
         {/* Header - iOS 17 + visionOS */}
         <div className={cn("flex items-start justify-between gap-3")}>
           <div className="flex-1 min-w-0">

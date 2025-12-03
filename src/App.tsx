@@ -1,12 +1,11 @@
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import NotFound from "./pages/NotFound";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import MarketingHome from "./pages/MarketingHome";
 import HomePage from "./pages/HomePage";
-import ClientDashboard from "./pages/ClientDashboard";
 import AdminDashboard from "./pages/AdminDashboard";
 import CADashboard from "./pages/CADashboard";
 import CreatorDashboard from "./pages/CreatorDashboard";
@@ -52,6 +51,7 @@ import GoogleAnalyticsTracker from "./components/GoogleAnalyticsTracker"; // Imp
 // NEW: Import Creator-specific pages
 import CreatorContracts from "./pages/CreatorContracts";
 import DealDetailPage from "./pages/DealDetailPage";
+import CreateDealPage from "./pages/CreateDealPage";
 import CreatorPaymentsAndRecovery from "./pages/CreatorPaymentsAndRecovery";
 import DashboardWhitePreview from "./pages/DashboardWhitePreview";
 import CreatorContentProtection from "./pages/CreatorContentProtection";
@@ -113,6 +113,14 @@ const App = () => {
       <QueryClientProvider client={queryClient}>
         <TooltipProvider>
           <AppToaster />
+          {/* replaced-by-ultra-polish: Skip to main content link for accessibility */}
+          <a 
+            href="#main-content" 
+            className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-[10001] focus:px-4 focus:py-2 focus:bg-purple-600 focus:text-white focus:rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400"
+            aria-label="Skip to main content"
+          >
+            Skip to main content
+          </a>
           <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
             <NetworkStatusWrapper>
               <FacebookPixelTracker />
@@ -154,8 +162,8 @@ const App = () => {
               {/* Referral Landing */}
               <Route path="/p/:code" element={<ReferralLanding />} />
 
-              {/* Client-specific routes */}
-              <Route path="/client-dashboard" element={<ProtectedLayout allowedRoles={['client']}><ClientDashboard /></ProtectedLayout>} />
+              {/* Client-specific routes - Redirected to Creator Dashboard */}
+              <Route path="/client-dashboard" element={<Navigate to="/creator-dashboard" replace />} />
               <Route path="/client-profile" element={<ProtectedLayout allowedRoles={['client']}><ClientProfile /></ProtectedLayout>} />
               <Route path="/client-subscription" element={<ProtectedLayout allowedRoles={['client']}><ClientSubscription /></ProtectedLayout>} />
               <Route path="/client-cases" element={<ProtectedLayout allowedRoles={['client']}><ClientCases /></ProtectedLayout>} />
@@ -188,6 +196,7 @@ const App = () => {
               {/* NEW: Creator-specific pages */}
               <Route path="/creator-contracts" element={<ProtectedLayout allowedRoles={['creator']}><CreatorContracts /></ProtectedLayout>} />
               <Route path="/brand-deals" element={<ProtectedLayout allowedRoles={['creator']}><CreatorContracts /></ProtectedLayout>} />
+              <Route path="/create-deal" element={<ProtectedLayout allowedRoles={['creator']}><CreateDealPage /></ProtectedLayout>} />
               <Route path="/creator-contracts/:dealId" element={<ProtectedLayout allowedRoles={['creator']}><DealDetailPage /></ProtectedLayout>} />
               <Route path="/creator-payments" element={<ProtectedLayout allowedRoles={['creator']}><CreatorPaymentsAndRecovery /></ProtectedLayout>} />
               <Route path="/payment/:paymentId" element={<ProtectedLayout allowedRoles={['creator']}><PaymentDetailPage /></ProtectedLayout>} />

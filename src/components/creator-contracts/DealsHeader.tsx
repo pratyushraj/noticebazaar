@@ -5,7 +5,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Download, Filter, Briefcase, Clock, TrendingUp } from 'lucide-react';
 import { BrandDeal } from '@/types';
-import { DealStage } from './DealStatusBadge';
+import { DealStage } from '@/lib/hooks/useBrandDeals';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 
@@ -18,18 +18,28 @@ interface DealsHeaderProps {
 
 // Helper function to map old status to new stage
 const getDealStage = (deal: BrandDeal): DealStage => {
-  if (deal.status === 'Drafting') return 'draft';
-  if (deal.status === 'Approved') return 'active';
-  if (deal.status === 'Payment Pending') {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const dueDate = new Date(deal.payment_expected_date);
-    dueDate.setHours(0, 0, 0, 0);
-    return dueDate < today ? 'overdue' : 'payment_pending';
+  const status = deal.status?.toLowerCase() || '';
+  
+  // Map old statuses to new stages
+  if (status.includes('draft')) return 'negotiation';
+  if (status.includes('review')) return 'signed';
+  if (status.includes('negotiation')) return 'negotiation';
+  if (status.includes('signed')) return 'signed';
+  if (status.includes('content_making') || status.includes('content making')) return 'content_making';
+  if (status.includes('content_delivered') || status.includes('content delivered')) return 'content_delivered';
+  if (status.includes('completed')) return 'completed';
+  
+  // Fallback: use progress_percentage if available
+  if (deal.progress_percentage !== null && deal.progress_percentage !== undefined) {
+    if (deal.progress_percentage >= 100) return 'completed';
+    if (deal.progress_percentage >= 90) return 'content_delivered';
+    if (deal.progress_percentage >= 80) return 'content_making';
+    if (deal.progress_percentage >= 70) return 'signed';
+    return 'negotiation';
   }
-  if (deal.status === 'Completed') return 'completed';
-  if (deal.payment_received_date) return 'paid';
-  return 'draft';
+  
+  // Default fallback
+  return 'negotiation';
 };
 
 const DealsHeader: React.FC<DealsHeaderProps> = ({
@@ -42,11 +52,11 @@ const DealsHeader: React.FC<DealsHeaderProps> = ({
     const dealsWithStages = allDeals.map(deal => ({ deal, stage: getDealStage(deal) }));
     
     const activeCampaigns = dealsWithStages.filter(({ stage }) => 
-      stage === 'active'
+      stage === 'signed' || stage === 'content_making' || stage === 'content_delivered'
     ).length;
     
-    const pendingPayments = dealsWithStages.filter(({ stage }) => 
-      stage === 'payment_pending' || stage === 'overdue'
+    const pendingPayments = dealsWithStages.filter(({ deal }) => 
+      deal.status === 'Payment Pending' || (deal.payment_expected_date && !deal.payment_received_date)
     ).length;
     
     // Calculate deals closing in 7 days

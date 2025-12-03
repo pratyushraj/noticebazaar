@@ -2,7 +2,7 @@
 
 import { useMemo, useState, useRef, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, CheckCircle, Clock, AlertCircle, Calendar, FileText, Building2, CreditCard, Tag, Edit, Trash2, Eye, Loader2, Download, IndianRupee, Upload, X, MessageSquare } from 'lucide-react';
+import { ArrowLeft, CheckCircle, AlertCircle, Calendar, FileText, Building2, CreditCard, Tag, Edit, Trash2, Eye, Loader2, Download, IndianRupee, Upload, X, MessageSquare } from 'lucide-react';
 import { useSession } from '@/contexts/SessionContext';
 import { useBrandDealById, useUpdateBrandDeal } from '@/lib/hooks/useBrandDeals';
 import { toast } from 'sonner';
@@ -11,6 +11,10 @@ import { motion } from 'framer-motion';
 import { extractTaxInfo, getTaxDisplayMessage, calculateFinalAmount } from '@/lib/utils/taxExtraction';
 import { supabase } from '@/integrations/supabase/client';
 import { CREATOR_ASSETS_BUCKET } from '@/lib/constants/storage';
+import { PaymentStatusChip, type PaymentStatus } from '@/components/payments/PaymentStatusChip';
+import { PaymentTimeline } from '@/components/payments/PaymentTimeline';
+import { FilePreview } from '@/components/payments/FilePreview';
+import { GlassButton } from '@/components/payments/GlassButton';
 
 const PaymentDetailPage = () => {
   const navigate = useNavigate();
@@ -27,6 +31,7 @@ const PaymentDetailPage = () => {
   const [proofOfPaymentUrl, setProofOfPaymentUrl] = useState<string | null>(null);
   const [isUploadingProof, setIsUploadingProof] = useState(false);
   const [isSavingNotes, setIsSavingNotes] = useState(false);
+  const [showPreviewModal, setShowPreviewModal] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Undo payment state
@@ -127,13 +132,30 @@ const PaymentDetailPage = () => {
       }
     }
 
+    // Calculate risk level - if payment received and risk was only due to payment delay, reduce to low
+    let finalRiskLevel: 'low' | 'medium' | 'high' = riskLevel;
+    if (status === 'received' && riskLevel === 'high' && paymentExpectedDate && paymentReceivedDate) {
+      // If payment was overdue but now received, reduce risk
+      const wasOverdue = paymentExpectedDate < paymentReceivedDate;
+      if (wasOverdue && taxInfo.riskScore < 15) {
+        finalRiskLevel = 'low'; // Payment delay was the only issue
+      }
+    } else if (status === 'received') {
+      // Payment received, reduce risk if it was only payment-related
+      if (taxInfo.riskScore < 15) {
+        finalRiskLevel = 'low';
+      }
+    } else {
+      finalRiskLevel = taxInfo.riskScore >= 25 ? 'high' : taxInfo.riskScore >= 15 ? 'high' : taxInfo.riskScore > 0 ? 'medium' : riskLevel;
+    }
+
     return {
       id: brandDeal.id,
       amount,
       netAmount: finalAmountCalc.finalAmount,
       tax: taxInfo.gstRate ? (amount * taxInfo.gstRate / 100) : 0,
       status,
-      riskLevel: taxInfo.riskScore >= 25 ? 'high' : taxInfo.riskScore >= 15 ? 'high' : taxInfo.riskScore > 0 ? 'medium' : riskLevel,
+      riskLevel: finalRiskLevel,
       daysInfo,
       brandName: brandDeal.brand_name || 'Unknown Brand',
       contractName: `${brandDeal.brand_name} Campaign`,
@@ -145,6 +167,7 @@ const PaymentDetailPage = () => {
       createdDate: brandDeal.created_at ? new Date(brandDeal.created_at) : new Date(),
       expectedDate: paymentExpectedDate,
       receivedDate: paymentReceivedDate,
+      receivedAt: paymentReceivedDate, // New field for timeline
       utrNumber: brandDeal.utr_number,
       taxInfo: taxDisplay,
       taxDetails: taxInfo,
@@ -199,14 +222,16 @@ const PaymentDetailPage = () => {
 
     try {
       const now = new Date().toISOString();
+      
       await updateDealMutation.mutateAsync({
         id: brandDeal.id,
         creator_id: profile.id,
         status: 'Payment Received',
         payment_received_date: now,
-        payment_received_amount: paymentData.amount,
+        // Note: payment_received_amount column doesn't exist - amount is stored in deal_amount
         proof_of_payment_url: proofOfPaymentUrl,
         utr_number: null, // Can be added separately
+        // updated_at will be automatically updated by trigger
       });
 
       // Set undo deadline (5 minutes from now)
@@ -214,16 +239,13 @@ const PaymentDetailPage = () => {
       deadline.setMinutes(deadline.getMinutes() + 5);
       setUndoDeadline(deadline);
 
-      // Show undo toast
-      const toastId = toast.success('Payment marked as received — Undo?', {
-        description: 'You have 5 minutes to undo this action.',
-        duration: 300000, // 5 minutes
+      // Show improved snackbar with countdown
+      const toastId = toast.success('Payment marked as received', {
+        description: 'Undo within 5 minutes.',
+        duration: 5000, // Show for 5 seconds, but allow undo for 5 minutes
         action: {
           label: 'Undo',
           onClick: handleUndoPayment,
-        },
-        cancel: {
-          label: 'Dismiss',
         },
       });
 
@@ -258,7 +280,7 @@ const PaymentDetailPage = () => {
         creator_id: profile.id,
         status: previousPaymentState.status,
         payment_received_date: previousPaymentState.payment_received_date,
-        payment_received_amount: previousPaymentState.payment_received_amount,
+        // Note: payment_received_amount column doesn't exist - amount is stored in deal_amount
         proof_of_payment_url: previousPaymentState.payment_proof_url,
         utr_number: previousPaymentState.utr_number,
       });
@@ -284,7 +306,7 @@ const PaymentDetailPage = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-[#2B0B4C] via-[#3E0C72] to-[#2B0B4C] text-white flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 text-white flex items-center justify-center">
         <Loader2 className="w-8 h-8 animate-spin text-white" />
       </div>
     );
@@ -292,7 +314,7 @@ const PaymentDetailPage = () => {
 
   if (error || !paymentData) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-[#2B0B4C] via-[#3E0C72] to-[#2B0B4C] text-white flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 text-white flex items-center justify-center">
         <div className="text-center">
           <AlertCircle className="w-16 h-16 text-white/80 mx-auto mb-4" />
           <h2 className="text-2xl font-bold mb-2">Payment Not Found</h2>
@@ -308,30 +330,7 @@ const PaymentDetailPage = () => {
     );
   }
 
-  const statusConfig = {
-    received: {
-      label: 'Received',
-      color: 'bg-green-500/20 text-green-400 border-green-500/30',
-      icon: CheckCircle,
-      timelineColor: 'text-green-400',
-      chipColor: 'bg-green-500/20 text-green-400',
-    },
-    pending: {
-      label: 'Pending',
-      color: 'bg-[#FFCD4D]/20 text-[#FFCD4D] border-[#FFCD4D]/30',
-      icon: Clock,
-      timelineColor: 'text-[#FFCD4D]',
-      chipColor: 'bg-[#FFCD4D]/20 text-[#FFCD4D]',
-    },
-    overdue: {
-      label: 'Overdue',
-      color: 'bg-[#FF4D4D]/20 text-[#FF4D4D] border-[#FF4D4D]/30',
-      icon: AlertCircle,
-      timelineColor: 'text-[#FF4D4D]',
-      chipColor: 'bg-[#FF4D4D]/20 text-[#FF4D4D]',
-    },
-  };
-
+  // Risk config for display
   const riskConfig = {
     low: { 
       label: 'Low Risk', 
@@ -346,8 +345,6 @@ const PaymentDetailPage = () => {
       chipColor: 'bg-[#FF4D4D]/20 text-[#FF4D4D]',
     },
   };
-
-  const StatusIcon = statusConfig[paymentData.status].icon;
 
   // Handle proof of payment file selection
   const handleProofFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -462,9 +459,9 @@ const PaymentDetailPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#2B0B4C] via-[#3E0C72] to-[#2B0B4C] px-4 pb-32 text-white relative">
+    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 px-4 pb-32 text-white relative">
       {/* Page Header */}
-      <div className="sticky top-0 z-50 bg-gradient-to-br from-[#2B0B4C]/95 via-[#3E0C72]/95 to-[#2B0B4C]/95 backdrop-blur-xl border-b border-white/10 shadow-xl">
+      <div className="sticky top-0 z-50 bg-gradient-to-br from-purple-900/95 via-purple-800/95 to-indigo-900/95 backdrop-blur-xl border-b border-white/10 shadow-xl">
         <div className="flex items-center gap-4 px-4 md:px-6 py-4 max-w-4xl mx-auto">
           <button
             onClick={() => navigate('/creator-payments')}
@@ -478,37 +475,49 @@ const PaymentDetailPage = () => {
       </div>
 
       <div className="max-w-4xl mx-auto px-4 md:px-6 py-6 space-y-6">
-        {/* SECTION 1: Payment Summary (Hero Card) */}
+        {/* SECTION 1: Payment Summary (Hero Card) - Glass UI */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3 }}
-          className="relative bg-white/5 backdrop-blur-xl rounded-3xl p-5 md:p-6 border border-white/10 cursor-pointer transition-all duration-200 hover:bg-white/7 hover:border-white/15 shadow-lg shadow-black/10 before:absolute before:inset-0 before:bg-gradient-to-b before:from-white/5 before:to-transparent before:rounded-3xl before:pointer-events-none"
+          className="relative bg-white/10 backdrop-blur-xl rounded-2xl p-5 md:p-6 border border-white/20 shadow-xl transition-all duration-200 hover:bg-white/15 hover:border-white/30"
         >
           <div className="relative z-10">
             <div className="flex items-start justify-between mb-6">
               <div className="flex-1">
                 {/* Large Amount */}
                 <div className="flex items-baseline gap-3 mb-4">
-                  <IndianRupee className="w-8 h-8 text-white" />
-                  <div className="text-4xl font-bold text-white">
-                    {(paymentData.amount / 1000).toFixed(1)}K
+                  <IndianRupee className={cn(
+                    "w-8 h-8",
+                    paymentData.status === 'received' ? 'text-green-400' : 'text-white'
+                  )} />
+                  <div className={cn(
+                    "text-4xl font-bold",
+                    paymentData.status === 'received' ? 'text-green-400' : 'text-white'
+                  )}>
+                    ₹{paymentData.amount.toLocaleString('en-IN', { maximumFractionDigits: 0 })}
                   </div>
                 </div>
 
                 {/* Status Badges - Glass Style Neon */}
                 <div className="flex items-center gap-3 flex-wrap mb-4">
-                  <div className={cn(
-                    "px-3 py-1.5 rounded-full border text-sm font-semibold flex items-center gap-2",
-                    statusConfig[paymentData.status].chipColor,
-                    "border-white/20"
-                  )}>
-                    <StatusIcon className="w-4 h-4" />
-                    {statusConfig[paymentData.status].label}
-                  </div>
-                  <div className="px-3 py-1.5 rounded-full bg-white/10 text-white text-xs border border-white/20">
+                  <PaymentStatusChip status={paymentData.status as PaymentStatus} />
+                  <div className="px-3 py-1.5 rounded-full bg-white/10 text-white text-xs border border-white/20 backdrop-blur-xl">
                     {paymentData.category}
                   </div>
+                  {/* Hide risk chip if payment received and risk was only payment-related */}
+                  {!(paymentData.status === 'received' && paymentData.riskLevel === 'low') && (
+                    <div className={cn(
+                      "px-3 py-1.5 rounded-full text-xs font-semibold border backdrop-blur-xl",
+                      paymentData.riskLevel === 'high' 
+                        ? 'bg-red-500/20 text-red-400 border-red-500/30'
+                        : paymentData.riskLevel === 'medium'
+                        ? 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30'
+                        : 'bg-green-500/20 text-green-400 border-green-500/30'
+                    )}>
+                      {paymentData.riskLevel === 'high' ? 'High Risk' : paymentData.riskLevel === 'medium' ? 'Medium Risk' : 'Low Risk'}
+                    </div>
+                  )}
                 </div>
 
                 {/* Metadata Grid */}
@@ -521,14 +530,21 @@ const PaymentDetailPage = () => {
                     <div className="text-xs text-white/60 mb-1">Payment Method</div>
                     <div className="text-sm font-medium text-white">{paymentData.paymentMethod}</div>
                   </div>
-                  {paymentData.expectedDate && (
+                  {paymentData.status === 'received' && paymentData.receivedAt ? (
+                    <div>
+                      <div className="text-xs text-white/60 mb-1">Received on</div>
+                      <div className="text-sm font-medium text-green-400">
+                        {paymentData.receivedAt.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                      </div>
+                    </div>
+                  ) : paymentData.expectedDate ? (
                     <div>
                       <div className="text-xs text-white/60 mb-1">Expected Date</div>
                       <div className="text-sm font-medium text-white">
                         {paymentData.expectedDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                       </div>
                     </div>
-                  )}
+                  ) : null}
                   <div>
                     <div className="text-xs text-white/60 mb-1">Risk Level</div>
                     <div className={cn("text-sm font-medium inline-block px-2 py-0.5 rounded-full", riskConfig[paymentData.riskLevel].chipColor)}>
@@ -549,7 +565,7 @@ const PaymentDetailPage = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1, duration: 0.3 }}
-          className="relative bg-white/5 backdrop-blur-xl rounded-3xl p-5 md:p-6 border border-white/10 cursor-pointer transition-all duration-200 hover:bg-white/7 hover:border-white/15 shadow-lg shadow-black/10 before:absolute before:inset-0 before:bg-gradient-to-b before:from-white/5 before:to-transparent before:rounded-3xl before:pointer-events-none"
+          className="relative bg-white/10 backdrop-blur-xl rounded-2xl p-5 md:p-6 border border-white/20 shadow-xl"
         >
           <div className="grid grid-cols-1 md:grid-cols-2 gap-y-4 gap-x-8">
             {/* Left Column */}
@@ -615,92 +631,21 @@ const PaymentDetailPage = () => {
         {/* Purple Neon Divider */}
         <div className="h-px w-full bg-white/10 my-4" />
 
-        {/* Section Title: Status Timeline */}
-        <div className="text-sm font-medium text-white/50 tracking-wider uppercase mb-3">Status Timeline</div>
+        {/* Section Title: Payment History */}
+        <div className="text-sm font-medium text-white/50 tracking-wider uppercase mb-3">Payment History</div>
 
-        {/* SECTION 3: Status Timeline (Glass Card) */}
+        {/* SECTION 3: Payment Timeline (Glass Card) */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2, duration: 0.3 }}
-          className="relative bg-white/5 backdrop-blur-xl rounded-3xl p-5 md:p-6 border border-white/10 cursor-pointer transition-all duration-200 hover:bg-white/7 hover:border-white/15 shadow-lg shadow-black/10 before:absolute before:inset-0 before:bg-gradient-to-b before:from-white/5 before:to-transparent before:rounded-3xl before:pointer-events-none"
+          className="relative bg-white/10 backdrop-blur-xl rounded-2xl p-5 md:p-6 border border-white/20 shadow-xl"
         >
-          <div className="relative pl-6">
-            {/* Vertical Line */}
-            <div className="absolute left-[11px] top-0 bottom-0 w-[2px] bg-white/10" />
-            
-            <div className="space-y-6">
-              {/* Created */}
-              <div className="relative flex items-start gap-4">
-                <div className="relative z-10 flex flex-col items-center">
-                  <div className="w-4 h-4 bg-green-500/30 border border-green-400 rounded-full flex-shrink-0" />
-                  <div className="absolute left-1/2 -translate-x-1/2 top-5 w-[2px] h-12 bg-gradient-to-b from-green-400/50 to-transparent" />
-                </div>
-                <div className="flex-1 pt-0">
-                  <div className="text-base font-medium text-white mb-1">Created</div>
-                  <div className="text-sm text-white/60">
-                    {paymentData.createdDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
-                  </div>
-                </div>
-              </div>
-
-              {/* Expected Payment Date */}
-              {paymentData.expectedDate && (
-                <div className="relative flex items-start gap-4">
-                  <div className="relative z-10 flex flex-col items-center">
-                    <div className={cn(
-                      "w-4 h-4 rounded-full flex-shrink-0 border",
-                      paymentData.status === 'received' 
-                        ? "bg-green-500/30 border-green-400"
-                        : paymentData.status === 'overdue'
-                        ? "bg-[#FF4D4D]/30 border-[#FF4D4D]"
-                        : "bg-[#FFCD4D]/30 border-[#FFCD4D]"
-                    )} />
-                    {paymentData.status !== 'received' && (
-                      <div className={cn(
-                        "absolute left-1/2 -translate-x-1/2 top-5 w-[2px] h-12 bg-gradient-to-b to-transparent",
-                        paymentData.status === 'overdue' 
-                          ? "from-[#FF4D4D]/50"
-                          : "from-[#FFCD4D]/50"
-                      )} />
-                    )}
-                  </div>
-                  <div className="flex-1 pt-0">
-                    <div className="text-base font-medium text-white mb-1">Expected Payment Date</div>
-                    <div className="text-sm text-white/60">
-                      {paymentData.expectedDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
-                    </div>
-                    {paymentData.status !== 'received' && (
-                      <div className={cn(
-                        "text-xs mt-1 font-medium",
-                        paymentData.status === 'overdue' ? 'text-[#FF4D4D]' : 'text-[#FFCD4D]'
-                      )}>
-                        {paymentData.daysInfo}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {/* Payment Received */}
-              {paymentData.receivedDate && (
-                <div className="relative flex items-start gap-4">
-                  <div className="relative z-10 flex flex-col items-center">
-                    <div className="w-4 h-4 bg-green-500/30 border border-green-400 rounded-full flex-shrink-0" />
-                  </div>
-                  <div className="flex-1 pt-0">
-                    <div className="text-base font-medium text-white mb-1">Payment Received</div>
-                    <div className="text-sm text-white/60">
-                      {paymentData.receivedDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
-                    </div>
-                    {paymentData.utrNumber && (
-                      <div className="text-xs text-green-400 mt-1">UTR: {paymentData.utrNumber}</div>
-                    )}
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
+          <PaymentTimeline
+            createdAt={paymentData.createdDate}
+            invoiceDate={paymentData.invoiceFileUrl ? paymentData.createdDate : null}
+            receivedAt={paymentData.receivedAt}
+          />
         </motion.div>
 
         {/* Purple Neon Divider */}
@@ -714,7 +659,7 @@ const PaymentDetailPage = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3, duration: 0.3 }}
-          className="relative bg-white/5 backdrop-blur-xl rounded-3xl p-5 md:p-6 border border-white/10 cursor-pointer transition-all duration-200 hover:bg-white/7 hover:border-white/15 shadow-lg shadow-black/10 before:absolute before:inset-0 before:bg-gradient-to-b before:from-white/5 before:to-transparent before:rounded-3xl before:pointer-events-none"
+          className="relative bg-white/10 backdrop-blur-xl rounded-2xl p-5 md:p-6 border border-white/20 shadow-xl"
         >
           <div className="space-y-4">
             {/* Invoice Number */}
@@ -790,7 +735,7 @@ const PaymentDetailPage = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4, duration: 0.3 }}
-              className="relative bg-white/5 backdrop-blur-xl rounded-3xl p-5 md:p-6 border border-white/10 cursor-pointer transition-all duration-200 hover:bg-white/7 hover:border-white/15 shadow-lg shadow-black/10 before:absolute before:inset-0 before:bg-gradient-to-b before:from-white/5 before:to-transparent before:rounded-3xl before:pointer-events-none"
+              className="relative bg-white/10 backdrop-blur-xl rounded-2xl p-5 md:p-6 border border-white/20 shadow-xl"
             >
               <div className="space-y-4">
                 {/* Large Date */}
@@ -838,7 +783,7 @@ const PaymentDetailPage = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.45, duration: 0.3 }}
-          className="relative bg-white/5 backdrop-blur-xl rounded-3xl p-5 md:p-6 border border-white/10 cursor-pointer transition-all duration-200 hover:bg-white/7 hover:border-white/15 shadow-lg shadow-black/10 before:absolute before:inset-0 before:bg-gradient-to-b before:from-white/5 before:to-transparent before:rounded-3xl before:pointer-events-none"
+          className="relative bg-white/10 backdrop-blur-xl rounded-2xl p-5 md:p-6 border border-white/20 shadow-xl"
         >
           <div className="relative z-10 space-y-4">
             <div>
@@ -849,38 +794,33 @@ const PaymentDetailPage = () => {
             </div>
 
             {proofOfPaymentUrl ? (
-              <div className="space-y-3">
-                <div className="flex items-center gap-3 p-3 bg-white/5 rounded-xl border border-white/10">
-                  <FileText className="w-5 h-5 text-white/60 flex-shrink-0" />
-                  <div className="flex-1 min-w-0">
-                    <div className="text-sm font-medium text-white truncate">Proof of Payment</div>
-                    <div className="text-xs text-white/60">Uploaded</div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={() => window.open(proofOfPaymentUrl, '_blank', 'noopener,noreferrer')}
-                      className="p-2 hover:bg-white/10 rounded-lg transition-colors"
-                      aria-label="View proof"
-                    >
-                      <Eye className="w-4 h-4 text-white/60" />
-                    </button>
-                    <button
-                      onClick={() => {
-                        setProofOfPaymentUrl(null);
-                        setProofOfPaymentFile(null);
-                        if (fileInputRef.current) {
-                          fileInputRef.current.value = '';
-                        }
-                        // TODO: Delete file from storage and update deal
-                      }}
-                      className="p-2 hover:bg-white/10 rounded-lg transition-colors"
-                      aria-label="Remove proof"
-                    >
-                      <X className="w-4 h-4 text-white/60" />
-                    </button>
-                  </div>
-                </div>
-              </div>
+              <FilePreview
+                fileURL={proofOfPaymentUrl}
+                fileName={proofOfPaymentUrl.split('/').pop() || 'Proof of Payment'}
+                onRemove={async () => {
+                  setProofOfPaymentUrl(null);
+                  setProofOfPaymentFile(null);
+                  if (fileInputRef.current) {
+                    fileInputRef.current.value = '';
+                  }
+                  // Update deal to remove proof URL
+                  if (brandDeal && profile?.id) {
+                    try {
+                      await updateDealMutation.mutateAsync({
+                        id: brandDeal.id,
+                        creator_id: profile.id,
+                        proof_of_payment_url: null,
+                      });
+                      toast.success('Proof of payment removed');
+                    } catch (error: any) {
+                      toast.error('Failed to remove proof', {
+                        description: error.message || 'Please try again.',
+                      });
+                    }
+                  }
+                }}
+                onPreview={() => setShowPreviewModal(true)}
+              />
             ) : (
               <div className="space-y-3">
                 <input
@@ -928,12 +868,12 @@ const PaymentDetailPage = () => {
           </div>
         </motion.div>
 
-        {/* SECTION 7: Notes / Comments */}
+        {/* SECTION 7: Notes / Comments (Glass Card) */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5, duration: 0.3 }}
-          className="relative bg-white/5 backdrop-blur-xl rounded-3xl p-5 md:p-6 border border-white/10 cursor-pointer transition-all duration-200 hover:bg-white/7 hover:border-white/15 shadow-lg shadow-black/10 before:absolute before:inset-0 before:bg-gradient-to-b before:from-white/5 before:to-transparent before:rounded-3xl before:pointer-events-none"
+          className="relative bg-white/10 backdrop-blur-xl rounded-2xl p-5 md:p-6 border border-white/20 shadow-xl"
         >
           <div className="relative z-10 space-y-4">
             <div>
@@ -985,19 +925,22 @@ const PaymentDetailPage = () => {
           transition={{ delay: 0.55, duration: 0.3 }}
           className="space-y-3"
         >
-          {/* Primary CTA - Neon Purple */}
-          {paymentData.status !== 'received' && (
-            <button
+          {/* Primary CTA - After Received State */}
+          {paymentData.status === 'received' ? (
+            <GlassButton
+              variant="green"
+              disabled
+              className="w-full py-4 flex items-center justify-center gap-2"
+            >
+              <CheckCircle className="w-5 h-5" />
+              Payment Received ✓
+            </GlassButton>
+          ) : (
+            <GlassButton
+              variant="purple"
               onClick={handleMarkAsReceived}
               disabled={updateDealMutation.isPending}
-              className={cn(
-                "w-full rounded-xl py-4 bg-gradient-to-r from-[#A06BFF] to-[#7C3AED]",
-                "text-white font-medium shadow-lg shadow-purple-900/40",
-                "hover:from-[#8F5AFF] hover:to-[#6D28D9]",
-                "transition-all duration-200 active:scale-[0.97]",
-                "disabled:opacity-50 disabled:cursor-not-allowed",
-                "flex items-center justify-center gap-2"
-              )}
+              className="w-full py-4 flex items-center justify-center gap-2"
             >
               {updateDealMutation.isPending ? (
                 <>
@@ -1007,7 +950,7 @@ const PaymentDetailPage = () => {
               ) : (
                 'Mark as Received'
               )}
-            </button>
+            </GlassButton>
           )}
 
           {/* Secondary Buttons */}
@@ -1047,6 +990,45 @@ const PaymentDetailPage = () => {
           </div>
         </motion.div>
       </div>
+
+      {/* Full-Screen Preview Modal */}
+      {showPreviewModal && proofOfPaymentUrl && (
+        <div
+          className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4"
+          onClick={() => setShowPreviewModal(false)}
+        >
+          <div
+            className="relative max-w-4xl max-h-[90vh] bg-white/10 backdrop-blur-xl rounded-2xl border border-white/20 shadow-xl overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between p-4 border-b border-white/10">
+              <h3 className="text-lg font-semibold text-white">Proof of Payment</h3>
+              <button
+                onClick={() => setShowPreviewModal(false)}
+                className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+                aria-label="Close preview"
+              >
+                <X className="w-5 h-5 text-white/60" />
+              </button>
+            </div>
+            <div className="p-4 overflow-auto max-h-[calc(90vh-80px)]">
+              {/\.(png|jpg|jpeg|gif|webp)$/i.test(proofOfPaymentUrl) ? (
+                <img
+                  src={proofOfPaymentUrl}
+                  alt="Proof of Payment"
+                  className="w-full h-auto rounded-lg"
+                />
+              ) : (
+                <iframe
+                  src={proofOfPaymentUrl}
+                  className="w-full h-[600px] rounded-lg"
+                  title="Proof of Payment"
+                />
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

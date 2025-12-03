@@ -15,7 +15,7 @@ export function useDealActionLogs(dealId: string | undefined, enabled = true) {
         return [];
       }
 
-      let query = supabase
+      const query = supabase
         .from('deal_action_logs')
         .select('*')
         .order('created_at', { ascending: false })

@@ -15,7 +15,7 @@ export function useIssues(dealId: string | undefined, enabled = true) {
         return [];
       }
 
-      let query = supabase
+      const query = supabase
         .from('issues')
         .select('*')
         .order('created_at', { ascending: false })
