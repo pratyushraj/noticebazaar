@@ -1,4 +1,4 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { BrandDeal } from '@/types';
 import type { Database } from '@/types/supabase';
@@ -34,7 +34,8 @@ const getDemoBrandDeals = (creatorId: string): BrandDeal[] => {
       payment_expected_date: dec4.toISOString().split('T')[0], // 16 days left from Nov 18
       contact_person: 'Amit Verma',
       platform: 'Instagram',
-      status: 'Payment Pending',
+      status: 'Content Delivered',
+      progress_percentage: 90,
       invoice_file_url: null,
       payment_received_date: null,
       utr_number: null,
@@ -54,7 +55,8 @@ const getDemoBrandDeals = (creatorId: string): BrandDeal[] => {
       payment_expected_date: nov30.toISOString().split('T')[0], // 12 days left from Nov 18
       contact_person: 'Anjali Mehta',
       platform: 'YouTube',
-      status: 'Payment Pending',
+      status: 'Content Delivered',
+      progress_percentage: 90,
       invoice_file_url: null,
       payment_received_date: null,
       utr_number: null,
@@ -74,7 +76,8 @@ const getDemoBrandDeals = (creatorId: string): BrandDeal[] => {
       payment_expected_date: nov20.toISOString().split('T')[0], // 2 days left from Nov 18
       contact_person: 'Sneha Patel',
       platform: 'Instagram',
-      status: 'Payment Pending',
+      status: 'Content Delivered',
+      progress_percentage: 90,
       invoice_file_url: null,
       payment_received_date: null,
       utr_number: null,
@@ -94,7 +97,8 @@ const getDemoBrandDeals = (creatorId: string): BrandDeal[] => {
       payment_expected_date: nov10.toISOString().split('T')[0], // Overdue by 5 days (Nov 18 - Nov 10 = 8, but user says 5)
       contact_person: 'Varun Singh',
       platform: 'Instagram',
-      status: 'Payment Pending',
+      status: 'Content Delivered',
+      progress_percentage: 90,
       invoice_file_url: null,
       payment_received_date: null,
       utr_number: null,
@@ -114,7 +118,8 @@ const getDemoBrandDeals = (creatorId: string): BrandDeal[] => {
       payment_expected_date: nov22.toISOString().split('T')[0], // Due soon (Nov 22, 4 days from Nov 18)
       contact_person: 'Rajesh Kumar',
       platform: 'Instagram',
-      status: 'Payment Pending',
+      status: 'Content Delivered',
+      progress_percentage: 90,
       invoice_file_url: null,
       payment_received_date: null,
       utr_number: null,
@@ -130,11 +135,12 @@ const getDemoBrandDeals = (creatorId: string): BrandDeal[] => {
       deal_amount: 1000,
       deliverables: JSON.stringify(['1 Reel', '1 Story']),
       contract_file_url: null,
-      due_date: new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // Draft deal still has due date for deliverables
+      due_date: new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
       payment_expected_date: new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // Far future, not yet set for payment
       contact_person: 'Priya Sharma',
       platform: 'Instagram',
-      status: 'Drafting', // Draft status - no payment yet
+      status: 'Negotiation',
+      progress_percentage: 30,
       invoice_file_url: null,
       payment_received_date: null,
       utr_number: null,
@@ -623,6 +629,130 @@ export const useDeleteBrandDeal = () => {
       },
       successMessage: 'Brand deal deleted successfully!',
       errorMessage: 'Failed to delete brand deal',
+    }
+  );
+};
+
+// ============================================
+// DEAL PROGRESS UPDATE HELPER
+// ============================================
+
+export type DealStage = 'negotiation' | 'signed' | 'content_making' | 'content_delivered' | 'completed';
+
+export const DEAL_PROGRESS_STAGES = {
+  negotiation: { percent: 30, next: 'signed' },
+  signed: { percent: 70, next: 'content_making' },
+  content_making: { percent: 80, next: 'content_delivered' },
+  content_delivered: { percent: 90, next: 'completed' },
+  completed: { percent: 100, next: null },
+} as const;
+
+export const STAGE_TO_PROGRESS: Record<DealStage, number> = {
+  negotiation: 30,
+  signed: 70,
+  content_making: 80,
+  content_delivered: 90,
+  completed: 100,
+};
+
+export const STAGE_TO_STATUS: Record<DealStage, string> = {
+  negotiation: 'Negotiation',
+  signed: 'Signed',
+  content_making: 'Content Making',
+  content_delivered: 'Content Delivered',
+  completed: 'Completed',
+};
+
+export const STAGE_LABELS: Record<DealStage, string> = {
+  negotiation: 'Negotiation',
+  signed: 'Signed',
+  content_making: 'Content Making',
+  content_delivered: 'Content Delivered',
+  completed: 'Completed',
+};
+
+export const useUpdateDealProgress = () => {
+  const queryClient = useQueryClient();
+  return useSupabaseMutation<void, Error, { dealId: string; stage: DealStage; creator_id: string }>(
+    async ({ dealId, stage, creator_id }) => {
+      // Fetch current deal to validate sequential progression
+      const { data: currentDeal, error: fetchError } = await supabase
+        .from('brand_deals')
+        .select('progress_percentage, status')
+        .eq('id', dealId)
+        .single();
+
+      if (fetchError) {
+        throw new Error(`Failed to fetch deal: ${fetchError.message}`);
+      }
+
+      // Validate sequential progression
+      const currentProgress = (currentDeal as any)?.progress_percentage ?? 0;
+      
+      // Get current stage from progress
+      const getCurrentStageFromProgress = (progress: number): DealStage | null => {
+        if (progress >= 100) return 'completed';
+        if (progress >= 90) return 'content_delivered';
+        if (progress >= 80) return 'content_making';
+        if (progress >= 70) return 'signed';
+        if (progress >= 30) return 'negotiation';
+        return null;
+      };
+
+      const currentStage = getCurrentStageFromProgress(currentProgress);
+      
+      // Check if progression is valid (must be next stage or same stage)
+      if (currentStage) {
+        const currentStageConfig = DEAL_PROGRESS_STAGES[currentStage];
+        const targetStageConfig = DEAL_PROGRESS_STAGES[stage];
+        
+        // Allow same stage (no-op) or next stage only
+        if (stage !== currentStage && targetStageConfig.percent <= currentStageConfig.percent) {
+          throw new Error(`Cannot skip stages. Current: ${currentStage}, Attempted: ${stage}`);
+        }
+        
+        // Ensure we're moving to the next stage only
+        if (currentStageConfig.next && stage !== currentStage && stage !== currentStageConfig.next) {
+          throw new Error(`Must progress sequentially. Current: ${currentStage}, Next allowed: ${currentStageConfig.next}, Attempted: ${stage}`);
+        }
+      }
+
+      const progress_percentage = STAGE_TO_PROGRESS[stage];
+      const status = STAGE_TO_STATUS[stage];
+
+      const updatePayload: Record<string, any> = {
+        progress_percentage,
+        status,
+        updated_at: new Date().toISOString(),
+      };
+
+      const { error } = await supabase
+        .from('brand_deals')
+        .update(updatePayload)
+        .eq('id', dealId);
+
+      if (error) {
+        throw new Error(error.message);
+      }
+    },
+    {
+      onSuccess: (_, variables) => {
+        // Optimistically update UI
+        queryClient.invalidateQueries({ 
+          queryKey: ['brand_deals'],
+          exact: false 
+        });
+        queryClient.invalidateQueries({ 
+          queryKey: ['brand_deal', variables.dealId],
+          exact: false 
+        });
+        queryClient.refetchQueries({ 
+          queryKey: ['brand_deals', variables.creator_id],
+          exact: false 
+        });
+      },
+      successMessage: 'Deal progress updated successfully!',
+      errorMessage: 'Failed to update deal progress',
     }
   );
 };

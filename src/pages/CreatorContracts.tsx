@@ -41,22 +41,49 @@ const CreatorContracts = () => {
       let progress = 0;
       let nextStep = 'Review contract';
 
-      if (deal.status === 'Completed') {
-        status = 'completed';
-        progress = 100;
-        nextStep = 'Payment processing';
-      } else if (deal.status === 'Payment Pending') {
-        status = 'active';
-        progress = 75;
-        nextStep = 'Awaiting payment';
-      } else if (deal.status === 'Drafting') {
-        status = 'negotiation';
-        progress = 30;
-        nextStep = 'Review contract terms';
+      // Use progress_percentage if available, otherwise map from status
+      if (deal.progress_percentage !== null && deal.progress_percentage !== undefined) {
+        progress = deal.progress_percentage;
+        if (progress >= 100) {
+          status = 'completed';
+          nextStep = 'Deal completed';
+        } else if (progress >= 90) {
+          status = 'content_delivered';
+          nextStep = 'Awaiting payment';
+        } else if (progress >= 80) {
+          status = 'content_making';
+          nextStep = 'Complete content creation';
+        } else if (progress >= 70) {
+          status = 'signed';
+          nextStep = 'Start content creation';
+        } else {
+          status = 'negotiation';
+          nextStep = 'Complete negotiation';
+        }
       } else {
-        status = 'pending';
-        progress = 20;
-        nextStep = 'Awaiting brand approval';
+        // Fallback mapping from status
+        const statusLower = (deal.status || '').toLowerCase();
+        if (statusLower.includes('completed')) {
+          status = 'completed';
+          progress = 100;
+          nextStep = 'Deal completed';
+        } else if (statusLower.includes('content_delivered') || statusLower.includes('content delivered')) {
+          status = 'content_delivered';
+          progress = 90;
+          nextStep = 'Awaiting payment';
+        } else if (statusLower.includes('content_making') || statusLower.includes('content making')) {
+          status = 'content_making';
+          progress = 80;
+          nextStep = 'Complete content creation';
+        } else if (statusLower.includes('signed')) {
+          status = 'signed';
+          progress = 70;
+          nextStep = 'Start content creation';
+        } else {
+          status = 'negotiation';
+          progress = 30;
+          nextStep = 'Complete negotiation';
+        }
       }
 
       return {
@@ -77,8 +104,14 @@ const CreatorContracts = () => {
   // Calculate stats from real data
   const stats = useMemo(() => {
     const total = brandDeals.length;
-    const active = brandDeals.filter(d => d.status !== 'Completed' && d.status !== 'Drafting').length;
-    const pending = brandDeals.filter(d => d.status === 'Drafting' || !d.status).length;
+    const active = brandDeals.filter(d => {
+      const status = d.status?.toLowerCase() || '';
+      return !status.includes('completed');
+    }).length;
+    const pending = brandDeals.filter(d => {
+      const status = d.status?.toLowerCase() || '';
+      return status.includes('negotiation') || status.includes('draft') || !d.status;
+    }).length;
     const completed = brandDeals.filter(d => d.status === 'Completed').length;
     const totalValue = brandDeals.reduce((sum, d) => sum + (d.deal_amount || 0), 0);
     

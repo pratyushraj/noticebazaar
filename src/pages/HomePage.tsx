@@ -22,15 +22,13 @@ const HomePage = () => {
 
   useEffect(() => {
     if (session && profile) {
-      // Default to Creator Dashboard (unless specific role)
+      // Default to Creator Dashboard for ALL users (including clients)
       if (profile.role === 'admin') {
         navigate('/admin-dashboard');
       } else if (profile.role === 'chartered_accountant') {
         navigate('/ca-dashboard');
-      } else if (profile.role === 'client') {
-        navigate('/client-dashboard');
       } else {
-        // Default: Creator Dashboard (for 'creator', null, or any other role)
+        // Default: Creator Dashboard (for 'creator', 'client', null, or any other role)
         navigate('/creator-dashboard');
       }
     }

@@ -1,12 +1,11 @@
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import NotFound from "./pages/NotFound";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import MarketingHome from "./pages/MarketingHome";
 import HomePage from "./pages/HomePage";
-import ClientDashboard from "./pages/ClientDashboard";
 import AdminDashboard from "./pages/AdminDashboard";
 import CADashboard from "./pages/CADashboard";
 import CreatorDashboard from "./pages/CreatorDashboard";
@@ -162,8 +161,8 @@ const App = () => {
               {/* Referral Landing */}
               <Route path="/p/:code" element={<ReferralLanding />} />
 
-              {/* Client-specific routes */}
-              <Route path="/client-dashboard" element={<ProtectedLayout allowedRoles={['client']}><ClientDashboard /></ProtectedLayout>} />
+              {/* Client-specific routes - Redirected to Creator Dashboard */}
+              <Route path="/client-dashboard" element={<Navigate to="/creator-dashboard" replace />} />
               <Route path="/client-profile" element={<ProtectedLayout allowedRoles={['client']}><ClientProfile /></ProtectedLayout>} />
               <Route path="/client-subscription" element={<ProtectedLayout allowedRoles={['client']}><ClientSubscription /></ProtectedLayout>} />
               <Route path="/client-cases" element={<ProtectedLayout allowedRoles={['client']}><ClientCases /></ProtectedLayout>} />

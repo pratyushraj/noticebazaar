@@ -5,7 +5,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { IndianRupee, Briefcase, Clock, DollarSign, Loader2, TrendingUp, AlertCircle } from 'lucide-react';
 import { BrandDeal } from '@/types';
 import { cn } from '@/lib/utils';
-import { DealStage } from './DealStatusBadge';
+import { DealStage } from '@/lib/hooks/useBrandDeals';
 
 interface BrandDealsStatsProps {
   allDeals: BrandDeal[];
@@ -14,18 +14,28 @@ interface BrandDealsStatsProps {
 
 // Helper function to map old status to new stage
 const getDealStage = (deal: BrandDeal): DealStage => {
-  if (deal.status === 'Drafting') return 'draft';
-  if (deal.status === 'Approved') return 'active';
-  if (deal.status === 'Payment Pending') {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const dueDate = new Date(deal.payment_expected_date);
-    dueDate.setHours(0, 0, 0, 0);
-    return dueDate < today ? 'overdue' : 'payment_pending';
+  const status = deal.status?.toLowerCase() || '';
+  
+  // Map old statuses to new stages
+  if (status.includes('draft')) return 'negotiation';
+  if (status.includes('review')) return 'signed';
+  if (status.includes('negotiation')) return 'negotiation';
+  if (status.includes('signed')) return 'signed';
+  if (status.includes('content_making') || status.includes('content making')) return 'content_making';
+  if (status.includes('content_delivered') || status.includes('content delivered')) return 'content_delivered';
+  if (status.includes('completed')) return 'completed';
+  
+  // Fallback: use progress_percentage if available
+  if (deal.progress_percentage !== null && deal.progress_percentage !== undefined) {
+    if (deal.progress_percentage >= 100) return 'completed';
+    if (deal.progress_percentage >= 90) return 'content_delivered';
+    if (deal.progress_percentage >= 80) return 'content_making';
+    if (deal.progress_percentage >= 70) return 'signed';
+    return 'negotiation';
   }
-  if (deal.status === 'Completed') return 'completed';
-  if (deal.payment_received_date) return 'paid';
-  return 'draft';
+  
+  // Default fallback
+  return 'negotiation';
 };
 
 const BrandDealsStats: React.FC<BrandDealsStatsProps> = ({ allDeals, isLoading }) => {
@@ -35,15 +45,15 @@ const BrandDealsStats: React.FC<BrandDealsStatsProps> = ({ allDeals, isLoading }
     const dealsWithStages = allDeals.map(deal => ({ deal, stage: getDealStage(deal) }));
     
     const activeDeals = dealsWithStages.filter(({ stage }) => 
-      stage === 'active' || stage === 'payment_pending'
+      stage === 'signed' || stage === 'content_making' || stage === 'content_delivered'
     ).length;
     
-    const pendingPayments = dealsWithStages.filter(({ stage }) => 
-      stage === 'payment_pending' || stage === 'overdue'
+    const pendingPayments = dealsWithStages.filter(({ deal }) => 
+      deal.status === 'Payment Pending' || (deal.payment_expected_date && !deal.payment_received_date)
     ).length;
     
     const incomeTracked = dealsWithStages
-      .filter(({ stage }) => stage === 'completed' || stage === 'paid')
+      .filter(({ stage }) => stage === 'completed')
       .reduce((sum, { deal }) => sum + deal.deal_amount, 0);
 
     // Revenue this month
@@ -51,7 +61,7 @@ const BrandDealsStats: React.FC<BrandDealsStatsProps> = ({ allDeals, isLoading }
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
     const revenueThisMonth = dealsWithStages
       .filter(({ deal, stage }) => {
-        if (stage !== 'paid' && stage !== 'completed') return false;
+        if (stage !== 'completed') return false;
         const paymentDate = deal.payment_received_date 
           ? new Date(deal.payment_received_date)
           : new Date(deal.updated_at || deal.created_at);
@@ -63,7 +73,7 @@ const BrandDealsStats: React.FC<BrandDealsStatsProps> = ({ allDeals, isLoading }
     const sevenDaysFromNow = new Date();
     sevenDaysFromNow.setDate(sevenDaysFromNow.getDate() + 7);
     const dealsClosingSoon = dealsWithStages.filter(({ deal, stage }) => {
-      if (stage === 'completed' || stage === 'paid') return false;
+      if (stage === 'completed') return false;
       const dueDate = new Date(deal.payment_expected_date || deal.due_date);
       return dueDate <= sevenDaysFromNow && dueDate >= new Date();
     }).length;

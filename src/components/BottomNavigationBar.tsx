@@ -90,22 +90,14 @@ const BottomNavigationBar = ({ onDocumentUploadSuccess, onConsultationBookingSuc
     setAiInitialFlow('general'); // Reset flow for next open
   };
 
-  // Determine nav items based on user role
-  const navItems = profile?.role === 'creator' 
-    ? [
-        { to: "/creator-dashboard", icon: LayoutDashboard, label: "Dashboard" },
-        { to: "/creator-contracts", icon: FileText, label: "Brand Deals" },
-        { to: "/creator-payments", icon: DollarSign, label: "Payments & Recovery" },
-        { to: "/creator-content-protection", icon: ShieldCheck, label: "Content Protection" },
-        { to: "/messages", icon: MessageSquare, label: "Messages" },
-      ]
-    : [
-        { to: "/client-dashboard", icon: Home, label: "Home" },
-        { to: "/client-cases", icon: Briefcase, label: "Cases" },
-        { to: "quick-actions", icon: Zap, label: "Actions" }, // Changed icon to Zap
-        { to: "/client-documents", icon: FileText, label: "Docs" },
-        { to: "/messages", icon: MessageSquare, label: "Messages" },
-      ];
+  // All users now use Creator Dashboard navigation
+  const navItems = [
+    { to: "/creator-dashboard", icon: LayoutDashboard, label: "Dashboard" },
+    { to: "/creator-contracts", icon: FileText, label: "Brand Deals" },
+    { to: "/creator-payments", icon: DollarSign, label: "Payments & Recovery" },
+    { to: "/creator-content-protection", icon: ShieldCheck, label: "Content Protection" },
+    { to: "/messages", icon: MessageSquare, label: "Messages" },
+  ];
 
   return (
     <>

@@ -121,6 +121,7 @@ export interface CreatorKpi {
 // New type for Brand Deals
 export type BrandDeal = Tables<'brand_deals'> & {
   organization_id: string; // NEW: Added organization_id
+  progress_percentage?: number | null; // Deal progress percentage (0-100)
 };
 
 // NEW: Payment Reminder Type

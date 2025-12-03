@@ -178,12 +178,18 @@ const CreatorDashboard = () => {
 
     // Calculate pending payments
     const pendingPayments = brandDeals
-      .filter(deal => deal.status === 'Payment Pending' && !deal.payment_received_date)
+      .filter(deal => {
+        const status = deal.status?.toLowerCase() || '';
+        return (status.includes('content_delivered') || status.includes('content delivered')) && !deal.payment_received_date;
+      })
       .reduce((sum, deal) => sum + (deal.deal_amount || 0), 0);
 
     // Get next payout (earliest pending payment)
     const nextPayoutDeal = brandDeals
-      .filter(deal => deal.status === 'Payment Pending' && deal.payment_expected_date)
+      .filter(deal => {
+        const status = deal.status?.toLowerCase() || '';
+        return (status.includes('content_delivered') || status.includes('content delivered')) && deal.payment_expected_date;
+      })
       .sort((a, b) => {
         const dateA = new Date(a.payment_expected_date!).getTime();
         const dateB = new Date(b.payment_expected_date!).getTime();
@@ -332,7 +338,7 @@ const CreatorDashboard = () => {
         amount: deal.deal_amount,
         status: deal.status,
         dueDate: deal.due_date,
-        progress: deal.status === 'Completed' ? 100 : deal.status === 'Payment Pending' ? 75 : deal.status === 'Approved' ? 60 : 50
+        progress: deal.progress_percentage ?? (deal.status === 'Completed' ? 100 : deal.status === 'Content Delivered' ? 90 : deal.status === 'Content Making' ? 80 : deal.status === 'Signed' ? 70 : 30)
       }));
   }, [brandDeals, hasNoData]);
 
@@ -343,7 +349,7 @@ const CreatorDashboard = () => {
     brand: deal.brand,
     value: deal.amount,
     progress: deal.progress,
-    status: deal.status === 'Payment Pending' ? 'active' : 'negotiation',
+    status: (deal.status === 'Content Delivered' || deal.status === 'Content Making' || deal.status === 'Signed') ? 'active' : 'negotiation',
     deadline: deal.dueDate ? new Date(deal.dueDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'TBD'
   }));
 
