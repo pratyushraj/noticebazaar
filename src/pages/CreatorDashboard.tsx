@@ -726,27 +726,45 @@ const CreatorDashboard = () => {
                     Start tracking your brand deals, payments, and contracts. Add your first deal to see your earnings and activity here.
                   </p>
                   <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                    <button
-                      onClick={() => {
+                    <motion.button
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
                         triggerHaptic(HapticPatterns.medium);
                         navigate('/creator-contracts');
                       }}
-                      className={`${buttons.primary} flex items-center justify-center gap-2`}
+                      whileTap={animations.microTap}
+                      className={cn(
+                        buttons.primary,
+                        "flex items-center justify-center gap-2",
+                        "cursor-pointer",
+                        "relative z-10"
+                      )}
+                      type="button"
                     >
                       <Plus className={iconSizes.md} />
                       Add Your First Deal
-                    </button>
-                    <button
-                      onClick={() => {
+                    </motion.button>
+                    <motion.button
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
                         triggerHaptic(HapticPatterns.light);
                         navigate('/brand-directory');
                       }}
-                      className={`${buttons.secondary} flex items-center justify-center gap-2`}
+                      whileTap={animations.microTap}
+                      className={cn(
+                        buttons.secondary,
+                        "flex items-center justify-center gap-2",
+                        "cursor-pointer",
+                        "relative z-10"
+                      )}
+                      type="button"
                     >
                       <Briefcase className={iconSizes.md} />
                       Explore Brands
-                    </button>
-                          </div>
+                    </motion.button>
+                  </div>
                 </BaseCard>
 
                 {/* Quick Start Guide */}
@@ -756,28 +774,55 @@ const CreatorDashboard = () => {
                   icon={<Target className="w-5 h-5 text-purple-400" />}
                 >
                   <div className="grid md:grid-cols-3 gap-4">
-                    <BaseCard variant="tertiary">
-                      <div className="w-10 h-10 rounded-lg bg-purple-500/20 flex items-center justify-center mb-3">
-                        <Briefcase className={`${iconSizes.md} text-purple-400`} />
+                    <motion.div
+                      onClick={() => {
+                        triggerHaptic(HapticPatterns.light);
+                        navigate('/creator-contracts');
+                      }}
+                      whileTap={animations.microTap}
+                      className="cursor-pointer"
+                    >
+                      <BaseCard variant="tertiary" interactive>
+                        <div className="w-10 h-10 rounded-lg bg-purple-500/20 flex items-center justify-center mb-3">
+                          <Briefcase className={`${iconSizes.md} text-purple-400`} />
                         </div>
-                      <h4 className={typography.h4 + " mb-1"}>Add Brand Deals</h4>
-                      <p className={typography.bodySmall}>Track your partnerships and contracts</p>
-                    </BaseCard>
-                    <BaseCard variant="tertiary">
-                      <div className="w-10 h-10 rounded-lg bg-green-500/20 flex items-center justify-center mb-3">
-                        <CreditCard className={`${iconSizes.md} text-green-400`} />
+                        <h4 className={typography.h4 + " mb-1"}>Add Brand Deals</h4>
+                        <p className={typography.bodySmall}>Track your partnerships and contracts</p>
+                      </BaseCard>
+                    </motion.div>
+                    <motion.div
+                      onClick={() => {
+                        triggerHaptic(HapticPatterns.light);
+                        navigate('/creator-payments');
+                      }}
+                      whileTap={animations.microTap}
+                      className="cursor-pointer"
+                    >
+                      <BaseCard variant="tertiary" interactive>
+                        <div className="w-10 h-10 rounded-lg bg-green-500/20 flex items-center justify-center mb-3">
+                          <CreditCard className={`${iconSizes.md} text-green-400`} />
                         </div>
-                      <h4 className={typography.h4 + " mb-1"}>Track Payments</h4>
-                      <p className={typography.bodySmall}>Monitor incoming and pending payments</p>
-                    </BaseCard>
-                    <BaseCard variant="tertiary">
-                      <div className="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center mb-3">
-                        <Shield className={`${iconSizes.md} text-blue-400`} />
+                        <h4 className={typography.h4 + " mb-1"}>Track Payments</h4>
+                        <p className={typography.bodySmall}>Monitor incoming and pending payments</p>
+                      </BaseCard>
+                    </motion.div>
+                    <motion.div
+                      onClick={() => {
+                        triggerHaptic(HapticPatterns.light);
+                        navigate('/creator-content-protection');
+                      }}
+                      whileTap={animations.microTap}
+                      className="cursor-pointer"
+                    >
+                      <BaseCard variant="tertiary" interactive>
+                        <div className="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center mb-3">
+                          <Shield className={`${iconSizes.md} text-blue-400`} />
                         </div>
-                      <h4 className={typography.h4 + " mb-1"}>Protect Content</h4>
-                      <p className={typography.bodySmall}>Register and monitor your content</p>
-                    </BaseCard>
-                      </div>
+                        <h4 className={typography.h4 + " mb-1"}>Protect Content</h4>
+                        <p className={typography.bodySmall}>Register and monitor your content</p>
+                      </BaseCard>
+                    </motion.div>
+                  </div>
                 </SectionCard>
                     </div>
             ) : (

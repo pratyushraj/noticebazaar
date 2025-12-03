@@ -52,12 +52,8 @@ const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
         targetDashboard = '/ca-dashboard';
       } else {
         // Default: Creator Dashboard (for 'creator', 'client', null role, or any other role)
-        // NEW: Creator Onboarding Check
-        if (!profile.onboarding_complete && location.pathname !== '/creator-onboarding') {
-          targetDashboard = '/creator-onboarding';
-          navigate(targetDashboard, { replace: true });
-          return;
-        }
+        // Allow access to dashboard even if onboarding isn't complete
+        // Users can complete onboarding later if needed
         targetDashboard = '/creator-dashboard';
       }
 
