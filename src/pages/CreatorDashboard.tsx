@@ -142,7 +142,9 @@ const CreatorDashboard = () => {
     }
   }, [profile, sessionLoading]);
 
-  const isInitialLoading = sessionLoading || isLoadingDeals;
+  // Only show loading skeleton if we're actually loading data
+  // Don't show loading if we're just waiting for profile (new accounts should see empty state)
+  const isInitialLoading = (sessionLoading && !session) || (isLoadingDeals && !!creatorId);
 
   // Pull to refresh
   const handleRefresh = async () => {
@@ -277,11 +279,14 @@ const CreatorDashboard = () => {
   
   // Safe check: Ensure brandDeals is an array and check length
   // Only show empty state when:
-  // 1. Not loading
+  // 1. Not loading (or query is disabled because no creatorId yet)
   // 2. No error (or error is handled)
   // 3. brandDeals is an empty array
   const hasDeals = Array.isArray(brandDeals) && brandDeals.length > 0;
-  const hasNoData = !isLoadingDeals && !brandDealsError && Array.isArray(brandDeals) && brandDeals.length === 0;
+  
+  // For new accounts: if creatorId exists but query hasn't run yet, or query completed with empty array
+  const queryHasCompleted = !isLoadingDeals || !creatorId; // If no creatorId, query is disabled, so consider it "completed"
+  const hasNoData = queryHasCompleted && !brandDealsError && Array.isArray(brandDeals) && brandDeals.length === 0;
   
   // Debug: Log empty state decision
   useEffect(() => {
