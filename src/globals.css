@@ -12,6 +12,23 @@ html, body {
   overscroll-behavior-y: none; /* Disable weird elastic scroll */
 }
 
+/* Calendar-specific fixes */
+.calendar-grid,
+.calendar-container,
+.calendar-week,
+.calendar-week-grid,
+.calendar-week-container {
+  min-width: 0 !important;
+}
+
+/* Drawer-specific fixes */
+.drawer-container,
+.premium-drawer {
+  -webkit-mask-image: radial-gradient(circle, white 100%, transparent 100%);
+  mask-image: radial-gradient(circle, white 100%, transparent 100%);
+  overflow: hidden !important;
+}
+
 body {
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;

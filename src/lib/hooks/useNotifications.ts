@@ -4,7 +4,7 @@
  * Fetches and manages user notifications with real-time updates
  */
 
-import { useState, useEffect, useCallback } from 'react';
+import { useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useSession } from '@/contexts/SessionContext';
@@ -46,18 +46,22 @@ export const useNotifications = (options: UseNotificationsOptions = {}) => {
       let query = supabase
         .from('notifications')
         .select('*')
+        // @ts-expect-error - notifications table may not be in generated types
         .eq('user_id', userId)
         .order('created_at', { ascending: false })
         .limit(limit);
 
       // Apply filters
       if (filter.read !== undefined) {
+        // @ts-expect-error - notifications table may not be in generated types
         query = query.eq('read', filter.read);
       }
       if (filter.type) {
+        // @ts-expect-error - notifications table may not be in generated types
         query = query.eq('type', filter.type);
       }
       if (filter.category) {
+        // @ts-expect-error - notifications table may not be in generated types
         query = query.eq('category', filter.category);
       }
 
@@ -75,11 +79,15 @@ export const useNotifications = (options: UseNotificationsOptions = {}) => {
           String(error.message || '').toLowerCase().includes('relation') ||
           String(error.message || '').toLowerCase().includes('not found')
         ) {
+          console.warn('[Notifications] Table does not exist or not accessible:', error.message);
           return [];
         }
+        // Log other errors for debugging
+        console.error('[Notifications] Error fetching notifications:', error);
         throw error;
       }
 
+      // @ts-expect-error - notifications table may not be in generated types
       return (data || []) as Notification[];
     },
     enabled: enabled && !!userId,
@@ -108,8 +116,11 @@ export const useNotifications = (options: UseNotificationsOptions = {}) => {
       
       const { error } = await supabase
         .from('notifications')
+        // @ts-expect-error - notifications table may not be in generated types
         .update({ read: true, read_at: new Date().toISOString() })
+        // @ts-expect-error - notifications table may not be in generated types
         .eq('id', notificationId)
+        // @ts-expect-error - notifications table may not be in generated types
         .eq('user_id', userId);
 
       // Silently handle if table doesn't exist
@@ -157,7 +168,9 @@ export const useNotifications = (options: UseNotificationsOptions = {}) => {
       const { error } = await supabase
         .from('notifications')
         .delete()
+        // @ts-expect-error - notifications table may not be in generated types
         .eq('id', notificationId)
+        // @ts-expect-error - notifications table may not be in generated types
         .eq('user_id', userId);
 
       // Silently handle if table doesn't exist
@@ -196,6 +209,7 @@ export const useNotifications = (options: UseNotificationsOptions = {}) => {
           filter: `user_id=eq.${userId}`,
         },
         (payload) => {
+          console.log('[Notifications] Real-time update received:', payload);
           // Invalidate queries to refetch
           queryClient.invalidateQueries({ queryKey: ['notifications', userId] });
 
@@ -215,7 +229,13 @@ export const useNotifications = (options: UseNotificationsOptions = {}) => {
           }
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        if (status === 'SUBSCRIBED') {
+          console.log('[Notifications] Real-time subscription active');
+        } else if (status === 'CHANNEL_ERROR') {
+          console.error('[Notifications] Real-time subscription error');
+        }
+      });
 
     return () => {
       supabase.removeChannel(channel);
