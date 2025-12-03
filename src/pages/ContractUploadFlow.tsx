@@ -5,13 +5,6 @@ import { ContextualTipsProvider } from '@/components/contextual-tips/ContextualT
 import { useSession } from '@/contexts/SessionContext';
 import { useAddBrandDeal } from '@/lib/hooks/useBrandDeals';
 import { toast } from 'sonner';
-import { generateContractReport } from '@/lib/utils/generateContractReport';
-import { ScoreCard } from '@/components/contract-analysis/ScoreCard';
-import { KeyTerms } from '@/components/contract-analysis/KeyTerms';
-import { IssuesList } from '@/components/contract-analysis/IssuesList';
-import { VerifiedList } from '@/components/contract-analysis/VerifiedList';
-import { NextSteps } from '@/components/contract-analysis/NextSteps';
-import { ContractAnalysisResult } from '@/types/contractAnalysis';
 
 type RiskLevel = 'low' | 'medium' | 'high';
 
