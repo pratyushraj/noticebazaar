@@ -713,7 +713,7 @@ const CreatorDashboard = () => {
                 </div>
 
                 {/* Empty State Card */}
-                <BaseCard variant="secondary" className="text-center p-6 md:p-8 relative">
+                <BaseCard variant="secondary" className="text-center p-6 md:p-8 relative" style={{ pointerEvents: 'auto' }}>
                   <motion.div
                     initial={{ scale: 0.8, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
@@ -725,7 +725,7 @@ const CreatorDashboard = () => {
                   <p className={typography.body + " mb-6 max-w-md mx-auto"}>
                     Start tracking your brand deals, payments, and contracts. Add your first deal to see your earnings and activity here.
                   </p>
-                  <div className="flex flex-col sm:flex-row gap-3 justify-center relative z-20 pointer-events-auto">
+                  <div className="flex flex-col sm:flex-row gap-3 justify-center relative" style={{ zIndex: 50, pointerEvents: 'auto' }}>
                     <button
                       onClick={(e) => {
                         e.preventDefault();
@@ -743,17 +743,22 @@ const CreatorDashboard = () => {
                         buttons.primary,
                         "flex items-center justify-center gap-2",
                         "cursor-pointer",
-                        "relative z-30",
                         "pointer-events-auto",
                         "touch-manipulation",
-                        "select-none"
+                        "select-none",
+                        "min-h-[44px]",
+                        "will-change-transform"
                       )}
                       type="button"
                       style={{ 
                         pointerEvents: 'auto',
                         WebkitTapHighlightColor: 'transparent',
-                        touchAction: 'manipulation'
+                        touchAction: 'manipulation',
+                        position: 'relative',
+                        zIndex: 50,
+                        isolation: 'isolate'
                       }}
+                      aria-label="Add Your First Deal"
                     >
                       <Plus className={iconSizes.md} />
                       Add Your First Deal
@@ -775,17 +780,22 @@ const CreatorDashboard = () => {
                         buttons.secondary,
                         "flex items-center justify-center gap-2",
                         "cursor-pointer",
-                        "relative z-30",
                         "pointer-events-auto",
                         "touch-manipulation",
-                        "select-none"
+                        "select-none",
+                        "min-h-[44px]",
+                        "will-change-transform"
                       )}
                       type="button"
                       style={{ 
                         pointerEvents: 'auto',
                         WebkitTapHighlightColor: 'transparent',
-                        touchAction: 'manipulation'
+                        touchAction: 'manipulation',
+                        position: 'relative',
+                        zIndex: 50,
+                        isolation: 'isolate'
                       }}
+                      aria-label="Explore Brands"
                     >
                       <Briefcase className={iconSizes.md} />
                       Explore Brands
