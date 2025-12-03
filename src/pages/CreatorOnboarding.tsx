@@ -45,6 +45,7 @@ const CreatorOnboarding = () => {
   const { profile, loading: sessionLoading, refetchProfile, user } = useSession();
   const navigate = useNavigate();
   const updateProfileMutation = useUpdateProfile();
+  const [isNavigating, setIsNavigating] = useState(false);
   
   const [welcomeStep, setWelcomeStep] = useState<WelcomeStep>(0);
   const [setupStep, setSetupStep] = useState<SetupStep>('name');
@@ -131,17 +132,20 @@ const CreatorOnboarding = () => {
     if (sessionLoading) return;
     
     if (!profile || profile.role !== 'creator') {
+      setIsNavigating(true);
       navigate('/login');
       return;
     }
 
     if (profile.onboarding_complete) {
+      setIsNavigating(true);
       navigate('/creator-dashboard', { replace: true });
       return;
     }
   }, [sessionLoading, profile, navigate]);
 
-  if (sessionLoading) {
+  // Show loading state while session is loading or navigation is happening
+  if (sessionLoading || isNavigating) {
     return (
       <OnboardingContainer>
         <div className="flex items-center justify-center h-full">
@@ -156,12 +160,30 @@ const CreatorOnboarding = () => {
 
   // Early return if profile is invalid (navigation will happen in useEffect)
   if (!profile || profile.role !== 'creator') {
-    return null;
+    return (
+      <OnboardingContainer>
+        <div className="flex items-center justify-center h-full">
+          <div className="text-center">
+            <Loader2 className="w-12 h-12 animate-spin mx-auto mb-4 text-purple-400" />
+            <p className="text-white/80">Redirecting...</p>
+          </div>
+        </div>
+      </OnboardingContainer>
+    );
   }
 
   // Early return if onboarding is complete (navigation will happen in useEffect)
   if (profile.onboarding_complete) {
-    return null;
+    return (
+      <OnboardingContainer>
+        <div className="flex items-center justify-center h-full">
+          <div className="text-center">
+            <Loader2 className="w-12 h-12 animate-spin mx-auto mb-4 text-purple-400" />
+            <p className="text-white/80">Redirecting to dashboard...</p>
+          </div>
+        </div>
+      </OnboardingContainer>
+    );
   }
 
   const handleSkipWelcome = () => {

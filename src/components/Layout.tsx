@@ -16,12 +16,22 @@ interface LayoutProps {
 const Layout = ({ children }: LayoutProps) => {
   const { profile } = useSession();
   const location = useLocation();
-  const isCreator = profile?.role === 'creator';
   const { isOpen } = useSidebar();
   
-  // Hide bottom nav during onboarding
+  // Show bottom nav for all users on creator routes (since creator dashboard is default)
+  // Hide bottom nav during onboarding and for admin/CA routes
   const isOnboarding = location.pathname === '/creator-onboarding';
-  const shouldShowBottomNav = isCreator && !isOnboarding;
+  const isAdminRoute = location.pathname.startsWith('/admin-');
+  const isCARoute = location.pathname.startsWith('/ca-dashboard');
+  const isClientRoute = location.pathname.startsWith('/client-');
+  const isCreatorRoute = location.pathname.startsWith('/creator-') || 
+                        location.pathname.startsWith('/messages') ||
+                        location.pathname.startsWith('/calendar') ||
+                        location.pathname.startsWith('/payment/') ||
+                        location.pathname.startsWith('/create-deal');
+  
+  // Show bottom nav for creator routes (default for all users), hide for admin/CA/client routes
+  const shouldShowBottomNav = isCreatorRoute && !isOnboarding && !isAdminRoute && !isCARoute && !isClientRoute && !!profile;
 
   return (
     <div className="relative min-h-screen bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 text-white">
