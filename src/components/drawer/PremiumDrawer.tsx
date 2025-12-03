@@ -509,10 +509,8 @@ export default function PremiumDrawer({
               "absolute left-0 top-0 h-full relative",
               "w-[78%] max-w-[320px] md:w-[300px]",
               radius.xl,
-              // Match page purple theme: Mobile +10%, Desktop +15% luminosity
-              "md:bg-[radial-gradient(circle_at_20%_0%,#a05cff,#7a3cff,#5500aa)]",
-              "bg-[radial-gradient(circle_at_20%_0%,#9a4cff,#6a2cf9,#44009a)]",
-              "backdrop-blur-3xl",
+              // Match header color style
+              "bg-white/8 backdrop-blur-3xl",
               "border border-white/15",
               shadows.depthStrong,
               spacing.cardPadding.secondary,
@@ -521,10 +519,10 @@ export default function PremiumDrawer({
               // Hide scrollbar but keep scrolling
               "[&::-webkit-scrollbar]:w-0 [&::-webkit-scrollbar]:h-0",
               "overscroll-contain",
-              // Inner border for depth
-              "shadow-[inset_0_1px_0_rgba(255,255,255,0.1)]",
-              // Grain texture (if grain.png exists)
-              "after:absolute after:inset-0 after:bg-[url('/grain.png')] after:opacity-[0.15] after:pointer-events-none"
+              // Inner shadow for depth (matching header)
+              "shadow-[inset_0_1px_0_rgba(255,255,255,0.15)]",
+              // Purple theme integration (matching header)
+              "before:absolute before:inset-0 before:bg-gradient-to-b before:from-purple-500/10 before:to-transparent before:pointer-events-none"
             )}
             style={{
               scrollbarWidth: 'none',

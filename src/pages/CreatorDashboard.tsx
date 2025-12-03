@@ -795,7 +795,7 @@ const CreatorDashboard = () => {
                 </div>
 
             {/* Quick Stats Row */}
-            <div data-tutorial="stats-grid" className="grid grid-cols-3 gap-3 mb-4">
+            <div data-tutorial="stats-grid" className="grid grid-cols-3 gap-2 sm:gap-4 w-full max-w-full px-2 mb-4">
               <StatCard
                 label="Total Deals"
                 value={stats.totalDeals}
@@ -814,7 +814,7 @@ const CreatorDashboard = () => {
                 icon={<CreditCard className={`${iconSizes.sm} text-orange-400`} />}
                 variant="tertiary"
               />
-          </div>
+            </div>
 
             {/* Main Earnings Card - iOS 17 + visionOS */}
             <motion.div 

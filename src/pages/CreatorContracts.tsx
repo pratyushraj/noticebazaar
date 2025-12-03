@@ -163,7 +163,10 @@ const CreatorContracts = () => {
             <div className={cn("h-[1px] w-full bg-white/5 my-6")} />
 
             {/* Filter Tabs - Matching Payments Page Style */}
-            <div className={cn("flex items-center gap-2 overflow-x-auto pb-2 mb-6", scroll.container, "[&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]")}>
+            <div className={cn(
+              "flex gap-2 overflow-x-auto overflow-y-visible py-1 mb-6",
+              "[&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
+            )}>
               {filters.map((filter) => {
                 const isActive = activeFilter === filter.id;
                 return (
@@ -175,9 +178,11 @@ const CreatorContracts = () => {
                     }}
                     whileTap={animations.microTap}
                     className={cn(
-                      "px-4 py-2 rounded-full text-sm font-semibold transition-all duration-200 whitespace-nowrap",
+                      "whitespace-nowrap rounded-full border transition-all select-none",
+                      "text-xs sm:text-sm px-2 py-1.5",
+                      "flex-shrink-0 font-semibold",
                       isActive
-                        ? "bg-white/15 text-white border border-white/20"
+                        ? "bg-white/15 text-white border-2 border-white/20 scale-[1.02] shadow-sm"
                         : "bg-white/5 text-white/70 border border-white/10 hover:bg-white/8"
                     )}
                   >
@@ -202,7 +207,7 @@ const CreatorContracts = () => {
         </div>
       ) : filteredDeals.length > 0 ? (
         /* Deals List - Matching Payments Page Card Style */
-        <div className={cn("space-y-4")}>
+        <div className={cn("space-y-5 sm:space-y-6")}>
           {filteredDeals.map((deal, index) => {
             const StatusIcon = statusConfig[deal.status as DealStatus].icon;
             

@@ -97,30 +97,35 @@ export const StatCard = ({
   className 
 }: StatCardProps) => {
   return (
-    <BaseCard variant={variant} className={cn("text-left", className)}>
+    <BaseCard variant={variant} className={cn(
+      "text-left aspect-square flex flex-col justify-between",
+      "min-w-0 w-full px-3 py-4 sm:px-4 sm:py-5",
+      "scale-[0.96] sm:scale-100",
+      className
+    )}>
       {/* Icon at top */}
       {icon && (
-        <div className="flex items-center mb-3">
-          <div className="p-2 rounded-xl bg-white/5">{icon}</div>
+        <div className="flex items-center mb-2 sm:mb-3">
+          <div className="w-9 h-9 sm:w-10 sm:h-10 p-2 rounded-xl bg-white/5 flex items-center justify-center">{icon}</div>
         </div>
       )}
       
       {/* Label */}
-      <div className={cn(typography.label, "mb-2 text-white/80")}>{label}</div>
+      <div className={cn("text-[10px] sm:text-xs tracking-wide opacity-80 mb-1 sm:mb-2")}>{label}</div>
       
       {/* Large Value */}
-      <div className={cn(typography.amount, "mb-2 text-white")}>
+      <div className={cn("text-xl sm:text-2xl font-semibold text-white mb-1 sm:mb-2")}>
         {typeof value === 'number' ? value.toLocaleString('en-IN') : value}
       </div>
       
       {/* Subtitle or Trend */}
       {subtitle ? (
-        <div className={cn("text-xs font-medium", trend?.isPositive ? "text-green-400" : "text-white/70")}>
+        <div className={cn("text-[10px] sm:text-xs font-medium", trend?.isPositive ? "text-green-400" : "text-white/70")}>
           {subtitle}
         </div>
       ) : trend && (
         <div className={cn(
-          "text-xs font-medium",
+          "text-[10px] sm:text-xs font-medium",
           trend.isPositive ? "text-green-400" : "text-red-400"
         )}>
           {trend.isPositive ? '+' : ''}{trend.value}%
