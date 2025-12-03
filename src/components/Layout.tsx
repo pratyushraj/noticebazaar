@@ -31,6 +31,7 @@ const Layout = ({ children }: LayoutProps) => {
                         location.pathname.startsWith('/create-deal');
   
   // Show bottom nav for creator routes (default for all users), hide for admin/CA/client routes
+  // Allow bottom nav even if profile role is null/undefined (new accounts default to creator)
   const shouldShowBottomNav = isCreatorRoute && !isOnboarding && !isAdminRoute && !isCARoute && !isClientRoute && !!profile;
 
   return (

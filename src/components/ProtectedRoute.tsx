@@ -134,9 +134,16 @@ const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
         return;
       }
 
-      if (allowedRoles && !allowedRoles.includes(profile.role)) {
-        navigate(targetDashboard, { replace: true });
-        return;
+      // Check if user has required role
+      // For new accounts, if role is null/undefined, default to 'creator' role
+      const userRole = profile.role || 'creator';
+      
+      if (allowedRoles && allowedRoles.length > 0) {
+        // If profile role is null/undefined, treat as 'creator' for new accounts
+        if (!allowedRoles.includes(userRole)) {
+          navigate(targetDashboard, { replace: true });
+          return;
+        }
       }
     } else if (!session) {
       const isRootPath = location.pathname === '/';
