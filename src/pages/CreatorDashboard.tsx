@@ -713,7 +713,7 @@ const CreatorDashboard = () => {
                 </div>
 
                 {/* Empty State Card */}
-                <BaseCard variant="primary" className="text-center p-6 md:p-8">
+                <BaseCard variant="secondary" className="text-center p-6 md:p-8">
                   <motion.div
                     initial={{ scale: 0.8, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
