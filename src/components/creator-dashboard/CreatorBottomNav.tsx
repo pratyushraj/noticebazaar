@@ -171,15 +171,17 @@ const CreatorBottomNav = () => {
         <div className="absolute inset-x-0 top-0 h-[1px] bg-white/10" />
         
         <nav 
-          className="flex justify-around h-16 md:h-14 items-center px-2 relative z-10"
+          className="flex justify-around h-16 md:h-14 items-center px-2 relative z-10 pointer-events-auto"
           style={{ 
             paddingBottom: `max(8px, env(safe-area-inset-bottom, 8px))`, 
             paddingTop: '8px',
             // Android browser fix: ensure nav is visible
             minHeight: '64px',
+            pointerEvents: 'auto',
           }}
           role="navigation"
           aria-label="Bottom navigation"
+          onClick={(e) => e.stopPropagation()}
         >
         {navItems.map((item) => {
           const Icon = item.icon;
@@ -192,6 +194,13 @@ const CreatorBottomNav = () => {
             }
           };
 
+          const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+            e.preventDefault();
+            e.stopPropagation();
+            triggerHaptic(HapticPatterns.light);
+            navigate(item.to);
+          };
+
           return (
             <motion.div
               key={item.to}
@@ -202,15 +211,22 @@ const CreatorBottomNav = () => {
                 to={item.to}
                 tabIndex={0}
                 onKeyDown={handleKeyDown}
-                onClick={() => triggerHaptic(HapticPatterns.light)}
+                onClick={handleClick}
                 className={cn(
                   "flex flex-col items-center justify-center h-full transition-all duration-150 relative",
                   "focus-visible:outline focus-visible:outline-2 focus-visible:outline-purple-400/70 focus-visible:outline-offset-2 focus-visible:rounded-lg",
                   "min-h-[44px] min-w-[44px] touch-manipulation",
+                  "pointer-events-auto",
+                  "cursor-pointer",
                   active 
                     ? "text-white" 
                     : "text-white/70"
                 )}
+                style={{
+                  pointerEvents: 'auto',
+                  WebkitTapHighlightColor: 'transparent',
+                  touchAction: 'manipulation'
+                }}
                 aria-label={item.label}
                 aria-current={active ? 'page' : undefined}
               >
