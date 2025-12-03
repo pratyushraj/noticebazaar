@@ -13,7 +13,7 @@ import {
 import { motion, useScroll, useTransform } from 'framer-motion';
 
 const HomePage = () => {
-  const { session, loading, profile } = useSession();
+  const { session, loading, profile, user } = useSession();
   const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { scrollYProgress } = useScroll();
@@ -23,7 +23,14 @@ const HomePage = () => {
   useEffect(() => {
     if (session && profile) {
       // Default to Creator Dashboard for ALL users (including clients)
-      if (profile.role === 'admin') {
+      // Special case: pratyushraj@outlook.com always gets creator dashboard
+      const userEmail = user?.email?.toLowerCase() || session?.user?.email?.toLowerCase();
+      const isPratyush = userEmail === 'pratyushraj@outlook.com';
+      
+      if (isPratyush) {
+        // Always use creator dashboard for pratyushraj@outlook.com
+        navigate('/creator-dashboard');
+      } else if (profile.role === 'admin') {
         navigate('/admin-dashboard');
       } else if (profile.role === 'chartered_accountant') {
         navigate('/ca-dashboard');
@@ -32,7 +39,7 @@ const HomePage = () => {
         navigate('/creator-dashboard');
       }
     }
-  }, [session, profile, navigate]);
+  }, [session, profile, user, navigate]);
 
   if (loading) {
     return (

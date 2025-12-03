@@ -38,8 +38,15 @@ const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
       // Default to Creator Dashboard for ALL users (including clients)
       let targetDashboard = '/creator-dashboard';
       
+      // Special case: pratyushraj@outlook.com always gets creator dashboard
+      const userEmail = user?.email?.toLowerCase();
+      const isPratyush = userEmail === 'pratyushraj@outlook.com';
+      
       // Only redirect to specific dashboards for explicit roles (admin, CA)
-      if (profile.role === 'admin') {
+      // But always use creator dashboard for pratyushraj@outlook.com
+      if (isPratyush) {
+        targetDashboard = '/creator-dashboard';
+      } else if (profile.role === 'admin') {
         targetDashboard = '/admin-dashboard';
       } else if (profile.role === 'chartered_accountant') {
         targetDashboard = '/ca-dashboard';
