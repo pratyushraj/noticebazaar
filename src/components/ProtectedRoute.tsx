@@ -150,6 +150,16 @@ const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
         '/create-deal',
         '/payment',
         '/deal',
+        '/contract-upload',
+        '/contract-analyzer',
+        '/contract-comparison',
+        '/contract-protection',
+        '/rate-calculator',
+        '/ai-pitch-generator',
+        '/creator-profile',
+        '/creator-analytics',
+        '/brand-directory',
+        '/brands',
       ];
       
       // Check if current path is a valid creator route
