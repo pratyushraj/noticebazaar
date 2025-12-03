@@ -126,6 +126,21 @@ const CreatorOnboarding = () => {
     }
   }, [setupStep, stepStartTime]);
 
+  // Handle navigation in useEffect to avoid render-time navigation warnings
+  useEffect(() => {
+    if (sessionLoading) return;
+    
+    if (!profile || profile.role !== 'creator') {
+      navigate('/login');
+      return;
+    }
+
+    if (profile.onboarding_complete) {
+      navigate('/creator-dashboard', { replace: true });
+      return;
+    }
+  }, [sessionLoading, profile, navigate]);
+
   if (sessionLoading) {
     return (
       <OnboardingContainer>
@@ -139,13 +154,13 @@ const CreatorOnboarding = () => {
     );
   }
 
+  // Early return if profile is invalid (navigation will happen in useEffect)
   if (!profile || profile.role !== 'creator') {
-    navigate('/login');
     return null;
   }
 
+  // Early return if onboarding is complete (navigation will happen in useEffect)
   if (profile.onboarding_complete) {
-    navigate('/creator-dashboard', { replace: true });
     return null;
   }
 
