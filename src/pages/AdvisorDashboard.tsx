@@ -71,22 +71,67 @@ export default function AdvisorDashboard() {
 
     const fetchConversations = async () => {
       try {
-        const { data, error } = await supabase
+        // First, get conversations where user is a participant
+        const { data: participantData, error: participantError } = await supabase
+          .from('conversation_participants')
+          .select('conversation_id')
+          .eq('user_id', user.id);
+
+        if (participantError) throw participantError;
+
+        const conversationIds = participantData?.map(p => p.conversation_id) || [];
+        
+        if (conversationIds.length === 0) {
+          setConversations([]);
+          setIsLoading(false);
+          return;
+        }
+
+        // Fetch conversations
+        const { data: conversationsData, error: conversationsError } = await supabase
           .from('conversations')
           .select(`
             *,
-            participants:conversation_participants!inner(
-              user_id,
-              role,
-              profiles:user_id(first_name, last_name, avatar_url)
-            ),
             last_message:messages!last_message_id(content, sent_at)
           `)
-          .eq('conversation_participants.user_id', user.id)
+          .in('id', conversationIds)
           .order('updated_at', { ascending: false });
 
-        if (error) throw error;
-        setConversations(data || []);
+        if (conversationsError) throw conversationsError;
+
+        // Fetch all participants for these conversations
+        const { data: allParticipants, error: participantsError } = await supabase
+          .from('conversation_participants')
+          .select('conversation_id, user_id, role')
+          .in('conversation_id', conversationIds);
+
+        if (participantsError) throw participantsError;
+
+        // Get unique user IDs and fetch profiles
+        const userIds = [...new Set(allParticipants?.map(p => p.user_id) || [])];
+        const { data: profilesData, error: profilesError } = await supabase
+          .from('profiles')
+          .select('id, first_name, last_name, avatar_url')
+          .in('id', userIds);
+
+        if (profilesError) throw profilesError;
+
+        // Create a map of user_id -> profile
+        const profilesMap = new Map(profilesData?.map(p => [p.id, p]) || []);
+
+        // Join conversations with participants and profiles
+        const conversationsWithParticipants = conversationsData?.map(conv => ({
+          ...conv,
+          participants: allParticipants
+            ?.filter(p => p.conversation_id === conv.id)
+            .map(p => ({
+              user_id: p.user_id,
+              role: p.role,
+              profiles: profilesMap.get(p.user_id) || null
+            })) || []
+        })) || [];
+
+        setConversations(conversationsWithParticipants);
       } catch (err: any) {
         toast.error('Failed to load conversations', { description: err.message });
       } finally {
