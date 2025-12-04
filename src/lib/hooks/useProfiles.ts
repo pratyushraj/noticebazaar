@@ -61,12 +61,16 @@ export const useProfiles = (options?: UseProfilesOptions) => {
       (error as any).code === '42703' ||
       (error as any).status === 400 ||
       (error as any).statusCode === 400 ||
+      (error as any).code === 'PGRST116' || // PostgREST column error
       error.message?.includes('column') ||
       error.message?.includes('does not exist') ||
-      String(error.message || '').toLowerCase().includes('bad request')
+      error.message?.includes('Could not find') ||
+      String(error.message || '').toLowerCase().includes('bad request') ||
+      String(error.message || '').toLowerCase().includes('invalid')
     );
     
     if (isColumnError) {
+      // Retry with basic select statement (only essential columns)
       query = supabase
         .from('profiles')
         .select(basicSelectStatement, { count: 'exact' })
@@ -94,9 +98,18 @@ export const useProfiles = (options?: UseProfilesOptions) => {
       count = retryResult.count;
     }
 
+    // If still error, check if it's an RLS policy issue or other non-critical error
     if (error) {
-      console.error('Error fetching profiles:', error);
+      // Log the error but don't crash the UI
+      console.warn('Error fetching profiles:', {
+        role,
+        error: error.message,
+        code: (error as any).code,
+        status: (error as any).status,
+      });
+      
       // Return empty data instead of throwing to prevent UI crashes
+      // This allows the UI to gracefully handle missing data
       return { data: [] as Profile[], count: 0 };
     }
     // Type assertion needed because fallback query may not include all fields
