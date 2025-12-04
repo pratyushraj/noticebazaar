@@ -169,14 +169,32 @@ const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
         location.pathname === route || location.pathname.startsWith(route + '/')
       );
       
+      // Check if current path is a lawyer route
+      const isLawyerRoute = location.pathname.startsWith('/lawyer-dashboard');
+      const isAdvisorRoute = location.pathname.startsWith('/advisor-dashboard');
+      const isAdminRoute = location.pathname.startsWith('/admin-');
+      const isCARoute = location.pathname.startsWith('/ca-dashboard');
+      
       if (allowedRoles && allowedRoles.length > 0) {
         // If profile role is null/undefined, treat as 'creator' for new accounts
         if (!allowedRoles.includes(userRole)) {
-          // Only redirect if not already on a valid creator route
-          // This prevents redirect loops when navigating between creator pages
-          if (!isOnValidCreatorRoute) {
-            navigate(targetDashboard, { replace: true });
-          }
+          // User doesn't have required role - redirect to their dashboard
+          navigate(targetDashboard, { replace: true });
+          return;
+        }
+        
+        // User has required role - but check if they're trying to access wrong dashboard
+        // Lawyers should only access lawyer routes, not creator routes
+        if (userRole === 'lawyer' && isOnValidCreatorRoute) {
+          // Lawyer trying to access creator route - redirect to lawyer dashboard
+          navigate('/lawyer-dashboard', { replace: true });
+          return;
+        }
+        
+        // Creators should only access creator routes, not lawyer routes
+        if (userRole === 'creator' && (isLawyerRoute || isAdvisorRoute || isAdminRoute || isCARoute)) {
+          // Creator trying to access non-creator route - redirect to creator dashboard
+          navigate('/creator-dashboard', { replace: true });
           return;
         }
       }
@@ -184,7 +202,10 @@ const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
       // If user is on a valid creator route and has the right role, allow access
       // Don't redirect if already on a valid route
       if (isOnValidCreatorRoute && (allowedRoles?.includes(userRole) || !allowedRoles || allowedRoles.length === 0)) {
-        return; // Allow the route to render
+        // But only if user is actually a creator (or no role restrictions)
+        if (!allowedRoles || allowedRoles.length === 0 || userRole === 'creator') {
+          return; // Allow the route to render
+        }
       }
     } else if (!session) {
       const isRootPath = location.pathname === '/';
