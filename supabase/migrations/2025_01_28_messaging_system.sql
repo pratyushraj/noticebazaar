@@ -240,11 +240,12 @@ CREATE POLICY "conversations_select_admin"
 CREATE POLICY "participants_select_own"
   ON public.conversation_participants FOR SELECT
   USING (
-    conversation_participants.user_id = auth.uid() 
-    OR conversation_participants.conversation_id IN (
-      SELECT cp2.conversation_id 
+    user_id = auth.uid() 
+    OR EXISTS (
+      SELECT 1 
       FROM public.conversation_participants cp2 
-      WHERE cp2.user_id = auth.uid()
+      WHERE cp2.conversation_id = conversation_participants.conversation_id
+        AND cp2.user_id = auth.uid()
     )
   );
 
