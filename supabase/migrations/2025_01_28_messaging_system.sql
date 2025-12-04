@@ -295,7 +295,7 @@ CREATE POLICY "attachments_insert_participants_only"
     EXISTS (
       SELECT 1 FROM public.messages m
       JOIN public.conversation_participants cp ON cp.conversation_id = m.conversation_id
-      WHERE m.id = message_attachments.message_id
+      WHERE m.id = NEW.message_id
         AND cp.user_id = auth.uid()
     )
   );
