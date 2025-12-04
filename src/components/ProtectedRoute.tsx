@@ -114,7 +114,7 @@ const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
       const userEmail = user?.email?.toLowerCase();
       const isPratyush = userEmail === 'pratyushraj@outlook.com';
       
-      // Only redirect to specific dashboards for explicit roles (admin, CA)
+      // Only redirect to specific dashboards for explicit roles (admin, CA, lawyer)
       // But always use creator dashboard for pratyushraj@outlook.com
       if (isPratyush) {
         targetDashboard = '/creator-dashboard';
@@ -122,6 +122,8 @@ const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
         targetDashboard = '/admin-dashboard';
       } else if (profile.role === 'chartered_accountant') {
         targetDashboard = '/ca-dashboard';
+      } else if (profile.role === 'lawyer') {
+        targetDashboard = '/lawyer-dashboard';
       } else {
         // Default: Creator Dashboard (for 'creator', 'client', null role, or any other role)
         // Allow access to dashboard even if onboarding isn't complete
