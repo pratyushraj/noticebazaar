@@ -178,8 +178,8 @@ export default function LawyerDashboard() {
   const creatorParticipant = selectedConv?.participants.find(p => p.role === 'creator');
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 text-white">
-      <div className="flex h-screen">
+    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 text-white fixed inset-0">
+      <div className="flex h-full">
         {/* Left Sidebar - Filters & Conversation List */}
         <aside className="w-80 border-r border-white/10 bg-white/5 backdrop-blur-xl">
           <div className="p-4 space-y-4">

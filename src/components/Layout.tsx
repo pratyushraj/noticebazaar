@@ -19,10 +19,12 @@ const Layout = ({ children }: LayoutProps) => {
   const { isOpen } = useSidebar();
   
   // Show bottom nav for all users on creator routes (since creator dashboard is default)
-  // Hide bottom nav during onboarding and for admin/CA routes
+  // Hide bottom nav during onboarding and for admin/CA/lawyer routes
   const isOnboarding = location.pathname === '/creator-onboarding';
   const isAdminRoute = location.pathname.startsWith('/admin-');
   const isCARoute = location.pathname.startsWith('/ca-dashboard');
+  const isLawyerRoute = location.pathname.startsWith('/lawyer-dashboard');
+  const isAdvisorRoute = location.pathname.startsWith('/advisor-dashboard');
   const isClientRoute = location.pathname.startsWith('/client-');
   const isCreatorRoute = location.pathname.startsWith('/creator-') || 
                         location.pathname.startsWith('/messages') ||
@@ -30,9 +32,9 @@ const Layout = ({ children }: LayoutProps) => {
                         location.pathname.startsWith('/payment/') ||
                         location.pathname.startsWith('/create-deal');
   
-  // Show bottom nav for creator routes (default for all users), hide for admin/CA/client routes
+  // Show bottom nav for creator routes (default for all users), hide for admin/CA/lawyer/advisor routes
   // Allow bottom nav even if profile role is null/undefined (new accounts default to creator)
-  const shouldShowBottomNav = isCreatorRoute && !isOnboarding && !isAdminRoute && !isCARoute && !isClientRoute && !!profile;
+  const shouldShowBottomNav = isCreatorRoute && !isOnboarding && !isAdminRoute && !isCARoute && !isLawyerRoute && !isAdvisorRoute && !isClientRoute && !!profile;
 
   return (
     <div className="relative min-h-screen bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 text-white">
