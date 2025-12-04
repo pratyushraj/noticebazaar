@@ -326,15 +326,30 @@ CREATE POLICY conversations_select_admin
 -- ============================================================================
 -- RLS POLICIES: Conversation Participants
 -- ============================================================================
+-- Users can see their own participant records
+-- AND all participants in conversations they participate in
+-- (uses SECURITY DEFINER function to avoid RLS recursion)
+CREATE OR REPLACE FUNCTION public.is_conversation_participant(
+  p_conversation_id UUID,
+  p_user_id UUID
+)
+RETURNS BOOLEAN
+LANGUAGE sql
+SECURITY DEFINER
+STABLE
+AS $$
+  SELECT EXISTS (
+    SELECT 1 FROM public.conversation_participants
+    WHERE conversation_id = p_conversation_id
+      AND user_id = p_user_id
+  );
+$$;
+
 CREATE POLICY participants_select_own
   ON public.conversation_participants FOR SELECT
   USING (
     user_id = auth.uid()
-    OR conversation_id IN (
-      SELECT cp2.conversation_id
-      FROM public.conversation_participants cp2
-      WHERE cp2.user_id = auth.uid()
-    )
+    OR public.is_conversation_participant(conversation_id, auth.uid())
   );
 
 CREATE POLICY participants_insert_own
