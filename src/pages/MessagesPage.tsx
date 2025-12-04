@@ -12,7 +12,7 @@ import { useProfiles } from '@/lib/hooks/useProfiles';
 import { useMessages, useSendMessage } from '@/lib/hooks/useMessages';
 import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useSampleChatHistory } from '@/lib/hooks/useSampleChatHistory';
+// Sample history disabled - no demo messages
 import { generateAvatarUrl } from '@/lib/utils/avatar';
 import { useCometChat } from '@/lib/cometchat/useCometChat';
 import { COMETCHAT_CONFIG } from '@/lib/cometchat/config';
@@ -917,13 +917,8 @@ export default function MessagesPage() {
     }
   }, [cometChat.isTyping, selectedAdvisorId]);
 
-  // Generate sample history if no real messages exist AND the user is a client
-  // Only generate sample history for actual clients, not creators or new accounts
-  // Strict check: must be explicitly 'client' role, not 'creator', not null, not undefined
-  const isExplicitlyClient = profile?.role === 'client';
-  const sampleHistory = useSampleChatHistory(
-    isExplicitlyClient ? (profile?.first_name || null) : null
-  );
+  // Sample history disabled - no demo messages for any users
+  const sampleHistory: never[] = [];
   
   // Convert messages to new format (CometChat or Supabase)
   const messages: Message[] = useMemo(() => {
@@ -940,20 +935,8 @@ export default function MessagesPage() {
       }));
     }
 
-    // Use sample history if available (fallback)
-    // ONLY show sample history for clients, NOT for creators or new accounts
-    // New accounts should see empty state, not demo messages
-    // Strict check: must be explicitly 'client' role, not 'creator', not null, not undefined
-    const isExplicitlyClient = profile?.role === 'client';
-    if ((!realMessages || realMessages.length === 0) && isExplicitlyClient && sampleHistory.length > 0) {
-      return sampleHistory.map(msg => ({
-        id: msg.id,
-        advisorId: selectedAdvisorId,
-        author: msg.sender_id === 'client' ? 'user' : 'advisor',
-        text: typeof msg.content === 'string' ? msg.content : String(msg.content),
-        createdAt: msg.sent_at,
-      }));
-    }
+    // Sample history disabled - no demo messages for any users
+    // All users (clients, creators, new accounts) will see empty state if no real messages
 
     // Convert Supabase messages
     if (!realMessages) return [];
