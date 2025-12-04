@@ -194,6 +194,23 @@ ALTER TABLE public.message_audit_logs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.presence ENABLE ROW LEVEL SECURITY;
 
 -- ============================================================================
+-- DROP EXISTING POLICIES (if any)
+-- ============================================================================
+DROP POLICY IF EXISTS "conversations_select_participants_only" ON public.conversations;
+DROP POLICY IF EXISTS "conversations_select_admin" ON public.conversations;
+DROP POLICY IF EXISTS "participants_select_own" ON public.conversation_participants;
+DROP POLICY IF EXISTS "participants_insert_own" ON public.conversation_participants;
+DROP POLICY IF EXISTS "messages_select_participants_only" ON public.messages;
+DROP POLICY IF EXISTS "messages_insert_participants_only" ON public.messages;
+DROP POLICY IF EXISTS "messages_update_own" ON public.messages;
+DROP POLICY IF EXISTS "attachments_select_participants_only" ON public.message_attachments;
+DROP POLICY IF EXISTS "attachments_insert_participants_only" ON public.message_attachments;
+DROP POLICY IF EXISTS "audit_logs_select_admin" ON public.message_audit_logs;
+DROP POLICY IF EXISTS "presence_select_participants_only" ON public.presence;
+DROP POLICY IF EXISTS "presence_upsert_own" ON public.presence;
+DROP POLICY IF EXISTS "presence_update_own" ON public.presence;
+
+-- ============================================================================
 -- RLS POLICIES: Conversations
 -- ============================================================================
 -- Users can only see conversations they participate in
@@ -223,9 +240,9 @@ CREATE POLICY "conversations_select_admin"
 CREATE POLICY "participants_select_own"
   ON public.conversation_participants FOR SELECT
   USING (
-    conversation_participants.user_id = auth.uid() 
-    OR conversation_participants.conversation_id IN (
-      SELECT conversation_id FROM public.conversation_participants WHERE user_id = auth.uid()
+    user_id = auth.uid() 
+    OR conversation_id IN (
+      SELECT cp2.conversation_id FROM public.conversation_participants cp2 WHERE cp2.user_id = auth.uid()
     )
   );
 
