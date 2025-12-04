@@ -237,21 +237,15 @@ CREATE POLICY "conversations_select_admin"
 -- ============================================================================
 -- RLS POLICIES: Conversation Participants
 -- ============================================================================
--- Users can see their own participant records
+-- Users can see participant records for conversations they're part of
 CREATE POLICY "participants_select_own"
   ON public.conversation_participants FOR SELECT
-  USING (user_id = auth.uid());
-
--- Users can see other participants in conversations they're part of
-CREATE POLICY "participants_select_conversation_members"
-  ON public.conversation_participants FOR SELECT
   USING (
-    EXISTS (
-      SELECT 1 
-      FROM public.conversation_participants cp2 
-      WHERE cp2.conversation_id = public.conversation_participants.conversation_id
-        AND cp2.user_id = auth.uid()
-        AND cp2.id != public.conversation_participants.id
+    user_id = auth.uid() 
+    OR conversation_id IN (
+      SELECT conversation_id 
+      FROM public.conversation_participants 
+      WHERE user_id = auth.uid()
     )
   );
 
