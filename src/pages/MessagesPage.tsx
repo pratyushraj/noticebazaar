@@ -918,7 +918,10 @@ export default function MessagesPage() {
   }, [cometChat.isTyping, selectedAdvisorId]);
 
   // Generate sample history if no real messages exist AND the user is a client
-  const sampleHistory = useSampleChatHistory(profile?.first_name || null);
+  // Only generate sample history for actual clients, not creators or new accounts
+  const sampleHistory = useSampleChatHistory(
+    profile?.role === 'client' ? (profile?.first_name || null) : null
+  );
   
   // Convert messages to new format (CometChat or Supabase)
   const messages: Message[] = useMemo(() => {
