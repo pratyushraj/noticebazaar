@@ -240,7 +240,7 @@ CREATE POLICY "conversations_select_admin"
 CREATE POLICY "participants_select_own"
   ON public.conversation_participants FOR SELECT
   USING (
-    conversation_participants.user_id = auth.uid() 
+    user_id = auth.uid() 
     OR EXISTS (
       SELECT 1 FROM public.conversation_participants cp2 
       WHERE cp2.conversation_id = conversation_participants.conversation_id 
@@ -261,10 +261,10 @@ CREATE POLICY "messages_select_participants_only"
   USING (
     EXISTS (
       SELECT 1 FROM public.conversation_participants cp
-      WHERE cp.conversation_id = public.messages.conversation_id
+      WHERE cp.conversation_id = messages.conversation_id
         AND cp.user_id = auth.uid()
     )
-    AND public.messages.is_deleted = FALSE
+    AND messages.is_deleted = FALSE
   );
 
 -- Users can only send messages to conversations they participate in
