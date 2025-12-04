@@ -1,6 +1,8 @@
--- NoticeBazaar Messaging System Migration
--- Creates conversations, messages, participants, audit logs, and attachments tables
--- Includes triggers for updated_at, realtime, and RLS policies
+-- Fix: NoticeBazaar Messaging System Migration (corrected)
+-- Run as a single migration. Idempotent where possible.
+
+-- Ensure pgcrypto for gen_random_uuid()
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
 -- ============================================================================
 -- CONVERSATIONS TABLE
@@ -112,44 +114,58 @@ CREATE INDEX IF NOT EXISTS idx_presence_conversation_id ON public.presence(conve
 CREATE INDEX IF NOT EXISTS idx_presence_user_id ON public.presence(user_id);
 
 -- ============================================================================
+-- DROP TRIGGERS if they already exist (safe)
+-- ============================================================================
+DROP TRIGGER IF EXISTS trigger_update_conversation_on_message ON public.messages;
+DROP FUNCTION IF EXISTS public.update_conversation_on_message();
+
+DROP TRIGGER IF EXISTS trigger_log_message_action ON public.messages;
+DROP FUNCTION IF EXISTS public.log_message_action();
+
+-- ============================================================================
 -- TRIGGERS: Update conversations.updated_at on new message
 -- ============================================================================
 CREATE OR REPLACE FUNCTION public.update_conversation_on_message()
 RETURNS TRIGGER AS $$
 BEGIN
+  -- Update conversation general fields
   UPDATE public.conversations
   SET 
     updated_at = NOW(),
     last_message_id = NEW.id,
     last_message_at = NEW.sent_at
   WHERE id = NEW.conversation_id;
-  
-  -- Update unread counts
+
+  -- Update unread counts for creators
   UPDATE public.conversations c
-  SET 
-    unread_count_creator = (
-      SELECT COUNT(*) FROM public.messages m
-      JOIN public.conversation_participants cp ON cp.conversation_id = m.conversation_id
-      WHERE m.conversation_id = NEW.conversation_id
-        AND m.sender_id != cp.user_id
-        AND m.is_read = FALSE
-        AND cp.role = 'creator'
-    ),
-    unread_count_advisor = (
-      SELECT COUNT(*) FROM public.messages m
-      JOIN public.conversation_participants cp ON cp.conversation_id = m.conversation_id
-      WHERE m.conversation_id = NEW.conversation_id
-        AND m.sender_id != cp.user_id
-        AND m.is_read = FALSE
-        AND cp.role = 'advisor'
-    )
-  WHERE c.id = NEW.conversation_id;
-  
+  SET unread_count_creator = sub.creator_unread
+  FROM (
+    SELECT m.conversation_id,
+      SUM(CASE WHEN cp.role = 'creator' AND m.is_read = FALSE AND m.sender_id <> cp.user_id THEN 1 ELSE 0 END) AS creator_unread
+    FROM public.messages m
+    JOIN public.conversation_participants cp ON cp.conversation_id = m.conversation_id
+    WHERE m.conversation_id = NEW.conversation_id
+    GROUP BY m.conversation_id
+  ) AS sub
+  WHERE c.id = sub.conversation_id;
+
+  -- Update unread counts for advisors
+  UPDATE public.conversations c
+  SET unread_count_advisor = sub.advisor_unread
+  FROM (
+    SELECT m.conversation_id,
+      SUM(CASE WHEN cp.role = 'advisor' AND m.is_read = FALSE AND m.sender_id <> cp.user_id THEN 1 ELSE 0 END) AS advisor_unread
+    FROM public.messages m
+    JOIN public.conversation_participants cp ON cp.conversation_id = m.conversation_id
+    WHERE m.conversation_id = NEW.conversation_id
+    GROUP BY m.conversation_id
+  ) AS sub
+  WHERE c.id = sub.conversation_id;
+
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
-DROP TRIGGER IF EXISTS trigger_update_conversation_on_message ON public.messages;
 CREATE TRIGGER trigger_update_conversation_on_message
   AFTER INSERT ON public.messages
   FOR EACH ROW
@@ -160,44 +176,63 @@ CREATE TRIGGER trigger_update_conversation_on_message
 -- ============================================================================
 CREATE OR REPLACE FUNCTION public.log_message_action()
 RETURNS TRIGGER AS $$
+DECLARE
+  actor_uuid UUID;
 BEGIN
   IF TG_OP = 'INSERT' THEN
     INSERT INTO public.message_audit_logs (message_id, action, performed_by, details)
-    VALUES (NEW.id, 'created', NEW.sender_id, jsonb_build_object('content_length', length(NEW.content)));
+    VALUES (NEW.id, 'created', NEW.sender_id, jsonb_build_object('content_length', COALESCE(length(NEW.content),0)));
   ELSIF TG_OP = 'UPDATE' THEN
-    IF NEW.is_read != OLD.is_read AND NEW.is_read = TRUE THEN
+    -- Determine actor from jwt claims if available; fallback to NULL
+    BEGIN
+      actor_uuid := (current_setting('request.jwt.claims', true)::json->>'sub')::uuid;
+    EXCEPTION WHEN others THEN
+      actor_uuid := NULL;
+    END;
+
+    IF NEW.is_read IS DISTINCT FROM OLD.is_read AND NEW.is_read = TRUE THEN
       INSERT INTO public.message_audit_logs (message_id, action, performed_by)
-      VALUES (NEW.id, 'read', current_setting('request.jwt.claims', true)::json->>'sub');
-    ELSIF NEW.is_deleted != OLD.is_deleted AND NEW.is_deleted = TRUE THEN
+      VALUES (NEW.id, 'read', actor_uuid);
+    ELSIF NEW.is_deleted IS DISTINCT FROM OLD.is_deleted AND NEW.is_deleted = TRUE THEN
       INSERT INTO public.message_audit_logs (message_id, action, performed_by)
-      VALUES (NEW.id, 'deleted', current_setting('request.jwt.claims', true)::json->>'sub');
+      VALUES (NEW.id, 'deleted', actor_uuid);
     END IF;
   END IF;
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
-DROP TRIGGER IF EXISTS trigger_log_message_action ON public.messages;
 CREATE TRIGGER trigger_log_message_action
   AFTER INSERT OR UPDATE ON public.messages
   FOR EACH ROW
   EXECUTE FUNCTION public.log_message_action();
 
 -- ============================================================================
--- ENABLE ROW LEVEL SECURITY
+-- ENABLE ROW LEVEL SECURITY (must exist before policies)
 -- ============================================================================
-ALTER TABLE public.conversations ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.conversation_participants ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.messages ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.message_attachments ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.message_audit_logs ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.presence ENABLE ROW LEVEL SECURITY;
+ALTER TABLE IF EXISTS public.conversations ENABLE ROW LEVEL SECURITY;
+ALTER TABLE IF EXISTS public.conversation_participants ENABLE ROW LEVEL SECURITY;
+ALTER TABLE IF EXISTS public.messages ENABLE ROW LEVEL SECURITY;
+ALTER TABLE IF EXISTS public.message_attachments ENABLE ROW LEVEL SECURITY;
+ALTER TABLE IF EXISTS public.message_audit_logs ENABLE ROW LEVEL SECURITY;
+ALTER TABLE IF EXISTS public.presence ENABLE ROW LEVEL SECURITY;
 
 -- ============================================================================
 -- DROP EXISTING POLICIES (if any)
 -- ============================================================================
-DROP POLICY IF EXISTS "conversations_select_participants_only" ON public.conversations;
-DROP POLICY IF EXISTS "conversations_select_admin" ON public.conversations;
+DO $$
+BEGIN
+  IF EXISTS (SELECT 1 FROM pg_policy WHERE polname = 'conversations_select_participants_only' AND polrelid = 'public.conversations'::regclass) THEN
+    DROP POLICY conversations_select_participants_only ON public.conversations;
+  END IF;
+  IF EXISTS (SELECT 1 FROM pg_policy WHERE polname = 'conversations_select_admin' AND polrelid = 'public.conversations'::regclass) THEN
+    DROP POLICY conversations_select_admin ON public.conversations;
+  END IF;
+EXCEPTION WHEN undefined_table THEN
+  -- ignore
+END $$;
+
+-- Drop other policies safely
 DROP POLICY IF EXISTS "participants_select_own" ON public.conversation_participants;
 DROP POLICY IF EXISTS "participants_insert_own" ON public.conversation_participants;
 DROP POLICY IF EXISTS "messages_select_participants_only" ON public.messages;
@@ -214,23 +249,23 @@ DROP POLICY IF EXISTS "presence_update_own" ON public.presence;
 -- RLS POLICIES: Conversations
 -- ============================================================================
 -- Users can only see conversations they participate in
-CREATE POLICY "conversations_select_participants_only"
+CREATE POLICY conversations_select_participants_only
   ON public.conversations FOR SELECT
   USING (
     EXISTS (
       SELECT 1 FROM public.conversation_participants cp
-      WHERE cp.conversation_id = conversations.id
+      WHERE cp.conversation_id = id
         AND cp.user_id = auth.uid()
     )
   );
 
--- Admins can see all conversations
-CREATE POLICY "conversations_select_admin"
+-- Admins can see all conversations (if profile.role = 'admin')
+CREATE POLICY conversations_select_admin
   ON public.conversations FOR SELECT
   USING (
     EXISTS (
-      SELECT 1 FROM public.profiles
-      WHERE id = auth.uid() AND role = 'admin'
+      SELECT 1 FROM public.profiles p
+      WHERE p.id = auth.uid() AND p.role = 'admin'
     )
   );
 
@@ -238,41 +273,41 @@ CREATE POLICY "conversations_select_admin"
 -- RLS POLICIES: Conversation Participants
 -- ============================================================================
 -- Users can see participant records for conversations they're part of
-CREATE POLICY "participants_select_own"
+CREATE POLICY participants_select_own
   ON public.conversation_participants FOR SELECT
   USING (
-    conversation_participants.user_id = auth.uid() 
-    OR conversation_participants.conversation_id IN (
-      SELECT cp2.conversation_id 
-      FROM public.conversation_participants cp2 
+    user_id = auth.uid()
+    OR conversation_id IN (
+      SELECT cp2.conversation_id
+      FROM public.conversation_participants cp2
       WHERE cp2.user_id = auth.uid()
     )
   );
 
-CREATE POLICY "participants_insert_own"
+CREATE POLICY participants_insert_own
   ON public.conversation_participants FOR INSERT
-  WITH CHECK (NEW.user_id = auth.uid());
+  WITH CHECK (user_id = auth.uid());
 
 -- ============================================================================
 -- RLS POLICIES: Messages
 -- ============================================================================
 -- Users can only read messages from conversations they participate in
-CREATE POLICY "messages_select_participants_only"
+CREATE POLICY messages_select_participants_only
   ON public.messages FOR SELECT
   USING (
     EXISTS (
       SELECT 1 FROM public.conversation_participants cp
-      WHERE cp.conversation_id = messages.conversation_id
+      WHERE cp.conversation_id = conversation_id
         AND cp.user_id = auth.uid()
     )
-    AND messages.is_deleted = FALSE
+    AND is_deleted = FALSE
   );
 
 -- Users can only send messages to conversations they participate in
-CREATE POLICY "messages_insert_participants_only"
+CREATE POLICY messages_insert_participants_only
   ON public.messages FOR INSERT
   WITH CHECK (
-    NEW.sender_id = auth.uid()
+    sender_id = auth.uid()
     AND EXISTS (
       SELECT 1 FROM public.conversation_participants cp
       WHERE cp.conversation_id = NEW.conversation_id
@@ -281,12 +316,12 @@ CREATE POLICY "messages_insert_participants_only"
   );
 
 -- Users can update their own messages (mark as read, delete)
-CREATE POLICY "messages_update_own"
+CREATE POLICY messages_update_own
   ON public.messages FOR UPDATE
   USING (
     EXISTS (
       SELECT 1 FROM public.conversation_participants cp
-      WHERE cp.conversation_id = messages.conversation_id
+      WHERE cp.conversation_id = conversation_id
         AND cp.user_id = auth.uid()
     )
   )
@@ -301,18 +336,18 @@ CREATE POLICY "messages_update_own"
 -- ============================================================================
 -- RLS POLICIES: Message Attachments
 -- ============================================================================
-CREATE POLICY "attachments_select_participants_only"
+CREATE POLICY attachments_select_participants_only
   ON public.message_attachments FOR SELECT
   USING (
     EXISTS (
       SELECT 1 FROM public.messages m
       JOIN public.conversation_participants cp ON cp.conversation_id = m.conversation_id
-      WHERE m.id = message_attachments.message_id
+      WHERE m.id = message_id
         AND cp.user_id = auth.uid()
     )
   );
 
-CREATE POLICY "attachments_insert_participants_only"
+CREATE POLICY attachments_insert_participants_only
   ON public.message_attachments FOR INSERT
   WITH CHECK (
     EXISTS (
@@ -324,19 +359,19 @@ CREATE POLICY "attachments_insert_participants_only"
   );
 
 -- ============================================================================
--- RLS POLICIES: Audit Logs (admin only)
+-- RLS POLICIES: Audit Logs (admin only OR participant of related convo)
 -- ============================================================================
-CREATE POLICY "audit_logs_select_admin"
+CREATE POLICY audit_logs_select_admin
   ON public.message_audit_logs FOR SELECT
   USING (
     EXISTS (
-      SELECT 1 FROM public.profiles
-      WHERE id = auth.uid() AND role = 'admin'
+      SELECT 1 FROM public.profiles p
+      WHERE p.id = auth.uid() AND p.role = 'admin'
     )
     OR EXISTS (
       SELECT 1 FROM public.messages m
       JOIN public.conversation_participants cp ON cp.conversation_id = m.conversation_id
-      WHERE m.id = message_audit_logs.message_id
+      WHERE m.id = message_id
         AND cp.user_id = auth.uid()
     )
   );
@@ -344,48 +379,45 @@ CREATE POLICY "audit_logs_select_admin"
 -- ============================================================================
 -- RLS POLICIES: Presence
 -- ============================================================================
-CREATE POLICY "presence_select_participants_only"
+CREATE POLICY presence_select_participants_only
   ON public.presence FOR SELECT
   USING (
     EXISTS (
       SELECT 1 FROM public.conversation_participants cp
-      WHERE cp.conversation_id = presence.conversation_id
+      WHERE cp.conversation_id = conversation_id
         AND cp.user_id = auth.uid()
     )
   );
 
-CREATE POLICY "presence_upsert_own"
+CREATE POLICY presence_upsert_own
   ON public.presence FOR INSERT
-  WITH CHECK (NEW.user_id = auth.uid());
+  WITH CHECK (user_id = auth.uid());
 
-CREATE POLICY "presence_update_own"
+CREATE POLICY presence_update_own
   ON public.presence FOR UPDATE
-  USING (presence.user_id = auth.uid())
-  WITH CHECK (NEW.user_id = auth.uid());
+  USING (user_id = auth.uid())
+  WITH CHECK (user_id = auth.uid());
 
 -- ============================================================================
--- ENABLE REALTIME (Supabase)
+-- ENABLE REALTIME (Supabase) - safe adds
 -- ============================================================================
--- Note: These may fail if tables are already in publication, which is fine
 DO $$
 BEGIN
-  ALTER PUBLICATION supabase_realtime ADD TABLE public.messages;
-EXCEPTION WHEN duplicate_object THEN
-  -- Table already in publication, ignore
-END $$;
-
-DO $$
-BEGIN
-  ALTER PUBLICATION supabase_realtime ADD TABLE public.conversations;
-EXCEPTION WHEN duplicate_object THEN
-  -- Table already in publication, ignore
-END $$;
-
-DO $$
-BEGIN
-  ALTER PUBLICATION supabase_realtime ADD TABLE public.presence;
-EXCEPTION WHEN duplicate_object THEN
-  -- Table already in publication, ignore
+  BEGIN
+    ALTER PUBLICATION supabase_realtime ADD TABLE public.messages;
+  EXCEPTION WHEN duplicate_object THEN
+    -- ignore
+  END;
+  BEGIN
+    ALTER PUBLICATION supabase_realtime ADD TABLE public.conversations;
+  EXCEPTION WHEN duplicate_object THEN
+    -- ignore
+  END;
+  BEGIN
+    ALTER PUBLICATION supabase_realtime ADD TABLE public.presence;
+  EXCEPTION WHEN duplicate_object THEN
+    -- ignore
+  END;
 END $$;
 
 -- ============================================================================
@@ -398,3 +430,4 @@ COMMENT ON TABLE public.message_attachments IS 'File attachments linked to messa
 COMMENT ON TABLE public.message_audit_logs IS 'Audit trail for all message actions (admin access)';
 COMMENT ON TABLE public.presence IS 'Real-time presence and typing indicators';
 
+-- Done.

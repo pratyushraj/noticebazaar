@@ -12,6 +12,12 @@ import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { Message, Profile } from '@/types';
 import { useMessages, useSendMessage } from '@/lib/hooks/useMessages';
+import { 
+  useConversationMessages, 
+  useSendConversationMessage,
+  findOrCreateConversation,
+  isLawyerOrAdvisor
+} from '@/lib/hooks/useConversationMessages';
 import { useQueryClient } from '@tanstack/react-query';
 import { getInitials, DEFAULT_AVATAR_URL } from '@/lib/utils/avatar';
 // Sample history disabled - no demo messages
@@ -43,11 +49,44 @@ const ChatWindow = ({ receiverId, receiverName, receiverAvatarUrl }: ChatWindowP
   const { user, profile, loading: sessionLoading, trialStatus } = useSession();
   const [newMessage, setNewMessage] = useState('');
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [conversationId, setConversationId] = useState<string | null>(null);
+  const [isLawyerChat, setIsLawyerChat] = useState(false);
+  const [isCheckingConversation, setIsCheckingConversation] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const queryClient = useQueryClient();
 
   const currentUserId = user?.id;
   
+  // Check if receiver is a lawyer/advisor and find/create conversation
+  useEffect(() => {
+    if (!currentUserId || !receiverId) return;
+
+    const checkAndSetupConversation = async () => {
+      try {
+        setIsCheckingConversation(true);
+        const isAdvisor = await isLawyerOrAdvisor(receiverId);
+        setIsLawyerChat(isAdvisor);
+
+        if (isAdvisor) {
+          // Use new conversation system for lawyers/advisors
+          const convId = await findOrCreateConversation(
+            currentUserId,
+            receiverId,
+            `Chat with ${receiverName}`
+          );
+          setConversationId(convId);
+        }
+      } catch (error: any) {
+        console.error('Failed to setup conversation:', error);
+        toast.error('Failed to setup chat', { description: error.message });
+      } finally {
+        setIsCheckingConversation(false);
+      }
+    };
+
+    checkAndSetupConversation();
+  }, [currentUserId, receiverId, receiverName]);
+
   // Check if this is CA or Lawyer chat (creator role checking CA/admin roles)
   const isCAOrLawyerChat = React.useMemo(() => {
     // This will be determined by checking the receiver role
@@ -55,12 +94,22 @@ const ChatWindow = ({ receiverId, receiverName, receiverAvatarUrl }: ChatWindowP
     return profile?.role === 'creator';
   }, [profile]);
 
-  // Fetch messages using the new hook
-  const { data: realMessages, isLoading: isLoadingMessages, error: messagesError } = useMessages({
+  // Fetch messages - use conversation system for lawyers, legacy for others
+  const { data: legacyMessages, isLoading: isLoadingLegacyMessages, error: legacyMessagesError } = useMessages({
     currentUserId: currentUserId,
     receiverId: receiverId,
-    enabled: !!currentUserId && !!receiverId,
+    enabled: !!currentUserId && !!receiverId && !isLawyerChat,
   });
+
+  const { data: conversationMessages, isLoading: isLoadingConversationMessages, error: conversationMessagesError } = useConversationMessages({
+    conversationId: conversationId,
+    enabled: !!conversationId && isLawyerChat,
+  });
+
+  // Determine which messages to use
+  const realMessages = isLawyerChat ? conversationMessages : legacyMessages;
+  const isLoadingMessages = isLawyerChat ? isLoadingConversationMessages : isLoadingLegacyMessages;
+  const messagesError = isLawyerChat ? conversationMessagesError : legacyMessagesError;
 
   // Sample history disabled - no demo messages for any users
   // Always use real messages, never sample history
@@ -80,8 +129,9 @@ const ChatWindow = ({ receiverId, receiverName, receiverAvatarUrl }: ChatWindowP
     return isTrialFeatureRestricted(profile, userMessagesCount, 1);
   }, [isCAOrLawyerChat, trialStatus.isTrial, profile, userMessagesCount]);
 
-  // Mutation for sending messages
-  const sendMessageMutation = useSendMessage();
+  // Mutations for sending messages
+  const sendLegacyMessageMutation = useSendMessage();
+  const sendConversationMessageMutation = useSendConversationMessage();
 
   useEffect(() => {
     if (messagesError) {
@@ -97,8 +147,33 @@ const ChatWindow = ({ receiverId, receiverName, receiverAvatarUrl }: ChatWindowP
     scrollToBottom();
   }, [messagesToDisplay]); // Depend on messagesToDisplay instead of messages
 
+  // Real-time subscriptions
   useEffect(() => {
-    if (currentUserId && receiverId) {
+    if (!currentUserId || !receiverId) return;
+
+    if (isLawyerChat && conversationId) {
+      // Subscribe to conversation messages
+      const channel = supabase
+        .channel(`conversation:${conversationId}`)
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'messages',
+            filter: `conversation_id=eq.${conversationId}`
+          },
+          () => {
+            queryClient.invalidateQueries({ queryKey: ['conversation-messages', conversationId] });
+          }
+        )
+        .subscribe();
+
+      return () => {
+        supabase.removeChannel(channel);
+      };
+    } else if (!isLawyerChat) {
+      // Subscribe to legacy messages
       const sortedIds = [currentUserId, receiverId].sort();
       const channelName = `chat_${sortedIds[0]}_${sortedIds[1]}`;
 
@@ -109,10 +184,10 @@ const ChatWindow = ({ receiverId, receiverName, receiverAvatarUrl }: ChatWindowP
           {
             event: '*',
             schema: 'public',
-            table: 'messages',
+            table: 'legacy_messages',
             filter: `or(and(sender_id.eq.${currentUserId},receiver_id.eq.${receiverId}),and(sender_id.eq.${receiverId},receiver_id.eq.${currentUserId}))`
           },
-          (payload) => {
+          () => {
             queryClient.invalidateQueries({ queryKey: ['messages', currentUserId, receiverId] });
           }
         )
@@ -122,7 +197,7 @@ const ChatWindow = ({ receiverId, receiverName, receiverAvatarUrl }: ChatWindowP
         supabase.removeChannel(channel);
       };
     }
-  }, [currentUserId, receiverId, queryClient]);
+  }, [currentUserId, receiverId, conversationId, isLawyerChat, queryClient]);
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -134,27 +209,45 @@ const ChatWindow = ({ receiverId, receiverName, receiverAvatarUrl }: ChatWindowP
       return;
     }
 
+    // Wait for conversation to be set up if it's a lawyer chat
+    if (isLawyerChat && !conversationId) {
+      toast.error('Setting up conversation...', { description: 'Please wait a moment' });
+      return;
+    }
+
     try {
-      await sendMessageMutation.mutateAsync({
-        sender_id: currentUserId,
-        receiver_id: receiverId,
-        content: newMessage.trim(),
-        senderFirstName: profile.first_name || '',
-        senderLastName: profile.last_name || '',
-        receiverFirstName: receiverName.split(' ')[0],
-        receiverLastName: receiverName.split(' ')[1] || '',
-      });
+      if (isLawyerChat && conversationId) {
+        // Use new conversation system
+        await sendConversationMessageMutation.mutateAsync({
+          conversation_id: conversationId,
+          sender_id: currentUserId,
+          content: newMessage.trim(),
+        });
+      } else {
+        // Use legacy system
+        await sendLegacyMessageMutation.mutateAsync({
+          sender_id: currentUserId,
+          receiver_id: receiverId,
+          content: newMessage.trim(),
+          senderFirstName: profile.first_name || '',
+          senderLastName: profile.last_name || '',
+          receiverFirstName: receiverName.split(' ')[0],
+          receiverLastName: receiverName.split(' ')[1] || '',
+        });
+      }
       setNewMessage('');
     } catch (error: any) {
       toast.error('Failed to send message', { description: error.message });
     }
   };
 
-  if (sessionLoading || isLoadingMessages) {
+  if (sessionLoading || isLoadingMessages || isCheckingConversation) {
     return (
       <div className="flex flex-col items-center justify-center h-full min-h-[300px]">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        <p className="mt-3 text-muted-foreground">Loading messages...</p>
+        <p className="mt-3 text-muted-foreground">
+          {isCheckingConversation ? 'Setting up conversation...' : 'Loading messages...'}
+        </p>
       </div>
     );
   }
@@ -196,9 +289,18 @@ const ChatWindow = ({ receiverId, receiverName, receiverAvatarUrl }: ChatWindowP
               >
                 {!isCurrentUserMessage && (
                   <Avatar className="h-8 w-8">
-                    <AvatarImage src={msg.sender?.avatar_url || receiverAvatarUrl || DEFAULT_AVATAR_URL} alt={msg.sender?.first_name || receiverName} />
+                    <AvatarImage 
+                      src={
+                        (msg as any).sender?.avatar_url || 
+                        receiverAvatarUrl || 
+                        DEFAULT_AVATAR_URL
+                      } 
+                      alt={(msg as any).sender?.first_name || receiverName} 
+                    />
                     <AvatarFallback className="bg-secondary text-secondary-foreground">
-                      {msg.sender ? getInitials(msg.sender.first_name, msg.sender.last_name) : getInitials(receiverName.split(' ')[0], receiverName.split(' ')[1] || '')}
+                      {(msg as any).sender 
+                        ? getInitials((msg as any).sender.first_name, (msg as any).sender.last_name) 
+                        : getInitials(receiverName.split(' ')[0], receiverName.split(' ')[1] || '')}
                     </AvatarFallback>
                   </Avatar>
                 )}
@@ -245,14 +347,29 @@ const ChatWindow = ({ receiverId, receiverName, receiverAvatarUrl }: ChatWindowP
           onChange={(e) => setNewMessage(e.target.value)}
           placeholder={isMessageRestricted ? "Upgrade to send more messages..." : "Type your message..."}
           className="flex-1 bg-input text-foreground border-border"
-          disabled={sendMessageMutation.isPending || isMessageRestricted || trialStatus.trialLocked}
+          disabled={
+            (isLawyerChat ? sendConversationMessageMutation.isPending : sendLegacyMessageMutation.isPending) ||
+            isMessageRestricted ||
+            trialStatus.trialLocked ||
+            isCheckingConversation
+          }
         />
         <Button 
           type="submit" 
-          disabled={!newMessage.trim() || sendMessageMutation.isPending || isMessageRestricted || trialStatus.trialLocked} 
+          disabled={
+            !newMessage.trim() ||
+            (isLawyerChat ? sendConversationMessageMutation.isPending : sendLegacyMessageMutation.isPending) ||
+            isMessageRestricted ||
+            trialStatus.trialLocked ||
+            isCheckingConversation
+          } 
           className="bg-primary text-primary-foreground hover:bg-primary/90"
         >
-          {sendMessageMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+          {(isLawyerChat ? sendConversationMessageMutation.isPending : sendLegacyMessageMutation.isPending) ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <Send className="h-4 w-4" />
+          )}
         </Button>
       </form>
 
