@@ -141,84 +141,40 @@ export async function findOrCreateConversation(
   // No existing conversation found, create a new one
   console.log('[findOrCreateConversation] Creating new conversation:', { creatorId, advisorId, title });
   
-  // Verify user is authenticated and refresh token if needed
+  // Verify user is authenticated
   const { data: { user }, error: authError } = await supabase.auth.getUser();
   if (authError || !user) {
     console.error('[findOrCreateConversation] User not authenticated:', authError);
-    // Try to refresh the session
-    const { data: { session }, error: refreshError } = await supabase.auth.refreshSession();
-    if (refreshError || !session) {
-      throw new Error(`User not authenticated: ${authError?.message || 'No user found'}. Refresh failed: ${refreshError?.message}`);
-    }
-    console.log('[findOrCreateConversation] Session refreshed, retrying...');
-  } else {
-    console.log('[findOrCreateConversation] User authenticated:', user.id);
-    // Verify the user ID matches the creatorId
-    if (user.id !== creatorId) {
-      console.warn('[findOrCreateConversation] User ID mismatch:', { 
-        authUserId: user.id, 
-        creatorId 
-      });
-    }
+    throw new Error(`User not authenticated: ${authError?.message || 'No user found'}`);
   }
+  console.log('[findOrCreateConversation] User authenticated:', user.id);
   
-  // Get fresh user after potential refresh
-  const { data: { user: currentUser } } = await supabase.auth.getUser();
-  if (!currentUser) {
-    throw new Error('Unable to get authenticated user');
-  }
-  
-  const { data: conversation, error: convError } = await supabase
-    .from('conversations')
-    .insert({
-      title: title || 'Legal Consultation',
-      type: 'direct',
-      risk_tag: 'legal',
-    } as any)
-    .select()
-    .single();
+  // Use SECURITY DEFINER function to bypass RLS
+  const { data: conversationId, error: convError } = await supabase.rpc('create_conversation', {
+    p_title: title || 'Legal Consultation',
+    p_type: 'direct',
+    p_risk_tag: 'legal',
+    p_creator_id: creatorId,
+    p_advisor_id: advisorId,
+  } as any);
 
   if (convError) {
-    console.error('[findOrCreateConversation] Failed to create conversation:', {
+    console.error('[findOrCreateConversation] Failed to create conversation via RPC:', {
       error: convError,
       message: convError.message,
       code: convError.code,
       details: convError.details,
       hint: convError.hint,
-      user_id: user.id
     });
     throw new Error(`Failed to create conversation: ${convError.message} (Code: ${convError.code})`);
   }
 
-  console.log('[findOrCreateConversation] Conversation created:', (conversation as any)?.id);
-
-  // Add both participants
-  const participants = [
-    {
-      conversation_id: (conversation as any).id,
-      user_id: creatorId as any,
-      role: 'creator',
-    },
-    {
-      conversation_id: (conversation as any).id,
-      user_id: advisorId as any,
-      role: 'advisor',
-    },
-  ];
-  
-  console.log('[findOrCreateConversation] Adding participants:', participants);
-  
-  const { error: participantsError } = await supabase
-    .from('conversation_participants')
-    .insert(participants as any);
-
-  if (participantsError) {
-    console.error('[findOrCreateConversation] Failed to add participants:', participantsError);
-    throw new Error(`Failed to add participants: ${participantsError.message}`);
+  if (!conversationId) {
+    throw new Error('Conversation was created but no ID was returned');
   }
 
-  console.log('[findOrCreateConversation] Success! Conversation ID:', (conversation as any).id);
-  return (conversation as any).id;
+  console.log('[findOrCreateConversation] Success! Conversation ID:', conversationId);
+  return conversationId as string;
 }
 
 /**
