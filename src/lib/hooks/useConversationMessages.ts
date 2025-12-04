@@ -141,13 +141,32 @@ export async function findOrCreateConversation(
   // No existing conversation found, create a new one
   console.log('[findOrCreateConversation] Creating new conversation:', { creatorId, advisorId, title });
   
-  // Verify user is authenticated before attempting insert
+  // Verify user is authenticated and refresh token if needed
   const { data: { user }, error: authError } = await supabase.auth.getUser();
   if (authError || !user) {
     console.error('[findOrCreateConversation] User not authenticated:', authError);
-    throw new Error(`User not authenticated: ${authError?.message || 'No user found'}`);
+    // Try to refresh the session
+    const { data: { session }, error: refreshError } = await supabase.auth.refreshSession();
+    if (refreshError || !session) {
+      throw new Error(`User not authenticated: ${authError?.message || 'No user found'}. Refresh failed: ${refreshError?.message}`);
+    }
+    console.log('[findOrCreateConversation] Session refreshed, retrying...');
+  } else {
+    console.log('[findOrCreateConversation] User authenticated:', user.id);
+    // Verify the user ID matches the creatorId
+    if (user.id !== creatorId) {
+      console.warn('[findOrCreateConversation] User ID mismatch:', { 
+        authUserId: user.id, 
+        creatorId 
+      });
+    }
   }
-  console.log('[findOrCreateConversation] User authenticated:', user.id);
+  
+  // Get fresh user after potential refresh
+  const { data: { user: currentUser } } = await supabase.auth.getUser();
+  if (!currentUser) {
+    throw new Error('Unable to get authenticated user');
+  }
   
   const { data: conversation, error: convError } = await supabase
     .from('conversations')
