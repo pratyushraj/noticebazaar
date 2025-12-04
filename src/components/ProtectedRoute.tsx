@@ -185,10 +185,21 @@ const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
         
         // User has required role - but check if they're trying to access wrong dashboard
         // Lawyers should only access lawyer routes, not creator routes
-        if (userRole === 'lawyer' && isOnValidCreatorRoute) {
-          // Lawyer trying to access creator route - redirect to lawyer dashboard
-          navigate('/lawyer-dashboard', { replace: true });
-          return;
+        const isOnValidLawyerRoute = validLawyerRoutes.some(route => 
+          location.pathname === route || location.pathname.startsWith(route + '/')
+        );
+        
+        if (userRole === 'lawyer') {
+          // Lawyers should only access lawyer routes
+          if (isOnValidCreatorRoute && !isOnValidLawyerRoute) {
+            // Lawyer trying to access creator route - redirect to lawyer dashboard
+            navigate('/lawyer-dashboard', { replace: true });
+            return;
+          }
+          // If lawyer is on a valid lawyer route, allow access
+          if (isOnValidLawyerRoute) {
+            return; // Allow the route to render
+          }
         }
         
         // Creators should only access creator routes, not lawyer routes
