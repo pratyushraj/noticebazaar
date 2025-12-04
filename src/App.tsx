@@ -261,8 +261,8 @@ const App = () => {
               <Route path="/rate-calculator" element={<ProtectedLayout allowedRoles={['creator']}><RateCalculator /></ProtectedLayout>} />
               <Route path="/ai-pitch-generator" element={<ProtectedLayout allowedRoles={['creator']}><AIPitchGenerator /></ProtectedLayout>} />
 
-              {/* Shared routes (accessible by client, admin, and CA) */}
-              <Route path="/messages" element={<ProtectedLayout allowedRoles={['client', 'admin', 'chartered_accountant', 'creator', 'lawyer']}><MessagesPage /></ProtectedLayout>} /> {/* Added creator and lawyer roles */}
+              {/* Shared routes (accessible by client, admin, CA, and creator - NOT lawyer) */}
+              <Route path="/messages" element={<ProtectedLayout allowedRoles={['client', 'admin', 'chartered_accountant', 'creator']}><MessagesPage /></ProtectedLayout>} />
               
               {/* Advisor Dashboard (for admin and CA roles) */}
               <Route path="/advisor-dashboard" element={<ProtectedLayout allowedRoles={['admin', 'chartered_accountant']}><AdvisorDashboard /></ProtectedLayout>} />
