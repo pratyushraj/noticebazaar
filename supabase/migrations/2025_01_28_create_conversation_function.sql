@@ -2,11 +2,11 @@
 -- This bypasses RLS and allows authenticated users to create conversations
 
 CREATE OR REPLACE FUNCTION public.create_conversation(
-  p_title TEXT,
-  p_type TEXT DEFAULT 'direct',
-  p_risk_tag TEXT DEFAULT NULL,
   p_creator_id UUID,
-  p_advisor_id UUID
+  p_advisor_id UUID,
+  p_title TEXT DEFAULT 'Legal Consultation',
+  p_type TEXT DEFAULT 'direct',
+  p_risk_tag TEXT DEFAULT NULL
 )
 RETURNS UUID
 LANGUAGE plpgsql

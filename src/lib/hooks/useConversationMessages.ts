@@ -151,11 +151,11 @@ export async function findOrCreateConversation(
   
   // Use SECURITY DEFINER function to bypass RLS
   const { data: conversationId, error: convError } = await supabase.rpc('create_conversation', {
+    p_creator_id: creatorId,
+    p_advisor_id: advisorId,
     p_title: title || 'Legal Consultation',
     p_type: 'direct',
     p_risk_tag: 'legal',
-    p_creator_id: creatorId,
-    p_advisor_id: advisorId,
   } as any);
 
   if (convError) {
