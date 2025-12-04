@@ -228,7 +228,7 @@ CREATE POLICY "participants_select_own"
 
 CREATE POLICY "participants_insert_own"
   ON public.conversation_participants FOR INSERT
-  WITH CHECK (user_id = auth.uid());
+  WITH CHECK (NEW.user_id = auth.uid());
 
 -- ============================================================================
 -- RLS POLICIES: Messages
@@ -333,12 +333,12 @@ CREATE POLICY "presence_select_participants_only"
 
 CREATE POLICY "presence_upsert_own"
   ON public.presence FOR INSERT
-  WITH CHECK (user_id = auth.uid());
+  WITH CHECK (NEW.user_id = auth.uid());
 
 CREATE POLICY "presence_update_own"
   ON public.presence FOR UPDATE
   USING (user_id = auth.uid())
-  WITH CHECK (user_id = auth.uid());
+  WITH CHECK (NEW.user_id = auth.uid());
 
 -- ============================================================================
 -- ENABLE REALTIME (Supabase)
