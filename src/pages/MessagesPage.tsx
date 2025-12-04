@@ -936,7 +936,9 @@ export default function MessagesPage() {
     }
 
     // Use sample history if available (fallback)
-    if ((!realMessages || realMessages.length === 0) && isClient && sampleHistory.length > 0) {
+    // ONLY show sample history for clients, NOT for creators or new accounts
+    // New accounts should see empty state, not demo messages
+    if ((!realMessages || realMessages.length === 0) && isClient && profile?.role === 'client' && sampleHistory.length > 0) {
       return sampleHistory.map(msg => ({
         id: msg.id,
         advisorId: selectedAdvisorId,
