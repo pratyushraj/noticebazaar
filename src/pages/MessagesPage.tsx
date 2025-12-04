@@ -10,6 +10,12 @@ import { useSession } from '@/contexts/SessionContext';
 import { toast } from 'sonner';
 import { useProfiles } from '@/lib/hooks/useProfiles';
 import { useMessages, useSendMessage } from '@/lib/hooks/useMessages';
+import { 
+  findOrCreateConversation,
+  isLawyerOrAdvisor,
+  getAuthUserIdFromProfileId,
+  useSendConversationMessage
+} from '@/lib/hooks/useConversationMessages';
 import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 // Sample history disabled - no demo messages
@@ -1021,10 +1027,47 @@ export default function MessagesPage() {
   }, [currentUserId, selectedAdvisorId, queryClient]);
 
   const sendMessageMutation = useSendMessage();
+  const sendConversationMessageMutation = useSendConversationMessage();
+  const [conversationIds, setConversationIds] = useState<Map<string, string>>(new Map());
 
   const handleSelectAdvisor = (advisor: Advisor) => {
     setSelectedAdvisorId(advisor.id);
   };
+
+  // Check if advisor is lawyer/CA and setup conversation
+  useEffect(() => {
+    if (!selectedAdvisorId || !currentUserId) return;
+
+    const setupConversation = async () => {
+      try {
+        const isAdvisor = await isLawyerOrAdvisor(selectedAdvisorId);
+        console.log('[MessagesPage] Advisor check:', { selectedAdvisorId, isAdvisor });
+
+        if (isAdvisor) {
+          const advisorAuthId = await getAuthUserIdFromProfileId(selectedAdvisorId);
+          console.log('[MessagesPage] Advisor auth ID:', advisorAuthId);
+
+          if (advisorAuthId) {
+            const selectedAdvisor = advisors.find(a => a.id === selectedAdvisorId);
+            const advisorName = selectedAdvisor?.name || 'Advisor';
+            
+            const convId = await findOrCreateConversation(
+              currentUserId,
+              advisorAuthId,
+              `Chat with ${advisorName}`
+            );
+            
+            console.log('[MessagesPage] Conversation ID:', convId);
+            setConversationIds(prev => new Map(prev).set(selectedAdvisorId, convId));
+          }
+        }
+      } catch (error: any) {
+        console.error('[MessagesPage] Failed to setup conversation:', error);
+      }
+    };
+
+    setupConversation();
+  }, [selectedAdvisorId, currentUserId, advisors]);
 
   const handleSend = async (text: string) => {
     if (!selectedAdvisorId || !currentUserId || !profile) return;
@@ -1036,17 +1079,34 @@ export default function MessagesPage() {
         return;
       }
 
-      // Fallback to Supabase
-      await sendMessageMutation.mutateAsync({
-        sender_id: currentUserId,
-        receiver_id: selectedAdvisorId,
-        content: text,
-        senderFirstName: profile.first_name || '',
-        senderLastName: profile.last_name || '',
-        receiverFirstName: advisors.find(a => a.id === selectedAdvisorId)?.name.split(' ')[0] || '',
-        receiverLastName: advisors.find(a => a.id === selectedAdvisorId)?.name.split(' ')[1] || undefined,
-      });
+      // Check if this is a lawyer/advisor chat (use new conversation system)
+      const conversationId = conversationIds.get(selectedAdvisorId);
+      const selectedAdvisor = advisors.find(a => a.id === selectedAdvisorId);
+      const isAdvisorChat = selectedAdvisor?.role === 'Legal Advisor' || selectedAdvisor?.role === 'Chartered Accountant';
+
+      if (isAdvisorChat && conversationId) {
+        // Use new conversation system
+        console.log('[MessagesPage] Sending via conversation system:', conversationId);
+        await sendConversationMessageMutation.mutateAsync({
+          conversation_id: conversationId,
+          sender_id: currentUserId,
+          content: text,
+        });
+      } else {
+        // Use legacy system
+        console.log('[MessagesPage] Sending via legacy system');
+        await sendMessageMutation.mutateAsync({
+          sender_id: currentUserId,
+          receiver_id: selectedAdvisorId,
+          content: text,
+          senderFirstName: profile.first_name || '',
+          senderLastName: profile.last_name || '',
+          receiverFirstName: selectedAdvisor?.name.split(' ')[0] || '',
+          receiverLastName: selectedAdvisor?.name.split(' ')[1] || undefined,
+        });
+      }
     } catch (error: any) {
+      console.error('[MessagesPage] Failed to send message:', error);
       toast.error('Failed to send message', { description: error.message });
     }
   };
