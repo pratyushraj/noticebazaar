@@ -139,6 +139,8 @@ export async function findOrCreateConversation(
   }
 
   // No existing conversation found, create a new one
+  console.log('[findOrCreateConversation] Creating new conversation:', { creatorId, advisorId, title });
+  
   const { data: conversation, error: convError } = await supabase
     .from('conversations')
     .insert({
@@ -150,29 +152,38 @@ export async function findOrCreateConversation(
     .single();
 
   if (convError) {
+    console.error('[findOrCreateConversation] Failed to create conversation:', convError);
     throw new Error(`Failed to create conversation: ${convError.message}`);
   }
 
+  console.log('[findOrCreateConversation] Conversation created:', (conversation as any)?.id);
+
   // Add both participants
+  const participants = [
+    {
+      conversation_id: (conversation as any).id,
+      user_id: creatorId as any,
+      role: 'creator',
+    },
+    {
+      conversation_id: (conversation as any).id,
+      user_id: advisorId as any,
+      role: 'advisor',
+    },
+  ];
+  
+  console.log('[findOrCreateConversation] Adding participants:', participants);
+  
   const { error: participantsError } = await supabase
     .from('conversation_participants')
-    .insert([
-      {
-        conversation_id: (conversation as any).id,
-        user_id: creatorId as any,
-        role: 'creator',
-      },
-      {
-        conversation_id: (conversation as any).id,
-        user_id: advisorId as any,
-        role: 'advisor',
-      },
-    ] as any);
+    .insert(participants as any);
 
   if (participantsError) {
+    console.error('[findOrCreateConversation] Failed to add participants:', participantsError);
     throw new Error(`Failed to add participants: ${participantsError.message}`);
   }
 
+  console.log('[findOrCreateConversation] Success! Conversation ID:', (conversation as any).id);
   return (conversation as any).id;
 }
 

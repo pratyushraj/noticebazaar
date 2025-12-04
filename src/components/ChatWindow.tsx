@@ -69,11 +69,15 @@ const ChatWindow = ({ receiverId, receiverName, receiverAvatarUrl }: ChatWindowP
         setIsLawyerChat(isAdvisor);
 
         if (isAdvisor) {
+          console.log('[ChatWindow] Setting up conversation for advisor:', { receiverId, receiverName, currentUserId });
+          
           // Get auth.users ID from profile ID (they should be the same, but verify)
           const advisorAuthId = await getAuthUserIdFromProfileId(receiverId);
           
+          console.log('[ChatWindow] Advisor auth ID:', advisorAuthId);
+          
           if (!advisorAuthId) {
-            console.error('Could not find auth user ID for advisor:', receiverId);
+            console.error('[ChatWindow] Could not find auth user ID for advisor:', receiverId);
             toast.error('Failed to setup chat', { description: 'Could not find advisor user ID' });
             setIsCheckingConversation(false);
             return;
@@ -81,11 +85,13 @@ const ChatWindow = ({ receiverId, receiverName, receiverAvatarUrl }: ChatWindowP
 
           // Use new conversation system for lawyers/advisors
           // Note: currentUserId should already be auth.users.id from useSession
+          console.log('[ChatWindow] Creating/finding conversation...');
           const convId = await findOrCreateConversation(
             currentUserId,
             advisorAuthId,
             `Chat with ${receiverName}`
           );
+          console.log('[ChatWindow] Conversation ID:', convId);
           setConversationId(convId);
         }
       } catch (error: any) {
