@@ -361,7 +361,7 @@ CREATE POLICY messages_insert_participants_only
     sender_id = auth.uid()
     AND EXISTS (
       SELECT 1 FROM public.conversation_participants cp
-      WHERE cp.conversation_id = NEW.conversation_id
+      WHERE cp.conversation_id = conversation_id
         AND cp.user_id = auth.uid()
     )
   );
@@ -378,7 +378,7 @@ CREATE POLICY messages_update_own
   WITH CHECK (
     EXISTS (
       SELECT 1 FROM public.conversation_participants cp
-      WHERE cp.conversation_id = NEW.conversation_id
+      WHERE cp.conversation_id = conversation_id
         AND cp.user_id = auth.uid()
     )
   );
@@ -403,7 +403,7 @@ CREATE POLICY attachments_insert_participants_only
     EXISTS (
       SELECT 1 FROM public.messages m
       JOIN public.conversation_participants cp ON cp.conversation_id = m.conversation_id
-      WHERE m.id = NEW.message_id
+      WHERE m.id = message_id
         AND cp.user_id = auth.uid()
     )
   );
