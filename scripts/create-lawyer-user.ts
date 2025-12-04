@@ -39,24 +39,26 @@ async function createOrUpdateLawyerUser() {
 
   try {
     // Step 1: Check if user exists
-    const { data: existingUser, error: getUserError } = await supabase.auth.admin.getUserByEmail(email);
+    console.log('📧 Checking if user exists...');
+    const { data: existingUsers } = await supabase.auth.admin.listUsers();
+    const existingUser = existingUsers?.users?.find(u => u.email === email);
 
     let userId: string;
 
-    if (existingUser?.user) {
+    if (existingUser) {
       console.log('✅ User already exists, updating...');
-      userId = existingUser.user.id;
+      userId = existingUser.id;
     } else {
       console.log('📝 Creating new user...');
-      // Create new user
-      const { data: newUser, error: createError } = await supabase.auth.admin.createUser({
+      // Create new user using admin API (same pattern as create-user-account.ts)
+      const { data: newUser, error: userError } = await supabase.auth.admin.createUser({
         email,
         password,
         email_confirm: true,
       });
 
-      if (createError || !newUser.user) {
-        throw new Error(`Failed to create user: ${createError?.message || 'Unknown error'}`);
+      if (userError || !newUser.user) {
+        throw new Error(`Failed to create user: ${userError?.message || 'Unknown error'}`);
       }
 
       userId = newUser.user.id;
@@ -75,13 +77,13 @@ async function createOrUpdateLawyerUser() {
     };
 
     // Check if profile exists
-    const { data: existingProfile } = await supabase
+    const { data: currentProfile } = await supabase
       .from('profiles')
       .select('id')
       .eq('id', userId)
       .single();
 
-    if (existingProfile) {
+    if (currentProfile) {
       // Update existing profile
       const { error: updateError } = await supabase
         .from('profiles')
