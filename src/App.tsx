@@ -78,6 +78,7 @@ import SearchResults from "./pages/SearchResults";
 import CalendarPage from "./pages/CalendarPage";
 import ContractProtectionDetails from "./pages/ContractProtectionDetails";
 import PaymentDetailPage from "./pages/PaymentDetailPage";
+import AdvisorDashboard from "./pages/AdvisorDashboard";
 import { ErrorBoundary } from "./components/ui/error-boundary";
 import NetworkStatusWrapper from "./components/NetworkStatusWrapper";
 
@@ -261,6 +262,9 @@ const App = () => {
 
               {/* Shared routes (accessible by client, admin, and CA) */}
               <Route path="/messages" element={<ProtectedLayout allowedRoles={['client', 'admin', 'chartered_accountant', 'creator']}><MessagesPage /></ProtectedLayout>} /> {/* Added creator role */}
+              
+              {/* Advisor Dashboard (for admin and CA roles) */}
+              <Route path="/advisor-dashboard" element={<ProtectedLayout allowedRoles={['admin', 'chartered_accountant']}><AdvisorDashboard /></ProtectedLayout>} />
 
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="/maintenance" element={<MaintenancePage />} />
