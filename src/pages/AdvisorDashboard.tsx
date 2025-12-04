@@ -9,7 +9,8 @@ import {
   MessageSquare, Search, Filter, FileText, CheckCircle, 
   AlertTriangle, Clock, Send, X, Eye, Download
 } from 'lucide-react';
-import { cn, spacing, typography, iconSizes, radius, glass, shadows, animations } from '@/lib/design-system';
+import { spacing, typography, iconSizes, radius, glass, shadows, animations } from '@/lib/design-system';
+import { cn } from '@/lib/utils';
 import { triggerHaptic, HapticPatterns } from '@/lib/utils/haptics';
 import { toast } from 'sonner';
 
