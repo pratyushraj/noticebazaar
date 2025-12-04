@@ -219,7 +219,7 @@ CREATE POLICY "conversations_select_participants_only"
   USING (
     EXISTS (
       SELECT 1 FROM public.conversation_participants cp
-      WHERE cp.conversation_id = conversations.id
+      WHERE cp.conversation_id = public.conversations.id
         AND cp.user_id = auth.uid()
     )
   );
@@ -259,10 +259,10 @@ CREATE POLICY "messages_select_participants_only"
   USING (
     EXISTS (
       SELECT 1 FROM public.conversation_participants cp
-      WHERE cp.conversation_id = messages.conversation_id
+      WHERE cp.conversation_id = public.messages.conversation_id
         AND cp.user_id = auth.uid()
     )
-    AND is_deleted = FALSE
+    AND public.messages.is_deleted = FALSE
   );
 
 -- Users can only send messages to conversations they participate in
@@ -283,7 +283,7 @@ CREATE POLICY "messages_update_own"
   USING (
     EXISTS (
       SELECT 1 FROM public.conversation_participants cp
-      WHERE cp.conversation_id = messages.conversation_id
+      WHERE cp.conversation_id = public.messages.conversation_id
         AND cp.user_id = auth.uid()
     )
   )
@@ -304,7 +304,7 @@ CREATE POLICY "attachments_select_participants_only"
     EXISTS (
       SELECT 1 FROM public.messages m
       JOIN public.conversation_participants cp ON cp.conversation_id = m.conversation_id
-      WHERE m.id = message_attachments.message_id
+      WHERE m.id = public.message_attachments.message_id
         AND cp.user_id = auth.uid()
     )
   );
@@ -333,7 +333,7 @@ CREATE POLICY "audit_logs_select_admin"
     OR EXISTS (
       SELECT 1 FROM public.messages m
       JOIN public.conversation_participants cp ON cp.conversation_id = m.conversation_id
-      WHERE m.id = message_audit_logs.message_id
+      WHERE m.id = public.message_audit_logs.message_id
         AND cp.user_id = auth.uid()
     )
   );
@@ -346,7 +346,7 @@ CREATE POLICY "presence_select_participants_only"
   USING (
     EXISTS (
       SELECT 1 FROM public.conversation_participants cp
-      WHERE cp.conversation_id = presence.conversation_id
+      WHERE cp.conversation_id = public.presence.conversation_id
         AND cp.user_id = auth.uid()
     )
   );
@@ -357,7 +357,7 @@ CREATE POLICY "presence_upsert_own"
 
 CREATE POLICY "presence_update_own"
   ON public.presence FOR UPDATE
-  USING (user_id = auth.uid())
+  USING (public.presence.user_id = auth.uid())
   WITH CHECK (NEW.user_id = auth.uid());
 
 -- ============================================================================
