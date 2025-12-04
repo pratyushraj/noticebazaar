@@ -222,9 +222,12 @@ CREATE POLICY "conversations_select_admin"
 -- ============================================================================
 CREATE POLICY "participants_select_own"
   ON public.conversation_participants FOR SELECT
-  USING (user_id = auth.uid() OR conversation_id IN (
-    SELECT conversation_id FROM public.conversation_participants WHERE user_id = auth.uid()
-  ));
+  USING (
+    conversation_participants.user_id = auth.uid() 
+    OR conversation_participants.conversation_id IN (
+      SELECT conversation_id FROM public.conversation_participants WHERE user_id = auth.uid()
+    )
+  );
 
 CREATE POLICY "participants_insert_own"
   ON public.conversation_participants FOR INSERT
