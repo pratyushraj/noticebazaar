@@ -22,7 +22,7 @@ export const useMessages = (options: UseMessagesOptions) => {
       }
 
       const { data, error } = await supabase
-        .from('messages')
+        .from('legacy_messages')
         .select(`
           *,
           sender:profiles!sender_id(first_name, last_name, avatar_url)
@@ -60,7 +60,7 @@ export const useSendMessage = () => {
     async (newMessage) => {
       // Only insert the actual database columns, not the optional logging fields
       const { senderFirstName, senderLastName, receiverFirstName, receiverLastName, ...messageData } = newMessage;
-      const { error } = await supabase.from('messages').insert(messageData);
+      const { error } = await supabase.from('legacy_messages').insert(messageData);
       if (error) {
         throw new Error(error.message);
       }

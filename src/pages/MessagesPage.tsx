@@ -1005,7 +1005,7 @@ export default function MessagesPage() {
           {
             event: '*',
             schema: 'public',
-            table: 'messages',
+            table: 'legacy_messages',
             filter: `or(and(sender_id.eq.${currentUserId},receiver_id.eq.${selectedAdvisorId}),and(sender_id.eq.${selectedAdvisorId},receiver_id.eq.${currentUserId}))`
           },
           () => {
