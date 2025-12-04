@@ -141,6 +141,14 @@ export async function findOrCreateConversation(
   // No existing conversation found, create a new one
   console.log('[findOrCreateConversation] Creating new conversation:', { creatorId, advisorId, title });
   
+  // Verify user is authenticated before attempting insert
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  if (authError || !user) {
+    console.error('[findOrCreateConversation] User not authenticated:', authError);
+    throw new Error(`User not authenticated: ${authError?.message || 'No user found'}`);
+  }
+  console.log('[findOrCreateConversation] User authenticated:', user.id);
+  
   const { data: conversation, error: convError } = await supabase
     .from('conversations')
     .insert({
@@ -152,8 +160,15 @@ export async function findOrCreateConversation(
     .single();
 
   if (convError) {
-    console.error('[findOrCreateConversation] Failed to create conversation:', convError);
-    throw new Error(`Failed to create conversation: ${convError.message}`);
+    console.error('[findOrCreateConversation] Failed to create conversation:', {
+      error: convError,
+      message: convError.message,
+      code: convError.code,
+      details: convError.details,
+      hint: convError.hint,
+      user_id: user.id
+    });
+    throw new Error(`Failed to create conversation: ${convError.message} (Code: ${convError.code})`);
   }
 
   console.log('[findOrCreateConversation] Conversation created:', (conversation as any)?.id);
