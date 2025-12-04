@@ -103,13 +103,26 @@ export const useProfiles = (options?: UseProfilesOptions) => {
 
     // If still error, check if it's an RLS policy issue or other non-critical error
     if (error) {
-      // Log the error but don't crash the UI
-      console.warn('Error fetching profiles:', {
-        role,
-        error: error.message,
-        code: (error as any).code,
-        status: (error as any).status,
-      });
+      // Suppress expected errors (role filter issues, RLS blocking, etc.)
+      const isExpectedError = (
+        (error as any).status === 400 ||
+        (error as any).status === 403 ||
+        (error as any).code === 'PGRST301' ||
+        error.message?.includes('role') ||
+        error.message?.includes('permission denied') ||
+        error.message?.includes('RLS') ||
+        error.message?.includes('policy')
+      );
+      
+      if (!isExpectedError) {
+        // Only log unexpected errors
+        console.warn('Error fetching profiles:', {
+          role,
+          error: error.message,
+          code: (error as any).code,
+          status: (error as any).status,
+        });
+      }
       
       // Return empty data instead of throwing to prevent UI crashes
       // This allows the UI to gracefully handle missing data

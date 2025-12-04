@@ -239,14 +239,17 @@ export const usePartnerStats = (userId: string | undefined) => {
 
       return data as PartnerStats;
     } catch (err: any) {
-      // Handle 404/PGRST202 errors gracefully (table/function doesn't exist)
+      // Handle 404/406/PGRST202 errors gracefully (table/function doesn't exist or RLS blocking)
       if (err?.status === 404 || 
+          err?.status === 406 ||
           err?.code === 'PGRST116' || 
           err?.code === 'PGRST202' ||
+          err?.code === 'PGRST301' ||
           err?.code === '42P01' ||
           err?.message?.includes('not found') ||
-          err?.message?.includes('schema cache')) {
-        return null; // Table/function doesn't exist yet
+          err?.message?.includes('schema cache') ||
+          err?.message?.includes('permission denied')) {
+        return null; // Table/function doesn't exist yet or access denied
       }
       throw err;
     }
@@ -279,9 +282,15 @@ export const usePartnerEarnings = (userId: string | undefined, limit = 50) => {
         .order('created_at', { ascending: false })
         .limit(limit);
 
-      // Check if table doesn't exist (404)
-      if (error && ((error as any).status === 404 || error.code === 'PGRST116' || error.code === '42P01')) {
-        return []; // Table doesn't exist yet - return empty array
+      // Check if table doesn't exist (404, 406) or RLS blocking
+      if (error && (
+        (error as any).status === 404 || 
+        (error as any).status === 406 ||
+        error.code === 'PGRST116' || 
+        error.code === '42P01' ||
+        error.code === 'PGRST301'
+      )) {
+        return []; // Table doesn't exist yet or access denied - return empty array
       }
 
       if (error) {
@@ -290,14 +299,17 @@ export const usePartnerEarnings = (userId: string | undefined, limit = 50) => {
 
       return (data || []) as PartnerEarning[];
     } catch (err: any) {
-      // Handle 404/PGRST202 errors gracefully (table doesn't exist)
+      // Handle 404/406/PGRST202 errors gracefully (table doesn't exist or RLS blocking)
       if (err?.status === 404 || 
+          err?.status === 406 ||
           err?.code === 'PGRST116' || 
           err?.code === 'PGRST202' ||
+          err?.code === 'PGRST301' ||
           err?.code === '42P01' ||
           err?.message?.includes('not found') ||
-          err?.message?.includes('schema cache')) {
-        return []; // Table doesn't exist yet
+          err?.message?.includes('schema cache') ||
+          err?.message?.includes('permission denied')) {
+        return []; // Table doesn't exist yet or access denied
       }
       throw err;
     }
@@ -329,9 +341,15 @@ export const usePartnerMilestones = (userId: string | undefined) => {
         .eq('user_id', userId)
         .order('achieved_at', { ascending: false });
 
-      // Check if table doesn't exist (404)
-      if (error && ((error as any).status === 404 || error.code === 'PGRST116' || error.code === '42P01')) {
-        return []; // Table doesn't exist yet - return empty array
+      // Check if table doesn't exist (404, 406) or RLS blocking
+      if (error && (
+        (error as any).status === 404 || 
+        (error as any).status === 406 ||
+        error.code === 'PGRST116' || 
+        error.code === '42P01' ||
+        error.code === 'PGRST301'
+      )) {
+        return []; // Table doesn't exist yet or access denied - return empty array
       }
 
       if (error) {
@@ -340,14 +358,17 @@ export const usePartnerMilestones = (userId: string | undefined) => {
 
       return (data || []) as PartnerMilestone[];
     } catch (err: any) {
-      // Handle 404/PGRST202 errors gracefully (table doesn't exist)
+      // Handle 404/406/PGRST202 errors gracefully (table doesn't exist or RLS blocking)
       if (err?.status === 404 || 
+          err?.status === 406 ||
           err?.code === 'PGRST116' || 
           err?.code === 'PGRST202' ||
+          err?.code === 'PGRST301' ||
           err?.code === '42P01' ||
           err?.message?.includes('not found') ||
-          err?.message?.includes('schema cache')) {
-        return []; // Table doesn't exist yet
+          err?.message?.includes('schema cache') ||
+          err?.message?.includes('permission denied')) {
+        return []; // Table doesn't exist yet or access denied
       }
       throw err;
     }
@@ -379,9 +400,15 @@ export const useReferrals = (userId: string | undefined) => {
         .eq('referrer_id', userId)
         .order('created_at', { ascending: false });
 
-      // Check if table doesn't exist (404)
-      if (error && ((error as any).status === 404 || error.code === 'PGRST116' || error.code === '42P01')) {
-        return []; // Table doesn't exist yet - return empty array
+      // Check if table doesn't exist (404, 406) or RLS blocking
+      if (error && (
+        (error as any).status === 404 || 
+        (error as any).status === 406 ||
+        error.code === 'PGRST116' || 
+        error.code === '42P01' ||
+        error.code === 'PGRST301'
+      )) {
+        return []; // Table doesn't exist yet or access denied - return empty array
       }
 
       if (error) {
@@ -390,14 +417,17 @@ export const useReferrals = (userId: string | undefined) => {
 
       return (data || []) as Referral[];
     } catch (err: any) {
-      // Handle 404/PGRST202 errors gracefully (table doesn't exist)
+      // Handle 404/406/PGRST202 errors gracefully (table doesn't exist or RLS blocking)
       if (err?.status === 404 || 
+          err?.status === 406 ||
           err?.code === 'PGRST116' || 
           err?.code === 'PGRST202' ||
+          err?.code === 'PGRST301' ||
           err?.code === '42P01' ||
           err?.message?.includes('not found') ||
-          err?.message?.includes('schema cache')) {
-        return []; // Table doesn't exist yet
+          err?.message?.includes('schema cache') ||
+          err?.message?.includes('permission denied')) {
+        return []; // Table doesn't exist yet or access denied
       }
       throw err;
     }
@@ -434,9 +464,15 @@ export const usePartnerLeaderboard = (limit = 10) => {
         .order('total_earnings', { ascending: false })
         .limit(limit);
 
-      // Check if table doesn't exist (404)
-      if (error && ((error as any).status === 404 || error.code === 'PGRST116' || error.code === '42P01')) {
-        return []; // Table doesn't exist yet - return empty array
+      // Check if table doesn't exist (404, 406) or RLS blocking
+      if (error && (
+        (error as any).status === 404 || 
+        (error as any).status === 406 ||
+        error.code === 'PGRST116' || 
+        error.code === '42P01' ||
+        error.code === 'PGRST301'
+      )) {
+        return []; // Table doesn't exist yet or access denied - return empty array
       }
 
       if (error) {
@@ -447,14 +483,17 @@ export const usePartnerLeaderboard = (limit = 10) => {
         profiles: { first_name: string | null; last_name: string | null; avatar_url: string | null } | null;
       })[];
     } catch (err: any) {
-      // Handle 404/PGRST202 errors gracefully (table doesn't exist)
+      // Handle 404/406/PGRST202 errors gracefully (table doesn't exist or RLS blocking)
       if (err?.status === 404 || 
+          err?.status === 406 ||
           err?.code === 'PGRST116' || 
           err?.code === 'PGRST202' ||
+          err?.code === 'PGRST301' ||
           err?.code === '42P01' ||
           err?.message?.includes('not found') ||
-          err?.message?.includes('schema cache')) {
-        return []; // Table doesn't exist yet
+          err?.message?.includes('schema cache') ||
+          err?.message?.includes('permission denied')) {
+        return []; // Table doesn't exist yet or access denied
       }
       throw err;
     }
