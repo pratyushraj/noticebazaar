@@ -78,7 +78,17 @@ export default defineConfig(() => ({
     dedupe: ["react", "react-dom", "react/jsx-runtime"],
   },
   optimizeDeps: {
-    include: ["react", "react-dom"],
+    include: [
+      "react",
+      "react-dom",
+      "react/jsx-runtime",
+      "@tanstack/react-query",
+    ],
+    exclude: [],
     force: true, // Force re-optimization
+    esbuildOptions: {
+      // Ensure React is treated as external and deduped
+      plugins: [],
+    },
   },
 }));
