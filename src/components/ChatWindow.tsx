@@ -14,7 +14,7 @@ import { Message, Profile } from '@/types';
 import { useMessages, useSendMessage } from '@/lib/hooks/useMessages';
 import { useQueryClient } from '@tanstack/react-query';
 import { getInitials, DEFAULT_AVATAR_URL } from '@/lib/utils/avatar';
-import { useSampleChatHistory } from '@/lib/hooks/useSampleChatHistory';
+// Sample history disabled - no demo messages
 import { isTrialFeatureRestricted } from '@/lib/trial';
 import UpgradeModal from '@/components/trial/UpgradeModal';
 
@@ -63,26 +63,20 @@ const ChatWindow = ({ receiverId, receiverName, receiverAvatarUrl }: ChatWindowP
     enabled: !!currentUserId && !!receiverId,
   });
 
-  // Generate sample history if no real messages exist AND the user is a client
-  const sampleHistory = useSampleChatHistory(profile?.first_name || null);
+  // Sample history disabled - no demo messages for any users
+  const sampleHistory: never[] = [];
   
   // Determine which messages to display
-  const isShowingSample = (realMessages === undefined || realMessages.length === 0) && isClient && sampleHistory.length > 0;
-  
-  const messagesToDisplay = isShowingSample 
-    ? sampleHistory 
-    : realMessages || [];
+  // Always use real messages, never sample history
+  const messagesToDisplay = realMessages || [];
 
   // Count user's sent messages (only for CA/Lawyer chat during trial)
   const userMessagesCount = React.useMemo(() => {
     if (!isCAOrLawyerChat || !trialStatus.isTrial) return 0;
     return messagesToDisplay.filter(msg => {
-      if (isShowingSample) {
-        return msg.sender_id === 'client';
-      }
       return msg.sender_id === currentUserId;
     }).length;
-  }, [messagesToDisplay, isCAOrLawyerChat, trialStatus.isTrial, isShowingSample, currentUserId]);
+  }, [messagesToDisplay, isCAOrLawyerChat, trialStatus.isTrial, currentUserId]);
 
   // Check if message sending is restricted
   const isMessageRestricted = React.useMemo(() => {
