@@ -58,7 +58,9 @@ export const useSendMessage = () => {
 
   return useSupabaseMutation<void, Error, SendMessageVariables>(
     async (newMessage) => {
-      const { error } = await supabase.from('messages').insert(newMessage);
+      // Only insert the actual database columns, not the optional logging fields
+      const { senderFirstName, senderLastName, receiverFirstName, receiverLastName, ...messageData } = newMessage;
+      const { error } = await supabase.from('messages').insert(messageData);
       if (error) {
         throw new Error(error.message);
       }
