@@ -240,8 +240,8 @@ CREATE POLICY "conversations_select_admin"
 CREATE POLICY "participants_select_own"
   ON public.conversation_participants FOR SELECT
   USING (
-    conversation_participants.user_id = auth.uid() 
-    OR conversation_participants.conversation_id IN (
+    user_id = auth.uid() 
+    OR conversation_id IN (
       SELECT cp2.conversation_id FROM public.conversation_participants cp2 WHERE cp2.user_id = auth.uid()
     )
   );
@@ -363,9 +363,27 @@ CREATE POLICY "presence_update_own"
 -- ============================================================================
 -- ENABLE REALTIME (Supabase)
 -- ============================================================================
-ALTER PUBLICATION supabase_realtime ADD TABLE public.messages;
-ALTER PUBLICATION supabase_realtime ADD TABLE public.conversations;
-ALTER PUBLICATION supabase_realtime ADD TABLE public.presence;
+-- Note: These may fail if tables are already in publication, which is fine
+DO $$
+BEGIN
+  ALTER PUBLICATION supabase_realtime ADD TABLE public.messages;
+EXCEPTION WHEN duplicate_object THEN
+  -- Table already in publication, ignore
+END $$;
+
+DO $$
+BEGIN
+  ALTER PUBLICATION supabase_realtime ADD TABLE public.conversations;
+EXCEPTION WHEN duplicate_object THEN
+  -- Table already in publication, ignore
+END $$;
+
+DO $$
+BEGIN
+  ALTER PUBLICATION supabase_realtime ADD TABLE public.presence;
+EXCEPTION WHEN duplicate_object THEN
+  -- Table already in publication, ignore
+END $$;
 
 -- ============================================================================
 -- COMMENTS FOR DOCUMENTATION
