@@ -37,7 +37,9 @@ const SAMPLE_CONVERSATION: Omit<Message, 'id' | 'timestamp'>[] = [
  * The ChatWindow component will be responsible for converting these to JSX and applying timestamps.
  */
 export const useSampleChatHistory = (clientFirstName: string | null) => {
-  if (!clientFirstName) return [];
+  // Strict check: only return sample history if clientFirstName is provided
+  // This prevents demo messages from showing for creators or new accounts
+  if (!clientFirstName || clientFirstName.trim() === '') return [];
 
   // Create a deep copy of the sample conversation and personalize it
   const personalizedConversation = SAMPLE_CONVERSATION.map((msg, index) => {

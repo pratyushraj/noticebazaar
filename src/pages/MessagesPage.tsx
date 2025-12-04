@@ -919,8 +919,10 @@ export default function MessagesPage() {
 
   // Generate sample history if no real messages exist AND the user is a client
   // Only generate sample history for actual clients, not creators or new accounts
+  // Strict check: must be explicitly 'client' role, not 'creator', not null, not undefined
+  const isExplicitlyClient = profile?.role === 'client';
   const sampleHistory = useSampleChatHistory(
-    profile?.role === 'client' ? (profile?.first_name || null) : null
+    isExplicitlyClient ? (profile?.first_name || null) : null
   );
   
   // Convert messages to new format (CometChat or Supabase)
@@ -941,7 +943,9 @@ export default function MessagesPage() {
     // Use sample history if available (fallback)
     // ONLY show sample history for clients, NOT for creators or new accounts
     // New accounts should see empty state, not demo messages
-    if ((!realMessages || realMessages.length === 0) && isClient && profile?.role === 'client' && sampleHistory.length > 0) {
+    // Strict check: must be explicitly 'client' role, not 'creator', not null, not undefined
+    const isExplicitlyClient = profile?.role === 'client';
+    if ((!realMessages || realMessages.length === 0) && isExplicitlyClient && sampleHistory.length > 0) {
       return sampleHistory.map(msg => ({
         id: msg.id,
         advisorId: selectedAdvisorId,
