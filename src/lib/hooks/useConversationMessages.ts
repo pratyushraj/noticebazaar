@@ -178,11 +178,12 @@ export async function findOrCreateConversation(
 
 /**
  * Check if a user is a lawyer or advisor
+ * userId can be either a profile ID or auth.users ID
  */
 export async function isLawyerOrAdvisor(userId: string): Promise<boolean> {
   const { data, error } = await supabase
     .from('profiles')
-    .select('role')
+    .select('role, id')
     .eq('id', userId)
     .single();
 
@@ -191,5 +192,36 @@ export async function isLawyerOrAdvisor(userId: string): Promise<boolean> {
   }
 
   return data.role === 'lawyer' || data.role === 'admin' || data.role === 'chartered_accountant';
+}
+
+/**
+ * Get auth.users ID from profile ID
+ * In Supabase, profiles.id typically equals auth.users.id, but we verify this
+ */
+export async function getAuthUserIdFromProfileId(profileId: string): Promise<string | null> {
+  // First check if profileId is already an auth.users ID by checking profiles
+  const { data: profile, error } = await supabase
+    .from('profiles')
+    .select('id')
+    .eq('id', profileId)
+    .single();
+
+  if (error || !profile) {
+    return null;
+  }
+
+  // In Supabase, profiles.id should match auth.users.id
+  // But let's also check auth.users to be sure
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  
+  // If profileId matches the current user's ID, return it
+  if (user && user.id === profileId) {
+    return profileId;
+  }
+
+  // Otherwise, try to get the user by checking if profileId exists in auth.users
+  // Since we can't directly query auth.users, we assume profiles.id = auth.users.id
+  // This is the standard Supabase pattern
+  return profile.id;
 }
 

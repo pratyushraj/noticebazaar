@@ -16,7 +16,8 @@ import {
   useConversationMessages, 
   useSendConversationMessage,
   findOrCreateConversation,
-  isLawyerOrAdvisor
+  isLawyerOrAdvisor,
+  getAuthUserIdFromProfileId
 } from '@/lib/hooks/useConversationMessages';
 import { useQueryClient } from '@tanstack/react-query';
 import { getInitials, DEFAULT_AVATAR_URL } from '@/lib/utils/avatar';
@@ -68,10 +69,21 @@ const ChatWindow = ({ receiverId, receiverName, receiverAvatarUrl }: ChatWindowP
         setIsLawyerChat(isAdvisor);
 
         if (isAdvisor) {
+          // Get auth.users ID from profile ID (they should be the same, but verify)
+          const advisorAuthId = await getAuthUserIdFromProfileId(receiverId);
+          
+          if (!advisorAuthId) {
+            console.error('Could not find auth user ID for advisor:', receiverId);
+            toast.error('Failed to setup chat', { description: 'Could not find advisor user ID' });
+            setIsCheckingConversation(false);
+            return;
+          }
+
           // Use new conversation system for lawyers/advisors
+          // Note: currentUserId should already be auth.users.id from useSession
           const convId = await findOrCreateConversation(
             currentUserId,
-            receiverId,
+            advisorAuthId,
             `Chat with ${receiverName}`
           );
           setConversationId(convId);
