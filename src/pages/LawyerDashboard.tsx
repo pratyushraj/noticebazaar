@@ -184,18 +184,22 @@ export default function LawyerDashboard() {
 
     fetchMessages();
 
-    // Subscribe to new messages
+    // Subscribe to new messages (listen for INSERT, UPDATE, DELETE)
     const channel = supabase
       .channel(`messages:${selectedConversation}`)
       .on('postgres_changes', {
-        event: 'INSERT',
+        event: '*',
         schema: 'public',
         table: 'messages',
         filter: `conversation_id=eq.${selectedConversation}`
-      }, () => {
+      }, (payload) => {
+        console.log('Message change detected:', payload);
+        // Refetch messages when any change occurs
         fetchMessages();
       })
-      .subscribe();
+      .subscribe((status) => {
+        console.log('Realtime subscription status:', status);
+      });
 
     return () => {
       supabase.removeChannel(channel);
@@ -350,12 +354,45 @@ export default function LawyerDashboard() {
               messages={messages}
               onSendMessage={async (content) => {
                 if (!user?.id) return;
-                const { error } = await supabase.from('messages').insert({
-                  conversation_id: selectedConversation,
-                  sender_id: user.id,
-                  content
-                });
-                if (error) throw error;
+                const { data, error } = await supabase
+                  .from('messages')
+                  .insert({
+                    conversation_id: selectedConversation,
+                    sender_id: user.id,
+                    content: content.trim()
+                  })
+                  .select(`
+                    *,
+                    attachments:message_attachments(id, file_name, signed_download_url)
+                  `)
+                  .single();
+                
+                if (error) {
+                  console.error('Failed to send message:', error);
+                  throw error;
+                }
+                
+                // Optimistically add message to UI immediately
+                if (data) {
+                  setMessages(prev => [...prev, data]);
+                }
+                
+                // Also refetch to ensure we have the latest (triggers will update conversation metadata)
+                setTimeout(() => {
+                  const fetchMessages = async () => {
+                    const { data: freshData } = await supabase
+                      .from('messages')
+                      .select(`
+                        *,
+                        attachments:message_attachments(id, file_name, signed_download_url)
+                      `)
+                      .eq('conversation_id', selectedConversation)
+                      .eq('is_deleted', false)
+                      .order('sent_at', { ascending: true });
+                    if (freshData) setMessages(freshData);
+                  };
+                  fetchMessages();
+                }, 500);
               }}
             />
           ) : (
