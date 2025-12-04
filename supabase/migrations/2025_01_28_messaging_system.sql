@@ -244,7 +244,7 @@ CREATE POLICY "participants_select_own"
     OR EXISTS (
       SELECT 1 
       FROM public.conversation_participants cp2 
-      WHERE cp2.conversation_id = conversation_participants.conversation_id
+      WHERE cp2.conversation_id = public.conversation_participants.conversation_id
         AND cp2.user_id = auth.uid()
     )
   );
