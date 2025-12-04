@@ -79,6 +79,7 @@ import CalendarPage from "./pages/CalendarPage";
 import ContractProtectionDetails from "./pages/ContractProtectionDetails";
 import PaymentDetailPage from "./pages/PaymentDetailPage";
 import AdvisorDashboard from "./pages/AdvisorDashboard";
+import LawyerDashboard from "./pages/LawyerDashboard";
 import { ErrorBoundary } from "./components/ui/error-boundary";
 import NetworkStatusWrapper from "./components/NetworkStatusWrapper";
 
@@ -261,10 +262,13 @@ const App = () => {
               <Route path="/ai-pitch-generator" element={<ProtectedLayout allowedRoles={['creator']}><AIPitchGenerator /></ProtectedLayout>} />
 
               {/* Shared routes (accessible by client, admin, and CA) */}
-              <Route path="/messages" element={<ProtectedLayout allowedRoles={['client', 'admin', 'chartered_accountant', 'creator']}><MessagesPage /></ProtectedLayout>} /> {/* Added creator role */}
+              <Route path="/messages" element={<ProtectedLayout allowedRoles={['client', 'admin', 'chartered_accountant', 'creator', 'lawyer']}><MessagesPage /></ProtectedLayout>} /> {/* Added creator and lawyer roles */}
               
               {/* Advisor Dashboard (for admin and CA roles) */}
               <Route path="/advisor-dashboard" element={<ProtectedLayout allowedRoles={['admin', 'chartered_accountant']}><AdvisorDashboard /></ProtectedLayout>} />
+              
+              {/* Lawyer Dashboard (for lawyer role) */}
+              <Route path="/lawyer-dashboard" element={<ProtectedLayout allowedRoles={['lawyer']}><LawyerDashboard /></ProtectedLayout>} />
 
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="/maintenance" element={<MaintenancePage />} />

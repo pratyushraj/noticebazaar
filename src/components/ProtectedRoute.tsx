@@ -10,7 +10,7 @@ import { supabase } from '@/integrations/supabase/client';
 
 interface ProtectedRouteProps {
   children: ReactNode;
-  allowedRoles?: ('client' | 'admin' | 'chartered_accountant' | 'creator')[]; // Updated allowedRoles type
+  allowedRoles?: ('client' | 'admin' | 'chartered_accountant' | 'creator' | 'lawyer')[]; // Updated allowedRoles type to include lawyer
 }
 
 const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {

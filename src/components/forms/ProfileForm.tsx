@@ -124,7 +124,7 @@ const ProfileForm = ({ initialProfile, onSaveSuccess, isAdminView = false }: Pro
       {isAdminView && (
         <div>
           <Label htmlFor="role" className="text-foreground">Role</Label>
-          <Select onValueChange={(value: 'client' | 'admin' | 'chartered_accountant' | 'creator') => setRole(value)} value={role} disabled={updateProfileMutation.isPending}>
+          <Select onValueChange={(value: 'client' | 'admin' | 'chartered_accountant' | 'creator' | 'lawyer') => setRole(value)} value={role} disabled={updateProfileMutation.isPending}>
             <SelectTrigger id="role" className="bg-input text-foreground border-border">
               <SelectValue placeholder="Select role" />
             </SelectTrigger>
@@ -132,7 +132,8 @@ const ProfileForm = ({ initialProfile, onSaveSuccess, isAdminView = false }: Pro
               <SelectItem value="client">Client</SelectItem>
               <SelectItem value="admin">Admin</SelectItem>
               <SelectItem value="chartered_accountant">Chartered Accountant</SelectItem>
-              <SelectItem value="creator">Creator</SelectItem> {/* New: Creator role */}
+              <SelectItem value="creator">Creator</SelectItem>
+              <SelectItem value="lawyer">Lawyer</SelectItem> {/* New: Lawyer role */}
             </SelectContent>
           </Select>
         </div>

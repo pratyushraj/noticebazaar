@@ -34,6 +34,8 @@ const HomePage = () => {
         navigate('/admin-dashboard');
       } else if (profile.role === 'chartered_accountant') {
         navigate('/ca-dashboard');
+      } else if (profile.role === 'lawyer') {
+        navigate('/lawyer-dashboard');
       } else {
         // Default: Creator Dashboard (for 'creator', 'client', null, or any other role)
         navigate('/creator-dashboard');
