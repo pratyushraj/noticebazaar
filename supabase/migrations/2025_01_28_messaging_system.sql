@@ -240,9 +240,11 @@ CREATE POLICY "conversations_select_admin"
 CREATE POLICY "participants_select_own"
   ON public.conversation_participants FOR SELECT
   USING (
-    user_id = auth.uid() 
-    OR conversation_id IN (
-      SELECT cp2.conversation_id FROM public.conversation_participants cp2 WHERE cp2.user_id = auth.uid()
+    conversation_participants.user_id = auth.uid() 
+    OR EXISTS (
+      SELECT 1 FROM public.conversation_participants cp2 
+      WHERE cp2.conversation_id = conversation_participants.conversation_id 
+        AND cp2.user_id = auth.uid()
     )
   );
 
@@ -283,7 +285,7 @@ CREATE POLICY "messages_update_own"
   USING (
     EXISTS (
       SELECT 1 FROM public.conversation_participants cp
-      WHERE cp.conversation_id = public.messages.conversation_id
+      WHERE cp.conversation_id = messages.conversation_id
         AND cp.user_id = auth.uid()
     )
   )
@@ -304,7 +306,7 @@ CREATE POLICY "attachments_select_participants_only"
     EXISTS (
       SELECT 1 FROM public.messages m
       JOIN public.conversation_participants cp ON cp.conversation_id = m.conversation_id
-      WHERE m.id = public.message_attachments.message_id
+      WHERE m.id = message_attachments.message_id
         AND cp.user_id = auth.uid()
     )
   );
@@ -333,7 +335,7 @@ CREATE POLICY "audit_logs_select_admin"
     OR EXISTS (
       SELECT 1 FROM public.messages m
       JOIN public.conversation_participants cp ON cp.conversation_id = m.conversation_id
-      WHERE m.id = public.message_audit_logs.message_id
+      WHERE m.id = message_audit_logs.message_id
         AND cp.user_id = auth.uid()
     )
   );
@@ -346,7 +348,7 @@ CREATE POLICY "presence_select_participants_only"
   USING (
     EXISTS (
       SELECT 1 FROM public.conversation_participants cp
-      WHERE cp.conversation_id = public.presence.conversation_id
+      WHERE cp.conversation_id = presence.conversation_id
         AND cp.user_id = auth.uid()
     )
   );
@@ -357,7 +359,7 @@ CREATE POLICY "presence_upsert_own"
 
 CREATE POLICY "presence_update_own"
   ON public.presence FOR UPDATE
-  USING (public.presence.user_id = auth.uid())
+  USING (presence.user_id = auth.uid())
   WITH CHECK (NEW.user_id = auth.uid());
 
 -- ============================================================================
