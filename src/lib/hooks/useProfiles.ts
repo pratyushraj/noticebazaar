@@ -57,14 +57,17 @@ export const useProfiles = (options?: UseProfilesOptions) => {
     let { data, error, count } = await query;
 
     // If error is due to missing columns (400, 42703, or column-related messages), retry with basic select
+    // Also handle role filter errors gracefully
     const isColumnError = error && (
       (error as any).code === '42703' ||
       (error as any).status === 400 ||
       (error as any).statusCode === 400 ||
       (error as any).code === 'PGRST116' || // PostgREST column error
+      (error as any).code === 'PGRST202' || // PostgREST function error
       error.message?.includes('column') ||
       error.message?.includes('does not exist') ||
       error.message?.includes('Could not find') ||
+      error.message?.includes('role') || // Role column might not exist
       String(error.message || '').toLowerCase().includes('bad request') ||
       String(error.message || '').toLowerCase().includes('invalid')
     );

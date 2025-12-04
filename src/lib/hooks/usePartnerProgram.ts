@@ -201,9 +201,15 @@ export const usePartnerStats = (userId: string | undefined) => {
         .eq('user_id', userId)
         .single();
 
-      // Check if table doesn't exist (404)
-      if (error && ((error as any).status === 404 || error.code === 'PGRST116' || error.code === '42P01')) {
-        return null; // Table doesn't exist yet - migrations not run
+      // Check if table doesn't exist (404, 406) or RLS blocking
+      if (error && (
+        (error as any).status === 404 || 
+        (error as any).status === 406 ||
+        error.code === 'PGRST116' || 
+        error.code === '42P01' ||
+        error.code === 'PGRST301' // RLS policy violation
+      )) {
+        return null; // Table doesn't exist yet or access denied - migrations not run
       }
 
       if (error) {
