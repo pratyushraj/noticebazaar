@@ -1,0 +1,249 @@
+{
+  "info": {
+    "name": "NoticeBazaar API",
+    "description": "Complete API collection for NoticeBazaar messaging, payments, and protection",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{auth_token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "item": [
+    {
+      "name": "Conversations",
+      "item": [
+        {
+          "name": "List Conversations",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/conversations?limit=20&offset=0",
+              "host": ["{{base_url}}"],
+              "path": ["api", "conversations"],
+              "query": [
+                {"key": "limit", "value": "20"},
+                {"key": "offset", "value": "0"}
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Conversation",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"participant_ids\": [\"advisor-user-id\"],\n  \"title\": \"Contract Review\",\n  \"type\": \"direct\",\n  \"risk_tag\": \"high_risk\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/conversations",
+              "host": ["{{base_url}}"],
+              "path": ["api", "conversations"]
+            }
+          }
+        },
+        {
+          "name": "Get Conversation",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/conversations/:id",
+              "host": ["{{base_url}}"],
+              "path": ["api", "conversations", ":id"],
+              "variable": [{"key": "id", "value": "conversation-id"}]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Messages",
+      "item": [
+        {
+          "name": "Get Messages",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/conversations/:conversationId/messages?limit=40",
+              "host": ["{{base_url}}"],
+              "path": ["api", "conversations", ":conversationId", "messages"],
+              "query": [{"key": "limit", "value": "40"}],
+              "variable": [{"key": "conversationId", "value": "conv-id"}]
+            }
+          }
+        },
+        {
+          "name": "Send Message",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"content\": \"Hello, I need help with my contract.\",\n  \"message_type\": \"text\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/conversations/:conversationId/messages",
+              "host": ["{{base_url}}"],
+              "path": ["api", "conversations", ":conversationId", "messages"],
+              "variable": [{"key": "conversationId", "value": "conv-id"}]
+            }
+          }
+        },
+        {
+          "name": "Mark as Read",
+          "request": {
+            "method": "PATCH",
+            "url": {
+              "raw": "{{base_url}}/api/messages/:id/read",
+              "host": ["{{base_url}}"],
+              "path": ["api", "messages", ":id", "read"],
+              "variable": [{"key": "id", "value": "message-id"}]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Attachments",
+      "item": [
+        {
+          "name": "Request Upload URL",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"file_name\": \"contract.pdf\",\n  \"file_size\": 1024000,\n  \"file_type\": \"application/pdf\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/conversations/:conversationId/attachments/request-upload",
+              "host": ["{{base_url}}"],
+              "path": ["api", "conversations", ":conversationId", "attachments", "request-upload"],
+              "variable": [{"key": "conversationId", "value": "conv-id"}]
+            }
+          }
+        },
+        {
+          "name": "Confirm Upload",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"attachment_id\": \"attachment-id\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/conversations/:conversationId/attachments/confirm",
+              "host": ["{{base_url}}"],
+              "path": ["api", "conversations", ":conversationId", "attachments", "confirm"],
+              "variable": [{"key": "conversationId", "value": "conv-id"}]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Protection",
+      "item": [
+        {
+          "name": "Analyze Contract",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"contract_url\": \"https://example.com/contract.pdf\",\n  \"deal_id\": \"deal-id\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/protection/analyze",
+              "host": ["{{base_url}}"],
+              "path": ["api", "protection", "analyze"]
+            }
+          }
+        },
+        {
+          "name": "Download Report PDF",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/protection/:id/report.pdf",
+              "host": ["{{base_url}}"],
+              "path": ["api", "protection", ":id", "report.pdf"],
+              "variable": [{"key": "id", "value": "report-id"}]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Payments",
+      "item": [
+        {
+          "name": "Get Recent Payments",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/payments/recent?limit=20",
+              "host": ["{{base_url}}"],
+              "path": ["api", "payments", "recent"],
+              "query": [{"key": "limit", "value": "20"}]
+            }
+          }
+        },
+        {
+          "name": "Request Payment",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"deal_id\": \"deal-id\",\n  \"amount\": 50000,\n  \"due_date\": \"2025-02-15\",\n  \"notes\": \"Payment for completed deliverables\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/payments/request",
+              "host": ["{{base_url}}"],
+              "path": ["api", "payments", "request"]
+            }
+          }
+        },
+        {
+          "name": "Mark Payment Received",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"deal_id\": \"deal-id\",\n  \"received_date\": \"2025-01-28\",\n  \"utr_number\": \"UTR123456789\",\n  \"proof_url\": \"https://example.com/proof.pdf\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/payments/mark-received",
+              "host": ["{{base_url}}"],
+              "path": ["api", "payments", "mark-received"]
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:3001",
+      "type": "string"
+    },
+    {
+      "key": "auth_token",
+      "value": "",
+      "type": "string"
+    }
+  ]
+}
+
