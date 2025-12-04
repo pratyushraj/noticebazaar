@@ -47,7 +47,6 @@ const ChatWindow = ({ receiverId, receiverName, receiverAvatarUrl }: ChatWindowP
   const queryClient = useQueryClient();
 
   const currentUserId = user?.id;
-  const isClient = profile?.role === 'client';
   
   // Check if this is CA or Lawyer chat (creator role checking CA/admin roles)
   const isCAOrLawyerChat = React.useMemo(() => {
@@ -64,9 +63,6 @@ const ChatWindow = ({ receiverId, receiverName, receiverAvatarUrl }: ChatWindowP
   });
 
   // Sample history disabled - no demo messages for any users
-  const sampleHistory: never[] = [];
-  
-  // Determine which messages to display
   // Always use real messages, never sample history
   const messagesToDisplay = realMessages || [];
 
@@ -184,15 +180,8 @@ const ChatWindow = ({ receiverId, receiverName, receiverAvatarUrl }: ChatWindowP
           <div className="text-center text-muted-foreground py-8">No messages yet. Start the conversation!</div>
         ) : (
           messagesToDisplay.map((msg) => {
-            let isCurrentUserMessage: boolean;
-
-            if (isShowingSample) {
-              // For sample messages, check the mock sender_id against the mock client ID
-              isCurrentUserMessage = msg.sender_id === 'client';
-            } else {
-              // For real messages, check the actual sender_id against the current user's ID
-              isCurrentUserMessage = msg.sender_id === currentUserId;
-            }
+            // For real messages, check the actual sender_id against the current user's ID
+            const isCurrentUserMessage = msg.sender_id === currentUserId;
             
             // Format content for display
             const content = formatMessageContent(msg.content);
@@ -230,7 +219,7 @@ const ChatWindow = ({ receiverId, receiverName, receiverAvatarUrl }: ChatWindowP
                   <Avatar className="h-8 w-8">
                     <AvatarImage src={profile?.avatar_url || DEFAULT_AVATAR_URL} alt={profile?.first_name || "You"} />
                     <AvatarFallback className="bg-primary text-primary-foreground">
-                      {getInitials(profile?.first_name, profile?.last_name)}
+                      {getInitials(profile?.first_name || null, profile?.last_name || null)}
                     </AvatarFallback>
                   </Avatar>
                 )}
