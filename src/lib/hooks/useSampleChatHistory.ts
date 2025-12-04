@@ -7,6 +7,7 @@ const SAMPLE_CONVERSATION: Omit<Message, 'id' | 'timestamp'>[] = [
     receiver_id: 'client', // Placeholder for client ID
     content: "Hi [Client Name], I've reviewed the **SaaS MSA draft**. The liability clause needs clarification. I've uploaded my redlines to the 'Documents' section for your review. Let me know if you have time for a quick call tomorrow.",
     sent_at: new Date().toISOString(), // Will be overridden with specific timestamps
+    created_at: new Date().toISOString(),
     is_read: false,
     case_id: null,
     sender: null, // Will be populated if needed
@@ -16,6 +17,7 @@ const SAMPLE_CONVERSATION: Omit<Message, 'id' | 'timestamp'>[] = [
     receiver_id: 'advisor',
     content: "Thanks, Prateek. Just checked the redlines, looks good. Could you please schedule a 15 min call for Friday morning to confirm? Also, can you check on the **Trademark filing status**?",
     sent_at: new Date().toISOString(),
+    created_at: new Date().toISOString(),
     is_read: false,
     case_id: null,
     sender: null,
@@ -25,6 +27,7 @@ const SAMPLE_CONVERSATION: Omit<Message, 'id' | 'timestamp'>[] = [
     receiver_id: 'client',
     content: "Done. Call is booked for Friday at 10:00 AM (see 'Consultations'). Trademark is still 'Filing Submitted' (90% complete). I'll send an update if the registry provides one. Any other questions?",
     sent_at: new Date().toISOString(),
+    created_at: new Date().toISOString(),
     is_read: false,
     case_id: null,
     sender: null,
@@ -68,6 +71,7 @@ export const useSampleChatHistory = (clientFirstName: string | null) => {
       ...msg,
       content: personalizedContent,
       sent_at: timestamp.toISOString(),
+      created_at: timestamp.toISOString(),
       // For display purposes in ChatWindow, we'll use a mock ID
       id: `sample-${index + 1}`,
     };
