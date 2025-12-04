@@ -9,7 +9,6 @@ INSERT INTO profiles (
   last_name,
   role,
   onboarding_complete,
-  created_at,
   updated_at
 )
 VALUES (
@@ -18,7 +17,6 @@ VALUES (
   'Advisor',
   'lawyer',
   true,
-  NOW(),
   NOW()
 )
 ON CONFLICT (id) DO UPDATE SET
@@ -35,7 +33,6 @@ SELECT
   last_name,
   role,
   onboarding_complete,
-  created_at,
   updated_at
 FROM profiles
 WHERE id = '27239566-f735-4423-a898-8dbaee1ec77f';
