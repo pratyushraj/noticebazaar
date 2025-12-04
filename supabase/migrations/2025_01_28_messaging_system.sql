@@ -252,7 +252,7 @@ CREATE POLICY "messages_insert_participants_only"
     sender_id = auth.uid()
     AND EXISTS (
       SELECT 1 FROM public.conversation_participants cp
-      WHERE cp.conversation_id = messages.conversation_id
+      WHERE cp.conversation_id = NEW.conversation_id
         AND cp.user_id = auth.uid()
     )
   );
