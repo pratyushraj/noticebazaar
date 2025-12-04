@@ -164,6 +164,11 @@ const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
         '/brands',
       ];
       
+      // List of lawyer-specific routes
+      const validLawyerRoutes = [
+        '/lawyer-dashboard',
+      ];
+      
       // Check if current path is a valid creator route
       const isOnValidCreatorRoute = validCreatorRoutes.some(route => 
         location.pathname === route || location.pathname.startsWith(route + '/')
