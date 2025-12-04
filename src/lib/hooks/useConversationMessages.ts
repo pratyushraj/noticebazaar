@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useSupabaseQuery } from './useSupabaseQuery';
 import { useSupabaseMutation } from './useSupabaseMutation';
@@ -74,10 +74,10 @@ export const useSendConversationMessage = () => {
       const { error } = await supabase
         .from('messages')
         .insert({
-          conversation_id: messageData.conversation_id,
-          sender_id: messageData.sender_id,
+          conversation_id: messageData.conversation_id as any,
+          sender_id: messageData.sender_id as any,
           content: messageData.content.trim(),
-        });
+        } as any);
 
       if (error) {
         throw new Error(error.message);
@@ -112,7 +112,7 @@ export async function findOrCreateConversation(
   const { data: existingParticipants, error: checkError } = await supabase
     .from('conversation_participants')
     .select('conversation_id')
-    .eq('user_id', creatorId);
+    .eq('user_id', creatorId as any);
 
   if (checkError) {
     throw new Error(`Failed to check existing conversations: ${checkError.message}`);
@@ -125,8 +125,8 @@ export async function findOrCreateConversation(
     const { data: advisorParticipants, error: advisorCheckError } = await supabase
       .from('conversation_participants')
       .select('conversation_id')
-      .eq('user_id', advisorId)
-      .in('conversation_id', conversationIds);
+      .eq('user_id', advisorId as any)
+      .in('conversation_id', conversationIds as any);
 
     if (advisorCheckError) {
       throw new Error(`Failed to check advisor participation: ${advisorCheckError.message}`);
@@ -145,7 +145,7 @@ export async function findOrCreateConversation(
       title: title || 'Legal Consultation',
       type: 'direct',
       risk_tag: 'legal',
-    })
+    } as any)
     .select()
     .single();
 
@@ -158,22 +158,22 @@ export async function findOrCreateConversation(
     .from('conversation_participants')
     .insert([
       {
-        conversation_id: conversation.id,
-        user_id: creatorId,
+        conversation_id: (conversation as any).id,
+        user_id: creatorId as any,
         role: 'creator',
       },
       {
-        conversation_id: conversation.id,
-        user_id: advisorId,
+        conversation_id: (conversation as any).id,
+        user_id: advisorId as any,
         role: 'advisor',
       },
-    ]);
+    ] as any);
 
   if (participantsError) {
     throw new Error(`Failed to add participants: ${participantsError.message}`);
   }
 
-  return conversation.id;
+  return (conversation as any).id;
 }
 
 /**
@@ -196,10 +196,12 @@ export async function isLawyerOrAdvisor(userId: string): Promise<boolean> {
 
 /**
  * Get auth.users ID from profile ID
- * In Supabase, profiles.id typically equals auth.users.id, but we verify this
+ * In Supabase, profiles.id equals auth.users.id by design
+ * This function just verifies the profile exists and returns the ID
  */
 export async function getAuthUserIdFromProfileId(profileId: string): Promise<string | null> {
-  // First check if profileId is already an auth.users ID by checking profiles
+  // In Supabase, profiles.id IS the auth.users.id (same UUID)
+  // Just verify the profile exists
   const { data: profile, error } = await supabase
     .from('profiles')
     .select('id')
@@ -207,21 +209,11 @@ export async function getAuthUserIdFromProfileId(profileId: string): Promise<str
     .single();
 
   if (error || !profile) {
+    console.error('Profile not found:', profileId, error);
     return null;
   }
 
-  // In Supabase, profiles.id should match auth.users.id
-  // But let's also check auth.users to be sure
-  const { data: { user }, error: authError } = await supabase.auth.getUser();
-  
-  // If profileId matches the current user's ID, return it
-  if (user && user.id === profileId) {
-    return profileId;
-  }
-
-  // Otherwise, try to get the user by checking if profileId exists in auth.users
-  // Since we can't directly query auth.users, we assume profiles.id = auth.users.id
-  // This is the standard Supabase pattern
+  // Return the profile ID as it's the same as auth.users.id
   return profile.id;
 }
 
