@@ -83,6 +83,8 @@ export default defineConfig(() => ({
       "react-dom",
       "react/jsx-runtime",
       "@tanstack/react-query",
+      "framer-motion",
+      "@radix-ui/react-tooltip",
     ],
     exclude: [],
     force: true, // Force re-optimization

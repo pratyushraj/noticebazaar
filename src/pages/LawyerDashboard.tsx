@@ -72,39 +72,163 @@ export default function LawyerDashboard() {
 
     const fetchConversations = async () => {
       try {
+        // Verify auth session
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        const authUserId = session?.user?.id;
+        
+        console.log('[LawyerDashboard] Auth session:', {
+          hasSession: !!session,
+          authUserId: authUserId,
+          profileUserId: user.id,
+          matches: authUserId === user.id,
+        });
+        
+        if (sessionError) {
+          console.error('[LawyerDashboard] Session error:', sessionError);
+        }
+        
+        if (!authUserId) {
+          console.error('[LawyerDashboard] No auth user ID found');
+          setConversations([]);
+          setIsLoading(false);
+          return;
+        }
+        
+        console.log('[LawyerDashboard] Fetching conversations for auth user:', authUserId);
+        
         // First, get conversations where user is a participant
+        // IMPORTANT: conversation_participants.user_id should match auth.uid() (not profile.id)
         const { data: participantData, error: participantError } = await supabase
           .from('conversation_participants')
-          .select('conversation_id')
-          .eq('user_id', user.id);
+          .select('conversation_id, user_id')
+          .eq('user_id', authUserId);
 
-        if (participantError) throw participantError;
+        if (participantError) {
+          console.error('[LawyerDashboard] Error fetching participants:', {
+            error: participantError,
+            message: participantError.message,
+            code: participantError.code,
+            details: participantError.details,
+            hint: participantError.hint,
+          });
+          throw participantError;
+        }
 
-        const conversationIds = participantData?.map(p => p.conversation_id) || [];
+        console.log('[LawyerDashboard] Found participants:', participantData?.length || 0);
+        console.log('[LawyerDashboard] Participant data:', participantData);
+        console.log('[LawyerDashboard] Participant user_ids:', participantData?.map(p => p.user_id));
+        console.log('[LawyerDashboard] Expected auth.uid():', authUserId);
         
-        if (conversationIds.length === 0) {
+        // Check if participant user_ids match auth.uid()
+        const mismatchedParticipants = participantData?.filter(p => p.user_id !== authUserId) || [];
+        if (mismatchedParticipants.length > 0) {
+          console.warn('[LawyerDashboard] WARNING: Some participants have mismatched user_id:', mismatchedParticipants);
+        }
+        
+        const participantConversationIds = participantData?.map(p => p.conversation_id).filter(Boolean) || [];
+        
+        if (participantConversationIds.length === 0) {
+          console.log('[LawyerDashboard] No conversation IDs found from participants');
           setConversations([]);
           setIsLoading(false);
           return;
         }
 
-        // Fetch conversations
-        const { data: conversationsData, error: conversationsError } = await supabase
-          .from('conversations')
-          .select(`
-            *,
-            last_message:messages!last_message_id(content, sent_at)
-          `)
-          .in('id', conversationIds)
-          .order('updated_at', { ascending: false });
+        console.log('[LawyerDashboard] Conversation IDs to fetch:', participantConversationIds);
 
-        if (conversationsError) throw conversationsError;
+        // Try RPC function first (bypasses RLS issues)
+        let conversationsData: any[] = [];
+        let conversationsError: any = null;
+
+        console.log('[LawyerDashboard] Trying RPC function first...');
+        const { data: rpcData, error: rpcError } = await supabase.rpc('get_user_conversations');
+        
+        console.log('[LawyerDashboard] RPC function result:', {
+          dataCount: rpcData?.length || 0,
+          error: rpcError,
+          errorCode: rpcError?.code,
+          errorMessage: rpcError?.message,
+        });
+        
+        if (!rpcError && rpcData && rpcData.length > 0) {
+          conversationsData = rpcData;
+          console.log('[LawyerDashboard] Using RPC function results:', conversationsData.length);
+        } else {
+          // Fallback to direct query
+          console.log('[LawyerDashboard] RPC failed, trying direct query...');
+          const { data: batchData, error: batchError } = await supabase
+            .from('conversations')
+            .select('*')
+            .in('id', participantConversationIds)
+            .order('updated_at', { ascending: false });
+          
+          console.log('[LawyerDashboard] Direct query result:', {
+            dataCount: batchData?.length || 0,
+            error: batchError,
+            errorCode: batchError?.code,
+            errorMessage: batchError?.message,
+          });
+          
+          if (batchData) {
+            conversationsData = batchData;
+          }
+          conversationsError = batchError;
+          
+          // If batch query failed, try individual queries as fallback
+          if (batchError && (!batchData || batchData.length === 0)) {
+            console.warn('[LawyerDashboard] Batch query failed, trying individual queries:', batchError);
+            const individualResults: any[] = [];
+            for (const convId of participantConversationIds) {
+              const { data: singleData, error: singleError } = await supabase
+                .from('conversations')
+                .select('*')
+                .eq('id', convId)
+                .single();
+              
+              if (!singleError && singleData) {
+                individualResults.push(singleData);
+              } else {
+                console.warn(`[LawyerDashboard] Failed to fetch conversation ${convId}:`, singleError);
+              }
+            }
+            if (individualResults.length > 0) {
+              conversationsData = individualResults;
+            }
+          }
+        }
+
+        if (conversationsError && conversationsData.length === 0) {
+          console.error('[LawyerDashboard] Error fetching conversations:', {
+            error: conversationsError,
+            message: conversationsError.message,
+            code: conversationsError.code,
+            details: conversationsError.details,
+            hint: conversationsError.hint,
+          });
+          // Don't throw - try to continue with empty array
+        }
+
+        console.log('[LawyerDashboard] Found conversations:', conversationsData.length);
+        console.log('[LawyerDashboard] Conversations data:', conversationsData);
+        
+        // Use the conversations we fetched (they're already filtered by participant IDs)
+        const filteredConversations = conversationsData;
+        
+        console.log('[LawyerDashboard] Filtered conversations:', filteredConversations.length);
+        
+        if (filteredConversations.length === 0) {
+          console.log('[LawyerDashboard] No conversations found after filtering');
+          setConversations([]);
+          setIsLoading(false);
+          return;
+        }
 
         // Fetch all participants for these conversations
+        const filteredConversationIds = filteredConversations.map(c => c.id);
         const { data: allParticipants, error: participantsError } = await supabase
           .from('conversation_participants')
           .select('conversation_id, user_id, role')
-          .in('conversation_id', conversationIds);
+          .in('conversation_id', filteredConversationIds);
 
         if (participantsError) throw participantsError;
 
@@ -120,9 +244,33 @@ export default function LawyerDashboard() {
         // Create a map of user_id -> profile
         const profilesMap = new Map(profilesData?.map(p => [p.id, p]) || []);
 
-        // Join conversations with participants and profiles
-        const conversationsWithParticipants = conversationsData?.map(conv => ({
+        // Fetch last messages for each conversation
+        const lastMessagesMap = new Map<string, { content: string; sent_at: string }>();
+        const conversationIdsForMessages = filteredConversations.map(c => c.id);
+        if (conversationIdsForMessages.length > 0) {
+          for (const convId of conversationIdsForMessages) {
+            const { data: lastMessage, error: msgError } = await supabase
+              .from('messages')
+              .select('content, sent_at')
+              .eq('conversation_id', convId)
+              .eq('is_deleted', false)
+              .order('sent_at', { ascending: false })
+              .limit(1)
+              .single();
+            
+            if (!msgError && lastMessage) {
+              lastMessagesMap.set(convId, {
+                content: lastMessage.content,
+                sent_at: lastMessage.sent_at,
+              });
+            }
+          }
+        }
+
+        // Join conversations with participants, profiles, and last messages
+        const conversationsWithParticipants = filteredConversations.map(conv => ({
           ...conv,
+          last_message: lastMessagesMap.get(conv.id) || null,
           participants: allParticipants
             ?.filter(p => p.conversation_id === conv.id)
             .map(p => ({
@@ -132,8 +280,10 @@ export default function LawyerDashboard() {
             })) || []
         })) || [];
 
+        console.log('[LawyerDashboard] Setting conversations:', conversationsWithParticipants.length);
         setConversations(conversationsWithParticipants);
       } catch (err: any) {
+        console.error('[LawyerDashboard] Error in fetchConversations:', err);
         toast.error('Failed to load conversations', { description: err.message });
       } finally {
         setIsLoading(false);
@@ -193,12 +343,34 @@ export default function LawyerDashboard() {
         table: 'messages',
         filter: `conversation_id=eq.${selectedConversation}`
       }, (payload) => {
-        console.log('Message change detected:', payload);
-        // Refetch messages when any change occurs
+        console.log('[LawyerDashboard] Real-time message update:', {
+          event: payload.eventType,
+          new: payload.new,
+          old: payload.old,
+        });
+        // Optimistically update UI for INSERT events
+        if (payload.eventType === 'INSERT' && payload.new) {
+          const newMessage = payload.new as any;
+          setMessages(prev => {
+            // Avoid duplicates
+            if (prev.some(m => m.id === newMessage.id)) {
+              return prev;
+            }
+            return [...prev, {
+              id: newMessage.id,
+              content: newMessage.content,
+              sender_id: newMessage.sender_id,
+              sent_at: newMessage.sent_at,
+              is_read: newMessage.is_read || false,
+              attachments: []
+            }];
+          });
+        }
+        // Refetch messages to ensure we have the latest (handles UPDATE, DELETE)
         fetchMessages();
       })
       .subscribe((status) => {
-        console.log('Realtime subscription status:', status);
+        console.log('[LawyerDashboard] Realtime subscription status:', status);
       });
 
     return () => {
@@ -317,7 +489,7 @@ export default function LawyerDashboard() {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between mb-1">
                         <div className="font-semibold truncate">
-                          {conv.title || creatorParticipant?.profiles.first_name || 'Conversation'}
+                          {conv.title || creatorParticipant?.profiles?.first_name || 'Conversation'}
                         </div>
                         {conv.unread_count_advisor > 0 && (
                           <span className="px-2 py-0.5 rounded-full bg-purple-500 text-xs font-semibold">
@@ -449,10 +621,10 @@ function ConversationView({
             </div>
             <div>
               <div className="font-semibold">
-                {conversation.title || creatorParticipant?.profiles.first_name || 'Conversation'}
+                {conversation.title || creatorParticipant?.profiles?.first_name || 'Conversation'}
               </div>
               <div className="text-sm text-white/60">
-                {creatorParticipant?.profiles.first_name} {creatorParticipant?.profiles.last_name}
+                {creatorParticipant?.profiles?.first_name || ''} {creatorParticipant?.profiles?.last_name || ''}
               </div>
             </div>
           </div>

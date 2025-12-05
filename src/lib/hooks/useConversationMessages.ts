@@ -69,22 +69,46 @@ interface SendConversationMessageVariables {
 export const useSendConversationMessage = () => {
   const queryClient = useQueryClient();
 
-  return useSupabaseMutation<void, Error, SendConversationMessageVariables>(
+  return useSupabaseMutation<any, Error, SendConversationMessageVariables>(
     async (messageData) => {
-      const { error } = await supabase
+      console.log('[useSendConversationMessage] Sending message:', {
+        conversation_id: messageData.conversation_id,
+        sender_id: messageData.sender_id,
+        content_length: messageData.content.trim().length,
+      });
+
+      const { data, error } = await supabase
         .from('messages')
         .insert({
           conversation_id: messageData.conversation_id as any,
           sender_id: messageData.sender_id as any,
           content: messageData.content.trim(),
-        } as any);
+        } as any)
+        .select()
+        .single();
 
       if (error) {
-        throw new Error(error.message);
+        console.error('[useSendConversationMessage] Insert error:', {
+          error,
+          message: error.message,
+          code: error.code,
+          details: error.details,
+          hint: error.hint,
+        });
+        throw new Error(error.message || 'Failed to send message');
       }
+
+      if (!data) {
+        console.error('[useSendConversationMessage] No data returned from insert');
+        throw new Error('Message was not created - no data returned');
+      }
+
+      console.log('[useSendConversationMessage] Message sent successfully:', data.id);
+      return data;
     },
     {
-      onSuccess: async (_, variables) => {
+      onSuccess: async (data, variables) => {
+        console.log('[useSendConversationMessage] onSuccess:', { messageId: data?.id, conversationId: variables.conversation_id });
         // Invalidate conversation messages
         queryClient.invalidateQueries({ 
           queryKey: ['conversation-messages', variables.conversation_id] 
@@ -93,6 +117,9 @@ export const useSendConversationMessage = () => {
         queryClient.invalidateQueries({ 
           queryKey: ['conversations'] 
         });
+      },
+      onError: (error) => {
+        console.error('[useSendConversationMessage] Mutation error:', error);
       },
       successMessage: 'Message sent!',
       errorMessage: 'Failed to send message',

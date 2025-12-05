@@ -14,7 +14,8 @@ import {
   findOrCreateConversation,
   isLawyerOrAdvisor,
   getAuthUserIdFromProfileId,
-  useSendConversationMessage
+  useSendConversationMessage,
+  useConversationMessages
 } from '@/lib/hooks/useConversationMessages';
 import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -903,11 +904,29 @@ export default function MessagesPage() {
     enabled: useCometChatEnabled && !!currentUserId && !!selectedAdvisorId,
   });
 
-  // Supabase messages (fallback)
+  // State for storing conversation IDs
+  const [conversationIds, setConversationIds] = useState<Map<string, string>>(new Map());
+
+  // Get conversation ID for current advisor
+  const currentConversationId = useMemo(() => {
+    if (!selectedAdvisorId) return null;
+    return conversationIds.get(selectedAdvisorId) || null;
+  }, [selectedAdvisorId, conversationIds]);
+
+  const selectedAdvisor = advisors.find(a => a.id === selectedAdvisorId);
+  const isAdvisorChat = selectedAdvisor?.role === 'Legal Advisor' || selectedAdvisor?.role === 'Chartered Accountant';
+
+  // Fetch conversation messages (new system)
+  const { data: conversationMessages, isLoading: isLoadingConversationMessages } = useConversationMessages({
+    conversationId: currentConversationId || null,
+    enabled: !useCometChatEnabled && !!currentConversationId && isAdvisorChat,
+  });
+
+  // Supabase messages (legacy fallback)
   const { data: realMessages, isLoading: isLoadingMessages } = useMessages({
     currentUserId: currentUserId,
     receiverId: selectedAdvisorId || '',
-    enabled: !useCometChatEnabled && !!currentUserId && !!selectedAdvisorId,
+    enabled: !useCometChatEnabled && !!currentUserId && !!selectedAdvisorId && !isAdvisorChat,
   });
 
   // Update typing indicators from CometChat
@@ -926,9 +945,21 @@ export default function MessagesPage() {
   // Sample history disabled - no demo messages for any users
   const sampleHistory: never[] = [];
   
-  // Convert messages to new format (CometChat or Supabase)
+  // Convert messages to new format (CometChat, Conversation, or Legacy)
   const messages: Message[] = useMemo(() => {
     if (!selectedAdvisorId || !currentUserId) return [];
+
+    // Debug logging (reduced to prevent spam)
+    // console.log('[MessagesPage] Converting messages:', {
+    //   selectedAdvisorId,
+    //   currentUserId,
+    //   isAdvisorChat,
+    //   currentConversationId,
+    //   conversationMessagesCount: conversationMessages?.length || 0,
+    //   realMessagesCount: realMessages?.length || 0,
+    //   cometChatMessagesCount: cometChat.messages.length,
+    //   useCometChatEnabled,
+    // });
 
     // Use CometChat messages if available
     if (useCometChatEnabled && cometChat.messages.length > 0) {
@@ -941,19 +972,32 @@ export default function MessagesPage() {
       }));
     }
 
-    // Sample history disabled - no demo messages for any users
-    // All users (clients, creators, new accounts) will see empty state if no real messages
+    // Use conversation messages (new system) if available
+    if (isAdvisorChat && conversationMessages && conversationMessages.length > 0) {
+      console.log('[MessagesPage] Using conversation messages:', conversationMessages.length);
+      return conversationMessages.map(msg => ({
+        id: msg.id,
+        advisorId: selectedAdvisorId,
+        author: msg.sender_id === currentUserId ? 'user' : 'advisor',
+        text: typeof msg.content === 'string' ? msg.content : String(msg.content),
+        createdAt: msg.sent_at,
+      }));
+    }
 
-    // Convert Supabase messages
-    if (!realMessages) return [];
-    return realMessages.map(msg => ({
-      id: msg.id,
-      advisorId: selectedAdvisorId,
-      author: msg.sender_id === currentUserId ? 'user' : 'advisor',
-      text: typeof msg.content === 'string' ? msg.content : String(msg.content),
-      createdAt: msg.sent_at,
-    }));
-  }, [cometChat.messages, realMessages, selectedAdvisorId, currentUserId, isClient, sampleHistory, useCometChatEnabled]);
+    // Convert legacy Supabase messages
+    if (!isAdvisorChat && realMessages && realMessages.length > 0) {
+      return realMessages.map(msg => ({
+        id: msg.id,
+        advisorId: selectedAdvisorId,
+        author: msg.sender_id === currentUserId ? 'user' : 'advisor',
+        text: typeof msg.content === 'string' ? msg.content : String(msg.content),
+        createdAt: msg.sent_at,
+      }));
+    }
+
+    console.log('[MessagesPage] No messages found');
+    return [];
+  }, [cometChat.messages, conversationMessages, realMessages, selectedAdvisorId, currentUserId, isAdvisorChat, currentConversationId, useCometChatEnabled]);
 
   // Compute last message and unread count for each advisor
   const advisorsWithMetadata = useMemo(() => {
@@ -998,9 +1042,37 @@ export default function MessagesPage() {
     return () => clearInterval(interval);
   }, [selectedAdvisorId, useCometChatEnabled]);
 
-  // Real-time subscription
+  // Real-time subscription for conversation messages (new system)
   useEffect(() => {
-    if (currentUserId && selectedAdvisorId) {
+    if (currentConversationId && isAdvisorChat) {
+      console.log('[MessagesPage] Setting up real-time subscription for conversation:', currentConversationId);
+      const channel = supabase
+        .channel(`conversation_${currentConversationId}`)
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'messages',
+            filter: `conversation_id=eq.${currentConversationId}`
+          },
+          (payload) => {
+            console.log('[MessagesPage] Real-time message update:', payload);
+            queryClient.invalidateQueries({ queryKey: ['conversation-messages', currentConversationId] });
+          }
+        )
+        .subscribe();
+
+      return () => {
+        console.log('[MessagesPage] Removing real-time subscription for conversation:', currentConversationId);
+        supabase.removeChannel(channel);
+      };
+    }
+  }, [currentConversationId, isAdvisorChat, queryClient]);
+
+  // Real-time subscription for legacy messages
+  useEffect(() => {
+    if (currentUserId && selectedAdvisorId && !isAdvisorChat) {
       const sortedIds = [currentUserId, selectedAdvisorId].sort();
       const channelName = `chat_${sortedIds[0]}_${sortedIds[1]}`;
 
@@ -1024,11 +1096,11 @@ export default function MessagesPage() {
         supabase.removeChannel(channel);
       };
     }
-  }, [currentUserId, selectedAdvisorId, queryClient]);
+  }, [currentUserId, selectedAdvisorId, isAdvisorChat, queryClient]);
 
   const sendMessageMutation = useSendMessage();
   const sendConversationMessageMutation = useSendConversationMessage();
-  const [conversationIds, setConversationIds] = useState<Map<string, string>>(new Map());
+  // conversationIds state is declared above (before useMemo that uses it)
 
   const handleSelectAdvisor = (advisor: Advisor) => {
     setSelectedAdvisorId(advisor.id);
@@ -1037,40 +1109,54 @@ export default function MessagesPage() {
   // Check if advisor is lawyer/CA and setup conversation
   useEffect(() => {
     if (!selectedAdvisorId || !currentUserId) return;
+    
+    // Check if conversation already exists to avoid unnecessary setup
+    if (conversationIds.has(selectedAdvisorId)) {
+      return;
+    }
 
     const setupConversation = async () => {
       try {
         const isAdvisor = await isLawyerOrAdvisor(selectedAdvisorId);
-        console.log('[MessagesPage] Advisor check:', { selectedAdvisorId, isAdvisor });
+        if (!isAdvisor) return;
 
-        if (isAdvisor) {
-          const advisorAuthId = await getAuthUserIdFromProfileId(selectedAdvisorId);
-          console.log('[MessagesPage] Advisor auth ID:', advisorAuthId);
+        const advisorAuthId = await getAuthUserIdFromProfileId(selectedAdvisorId);
+        if (!advisorAuthId) return;
 
-          if (advisorAuthId) {
-            const selectedAdvisor = advisors.find(a => a.id === selectedAdvisorId);
-            const advisorName = selectedAdvisor?.name || 'Advisor';
-            
-            const convId = await findOrCreateConversation(
-              currentUserId,
-              advisorAuthId,
-              `Chat with ${advisorName}`
-            );
-            
-            console.log('[MessagesPage] Conversation ID:', convId);
-            setConversationIds(prev => new Map(prev).set(selectedAdvisorId, convId));
-          }
-        }
+        // Use the outer selectedAdvisor or find it here
+        const advisor = advisors.find(a => a.id === selectedAdvisorId);
+        const advisorName = advisor?.name || 'Advisor';
+        
+        const convId = await findOrCreateConversation(
+          currentUserId,
+          advisorAuthId,
+          `Chat with ${advisorName}`
+        );
+        
+        setConversationIds(prev => {
+          const next = new Map(prev);
+          next.set(selectedAdvisorId, convId);
+          return next;
+        });
       } catch (error: any) {
         console.error('[MessagesPage] Failed to setup conversation:', error);
       }
     };
 
     setupConversation();
-  }, [selectedAdvisorId, currentUserId, advisors]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedAdvisorId, currentUserId]); // 'advisors' intentionally omitted to prevent infinite loops (it's memoized and stable)
 
   const handleSend = async (text: string) => {
-    if (!selectedAdvisorId || !currentUserId || !profile) return;
+    if (!selectedAdvisorId || !currentUserId || !profile) {
+      console.warn('[MessagesPage] Cannot send: missing required data', { selectedAdvisorId, currentUserId, profile: !!profile });
+      return;
+    }
+
+    if (!text.trim()) {
+      console.warn('[MessagesPage] Cannot send: empty message');
+      return;
+    }
 
     try {
       // Try CometChat first if enabled and initialized
@@ -1079,19 +1165,50 @@ export default function MessagesPage() {
         return;
       }
 
-      // Check if this is a lawyer/advisor chat (use new conversation system)
-      const conversationId = conversationIds.get(selectedAdvisorId);
-      const selectedAdvisor = advisors.find(a => a.id === selectedAdvisorId);
+      // Use the outer selectedAdvisor that's already declared
       const isAdvisorChat = selectedAdvisor?.role === 'Legal Advisor' || selectedAdvisor?.role === 'Chartered Accountant';
+      
+      console.log('[MessagesPage] Send attempt:', {
+        selectedAdvisorId,
+        advisorRole: selectedAdvisor?.role,
+        isAdvisorChat,
+        conversationIds: Array.from(conversationIds.entries()),
+      });
+
+      // Check if this is a lawyer/advisor chat (use new conversation system)
+      let conversationId = conversationIds.get(selectedAdvisorId);
+
+      // If advisor chat but no conversation ID, try to create it
+      if (isAdvisorChat && !conversationId) {
+        console.log('[MessagesPage] No conversation ID found, creating one...');
+        try {
+          const advisorAuthId = await getAuthUserIdFromProfileId(selectedAdvisorId);
+          if (advisorAuthId) {
+            const advisorName = selectedAdvisor?.name || 'Advisor';
+            conversationId = await findOrCreateConversation(
+              currentUserId,
+              advisorAuthId,
+              `Chat with ${advisorName}`
+            );
+            setConversationIds(prev => new Map(prev).set(selectedAdvisorId, conversationId!));
+            console.log('[MessagesPage] Conversation created:', conversationId);
+          }
+        } catch (error: any) {
+          console.error('[MessagesPage] Failed to create conversation:', error);
+          toast.error('Failed to setup conversation', { description: error.message });
+          return;
+        }
+      }
 
       if (isAdvisorChat && conversationId) {
         // Use new conversation system
-        console.log('[MessagesPage] Sending via conversation system:', conversationId);
+        console.log('[MessagesPage] Sending via conversation system:', { conversationId, text: text.substring(0, 50) });
         await sendConversationMessageMutation.mutateAsync({
           conversation_id: conversationId,
           sender_id: currentUserId,
           content: text,
         });
+        console.log('[MessagesPage] Message sent successfully via conversation system');
       } else {
         // Use legacy system
         console.log('[MessagesPage] Sending via legacy system');
@@ -1104,10 +1221,11 @@ export default function MessagesPage() {
           receiverFirstName: selectedAdvisor?.name.split(' ')[0] || '',
           receiverLastName: selectedAdvisor?.name.split(' ')[1] || undefined,
         });
+        console.log('[MessagesPage] Message sent successfully via legacy system');
       }
     } catch (error: any) {
       console.error('[MessagesPage] Failed to send message:', error);
-      toast.error('Failed to send message', { description: error.message });
+      toast.error('Failed to send message', { description: error.message || 'Unknown error occurred' });
     }
   };
 
@@ -1121,7 +1239,7 @@ export default function MessagesPage() {
   }, [clientProfilesError, adminProfileError, caProfileError]);
 
   const isLoadingPage = sessionLoading || isLoadingClientProfiles || isLoadingAdminProfile || isLoadingCAProfile;
-  const selectedAdvisor = advisors.find(a => a.id === selectedAdvisorId);
+  // selectedAdvisor is already declared above (line 913)
   const isLoadingAdvisors = isAdmin ? isLoadingClientProfiles : (isLoadingAdminProfile || isLoadingCAProfile);
   const currentUserName = profile ? `${profile.first_name} ${profile.last_name}` : 'You';
 
@@ -1167,7 +1285,7 @@ export default function MessagesPage() {
                 }}
                 currentUserAvatar={profile?.avatar_url || undefined}
                 currentUserName={currentUserName}
-                isLoading={sendMessageMutation.isPending || isLoadingMessages || cometChat.isLoading}
+                isLoading={sendMessageMutation.isPending || sendConversationMessageMutation.isPending || isLoadingMessages || isLoadingConversationMessages || cometChat.isLoading}
               />
             </div>
           </div>

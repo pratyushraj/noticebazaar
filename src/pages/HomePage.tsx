@@ -16,9 +16,16 @@ const HomePage = () => {
   const { session, loading, profile, user } = useSession();
   const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const { scrollYProgress } = useScroll();
-  const opacity = useTransform(scrollYProgress, [0, 0.2], [1, 0]);
-  const scale = useTransform(scrollYProgress, [0, 0.2], [1, 0.95]);
+  
+  // Temporarily disable scroll animations due to React hooks error
+  // Using static values to ensure content is visible
+  const opacity = 1;
+  const scale = 1;
+  
+  // TODO: Re-enable when React hooks issue is resolved
+  // const { scrollYProgress } = useScroll();
+  // const opacity = useTransform(scrollYProgress, [0, 0.2], [1, 0]);
+  // const scale = useTransform(scrollYProgress, [0, 0.2], [1, 0.95]);
 
   useEffect(() => {
     if (session && profile) {
