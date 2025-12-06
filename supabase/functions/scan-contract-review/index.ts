@@ -24,6 +24,10 @@ serve(async (req) => {
       });
     }
 
+    // NOTE: This is a mock function. In production, download and validate the contract PDF here
+    // Validation should check if document is a brand deal contract before proceeding
+    // See server/src/services/contractAnalysis.ts for validation logic
+
     // --- Simulate AI Analysis ---
     const mockAnalysis = {
       summary: `AI analysis for contract with ${brand_name} completed. Found 5 potential risks.`,

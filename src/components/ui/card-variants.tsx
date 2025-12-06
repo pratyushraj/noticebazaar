@@ -10,7 +10,7 @@ interface BaseCardProps {
   variant?: 'primary' | 'secondary' | 'tertiary';
   className?: string;
   children: ReactNode;
-  onClick?: () => void;
+  onClick?: (e?: React.MouseEvent) => void;
   interactive?: boolean;
 }
 
@@ -29,9 +29,24 @@ export const BaseCard = ({
       className={cn(
         baseClasses,
         interactive && "cursor-pointer transition-all duration-200 hover:scale-[1.02] hover:shadow-xl active:scale-[0.98]",
+        onClick && "pointer-events-auto",
         className
       )}
-      onClick={onClick}
+      onClick={(e) => {
+        if (onClick) {
+          e.preventDefault();
+          e.stopPropagation();
+          onClick();
+        }
+      }}
+      role={onClick ? "button" : undefined}
+      tabIndex={onClick ? 0 : undefined}
+      onKeyDown={(e) => {
+        if (onClick && (e.key === 'Enter' || e.key === ' ')) {
+          e.preventDefault();
+          onClick();
+        }
+      }}
     >
       {children}
     </div>
@@ -138,7 +153,7 @@ export const StatCard = ({
 interface ActionCardProps {
   icon: ReactNode;
   label: string;
-  onClick: () => void;
+  onClick: (e?: React.MouseEvent) => void;
   variant?: 'primary' | 'secondary' | 'tertiary';
   className?: string;
 }
@@ -150,18 +165,30 @@ export const ActionCard = ({
   variant = 'tertiary',
   className 
 }: ActionCardProps) => {
+  const handleClick = (e?: React.MouseEvent) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    if (import.meta.env.DEV) {
+      console.log('[ActionCard] Clicked:', label);
+    }
+    onClick(e);
+  };
+
   return (
     <BaseCard 
       variant={variant} 
       className={cn(
         "flex flex-col items-center justify-center gap-2 text-center cursor-pointer",
+        "pointer-events-auto",
         className
       )}
-      onClick={onClick}
+      onClick={handleClick}
       interactive
     >
-      <div className="p-3 rounded-xl bg-white/5">{icon}</div>
-      <span className={typography.bodySmall}>{label}</span>
+      <div className="p-3 rounded-xl bg-white/5 pointer-events-none">{icon}</div>
+      <span className={cn(typography.bodySmall, "pointer-events-none")}>{label}</span>
     </BaseCard>
   );
 };

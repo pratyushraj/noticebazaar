@@ -27,6 +27,11 @@ export const MessageInput: React.FC<Props> = ({ onSend, isLoading = false, place
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto';
     }
+    
+    // Refocus textarea so keyboard stays up on mobile
+    setTimeout(() => {
+      textareaRef.current?.focus();
+    }, 30);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -37,7 +42,7 @@ export const MessageInput: React.FC<Props> = ({ onSend, isLoading = false, place
   };
 
   return (
-    <div className="sticky bottom-0 w-full px-4 py-3 bg-card border-t border-border/40">
+    <div className="sticky bottom-0 left-0 right-0 bg-gradient-to-b from-transparent to-purple-900/70 backdrop-blur-xl px-3 py-2">
       <div className="flex items-center gap-2 bg-muted/20 border border-border/40 rounded-full px-3 py-2 shadow-sm transition-all duration-150">
         <button
           type="button"

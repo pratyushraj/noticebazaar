@@ -4,8 +4,7 @@
 // declaration issues by keeping all components scoped in this file.
 
 import { useEffect, useRef, useState, useMemo } from 'react';
-import clsx from 'clsx';
-import { Lock, MessageSquare, ArrowUp, Loader2, Mic } from 'lucide-react';
+import { Lock, MessageSquare, ArrowUp, Loader2, Mic, Paperclip, Smile, Check, CheckCheck, AlertCircle, RefreshCw } from 'lucide-react';
 import { useSession } from '@/contexts/SessionContext';
 import { toast } from 'sonner';
 import { useProfiles } from '@/lib/hooks/useProfiles';
@@ -27,7 +26,7 @@ import { AdvisorModeSwitch } from '@/components/AdvisorModeSwitch';
 import { ContextualTipsProvider } from '@/components/contextual-tips/ContextualTipsProvider';
 import { NoMessagesEmptyState } from '@/components/empty-states/PreconfiguredEmptyStates';
 import { logger } from '@/lib/utils/logger';
-import { spacing, typography, iconSizes, radius, shadows, glass, animations, vision, motion as motionTokens, colors, gradients, badges } from '@/lib/design-system';
+import { spacing, typography, iconSizes, radius, shadows, glass, animations, vision, colors, gradients, badges } from '@/lib/design-system';
 import { triggerHaptic, HapticPatterns } from '@/lib/utils/haptics';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
@@ -50,19 +49,43 @@ type Message = {
   author: 'user' | 'advisor';
   text: string;
   createdAt: string;
+  isSeen?: boolean; // For seen status (double tick)
+  isRead?: boolean; // For read status
+  failed?: boolean; // For failed message retry
 };
 
 // --- Local Avatar (single canonical avatar used in this file) ---
-function LocalAvatar({ src, alt, size = 'md' }: { src?: string; alt?: string; size?: 'sm' | 'md' | 'lg' }) {
-  const dims = size === 'sm' ? 'w-8 h-8' : size === 'lg' ? 'w-12 h-12' : 'w-10 h-10';
+function LocalAvatar({ src, alt, size = 'md', className }: { src?: string; alt?: string; size?: 'sm' | 'md' | 'lg'; className?: string }) {
+  const dims = size === 'sm' ? 'w-10 h-10' : size === 'lg' ? 'w-12 h-12' : 'w-10 h-10';
+  const textSize = size === 'sm' ? 'text-xs' : size === 'lg' ? 'text-sm' : 'text-xs';
   const initials = alt ? alt.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() : 'U';
   
   return (
-    <div className={clsx('inline-flex items-center justify-center overflow-hidden rounded-full bg-muted/30', dims)} title={alt}>
+    <div 
+      className={cn(
+        'inline-flex items-center justify-center overflow-hidden rounded-full',
+        'bg-gradient-to-br from-purple-500/20 to-indigo-500/20',
+        'backdrop-blur-sm',
+        'border border-white/10',
+        'shadow-sm',
+        dims,
+        className
+      )} 
+      title={alt}
+    >
       {src ? (
-        <img src={src} alt={alt} className="object-cover w-full h-full" />
+        <img 
+          src={src} 
+          alt={alt} 
+          className="object-cover w-full h-full" 
+        />
       ) : (
-        <span className="text-xs text-muted-foreground">{initials}</span>
+        <span className={cn(
+          textSize,
+          "font-semibold text-white/90"
+        )}>
+          {initials}
+        </span>
       )}
     </div>
   );
@@ -283,18 +306,27 @@ function MessageInputScoped({
   isLoading,
   variant = 'inline',
   className,
+  onFocus,
+  conversationId,
+  userId,
 }: { 
   onSend?: (text: string) => void; 
   isLoading?: boolean;
   variant?: MessageInputVariant;
   className?: string;
+  onFocus?: () => void;
+  conversationId?: string;
+  userId?: string;
 }) {
   const [value, setValue] = useState('');
   const [isRecording, setIsRecording] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
+  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
     if (!textareaRef.current) return;
@@ -352,6 +384,11 @@ function MessageInputScoped({
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto';
     }
+    
+    // Refocus textarea so keyboard stays up on mobile
+    setTimeout(() => {
+      textareaRef.current?.focus();
+    }, 30);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -361,8 +398,50 @@ function MessageInputScoped({
     }
   };
 
+  // Update typing status in presence table
+  const updateTypingStatus = async (status: 'typing' | 'online') => {
+    if (!conversationId || !userId) return;
+    
+    try {
+      const { error } = await supabase.from('presence').upsert({
+        conversation_id: conversationId,
+        user_id: userId,
+        status: status,
+        last_seen_at: new Date().toISOString()
+      }, {
+        onConflict: 'conversation_id,user_id'
+      });
+      
+      // Silently handle expected errors (409 conflict, RLS blocking, table doesn't exist)
+      if (error && (
+        (error as any).code === '23505' || // Unique violation
+        (error as any).status === 409 || // Conflict
+        (error as any).code === 'PGRST301' || // RLS policy violation
+        (error as any).code === '42P01' || // Table doesn't exist
+        (error as any).status === 404 || // Not found
+        error.message?.includes('permission denied') ||
+        error.message?.includes('RLS')
+      )) {
+        // Expected errors - table might not exist or RLS blocking
+        return;
+      }
+      
+      if (error) {
+        // Only log unexpected errors
+        console.warn('Failed to update typing status:', error);
+      }
+    } catch (err) {
+      // Silently handle errors - presence is optional
+    }
+  };
+
   const handleFocus = () => {
     setIsFocused(true);
+    onFocus?.();
+    // Update typing status when user starts typing
+    if (value.trim()) {
+      updateTypingStatus('typing');
+    }
     window.requestAnimationFrame(() => {
       textareaRef.current?.scrollIntoView({
         block: 'nearest',
@@ -370,6 +449,35 @@ function MessageInputScoped({
       });
     });
   };
+
+  // Handle typing indicator
+  useEffect(() => {
+    if (!conversationId || !userId) return;
+    
+    if (value.trim()) {
+      // User is typing
+      updateTypingStatus('typing');
+      
+      // Clear existing timeout
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+      }
+      
+      // Set timeout to stop typing after 300ms of no input
+      typingTimeoutRef.current = setTimeout(() => {
+        updateTypingStatus('online');
+      }, 300);
+    } else {
+      // No text, set to online
+      updateTypingStatus('online');
+    }
+    
+    return () => {
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+      }
+    };
+  }, [value, conversationId, userId]);
 
   const handleBlur = () => {
     setIsFocused(false);
@@ -379,16 +487,14 @@ function MessageInputScoped({
     variant === 'mobile-fixed'
       ? cn(
           "md:hidden fixed left-0 right-0",
-          // Position above bottom nav (bottom nav is ~60px tall)
-          "bottom-[60px]",
-          // Highest z-index to be above bottom nav (bottom nav is z-[100])
-          "z-[9999]",
-          // Background transparent to let page show through
-          "bg-transparent",
-          // Safe area support
-          "pb-[calc(env(safe-area-inset-bottom,0px)+12px)]",
+          // Position above bottom nav (reduced gap: 64px nav + 4px spacing = 68px + safe-area)
+          "bottom-[calc(68px+env(safe-area-inset-bottom))]",
+          // z-index above bottom nav (bottom nav is z-9999, input should be z-[10000])
+          "z-[10000]",
+          // Sticky bottom with gradient
+          "bg-gradient-to-b from-transparent to-purple-900/70 backdrop-blur-xl",
           // Horizontal padding
-          "px-4"
+          "px-3 py-2"
         )
       : "w-full flex flex-col flex-shrink-0";
 
@@ -434,6 +540,112 @@ function MessageInputScoped({
     <div className={cn(wrapperClasses, className)}>
       <div className={bubbleClasses}>
         <div className={rowClasses}>
+        {/* Attachment button */}
+        {variant === 'mobile-fixed' ? (
+          <motion.button
+            className={cn(
+              "h-10 w-10 rounded-xl flex items-center justify-center flex-shrink-0",
+              "bg-white/10 backdrop-blur-xl",
+              "mr-2",
+              "transition-all duration-200",
+              "text-white/80 hover:bg-white/20 active:scale-95"
+            )}
+            whileTap={animations.microTap}
+            style={{ touchAction: 'manipulation' }}
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            aria-label="Attach file"
+          >
+            <Paperclip className="text-lg text-white/80" />
+          </motion.button>
+        ) : (
+          <motion.button
+            className={cn(
+              "h-11 w-11 md:w-12 md:h-12 flex items-center justify-center flex-shrink-0",
+              radius.full,
+              "border border-white/20 transition-all duration-200",
+              "bg-white/10 text-white/80",
+              "hover:bg-white/20 hover:scale-105",
+              "active:scale-95"
+            )}
+            whileTap={animations.microTap}
+            style={{ touchAction: 'manipulation' }}
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            aria-label="Attach file"
+          >
+            <Paperclip className={cn(iconSizes.sm, "md:w-5 md:h-5")} />
+          </motion.button>
+        )}
+
+        {/* Hidden file input */}
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*,application/pdf"
+          className="hidden"
+          onChange={(e) => {
+            const file = e.target.files?.[0];
+            if (file) {
+              // TODO: Implement file upload
+              toast.info(`File selected: ${file.name} (Upload functionality coming soon)`);
+              e.target.value = ''; // Reset input
+            }
+          }}
+        />
+
+        {/* Emoji picker button */}
+        {variant === 'mobile-fixed' ? (
+          <motion.button
+            className={cn(
+              "h-10 w-10 rounded-xl flex items-center justify-center flex-shrink-0",
+              "bg-white/10 backdrop-blur-xl",
+              "mr-2",
+              "transition-all duration-200",
+              showEmojiPicker
+                ? "bg-white/20 text-white"
+                : "text-white/80 hover:bg-white/20 active:scale-95"
+            )}
+            whileTap={animations.microTap}
+            style={{ touchAction: 'manipulation' }}
+            type="button"
+            onClick={() => {
+              setShowEmojiPicker(!showEmojiPicker);
+              // TODO: Implement emoji picker
+              toast.info('Emoji picker coming soon');
+            }}
+            aria-label="Add emoji"
+          >
+            <Smile className="text-lg text-white/80" />
+          </motion.button>
+        ) : (
+          <motion.button
+            className={cn(
+              "h-11 w-11 md:w-12 md:h-12 flex items-center justify-center flex-shrink-0",
+              radius.full,
+              "border border-white/20 transition-all duration-200",
+              showEmojiPicker
+                ? "bg-white/20 text-white"
+                : cn(
+                    "bg-white/10 text-white/80",
+                    "hover:bg-white/20 hover:scale-105",
+                    "active:scale-95"
+                  )
+            )}
+            whileTap={animations.microTap}
+            style={{ touchAction: 'manipulation' }}
+            type="button"
+            onClick={() => {
+              setShowEmojiPicker(!showEmojiPicker);
+              // TODO: Implement emoji picker
+              toast.info('Emoji picker coming soon');
+            }}
+            aria-label="Add emoji"
+          >
+            <Smile className={cn(iconSizes.sm, "md:w-5 md:h-5")} />
+          </motion.button>
+        )}
+
         {/* Voice message button (hold to record) - iOS 17 + visionOS */}
         {variant === 'mobile-fixed' ? (
           <motion.button 
@@ -627,7 +839,10 @@ function MessageBubbleScoped({
   currentUserAvatar, 
   advisorAvatar, 
   currentUserName, 
-  advisorName 
+  advisorName,
+  isGrouped = false,
+  showTail = false,
+  onRetry
 }: { 
   message: Message; 
   isCurrentUser: boolean;
@@ -635,6 +850,9 @@ function MessageBubbleScoped({
   advisorAvatar?: string;
   currentUserName?: string;
   advisorName?: string;
+  isGrouped?: boolean;
+  showTail?: boolean;
+  onRetry?: (messageId: string) => void;
 }) {
   const time = new Date(message.createdAt).toLocaleTimeString([], { 
     hour: '2-digit', 
@@ -643,50 +861,71 @@ function MessageBubbleScoped({
 
   return (
     <motion.div 
-      initial={motionTokens.slide.up.initial}
-      animate={motionTokens.slide.up.animate}
-      transition={motionTokens.slide.up.transition}
-      className={cn('flex items-end gap-2', isCurrentUser ? 'justify-end' : 'justify-start')}
-    >
-      {!isCurrentUser && (
-        <LocalAvatar 
-          size="sm" 
-          src={advisorAvatar} 
-          alt={advisorName || 'Advisor'} 
-        />
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.15 }}
+      className={cn(
+        'flex mb-1',
+        isCurrentUser ? 'justify-end' : 'justify-start',
+        isGrouped && 'mt-0.5'
       )}
-      
-      <div
-        className={cn(
-          'inline-block leading-[1.4] max-w-[75%] relative overflow-hidden',
-          typography.body,
-          spacing.cardPadding.secondary,
-          radius.lg,
-          isCurrentUser
-            ? cn(gradients.primary, "text-white rounded-br-[4px]", shadows.md)
-            : cn(glass.apple, "text-white rounded-bl-[4px]")
-        )}
-      >
-        {/* Spotlight for advisor messages */}
-        {!isCurrentUser && <div className={cn(vision.spotlight.base, "opacity-10")} />}
-        
-        <p className={cn("leading-relaxed break-words relative z-10")}>{message.text}</p>
+    >
+      <div className={cn(
+        "max-w-[80%] px-3 py-2.5 text-sm",
+        // Enhanced color differentiation
+        isCurrentUser
+          ? cn(
+              // User message: brighter purple (more saturated)
+              "bg-gradient-to-br from-purple-500 to-purple-600 text-white",
+              "shadow-sm shadow-purple-500/20",
+              showTail ? "rounded-2xl rounded-br-sm" : "rounded-2xl"
+            )
+          : cn(
+              // Advisor message: softer purple (more transparent, muted)
+              "bg-white/8 backdrop-blur-sm text-white/95",
+              "border border-white/5",
+              showTail ? "rounded-2xl rounded-bl-sm" : "rounded-2xl"
+            ),
+        // Failed message styling
+        message.failed && isCurrentUser && "opacity-75 border border-red-400/30"
+      )}>
+        <p className="text-sm leading-relaxed break-words">{message.text}</p>
         <div className={cn(
-          typography.caption,
-          "mt-1 relative z-10",
-          isCurrentUser ? "text-white/70" : "text-white/50"
+          "text-[10px] mt-1.5 flex items-center gap-1.5",
+          isCurrentUser ? "text-white/60 justify-end" : "text-white/40 justify-start"
         )}>
-          {time}
+          {/* Time - subtle */}
+          <span className="opacity-70">{time}</span>
+          
+          {/* Seen status (only for user messages) */}
+          {isCurrentUser && !message.failed && (
+            <span className="ml-0.5">
+              {message.isRead || message.isSeen ? (
+                <CheckCheck className="w-3 h-3 text-blue-300" aria-label="Read" />
+              ) : (
+                <Check className="w-3 h-3 text-white/50" aria-label="Sent" />
+              )}
+            </span>
+          )}
+          
+          {/* Failed message retry option */}
+          {message.failed && isCurrentUser && onRetry && (
+            <button
+              onClick={() => onRetry(message.id)}
+              className="ml-1 p-0.5 rounded hover:bg-white/10 transition-colors"
+              aria-label="Retry sending message"
+              title="Retry sending"
+            >
+              <RefreshCw className="w-3 h-3 text-red-300" />
+            </button>
+          )}
+          
+          {/* Failed indicator */}
+          {message.failed && isCurrentUser && (
+            <AlertCircle className="w-3 h-3 text-red-300 ml-0.5" aria-label="Failed to send" />
+          )}
         </div>
       </div>
-      
-      {isCurrentUser && (
-        <LocalAvatar 
-          size="sm" 
-          src={currentUserAvatar} 
-          alt={currentUserName || 'You'} 
-        />
-      )}
     </motion.div>
   );
 }
@@ -700,7 +939,9 @@ function ChatWindowScoped({
   onSwitchAdvisor,
   currentUserAvatar,
   currentUserName,
-  isLoading
+  isLoading,
+  conversationId,
+  userId
 }: { 
   advisor?: Advisor | null;
   advisors?: Advisor[];
@@ -710,19 +951,78 @@ function ChatWindowScoped({
   currentUserAvatar?: string;
   currentUserName?: string;
   isLoading?: boolean;
+  conversationId?: string;
+  userId?: string;
 }) {
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [newMessage, setNewMessage] = useState('');
   const hasMessages = (messages ?? []).length > 0;
 
+  // Reliable scroll to bottom using scrollTop on the messages container
+  // This ensures we're scrolling the correct container
+  const scrollToBottom = () => {
+    requestAnimationFrame(() => {
+      setTimeout(() => {
+        const container = document.getElementById("MessagesScrollContainer");
+        if (container) {
+          container.scrollTop = container.scrollHeight;
+        }
+      }, 50);
+    });
+  };
+
+  // Auto-scroll on component mount
   useEffect(() => {
-    if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
-    }
+    scrollToBottom();
+  }, []);
+
+  // Auto-scroll when messages change
+  useEffect(() => {
+    scrollToBottom();
   }, [messages]);
+
+  // Auto-scroll on window resize (handles mobile navigation resizing)
+  useEffect(() => {
+    const handler = () => scrollToBottom();
+    window.addEventListener("resize", handler);
+    
+    // Handle mobile keyboard appearance/disappearance
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener("resize", handler);
+      window.visualViewport.addEventListener("scroll", handler);
+    }
+    
+    return () => {
+      window.removeEventListener("resize", handler);
+      if (window.visualViewport) {
+        window.visualViewport.removeEventListener("resize", handler);
+        window.visualViewport.removeEventListener("scroll", handler);
+      }
+    };
+  }, []);
+
+  const handleSend = async () => {
+    if (!newMessage.trim() || isLoading) return;
+    
+    try {
+      await onSend?.(newMessage);
+      setNewMessage('');
+      
+      // Refocus input so keyboard stays up on mobile
+      setTimeout(() => {
+        inputRef.current?.focus();
+        // Scroll after message is rendered
+        scrollToBottom();
+      }, 30);
+    } catch (err: any) {
+      toast.error('Failed to send message', { description: err.message });
+    }
+  };
 
   return (
     <div className={cn(
-      "flex flex-col flex-1 min-h-0 overflow-visible relative",
+      "flex flex-col h-full overflow-hidden relative",
       "rounded-none md:rounded-[20px]",
       "bg-transparent md:bg-white/5",
       "backdrop-blur-none md:backdrop-blur-xl",
@@ -735,59 +1035,158 @@ function ChatWindowScoped({
       {/* Spotlight gradient - desktop only */}
       <div className={cn("hidden md:block", vision.spotlight.base, "opacity-30")} />
       
+      {/* Header - fixed height, not scrollable */}
       <ChatHeaderScoped advisor={advisor} advisors={advisors} onSwitchAdvisor={onSwitchAdvisor} />
 
-      <div className="flex-1 min-h-0 overflow-visible">
-        <div className="p-2 md:p-6 lg:p-8">
-          {!hasMessages ? (
-            <div className="mb-0 md:mb-8 pb-[100px] md:pb-0">
-              <NoMessagesEmptyState
-                onStartChat={() => onSend?.('Hello! I need help.')}
-              />
+      {/* Messages area - ONLY scrollable container */}
+      <div 
+        id="MessagesScrollContainer"
+        ref={messagesContainerRef}
+        className={cn(
+          "flex-1 overflow-y-auto min-h-0 p-2",
+          // Mobile: Minimal padding to account for fixed input bar (just enough to clear it)
+          "pb-[calc(100px+env(safe-area-inset-bottom,0px))]",
+          // Desktop: no extra padding needed (input is sticky inside container)
+          "md:pb-2"
+        )}
+        style={{ WebkitOverflowScrolling: 'touch' }}
+      >
+        {!hasMessages ? (
+          <div className="mb-0 md:mb-8">
+            <NoMessagesEmptyState
+              onStartChat={() => onSend?.('Hello! I need help.')}
+            />
+          </div>
+        ) : (
+          <>
+            {(messages || []).map((m, index) => {
+              // Improved grouping logic - group by sender and time (within same minute)
+              const messageList = messages || [];
+              const prevMsg = index > 0 ? messageList[index - 1] : null;
+              const nextMsg = index < messageList.length - 1 ? messageList[index + 1] : null;
               
-              {/* Desktop input */}
-              <div className="hidden md:block mt-8">
-                <MessageInputScoped
-                  onSend={onSend}
-                  isLoading={isLoading}
-                  className="md:flex"
-                />
-              </div>
-            </div>
-          ) : (
-            <div className="space-y-3 md:space-y-4 pb-[120px] md:pb-0">
-              {messages!.map((m) => (
-                <MessageBubbleScoped
+              const isFirstOfGroup = 
+                index === 0 ||
+                !prevMsg ||
+                prevMsg.author !== m.author ||
+                new Date(m.createdAt).getTime() - new Date(prevMsg.createdAt).getTime() > 60000; // 1 minute gap
+              
+              const isLastInGroup = !nextMsg || 
+                nextMsg.author !== m.author ||
+                new Date(nextMsg.createdAt).getTime() - new Date(m.createdAt).getTime() > 60000;
+              
+              const showTail = isFirstOfGroup;
+              const isGrouped = !isFirstOfGroup;
+              
+              return (
+                <motion.div
                   key={m.id}
-                  message={m}
-                  isCurrentUser={m.author === 'user'}
-                  currentUserAvatar={currentUserAvatar}
-                  advisorAvatar={advisor?.avatarUrl}
-                  currentUserName={currentUserName}
-                  advisorName={advisor?.name}
-                />
-              ))}
-              <div ref={messagesEndRef} />
-            </div>
-          )}
-        </div>
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.15 }}
+                >
+                  <MessageBubbleScoped
+                    message={m}
+                    isCurrentUser={m.author === 'user'}
+                    currentUserAvatar={currentUserAvatar}
+                    advisorAvatar={advisor?.avatarUrl}
+                    currentUserName={currentUserName}
+                    advisorName={advisor?.name}
+                    isGrouped={isGrouped}
+                    showTail={showTail}
+                  />
+                </motion.div>
+              );
+            })}
+            {/* Scroll target element at the bottom of messages */}
+            <div id="messagesEnd" />
+            {/* Minimal spacer to ensure last message is visible above mobile input */}
+            <div 
+              className="h-[calc(100px+env(safe-area-inset-bottom,0px))] md:h-0"
+            />
+          </>
+        )}
       </div>
 
-      {/* Input bar at bottom when there are messages */}
-      {hasMessages && (
-        <div 
-          className="hidden md:block px-4 md:px-6 lg:px-8 pt-3 flex-shrink-0 bg-transparent border-t border-white/10 md:border-t-0"
-          style={{ 
-            paddingBottom: `max(12px, env(safe-area-inset-bottom, 12px))`,
-            paddingTop: '12px'
-          }}
-        >
-          <MessageInputScoped
-            onSend={onSend}
-            isLoading={isLoading}
+      {/* Security & Trust UI - Desktop */}
+      <div className="px-4 py-2 hidden md:flex items-center gap-2 text-white/60 text-xs border-t border-white/10">
+        <Lock className="w-3 h-3" />
+        <span>All chats are end-to-end encrypted & confidential</span>
+      </div>
+
+      {/* Contextual Quick Actions - Desktop */}
+      {(() => {
+        const referrer = document.referrer || '';
+        const contextualActions: Array<{ label: string; message: string }> = [];
+        
+        if (referrer.includes('/contract-upload') || referrer.includes('/contract')) {
+          contextualActions.push({ label: 'Ask about this contract', message: 'I have a question about the contract I just analyzed.' });
+        }
+        if (referrer.includes('/payments')) {
+          contextualActions.push({ label: 'Ask about delayed payment', message: 'I have a question about a delayed payment.' });
+        }
+        if (referrer.includes('/protection')) {
+          contextualActions.push({ label: 'Ask about risky clause', message: 'I need help understanding a risky clause in my contract.' });
+        }
+        
+        return contextualActions.length > 0 ? (
+          <div className="px-4 pb-2 hidden md:flex flex-wrap gap-2 border-t border-white/10">
+            {contextualActions.map((action, index) => (
+              <motion.button
+                key={index}
+                onClick={() => {
+                  onSend?.(action.message);
+                  triggerHaptic(HapticPatterns.light);
+                }}
+                className={cn(
+                  "px-3 py-1.5 rounded-full text-xs font-medium",
+                  "bg-white/10 hover:bg-white/20 text-white/90",
+                  "border border-white/10",
+                  "transition-all duration-200",
+                  "backdrop-blur-sm"
+                )}
+                whileTap={{ scale: 0.95 }}
+              >
+                {action.label}
+              </motion.button>
+            ))}
+          </div>
+        ) : null;
+      })()}
+
+      {/* Input bar - matching LawyerDashboard style */}
+      <div className={cn("p-4 border-t border-white/10 flex-shrink-0 hidden md:flex", glass.apple)}>
+        <div className="flex gap-2">
+          <input
+            ref={inputRef}
+            type="text"
+            value={newMessage}
+            onChange={(e) => setNewMessage(e.target.value)}
+            onKeyPress={(e) => e.key === 'Enter' && handleSend()}
+            placeholder="Type your message..."
+            className={cn(
+              "flex-1 px-4 py-2 rounded-xl",
+              glass.appleSubtle,
+              "border border-white/10",
+              "text-white placeholder:text-white/40",
+              "focus:outline-none focus:ring-2 focus:ring-purple-400/50"
+            )}
           />
+          <motion.button
+            onClick={handleSend}
+            disabled={!newMessage.trim() || isLoading}
+            whileTap={animations.microTap}
+            className={cn(
+              "px-6 py-2 rounded-xl font-medium",
+              "bg-purple-500 hover:bg-purple-600",
+              "disabled:opacity-50 disabled:cursor-not-allowed",
+              "transition-colors"
+            )}
+          >
+            <ArrowUp className={iconSizes.sm} />
+          </motion.button>
         </div>
-      )}
+      </div>
 
     </div>
   );
@@ -995,7 +1394,9 @@ export default function MessagesPage() {
       }));
     }
 
-    console.log('[MessagesPage] No messages found');
+    if (import.meta.env.DEV) {
+      console.log('[MessagesPage] No messages found');
+    }
     return [];
   }, [cometChat.messages, conversationMessages, realMessages, selectedAdvisorId, currentUserId, isAdvisorChat, currentConversationId, useCometChatEnabled]);
 
@@ -1045,7 +1446,9 @@ export default function MessagesPage() {
   // Real-time subscription for conversation messages (new system)
   useEffect(() => {
     if (currentConversationId && isAdvisorChat) {
-      console.log('[MessagesPage] Setting up real-time subscription for conversation:', currentConversationId);
+      if (import.meta.env.DEV) {
+        console.log('[MessagesPage] Setting up real-time subscription for conversation:', currentConversationId);
+      }
       const channel = supabase
         .channel(`conversation_${currentConversationId}`)
         .on(
@@ -1057,14 +1460,18 @@ export default function MessagesPage() {
             filter: `conversation_id=eq.${currentConversationId}`
           },
           (payload) => {
-            console.log('[MessagesPage] Real-time message update:', payload);
+            if (import.meta.env.DEV) {
+              console.log('[MessagesPage] Real-time message update:', payload);
+            }
             queryClient.invalidateQueries({ queryKey: ['conversation-messages', currentConversationId] });
           }
         )
         .subscribe();
 
       return () => {
-        console.log('[MessagesPage] Removing real-time subscription for conversation:', currentConversationId);
+        if (import.meta.env.DEV) {
+          console.log('[MessagesPage] Removing real-time subscription for conversation:', currentConversationId);
+        }
         supabase.removeChannel(channel);
       };
     }
@@ -1168,19 +1575,23 @@ export default function MessagesPage() {
       // Use the outer selectedAdvisor that's already declared
       const isAdvisorChat = selectedAdvisor?.role === 'Legal Advisor' || selectedAdvisor?.role === 'Chartered Accountant';
       
-      console.log('[MessagesPage] Send attempt:', {
-        selectedAdvisorId,
-        advisorRole: selectedAdvisor?.role,
-        isAdvisorChat,
-        conversationIds: Array.from(conversationIds.entries()),
-      });
+      if (import.meta.env.DEV) {
+        console.log('[MessagesPage] Send attempt:', {
+          selectedAdvisorId,
+          advisorRole: selectedAdvisor?.role,
+          isAdvisorChat,
+          conversationIds: Array.from(conversationIds.entries()),
+        });
+      }
 
       // Check if this is a lawyer/advisor chat (use new conversation system)
       let conversationId = conversationIds.get(selectedAdvisorId);
 
       // If advisor chat but no conversation ID, try to create it
       if (isAdvisorChat && !conversationId) {
-        console.log('[MessagesPage] No conversation ID found, creating one...');
+        if (import.meta.env.DEV) {
+          console.log('[MessagesPage] No conversation ID found, creating one...');
+        }
         try {
           const advisorAuthId = await getAuthUserIdFromProfileId(selectedAdvisorId);
           if (advisorAuthId) {
@@ -1191,7 +1602,9 @@ export default function MessagesPage() {
               `Chat with ${advisorName}`
             );
             setConversationIds(prev => new Map(prev).set(selectedAdvisorId, conversationId!));
-            console.log('[MessagesPage] Conversation created:', conversationId);
+            if (import.meta.env.DEV) {
+              console.log('[MessagesPage] Conversation created:', conversationId);
+            }
           }
         } catch (error: any) {
           console.error('[MessagesPage] Failed to create conversation:', error);
@@ -1202,16 +1615,22 @@ export default function MessagesPage() {
 
       if (isAdvisorChat && conversationId) {
         // Use new conversation system
-        console.log('[MessagesPage] Sending via conversation system:', { conversationId, text: text.substring(0, 50) });
+        if (import.meta.env.DEV) {
+          console.log('[MessagesPage] Sending via conversation system:', { conversationId, text: text.substring(0, 50) });
+        }
         await sendConversationMessageMutation.mutateAsync({
           conversation_id: conversationId,
           sender_id: currentUserId,
           content: text,
         });
-        console.log('[MessagesPage] Message sent successfully via conversation system');
+        if (import.meta.env.DEV) {
+          console.log('[MessagesPage] Message sent successfully via conversation system');
+        }
       } else {
         // Use legacy system
-        console.log('[MessagesPage] Sending via legacy system');
+        if (import.meta.env.DEV) {
+          console.log('[MessagesPage] Sending via legacy system');
+        }
         await sendMessageMutation.mutateAsync({
           sender_id: currentUserId,
           receiver_id: selectedAdvisorId,
@@ -1221,7 +1640,9 @@ export default function MessagesPage() {
           receiverFirstName: selectedAdvisor?.name.split(' ')[0] || '',
           receiverLastName: selectedAdvisor?.name.split(' ')[1] || undefined,
         });
-        console.log('[MessagesPage] Message sent successfully via legacy system');
+        if (import.meta.env.DEV) {
+          console.log('[MessagesPage] Message sent successfully via legacy system');
+        }
       }
     } catch (error: any) {
       console.error('[MessagesPage] Failed to send message:', error);
@@ -1254,47 +1675,38 @@ export default function MessagesPage() {
 
   return (
     <ContextualTipsProvider currentView="messages">
-    <div className="flex flex-col min-h-full md:h-screen md:p-6 overflow-visible bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 ios-safe-bottom">
-      {/* Content with safe area padding for bottom nav + input */}
-      <div className="flex-1 min-h-0 px-3 md:px-0 overflow-visible pb-[calc(120px+env(safe-area-inset-bottom,0px))]">
-        <div className="w-full max-w-[420px] mx-auto md:mx-0 md:max-w-none pt-2 md:pt-4">
-          {/* Main content area */}
-          <div className="flex gap-6">
-            {/* Desktop: Fixed sidebar */}
-            {!isMobile && (
-              <AdvisorListScoped
-                advisors={advisorsWithMetadata}
-                selectedId={selectedAdvisorId}
-                onSelect={handleSelectAdvisor}
-                isLoading={isLoadingAdvisors}
-              />
-            )}
+    <div className="flex flex-col h-screen overflow-hidden bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900">
+      {/* Content area - simplified structure */}
+      <div className="flex-1 min-h-0 flex gap-6 md:p-6 px-3 md:px-6 overflow-hidden">
+        {/* Desktop: Fixed sidebar */}
+        {!isMobile && (
+          <AdvisorListScoped
+            advisors={advisorsWithMetadata}
+            selectedId={selectedAdvisorId}
+            onSelect={handleSelectAdvisor}
+            isLoading={isLoadingAdvisors}
+          />
+        )}
 
-            {/* Chat Window */}
-            <div className="flex-1 min-w-0 flex flex-col min-h-0 -mx-3 md:mx-0">
-              <ChatWindowScoped
-                advisor={selectedAdvisor}
-                advisors={advisors}
-                messages={messages}
-                onSend={handleSend}
-                onSwitchAdvisor={(advisorId) => {
-                  const advisor = advisors.find(a => a.id === advisorId);
-                  if (advisor) {
-                    handleSelectAdvisor(advisor);
-                  }
-                }}
-                currentUserAvatar={profile?.avatar_url || undefined}
-                currentUserName={currentUserName}
-                isLoading={sendMessageMutation.isPending || sendConversationMessageMutation.isPending || isLoadingMessages || isLoadingConversationMessages || cometChat.isLoading}
-              />
-            </div>
-          </div>
-
-          {/* Footer - hidden on mobile, shown on desktop */}
-          {/* replaced-by-ultra-polish */}
-          <footer className={cn("hidden md:block mt-8 text-center", typography.caption, "opacity-40")}>
-            © 2025 NoticeBazaar — Secure Legal Portal
-          </footer>
+        {/* Chat Window - simplified to single flex container, no h-full */}
+        <div className="flex-1 min-w-0 flex flex-col min-h-0 -mx-3 md:mx-0 overflow-hidden">
+          <ChatWindowScoped
+            advisor={selectedAdvisor}
+            advisors={advisors}
+            messages={messages}
+            onSend={handleSend}
+            onSwitchAdvisor={(advisorId) => {
+              const advisor = advisors.find(a => a.id === advisorId);
+              if (advisor) {
+                handleSelectAdvisor(advisor);
+              }
+            }}
+            currentUserAvatar={profile?.avatar_url || undefined}
+            currentUserName={currentUserName}
+            isLoading={sendMessageMutation.isPending || sendConversationMessageMutation.isPending || isLoadingMessages || isLoadingConversationMessages || cometChat.isLoading}
+            conversationId={selectedAdvisorId ? conversationIds.get(selectedAdvisorId) || undefined : undefined}
+            userId={currentUserId || undefined}
+          />
         </div>
       </div>
 
@@ -1304,8 +1716,11 @@ export default function MessagesPage() {
         isLoading={sendMessageMutation.isPending || isLoadingMessages || cometChat.isLoading}
         variant="mobile-fixed"
         className="md:hidden"
+        conversationId={selectedAdvisorId ? conversationIds.get(selectedAdvisorId) || undefined : undefined}
+        userId={currentUserId || undefined}
       />
     </div>
     </ContextualTipsProvider>
   );
 }
+

@@ -110,7 +110,11 @@ body {
 html, body {
   height: 100%;
   overflow-x: hidden !important;
-  overscroll-behavior-y: none; /* Disable weird elastic scroll */
+  overscroll-behavior: none; /* Disable weird elastic scroll */
+}
+
+* {
+  -webkit-overflow-scrolling: touch;
 }
 
 /* Calendar-specific fixes */

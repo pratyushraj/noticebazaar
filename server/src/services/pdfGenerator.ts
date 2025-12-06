@@ -8,8 +8,12 @@ export async function generateReportPdf(analysis: AnalysisResult): Promise<Buffe
   const html = generateReportHtml(analysis);
 
   const browser = await puppeteer.launch({
-    headless: true,
+    headless: 'new',
     args: ['--no-sandbox', '--disable-setuid-sandbox']
+  }).catch(async (error) => {
+    // If Chrome is not installed, return a simple error message
+    console.error('[PDFGenerator] Puppeteer launch failed:', error.message);
+    throw new Error('PDF generation is temporarily unavailable. Please try again later.');
   });
 
   try {

@@ -153,19 +153,19 @@ export const ContractPreviewModal: React.FC<ContractPreviewModalProps> = ({
             animate={{ y: 0 }}
             exit={{ y: '100%' }}
             transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-            className="fixed inset-x-0 bottom-0 md:inset-auto md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:bottom-auto md:w-[90vw] md:max-w-4xl md:h-[85vh] bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 rounded-t-3xl md:rounded-3xl border border-white/10 shadow-2xl z-50 flex flex-col overflow-hidden"
+            className="fixed inset-0 md:inset-auto md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:bottom-auto md:w-[90vw] md:max-w-4xl md:h-[85vh] md:rounded-3xl bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 md:border md:border-white/10 shadow-2xl z-50 flex flex-col overflow-hidden"
           >
-            {/* Header */}
-            <div className="flex items-center justify-between p-4 border-b border-white/10 bg-purple-900/50 backdrop-blur-xl">
-              <div className="flex items-center gap-3 flex-1 min-w-0">
-                {fileType === 'pdf' && <FileText className="w-5 h-5 text-purple-300 flex-shrink-0" />}
-                {fileType === 'image' && <ImageIcon className="w-5 h-5 text-purple-300 flex-shrink-0" />}
-                {fileType === 'doc' && <FileText className="w-5 h-5 text-purple-300 flex-shrink-0" />}
+            {/* Header - Compact on mobile, full on desktop */}
+            <div className="flex items-center justify-between p-3 md:p-4 border-b border-white/10 bg-purple-900/50 backdrop-blur-xl flex-shrink-0">
+              <div className="flex items-center gap-2 md:gap-3 flex-1 min-w-0">
+                {fileType === 'pdf' && <FileText className="w-4 h-4 md:w-5 md:h-5 text-purple-300 flex-shrink-0" />}
+                {fileType === 'image' && <ImageIcon className="w-4 h-4 md:w-5 md:h-5 text-purple-300 flex-shrink-0" />}
+                {fileType === 'doc' && <FileText className="w-4 h-4 md:w-5 md:h-5 text-purple-300 flex-shrink-0" />}
                 <div className="min-w-0 flex-1">
-                  <h3 className="text-white font-semibold truncate">
+                  <h3 className="text-white font-semibold truncate text-sm md:text-base">
                     {fileName || metadata?.filename || 'Contract Preview'}
                   </h3>
-                  <div className="flex items-center gap-2 text-xs text-purple-300">
+                  <div className="flex items-center gap-1.5 md:gap-2 text-xs text-purple-300">
                     {metadata && (
                       <>
                         <span className="uppercase">{metadata.filetype}</span>
@@ -178,7 +178,7 @@ export const ContractPreviewModal: React.FC<ContractPreviewModalProps> = ({
                         {metadata.uploaded_at && (
                           <>
                             <span>•</span>
-                            <span>
+                            <span className="hidden sm:inline">
                               Uploaded {new Date(metadata.uploaded_at).toLocaleDateString('en-US', {
                                 month: 'short',
                                 day: 'numeric',
@@ -195,35 +195,35 @@ export const ContractPreviewModal: React.FC<ContractPreviewModalProps> = ({
                 </div>
               </div>
 
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1.5 md:gap-2">
                 {isMobileDevice() && (
                   <button
                     onClick={handleShare}
-                    className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+                    className="p-1.5 md:p-2 hover:bg-white/10 rounded-lg transition-colors"
                     aria-label="Share"
                   >
-                    <Share2 className="w-5 h-5 text-white" />
+                    <Share2 className="w-4 h-4 md:w-5 md:h-5 text-white" />
                   </button>
                 )}
                 <button
                   onClick={handleDownload}
-                  className="px-4 py-2 bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white font-medium rounded-xl transition-all active:scale-95 flex items-center gap-2"
+                  className="px-3 py-1.5 md:px-4 md:py-2 bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white font-medium rounded-xl transition-all active:scale-95 flex items-center gap-1.5 md:gap-2 text-sm md:text-base"
                 >
-                  <Download className="w-4 h-4" />
+                  <Download className="w-3.5 h-3.5 md:w-4 md:h-4" />
                   <span className="hidden sm:inline">Download</span>
                 </button>
                 <button
                   onClick={onClose}
-                  className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+                  className="p-1.5 md:p-2 hover:bg-white/10 rounded-lg transition-colors"
                   aria-label="Close"
                 >
-                  <X className="w-5 h-5 text-white" />
+                  <X className="w-4 h-4 md:w-5 md:h-5 text-white" />
                 </button>
               </div>
             </div>
 
             {/* Content */}
-            <div className="flex-1 overflow-auto bg-black/20">
+            <div className="flex-1 overflow-hidden bg-black/20 md:overflow-auto">
               {isLoading ? (
                 <div className="flex items-center justify-center h-full">
                   <div className="text-white/60">Loading preview...</div>
@@ -241,11 +241,15 @@ export const ContractPreviewModal: React.FC<ContractPreviewModalProps> = ({
                   </button>
                 </div>
               ) : fileType === 'pdf' ? (
-                <div className="h-full w-full">
-                  <embed
+                <div className="h-full w-full flex-1 overflow-hidden">
+                  <iframe
                     src={fileUrl}
                     type="application/pdf"
-                    className="w-full h-full"
+                    className="w-full h-full border-0"
+                    style={{ 
+                      minHeight: isMobileDevice() ? 'calc(100vh - 70px)' : '100%',
+                      height: '100%'
+                    }}
                     onError={() => {
                       setError('Failed to load PDF. Please download the file instead.');
                     }}

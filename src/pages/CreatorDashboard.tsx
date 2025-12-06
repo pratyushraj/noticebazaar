@@ -65,15 +65,17 @@ const CreatorDashboard = () => {
   const authenticatedUserId = session?.user?.id;
   const creatorId = profile?.id || authenticatedUserId;
   
-  // Debug: Log creator ID resolution
+  // Debug: Log creator ID resolution (dev only)
   useEffect(() => {
-    console.log('[CreatorDashboard] Creator ID resolution:', {
-      profileId: profile?.id,
-      authenticatedUserId,
-      finalCreatorId: creatorId,
-      hasSession: !!session,
-      hasProfile: !!profile,
-    });
+    if (import.meta.env.DEV) {
+      console.log('[CreatorDashboard] Creator ID resolution:', {
+        profileId: profile?.id,
+        authenticatedUserId,
+        finalCreatorId: creatorId,
+        hasSession: !!session,
+        hasProfile: !!profile,
+      });
+    }
   }, [profile?.id, authenticatedUserId, creatorId, session, profile]);
   
   const { data: brandDeals = [], isLoading: isLoadingDeals, error: brandDealsError } = useBrandDeals({
@@ -81,19 +83,21 @@ const CreatorDashboard = () => {
     enabled: !sessionLoading && !!creatorId,
   });
   
-  // Debug: Log dashboard state
+  // Debug: Log dashboard state (dev only)
   useEffect(() => {
-    console.log('[CreatorDashboard] State:', {
-      profileId: profile?.id,
-      authenticatedUserId,
-      creatorId,
-      brandDealsLength: brandDeals?.length ?? 0,
-      isLoadingDeals,
-      hasError: !!brandDealsError,
-      errorMessage: brandDealsError?.message,
-      brandDealsIsArray: Array.isArray(brandDeals),
-      brandDealsValue: brandDeals,
-    });
+    if (import.meta.env.DEV) {
+      console.log('[CreatorDashboard] State:', {
+        profileId: profile?.id,
+        authenticatedUserId,
+        creatorId,
+        brandDealsLength: brandDeals?.length ?? 0,
+        isLoadingDeals,
+        hasError: !!brandDealsError,
+        errorMessage: brandDealsError?.message,
+        brandDealsIsArray: Array.isArray(brandDeals),
+        brandDealsValue: brandDeals,
+      });
+    }
   }, [profile?.id, authenticatedUserId, creatorId, brandDeals, isLoadingDeals, brandDealsError]);
 
   const { data: partnerStats } = usePartnerStats(profile?.id);
@@ -1214,13 +1218,25 @@ const CreatorDashboard = () => {
                       transition={{ ...motionTokens.slide.up.transition, delay: index * 0.1 }}
                       whileTap={animations.microTap}
                       whileHover={window.innerWidth > 768 ? animations.microHover : undefined}
+                      style={{ pointerEvents: 'auto' }}
                     >
                       <ActionCard
                         icon={<Icon className={cn(iconSizes.lg, action.iconColor)} />}
                         label={action.label}
-                        onClick={() => {
+                        onClick={(e) => {
+                          if (e) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                          }
                           triggerHaptic(HapticPatterns.light);
-                          action.onClick();
+                          if (import.meta.env.DEV) {
+                            console.log('[CreatorDashboard] Action clicked:', action.label);
+                          }
+                          try {
+                            action.onClick();
+                          } catch (error) {
+                            console.error('[CreatorDashboard] Error in action onClick:', error);
+                          }
                         }}
                         variant="tertiary"
                         className={action.color}
@@ -1526,8 +1542,15 @@ const CreatorDashboard = () => {
                 <ActionCard
                   icon={<Icon className={`w-6 h-6 ${action.iconColor}`} />}
                   label={action.label}
-                  onClick={() => {
+                  onClick={(e) => {
+                    if (e) {
+                      e.preventDefault();
+                      e.stopPropagation();
+                    }
                     triggerHaptic(HapticPatterns.medium);
+                    if (import.meta.env.DEV) {
+                      console.log('[CreatorDashboard] Action clicked:', action.label);
+                    }
                     action.onClick();
                     setShowQuickActionsSheet(false);
                   }}

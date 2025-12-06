@@ -1,18 +1,19 @@
 // Advisor Dashboard - Inbox, conversation view, contract preview, quick replies
 // Matches existing NoticeBazaar design (purple gradient, glass cards)
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { useSession } from '@/contexts/SessionContext';
 import { supabase } from '@/integrations/supabase/client';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   MessageSquare, Search, Filter, FileText, CheckCircle, 
-  AlertTriangle, Clock, Send, X, Eye, Download
+  AlertTriangle, Clock, Send, X, Eye, Download, ChevronLeft, LogOut, Loader2
 } from 'lucide-react';
 import { spacing, typography, iconSizes, radius, glass, shadows, animations } from '@/lib/design-system';
 import { cn } from '@/lib/utils';
 import { triggerHaptic, HapticPatterns } from '@/lib/utils/haptics';
 import { toast } from 'sonner';
+import { useSignOut } from '@/lib/hooks/useAuth';
 
 interface Conversation {
   id: string;
@@ -64,6 +65,11 @@ export default function AdvisorDashboard() {
   const [filter, setFilter] = useState<'all' | 'high_risk' | 'payment' | 'tax'>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(true);
+  const signOutMutation = useSignOut();
+  
+  // Mobile view state
+  const [showListOnMobile, setShowListOnMobile] = useState(true);
+  const [showChatOnMobile, setShowChatOnMobile] = useState(false);
 
   // Fetch conversations
   useEffect(() => {
@@ -221,12 +227,82 @@ export default function AdvisorDashboard() {
   const selectedConv = conversations.find(c => c.id === selectedConversation);
   const creatorParticipant = selectedConv?.participants.find(p => p.role === 'creator');
 
+  // Handle conversation selection
+  const handleSelectConversation = (convId: string) => {
+    triggerHaptic(HapticPatterns.medium);
+    setSelectedConversation(convId);
+    // On mobile, hide list and show chat
+    if (window.innerWidth < 768) {
+      setShowListOnMobile(false);
+      setShowChatOnMobile(true);
+    }
+  };
+
+  // Handle back button
+  const handleBack = () => {
+    setShowChatOnMobile(false);
+    setShowListOnMobile(true);
+    setSelectedConversation(null);
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 text-white">
       <div className="flex h-screen">
         {/* Left Sidebar - Filters & Conversation List */}
-        <aside className="w-80 border-r border-white/10 bg-white/5 backdrop-blur-xl">
+        <aside className={cn(
+          "w-full md:w-80 border-r border-white/10 bg-white/5 backdrop-blur-xl",
+          "transition-transform duration-300 ease-in-out",
+          showListOnMobile ? "block" : "hidden md:block"
+        )}>
           <div className="p-4 space-y-4">
+            {/* Header */}
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <div className={cn(
+                  "w-10 h-10 rounded-full flex items-center justify-center",
+                  "bg-gradient-to-br from-purple-500/20 to-indigo-500/20"
+                )}>
+                  <MessageSquare className={iconSizes.md} />
+                </div>
+                <div>
+                  <div className="font-semibold">Chartered Accountant</div>
+                  <div className="text-xs text-white/60">Tax & Finance</div>
+                </div>
+              </div>
+              <motion.button
+                onClick={async () => {
+                  triggerHaptic(HapticPatterns.medium);
+                  try {
+                    // Analytics tracking
+                    if (typeof window !== 'undefined' && (window as any).gtag) {
+                      (window as any).gtag('event', 'logout', {
+                        event_category: 'engagement',
+                        event_label: 'user_logout',
+                        method: 'advisor_dashboard'
+                      });
+                    }
+                    await signOutMutation.mutateAsync();
+                  } catch (error: any) {
+                    console.error('Logout failed', error);
+                  }
+                }}
+                disabled={signOutMutation.isPending}
+                whileTap={animations.microTap}
+                className={cn(
+                  "p-2 rounded-lg transition-colors",
+                  "text-white/70 hover:text-white hover:bg-white/10",
+                  "disabled:opacity-50 disabled:cursor-not-allowed"
+                )}
+                aria-label="Log out"
+              >
+                {signOutMutation.isPending ? (
+                  <Loader2 className={iconSizes.sm} />
+                ) : (
+                  <LogOut className={iconSizes.sm} />
+                )}
+              </motion.button>
+            </div>
+
             {/* Search */}
             <div className="relative">
               <Search className={cn(iconSizes.sm, "absolute left-3 top-1/2 -translate-y-1/2 text-white/40")} />
@@ -277,10 +353,7 @@ export default function AdvisorDashboard() {
               filteredConversations.map((conv) => (
                 <motion.button
                   key={conv.id}
-                  onClick={() => {
-                    triggerHaptic(HapticPatterns.medium);
-                    setSelectedConversation(conv.id);
-                  }}
+                  onClick={() => handleSelectConversation(conv.id)}
                   whileTap={animations.microTap}
                   className={cn(
                     "w-full p-4 text-left border-b border-white/5",
@@ -298,7 +371,7 @@ export default function AdvisorDashboard() {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between mb-1">
                         <div className="font-semibold truncate">
-                          {conv.title || creatorParticipant?.profiles.first_name || 'Conversation'}
+                          {conv.title || creatorParticipant?.profiles?.first_name || 'Conversation'}
                         </div>
                         {conv.unread_count_advisor > 0 && (
                           <span className="px-2 py-0.5 rounded-full bg-purple-500 text-xs font-semibold">
@@ -328,11 +401,15 @@ export default function AdvisorDashboard() {
         </aside>
 
         {/* Main Content - Conversation View */}
-        <main className="flex-1 flex flex-col">
+        <main className={cn(
+          "flex-1 flex flex-col h-full",
+          showChatOnMobile ? "flex" : "hidden md:flex"
+        )}>
           {selectedConversation ? (
             <ConversationView
               conversation={selectedConv!}
               messages={messages}
+              onBack={handleBack}
               onSendMessage={async (content) => {
                 if (!user?.id) return;
                 const { error } = await supabase.from('messages').insert({
@@ -360,15 +437,63 @@ export default function AdvisorDashboard() {
 function ConversationView({
   conversation,
   messages,
-  onSendMessage
+  onSendMessage,
+  onBack
 }: {
   conversation: Conversation;
   messages: Message[];
   onSendMessage: (content: string) => Promise<void>;
+  onBack?: () => void;
 }) {
   const { user } = useSession();
   const [newMessage, setNewMessage] = useState('');
   const [isSending, setIsSending] = useState(false);
+  const messagesContainerRef = useRef<HTMLDivElement | null>(null);
+  const lastMessageRef = useRef<HTMLDivElement | null>(null);
+  const lastMessageIdRef = useRef<string | null>(null);
+  const inputRef = useRef<HTMLInputElement | null>(null);
+
+  // Scroll helper with fallbacks
+  const scrollToLast = (smooth = true) => {
+    const el = lastMessageRef.current;
+    const container = messagesContainerRef.current;
+    
+    if (!container) return;
+    
+    // If we have a last message element, prefer scrollIntoView
+    if (el && typeof el.scrollIntoView === 'function') {
+      try {
+        el.scrollIntoView({ behavior: smooth ? 'smooth' : 'auto', block: 'end', inline: 'nearest' });
+        return;
+      } catch (err) {
+        // ignore and fall back
+      }
+    }
+    
+    // Fallback: adjust scrollTop
+    container.scrollTop = container.scrollHeight - container.clientHeight;
+  };
+
+  // Auto-scroll when messages change
+  useEffect(() => {
+    if (!messages || messages.length === 0) return;
+    
+    const latestId = messages[messages.length - 1]?.id;
+    if (!latestId) return;
+    
+    const changed = lastMessageIdRef.current !== latestId;
+    lastMessageIdRef.current = latestId;
+    
+    // On mobile, keyboard may shift layout. Allow a tiny delay:
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    const timeout = isMobile ? 120 : 40;
+    
+    const t = setTimeout(() => {
+      scrollToLast(changed);
+    }, timeout);
+    
+    return () => clearTimeout(t);
+  }, [messages]);
 
   const handleSend = async () => {
     if (!newMessage.trim() || isSending) return;
@@ -377,6 +502,15 @@ function ConversationView({
     try {
       await onSendMessage(newMessage);
       setNewMessage('');
+      
+      // Refocus input so keyboard stays up on mobile
+      setTimeout(() => {
+        inputRef.current?.focus();
+        // Small delay then scroll to ensure new message is rendered
+        setTimeout(() => {
+          scrollToLast(true);
+        }, 70);
+      }, 30);
     } catch (err: any) {
       toast.error('Failed to send message', { description: err.message });
     } finally {
@@ -387,20 +521,30 @@ function ConversationView({
   const creatorParticipant = conversation.participants.find(p => p.role === 'creator');
 
   return (
-    <>
+    <div className="flex flex-col h-full">
       {/* Header */}
-      <div className={cn("p-4 border-b border-white/10", glass.apple)}>
+      <div className={cn("p-4 border-b border-white/10 flex-shrink-0", glass.apple)}>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
+            {/* Back button for mobile */}
+            {onBack && (
+              <button
+                onClick={onBack}
+                className="md:hidden p-2 -ml-2 rounded-lg hover:bg-white/10 transition-colors"
+                aria-label="Back to conversations"
+              >
+                <ChevronLeft className={iconSizes.md} />
+              </button>
+            )}
             <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500/20 to-indigo-500/20 flex items-center justify-center">
               <MessageSquare className={iconSizes.md} />
             </div>
             <div>
               <div className="font-semibold">
-                {conversation.title || creatorParticipant?.profiles.first_name || 'Conversation'}
+                {conversation.title || creatorParticipant?.profiles?.first_name || 'Conversation'}
               </div>
               <div className="text-sm text-white/60">
-                {creatorParticipant?.profiles.first_name} {creatorParticipant?.profiles.last_name}
+                {creatorParticipant?.profiles?.first_name || ''} {creatorParticipant?.profiles?.last_name || ''}
               </div>
             </div>
           </div>
@@ -423,21 +567,59 @@ function ConversationView({
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {messages.map((msg) => {
+      <div 
+        ref={messagesContainerRef}
+        className="flex-1 overflow-y-auto min-h-0 p-2"
+        style={{ WebkitOverflowScrolling: 'touch' }}
+      >
+        {messages.map((msg, index) => {
           const isOwn = msg.sender_id === user?.id;
+          const prevMsg = index > 0 ? messages[index - 1] : null;
+          const nextMsg = index < messages.length - 1 ? messages[index + 1] : null;
+          
+          // Improved grouping - group by sender and time (within same minute)
+          const isFirstOfGroup = 
+            index === 0 ||
+            !prevMsg ||
+            prevMsg.sender_id !== msg.sender_id ||
+            new Date(msg.sent_at).getTime() - new Date(prevMsg.sent_at).getTime() > 60000;
+          
+          const isLastInGroup = !nextMsg || 
+            nextMsg.sender_id !== msg.sender_id ||
+            new Date(nextMsg.sent_at).getTime() - new Date(msg.sent_at).getTime() > 60000;
+          
+          const isGrouped = !isFirstOfGroup;
+          const isLast = index === messages.length - 1;
+          const showTail = isFirstOfGroup;
+          
           return (
-            <div
+            <motion.div
               key={msg.id}
-              className={cn("flex gap-3", isOwn && "flex-row-reverse")}
+              ref={isLast ? lastMessageRef : undefined}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.15 }}
+              className={cn(
+                "flex mb-1",
+                isOwn ? "justify-end" : "justify-start",
+                isGrouped && "mt-0.5"
+              )}
+              aria-live={isLast ? 'polite' : undefined}
             >
               <div className={cn(
-                "max-w-[70%] rounded-2xl p-4",
+                "max-w-[80%] px-3 py-2 text-sm",
+                // WhatsApp/iMessage style rounded corners
                 isOwn
-                  ? "bg-gradient-to-br from-purple-500 to-indigo-500"
-                  : cn(glass.apple, "bg-white/10")
+                  ? cn(
+                      "bg-purple-600 text-white",
+                      showTail ? "rounded-2xl rounded-br-sm" : "rounded-2xl"
+                    )
+                  : cn(
+                      "bg-white/10 text-white",
+                      showTail ? "rounded-2xl rounded-bl-sm" : "rounded-2xl"
+                    )
               )}>
-                <p className="text-sm">{msg.content}</p>
+                <p className="text-sm leading-relaxed break-words">{msg.content}</p>
                 {msg.attachments && msg.attachments.length > 0 && (
                   <div className="mt-2 space-y-2">
                     {msg.attachments.map((att) => (
@@ -455,19 +637,23 @@ function ConversationView({
                     ))}
                   </div>
                 )}
-                <div className="text-xs text-white/50 mt-2">
-                  {new Date(msg.sent_at).toLocaleTimeString()}
+                <div className={cn(
+                  "text-[10px] mt-1 flex items-center gap-1",
+                  isOwn ? "text-white/70 justify-end" : "text-white/50"
+                )}>
+                  {new Date(msg.sent_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                 </div>
               </div>
-            </div>
+            </motion.div>
           );
         })}
       </div>
 
       {/* Input */}
-      <div className={cn("p-4 border-t border-white/10", glass.apple)}>
+      <div className={cn("p-4 border-t border-white/10 flex-shrink-0", glass.apple)}>
         <div className="flex gap-2">
           <input
+            ref={inputRef}
             type="text"
             value={newMessage}
             onChange={(e) => setNewMessage(e.target.value)}
@@ -496,7 +682,7 @@ function ConversationView({
           </motion.button>
         </div>
       </div>
-    </>
+    </div>
   );
 }
 

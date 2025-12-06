@@ -194,12 +194,9 @@ const CreatorBottomNav = () => {
           };
 
           const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
-            // Don't prevent default - let Link handle navigation naturally
-            // Only stop propagation to prevent event bubbling
-            e.stopPropagation();
+            // Trigger haptic feedback
             triggerHaptic(HapticPatterns.light);
-            // navigate() is called as fallback, but Link should handle it
-            navigate(item.to);
+            // Let Link component handle navigation naturally
           };
 
           return (
@@ -207,12 +204,14 @@ const CreatorBottomNav = () => {
               key={item.to}
               className="flex-1"
               whileTap={animations.microTap}
+              style={{ pointerEvents: 'auto' }}
             >
               <Link
                 to={item.to}
                 tabIndex={0}
                 onKeyDown={handleKeyDown}
                 onClick={handleClick}
+                replace={false}
                 className={cn(
                   "flex flex-col items-center justify-center h-full transition-all duration-150 relative",
                   "focus-visible:outline focus-visible:outline-2 focus-visible:outline-purple-400/70 focus-visible:outline-offset-2 focus-visible:rounded-lg",

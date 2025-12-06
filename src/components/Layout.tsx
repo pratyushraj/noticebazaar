@@ -30,14 +30,15 @@ const Layout = ({ children }: LayoutProps) => {
                         location.pathname.startsWith('/messages') ||
                         location.pathname.startsWith('/calendar') ||
                         location.pathname.startsWith('/payment/') ||
-                        location.pathname.startsWith('/create-deal');
+                        location.pathname.startsWith('/create-deal') ||
+                        location.pathname.startsWith('/contract-upload');
   
   // Show bottom nav for creator routes (default for all users), hide for admin/CA/lawyer/advisor routes
   // Allow bottom nav even if profile role is null/undefined (new accounts default to creator)
   const shouldShowBottomNav = isCreatorRoute && !isOnboarding && !isAdminRoute && !isCARoute && !isLawyerRoute && !isAdvisorRoute && !isClientRoute && !!profile;
 
   return (
-    <div className="relative min-h-screen bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 text-white">
+    <div className="relative h-screen md:min-h-screen bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 text-white overflow-hidden md:overflow-visible">
       {/* Skip to main content link */}
       <a 
         href="#main" 
@@ -46,15 +47,16 @@ const Layout = ({ children }: LayoutProps) => {
         Skip to main content
       </a>
       
-      <div className="relative z-10 flex flex-col min-h-screen">
+      <div className="relative z-10 flex flex-col h-full md:min-h-screen">
         {/* Modern Navbar */}
         <Navbar />
         
-        <div className="flex flex-1">
+        <div className="flex flex-1 min-h-0 overflow-hidden md:overflow-visible">
           <main 
             id="main"
             className={cn(
               "flex-1 w-full py-6 px-4 md:px-6 lg:px-8 pb-20 md:pb-24 transition-all duration-300 ease-in-out",
+              "overflow-y-auto md:overflow-y-visible",
               isOpen && "md:ml-[280px]"
             )}
           >

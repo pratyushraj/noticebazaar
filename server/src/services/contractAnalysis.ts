@@ -1,11 +1,16 @@
 // Contract Analysis Service
 // Analyzes PDF contracts and extracts key terms, issues, and risk assessment
+// Uses AI (free LLM) with fallback to rule-based analysis
 
 import * as pdfjsLib from 'pdfjs-dist';
 import { TextItem } from 'pdfjs-dist/types/src/display/api';
+import { analyzeContractWithAI } from './aiContractAnalysis';
+import { classifyDocumentTypeWithAI } from './contractClassifier';
+import { calculateNegotiationPowerScore } from './negotiationPowerScore';
 
 interface AnalysisResult {
   protectionScore: number;
+  negotiationPowerScore?: number; // Added negotiation power score
   overallRisk: 'low' | 'medium' | 'high';
   issues: Array<{
     severity: 'high' | 'medium' | 'low' | 'warning';
@@ -27,16 +32,107 @@ interface AnalysisResult {
     deliverables?: string;
     paymentSchedule?: string;
     exclusivity?: string;
+    payment?: string; // Added for negotiation power score calculation
   };
   recommendations: string[];
 }
 
+/**
+ * Validates if the document is a brand deal contract
+ * RELAXED VALIDATION: Only rejects hard patterns, accepts if 2+ positive signals
+ * Returns validation result with score and reason
+ * 
+ * EXPORTED for use in contractClassifier as fallback
+ */
+export function isValidBrandDealContract(text: string): { valid: boolean; score: number; reason?: string } {
+  const t = text.toLowerCase();
+
+  // 🚨 HARD REJECTION ONLY FOR THESE SPECIFIC PATTERNS
+  // Make patterns more specific to avoid false positives
+  const rejectionPatterns = [
+    { pattern: "legal notice", exact: false },
+    { pattern: "zoomcar", exact: false },
+    { pattern: "booking id", exact: false },
+    { pattern: "vehicle rental", exact: false },
+    { pattern: "vehicle damage", exact: false },
+    { pattern: "repair estimate", exact: false },
+    { pattern: "insurance claim", exact: false },
+    { pattern: "insurance policy", exact: false },
+    { pattern: "court order", exact: false },
+    { pattern: "plaintiff", exact: false },
+    { pattern: "defendant", exact: false },
+    { pattern: "invoice number", exact: false },
+    { pattern: "receipt number", exact: false },
+    { pattern: "gst certificate", exact: false },
+    { pattern: "gst registration", exact: false },
+    { pattern: "aadhaar card", exact: false },
+    { pattern: "pan card", exact: false },
+    { pattern: "tax form", exact: false },
+    { pattern: "government form", exact: false },
+  ];
+
+  for (const { pattern, exact } of rejectionPatterns) {
+    if (exact ? t === pattern : t.includes(pattern)) {
+      console.log('[BackendValidation] ❌ HARD REJECTION PATTERN:', pattern);
+      return { valid: false, score: 0, reason: "Hard rejection pattern: " + pattern };
+    }
+  }
+
+  console.log('[BackendValidation] ✓ No hard rejection patterns found');
+
+  // ✅ STRONG BRAND DEAL SIGNALS (ANY 2 GROUPS IS ENOUGH)
+  const positiveSignals = {
+    roles: ["brand", "creator", "influencer"],
+    content: ["post", "video", "reel", "story", "content", "deliverable"],
+    deal: ["campaign", "collaboration", "sponsorship", "promotion"],
+    money: ["payment", "fee", "compensation", "consideration", "amount"],
+    rights: ["usage", "license", "intellectual property", "ip"],
+    exclusivity: ["exclusive", "exclusivity", "non compete"]
+  };
+
+  let matches = 0;
+  const matchedGroups: string[] = [];
+
+  Object.entries(positiveSignals).forEach(([groupName, words]) => {
+    if (words.some(word => t.includes(word))) {
+      matches += 1;
+      matchedGroups.push(groupName);
+    }
+  });
+
+  console.log('[BackendValidation] Positive signal matches:', matches, 'Groups:', matchedGroups);
+
+  // ✅ RELAXED PASS CONDITION: ANY 2 GROUPS = VALID
+  if (matches >= 2) {
+    console.log('[BackendValidation] ✅ BRAND DEAL DETECTED (', matches, 'signal groups matched)');
+    return { valid: true, score: Math.min(100, matches * 15), reason: "Brand deal detected: " + matchedGroups.join(", ") };
+  }
+
+  console.log('[BackendValidation] ❌ Not enough brand deal signals (', matches, 'groups, need 2+)');
+  return { valid: false, score: matches, reason: "Not enough brand deal signals (found " + matches + ", need 2+)" };
+}
+
 export async function analyzeContract(pdfBuffer: Buffer): Promise<AnalysisResult> {
-  // Initialize PDF.js
-  pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
+  // For Node.js, use local worker file from node_modules
+  // For browser, use CDN worker
+  if (typeof window === 'undefined') {
+    // Node.js environment - use local worker file
+    const path = require('path');
+    const workerPath = path.join(__dirname, '../../node_modules/pdfjs-dist/build/pdf.worker.min.js');
+    pdfjsLib.GlobalWorkerOptions.workerSrc = workerPath;
+  } else {
+    // Browser environment - use CDN worker
+    pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
+  }
+
+  // Convert Buffer to Uint8Array (required by pdfjs-dist)
+  const uint8Array = new Uint8Array(pdfBuffer);
 
   // Load PDF
-  const loadingTask = pdfjsLib.getDocument({ data: pdfBuffer });
+  const loadingTask = pdfjsLib.getDocument({ 
+    data: uint8Array,
+    verbosity: 0 // Reduce console output
+  });
   const pdf = await loadingTask.promise;
   
   // Extract text from all pages
@@ -50,13 +146,80 @@ export async function analyzeContract(pdfBuffer: Buffer): Promise<AnalysisResult
     fullText += pageText + '\n';
   }
 
-  // Analyze contract text
-  const analysis = analyzeContractText(fullText);
+  // 🚨 VALIDATION: AI-based classification ONLY (Gemini)
+  // ✅ ACCEPT if AI says it's a brand deal
+  // ❌ REJECT if AI rejects it
+  console.log('[ContractAnalysis] Performing AI-based document classification (Gemini only)...');
+  const classification = await classifyDocumentTypeWithAI(fullText);
+
+  console.log('[ContractAnalysis] AI result:', classification.type, '(confidence:', classification.confidence, ')');
+
+  // ✅ ACCEPT only if AI classifies as brand deal
+  if (classification.type !== "brand_deal_contract") {
+    console.log('[ContractAnalysis] ❌ AI REJECTED');
+    const err: any = new Error(
+      "⚠️ This document is NOT a brand deal contract. Only influencer–brand collaboration agreements are supported."
+    );
+    err.name = "ValidationError";
+    err.validationError = true;
+    err.details = { classification };
+    throw err;
+  }
+
+  console.log('[ContractAnalysis] ✅ AI classification passed (confidence:', classification.confidence, ')');
+
+  // Analyze contract text (AI-powered with fallback to rule-based)
+  const analysis = await analyzeContractText(fullText);
+
+  // Calculate Negotiation Power Score
+  const negotiationPowerScore = calculateNegotiationPowerScore(analysis);
+  analysis.negotiationPowerScore = negotiationPowerScore;
+  console.log('[ContractAnalysis] Negotiation Power Score calculated:', negotiationPowerScore);
 
   return analysis;
 }
 
-function analyzeContractText(text: string): AnalysisResult {
+/**
+ * Analyze contract text using AI (if enabled) or fallback to rule-based
+ */
+async function analyzeContractText(text: string): Promise<AnalysisResult> {
+  // Check if AI analysis is enabled
+  const useAI = process.env.USE_AI_CONTRACT_ANALYSIS === 'true' || 
+                process.env.LLM_PROVIDER !== undefined;
+  
+  if (useAI) {
+    try {
+      console.log('[ContractAnalysis] Using AI-powered analysis...');
+      const aiAnalysis = await analyzeContractWithAI(text);
+      console.log('[ContractAnalysis] AI analysis completed successfully');
+      
+      // Calculate Negotiation Power Score for AI analysis
+      const result = aiAnalysis as AnalysisResult;
+      result.negotiationPowerScore = calculateNegotiationPowerScore(result);
+      console.log('[ContractAnalysis] Negotiation Power Score calculated:', result.negotiationPowerScore);
+      
+      return result;
+    } catch (error: any) {
+      console.warn('[ContractAnalysis] AI analysis failed, falling back to rule-based:', error.message);
+      // Fall through to rule-based analysis
+    }
+  }
+
+  // Fallback to rule-based analysis
+  console.log('[ContractAnalysis] Using rule-based analysis...');
+  const ruleBasedResult = analyzeContractTextRuleBased(text);
+  
+  // Calculate Negotiation Power Score for rule-based analysis
+  ruleBasedResult.negotiationPowerScore = calculateNegotiationPowerScore(ruleBasedResult);
+  console.log('[ContractAnalysis] Negotiation Power Score calculated:', ruleBasedResult.negotiationPowerScore);
+  
+  return ruleBasedResult;
+}
+
+/**
+ * Rule-based contract analysis (fallback)
+ */
+function analyzeContractTextRuleBased(text: string): AnalysisResult {
   const lowerText = text.toLowerCase();
   const issues: AnalysisResult['issues'] = [];
   const verified: AnalysisResult['verified'] = [];
@@ -141,7 +304,7 @@ function analyzeContractText(text: string): AnalysisResult {
     riskLevel = 'medium';
   }
 
-  return {
+  const result: AnalysisResult = {
     protectionScore: Math.max(0, Math.min(100, protectionScore)),
     overallRisk: riskLevel,
     issues,
@@ -151,7 +314,8 @@ function analyzeContractText(text: string): AnalysisResult {
       duration,
       deliverables,
       paymentSchedule,
-      exclusivity
+      exclusivity,
+      payment: paymentSchedule // Alias for negotiation power score calculation
     },
     recommendations: [
       'Review identified issues with your legal advisor',
@@ -159,6 +323,11 @@ function analyzeContractText(text: string): AnalysisResult {
       'Request clarification on ambiguous clauses'
     ]
   };
+
+  // Calculate Negotiation Power Score
+  result.negotiationPowerScore = calculateNegotiationPowerScore(result);
+
+  return result;
 }
 
 function extractDealValue(text: string): string | undefined {
