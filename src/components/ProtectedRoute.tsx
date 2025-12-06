@@ -182,7 +182,9 @@ const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
       
       if (allowedRoles && allowedRoles.length > 0) {
         // If profile role is null/undefined, treat as 'creator' for new accounts
-        if (!allowedRoles.includes(userRole)) {
+        // For new accounts, if role is null/undefined and allowedRoles includes 'creator', allow access
+        const isNewAccountWithNullRole = !profile.role && allowedRoles.includes('creator');
+        if (!isNewAccountWithNullRole && !allowedRoles.includes(userRole)) {
           // User doesn't have required role - redirect to their dashboard
           navigate(targetDashboard, { replace: true });
           return;
