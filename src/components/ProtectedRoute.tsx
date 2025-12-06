@@ -279,7 +279,24 @@ const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
     );
   }
 
-  if (!session || !profile) {
+  // Allow rendering if user has session, even if profile is still loading
+  // The route permission checks above will handle role-based access
+  // For new accounts, profile might be null but they should still be able to access creator routes
+  if (!session) {
+    return null;
+  }
+
+  // If profile doesn't exist but user has session and is on a creator route with 'creator' in allowedRoles, allow access
+  if (!profile && session && allowedRoles?.includes('creator')) {
+    const isOnValidCreatorRoute = validCreatorRoutes.some(route => 
+      location.pathname === route || location.pathname.startsWith(route + '/')
+    );
+    if (isOnValidCreatorRoute) {
+      return <>{children}</>;
+    }
+  }
+
+  if (!profile) {
     return null;
   }
 
