@@ -14,7 +14,7 @@ interface LayoutProps {
 }
 
 const Layout = ({ children }: LayoutProps) => {
-  const { profile } = useSession();
+  const { profile, session, initialLoadComplete } = useSession();
   const location = useLocation();
   const { isOpen } = useSidebar();
   
@@ -34,8 +34,20 @@ const Layout = ({ children }: LayoutProps) => {
                         location.pathname.startsWith('/contract-upload');
   
   // Show bottom nav for creator routes (default for all users), hide for admin/CA/lawyer/advisor routes
-  // Allow bottom nav even if profile role is null/undefined (new accounts default to creator)
-  const shouldShowBottomNav = isCreatorRoute && !isOnboarding && !isAdminRoute && !isCARoute && !isLawyerRoute && !isAdvisorRoute && !isClientRoute && !!profile;
+  // Allow bottom nav if:
+  // 1. User is logged in (has session)
+  // 2. Profile exists OR profile is still loading (for new accounts, profile might be created by trigger)
+  // 3. User is not explicitly an admin/CA/lawyer/advisor (if profile exists and has a different role)
+  const isNonCreatorRole = profile && profile.role && !['creator', null, undefined].includes(profile.role);
+  const shouldShowBottomNav = isCreatorRoute && 
+                              !isOnboarding && 
+                              !isAdminRoute && 
+                              !isCARoute && 
+                              !isLawyerRoute && 
+                              !isAdvisorRoute && 
+                              !isClientRoute && 
+                              !!session && // User must be logged in
+                              !isNonCreatorRole; // Don't show if user has a non-creator role
 
   return (
     <div className="relative h-screen md:min-h-screen bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 text-white overflow-hidden md:overflow-visible">
