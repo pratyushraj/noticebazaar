@@ -8,7 +8,6 @@ SELECT
   first_name,
   last_name,
   onboarding_complete,
-  created_at,
   updated_at
 FROM profiles
 WHERE id IN (
@@ -29,15 +28,13 @@ WHERE id IN (
 
 -- Fix: Create or update profiles with 'creator' role
 -- This will create profiles if they don't exist, or update role if they do
-INSERT INTO public.profiles (id, role, onboarding_complete, created_at, updated_at)
+INSERT INTO public.profiles (id, role, onboarding_complete, updated_at)
 SELECT 
   u.id,
   'creator',
   false, -- Allow them to see dashboard even if onboarding not complete
-  COALESCE(p.created_at, NOW()),
   NOW()
 FROM auth.users u
-LEFT JOIN public.profiles p ON p.id = u.id
 WHERE u.id IN (
   'f5e28653-d355-4408-ae77-4ee27ae41102',
   'de7fe513-487a-4f90-bf1a-ce0e8014d6ef'
@@ -54,7 +51,6 @@ SELECT
   first_name,
   last_name,
   onboarding_complete,
-  created_at,
   updated_at
 FROM profiles
 WHERE id IN (
