@@ -2,6 +2,7 @@
 -- This script recreates the trigger if it's missing or broken
 
 -- Step 1: Create or replace the function
+-- Note: profiles table doesn't have created_at column, only updated_at
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER AS $$
 BEGIN

@@ -5,12 +5,11 @@
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER AS $$
 BEGIN
-  INSERT INTO public.profiles (id, role, onboarding_complete, created_at, updated_at)
+  INSERT INTO public.profiles (id, role, onboarding_complete, updated_at)
   VALUES (
     NEW.id,
     'creator', -- Default role for new signups from the signup page
     FALSE, -- Onboarding not complete yet - will trigger onboarding flow
-    NOW(),
     NOW()
   )
   ON CONFLICT (id) DO NOTHING; -- Prevent errors if profile already exists
