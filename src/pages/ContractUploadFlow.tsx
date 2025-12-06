@@ -286,7 +286,10 @@ ${creatorName}`;
     setClauseStates(new Map(clauseStates.set(issue.id, 'loading')));
     
     try {
-      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001';
+      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 
+        (typeof window !== 'undefined' && window.location.origin.includes('noticebazaar.com') 
+          ? 'https://api.noticebazaar.com' 
+          : 'http://localhost:3001');
       const response = await fetch(`${apiBaseUrl}/api/protection/generate-fix`, {
         method: 'POST',
         headers: {
@@ -472,8 +475,11 @@ ${creatorName}`;
     setReviewError(null);
 
     try {
-      // Get API base URL (backend runs on port 3001 or use env variable)
-      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001';
+      // Get API base URL - use env variable, or detect from current origin, or fallback to localhost
+      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 
+        (typeof window !== 'undefined' && window.location.origin.includes('noticebazaar.com') 
+          ? 'https://api.noticebazaar.com' 
+          : 'http://localhost:3001');
       const { data: { session } } = await supabase.auth.getSession();
       
       if (!session) {
@@ -1909,7 +1915,10 @@ ${creatorName}`;
                       triggerHaptic(HapticPatterns.light);
                       
                       try {
-                        const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001';
+                        const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 
+                          (typeof window !== 'undefined' && window.location.origin.includes('noticebazaar.com') 
+                            ? 'https://api.noticebazaar.com' 
+                            : 'http://localhost:3001');
                         const response = await fetch(`${apiBaseUrl}/api/protection/send-for-legal-review`, {
                           method: 'POST',
                           headers: {
@@ -1976,7 +1985,10 @@ ${creatorName}`;
                         setIsGeneratingMessage(true);
                         
                         try {
-                          const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001';
+                          const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 
+                            (typeof window !== 'undefined' && window.location.origin.includes('noticebazaar.com') 
+                              ? 'https://api.noticebazaar.com' 
+                              : 'http://localhost:3001');
                           const response = await fetch(`${apiBaseUrl}/api/protection/generate-negotiation-message`, {
                             method: 'POST',
                             headers: {

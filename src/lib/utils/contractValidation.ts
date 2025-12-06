@@ -155,21 +155,9 @@ export async function extractTextFromPDF(file: File): Promise<string> {
         // Dynamically import pdf.js
         const pdfjsLib = await import('pdfjs-dist');
         
-        // Try to set worker source - use multiple fallback options
-        const pdfjsVersion = pdfjsLib.version || '3.11.174'; // Use library version or fallback
-        try {
-          // Try unpkg first (more reliable)
-          pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsVersion}/build/pdf.worker.min.js`;
-        } catch (workerError) {
-          console.warn('[ContractValidation] Failed to set worker from unpkg, trying CDN:', workerError);
-          // Fallback to CDN
-          try {
-            pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsVersion}/pdf.worker.min.js`;
-          } catch (cdnError) {
-            // Last resort: use jsdelivr
-            pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdn.jsdelivr.net/npm/pdfjs-dist@${pdfjsVersion}/build/pdf.worker.min.js`;
-          }
-        }
+        // Use jsdelivr CDN (has better CORS headers than unpkg)
+        const pdfjsVersion = pdfjsLib.version || '3.11.174';
+        pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdn.jsdelivr.net/npm/pdfjs-dist@${pdfjsVersion}/build/pdf.worker.min.js`;
         
         console.log('[ContractValidation] Loading PDF, size:', arrayBuffer.byteLength, 'bytes');
         
