@@ -14,7 +14,7 @@ interface LayoutProps {
 }
 
 const Layout = ({ children }: LayoutProps) => {
-  const { profile, session, initialLoadComplete } = useSession();
+  const { profile, session } = useSession();
   const location = useLocation();
   const { isOpen } = useSidebar();
   
