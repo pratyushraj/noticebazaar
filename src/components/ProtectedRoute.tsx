@@ -288,7 +288,28 @@ const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
 
   // If profile doesn't exist but user has session and is on a creator route with 'creator' in allowedRoles, allow access
   if (!profile && session && allowedRoles?.includes('creator')) {
-    const isOnValidCreatorRoute = validCreatorRoutes.some(route => 
+    const validCreatorRoutesList = [
+      '/creator-dashboard',
+      '/creator-contracts',
+      '/creator-payments',
+      '/creator-content-protection',
+      '/messages',
+      '/calendar',
+      '/create-deal',
+      '/payment',
+      '/deal',
+      '/contract-upload',
+      '/contract-analyzer',
+      '/contract-comparison',
+      '/contract-protection',
+      '/rate-calculator',
+      '/ai-pitch-generator',
+      '/creator-profile',
+      '/creator-analytics',
+      '/brand-directory',
+      '/brands',
+    ];
+    const isOnValidCreatorRoute = validCreatorRoutesList.some((route: string) => 
       location.pathname === route || location.pathname.startsWith(route + '/')
     );
     if (isOnValidCreatorRoute) {
