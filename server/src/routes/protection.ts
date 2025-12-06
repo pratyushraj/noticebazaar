@@ -33,6 +33,8 @@ router.post('/analyze', async (req: AuthenticatedRequest, res) => {
     try {
       analysis = await analyzeContract(contractBuffer);
     } catch (err: any) {
+      console.error('[Protection] Contract analysis error:', err);
+      
       // 🚨 HARD FAIL AT API LEVEL: If validation fails, MUST return 400
       if (err.validationError === true) {
         return res.status(400).json({
@@ -42,8 +44,22 @@ router.post('/analyze', async (req: AuthenticatedRequest, res) => {
           details: err.details || null
         });
       }
-      // For all other errors, re-throw to outer catch
-      throw err;
+      
+      // Handle PDF parsing errors
+      if (err.message?.includes('Invalid PDF') || err.message?.includes('PDF structure')) {
+        return res.status(400).json({
+          ok: false,
+          error: 'Invalid PDF file. Please ensure the file is a valid PDF document.',
+          details: err.message
+        });
+      }
+      
+      // For all other errors, return 500 with error message
+      return res.status(500).json({
+        ok: false,
+        error: err.message || 'Failed to analyze contract',
+        details: process.env.NODE_ENV === 'development' ? err.stack : undefined
+      });
     }
 
     // Generate PDF report (optional - if it fails, continue without PDF)

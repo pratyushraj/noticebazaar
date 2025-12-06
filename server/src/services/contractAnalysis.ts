@@ -118,22 +118,48 @@ export async function analyzeContract(pdfBuffer: Buffer): Promise<AnalysisResult
   if (typeof window === 'undefined') {
     // Node.js environment - use local worker file
     const path = require('path');
+    const fs = require('fs');
     const workerPath = path.join(__dirname, '../../node_modules/pdfjs-dist/build/pdf.worker.min.js');
-    pdfjsLib.GlobalWorkerOptions.workerSrc = workerPath;
+    
+    // Check if local worker exists, otherwise use CDN
+    if (fs.existsSync(workerPath)) {
+      pdfjsLib.GlobalWorkerOptions.workerSrc = workerPath;
+    } else {
+      // Fallback to CDN if local file doesn't exist
+      const pdfjsVersion = pdfjsLib.version || '3.11.174';
+      pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsVersion}/build/pdf.worker.min.js`;
+    }
   } else {
     // Browser environment - use CDN worker
-    pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
+    const pdfjsVersion = pdfjsLib.version || '3.11.174';
+    pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsVersion}/build/pdf.worker.min.js`;
   }
 
   // Convert Buffer to Uint8Array (required by pdfjs-dist)
   const uint8Array = new Uint8Array(pdfBuffer);
 
-  // Load PDF
-  const loadingTask = pdfjsLib.getDocument({ 
-    data: uint8Array,
-    verbosity: 0 // Reduce console output
-  });
-  const pdf = await loadingTask.promise;
+  // Validate PDF buffer is not empty
+  if (uint8Array.length === 0) {
+    throw new Error('PDF buffer is empty');
+  }
+
+  // Load PDF with better error handling
+  let pdf;
+  try {
+    const loadingTask = pdfjsLib.getDocument({ 
+      data: uint8Array,
+      verbosity: 0, // Reduce console output
+      stopAtErrors: false, // Continue even if there are errors
+      maxImageSize: 1024 * 1024 * 10 // 10MB max image size
+    });
+    pdf = await loadingTask.promise;
+  } catch (error: any) {
+    console.error('[ContractAnalysis] PDF loading error:', error);
+    if (error.name === 'InvalidPDFException' || error.message?.includes('Invalid PDF')) {
+      throw new Error('Invalid PDF structure. Please ensure the file is a valid PDF document.');
+    }
+    throw new Error(`Failed to load PDF: ${error.message || 'Unknown error'}`);
+  }
   
   // Extract text from all pages
   let fullText = '';
