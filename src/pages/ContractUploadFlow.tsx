@@ -479,10 +479,22 @@ ${creatorName}`;
 
     try {
       // Get API base URL - use env variable, or detect from current origin, or fallback to localhost
-      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 
-        (typeof window !== 'undefined' && window.location.origin.includes('noticebazaar.com') 
-          ? 'https://api.noticebazaar.com' 
-          : 'http://localhost:3001');
+      let apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
+      
+      if (!apiBaseUrl && typeof window !== 'undefined') {
+        const origin = window.location.origin;
+        // If on production domain, try api subdomain first, then same origin
+        if (origin.includes('noticebazaar.com')) {
+          // Try api subdomain, but fallback to same origin if it fails
+          apiBaseUrl = 'https://api.noticebazaar.com';
+        } else {
+          // Local development
+          apiBaseUrl = 'http://localhost:3001';
+        }
+      } else if (!apiBaseUrl) {
+        apiBaseUrl = 'http://localhost:3001';
+      }
+      
       const { data: { session } } = await supabase.auth.getSession();
       
       if (!session) {
@@ -495,8 +507,11 @@ ${creatorName}`;
 
       const apiEndpoint = `${apiBaseUrl}/api/protection/analyze`;
       console.log('[ContractUploadFlow] Calling API:', apiEndpoint);
+      console.log('[ContractUploadFlow] Current origin:', typeof window !== 'undefined' ? window.location.origin : 'server');
 
-      const response = await fetch(apiEndpoint, {
+      let response;
+      try {
+        response = await fetch(apiEndpoint, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
