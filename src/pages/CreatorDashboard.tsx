@@ -562,8 +562,6 @@ const CreatorDashboard = () => {
             {userData.avatar}
           </motion.button>
           
-          <div className={typography.h4}>NoticeBazaar</div>
-          
           <div className="flex items-center gap-2">
             <motion.button 
               onClick={handleRefresh}
