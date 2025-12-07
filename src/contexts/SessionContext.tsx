@@ -434,8 +434,28 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
         const hasQueryCode = urlParams.get('code') !== null;
         const isOAuthCallback = hasHashTokens || hasQueryCode;
         
+        // Handle INITIAL_SESSION with tokens but no session yet
+        // This happens when OAuth tokens are present but Supabase hasn't processed them yet
+        if (event === 'INITIAL_SESSION' && !session && hasHashTokens) {
+          console.log('[SessionContext] INITIAL_SESSION: Tokens detected but no session yet, waiting for SIGNED_IN event...');
+          // Don't clean hash yet - wait for SIGNED_IN event to process tokens
+        } else if (event === 'INITIAL_SESSION' && !session) {
+          console.log('[SessionContext] INITIAL_SESSION: No session found (normal on first load)');
+        }
+        
         // If we have a session after OAuth callback or SIGNED_IN event
+        // Also check sessionStorage for intended route in case hash was already normalized
         if (session && (event === 'SIGNED_IN' || isOAuthCallback || (event === 'INITIAL_SESSION' && hasHashTokens))) {
+          // Get intended route from sessionStorage if not already extracted from hash
+          if (!intendedRoute) {
+            const storedRoute = sessionStorage.getItem('oauth_intended_route');
+            if (storedRoute) {
+              intendedRoute = storedRoute;
+              sessionStorage.removeItem('oauth_intended_route');
+              console.log('[SessionContext] Retrieved intended route from sessionStorage:', intendedRoute);
+            }
+          }
+          
           console.log('[SessionContext] Session established after OAuth, redirecting...', {
             event,
             isOAuthCallback,
@@ -454,11 +474,6 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
           // Clean up hash and set target route using replaceState to avoid triggering React Router
           window.history.replaceState(null, '', window.location.pathname + window.location.search + targetRoute);
           console.log('[SessionContext] Redirecting to:', targetRoute);
-        }
-        
-        // Handle INITIAL_SESSION with no session - this is normal on first load
-        if (event === 'INITIAL_SESSION' && !session) {
-          console.log('[SessionContext] INITIAL_SESSION: No session found (normal on first load)');
         }
       }
     );
