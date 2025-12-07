@@ -310,14 +310,28 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
         // If we normalized the hash, set it NOW using replaceState
         // We'll keep it until onAuthStateChange processes the tokens
         if (hasAccessToken && doubleHashMatch) {
-          window.history.replaceState(null, '', window.location.pathname + window.location.search + hash);
           // Store intended route in sessionStorage so onAuthStateChange can access it
           if (intendedRoute) {
             sessionStorage.setItem('oauth_intended_route', intendedRoute);
           }
           console.log('[SessionContext] Set normalized hash for Supabase:', hash.substring(0, 50) + '...');
           console.log('[SessionContext] Stored intended route:', intendedRoute);
-          console.log('[SessionContext] Keeping hash until onAuthStateChange processes tokens...');
+          
+          // Set the hash using replaceState to avoid triggering React Router
+          window.history.replaceState(null, '', window.location.pathname + window.location.search + hash);
+          
+          // Manually trigger Supabase to process the hash by dispatching a hashchange event
+          // This is safe because we've already set the hash with replaceState
+          // Supabase will read from window.location.hash when it processes the event
+          const hashChangeEvent = new HashChangeEvent('hashchange', {
+            oldURL: window.location.href,
+            newURL: window.location.href
+          });
+          window.dispatchEvent(hashChangeEvent);
+          console.log('[SessionContext] Dispatched hashchange event for Supabase to process tokens');
+          
+          // Give Supabase a moment to process the hashchange event
+          await new Promise(resolve => setTimeout(resolve, 300));
         } else if (hasAccessToken && intendedRoute) {
           // Store route even if hash wasn't normalized (e.g., #/route?access_token=...)
           sessionStorage.setItem('oauth_intended_route', intendedRoute);
@@ -328,11 +342,8 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
         let { data: { session: currentSession }, error } = await supabase.auth.getSession();
         
         // If we have tokens but no session, try to force Supabase to process them
-        // by calling getUser() which might trigger token processing
         if (hasAccessToken && !currentSession) {
           console.log('[SessionContext] Tokens present but no session, attempting to process tokens...');
-          // Wait a moment for Supabase to process the hash tokens
-          await new Promise(resolve => setTimeout(resolve, 300));
           // Try getUser() which might trigger token processing
           const { data: { user }, error: userError } = await supabase.auth.getUser();
           if (user && !userError) {
@@ -343,6 +354,8 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
               currentSession = newSession;
               console.log('[SessionContext] Session established after processing tokens');
             }
+          } else {
+            console.log('[SessionContext] No user found, tokens may not be processed yet. Waiting for onAuthStateChange...');
           }
         }
         
