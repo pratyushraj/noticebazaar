@@ -307,48 +307,43 @@ export async function extractTextFromPDF(file: File): Promise<string> {
         }
         
         // Dynamically import pdf.js
-        const pdfjsLib = await import('pdfjs-dist');
+        // For pdfjs-dist v5.x, we need to import and configure properly
+        const pdfjsModule = await import('pdfjs-dist');
         
-        // Configure PDF.js worker with proper error handling
-        // Handle different import structures for pdfjs-dist v5.x
-        try {
-          // Access GlobalWorkerOptions - it might be at different locations depending on import structure
-          let GlobalWorkerOptions: any = null;
-          
-          // Try standard location
-          if (pdfjsLib && 'GlobalWorkerOptions' in pdfjsLib && pdfjsLib.GlobalWorkerOptions) {
-            GlobalWorkerOptions = pdfjsLib.GlobalWorkerOptions;
+        // Handle different import structures (ESM vs CJS, default export vs named export)
+        const pdfjsLib: any = pdfjsModule.default || pdfjsModule;
+        
+        // Get getDocument function - it might be at different locations
+        const getDocument = pdfjsLib.getDocument || (pdfjsModule as any).getDocument;
+        
+        if (!getDocument || typeof getDocument !== 'function') {
+          throw new Error('PDF.js getDocument function not found. Please ensure pdfjs-dist is properly installed.');
+        }
+        
+        // Get version and worker URL for pdfjs-dist v5.x
+        const pdfjsVersion = pdfjsLib.version || pdfjsModule.version || '5.4.449';
+        const workerUrl = `https://unpkg.com/pdfjs-dist@${pdfjsVersion}/build/pdf.worker.min.mjs`;
+        
+        // Configure PDF.js worker - MUST be set before calling getDocument
+        // Access GlobalWorkerOptions through the same structure we used for getDocument
+        const GlobalWorkerOptions = pdfjsLib.GlobalWorkerOptions || (pdfjsModule as any).GlobalWorkerOptions;
+        
+        if (GlobalWorkerOptions) {
+          GlobalWorkerOptions.workerSrc = workerUrl;
+          console.log('[ContractValidation] PDF.js worker configured:', workerUrl);
+        } else {
+          // Create GlobalWorkerOptions if it doesn't exist
+          if (!pdfjsLib.GlobalWorkerOptions) {
+            pdfjsLib.GlobalWorkerOptions = {};
           }
-          // Try default export
-          else if (pdfjsLib && 'default' in pdfjsLib && (pdfjsLib as any).default?.GlobalWorkerOptions) {
-            GlobalWorkerOptions = (pdfjsLib as any).default.GlobalWorkerOptions;
-          }
-          // Try direct access
-          else if ((pdfjsLib as any).GlobalWorkerOptions) {
-            GlobalWorkerOptions = (pdfjsLib as any).GlobalWorkerOptions;
-          }
-          
-          if (GlobalWorkerOptions && typeof GlobalWorkerOptions === 'object') {
-            // Version 5.x uses .mjs extension
-            const pdfjsVersion = pdfjsLib.version || '5.4.449';
-            
-            // Use unpkg CDN - most reliable for PDF.js
-            // For version 5.x, the worker is in build/pdf.worker.min.mjs
-            GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsVersion}/build/pdf.worker.min.mjs`;
-            console.log('[ContractValidation] PDF.js worker configured:', GlobalWorkerOptions.workerSrc);
-          } else {
-            console.warn('[ContractValidation] GlobalWorkerOptions not found - PDF.js will use default worker or no worker');
-            // Continue without worker setup - PDF.js might still work
-          }
-        } catch (error: any) {
-          console.warn('[ContractValidation] Error setting PDF.js worker (non-critical):', error.message);
-          // Continue - PDF.js might still work without explicit worker setup
+          pdfjsLib.GlobalWorkerOptions.workerSrc = workerUrl;
+          console.log('[ContractValidation] PDF.js worker configured (created):', workerUrl);
         }
         
         console.log('[ContractValidation] Loading PDF, size:', arrayBuffer.byteLength, 'bytes');
         
         // Load PDF with error handling
-        const loadingTask = pdfjsLib.getDocument({ 
+        const loadingTask = getDocument({ 
           data: arrayBuffer,
           verbosity: 0 // Suppress warnings
         });
