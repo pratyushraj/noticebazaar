@@ -115,17 +115,9 @@ const App = () => {
   const [appLoaded, setAppLoaded] = useState(false);
   const [splashComplete, setSplashComplete] = useState(false);
 
-  // Preload critical routes
+  // Mark app as loaded (prefetch removed - not needed for SPA routing)
   useEffect(() => {
     if (!appLoaded) {
-      // Preload critical routes
-      const preloadRoutes = ['/creator-dashboard', '/creator-contracts', '/creator-payments'];
-      preloadRoutes.forEach((route) => {
-        const link = document.createElement('link');
-        link.rel = 'prefetch';
-        link.href = route;
-        document.head.appendChild(link);
-      });
       setAppLoaded(true);
     }
   }, [appLoaded]);
