@@ -214,7 +214,7 @@ export async function generateSafeContract(
               safe_clause: generated.safeClause,
               explanation: generated.explanation || ''
             };
-            await supabase.from('safe_clauses').insert(insertData);
+            await (supabase as any).from('safe_clauses').insert(insertData);
           }
 
           safeClausesMap.set(issue.clause_reference || issue.title, generated.safeClause);
