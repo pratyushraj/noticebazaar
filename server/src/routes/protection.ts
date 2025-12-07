@@ -759,8 +759,8 @@ router.post('/send-for-legal-review', async (req: AuthenticatedRequest, res: Res
     // If report has no deal_id, allow access (user created it via authenticated endpoint)
     const hasAccess = 
       (report as any).user_id === userId || // User created the report (if user_id column exists)
-      report.deal?.creator_id === userId || // User owns the deal
-      !report.deal_id || // No deal_id means user created it directly
+      (report as any).deal?.creator_id === userId || // User owns the deal
+      !(report as any).deal_id || // No deal_id means user created it directly
       req.user!.role === 'admin'; // Admin access
 
     if (!hasAccess) {
@@ -843,8 +843,8 @@ router.post('/save-report', async (req: AuthenticatedRequest, res: Response) => 
     // If report has no deal_id, allow access (user created it via authenticated endpoint)
     const hasAccess = 
       (report as any).user_id === userId || // User created the report (if user_id column exists)
-      report.deal?.creator_id === userId || // User owns the deal
-      !report.deal_id || // No deal_id means user created it directly
+      (report as any).deal?.creator_id === userId || // User owns the deal
+      !(report as any).deal_id || // No deal_id means user created it directly
       req.user!.role === 'admin'; // Admin access
 
     if (!hasAccess) {
