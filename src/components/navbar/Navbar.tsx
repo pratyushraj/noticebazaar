@@ -32,14 +32,7 @@ const Navbar: React.FC = () => {
     profilePath = "/creator-profile";
   }
 
-  return (
-    <nav className="sticky top-0 z-50 w-full bg-gradient-to-br from-purple-900/95 via-purple-800/95 to-indigo-900/95 backdrop-blur-xl border-b border-white/10 flex items-center gap-2 justify-end h-16 px-4 md:px-6">
-      <SearchBar />
-      <Notifications />
-      <AppsMenu profileRole={profile?.role || null} />
-      <ProfileDropdown profilePath={profilePath} />
-    </nav>
-  );
+  return null;
 };
 
 export default Navbar;
