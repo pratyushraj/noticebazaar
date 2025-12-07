@@ -137,8 +137,10 @@ Return ONLY the JSON object, no markdown, no explanations, no additional text.`;
 
 /**
  * Call Hugging Face API (free, no API key needed for public models)
+ * Uses Inference API endpoint which is more reliable for public models
  */
 async function callHuggingFace(model: string, prompt: string, apiKey?: string): Promise<string> {
+  // Use Inference API endpoint (more reliable for public models)
   const url = `https://api-inference.huggingface.co/models/${model}`;
   
   const headers: Record<string, string> = {
@@ -179,9 +181,35 @@ async function callHuggingFace(model: string, prompt: string, apiKey?: string): 
         throw new Error(`Hugging Face model is loading. Please wait ${estimatedTime} seconds and try again.`);
       }
       
-      const error = await response.json().catch(() => ({ error: 'Unknown error' })) as any;
-      console.error('[HuggingFace] API error:', response.status, error);
-      throw new Error(`Hugging Face API error (${response.status}): ${error.error || response.statusText}`);
+      // Handle 401/403 errors - might need API key or different endpoint
+      if (response.status === 401 || response.status === 403) {
+        console.error('[HuggingFace] Authentication error. Trying without auth or checking if model requires API key.');
+        // For public models, 401 might mean the endpoint changed or model requires auth
+        // Try to get more details from error response
+        const errorText = await response.text().catch(() => '');
+        console.error('[HuggingFace] Error response:', errorText);
+        
+        // If error mentions router, it's a redirect issue, not auth
+        if (errorText.includes('router.huggingface.co')) {
+          throw new Error('Hugging Face API endpoint has changed. Please check the model endpoint or use an API key.');
+        }
+        
+        throw new Error(`Hugging Face API authentication error (${response.status}). This model may require an API key.`);
+      }
+      
+      // Try to get error message from response
+      let errorMessage = 'Unknown error';
+      try {
+        const error = await response.json().catch(() => ({ error: 'Unknown error' })) as any;
+        errorMessage = error.error || error.message || response.statusText;
+        console.error('[HuggingFace] API error:', response.status, error);
+      } catch (parseError) {
+        const errorText = await response.text().catch(() => '');
+        errorMessage = errorText || response.statusText;
+        console.error('[HuggingFace] API error (non-JSON):', response.status, errorText);
+      }
+      
+      throw new Error(`Hugging Face API error (${response.status}): ${errorMessage}`);
     }
 
     const data = await response.json() as any;

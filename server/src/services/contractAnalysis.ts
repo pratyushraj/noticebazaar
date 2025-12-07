@@ -1,21 +1,11 @@
 // Contract Analysis Service
-// Analyzes PDF contracts and extracts key terms, issues, and risk assessment
-// Uses AI (free LLM) with fallback to rule-based analysis
+// Analyzes contracts (PDF, DOC, DOCX) and extracts key terms, issues, and risk assessment
+// Uses configured LLM provider (Groq, Hugging Face, etc.)
 
-// Import pdfjs-dist for Node.js environment
-// For pdfjs-dist v3.x in Node.js with ES modules, try different import paths
-import * as pdfjsLib from 'pdfjs-dist';
-import { TextItem } from 'pdfjs-dist/types/src/display/api';
 import { analyzeContractWithAI } from './aiContractAnalysis.js';
 import { classifyDocumentTypeWithAI } from './contractClassifier.js';
 import { calculateNegotiationPowerScore } from './negotiationPowerScore.js';
-import path from 'path';
-import fs from 'fs';
-import { fileURLToPath } from 'url';
-
-// ES module equivalent of __dirname
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+import { extractTextFromDocument, detectDocumentType } from './documentTextExtractor.js';
 
 export interface AnalysisResult {
   protectionScore: number;
@@ -51,7 +41,7 @@ export interface AnalysisResult {
  * RELAXED VALIDATION: Only rejects hard patterns, accepts if 2+ positive signals
  * Returns validation result with score and reason
  * 
- * EXPORTED for use in contractClassifier as fallback
+ * NOTE: This function is exported but not used in the main flow (AI classification is used instead)
  */
 export function isValidBrandDealContract(text: string): { valid: boolean; score: number; reason?: string } {
   const t = text.toLowerCase();
@@ -121,95 +111,43 @@ export function isValidBrandDealContract(text: string): { valid: boolean; score:
   return { valid: false, score: matches, reason: "Not enough brand deal signals (found " + matches + ", need 2+)" };
 }
 
-export async function analyzeContract(pdfBuffer: Buffer): Promise<AnalysisResult> {
-  // Set up PDF.js worker with proper error handling
-  // In Node.js, pdfjs-dist can work without a worker, so we disable it
-  // In browser, we need the worker from CDN
+export async function analyzeContract(documentBuffer: Buffer, documentUrl?: string): Promise<AnalysisResult> {
+  // Detect document type
+  const docType = detectDocumentType(documentBuffer, documentUrl);
+  console.log('[ContractAnalysis] Document type detected:', docType);
+  
+  // Extract text from document (supports PDF, DOCX, DOC)
+  let fullText: string;
   try {
-    // Check if GlobalWorkerOptions exists
-    if (pdfjsLib.GlobalWorkerOptions) {
-      // Node.js environment - disable worker (not needed, and can cause issues)
-      if (typeof process !== 'undefined' && process.versions && process.versions.node) {
-        // Disable worker for Node.js - pdfjs-dist works fine without it
-        pdfjsLib.GlobalWorkerOptions.workerSrc = '';
-        console.log('[ContractAnalysis] Node.js environment - worker disabled (not needed)');
-      } else {
-        // Browser environment - use CDN worker
-        const pdfjsVersion = pdfjsLib.version || '3.11.174';
-        pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsVersion}/build/pdf.worker.min.js`;
-        console.log('[ContractAnalysis] Browser environment - using CDN worker');
-      }
-    } else {
-      console.warn('[ContractAnalysis] GlobalWorkerOptions not available - this is normal for some pdfjs-dist versions');
-    }
+    fullText = await extractTextFromDocument(documentBuffer, documentUrl);
+    console.log('[ContractAnalysis] Text extracted, length:', fullText.length);
   } catch (error: any) {
-    console.warn('[ContractAnalysis] Error setting PDF.js worker (non-critical):', error.message);
-    // Continue - pdfjs-dist should still work
-  }
-
-  // Convert Buffer to Uint8Array (required by pdfjs-dist)
-  const uint8Array = new Uint8Array(pdfBuffer);
-
-  // Validate PDF buffer is not empty
-  if (uint8Array.length === 0) {
-    throw new Error('PDF buffer is empty');
-  }
-
-  // Load PDF with better error handling
-  let pdf;
-  try {
-    // Try multiple ways to access getDocument (pdfjs-dist v3.x can export differently)
-    let getDocument = (pdfjsLib as any).getDocument;
+    console.error('[ContractAnalysis] Text extraction error:', error);
     
-    // If not found, try default export or other structures
-    if (!getDocument || typeof getDocument !== 'function') {
-      getDocument = (pdfjsLib as any).default?.getDocument;
+    // Provide helpful error messages based on document type
+    if (docType === 'doc') {
+      throw new Error(
+        'DOC files (old Microsoft Word format) are not fully supported. ' +
+        'Please convert your document to DOCX or PDF format and try again.'
+      );
     }
     
-    // Try accessing from nested structure
-    if (!getDocument || typeof getDocument !== 'function') {
-      const lib: any = pdfjsLib;
-      if (lib.getDocument) getDocument = lib.getDocument;
-      else if (lib.default?.getDocument) getDocument = lib.default.getDocument;
+    if (error.message?.includes('Invalid PDF') || error.message?.includes('PDF structure')) {
+      throw new Error('Invalid document structure. Please ensure the file is a valid PDF, DOCX, or DOC document.');
     }
     
-    if (!getDocument || typeof getDocument !== 'function') {
-      console.error('[ContractAnalysis] pdfjsLib keys:', Object.keys(pdfjsLib));
-      console.error('[ContractAnalysis] pdfjsLib structure:', Object.keys(pdfjsLib).slice(0, 10));
-      throw new Error('pdfjsLib.getDocument is not a function. pdfjs-dist version: ' + ((pdfjsLib as any).version || 'unknown') + '. Try checking import path.');
-    }
-    
-    console.log('[ContractAnalysis] Using getDocument function for PDF loading');
-    const loadingTask = getDocument({ 
-      data: uint8Array,
-      verbosity: 0, // Reduce console output
-      stopAtErrors: false, // Continue even if there are errors
-      maxImageSize: 1024 * 1024 * 10 // 10MB max image size
-    });
-    pdf = await loadingTask.promise;
-  } catch (error: any) {
-    console.error('[ContractAnalysis] PDF loading error:', error);
-    if (error.name === 'InvalidPDFException' || error.message?.includes('Invalid PDF')) {
-      throw new Error('Invalid PDF structure. Please ensure the file is a valid PDF document.');
-    }
-    throw new Error(`Failed to load PDF: ${error.message || 'Unknown error'}`);
+    throw new Error(`Failed to extract text from document: ${error.message || 'Unknown error'}`);
   }
   
-  // Extract text from all pages
-  let fullText = '';
-  for (let i = 1; i <= pdf.numPages; i++) {
-    const page = await pdf.getPage(i);
-    const textContent = await page.getTextContent();
-    const pageText = textContent.items
-      .map((item: any) => (item as TextItem).str)
-      .join(' ');
-    fullText += pageText + '\n';
+  if (!fullText || fullText.trim().length < 100) {
+    throw new Error('Document contains insufficient text for analysis. Please ensure the document has readable text content.');
   }
 
-  // 🚨 VALIDATION: AI-based classification ONLY (Gemini)
+  // 🚨 VALIDATION: AI-based classification ONLY (using configured LLM provider)
   // ✅ ACCEPT if AI says it's a brand deal
   // ❌ REJECT if AI rejects it
-  console.log('[ContractAnalysis] Performing AI-based document classification (Gemini only)...');
+  const provider = process.env.LLM_PROVIDER || 'huggingface';
+  console.log(`[ContractAnalysis] Performing AI-based document classification (${provider} only)...`);
   const classification = await classifyDocumentTypeWithAI(fullText);
 
   console.log('[ContractAnalysis] AI result:', classification.type, '(confidence:', classification.confidence, ')');
@@ -217,8 +155,9 @@ export async function analyzeContract(pdfBuffer: Buffer): Promise<AnalysisResult
   // ✅ ACCEPT only if AI classifies as brand deal
   if (classification.type !== "brand_deal_contract") {
     console.log('[ContractAnalysis] ❌ AI REJECTED');
+    console.log('[ContractAnalysis] Classification details:', JSON.stringify(classification, null, 2));
     const err: any = new Error(
-      "⚠️ This document is NOT a brand deal contract. Only influencer–brand collaboration agreements are supported."
+      `⚠️ This document is NOT a brand deal contract. Only influencer–brand collaboration agreements are supported. ${classification.reasoning ? `Reason: ${classification.reasoning}` : ''}`
     );
     err.name = "ValidationError";
     err.validationError = true;
@@ -228,7 +167,7 @@ export async function analyzeContract(pdfBuffer: Buffer): Promise<AnalysisResult
 
   console.log('[ContractAnalysis] ✅ AI classification passed (confidence:', classification.confidence, ')');
 
-  // Analyze contract text (AI-powered with fallback to rule-based)
+  // Analyze contract text using Hugging Face AI ONLY - NO RULE-BASED FALLBACK
   const analysis = await analyzeContractText(fullText);
 
   // Calculate Negotiation Power Score
@@ -240,155 +179,145 @@ export async function analyzeContract(pdfBuffer: Buffer): Promise<AnalysisResult
 }
 
 /**
- * Analyze contract text using AI (if enabled) or fallback to rule-based
+ * Analyze contract text using AI (any configured provider) - NO RULE-BASED FALLBACK
  */
 async function analyzeContractText(text: string): Promise<AnalysisResult> {
-  // Check if AI analysis is enabled
-  const useAI = process.env.USE_AI_CONTRACT_ANALYSIS === 'true' || 
-                process.env.LLM_PROVIDER !== undefined;
+  const provider = process.env.LLM_PROVIDER || 'huggingface';
+  const model = process.env.LLM_MODEL || 'mistralai/Mistral-7B-Instruct-v0.2';
   
-  if (useAI) {
-    try {
-      console.log('[ContractAnalysis] Using AI-powered analysis...');
-      const aiAnalysis = await analyzeContractWithAI(text);
-      console.log('[ContractAnalysis] AI analysis completed successfully');
-      
-      // Calculate Negotiation Power Score for AI analysis
-      const result = aiAnalysis as AnalysisResult;
-      result.negotiationPowerScore = calculateNegotiationPowerScore(result);
-      console.log('[ContractAnalysis] Negotiation Power Score calculated:', result.negotiationPowerScore);
-      
-      return result;
-    } catch (error: any) {
-      console.warn('[ContractAnalysis] AI analysis failed, falling back to rule-based:', error.message);
-      // Fall through to rule-based analysis
-    }
-  }
+  console.log(`[ContractAnalysis] Using ${provider} AI-powered analysis with model: ${model}`);
 
-  // Fallback to rule-based analysis
-  console.log('[ContractAnalysis] Using rule-based analysis...');
-  const ruleBasedResult = analyzeContractTextRuleBased(text);
-  
-  // Calculate Negotiation Power Score for rule-based analysis
-  ruleBasedResult.negotiationPowerScore = calculateNegotiationPowerScore(ruleBasedResult);
-  console.log('[ContractAnalysis] Negotiation Power Score calculated:', ruleBasedResult.negotiationPowerScore);
-  
-  return ruleBasedResult;
+  try {
+    const aiAnalysis = await analyzeContractWithAI(text);
+    console.log(`[ContractAnalysis] ${provider} AI analysis completed successfully`);
+    
+    // Calculate Negotiation Power Score for AI analysis
+    const result = aiAnalysis as AnalysisResult;
+    result.negotiationPowerScore = calculateNegotiationPowerScore(result);
+    console.log('[ContractAnalysis] Negotiation Power Score calculated:', result.negotiationPowerScore);
+    
+    return result;
+  } catch (error: any) {
+    console.error(`[ContractAnalysis] ${provider} AI analysis failed:`, error);
+    // NO FALLBACK - throw error instead of falling back to rules
+    throw new Error(`${provider} AI analysis failed: ${error.message || 'Unknown error'}. No rule-based fallback available.`);
+  }
 }
 
 /**
- * Rule-based contract analysis (fallback)
+ * Rule-based contract analysis (DISABLED - Hugging Face AI only)
+ * This function is kept for reference but is no longer used.
  */
-function analyzeContractTextRuleBased(text: string): AnalysisResult {
-  const lowerText = text.toLowerCase();
-  const issues: AnalysisResult['issues'] = [];
-  const verified: AnalysisResult['verified'] = [];
-  let protectionScore = 100;
-  let riskLevel: 'low' | 'medium' | 'high' = 'low';
+// function analyzeContractTextRuleBased(text: string): AnalysisResult {
+//   const lowerText = text.toLowerCase();
+//   const issues: AnalysisResult['issues'] = [];
+//   const verified: AnalysisResult['verified'] = [];
+//   let protectionScore = 100;
+//   let riskLevel: 'low' | 'medium' | 'high' = 'low';
 
-  // Extract key terms
-  const dealValue = extractDealValue(text);
-  const duration = extractDuration(text);
-  const deliverables = extractDeliverables(text);
-  const paymentSchedule = extractPaymentSchedule(text);
-  const exclusivity = extractExclusivity(text);
+//   // Extract key terms
+//   const dealValue = extractDealValue(text);
+//   const duration = extractDuration(text);
+//   const deliverables = extractDeliverables(text);
+//   const paymentSchedule = extractPaymentSchedule(text);
+//   const exclusivity = extractExclusivity(text);
 
-  // Check for high-risk clauses
-  if (exclusivity && parseInt(exclusivity) > 30) {
-    issues.push({
-      severity: 'warning',
-      category: 'Exclusivity',
-      title: 'Extended Exclusivity Period',
-      description: `Contract requires ${exclusivity}-day exclusivity with competing brands. Industry standard is 30 days.`,
-      recommendation: 'Negotiate to reduce exclusivity period to 30 days or request additional compensation.'
-    });
-    protectionScore -= 10;
-    riskLevel = 'medium';
-  }
+//   // Check for high-risk clauses
+//   if (exclusivity && parseInt(exclusivity) > 30) {
+//     issues.push({
+//       severity: 'warning',
+//       category: 'Exclusivity',
+//       title: 'Extended Exclusivity Period',
+//       description: `Contract requires ${exclusivity}-day exclusivity with competing brands. Industry standard is 30 days.`,
+//       recommendation: 'Negotiate to reduce exclusivity period to 30 days or request additional compensation.'
+//     });
+//     protectionScore -= 10;
+//     riskLevel = 'medium';
+//   }
 
-  // Check for unfair termination clauses
-  if (lowerText.includes('termination') && (lowerText.includes('penalty') || lowerText.includes('forfeit'))) {
-    issues.push({
-      severity: 'high',
-      category: 'Termination',
-      title: 'Unfair Termination Penalties',
-      description: 'Contract includes penalties or forfeiture clauses on termination.',
-      recommendation: 'Request removal of termination penalties or negotiate fair terms.'
-    });
-    protectionScore -= 20;
-    riskLevel = 'high';
-  }
+//   // Check for unfair termination clauses
+//   if (lowerText.includes('termination') && (lowerText.includes('penalty') || lowerText.includes('forfeit'))) {
+//     issues.push({
+//       severity: 'high',
+//       category: 'Termination',
+//       title: 'Unfair Termination Penalties',
+//       description: 'Contract includes penalties or forfeiture clauses on termination.',
+//       recommendation: 'Request removal of termination penalties or negotiate fair terms.'
+//     });
+//     protectionScore -= 20;
+//     riskLevel = 'high';
+//   }
 
-  // Check for IP ownership issues
-  if (lowerText.includes('intellectual property') && lowerText.includes('brand') && !lowerText.includes('creator retains')) {
-    issues.push({
-      severity: 'high',
-      category: 'IP Rights',
-      title: 'IP Ownership Concerns',
-      description: 'Contract may grant excessive IP rights to the brand.',
-      recommendation: 'Ensure you retain ownership of content after campaign completion.'
-    });
-    protectionScore -= 15;
-    riskLevel = riskLevel === 'low' ? 'medium' : 'high';
-  }
+//   // Check for IP ownership issues
+//   if (lowerText.includes('intellectual property') && lowerText.includes('brand') && !lowerText.includes('creator retains')) {
+//     issues.push({
+//       severity: 'high',
+//       category: 'IP Rights',
+//       title: 'IP Ownership Concerns',
+//       description: 'Contract may grant excessive IP rights to the brand.',
+//       recommendation: 'Ensure you retain ownership of content after campaign completion.'
+//     });
+//     protectionScore -= 15;
+//     riskLevel = riskLevel === 'low' ? 'medium' : 'high';
+//   }
 
-  // Verified positive clauses
-  if (lowerText.includes('payment') && (lowerText.includes('milestone') || lowerText.includes('schedule'))) {
-    verified.push({
-      category: 'Payment Terms',
-      title: 'Clear Payment Schedule',
-      description: 'Payment milestones are clearly defined with specific amounts and dates.'
-    });
-  }
+//   // Verified positive clauses
+//   if (lowerText.includes('payment') && (lowerText.includes('milestone') || lowerText.includes('schedule'))) {
+//     verified.push({
+//       category: 'Payment Terms',
+//       title: 'Clear Payment Schedule',
+//       description: 'Payment milestones are clearly defined with specific amounts and dates.'
+//     });
+//   }
 
-  if (lowerText.includes('termination') && lowerText.includes('notice') && !lowerText.includes('penalty')) {
-    verified.push({
-      category: 'Termination Rights',
-      title: 'Fair Termination Clause',
-      description: 'Both parties can terminate with notice. No unfair penalties.'
-    });
-  }
+//   if (lowerText.includes('termination') && lowerText.includes('notice') && !lowerText.includes('penalty')) {
+//     verified.push({
+//       category: 'Termination Rights',
+//       title: 'Fair Termination Clause',
+//       description: 'Both parties can terminate with notice. No unfair penalties.'
+//     });
+//   }
 
-  if (lowerText.includes('intellectual property') && lowerText.includes('creator')) {
-    verified.push({
-      category: 'IP Rights',
-      title: 'Creator Retains IP',
-      description: 'You retain ownership of content after campaign completion.'
-    });
-  }
+//   if (lowerText.includes('intellectual property') && lowerText.includes('creator')) {
+//     verified.push({
+//       category: 'IP Rights',
+//       title: 'Creator Retains IP',
+//       description: 'You retain ownership of content after campaign completion.'
+//     });
+//   }
 
-  // Calculate final risk level
-  if (protectionScore < 60) {
-    riskLevel = 'high';
-  } else if (protectionScore < 80) {
-    riskLevel = 'medium';
-  }
+//   // Calculate final risk level
+//   if (protectionScore < 60) {
+//     riskLevel = 'high';
+//   } else if (protectionScore < 80) {
+//     riskLevel = 'medium';
+//   }
 
-  const result: AnalysisResult = {
-    protectionScore: Math.max(0, Math.min(100, protectionScore)),
-    overallRisk: riskLevel,
-    issues,
-    verified,
-    keyTerms: {
-      dealValue,
-      duration,
-      deliverables,
-      paymentSchedule,
-      exclusivity,
-      payment: paymentSchedule // Alias for negotiation power score calculation
-    },
-    recommendations: [
-      'Review identified issues with your legal advisor',
-      'Negotiate better terms before signing',
-      'Request clarification on ambiguous clauses'
-    ]
-  };
+//   const result: AnalysisResult = {
+//     protectionScore: Math.max(0, Math.min(100, protectionScore)),
+//     overallRisk: riskLevel,
+//     issues,
+//     verified,
+//     keyTerms: {
+//       dealValue,
+//       duration,
+//       deliverables,
+//       paymentSchedule,
+//       exclusivity,
+//       payment: paymentSchedule // Alias for negotiation power score calculation
+//     },
+//     recommendations: [
+//       'Review identified issues with your legal advisor',
+//       'Negotiate better terms before signing',
+//       'Request clarification on ambiguous clauses'
+//     ]
+//   };
 
-  // Calculate Negotiation Power Score
-  result.negotiationPowerScore = calculateNegotiationPowerScore(result);
+//   // Calculate Negotiation Power Score
+//   result.negotiationPowerScore = calculateNegotiationPowerScore(result);
 
-  return result;
-}
+//   return result;
+// }
 
 function extractDealValue(text: string): string | undefined {
   const match = text.match(/₹[\s]*([\d,]+)|(\$[\s]*[\d,]+)|([\d,]+[\s]*(?:rupees|rs|inr))/i);

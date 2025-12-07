@@ -1,0 +1,50 @@
+===========================================
+RENDER ENVIRONMENT VARIABLES - COPY & PASTE
+===========================================
+
+BACKEND API (noticebazaar-api) Environment Variables:
+------------------------------------------------------
+
+SUPABASE_URL=https://ooaxtwmqrvfzdqzoijcj.supabase.co
+
+SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9vYXh0d21xcnZmemRxem9pamNqIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1OTUwMTI1NiwiZXhwIjoyMDc1MDc3MjU2fQ.hKeyfz-wZ6JOs3mupPDppKDYuHii0GRcxc04oRROD4c
+
+LLM_PROVIDER=groq
+
+LLM_API_KEY=your-groq-api-key-here
+
+LLM_MODEL=llama-3.1-8b-instant
+
+FRONTEND_URL=https://noticebazaar-frontend.onrender.com
+
+NODE_ENV=production
+
+PORT=10000
+
+
+FRONTEND (noticebazaar-frontend) Environment Variables:
+-------------------------------------------------------
+
+VITE_SUPABASE_URL=https://ooaxtwmqrvfzdqzoijcj.supabase.co
+
+VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9vYXh0d21xcnZmemRxem9pamNqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk1MDEyNTYsImV4cCI6MjA3NTA3NzI1Nn0.xIIz_9W9PAnxTKDdJZ3_wQ6OO7NQJbiy4P_PP0CSVBQ
+
+VITE_API_BASE_URL=https://noticebazaar-api.onrender.com
+
+NODE_ENV=production
+
+
+===========================================
+INSTRUCTIONS:
+===========================================
+
+1. Go to https://dashboard.render.com
+2. Select your service (noticebazaar-api or noticebazaar-frontend)
+3. Go to "Environment" tab
+4. Click "Add Environment Variable"
+5. Copy and paste each variable above
+6. Click "Save Changes"
+7. Service will auto-redeploy
+
+===========================================
+

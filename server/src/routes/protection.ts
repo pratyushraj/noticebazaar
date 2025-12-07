@@ -29,9 +29,10 @@ router.post('/analyze', async (req: AuthenticatedRequest, res) => {
     const contractBuffer = Buffer.from(await contractResponse.arrayBuffer());
 
     // Analyze contract (HARD validation happens inside analyzeContract)
+    // Supports PDF, DOCX, and DOC files
     let analysis;
     try {
-      analysis = await analyzeContract(contractBuffer);
+      analysis = await analyzeContract(contractBuffer, contract_url);
     } catch (err: any) {
       console.error('[Protection] Contract analysis error:', err);
       
@@ -45,11 +46,11 @@ router.post('/analyze', async (req: AuthenticatedRequest, res) => {
         });
       }
       
-      // Handle PDF parsing errors
-      if (err.message?.includes('Invalid PDF') || err.message?.includes('PDF structure')) {
+      // Handle document parsing errors
+      if (err.message?.includes('Invalid') || err.message?.includes('structure') || err.message?.includes('extract text')) {
         return res.status(400).json({
           ok: false,
-          error: 'Invalid PDF file. Please ensure the file is a valid PDF document.',
+          error: 'Invalid document file. Please ensure the file is a valid PDF, DOCX, or DOC document.',
           details: err.message
         });
       }

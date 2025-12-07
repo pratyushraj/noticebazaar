@@ -393,17 +393,27 @@ export async function extractTextFromPDF(file: File): Promise<string> {
 }
 
 /**
- * Validates a PDF file to check if it's a brand deal contract
+ * Validates a contract file (PDF, DOCX, DOC) to check if it's a brand deal contract
  */
 export async function validateContractFile(file: File): Promise<{ isValid: boolean; error?: string }> {
-  // Only validate PDFs
-  if (file.type !== 'application/pdf') {
-    // For non-PDF files, we can't validate client-side, but backend will validate
-    // For now, reject non-PDFs to ensure only PDFs are accepted
+  // Support PDF, DOCX, and DOC files
+  const supportedTypes = [
+    'application/pdf',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document', // DOCX
+    'application/msword' // DOC
+  ];
+  
+  if (!supportedTypes.includes(file.type)) {
     return { 
       isValid: false, 
-      error: '⚠️ Only PDF files are supported for contract validation.\n\nPlease upload a PDF brand collaboration contract.' 
+      error: '⚠️ Only PDF, DOCX, and DOC files are supported for contract validation.\n\nPlease upload a PDF, DOCX, or DOC brand collaboration contract.' 
     };
+  }
+  
+  // For DOC files, skip client-side validation (backend will handle it)
+  if (file.type === 'application/msword') {
+    console.log('[ContractValidation] DOC file detected - skipping client-side validation, backend will validate');
+    return { isValid: true }; // Allow through, backend will validate
   }
   
   try {

@@ -617,15 +617,36 @@ ${creatorName}`;
 
       // 🚨 HARD STOP: If API fails or returns 400/500, show error and STOP
       if (!response.ok) {
+        console.error('[ContractUploadFlow] API error response:', {
+          status: response.status,
+          statusText: response.statusText,
+          data: responseData
+        });
+        
         if (response.status === 400 && responseData.validationError === true) {
-          // Validation error - show specific error message
-          setValidationError(responseData.error || 'This document is NOT a brand deal contract.');
+          // Validation error - show specific error message with details
+          const errorMessage = responseData.error || 'This document is NOT a brand deal contract.';
+          const details = responseData.details?.classification;
+          
+          console.error('[ContractUploadFlow] Validation error details:', details);
+          
+          // Build detailed error message
+          let fullErrorMessage = errorMessage;
+          if (details?.reasoning) {
+            fullErrorMessage += `\n\nReason: ${details.reasoning}`;
+          }
+          if (details?.confidence !== undefined) {
+            fullErrorMessage += `\nConfidence: ${(details.confidence * 100).toFixed(0)}%`;
+          }
+          
+          setValidationError(fullErrorMessage);
           setStep('validation-error');
           setIsAnalyzing(false);
           return; // HARD STOP - do not proceed
         }
         
         // Other API errors
+        console.error('[ContractUploadFlow] API error:', responseData);
         setReviewError(responseData.error || `Contract analysis failed (${response.status}). Please try again.`);
         setStep('review-error');
         setIsAnalyzing(false);
@@ -752,7 +773,7 @@ ${creatorName}`;
       // Validate file type
       const validTypes = ['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/msword'];
       if (!validTypes.includes(file.type)) {
-        toast.error('Please select a PDF or DOCX file');
+        toast.error('Please select a PDF, DOCX, or DOC file');
         return;
       }
       
@@ -762,8 +783,9 @@ ${creatorName}`;
         return;
       }
 
-      // Validate if it's a brand deal contract (for PDFs)
-      if (file.type === 'application/pdf') {
+      // Validate if it's a brand deal contract (for PDFs and DOCX)
+      // DOC files will be validated by backend only
+      if (file.type === 'application/pdf' || file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
         try {
           // Don't show validation message - backend will validate with Gemini AI
           const validation = await validateContractFile(file);
@@ -826,7 +848,7 @@ ${creatorName}`;
       // Validate file type
       const validTypes = ['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/msword'];
       if (!validTypes.includes(file.type)) {
-        toast.error('Please select a PDF or DOCX file');
+        toast.error('Please select a PDF, DOCX, or DOC file');
         return;
       }
       
@@ -836,8 +858,9 @@ ${creatorName}`;
         return;
       }
 
-      // Validate if it's a brand deal contract (for PDFs)
-      if (file.type === 'application/pdf') {
+      // Validate if it's a brand deal contract (for PDFs and DOCX)
+      // DOC files will be validated by backend only
+      if (file.type === 'application/pdf' || file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
         try {
           // Don't show validation message - backend will validate with Gemini AI
           const validation = await validateContractFile(file);
