@@ -1,14 +1,10 @@
 {
   "version": 2,
   "installCommand": "pnpm install --ignore-scripts || (pnpm install --no-optional --ignore-scripts && echo 'Canvas installation skipped')",
-  "buildCommand": "cd server && npm run build",
   "builds": [
     {
       "src": "src/index.ts",
-      "use": "@vercel/node",
-      "config": {
-        "includeFiles": ["dist/**"]
-      }
+      "use": "@vercel/node"
     }
   ],
   "routes": [
