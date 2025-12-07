@@ -512,15 +512,35 @@ ${creatorName}`;
       let response;
       try {
         response = await fetch(apiEndpoint, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.access_token}`,
-        },
-        body: JSON.stringify({
-          contract_url: contractUrl,
-        }),
-      });
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session.access_token}`,
+          },
+          body: JSON.stringify({
+            contract_url: contractUrl,
+          }),
+        });
+      } catch (fetchError: any) {
+        // If api subdomain fails and we're on production, try same origin
+        if (apiBaseUrl.includes('api.noticebazaar.com') && typeof window !== 'undefined') {
+          console.warn('[ContractUploadFlow] API subdomain failed, trying same origin:', fetchError);
+          const sameOriginUrl = `${window.location.origin}/api/protection/analyze`;
+          console.log('[ContractUploadFlow] Retrying with same origin:', sameOriginUrl);
+          response = await fetch(sameOriginUrl, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${session.access_token}`,
+            },
+            body: JSON.stringify({
+              contract_url: contractUrl,
+            }),
+          });
+        } else {
+          throw fetchError;
+        }
+      }
 
       // Check if response has content before parsing JSON
       const contentType = response.headers.get('content-type');
