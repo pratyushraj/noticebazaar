@@ -29,15 +29,52 @@ const Login = () => {
                             hash.includes('type=magiclink') ||
                             urlParams.get('code') !== null; // OAuth code in query params
     
-    // Don't redirect if we're in the middle of an OAuth callback - let SessionContext handle it
-    // Also add a small delay to ensure OAuth processing completes
+    // Check if we just came from OAuth (check sessionStorage for OAuth intent)
+    const hasOAuthIntent = sessionStorage.getItem('oauth_intended_route') !== null;
+    
+    // If we have a session and we're not in the middle of OAuth callback, redirect
+    // Also wait a bit if we just came from OAuth to let SessionContext process it
     if (!loading && session && !isOAuthCallback) {
-      console.log('[Login] Session exists, redirecting to dashboard');
-      // Use setTimeout to avoid race condition with OAuth callback
+      // If we have OAuth intent, wait a bit longer for SessionContext to redirect
+      const delay = hasOAuthIntent ? 1000 : 200;
+      console.log('[Login] Session exists, redirecting to dashboard', { hasOAuthIntent, delay });
       const timer = setTimeout(() => {
-        navigate('/creator-dashboard', { replace: true });
-      }, 200);
+        // Check if SessionContext already redirected (hash changed)
+        const currentHash = window.location.hash;
+        if (currentHash === hash || currentHash === '' || currentHash.startsWith('#/creator-')) {
+          // SessionContext might have already redirected, but if we're still here, redirect manually
+          navigate('/creator-dashboard', { replace: true });
+        }
+      }, delay);
       return () => clearTimeout(timer);
+    }
+    
+    // If we're in OAuth callback but session isn't established yet, wait for it
+    if (!loading && !session && (isOAuthCallback || hasOAuthIntent)) {
+      console.log('[Login] OAuth callback detected, waiting for session...');
+      // Wait up to 5 seconds for session to be established
+      const maxWait = 5000;
+      const startTime = Date.now();
+      const checkSession = setInterval(() => {
+        supabase.auth.getSession().then(({ data: { session: currentSession } }) => {
+          if (currentSession) {
+            console.log('[Login] Session established after OAuth, redirecting...');
+            clearInterval(checkSession);
+            // Let SessionContext handle the redirect, but if it doesn't, redirect here
+            setTimeout(() => {
+              const currentHash = window.location.hash;
+              if (currentHash.includes('access_token') || currentHash === '' || window.location.pathname === '/login') {
+                navigate('/creator-dashboard', { replace: true });
+              }
+            }, 500);
+          } else if (Date.now() - startTime > maxWait) {
+            console.warn('[Login] Session not established after OAuth, timeout');
+            clearInterval(checkSession);
+          }
+        });
+      }, 200);
+      
+      return () => clearInterval(checkSession);
     }
   }, [session, loading, navigate]);
 
