@@ -2,6 +2,8 @@
 // Analyzes PDF contracts and extracts key terms, issues, and risk assessment
 // Uses AI (free LLM) with fallback to rule-based analysis
 
+// Import pdfjs-dist for Node.js environment
+// For pdfjs-dist v3.x in Node.js with ES modules, try different import paths
 import * as pdfjsLib from 'pdfjs-dist';
 import { TextItem } from 'pdfjs-dist/types/src/display/api';
 import { analyzeContractWithAI } from './aiContractAnalysis.js';
@@ -156,7 +158,29 @@ export async function analyzeContract(pdfBuffer: Buffer): Promise<AnalysisResult
   // Load PDF with better error handling
   let pdf;
   try {
-    const loadingTask = pdfjsLib.getDocument({ 
+    // Try multiple ways to access getDocument (pdfjs-dist v3.x can export differently)
+    let getDocument = (pdfjsLib as any).getDocument;
+    
+    // If not found, try default export or other structures
+    if (!getDocument || typeof getDocument !== 'function') {
+      getDocument = (pdfjsLib as any).default?.getDocument;
+    }
+    
+    // Try accessing from nested structure
+    if (!getDocument || typeof getDocument !== 'function') {
+      const lib: any = pdfjsLib;
+      if (lib.getDocument) getDocument = lib.getDocument;
+      else if (lib.default?.getDocument) getDocument = lib.default.getDocument;
+    }
+    
+    if (!getDocument || typeof getDocument !== 'function') {
+      console.error('[ContractAnalysis] pdfjsLib keys:', Object.keys(pdfjsLib));
+      console.error('[ContractAnalysis] pdfjsLib structure:', Object.keys(pdfjsLib).slice(0, 10));
+      throw new Error('pdfjsLib.getDocument is not a function. pdfjs-dist version: ' + ((pdfjsLib as any).version || 'unknown') + '. Try checking import path.');
+    }
+    
+    console.log('[ContractAnalysis] Using getDocument function for PDF loading');
+    const loadingTask = getDocument({ 
       data: uint8Array,
       verbosity: 0, // Reduce console output
       stopAtErrors: false, // Continue even if there are errors
