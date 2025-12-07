@@ -9,9 +9,11 @@ if (!supabaseUrl || !supabaseAnonKey) {
 }
 
 // Get the current origin for redirect URLs (works in browser)
+// With HashRouter, we need to include the hash prefix for OAuth redirects
 const getRedirectUrl = () => {
   if (typeof window !== 'undefined') {
-    return window.location.origin;
+    // Use hash-based routing for OAuth redirects
+    return `${window.location.origin}/#/`;
   }
   // Fallback for SSR or Edge Functions
   return import.meta.env.VITE_APP_URL || 'http://localhost:32100';

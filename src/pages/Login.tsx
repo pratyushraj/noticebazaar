@@ -128,7 +128,7 @@ const Login = () => {
                 providers={['google', 'github']}
                 appearance={{ theme: ThemeSupa }}
                 theme="dark"
-                redirectTo={window.location.origin}
+                redirectTo={`${window.location.origin}/#/`}
                 onlyThirdPartyProviders={false}
               />
             </div>
