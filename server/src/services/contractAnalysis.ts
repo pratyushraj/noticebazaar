@@ -8,7 +8,7 @@ import { analyzeContractWithAI } from './aiContractAnalysis';
 import { classifyDocumentTypeWithAI } from './contractClassifier';
 import { calculateNegotiationPowerScore } from './negotiationPowerScore';
 
-interface AnalysisResult {
+export interface AnalysisResult {
   protectionScore: number;
   negotiationPowerScore?: number; // Added negotiation power score
   overallRisk: 'low' | 'medium' | 'high';
@@ -115,7 +115,8 @@ export function isValidBrandDealContract(text: string): { valid: boolean; score:
 export async function analyzeContract(pdfBuffer: Buffer): Promise<AnalysisResult> {
   // For Node.js, use local worker file from node_modules
   // For browser, use CDN worker
-  if (typeof window === 'undefined') {
+  // Node.js environment check
+  if (typeof process !== 'undefined' && process.versions && process.versions.node) {
     // Node.js environment - use local worker file
     const path = require('path');
     const fs = require('fs');

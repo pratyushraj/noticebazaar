@@ -33,11 +33,12 @@ export async function generateReportPdf(analysis: AnalysisResult): Promise<Buffe
 }
 
 function generateReportHtml(analysis: AnalysisResult): string {
-  const riskColor = {
+  const riskColorMap: Record<string, string> = {
     low: '#10b981',
     medium: '#f59e0b',
     high: '#ef4444'
-  }[analysis.overallRisk];
+  };
+  const riskColor = riskColorMap[analysis.overallRisk] || '#6b7280';
 
   return `
 <!DOCTYPE html>
@@ -185,7 +186,7 @@ function generateReportHtml(analysis: AnalysisResult): string {
     ${analysis.issues.length > 0 ? `
     <div class="section">
       <div class="section-title">⚠️ Issues Found (${analysis.issues.length})</div>
-      ${analysis.issues.map(issue => `
+      ${analysis.issues.map((issue: any) => `
         <div class="issue-item">
           <div class="issue-title">${issue.title}</div>
           <div class="issue-description">${issue.description}</div>
@@ -199,7 +200,7 @@ function generateReportHtml(analysis: AnalysisResult): string {
     ${analysis.verified.length > 0 ? `
     <div class="section">
       <div class="section-title">✅ Verified Clauses (${analysis.verified.length})</div>
-      ${analysis.verified.map(item => `
+      ${analysis.verified.map((item: any) => `
         <div class="verified-item">
           <div class="verified-title">${item.title}</div>
           <div class="verified-description">${item.description}</div>
@@ -227,7 +228,7 @@ function generateReportHtml(analysis: AnalysisResult): string {
     <div class="section">
       <div class="section-title">💡 Recommendations</div>
       <ul style="list-style: none; padding: 0;">
-        ${analysis.recommendations.map(rec => `
+        ${analysis.recommendations.map((rec: string) => `
           <li style="padding: 10px 0; border-bottom: 1px solid #e5e7eb;">
             • ${rec}
           </li>

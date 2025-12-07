@@ -165,16 +165,16 @@ async function callHuggingFace(model: string, prompt: string, apiKey?: string): 
   if (!response.ok) {
     // Check if model is loading
     if (response.status === 503) {
-      const errorData = await response.json().catch(() => ({}));
+      const errorData = await response.json().catch(() => ({})) as any;
       const estimatedTime = errorData.estimated_time || 30;
       throw new Error(`Model is loading. Please wait ${estimatedTime} seconds and try again.`);
     }
     
-    const error = await response.json().catch(() => ({ error: 'Unknown error' }));
+    const error = await response.json().catch(() => ({ error: 'Unknown error' })) as any;
     throw new Error(`Hugging Face API error: ${error.error || response.statusText}`);
   }
 
-  const data = await response.json();
+  const data = await response.json() as any;
   
   // Handle array response (Hugging Face sometimes returns array)
   if (Array.isArray(data) && data[0]?.generated_text) {
@@ -214,11 +214,11 @@ async function callGroq(model: string, prompt: string, apiKey: string): Promise<
   });
 
   if (!response.ok) {
-    const error = await response.json().catch(() => ({ error: 'Unknown error' }));
+    const error = await response.json().catch(() => ({ error: 'Unknown error' })) as any;
     throw new Error(`Groq API error: ${error.error?.message || response.statusText}`);
   }
 
-  const data = await response.json();
+  const data = await response.json() as any;
   return data.choices[0]?.message?.content || '';
 }
 
@@ -244,11 +244,11 @@ async function callTogether(model: string, prompt: string, apiKey: string): Prom
   });
 
   if (!response.ok) {
-    const error = await response.json().catch(() => ({ error: 'Unknown error' }));
+    const error = await response.json().catch(() => ({ error: 'Unknown error' })) as any;
     throw new Error(`Together AI API error: ${error.error?.message || response.statusText}`);
   }
 
-  const data = await response.json();
+  const data = await response.json() as any;
   return data.choices[0]?.message?.content || '';
 }
 
@@ -279,11 +279,11 @@ async function callGemini(model: string, prompt: string, apiKey: string): Promis
   });
 
   if (!response.ok) {
-    const error = await response.json().catch(() => ({ error: 'Unknown error' }));
+    const error = await response.json().catch(() => ({ error: 'Unknown error' })) as any;
     throw new Error(`Gemini API error: ${error.error?.message || response.statusText}`);
   }
 
-  const data = await response.json();
+  const data = await response.json() as any;
   
   // Extract text from Gemini response
   if (data.candidates && data.candidates[0]?.content?.parts) {
