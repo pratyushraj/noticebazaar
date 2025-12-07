@@ -693,7 +693,7 @@ router.post('/send-negotiation-email', async (req: AuthenticatedRequest, res: Re
       .eq('id', userId)
       .single();
 
-    const fromEmail = profile?.email || req.user!.email || 'noreply@noticebazaar.com';
+    const fromEmail = (profile as any)?.email || req.user!.email || 'noreply@noticebazaar.com';
     const fromName = (profile as any)?.first_name && (profile as any)?.last_name 
       ? `${(profile as any).first_name} ${(profile as any).last_name}`
       : 'NoticeBazaar User';
