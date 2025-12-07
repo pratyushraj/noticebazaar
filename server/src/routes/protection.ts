@@ -694,8 +694,8 @@ router.post('/send-negotiation-email', async (req: AuthenticatedRequest, res: Re
       .single();
 
     const fromEmail = profile?.email || req.user!.email || 'noreply@noticebazaar.com';
-    const fromName = profile?.first_name && profile?.last_name 
-      ? `${profile.first_name} ${profile.last_name}`
+    const fromName = (profile as any)?.first_name && (profile as any)?.last_name 
+      ? `${(profile as any).first_name} ${(profile as any).last_name}`
       : 'NoticeBazaar User';
 
     // TODO: Integrate with your email service (SendGrid, Resend, etc.)
