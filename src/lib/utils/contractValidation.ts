@@ -31,14 +31,14 @@ export function isValidBrandDealContract(text: string): { isValid: boolean; reas
     { pattern: /take.*notice|please.*take.*notice|you.*are.*hereby.*notified|notice.*is.*hereby|demand.*notice|legal.*demand/i, reason: 'legal notice', skipIfStrongTitle: true },
     // Common legal notice phrases
     { pattern: /whereas.*you.*have.*failed|you.*have.*failed.*to|default.*in.*payment|outstanding.*amount|due.*amount.*not.*paid/i, reason: 'legal notice', skipIfStrongTitle: false },
-    // Vehicle/rental related (often in legal notices)
-    { pattern: /vehicle.*damage|repair.*charges|towing.*charges|parking.*charges|rental.*charges/i, reason: 'legal notice', skipIfStrongTitle: false },
+    // Vehicle/rental related (often in legal notices) - more specific
+    { pattern: /vehicle.*damage.*charges|repair.*charges.*vehicle|towing.*charges|parking.*charges.*violation|rental.*charges.*outstanding/i, reason: 'legal notice', skipIfStrongTitle: false },
     // Consumer complaints
     { pattern: /consumer complaint|consumer forum|consumer court|consumer.*dispute|consumer.*redressal/i, reason: 'consumer complaint', skipIfStrongTitle: false },
     // Court documents
     { pattern: /case number|case no|petition|plaintiff|defendant|judgment|verdict|affidavit|fir|first information report/i, reason: 'court document', skipIfStrongTitle: false },
-    // Car rental agreements or claims
-    { pattern: /car rental|vehicle rental|rental agreement|lease.*vehicle|automobile.*rental|vehicle.*lease|booking id|registration no|repair estimate|vehicle/i, reason: 'car rental document', skipIfStrongTitle: false },
+    // Car rental agreements or claims - more specific patterns
+    { pattern: /car rental.*agreement|vehicle rental.*agreement|rental agreement.*vehicle|automobile.*rental.*agreement|vehicle.*lease.*agreement|booking id.*vehicle|registration no.*vehicle|repair estimate.*vehicle/i, reason: 'car rental document', skipIfStrongTitle: false },
     // Insurance policies/claims
     { pattern: /insurance claim|claim form|insurance policy|premium|coverage.*insurance|policy number|insurance.*claim/i, reason: 'insurance document', skipIfStrongTitle: false },
     // Government forms
@@ -84,14 +84,21 @@ export function isValidBrandDealContract(text: string): { isValid: boolean; reas
     },
     // Agreement for rent
     { pattern: /agreement.*for.*rent|rent.*agreement|lease.*agreement.*rent/i, reason: 'rental agreement', skipIfStrongTitle: false },
-    // Additional aggressive patterns for legal documents
-    { pattern: /whereas.*and.*whereas|whereas.*the.*parties|whereas.*the.*company|whereas.*the.*individual/i, reason: 'legal notice', skipIfStrongTitle: false }, // Legal notice format
+    // Additional aggressive patterns for legal documents - only specific legal notice patterns
+    { pattern: /whereas.*you.*have.*failed|whereas.*and.*whereas.*failed|whereas.*default/i, reason: 'legal notice', skipIfStrongTitle: false }, // Legal notice format (NOT normal contract "whereas the parties")
     { pattern: /you.*are.*hereby.*directed|you.*are.*hereby.*informed|you.*are.*hereby.*requested/i, reason: 'legal notice', skipIfStrongTitle: false },
     { pattern: /failing.*which|failing.*to.*comply|failing.*to.*pay/i, reason: 'legal notice', skipIfStrongTitle: false },
     { pattern: /legal.*action|legal.*proceedings|legal.*remedy|legal.*consequences/i, reason: 'legal notice', skipIfStrongTitle: false },
   ];
   
-  // Check rejection patterns - but skip certain ones if we have a strong brand deal title
+  // First, check for strong positive brand deal signals
+  // If we have strong signals, be more lenient with rejection patterns
+  const hasPayment = /payment|fee|compensation|amount payable|rupees|dollars|paid|payable/i.test(text);
+  const hasDeliverables = /deliverable|posts|videos|reels|stories|content|instagram|youtube|tiktok|social.*media/i.test(text);
+  const hasCollaboration = /brand|creator|influencer|collaboration|sponsorship|content creator/i.test(text);
+  const hasStrongPositiveSignals = hasPayment && hasDeliverables && hasCollaboration;
+
+  // Check rejection patterns - but skip certain ones if we have a strong brand deal title or strong positive signals
   for (const { pattern, reason, skipIfStrongTitle, contextCheck } of rejectionPatterns) {
     // Skip context-sensitive patterns if we have a strong brand deal title
     if (hasStrongBrandDealTitle && skipIfStrongTitle) {
@@ -112,6 +119,13 @@ export function isValidBrandDealContract(text: string): { isValid: boolean; reas
           console.log(`[ContractValidation] Pattern matched "${matchText}" but context check passed - allowing`);
           continue;
         }
+      }
+      
+      // If we have strong positive signals (payment + deliverables + collaboration),
+      // be more lenient - only reject for very clear non-brand-deal documents
+      if (hasStrongPositiveSignals && skipIfStrongTitle) {
+        console.log(`[ContractValidation] Pattern matched "${matchText}" but strong positive signals detected - allowing`);
+        continue;
       }
       
       console.log('[ContractValidation] ❌ REJECTION PATTERN MATCHED:', reason);
@@ -187,27 +201,43 @@ export function isValidBrandDealContract(text: string): { isValid: boolean; reas
     }
   }
 
-  // Check for brand deal contract indicators - REQUIRE AT LEAST 2
+  // Check for brand deal contract indicators - REQUIRE AT LEAST 2 (or 1 if we have clear signals)
   const brandDealIndicators = [
-    // Deliverables
-    /deliverable|posts|videos|reels|stories|content|deliverables/i,
-    // Payment terms
-    /payment|fee|compensation|amount payable|payment.*terms|payment.*schedule/i,
+    // Deliverables (strong indicator)
+    /deliverable|posts|videos|reels|stories|content|deliverables|instagram|youtube|tiktok|social.*media/i,
+    // Payment terms (strong indicator)
+    /payment|fee|compensation|amount payable|payment.*terms|payment.*schedule|rupees|dollars|paid|payable/i,
     // Campaign details
-    /campaign|timeline|deadline|deliver by|term|campaign.*duration|campaign.*period/i,
+    /campaign|timeline|deadline|deliver by|term|campaign.*duration|campaign.*period|duration|timeline/i,
     // Rights
-    /usage rights|content rights|license|distribution rights|usage.*right|content.*right/i,
+    /usage rights|content rights|license|distribution rights|usage.*right|content.*right|intellectual property/i,
     // Exclusivity
     /exclusive|exclusivity|non-compete|non.*compete/i,
-    // Collaboration terms
-    /brand|creator|influencer|scope of work|collaboration|partnership|sponsorship/i,
+    // Collaboration terms (this is very common, so count it)
+    /brand|creator|influencer|scope of work|collaboration|partnership|sponsorship|content creator/i,
+    // Additional common terms
+    /agreement|contract|terms and conditions|clause|section/i,
   ];
 
   // Count how many brand deal indicators are present
   const indicatorCount = brandDealIndicators.filter(pattern => pattern.test(text)).length;
 
-  // REQUIRE AT LEAST 2 indicators (or 1 if strong title)
+  // If we have payment + deliverables + collaboration terms, it's very likely a valid brand deal
+  // Even if rejection patterns matched something minor
+  if (hasPayment && hasDeliverables && hasCollaboration) {
+    console.log('[ContractValidation] ✅ Strong positive signals: payment + deliverables + collaboration - valid brand deal');
+    return { isValid: true };
+  }
+
+  // REQUIRE AT LEAST 2 indicators (more lenient)
+  // Or if we have payment + deliverables (2 strong signals), accept it
   if (indicatorCount < 2 && !hasStrongBrandDealTitle) {
+    // But allow if we have the two strongest indicators: payment + deliverables
+    if (hasPayment && hasDeliverables) {
+      console.log('[ContractValidation] ✅ Payment + Deliverables found - valid brand deal');
+      return { isValid: true };
+    }
+    
     console.log('[ContractValidation] Insufficient brand deal indicators found:', indicatorCount);
     console.log('[ContractValidation] Sample text:', text.substring(0, 500));
     return { 
