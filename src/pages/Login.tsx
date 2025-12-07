@@ -21,8 +21,14 @@ const Login = () => {
 
   useEffect(() => {
     // If session loading is finished and a session exists, redirect.
-    if (!loading && session) {
-      navigate('/', { replace: true });
+    // But check if we're coming from OAuth callback first
+    const hash = window.location.hash;
+    const isOAuthCallback = hash.includes('access_token') || hash.includes('type=recovery') || hash.includes('type=magiclink');
+    
+    // Don't redirect if we're in the middle of an OAuth callback - let SessionContext handle it
+    if (!loading && session && !isOAuthCallback) {
+      console.log('[Login] Session exists, redirecting to dashboard');
+      navigate('/creator-dashboard', { replace: true });
     }
   }, [session, loading, navigate]);
 

@@ -286,17 +286,7 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
             // Supabase will automatically process this via onAuthStateChange
             // But we ensure the session is set up correctly
             logger.debug('Processing OAuth authentication tokens from URL hash');
-            
-            // Redirect to dashboard after OAuth callback is processed
-            // Wait a bit for Supabase to process the session
-            setTimeout(() => {
-              if (window.location.hash.includes('access_token')) {
-                // Clean up the URL hash
-                window.history.replaceState(null, '', window.location.pathname + window.location.search);
-                // Redirect to dashboard
-                window.location.href = '/#/creator-dashboard';
-              }
-            }, 500);
+            // Don't redirect here - let onAuthStateChange handle it after session is established
           }
         }
 
@@ -325,6 +315,7 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
     // Listen for auth state changes (this handles hash fragments automatically)
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        console.log('[SessionContext] Auth state change:', event, session?.user?.email);
         setSession(session);
         const currentUser = session?.user ?? null;
         setUser(currentUser);
@@ -337,18 +328,22 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
           analytics.clearUserId();
         }
         
-        // Clean up URL hash after successful sign-in and redirect to dashboard
-        if (event === 'SIGNED_IN' && window.location.hash.includes('access_token')) {
-          // Clean up the hash
-          const cleanPath = window.location.pathname + window.location.search;
-          window.history.replaceState(null, '', cleanPath);
+        // Handle OAuth callback redirect after successful sign-in
+        if (event === 'SIGNED_IN' && session) {
+          const hash = window.location.hash;
+          const isOAuthCallback = hash.includes('access_token') || hash.includes('type=recovery') || hash.includes('type=magiclink');
           
-          // Redirect to dashboard if we're on root or login page
-          if (window.location.pathname === '/' || window.location.pathname === '/login' || window.location.hash.includes('login')) {
-            // Small delay to ensure session is fully established
+          if (isOAuthCallback) {
+            console.log('[SessionContext] OAuth callback detected, redirecting to dashboard...');
+            // Clean up the hash first
+            const cleanPath = window.location.pathname + window.location.search;
+            window.history.replaceState(null, '', cleanPath);
+            
+            // Wait a moment for session to be fully established, then redirect
             setTimeout(() => {
+              // Force redirect to dashboard - this ensures we don't stay on login page
               window.location.href = '/#/creator-dashboard';
-            }, 100);
+            }, 300);
           }
         }
       }
