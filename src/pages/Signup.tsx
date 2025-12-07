@@ -159,7 +159,19 @@ const Signup = () => {
                       toast.error('Failed to sign up with Google: ' + error.message);
                     } else if (data?.url) {
                       // Redirect to Google OAuth
-                      window.location.href = data.url;
+                      // Use replace instead of href for Safari compatibility
+                      console.log('[Signup] Redirecting to Google OAuth:', data.url);
+                      try {
+                        // Try using location.replace first (better for Safari)
+                        window.location.replace(data.url);
+                      } catch (err) {
+                        // Fallback to href if replace fails
+                        console.warn('[Signup] location.replace failed, using href:', err);
+                        window.location.href = data.url;
+                      }
+                    } else {
+                      console.error('[Signup] No OAuth URL received from Supabase');
+                      toast.error('Failed to start Google sign-up. Please try again.');
                     }
                   } catch (err: any) {
                     console.error('[Signup] Google OAuth exception:', err);
@@ -196,7 +208,19 @@ const Signup = () => {
                       toast.error('Failed to sign up with GitHub: ' + error.message);
                     } else if (data?.url) {
                       // Redirect to GitHub OAuth
-                      window.location.href = data.url;
+                      // Use replace instead of href for Safari compatibility
+                      console.log('[Signup] Redirecting to GitHub OAuth:', data.url);
+                      try {
+                        // Try using location.replace first (better for Safari)
+                        window.location.replace(data.url);
+                      } catch (err) {
+                        // Fallback to href if replace fails
+                        console.warn('[Signup] location.replace failed, using href:', err);
+                        window.location.href = data.url;
+                      }
+                    } else {
+                      console.error('[Signup] No OAuth URL received from Supabase');
+                      toast.error('Failed to start GitHub sign-up. Please try again.');
                     }
                   } catch (err: any) {
                     console.error('[Signup] GitHub OAuth exception:', err);

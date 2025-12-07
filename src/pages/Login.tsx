@@ -192,7 +192,19 @@ const Login = () => {
                       toast.error('Failed to sign in with Google: ' + error.message);
                     } else if (data?.url) {
                       // Redirect to Google OAuth
-                      window.location.href = data.url;
+                      // Use replace instead of href for Safari compatibility
+                      console.log('[Login] Redirecting to Google OAuth:', data.url);
+                      try {
+                        // Try using location.replace first (better for Safari)
+                        window.location.replace(data.url);
+                      } catch (err) {
+                        // Fallback to href if replace fails
+                        console.warn('[Login] location.replace failed, using href:', err);
+                        window.location.href = data.url;
+                      }
+                    } else {
+                      console.error('[Login] No OAuth URL received from Supabase');
+                      toast.error('Failed to start Google sign-in. Please try again.');
                     }
                   } catch (err: any) {
                     console.error('[Login] Google OAuth exception:', err);
@@ -214,7 +226,10 @@ const Login = () => {
                 onClick={async () => {
                   try {
                     const redirectUrl = `${window.location.origin}/#/creator-dashboard`;
+                    // Store intended route in sessionStorage BEFORE OAuth call
+                    sessionStorage.setItem('oauth_intended_route', 'creator-dashboard');
                     console.log('[Login] Starting GitHub OAuth with redirect:', redirectUrl);
+                    console.log('[Login] Stored intended route: creator-dashboard');
                     const { data, error } = await supabase.auth.signInWithOAuth({
                       provider: 'github',
                       options: {
@@ -226,7 +241,19 @@ const Login = () => {
                       toast.error('Failed to sign in with GitHub: ' + error.message);
                     } else if (data?.url) {
                       // Redirect to GitHub OAuth
-                      window.location.href = data.url;
+                      // Use replace instead of href for Safari compatibility
+                      console.log('[Login] Redirecting to GitHub OAuth:', data.url);
+                      try {
+                        // Try using location.replace first (better for Safari)
+                        window.location.replace(data.url);
+                      } catch (err) {
+                        // Fallback to href if replace fails
+                        console.warn('[Login] location.replace failed, using href:', err);
+                        window.location.href = data.url;
+                      }
+                    } else {
+                      console.error('[Login] No OAuth URL received from Supabase');
+                      toast.error('Failed to start GitHub sign-in. Please try again.');
                     }
                   } catch (err: any) {
                     console.error('[Login] GitHub OAuth exception:', err);
