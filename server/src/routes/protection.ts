@@ -783,7 +783,7 @@ router.post('/send-for-legal-review', async (req: AuthenticatedRequest, res: Res
       .insert({
         report_id: reportId,
         user_id: userId,
-        user_email: userEmail || profile?.email || req.user!.email,
+        user_email: userEmail || (profile as any)?.email || req.user!.email,
         user_phone: userPhone || (profile as any)?.phone,
         status: 'pending',
         requested_at: new Date().toISOString()
