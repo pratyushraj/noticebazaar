@@ -290,17 +290,31 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
           }
         }
 
+        // Get session - Supabase will automatically process hash tokens
         const { data: { session: currentSession }, error } = await supabase.auth.getSession();
         
         if (error) {
           logger.error("Error getting session", error);
         } else {
+          console.log('[SessionContext] Initial session check:', {
+            hasSession: !!currentSession,
+            userEmail: currentSession?.user?.email,
+            hasHashTokens: hasAccessToken,
+            hash: window.location.hash.substring(0, 50) + '...'
+          });
+          
           setSession(currentSession);
           const currentUser = currentSession?.user ?? null;
           setUser(currentUser);
           // Initialize analytics with user ID
           if (currentUser?.id) {
             analytics.setUserId(currentUser.id);
+          }
+          
+          // If we have hash tokens but no session yet, wait for onAuthStateChange to process them
+          if (hasAccessToken && !currentSession) {
+            console.log('[SessionContext] Hash tokens found but no session yet, waiting for onAuthStateChange...');
+            // Don't redirect here - let onAuthStateChange handle it after session is established
           }
           
           // If we have a session but we're on root or login page, redirect to dashboard
@@ -324,7 +338,13 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
     // Listen for auth state changes (this handles hash fragments automatically)
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        console.log('[SessionContext] Auth state change:', event, session?.user?.email);
+        console.log('[SessionContext] Auth state change:', event, {
+          hasSession: !!session,
+          userEmail: session?.user?.email,
+          hash: window.location.hash.substring(0, 50) + '...',
+          pathname: window.location.pathname
+        });
+        
         setSession(session);
         const currentUser = session?.user ?? null;
         setUser(currentUser);
@@ -337,34 +357,38 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
           analytics.clearUserId();
         }
         
-        // Handle OAuth callback redirect after successful sign-in
-        if (event === 'SIGNED_IN' && session) {
-          const hash = window.location.hash;
-          const urlParams = new URLSearchParams(window.location.search);
-          const isOAuthCallback = hash.includes('access_token') || 
-                                  hash.includes('type=recovery') || 
-                                  hash.includes('type=magiclink') ||
-                                  urlParams.get('code') !== null; // OAuth code in query params
+        // Handle OAuth callback - check for hash tokens or successful sign-in
+        const hash = window.location.hash;
+        const urlParams = new URLSearchParams(window.location.search);
+        const hasHashTokens = hash.includes('access_token') || hash.includes('type=recovery') || hash.includes('type=magiclink');
+        const hasQueryCode = urlParams.get('code') !== null;
+        const isOAuthCallback = hasHashTokens || hasQueryCode;
+        
+        // If we have a session after OAuth callback or SIGNED_IN event
+        if (session && (event === 'SIGNED_IN' || isOAuthCallback || (event === 'INITIAL_SESSION' && hasHashTokens))) {
+          console.log('[SessionContext] Session established after OAuth, redirecting to dashboard...', {
+            event,
+            isOAuthCallback,
+            hasHashTokens,
+            hasQueryCode,
+            userEmail: session?.user?.email
+          });
           
-          if (isOAuthCallback || (session && (window.location.pathname === '/' || window.location.hash === '' || window.location.hash === '#'))) {
-            console.log('[SessionContext] OAuth callback detected, redirecting to dashboard...', {
-              hash,
-              pathname: window.location.pathname,
-              hasSession: !!session,
-              userEmail: session?.user?.email
-            });
-            
-            // Clean up the hash/query params first
-            const cleanPath = window.location.pathname;
-            window.history.replaceState(null, '', cleanPath);
-            
-            // Wait a moment for session to be fully established, then redirect
-            setTimeout(() => {
-              // Force redirect to dashboard - this ensures we don't stay on login page
-              console.log('[SessionContext] Redirecting to dashboard now...');
-              window.location.href = '/#/creator-dashboard';
-            }, 500);
-          }
+          // Clean up the hash/query params first
+          const cleanPath = window.location.pathname;
+          window.history.replaceState(null, '', cleanPath);
+          
+          // Wait a moment for session to be fully established, then redirect
+          setTimeout(() => {
+            // Force redirect to dashboard - this ensures we don't stay on login page
+            console.log('[SessionContext] Redirecting to dashboard now...');
+            window.location.href = '/#/creator-dashboard';
+          }, 300);
+        }
+        
+        // Handle INITIAL_SESSION with no session - this is normal on first load
+        if (event === 'INITIAL_SESSION' && !session) {
+          console.log('[SessionContext] INITIAL_SESSION: No session found (normal on first load)');
         }
       }
     );
