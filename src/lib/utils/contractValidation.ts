@@ -309,13 +309,41 @@ export async function extractTextFromPDF(file: File): Promise<string> {
         // Dynamically import pdf.js
         const pdfjsLib = await import('pdfjs-dist');
         
-        // Configure PDF.js worker with proper fallback
-        // Version 5.x uses .mjs extension, try that first
-        const pdfjsVersion = pdfjsLib.version || '5.4.449';
-        
-        // Use unpkg CDN - most reliable for PDF.js
-        // For version 5.x, the worker is in build/pdf.worker.min.mjs
-        pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsVersion}/build/pdf.worker.min.mjs`;
+        // Configure PDF.js worker with proper error handling
+        // Handle different import structures for pdfjs-dist v5.x
+        try {
+          // Access GlobalWorkerOptions - it might be at different locations depending on import structure
+          let GlobalWorkerOptions: any = null;
+          
+          // Try standard location
+          if (pdfjsLib && 'GlobalWorkerOptions' in pdfjsLib && pdfjsLib.GlobalWorkerOptions) {
+            GlobalWorkerOptions = pdfjsLib.GlobalWorkerOptions;
+          }
+          // Try default export
+          else if (pdfjsLib && 'default' in pdfjsLib && (pdfjsLib as any).default?.GlobalWorkerOptions) {
+            GlobalWorkerOptions = (pdfjsLib as any).default.GlobalWorkerOptions;
+          }
+          // Try direct access
+          else if ((pdfjsLib as any).GlobalWorkerOptions) {
+            GlobalWorkerOptions = (pdfjsLib as any).GlobalWorkerOptions;
+          }
+          
+          if (GlobalWorkerOptions && typeof GlobalWorkerOptions === 'object') {
+            // Version 5.x uses .mjs extension
+            const pdfjsVersion = pdfjsLib.version || '5.4.449';
+            
+            // Use unpkg CDN - most reliable for PDF.js
+            // For version 5.x, the worker is in build/pdf.worker.min.mjs
+            GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsVersion}/build/pdf.worker.min.mjs`;
+            console.log('[ContractValidation] PDF.js worker configured:', GlobalWorkerOptions.workerSrc);
+          } else {
+            console.warn('[ContractValidation] GlobalWorkerOptions not found - PDF.js will use default worker or no worker');
+            // Continue without worker setup - PDF.js might still work
+          }
+        } catch (error: any) {
+          console.warn('[ContractValidation] Error setting PDF.js worker (non-critical):', error.message);
+          // Continue - PDF.js might still work without explicit worker setup
+        }
         
         console.log('[ContractValidation] Loading PDF, size:', arrayBuffer.byteLength, 'bytes');
         
