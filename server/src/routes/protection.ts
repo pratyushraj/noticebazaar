@@ -324,8 +324,8 @@ router.post('/generate-safe-contract', async (req: AuthenticatedRequest, res: Re
         // Check access: allow if user created it, or if deal's creator matches, or if admin
         const hasAccess = 
           (report as any).user_id === userId || // User created the report (if user_id column exists)
-          report.deal?.creator_id === userId || // User owns the deal
-          !report.deal_id || // No deal_id means user created it directly via /analyze endpoint
+          (report as any).deal?.creator_id === userId || // User owns the deal
+          !(report as any).deal_id || // No deal_id means user created it directly via /analyze endpoint
           req.user!.role === 'admin'; // Admin access
 
         if (!hasAccess) {
