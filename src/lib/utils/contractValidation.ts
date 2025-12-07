@@ -41,8 +41,35 @@ export function isValidBrandDealContract(text: string): { isValid: boolean; reas
     { pattern: /car rental.*agreement|vehicle rental.*agreement|rental agreement.*vehicle|automobile.*rental.*agreement|vehicle.*lease.*agreement|booking id.*vehicle|registration no.*vehicle|repair estimate.*vehicle/i, reason: 'car rental document', skipIfStrongTitle: false },
     // Insurance policies/claims
     { pattern: /insurance claim|claim form|insurance policy|premium|coverage.*insurance|policy number|insurance.*claim/i, reason: 'insurance document', skipIfStrongTitle: false },
-    // Government forms
-    { pattern: /government form|tax form|income tax|gst|pan|aadhaar|passport.*form|pan.*card|aadhaar.*card/i, reason: 'government form', skipIfStrongTitle: false },
+    // Government forms - CONTEXT-AWARE: only reject if clearly a form, not contract tax clauses
+    { 
+      pattern: /government form|tax form|income tax.*form|gst.*certificate|gst.*registration|pan.*card|aadhaar.*card|passport.*form/i, 
+      reason: 'government form', 
+      skipIfStrongTitle: true,
+      contextCheck: (matchText: string, fullText: string) => {
+        // Allow GST/TDS/PAN in contract contexts (tax compliance clauses)
+        const contextLower = fullText.toLowerCase();
+        const matchLower = matchText.toLowerCase();
+        
+        // Allow "GST/TDS" or "GST and TDS" - these are contract clauses
+        if (/gst.*tds|gst\/tds|gst and tds|tds.*gst/i.test(contextLower)) {
+          return false; // Don't reject - it's a contract tax clause
+        }
+        
+        // Allow "PAN" or "GST" in payment/tax section contexts
+        if (/payment.*gst|tax.*gst|gst.*standard|tds.*deduction|pan.*number|gst.*inclusive|tds.*applicable/i.test(contextLower)) {
+          return false; // Don't reject - it's contract language about taxes
+        }
+        
+        // Only reject if it's clearly about government forms/certificates
+        if (/gst.*certificate|gst.*registration|pan.*card|aadhaar.*card|government form|tax form/i.test(contextLower)) {
+          return true; // Reject - clearly a government form reference
+        }
+        
+        // Default: allow through if context is ambiguous (might be contract clause)
+        return false;
+      }
+    },
     // Employment agreements
     { pattern: /employment.*agreement|employee.*contract|job.*offer|employment.*letter|offer.*letter/i, reason: 'employment agreement', skipIfStrongTitle: false },
     // Invoices, receipts, bills - CONTEXT-AWARE: only reject if clearly a document type, not contract language
@@ -126,6 +153,20 @@ export function isValidBrandDealContract(text: string): { isValid: boolean; reas
       if (hasStrongPositiveSignals && skipIfStrongTitle) {
         console.log(`[ContractValidation] Pattern matched "${matchText}" but strong positive signals detected - allowing`);
         continue;
+      }
+      
+      // If we have a strong brand deal title, be more lenient with certain rejections
+      // Allow GST/TDS/PAN in contract contexts even if pattern matches
+      if (hasStrongBrandDealTitle && (reason === 'government form' || reason === 'invoice/receipt document')) {
+        // Check if it's in a contract clause context (GST/TDS, payment terms, etc.)
+        const matchIndex = text.toLowerCase().indexOf(matchText.toLowerCase());
+        if (matchIndex !== -1) {
+          const context = text.substring(Math.max(0, matchIndex - 30), Math.min(text.length, matchIndex + matchText.length + 30)).toLowerCase();
+          if (/gst.*tds|gst\/tds|payment.*gst|tax.*gst|gst.*standard|tds.*standard|pan.*number/i.test(context)) {
+            console.log(`[ContractValidation] Pattern matched "${matchText}" but it's a contract tax clause - allowing`);
+            continue;
+          }
+        }
       }
       
       console.log('[ContractValidation] ❌ REJECTION PATTERN MATCHED:', reason);
