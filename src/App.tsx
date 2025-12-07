@@ -277,7 +277,7 @@ const App = () => {
             </SidebarProvider>
           </SessionContextProvider>
         </NetworkStatusWrapper>
-        </BrowserRouter>
+        </HashRouter>
             </div>
           )}
         </TooltipProvider>
