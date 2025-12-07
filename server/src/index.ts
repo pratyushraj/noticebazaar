@@ -110,7 +110,10 @@ if (supabaseInitialized && supabaseServiceKey && supabaseServiceKey.length > 50)
 }
 
 // Middleware
-app.use(helmet());
+// Configure Helmet for API server (disable CSP since APIs don't serve HTML/scripts)
+app.use(helmet({
+  contentSecurityPolicy: false, // APIs don't need CSP - they don't serve HTML
+}));
 app.use(cors({
   origin: function (origin, callback) {
     // Allow requests with no origin (like mobile apps, Postman, or cloudflared tunnel)
@@ -156,6 +159,20 @@ app.use(cors({
 }));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+// Root route - API information
+app.get('/', (req: express.Request, res: express.Response) => {
+  res.json({
+    name: 'NoticeBazaar API',
+    version: '1.0.0',
+    status: 'running',
+    endpoints: {
+      health: '/health',
+      api: '/api/*'
+    },
+    documentation: 'See API documentation for available endpoints'
+  });
+});
 
 // Health check - must be simple and never fail
 app.get('/health', (req: express.Request, res: express.Response) => {
