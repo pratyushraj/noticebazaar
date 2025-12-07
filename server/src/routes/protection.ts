@@ -511,8 +511,8 @@ router.post('/generate-negotiation-message', async (req: AuthenticatedRequest, r
       // Check access: allow if user created it, or if deal's creator matches, or if admin
       const hasAccess = 
         (report as any).user_id === userId || // User created the report
-        report.deal?.creator_id === userId || // User owns the deal
-        !report.deal_id || // No deal_id means user created it directly
+        (report as any).deal?.creator_id === userId || // User owns the deal
+        !(report as any).deal_id || // No deal_id means user created it directly
         req.user!.role === 'admin'; // Admin access
 
       if (!hasAccess) {
@@ -784,7 +784,7 @@ router.post('/send-for-legal-review', async (req: AuthenticatedRequest, res: Res
         report_id: reportId,
         user_id: userId,
         user_email: userEmail || profile?.email || req.user!.email,
-        user_phone: userPhone || profile?.phone,
+        user_phone: userPhone || (profile as any)?.phone,
         status: 'pending',
         requested_at: new Date().toISOString()
       });
