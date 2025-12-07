@@ -20,6 +20,11 @@
     "pdfjs-dist": "^3.11.174",
     "puppeteer": "^21.6.1"
   },
+  "pnpm": {
+    "optionalDependencies": {
+      "canvas": "*"
+    }
+  },
   "devDependencies": {
     "@types/cors": "^2.8.17",
     "@types/express": "^4.17.21",
