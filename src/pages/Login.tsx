@@ -23,12 +23,21 @@ const Login = () => {
     // If session loading is finished and a session exists, redirect.
     // But check if we're coming from OAuth callback first
     const hash = window.location.hash;
-    const isOAuthCallback = hash.includes('access_token') || hash.includes('type=recovery') || hash.includes('type=magiclink');
+    const urlParams = new URLSearchParams(window.location.search);
+    const isOAuthCallback = hash.includes('access_token') || 
+                            hash.includes('type=recovery') || 
+                            hash.includes('type=magiclink') ||
+                            urlParams.get('code') !== null; // OAuth code in query params
     
     // Don't redirect if we're in the middle of an OAuth callback - let SessionContext handle it
+    // Also add a small delay to ensure OAuth processing completes
     if (!loading && session && !isOAuthCallback) {
       console.log('[Login] Session exists, redirecting to dashboard');
-      navigate('/creator-dashboard', { replace: true });
+      // Use setTimeout to avoid race condition with OAuth callback
+      const timer = setTimeout(() => {
+        navigate('/creator-dashboard', { replace: true });
+      }, 200);
+      return () => clearTimeout(timer);
     }
   }, [session, loading, navigate]);
 

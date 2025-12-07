@@ -302,6 +302,15 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
           if (currentUser?.id) {
             analytics.setUserId(currentUser.id);
           }
+          
+          // If we have a session but we're on root or login page, redirect to dashboard
+          // This handles the case where Supabase redirects to Site URL after OAuth
+          if (currentSession && (window.location.pathname === '/' || window.location.pathname === '/login') && !hasAccessToken) {
+            console.log('[SessionContext] Session exists but on root/login, redirecting to dashboard...');
+            setTimeout(() => {
+              window.location.href = '/#/creator-dashboard';
+            }, 100);
+          }
         }
       } catch (e: any) {
         logger.error("Critical error initializing session", e);
@@ -331,19 +340,30 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
         // Handle OAuth callback redirect after successful sign-in
         if (event === 'SIGNED_IN' && session) {
           const hash = window.location.hash;
-          const isOAuthCallback = hash.includes('access_token') || hash.includes('type=recovery') || hash.includes('type=magiclink');
+          const urlParams = new URLSearchParams(window.location.search);
+          const isOAuthCallback = hash.includes('access_token') || 
+                                  hash.includes('type=recovery') || 
+                                  hash.includes('type=magiclink') ||
+                                  urlParams.get('code') !== null; // OAuth code in query params
           
-          if (isOAuthCallback) {
-            console.log('[SessionContext] OAuth callback detected, redirecting to dashboard...');
-            // Clean up the hash first
-            const cleanPath = window.location.pathname + window.location.search;
+          if (isOAuthCallback || (session && (window.location.pathname === '/' || window.location.hash === '' || window.location.hash === '#'))) {
+            console.log('[SessionContext] OAuth callback detected, redirecting to dashboard...', {
+              hash,
+              pathname: window.location.pathname,
+              hasSession: !!session,
+              userEmail: session?.user?.email
+            });
+            
+            // Clean up the hash/query params first
+            const cleanPath = window.location.pathname;
             window.history.replaceState(null, '', cleanPath);
             
             // Wait a moment for session to be fully established, then redirect
             setTimeout(() => {
               // Force redirect to dashboard - this ensures we don't stay on login page
+              console.log('[SessionContext] Redirecting to dashboard now...');
               window.location.href = '/#/creator-dashboard';
-            }, 300);
+            }, 500);
           }
         }
       }
