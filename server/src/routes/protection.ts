@@ -270,16 +270,17 @@ router.get('/:id/report.pdf', async (req: AuthenticatedRequest, res: Response) =
     }
 
     // Verify access
-    if (report.deal?.creator_id !== userId && req.user!.role !== 'admin') {
+    const reportData = report as any;
+    if (reportData.deal?.creator_id !== userId && req.user!.role !== 'admin') {
       return res.status(403).json({ error: 'Access denied' });
     }
 
-    if (!report.pdf_report_url) {
+    if (!reportData.pdf_report_url) {
       return res.status(404).json({ error: 'PDF report not available' });
     }
 
     // Generate signed download URL
-    const path = report.pdf_report_url.split('/').slice(-2).join('/');
+    const path = reportData.pdf_report_url.split('/').slice(-2).join('/');
     const { generateSignedDownloadUrl } = await import('../services/storage');
     const signedUrl = await generateSignedDownloadUrl(path, 3600);
 
@@ -912,16 +913,17 @@ router.get('/download-report/:reportId', async (req: AuthenticatedRequest, res: 
     }
 
     // Verify access
-    if (report.deal?.creator_id !== userId && req.user!.role !== 'admin') {
+    const reportData = report as any;
+    if (reportData.deal?.creator_id !== userId && req.user!.role !== 'admin') {
       return res.status(403).json({ error: 'Access denied' });
     }
 
-    if (!report.pdf_report_url) {
+    if (!reportData.pdf_report_url) {
       return res.status(404).json({ error: 'PDF report not available' });
     }
 
     // Generate signed download URL
-    const path = report.pdf_report_url.split('/').slice(-2).join('/');
+    const path = reportData.pdf_report_url.split('/').slice(-2).join('/');
     const { generateSignedDownloadUrl } = await import('../services/storage');
     const signedUrl = await generateSignedDownloadUrl(path, 3600);
 
