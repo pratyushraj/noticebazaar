@@ -1,7 +1,6 @@
 "use client";
 
 import React from 'react';
-import { Link } from 'react-router-dom';
 import { useSession } from '@/contexts/SessionContext';
 import SearchBar from './SearchBar';
 import Notifications from './Notifications';
