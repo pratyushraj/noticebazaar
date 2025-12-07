@@ -617,7 +617,7 @@ Return ONLY the negotiation message text, no additional formatting, markdown, or
           user_id: userId,
           message: cleanMessage,
           brand_name: brandName || null
-        });
+        } as any);
 
       if (saveError) {
         console.warn('[Protection] Failed to save negotiation message:', saveError.message);
