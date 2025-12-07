@@ -230,7 +230,10 @@ ${creatorName}`;
     triggerHaptic(HapticPatterns.medium);
 
     try {
-      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001';
+      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 
+        (typeof window !== 'undefined' && window.location.origin.includes('noticebazaar.com') 
+          ? 'https://api.noticebazaar.com' 
+          : 'http://localhost:3001');
       const response = await fetch(`${apiBaseUrl}/api/protection/send-negotiation-email`, {
         method: 'POST',
         headers: {
