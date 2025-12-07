@@ -69,7 +69,7 @@ export const useSignOut = () => {
               localStorage.removeItem(key);
             }
           });
-          window.location.href = '/login';
+          window.location.href = '/#/login';
         }, 200);
       },
       onError: () => {
@@ -88,7 +88,7 @@ export const useSignOut = () => {
         }
         navigate('/login', { replace: true });
         setTimeout(() => {
-          window.location.href = '/login';
+          window.location.href = '/#/login';
         }, 200);
       },
       errorMessage: 'Logout failed',
