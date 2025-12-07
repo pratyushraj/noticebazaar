@@ -149,47 +149,69 @@ async function callHuggingFace(model: string, prompt: string, apiKey?: string): 
     headers['Authorization'] = `Bearer ${apiKey}`;
   }
 
-  const response: Response = await fetch(url, {
-    method: 'POST',
-    headers,
-    body: JSON.stringify({
-      inputs: prompt,
-      parameters: {
-        max_new_tokens: 2000,
-        temperature: 0.3, // Lower temperature for more consistent analysis
-        return_full_text: false,
-      },
-    }),
-  });
+  try {
+    // Create AbortController for timeout (60 seconds for Hugging Face)
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 60000); // 60 second timeout
 
-  if (!response.ok) {
-    // Check if model is loading
-    if (response.status === 503) {
-      const errorData = await response.json().catch(() => ({})) as any;
-      const estimatedTime = errorData.estimated_time || 30;
-      throw new Error(`Model is loading. Please wait ${estimatedTime} seconds and try again.`);
+    const response: Response = await fetch(url, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({
+        inputs: prompt,
+        parameters: {
+          max_new_tokens: 2000,
+          temperature: 0.3, // Lower temperature for more consistent analysis
+          return_full_text: false,
+        },
+      }),
+      signal: controller.signal,
+    });
+
+    clearTimeout(timeoutId);
+
+    if (!response.ok) {
+      // Check if model is loading
+      if (response.status === 503) {
+        const errorData = await response.json().catch(() => ({})) as any;
+        const estimatedTime = errorData.estimated_time || 30;
+        console.warn(`[HuggingFace] Model is loading. Estimated wait: ${estimatedTime} seconds`);
+        throw new Error(`Hugging Face model is loading. Please wait ${estimatedTime} seconds and try again.`);
+      }
+      
+      const error = await response.json().catch(() => ({ error: 'Unknown error' })) as any;
+      console.error('[HuggingFace] API error:', response.status, error);
+      throw new Error(`Hugging Face API error (${response.status}): ${error.error || response.statusText}`);
+    }
+
+    const data = await response.json() as any;
+    
+    // Handle array response (Hugging Face sometimes returns array)
+    if (Array.isArray(data) && data[0]?.generated_text) {
+      return data[0].generated_text;
     }
     
-    const error = await response.json().catch(() => ({ error: 'Unknown error' })) as any;
-    throw new Error(`Hugging Face API error: ${error.error || response.statusText}`);
-  }
+    if (data.generated_text) {
+      return data.generated_text;
+    }
+    
+    if (typeof data === 'string') {
+      return data;
+    }
 
-  const data = await response.json() as any;
-  
-  // Handle array response (Hugging Face sometimes returns array)
-  if (Array.isArray(data) && data[0]?.generated_text) {
-    return data[0].generated_text;
+    console.error('[HuggingFace] Unexpected response format:', JSON.stringify(data).substring(0, 200));
+    throw new Error('Unexpected response format from Hugging Face');
+  } catch (error: any) {
+    if (error.name === 'AbortError') {
+      throw new Error('Hugging Face API request timed out after 60 seconds. The model may be loading or overloaded.');
+    }
+    // Re-throw if it's already a formatted error
+    if (error.message?.includes('Hugging Face')) {
+      throw error;
+    }
+    // Wrap other errors
+    throw new Error(`Hugging Face API call failed: ${error.message || 'Unknown error'}`);
   }
-  
-  if (data.generated_text) {
-    return data.generated_text;
-  }
-  
-  if (typeof data === 'string') {
-    return data;
-  }
-
-  throw new Error('Unexpected response format from Hugging Face');
 }
 
 /**
