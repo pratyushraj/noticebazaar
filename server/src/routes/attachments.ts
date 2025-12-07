@@ -1,10 +1,10 @@
 // Attachments API routes - Signed URL generation and virus scan
 
 import { Router, Response } from 'express';
-import { supabase } from '../index';
-import { AuthenticatedRequest } from '../middleware/auth';
-import { generateSignedUploadUrl, generateSignedDownloadUrl } from '../services/storage';
-import { scanFileForVirus } from '../services/virusScan';
+import { supabase } from '../index.js';
+import { AuthenticatedRequest } from '../middleware/auth.js';
+import { generateSignedUploadUrl, generateSignedDownloadUrl } from '../services/storage.js';
+import { scanFileForVirus } from '../services/virusScan.js';
 
 const router = Router();
 

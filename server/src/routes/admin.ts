@@ -1,8 +1,8 @@
 // Admin API routes
 
 import { Router, Response } from 'express';
-import { supabase } from '../index';
-import { AuthenticatedRequest } from '../middleware/auth';
+import { supabase } from '../index.js';
+import { AuthenticatedRequest } from '../middleware/auth.js';
 
 const router = Router();
 

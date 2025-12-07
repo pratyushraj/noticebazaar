@@ -4,9 +4,9 @@
 
 import * as pdfjsLib from 'pdfjs-dist';
 import { TextItem } from 'pdfjs-dist/types/src/display/api';
-import { analyzeContractWithAI } from './aiContractAnalysis';
-import { classifyDocumentTypeWithAI } from './contractClassifier';
-import { calculateNegotiationPowerScore } from './negotiationPowerScore';
+import { analyzeContractWithAI } from './aiContractAnalysis.js';
+import { classifyDocumentTypeWithAI } from './contractClassifier.js';
+import { calculateNegotiationPowerScore } from './negotiationPowerScore.js';
 import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';

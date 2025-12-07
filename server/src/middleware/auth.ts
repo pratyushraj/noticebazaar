@@ -1,7 +1,7 @@
 // Authentication middleware using Supabase JWT
 
 import { Request, Response, NextFunction } from 'express';
-import { supabase, supabaseInitialized } from '../index';
+import { supabase, supabaseInitialized } from '../index.js';
 
 export interface AuthenticatedRequest extends Request {
   user?: {

@@ -1,7 +1,7 @@
 // AI-powered Document Type Classifier
 // HARD BLOCK: Uses AI (Gemini) ONLY - no rule-based fallback
 
-import { callLLM } from "./aiContractAnalysis";
+import { callLLM } from "./aiContractAnalysis.js";
 
 export type DocumentType = "brand_deal_contract" | "not_brand_deal";
 

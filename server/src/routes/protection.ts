@@ -1,13 +1,13 @@
 // Protection/Contract Analysis API routes
 
 import { Router, Response } from 'express';
-import { supabase } from '../index';
-import { AuthenticatedRequest } from '../middleware/auth';
-import { analyzeContract } from '../services/contractAnalysis';
-import { generateReportPdf } from '../services/pdfGenerator';
-import { generateSafeClause } from '../services/clauseGenerator';
-import { generateSafeContract } from '../services/safeContractGenerator';
-import { callLLM } from '../services/aiContractAnalysis';
+import { supabase } from '../index.js';
+import { AuthenticatedRequest } from '../middleware/auth.js';
+import { analyzeContract } from '../services/contractAnalysis.js';
+import { generateReportPdf } from '../services/pdfGenerator.js';
+import { generateSafeClause } from '../services/clauseGenerator.js';
+import { generateSafeContract } from '../services/safeContractGenerator.js';
+import { callLLM } from '../services/aiContractAnalysis.js';
 
 const router = Router();
 

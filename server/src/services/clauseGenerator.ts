@@ -1,7 +1,7 @@
 // Clause Generation Service using Gemini AI
 // Generates legally safe, creator-friendly clause replacements
 
-import { callLLM } from './aiContractAnalysis';
+import { callLLM } from './aiContractAnalysis.js';
 
 export interface ClauseGenerationRequest {
   originalClause: string;

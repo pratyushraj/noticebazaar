@@ -1,10 +1,10 @@
 // Safe Contract Generator Service
 // Generates a new contract PDF with risky clauses replaced by safe clauses
 
-import { supabase, supabaseConfig } from '../index';
-import { generateSafeClause } from './clauseGenerator';
+import { supabase, supabaseConfig } from '../index.js';
+import { generateSafeClause } from './clauseGenerator.js';
 import * as pdfjsLib from 'pdfjs-dist';
-import { generateReportPdf } from './pdfGenerator';
+import { generateReportPdf } from './pdfGenerator.js';
 import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';

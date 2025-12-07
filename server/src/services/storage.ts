@@ -1,6 +1,6 @@
 // Storage service for signed URL generation (Supabase Storage)
 
-import { supabase } from '../index';
+import { supabase } from '../index.js';
 
 const BUCKET_NAME = process.env.STORAGE_BUCKET || 'creator-assets';
 

@@ -2,7 +2,7 @@
 // Generates Contract Analysis Report PDF using Puppeteer
 
 import puppeteer from 'puppeteer';
-import { AnalysisResult } from './contractAnalysis';
+import { AnalysisResult } from './contractAnalysis.js';
 
 export async function generateReportPdf(analysis: AnalysisResult): Promise<Buffer> {
   const html = generateReportHtml(analysis);
