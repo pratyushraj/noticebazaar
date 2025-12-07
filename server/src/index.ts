@@ -7,12 +7,17 @@ import { resolve } from 'path';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 
-// Get __dirname equivalent for ES modules
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-// Load both root .env and server/.env
-dotenv.config({ path: resolve(__dirname, '../../.env') });
-dotenv.config({ path: resolve(__dirname, '../.env') });
+// Load environment variables
+// In Vercel, environment variables are already set, so dotenv is only needed for local dev
+// Try to load .env files, but don't fail if they don't exist (Vercel provides env vars directly)
+try {
+  dotenv.config();
+  // Also try server-specific .env if it exists
+  dotenv.config({ path: '.env' });
+} catch (error) {
+  // In Vercel serverless, env vars are provided directly, so this is fine
+  console.log('⚠️ Could not load .env files (this is normal in Vercel)');
+}
 
 import express from 'express';
 import cors from 'cors';
@@ -50,19 +55,29 @@ if (supabaseServiceKey.startsWith('${') || supabaseServiceKey === '') {
 }
 
 if (!supabaseUrl) {
-  console.error('❌ SUPABASE_URL is missing! Please set SUPABASE_URL or VITE_SUPABASE_URL in your .env file');
+  const errorMsg = '❌ SUPABASE_URL is missing! Please set SUPABASE_URL or VITE_SUPABASE_URL in your environment variables';
+  console.error(errorMsg);
+  // In Vercel, throw error instead of exiting (serverless functions should not exit)
+  if (process.env.VERCEL) {
+    throw new Error(errorMsg);
+  }
   process.exit(1);
 }
 
 if (!supabaseServiceKey) {
   console.error('❌ SUPABASE_SERVICE_ROLE_KEY is missing!');
-  console.error('   Please add SUPABASE_SERVICE_ROLE_KEY to your server/.env file');
+  console.error('   Please add SUPABASE_SERVICE_ROLE_KEY to your environment variables');
   console.error('   You can find it in your Supabase dashboard: Settings > API > service_role key');
   console.error('   For now, using anon key (limited functionality)...');
   // Use anon key as fallback (will have limited permissions)
   supabaseServiceKey = process.env.VITE_SUPABASE_ANON_KEY || '';
   if (!supabaseServiceKey) {
-    console.error('   ❌ VITE_SUPABASE_ANON_KEY also not found. Server cannot start.');
+    const errorMsg = '❌ VITE_SUPABASE_ANON_KEY also not found. Server cannot start.';
+    console.error(errorMsg);
+    // In Vercel, throw error instead of exiting
+    if (process.env.VERCEL) {
+      throw new Error(errorMsg);
+    }
     process.exit(1);
   }
 }
