@@ -25,7 +25,21 @@ export async function analyzeTaxFromContract(
   dealAmount: number
 ): Promise<TaxAnalysis> {
   // Extract text from PDF
-  pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
+  // Set up PDF.js worker with proper error handling
+  if (pdfjsLib.GlobalWorkerOptions) {
+    try {
+      // For Node.js, try to disable worker or use local file
+      if (typeof process !== 'undefined' && process.versions && process.versions.node) {
+        pdfjsLib.GlobalWorkerOptions.workerSrc = '';
+      } else {
+        const pdfjsVersion = pdfjsLib.version || '3.11.174';
+        pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsVersion}/pdf.worker.min.js`;
+      }
+    } catch (error: any) {
+      console.warn('[TaxInference] Error setting PDF.js worker:', error.message);
+    }
+  }
+  
   const loadingTask = pdfjsLib.getDocument({ data: pdfBuffer });
   const pdf = await loadingTask.promise;
   

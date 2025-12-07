@@ -80,20 +80,16 @@ interface AnalysisResult {
   recommendations: string[];
 }
 
-// Set up PDF.js worker for Node.js (lazy initialization)
-function setupPdfjsWorker() {
+// Set up PDF.js worker for Node.js - disable worker (not needed in Node.js)
+try {
   if (pdfjsLib.GlobalWorkerOptions) {
-    const pdfjsWorkerPath = path.join(
-      __dirname,
-      '../../node_modules/pdfjs-dist/build/pdf.worker.min.js'
-    );
-    if (fs.existsSync(pdfjsWorkerPath)) {
-      pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorkerPath;
-    } else {
-      // Fallback to CDN if local file doesn't exist
-      pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-    }
+    // Disable worker for Node.js - pdfjs-dist works fine without it
+    pdfjsLib.GlobalWorkerOptions.workerSrc = '';
+    console.log('[SafeContractGenerator] Node.js environment - worker disabled (not needed)');
   }
+} catch (error: any) {
+  console.warn('[SafeContractGenerator] Error setting PDF.js worker (non-critical):', error.message);
+  // Continue - pdfjs-dist should still work
 }
 
 export interface SafeContractRequest {
@@ -278,9 +274,6 @@ export async function generateSafeContract(
  * Extract text from PDF buffer
  */
 async function extractTextFromPdf(buffer: Buffer): Promise<string> {
-  // Set up PDF.js worker before use
-  setupPdfjsWorker();
-  
   const uint8Array = new Uint8Array(buffer);
   const pdf = await pdfjsLib.getDocument({ data: uint8Array }).promise;
   

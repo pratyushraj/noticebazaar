@@ -120,25 +120,29 @@ export function isValidBrandDealContract(text: string): { valid: boolean; score:
 }
 
 export async function analyzeContract(pdfBuffer: Buffer): Promise<AnalysisResult> {
-  // For Node.js, use local worker file from node_modules
-  // For browser, use CDN worker
-  // Node.js environment check
-  if (typeof process !== 'undefined' && process.versions && process.versions.node) {
-    // Node.js environment - use local worker file
-    const workerPath = path.join(__dirname, '../../node_modules/pdfjs-dist/build/pdf.worker.min.js');
-    
-    // Check if local worker exists, otherwise use CDN
-    if (fs.existsSync(workerPath)) {
-      pdfjsLib.GlobalWorkerOptions.workerSrc = workerPath;
+  // Set up PDF.js worker with proper error handling
+  // In Node.js, pdfjs-dist can work without a worker, so we disable it
+  // In browser, we need the worker from CDN
+  try {
+    // Check if GlobalWorkerOptions exists
+    if (pdfjsLib.GlobalWorkerOptions) {
+      // Node.js environment - disable worker (not needed, and can cause issues)
+      if (typeof process !== 'undefined' && process.versions && process.versions.node) {
+        // Disable worker for Node.js - pdfjs-dist works fine without it
+        pdfjsLib.GlobalWorkerOptions.workerSrc = '';
+        console.log('[ContractAnalysis] Node.js environment - worker disabled (not needed)');
+      } else {
+        // Browser environment - use CDN worker
+        const pdfjsVersion = pdfjsLib.version || '3.11.174';
+        pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsVersion}/build/pdf.worker.min.js`;
+        console.log('[ContractAnalysis] Browser environment - using CDN worker');
+      }
     } else {
-      // Fallback to CDN if local file doesn't exist
-      const pdfjsVersion = pdfjsLib.version || '3.11.174';
-      pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsVersion}/build/pdf.worker.min.js`;
+      console.warn('[ContractAnalysis] GlobalWorkerOptions not available - this is normal for some pdfjs-dist versions');
     }
-  } else {
-    // Browser environment - use CDN worker
-    const pdfjsVersion = pdfjsLib.version || '3.11.174';
-    pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsVersion}/build/pdf.worker.min.js`;
+  } catch (error: any) {
+    console.warn('[ContractAnalysis] Error setting PDF.js worker (non-critical):', error.message);
+    // Continue - pdfjs-dist should still work
   }
 
   // Convert Buffer to Uint8Array (required by pdfjs-dist)
