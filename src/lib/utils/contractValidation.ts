@@ -11,56 +11,113 @@
 export function isValidBrandDealContract(text: string): { isValid: boolean; reason?: string } {
   const lowerText = text.toLowerCase();
   
-  // STRICT REJECTION: Reject if ANY of these patterns appear
-  // These patterns are checked FIRST before any brand deal indicators
-  const rejectionPatterns = [
-    // Legal notices (including Zoomcar legal notices) - more comprehensive patterns
-    { pattern: /legal notice|legal.*notice|cease and desist|court order|summons|subpoena|writ of|notice.*legal|under.*section.*138|section.*138|negotiable.*instrument|dishonour.*of.*cheque/i, reason: 'legal notice' },
-    // Zoomcar specific patterns
-    { pattern: /zoomcar|zoom.*car|booking.*id|booking.*number|vehicle.*number|rc.*number|registration.*number|chassis.*number|engine.*number/i, reason: 'legal notice' },
-    // Notice patterns (if not in brand deal context)
-    { pattern: /take.*notice|please.*take.*notice|you.*are.*hereby.*notified|notice.*is.*hereby|demand.*notice|legal.*demand/i, reason: 'legal notice' },
-    // Common legal notice phrases
-    { pattern: /whereas.*you.*have.*failed|you.*have.*failed.*to|default.*in.*payment|outstanding.*amount|due.*amount.*not.*paid/i, reason: 'legal notice' },
-    // Vehicle/rental related (often in legal notices)
-    { pattern: /vehicle.*damage|repair.*charges|towing.*charges|parking.*charges|rental.*charges/i, reason: 'legal notice' },
-    // Consumer complaints
-    { pattern: /consumer complaint|consumer forum|consumer court|consumer.*dispute|consumer.*redressal/i, reason: 'consumer complaint' },
-    // Court documents
-    { pattern: /case number|case no|petition|plaintiff|defendant|judgment|verdict|affidavit|fir|first information report/i, reason: 'court document' },
-    // Car rental agreements or claims
-    { pattern: /car rental|vehicle rental|rental agreement|lease.*vehicle|automobile.*rental|vehicle.*lease|booking id|registration no|repair estimate|vehicle/i, reason: 'car rental document' },
-    // Insurance policies/claims
-    { pattern: /insurance claim|claim form|insurance policy|premium|coverage.*insurance|policy number|insurance.*claim/i, reason: 'insurance document' },
-    // Government forms
-    { pattern: /government form|tax form|income tax|gst|pan|aadhaar|passport.*form|pan.*card|aadhaar.*card/i, reason: 'government form' },
-    // Employment agreements
-    { pattern: /employment.*agreement|employee.*contract|job.*offer|employment.*letter|offer.*letter/i, reason: 'employment agreement' },
-    // Invoices, receipts, bills
-    { pattern: /invoice|receipt|bill|statement|quotation|estimate|invoice.*number|bill.*number/i, reason: 'invoice/receipt document' },
-    // Agreement for rent
-    { pattern: /agreement.*for.*rent|rent.*agreement|lease.*agreement.*rent/i, reason: 'rental agreement' },
-    // Additional aggressive patterns for legal documents
-    { pattern: /whereas.*and.*whereas|whereas.*the.*parties|whereas.*the.*company|whereas.*the.*individual/i, reason: 'legal notice' }, // Legal notice format
-    { pattern: /you.*are.*hereby.*directed|you.*are.*hereby.*informed|you.*are.*hereby.*requested/i, reason: 'legal notice' },
-    { pattern: /failing.*which|failing.*to.*comply|failing.*to.*pay/i, reason: 'legal notice' },
-    { pattern: /legal.*action|legal.*proceedings|legal.*remedy|legal.*consequences/i, reason: 'legal notice' },
-  ];
-
   // Log extracted text for debugging (first 500 chars)
   console.log('[ContractValidation] Extracted text sample (first 500 chars):', text.substring(0, 500));
   console.log('[ContractValidation] Full text length:', text.length);
   
-  // Check rejection patterns FIRST - if any match, immediately reject
-  for (const { pattern, reason } of rejectionPatterns) {
+  // FIRST: Check for strong brand deal title/header (within first 300 chars)
+  // If document title clearly says "brand deal" or "influencer agreement", prioritize that
+  const titleText = text.substring(0, 300).toLowerCase();
+  const hasStrongBrandDealTitle = /brand.*deal|influencer.*brand|creator.*brand|brand.*collaboration|influencer.*agreement|creator.*agreement|brand.*deal.*agreement|influencer.*collaboration/i.test(titleText);
+  
+  // STRICT REJECTION: Reject if ANY of these patterns appear
+  // But be more lenient if we have a strong brand deal title
+  const rejectionPatterns = [
+    // Legal notices (including Zoomcar legal notices) - more comprehensive patterns
+    { pattern: /legal notice|legal.*notice|cease and desist|court order|summons|subpoena|writ of|notice.*legal|under.*section.*138|section.*138|negotiable.*instrument|dishonour.*of.*cheque/i, reason: 'legal notice', skipIfStrongTitle: false },
+    // Zoomcar specific patterns
+    { pattern: /zoomcar|zoom.*car|booking.*id|booking.*number|vehicle.*number|rc.*number|registration.*number|chassis.*number|engine.*number/i, reason: 'legal notice', skipIfStrongTitle: false },
+    // Notice patterns (if not in brand deal context)
+    { pattern: /take.*notice|please.*take.*notice|you.*are.*hereby.*notified|notice.*is.*hereby|demand.*notice|legal.*demand/i, reason: 'legal notice', skipIfStrongTitle: true },
+    // Common legal notice phrases
+    { pattern: /whereas.*you.*have.*failed|you.*have.*failed.*to|default.*in.*payment|outstanding.*amount|due.*amount.*not.*paid/i, reason: 'legal notice', skipIfStrongTitle: false },
+    // Vehicle/rental related (often in legal notices)
+    { pattern: /vehicle.*damage|repair.*charges|towing.*charges|parking.*charges|rental.*charges/i, reason: 'legal notice', skipIfStrongTitle: false },
+    // Consumer complaints
+    { pattern: /consumer complaint|consumer forum|consumer court|consumer.*dispute|consumer.*redressal/i, reason: 'consumer complaint', skipIfStrongTitle: false },
+    // Court documents
+    { pattern: /case number|case no|petition|plaintiff|defendant|judgment|verdict|affidavit|fir|first information report/i, reason: 'court document', skipIfStrongTitle: false },
+    // Car rental agreements or claims
+    { pattern: /car rental|vehicle rental|rental agreement|lease.*vehicle|automobile.*rental|vehicle.*lease|booking id|registration no|repair estimate|vehicle/i, reason: 'car rental document', skipIfStrongTitle: false },
+    // Insurance policies/claims
+    { pattern: /insurance claim|claim form|insurance policy|premium|coverage.*insurance|policy number|insurance.*claim/i, reason: 'insurance document', skipIfStrongTitle: false },
+    // Government forms
+    { pattern: /government form|tax form|income tax|gst|pan|aadhaar|passport.*form|pan.*card|aadhaar.*card/i, reason: 'government form', skipIfStrongTitle: false },
+    // Employment agreements
+    { pattern: /employment.*agreement|employee.*contract|job.*offer|employment.*letter|offer.*letter/i, reason: 'employment agreement', skipIfStrongTitle: false },
+    // Invoices, receipts, bills - CONTEXT-AWARE: only reject if clearly a document type, not contract language
+    { 
+      pattern: /\b(invoice|receipt|bill|statement|quotation|estimate)\b|invoice.*number|bill.*number|payment.*receipt|tax.*receipt/i, 
+      reason: 'invoice/receipt document', 
+      skipIfStrongTitle: true,
+      contextCheck: (matchText: string, fullText: string) => {
+        // Allow "receipt" in contexts like "product receipt", "upon receipt", "delivery receipt"
+        const contextLower = fullText.toLowerCase();
+        const matchLower = matchText.toLowerCase();
+        const matchIndex = contextLower.indexOf(matchLower);
+        
+        // If we can't find the match (shouldn't happen), be safe and allow through
+        if (matchIndex === -1) return false; // Don't reject if we can't verify
+        
+        const beforeContext = contextLower.substring(Math.max(0, matchIndex - 40), matchIndex);
+        const afterContext = contextLower.substring(matchIndex + matchLower.length, Math.min(contextLower.length, matchIndex + matchLower.length + 40));
+        const fullContext = (beforeContext + ' [' + matchLower + '] ' + afterContext).toLowerCase();
+        
+        // If "receipt" appears in contract language context (product receipt, delivery receipt, etc.), allow it
+        if (/product.*receipt|delivery.*receipt|upon.*receipt|after.*receipt|within.*receipt|days.*of.*receipt|of.*product.*receipt/i.test(fullContext)) {
+          return false; // Don't reject - it's contract language
+        }
+        
+        // If it's a word like "invoice" or "bill" as standalone terms, likely a document type
+        if (/^\s*invoice\s*$|^\s*bill\s*$|^\s*statement\s*$|^\s*quotation\s*$|^\s*estimate\s*$/i.test(matchText.trim())) {
+          return true; // Reject - standalone document type word
+        }
+        
+        // Only reject if it's clearly about invoices/receipts as document types (not in contract context)
+        if (/invoice.*number|bill.*number|payment.*receipt|tax.*receipt|invoice.*receipt|receipt.*number/i.test(fullContext)) {
+          return true; // Reject - clearly a document type reference
+        }
+        
+        // Default: allow through if context is ambiguous
+        return false;
+      }
+    },
+    // Agreement for rent
+    { pattern: /agreement.*for.*rent|rent.*agreement|lease.*agreement.*rent/i, reason: 'rental agreement', skipIfStrongTitle: false },
+    // Additional aggressive patterns for legal documents
+    { pattern: /whereas.*and.*whereas|whereas.*the.*parties|whereas.*the.*company|whereas.*the.*individual/i, reason: 'legal notice', skipIfStrongTitle: false }, // Legal notice format
+    { pattern: /you.*are.*hereby.*directed|you.*are.*hereby.*informed|you.*are.*hereby.*requested/i, reason: 'legal notice', skipIfStrongTitle: false },
+    { pattern: /failing.*which|failing.*to.*comply|failing.*to.*pay/i, reason: 'legal notice', skipIfStrongTitle: false },
+    { pattern: /legal.*action|legal.*proceedings|legal.*remedy|legal.*consequences/i, reason: 'legal notice', skipIfStrongTitle: false },
+  ];
+  
+  // Check rejection patterns - but skip certain ones if we have a strong brand deal title
+  for (const { pattern, reason, skipIfStrongTitle, contextCheck } of rejectionPatterns) {
+    // Skip context-sensitive patterns if we have a strong brand deal title
+    if (hasStrongBrandDealTitle && skipIfStrongTitle) {
+      console.log(`[ContractValidation] Skipping pattern check for "${reason}" due to strong brand deal title`);
+      continue;
+    }
+    
     const match = pattern.test(text);
     if (match) {
       // Find the actual matching text
       const matchResult = text.match(pattern);
+      const matchText = matchResult ? matchResult[0] : '';
+      
+      // If there's a context check function, use it
+      if (contextCheck) {
+        const shouldReject = contextCheck(matchText, text);
+        if (!shouldReject) {
+          console.log(`[ContractValidation] Pattern matched "${matchText}" but context check passed - allowing`);
+          continue;
+        }
+      }
+      
       console.log('[ContractValidation] ❌ REJECTION PATTERN MATCHED:', reason);
       console.log('[ContractValidation] Pattern:', pattern.toString());
-      console.log('[ContractValidation] Matching text found:', matchResult ? matchResult[0] : 'pattern matched');
-      console.log('[ContractValidation] Context around match:', text.substring(Math.max(0, text.indexOf(matchResult ? matchResult[0] : '') - 50), Math.min(text.length, text.indexOf(matchResult ? matchResult[0] : '') + 200)));
+      console.log('[ContractValidation] Matching text found:', matchText);
+      console.log('[ContractValidation] Context around match:', text.substring(Math.max(0, text.indexOf(matchText) - 50), Math.min(text.length, text.indexOf(matchText) + 200)));
       return { isValid: false, reason };
     }
   }
@@ -119,11 +176,7 @@ export function isValidBrandDealContract(text: string): { isValid: boolean; reas
     }
   }
 
-  // FIRST: Check for strong brand deal title/header (within first 300 chars)
-  // If document title clearly says "brand deal" or "influencer agreement", it's likely valid
-  const titleText = text.substring(0, 300).toLowerCase();
-  const hasStrongBrandDealTitle = /brand.*deal|influencer.*brand|creator.*brand|brand.*collaboration|influencer.*agreement|creator.*agreement|brand.*deal.*agreement|influencer.*collaboration/i.test(titleText);
-  
+  // If we have a strong brand deal title, validate it quickly
   if (hasStrongBrandDealTitle) {
     console.log('[ContractValidation] Strong brand deal title detected in document header');
     // If it has a strong title, require at least ONE additional indicator
