@@ -423,16 +423,26 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
             userEmail: session?.user?.email
           });
           
-          // Clean up the hash/query params first
-          const cleanPath = window.location.pathname;
-          window.history.replaceState(null, '', cleanPath);
+          // Extract intended route from hash if present (e.g., #/creator-onboarding#access_token=...)
+          const currentHash = window.location.hash;
+          let targetRoute = '/#/creator-dashboard';
+          
+          // Check if there's a route before the tokens (double hash format)
+          const routeMatch = currentHash.match(/^#\/([^#?]+)/);
+          if (routeMatch && routeMatch[1] !== 'login' && routeMatch[1] !== 'signup') {
+            targetRoute = `#/${routeMatch[1]}`;
+            console.log('[SessionContext] Preserving intended route:', targetRoute);
+          }
+          
+          // Clean up hash immediately to prevent React Router 404
+          window.history.replaceState(null, '', window.location.pathname + window.location.search);
           
           // Wait a moment for session to be fully established, then redirect
           setTimeout(() => {
-            // Force redirect to dashboard - this ensures we don't stay on login page
-            console.log('[SessionContext] Redirecting to dashboard now...');
-            window.location.href = '/#/creator-dashboard';
-          }, 300);
+            // Set the clean route hash
+            console.log('[SessionContext] Redirecting to:', targetRoute);
+            window.location.hash = targetRoute;
+          }, 100);
         }
         
         // Handle INITIAL_SESSION with no session - this is normal on first load
