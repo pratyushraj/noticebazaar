@@ -787,7 +787,7 @@ router.post('/send-for-legal-review', async (req: AuthenticatedRequest, res: Res
         user_phone: userPhone || (profile as any)?.phone,
         status: 'pending',
         requested_at: new Date().toISOString()
-      });
+      } as any);
 
     if (insertError) {
       // If table doesn't exist, log and continue (graceful degradation)
