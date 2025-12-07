@@ -290,10 +290,7 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
             const tokenPart = hash.substring(secondHashIndex + 1);
             // Normalize to #access_token=... format that Supabase expects
             hash = '#' + tokenPart;
-            // Update the URL hash so Supabase can process it
-            window.location.hash = hash;
-            console.log('[SessionContext] Normalized hash to:', hash.substring(0, 50) + '...');
-            console.log('[SessionContext] Intended route:', intendedRoute);
+            // Store the normalized hash temporarily - we'll set it just before getSession()
             hasAccessToken = true;
           }
         } else {
@@ -310,22 +307,24 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
           }
         }
         
-        // Get session FIRST - Supabase will automatically process hash tokens from URL
-        // This must happen before we clean the hash
+        // If we normalized the hash, set it NOW (just before getSession) using replaceState
+        // This minimizes the window where React Router might see it
+        if (hasAccessToken && doubleHashMatch) {
+          window.history.replaceState(null, '', window.location.pathname + window.location.search + hash);
+          console.log('[SessionContext] Set normalized hash for Supabase:', hash.substring(0, 50) + '...');
+        }
+        
+        // Get session - Supabase reads tokens from window.location.hash when this is called
         const { data: { session: currentSession }, error } = await supabase.auth.getSession();
         
-        // IMMEDIATELY clean the hash after Supabase processes tokens to prevent React Router 404
+        // IMMEDIATELY clean the hash synchronously after getSession returns
+        // This happens in the same execution context, minimizing React Router's chance to see it
         if (hasAccessToken) {
-          console.log('[SessionContext] OAuth tokens detected, cleaning hash to prevent React Router 404...');
-          if (intendedRoute && intendedRoute !== 'login' && intendedRoute !== 'signup') {
-            // Set hash to intended route
-            window.location.hash = `#/${intendedRoute}`;
-            console.log('[SessionContext] Cleaned hash to intended route:', `#/${intendedRoute}`);
-          } else {
-            // No intended route or it's login/signup, clean hash completely
-            window.history.replaceState(null, '', window.location.pathname + window.location.search);
-            console.log('[SessionContext] Cleaned hash completely');
-          }
+          const cleanRoute = intendedRoute && intendedRoute !== 'login' && intendedRoute !== 'signup' 
+            ? `#/${intendedRoute}` 
+            : '';
+          window.history.replaceState(null, '', window.location.pathname + window.location.search + cleanRoute);
+          console.log('[SessionContext] Cleaned hash to:', cleanRoute || '(empty)');
         }
         
         if (error) {
@@ -406,7 +405,8 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
           const secondHashIndex = hash.indexOf('#', 1);
           if (secondHashIndex !== -1) {
             hash = '#' + hash.substring(secondHashIndex + 1);
-            window.location.hash = hash;
+            // Use replaceState to avoid triggering React Router
+            window.history.replaceState(null, '', window.location.pathname + window.location.search + hash);
             console.log('[SessionContext] Normalized double hash in onAuthStateChange, intended route:', intendedRoute);
           }
         } else {
@@ -438,13 +438,9 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
             targetRoute = `#/${intendedRoute}`;
           }
           
-          // Clean up hash immediately to prevent React Router 404
-          // Supabase has already processed the tokens
-          window.history.replaceState(null, '', window.location.pathname + window.location.search);
-          
-          // Set the clean route hash immediately
+          // Clean up hash and set target route using replaceState to avoid triggering React Router
+          window.history.replaceState(null, '', window.location.pathname + window.location.search + targetRoute);
           console.log('[SessionContext] Redirecting to:', targetRoute);
-          window.location.hash = targetRoute;
         }
         
         // Handle INITIAL_SESSION with no session - this is normal on first load
