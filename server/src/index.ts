@@ -177,11 +177,21 @@ app.get('/', (req: express.Request, res: express.Response) => {
 // Health check - must be simple and never fail
 app.get('/health', (req: express.Request, res: express.Response) => {
   try {
+    const llmProvider = process.env.LLM_PROVIDER || 'huggingface';
+    const llmModel = process.env.LLM_MODEL || 'not set';
+    const hasLLMKey = !!process.env.LLM_API_KEY;
+    
     res.json({ 
       status: 'ok', 
       timestamp: new Date().toISOString(),
       supabaseInitialized: supabaseInitialized,
-      nodeEnv: process.env.NODE_ENV || 'not set'
+      nodeEnv: process.env.NODE_ENV || 'not set',
+      llm: {
+        provider: llmProvider,
+        model: llmModel,
+        apiKeyConfigured: hasLLMKey,
+        status: hasLLMKey || llmProvider === 'huggingface' ? 'configured' : 'missing_api_key'
+      }
     });
   } catch (error: any) {
     // Even if something fails, return a response
