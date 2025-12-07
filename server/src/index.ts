@@ -57,20 +57,14 @@ let supabase: ReturnType<typeof createClient>;
 let supabaseInitialized = false;
 
 try {
-  if (!supabaseUrl) {
-    console.error('❌ SUPABASE_URL is missing! Please set SUPABASE_URL in your environment variables');
-    // Don't throw - let requests fail gracefully with error handler
-  } else if (!supabaseServiceKey) {
-    console.error('❌ SUPABASE_SERVICE_ROLE_KEY is missing!');
-    console.error('   Please add SUPABASE_SERVICE_ROLE_KEY to your environment variables');
-    // Try anon key as fallback
-    supabaseServiceKey = process.env.VITE_SUPABASE_ANON_KEY || '';
-    if (!supabaseServiceKey) {
-      console.error('❌ VITE_SUPABASE_ANON_KEY also not found. Supabase client will not be initialized.');
-    }
-  }
+  // Check if we have valid credentials (not placeholders)
+  const hasValidCredentials = 
+    supabaseUrl && 
+    supabaseUrl !== 'https://placeholder.supabase.co' &&
+    supabaseServiceKey && 
+    supabaseServiceKey !== 'placeholder-key';
   
-  if (supabaseUrl && supabaseServiceKey) {
+  if (hasValidCredentials) {
     supabase = createClient(supabaseUrl, supabaseServiceKey, {
       auth: {
         autoRefreshToken: false,
