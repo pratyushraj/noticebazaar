@@ -270,12 +270,14 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
   useEffect(() => {
     const initializeSession = async () => {
       try {
-        // Handle hash fragments from magic links (e.g., #access_token=...)
+        // Handle hash fragments from OAuth callbacks (e.g., #access_token=...)
         // Supabase automatically handles this, but we ensure it's processed
         const hashParams = new URLSearchParams(window.location.hash.substring(1));
-        if (hashParams.get('access_token') || hashParams.get('type') === 'magiclink') {
+        const hasAccessToken = hashParams.get('access_token') || hashParams.get('type') === 'magiclink' || hashParams.get('type') === 'recovery';
+        
+        if (hasAccessToken) {
           // If we're on localhost but the hash has tokens, process them
-          // This handles cases where magic link redirects to wrong domain
+          // This handles cases where OAuth redirects to wrong domain
           const accessToken = hashParams.get('access_token');
           const refreshToken = hashParams.get('refresh_token');
           const expiresAt = hashParams.get('expires_at');
@@ -283,15 +285,19 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
           if (accessToken) {
             // Supabase will automatically process this via onAuthStateChange
             // But we ensure the session is set up correctly
-            logger.debug('Processing authentication tokens from URL hash');
+            logger.debug('Processing OAuth authentication tokens from URL hash');
+            
+            // Redirect to dashboard after OAuth callback is processed
+            // Wait a bit for Supabase to process the session
+            setTimeout(() => {
+              if (window.location.hash.includes('access_token')) {
+                // Clean up the URL hash
+                window.history.replaceState(null, '', window.location.pathname + window.location.search);
+                // Redirect to dashboard
+                window.location.href = '/#/creator-dashboard';
+              }
+            }, 500);
           }
-          
-          // Clean up the URL after processing (Supabase handles the session)
-          setTimeout(() => {
-            if (window.location.hash.includes('access_token')) {
-              window.history.replaceState(null, '', window.location.pathname + window.location.search);
-            }
-          }, 1000);
         }
 
         const { data: { session: currentSession }, error } = await supabase.auth.getSession();
@@ -331,9 +337,19 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
           analytics.clearUserId();
         }
         
-        // Clean up URL hash after successful sign-in
+        // Clean up URL hash after successful sign-in and redirect to dashboard
         if (event === 'SIGNED_IN' && window.location.hash.includes('access_token')) {
-          window.history.replaceState(null, '', window.location.pathname + window.location.search);
+          // Clean up the hash
+          const cleanPath = window.location.pathname + window.location.search;
+          window.history.replaceState(null, '', cleanPath);
+          
+          // Redirect to dashboard if we're on root or login page
+          if (window.location.pathname === '/' || window.location.pathname === '/login' || window.location.hash.includes('login')) {
+            // Small delay to ensure session is fully established
+            setTimeout(() => {
+              window.location.href = '/#/creator-dashboard';
+            }, 100);
+          }
         }
       }
     );
