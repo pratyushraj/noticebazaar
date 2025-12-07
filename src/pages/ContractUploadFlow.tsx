@@ -482,11 +482,12 @@ ${creatorName}`;
       let apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
       
       // Check for local testing mode (for testing on noticebazaar.com with local API via tunnel)
+      // This works on mobile too! Just use URL parameters: ?localApi=true&tunnelUrl=https://...
       if (typeof window !== 'undefined') {
         const urlParams = new URLSearchParams(window.location.search);
         const useLocalApi = localStorage.getItem('useLocalApi') === 'true' || 
                            urlParams.get('localApi') === 'true';
-        // Get tunnel URL from URL param (preferred) or localStorage
+        // Get tunnel URL from URL param (preferred - works on mobile!) or localStorage
         const tunnelUrl = urlParams.get('tunnelUrl') || localStorage.getItem('tunnelUrl');
         
         if (useLocalApi) {
@@ -494,6 +495,7 @@ ${creatorName}`;
           if (tunnelUrl) {
             apiBaseUrl = tunnelUrl.replace(/\/$/, ''); // Remove trailing slash
             console.log('[ContractUploadFlow] Using tunnel API for testing:', apiBaseUrl);
+            console.log('[ContractUploadFlow] ✅ Works on mobile too!');
           } else {
             apiBaseUrl = 'http://localhost:3001';
             console.warn('[ContractUploadFlow] Using localhost API (may not work from noticebazaar.com due to CORS). Set tunnelUrl in localStorage or URL param.');
@@ -542,23 +544,49 @@ ${creatorName}`;
           }),
         });
       } catch (fetchError: any) {
+        console.error('[ContractUploadFlow] Analysis error:', fetchError);
+        
+        // Check if it's a network error (API might be sleeping on free tier)
+        const isNetworkError = fetchError.message?.includes('Failed to fetch') || 
+                               fetchError.message?.includes('NetworkError') ||
+                               fetchError.name === 'TypeError';
+        
+        if (isNetworkError) {
+          // API might be sleeping (Render free tier spins down after inactivity)
+          const errorMessage = 'The analysis service is starting up. Please wait a moment and try again. This usually takes 30-50 seconds after the first request.';
+          setReviewError(errorMessage);
+          setStep('review-error');
+          setIsAnalyzing(false);
+          return;
+        }
+        
         // If api subdomain fails and we're on production, try same origin
         if (apiBaseUrl.includes('api.noticebazaar.com') && typeof window !== 'undefined') {
           console.warn('[ContractUploadFlow] API subdomain failed, trying same origin:', fetchError);
           const sameOriginUrl = `${window.location.origin}/api/protection/analyze`;
           console.log('[ContractUploadFlow] Retrying with same origin:', sameOriginUrl);
-          response = await fetch(sameOriginUrl, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${session.access_token}`,
-            },
-            body: JSON.stringify({
-              contract_url: contractUrl,
-            }),
-          });
+          try {
+            response = await fetch(sameOriginUrl, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${session.access_token}`,
+              },
+              body: JSON.stringify({
+                contract_url: contractUrl,
+              }),
+            });
+          } catch (retryError) {
+            setReviewError('Unable to connect to the analysis service. Please check your internet connection and try again.');
+            setStep('review-error');
+            setIsAnalyzing(false);
+            return;
+          }
         } else {
-          throw fetchError;
+          setReviewError('Unable to connect to the analysis service. Please try again.');
+          setStep('review-error');
+          setIsAnalyzing(false);
+          return;
         }
       }
 

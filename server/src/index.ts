@@ -127,6 +127,16 @@ app.use(cors({
       'https://api.noticebazaar.com'
     ];
     
+    // Allow Render frontend URLs
+    if (origin.includes('onrender.com')) {
+      return callback(null, true);
+    }
+    
+    // Allow Netlify frontend URLs
+    if (origin.includes('netlify.app')) {
+      return callback(null, true);
+    }
+    
     // Allow cloudflared tunnel URLs (trycloudflare.com)
     if (origin.includes('trycloudflare.com') || origin.includes('noticebazaar.com')) {
       return callback(null, true);

@@ -155,9 +155,13 @@ export async function extractTextFromPDF(file: File): Promise<string> {
         // Dynamically import pdf.js
         const pdfjsLib = await import('pdfjs-dist');
         
-        // Use jsdelivr CDN (has better CORS headers than unpkg)
-        const pdfjsVersion = pdfjsLib.version || '3.11.174';
-        pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdn.jsdelivr.net/npm/pdfjs-dist@${pdfjsVersion}/build/pdf.worker.min.js`;
+        // Configure PDF.js worker with proper fallback
+        // Version 5.x uses .mjs extension, try that first
+        const pdfjsVersion = pdfjsLib.version || '5.4.449';
+        
+        // Use unpkg CDN - most reliable for PDF.js
+        // For version 5.x, the worker is in build/pdf.worker.min.mjs
+        pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsVersion}/build/pdf.worker.min.mjs`;
         
         console.log('[ContractValidation] Loading PDF, size:', arrayBuffer.byteLength, 'bytes');
         
