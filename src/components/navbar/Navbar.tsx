@@ -35,22 +35,12 @@ const Navbar: React.FC = () => {
 
   return (
     <nav className="sticky top-0 z-50 w-full bg-gradient-to-br from-purple-900/95 via-purple-800/95 to-indigo-900/95 backdrop-blur-xl border-b border-white/10">
-      <div className="flex items-center justify-between h-16 px-4 md:px-6">
-        {/* Logo/Brand */}
-        <Link 
-          to={dashboardPath}
-          className="flex items-center gap-2 font-bold text-white hover:opacity-80 transition-opacity"
-        >
-          <span className="text-lg">NoticeBazaar</span>
-        </Link>
-
-        {/* Right side actions */}
-        <div className="flex items-center gap-2">
-          <SearchBar />
-          <Notifications />
-          <AppsMenu profileRole={profile?.role || null} />
-          <ProfileDropdown profilePath={profilePath} />
-        </div>
+      {/* Right side actions */}
+      <div className="flex items-center gap-2 justify-end h-16 px-4 md:px-6">
+        <SearchBar />
+        <Notifications />
+        <AppsMenu profileRole={profile?.role || null} />
+        <ProfileDropdown profilePath={profilePath} />
       </div>
     </nav>
   );
