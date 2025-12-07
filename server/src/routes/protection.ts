@@ -876,7 +876,7 @@ router.post('/save-report', async (req: AuthenticatedRequest, res: Response) => 
         user_id: userId,
         report_id: reportId,
         saved_at: new Date().toISOString()
-      });
+      } as any);
 
     if (insertError) {
       // If table doesn't exist, log and continue
