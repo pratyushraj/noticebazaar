@@ -303,6 +303,21 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
           console.log('[SessionContext] OAuth tokens detected in hash, processing...');
           // Supabase will automatically process this via onAuthStateChange
           // The normalized hash should now be processable
+          // Clean up hash after a short delay to let Supabase process it, but before React Router routes
+          setTimeout(() => {
+            // Only clean if hash still contains tokens (Supabase hasn't processed it yet)
+            const currentHash = window.location.hash;
+            if (currentHash.includes('access_token') || currentHash.includes('type=')) {
+              // Extract just the route part if there's a route, otherwise go to dashboard
+              const routeMatch = currentHash.match(/^#\/([^#?]+)/);
+              if (routeMatch) {
+                window.location.hash = `#/${routeMatch[1]}`;
+              } else {
+                // No route in hash, clean it completely
+                window.history.replaceState(null, '', window.location.pathname + window.location.search);
+              }
+            }
+          }, 200);
         }
 
         // Get session - Supabase will automatically process hash tokens
