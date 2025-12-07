@@ -1,6 +1,6 @@
 // Protection/Contract Analysis API routes
 
-import { Router } from 'express';
+import { Router, Response } from 'express';
 import { supabase } from '../index';
 import { AuthenticatedRequest } from '../middleware/auth';
 import { analyzeContract } from '../services/contractAnalysis';
@@ -254,7 +254,7 @@ router.post('/analyze', async (req: AuthenticatedRequest, res) => {
 });
 
 // GET /protection/:id/report.pdf - Get signed PDF download URL
-router.get('/:id/report.pdf', async (req: AuthenticatedRequest, res) => {
+router.get('/:id/report.pdf', async (req: AuthenticatedRequest, res: Response) => {
   try {
     const userId = req.user!.id;
     const { id } = req.params;
@@ -290,7 +290,7 @@ router.get('/:id/report.pdf', async (req: AuthenticatedRequest, res) => {
 });
 
 // POST /protection/generate-safe-contract - Generate safe contract version
-router.post('/generate-safe-contract', async (req: AuthenticatedRequest, res) => {
+router.post('/generate-safe-contract', async (req: AuthenticatedRequest, res: Response) => {
   try {
     const userId = req.user!.id;
     const { reportId, originalFilePath } = req.body;
@@ -368,7 +368,7 @@ router.post('/generate-safe-contract', async (req: AuthenticatedRequest, res) =>
 });
 
 // POST /protection/generate-fix - Generate safe clause for a specific issue
-router.post('/generate-fix', async (req: AuthenticatedRequest, res) => {
+router.post('/generate-fix', async (req: AuthenticatedRequest, res: Response) => {
   try {
     const userId = req.user!.id;
     const { issueId, originalClause, reportId, issueIndex } = req.body;
@@ -484,7 +484,7 @@ router.post('/generate-fix', async (req: AuthenticatedRequest, res) => {
 });
 
 // POST /protection/generate-negotiation-message - Generate negotiation message
-router.post('/generate-negotiation-message', async (req: AuthenticatedRequest, res) => {
+router.post('/generate-negotiation-message', async (req: AuthenticatedRequest, res: Response) => {
   try {
     const userId = req.user!.id;
     const { reportId, brandName, issues: issuesFromBody } = req.body;
@@ -640,7 +640,7 @@ Return ONLY the negotiation message text, no additional formatting, markdown, or
 });
 
 // POST /protection/send-negotiation-email - Send negotiation message via email
-router.post('/send-negotiation-email', async (req: AuthenticatedRequest, res) => {
+router.post('/send-negotiation-email', async (req: AuthenticatedRequest, res: Response) => {
   try {
     const userId = req.user!.id;
     const { toEmail, message, reportId } = req.body;
@@ -728,7 +728,7 @@ router.post('/send-negotiation-email', async (req: AuthenticatedRequest, res) =>
 });
 
 // POST /protection/send-for-legal-review - Send report for lawyer review
-router.post('/send-for-legal-review', async (req: AuthenticatedRequest, res) => {
+router.post('/send-for-legal-review', async (req: AuthenticatedRequest, res: Response) => {
   try {
     const userId = req.user!.id;
     const { reportId, userEmail, userPhone } = req.body;
@@ -812,7 +812,7 @@ router.post('/send-for-legal-review', async (req: AuthenticatedRequest, res) => 
 });
 
 // POST /protection/save-report - Save report to dashboard
-router.post('/save-report', async (req: AuthenticatedRequest, res) => {
+router.post('/save-report', async (req: AuthenticatedRequest, res: Response) => {
   try {
     const userId = req.user!.id;
     const { reportId } = req.body;
@@ -896,7 +896,7 @@ router.post('/save-report', async (req: AuthenticatedRequest, res) => {
 });
 
 // GET /protection/download-report/:reportId - Download analysis report
-router.get('/download-report/:reportId', async (req: AuthenticatedRequest, res) => {
+router.get('/download-report/:reportId', async (req: AuthenticatedRequest, res: Response) => {
   try {
     const userId = req.user!.id;
     const { reportId } = req.params;

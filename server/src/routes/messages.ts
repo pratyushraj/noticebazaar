@@ -1,13 +1,13 @@
 // Messages API routes
 
-import { Router } from 'express';
+import { Router, Response } from 'express';
 import { supabase } from '../index';
 import { AuthenticatedRequest } from '../middleware/auth';
 
 const router = Router();
 
 // GET /conversations/:id/messages - Get messages with pagination
-router.get('/:conversationId/messages', async (req: AuthenticatedRequest, res) => {
+router.get('/:conversationId/messages', async (req: AuthenticatedRequest, res: Response) => {
   try {
     const userId = req.user!.id;
     const { conversationId } = req.params;
@@ -53,7 +53,7 @@ router.get('/:conversationId/messages', async (req: AuthenticatedRequest, res) =
 });
 
 // POST /conversations/:id/messages - Send message
-router.post('/:conversationId/messages', async (req: AuthenticatedRequest, res) => {
+router.post('/:conversationId/messages', async (req: AuthenticatedRequest, res: Response) => {
   try {
     const userId = req.user!.id;
     const { conversationId } = req.params;
@@ -104,7 +104,7 @@ router.post('/:conversationId/messages', async (req: AuthenticatedRequest, res) 
 });
 
 // PATCH /messages/:id/read - Mark message as read
-router.patch('/messages/:id/read', async (req: AuthenticatedRequest, res) => {
+router.patch('/messages/:id/read', async (req: AuthenticatedRequest, res: Response) => {
   try {
     const userId = req.user!.id;
     const { id } = req.params;

@@ -1,13 +1,13 @@
 // Payments API routes
 
-import { Router } from 'express';
+import { Router, Response } from 'express';
 import { supabase } from '../index';
 import { AuthenticatedRequest } from '../middleware/auth';
 
 const router = Router();
 
 // GET /payments/recent - Get recent payments
-router.get('/recent', async (req: AuthenticatedRequest, res) => {
+router.get('/recent', async (req: AuthenticatedRequest, res: Response) => {
   try {
     const userId = req.user!.id;
     const limit = parseInt(req.query.limit as string) || 20;
@@ -29,7 +29,7 @@ router.get('/recent', async (req: AuthenticatedRequest, res) => {
 });
 
 // POST /payments/request - Request payment from brand
-router.post('/request', async (req: AuthenticatedRequest, res) => {
+router.post('/request', async (req: AuthenticatedRequest, res: Response) => {
   try {
     const userId = req.user!.id;
     const { deal_id, amount, due_date, notes } = req.body;
@@ -71,7 +71,7 @@ router.post('/request', async (req: AuthenticatedRequest, res) => {
 });
 
 // POST /payments/mark-received - Mark payment as received
-router.post('/mark-received', async (req: AuthenticatedRequest, res) => {
+router.post('/mark-received', async (req: AuthenticatedRequest, res: Response) => {
   try {
     const userId = req.user!.id;
     const { deal_id, received_date, utr_number, proof_url } = req.body;

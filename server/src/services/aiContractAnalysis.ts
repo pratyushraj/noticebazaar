@@ -149,7 +149,7 @@ async function callHuggingFace(model: string, prompt: string, apiKey?: string): 
     headers['Authorization'] = `Bearer ${apiKey}`;
   }
 
-  const response = await fetch(url, {
+  const response: Response = await fetch(url, {
     method: 'POST',
     headers,
     body: JSON.stringify({
@@ -260,7 +260,7 @@ async function callGemini(model: string, prompt: string, apiKey: string): Promis
   const modelName = model || 'gemini-2.0-flash';
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
   
-  const response = await fetch(url, {
+  const response: Response = await fetch(url, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

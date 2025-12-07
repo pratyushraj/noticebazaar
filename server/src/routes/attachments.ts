@@ -1,6 +1,6 @@
 // Attachments API routes - Signed URL generation and virus scan
 
-import { Router } from 'express';
+import { Router, Response } from 'express';
 import { supabase } from '../index';
 import { AuthenticatedRequest } from '../middleware/auth';
 import { generateSignedUploadUrl, generateSignedDownloadUrl } from '../services/storage';
@@ -9,7 +9,7 @@ import { scanFileForVirus } from '../services/virusScan';
 const router = Router();
 
 // POST /conversations/:id/attachments/request-upload - Get signed upload URL
-router.post('/:conversationId/attachments/request-upload', async (req: AuthenticatedRequest, res) => {
+router.post('/:conversationId/attachments/request-upload', async (req: AuthenticatedRequest, res: Response) => {
   try {
     const userId = req.user!.id;
     const { conversationId } = req.params;
@@ -72,7 +72,7 @@ router.post('/:conversationId/attachments/request-upload', async (req: Authentic
 });
 
 // POST /conversations/:id/attachments/confirm - Confirm upload and trigger virus scan
-router.post('/:conversationId/attachments/confirm', async (req: AuthenticatedRequest, res) => {
+router.post('/:conversationId/attachments/confirm', async (req: AuthenticatedRequest, res: Response) => {
   try {
     const userId = req.user!.id;
     const { conversationId } = req.params;

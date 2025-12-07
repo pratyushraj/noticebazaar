@@ -1,13 +1,13 @@
 // Conversations API routes
 
-import { Router } from 'express';
+import { Router, Response } from 'express';
 import { supabase } from '../index';
 import { AuthenticatedRequest } from '../middleware/auth';
 
 const router = Router();
 
 // GET /conversations - List user's conversations
-router.get('/', async (req: AuthenticatedRequest, res) => {
+router.get('/', async (req: AuthenticatedRequest, res: Response) => {
   try {
     const userId = req.user!.id;
     const limit = parseInt(req.query.limit as string) || 20;
@@ -42,7 +42,7 @@ router.get('/', async (req: AuthenticatedRequest, res) => {
 });
 
 // POST /conversations - Create new conversation
-router.post('/', async (req: AuthenticatedRequest, res) => {
+router.post('/', async (req: AuthenticatedRequest, res: Response) => {
   try {
     const userId = req.user!.id;
     const { participant_ids, title, type = 'direct', risk_tag } = req.body;
@@ -87,7 +87,7 @@ router.post('/', async (req: AuthenticatedRequest, res) => {
 });
 
 // GET /conversations/:id - Get conversation details
-router.get('/:id', async (req: AuthenticatedRequest, res) => {
+router.get('/:id', async (req: AuthenticatedRequest, res: Response) => {
   try {
     const userId = req.user!.id;
     const { id } = req.params;

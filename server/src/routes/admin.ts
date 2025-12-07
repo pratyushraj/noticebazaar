@@ -1,13 +1,13 @@
 // Admin API routes
 
-import { Router } from 'express';
+import { Router, Response } from 'express';
 import { supabase } from '../index';
 import { AuthenticatedRequest } from '../middleware/auth';
 
 const router = Router();
 
 // Middleware to check admin role
-const adminOnly = (req: AuthenticatedRequest, res: any, next: any) => {
+const adminOnly = (req: AuthenticatedRequest, res: Response, next: any) => {
   if (req.user?.role !== 'admin') {
     return res.status(403).json({ error: 'Admin access required' });
   }
@@ -15,7 +15,7 @@ const adminOnly = (req: AuthenticatedRequest, res: any, next: any) => {
 };
 
 // GET /admin/conversations - List all conversations (admin only)
-router.get('/conversations', adminOnly, async (req: AuthenticatedRequest, res) => {
+router.get('/conversations', adminOnly, async (req: AuthenticatedRequest, res: Response) => {
   try {
     const limit = parseInt(req.query.limit as string) || 50;
     const offset = parseInt(req.query.offset as string) || 0;
@@ -42,7 +42,7 @@ router.get('/conversations', adminOnly, async (req: AuthenticatedRequest, res) =
 });
 
 // POST /admin/messages/:id/flag - Flag message for review
-router.post('/messages/:id/flag', adminOnly, async (req: AuthenticatedRequest, res) => {
+router.post('/messages/:id/flag', adminOnly, async (req: AuthenticatedRequest, res: Response) => {
   try {
     const { id } = req.params;
     const { reason, notes } = req.body;

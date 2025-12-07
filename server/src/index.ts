@@ -110,7 +110,7 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Health check
-app.get('/health', (req, res) => {
+app.get('/health', (req: express.Request, res: express.Response) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
@@ -123,7 +123,7 @@ app.use('/api/protection', authMiddleware, rateLimitMiddleware, protectionRouter
 app.use('/api/admin', authMiddleware, adminRouter);
 
 // 404 handler for API routes (must be before error handler)
-app.use('/api/*', (req, res) => {
+app.use('/api/*', (req: express.Request, res: express.Response) => {
   res.status(404).json({
     success: false,
     error: `API endpoint not found: ${req.method} ${req.path}`

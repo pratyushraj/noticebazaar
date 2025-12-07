@@ -18,7 +18,7 @@ export const rateLimitMiddleware = (
   res: Response,
   next: NextFunction
 ) => {
-  const userId = (req as any).user?.id || req.ip;
+  const userId = (req as any).user?.id || (req as any).ip || 'unknown';
   const now = Date.now();
   const key = `rate_limit:${userId}`;
 
