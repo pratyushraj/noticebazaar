@@ -1,7 +1,5 @@
 "use client";
 
-import { Auth } from '@supabase/auth-ui-react';
-import { ThemeSupa } from '@supabase/auth-ui-shared';
 import { supabase } from '@/integrations/supabase/client';
 import { Scale, ArrowLeft, Sparkles, Shield, TrendingUp, MessageCircle } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
