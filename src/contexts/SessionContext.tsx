@@ -325,7 +325,26 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
         
         // Get session - Supabase reads tokens from window.location.hash when this is called
         // Note: OAuth tokens are processed asynchronously via onAuthStateChange, not getSession()
-        const { data: { session: currentSession }, error } = await supabase.auth.getSession();
+        let { data: { session: currentSession }, error } = await supabase.auth.getSession();
+        
+        // If we have tokens but no session, try to force Supabase to process them
+        // by calling getUser() which might trigger token processing
+        if (hasAccessToken && !currentSession) {
+          console.log('[SessionContext] Tokens present but no session, attempting to process tokens...');
+          // Wait a moment for Supabase to process the hash tokens
+          await new Promise(resolve => setTimeout(resolve, 300));
+          // Try getUser() which might trigger token processing
+          const { data: { user }, error: userError } = await supabase.auth.getUser();
+          if (user && !userError) {
+            console.log('[SessionContext] User found after processing tokens, getting session...');
+            // Get session again now that user is available
+            const { data: { session: newSession } } = await supabase.auth.getSession();
+            if (newSession) {
+              currentSession = newSession;
+              console.log('[SessionContext] Session established after processing tokens');
+            }
+          }
+        }
         
         if (error) {
           logger.error("Error getting session", error);
