@@ -1824,7 +1824,10 @@ ${creatorName}`;
                       triggerHaptic(HapticPatterns.medium);
                       
                       try {
-                        const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001';
+                        const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 
+                          (typeof window !== 'undefined' && window.location.origin.includes('noticebazaar.com') 
+                            ? 'https://api.noticebazaar.com' 
+                            : 'http://localhost:3001');
                         const response = await fetch(`${apiBaseUrl}/api/protection/generate-safe-contract`, {
                           method: 'POST',
                           headers: {
@@ -2102,7 +2105,10 @@ ${creatorName}`;
                       triggerHaptic(HapticPatterns.medium);
                       
                       try {
-                        const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001';
+                        const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 
+                          (typeof window !== 'undefined' && window.location.origin.includes('noticebazaar.com') 
+                            ? 'https://api.noticebazaar.com' 
+                            : 'http://localhost:3001');
                         const response = await fetch(`${apiBaseUrl}/api/protection/generate-safe-contract`, {
                           method: 'POST',
                           headers: {
@@ -2181,7 +2187,10 @@ ${creatorName}`;
                       setIsGeneratingMessage(true);
                       
                       try {
-                        const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001';
+                        const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 
+                          (typeof window !== 'undefined' && window.location.origin.includes('noticebazaar.com') 
+                            ? 'https://api.noticebazaar.com' 
+                            : 'http://localhost:3001');
                         
                         // Prepare request body - send issues if reportId is not available
                         const requestBody: any = {
