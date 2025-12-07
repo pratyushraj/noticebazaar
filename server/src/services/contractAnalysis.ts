@@ -7,6 +7,13 @@ import { TextItem } from 'pdfjs-dist/types/src/display/api';
 import { analyzeContractWithAI } from './aiContractAnalysis';
 import { classifyDocumentTypeWithAI } from './contractClassifier';
 import { calculateNegotiationPowerScore } from './negotiationPowerScore';
+import path from 'path';
+import fs from 'fs';
+import { fileURLToPath } from 'url';
+
+// ES module equivalent of __dirname
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 export interface AnalysisResult {
   protectionScore: number;
@@ -118,8 +125,6 @@ export async function analyzeContract(pdfBuffer: Buffer): Promise<AnalysisResult
   // Node.js environment check
   if (typeof process !== 'undefined' && process.versions && process.versions.node) {
     // Node.js environment - use local worker file
-    const path = require('path');
-    const fs = require('fs');
     const workerPath = path.join(__dirname, '../../node_modules/pdfjs-dist/build/pdf.worker.min.js');
     
     // Check if local worker exists, otherwise use CDN

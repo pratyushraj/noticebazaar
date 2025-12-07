@@ -7,6 +7,11 @@ import * as pdfjsLib from 'pdfjs-dist';
 import { generateReportPdf } from './pdfGenerator';
 import path from 'path';
 import fs from 'fs';
+import { fileURLToPath } from 'url';
+
+// ES module equivalent of __dirname
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Get resolved Supabase URL and service role key from the main client
 // The supabase client in index.ts already has these resolved correctly
