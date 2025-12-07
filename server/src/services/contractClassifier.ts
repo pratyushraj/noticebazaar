@@ -55,7 +55,9 @@ DOCUMENT:
 `;
 
   try {
+    console.log('[ContractClassifier] Calling LLM for classification...');
     const aiResponse = await callLLM(prompt);
+    console.log('[ContractClassifier] LLM response received, length:', aiResponse?.length || 0);
     
     // Parse JSON from response (handle markdown code blocks)
     let jsonText = aiResponse.trim();
@@ -63,24 +65,33 @@ DOCUMENT:
     const jsonMatch = jsonText.match(/\{[\s\S]*\}/);
     if (jsonMatch) {
       jsonText = jsonMatch[0];
+    } else {
+      console.error('[ContractClassifier] No JSON object found in response:', jsonText.substring(0, 200));
+      return { type: "not_brand_deal", confidence: 0.3, reasoning: "No JSON found in AI response" };
     }
     
     const parsed = JSON.parse(jsonText);
+    console.log('[ContractClassifier] Parsed JSON:', JSON.stringify(parsed));
 
     if (!parsed.type || typeof parsed.confidence !== "number") {
+      console.warn('[ContractClassifier] Invalid AI output structure:', parsed);
       return { type: "not_brand_deal", confidence: 0.3, reasoning: "Invalid AI output" };
     }
 
     // Use AI result directly - no rule-based fallback
     if (parsed.confidence < 0.7) {
-      console.log('[ContractClassifier] AI confidence low (< 0.7), rejecting');
+      console.log('[ContractClassifier] AI confidence low (< 0.7), rejecting. Confidence:', parsed.confidence);
       return { type: "not_brand_deal", confidence: parsed.confidence, reasoning: parsed.reasoning };
     }
 
+    console.log('[ContractClassifier] ✅ Classification successful:', parsed.type, 'confidence:', parsed.confidence);
     return parsed;
-  } catch (e) {
+  } catch (e: any) {
     console.error('[ContractClassifier] AI classification failed:', e);
+    console.error('[ContractClassifier] Error name:', e?.name);
+    console.error('[ContractClassifier] Error message:', e?.message);
+    console.error('[ContractClassifier] Error stack:', e?.stack);
     // AI failed - reject (no fallback to rules)
-    return { type: "not_brand_deal", confidence: 0.3, reasoning: "AI classification failed" };
+    return { type: "not_brand_deal", confidence: 0.3, reasoning: `AI classification failed: ${e?.message || 'Unknown error'}` };
   }
 }
