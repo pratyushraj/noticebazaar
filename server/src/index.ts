@@ -133,7 +133,13 @@ app.use('/api/*', (req, res) => {
 // Error handler
 app.use(errorHandler);
 
-app.listen(PORT, () => {
-  console.log(`🚀 NoticeBazaar API server running on port ${PORT}`);
-});
+// Export for Vercel serverless functions
+export default app;
+
+// For local development, start the server
+if (process.env.VERCEL !== '1') {
+  app.listen(PORT, () => {
+    console.log(`🚀 NoticeBazaar API server running on port ${PORT}`);
+  });
+}
 
