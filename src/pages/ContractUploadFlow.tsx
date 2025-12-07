@@ -481,6 +481,26 @@ ${creatorName}`;
       // Get API base URL - use env variable, or detect from current origin, or fallback to localhost
       let apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
       
+      // Check for local testing mode (for testing on noticebazaar.com with local API via tunnel)
+      if (typeof window !== 'undefined') {
+        const urlParams = new URLSearchParams(window.location.search);
+        const useLocalApi = localStorage.getItem('useLocalApi') === 'true' || 
+                           urlParams.get('localApi') === 'true';
+        // Get tunnel URL from URL param (preferred) or localStorage
+        const tunnelUrl = urlParams.get('tunnelUrl') || localStorage.getItem('tunnelUrl');
+        
+        if (useLocalApi) {
+          // Use tunnel URL if available, otherwise fallback to localhost (won't work from noticebazaar.com)
+          if (tunnelUrl) {
+            apiBaseUrl = tunnelUrl.replace(/\/$/, ''); // Remove trailing slash
+            console.log('[ContractUploadFlow] Using tunnel API for testing:', apiBaseUrl);
+          } else {
+            apiBaseUrl = 'http://localhost:3001';
+            console.warn('[ContractUploadFlow] Using localhost API (may not work from noticebazaar.com due to CORS). Set tunnelUrl in localStorage or URL param.');
+          }
+        }
+      }
+      
       if (!apiBaseUrl && typeof window !== 'undefined') {
         const origin = window.location.origin;
         // If on production domain, try api subdomain first, then same origin
