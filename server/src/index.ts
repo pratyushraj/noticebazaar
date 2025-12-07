@@ -3,9 +3,6 @@
 
 // Load environment variables
 import dotenv from 'dotenv';
-import { resolve } from 'path';
-import { fileURLToPath } from 'url';
-import { dirname } from 'path';
 
 // Load environment variables
 // In Vercel, environment variables are already set, so dotenv is only needed for local dev
