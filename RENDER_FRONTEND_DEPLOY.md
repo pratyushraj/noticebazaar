@@ -45,41 +45,24 @@ Deploy your NoticeBazaar frontend to Render as a Static Site.
 
 ---
 
-### Option 2: Use render.yaml Blueprint (Auto-config)
+### Option 2: Deploy via Render Dashboard (Recommended)
 
-1. **Update render.yaml** (already exists at repo root):
-   ```yaml
-   services:
-     # API Service (already configured)
-     - type: web
-       name: noticebazaar-api
-       # ... existing config ...
-     
-     # Frontend Static Site
-     - type: web
-       name: noticebazaar-frontend
-       env: static
-       buildCommand: npm install && npm run build
-       staticPublishPath: ./dist
-       envVars:
-         - key: VITE_SUPABASE_URL
-           value: https://ooaxtwmqrvfzdqzoijcj.supabase.co
-         - key: VITE_SUPABASE_ANON_KEY
-           value: your-anon-key-here
-         - key: VITE_API_BASE_URL
-           value: https://noticebazaar-api.onrender.com
-         - key: NODE_ENV
-           value: production
-   ```
+**Note:** Render Blueprint doesn't support `static_site` type in `render.yaml`, so you must create the static site separately via the Dashboard after deploying the API via Blueprint.
 
-2. **Deploy via Blueprint:**
+1. **First, deploy API via Blueprint:**
    - Go to Render Dashboard
    - Click "New +" → "Blueprint"
    - Connect your GitHub repository
-   - Render will auto-detect `render.yaml`
-   - Review configuration
-   - Update environment variables with actual values
+   - Render will auto-detect `render.yaml` (which contains only the API service)
+   - Add API environment variables (SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, etc.)
    - Click "Apply"
+
+2. **Then, create frontend static site (separately):**
+   - In Render Dashboard, click "New +" → "Static Site"
+   - Connect the same GitHub repository: `noticebazaar`
+   - Configure as shown in Option 1 above
+   - Add frontend environment variables
+   - Deploy!
 
 ---
 

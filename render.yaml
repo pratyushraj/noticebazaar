@@ -16,16 +16,7 @@ services:
         value: "true"
     healthCheckPath: /health
 
-  # Frontend Static Site
-  - type: static_site
-    name: noticebazaar-frontend
-    buildCommand: npm install && npm run build
-    staticPublishPath: ./dist
-    envVars:
-      - key: NODE_ENV
-        value: production
-      # Note: Add these in Render Dashboard (they contain secrets):
-      # VITE_SUPABASE_URL=https://ooaxtwmqrvfzdqzoijcj.supabase.co
-      # VITE_SUPABASE_ANON_KEY=your-anon-key-here
-      # VITE_API_BASE_URL=https://noticebazaar-api.onrender.com
+# Note: Frontend static site must be deployed separately via Render Dashboard
+# (Render Blueprint doesn't support static_site type)
+# See RENDER_FRONTEND_DEPLOY.md for instructions
 
