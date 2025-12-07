@@ -207,13 +207,13 @@ export async function generateSafeContract(
 
           // Save to database (only if reportId is valid)
           if (reportId && reportId !== 'temp') {
-            await supabase.from('safe_clauses').insert({
+            await (supabase as any).from('safe_clauses').insert({
               report_id: reportId,
               issue_id: issue.id,
               original_clause: issue.clause_reference || '',
               safe_clause: generated.safeClause,
               explanation: generated.explanation || ''
-            } as any);
+            });
           }
 
           safeClausesMap.set(issue.clause_reference || issue.title, generated.safeClause);
