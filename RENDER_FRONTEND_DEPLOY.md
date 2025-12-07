@@ -19,7 +19,7 @@ Deploy your NoticeBazaar frontend to Render as a Static Site.
    - **Name:** `noticebazaar-frontend`
    - **Branch:** `main`
    - **Root Directory:** (leave empty - root of repo)
-   - **Build Command:** `npm install && npm run build`
+   - **Build Command:** `corepack enable && corepack prepare pnpm@latest --activate && pnpm install && pnpm run build`
    - **Publish Directory:** `dist`
    - **Environment:** `Node`
 
