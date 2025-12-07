@@ -305,6 +305,20 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
           if (routeMatch) {
             intendedRoute = routeMatch[1];
           }
+          
+          // If we're on /login but have tokens, the intended route should be dashboard/onboarding
+          // Check sessionStorage for stored intended route from OAuth call
+          if (!intendedRoute || intendedRoute === 'login') {
+            const storedRoute = sessionStorage.getItem('oauth_intended_route');
+            if (storedRoute && storedRoute !== 'login') {
+              intendedRoute = storedRoute;
+              console.log('[SessionContext] Using stored intended route from sessionStorage:', intendedRoute);
+            } else if (!intendedRoute || intendedRoute === 'login') {
+              // Default to dashboard if no route specified
+              intendedRoute = 'creator-dashboard';
+              console.log('[SessionContext] No intended route found, defaulting to creator-dashboard');
+            }
+          }
         }
         
         // If we have tokens, manually parse and set session

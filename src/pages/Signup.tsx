@@ -140,7 +140,10 @@ const Signup = () => {
                 onClick={async () => {
                   try {
                     const redirectUrl = `${window.location.origin}/#/creator-onboarding`;
+                    // Store intended route in sessionStorage BEFORE OAuth call
+                    sessionStorage.setItem('oauth_intended_route', 'creator-onboarding');
                     console.log('[Signup] Starting Google OAuth with redirect:', redirectUrl);
+                    console.log('[Signup] Stored intended route: creator-onboarding');
                     const { data, error } = await supabase.auth.signInWithOAuth({
                       provider: 'google',
                       options: {
@@ -178,7 +181,10 @@ const Signup = () => {
                 onClick={async () => {
                   try {
                     const redirectUrl = `${window.location.origin}/#/creator-onboarding`;
+                    // Store intended route in sessionStorage BEFORE OAuth call
+                    sessionStorage.setItem('oauth_intended_route', 'creator-onboarding');
                     console.log('[Signup] Starting GitHub OAuth with redirect:', redirectUrl);
+                    console.log('[Signup] Stored intended route: creator-onboarding');
                     const { data, error } = await supabase.auth.signInWithOAuth({
                       provider: 'github',
                       options: {

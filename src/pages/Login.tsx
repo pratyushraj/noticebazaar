@@ -172,7 +172,11 @@ const Login = () => {
                 onClick={async () => {
                   try {
                     const redirectUrl = `${window.location.origin}/#/creator-dashboard`;
+                    // Store intended route in sessionStorage BEFORE OAuth call
+                    // This ensures we can redirect correctly even if Supabase uses Site URL
+                    sessionStorage.setItem('oauth_intended_route', 'creator-dashboard');
                     console.log('[Login] Starting Google OAuth with redirect:', redirectUrl);
+                    console.log('[Login] Stored intended route: creator-dashboard');
                     const { data, error } = await supabase.auth.signInWithOAuth({
                       provider: 'google',
                       options: {
