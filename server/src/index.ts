@@ -20,18 +20,18 @@ import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import { createClient } from '@supabase/supabase-js';
-import conversationsRouter from './routes/conversations';
-import messagesRouter from './routes/messages';
-import attachmentsRouter from './routes/attachments';
-import paymentsRouter from './routes/payments';
-import protectionRouter from './routes/protection';
-import adminRouter from './routes/admin';
-import { authMiddleware } from './middleware/auth';
-import { rateLimitMiddleware } from './middleware/rateLimit';
-import { errorHandler } from './middleware/errorHandler';
+import conversationsRouter from './routes/conversations.js';
+import messagesRouter from './routes/messages.js';
+import attachmentsRouter from './routes/attachments.js';
+import paymentsRouter from './routes/payments.js';
+import protectionRouter from './routes/protection.js';
+import adminRouter from './routes/admin.js';
+import { authMiddleware } from './middleware/auth.js';
+import { rateLimitMiddleware } from './middleware/rateLimit.js';
+import { errorHandler } from './middleware/errorHandler.js';
 
 const app = express();
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT || 3001; // Fly.io uses 8080, but we keep 3001 for local dev
 
 // Initialize Supabase client
 // Use VITE_SUPABASE_URL if SUPABASE_URL is not set or is a variable reference (for local dev)
@@ -112,16 +112,32 @@ if (supabaseInitialized && supabaseServiceKey && supabaseServiceKey.length > 50)
 // Middleware
 app.use(helmet());
 app.use(cors({
-  origin: [
-    process.env.FRONTEND_URL || 'http://localhost:8080',
-    'http://localhost:8080',
-    'http://localhost:5173',
-    'http://127.0.0.1:8080',
-    'http://127.0.0.1:5173',
-    'https://www.noticebazaar.com',
-    'https://noticebazaar.com',
-    'https://api.noticebazaar.com'
-  ],
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps, Postman, or cloudflared tunnel)
+    if (!origin) return callback(null, true);
+    
+    const allowedOrigins = [
+      process.env.FRONTEND_URL || 'http://localhost:8080',
+      'http://localhost:8080',
+      'http://localhost:5173',
+      'http://127.0.0.1:8080',
+      'http://127.0.0.1:5173',
+      'https://www.noticebazaar.com',
+      'https://noticebazaar.com',
+      'https://api.noticebazaar.com'
+    ];
+    
+    // Allow cloudflared tunnel URLs (trycloudflare.com)
+    if (origin.includes('trycloudflare.com') || origin.includes('noticebazaar.com')) {
+      return callback(null, true);
+    }
+    
+    if (allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
