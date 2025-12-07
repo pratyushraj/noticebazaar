@@ -131,9 +131,24 @@ app.use(cors({
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// Health check
+// Health check - must be simple and never fail
 app.get('/health', (req: express.Request, res: express.Response) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+  try {
+    res.json({ 
+      status: 'ok', 
+      timestamp: new Date().toISOString(),
+      supabaseInitialized: supabaseInitialized,
+      nodeEnv: process.env.NODE_ENV || 'not set'
+    });
+  } catch (error: any) {
+    // Even if something fails, return a response
+    console.error('Health check error:', error);
+    res.status(200).json({ 
+      status: 'error', 
+      message: error.message || 'Unknown error',
+      timestamp: new Date().toISOString()
+    });
+  }
 });
 
 // API Routes (protected)
