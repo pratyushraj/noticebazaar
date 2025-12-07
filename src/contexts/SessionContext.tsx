@@ -307,25 +307,25 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
           }
         }
         
-        // If we normalized the hash, set it NOW (just before getSession) using replaceState
-        // This minimizes the window where React Router might see it
+        // If we normalized the hash, set it NOW using replaceState
+        // We'll keep it until onAuthStateChange processes the tokens
         if (hasAccessToken && doubleHashMatch) {
           window.history.replaceState(null, '', window.location.pathname + window.location.search + hash);
+          // Store intended route in sessionStorage so onAuthStateChange can access it
+          if (intendedRoute) {
+            sessionStorage.setItem('oauth_intended_route', intendedRoute);
+          }
           console.log('[SessionContext] Set normalized hash for Supabase:', hash.substring(0, 50) + '...');
+          console.log('[SessionContext] Stored intended route:', intendedRoute);
+          console.log('[SessionContext] Keeping hash until onAuthStateChange processes tokens...');
+        } else if (hasAccessToken && intendedRoute) {
+          // Store route even if hash wasn't normalized (e.g., #/route?access_token=...)
+          sessionStorage.setItem('oauth_intended_route', intendedRoute);
         }
         
         // Get session - Supabase reads tokens from window.location.hash when this is called
+        // Note: OAuth tokens are processed asynchronously via onAuthStateChange, not getSession()
         const { data: { session: currentSession }, error } = await supabase.auth.getSession();
-        
-        // IMMEDIATELY clean the hash synchronously after getSession returns
-        // This happens in the same execution context, minimizing React Router's chance to see it
-        if (hasAccessToken) {
-          const cleanRoute = intendedRoute && intendedRoute !== 'login' && intendedRoute !== 'signup' 
-            ? `#/${intendedRoute}` 
-            : '';
-          window.history.replaceState(null, '', window.location.pathname + window.location.search + cleanRoute);
-          console.log('[SessionContext] Cleaned hash to:', cleanRoute || '(empty)');
-        }
         
         if (error) {
           logger.error("Error getting session", error);
@@ -346,9 +346,10 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
           }
           
           // If we have hash tokens but no session yet, wait for onAuthStateChange to process them
+          // Don't clean the hash here - let onAuthStateChange do it after processing tokens
           if (hasAccessToken && !currentSession) {
             console.log('[SessionContext] Hash tokens found but no session yet, waiting for onAuthStateChange...');
-            // Don't redirect here - let onAuthStateChange handle it after session is established
+            // onAuthStateChange will clean the hash after processing tokens
           }
           
           // If we have a session but we're on root or login page, redirect to dashboard
@@ -397,6 +398,7 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
         let intendedRoute: string | null = null;
         
         // Check for double hash format: #/route#access_token=...
+        // Extract route BEFORE normalizing (in case hash was already normalized by initializeSession)
         const doubleHashMatch = hash.match(/^#\/([^#]+)#(access_token|type=)/);
         if (doubleHashMatch) {
           // Extract the intended route before normalizing
@@ -410,10 +412,21 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
             console.log('[SessionContext] Normalized double hash in onAuthStateChange, intended route:', intendedRoute);
           }
         } else {
+          // Hash might already be normalized (#access_token=...) or have route in query (#/route?access_token=...)
           // Check if there's a route in the hash (e.g., #/creator-onboarding?access_token=...)
           const routeMatch = hash.match(/^#\/([^?#]+)/);
           if (routeMatch) {
             intendedRoute = routeMatch[1];
+          }
+          // If hash is normalized (#access_token=...), we need to get route from sessionStorage or check if it's a known OAuth route
+          // For now, if no route found and we have tokens, default to creator-onboarding (common OAuth target)
+          if (!intendedRoute && (hash.includes('access_token') || hash.includes('type='))) {
+            // Try to get intended route from sessionStorage (set by initializeSession)
+            const storedRoute = sessionStorage.getItem('oauth_intended_route');
+            if (storedRoute) {
+              intendedRoute = storedRoute;
+              sessionStorage.removeItem('oauth_intended_route');
+            }
           }
         }
         
