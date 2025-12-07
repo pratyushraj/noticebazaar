@@ -67,27 +67,35 @@ export function isValidBrandDealContract(text: string): { isValid: boolean; reas
   
   console.log('[ContractValidation] ✓ No rejection patterns found');
   
-  // AGGRESSIVE: If document mentions "notice" at all, require strong brand deal context
-  // Legal notices almost always use "notice" without brand deal terms
-  if (/notice/i.test(text)) {
-    // Require MULTIPLE brand deal indicators to override "notice" keyword
-    const brandDealContextCount = [
+  // Smart check: Only reject "notice" if it's in legal notice context, not normal contract language
+  // Normal contracts use "written notice", "30 days notice", etc. which are fine
+  // Legal notices use phrases like "take notice", "you are hereby notified", etc.
+  const hasLegalNoticePhrases = [
+    /you.*are.*hereby.*notified/i,
+    /take.*notice.*that/i,
+    /notice.*is.*hereby.*given/i,
+    /legal.*notice/i,
+    /demand.*notice/i,
+  ].some(pattern => pattern.test(text));
+  
+  // Only check for "notice" if it's in legal notice context
+  if (hasLegalNoticePhrases || (/notice/i.test(text) && !/written.*notice|days.*notice|advance.*notice|prior.*notice/i.test(text))) {
+    // Check if it's clearly a contract with brand deal terms (not a legal notice)
+    const hasContractIndicators = [
+      /agreement|contract|terms.*and.*conditions/i,
       /brand|creator|influencer|collaboration|sponsorship/i,
       /deliverable|posts|videos|reels|stories|content/i,
       /payment|fee|compensation|amount payable/i,
-      /campaign|timeline|deadline/i,
     ].filter(pattern => pattern.test(text)).length;
     
-    // If "notice" appears but we don't have at least 2 brand deal context indicators, reject
-    if (brandDealContextCount < 2) {
-      console.log('[ContractValidation] Document contains "notice" with insufficient brand deal context - likely legal notice');
-      console.log('[ContractValidation] Brand deal context count:', brandDealContextCount);
-      console.log('[ContractValidation] Text sample:', text.substring(0, 500));
+    // Only reject if it looks like a legal notice (no contract indicators)
+    if (hasContractIndicators < 2 && hasLegalNoticePhrases) {
+      console.log('[ContractValidation] Document contains legal notice phrases without contract indicators');
       return { isValid: false, reason: 'legal notice' };
     }
   }
   
-  // Check for common legal notice phrases
+  // Check for common legal notice phrases (but allow if we have strong brand deal signals)
   const legalNoticePhrases = [
     /you.*are.*hereby.*notified/i,
     /take.*notice.*that/i,
@@ -97,10 +105,32 @@ export function isValidBrandDealContract(text: string): { isValid: boolean; reas
     /legal.*notice.*under/i,
   ];
   
-  for (const phrase of legalNoticePhrases) {
-    if (phrase.test(text)) {
-      console.log('[ContractValidation] Legal notice phrase detected');
+  // Check if any legal notice phrases are present
+  const hasLegalNoticePhrase = legalNoticePhrases.some(phrase => phrase.test(text));
+  
+  if (hasLegalNoticePhrase) {
+    // If it's clearly a brand deal contract, don't reject based on legal notice phrases alone
+    const isClearBrandDeal = /brand.*deal|influencer.*brand|creator.*brand|brand.*collaboration/i.test(text.substring(0, 500));
+    if (!isClearBrandDeal) {
+      console.log('[ContractValidation] Legal notice phrase detected without clear brand deal context');
       return { isValid: false, reason: 'legal notice' };
+    } else {
+      console.log('[ContractValidation] Legal notice phrase found but document is clearly a brand deal contract - allowing');
+    }
+  }
+
+  // FIRST: Check for strong brand deal title/header (within first 300 chars)
+  // If document title clearly says "brand deal" or "influencer agreement", it's likely valid
+  const titleText = text.substring(0, 300).toLowerCase();
+  const hasStrongBrandDealTitle = /brand.*deal|influencer.*brand|creator.*brand|brand.*collaboration|influencer.*agreement|creator.*agreement|brand.*deal.*agreement|influencer.*collaboration/i.test(titleText);
+  
+  if (hasStrongBrandDealTitle) {
+    console.log('[ContractValidation] Strong brand deal title detected in document header');
+    // If it has a strong title, require at least ONE additional indicator
+    const hasAnyIndicator = /payment|deliverable|posts|videos|reels|campaign|content|compensation|fee|collaboration|sponsorship/i.test(text);
+    if (hasAnyIndicator) {
+      console.log('[ContractValidation] ✅ Valid brand deal contract - strong title + indicators');
+      return { isValid: true };
     }
   }
 
@@ -123,8 +153,8 @@ export function isValidBrandDealContract(text: string): { isValid: boolean; reas
   // Count how many brand deal indicators are present
   const indicatorCount = brandDealIndicators.filter(pattern => pattern.test(text)).length;
 
-  // REQUIRE AT LEAST 2 indicators
-  if (indicatorCount < 2) {
+  // REQUIRE AT LEAST 2 indicators (or 1 if strong title)
+  if (indicatorCount < 2 && !hasStrongBrandDealTitle) {
     console.log('[ContractValidation] Insufficient brand deal indicators found:', indicatorCount);
     console.log('[ContractValidation] Sample text:', text.substring(0, 500));
     return { 
