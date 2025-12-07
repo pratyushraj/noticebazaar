@@ -307,57 +307,63 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
           }
         }
         
-        // If we normalized the hash, set it NOW using replaceState
-        // We'll keep it until onAuthStateChange processes the tokens
-        if (hasAccessToken && doubleHashMatch) {
+        // If we have tokens, manually parse and set session
+        // This is more reliable than waiting for Supabase's automatic processing
+        if (hasAccessToken) {
           // Store intended route in sessionStorage so onAuthStateChange can access it
           if (intendedRoute) {
             sessionStorage.setItem('oauth_intended_route', intendedRoute);
           }
-          console.log('[SessionContext] Set normalized hash for Supabase:', hash.substring(0, 50) + '...');
+          
+          // Determine which hash to parse tokens from
+          let tokenHash = hash;
+          if (doubleHashMatch) {
+            // Extract token part from double hash
+            const secondHashIndex = hash.indexOf('#', 1);
+            if (secondHashIndex !== -1) {
+              tokenHash = '#' + hash.substring(secondHashIndex + 1);
+              console.log('[SessionContext] Extracted token hash from double hash format');
+            }
+          }
+          
+          console.log('[SessionContext] Parsing tokens from hash:', tokenHash.substring(0, 50) + '...');
           console.log('[SessionContext] Stored intended route:', intendedRoute);
           
-          // Set the hash using replaceState to avoid triggering React Router
-          window.history.replaceState(null, '', window.location.pathname + window.location.search + hash);
+          // Parse tokens from hash
+          const hashParams = new URLSearchParams(tokenHash.substring(1)); // Remove #
+          const accessToken = hashParams.get('access_token');
+          const refreshToken = hashParams.get('refresh_token');
           
-          // Manually trigger Supabase to process the hash by dispatching a hashchange event
-          // This is safe because we've already set the hash with replaceState
-          // Supabase will read from window.location.hash when it processes the event
-          const hashChangeEvent = new HashChangeEvent('hashchange', {
-            oldURL: window.location.href,
-            newURL: window.location.href
-          });
-          window.dispatchEvent(hashChangeEvent);
-          console.log('[SessionContext] Dispatched hashchange event for Supabase to process tokens');
-          
-          // Give Supabase a moment to process the hashchange event
-          await new Promise(resolve => setTimeout(resolve, 300));
-        } else if (hasAccessToken && intendedRoute) {
-          // Store route even if hash wasn't normalized (e.g., #/route?access_token=...)
-          sessionStorage.setItem('oauth_intended_route', intendedRoute);
-        }
-        
-        // Get session - Supabase reads tokens from window.location.hash when this is called
-        // Note: OAuth tokens are processed asynchronously via onAuthStateChange, not getSession()
-        let { data: { session: currentSession }, error } = await supabase.auth.getSession();
-        
-        // If we have tokens but no session, try to force Supabase to process them
-        if (hasAccessToken && !currentSession) {
-          console.log('[SessionContext] Tokens present but no session, attempting to process tokens...');
-          // Try getUser() which might trigger token processing
-          const { data: { user }, error: userError } = await supabase.auth.getUser();
-          if (user && !userError) {
-            console.log('[SessionContext] User found after processing tokens, getting session...');
-            // Get session again now that user is available
-            const { data: { session: newSession } } = await supabase.auth.getSession();
-            if (newSession) {
-              currentSession = newSession;
-              console.log('[SessionContext] Session established after processing tokens');
+          if (accessToken && refreshToken) {
+            console.log('[SessionContext] Parsed tokens from hash, setting session manually...');
+            try {
+              // Set the session directly using Supabase's setSession method
+              const { data: sessionData, error: setSessionError } = await supabase.auth.setSession({
+                access_token: accessToken,
+                refresh_token: refreshToken,
+              });
+              
+              if (setSessionError) {
+                console.error('[SessionContext] Error setting session:', setSessionError);
+              } else if (sessionData.session) {
+                console.log('[SessionContext] Session set successfully via manual token parsing');
+                // Clean hash immediately after setting session
+                const cleanRoute = intendedRoute && intendedRoute !== 'login' && intendedRoute !== 'signup' 
+                  ? `#/${intendedRoute}` 
+                  : '#/creator-dashboard';
+                window.history.replaceState(null, '', window.location.pathname + window.location.search + cleanRoute);
+                console.log('[SessionContext] Cleaned hash to:', cleanRoute);
+              }
+            } catch (err) {
+              console.error('[SessionContext] Exception setting session:', err);
             }
           } else {
-            console.log('[SessionContext] No user found, tokens may not be processed yet. Waiting for onAuthStateChange...');
+            console.warn('[SessionContext] Could not parse tokens from hash', { hasAccessToken: !!accessToken, hasRefreshToken: !!refreshToken });
           }
         }
+        
+        // Get session - check if we successfully set it manually
+        let { data: { session: currentSession }, error } = await supabase.auth.getSession();
         
         if (error) {
           logger.error("Error getting session", error);
