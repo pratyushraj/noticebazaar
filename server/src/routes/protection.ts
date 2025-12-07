@@ -235,7 +235,15 @@ router.post('/analyze', async (req: AuthenticatedRequest, res) => {
     
     res.json(responseData);
   } catch (err: any) {
-    console.error(err);
+    // Log detailed error information for debugging
+    console.error('[Protection] Unhandled error in /analyze endpoint:', err);
+    console.error('[Protection] Error name:', err?.name);
+    console.error('[Protection] Error message:', err?.message);
+    console.error('[Protection] Error stack:', err?.stack);
+    
+    // Log request details for context
+    console.error('[Protection] Request body:', JSON.stringify(req.body, null, 2));
+    console.error('[Protection] User ID:', req.user?.id);
 
     if (err.validationError === true) {
       return res.status(400).json({
@@ -246,9 +254,14 @@ router.post('/analyze', async (req: AuthenticatedRequest, res) => {
       });
     }
 
+    // Return more detailed error message (hide stack in production for security)
     return res.status(500).json({
       ok: false,
-      error: "Internal Server Error"
+      error: err.message || "Internal Server Error",
+      details: process.env.NODE_ENV === 'development' ? {
+        stack: err.stack,
+        name: err.name
+      } : undefined
     });
   }
 });
