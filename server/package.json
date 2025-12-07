@@ -21,8 +21,12 @@
     "puppeteer": "^21.6.1"
   },
   "pnpm": {
-    "optionalDependencies": {
-      "canvas": "*"
+    "packageExtensions": {
+      "pdfjs-dist": {
+        "optionalDependencies": {
+          "canvas": "*"
+        }
+      }
     }
   },
   "devDependencies": {
