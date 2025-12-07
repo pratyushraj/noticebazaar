@@ -270,27 +270,48 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
   useEffect(() => {
     const initializeSession = async () => {
       try {
-        // Handle hash fragments from OAuth callbacks (e.g., #access_token=...)
-        // Supabase automatically handles this, but we ensure it's processed
-        const hashParams = new URLSearchParams(window.location.hash.substring(1));
-        const hasAccessToken = hashParams.get('access_token') || hashParams.get('type') === 'magiclink' || hashParams.get('type') === 'recovery';
+        // Handle hash fragments from OAuth callbacks
+        // Supabase sometimes appends tokens as #route#access_token=... (double hash)
+        // We need to normalize this to #access_token=... for Supabase to process it
+        let hash = window.location.hash;
+        let hasAccessToken = false;
+        
+        // Check for double hash format: #/route#access_token=...
+        const doubleHashMatch = hash.match(/^#\/[^#]*#(access_token|type=)/);
+        if (doubleHashMatch) {
+          console.log('[SessionContext] Detected double hash format, normalizing...', hash);
+          // Extract the access_token part (everything after the second #)
+          const secondHashIndex = hash.indexOf('#', 1); // Find second #
+          if (secondHashIndex !== -1) {
+            const tokenPart = hash.substring(secondHashIndex + 1); // Everything after second #
+            // Normalize to #access_token=... format that Supabase expects
+            hash = '#' + tokenPart;
+            // Update the URL hash so Supabase can process it
+            window.location.hash = hash;
+            console.log('[SessionContext] Normalized hash to:', hash.substring(0, 50) + '...');
+            hasAccessToken = true;
+          }
+        } else {
+          // Normal hash format: #access_token=... or #/route?access_token=...
+          const hashParams = new URLSearchParams(hash.substring(1));
+          hasAccessToken = hashParams.get('access_token') !== null || 
+                          hashParams.get('type') === 'magiclink' || 
+                          hashParams.get('type') === 'recovery';
+        }
         
         if (hasAccessToken) {
-          // If we're on localhost but the hash has tokens, process them
-          // This handles cases where OAuth redirects to wrong domain
-          const accessToken = hashParams.get('access_token');
-          const refreshToken = hashParams.get('refresh_token');
-          const expiresAt = hashParams.get('expires_at');
-          
-          if (accessToken) {
-            // Supabase will automatically process this via onAuthStateChange
-            // But we ensure the session is set up correctly
-            logger.debug('Processing OAuth authentication tokens from URL hash');
-            // Don't redirect here - let onAuthStateChange handle it after session is established
-          }
+          console.log('[SessionContext] OAuth tokens detected in hash, processing...');
+          // Supabase will automatically process this via onAuthStateChange
+          // The normalized hash should now be processable
         }
 
         // Get session - Supabase will automatically process hash tokens
+        // But first, if we normalized the hash, give it a moment to process
+        if (hasAccessToken && hash !== window.location.hash) {
+          // Hash was normalized, wait a bit for Supabase to process it
+          await new Promise(resolve => setTimeout(resolve, 100));
+        }
+        
         const { data: { session: currentSession }, error } = await supabase.auth.getSession();
         
         if (error) {
@@ -300,7 +321,7 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
             hasSession: !!currentSession,
             userEmail: currentSession?.user?.email,
             hasHashTokens: hasAccessToken,
-            hash: window.location.hash.substring(0, 50) + '...'
+            hash: window.location.hash.substring(0, 80) + '...'
           });
           
           setSession(currentSession);
@@ -358,8 +379,21 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
         }
         
         // Handle OAuth callback - check for hash tokens or successful sign-in
-        const hash = window.location.hash;
+        let hash = window.location.hash;
         const urlParams = new URLSearchParams(window.location.search);
+        
+        // Check for double hash format: #/route#access_token=...
+        const doubleHashMatch = hash.match(/^#\/[^#]*#(access_token|type=)/);
+        if (doubleHashMatch) {
+          // Normalize double hash to single hash format
+          const secondHashIndex = hash.indexOf('#', 1);
+          if (secondHashIndex !== -1) {
+            hash = '#' + hash.substring(secondHashIndex + 1);
+            window.location.hash = hash;
+            console.log('[SessionContext] Normalized double hash in onAuthStateChange');
+          }
+        }
+        
         const hasHashTokens = hash.includes('access_token') || hash.includes('type=recovery') || hash.includes('type=magiclink');
         const hasQueryCode = urlParams.get('code') !== null;
         const isOAuthCallback = hasHashTokens || hasQueryCode;
