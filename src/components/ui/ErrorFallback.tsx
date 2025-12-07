@@ -28,9 +28,9 @@ export const ErrorFallback: React.FC<ErrorFallbackProps> = ({
 }) => {
   const handleGoHome = () => {
     resetError();
-    // Use window.location instead of useNavigate to avoid Router context issues
+    // Use window.location with hash for HashRouter compatibility
     // This works even when ErrorBoundary is rendered outside Router context
-    window.location.href = '/creator-dashboard';
+    window.location.href = '/#/creator-dashboard';
   };
 
   const content = (
