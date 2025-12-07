@@ -673,8 +673,8 @@ router.post('/send-negotiation-email', async (req: AuthenticatedRequest, res: Re
       if (!reportError && report) {
         const hasAccess = 
           (report as any).user_id === userId ||
-          report.deal?.creator_id === userId ||
-          !report.deal_id ||
+      (report as any).deal?.creator_id === userId ||
+        !(report as any).deal_id ||
           req.user!.role === 'admin';
 
         if (!hasAccess) {
