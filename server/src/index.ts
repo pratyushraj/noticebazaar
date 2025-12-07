@@ -51,40 +51,56 @@ if (supabaseServiceKey.startsWith('${') || supabaseServiceKey === '') {
     || '';
 }
 
-if (!supabaseUrl) {
-  const errorMsg = '❌ SUPABASE_URL is missing! Please set SUPABASE_URL or VITE_SUPABASE_URL in your environment variables';
-  console.error(errorMsg);
-  // In Vercel, throw error instead of exiting (serverless functions should not exit)
-  if (process.env.VERCEL) {
-    throw new Error(errorMsg);
-  }
-  process.exit(1);
-}
+// Initialize Supabase client with error handling
+// Don't throw errors during module initialization (crashes Vercel serverless functions)
+let supabase: ReturnType<typeof createClient>;
+let supabaseInitialized = false;
 
-if (!supabaseServiceKey) {
-  console.error('❌ SUPABASE_SERVICE_ROLE_KEY is missing!');
-  console.error('   Please add SUPABASE_SERVICE_ROLE_KEY to your environment variables');
-  console.error('   You can find it in your Supabase dashboard: Settings > API > service_role key');
-  console.error('   For now, using anon key (limited functionality)...');
-  // Use anon key as fallback (will have limited permissions)
-  supabaseServiceKey = process.env.VITE_SUPABASE_ANON_KEY || '';
-  if (!supabaseServiceKey) {
-    const errorMsg = '❌ VITE_SUPABASE_ANON_KEY also not found. Server cannot start.';
-    console.error(errorMsg);
-    // In Vercel, throw error instead of exiting
-    if (process.env.VERCEL) {
-      throw new Error(errorMsg);
+try {
+  if (!supabaseUrl) {
+    console.error('❌ SUPABASE_URL is missing! Please set SUPABASE_URL in your environment variables');
+    // Don't throw - let requests fail gracefully with error handler
+  } else if (!supabaseServiceKey) {
+    console.error('❌ SUPABASE_SERVICE_ROLE_KEY is missing!');
+    console.error('   Please add SUPABASE_SERVICE_ROLE_KEY to your environment variables');
+    // Try anon key as fallback
+    supabaseServiceKey = process.env.VITE_SUPABASE_ANON_KEY || '';
+    if (!supabaseServiceKey) {
+      console.error('❌ VITE_SUPABASE_ANON_KEY also not found. Supabase client will not be initialized.');
     }
-    process.exit(1);
   }
+  
+  if (supabaseUrl && supabaseServiceKey) {
+    supabase = createClient(supabaseUrl, supabaseServiceKey, {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false
+      }
+    });
+    supabaseInitialized = true;
+    console.log('✅ Supabase client initialized successfully');
+  } else {
+    // Create a dummy client to prevent crashes (will fail on actual use)
+    supabase = createClient('https://placeholder.supabase.co', 'placeholder-key', {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false
+      }
+    });
+    console.warn('⚠️ Supabase client initialized with placeholder values. API calls will fail.');
+  }
+} catch (error: any) {
+  console.error('❌ Failed to initialize Supabase client:', error.message);
+  // Create a dummy client to prevent crashes
+  supabase = createClient('https://placeholder.supabase.co', 'placeholder-key', {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false
+    }
+  });
 }
 
-export const supabase = createClient(supabaseUrl, supabaseServiceKey, {
-  auth: {
-    autoRefreshToken: false,
-    persistSession: false
-  }
-});
+export { supabase, supabaseInitialized };
 
 // Export resolved config for use in other services (e.g., REST API calls)
 export const supabaseConfig = {
@@ -93,9 +109,9 @@ export const supabaseConfig = {
 };
 
 // Verify service role key is being used (for debugging)
-if (supabaseServiceKey && supabaseServiceKey.length > 50) {
+if (supabaseInitialized && supabaseServiceKey && supabaseServiceKey.length > 50) {
   console.log('✅ Supabase client initialized with service role key (length:', supabaseServiceKey.length, ')');
-} else {
+} else if (supabaseInitialized) {
   console.warn('⚠️ Supabase client may not be using service role key. Key length:', supabaseServiceKey?.length || 0);
 }
 

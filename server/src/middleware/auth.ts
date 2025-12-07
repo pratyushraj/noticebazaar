@@ -1,7 +1,7 @@
 // Authentication middleware using Supabase JWT
 
 import { Request, Response, NextFunction } from 'express';
-import { supabase } from '../index';
+import { supabase, supabaseInitialized } from '../index';
 
 export interface AuthenticatedRequest extends Request {
   user?: {
@@ -17,6 +17,10 @@ export const authMiddleware = async (
   next: NextFunction
 ) => {
   try {
+    if (!supabaseInitialized) {
+      return res.status(500).json({ error: 'Server configuration error: Supabase not initialized. Please check environment variables.' });
+    }
+    
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return res.status(401).json({ error: 'Missing or invalid authorization header' });
