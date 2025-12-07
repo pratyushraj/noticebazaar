@@ -272,23 +272,28 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
       try {
         // Handle hash fragments from OAuth callbacks
         // Supabase sometimes appends tokens as #route#access_token=... (double hash)
-        // We need to normalize this to #access_token=... for Supabase to process it
+        // We need to extract the route, let Supabase process tokens, then clean hash IMMEDIATELY
+        // to prevent React Router from routing to /access_token=...
         let hash = window.location.hash;
         let hasAccessToken = false;
+        let intendedRoute: string | null = null;
         
         // Check for double hash format: #/route#access_token=...
-        const doubleHashMatch = hash.match(/^#\/[^#]*#(access_token|type=)/);
+        const doubleHashMatch = hash.match(/^#\/([^#]+)#(access_token|type=)/);
         if (doubleHashMatch) {
-          console.log('[SessionContext] Detected double hash format, normalizing...', hash);
+          console.log('[SessionContext] Detected double hash format, extracting route and tokens...', hash);
+          // Extract the intended route (e.g., "creator-onboarding")
+          intendedRoute = doubleHashMatch[1];
           // Extract the access_token part (everything after the second #)
-          const secondHashIndex = hash.indexOf('#', 1); // Find second #
+          const secondHashIndex = hash.indexOf('#', 1);
           if (secondHashIndex !== -1) {
-            const tokenPart = hash.substring(secondHashIndex + 1); // Everything after second #
+            const tokenPart = hash.substring(secondHashIndex + 1);
             // Normalize to #access_token=... format that Supabase expects
             hash = '#' + tokenPart;
             // Update the URL hash so Supabase can process it
             window.location.hash = hash;
             console.log('[SessionContext] Normalized hash to:', hash.substring(0, 50) + '...');
+            console.log('[SessionContext] Intended route:', intendedRoute);
             hasAccessToken = true;
           }
         } else {
@@ -297,37 +302,31 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
           hasAccessToken = hashParams.get('access_token') !== null || 
                           hashParams.get('type') === 'magiclink' || 
                           hashParams.get('type') === 'recovery';
+          
+          // Check if there's a route in the hash (e.g., #/creator-onboarding?access_token=...)
+          const routeMatch = hash.match(/^#\/([^?#]+)/);
+          if (routeMatch) {
+            intendedRoute = routeMatch[1];
+          }
         }
         
-        if (hasAccessToken) {
-          console.log('[SessionContext] OAuth tokens detected in hash, processing...');
-          // Supabase will automatically process this via onAuthStateChange
-          // The normalized hash should now be processable
-          // Clean up hash after a short delay to let Supabase process it, but before React Router routes
-          setTimeout(() => {
-            // Only clean if hash still contains tokens (Supabase hasn't processed it yet)
-            const currentHash = window.location.hash;
-            if (currentHash.includes('access_token') || currentHash.includes('type=')) {
-              // Extract just the route part if there's a route, otherwise go to dashboard
-              const routeMatch = currentHash.match(/^#\/([^#?]+)/);
-              if (routeMatch) {
-                window.location.hash = `#/${routeMatch[1]}`;
-              } else {
-                // No route in hash, clean it completely
-                window.history.replaceState(null, '', window.location.pathname + window.location.search);
-              }
-            }
-          }, 200);
-        }
-
-        // Get session - Supabase will automatically process hash tokens
-        // But first, if we normalized the hash, give it a moment to process
-        if (hasAccessToken && hash !== window.location.hash) {
-          // Hash was normalized, wait a bit for Supabase to process it
-          await new Promise(resolve => setTimeout(resolve, 100));
-        }
-        
+        // Get session FIRST - Supabase will automatically process hash tokens from URL
+        // This must happen before we clean the hash
         const { data: { session: currentSession }, error } = await supabase.auth.getSession();
+        
+        // IMMEDIATELY clean the hash after Supabase processes tokens to prevent React Router 404
+        if (hasAccessToken) {
+          console.log('[SessionContext] OAuth tokens detected, cleaning hash to prevent React Router 404...');
+          if (intendedRoute && intendedRoute !== 'login' && intendedRoute !== 'signup') {
+            // Set hash to intended route
+            window.location.hash = `#/${intendedRoute}`;
+            console.log('[SessionContext] Cleaned hash to intended route:', `#/${intendedRoute}`);
+          } else {
+            // No intended route or it's login/signup, clean hash completely
+            window.history.replaceState(null, '', window.location.pathname + window.location.search);
+            console.log('[SessionContext] Cleaned hash completely');
+          }
+        }
         
         if (error) {
           logger.error("Error getting session", error);
@@ -396,16 +395,25 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
         // Handle OAuth callback - check for hash tokens or successful sign-in
         let hash = window.location.hash;
         const urlParams = new URLSearchParams(window.location.search);
+        let intendedRoute: string | null = null;
         
         // Check for double hash format: #/route#access_token=...
-        const doubleHashMatch = hash.match(/^#\/[^#]*#(access_token|type=)/);
+        const doubleHashMatch = hash.match(/^#\/([^#]+)#(access_token|type=)/);
         if (doubleHashMatch) {
-          // Normalize double hash to single hash format
+          // Extract the intended route before normalizing
+          intendedRoute = doubleHashMatch[1];
+          // Normalize double hash to single hash format for Supabase
           const secondHashIndex = hash.indexOf('#', 1);
           if (secondHashIndex !== -1) {
             hash = '#' + hash.substring(secondHashIndex + 1);
             window.location.hash = hash;
-            console.log('[SessionContext] Normalized double hash in onAuthStateChange');
+            console.log('[SessionContext] Normalized double hash in onAuthStateChange, intended route:', intendedRoute);
+          }
+        } else {
+          // Check if there's a route in the hash (e.g., #/creator-onboarding?access_token=...)
+          const routeMatch = hash.match(/^#\/([^?#]+)/);
+          if (routeMatch) {
+            intendedRoute = routeMatch[1];
           }
         }
         
@@ -415,34 +423,28 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
         
         // If we have a session after OAuth callback or SIGNED_IN event
         if (session && (event === 'SIGNED_IN' || isOAuthCallback || (event === 'INITIAL_SESSION' && hasHashTokens))) {
-          console.log('[SessionContext] Session established after OAuth, redirecting to dashboard...', {
+          console.log('[SessionContext] Session established after OAuth, redirecting...', {
             event,
             isOAuthCallback,
             hasHashTokens,
             hasQueryCode,
+            intendedRoute,
             userEmail: session?.user?.email
           });
           
-          // Extract intended route from hash if present (e.g., #/creator-onboarding#access_token=...)
-          const currentHash = window.location.hash;
-          let targetRoute = '/#/creator-dashboard';
-          
-          // Check if there's a route before the tokens (double hash format)
-          const routeMatch = currentHash.match(/^#\/([^#?]+)/);
-          if (routeMatch && routeMatch[1] !== 'login' && routeMatch[1] !== 'signup') {
-            targetRoute = `#/${routeMatch[1]}`;
-            console.log('[SessionContext] Preserving intended route:', targetRoute);
+          // Determine target route
+          let targetRoute = '#/creator-dashboard';
+          if (intendedRoute && intendedRoute !== 'login' && intendedRoute !== 'signup') {
+            targetRoute = `#/${intendedRoute}`;
           }
           
           // Clean up hash immediately to prevent React Router 404
+          // Supabase has already processed the tokens
           window.history.replaceState(null, '', window.location.pathname + window.location.search);
           
-          // Wait a moment for session to be fully established, then redirect
-          setTimeout(() => {
-            // Set the clean route hash
-            console.log('[SessionContext] Redirecting to:', targetRoute);
-            window.location.hash = targetRoute;
-          }, 100);
+          // Set the clean route hash immediately
+          console.log('[SessionContext] Redirecting to:', targetRoute);
+          window.location.hash = targetRoute;
         }
         
         // Handle INITIAL_SESSION with no session - this is normal on first load
