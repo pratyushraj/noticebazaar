@@ -41,10 +41,7 @@ const Navbar: React.FC = () => {
           to={dashboardPath}
           className="flex items-center gap-2 font-bold text-white hover:opacity-80 transition-opacity"
         >
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-indigo-500 flex items-center justify-center">
-            <span className="text-white text-sm font-bold">NB</span>
-          </div>
-          <span className="hidden sm:inline text-lg">NoticeBazaar</span>
+          <span className="text-lg">NoticeBazaar</span>
         </Link>
 
         {/* Right side actions */}
