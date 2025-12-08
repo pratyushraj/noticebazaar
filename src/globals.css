@@ -110,11 +110,8 @@ body {
 html, body {
   height: 100%;
   overflow-x: hidden !important;
-  overscroll-behavior: none; /* Disable weird elastic scroll */
-}
-
-* {
-  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: none; /* Disable weird elastic scroll */
+  -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
 }
 
 /* Calendar-specific fixes */
@@ -137,6 +134,8 @@ html, body {
 body {
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
+  -webkit-font-smoothing: antialiased; /* Better font rendering on Apple devices */
+  text-rendering: optimizeLegibility; /* Improve text rendering */
 }
 
 /* Prevent nested scroll */
@@ -373,17 +372,18 @@ body {
 
   /* Prevent iOS auto-zoom on input focus - ensure all inputs are at least 16px */
   input,
+  select,
   textarea,
-  select {
-    font-size: 16px !important;
+  button {
+    font-size: 16px;
   }
 
-  @media screen and (min-width: 768px) {
-    /* Allow smaller font sizes on desktop */
+  @media (min-width: 768px) {
     input,
+    select,
     textarea,
-    select {
-      font-size: inherit;
+    button {
+      font-size: 14px;
     }
   }
 
@@ -1116,4 +1116,36 @@ body {
   [class*="Card"] {
     page-break-inside: avoid;
   }
+}
+
+/* ============================================ */
+/* NOTICEBAZAAR SAFARI/iOS UTILITY CLASSES */
+/* ============================================ */
+
+/* iOS-safe screen height using dynamic viewport height */
+.nb-screen-height {
+  min-height: 100vh;
+}
+
+@supports (height: 100dvh) {
+  .nb-screen-height {
+    min-height: 100dvh;
+  }
+}
+
+/* Safe page padding for iPhone notch and bottom toolbar */
+.nb-safe-page {
+  padding-top: env(safe-area-inset-top, 0);
+  padding-bottom: max(80px, env(safe-area-inset-bottom, 0));
+}
+
+/* Safari gradient fix for better rendering */
+.nb-safari-gradient-fix {
+  background: linear-gradient(
+    180deg,
+    rgba(79, 70, 229, 0.98) 0%,
+    rgba(124, 58, 237, 0.98) 50%,
+    rgba(168, 85, 247, 0.98) 100%
+  );
+  filter: saturate(105%) contrast(105%);
 }

@@ -191,9 +191,9 @@ const HomePage = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 text-white overflow-hidden ios-safe-top">
+    <div className="nb-screen-height nb-safe-page bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 text-white overflow-hidden">
       {/* Navigation */}
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-purple-900/80 backdrop-blur-lg border-b border-white/10" style={{ paddingTop: 'max(16px, env(safe-area-inset-top))' }}>
+      <nav className="sticky top-[env(safe-area-inset-top,0)] z-50 bg-purple-900/80 backdrop-blur-xl border-b border-white/5">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center">
@@ -270,11 +270,9 @@ const HomePage = () => {
         style={{ 
           opacity, 
           scale,
-          paddingTop: 'max(128px, calc(env(safe-area-inset-top, 0px) + 128px))',
-          paddingBottom: 'max(80px, calc(env(safe-area-inset-bottom, 0px) + 80px))',
           transform: 'translateZ(0)'
         }}
-        className="relative px-4 sm:px-6 lg:px-8 overflow-hidden"
+        className="relative pt-16 md:pt-32 pb-12 md:pb-20 px-4 sm:px-6 lg:px-8 overflow-hidden flex flex-col justify-center min-h-[60vh]"
       >
         {/* Enhanced background overlay for better contrast on Safari */}
         <div className="absolute inset-0 bg-gradient-to-br from-purple-900/95 via-purple-800/95 to-indigo-900/95" style={{ transform: 'translateZ(0)' }} />
@@ -570,11 +568,8 @@ const HomePage = () => {
 
       {/* Final CTA */}
       <section 
-        className="py-20 px-4 sm:px-6 lg:px-8 ios-safe-bottom-cta"
-        style={{ 
-          paddingBottom: 'max(80px, calc(env(safe-area-inset-bottom, 0px) + 80px))',
-          transform: 'translateZ(0)'
-        }}
+        className="mt-8 space-y-4 md:space-y-6 pb-24 md:pb-16 px-4 sm:px-6 lg:px-8"
+        style={{ transform: 'translateZ(0)' }}
       >
         <div className="max-w-4xl mx-auto text-center" style={{ transform: 'translateZ(0)' }}>
           <motion.div
