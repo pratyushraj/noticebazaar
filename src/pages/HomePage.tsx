@@ -263,14 +263,13 @@ const HomePage = () => {
 
       {/* Hero Section */}
       <motion.section 
-        style={{ opacity, scale }}
-        className="relative pt-8 md:pt-32 pb-20 px-4 sm:px-6 lg:px-8 overflow-hidden"
-        style={{
-          opacity,
+        style={{ 
+          opacity, 
           scale,
           paddingLeft: 'max(1rem, env(safe-area-inset-left, 0px))',
           paddingRight: 'max(1rem, env(safe-area-inset-right, 0px))'
         }}
+        className="relative pt-8 md:pt-32 pb-20 px-4 sm:px-6 lg:px-8 overflow-hidden"
       >
         {/* Animated background elements */}
         <div className="absolute top-20 left-1/4 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl animate-pulse" />
