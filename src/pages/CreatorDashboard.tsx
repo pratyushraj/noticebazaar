@@ -757,7 +757,7 @@ const CreatorDashboard = () => {
       </a>
 
       {/* Main Content */}
-      <main id="main-content" className={`${sectionLayout.container} ${scroll.container}`}>
+      <main id="main-content" className={`${sectionLayout.container} ${scroll.container} pb-20 md:pb-28`} style={{ paddingBottom: 'max(80px, calc(80px + env(safe-area-inset-bottom, 0px)))' }}>
         {/* Home Tab */}
         {activeTab === 'home' && (
           <>
@@ -767,7 +767,7 @@ const CreatorDashboard = () => {
               </div>
             ) : hasNoData ? (
               // Empty State for New Users
-              <div className="space-y-6">
+              <div className="space-y-6 pb-4 md:pb-8">
                 {/* Greeting */}
                 <div className={sectionLayout.header}>
                   <h1 className={typography.h1 + " mb-2 leading-tight"}>
@@ -777,7 +777,7 @@ const CreatorDashboard = () => {
                 </div>
 
                 {/* Empty State Card */}
-                <BaseCard variant="secondary" className="text-center p-6 md:p-8 relative" style={{ pointerEvents: 'auto' }}>
+                <BaseCard variant="secondary" className="text-center p-6 md:p-8 relative" onClick={(e) => e?.stopPropagation()}>
                   <motion.div
                     initial={{ scale: 0.8, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
@@ -872,6 +872,7 @@ const CreatorDashboard = () => {
                   variant="secondary"
                   title="Quick Start Guide"
                   icon={<Target className="w-5 h-5 text-purple-400" />}
+                  className="mb-6 md:mb-24"
                 >
                   <div className="grid md:grid-cols-3 gap-4">
                     <motion.div
