@@ -123,24 +123,10 @@ export default defineConfig(() => ({
       "react-dom",
       "react/jsx-runtime",
       "react/jsx-dev-runtime",
+      // Include framer-motion to ensure it uses the same React instance
+      "framer-motion",
     ],
     exclude: [
-      // Exclude ALL React-dependent packages from pre-bundling
-      // This prevents them from creating separate React instances
-      "framer-motion",
-      "@radix-ui/react-tooltip",
-      "@radix-ui/react-dialog",
-      "@radix-ui/react-dropdown-menu",
-      "@radix-ui/react-select",
-      "@radix-ui/react-alert-dialog",
-      "@radix-ui/react-label",
-      "@radix-ui/react-avatar",
-      "@radix-ui/react-separator",
-      "@radix-ui/react-slider",
-      "@radix-ui/react-progress",
-      "@radix-ui/react-tabs",
-      "@radix-ui/react-scroll-area",
-      "@radix-ui/react-slot",
       // Exclude use-sync-external-store from pre-bundling to prevent separate React instance
       "use-sync-external-store",
       "use-sync-external-store/shim",
