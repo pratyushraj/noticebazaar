@@ -1415,6 +1415,8 @@ ${creatorName}`;
         {/* Results Step - ONLY render if we have real API data */}
         {step === 'results' && analysisResults && resultsRiskInfo && (
           <div className="space-y-6 animate-fadeIn pb-40 md:pb-6" style={{ paddingBottom: 'max(160px, calc(160px + env(safe-area-inset-bottom)))' }}>
+            {/* Content Width Container for iPad/Tablet */}
+            <div className="max-w-4xl mx-auto space-y-6">
             {/* Contract Type Badge */}
             <div className="bg-gradient-to-r from-purple-600/30 to-indigo-600/30 backdrop-blur-md rounded-2xl px-4 py-3 border border-purple-400/30">
               <div className="flex items-center gap-2 text-sm">
@@ -1555,7 +1557,7 @@ ${creatorName}`;
             )}
 
             {/* Key Terms with Status Badges - Refined */}
-            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-5 md:p-6 border border-white/10 shadow-lg">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-5 md:p-6 border border-white/10 shadow-lg md:border-t md:border-white/5">
               <h3 className="font-semibold text-xl mb-5 flex items-center gap-2">
                 <FileText className="w-5 h-5" />
                 Key Terms
@@ -1565,14 +1567,14 @@ ${creatorName}`;
                 {(() => {
                   const status = getKeyTermStatus('Deal Value', analysisResults.keyTerms.dealValue);
                   return (
-                    <div className="flex items-center justify-between p-4 border-b border-white/5 last:border-b-0">
+                    <div className="flex items-center justify-between p-4 md:p-3 border-b border-white/5 last:border-b-0">
                       <div className="flex items-center gap-4 flex-1">
                         <span className="text-2xl">{status.badge}</span>
                         <div>
                           <div className="font-semibold flex items-center gap-2">
                             <IndianRupee className="w-4 h-4 text-purple-300" />
                             <span className="text-purple-200">Deal Value:</span>
-                            <span className="text-white font-bold">{analysisResults.keyTerms.dealValue || 'Not specified'}</span>
+                            <span className="text-white font-bold md:text-sm">{analysisResults.keyTerms.dealValue || 'Not specified'}</span>
                           </div>
                         </div>
                       </div>
@@ -1587,13 +1589,13 @@ ${creatorName}`;
                 {(() => {
                   const status = getKeyTermStatus('Deliverables', analysisResults.keyTerms.deliverables);
                   return (
-                    <div className="flex items-center justify-between p-4 border-b border-white/5 last:border-b-0">
+                    <div className="flex items-center justify-between p-4 md:p-3 border-b border-white/5 last:border-b-0">
                       <div className="flex items-center gap-4 flex-1">
                         <span className="text-2xl">{status.badge}</span>
                         <div>
                           <div className="font-semibold">
                             <span className="text-purple-200">Deliverables:</span>
-                            <span className="text-white font-bold ml-2">{analysisResults.keyTerms.deliverables || 'Not specified'}</span>
+                            <span className="text-white font-bold ml-2 md:text-sm">{analysisResults.keyTerms.deliverables || 'Not specified'}</span>
                           </div>
                         </div>
                       </div>
@@ -1608,13 +1610,13 @@ ${creatorName}`;
                 {(() => {
                   const status = getKeyTermStatus('Payment', analysisResults.keyTerms.paymentSchedule);
                   return (
-                    <div className="flex items-center justify-between p-4 border-b border-white/5 last:border-b-0">
+                    <div className="flex items-center justify-between p-4 md:p-3 border-b border-white/5 last:border-b-0">
                       <div className="flex items-center gap-4 flex-1">
                         <span className="text-2xl">{status.badge}</span>
                         <div>
                           <div className="font-semibold">
                             <span className="text-purple-200">Payment:</span>
-                            <span className="text-white font-bold ml-2">{analysisResults.keyTerms.paymentSchedule || 'Not specified'}</span>
+                            <span className="text-white font-bold ml-2 md:text-sm">{analysisResults.keyTerms.paymentSchedule || 'Not specified'}</span>
                           </div>
                         </div>
                       </div>
@@ -1668,13 +1670,13 @@ ${creatorName}`;
                     : { badge: '⚠', color: 'bg-yellow-500/20 text-yellow-400', label: 'Missing' };
                   
                   return (
-                    <div className="flex items-center justify-between p-4 border-b border-white/5 last:border-b-0">
+                    <div className="flex items-center justify-between p-4 md:p-3 border-b border-white/5 last:border-b-0">
                       <div className="flex items-center gap-4 flex-1">
                         <span className="text-2xl">{status.badge}</span>
                         <div>
                           <div className="font-semibold">
                             <span className="text-purple-200">{termLabel}:</span>
-                            <span className="text-white font-bold ml-2">{governingLaw || 'Not specified'}</span>
+                            <span className="text-white font-bold ml-2 md:text-sm">{governingLaw || 'Not specified'}</span>
                           </div>
                         </div>
                       </div>
@@ -1696,13 +1698,13 @@ ${creatorName}`;
               const roundedProgress = Math.round(clampedProgress);
               
               return (
-                <div className={`${status.bgColor} backdrop-blur-md rounded-2xl p-5 md:p-6 border ${status.borderColor} shadow-lg mb-6 transition-all duration-300`}>
+                <div className={`${status.bgColor} backdrop-blur-md rounded-2xl p-5 md:p-4 border ${status.borderColor} md:border-white/10 md:border-t shadow-lg mb-6 transition-all duration-300`}>
                   <div className="flex items-center justify-between mb-3">
-                    <h3 className="font-semibold text-lg flex items-center gap-2">
+                    <h3 className="font-semibold text-lg flex items-center gap-2 md:text-left">
                       <Shield className={`w-5 h-5 ${status.shieldColor} transition-colors duration-300`} />
                       <span className="text-white">Protection Status</span>
                     </h3>
-                    <div className="flex flex-col items-end">
+                    <div className="flex flex-col items-end md:items-end">
                       <div className="flex items-center gap-2">
                         <span className={`text-xl font-bold ${status.color} transition-colors duration-300`}>
                           {status.icon} {status.label}
@@ -1719,8 +1721,8 @@ ${creatorName}`;
                       )}
                     </div>
                   </div>
-                  <div className="relative h-3 bg-white/10 rounded-full overflow-hidden">
-                    {/* Animated glow effect based on risk level */}
+                  <div className="relative h-3 bg-white/10 rounded-full overflow-hidden max-w-2xl">
+                    {/* Animated glow effect based on risk level - Reduced intensity on md+ */}
                     <motion.div
                       initial={{ opacity: 0 }}
                       animate={{ opacity: [0.4, 0.8, 0.4] }}
@@ -1731,7 +1733,7 @@ ${creatorName}`;
                       }}
                       className="absolute inset-0 rounded-full"
                       style={{
-                        boxShadow: `0 0 20px ${status.glowColor}`,
+                        boxShadow: `0 0 ${typeof window !== 'undefined' && window.innerWidth >= 768 ? '15px' : '20px'} ${status.glowColor}`,
                         zIndex: 1
                       }}
                     />
@@ -1763,7 +1765,7 @@ ${creatorName}`;
 
             {/* Issues Table - Premium Action-Driven */}
             {analysisResults.issues.length > 0 && (
-              <div id="issues-section" className="bg-white/10 backdrop-blur-md rounded-2xl p-4 md:p-6 border border-white/10 shadow-lg">
+              <div id="issues-section" className="bg-white/10 backdrop-blur-md rounded-2xl p-4 md:p-6 border border-white/10 md:border-t shadow-lg">
                 <h3 className="font-semibold text-xl mb-5 flex items-center gap-2">
                   <AlertTriangle className="w-5 h-5 text-yellow-400" />
                   Issues Found ({analysisResults.issues.length - resolvedIssues.size})
@@ -1782,12 +1784,14 @@ ${creatorName}`;
                     groupedIssues.get(key)!.push(issue);
                   });
 
-                  return Array.from(groupedIssues.entries()).map(([categoryLabel, issues]) => {
-                    const categoryInfo = getIssueCategory(issues[0]);
-                    const CategoryIcon = categoryInfo.icon;
-                    
-                    return (
-                      <div key={categoryLabel} className="mb-6 last:mb-0">
+                  return (
+                    <div className="md:grid md:grid-cols-2 md:gap-6">
+                      {Array.from(groupedIssues.entries()).map(([categoryLabel, issues]) => {
+                        const categoryInfo = getIssueCategory(issues[0]);
+                        const CategoryIcon = categoryInfo.icon;
+                        
+                        return (
+                          <div key={categoryLabel} className="mb-6 md:mb-0">
                         <div className="flex items-center gap-2 mb-4">
                           <CategoryIcon className="w-5 h-5 text-purple-400" />
                           <h4 className="font-semibold text-lg">{categoryInfo.emoji} {categoryLabel} ({issues.length})</h4>
@@ -2135,14 +2139,16 @@ ${creatorName}`;
                         </div>
                       </div>
                     );
-                  });
+                  })}
+                    </div>
+                  );
                 })()}
               </div>
             )}
 
             {/* Strong Clauses - Visual Trust Boost */}
             {analysisResults.verified.length > 0 && (
-              <div className="bg-white/10 backdrop-blur-md rounded-2xl p-5 md:p-6 border border-green-500/30 shadow-lg">
+              <div className="bg-white/10 backdrop-blur-md rounded-2xl p-5 md:p-6 border border-green-500/30 md:border-t shadow-lg">
                 <h3 className="font-semibold text-xl mb-5 flex items-center gap-2">
                   <CheckCircle className="w-5 h-5 text-green-400" />
                   Strong Clauses ({analysisResults.verified.length})
@@ -2645,13 +2651,13 @@ ${creatorName}`;
 
 
             {/* Desktop Action Buttons */}
-            <div className="hidden md:flex gap-3">
+            <div className="hidden md:flex gap-3 max-w-3xl mx-auto">
               <button 
                 onClick={() => {
                   navigate('/messages');
                   toast.success('Sent for Legal Review');
                 }}
-                className="flex-1 bg-white/10 hover:bg-white/15 font-semibold py-4 rounded-xl transition-colors flex items-center justify-center gap-2"
+                className="flex-1 bg-white/10 hover:bg-white/15 font-semibold py-3 rounded-xl transition-colors flex items-center justify-center gap-2"
               >
                 <FileText className="w-5 h-5" />
                 Get Legal Review
@@ -2729,6 +2735,8 @@ ${creatorName}`;
                 )}
               </button>
             </div>
+            </div>
+            {/* End Content Width Container for iPad/Tablet */}
 
             {/* Clause Generation Modal */}
             {selectedIssueForClause !== null && generatedClause && (() => {
