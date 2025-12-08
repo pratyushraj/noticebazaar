@@ -767,30 +767,30 @@ const CreatorDashboard = () => {
               </div>
             ) : hasNoData ? (
               // Empty State for New Users
-              <div className="space-y-6 pb-4 md:pb-8">
+              <div className="max-w-5xl mx-auto space-y-6 pb-4 md:pb-8">
                 {/* Greeting */}
-                <div className={sectionLayout.header}>
-                  <h1 className={typography.h1 + " mb-2 leading-tight"}>
+                <div className={cn(sectionLayout.header, "md:pt-4 md:text-left")}>
+                  <h1 className={cn(typography.h1, "mb-2 leading-tight md:text-xl")}>
                     {getGreeting()}, {userData.name}! 👋
                   </h1>
-                  <p className={typography.body + " leading-relaxed"}>Let's get you started with your first brand deal.</p>
+                  <p className={cn(typography.body, "leading-relaxed")}>Let's get you started with your first brand deal.</p>
                 </div>
 
                 {/* Empty State Card */}
-                <BaseCard variant="secondary" className="text-center p-6 md:p-8 relative" onClick={(e) => e?.stopPropagation()}>
+                <BaseCard variant="secondary" className="text-center p-6 md:p-6 relative" onClick={(e) => e?.stopPropagation()}>
                   <motion.div
                     initial={{ scale: 0.8, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
-                    className="w-24 h-24 rounded-full bg-gradient-to-br from-purple-500/20 to-indigo-500/20 flex items-center justify-center mx-auto mb-6"
+                    className="w-20 h-20 md:w-16 md:h-16 rounded-full bg-gradient-to-br from-purple-500/20 to-indigo-500/20 flex items-center justify-center mx-auto mb-4 md:mb-3"
                   >
-                    <Briefcase className={`${iconSizes.xl} text-purple-400`} />
+                    <Briefcase className={cn(iconSizes.xl, "md:w-8 md:h-8 text-purple-400")} />
                   </motion.div>
-                  <h2 className={typography.h2 + " mb-3"}>Welcome to Your Dashboard!</h2>
-                  <p className={typography.body + " mb-6 max-w-md mx-auto"}>
+                  <h2 className={cn(typography.h2, "mb-3 md:text-2xl")}>Welcome to Your Dashboard!</h2>
+                  <p className={cn(typography.body, "mb-6 max-w-md md:max-w-lg mx-auto")}>
                     Start tracking your brand deals, payments, and contracts. Add your first deal to see your earnings and activity here.
                   </p>
-                  <div className="flex flex-col sm:flex-row gap-3 justify-center relative" style={{ zIndex: 50, pointerEvents: 'auto' }}>
-                    <button
+                  <div className="flex flex-col sm:flex-row gap-3 justify-center relative md:max-w-md md:mx-auto" style={{ zIndex: 50, pointerEvents: 'auto' }}>
+                    <motion.button
                       onClick={(e) => {
                         e.preventDefault();
                         e.stopPropagation();
@@ -803,6 +803,7 @@ const CreatorDashboard = () => {
                       onTouchStart={(e) => {
                         e.stopPropagation();
                       }}
+                      whileHover={{ scale: 1.02 }}
                       className={cn(
                         buttons.primary,
                         "flex items-center justify-center gap-2",
@@ -810,8 +811,9 @@ const CreatorDashboard = () => {
                         "pointer-events-auto",
                         "touch-manipulation",
                         "select-none",
-                        "min-h-[44px]",
-                        "will-change-transform"
+                        "min-h-[44px] md:min-h-[40px]",
+                        "will-change-transform",
+                        "md:text-sm"
                       )}
                       type="button"
                       style={{ 
@@ -826,8 +828,8 @@ const CreatorDashboard = () => {
                     >
                       <Plus className={iconSizes.md} />
                       Add Your First Deal
-                    </button>
-                    <button
+                    </motion.button>
+                    <motion.button
                       onClick={(e) => {
                         e.preventDefault();
                         e.stopPropagation();
@@ -840,6 +842,7 @@ const CreatorDashboard = () => {
                       onTouchStart={(e) => {
                         e.stopPropagation();
                       }}
+                      whileHover={{ scale: 1.02 }}
                       className={cn(
                         buttons.secondary,
                         "flex items-center justify-center gap-2",
@@ -847,8 +850,9 @@ const CreatorDashboard = () => {
                         "pointer-events-auto",
                         "touch-manipulation",
                         "select-none",
-                        "min-h-[44px]",
-                        "will-change-transform"
+                        "min-h-[44px] md:min-h-[40px]",
+                        "will-change-transform",
+                        "md:text-sm"
                       )}
                       type="button"
                       style={{ 
@@ -863,7 +867,7 @@ const CreatorDashboard = () => {
                     >
                       <Briefcase className={iconSizes.md} />
                       Explore Brands
-                    </button>
+                    </motion.button>
                   </div>
                 </BaseCard>
 
@@ -872,23 +876,24 @@ const CreatorDashboard = () => {
                   variant="secondary"
                   title="Quick Start Guide"
                   icon={<Target className="w-5 h-5 text-purple-400" />}
-                  className="mb-6 md:mb-24"
+                  className="mb-6 md:mb-24 border-t border-white/10 pt-6 mt-6"
                 >
-                  <div className="grid md:grid-cols-3 gap-4">
+                  <div className="grid md:grid-cols-3 gap-4 md:gap-3">
                     <motion.div
                       onClick={() => {
                         triggerHaptic(HapticPatterns.light);
                         navigate('/creator-contracts');
                       }}
                       whileTap={animations.microTap}
-                      className="cursor-pointer"
+                      whileHover={{ y: -2, transition: { duration: 0.2 } }}
+                      className="cursor-pointer h-full"
                     >
-                      <BaseCard variant="tertiary" interactive>
-                        <div className="w-10 h-10 rounded-lg bg-purple-500/20 flex items-center justify-center mb-3">
-                          <Briefcase className={`${iconSizes.md} text-purple-400`} />
+                      <BaseCard variant="tertiary" interactive className="h-full md:p-4 hover:shadow-lg hover:shadow-purple-500/20 transition-all duration-200">
+                        <div className="w-10 h-10 md:w-9 md:h-9 rounded-lg bg-purple-500/20 flex items-center justify-center mb-2 md:mb-1.5">
+                          <Briefcase className={cn(iconSizes.md, "md:w-4 md:h-4 text-purple-400")} />
                         </div>
-                        <h4 className={typography.h4 + " mb-1"}>Add Brand Deals</h4>
-                        <p className={typography.bodySmall}>Track your partnerships and contracts</p>
+                        <h4 className={cn(typography.h4, "mb-0.5 md:mb-0 md:text-sm")}>Add Brand Deals</h4>
+                        <p className={cn(typography.bodySmall, "md:text-xs")}>Track your partnerships and contracts</p>
                       </BaseCard>
                     </motion.div>
                     <motion.div
@@ -897,14 +902,15 @@ const CreatorDashboard = () => {
                         navigate('/creator-payments');
                       }}
                       whileTap={animations.microTap}
-                      className="cursor-pointer"
+                      whileHover={{ y: -2, transition: { duration: 0.2 } }}
+                      className="cursor-pointer h-full"
                     >
-                      <BaseCard variant="tertiary" interactive>
-                        <div className="w-10 h-10 rounded-lg bg-green-500/20 flex items-center justify-center mb-3">
-                          <CreditCard className={`${iconSizes.md} text-green-400`} />
+                      <BaseCard variant="tertiary" interactive className="h-full md:p-4 hover:shadow-lg hover:shadow-green-500/20 transition-all duration-200">
+                        <div className="w-10 h-10 md:w-9 md:h-9 rounded-lg bg-green-500/20 flex items-center justify-center mb-2 md:mb-1.5">
+                          <CreditCard className={cn(iconSizes.md, "md:w-4 md:h-4 text-green-400")} />
                         </div>
-                        <h4 className={typography.h4 + " mb-1"}>Track Payments</h4>
-                        <p className={typography.bodySmall}>Monitor incoming and pending payments</p>
+                        <h4 className={cn(typography.h4, "mb-0.5 md:mb-0 md:text-sm")}>Track Payments</h4>
+                        <p className={cn(typography.bodySmall, "md:text-xs")}>Monitor incoming and pending payments</p>
                       </BaseCard>
                     </motion.div>
                     <motion.div
@@ -913,24 +919,25 @@ const CreatorDashboard = () => {
                         navigate('/creator-content-protection');
                       }}
                       whileTap={animations.microTap}
-                      className="cursor-pointer"
+                      whileHover={{ y: -2, transition: { duration: 0.2 } }}
+                      className="cursor-pointer h-full"
                     >
-                      <BaseCard variant="tertiary" interactive>
-                        <div className="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center mb-3">
-                          <Shield className={`${iconSizes.md} text-blue-400`} />
+                      <BaseCard variant="tertiary" interactive className="h-full md:p-4 hover:shadow-lg hover:shadow-blue-500/20 transition-all duration-200">
+                        <div className="w-10 h-10 md:w-9 md:h-9 rounded-lg bg-blue-500/20 flex items-center justify-center mb-2 md:mb-1.5">
+                          <Shield className={cn(iconSizes.md, "md:w-4 md:h-4 text-blue-400")} />
                         </div>
-                        <h4 className={typography.h4 + " mb-1"}>Protect Content</h4>
-                        <p className={typography.bodySmall}>Register and monitor your content</p>
+                        <h4 className={cn(typography.h4, "mb-0.5 md:mb-0 md:text-sm")}>Protect Content</h4>
+                        <p className={cn(typography.bodySmall, "md:text-xs")}>Register and monitor your content</p>
                       </BaseCard>
                     </motion.div>
                   </div>
                 </SectionCard>
                     </div>
             ) : (
-              <div className={spacing.section}>
+              <div className={cn(spacing.section, "max-w-5xl mx-auto")}>
             {/* Greeting */}
-            <div className={sectionLayout.header}>
-              <h1 className={typography.h1 + " mb-2 leading-tight"}>
+            <div className={cn(sectionLayout.header, "md:pt-4 md:text-left")}>
+              <h1 className={cn(typography.h1, "mb-2 leading-tight md:text-xl")}>
                 {getGreeting()}, <br />
                 <span className="bg-gradient-to-r from-purple-400 to-pink-400 text-transparent bg-clip-text">
                   {userData.displayName}!

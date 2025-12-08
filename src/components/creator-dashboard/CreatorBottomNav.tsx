@@ -171,7 +171,7 @@ const CreatorBottomNav = () => {
         <div className="absolute inset-x-0 top-0 h-[1px] bg-white/10" />
         
         <nav 
-          className="flex justify-around h-16 md:h-14 items-center px-2 relative z-10 pointer-events-auto"
+          className="flex justify-around h-16 md:h-12 items-center px-2 md:px-4 relative z-10 pointer-events-auto"
           style={{ 
             paddingBottom: `max(8px, env(safe-area-inset-bottom, 8px))`, 
             paddingTop: '8px',
