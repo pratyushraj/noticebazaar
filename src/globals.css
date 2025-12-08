@@ -31,22 +31,23 @@
 }
 
 /* Prevent flicker by ensuring body has background color */
+/* Extend background to cover safe areas on iOS - prevents white gaps at top/bottom */
 html {
   background: linear-gradient(to bottom right, #581c87, #4c1d95, #312e81);
   min-height: 100vh;
   min-height: -webkit-fill-available;
-  /* Extend background to cover safe areas on iOS */
   background-attachment: fixed;
   background-size: cover;
+  background-repeat: no-repeat;
 }
 
 body {
   background: linear-gradient(to bottom right, #581c87, #4c1d95, #312e81);
   min-height: 100vh;
   min-height: -webkit-fill-available;
-  /* Extend background to cover safe areas */
   background-attachment: fixed;
   background-size: cover;
+  background-repeat: no-repeat;
 }
 
 /* Touch Feedback - Scale Animation */
