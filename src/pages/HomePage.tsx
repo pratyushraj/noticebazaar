@@ -222,12 +222,6 @@ const HomePage = () => {
               <Link 
                 to="/signup" 
                 className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 px-6 py-2 rounded-full font-semibold transition-all transform hover:scale-105"
-                style={{ 
-                  WebkitTapHighlightColor: 'transparent',
-                  touchAction: 'manipulation',
-                  transform: 'translateZ(0)',
-                  minHeight: '44px'
-                }}
               >
                 Get Started Free
               </Link>
@@ -237,13 +231,6 @@ const HomePage = () => {
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
               className="md:hidden p-2 rounded-lg hover:bg-white/10 transition-colors"
-              style={{ 
-                WebkitTapHighlightColor: 'transparent',
-                touchAction: 'manipulation',
-                transform: 'translateZ(0)',
-                minHeight: '44px',
-                minWidth: '44px'
-              }}
             >
               {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </button>
@@ -567,12 +554,6 @@ const HomePage = () => {
                       ? 'bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700'
                       : 'bg-white/10 hover:bg-white/20'
                   }`}
-                  style={{ 
-                    WebkitTapHighlightColor: 'transparent',
-                    touchAction: 'manipulation',
-                    transform: 'translateZ(0)',
-                    minHeight: '44px'
-                  }}
                 >
                   {plan.cta}
                 </Link>
@@ -584,31 +565,24 @@ const HomePage = () => {
 
       {/* Final CTA */}
       <section className="py-20 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-4xl mx-auto text-center" style={{ transform: 'translateZ(0)' }}>
+        <div className="max-w-4xl mx-auto text-center">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
             viewport={{ once: true }}
             className="bg-gradient-to-r from-purple-600/20 to-pink-600/20 backdrop-blur-md rounded-3xl p-12 border border-white/10"
-            style={{ transform: 'translateZ(0)' }}
           >
             <h2 className="text-4xl md:text-5xl font-bold mb-6">
               Ready to Protect Your Content?
             </h2>
-            <p className="text-xl text-purple-200/90 mb-8 max-w-2xl mx-auto font-medium">
+            <p className="text-xl text-purple-200 mb-8 max-w-2xl mx-auto">
               Join thousands of creators who trust NoticeBazaar to manage their brand deals and protect their intellectual property.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <Link
                 to="/signup"
                 className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 px-8 py-4 rounded-full font-bold text-lg transition-all transform hover:scale-105 shadow-2xl shadow-purple-500/50 flex items-center gap-2"
-                style={{ 
-                  WebkitTapHighlightColor: 'transparent',
-                  touchAction: 'manipulation',
-                  transform: 'translateZ(0)',
-                  minHeight: '44px'
-                }}
               >
                 Start Your Free Trial
                 <ArrowRight className="w-5 h-5" />
@@ -616,12 +590,6 @@ const HomePage = () => {
               <Link
                 to="/login"
                 className="px-8 py-4 rounded-full border-2 border-white/20 hover:border-white/40 transition-all font-semibold"
-                style={{ 
-                  WebkitTapHighlightColor: 'transparent',
-                  touchAction: 'manipulation',
-                  transform: 'translateZ(0)',
-                  minHeight: '44px'
-                }}
               >
                 Sign In
               </Link>
