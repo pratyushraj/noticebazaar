@@ -1139,6 +1139,29 @@ body {
   padding-bottom: max(80px, env(safe-area-inset-bottom, 0));
 }
 
+/* Latest iOS Safari / Dynamic Island Support */
+@supports (padding: max(0px)) {
+  .ios-safe-header {
+    padding-top: max(20px, env(safe-area-inset-top, 0px));
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+  }
+  
+  .ios-safe-hero {
+    padding-top: max(
+      calc(64px + env(safe-area-inset-top, 0px) + 32px),
+      128px
+    );
+  }
+}
+
+/* Support for iPhone 14 Pro+ Dynamic Island */
+@media screen and (min-width: 375px) {
+  .ios-dynamic-island-safe {
+    padding-top: max(59px, env(safe-area-inset-top, 0px));
+  }
+}
+
 /* Safari gradient fix for better rendering */
 .nb-safari-gradient-fix {
   background: linear-gradient(

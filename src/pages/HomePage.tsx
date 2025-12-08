@@ -191,11 +191,23 @@ const HomePage = () => {
   ];
 
   return (
-    <div className="nb-screen-height nb-safe-page bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 text-white overflow-hidden">
+    <div className="nb-screen-height bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 text-white overflow-hidden">
       {/* Navigation */}
-      <nav className="sticky top-[env(safe-area-inset-top,0)] z-50 bg-purple-900/80 backdrop-blur-xl border-b border-white/5">
+      <nav 
+        className="sticky top-0 z-50 bg-purple-900/80 backdrop-blur-xl border-b border-white/5"
+        style={{ 
+          paddingTop: 'max(16px, env(safe-area-inset-top, 0px))',
+          top: 0
+        }}
+      >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
+          <div 
+            className="flex items-center justify-between"
+            style={{ 
+              minHeight: '64px',
+              paddingBottom: '8px'
+            }}
+          >
             <div className="flex items-center">
               <Link to="/" className="text-2xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 text-transparent bg-clip-text">
                 NoticeBazaar
@@ -247,6 +259,10 @@ const HomePage = () => {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
             className="md:hidden bg-purple-900/95 backdrop-blur-lg border-t border-white/10"
+            style={{ 
+              paddingTop: 'max(8px, env(safe-area-inset-top, 0px))',
+              paddingBottom: 'max(8px, env(safe-area-inset-bottom, 0px))'
+            }}
           >
             <div className="px-4 py-4 space-y-3">
               <a href="#features" className="block py-2 text-purple-200 hover:text-white transition-colors">Features</a>
@@ -270,9 +286,11 @@ const HomePage = () => {
         style={{ 
           opacity, 
           scale,
-          transform: 'translateZ(0)'
+          transform: 'translateZ(0)',
+          paddingTop: 'max(calc(64px + env(safe-area-inset-top, 0px) + 32px), 128px)',
+          paddingBottom: 'max(80px, calc(env(safe-area-inset-bottom, 0px) + 80px))'
         }}
-        className="relative pt-16 md:pt-32 pb-12 md:pb-20 px-4 sm:px-6 lg:px-8 overflow-hidden flex flex-col justify-center min-h-[60vh]"
+        className="relative px-4 sm:px-6 lg:px-8 overflow-hidden flex flex-col justify-center min-h-[60vh]"
       >
         {/* Enhanced background overlay for better contrast on Safari */}
         <div className="absolute inset-0 bg-gradient-to-br from-purple-900/95 via-purple-800/95 to-indigo-900/95" style={{ transform: 'translateZ(0)' }} />
