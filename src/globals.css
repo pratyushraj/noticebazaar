@@ -380,36 +380,6 @@ body {
     padding-right: env(safe-area-inset-right);
   }
 
-  /* Prevent iOS auto-zoom on input focus - ensure all inputs are at least 16px */
-  input,
-  select,
-  textarea,
-  button {
-    font-size: 16px;
-  }
-
-  @media (min-width: 768px) {
-    input,
-    select,
-    textarea,
-    button {
-      font-size: 14px;
-    }
-  }
-
-  /* iOS button tap fixes */
-  button,
-  a,
-  [role="button"],
-  [type="button"],
-  [type="submit"] {
-    -webkit-tap-highlight-color: transparent;
-    touch-action: manipulation;
-    /* GPU acceleration for better iOS performance */
-    transform: translateZ(0);
-    -webkit-transform: translateZ(0);
-    will-change: transform;
-  }
 
   /* Prevent bottom Safari toolbar overlap */
   main,
