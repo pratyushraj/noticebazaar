@@ -191,9 +191,9 @@ const HomePage = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 text-white overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 text-white overflow-hidden ios-safe-top">
       {/* Navigation */}
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-purple-900/80 backdrop-blur-lg border-b border-white/10">
+      <nav className="fixed top-0 left-0 right-0 z-50 bg-purple-900/80 backdrop-blur-lg border-b border-white/10" style={{ paddingTop: 'max(16px, env(safe-area-inset-top))' }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center">
@@ -212,6 +212,12 @@ const HomePage = () => {
               <Link 
                 to="/signup" 
                 className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 px-6 py-2 rounded-full font-semibold transition-all transform hover:scale-105"
+                style={{ 
+                  WebkitTapHighlightColor: 'transparent',
+                  touchAction: 'manipulation',
+                  transform: 'translateZ(0)',
+                  minHeight: '44px'
+                }}
               >
                 Get Started Free
               </Link>
@@ -221,6 +227,13 @@ const HomePage = () => {
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
               className="md:hidden p-2 rounded-lg hover:bg-white/10 transition-colors"
+              style={{ 
+                WebkitTapHighlightColor: 'transparent',
+                touchAction: 'manipulation',
+                transform: 'translateZ(0)',
+                minHeight: '44px',
+                minWidth: '44px'
+              }}
             >
               {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </button>
@@ -254,28 +267,38 @@ const HomePage = () => {
 
       {/* Hero Section */}
       <motion.section 
-        style={{ opacity, scale }}
-        className="relative pt-32 pb-20 px-4 sm:px-6 lg:px-8 overflow-hidden"
+        style={{ 
+          opacity, 
+          scale,
+          paddingTop: 'max(128px, calc(env(safe-area-inset-top, 0px) + 128px))',
+          paddingBottom: 'max(80px, calc(env(safe-area-inset-bottom, 0px) + 80px))',
+          transform: 'translateZ(0)'
+        }}
+        className="relative px-4 sm:px-6 lg:px-8 overflow-hidden"
       >
-        {/* Animated background elements */}
-        <div className="absolute top-20 left-1/4 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl animate-pulse" />
-        <div className="absolute bottom-20 right-1/4 w-96 h-96 bg-pink-500/20 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
+        {/* Enhanced background overlay for better contrast on Safari */}
+        <div className="absolute inset-0 bg-gradient-to-br from-purple-900/95 via-purple-800/95 to-indigo-900/95" style={{ transform: 'translateZ(0)' }} />
+        
+        {/* Animated background elements with GPU acceleration */}
+        <div className="absolute top-20 left-1/4 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl animate-pulse" style={{ transform: 'translateZ(0)' }} />
+        <div className="absolute bottom-20 right-1/4 w-96 h-96 bg-pink-500/20 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s', transform: 'translateZ(0)' }} />
 
-        <div className="max-w-7xl mx-auto relative z-10">
+        <div className="max-w-7xl mx-auto relative z-10" style={{ transform: 'translateZ(0)' }}>
           <div className="text-center">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8 }}
+              style={{ transform: 'translateZ(0)' }}
             >
-              <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-tight">
+              <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-tight" style={{ transform: 'translateZ(0)' }}>
                 Protect Your Content.
                 <br />
                 <span className="bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 text-transparent bg-clip-text">
                   Grow Your Income.
                 </span>
               </h1>
-              <p className="text-xl md:text-2xl text-purple-200 mb-8 max-w-3xl mx-auto">
+              <p className="text-xl md:text-2xl text-purple-200/90 mb-8 max-w-3xl mx-auto font-medium" style={{ transform: 'translateZ(0)' }}>
                 The all-in-one platform for content creators to manage brand deals, protect intellectual property, and maximize earnings.
               </p>
             </motion.div>
@@ -285,15 +308,30 @@ const HomePage = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.2 }}
               className="flex flex-col sm:flex-row items-center justify-center gap-4"
+              style={{ transform: 'translateZ(0)' }}
             >
               <Link
                 to="/signup"
                 className="group bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 px-8 py-4 rounded-full font-bold text-lg transition-all transform hover:scale-105 shadow-2xl shadow-purple-500/50 flex items-center gap-2"
+                style={{ 
+                  WebkitTapHighlightColor: 'transparent',
+                  touchAction: 'manipulation',
+                  transform: 'translateZ(0)',
+                  minHeight: '44px' // iOS minimum touch target
+                }}
               >
                 Start Free Trial
                 <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </Link>
-              <button className="flex items-center gap-2 px-8 py-4 rounded-full border-2 border-white/20 hover:border-white/40 transition-all font-semibold">
+              <button 
+                className="flex items-center gap-2 px-8 py-4 rounded-full border-2 border-white/20 hover:border-white/40 transition-all font-semibold"
+                style={{ 
+                  WebkitTapHighlightColor: 'transparent',
+                  touchAction: 'manipulation',
+                  transform: 'translateZ(0)',
+                  minHeight: '44px' // iOS minimum touch target
+                }}
+              >
                 <Play className="w-5 h-5" />
                 Watch Demo
               </button>
@@ -515,6 +553,12 @@ const HomePage = () => {
                       ? 'bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700'
                       : 'bg-white/10 hover:bg-white/20'
                   }`}
+                  style={{ 
+                    WebkitTapHighlightColor: 'transparent',
+                    touchAction: 'manipulation',
+                    transform: 'translateZ(0)',
+                    minHeight: '44px'
+                  }}
                 >
                   {plan.cta}
                 </Link>
@@ -525,25 +569,38 @@ const HomePage = () => {
       </section>
 
       {/* Final CTA */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-4xl mx-auto text-center">
+      <section 
+        className="py-20 px-4 sm:px-6 lg:px-8 ios-safe-bottom-cta"
+        style={{ 
+          paddingBottom: 'max(80px, calc(env(safe-area-inset-bottom, 0px) + 80px))',
+          transform: 'translateZ(0)'
+        }}
+      >
+        <div className="max-w-4xl mx-auto text-center" style={{ transform: 'translateZ(0)' }}>
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
             viewport={{ once: true }}
             className="bg-gradient-to-r from-purple-600/20 to-pink-600/20 backdrop-blur-md rounded-3xl p-12 border border-white/10"
+            style={{ transform: 'translateZ(0)' }}
           >
             <h2 className="text-4xl md:text-5xl font-bold mb-6">
               Ready to Protect Your Content?
             </h2>
-            <p className="text-xl text-purple-200 mb-8 max-w-2xl mx-auto">
+            <p className="text-xl text-purple-200/90 mb-8 max-w-2xl mx-auto font-medium">
               Join thousands of creators who trust NoticeBazaar to manage their brand deals and protect their intellectual property.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <Link
                 to="/signup"
                 className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 px-8 py-4 rounded-full font-bold text-lg transition-all transform hover:scale-105 shadow-2xl shadow-purple-500/50 flex items-center gap-2"
+                style={{ 
+                  WebkitTapHighlightColor: 'transparent',
+                  touchAction: 'manipulation',
+                  transform: 'translateZ(0)',
+                  minHeight: '44px'
+                }}
               >
                 Start Your Free Trial
                 <ArrowRight className="w-5 h-5" />
@@ -551,6 +608,12 @@ const HomePage = () => {
               <Link
                 to="/login"
                 className="px-8 py-4 rounded-full border-2 border-white/20 hover:border-white/40 transition-all font-semibold"
+                style={{ 
+                  WebkitTapHighlightColor: 'transparent',
+                  touchAction: 'manipulation',
+                  transform: 'translateZ(0)',
+                  minHeight: '44px'
+                }}
               >
                 Sign In
               </Link>
