@@ -1,7 +1,5 @@
 "use client";
 
-import { Auth } from '@supabase/auth-ui-react';
-import { ThemeSupa } from '@supabase/auth-ui-shared';
 import { supabase } from '@/integrations/supabase/client';
 import { Scale, ArrowLeft } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
@@ -18,6 +16,10 @@ const Login = () => {
   const { session, loading, user } = useSession();
   const [passkeyEmail, setPasskeyEmail] = useState('');
   const [showPasskeyAuth, setShowPasskeyAuth] = useState(false);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [showFaceIDLogin, setShowFaceIDLogin] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     // If session loading is finished and a session exists, redirect.
@@ -99,6 +101,65 @@ const Login = () => {
     setShowPasskeyAuth(false);
   };
 
+  const handleEmailPasswordLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!email.trim() || !password.trim()) {
+      toast.error('Please enter both email and password');
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: email.trim(),
+        password: password,
+      });
+
+      if (error) {
+        console.error('[Login] Email/password error:', error);
+        if (error.message.includes('Invalid login credentials')) {
+          toast.error('Invalid email or password. Please try again.');
+        } else if (error.message.includes('Email not confirmed')) {
+          toast.error('Please check your email and confirm your account before signing in.');
+        } else {
+          toast.error('Failed to sign in: ' + error.message);
+        }
+      } else if (data.session) {
+        toast.success('Signed in successfully!');
+        // SessionContext will handle the redirect
+        navigate('/creator-dashboard', { replace: true });
+      }
+    } catch (err: any) {
+      console.error('[Login] Email/password exception:', err);
+      toast.error('An error occurred. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleForgotPassword = async () => {
+    if (!email.trim()) {
+      toast.error('Please enter your email address first');
+      return;
+    }
+
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+        redirectTo: `${window.location.origin}/#/reset-password`,
+      });
+
+      if (error) {
+        toast.error('Failed to send password reset email: ' + error.message);
+      } else {
+        toast.success('Password reset email sent! Check your inbox.');
+      }
+    } catch (err: any) {
+      console.error('[Login] Forgot password exception:', err);
+      toast.error('An error occurred. Please try again.');
+    }
+  };
+
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-[#2A40A0] p-4">
       <div 
@@ -111,47 +172,124 @@ const Login = () => {
           <p className="text-center text-blue-200 mb-8">Access your cases securely</p>
         </div>
         
-        {/* Primary: Face ID Authentication */}
+        {/* Primary: Email/Password Login */}
         {!session && (
           <div className="mb-6">
             <div className="space-y-3">
-              <div>
-                <Label htmlFor="passkey-email" className="text-blue-200 text-sm mb-2 block">
-                  Sign in with Face ID
-                </Label>
-                <Input
-                  id="passkey-email"
-                  type="email"
-                  placeholder="Enter your email"
-                  value={passkeyEmail}
-                  onChange={(e) => setPasskeyEmail(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' && passkeyEmail.trim()) {
-                      e.preventDefault();
-                      const button = e.currentTarget.nextElementSibling?.querySelector('button');
-                      button?.click();
-                    }
-                  }}
-                  className="bg-white/5 border-white/10 text-white placeholder:text-white/40 text-base h-12"
-                  aria-label="Email address for passkey authentication"
-                  required
-                />
-                {passkeyEmail && !passkeyEmail.includes('@') && (
-                  <p className="text-xs text-red-400 mt-1">Please enter a valid email address</p>
-                )}
-              </div>
-              <BiometricLogin 
-                mode="authenticate"
-                email={passkeyEmail.trim()}
-                onSuccess={handlePasskeyAuthSuccess}
-              />
-              <Button
-                variant="ghost"
-                onClick={() => setShowPasskeyAuth(true)}
-                className="w-full text-blue-200 hover:text-white text-sm"
-              >
-                Don't have a passkey? Register one
-              </Button>
+              {!showFaceIDLogin ? (
+                <>
+                  <form onSubmit={handleEmailPasswordLogin} className="space-y-3">
+                    <div>
+                      <Label htmlFor="email" className="text-blue-200 text-sm mb-2 block">
+                        Email
+                      </Label>
+                      <Input
+                        id="email"
+                        type="email"
+                        placeholder="Enter your email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        className="bg-white/5 border-white/10 text-white placeholder:text-white/40 text-base h-12"
+                        required
+                        autoComplete="email"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="password" className="text-blue-200 text-sm mb-2 block">
+                        Password
+                      </Label>
+                      <Input
+                        id="password"
+                        type="password"
+                        placeholder="Enter your password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        className="bg-white/5 border-white/10 text-white placeholder:text-white/40 text-base h-12"
+                        required
+                        autoComplete="current-password"
+                      />
+                    </div>
+                    <Button
+                      type="submit"
+                      disabled={isLoading || !email.trim() || !password.trim()}
+                      className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold h-12"
+                      style={{ 
+                        WebkitTapHighlightColor: 'transparent',
+                        touchAction: 'manipulation',
+                        transform: 'translateZ(0)',
+                        minHeight: '44px'
+                      }}
+                    >
+                      {isLoading ? 'Signing in...' : 'Sign In'}
+                    </Button>
+                  </form>
+                  <div className="flex items-center justify-between text-sm">
+                    <button
+                      type="button"
+                      onClick={handleForgotPassword}
+                      className="text-blue-200 hover:text-white transition-colors"
+                    >
+                      Forgot password?
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setShowFaceIDLogin(true)}
+                      className="text-blue-200 hover:text-white transition-colors"
+                    >
+                      Use Face ID instead
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div>
+                    <Label htmlFor="passkey-email" className="text-blue-200 text-sm mb-2 block">
+                      Sign in with Face ID
+                    </Label>
+                    <Input
+                      id="passkey-email"
+                      type="email"
+                      placeholder="Enter your email"
+                      value={passkeyEmail}
+                      onChange={(e) => setPasskeyEmail(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' && passkeyEmail.trim()) {
+                          e.preventDefault();
+                          const button = e.currentTarget.nextElementSibling?.querySelector('button');
+                          button?.click();
+                        }
+                      }}
+                      className="bg-white/5 border-white/10 text-white placeholder:text-white/40 text-base h-12"
+                      aria-label="Email address for passkey authentication"
+                      required
+                    />
+                    {passkeyEmail && !passkeyEmail.includes('@') && (
+                      <p className="text-xs text-red-400 mt-1">Please enter a valid email address</p>
+                    )}
+                  </div>
+                  <BiometricLogin 
+                    mode="authenticate"
+                    email={passkeyEmail.trim()}
+                    onSuccess={handlePasskeyAuthSuccess}
+                  />
+                  <div className="flex items-center justify-between text-sm">
+                    <Button
+                      variant="ghost"
+                      onClick={() => setShowPasskeyAuth(true)}
+                      className="text-blue-200 hover:text-white text-sm"
+                    >
+                      Don't have a passkey? Register one
+                    </Button>
+                    <button
+                      type="button"
+                      onClick={() => setShowFaceIDLogin(false)}
+                      className="text-blue-200 hover:text-white transition-colors"
+                    >
+                      Use password instead
+                    </button>
+                  </div>
+                </>
+              )}
             </div>
           </div>
         )}
