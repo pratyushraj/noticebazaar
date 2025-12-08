@@ -417,6 +417,126 @@ ${creatorName}`;
     return Math.min(100, Math.max(0, progress));
   };
 
+  // Get dynamic risk-based status based on progress percentage
+  const getProtectionStatus = (progress: number) => {
+    const clampedProgress = Math.min(100, Math.max(0, progress));
+    
+    if (clampedProgress === 100) {
+      return {
+        label: 'Fully Secured',
+        color: 'text-green-400',
+        bgColor: 'bg-green-500/20',
+        borderColor: 'border-green-500/50',
+        shieldColor: 'text-green-400',
+        glowColor: 'rgba(34, 197, 94, 0.6)', // green-500
+        gradientStart: '#10b981', // emerald-500
+        gradientEnd: '#059669', // emerald-600
+        icon: '✅'
+      };
+    } else if (clampedProgress >= 76) {
+      return {
+        label: 'Almost Secure',
+        color: 'text-blue-400',
+        bgColor: 'bg-blue-500/20',
+        borderColor: 'border-blue-500/50',
+        shieldColor: 'text-blue-400',
+        glowColor: 'rgba(59, 130, 246, 0.6)', // blue-500
+        gradientStart: '#3b82f6', // blue-500
+        gradientEnd: '#2563eb', // blue-600
+        icon: '🛡️'
+      };
+    } else if (clampedProgress >= 51) {
+      return {
+        label: 'Improving Protection',
+        color: 'text-yellow-400',
+        bgColor: 'bg-yellow-500/20',
+        borderColor: 'border-yellow-500/50',
+        shieldColor: 'text-yellow-400',
+        glowColor: 'rgba(234, 179, 8, 0.6)', // yellow-500
+        gradientStart: '#eab308', // yellow-500
+        gradientEnd: '#ca8a04', // yellow-600
+        icon: '⚠️'
+      };
+    } else if (clampedProgress >= 26) {
+      return {
+        label: 'Moderate Risk',
+        color: 'text-orange-400',
+        bgColor: 'bg-orange-500/20',
+        borderColor: 'border-orange-500/50',
+        shieldColor: 'text-orange-400',
+        glowColor: 'rgba(249, 115, 22, 0.6)', // orange-500
+        gradientStart: '#f97316', // orange-500
+        gradientEnd: '#ea580c', // orange-600
+        icon: '▲'
+      };
+    } else {
+      return {
+        label: 'High Risk',
+        color: 'text-red-400',
+        bgColor: 'bg-red-500/20',
+        borderColor: 'border-red-500/50',
+        shieldColor: 'text-red-400',
+        glowColor: 'rgba(239, 68, 68, 0.6)', // red-500
+        gradientStart: '#ef4444', // red-500
+        gradientEnd: '#dc2626', // red-600
+        icon: '⚠️'
+      };
+    }
+  };
+
+  // Get smooth gradient colors for progress bar based on percentage
+  // Transitions: Red (0%) → Orange (25%) → Yellow (50%) → Blue (75%) → Green (100%)
+  const getProgressGradient = (progress: number) => {
+    const clampedProgress = Math.min(100, Math.max(0, progress));
+    
+    // Define color stops for smooth transitions
+    if (clampedProgress === 0) {
+      return { start: '#ef4444', end: '#dc2626' }; // Red
+    } else if (clampedProgress < 25) {
+      // Red to Orange
+      const ratio = clampedProgress / 25;
+      const r = Math.round(239 + (249 - 239) * ratio);
+      const g = Math.round(68 + (115 - 68) * ratio);
+      const b = Math.round(68 + (22 - 68) * ratio);
+      const r2 = Math.round(220 + (234 - 220) * ratio);
+      const g2 = Math.round(38 + (88 - 38) * ratio);
+      const b2 = Math.round(38 + (12 - 38) * ratio);
+      return { start: `rgb(${r}, ${g}, ${b})`, end: `rgb(${r2}, ${g2}, ${b2})` };
+    } else if (clampedProgress < 50) {
+      // Orange to Yellow
+      const ratio = (clampedProgress - 25) / 25;
+      const r = Math.round(249 + (234 - 249) * ratio);
+      const g = Math.round(115 + (179 - 115) * ratio);
+      const b = Math.round(22 + (8 - 22) * ratio);
+      const r2 = Math.round(234 + (202 - 234) * ratio);
+      const g2 = Math.round(88 + (138 - 88) * ratio);
+      const b2 = Math.round(12 + (4 - 12) * ratio);
+      return { start: `rgb(${r}, ${g}, ${b})`, end: `rgb(${r2}, ${g2}, ${b2})` };
+    } else if (clampedProgress < 75) {
+      // Yellow to Blue
+      const ratio = (clampedProgress - 50) / 25;
+      const r = Math.round(234 + (59 - 234) * ratio);
+      const g = Math.round(179 + (130 - 179) * ratio);
+      const b = Math.round(8 + (246 - 8) * ratio);
+      const r2 = Math.round(202 + (37 - 202) * ratio);
+      const g2 = Math.round(138 + (99 - 138) * ratio);
+      const b2 = Math.round(4 + (235 - 4) * ratio);
+      return { start: `rgb(${r}, ${g}, ${b})`, end: `rgb(${r2}, ${g2}, ${b2})` };
+    } else if (clampedProgress < 100) {
+      // Blue to Green
+      const ratio = (clampedProgress - 75) / 25;
+      const r = Math.round(59 + (16 - 59) * ratio);
+      const g = Math.round(130 + (185 - 130) * ratio);
+      const b = Math.round(246 + (129 - 246) * ratio);
+      const r2 = Math.round(37 + (5 - 37) * ratio);
+      const g2 = Math.round(99 + (150 - 99) * ratio);
+      const b2 = Math.round(235 + (105 - 235) * ratio);
+      return { start: `rgb(${r}, ${g}, ${b})`, end: `rgb(${r2}, ${g2}, ${b2})` };
+    } else {
+      return { start: '#10b981', end: '#059669' }; // Green (100%)
+    }
+  };
+
   // Real API integration: Upload file and analyze contract
   useEffect(() => {
     if (step === 'uploading' && uploadedFile) {
@@ -1567,55 +1687,79 @@ ${creatorName}`;
               </div>
             </div>
 
-            {/* Contract Safety Progress Bar - Improvement Focused */}
-            {analysisResults && analysisResults.issues && analysisResults.issues.length > 0 && (
-              <div className="bg-white/10 backdrop-blur-md rounded-2xl p-5 md:p-6 border border-white/10 shadow-lg mb-6">
-                <div className="flex items-center justify-between mb-3">
-                  <h3 className="font-semibold text-lg flex items-center gap-2">
-                    <Shield className="w-5 h-5 text-purple-400" />
-                    Protection Status
-                  </h3>
-                  <div className="flex flex-col items-end">
-                    <span className="text-xl font-bold text-purple-300">
-                      {(() => {
-                        const progress = getContractSafetyProgress();
-                        const roundedProgress = Math.round(progress);
-                        return roundedProgress === 0 
-                          ? 'Protection Not Optimized Yet' 
-                          : `${roundedProgress}% Protected`;
-                      })()}
-                    </span>
-                    {(() => {
-                      const progress = getContractSafetyProgress();
-                      const unresolvedCount = analysisResults.issues.length - (resolvedIssues?.size || 0);
-                      if (Math.round(progress) === 0 && analysisResults.issues.length > 0) {
-                        return (
-                          <span className="text-xs text-purple-400 mt-1">
-                            {unresolvedCount} {unresolvedCount === 1 ? 'risk' : 'risks'} still unresolved
-                          </span>
-                        );
-                      }
-                      if (Math.round(progress) > 0 && Math.round(progress) < 100) {
-                        return (
-                          <span className="text-xs text-purple-400 mt-1">
-                            {unresolvedCount} {unresolvedCount === 1 ? 'improvement' : 'improvements'} remaining
-                          </span>
-                        );
-                      }
-                      return null;
-                    })()}
+            {/* Contract Safety Progress Bar - Dynamic Risk-Based Status */}
+            {analysisResults && analysisResults.issues && analysisResults.issues.length > 0 && (() => {
+              const progress = getContractSafetyProgress();
+              const clampedProgress = Math.min(100, Math.max(0, progress));
+              const status = getProtectionStatus(clampedProgress);
+              const unresolvedCount = analysisResults.issues.length - (resolvedIssues?.size || 0);
+              const roundedProgress = Math.round(clampedProgress);
+              
+              return (
+                <div className={`${status.bgColor} backdrop-blur-md rounded-2xl p-5 md:p-6 border ${status.borderColor} shadow-lg mb-6 transition-all duration-300`}>
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="font-semibold text-lg flex items-center gap-2">
+                      <Shield className={`w-5 h-5 ${status.shieldColor} transition-colors duration-300`} />
+                      <span className="text-white">Protection Status</span>
+                    </h3>
+                    <div className="flex flex-col items-end">
+                      <div className="flex items-center gap-2">
+                        <span className={`text-xl font-bold ${status.color} transition-colors duration-300`}>
+                          {status.icon} {status.label}
+                        </span>
+                      </div>
+                      {roundedProgress === 100 ? (
+                        <span className="text-xs text-green-300 mt-1 font-medium">
+                          All risks resolved. Your contract is fully protected ✅
+                        </span>
+                      ) : (
+                        <span className={`text-xs ${status.color} mt-1 transition-colors duration-300`}>
+                          {unresolvedCount} {unresolvedCount === 1 ? 'risk' : 'risks'} still unresolved
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  <div className="relative h-3 bg-white/10 rounded-full overflow-hidden">
+                    {/* Animated glow effect based on risk level */}
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: [0.4, 0.8, 0.4] }}
+                      transition={{ 
+                        duration: 2, 
+                        repeat: Infinity, 
+                        ease: "easeInOut" 
+                      }}
+                      className="absolute inset-0 rounded-full"
+                      style={{
+                        boxShadow: `0 0 20px ${status.glowColor}`,
+                        zIndex: 1
+                      }}
+                    />
+                    {/* Progress bar with smooth dynamic gradient (Red → Orange → Yellow → Blue → Green) */}
+                    <motion.div
+                      initial={{ width: 0 }}
+                      animate={{ width: `${clampedProgress}%` }}
+                      transition={{ duration: 1, ease: "easeOut" }}
+                      className="absolute inset-y-0 left-0 rounded-full z-10"
+                      style={{
+                        background: (() => {
+                          const gradient = getProgressGradient(clampedProgress);
+                          return `linear-gradient(to right, ${gradient.start}, ${gradient.end})`;
+                        })()
+                      }}
+                    />
+                    {/* Progress percentage text overlay (optional, for very high contrast) */}
+                    {clampedProgress > 10 && (
+                      <div className="absolute inset-0 flex items-center justify-center z-20">
+                        <span className="text-xs font-bold text-white drop-shadow-lg">
+                          {roundedProgress}%
+                        </span>
+                      </div>
+                    )}
                   </div>
                 </div>
-                <div className="relative h-3 bg-white/10 rounded-full overflow-hidden">
-                  <motion.div
-                    initial={{ width: 0 }}
-                    animate={{ width: `${Math.max(0, Math.min(100, getContractSafetyProgress()))}%` }}
-                    transition={{ duration: 1, ease: "easeOut" }}
-                    className="absolute inset-y-0 left-0 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full"
-                  />
-                </div>
-              </div>
-            )}
+              );
+            })()}
 
             {/* Issues Table - Premium Action-Driven */}
             {analysisResults.issues.length > 0 && (
