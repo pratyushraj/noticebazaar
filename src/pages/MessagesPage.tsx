@@ -1030,7 +1030,7 @@ function ChatWindowScoped({
       "md:shadow-[0_0_50px_-10px_rgba(0,0,0,0.45)]"
     )}>
       {/* Vision Pro depth elevation - desktop only */}
-      <div className="hidden md:block">{vision.depth.elevation}</div>
+      <div className={cn("hidden md:block", vision.depth.elevation)} />
       
       {/* Spotlight gradient - desktop only */}
       <div className={cn("hidden md:block", vision.spotlight.base, "opacity-30")} />
