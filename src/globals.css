@@ -31,9 +31,22 @@
 }
 
 /* Prevent flicker by ensuring body has background color */
+html {
+  background: linear-gradient(to bottom right, #581c87, #4c1d95, #312e81);
+  min-height: 100vh;
+  min-height: -webkit-fill-available;
+  /* Extend background to cover safe areas on iOS */
+  background-attachment: fixed;
+  background-size: cover;
+}
+
 body {
   background: linear-gradient(to bottom right, #581c87, #4c1d95, #312e81);
   min-height: 100vh;
+  min-height: -webkit-fill-available;
+  /* Extend background to cover safe areas */
+  background-attachment: fixed;
+  background-size: cover;
 }
 
 /* Touch Feedback - Scale Animation */
@@ -109,9 +122,14 @@ body {
 
 html, body {
   height: 100%;
+  height: -webkit-fill-available; /* iOS Safari fix */
   overflow-x: hidden !important;
   overscroll-behavior-y: none; /* Disable weird elastic scroll */
   -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+  /* Ensure background covers entire viewport including safe areas */
+  background: linear-gradient(to bottom right, #581c87, #4c1d95, #312e81);
+  background-attachment: fixed;
+  background-size: cover;
 }
 
 /* Calendar-specific fixes */

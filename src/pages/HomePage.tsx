@@ -191,7 +191,16 @@ const HomePage = () => {
   ];
 
   return (
-    <div className="nb-screen-height bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 text-white overflow-hidden">
+    <div 
+      className="nb-screen-height bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 text-white overflow-hidden fixed inset-0"
+      style={{
+        minHeight: '-webkit-fill-available',
+        paddingTop: 'env(safe-area-inset-top, 0px)',
+        paddingBottom: 'env(safe-area-inset-bottom, 0px)',
+        paddingLeft: 'env(safe-area-inset-left, 0px)',
+        paddingRight: 'env(safe-area-inset-right, 0px)'
+      }}
+    >
       {/* Navigation */}
       <nav 
         className="sticky top-0 z-50 bg-purple-900/80 backdrop-blur-xl border-b border-white/5"
