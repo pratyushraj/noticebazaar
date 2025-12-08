@@ -268,38 +268,28 @@ const HomePage = () => {
 
       {/* Hero Section */}
       <motion.section 
-        style={{ 
-          opacity, 
-          scale,
-          transform: 'translateZ(0)',
-          paddingTop: 'max(calc(64px + env(safe-area-inset-top, 0px) + 32px), 128px)',
-          paddingBottom: 'max(80px, calc(env(safe-area-inset-bottom, 0px) + 80px))'
-        }}
-        className="relative px-4 sm:px-6 lg:px-8 overflow-hidden flex flex-col justify-center min-h-[60vh]"
+        style={{ opacity, scale }}
+        className="relative pt-32 pb-20 px-4 sm:px-6 lg:px-8 overflow-hidden"
       >
-        {/* Enhanced background overlay for better contrast on Safari */}
-        <div className="absolute inset-0 bg-gradient-to-br from-purple-900/95 via-purple-800/95 to-indigo-900/95" style={{ transform: 'translateZ(0)' }} />
-        
-        {/* Animated background elements with GPU acceleration */}
-        <div className="absolute top-20 left-1/4 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl animate-pulse" style={{ transform: 'translateZ(0)' }} />
-        <div className="absolute bottom-20 right-1/4 w-96 h-96 bg-pink-500/20 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s', transform: 'translateZ(0)' }} />
+        {/* Animated background elements */}
+        <div className="absolute top-20 left-1/4 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl animate-pulse" />
+        <div className="absolute bottom-20 right-1/4 w-96 h-96 bg-pink-500/20 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
 
-        <div className="max-w-7xl mx-auto relative z-10" style={{ transform: 'translateZ(0)' }}>
+        <div className="max-w-7xl mx-auto relative z-10">
           <div className="text-center">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8 }}
-              style={{ transform: 'translateZ(0)' }}
             >
-              <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-tight" style={{ transform: 'translateZ(0)' }}>
+              <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-tight">
                 Protect Your Content.
                 <br />
                 <span className="bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 text-transparent bg-clip-text">
                   Grow Your Income.
                 </span>
               </h1>
-              <p className="text-xl md:text-2xl text-purple-200/90 mb-8 max-w-3xl mx-auto font-medium" style={{ transform: 'translateZ(0)' }}>
+              <p className="text-xl md:text-2xl text-purple-200 mb-8 max-w-3xl mx-auto">
                 The all-in-one platform for content creators to manage brand deals, protect intellectual property, and maximize earnings.
               </p>
             </motion.div>
@@ -309,30 +299,15 @@ const HomePage = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.2 }}
               className="flex flex-col sm:flex-row items-center justify-center gap-4"
-              style={{ transform: 'translateZ(0)' }}
             >
               <Link
                 to="/signup"
                 className="group bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 px-8 py-4 rounded-full font-bold text-lg transition-all transform hover:scale-105 shadow-2xl shadow-purple-500/50 flex items-center gap-2"
-                style={{ 
-                  WebkitTapHighlightColor: 'transparent',
-                  touchAction: 'manipulation',
-                  transform: 'translateZ(0)',
-                  minHeight: '44px' // iOS minimum touch target
-                }}
               >
                 Start Free Trial
                 <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </Link>
-              <button 
-                className="flex items-center gap-2 px-8 py-4 rounded-full border-2 border-white/20 hover:border-white/40 transition-all font-semibold"
-                style={{ 
-                  WebkitTapHighlightColor: 'transparent',
-                  touchAction: 'manipulation',
-                  transform: 'translateZ(0)',
-                  minHeight: '44px' // iOS minimum touch target
-                }}
-              >
+              <button className="flex items-center gap-2 px-8 py-4 rounded-full border-2 border-white/20 hover:border-white/40 transition-all font-semibold">
                 <Play className="w-5 h-5" />
                 Watch Demo
               </button>
