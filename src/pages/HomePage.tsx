@@ -191,19 +191,14 @@ const HomePage = () => {
   ];
 
   return (
-    <div 
-      className="nb-screen-height bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 text-white overflow-hidden"
-      style={{
-        minHeight: '-webkit-fill-available',
-        paddingTop: 'env(safe-area-inset-top, 0px)',
-        paddingBottom: 'max(120px, calc(env(safe-area-inset-bottom, 0px) + 120px))',
-        paddingLeft: 'env(safe-area-inset-left, 0px)',
-        paddingRight: 'env(safe-area-inset-right, 0px)',
-        backgroundColor: '#581c87' // Fallback to prevent white gaps
-      }}
-    >
+    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 text-white overflow-hidden">
       {/* Navigation */}
-      <nav className="sticky top-0 z-50 bg-purple-900/80 backdrop-blur-xl border-b border-white/5">
+      <nav 
+        className="sticky top-0 z-50 bg-purple-900/80 backdrop-blur-xl border-b border-white/5"
+        style={{
+          paddingTop: 'env(safe-area-inset-top, 0px)'
+        }}
+      >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center">
@@ -270,6 +265,12 @@ const HomePage = () => {
       <motion.section 
         style={{ opacity, scale }}
         className="relative pt-8 md:pt-32 pb-20 px-4 sm:px-6 lg:px-8 overflow-hidden"
+        style={{
+          opacity,
+          scale,
+          paddingLeft: 'max(1rem, env(safe-area-inset-left, 0px))',
+          paddingRight: 'max(1rem, env(safe-area-inset-right, 0px))'
+        }}
       >
         {/* Animated background elements */}
         <div className="absolute top-20 left-1/4 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl animate-pulse" />
@@ -539,7 +540,14 @@ const HomePage = () => {
       </section>
 
       {/* Final CTA */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8">
+      <section 
+        className="py-20 px-4 sm:px-6 lg:px-8"
+        style={{
+          paddingBottom: 'max(5rem, calc(env(safe-area-inset-bottom, 0px) + 5rem))',
+          paddingLeft: 'max(1rem, env(safe-area-inset-left, 0px))',
+          paddingRight: 'max(1rem, env(safe-area-inset-right, 0px))'
+        }}
+      >
         <div className="max-w-4xl mx-auto text-center">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
