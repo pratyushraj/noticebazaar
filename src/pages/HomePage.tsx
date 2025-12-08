@@ -192,8 +192,9 @@ const HomePage = () => {
 
   return (
     <div 
-      className="nb-screen-height bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 text-white overflow-hidden fixed inset-0"
+      className="nb-screen-height bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 text-white overflow-hidden"
       style={{
+        minHeight: '100vh',
         minHeight: '-webkit-fill-available',
         paddingTop: 'env(safe-area-inset-top, 0px)',
         paddingBottom: 'env(safe-area-inset-bottom, 0px)',
