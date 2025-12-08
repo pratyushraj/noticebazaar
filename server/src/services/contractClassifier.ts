@@ -96,32 +96,71 @@ function stage1HardRejection(text: string): { rejected: boolean; reason?: string
 /**
  * STAGE 2: Required Brand Deal Signals
  * Must have at least 2 of the required signals
+ * Returns detailed signal information for hard override check
  */
-function stage2BrandDealSignals(text: string): { passed: boolean; signals: string[]; missing: string[] } {
+function stage2BrandDealSignals(text: string): { 
+  passed: boolean; 
+  signals: string[]; 
+  missing: string[]; 
+  hasBrand: boolean;
+  hasInfluencer: boolean;
+  hasDeliverables: boolean;
+  hasPayment: boolean;
+  hasContentPlatform: boolean;
+  hasRupeeAmount: boolean;
+} {
   const lowerText = text.toLowerCase();
   
   const requiredSignals = [
-    { pattern: /\b(instagram|youtube|reels|shorts|story|content)\b/i, name: "Content Platform" },
+    { pattern: /\b(instagram|youtube|reels|shorts|story|content|tiktok|snapchat|facebook)\b/i, name: "Content Platform" },
     { pattern: /\b(influencer|creator|content creator)\b/i, name: "Influencer/Creator" },
     { pattern: /\b(brand|sponsor|campaign)\b/i, name: "Brand/Sponsor" },
-    { pattern: /\b(payment|fee|compensation|amount payable)\b/i, name: "Payment/Compensation" },
-    { pattern: /\b(deliverables|posting schedule)\b/i, name: "Deliverables" },
+    { pattern: /\b(payment|fee|compensation|amount payable|remuneration)\b/i, name: "Payment/Compensation" },
+    { pattern: /\b(deliverables|posting schedule|posts|videos|reels)\b/i, name: "Deliverables" },
   ];
   
   const foundSignals: string[] = [];
   const missingSignals: string[] = [];
   
-  for (const { pattern, name } of requiredSignals) {
-    if (pattern.test(lowerText)) {
-      foundSignals.push(name);
-    } else {
-      missingSignals.push(name);
-    }
-  }
+  // Check each signal
+  const hasContentPlatform = requiredSignals[0].pattern.test(lowerText);
+  const hasInfluencer = requiredSignals[1].pattern.test(lowerText);
+  const hasBrand = requiredSignals[2].pattern.test(lowerText);
+  const hasPayment = requiredSignals[3].pattern.test(lowerText);
+  const hasDeliverables = requiredSignals[4].pattern.test(lowerText);
+  
+  // Check for ₹ amount (Indian Rupee)
+  const hasRupeeAmount = /₹|rs\.|rupees|inr/i.test(text);
+  
+  // Build signal arrays
+  if (hasContentPlatform) foundSignals.push(requiredSignals[0].name);
+  else missingSignals.push(requiredSignals[0].name);
+  
+  if (hasInfluencer) foundSignals.push(requiredSignals[1].name);
+  else missingSignals.push(requiredSignals[1].name);
+  
+  if (hasBrand) foundSignals.push(requiredSignals[2].name);
+  else missingSignals.push(requiredSignals[2].name);
+  
+  if (hasPayment) foundSignals.push(requiredSignals[3].name);
+  else missingSignals.push(requiredSignals[3].name);
+  
+  if (hasDeliverables) foundSignals.push(requiredSignals[4].name);
+  else missingSignals.push(requiredSignals[4].name);
   
   const passed = foundSignals.length >= 2;
   
-  return { passed, signals: foundSignals, missing: missingSignals };
+  return { 
+    passed, 
+    signals: foundSignals, 
+    missing: missingSignals,
+    hasBrand,
+    hasInfluencer,
+    hasDeliverables,
+    hasPayment,
+    hasContentPlatform,
+    hasRupeeAmount
+  };
 }
 
 /**
@@ -233,6 +272,8 @@ Document:
 /**
  * 4-Stage Production-Grade Classifier
  * Returns validation result with detailed rejection reasons
+ * 
+ * CRITICAL: Hard override for strong brand deal signals - LLM cannot override
  */
 export async function classifyDocumentTypeWithAI(text: string): Promise<DocumentTypeResult> {
   const rejection: ClassificationRejection = {};
@@ -252,7 +293,7 @@ export async function classifyDocumentTypeWithAI(text: string): Promise<Document
   const stage1 = stage1HardRejection(text);
   if (stage1.rejected) {
     rejection.hardRejectMatch = stage1.match;
-    console.log('[ContractClassifier] ❌ STAGE 1 REJECTED:', stage1.reason);
+    console.error('[ContractClassifier] ❌ STAGE 1 REJECTED:', stage1.reason);
     return {
       type: "not_brand_deal",
       confidence: 0.0,
@@ -265,6 +306,39 @@ export async function classifyDocumentTypeWithAI(text: string): Promise<Document
   // STAGE 2: Required Brand Deal Signals
   // ================================
   const stage2 = stage2BrandDealSignals(text);
+  
+  // ================================
+  // HARD OVERRIDE: Force Accept if Strong Signals Present
+  // ================================
+  // This override happens BEFORE LLM check - LLM cannot override strong signals
+  const hasStrongBrandDealSignals = 
+    // Option 1: Brand + Influencer + Deliverables
+    (stage2.hasBrand && stage2.hasInfluencer && stage2.hasDeliverables) ||
+    // Option 2: Payment + Deliverables
+    (stage2.hasPayment && stage2.hasDeliverables) ||
+    // Option 3: Influencer keyword + Content Platform + Payment
+    (stage2.hasInfluencer && stage2.hasContentPlatform && stage2.hasPayment) ||
+    // Option 4: Any ₹ amount + Deliverables (strong indicator)
+    (stage2.hasRupeeAmount && stage2.hasDeliverables);
+  
+  if (hasStrongBrandDealSignals) {
+    console.log('[ContractClassifier] 🚀 HARD OVERRIDE: Strong brand deal signals detected - FORCING ACCEPT');
+    console.log('[ContractClassifier] Signal details:', {
+      hasBrand: stage2.hasBrand,
+      hasInfluencer: stage2.hasInfluencer,
+      hasDeliverables: stage2.hasDeliverables,
+      hasPayment: stage2.hasPayment,
+      hasContentPlatform: stage2.hasContentPlatform,
+      hasRupeeAmount: stage2.hasRupeeAmount
+    });
+    return {
+      type: "brand_deal_contract",
+      confidence: 0.95,
+      reasoning: "Hard override: Strong brand deal signals detected (Brand+Influencer+Deliverables OR Payment+Deliverables OR Influencer+Platform+Payment OR ₹+Deliverables)"
+    };
+  }
+  
+  // Continue with normal flow if no hard override
   if (!stage2.passed) {
     rejection.missingSignals = stage2.missing;
     console.log('[ContractClassifier] ❌ STAGE 2 REJECTED: Missing required signals');
@@ -279,38 +353,92 @@ export async function classifyDocumentTypeWithAI(text: string): Promise<Document
   console.log('[ContractClassifier] ✅ STAGE 2 PASSED: Found', stage2.signals.length, 'signals:', stage2.signals.join(', '));
   
   // ================================
-  // STAGE 3: LLM Binary Classifier
+  // STAGE 3: LLM Binary Classifier (SUGGESTION ONLY)
   // ================================
+  // LLM can suggest rejection, but cannot override strong signals
   const stage3 = await stage3LLMBinaryClassifier(text);
   if (!stage3.isValid) {
     rejection.llmRejected = true;
-    console.log('[ContractClassifier] ❌ STAGE 3 REJECTED: LLM returned NO');
+    console.warn('[ContractClassifier] ⚠️ STAGE 3: LLM suggested NO, but checking if signals override');
     console.log('[ContractClassifier] LLM response:', stage3.response);
-    return {
-      type: "not_brand_deal",
-      confidence: 0.3,
-      reasoning: `LLM classification: ${stage3.response}`
-    };
+    
+    // Check if we have strong enough signals to override LLM
+    const canOverrideLLM = 
+      stage2.hasInfluencer || 
+      stage2.hasContentPlatform || 
+      stage2.hasRupeeAmount;
+    
+    if (canOverrideLLM) {
+      console.log('[ContractClassifier] 🚀 OVERRIDING LLM: Strong signals present (Influencer OR Platform OR ₹)');
+      // Continue to Stage 4 - don't reject here
+    } else {
+      // LLM rejected and no strong override signals
+      console.error('[ContractClassifier] REJECTED BY CLASSIFIER:', {
+        reason: 'LLM rejected and no strong override signals',
+        extractedSignals: {
+          hasBrand: stage2.hasBrand,
+          hasInfluencer: stage2.hasInfluencer,
+          hasDeliverables: stage2.hasDeliverables,
+          hasPayment: stage2.hasPayment,
+          hasContentPlatform: stage2.hasContentPlatform,
+          hasRupeeAmount: stage2.hasRupeeAmount,
+          allSignals: stage2.signals
+        },
+        llmResult: stage3.response
+      });
+      return {
+        type: "not_brand_deal",
+        confidence: 0.3,
+        reasoning: `LLM classification: ${stage3.response} (no strong signals to override)`
+      };
+    }
+  } else {
+    console.log('[ContractClassifier] ✅ STAGE 3 PASSED: LLM returned YES');
   }
-  console.log('[ContractClassifier] ✅ STAGE 3 PASSED: LLM returned YES');
   
   // ================================
-  // STAGE 4: Confidence Self-Check
+  // STAGE 4: Confidence Self-Check (NON-BLOCKING)
   // ================================
   const stage4 = await stage4ConfidenceCheck(text);
   if (!stage4.confident) {
     // Use fallback scoring
     if (stage4.fallbackScore === undefined || stage4.fallbackScore < 3) {
-      rejection.confidenceFailed = true;
-      rejection.fallbackScore = stage4.fallbackScore;
-      console.log('[ContractClassifier] ❌ STAGE 4 REJECTED: Not confident, fallback score:', stage4.fallbackScore);
-      return {
-        type: "not_brand_deal",
-        confidence: 0.4,
-        reasoning: `Confidence check failed. Fallback score: ${stage4.fallbackScore}/4 (need ≥3)`
-      };
+      // Check if we can override with strong signals
+      const canOverrideConfidence = 
+        (stage2.hasBrand && stage2.hasDeliverables && (stage2.hasPayment || stage2.hasInfluencer)) ||
+        (stage2.hasInfluencer && stage2.hasContentPlatform) ||
+        stage2.hasRupeeAmount;
+      
+      if (canOverrideConfidence) {
+        console.log('[ContractClassifier] 🚀 OVERRIDING CONFIDENCE CHECK: Strong signals present');
+        // Continue - accept despite low confidence
+      } else {
+        rejection.confidenceFailed = true;
+        rejection.fallbackScore = stage4.fallbackScore;
+        console.error('[ContractClassifier] REJECTED BY CLASSIFIER:', {
+          reason: 'Confidence check failed and no strong override signals',
+          extractedSignals: {
+            hasBrand: stage2.hasBrand,
+            hasInfluencer: stage2.hasInfluencer,
+            hasDeliverables: stage2.hasDeliverables,
+            hasPayment: stage2.hasPayment,
+            hasContentPlatform: stage2.hasContentPlatform,
+            hasRupeeAmount: stage2.hasRupeeAmount,
+            allSignals: stage2.signals
+          },
+          llmResult: stage3.response,
+          fallbackScore: stage4.fallbackScore
+        });
+        console.log('[ContractClassifier] ❌ STAGE 4 REJECTED: Not confident, fallback score:', stage4.fallbackScore);
+        return {
+          type: "not_brand_deal",
+          confidence: 0.4,
+          reasoning: `Confidence check failed. Fallback score: ${stage4.fallbackScore}/4 (need ≥3)`
+        };
+      }
+    } else {
+      console.log('[ContractClassifier] ⚠️ STAGE 4: Not confident, but fallback score passed:', stage4.fallbackScore);
     }
-    console.log('[ContractClassifier] ⚠️ STAGE 4: Not confident, but fallback score passed:', stage4.fallbackScore);
   } else {
     console.log('[ContractClassifier] ✅ STAGE 4 PASSED: LLM confident');
   }
@@ -319,6 +447,15 @@ export async function classifyDocumentTypeWithAI(text: string): Promise<Document
   // FINAL DECISION: ACCEPT
   // ================================
   console.log('[ContractClassifier] ✅✅✅ ALL STAGES PASSED - ACCEPTING CONTRACT');
+  console.log('[ContractClassifier] Final signals:', {
+    hasBrand: stage2.hasBrand,
+    hasInfluencer: stage2.hasInfluencer,
+    hasDeliverables: stage2.hasDeliverables,
+    hasPayment: stage2.hasPayment,
+    hasContentPlatform: stage2.hasContentPlatform,
+    hasRupeeAmount: stage2.hasRupeeAmount,
+    allSignals: stage2.signals
+  });
   console.log('[ContractClassifier] Rejection log:', JSON.stringify(rejection, null, 2));
   
   return {
