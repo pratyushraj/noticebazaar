@@ -203,21 +203,9 @@ const HomePage = () => {
       }}
     >
       {/* Navigation */}
-      <nav 
-        className="sticky top-0 z-50 bg-purple-900/80 backdrop-blur-xl border-b border-white/5"
-        style={{ 
-          paddingTop: 'max(16px, env(safe-area-inset-top, 0px))',
-          top: 0
-        }}
-      >
+      <nav className="sticky top-0 z-50 bg-purple-900/80 backdrop-blur-xl border-b border-white/5">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div 
-            className="flex items-center justify-between"
-            style={{ 
-              minHeight: '64px',
-              paddingBottom: '8px'
-            }}
-          >
+          <div className="flex items-center justify-between h-16">
             <div className="flex items-center">
               <Link to="/" className="text-2xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 text-transparent bg-clip-text">
                 NoticeBazaar
@@ -595,13 +583,7 @@ const HomePage = () => {
       </section>
 
       {/* Final CTA */}
-      <section 
-        className="mt-8 space-y-4 md:space-y-6 px-4 sm:px-6 lg:px-8"
-        style={{ 
-          transform: 'translateZ(0)',
-          paddingBottom: 'max(120px, calc(env(safe-area-inset-bottom, 0px) + 120px))'
-        }}
-      >
+      <section className="py-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto text-center" style={{ transform: 'translateZ(0)' }}>
           <motion.div
             initial={{ opacity: 0, y: 20 }}
