@@ -1371,7 +1371,7 @@ ${creatorName}`;
                   <p className="text-sm text-purple-300">Protection Score: {analysisResults.score}/100</p>
                 </div>
 
-                {/* Quick Actions */}
+                {/* Quick Actions - De-emphasized */}
                 <div className="flex flex-col gap-2 w-full md:w-auto">
                   <button 
                     onClick={() => {
@@ -1382,11 +1382,25 @@ ${creatorName}`;
                       }
                     }}
                     disabled={!contractUrl}
-                    className="bg-white/10 hover:bg-white/15 disabled:opacity-50 disabled:cursor-not-allowed font-medium py-2.5 px-4 rounded-xl transition-colors flex items-center justify-center gap-2 text-sm"
+                    className="bg-white/5 hover:bg-white/10 disabled:opacity-50 disabled:cursor-not-allowed font-medium py-2 px-3 rounded-lg transition-colors flex items-center justify-center gap-2 text-xs text-purple-300 hover:text-purple-200"
                   >
-                    <Eye className="w-4 h-4" />
+                    <Eye className="w-3 h-3" />
                     View Contract
                   </button>
+                  {analysisResults.issues.length > 0 && (
+                    <button
+                      onClick={() => {
+                        const issuesSection = document.getElementById('issues-section');
+                        if (issuesSection) {
+                          issuesSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        }
+                      }}
+                      className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 font-semibold py-3 px-4 rounded-xl transition-all flex items-center justify-center gap-2 text-sm shadow-lg shadow-purple-500/30 min-h-[48px]"
+                    >
+                      <Shield className="w-4 h-4" />
+                      Make Contract Safer
+                    </button>
+                  )}
                 </div>
               </div>
             </div>
@@ -1409,7 +1423,10 @@ ${creatorName}`;
                     <span className="text-yellow-400 font-medium">🟡 Balanced Negotiation</span>
                   )}
                   {analysisResults.negotiationPowerScore < 40 && (
-                    <span className="text-red-400 font-medium">🔴 Brand Dominates</span>
+                    <>
+                      <span className="text-orange-400 font-medium">🟠 Brand Has Stronger Position</span>
+                      <p className="text-xs text-purple-300 mt-1">You can improve this by fixing 2–3 clauses.</p>
+                    </>
                   )}
                 </div>
               </div>
@@ -1486,21 +1503,56 @@ ${creatorName}`;
                   );
                 })()}
 
-                {/* Governing Law / Exclusivity */}
+                {/* Governing Law - Only show location names */}
                 {(() => {
-                  const governingLaw = analysisResults.keyTerms.exclusivity || 'None';
-                  const hasGoverningLaw = governingLaw !== 'None' && governingLaw !== 'Not specified';
+                  // Extract governing law from keyTerms - should only be location names
+                  const governingLawRaw = analysisResults.keyTerms.exclusivity || analysisResults.keyTerms.duration || '';
+                  // Check if it's a location (India, Delhi, etc.) vs a time period (30 days, etc.)
+                  const isLocation = /^(India|Delhi|Mumbai|Bangalore|Kolkata|Chennai|Hyderabad|Pune|Ahmedabad|Jaipur|Surat|Lucknow|Kanpur|Nagpur|Indore|Thane|Bhopal|Visakhapatnam|Patna|Vadodara|Ghaziabad|Ludhiana|Agra|Nashik|Faridabad|Meerut|Rajkot|Varanasi|Srinagar|Amritsar|Dhanbad|Allahabad|Coimbatore|Jabalpur|Gwalior|Vijayawada|Jodhpur|Madurai|Raipur|Kota|Guwahati|Chandigarh|Solapur|Hubli|Tiruchirappalli|Bareilly|Moradabad|Mysore|Gurgaon|Aligarh|Jalandhar|Bhubaneswar|Salem|Warangal|Guntur|Bhiwandi|Saharanpur|Gorakhpur|Bikaner|Amravati|Noida|Jamshedpur|Bhilai|Cuttack|Firozabad|Kochi|Bhavnagar|Dehradun|Durgapur|Asansol|Nanded|Kolhapur|Ajmer|Gulbarga|Jamnagar|Ujjain|Loni|Siliguri|Jhansi|Ulhasnagar|Jammu|Sangli|Mira|Latur|Rohtak|Tumkur|Alwar|Davanagere|Kurnool|Bokaro|Rajahmundry|Ballari|Agartala|Bhagalpur|Muzaffarnagar|Bhatpara|Panihati|Latur|Dhule|Rohtak|Sagar|Bilaspur|Mathura|Kamarhati|Patiala|Saharsa|New Delhi|Mumbai|Bangalore|Kolkata|Chennai|Hyderabad|Pune|Ahmedabad|Jaipur|Surat|Lucknow|Kanpur|Nagpur|Indore|Thane|Bhopal|Visakhapatnam|Patna|Vadodara|Ghaziabad|Ludhiana|Agra|Nashik|Faridabad|Meerut|Rajkot|Varanasi|Srinagar|Amritsar|Dhanbad|Allahabad|Coimbatore|Jabalpur|Gwalior|Vijayawada|Jodhpur|Madurai|Raipur|Kota|Guwahati|Chandigarh|Solapur|Hubli|Tiruchirappalli|Bareilly|Moradabad|Mysore|Gurgaon|Aligarh|Jalandhar|Bhubaneswar|Salem|Warangal|Guntur|Bhiwandi|Saharanpur|Gorakhpur|Bikaner|Amravati|Noida|Jamshedpur|Bhilai|Cuttack|Firozabad|Kochi|Bhavnagar|Dehradun|Durgapur|Asansol|Nanded|Kolhapur|Ajmer|Gulbarga|Jamnagar|Ujjain|Loni|Siliguri|Jhansi|Ulhasnagar|Jammu|Sangli|Mira|Latur|Rohtak|Tumkur|Alwar|Davanagere|Kurnool|Bokaro|Rajahmundry|Ballari|Agartala|Bhagalpur|Muzaffarnagar|Bhatpara|Panihati|Latur|Dhule|Rohtak|Sagar|Bilaspur|Mathura|Kamarhati|Patiala|Saharsa)$/i.test(governingLawRaw.trim());
+                  const isTimePeriod = /\d+\s*(days?|months?|years?|weeks?)/i.test(governingLawRaw);
+                  
+                  let governingLaw = '';
+                  let termLabel = 'Governing Law';
+                  
+                  if (isLocation) {
+                    governingLaw = governingLawRaw.trim();
+                    termLabel = 'Governing Law';
+                  } else if (isTimePeriod) {
+                    // This is a time period, show as Termination Notice Period or Exclusivity Duration
+                    const daysMatch = governingLawRaw.match(/(\d+)\s*days?/i);
+                    if (daysMatch) {
+                      const days = daysMatch[1];
+                      termLabel = 'Termination Notice Period';
+                      governingLaw = `${days} days`;
+                    } else {
+                      termLabel = 'Exclusivity Duration';
+                      governingLaw = governingLawRaw.trim();
+                    }
+                  } else if (governingLawRaw && governingLawRaw !== 'None' && governingLawRaw !== 'Not specified') {
+                    // Check if it contains location keywords
+                    if (/india|delhi|mumbai|bangalore|kolkata|chennai|hyderabad|pune|ahmedabad|jaipur/i.test(governingLawRaw)) {
+                      governingLaw = governingLawRaw.trim();
+                      termLabel = 'Governing Law';
+                    } else {
+                      // Likely a time period or other term
+                      termLabel = 'Termination Notice Period';
+                      governingLaw = governingLawRaw.trim();
+                    }
+                  }
+                  
+                  const hasGoverningLaw = governingLaw && governingLaw !== 'None' && governingLaw !== 'Not specified';
                   const status = hasGoverningLaw 
                     ? { badge: '✅', color: 'bg-green-500/20 text-green-400', label: 'Defined' }
                     : { badge: '⚠', color: 'bg-yellow-500/20 text-yellow-400', label: 'Missing' };
+                  
                   return (
                     <div className="flex items-center justify-between p-4 border-b border-white/5 last:border-b-0">
                       <div className="flex items-center gap-4 flex-1">
                         <span className="text-2xl">{status.badge}</span>
                         <div>
                           <div className="font-semibold">
-                            <span className="text-purple-200">Governing Law:</span>
-                            <span className="text-white font-bold ml-2">{governingLaw}</span>
+                            <span className="text-purple-200">{termLabel}:</span>
+                            <span className="text-white font-bold ml-2">{governingLaw || 'Not specified'}</span>
                           </div>
                         </div>
                       </div>
@@ -1513,15 +1565,31 @@ ${creatorName}`;
               </div>
             </div>
 
-            {/* Contract Safety Progress Bar */}
+            {/* Contract Safety Progress Bar - Improvement Focused */}
             {analysisResults.issues.length > 0 && (
               <div className="bg-white/10 backdrop-blur-md rounded-2xl p-5 md:p-6 border border-white/10 shadow-lg mb-6">
                 <div className="flex items-center justify-between mb-3">
                   <h3 className="font-semibold text-lg flex items-center gap-2">
                     <Shield className="w-5 h-5 text-purple-400" />
-                    🛡 Contract Safety Progress
+                    Protection Status
                   </h3>
-                  <span className="text-2xl font-bold text-purple-300">{Math.round(getContractSafetyProgress())}% Secure</span>
+                  <div className="flex flex-col items-end">
+                    <span className="text-xl font-bold text-purple-300">
+                      {Math.round(getContractSafetyProgress()) === 0 
+                        ? 'Protection Not Optimized Yet' 
+                        : `${Math.round(getContractSafetyProgress())}% Protected`}
+                    </span>
+                    {Math.round(getContractSafetyProgress()) === 0 && analysisResults.issues.length > 0 && (
+                      <span className="text-xs text-purple-400 mt-1">
+                        {analysisResults.issues.length - resolvedIssues.size} risks still unresolved
+                      </span>
+                    )}
+                    {Math.round(getContractSafetyProgress()) > 0 && Math.round(getContractSafetyProgress()) < 100 && (
+                      <span className="text-xs text-purple-400 mt-1">
+                        {analysisResults.issues.length - resolvedIssues.size} improvements remaining
+                      </span>
+                    )}
+                  </div>
                 </div>
                 <div className="relative h-3 bg-white/10 rounded-full overflow-hidden">
                   <motion.div
@@ -1536,7 +1604,7 @@ ${creatorName}`;
 
             {/* Issues Table - Premium Action-Driven */}
             {analysisResults.issues.length > 0 && (
-              <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 md:p-6 border border-white/10 shadow-lg">
+              <div id="issues-section" className="bg-white/10 backdrop-blur-md rounded-2xl p-4 md:p-6 border border-white/10 shadow-lg">
                 <h3 className="font-semibold text-xl mb-5 flex items-center gap-2">
                   <AlertTriangle className="w-5 h-5 text-yellow-400" />
                   Issues Found ({analysisResults.issues.length - resolvedIssues.size})
@@ -1566,14 +1634,14 @@ ${creatorName}`;
                           <h4 className="font-semibold text-lg">{categoryInfo.emoji} {categoryLabel} ({issues.length})</h4>
                         </div>
                         
-                        {/* Desktop Table View */}
+                        {/* Desktop Table View - Compact with Expandable Details */}
                         <div className="hidden md:block overflow-x-auto">
                           <table className="w-full">
                             <thead>
                               <tr className="border-b border-white/10">
-                                <th className="text-left py-3 px-4 text-sm font-semibold text-purple-300">⚠ Issue</th>
-                                <th className="text-left py-3 px-4 text-sm font-semibold text-purple-300">📄 Clause</th>
-                                <th className="text-left py-3 px-4 text-sm font-semibold text-purple-300">💡 Fix</th>
+                                <th className="text-left py-3 px-4 text-sm font-semibold text-purple-300">Issue</th>
+                                <th className="text-left py-3 px-4 text-sm font-semibold text-purple-300">Severity</th>
+                                <th className="text-left py-3 px-4 text-sm font-semibold text-purple-300">Score Impact</th>
                                 <th className="text-center py-3 px-4 text-sm font-semibold text-purple-300">Action</th>
                               </tr>
                             </thead>
@@ -1582,127 +1650,162 @@ ${creatorName}`;
                                 const severityConfig = {
                                   high: { 
                                     border: 'border-l-4 border-red-500', 
-                                    icon: '⚠️', 
-                                    badge: 'bg-red-500/30 text-red-300 border-red-500/50' 
+                                    badge: 'bg-red-500/30 text-red-300 border-red-500/50',
+                                    label: 'High'
                                   },
                                   medium: { 
                                     border: 'border-l-4 border-orange-500', 
-                                    icon: '▲', 
-                                    badge: 'bg-orange-500/30 text-orange-300 border-orange-500/50' 
+                                    badge: 'bg-orange-500/30 text-orange-300 border-orange-500/50',
+                                    label: 'Medium'
                                   },
                                   low: { 
-                                    border: 'border-l-4 border-green-500', 
-                                    icon: '✓', 
-                                    badge: 'bg-yellow-500/30 text-yellow-300 border-yellow-500/50' 
+                                    border: 'border-l-4 border-yellow-500', 
+                                    badge: 'bg-yellow-500/30 text-yellow-300 border-yellow-500/50',
+                                    label: 'Warning'
+                                  },
+                                  warning: {
+                                    border: 'border-l-4 border-yellow-500',
+                                    badge: 'bg-yellow-500/30 text-yellow-300 border-yellow-500/50',
+                                    label: 'Warning'
                                   }
                                 };
-                                const config = severityConfig[issue.severity] || severityConfig.low;
+                                const config = severityConfig[issue.severity] || severityConfig.medium;
                                 const clauseState = clauseStates.get(issue.id) || 'default';
                                 const generatedClause = generatedClauses.get(issue.id);
                                 const negotiationStrength = getNegotiationStrength(issue);
+                                const isExpanded = expandedFixes.has(issue.id);
+                                
+                                // Calculate potential score improvement
+                                const currentScore = analysisResults?.score || 0;
+                                const potentialScore = Math.min(100, currentScore + (issue.severity === 'high' ? 8 : issue.severity === 'medium' ? 5 : 3));
                                 
                                 return (
-                                  <motion.tr 
-                                    key={issue.id} 
-                                    initial={{ opacity: 0, x: -20 }}
-                                    animate={{ opacity: resolvedIssues.has(issue.id) ? 0.5 : 1, x: 0 }}
-                                    exit={{ opacity: 0, height: 0 }}
-                                    className={`${config.border} border-b border-white/5 hover:bg-white/10 hover:border-purple-400/30 transition-all duration-200 group`}
-                                    style={{ animationDelay: `${index * 50}ms` }}
-                                  >
-                                    <td className="py-5 px-4">
-                                      <div className="flex items-center gap-2">
-                                        <span className="text-lg">{config.icon}</span>
-                                        <span className="font-semibold">{issue.title}</span>
-                                        <span className={`px-2.5 py-1 rounded-full text-xs font-semibold border ${config.badge}`}>
-                                          {issue.severity.charAt(0).toUpperCase() + issue.severity.slice(1)}
-                                        </span>
-                                      </div>
-                                    </td>
-                                    <td className="py-5 px-4">
-                                      <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3 mb-2">
-                                        <div className="text-xs text-red-300 mb-1 flex items-center gap-1">
-                                          <XCircle className="w-3 h-3" />
-                                          ❌ Problem
+                                  <React.Fragment key={issue.id}>
+                                    <motion.tr 
+                                      initial={{ opacity: 0, x: -20 }}
+                                      animate={{ opacity: resolvedIssues.has(issue.id) ? 0.5 : 1, x: 0 }}
+                                      exit={{ opacity: 0, height: 0 }}
+                                      className={`${config.border} border-b border-white/5 hover:bg-white/10 hover:border-purple-400/30 transition-all duration-200 group`}
+                                      style={{ animationDelay: `${index * 50}ms` }}
+                                    >
+                                      <td className="py-4 px-4">
+                                        <div className="flex items-center gap-2">
+                                          <span className="font-semibold">{issue.title}</span>
                                         </div>
-                                        <div className="text-sm text-purple-200">{issue.clause || issue.description || 'N/A'}</div>
-                                      </div>
-                                    </td>
-                                    <td className="py-5 px-4">
-                                      <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-3 mb-2">
-                                        <div className="text-xs text-green-300 mb-1 flex items-center gap-1">
-                                          <CheckCircle className="w-3 h-3" />
-                                          💡 Recommended Fix
-                                        </div>
-                                        <div className="text-sm text-purple-200 leading-relaxed">{issue.recommendation}</div>
-                                        <div className="mt-2 flex items-center gap-2">
-                                          <span className={`px-2 py-1 rounded-full text-xs font-medium border ${negotiationStrength.color}`}>
-                                            {negotiationStrength.emoji} {negotiationStrength.label}
-                                          </span>
-                                        </div>
-                                      </div>
-                                      <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-2 mt-2">
-                                        <div className="text-xs text-yellow-300 flex items-center gap-1">
-                                          <AlertTriangle className="w-3 h-3" />
-                                          ⚠️ If ignored: {getImpactIfIgnored(issue)}
-                                        </div>
-                                      </div>
-                                    </td>
-                                    <td className="py-5 px-4 text-center">
-                                      {clauseState === 'success' && generatedClause ? (
-                                        <div className="flex flex-col gap-2">
-                                          <div className="flex items-center gap-2 text-green-400 text-xs mb-1">
-                                            <CheckCircle className="w-4 h-4" />
-                                            ✅ Clause Generated
-                                          </div>
-                                          <button
-                                            onClick={async () => {
-                                              await navigator.clipboard.writeText(generatedClause);
-                                              toast.success('Clause copied!');
-                                            }}
-                                            className="bg-green-600/80 hover:bg-green-600 text-white px-3 py-1.5 rounded-lg text-xs font-medium transition-all flex items-center justify-center gap-1"
-                                          >
-                                            <Copy className="w-3 h-3" />
-                                            📋 Copy
-                                          </button>
-                                          <button
-                                            onClick={() => handleMarkAsResolved(issue.id)}
-                                            className="bg-purple-600/80 hover:bg-purple-600 text-white px-3 py-1.5 rounded-lg text-xs font-medium transition-all"
-                                          >
-                                            ✔ Mark as Resolved
-                                          </button>
-                                        </div>
-                                      ) : (
                                         <button
-                                          onClick={() => {
-                                            triggerHaptic(HapticPatterns.light);
-                                            handleGenerateClause(issue);
-                                          }}
-                                          disabled={clauseState === 'loading'}
-                                          className="bg-purple-600/80 hover:bg-purple-600 hover:shadow-lg hover:shadow-purple-500/50 text-white px-4 py-2 rounded-lg text-xs font-medium transition-all duration-200 flex items-center gap-2 disabled:opacity-50 group-hover:scale-105"
+                                          onClick={() => toggleFixExpansion(issue.id)}
+                                          className="text-xs text-purple-400 hover:text-purple-300 transition-colors mt-1 flex items-center gap-1"
                                         >
-                                          {clauseState === 'loading' ? (
-                                            <>
-                                              <Loader2 className="w-3 h-3 animate-spin" />
-                                              ⏳ Generating...
-                                            </>
-                                          ) : (
-                                            <>
-                                              <Wand2 className="w-3 h-3 group-hover:animate-pulse" />
-                                              ✨ Generate Legal-Safe Clause
-                                            </>
-                                          )}
+                                          {isExpanded ? 'Hide Details' : 'Tap to View Details'}
+                                          {isExpanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
                                         </button>
-                                      )}
-                                    </td>
-                                  </motion.tr>
+                                      </td>
+                                      <td className="py-4 px-4">
+                                        <span className={`px-2.5 py-1 rounded-full text-xs font-semibold border ${config.badge}`}>
+                                          {config.label}
+                                        </span>
+                                      </td>
+                                      <td className="py-4 px-4">
+                                        <div className="text-sm text-purple-300">
+                                          Fixing this will improve your score to ~{potentialScore}/100
+                                        </div>
+                                      </td>
+                                      <td className="py-4 px-4 text-center">
+                                        {clauseState === 'success' && generatedClause ? (
+                                          <div className="flex flex-col gap-2">
+                                            <div className="flex items-center gap-2 text-green-400 text-xs mb-1 justify-center">
+                                              <CheckCircle className="w-4 h-4" />
+                                              ✅ Generated
+                                            </div>
+                                            <button
+                                              onClick={async () => {
+                                                await navigator.clipboard.writeText(generatedClause);
+                                                toast.success('Clause copied!');
+                                              }}
+                                              className="bg-green-600/80 hover:bg-green-600 text-white px-3 py-2 rounded-lg text-xs font-medium transition-all flex items-center justify-center gap-1 min-h-[48px]"
+                                            >
+                                              <Copy className="w-3 h-3" />
+                                              Copy
+                                            </button>
+                                            <button
+                                              onClick={() => handleMarkAsResolved(issue.id)}
+                                              className="bg-purple-600/80 hover:bg-purple-600 text-white px-3 py-2 rounded-lg text-xs font-medium transition-all min-h-[48px]"
+                                            >
+                                              Mark Resolved
+                                            </button>
+                                          </div>
+                                        ) : (
+                                          <motion.button
+                                            onClick={() => {
+                                              triggerHaptic(HapticPatterns.light);
+                                              handleGenerateClause(issue);
+                                            }}
+                                            disabled={clauseState === 'loading'}
+                                            whileTap={{ scale: 0.98 }}
+                                            className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 hover:shadow-lg hover:shadow-purple-500/50 text-white px-4 py-3 rounded-lg text-sm font-semibold transition-all duration-200 flex items-center gap-2 disabled:opacity-50 group-hover:scale-105 min-h-[48px]"
+                                          >
+                                            {clauseState === 'loading' ? (
+                                              <>
+                                                <Loader2 className="w-4 h-4 animate-spin" />
+                                                Generating...
+                                              </>
+                                            ) : (
+                                              <>
+                                                <Wand2 className="w-4 h-4 group-hover:animate-pulse" />
+                                                Fix This Clause
+                                              </>
+                                            )}
+                                          </motion.button>
+                                        )}
+                                      </td>
+                                    </motion.tr>
+                                    {/* Expanded Details Row */}
+                                    {isExpanded && (
+                                      <motion.tr
+                                        initial={{ opacity: 0, height: 0 }}
+                                        animate={{ opacity: 1, height: 'auto' }}
+                                        exit={{ opacity: 0, height: 0 }}
+                                        className="border-b border-white/5"
+                                      >
+                                        <td colSpan={4} className="py-4 px-4">
+                                          <div className="grid grid-cols-2 gap-4">
+                                            <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3">
+                                              <div className="text-xs text-red-300 mb-1 flex items-center gap-1 font-medium">
+                                                <XCircle className="w-3 h-3" />
+                                                Problem Detected
+                                              </div>
+                                              <div className="text-sm text-purple-200 leading-relaxed">{issue.clause || issue.description || 'N/A'}</div>
+                                            </div>
+                                            <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-3">
+                                              <div className="text-xs text-green-300 mb-1 flex items-center gap-1 font-medium">
+                                                <CheckCircle className="w-3 h-3" />
+                                                Recommended Fix
+                                              </div>
+                                              <div className="text-sm text-purple-200 leading-relaxed">{issue.recommendation}</div>
+                                              <div className="mt-2">
+                                                <span className={`px-2 py-1 rounded-full text-xs font-medium border ${negotiationStrength.color}`}>
+                                                  {negotiationStrength.emoji} {negotiationStrength.label}
+                                                </span>
+                                              </div>
+                                              <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-2 mt-2">
+                                                <div className="text-xs text-yellow-300 flex items-center gap-1">
+                                                  <AlertTriangle className="w-3 h-3" />
+                                                  If ignored: {getImpactIfIgnored(issue)}
+                                                </div>
+                                              </div>
+                                            </div>
+                                          </div>
+                                        </td>
+                                      </motion.tr>
+                                    )}
+                                  </React.Fragment>
                                 );
                               })}
                             </tbody>
                           </table>
                         </div>
                         
-                        {/* Mobile Card View */}
+                        {/* Mobile Card View - Compact by Default */}
                         <div className="md:hidden space-y-3">
                           {issues.map((issue, index) => {
                             if (resolvedIssues.has(issue.id)) return null;
@@ -1710,25 +1813,34 @@ ${creatorName}`;
                             const severityConfig = {
                               high: { 
                                 border: 'border-l-4 border-red-500', 
-                                icon: '⚠️', 
-                                badge: 'bg-red-500/30 text-red-300 border-red-500/50' 
+                                badge: 'bg-red-500/30 text-red-300 border-red-500/50',
+                                label: 'High'
                               },
                               medium: { 
                                 border: 'border-l-4 border-orange-500', 
-                                icon: '▲', 
-                                badge: 'bg-orange-500/30 text-orange-300 border-orange-500/50' 
+                                badge: 'bg-orange-500/30 text-orange-300 border-orange-500/50',
+                                label: 'Medium'
                               },
                               low: { 
-                                border: 'border-l-4 border-green-500', 
-                                icon: '✓', 
-                                badge: 'bg-yellow-500/30 text-yellow-300 border-yellow-500/50' 
+                                border: 'border-l-4 border-yellow-500', 
+                                badge: 'bg-yellow-500/30 text-yellow-300 border-yellow-500/50',
+                                label: 'Warning'
+                              },
+                              warning: {
+                                border: 'border-l-4 border-yellow-500',
+                                badge: 'bg-yellow-500/30 text-yellow-300 border-yellow-500/50',
+                                label: 'Warning'
                               }
                             };
-                            const config = severityConfig[issue.severity] || severityConfig.low;
+                            const config = severityConfig[issue.severity] || severityConfig.medium;
                             const clauseState = clauseStates.get(issue.id) || 'default';
                             const generatedClause = generatedClauses.get(issue.id);
                             const negotiationStrength = getNegotiationStrength(issue);
-                            const isFixExpanded = expandedFixes.has(issue.id);
+                            const isExpanded = expandedFixes.has(issue.id);
+                            
+                            // Calculate potential score improvement
+                            const currentScore = analysisResults?.score || 0;
+                            const potentialScore = Math.min(100, currentScore + (issue.severity === 'high' ? 8 : issue.severity === 'medium' ? 5 : 3));
                             
                             return (
                               <AnimatePresence key={issue.id}>
@@ -1736,73 +1848,82 @@ ${creatorName}`;
                                   initial={{ opacity: 0, y: 20 }}
                                   animate={{ opacity: 1, y: 0 }}
                                   exit={{ opacity: 0, height: 0 }}
-                                  className={`${config.border} p-3 bg-white/5 rounded-xl border border-white/10 hover:bg-white/10 hover:border-purple-400/30 transition-all duration-200`}
+                                  className={`${config.border} p-4 bg-white/5 rounded-xl border border-white/10 hover:bg-white/10 hover:border-purple-400/30 transition-all duration-200`}
                                   style={{ animationDelay: `${index * 50}ms` }}
                                 >
-                                  <div className="flex items-start justify-between mb-2">
+                                  {/* Compact Header - Always Visible */}
+                                  <div className="flex items-start justify-between mb-3">
                                     <div className="flex-1">
                                       <div className="flex items-center gap-2 mb-2 flex-wrap">
-                                        <span className="text-lg">{config.icon}</span>
-                                        <span className="font-semibold text-sm">{issue.title}</span>
-                                        <span className={`px-2 py-0.5 rounded-full text-xs font-semibold border ${config.badge}`}>
-                                          {issue.severity.charAt(0).toUpperCase() + issue.severity.slice(1)}
+                                        <span className="font-semibold text-base">{issue.title}</span>
+                                        <span className={`px-2.5 py-1 rounded-full text-xs font-semibold border ${config.badge}`}>
+                                          {config.label}
                                         </span>
                                       </div>
                                       
-                                      {/* Problem Section */}
-                                      <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-2 mb-2">
-                                        <div className="text-xs text-red-300 mb-1 flex items-center gap-1">
-                                          <XCircle className="w-3 h-3" />
-                                          ❌ Problem
-                                        </div>
-                                        <div className="text-xs text-purple-200 leading-relaxed">{issue.clause || issue.description || 'N/A'}</div>
-                                      </div>
+                                      {/* Score Preview - Always Visible */}
+                                      <p className="text-xs text-purple-300 mb-3">
+                                        Fixing this will improve your score to ~{potentialScore}/100
+                                      </p>
                                       
-                                      {/* Fix Section - Collapsible on Mobile */}
-                                      <div className="mb-2">
-                                        <button
-                                          onClick={() => toggleFixExpansion(issue.id)}
-                                          className="w-full flex items-center justify-between text-xs text-purple-300 mb-1 hover:text-purple-200 transition-colors"
-                                        >
-                                          <span className="flex items-center gap-1">
-                                            <CheckCircle className="w-3 h-3" />
-                                            💡 Recommended Fix
-                                          </span>
-                                          {isFixExpanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
-                                        </button>
-                                        <AnimatePresence>
-                                          {isFixExpanded && (
-                                            <motion.div
-                                              initial={{ height: 0, opacity: 0 }}
-                                              animate={{ height: 'auto', opacity: 1 }}
-                                              exit={{ height: 0, opacity: 0 }}
-                                              className="overflow-hidden"
-                                            >
-                                              <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-2 mb-2">
-                                                <div className="text-xs text-purple-200 leading-relaxed">{issue.recommendation}</div>
-                                                <div className="mt-2">
-                                                  <span className={`px-2 py-0.5 rounded-full text-xs font-medium border ${negotiationStrength.color}`}>
-                                                    {negotiationStrength.emoji} {negotiationStrength.label}
-                                                  </span>
-                                                </div>
-                                              </div>
-                                              <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-2">
-                                                <div className="text-xs text-yellow-300 flex items-center gap-1">
-                                                  <AlertTriangle className="w-3 h-3" />
-                                                  ⚠️ If ignored: {getImpactIfIgnored(issue)}
-                                                </div>
-                                              </div>
-                                            </motion.div>
-                                          )}
-                                        </AnimatePresence>
-                                      </div>
+                                      {/* Tap to View Details Link */}
+                                      <button
+                                        onClick={() => toggleFixExpansion(issue.id)}
+                                        className="text-xs text-purple-400 hover:text-purple-300 transition-colors flex items-center gap-1 mb-3"
+                                      >
+                                        {isExpanded ? 'Hide Details' : 'Tap to View Details'}
+                                        {isExpanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+                                      </button>
                                     </div>
                                   </div>
                                   
-                                  {/* Action Button */}
+                                  {/* Expanded Details - Only on Tap */}
+                                  <AnimatePresence>
+                                    {isExpanded && (
+                                      <motion.div
+                                        initial={{ height: 0, opacity: 0 }}
+                                        animate={{ height: 'auto', opacity: 1 }}
+                                        exit={{ height: 0, opacity: 0 }}
+                                        className="overflow-hidden space-y-3 mb-3"
+                                      >
+                                        {/* Problem Section */}
+                                        <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3">
+                                          <div className="text-xs text-red-300 mb-1 flex items-center gap-1 font-medium">
+                                            <XCircle className="w-3 h-3" />
+                                            Problem Detected
+                                          </div>
+                                          <div className="text-sm text-purple-200 leading-relaxed">{issue.clause || issue.description || 'N/A'}</div>
+                                        </div>
+                                        
+                                        {/* Recommendation Section */}
+                                        <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-3">
+                                          <div className="text-xs text-green-300 mb-1 flex items-center gap-1 font-medium">
+                                            <CheckCircle className="w-3 h-3" />
+                                            Recommended Fix
+                                          </div>
+                                          <div className="text-sm text-purple-200 leading-relaxed">{issue.recommendation}</div>
+                                          <div className="mt-2">
+                                            <span className={`px-2 py-1 rounded-full text-xs font-medium border ${negotiationStrength.color}`}>
+                                              {negotiationStrength.emoji} {negotiationStrength.label}
+                                            </span>
+                                          </div>
+                                        </div>
+                                        
+                                        {/* Impact Warning */}
+                                        <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-2">
+                                          <div className="text-xs text-yellow-300 flex items-center gap-1">
+                                            <AlertTriangle className="w-3 h-3" />
+                                            If ignored: {getImpactIfIgnored(issue)}
+                                          </div>
+                                        </div>
+                                      </motion.div>
+                                    )}
+                                  </AnimatePresence>
+                                  
+                                  {/* Primary CTA Button - Always Visible */}
                                   {clauseState === 'success' && generatedClause ? (
                                     <div className="flex flex-col gap-2">
-                                      <div className="flex items-center gap-2 text-green-400 text-xs">
+                                      <div className="flex items-center gap-2 text-green-400 text-xs mb-1">
                                         <CheckCircle className="w-3 h-3" />
                                         ✅ Clause Generated
                                       </div>
@@ -1812,40 +1933,41 @@ ${creatorName}`;
                                             await navigator.clipboard.writeText(generatedClause);
                                             toast.success('Clause copied!');
                                           }}
-                                          className="flex-1 bg-green-600/80 hover:bg-green-600 text-white px-3 py-2 rounded-lg text-xs font-medium transition-all flex items-center justify-center gap-1"
+                                          className="flex-1 bg-green-600/80 hover:bg-green-600 text-white px-4 py-3 rounded-lg text-sm font-semibold transition-all flex items-center justify-center gap-2 min-h-[48px]"
                                         >
-                                          <Copy className="w-3 h-3" />
-                                          📋 Copy
+                                          <Copy className="w-4 h-4" />
+                                          Copy Clause
                                         </button>
                                         <button
                                           onClick={() => handleMarkAsResolved(issue.id)}
-                                          className="flex-1 bg-purple-600/80 hover:bg-purple-600 text-white px-3 py-2 rounded-lg text-xs font-medium transition-all"
+                                          className="flex-1 bg-purple-600/80 hover:bg-purple-600 text-white px-4 py-3 rounded-lg text-sm font-semibold transition-all min-h-[48px]"
                                         >
-                                          ✔ Resolved
+                                          Mark Resolved
                                         </button>
                                       </div>
                                     </div>
                                   ) : (
-                                    <button
+                                    <motion.button
                                       onClick={() => {
                                         triggerHaptic(HapticPatterns.light);
                                         handleGenerateClause(issue);
                                       }}
                                       disabled={clauseState === 'loading'}
-                                      className="w-full bg-purple-600/80 hover:bg-purple-600 hover:shadow-lg hover:shadow-purple-500/50 text-white px-4 py-2 rounded-lg text-xs font-medium transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-50"
+                                      whileTap={{ scale: 0.98 }}
+                                      className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 hover:shadow-lg hover:shadow-purple-500/50 text-white px-4 py-3 rounded-lg text-sm font-semibold transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-50 min-h-[48px]"
                                     >
                                       {clauseState === 'loading' ? (
                                         <>
-                                          <Loader2 className="w-3 h-3 animate-spin" />
-                                          ⏳ Generating...
+                                          <Loader2 className="w-4 h-4 animate-spin" />
+                                          Generating...
                                         </>
                                       ) : (
                                         <>
-                                          <Wand2 className="w-3 h-3" />
-                                          ✨ Generate Legal-Safe Clause
+                                          <Wand2 className="w-4 h-4" />
+                                          Fix This Clause
                                         </>
                                       )}
-                                    </button>
+                                    </motion.button>
                                   )}
                                 </motion.div>
                               </AnimatePresence>
@@ -1992,11 +2114,11 @@ ${creatorName}`;
                         toast.error(error.message || 'Failed to generate safe contract. Please try again.');
                       }
                     }}
-                    className="bg-green-600/90 hover:bg-green-600 hover:shadow-xl hover:shadow-green-500/50 hover:-translate-y-1 text-white px-4 py-4 rounded-xl font-semibold transition-all duration-200 flex flex-col items-center justify-center gap-1.5 md:col-span-1"
+                    className="bg-green-600/90 hover:bg-green-600 hover:shadow-xl hover:shadow-green-500/50 hover:-translate-y-1 text-white px-4 py-4 rounded-xl font-semibold transition-all duration-200 flex flex-col items-center justify-center gap-1.5 md:col-span-1 min-h-[48px]"
                   >
                     <div className="flex items-center gap-2">
                       <CheckCircle className="w-5 h-5" />
-                      <span className="text-sm">Download Safe Version</span>
+                      <span className="text-sm font-semibold">Download Safe Version</span>
                       <TooltipProvider>
                         <Tooltip>
                           <TooltipTrigger asChild>
@@ -2004,7 +2126,7 @@ ${creatorName}`;
                           </TooltipTrigger>
                           <TooltipContent side="top" className="bg-purple-900/95 border-white/20 text-white max-w-xs z-[10001]">
                             <p className="font-medium mb-1">Download Safe Version</p>
-                            <p className="text-sm">We replace unfair or dangerous clauses with legally safer alternatives and create a new, renegotiation-ready contract PDF for you.</p>
+                            <p className="text-sm">We replace clauses that need improvement with legally stronger alternatives and create a new, renegotiation-ready contract PDF for you.</p>
                           </TooltipContent>
                         </Tooltip>
                       </TooltipProvider>
@@ -2066,7 +2188,7 @@ ${creatorName}`;
                         toast.error(error.message || 'Failed to send for legal review. Please try again.');
                       }
                     }}
-                    className="bg-yellow-600/80 hover:bg-yellow-600 hover:shadow-xl hover:shadow-yellow-500/50 hover:-translate-y-1 text-white px-4 py-3 rounded-xl font-semibold transition-all duration-200 flex flex-col items-center justify-center gap-1.5"
+                    className="bg-yellow-600/80 hover:bg-yellow-600 hover:shadow-xl hover:shadow-yellow-500/50 hover:-translate-y-1 text-white px-4 py-3 rounded-xl font-semibold transition-all duration-200 flex flex-col items-center justify-center gap-1.5 min-h-[48px]"
                   >
                     <div className="flex items-center gap-2">
                       <Send className="w-5 h-5" />
@@ -2155,7 +2277,7 @@ ${creatorName}`;
                         }
                       }}
                       disabled={isGeneratingMessage}
-                      className="bg-red-600/80 hover:bg-red-600 hover:shadow-xl hover:shadow-red-500/50 hover:-translate-y-1 disabled:opacity-50 disabled:cursor-not-allowed text-white px-4 py-3 rounded-xl font-semibold transition-all duration-200 flex flex-col items-center justify-center gap-1.5 w-full"
+                      className="bg-red-600/80 hover:bg-red-600 hover:shadow-xl hover:shadow-red-500/50 hover:-translate-y-1 disabled:opacity-50 disabled:cursor-not-allowed text-white px-4 py-3 rounded-xl font-semibold transition-all duration-200 flex flex-col items-center justify-center gap-1.5 w-full min-h-[48px]"
                     >
                       <div className="flex items-center gap-2">
                         {isGeneratingMessage ? (
@@ -2272,10 +2394,10 @@ ${creatorName}`;
                         toast.error(error.message || 'Failed to generate safe contract. Please try again.');
                       }
                     }}
-                    className="bg-green-600/90 hover:bg-green-600 text-white px-4 py-3 rounded-xl font-semibold transition-all duration-200 flex items-center justify-center gap-2"
+                    className="bg-green-600/90 hover:bg-green-600 text-white px-4 py-3 rounded-xl font-semibold transition-all duration-200 flex items-center justify-center gap-2 min-h-[48px]"
                   >
                     <Download className="w-5 h-5" />
-                    <span className="text-sm">Download Safe Version</span>
+                    <span className="text-sm font-semibold">Download Safe Version</span>
                   </button>
                   <button
                     onClick={async () => {
@@ -2352,10 +2474,10 @@ ${creatorName}`;
                         setIsGeneratingMessage(false);
                       }
                     }}
-                    className="bg-blue-600/90 hover:bg-blue-600 text-white px-4 py-3 rounded-xl font-semibold transition-all duration-200 flex items-center justify-center gap-2"
+                    className="bg-blue-600/90 hover:bg-blue-600 text-white px-4 py-3 rounded-xl font-semibold transition-all duration-200 flex items-center justify-center gap-2 min-h-[48px]"
                   >
                     <Send className="w-5 h-5" />
-                    <span className="text-sm">Send to Brand</span>
+                    <span className="text-sm font-semibold">Send to Brand</span>
                   </button>
                 </div>
               </div>
