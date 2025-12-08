@@ -1261,11 +1261,17 @@ export default function MessagesPage() {
       
       if (adminProfile && !seenIds.has(adminProfile.id)) {
         seenIds.add(adminProfile.id);
+        // Special case: Prateek (lawyer) - user ID: 27239566-f735-4423-a898-8dbaee1ec77f
+        const isPrateek = adminProfile.id === '27239566-f735-4423-a898-8dbaee1ec77f';
+        const firstName = isPrateek ? 'Prateek' : (adminProfile.first_name || '');
+        const lastName = isPrateek ? '' : (adminProfile.last_name || '');
+        const displayName = isPrateek ? 'Prateek' : `${firstName} ${lastName}`.trim() || 'Legal Advisor';
+        
         result.push({
           id: adminProfile.id,
-          name: `${adminProfile.first_name} ${adminProfile.last_name}`,
+          name: displayName,
           role: 'Legal Advisor',
-          avatarUrl: adminProfile.avatar_url || generateAvatarUrl(adminProfile.first_name, adminProfile.last_name),
+          avatarUrl: adminProfile.avatar_url || generateAvatarUrl(firstName, lastName),
           online: false,
           lastMessage: undefined,
           unreadCount: 0,
