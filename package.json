@@ -20,6 +20,7 @@
     "create-demo": "tsx scripts/create-demo-user.ts",
     "create-user": "tsx scripts/create-user-account.ts",
     "update-role": "tsx scripts/update-user-role.ts",
+    "update-prateek-profile": "tsx scripts/update-prateek-profile.ts",
     "verify-migrations": "tsx scripts/verify-migrations.ts",
     "sync-brands": "tsx scripts/sync-brands.ts",
     "validate-opportunities": "tsx scripts/validate-opportunities-db.ts",
