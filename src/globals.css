@@ -1202,18 +1202,8 @@ body {
     pointer-events: none;
   }
   
-  html::before {
-    content: '';
-    position: fixed;
-    top: -100px;
-    left: 0;
-    right: 0;
-    height: 100px;
-    background: linear-gradient(to bottom right, #581c87, #4c1d95, #312e81);
-    background-color: #581c87;
-    z-index: -1;
-    pointer-events: none;
-  }
+  /* Removed html::before - it was causing visible purple bar above Safari address bar */
+  /* background-attachment: fixed on html/body already covers the top area */
 }
 
 /* Safari gradient fix for better rendering */
