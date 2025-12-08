@@ -167,24 +167,29 @@ function stage2BrandDealSignals(text: string): {
  * STAGE 3: LLM Binary Classifier (YES/NO)
  */
 async function stage3LLMBinaryClassifier(text: string): Promise<{ isValid: boolean; response: string }> {
-  const prompt = `You are a legal document classifier.
+  const prompt = `You are a legal document classifier. Your role is ADVISORY - signal-based detection will override your response.
 
 Reply ONLY with:
-YES → if this is a Brand Deal / Influencer / Creator Sponsorship Contract  
-NO → for ALL OTHER document types.
+YES → if this appears to be a Brand Deal / Influencer / Creator Sponsorship Contract  
+NO → if this is clearly NOT a brand deal (invoices, legal notices, employment, etc.)
 
-ONLY ACCEPT IF:
-- Brand + Creator/Influencer BOTH exist
-- Deliverables (posts, reels, videos, content)
-- Payment/compensation exists
+IMPORTANT CONTEXT:
+- Test/demo contracts (e.g., "Nike demo", "TEST contract") are VALID if they contain brand deal elements
+- High-risk clauses don't make it invalid - they just need flagging
+- Weak titles are OK if content shows brand collaboration
 
-ALWAYS REJECT:
-- Invoices, Receipts
-- Legal notices or court documents
-- Government forms (PAN, GST, Aadhaar)
-- Employment contracts
-- Rental, insurance, loan, property
-- NDA without payment + deliverables
+ONLY SUGGEST REJECTION FOR:
+- Invoices, Receipts, Bills
+- Legal notices or court documents (summons, petitions)
+- Government forms (PAN, GST, Aadhaar certificates)
+- Employment contracts (job offers, salary agreements)
+- Rental agreements, insurance policies, loan documents
+- Pure NDAs without any payment or deliverables
+
+ACCEPT (even if marked TEST/DEMO/HIGH RISK):
+- Any document with Brand + Creator/Influencer + Deliverables
+- Any document with Payment + Deliverables
+- Any document mentioning Instagram/YouTube/Reels with payment terms
 
 Reply ONLY:
 YES or NO
