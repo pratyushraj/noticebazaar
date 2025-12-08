@@ -261,7 +261,7 @@ function ChatHeaderScoped({
       "relative overflow-hidden"
     )}>
       {/* Vision Pro depth elevation - desktop only */}
-      <div className="hidden md:block">{vision.depth.elevation}</div>
+      <div className={cn("hidden md:block", vision.depth.elevation)} />
       
       {/* Spotlight gradient - desktop only */}
       <div className={cn("hidden md:block", vision.spotlight.base, "opacity-40")} />
