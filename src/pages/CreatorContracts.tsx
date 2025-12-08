@@ -184,7 +184,7 @@ const CreatorContracts = () => {
                 <SkeletonCard variant="secondary" />
               </div>
             ) : (
-              <div className={cn("grid grid-cols-2 gap-3 md:gap-5 mb-6")}>
+              <div className={cn("grid grid-cols-2 gap-3 md:gap-5 mb-4")}>
                 <StatCard
                   label="Total Deals"
                   value={stats.total}
@@ -204,11 +204,11 @@ const CreatorContracts = () => {
             )}
 
             {/* Section Separator - Matching Payments Page */}
-            <div className={cn("h-[1px] w-full bg-white/5 my-6")} />
+            <div className={cn("h-[1px] w-full bg-white/5 my-4")} />
 
             {/* Filter Tabs - Matching Payments Page Style */}
             <div className={cn(
-              "flex gap-2 overflow-x-auto overflow-y-visible py-1 mb-6",
+              "flex gap-2 overflow-x-auto overflow-y-visible py-1 mb-4",
               "[&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
             )}>
               {filters.map((filter) => {
@@ -346,11 +346,12 @@ const CreatorContracts = () => {
         </div>
       ) : (
         /* Empty State - Always show when no deals */
-        <div className={cn("py-12")}>
+        <div className={cn("py-4")}>
           {deals.length === 0 ? (
             <NoDealsEmptyState
               onAddDeal={() => navigate('/contract-upload')}
               onExploreBrands={() => navigate('/brand-directory')}
+              variant="compact"
             />
           ) : (
             <FilteredNoMatchesEmptyState
