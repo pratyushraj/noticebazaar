@@ -194,12 +194,12 @@ const HomePage = () => {
     <div 
       className="nb-screen-height bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 text-white overflow-hidden"
       style={{
-        minHeight: '100vh',
         minHeight: '-webkit-fill-available',
         paddingTop: 'env(safe-area-inset-top, 0px)',
-        paddingBottom: 'env(safe-area-inset-bottom, 0px)',
+        paddingBottom: 'max(120px, calc(env(safe-area-inset-bottom, 0px) + 120px))',
         paddingLeft: 'env(safe-area-inset-left, 0px)',
-        paddingRight: 'env(safe-area-inset-right, 0px)'
+        paddingRight: 'env(safe-area-inset-right, 0px)',
+        backgroundColor: '#581c87' // Fallback to prevent white gaps
       }}
     >
       {/* Navigation */}
@@ -596,8 +596,11 @@ const HomePage = () => {
 
       {/* Final CTA */}
       <section 
-        className="mt-8 space-y-4 md:space-y-6 pb-24 md:pb-16 px-4 sm:px-6 lg:px-8"
-        style={{ transform: 'translateZ(0)' }}
+        className="mt-8 space-y-4 md:space-y-6 px-4 sm:px-6 lg:px-8"
+        style={{ 
+          transform: 'translateZ(0)',
+          paddingBottom: 'max(120px, calc(env(safe-area-inset-bottom, 0px) + 120px))'
+        }}
       >
         <div className="max-w-4xl mx-auto text-center" style={{ transform: 'translateZ(0)' }}>
           <motion.div

@@ -34,20 +34,26 @@
 /* Extend background to cover safe areas on iOS - prevents white gaps at top/bottom */
 html {
   background: linear-gradient(to bottom right, #581c87, #4c1d95, #312e81);
+  background-color: #581c87; /* Fallback color to prevent white */
   min-height: 100vh;
   min-height: -webkit-fill-available;
   background-attachment: fixed;
   background-size: cover;
   background-repeat: no-repeat;
+  background-position: center;
 }
 
 body {
   background: linear-gradient(to bottom right, #581c87, #4c1d95, #312e81);
+  background-color: #581c87; /* Fallback color to prevent white */
   min-height: 100vh;
   min-height: -webkit-fill-available;
   background-attachment: fixed;
   background-size: cover;
   background-repeat: no-repeat;
+  background-position: center;
+  /* Add extra bottom space to cover Safari toolbar */
+  padding-bottom: max(100px, calc(env(safe-area-inset-bottom, 0px) + 100px));
 }
 
 /* Touch Feedback - Scale Animation */
@@ -1178,6 +1184,35 @@ body {
 @media screen and (min-width: 375px) {
   .ios-dynamic-island-safe {
     padding-top: max(59px, env(safe-area-inset-top, 0px));
+  }
+}
+
+/* Ensure background extends to cover Safari toolbar - prevents white gaps */
+@supports (-webkit-touch-callout: none) {
+  body::after {
+    content: '';
+    position: fixed;
+    bottom: -200px;
+    left: 0;
+    right: 0;
+    height: 200px;
+    background: linear-gradient(to bottom right, #581c87, #4c1d95, #312e81);
+    background-color: #581c87;
+    z-index: -1;
+    pointer-events: none;
+  }
+  
+  html::before {
+    content: '';
+    position: fixed;
+    top: -100px;
+    left: 0;
+    right: 0;
+    height: 100px;
+    background: linear-gradient(to bottom right, #581c87, #4c1d95, #312e81);
+    background-color: #581c87;
+    z-index: -1;
+    pointer-events: none;
   }
 }
 
