@@ -407,11 +407,13 @@ ${creatorName}`;
 
   // Calculate contract safety progress
   const getContractSafetyProgress = () => {
-    if (!analysisResults) return 0;
+    if (!analysisResults || !analysisResults.issues || analysisResults.issues.length === 0) return 0;
     const totalIssues = analysisResults.issues.length;
-    const resolvedCount = resolvedIssues.size;
-    const generatedCount = Array.from(clauseStates.values()).filter(s => s === 'success').length;
-    const progress = ((resolvedCount + generatedCount * 0.5) / totalIssues) * 100;
+    if (totalIssues === 0) return 100; // No issues = 100% protected
+    
+    const resolvedCount = resolvedIssues?.size || 0;
+    const generatedCount = clauseStates ? Array.from(clauseStates.values()).filter(s => s === 'success').length : 0;
+    const progress = totalIssues > 0 ? ((resolvedCount + generatedCount * 0.5) / totalIssues) * 100 : 0;
     return Math.min(100, Math.max(0, progress));
   };
 
@@ -1566,7 +1568,7 @@ ${creatorName}`;
             </div>
 
             {/* Contract Safety Progress Bar - Improvement Focused */}
-            {analysisResults.issues.length > 0 && (
+            {analysisResults && analysisResults.issues && analysisResults.issues.length > 0 && (
               <div className="bg-white/10 backdrop-blur-md rounded-2xl p-5 md:p-6 border border-white/10 shadow-lg mb-6">
                 <div className="flex items-center justify-between mb-3">
                   <h3 className="font-semibold text-lg flex items-center gap-2">
@@ -1575,26 +1577,39 @@ ${creatorName}`;
                   </h3>
                   <div className="flex flex-col items-end">
                     <span className="text-xl font-bold text-purple-300">
-                      {Math.round(getContractSafetyProgress()) === 0 
-                        ? 'Protection Not Optimized Yet' 
-                        : `${Math.round(getContractSafetyProgress())}% Protected`}
+                      {(() => {
+                        const progress = getContractSafetyProgress();
+                        const roundedProgress = Math.round(progress);
+                        return roundedProgress === 0 
+                          ? 'Protection Not Optimized Yet' 
+                          : `${roundedProgress}% Protected`;
+                      })()}
                     </span>
-                    {Math.round(getContractSafetyProgress()) === 0 && analysisResults.issues.length > 0 && (
-                      <span className="text-xs text-purple-400 mt-1">
-                        {analysisResults.issues.length - resolvedIssues.size} risks still unresolved
-                      </span>
-                    )}
-                    {Math.round(getContractSafetyProgress()) > 0 && Math.round(getContractSafetyProgress()) < 100 && (
-                      <span className="text-xs text-purple-400 mt-1">
-                        {analysisResults.issues.length - resolvedIssues.size} improvements remaining
-                      </span>
-                    )}
+                    {(() => {
+                      const progress = getContractSafetyProgress();
+                      const unresolvedCount = analysisResults.issues.length - (resolvedIssues?.size || 0);
+                      if (Math.round(progress) === 0 && analysisResults.issues.length > 0) {
+                        return (
+                          <span className="text-xs text-purple-400 mt-1">
+                            {unresolvedCount} {unresolvedCount === 1 ? 'risk' : 'risks'} still unresolved
+                          </span>
+                        );
+                      }
+                      if (Math.round(progress) > 0 && Math.round(progress) < 100) {
+                        return (
+                          <span className="text-xs text-purple-400 mt-1">
+                            {unresolvedCount} {unresolvedCount === 1 ? 'improvement' : 'improvements'} remaining
+                          </span>
+                        );
+                      }
+                      return null;
+                    })()}
                   </div>
                 </div>
                 <div className="relative h-3 bg-white/10 rounded-full overflow-hidden">
                   <motion.div
                     initial={{ width: 0 }}
-                    animate={{ width: `${getContractSafetyProgress()}%` }}
+                    animate={{ width: `${Math.max(0, Math.min(100, getContractSafetyProgress()))}%` }}
                     transition={{ duration: 1, ease: "easeOut" }}
                     className="absolute inset-y-0 left-0 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full"
                   />
