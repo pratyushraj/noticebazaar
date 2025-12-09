@@ -63,7 +63,7 @@ const Layout = ({ children }: LayoutProps) => {
         {/* Modern Navbar */}
         <Navbar />
         
-        <div className="flex flex-1 min-h-0 overflow-hidden md:overflow-visible">
+        <div className="flex flex-1 min-h-0 overflow-hidden md:overflow-visible flex-col">
           <main 
             id="main"
             className={cn(
@@ -74,15 +74,15 @@ const Layout = ({ children }: LayoutProps) => {
           >
             {children}
           </main>
+          
+          {/* Footer - Hidden on mobile, shown on desktop, positioned at bottom */}
+          <div className="hidden md:block text-center py-4 text-sm text-white/30 mt-auto">
+            <a href="#" className="hover:underline">Legal Resources</a> | <MadeWithDyad />
+          </div>
         </div>
         
         {/* Bottom Navigation - Primary navigation for creators (all screen sizes) */}
         {shouldShowBottomNav && <CreatorBottomNav />}
-        
-        {/* Footer - Hidden on mobile, shown on desktop */}
-        <div className="hidden md:block text-center py-8 text-sm text-white/30 mt-auto">
-          <a href="#" className="hover:underline">Legal Resources</a> | <MadeWithDyad />
-        </div>
       </div>
     </div>
   );

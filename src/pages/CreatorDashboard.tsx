@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from 'react';
-import { Home, Briefcase, CreditCard, Shield, MessageCircle, TrendingUp, DollarSign, Calendar, FileText, AlertCircle, Clock, ChevronRight, Plus, Search, Target, BarChart3, RefreshCw, LogOut, Loader2, Sparkles, XCircle } from 'lucide-react';
+import { Home, Briefcase, CreditCard, Shield, MessageCircle, TrendingUp, DollarSign, Calendar, FileText, AlertCircle, Clock, ChevronRight, Plus, Search, Target, BarChart3, RefreshCw, LogOut, Loader2, Sparkles, XCircle, Menu } from 'lucide-react';
 import { BottomSheet } from '@/components/ui/bottom-sheet';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useSignOut } from '@/lib/hooks/useAuth';
@@ -539,7 +539,7 @@ const CreatorDashboard = () => {
           // Better spacing on mobile
           "px-4 sm:px-5"
         )}>
-          {/* Creator Avatar - Replaces Menu Icon */}
+          {/* Sidebar Menu Icon - Left Side */}
           <motion.button 
             onClick={() => {
               setShowMenu(!showMenu);
@@ -548,18 +548,12 @@ const CreatorDashboard = () => {
             whileTap={animations.microTap}
             whileHover={window.innerWidth > 768 ? animations.microHover : undefined}
             className={cn(
-              "w-10 h-10",
-              radius.full,
-              "bg-gradient-to-br from-blue-600 to-purple-600",
-              "flex items-center justify-center",
-              typography.body,
-              "font-semibold flex-shrink-0",
-              "border-2 border-white/20",
-              shadows.md
+              buttons.icon,
+              "flex-shrink-0"
             )}
-            aria-label={showMenu ? "Close menu" : "Open profile menu"}
+            aria-label={showMenu ? "Close menu" : "Open menu"}
           >
-            {userData.avatar}
+            <Menu className={iconSizes.md} />
           </motion.button>
           
           <div className="flex items-center gap-2">
@@ -583,6 +577,28 @@ const CreatorDashboard = () => {
               aria-label="Search"
             >
               <Search className={iconSizes.md} />
+            </motion.button>
+            {/* Creator Avatar - Right Side */}
+            <motion.button 
+              onClick={() => {
+                setShowMenu(!showMenu);
+                triggerHaptic(HapticPatterns.light);
+              }}
+              whileTap={animations.microTap}
+              whileHover={window.innerWidth > 768 ? animations.microHover : undefined}
+              className={cn(
+                "w-10 h-10",
+                radius.full,
+                "bg-gradient-to-br from-blue-600 to-purple-600",
+                "flex items-center justify-center",
+                typography.body,
+                "font-semibold flex-shrink-0",
+                "border-2 border-white/20",
+                shadows.md
+              )}
+              aria-label={showMenu ? "Close profile menu" : "Open profile menu"}
+            >
+              {userData.avatar}
             </motion.button>
           </div>
         </div>
@@ -795,7 +811,7 @@ const CreatorDashboard = () => {
                         e.preventDefault();
                         e.stopPropagation();
                         triggerHaptic(HapticPatterns.medium);
-                        navigate('/creator-contracts');
+                        navigate('/contract-upload');
                       }}
                       onMouseDown={(e) => {
                         e.stopPropagation();

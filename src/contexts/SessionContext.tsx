@@ -367,10 +367,10 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
                   : '#/creator-dashboard';
                 window.history.replaceState(null, '', window.location.pathname + window.location.search + cleanRoute);
                 console.log('[SessionContext] Cleaned hash to:', cleanRoute);
-              }
+            }
             } catch (err) {
               console.error('[SessionContext] Exception setting session:', err);
-            }
+        }
           } else {
             console.warn('[SessionContext] Could not parse tokens from hash', { hasAccessToken: !!accessToken, hasRefreshToken: !!refreshToken });
           }
@@ -523,9 +523,18 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
             targetRoute = `#/${intendedRoute}`;
           }
           
-          // Clean up hash and set target route using replaceState to avoid triggering React Router
-          window.history.replaceState(null, '', window.location.pathname + window.location.search + targetRoute);
-          console.log('[SessionContext] Redirecting to:', targetRoute);
+          // Defer redirect using requestAnimationFrame to ensure React context is fully set up
+          // This prevents "useSession must be used within a SessionContextProvider" errors
+          // by allowing React to complete the current render cycle before navigation
+          requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+              // Use replaceState to avoid full page reload while ensuring context is ready
+              window.history.replaceState(null, '', window.location.pathname + window.location.search + targetRoute);
+              // Trigger a hashchange event to notify React Router
+              window.dispatchEvent(new HashChangeEvent('hashchange'));
+              console.log('[SessionContext] Redirecting to:', targetRoute);
+            });
+          });
         }
       }
     );

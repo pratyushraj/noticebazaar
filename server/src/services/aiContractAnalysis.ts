@@ -24,6 +24,7 @@ interface AIContractAnalysis {
     deliverables?: string;
     paymentSchedule?: string;
     exclusivity?: string;
+    brandName?: string;
   };
   recommendations: string[];
 }
@@ -93,7 +94,8 @@ Analyze this contract and return ONLY a valid JSON object with this exact struct
     "duration": "<duration>",
     "deliverables": "<deliverables>",
     "paymentSchedule": "<payment schedule>",
-    "exclusivity": "<exclusivity period>"
+    "exclusivity": "<exclusivity period>",
+    "brandName": "<brand or company name>"
   },
   "recommendations": ["<recommendation 1>", "<recommendation 2>"]
 }
@@ -200,9 +202,9 @@ async function callHuggingFace(model: string, prompt: string, apiKey?: string): 
       // Try to get error message from response
       let errorMessage = 'Unknown error';
       try {
-        const error = await response.json().catch(() => ({ error: 'Unknown error' })) as any;
+      const error = await response.json().catch(() => ({ error: 'Unknown error' })) as any;
         errorMessage = error.error || error.message || response.statusText;
-        console.error('[HuggingFace] API error:', response.status, error);
+      console.error('[HuggingFace] API error:', response.status, error);
       } catch (parseError) {
         const errorText = await response.text().catch(() => '');
         errorMessage = errorText || response.statusText;

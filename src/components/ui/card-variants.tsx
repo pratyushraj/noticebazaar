@@ -100,6 +100,7 @@ interface StatCardProps {
   subtitle?: string; // Additional info text below value (e.g., "+3 this month", "Across all deals")
   variant?: 'primary' | 'secondary' | 'tertiary';
   className?: string;
+  isEmpty?: boolean; // When value is 0, show placeholder text
 }
 
 export const StatCard = ({ 
@@ -109,38 +110,47 @@ export const StatCard = ({
   trend, 
   subtitle,
   variant = 'tertiary',
-  className 
+  className,
+  isEmpty = false
 }: StatCardProps) => {
+  const displayValue = isEmpty 
+    ? (label === 'Total Value' ? '₹0' : '0')
+    : (typeof value === 'number' ? (label === 'Total Value' ? `₹${value.toLocaleString('en-IN')}` : value.toLocaleString('en-IN')) : value);
+  
   return (
     <BaseCard variant={variant} className={cn(
-      "text-left aspect-square flex flex-col justify-between",
-      "min-w-0 w-full px-3 py-4 sm:px-4 sm:py-5",
+      "text-left flex flex-col justify-between",
+      "min-w-0 w-full px-4 py-4 md:py-5",
+      "border border-white/8 shadow-[0_18px_50px_rgba(0,0,0,0.35)]",
       "scale-[0.96] sm:scale-100",
       className
     )}>
       {/* Icon at top */}
       {icon && (
-        <div className="flex items-center mb-2 sm:mb-3">
-          <div className="w-9 h-9 sm:w-10 sm:h-10 p-2 rounded-xl bg-white/5 flex items-center justify-center">{icon}</div>
+        <div className="flex items-center mb-2 md:mb-3">
+          <div className="w-9 h-9 md:w-10 md:h-10 p-2 rounded-xl bg-white/5 flex items-center justify-center">{icon}</div>
         </div>
       )}
       
       {/* Label */}
-      <div className={cn("text-[10px] sm:text-xs tracking-wide opacity-80 mb-1 sm:mb-2")}>{label}</div>
+      <div className={cn("text-xs md:text-sm tracking-wide opacity-80 mb-1 md:mb-2")}>{label}</div>
       
       {/* Large Value */}
-      <div className={cn("text-xl sm:text-2xl font-semibold text-white mb-1 sm:mb-2")}>
-        {typeof value === 'number' ? value.toLocaleString('en-IN') : value}
+      <div className={cn("text-2xl md:text-3xl font-semibold text-white mb-1 md:mb-2")}>
+        {displayValue}
       </div>
       
-      {/* Subtitle or Trend */}
+      {/* Subtitle or Trend - Show on second line */}
       {subtitle ? (
-        <div className={cn("text-[10px] sm:text-xs font-medium", trend?.isPositive ? "text-green-400" : "text-white/70")}>
+        <div className={cn(
+          "text-xs md:text-sm font-medium leading-relaxed",
+          isEmpty ? "text-white/60" : (trend?.isPositive ? "text-green-400" : "text-white/70")
+        )}>
           {subtitle}
         </div>
       ) : trend && (
         <div className={cn(
-          "text-[10px] sm:text-xs font-medium",
+          "text-xs md:text-sm font-medium",
           trend.isPositive ? "text-green-400" : "text-red-400"
         )}>
           {trend.isPositive ? '+' : ''}{trend.value}%

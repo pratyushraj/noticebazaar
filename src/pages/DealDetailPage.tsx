@@ -2,7 +2,7 @@
 
 import { useState, useCallback, lazy, Suspense, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Eye, Download, Flag, Loader2, Building2, Calendar, FileText, CheckCircle, Clock } from 'lucide-react';
+import { ArrowLeft, Eye, Download, Flag, Loader2, Building2, Calendar, FileText, CheckCircle, Clock, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useDeal, DealProvider } from '@/contexts/DealContext';
 import { useIssues } from '@/lib/hooks/useIssues';
@@ -17,7 +17,7 @@ import { createCalendarEvent, downloadEventAsICal, openEventInGoogleCalendar } f
 import { DeliverableAutoInfo } from '@/components/deals/DeliverableAutoInfo';
 import { MessageBrandModal } from '@/components/brand-messages/MessageBrandModal';
 import ProgressUpdateSheet from '@/components/deals/ProgressUpdateSheet';
-import { useUpdateDealProgress, DealStage, STAGE_TO_PROGRESS } from '@/lib/hooks/useBrandDeals';
+import { useUpdateDealProgress, DealStage, STAGE_TO_PROGRESS, useDeleteBrandDeal } from '@/lib/hooks/useBrandDeals';
 import { triggerHaptic, HapticPatterns } from '@/lib/utils/haptics';
 import { animations, iconSizes } from '@/lib/design-system';
 import { motion } from 'framer-motion';
@@ -55,6 +55,10 @@ function DealDetailPageContent() {
   
   // Deal progress update
   const updateDealProgress = useUpdateDealProgress();
+  const deleteDeal = useDeleteBrandDeal();
+  
+  // Delete confirmation state
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   
   // Get current stage from deal status - helper function
   const getCurrentStage = (status: string | null | undefined, progressPercentage?: number | null): DealStage | undefined => {
@@ -485,7 +489,7 @@ Best regards`;
           </div>
 
           {/* Action Buttons */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
             <motion.button
               onClick={() => {
                 triggerHaptic(HapticPatterns.light);
@@ -524,6 +528,22 @@ Best regards`;
               <Flag className="w-5 h-5" />
               <span className="text-xs font-medium">Report</span>
             </button>
+            <motion.button
+              onClick={() => {
+                triggerHaptic(HapticPatterns.medium);
+                setShowDeleteConfirm(true);
+              }}
+              whileTap={animations.microTap}
+              disabled={deleteDeal.isPending}
+              className="flex flex-col items-center justify-center gap-2 p-3 bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 rounded-xl transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {deleteDeal.isPending ? (
+                <Loader2 className="w-5 h-5 animate-spin text-red-400" />
+              ) : (
+                <Trash2 className="w-5 h-5 text-red-400" />
+              )}
+              <span className="text-xs font-medium text-red-400">Delete</span>
+            </motion.button>
           </div>
         </div>
 
@@ -750,6 +770,83 @@ Best regards`;
         onStageSelect={handleProgressStageSelect}
         isLoading={updateDealProgress.isPending}
       />
+
+      {/* Delete Confirmation Dialog */}
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl p-6 max-w-md w-full border border-white/10 shadow-2xl"
+          >
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-12 h-12 rounded-full bg-red-500/20 flex items-center justify-center">
+                <Trash2 className="w-6 h-6 text-red-400" />
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-white">Delete Deal</h3>
+                <p className="text-sm text-white/60">This action cannot be undone</p>
+              </div>
+            </div>
+            
+            <p className="text-white/80 mb-6">
+              Are you sure you want to delete <span className="font-semibold">"{deal.brand_name}"</span>? 
+              This will permanently remove the deal and all associated data.
+            </p>
+            
+            <div className="flex gap-3">
+              <button
+                onClick={() => {
+                  triggerHaptic(HapticPatterns.light);
+                  setShowDeleteConfirm(false);
+                }}
+                disabled={deleteDeal.isPending}
+                className="flex-1 px-4 py-2.5 bg-white/10 hover:bg-white/15 border border-white/20 text-white rounded-xl font-medium transition-all disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <motion.button
+                onClick={async () => {
+                  if (!profile?.id) {
+                    toast.error('User not found');
+                    return;
+                  }
+                  
+                  triggerHaptic(HapticPatterns.medium);
+                  
+                  try {
+                    await deleteDeal.mutateAsync({
+                      id: deal.id,
+                      creator_id: profile.id,
+                      contract_file_url: deal.contract_file_url,
+                      invoice_file_url: deal.invoice_file_url,
+                    });
+                    
+                    toast.success('Deal deleted successfully');
+                    navigate('/creator-contracts');
+                  } catch (error: any) {
+                    console.error('[DealDetailPage] Delete error:', error);
+                    toast.error(error.message || 'Failed to delete deal');
+                  }
+                }}
+                disabled={deleteDeal.isPending}
+                whileTap={{ scale: 0.98 }}
+                className="flex-1 px-4 py-2.5 bg-red-500 hover:bg-red-600 text-white rounded-xl font-medium transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+              >
+                {deleteDeal.isPending ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Deleting...
+                  </>
+                ) : (
+                  'Delete Deal'
+                )}
+              </motion.button>
+            </div>
+          </motion.div>
+        </div>
+      )}
     </div>
   );
 }

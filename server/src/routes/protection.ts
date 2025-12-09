@@ -395,7 +395,7 @@ router.post('/generate-fix', async (req: AuthenticatedRequest, res: Response) =>
       // UUID format - direct lookup
       const { data, error: issueError } = await supabase
         .from('protection_issues')
-        .select('*, report:protection_reports!report_id(deal:brand_deals!deal_id(creator_id))')
+        .select('*, report:protection_reports!report_id(user_id, deal:brand_deals!deal_id(creator_id))')
         .eq('id', issueId)
         .single();
       
@@ -410,7 +410,7 @@ router.post('/generate-fix', async (req: AuthenticatedRequest, res: Response) =>
       // Lookup by reportId and issue identifier
       const { data: issues, error: issuesError } = await supabase
         .from('protection_issues')
-        .select('*, report:protection_reports!report_id(deal:brand_deals!deal_id(creator_id))')
+        .select('*, report:protection_reports!report_id(user_id, deal:brand_deals!deal_id(creator_id))')
         .eq('report_id', reportId)
         .order('created_at', { ascending: true });
 
@@ -444,20 +444,27 @@ router.post('/generate-fix', async (req: AuthenticatedRequest, res: Response) =>
       });
     }
 
-    // Check access
+    // Check access: allow if user created it, or if deal's creator matches, or if admin
     const report = issue.report as any;
-    if (report?.deal?.creator_id !== userId && req.user!.role !== 'admin') {
+    const hasAccess = 
+      report?.user_id === userId || // User created the report (if user_id column exists)
+      report?.deal?.creator_id === userId || // User owns the deal
+      !report?.deal_id || // No deal_id means user created it directly
+      req.user!.role === 'admin'; // Admin access
+
+    if (!hasAccess) {
       return res.status(403).json({ 
         success: false,
         error: 'Access denied' 
       });
     }
 
-    // Check if safe clause already exists
+    // Check if safe clause already exists (use issue.id if issueId wasn't provided)
+    const actualIssueId = issueId || issue.id;
     const { data: existingClause } = await supabase
       .from('safe_clauses')
       .select('*')
-      .eq('issue_id', issueId)
+      .eq('issue_id', actualIssueId)
       .single();
 
     if (existingClause) {
@@ -478,7 +485,7 @@ router.post('/generate-fix', async (req: AuthenticatedRequest, res: Response) =>
     // Save to database
     await supabase.from('safe_clauses').insert({
       report_id: issue.report_id,
-      issue_id: issueId,
+      issue_id: actualIssueId,
       original_clause: originalClause,
       safe_clause: result.safeClause,
       explanation: result.explanation

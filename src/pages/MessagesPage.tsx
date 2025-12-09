@@ -108,48 +108,104 @@ function AdvisorCardScoped({ advisor, selected, onClick }: { advisor: Advisor; s
         'border',
         // replaced-by-ultra-polish
         selected 
-          ? cn(badges.info, 'ring-2 ring-blue-400/50 border-blue-400/50', shadows.sm, spacing.cardPadding.secondary, 'scale-[1.02]') 
-          : cn(glass.appleSubtle, 'border-white/10', spacing.cardPadding.tertiary, 'hover:bg-white/10'),
-        spacing.cardPadding.secondary
+          ? cn(
+              badges.info, 
+              'ring-2 ring-blue-400/50 border-blue-400/50', 
+              shadows.sm, 
+              'px-3 py-2 md:py-2.5', 
+              'scale-[1.02]',
+              'bg-blue-500/10 backdrop-blur-sm'
+            ) 
+          : cn(
+              glass.appleSubtle, 
+              'border-white/10', 
+              'px-3 py-2 md:py-2.5', 
+              'hover:bg-white/10 hover:border-white/20',
+              'transition-all duration-200',
+              advisor.unreadCount && advisor.unreadCount > 0 && 'border-purple-400/30 bg-purple-500/5'
+            )
       )}
     >
       {/* Spotlight on hover */}
       {!selected && <div className={cn(vision.spotlight.hover, "opacity-0 group-hover:opacity-100")} />}
       <div className="relative flex-shrink-0">
         <LocalAvatar size="sm" src={advisor.avatarUrl} alt={advisor.name} />
+        {/* Online status ring on avatar */}
         {advisor.online && (
-          <span className="absolute right-0 bottom-0 inline-block w-2.5 h-2.5 bg-green-400 rounded-full ring-2 ring-background" />
-        )}
-        {/* Unread dot - replaced-by-ultra-polish */}
-        {advisor.unreadCount && advisor.unreadCount > 0 && (
-          <span className={cn("absolute -top-1 -right-1 inline-flex items-center justify-center", iconSizes.md, badges.danger, radius.full, typography.caption, "font-semibold ring-2 ring-background")}>
-            {advisor.unreadCount > 9 ? '9+' : advisor.unreadCount}
-          </span>
+          <span className="absolute inset-0 rounded-full ring-2 ring-green-400/50 ring-offset-2 ring-offset-transparent animate-pulse" />
         )}
       </div>
 
       <div className="flex-1 min-w-0 relative z-10">
-        <div className="flex items-center gap-2">
-          <div className={cn(typography.body, "font-semibold text-white truncate")}>{advisor.name}</div>
+        {/* Top row: Name + Status + Timestamp */}
+        <div className="flex items-center justify-between gap-2 mb-0.5">
+          <div className="flex items-center gap-2 flex-1 min-w-0">
+            <div className={cn(typography.body, "font-semibold text-white truncate text-sm md:text-base")}>{advisor.name}</div>
+            {/* Online status dot with pulse animation */}
+            {advisor.online && (
+              <span className="inline-block w-2 h-2 bg-green-400 rounded-full ring-1 ring-white/20 animate-pulse" />
+            )}
+            {/* Typing indicator */}
           {advisor.isTyping && (
-            <div className="flex gap-1">
+              <div className="flex gap-0.5 items-center">
               <span className={cn("w-1.5 h-1.5 bg-blue-400", radius.full, "animate-bounce")} style={{ animationDelay: '0ms' }} />
               <span className={cn("w-1.5 h-1.5 bg-blue-400", radius.full, "animate-bounce")} style={{ animationDelay: '150ms' }} />
               <span className={cn("w-1.5 h-1.5 bg-blue-400", radius.full, "animate-bounce")} style={{ animationDelay: '300ms' }} />
+                <span className="text-[10px] text-blue-400 ml-1">typing...</span>
             </div>
           )}
         </div>
-        <div className={cn(typography.bodySmall, "text-white/60 truncate")}>{advisor.role}</div>
-        {/* Last message preview */}
-        {advisor.lastMessage && (
-          <div className={cn(typography.bodySmall, "text-white/50 truncate mt-0.5")}>
-            {advisor.lastMessage}
+          {/* Timestamp or unread indicator */}
+          {advisor.unreadCount && advisor.unreadCount > 0 ? (
+            <span className={cn(
+              "flex-shrink-0 px-1.5 py-0.5 rounded-full text-[10px] font-semibold",
+              "bg-purple-500 text-white",
+              "animate-pulse"
+            )}>
+              {advisor.unreadCount > 9 ? '9+' : advisor.unreadCount}
+            </span>
+          ) : advisor.lastMessage ? (
+            <span className="text-[10px] text-white/40 flex-shrink-0">Now</span>
+          ) : null}
           </div>
-        )}
+        
+        {/* Role - subtle */}
+        <div className={cn("text-white/50 truncate text-[10px] md:text-xs mb-1")}>{advisor.role}</div>
+        
+        {/* Last message preview - styled like chat preview */}
+        <div className={cn(
+          "truncate text-[11px] md:text-xs leading-tight",
+          advisor.lastMessage 
+            ? "text-white/70 font-medium" 
+            : "text-white/50 italic",
+          advisor.unreadCount && advisor.unreadCount > 0 && "text-white/90 font-semibold"
+        )}>
+          {advisor.lastMessage ? (
+            <span className="flex items-center gap-1">
+              <span className="truncate">{advisor.lastMessage}</span>
+            </span>
+          ) : (
+            <span>Tap to start conversation</span>
+          )}
+        </div>
       </div>
 
-      <div className={cn('p-1', radius.md, "flex-shrink-0 relative z-10", selected ? 'text-blue-400' : 'text-white/40')}>
+      {/* Chat icon - more prominent when unread */}
+      <div className={cn(
+        'p-1.5', 
+        radius.md, 
+        "flex-shrink-0 relative z-10 transition-all duration-200",
+        selected 
+          ? 'text-blue-400 bg-blue-400/10' 
+          : advisor.unreadCount && advisor.unreadCount > 0
+          ? 'text-purple-400 bg-purple-400/10'
+          : 'text-white/40'
+      )}>
         <MessageSquare className={iconSizes.sm} />
+        {/* New message indicator */}
+        {advisor.unreadCount && advisor.unreadCount > 0 && !selected && (
+          <span className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-purple-500 rounded-full animate-ping" />
+        )}
       </div>
     </motion.button>
   );
@@ -208,7 +264,11 @@ function AdvisorListScoped({
       radius.lg,
       glass.apple,
       shadows.sm,
-      "flex flex-col overflow-hidden relative"
+      "flex flex-col overflow-hidden relative",
+      // Match height with chat window on iPad
+      "h-full",
+      // Add bottom padding on iPad to account for bottom navigation (48px nav height + safe area)
+      "md:pb-[calc(48px+env(safe-area-inset-bottom,0px))]"
     )}>
       {/* Vision Pro depth elevation */}
       <div className={vision.depth.elevation} />
@@ -216,14 +276,21 @@ function AdvisorListScoped({
       {/* Spotlight gradient */}
       <div className={cn(vision.spotlight.base, "opacity-30")} />
       
-      <div className={cn("px-4 py-3 border-b border-white/10", colors.bg.secondary, "relative z-10")}>
-        <div className={cn(typography.label, "text-white/60")}>Select Advisor</div>
+      <div className={cn("px-4 py-2 md:py-2.5 border-b border-white/10", colors.bg.secondary, "relative z-10")}>
+        <div className={cn(typography.label, "text-white/60 text-xs md:text-sm")}>Select Advisor</div>
       </div>
 
-      <div className="flex-1 relative z-10 overflow-visible">
-        <div className={cn(spacing.cardPadding.tertiary, "flex flex-col gap-2")}>
-          {advisors.map((a) => (
-            <AdvisorCardScoped key={a.id} advisor={a} selected={selectedId === a.id} onClick={onSelect} />
+      <div className="flex-1 relative z-10 overflow-y-auto overflow-x-hidden min-h-0">
+        <div className={cn("px-3 py-2 md:px-3 md:py-2", "flex flex-col gap-2 md:gap-2.5")}>
+          {advisors.map((a, index) => (
+            <motion.div
+              key={a.id}
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: index * 0.05, duration: 0.2 }}
+            >
+              <AdvisorCardScoped advisor={a} selected={selectedId === a.id} onClick={onSelect} />
+            </motion.div>
           ))}
         </div>
       </div>
@@ -281,18 +348,7 @@ function ChatHeaderScoped({
             onToggle={handleToggle}
           />
         )}
-        <div className={cn(
-          "hidden md:inline-flex items-center gap-1.5",
-          radius.md,
-          spacing.cardPadding.tertiary,
-          "border border-white/10",
-          colors.bg.secondary,
-          typography.caption,
-          "text-white/60"
-        )}>
-          <Lock className={iconSizes.xs} />
-          <span>End-to-end encrypted</span>
-        </div>
+        {/* Removed End-to-end encrypted badge from header - moved to bottom */}
       </div>
     </div>
   );
@@ -1052,7 +1108,7 @@ function ChatWindowScoped({
         style={{ WebkitOverflowScrolling: 'touch' }}
       >
         {!hasMessages ? (
-          <div className="mb-0 md:mb-8">
+          <div className="mb-0 md:mb-8 flex items-center justify-center min-h-full md:min-h-[60vh]">
             <NoMessagesEmptyState
               onStartChat={() => onSend?.('Hello! I need help.')}
             />
@@ -1108,10 +1164,10 @@ function ChatWindowScoped({
         )}
       </div>
 
-      {/* Security & Trust UI - Desktop */}
-      <div className="px-4 py-2 hidden md:flex items-center gap-2 text-white/60 text-xs border-t border-white/10">
-        <Lock className="w-3 h-3" />
-        <span>All chats are end-to-end encrypted & confidential</span>
+      {/* Security & Trust UI - Desktop - Moved from header for cleaner design */}
+      <div className="px-4 py-2 hidden md:flex items-center gap-2 text-white/50 text-xs border-t border-white/10">
+        <Lock className="w-3 h-3 text-white/40" />
+        <span>End-to-end encrypted</span>
       </div>
 
       {/* Contextual Quick Actions - Desktop */}
@@ -1154,7 +1210,7 @@ function ChatWindowScoped({
         ) : null;
       })()}
 
-      {/* Input bar - matching LawyerDashboard style */}
+      {/* Input bar - matching LawyerDashboard style - Show on tablet (768px+) and desktop */}
       <div className={cn("p-4 border-t border-white/10 flex-shrink-0 hidden md:flex", glass.apple)}>
         <div className="flex gap-2">
           <input
@@ -1167,20 +1223,27 @@ function ChatWindowScoped({
             className={cn(
               "flex-1 px-4 py-2 rounded-xl",
               glass.appleSubtle,
-              "border border-white/10",
-              "text-white placeholder:text-white/40",
-              "focus:outline-none focus:ring-2 focus:ring-purple-400/50"
+              "border border-white/15",
+              "text-white placeholder:text-white/50",
+              "bg-white/10 backdrop-blur-xl",
+              "shadow-[0_2px_8px_rgba(0,0,0,0.2)]",
+              "focus:outline-none focus:ring-2 focus:ring-purple-400/50 focus:border-purple-400/30",
+              "transition-all duration-200"
             )}
           />
           <motion.button
             onClick={handleSend}
             disabled={!newMessage.trim() || isLoading}
             whileTap={animations.microTap}
+            whileHover={!isLoading && newMessage.trim() ? { scale: 1.05 } : undefined}
             className={cn(
               "px-6 py-2 rounded-xl font-medium",
               "bg-purple-500 hover:bg-purple-600",
               "disabled:opacity-50 disabled:cursor-not-allowed",
-              "transition-colors"
+              "transition-all duration-200",
+              "shadow-[0_2px_8px_rgba(138,60,255,0.3)]",
+              "focus:shadow-[0_4px_12px_rgba(138,60,255,0.5)]",
+              newMessage.trim() && !isLoading && "brightness-110"
             )}
           >
             <ArrowUp className={iconSizes.sm} />
@@ -1682,9 +1745,9 @@ export default function MessagesPage() {
   return (
     <ContextualTipsProvider currentView="messages">
     <div className="flex flex-col h-screen overflow-hidden bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900">
-      {/* Content area - simplified structure */}
-      <div className="flex-1 min-h-0 flex gap-6 md:p-6 px-3 md:px-6 overflow-hidden">
-        {/* Desktop: Fixed sidebar */}
+      {/* Content area - simplified structure - Maintain 2-column layout on iPad (≥768px) */}
+      <div className="flex-1 min-h-0 flex gap-4 md:gap-6 md:p-6 px-3 md:px-6 overflow-hidden">
+        {/* Desktop & iPad: Fixed sidebar - Always visible at ≥768px */}
         {!isMobile && (
           <AdvisorListScoped
             advisors={advisorsWithMetadata}
@@ -1695,7 +1758,8 @@ export default function MessagesPage() {
         )}
 
         {/* Chat Window - simplified to single flex container, no h-full */}
-        <div className="flex-1 min-w-0 flex flex-col min-h-0 -mx-3 md:mx-0 overflow-hidden">
+        {/* Add bottom padding on iPad to account for bottom navigation */}
+        <div className="flex-1 min-w-0 flex flex-col min-h-0 -mx-3 md:mx-0 overflow-hidden md:pb-[calc(48px+env(safe-area-inset-bottom,0px))]">
           <ChatWindowScoped
             advisor={selectedAdvisor}
             advisors={advisors}

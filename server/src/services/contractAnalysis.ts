@@ -32,6 +32,7 @@ export interface AnalysisResult {
     paymentSchedule?: string;
     exclusivity?: string;
     payment?: string; // Added for negotiation power score calculation
+    brandName?: string;
   };
   recommendations: string[];
 }
@@ -187,17 +188,17 @@ async function analyzeContractText(text: string): Promise<AnalysisResult> {
   
   console.log(`[ContractAnalysis] Using ${provider} AI-powered analysis with model: ${model}`);
 
-  try {
-    const aiAnalysis = await analyzeContractWithAI(text);
+    try {
+      const aiAnalysis = await analyzeContractWithAI(text);
     console.log(`[ContractAnalysis] ${provider} AI analysis completed successfully`);
-    
-    // Calculate Negotiation Power Score for AI analysis
-    const result = aiAnalysis as AnalysisResult;
-    result.negotiationPowerScore = calculateNegotiationPowerScore(result);
-    console.log('[ContractAnalysis] Negotiation Power Score calculated:', result.negotiationPowerScore);
-    
-    return result;
-  } catch (error: any) {
+      
+      // Calculate Negotiation Power Score for AI analysis
+      const result = aiAnalysis as AnalysisResult;
+      result.negotiationPowerScore = calculateNegotiationPowerScore(result);
+      console.log('[ContractAnalysis] Negotiation Power Score calculated:', result.negotiationPowerScore);
+      
+      return result;
+    } catch (error: any) {
     console.error(`[ContractAnalysis] ${provider} AI analysis failed:`, error);
     // NO FALLBACK - throw error instead of falling back to rules
     throw new Error(`${provider} AI analysis failed: ${error.message || 'Unknown error'}. No rule-based fallback available.`);

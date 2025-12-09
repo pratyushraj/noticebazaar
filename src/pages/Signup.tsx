@@ -349,7 +349,7 @@ const Signup = () => {
                         queryParams: {
                           access_type: 'offline',
                           prompt: 'consent',
-                        },
+                      },
                       },
                     });
                     if (error) {

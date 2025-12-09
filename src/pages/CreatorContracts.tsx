@@ -2,16 +2,14 @@
 
 import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Briefcase, TrendingUp, Clock, CheckCircle, AlertCircle, IndianRupee, Calendar, ChevronRight, Plus } from 'lucide-react';
+import { Briefcase, TrendingUp, Clock, CheckCircle, AlertCircle, IndianRupee, Calendar, ChevronRight } from 'lucide-react';
 import { useSession } from '@/contexts/SessionContext';
 import { useBrandDeals } from '@/lib/hooks/useBrandDeals';
-import { SegmentedControl } from '@/components/ui/segmented-control';
 import { motion } from 'framer-motion';
 import { ContextualTipsProvider } from '@/components/contextual-tips/ContextualTipsProvider';
 import { FilteredNoMatchesEmptyState, NoDealsEmptyState } from '@/components/empty-states/PreconfiguredEmptyStates';
-import { sectionLayout, animations, spacing, typography, iconSizes, radius, shadows, zIndex, glass, vision, motion as motionTokens, gradients, separators, scroll } from '@/lib/design-system';
+import { animations, spacing, typography, iconSizes, radius, motion as motionTokens, gradients } from '@/lib/design-system';
 import { BaseCard, StatCard } from '@/components/ui/card-variants';
-import { Divider } from '@/components/ui/Divider';
 import { triggerHaptic, HapticPatterns } from '@/lib/utils/haptics';
 import { ErrorBoundary } from '@/components/ui/error-boundary';
 import { SkeletonCard } from '@/components/ui/SkeletonCard';
@@ -167,48 +165,54 @@ const CreatorContracts = () => {
   return (
     <ErrorBoundary>
       <ContextualTipsProvider currentView="deals">
-        <div className={cn(`min-h-full ${gradients.page} text-white ${spacing.page} pb-24 safe-area-fix`)}>
+        <div className={cn(
+          `min-h-full ${gradients.page} text-white`,
+          "px-4 pt-4 sm:px-5 md:px-6 md:pt-6 lg:px-8",
+          "pb-[88px] md:pb-[96px] lg:pb-[104px] safe-area-fix"
+        )} style={{ paddingBottom: 'max(88px, calc(88px + env(safe-area-inset-bottom, 0px)))' }}>
           {/* Header - Matching Payments Page */}
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <h1 className={cn(typography.h1, "mb-1")}>Brand Deals</h1>
+          <div className="flex items-center justify-between mb-4 md:mb-6">
+            <div className="space-y-1 md:space-y-2">
+              <h1 className={cn(typography.h1, "mb-0")}>Brand Deals</h1>
               <p className={cn(typography.body, "font-medium")}>Track and manage your partnerships</p>
             </div>
           </div>
 
           <div className={cn("min-h-[200px]", spacing.section)}>
-            {/* Stats Overview - Always visible */}
-            {isLoadingDeals ? (
-              <div className={sectionLayout.grid.two}>
-                <SkeletonCard variant="secondary" />
-                <SkeletonCard variant="secondary" />
-              </div>
-            ) : (
-              <div className={cn("grid grid-cols-2 gap-3 md:gap-5 mb-4")}>
-                <StatCard
-                  label="Total Deals"
-                  value={stats.total}
-                  icon={<Briefcase className={cn(iconSizes.md, "text-white")} />}
-                  variant="secondary"
-                  subtitle={stats.thisMonth > 0 ? `+${stats.thisMonth} this month` : undefined}
-                  trend={stats.thisMonth > 0 ? { value: stats.thisMonth, isPositive: true } : undefined}
-                />
-                <StatCard
-                  label="Total Value"
-                  value={stats.totalValue}
-                  icon={<IndianRupee className={cn(iconSizes.md, "text-white")} />}
-                  variant="secondary"
-                  subtitle="Across all deals"
-                />
-              </div>
-            )}
+            {/* Stats Overview - Compact Grid */}
+            <section className="mb-4 md:mb-6">
+              {isLoadingDeals ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+                  <SkeletonCard variant="secondary" />
+                  <SkeletonCard variant="secondary" />
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+                  <StatCard
+                    label="Total Deals"
+                    value={stats.total}
+                    icon={<Briefcase className={cn(iconSizes.md, "text-white")} />}
+                    variant="secondary"
+                    subtitle={stats.total === 0 ? "No deals yet" : (stats.thisMonth > 0 ? `+${stats.thisMonth} this month` : undefined)}
+                    trend={stats.thisMonth > 0 ? { value: stats.thisMonth, isPositive: true } : undefined}
+                    isEmpty={stats.total === 0}
+                  />
+                  <StatCard
+                    label="Total Value"
+                    value={stats.totalValue}
+                    icon={<IndianRupee className={cn(iconSizes.md, "text-white")} />}
+                    variant="secondary"
+                    subtitle={stats.totalValue === 0 ? "Start your first deal to see total earnings" : "Across all deals"}
+                    isEmpty={stats.totalValue === 0}
+                  />
+                </div>
+              )}
+            </section>
 
-            {/* Section Separator - Matching Payments Page */}
-            <div className={cn("h-[1px] w-full bg-white/5 my-4")} />
-
-            {/* Filter Tabs - Matching Payments Page Style */}
+            {/* Filter Tabs - Centered under stats */}
             <div className={cn(
-              "flex gap-2 overflow-x-auto overflow-y-visible py-1 mb-4",
+              "flex flex-wrap items-center justify-center gap-3 md:gap-4 mt-4 md:mt-6 mb-4 md:mb-6",
+              "overflow-x-auto overflow-y-visible py-1",
               "[&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
             )}>
               {filters.map((filter) => {
@@ -223,7 +227,7 @@ const CreatorContracts = () => {
                     whileTap={animations.microTap}
                     className={cn(
                       "whitespace-nowrap rounded-full border transition-all select-none",
-                      "text-xs sm:text-sm px-2 py-1.5",
+                      "text-sm md:text-base px-4 py-1.5 md:px-5 md:py-2",
                       "flex-shrink-0 font-semibold",
                       isActive
                         ? "bg-white/15 text-white border-2 border-white/20 scale-[1.02] shadow-sm"
@@ -244,14 +248,16 @@ const CreatorContracts = () => {
               })}
             </div>
 
-      {/* Loading State */}
-      {isLoadingDeals ? (
-        <div className={cn("py-12 text-center")}>
-          <div className="text-white/60">Loading deals...</div>
-        </div>
-      ) : filteredDeals.length > 0 ? (
-        /* Deals List - Matching Payments Page Card Style */
-        <div className={cn("space-y-5 sm:space-y-6")}>
+            {/* Content Section */}
+            <section className="flex flex-col gap-6 md:gap-8">
+              {/* Loading State */}
+              {isLoadingDeals ? (
+                <div className={cn("py-12 text-center")}>
+                  <div className="text-white/60">Loading deals...</div>
+                </div>
+              ) : filteredDeals.length > 0 ? (
+                /* Deals List - Matching Payments Page Card Style */
+                <div className={cn("space-y-5 sm:space-y-6")}>
           {filteredDeals.map((deal, index) => {
             const statusInfo = getStatusConfig(deal.status);
             const StatusIcon = statusInfo.icon;
@@ -343,24 +349,27 @@ const CreatorContracts = () => {
               </motion.div>
             );
           })}
-        </div>
-      ) : (
-        /* Empty State - Always show when no deals */
-        <div className={cn("py-4")}>
-          {deals.length === 0 ? (
-            <NoDealsEmptyState
-              onAddDeal={() => navigate('/contract-upload')}
-              onExploreBrands={() => navigate('/brand-directory')}
-              variant="compact"
-            />
-          ) : (
-            <FilteredNoMatchesEmptyState
-              onClearFilters={() => setActiveFilter('all')}
-              filterCount={activeFilter !== 'all' ? 1 : 0}
-            />
-          )}
-        </div>
-      )}
+                </div>
+              ) : (
+                /* Empty State - Centered and compact */
+                <div className="flex justify-center md:pt-6">
+                  <div className="w-full max-w-xl text-center">
+                    {deals.length === 0 ? (
+                      <NoDealsEmptyState
+                        onAddDeal={() => navigate('/contract-upload')}
+                        onExploreBrands={() => navigate('/brand-directory')}
+                        variant="compact"
+                      />
+                    ) : (
+                      <FilteredNoMatchesEmptyState
+                        onClearFilters={() => setActiveFilter('all')}
+                        filterCount={activeFilter !== 'all' ? 1 : 0}
+                      />
+                    )}
+                  </div>
+                </div>
+              )}
+            </section>
 
           </div>
         </div>

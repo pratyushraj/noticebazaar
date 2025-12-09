@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { MessageSquare, FileText, Search, Filter, X, Upload, Briefcase, Wallet, Sparkles, Scale, BarChart3 } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { EmptyState } from './EmptyState';
 
 /**
@@ -23,37 +24,56 @@ const EmptyActionButton: React.FC<{
   label: string;
   onClick: () => void;
 }> = ({ icon, label, onClick }) => (
-  <button
+  <motion.button
     onClick={onClick}
-    className="flex flex-col items-center justify-center h-12 md:h-14 rounded-xl bg-white/10 border border-white/10 backdrop-blur-xl text-white/80 text-[12px] md:text-[14px] font-medium active:scale-[0.96] transition-all shadow-[0_4px_12px_rgba(0,0,0,0.15)] hover:bg-white/20 hover:border-white/15"
+    whileHover={{ y: -2, scale: 1.02 }}
+    whileTap={{ scale: 0.98 }}
+    className="flex items-center justify-center gap-2 h-12 md:h-14 rounded-xl bg-white/10 border-2 border-white/20 backdrop-blur-xl text-white/90 text-[12px] md:text-[14px] font-medium transition-all shadow-[0_4px_12px_rgba(0,0,0,0.15)] hover:bg-white/20 hover:border-white/30 hover:shadow-[0_6px_16px_rgba(0,0,0,0.25)] relative group"
   >
-    <div className="mb-1 md:mb-1.5 text-white/70 scale-90 md:scale-100">{icon}</div>
+    <div className="text-white/80 scale-90 md:scale-100">{icon}</div>
     <span className="leading-tight">{label}</span>
-  </button>
+    <svg className="w-4 h-4 text-white/60 group-hover:text-white/80 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+    </svg>
+  </motion.button>
 );
 
 export const NoMessagesEmptyState: React.FC<NoMessagesEmptyStateProps> = ({
   onStartChat,
 }) => {
   return (
-    <div className="flex flex-col items-center px-4 pt-2 pb-2 max-w-lg mx-auto w-full">
-      {/* Empty Icon */}
-      <div className="w-12 h-12 md:w-20 md:h-20 rounded-full bg-white/10 backdrop-blur-xl border border-white/15 flex items-center justify-center mb-3 md:mb-4 shadow-[0_4px_12px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.1)]">
-        <MessageSquare className="w-6 h-6 md:w-10 md:h-10 text-white/60" />
-      </div>
+    <div className="flex flex-col items-center px-4 pt-2 pb-2 max-w-lg mx-auto w-full relative">
+      {/* Gradient glow behind empty card */}
+      <div className="absolute inset-0 bg-gradient-to-br from-purple-500/20 via-indigo-500/20 to-purple-600/20 rounded-2xl blur-xl -z-10 animate-pulse" />
+      
+      {/* Empty Icon with pulsing animation */}
+      <motion.div 
+        animate={{ 
+          scale: [1, 1.05, 1],
+          opacity: [0.6, 0.8, 0.6]
+        }}
+        transition={{ 
+          duration: 2,
+          repeat: Infinity,
+          ease: "easeInOut"
+        }}
+        className="w-12 h-12 md:w-20 md:h-20 rounded-full bg-white/10 backdrop-blur-xl border border-white/15 flex items-center justify-center mb-3 md:mb-4 shadow-[0_4px_12px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.1)] relative z-10"
+      >
+        <MessageSquare className="w-6 h-6 md:w-10 md:h-10 text-white/70" />
+      </motion.div>
 
       {/* Title */}
-      <h2 className="text-[18px] md:text-[22px] font-semibold text-white mb-1.5 md:mb-2 text-center">
+      <h2 className="text-[18px] md:text-[22px] font-semibold text-white mb-1.5 md:mb-2 text-center relative z-10">
         No Messages Yet
       </h2>
 
-      {/* Subtitle */}
-      <p className="text-center text-[12px] md:text-[15px] leading-snug md:leading-relaxed text-white/70 mb-4 md:mb-6 px-2 max-w-sm mx-auto">
-        Start a conversation with your advisor to get help with contracts, payments, or legal questions.
+      {/* Subtitle - More emotional */}
+      <p className="text-center text-[12px] md:text-[15px] leading-snug md:leading-relaxed text-white/80 mb-4 md:mb-6 px-2 max-w-sm mx-auto relative z-10">
+        Your legal advisor is ready when you are.
       </p>
 
       {/* Action Buttons */}
-      <div className="grid grid-cols-2 gap-2 md:gap-3 w-full max-w-md">
+      <div className="grid grid-cols-2 gap-2 md:gap-3 w-full max-w-md relative z-10">
         <EmptyActionButton
           icon={<FileText className="w-4 h-4" />}
           label="Contract Review"

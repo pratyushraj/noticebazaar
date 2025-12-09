@@ -290,8 +290,8 @@ export async function classifyDocumentTypeWithAI(text: string): Promise<Document
       confidence: 0.0,
       reasoning: "Text too short (< 100 characters)"
     };
-  }
-  
+    }
+
   // ================================
   // STAGE 1: Hard Rejection Filter
   // ================================

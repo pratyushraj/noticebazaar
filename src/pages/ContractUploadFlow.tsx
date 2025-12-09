@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ArrowLeft, Upload, FileText, CheckCircle, AlertTriangle, XCircle, Loader, Sparkles, Shield, Eye, Download, IndianRupee, Calendar, Loader2, Copy, Wrench, Send, FileCheck, X, Wand2, Lock, Info, MessageSquare, Mail, ChevronDown, ChevronUp, TrendingUp, DollarSign, FileCode, Ban, AlertCircle } from 'lucide-react';
+import { ArrowLeft, Upload, FileText, CheckCircle, AlertTriangle, XCircle, Loader, Sparkles, Shield, Eye, Download, IndianRupee, Calendar, Loader2, Copy, Wrench, Send, FileCheck, X, Wand2, Lock, Info, MessageSquare, Mail, ChevronDown, ChevronUp, TrendingUp, DollarSign, FileCode, Ban, AlertCircle, ArrowDown, Clock, Star, Heart, Zap, CreditCard, Building2, Gift, Package } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { SkeletonLoader } from '@/components/ui/SkeletonLoader';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '@/components/ui/tooltip';
 import { useNavigate } from 'react-router-dom';
@@ -20,6 +21,22 @@ const ContractUploadFlow = () => {
   const { profile, session } = useSession();
   const addDealMutation = useAddBrandDeal();
   const [step, setStep] = useState('upload'); // upload, uploading, scanning, analyzing, results, upload-error, review-error, validation-error
+  const [dealType, setDealType] = useState<'contract' | 'barter'>('contract'); // 'contract' or 'barter'
+  
+  // Barter Deal State
+  const [barterChatText, setBarterChatText] = useState('');
+  const [barterFormData, setBarterFormData] = useState({
+    brandName: '',
+    productName: '',
+    deliverables: '',
+    productValue: '',
+    usageRights: '',
+    timeline: '',
+  });
+  const [barterInputMode, setBarterInputMode] = useState<'chat' | 'form'>('chat'); // 'chat' or 'form'
+  const [isGeneratingBarter, setIsGeneratingBarter] = useState(false);
+  const [barterError, setBarterError] = useState<string | null>(null);
+  const [isBarterDeal, setIsBarterDeal] = useState(false); // Flag to track if current analysis is from barter
   const [uploadProgress, setUploadProgress] = useState(0);
   const [scanProgress, setScanProgress] = useState(0);
   const [fileName, setFileName] = useState('');
@@ -38,6 +55,10 @@ const ContractUploadFlow = () => {
   const [isGeneratingMessage, setIsGeneratingMessage] = useState(false);
   const [brandEmail, setBrandEmail] = useState('');
   const [isSendingEmail, setIsSendingEmail] = useState(false);
+  
+  // Brand Approval Tracker State
+  const [brandApprovalStatus, setBrandApprovalStatus] = useState<'sent' | 'viewed' | 'negotiating' | 'approved' | 'rejected' | null>(null);
+  const [approvalStatusUpdatedAt, setApprovalStatusUpdatedAt] = useState<Date | null>(null);
   
   // Helper function to format negotiation message with dynamic fields
   const formatNegotiationMessage = (baseMessage: string): string => {
@@ -81,24 +102,32 @@ const ContractUploadFlow = () => {
     }
     issuesContent = issuesContent.trim();
 
-    // Format the message with dynamic fields using the specified template
-    let formattedMessage = `Dear ${brandName},
+    // Format the message with India-optimized template
+    let formattedMessage = `Subject: Requested Revisions for ${brandName} Collaboration Agreement
 
-Thank you for sharing the contract for the collaboration valued at ${dealValue}. I have reviewed the agreement and would like to request a few small revisions to ensure clarity and a smooth working relationship for both sides.
+Dear ${brandName},
 
-${issuesContent}`;
+Thank you for sharing the contract and for the opportunity to collaborate. I truly appreciate the interest and am excited about the potential association.
 
-    // Add duration if available
-    if (duration) {
-      formattedMessage += `\n\nThis collaboration is planned for a duration of ${duration}.`;
-    }
+After reviewing the agreement, I would like to request a few minor revisions to ensure clarity and fairness for both parties:
 
-    formattedMessage += `\n\nThese changes will help protect both parties and ensure long-term clarity and flexibility.
+${issuesContent}
 
-Kindly share a revised version of the contract incorporating these changes at your convenience.
+These changes will help us maintain a long-term and professional working relationship.
+
+Kindly share the revised agreement at your convenience.
+
+Looking forward to working together.
 
 Warm regards,
 ${creatorName}`;
+
+    // Add contact info if available
+    const creatorEmail = session?.user?.email || '';
+    const creatorPhone = profile?.phone || '';
+    if (creatorEmail || creatorPhone) {
+      formattedMessage += `\n\n${creatorPhone ? `${creatorPhone} | ` : ''}${creatorEmail}`;
+    }
 
     return formattedMessage;
   };
@@ -129,6 +158,7 @@ ${creatorName}`;
       deliverables?: string;
       paymentSchedule?: string;
       exclusivity?: string;
+      brandName?: string;
     };
   } | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -142,6 +172,14 @@ ${creatorName}`;
   const [expandedFixes, setExpandedFixes] = useState<Set<number>>(new Set());
   const [generatedClauses, setGeneratedClauses] = useState<Map<number, string>>(new Map());
   const [clauseStates, setClauseStates] = useState<Map<number, 'default' | 'loading' | 'success'>>(new Map());
+  const [showAllIssues, setShowAllIssues] = useState(false);
+  const [showWhatsAppPreview, setShowWhatsAppPreview] = useState(false);
+  const [isKeyTermsExpanded, setIsKeyTermsExpanded] = useState(false);
+  const [isIssuesExpanded, setIsIssuesExpanded] = useState(true);
+  const [isProtectionStatusExpanded, setIsProtectionStatusExpanded] = useState(false);
+  const [isMissingClausesExpanded, setIsMissingClausesExpanded] = useState(false);
+  const [isFinancialBreakdownExpanded, setIsFinancialBreakdownExpanded] = useState(false);
+  const [isRecommendedActionsExpanded, setIsRecommendedActionsExpanded] = useState(false);
 
   // Helper function to get risk score color and label
   const getRiskScoreInfo = (score: number) => {
@@ -166,6 +204,21 @@ ${creatorName}`;
       return { badge: '⚠', color: 'bg-yellow-500/20 text-yellow-400', label: 'Needs Attention' };
     }
     return { badge: '✅', color: 'bg-green-500/20 text-green-400', label: 'Clear' };
+  };
+  
+  // Calculate fixed issues count
+  const fixedIssuesCount = analysisResults ? (
+    Array.from(clauseStates.values()).filter(s => s === 'success').length + resolvedIssues.size
+  ) : 0;
+  const totalIssuesCount = analysisResults?.issues?.length || 0;
+  
+  // Get top 2 most dangerous issues (sorted by severity: high > medium > low > warning)
+  const getTopIssues = (issues: any[]) => {
+    const severityOrder = { high: 4, medium: 3, low: 2, warning: 1 };
+    return [...issues]
+      .filter(issue => !resolvedIssues.has(issue.id))
+      .sort((a, b) => (severityOrder[b.severity as keyof typeof severityOrder] || 0) - (severityOrder[a.severity as keyof typeof severityOrder] || 0))
+      .slice(0, 2);
   };
 
   // Progressive analysis animation
@@ -261,6 +314,9 @@ ${creatorName}`;
         throw new Error(data.error || 'Failed to send email');
       }
 
+      // Set brand approval status to 'sent' when email is successfully sent
+      setBrandApprovalStatus('sent');
+      setApprovalStatusUpdatedAt(new Date());
       toast.success('Email sent successfully!');
       setBrandEmail('');
     } catch (error: any) {
@@ -395,6 +451,66 @@ ${creatorName}`;
     toast.success('Issue marked as resolved');
   };
 
+  // Missing Price Alert Component
+  const MissingPriceAlert = ({ onAskBrand }: { onAskBrand: () => void }) => {
+    useEffect(() => {
+      const timer = setTimeout(() => {
+        const alertElement = document.getElementById('deal-breaker-alert');
+        if (alertElement) {
+          alertElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }, 500);
+      return () => clearTimeout(timer);
+    }, []);
+
+    return (
+      <motion.div
+        id="deal-breaker-alert"
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="mb-6 bg-red-500/20 border-2 border-red-500/50 rounded-xl p-5 md:p-6 relative overflow-hidden"
+      >
+        {/* Pulse animation */}
+        <motion.div
+          animate={{
+            scale: [1, 1.02, 1],
+            opacity: [0.3, 0.5, 0.3],
+          }}
+          transition={{
+            duration: 2,
+            repeat: Infinity,
+            ease: "easeInOut"
+          }}
+          className="absolute inset-0 bg-red-500/10 rounded-xl"
+        />
+        <div className="relative z-10">
+          <div className="flex items-start gap-3 mb-4">
+            <div className="w-10 h-10 rounded-full bg-red-500/30 flex items-center justify-center flex-shrink-0">
+              <AlertTriangle className="w-6 h-6 text-red-400" />
+            </div>
+            <div className="flex-1">
+              <h4 className="font-bold text-lg md:text-xl text-red-300 mb-2">
+                🔴 DEAL BREAKER ALERT: Payment amount is missing
+              </h4>
+              <p className="text-sm text-red-200/80 leading-relaxed">
+                This contract does not specify the payment amount. This is a critical issue that must be addressed before proceeding.
+              </p>
+            </div>
+          </div>
+          <motion.button
+            onClick={onAskBrand}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            className="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg font-semibold transition-all duration-200 flex items-center gap-2"
+          >
+            <Mail className="w-4 h-4" />
+            Ask Brand to Add Price
+          </motion.button>
+        </div>
+      </motion.div>
+    );
+  };
+
   const toggleFixExpansion = (issueId: number) => {
     const newExpanded = new Set(expandedFixes);
     if (newExpanded.has(issueId)) {
@@ -403,6 +519,385 @@ ${creatorName}`;
       newExpanded.add(issueId);
     }
     setExpandedFixes(newExpanded);
+  };
+
+  // Helper function to create WhatsApp-optimized message (under 600 chars)
+  const createWhatsAppMessage = (fullMessage: string): string => {
+    // Extract key points from the full message
+    const lines = fullMessage.split('\n');
+    let whatsappMessage = '';
+    
+    // Start with greeting
+    if (lines[0].includes('Dear') || lines[0].includes('Subject')) {
+      whatsappMessage = 'Hi! 👋\n\n';
+    }
+    
+    // Extract main request
+    const requestSection = lines.find(line => 
+      line.toLowerCase().includes('request') || 
+      line.toLowerCase().includes('revision') ||
+      line.toLowerCase().includes('clarification')
+    );
+    
+    if (requestSection) {
+      whatsappMessage += requestSection + '\n\n';
+    }
+    
+    // Add key issues (truncate if needed)
+    const issuesStart = lines.findIndex(line => line.match(/^\d+\./));
+    if (issuesStart !== -1) {
+      let issueCount = 0;
+      for (let i = issuesStart; i < Math.min(issuesStart + 3, lines.length); i++) {
+        if (lines[i].trim() && issueCount < 2) {
+          whatsappMessage += lines[i] + '\n';
+          issueCount++;
+        }
+      }
+    }
+    
+    // Add closing
+    whatsappMessage += '\nPlease share the revised contract. Thanks! 🙏';
+    
+    // Truncate if still too long
+    if (whatsappMessage.length > 600) {
+      whatsappMessage = whatsappMessage.substring(0, 597) + '...';
+    }
+    
+    return whatsappMessage;
+  };
+
+  // Copy Email handler
+  const handleCopyEmail = async () => {
+    if (!negotiationMessage) {
+      toast.error('Please generate a negotiation message first');
+      return;
+    }
+    
+    const emailMessage = formatNegotiationMessage(negotiationMessage);
+    await navigator.clipboard.writeText(emailMessage);
+    toast.success('Copied for Email');
+    triggerHaptic(HapticPatterns.light);
+  };
+
+  // Copy WhatsApp handler
+  const handleCopyWhatsApp = async () => {
+    if (!negotiationMessage) {
+      toast.error('Please generate a negotiation message first');
+      return;
+    }
+    
+    const fullMessage = formatNegotiationMessage(negotiationMessage);
+    const whatsappMessage = createWhatsAppMessage(fullMessage);
+    
+    // Show preview modal first
+    setShowWhatsAppPreview(true);
+    triggerHaptic(HapticPatterns.light);
+  };
+  
+  const handleConfirmWhatsAppCopy = async () => {
+    if (!negotiationMessage) return;
+    
+    const fullMessage = formatNegotiationMessage(negotiationMessage);
+    const whatsappMessage = createWhatsAppMessage(fullMessage);
+    await navigator.clipboard.writeText(whatsappMessage);
+    toast.success('Copied for WhatsApp');
+    setShowWhatsAppPreview(false);
+  };
+
+  // Share Feedback modal state
+  const [showShareFeedbackModal, setShowShareFeedbackModal] = useState(false);
+
+  // Helper function to build mock barter analysis from chat text
+  const buildMockBarterAnalysis = (chatText: string): NonNullable<typeof analysisResults> => {
+    const lowerText = chatText.toLowerCase();
+    
+    // Extract brand name
+    let brandName = 'Brand (from chat)';
+    const brandPatterns = [
+      /(?:hi|hello|hey)[\s,]+(?:this is|i'm|i am|from)[\s]+([A-Z][a-zA-Z\s&]+?)(?:[\s,]+(?:team|brand|here)|$)/i,
+      /(?:from|by)[\s]+([A-Z][a-zA-Z\s&]+?)(?:[\s,]+(?:team|brand)|$)/i,
+      /([A-Z][a-zA-Z\s&]{2,20})(?:[\s,]+(?:brand|team|here))/i,
+    ];
+    for (const pattern of brandPatterns) {
+      const match = chatText.match(pattern);
+      if (match && match[1]) {
+        brandName = match[1].trim();
+        break;
+      }
+    }
+    
+    // Extract product
+    let product = '';
+    const productPatterns = [
+      /(?:sending you|we'll send|we will send|gift|product)[\s:]+([A-Za-z\s&]+?)(?:[\s,]+(?:worth|valued|₹)|$)/i,
+      /(?:product|item)[\s:]+([A-Za-z\s&]+?)(?:[\s,]+(?:worth|valued)|$)/i,
+    ];
+    for (const pattern of productPatterns) {
+      const match = chatText.match(pattern);
+      if (match && match[1]) {
+        product = match[1].trim();
+        break;
+      }
+    }
+    
+    // Extract deliverables
+    let deliverables = '';
+    const deliverablePatterns = [
+      /(\d+)[\s]*(?:instagram|insta|ig)[\s]*(?:reel|reels|post|posts|story|stories)/i,
+      /(?:post|reel|story)[\s]+(\d+)/i,
+      /(\d+)[\s]*(?:content|post|reel|story)/i,
+    ];
+    for (const pattern of deliverablePatterns) {
+      const match = chatText.match(pattern);
+      if (match) {
+        const count = match[1];
+        const type = lowerText.includes('reel') ? 'Reels' : lowerText.includes('story') ? 'Stories' : 'Posts';
+        deliverables = `${count} Instagram ${type}`;
+        break;
+      }
+    }
+    if (!deliverables && (lowerText.includes('post') || lowerText.includes('reel') || lowerText.includes('story'))) {
+      deliverables = 'Content posts (extracted from chat)';
+    }
+    
+    // Extract product value
+    let productValue = '';
+    const valueMatch = chatText.match(/₹[\s]*([\d,]+)|([\d,]+)[\s]*(?:rupees|rs|inr)/i);
+    if (valueMatch) {
+      productValue = valueMatch[1] || valueMatch[2] || '';
+      if (productValue && !productValue.includes('₹')) {
+        productValue = `₹${productValue}`;
+      }
+    }
+    
+    // Extract timeline
+    let timeline = '';
+    const timelineMatch = chatText.match(/(\d+)[\s]*(?:days?|weeks?|months?)/i);
+    if (timelineMatch) {
+      timeline = timelineMatch[0];
+    }
+    
+    // Determine risk level and score
+    let protectionScore = 45; // Default for barter deals (lower than contracts)
+    let overallRisk: RiskLevel = 'high';
+    
+    // Adjust score based on what's mentioned
+    if (deliverables) protectionScore += 10;
+    if (productValue) protectionScore += 10;
+    if (timeline) protectionScore += 5;
+    if (lowerText.includes('usage') || lowerText.includes('rights')) protectionScore += 5;
+    
+    if (protectionScore >= 60) overallRisk = 'medium';
+    if (protectionScore >= 75) overallRisk = 'low';
+    
+    // Build issues array
+    const issues: NonNullable<typeof analysisResults>['issues'] = [];
+    
+    if (!deliverables || deliverables.includes('extracted')) {
+      issues.push({
+        id: 1,
+        severity: 'high',
+        category: 'Deliverables',
+        title: 'No written confirmation of deliverables',
+        description: 'The chat does not clearly specify what content you need to create. This can lead to scope creep or disputes later.',
+        recommendation: 'Ask the brand to confirm deliverables and posting date in one message.',
+      });
+    }
+    
+    if (!timeline) {
+      issues.push({
+        id: 2,
+        severity: 'high',
+        category: 'Timeline',
+        title: 'No timeline for product delivery',
+        description: 'There is no clear deadline mentioned for when you will receive the product or when you need to post.',
+        recommendation: 'Clarify both product delivery date and content posting deadline.',
+      });
+    }
+    
+    if (!lowerText.includes('usage') && !lowerText.includes('rights')) {
+      issues.push({
+        id: 3,
+        severity: 'high',
+        category: 'Usage Rights',
+        title: 'No clarity on usage rights of your content',
+        description: 'The chat does not specify how the brand can use your content. They may reuse it in ads or repost without permission.',
+        recommendation: 'Clarify if they can reuse your content in ads and ask for tag/credit requirements.',
+      });
+    }
+    
+    if (!productValue) {
+      issues.push({
+        id: 4,
+        severity: 'medium',
+        category: 'Product Value',
+        title: 'Product value not specified',
+        description: 'The value of the product/service you are receiving is not mentioned, making it hard to assess if the deal is fair.',
+        recommendation: 'Ask the brand to confirm the product value to ensure fair exchange.',
+      });
+    }
+    
+    // Build verified items
+    const verified: NonNullable<typeof analysisResults>['verified'] = [];
+    if (brandName && brandName !== 'Brand (from chat)') {
+      verified.push({
+        id: 1,
+        category: 'Brand Identification',
+        title: 'Brand name identified',
+        description: `Brand identified as: ${brandName}`,
+      });
+    }
+    
+    if (product) {
+      verified.push({
+        id: 2,
+        category: 'Product/Service',
+        title: 'Product identified',
+        description: `Product/service: ${product}`,
+      });
+    }
+    
+    return {
+      overallRisk,
+      score: Math.min(100, Math.max(0, protectionScore)),
+      negotiationPowerScore: 35, // Lower for barter deals
+      issues,
+      verified,
+      keyTerms: {
+        dealValue: productValue || 'Product/Service Exchange',
+        duration: timeline || 'Not specified',
+        deliverables: deliverables || 'Not specified',
+        paymentSchedule: 'Barter - No payment',
+        exclusivity: 'Not specified',
+        brandName: brandName,
+      },
+      dealType: 'barter',
+    };
+  };
+
+  // Handle barter report generation
+  const handleGenerateBarterReport = async () => {
+    const chatText = barterInputMode === 'chat' ? barterChatText : 
+      `Brand: ${barterFormData.brandName}\nProduct: ${barterFormData.productName}\nDeliverables: ${barterFormData.deliverables}\nProduct Value: ${barterFormData.productValue || 'Not specified'}\nUsage Rights: ${barterFormData.usageRights || 'Not specified'}\nTimeline: ${barterFormData.timeline || 'Not specified'}`;
+    
+    if (!chatText.trim()) {
+      const errorMsg = 'Please paste your WhatsApp / Instagram chat before generating a report.';
+      setBarterError(errorMsg);
+      toast.error(errorMsg);
+      return;
+    }
+    
+    // Validate form mode
+    if (barterInputMode === 'form' && !barterFormData.brandName.trim() && !barterFormData.deliverables.trim()) {
+      const errorMsg = 'Please fill in at least Brand Name and Deliverables.';
+      setBarterError(errorMsg);
+      toast.error(errorMsg);
+      return;
+    }
+    
+    try {
+      setIsGeneratingBarter(true);
+      setBarterError(null);
+      triggerHaptic(HapticPatterns.medium);
+      setIsAnalyzing(true);
+      setStep('analyzing');
+      
+      // Try real API first
+      let apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
+      if (typeof window !== 'undefined') {
+        const urlParams = new URLSearchParams(window.location.search);
+        const useLocalApi = localStorage.getItem('useLocalApi') === 'true' || 
+                           urlParams.get('localApi') === 'true';
+        const tunnelUrl = urlParams.get('tunnelUrl') || localStorage.getItem('tunnelUrl');
+        
+        if (useLocalApi && tunnelUrl) {
+          apiBaseUrl = tunnelUrl.replace(/\/$/, '');
+        } else if (useLocalApi) {
+          apiBaseUrl = 'http://localhost:3001';
+        }
+      }
+      
+      if (!apiBaseUrl && typeof window !== 'undefined') {
+        apiBaseUrl = window.location.origin.replace(':8080', ':3001');
+      }
+      
+      let report: NonNullable<typeof analysisResults> | null = null;
+      
+      try {
+        const res = await fetch(`${apiBaseUrl}/api/protection/analyze-barter`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session?.access_token}`,
+          },
+          body: JSON.stringify({ 
+            chatText: barterInputMode === 'chat' ? barterChatText : null,
+            formData: barterInputMode === 'form' ? barterFormData : null,
+            inputType: barterInputMode,
+          }),
+        });
+        
+        if (res.ok) {
+          const responseData = await res.json();
+          if (responseData.success && responseData.data?.analysis_json) {
+            const analysis = responseData.data.analysis_json;
+            report = {
+              overallRisk: analysis.overallRisk || 'medium',
+              score: analysis.protectionScore || 45,
+              negotiationPowerScore: analysis.negotiationPowerScore || 35,
+              issues: (analysis.issues || []).map((issue: any, index: number) => ({
+                id: index + 1,
+                severity: issue.severity || 'warning',
+                category: issue.category || 'General',
+                title: issue.title || 'Issue',
+                description: issue.description || '',
+                clause: issue.clause,
+                recommendation: issue.recommendation || '',
+              })),
+              verified: (analysis.verified || []).map((item: any, index: number) => ({
+                id: index + 1,
+                category: item.category || 'General',
+                title: item.title || 'Verified',
+                description: item.description || '',
+                clause: item.clause,
+              })),
+              keyTerms: {
+                dealValue: analysis.keyTerms?.dealValue || barterFormData.productValue || 'Product/Service Exchange',
+                duration: analysis.keyTerms?.duration || barterFormData.timeline,
+                deliverables: analysis.keyTerms?.deliverables || barterFormData.deliverables,
+                paymentSchedule: 'Barter - No payment',
+                exclusivity: analysis.keyTerms?.exclusivity,
+                brandName: analysis.keyTerms?.brandName || barterFormData.brandName,
+              },
+              dealType: 'barter',
+            };
+          }
+        }
+      } catch (apiError) {
+        console.log('[ContractUploadFlow] Barter API not available, using mock analysis');
+      }
+      
+      // Fallback: use mock analysis
+      if (!report) {
+        report = buildMockBarterAnalysis(chatText);
+      }
+      
+      // Set analysis results and navigate to results view
+      setAnalysisResults(report);
+      setIsBarterDeal(true);
+      setStep('results');
+      toast.success('Barter protection report generated!');
+      
+    } catch (err: any) {
+      console.error('[ContractUploadFlow] Barter report generation error:', err);
+      const errorMsg = 'Something went wrong while generating the barter protection report. Please try again.';
+      setBarterError(errorMsg);
+      toast.error(errorMsg);
+      setStep('upload');
+    } finally {
+      setIsGeneratingBarter(false);
+      setIsAnalyzing(false);
+    }
   };
 
   // Calculate contract safety progress
@@ -820,6 +1315,32 @@ ${creatorName}`;
 
       // Transform API response to UI format
       const analysis = responseData.data.analysis_json;
+      
+      // Extract brand name from contract text if not provided by AI
+      let extractedBrandName = analysis.keyTerms?.brandName || (analysis as any).brandName;
+      if (!extractedBrandName && responseData.data.contract_text) {
+        // Try to extract brand name from contract text
+        const contractText = responseData.data.contract_text.toLowerCase();
+        // Common patterns for brand names in contracts
+        const brandPatterns = [
+          /(?:brand|company|client|sponsor)[\s:]+([A-Z][a-zA-Z\s&]+)/i,
+          /(?:between|with)[\s]+([A-Z][a-zA-Z\s&]+?)(?:[\s,]+(?:herein|hereinafter|the|a))/i,
+          /(?:this\s+agreement\s+is\s+between)[\s]+([A-Z][a-zA-Z\s&]+?)(?:[\s,]+(?:and|&))/i,
+        ];
+        
+        for (const pattern of brandPatterns) {
+          const match = responseData.data.contract_text.match(pattern);
+          if (match && match[1]) {
+            extractedBrandName = match[1].trim();
+            // Clean up common suffixes
+            extractedBrandName = extractedBrandName.replace(/\s+(?:LLC|Inc|Ltd|Limited|Corp|Corporation|Pvt|Private).*$/i, '');
+            if (extractedBrandName.length > 2 && extractedBrandName.length < 50) {
+              break;
+            }
+          }
+        }
+      }
+      
       setAnalysisResults({
         overallRisk: analysis.overallRisk || 'low',
         score: analysis.protectionScore || 0,
@@ -846,6 +1367,7 @@ ${creatorName}`;
           deliverables: analysis.keyTerms?.deliverables,
           paymentSchedule: analysis.keyTerms?.paymentSchedule,
           exclusivity: analysis.keyTerms?.exclusivity,
+          brandName: extractedBrandName,
         },
       });
 
@@ -1067,93 +1589,391 @@ ${creatorName}`;
             <ArrowLeft className="w-6 h-6" />
           </button>
           
-          <div className="text-lg font-semibold">Upload Contract</div>
+          <div className="text-lg font-semibold">
+            {dealType === 'contract' ? 'Upload Contract' : 'Barter Deal'}
+          </div>
           
           <div className="w-10"></div>
         </div>
+        
+        {/* Deal Type Toggle */}
+        {step === 'upload' && (
+          <div className="flex gap-2 mb-4 bg-white/5 rounded-xl p-1">
+            <button
+              onClick={() => {
+                setDealType('contract');
+                triggerHaptic(HapticPatterns.light);
+              }}
+              className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg font-medium transition-all ${
+                dealType === 'contract'
+                  ? 'bg-purple-600 text-white shadow-lg'
+                  : 'text-white/60 hover:text-white/80 hover:bg-white/5'
+              }`}
+            >
+              <FileText className="w-4 h-4" />
+              Upload Contract
+            </button>
+            <button
+              onClick={() => {
+                setDealType('barter');
+                triggerHaptic(HapticPatterns.light);
+              }}
+              className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg font-medium transition-all ${
+                dealType === 'barter'
+                  ? 'bg-purple-600 text-white shadow-lg'
+                  : 'text-white/60 hover:text-white/80 hover:bg-white/5'
+              }`}
+            >
+              <Gift className="w-4 h-4" />
+              Barter Deal (No Contract)
+            </button>
+          </div>
+        )}
       </div>
 
       <div className="flex-1 overflow-y-auto">
         {/* Upload Step */}
         {step === 'upload' && (
-          <div className="space-y-6">
-            {/* Info Card */}
-            <div className="bg-gradient-to-br from-blue-500/20 to-purple-500/20 backdrop-blur-md rounded-2xl p-5 border border-blue-400/30">
-              <div className="flex items-start gap-3 mb-3">
-                <div className="w-10 h-10 rounded-xl bg-blue-500/30 flex items-center justify-center flex-shrink-0">
-                  <Sparkles className="w-5 h-5 text-blue-400" />
+          <>
+            {dealType === 'contract' ? (
+              <div className="space-y-6">
+                {/* Info Card */}
+                <div className="bg-gradient-to-br from-blue-500/20 to-purple-500/20 backdrop-blur-md rounded-2xl p-5 border border-blue-400/30">
+                  <div className="flex items-start gap-3 mb-3">
+                    <div className="w-10 h-10 rounded-xl bg-blue-500/30 flex items-center justify-center flex-shrink-0">
+                      <Sparkles className="w-5 h-5 text-blue-400" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold mb-1">AI-Powered Review</h3>
+                      <p className="text-sm text-purple-200">Our AI instantly analyzes your contract for potential issues and unfair terms.</p>
+                    </div>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="font-semibold mb-1">AI-Powered Review</h3>
-                  <p className="text-sm text-purple-200">Our AI instantly analyzes your contract for potential issues and unfair terms.</p>
-                </div>
-              </div>
-            </div>
 
-            {/* Upload Area */}
-            <div 
-              className="bg-white/10 backdrop-blur-md rounded-2xl border-2 border-dashed border-white/20 p-12 text-center hover:bg-white/15 transition-all cursor-pointer"
-              onDragOver={handleDragOver}
-              onDrop={handleDrop}
-              onClick={handleFileSelect}
-            >
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-                onChange={handleFileChange}
-                className="hidden"
-              />
-              
-              <div className="w-20 h-20 rounded-full bg-purple-500/20 flex items-center justify-center mx-auto mb-4">
-                <Upload className="w-10 h-10 text-purple-400" />
-              </div>
-              
-              <h3 className="text-xl font-semibold mb-2">Upload Contract</h3>
-              <p className="text-sm text-purple-300 mb-4">Drag and drop or click to browse</p>
-              
-              <button 
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleFileSelect();
-                }}
-                className="bg-purple-600 hover:bg-purple-700 px-6 py-3 rounded-xl font-medium transition-colors"
-              >
-                Choose File
-              </button>
-              
-              <div className="mt-4 text-xs text-purple-400">
-                Supported: PDF, DOCX • Max 10MB
-              </div>
-            </div>
+                {/* Upload Area */}
+                <div 
+                  className="bg-white/10 backdrop-blur-md rounded-2xl border-2 border-dashed border-white/20 p-12 text-center hover:bg-white/15 transition-all cursor-pointer"
+                  onDragOver={handleDragOver}
+                  onDrop={handleDrop}
+                  onClick={handleFileSelect}
+                >
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                    onChange={handleFileChange}
+                    className="hidden"
+                  />
+                  
+                  <div className="w-20 h-20 rounded-full bg-purple-500/20 flex items-center justify-center mx-auto mb-4">
+                    <Upload className="w-10 h-10 text-purple-400" />
+                  </div>
+                  
+                  <h3 className="text-xl font-semibold mb-2">Upload Contract</h3>
+                  <p className="text-sm text-purple-300 mb-4">Drag and drop or click to browse</p>
+                  
+                  <button 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleFileSelect();
+                    }}
+                    className="bg-purple-600 hover:bg-purple-700 px-6 py-3 rounded-xl font-medium transition-colors"
+                  >
+                    Choose File
+                  </button>
+                  
+                  <div className="mt-4 text-xs text-purple-400">
+                    Supported: PDF, DOCX • Max 10MB
+                  </div>
+                </div>
 
-            {/* Features List */}
-            <div className="space-y-3">
-              <div className="flex items-start gap-3 text-sm">
-                <CheckCircle className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
-                <div>
-                  <div className="font-medium">Instant Analysis</div>
-                  <div className="text-purple-300">Get results in under 30 seconds</div>
+                {/* Features List */}
+                <div className="space-y-3">
+                  <div className="flex items-start gap-3 text-sm">
+                    <CheckCircle className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
+                    <div>
+                      <div className="font-medium">Instant Analysis</div>
+                      <div className="text-purple-300">Get results in under 30 seconds</div>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-start gap-3 text-sm">
+                    <Shield className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
+                    <div>
+                      <div className="font-medium">100% Confidential</div>
+                      <div className="text-purple-300">Your contracts are encrypted and secure</div>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-start gap-3 text-sm">
+                    <Sparkles className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
+                    <div>
+                      <div className="font-medium">Expert Insights</div>
+                      <div className="text-purple-300">AI trained on 10,000+ creator contracts</div>
+                    </div>
+                  </div>
                 </div>
               </div>
-              
-              <div className="flex items-start gap-3 text-sm">
-                <Shield className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
-                <div>
-                  <div className="font-medium">100% Confidential</div>
-                  <div className="text-purple-300">Your contracts are encrypted and secure</div>
+            ) : (
+              <div className="space-y-6">
+                {/* Info Card */}
+                <div className="bg-gradient-to-br from-green-500/20 to-purple-500/20 backdrop-blur-md rounded-2xl p-5 border border-green-400/30">
+                  <div className="flex items-start gap-3 mb-3">
+                    <div className="w-10 h-10 rounded-xl bg-green-500/30 flex items-center justify-center flex-shrink-0">
+                      <Gift className="w-5 h-5 text-green-400" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold mb-1">Barter Deal Protection</h3>
+                      <p className="text-sm text-purple-200">Convert your chat conversations into legal proof and protect your rights.</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Input Mode Toggle */}
+                <div className="flex gap-2 bg-white/5 rounded-xl p-1">
+                  <button
+                    onClick={() => {
+                      setBarterInputMode('chat');
+                      triggerHaptic(HapticPatterns.light);
+                    }}
+                    className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg font-medium transition-all ${
+                      barterInputMode === 'chat'
+                        ? 'bg-purple-600 text-white shadow-lg'
+                        : 'text-white/60 hover:text-white/80 hover:bg-white/5'
+                    }`}
+                  >
+                    <MessageSquare className="w-4 h-4" />
+                    Paste Chat
+                  </button>
+                  <button
+                    onClick={() => {
+                      setBarterInputMode('form');
+                      triggerHaptic(HapticPatterns.light);
+                    }}
+                    className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg font-medium transition-all ${
+                      barterInputMode === 'form'
+                        ? 'bg-purple-600 text-white shadow-lg'
+                        : 'text-white/60 hover:text-white/80 hover:bg-white/5'
+                    }`}
+                  >
+                    <FileText className="w-4 h-4" />
+                    Manual Form
+                  </button>
+                </div>
+
+                {/* Chat Input Mode */}
+                {barterInputMode === 'chat' && (
+                  <div className="bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 p-6">
+                    <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+                      <MessageSquare className="w-5 h-5 text-purple-300" />
+                      Paste WhatsApp / Instagram Chat
+                    </h3>
+                    <textarea
+                      value={barterChatText}
+                      onChange={(e) => {
+                        setBarterChatText(e.target.value);
+                        setBarterError(null); // Clear error on input
+                      }}
+                      placeholder="Paste your full brand conversation here..."
+                      className="w-full h-64 bg-white/5 border border-white/10 rounded-xl p-4 text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-purple-500/50 resize-none"
+                    />
+                    {barterError && (
+                      <p className="mt-2 text-sm text-red-400 flex items-center gap-1">
+                        <AlertCircle className="w-4 h-4" />
+                        {barterError}
+                      </p>
+                    )}
+                  </div>
+                )}
+
+                {/* Manual Form Mode */}
+                {barterInputMode === 'form' && (
+                  <div className="bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 p-6 space-y-4">
+                    <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                      <FileText className="w-5 h-5 text-purple-300" />
+                      Deal Details
+                    </h3>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-white/80 mb-2">Brand Name</label>
+                      <input
+                        type="text"
+                        value={barterFormData.brandName}
+                        onChange={(e) => {
+                          setBarterFormData({ ...barterFormData, brandName: e.target.value });
+                          setBarterError(null);
+                        }}
+                        placeholder="Enter brand name"
+                        className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-purple-500/50"
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-white/80 mb-2">Product Name</label>
+                      <input
+                        type="text"
+                        value={barterFormData.productName}
+                        onChange={(e) => {
+                          setBarterFormData({ ...barterFormData, productName: e.target.value });
+                          setBarterError(null);
+                        }}
+                        placeholder="What product/service are you receiving?"
+                        className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-purple-500/50"
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-white/80 mb-2">Deliverables</label>
+                      <input
+                        type="text"
+                        value={barterFormData.deliverables}
+                        onChange={(e) => {
+                          setBarterFormData({ ...barterFormData, deliverables: e.target.value });
+                          setBarterError(null);
+                        }}
+                        placeholder="e.g., 2 Instagram Reels, 3 Posts"
+                        className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-purple-500/50"
+                      />
+                    </div>
+                    
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-white/80 mb-2">Product Value (₹)</label>
+                        <input
+                          type="text"
+                          value={barterFormData.productValue}
+                          onChange={(e) => {
+                            setBarterFormData({ ...barterFormData, productValue: e.target.value });
+                            setBarterError(null);
+                          }}
+                          placeholder="Optional"
+                          className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-purple-500/50"
+                        />
+                      </div>
+                      
+                      <div>
+                        <label className="block text-sm font-medium text-white/80 mb-2">Timeline</label>
+                        <input
+                          type="text"
+                          value={barterFormData.timeline}
+                          onChange={(e) => {
+                            setBarterFormData({ ...barterFormData, timeline: e.target.value });
+                            setBarterError(null);
+                          }}
+                          placeholder="e.g., 15 days"
+                          className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-purple-500/50"
+                        />
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-white/80 mb-2">Usage Rights</label>
+                      <input
+                        type="text"
+                        value={barterFormData.usageRights}
+                        onChange={(e) => {
+                          setBarterFormData({ ...barterFormData, usageRights: e.target.value });
+                          setBarterError(null);
+                        }}
+                        placeholder="e.g., 6 months, unlimited usage"
+                        className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-purple-500/50"
+                      />
+                    </div>
+                  </div>
+                )}
+                
+                {/* Error Display for Form Mode */}
+                {barterInputMode === 'form' && barterError && (
+                  <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-4">
+                    <p className="text-sm text-red-400 flex items-center gap-2">
+                      <AlertCircle className="w-4 h-4" />
+                      {barterError}
+                    </p>
+                  </div>
+                )}
+
+                {/* Generate Button */}
+                <motion.button
+                  onClick={handleGenerateBarterReport}
+                  whileHover={{ scale: isGeneratingBarter ? 1 : 1.02 }}
+                  whileTap={{ scale: isGeneratingBarter ? 1 : 0.98 }}
+                  disabled={isGeneratingBarter}
+                  aria-busy={isGeneratingBarter}
+                  className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white px-6 py-4 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isGeneratingBarter ? (
+                    <>
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                      Generating Report...
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle className="w-5 h-5" />
+                      Generate Barter Protection Report
+                    </>
+                  )}
+                </motion.button>
+
+                {/* Benefits */}
+                <div className="bg-white/5 backdrop-blur-md rounded-2xl border border-white/10 p-5">
+                  <h4 className="font-semibold mb-4 text-center">What You Get</h4>
+                  <div className="space-y-3">
+                    <div className="flex items-start gap-3 text-sm">
+                      <CheckCircle className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
+                      <div>
+                        <div className="font-medium">Converts chat into legal proof</div>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-3 text-sm">
+                      <CheckCircle className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
+                      <div>
+                        <div className="font-medium">Generates Barter Agreement PDF</div>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-3 text-sm">
+                      <CheckCircle className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
+                      <div>
+                        <div className="font-medium">Detects misuse & unlimited usage risk</div>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-3 text-sm">
+                      <CheckCircle className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
+                      <div>
+                        <div className="font-medium">Helps you send a legal notice later</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Features List */}
+                <div className="space-y-3">
+                  <div className="flex items-start gap-3 text-sm">
+                    <CheckCircle className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
+                    <div>
+                      <div className="font-medium">Instant Analysis</div>
+                      <div className="text-purple-300">Get results in under 30 seconds</div>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-start gap-3 text-sm">
+                    <Shield className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
+                    <div>
+                      <div className="font-medium">100% Confidential</div>
+                      <div className="text-purple-300">Your contracts are encrypted and secure</div>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-start gap-3 text-sm">
+                    <Sparkles className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
+                    <div>
+                      <div className="font-medium">Expert Insights</div>
+                      <div className="text-purple-300">AI trained on 10,000+ creator contracts</div>
+                    </div>
+                  </div>
                 </div>
               </div>
-              
-              <div className="flex items-start gap-3 text-sm">
-                <Sparkles className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
-                <div>
-                  <div className="font-medium">Expert Insights</div>
-                  <div className="text-purple-300">AI trained on 10,000+ creator contracts</div>
-                </div>
-              </div>
-            </div>
-          </div>
+            )}
+          </>
         )}
 
         {/* Uploading Step */}
@@ -1262,19 +2082,19 @@ ${creatorName}`;
 
         {/* Analyzing Step */}
         {step === 'analyzing' && (
-          <div className="flex items-center justify-center min-h-[60vh]">
-            <div className="text-center">
+          <div className="flex flex-col items-center min-h-[60vh] py-8" style={{ willChange: 'contents' }}>
+            <div className="text-center mb-8">
               <div className="w-24 h-24 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center mx-auto mb-6 relative animate-pulse">
                 <Sparkles className="w-12 h-12 text-white" />
               </div>
               
               <h2 className="text-2xl font-bold mb-2">AI Analyzing Contract...</h2>
-              <p className="text-purple-300 mb-8">Checking for potential issues</p>
+              <p className="text-purple-300/70 mb-8">Checking for potential issues</p>
               
               <div className="space-y-3 text-sm max-w-xs mx-auto">
                 {['Payment terms', 'Termination rights', 'IP ownership', 'Exclusivity clause', 'Liability terms'].map((item) => (
-                  <div key={item} className="flex items-center justify-between p-3 bg-white/5 rounded-lg">
-                    <span className="text-purple-200">{item}</span>
+                  <div key={item} className="flex items-center justify-between p-3 bg-white/5 rounded-lg" style={{ transform: 'translateZ(0)' }}>
+                    <span className="text-purple-200/70">{item}</span>
                     {analyzedItems.has(item) ? (
                       <CheckCircle className="w-4 h-4 text-green-400" />
                     ) : (
@@ -1283,6 +2103,13 @@ ${creatorName}`;
                   </div>
                 ))}
               </div>
+            </div>
+            
+            {/* Skeleton Loaders for Results Preview */}
+            <div className="w-full max-w-4xl mx-auto space-y-8 mt-8">
+              <SkeletonLoader variant="score" />
+              <SkeletonLoader variant="issues" />
+              <SkeletonLoader variant="keyTerms" />
             </div>
           </div>
         )}
@@ -1414,48 +2241,93 @@ ${creatorName}`;
 
         {/* Results Step - ONLY render if we have real API data */}
         {step === 'results' && analysisResults && resultsRiskInfo && (
-          <div className="space-y-6 animate-fadeIn pb-40 md:pb-6" style={{ paddingBottom: 'max(160px, calc(160px + env(safe-area-inset-bottom)))' }}>
+          <div className="space-y-8 md:space-y-10 animate-fadeIn pb-40 md:pb-6" style={{ paddingBottom: 'max(160px, calc(160px + env(safe-area-inset-bottom)))', willChange: 'scroll-position' }}>
             {/* Content Width Container for iPad/Tablet */}
-            <div className="max-w-4xl mx-auto space-y-6">
+            <div className="max-w-4xl mx-auto space-y-8 md:space-y-10">
             {/* Contract Type Badge */}
             <div className="bg-gradient-to-r from-purple-600/30 to-indigo-600/30 backdrop-blur-md rounded-2xl px-4 py-3 border border-purple-400/30">
-              <div className="flex items-center gap-2 text-sm">
+              <div className="flex items-center gap-2 text-sm flex-wrap">
                 <FileText className="w-4 h-4 text-purple-300" />
-                <span className="text-purple-200">Detected Contract Type:</span>
-                <span className="font-semibold text-white">Influencer–Brand Paid Collaboration</span>
+                <span className="text-purple-200">
+                  {analysisResults.dealType === 'barter' ? 'Barter Protection (from chat)' : 'Detected Contract Type:'}
+                </span>
+                <span className="font-semibold text-white">
+                  {analysisResults.dealType === 'barter' 
+                    ? 'Beta' 
+                    : 'Influencer–Brand Paid Collaboration'}
+                </span>
+                {analysisResults.dealType === 'barter' && (
+                  <span className="ml-2 px-2 py-0.5 bg-green-500/20 text-green-400 text-xs rounded-full border border-green-500/30">
+                    Barter Deal
+                  </span>
+                )}
               </div>
             </div>
 
+            {/* Premium Badge - Show for PRO users */}
+            {((profile as any)?.subscription_plan === 'premium' || (profile as any)?.subscription_plan === 'pro' || (profile as any)?.subscription_plan === 'strategic') ? (
+              <div className="bg-gradient-to-r from-purple-600/30 to-indigo-600/30 backdrop-blur-md rounded-2xl px-4 py-3 border border-purple-400/30">
+                <div className="flex items-center gap-2 text-sm">
+                  <Shield className="w-4 h-4 text-purple-300" />
+                  <span className="text-purple-200">🛡️ Contract Protected by Lawyer + AI</span>
+                </div>
+                <p className="text-xs text-purple-300/80 mt-1 ml-6">
+                  ✅ Your contract is now legally optimized for negotiation
+                </p>
+              </div>
+            ) : null}
+
             {/* Premium Risk Score Card with Circular Gauge */}
-            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 md:p-8 border border-white/10 shadow-xl">
-              <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 md:p-8 border border-white/10 shadow-xl" style={{ transform: 'translateZ(0)' }}>
+              <div className="flex flex-col items-center gap-6">
+                {/* Brand Name and Deal Amount Display */}
+                {(analysisResults.keyTerms?.brandName || analysisResults.keyTerms?.dealValue) && (
+                  <div className="w-full mb-2 space-y-2">
+                    {analysisResults.keyTerms?.brandName && (
+                      <div className="flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-purple-500/20 to-indigo-500/20 border border-purple-400/40 rounded-xl backdrop-blur-sm">
+                        <Building2 className="w-4 h-4 text-purple-300 flex-shrink-0" />
+                        <span className="text-sm font-semibold text-white tracking-wide">
+                          {analysisResults.keyTerms.brandName}
+                        </span>
+                      </div>
+                    )}
+                    {analysisResults.keyTerms?.dealValue && analysisResults.keyTerms.dealValue !== 'Not specified' && (
+                      <div className="flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-green-500/20 to-emerald-500/20 border border-green-400/40 rounded-xl backdrop-blur-sm">
+                        <IndianRupee className="w-4 h-4 text-green-300 flex-shrink-0" />
+                        <span className="text-sm font-semibold text-white tracking-wide">
+                          {analysisResults.keyTerms.dealValue}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                )}
                 {/* Circular Progress Gauge with Animation and Glow */}
-                <div className="relative w-40 h-40 flex-shrink-0">
+                <div className="relative w-32 h-32 md:w-40 md:h-40 flex-shrink-0" style={{ willChange: 'transform' }}>
                   {/* Pulse glow effect based on risk level */}
                   <div 
                     className="absolute inset-0 rounded-full animate-pulse"
                     style={{
-                      boxShadow: `0 0 30px ${resultsRiskInfo.glowColor}`,
-                      opacity: 0.6
+                      boxShadow: `0 0 40px ${resultsRiskInfo.glowColor}`,
+                      opacity: 0.5
                     }}
                   />
-                  <svg className="transform -rotate-90 w-40 h-40 relative z-10">
+                  <svg className="transform -rotate-90 w-32 h-32 md:w-40 md:h-40 relative z-10">
                     {/* Background circle */}
                     <circle
-                      cx="80"
-                      cy="80"
-                      r="45"
+                      cx={analysisResults.score >= 80 ? "64" : "80"}
+                      cy={analysisResults.score >= 80 ? "64" : "80"}
+                      r={analysisResults.score >= 80 ? "36" : "45"}
                       stroke="rgba(255,255,255,0.1)"
-                      strokeWidth="8"
+                      strokeWidth="6"
                       fill="none"
                     />
                     {/* Progress circle - animated */}
                     <circle
-                      cx="80"
-                      cy="80"
-                      r="45"
+                      cx={analysisResults.score >= 80 ? "64" : "80"}
+                      cy={analysisResults.score >= 80 ? "64" : "80"}
+                      r={analysisResults.score >= 80 ? "36" : "45"}
                       stroke={`url(#gradient-${analysisResults.score})`}
-                      strokeWidth="8"
+                      strokeWidth="6"
                       fill="none"
                       strokeDasharray={resultsStrokeDasharray}
                       strokeDashoffset={step === 'results' && analysisResults 
@@ -1472,310 +2344,887 @@ ${creatorName}`;
                     </defs>
                   </svg>
                   <div className="absolute inset-0 flex flex-col items-center justify-center z-10">
-                    <div className={`text-4xl font-bold ${resultsRiskInfo.color} transition-all duration-300`}>
-                      {scoreAnimation || analysisResults.score}
+                    <div className="relative">
+                      <div className={`text-5xl md:text-6xl font-black ${resultsRiskInfo.color} transition-all duration-300 leading-none drop-shadow-lg`} style={{ textShadow: '0 2px 8px rgba(0,0,0,0.3)' }}>
+                        {scoreAnimation || analysisResults.score}
+                      </div>
+                      <div className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-white/40 animate-pulse"></div>
                     </div>
-                    <div className="text-xs text-purple-300 mt-1">Score</div>
+                    <div className="text-[11px] md:text-xs text-white/60 mt-2 font-semibold tracking-widest uppercase letter-spacing-wide">Score</div>
                   </div>
                 </div>
 
                 {/* Risk Label and Info */}
-                <div className="flex-1 text-center md:text-left">
-                  <h2 className="text-3xl font-bold mb-2">Contract Analysis</h2>
-                  <div className="flex items-center gap-2 mb-2">
-                    <p className={`text-lg font-semibold ${resultsRiskInfo.color}`}>{resultsRiskInfo.label}</p>
+                <div className="flex-1 text-center w-full">
+                  <h2 className="text-2xl md:text-3xl font-bold mb-3 text-white">Contract Analysis</h2>
+                  <div className="flex items-center justify-center gap-2 mb-3">
+                    <p className={`text-base md:text-lg font-semibold ${resultsRiskInfo.color}`}>{resultsRiskInfo.label}</p>
                     <div className="group relative">
-                      <Info className="w-4 h-4 text-purple-400 cursor-help" />
+                      <Info className="w-4 h-4 text-white/40 cursor-help hover:text-white/60 transition-colors" />
                       <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-purple-900/95 backdrop-blur-sm rounded-lg text-xs text-white whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-20 border border-purple-400/30">
                         Score is based on 30+ legal risk checks
                         <div className="absolute top-full left-1/2 transform -translate-x-1/2 -mt-1 border-4 border-transparent border-t-purple-900/95"></div>
                       </div>
                     </div>
                   </div>
-                  <p className="text-sm text-purple-300">Protection Score: {analysisResults.score}/100</p>
+                  <p className="text-sm text-white/70 font-medium">
+                    Protection Score: <span className={`font-black ${resultsRiskInfo.color}`}>{analysisResults.score}</span>/100
+                  </p>
                 </div>
 
-                {/* Quick Actions - De-emphasized */}
+                {/* Primary CTA */}
                 <div className="flex flex-col gap-2 w-full md:w-auto">
-                  <button 
-                    onClick={() => {
-                      if (contractUrl) {
-                        window.open(contractUrl, '_blank', 'noopener,noreferrer');
-                      } else {
-                        toast.error('Contract URL not available');
-                      }
-                    }}
-                    disabled={!contractUrl}
-                    className="bg-white/5 hover:bg-white/10 disabled:opacity-50 disabled:cursor-not-allowed font-medium py-2 px-3 rounded-lg transition-colors flex items-center justify-center gap-2 text-xs text-purple-300 hover:text-purple-200"
-                  >
-                    <Eye className="w-3 h-3" />
-                    View Contract
-                  </button>
-                  {analysisResults.issues.length > 0 && (
-                    <button
-                      onClick={() => {
-                        const issuesSection = document.getElementById('issues-section');
-                        if (issuesSection) {
-                          issuesSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                  {fixedIssuesCount >= 2 && (
+                    <motion.button
+                      onClick={async () => {
+                        if (!session?.access_token) {
+                          toast.error('Please log in to generate negotiation message');
+                          return;
+                        }
+                        if (!analysisResults || analysisResults.issues.length === 0) {
+                          toast.error('No issues found to negotiate');
+                          return;
+                        }
+                        triggerHaptic(HapticPatterns.light);
+                        setIsGeneratingMessage(true);
+                        try {
+                          const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 
+                            (typeof window !== 'undefined' && window.location.origin.includes('noticebazaar.com') 
+                              ? 'https://api.noticebazaar.com' 
+                              : 'http://localhost:3001');
+                          const requestBody: any = { brandName: 'the Brand' };
+                          if (reportId) {
+                            requestBody.reportId = reportId;
+                          } else {
+                            requestBody.issues = analysisResults.issues
+                              .filter((issue: any) => issue.severity === 'high' || issue.severity === 'medium')
+                              .map((issue: any) => ({
+                                title: issue.title,
+                                category: issue.category,
+                                description: issue.description,
+                                recommendation: issue.recommendation,
+                                severity: issue.severity,
+                                clause_reference: issue.clause
+                              }));
+                          }
+                          const response = await fetch(`${apiBaseUrl}/api/protection/generate-negotiation-message`, {
+                            method: 'POST',
+                            headers: {
+                              'Content-Type': 'application/json',
+                              'Authorization': `Bearer ${session.access_token}`
+                            },
+                            body: JSON.stringify(requestBody)
+                          });
+                          const contentType = response.headers.get('content-type');
+                          let data: any = {};
+                          if (contentType?.includes('application/json')) {
+                            data = await response.json();
+                          } else {
+                            const text = await response.text();
+                            throw new Error(`Server returned ${response.status}: ${text.substring(0, 100)}`);
+                          }
+                          if (!response.ok || !data.success) {
+                            throw new Error(data.error || 'Failed to generate negotiation message');
+                          }
+                          const formattedMessage = formatNegotiationMessage(data.message);
+                          setNegotiationMessage(formattedMessage);
+                          setShowShareFeedbackModal(true);
+                          toast.success('Negotiation message generated!');
+                        } catch (error: any) {
+                          console.error('[ContractUploadFlow] Generate negotiation message error:', error);
+                          toast.error(error.message || 'Failed to generate negotiation message. Please try again.');
+                        } finally {
+                          setIsGeneratingMessage(false);
                         }
                       }}
-                      className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 font-semibold py-3 px-4 rounded-xl transition-all flex items-center justify-center gap-2 text-sm shadow-lg shadow-purple-500/30 min-h-[48px]"
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      className="bg-green-600 hover:bg-green-700 font-semibold py-3 px-4 rounded-xl transition-all flex items-center justify-center gap-2 text-sm shadow-lg shadow-green-500/30 min-h-[48px]"
                     >
-                      <Shield className="w-4 h-4" />
-                      Make Contract Safer
-                    </button>
+                      <Send className="w-4 h-4" />
+                      Ready to Send Back to Brand
+                    </motion.button>
                   )}
                 </div>
               </div>
             </div>
 
-            {/* Negotiation Power Score */}
-            {analysisResults.negotiationPowerScore !== undefined && (
-              <div className="mt-4 p-4 rounded-xl bg-purple-900/40 border border-purple-700/50 backdrop-blur-md">
-                <div className="text-white text-sm font-medium mb-2 flex items-center gap-2">
-                  <TrendingUp className="w-4 h-4 text-purple-300" />
-                  Negotiation Power
-                </div>
-                <div className="text-3xl font-bold mt-1 text-purple-200">
-                  {analysisResults.negotiationPowerScore}/100
-                </div>
-                <div className="mt-2 text-sm">
-                  {analysisResults.negotiationPowerScore > 65 && (
-                    <span className="text-green-400 font-medium">🟢 Creator Dominant Deal</span>
+            {/* Collapsible Sections */}
+            {analysisResults && (
+            <div className="space-y-3 mt-4">
+              {/* 1. Key Terms */}
+              <div className="bg-white/5 backdrop-blur-md rounded-xl border border-white/10 overflow-hidden">
+                <button
+                  onClick={() => setIsKeyTermsExpanded(!isKeyTermsExpanded)}
+                  className="w-full p-4 flex items-center justify-between hover:bg-white/5 transition-colors"
+                >
+                  <div className="flex items-center gap-3">
+                    <CheckCircle className="w-5 h-5 text-green-400" />
+                    <span className="text-white font-medium">Key Terms</span>
+                    <span className="text-xs px-3 py-1 rounded-full bg-green-500/20 text-green-400 border border-green-500/30">
+                      All Clear
+                    </span>
+                  </div>
+                  <ChevronDown 
+                    className={`w-5 h-5 text-white/60 transition-transform ${isKeyTermsExpanded ? 'rotate-180' : ''}`}
+                  />
+                </button>
+                <AnimatePresence>
+                  {isKeyTermsExpanded && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: 'auto', opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.3 }}
+                      className="overflow-hidden"
+                    >
+                      <div className="px-4 pb-4 space-y-3">
+                        {analysisResults.keyTerms && (
+                          <>
+                            {analysisResults.keyTerms.brandName && (
+                              <div className="flex justify-between items-center text-sm pb-2 border-b border-white/10">
+                                <span className="text-white/70 flex items-center gap-2">
+                                  <Building2 className="w-4 h-4" />
+                                  Brand Name:
+                                </span>
+                                <span className="text-white font-semibold">{analysisResults.keyTerms.brandName}</span>
+                              </div>
+                            )}
+                            {analysisResults.keyTerms.dealValue && analysisResults.keyTerms.dealValue !== 'Not specified' && (
+                              <div className="flex justify-between items-center text-sm">
+                                <span className="text-white/70">Deal Value:</span>
+                                <span className="text-white font-medium">{analysisResults.keyTerms.dealValue}</span>
+                              </div>
+                            )}
+                            {analysisResults.keyTerms.deliverables && analysisResults.keyTerms.deliverables !== 'Not specified' && (
+                              <div className="flex justify-between items-center text-sm">
+                                <span className="text-white/70">Deliverables:</span>
+                                <span className="text-white font-medium">{analysisResults.keyTerms.deliverables}</span>
+                              </div>
+                            )}
+                            {analysisResults.keyTerms.paymentSchedule && analysisResults.keyTerms.paymentSchedule !== 'Not specified' && (
+                              <div className="flex justify-between items-center text-sm">
+                                <span className="text-white/70">Payment Schedule:</span>
+                                <span className="text-white font-medium">{analysisResults.keyTerms.paymentSchedule}</span>
+                              </div>
+                            )}
+                            {analysisResults.keyTerms.duration && analysisResults.keyTerms.duration !== 'Not specified' && (
+                              <div className="flex justify-between items-center text-sm">
+                                <span className="text-white/70">Duration:</span>
+                                <span className="text-white font-medium">{analysisResults.keyTerms.duration}</span>
+                              </div>
+                            )}
+                          </>
+                        )}
+                      </div>
+                    </motion.div>
                   )}
-                  {analysisResults.negotiationPowerScore >= 40 && analysisResults.negotiationPowerScore <= 65 && (
-                    <span className="text-yellow-400 font-medium">🟡 Balanced Negotiation</span>
+                </AnimatePresence>
+              </div>
+
+              {/* 2. Protection Status */}
+              <div className="bg-white/5 backdrop-blur-md rounded-xl border border-white/10 overflow-hidden">
+                <button
+                  onClick={() => setIsProtectionStatusExpanded(!isProtectionStatusExpanded)}
+                  className="w-full p-4 flex items-center justify-between hover:bg-white/5 transition-colors"
+                >
+                  <div className="flex items-center gap-3">
+                    <Shield className="w-5 h-5 text-green-400" />
+                    <span className="text-white font-medium">Protection Status</span>
+                    <span className="text-xs px-3 py-1 rounded-full bg-green-500/20 text-green-400 border border-green-500/30">
+                      {analysisResults.verified.length} Strong Clauses
+                    </span>
+                  </div>
+                  <ChevronDown 
+                    className={`w-5 h-5 text-white/60 transition-transform ${isProtectionStatusExpanded ? 'rotate-180' : ''}`}
+                  />
+                </button>
+                <AnimatePresence>
+                  {isProtectionStatusExpanded && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: 'auto', opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.3 }}
+                      className="overflow-hidden"
+                    >
+                      <div className="px-4 pb-4 space-y-2">
+                        {analysisResults.verified.length > 0 ? (
+                          analysisResults.verified.map((clause) => (
+                            <div key={clause.id} className="flex items-start gap-2 text-sm">
+                              <CheckCircle className="w-4 h-4 text-green-400 mt-0.5 flex-shrink-0" />
+                              <div>
+                                <div className="text-white font-medium">{clause.title}</div>
+                                <div className="text-white/60 text-xs">{clause.description}</div>
+                              </div>
+                            </div>
+                          ))
+                        ) : (
+                          <div className="text-white/60 text-sm">No strong clauses found.</div>
+                        )}
+                      </div>
+                    </motion.div>
                   )}
-                  {analysisResults.negotiationPowerScore < 40 && (
+                </AnimatePresence>
+              </div>
+
+              {/* 3. Issues Found */}
+              <div className="bg-white/5 backdrop-blur-md rounded-xl border border-white/10 overflow-hidden">
+                <button
+                  onClick={() => setIsIssuesExpanded(!isIssuesExpanded)}
+                  className="w-full p-4 flex items-center justify-between hover:bg-white/5 transition-colors"
+                >
+                  <div className="flex items-center gap-3">
+                    <AlertTriangle className="w-5 h-5 text-orange-400" />
+                    <span className="text-white font-medium">Issues Found</span>
+                    <span className="text-xs px-3 py-1 rounded-full bg-orange-500/20 text-orange-400 border border-orange-500/30">
+                      {analysisResults.issues.length} {analysisResults.issues.length === 1 ? 'Issue' : 'Issues'}
+                    </span>
+                  </div>
+                  <ChevronDown 
+                    className={`w-5 h-5 text-white/60 transition-transform ${isIssuesExpanded ? 'rotate-180' : ''}`}
+                  />
+                </button>
+                <AnimatePresence>
+                  {isIssuesExpanded && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: 'auto', opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.3 }}
+                      className="overflow-hidden"
+                    >
+                      <div className="px-4 pb-4 space-y-2">
+                        {analysisResults.issues.length > 0 ? (
+                          analysisResults.issues.map((issue) => (
+                            <div key={issue.id} className="flex items-start gap-2 text-sm">
+                              <AlertTriangle className={`w-4 h-4 mt-0.5 flex-shrink-0 ${
+                                issue.severity === 'high' ? 'text-red-400' : 
+                                issue.severity === 'medium' ? 'text-orange-400' : 
+                                'text-yellow-400'
+                              }`} />
+                              <div className="flex-1">
+                                <div className="text-white font-medium">{issue.title}</div>
+                                <div className="text-white/60 text-xs">{issue.description}</div>
+                                <span className={`text-xs px-2 py-0.5 rounded-full mt-1 inline-block ${
+                                  issue.severity === 'high' ? 'bg-red-500/20 text-red-400 border border-red-500/30' :
+                                  issue.severity === 'medium' ? 'bg-orange-500/20 text-orange-400 border border-orange-500/30' :
+                                  'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30'
+                                }`}>
+                                  {issue.severity}
+                                </span>
+                              </div>
+                            </div>
+                          ))
+                        ) : (
+                          <div className="text-white/60 text-sm">No issues found.</div>
+                        )}
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+
+              {/* 4. Financial Breakdown */}
+              <div className="bg-white/5 backdrop-blur-md rounded-xl border border-white/10 overflow-hidden">
+                <button
+                  onClick={() => setIsFinancialBreakdownExpanded(!isFinancialBreakdownExpanded)}
+                  className="w-full p-4 flex items-center justify-between hover:bg-white/5 transition-colors"
+                >
+                  <div className="flex items-center gap-3">
+                    <DollarSign className="w-5 h-5 text-green-400" />
+                    <span className="text-white font-medium">Financial Breakdown</span>
+                    <span className="text-xs px-3 py-1 rounded-full bg-green-500/20 text-green-400 border border-green-500/30">
+                      Fair Rate
+                    </span>
+                  </div>
+                  <ChevronDown 
+                    className={`w-5 h-5 text-white/60 transition-transform ${isFinancialBreakdownExpanded ? 'rotate-180' : ''}`}
+                  />
+                </button>
+                <AnimatePresence>
+                  {isFinancialBreakdownExpanded && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: 'auto', opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.3 }}
+                      className="overflow-hidden"
+                    >
+                      <div className="px-4 pb-4 space-y-3">
+                        {analysisResults.keyTerms?.dealValue && analysisResults.keyTerms.dealValue !== 'Not specified' && (
+                          <div className="flex justify-between items-center text-sm">
+                            <span className="text-white/70">Deal Value:</span>
+                            <span className="text-white font-medium">{analysisResults.keyTerms.dealValue}</span>
+                          </div>
+                        )}
+                        {analysisResults.keyTerms?.paymentSchedule && analysisResults.keyTerms.paymentSchedule !== 'Not specified' && (
+                          <div className="flex justify-between items-center text-sm">
+                            <span className="text-white/70">Payment Schedule:</span>
+                            <span className="text-white font-medium">{analysisResults.keyTerms.paymentSchedule}</span>
+                          </div>
+                        )}
+                        {(!analysisResults.keyTerms?.dealValue || analysisResults.keyTerms.dealValue === 'Not specified') && (
+                          <div className="text-white/60 text-sm">Payment amount not specified in contract.</div>
+                        )}
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+
+              {/* 6. Recommended Actions */}
+              <div className="bg-white/5 backdrop-blur-md rounded-xl border border-white/10 overflow-hidden">
+                <button
+                  onClick={() => setIsRecommendedActionsExpanded(!isRecommendedActionsExpanded)}
+                  className="w-full p-4 flex items-center justify-between hover:bg-white/5 transition-colors"
+                >
+                  <div className="flex items-center gap-3">
+                    <Sparkles className="w-5 h-5 text-purple-400" />
+                    <span className="text-white font-medium">Recommended Actions</span>
+                    <span className="text-xs px-3 py-1 rounded-full bg-blue-500/20 text-blue-400 border border-blue-500/30">
+                      {analysisResults.issues.length > 0 ? '4 Actions' : '0 Actions'}
+                    </span>
+                  </div>
+                  <ChevronDown 
+                    className={`w-5 h-5 text-white/60 transition-transform ${isRecommendedActionsExpanded ? 'rotate-180' : ''}`}
+                  />
+                </button>
+                <AnimatePresence>
+                  {isRecommendedActionsExpanded && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: 'auto', opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.3 }}
+                      className="overflow-hidden"
+                    >
+                      <div className="px-4 pb-4 space-y-2">
+                        {analysisResults.issues.length > 0 && (
+                          <>
+                            <div className="text-sm text-white font-medium mb-2">Next Steps:</div>
+                            <div className="space-y-2">
+                              <div className="flex items-start gap-2 text-sm">
+                                <span className="text-orange-400">1.</span>
+                                <span className="text-white">Ask brand for revisions</span>
+                              </div>
+                              <div className="flex items-start gap-2 text-sm">
+                                <span className="text-yellow-400">2.</span>
+                                <span className="text-white">Get lawyer review</span>
+                              </div>
+                              <div className="flex items-start gap-2 text-sm">
+                                <span className="text-green-400">3.</span>
+                                <span className="text-white">Download brand-safe contract</span>
+                              </div>
+                              <div className="flex items-start gap-2 text-sm">
+                                <span className="text-purple-400">4.</span>
+                                <span className="text-white">Share feedback with brand</span>
+                              </div>
+                            </div>
+                          </>
+                        )}
+                        {analysisResults.issues.length === 0 && (
+                          <div className="text-white/60 text-sm">No actions needed. Contract looks safe!</div>
+                        )}
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            </div>
+            )}
+
+            {/* Action Buttons */}
+            {analysisResults && (
+              <div className="mt-6 flex flex-col sm:flex-row gap-3">
+                {/* Save This Deal Button */}
+                <motion.button
+                  onClick={async () => {
+                    if (!session?.access_token) {
+                      toast.error('Please log in to save this deal');
+                      return;
+                    }
+
+                    if (!analysisResults) {
+                      toast.error('No contract data to save');
+                      return;
+                    }
+
+                    triggerHaptic(HapticPatterns.light);
+                    
+                    try {
+                      const creatorId = session?.user?.id;
+                      if (!creatorId) {
+                        toast.error('User ID not found');
+                        return;
+                      }
+
+                      // Parse deal amount - default to 0 if not specified (required field)
+                      let dealAmount = 0;
+                      const dealValueStr = analysisResults.keyTerms?.dealValue || '';
+                      
+                      if (dealValueStr && dealValueStr.trim() !== '' && 
+                          dealValueStr.toLowerCase() !== 'not specified' && 
+                          dealValueStr.toLowerCase() !== 'not mentioned') {
+                        
+                        // Try multiple parsing strategies
+                        // Strategy 1: Extract number with commas (e.g., "Rs. 75,000" or "₹75,000")
+                        const commaMatch = dealValueStr.match(/(\d{1,3}(?:,\d{2,3})*(?:\.\d+)?)/);
+                        if (commaMatch) {
+                          const valueWithCommas = commaMatch[1].replace(/,/g, '');
+                          const parsed = parseFloat(valueWithCommas);
+                          if (!isNaN(parsed) && parsed > 0 && isFinite(parsed)) {
+                            dealAmount = parsed;
+                          }
+                        }
+                        
+                        // Strategy 2: If Strategy 1 failed, try removing all non-digits except decimal point
+                        if (dealAmount === 0) {
+                          let cleanedValue = dealValueStr
+                            .replace(/[₹Rs$€£,\s]/g, '')
+                            .trim();
+                          const parsed = parseFloat(cleanedValue);
+                          if (!isNaN(parsed) && parsed > 0 && isFinite(parsed)) {
+                            dealAmount = parsed;
+                          }
+                        }
+                        
+                        // Strategy 3: Try to find any sequence of digits
+                        if (dealAmount === 0) {
+                          const digitMatch = dealValueStr.match(/(\d+)/);
+                          if (digitMatch) {
+                            const parsed = parseFloat(digitMatch[1]);
+                            if (!isNaN(parsed) && parsed > 0 && isFinite(parsed)) {
+                              dealAmount = parsed;
+                            }
+                          }
+                        }
+                      }
+                      
+                      // If still 0, show a warning but allow saving
+                      if (dealAmount === 0 && dealValueStr) {
+                        console.warn('[ContractUploadFlow] Could not parse deal amount from:', dealValueStr);
+                        toast.warning(`Could not extract payment amount from "${dealValueStr}". Deal saved with ₹0. You can update it later.`);
+                      } else if (dealAmount === 0) {
+                        toast.warning('No payment amount found in contract. Deal saved with amount ₹0. You can update it later.');
+                      }
+
+                      // Calculate due date (default to 30 days from now) - required field
+                      const dueDate = new Date();
+                      dueDate.setDate(dueDate.getDate() + 30);
+                      const dueDateStr = dueDate.toISOString().split('T')[0];
+                      
+                      // Payment expected date (same as due date) - required field
+                      const paymentExpectedDateStr = dueDateStr;
+                      
+                      // Extract brand name from contract or use default
+                      const extractedBrandName = analysisResults.keyTerms?.brandName || 
+                        fileName?.replace(/\.(pdf|docx?)$/i, '').replace(/[_-]/g, ' ') || 
+                        'Contract Upload';
+                      
+                      await addDealMutation.mutateAsync({
+                        creator_id: creatorId,
+                        organization_id: null,
+                        brand_name: extractedBrandName,
+                        deal_amount: dealAmount, // Always a number, never null
+                        deliverables: analysisResults.keyTerms?.deliverables || 'As per contract',
+                        contract_file: uploadedFile, // File object or null
+                        due_date: dueDateStr, // Required
+                        payment_expected_date: paymentExpectedDateStr, // Required
+                        contact_person: null,
+                        platform: 'Other',
+                        status: 'Draft' as const,
+                        invoice_file: null,
+                        utr_number: null,
+                        brand_email: null,
+                        payment_received_date: null,
+                      });
+                      toast.success('✅ Deal saved successfully!');
+                    } catch (error: any) {
+                      console.error('[ContractUploadFlow] Save deal error:', error);
+                      toast.error(error.message || 'Failed to save deal. Please try again.');
+                    }
+                  }}
+                  disabled={addDealMutation.isPending}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="flex-1 bg-white/10 hover:bg-white/15 border border-white/20 text-white px-6 py-3 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                >
+                  {addDealMutation.isPending ? (
                     <>
-                      <span className="text-orange-400 font-medium">🟠 Brand Has Stronger Position</span>
-                      <p className="text-xs text-purple-300 mt-1">You can improve this by fixing 2–3 clauses.</p>
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                      Saving...
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle className="w-5 h-5" />
+                      Save This Deal
                     </>
                   )}
+                </motion.button>
+
+                {/* Fix Contract & Send to Brand Button */}
+                <motion.button
+                  onClick={async () => {
+                    if (!session?.access_token) {
+                      toast.error('Please log in to send to brand');
+                      return;
+                    }
+
+                    if (!analysisResults || analysisResults.issues.length === 0) {
+                      toast.error('No issues found to fix');
+                      return;
+                    }
+
+                    triggerHaptic(HapticPatterns.medium);
+                    setIsGeneratingMessage(true);
+                    
+                    try {
+                      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 
+                        (typeof window !== 'undefined' && window.location.origin.includes('noticebazaar.com') 
+                          ? 'https://api.noticebazaar.com' 
+                          : 'http://localhost:3001');
+                      
+                      const requestBody: any = {
+                        brandName: 'the Brand'
+                      };
+                      
+                      if (reportId) {
+                        requestBody.reportId = reportId;
+                      } else {
+                        requestBody.issues = analysisResults.issues
+                          .filter((issue: any) => issue.severity === 'high' || issue.severity === 'medium')
+                          .map((issue: any) => ({
+                            title: issue.title,
+                            category: issue.category,
+                            description: issue.description,
+                            recommendation: issue.recommendation,
+                            severity: issue.severity,
+                            clause_reference: issue.clause
+                          }));
+                      }
+                      
+                      const response = await fetch(`${apiBaseUrl}/api/protection/generate-negotiation-message`, {
+                        method: 'POST',
+                        headers: {
+                          'Content-Type': 'application/json',
+                          'Authorization': `Bearer ${session.access_token}`
+                        },
+                        body: JSON.stringify(requestBody)
+                      });
+
+                      const contentType = response.headers.get('content-type');
+                      let data: any = {};
+                      
+                      if (contentType?.includes('application/json')) {
+                        data = await response.json();
+                      } else {
+                        const text = await response.text();
+                        throw new Error(`Server returned ${response.status}: ${text.substring(0, 100)}`);
+                      }
+
+                      if (!response.ok || !data.success) {
+                        throw new Error(data.error || 'Failed to generate negotiation message');
+                      }
+
+                      const formattedMessage = formatNegotiationMessage(data.message);
+                      setNegotiationMessage(formattedMessage);
+                      setShowShareFeedbackModal(true);
+                      toast.success('Ready to send to brand!');
+                    } catch (error: any) {
+                      console.error('[ContractUploadFlow] Generate negotiation message error:', error);
+                      toast.error(error.message || 'Failed to generate message. Please try again.');
+                    } finally {
+                      setIsGeneratingMessage(false);
+                    }
+                  }}
+                  disabled={isGeneratingMessage}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="flex-1 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white px-6 py-3 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 disabled:opacity-50 shadow-lg shadow-purple-500/30"
+                >
+                  {isGeneratingMessage ? (
+                    <>
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                      Generating...
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="w-5 h-5" />
+                      Fix Contract & Send to Brand
+                    </>
+                  )}
+                </motion.button>
+              </div>
+            )}
+
+            {/* Perfect Contract Empty State */}
+            {analysisResults.issues.length === 0 && analysisResults.score >= 75 && (
+              <div className="bg-gradient-to-br from-green-500/20 to-emerald-500/20 backdrop-blur-md rounded-2xl p-8 md:p-12 border-2 border-green-500/60 shadow-lg text-center mb-6">
+                <motion.div
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ type: "spring", stiffness: 200, damping: 15 }}
+                  className="mb-6"
+                >
+                  <div className="text-6xl md:text-8xl mb-4">
+                    🎉 ✨ 🎊
+                  </div>
+                  <motion.div
+                    animate={{ scale: [1, 1.1, 1] }}
+                    transition={{ duration: 2, repeat: Infinity }}
+                  >
+                    <CheckCircle className="w-16 h-16 text-green-400 mx-auto mb-4" />
+                  </motion.div>
+                </motion.div>
+                <h2 className="text-3xl md:text-4xl font-bold text-green-300 mb-3">Perfect Contract! 💯</h2>
+                <p className="text-lg text-green-200/80 mb-6 max-w-2xl mx-auto">
+                  This is one of the safest contracts we've analyzed. All key terms are properly defined and there are no critical risks.
+                </p>
+                <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                  <motion.button
+                    onClick={async () => {
+                      if (contractUrl) {
+                        const a = document.createElement('a');
+                        a.href = contractUrl;
+                        a.download = fileName || 'contract.pdf';
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                        toast.success('Contract downloaded!');
+                      }
+                    }}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-xl font-semibold transition-all flex items-center justify-center gap-2"
+                  >
+                    <Download className="w-5 h-5" />
+                    Download for Records
+                  </motion.button>
+                  <motion.button
+                    onClick={() => {
+                      if (contractUrl) {
+                        window.open(contractUrl, '_blank', 'noopener,noreferrer');
+                      }
+                    }}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-xl font-semibold transition-all flex items-center justify-center gap-2"
+                  >
+                    <Send className="w-5 h-5" />
+                    Share with Brand
+                  </motion.button>
                 </div>
               </div>
             )}
 
-            {/* Key Terms with Status Badges - Refined */}
-            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-5 md:p-6 border border-white/10 shadow-lg md:border-t md:border-white/5">
-              <h3 className="font-semibold text-xl mb-5 flex items-center gap-2">
-                <FileText className="w-5 h-5" />
-                Key Terms
-              </h3>
-              <div className="space-y-0">
-                {/* Deal Value */}
-                {(() => {
-                  const status = getKeyTermStatus('Deal Value', analysisResults.keyTerms.dealValue);
-                  return (
-                    <div className="flex items-center justify-between p-4 md:p-3 border-b border-white/5 last:border-b-0">
-                      <div className="flex items-center gap-4 flex-1">
-                        <span className="text-2xl">{status.badge}</span>
-                        <div>
-                          <div className="font-semibold flex items-center gap-2">
-                            <IndianRupee className="w-4 h-4 text-purple-300" />
-                            <span className="text-purple-200">Deal Value:</span>
-                            <span className="text-white font-bold md:text-sm">{analysisResults.keyTerms.dealValue || 'Not specified'}</span>
-                          </div>
-                        </div>
-                      </div>
-                      <span className={`px-3 py-1.5 rounded-full text-xs font-medium ${status.color}`}>
-                        {status.label}
-                      </span>
-                    </div>
-                  );
-                })()}
-
-                {/* Deliverables */}
-                {(() => {
-                  const status = getKeyTermStatus('Deliverables', analysisResults.keyTerms.deliverables);
-                  return (
-                    <div className="flex items-center justify-between p-4 md:p-3 border-b border-white/5 last:border-b-0">
-                      <div className="flex items-center gap-4 flex-1">
-                        <span className="text-2xl">{status.badge}</span>
-                        <div>
-                          <div className="font-semibold">
-                            <span className="text-purple-200">Deliverables:</span>
-                            <span className="text-white font-bold ml-2 md:text-sm">{analysisResults.keyTerms.deliverables || 'Not specified'}</span>
-                          </div>
-                        </div>
-                      </div>
-                      <span className={`px-3 py-1.5 rounded-full text-xs font-medium ${status.color}`}>
-                        {status.label}
-                      </span>
-                    </div>
-                  );
-                })()}
-
-                {/* Payment */}
-                {(() => {
-                  const status = getKeyTermStatus('Payment', analysisResults.keyTerms.paymentSchedule);
-                  return (
-                    <div className="flex items-center justify-between p-4 md:p-3 border-b border-white/5 last:border-b-0">
-                      <div className="flex items-center gap-4 flex-1">
-                        <span className="text-2xl">{status.badge}</span>
-                        <div>
-                          <div className="font-semibold">
-                            <span className="text-purple-200">Payment:</span>
-                            <span className="text-white font-bold ml-2 md:text-sm">{analysisResults.keyTerms.paymentSchedule || 'Not specified'}</span>
-                          </div>
-                        </div>
-                      </div>
-                      <span className={`px-3 py-1.5 rounded-full text-xs font-medium ${status.color}`}>
-                        {status.label}
-                      </span>
-                    </div>
-                  );
-                })()}
-
-                {/* Governing Law - Only show location names */}
-                {(() => {
-                  // Extract governing law from keyTerms - should only be location names
-                  const governingLawRaw = analysisResults.keyTerms.exclusivity || analysisResults.keyTerms.duration || '';
-                  // Check if it's a location (India, Delhi, etc.) vs a time period (30 days, etc.)
-                  const isLocation = /^(India|Delhi|Mumbai|Bangalore|Kolkata|Chennai|Hyderabad|Pune|Ahmedabad|Jaipur|Surat|Lucknow|Kanpur|Nagpur|Indore|Thane|Bhopal|Visakhapatnam|Patna|Vadodara|Ghaziabad|Ludhiana|Agra|Nashik|Faridabad|Meerut|Rajkot|Varanasi|Srinagar|Amritsar|Dhanbad|Allahabad|Coimbatore|Jabalpur|Gwalior|Vijayawada|Jodhpur|Madurai|Raipur|Kota|Guwahati|Chandigarh|Solapur|Hubli|Tiruchirappalli|Bareilly|Moradabad|Mysore|Gurgaon|Aligarh|Jalandhar|Bhubaneswar|Salem|Warangal|Guntur|Bhiwandi|Saharanpur|Gorakhpur|Bikaner|Amravati|Noida|Jamshedpur|Bhilai|Cuttack|Firozabad|Kochi|Bhavnagar|Dehradun|Durgapur|Asansol|Nanded|Kolhapur|Ajmer|Gulbarga|Jamnagar|Ujjain|Loni|Siliguri|Jhansi|Ulhasnagar|Jammu|Sangli|Mira|Latur|Rohtak|Tumkur|Alwar|Davanagere|Kurnool|Bokaro|Rajahmundry|Ballari|Agartala|Bhagalpur|Muzaffarnagar|Bhatpara|Panihati|Latur|Dhule|Rohtak|Sagar|Bilaspur|Mathura|Kamarhati|Patiala|Saharsa|New Delhi|Mumbai|Bangalore|Kolkata|Chennai|Hyderabad|Pune|Ahmedabad|Jaipur|Surat|Lucknow|Kanpur|Nagpur|Indore|Thane|Bhopal|Visakhapatnam|Patna|Vadodara|Ghaziabad|Ludhiana|Agra|Nashik|Faridabad|Meerut|Rajkot|Varanasi|Srinagar|Amritsar|Dhanbad|Allahabad|Coimbatore|Jabalpur|Gwalior|Vijayawada|Jodhpur|Madurai|Raipur|Kota|Guwahati|Chandigarh|Solapur|Hubli|Tiruchirappalli|Bareilly|Moradabad|Mysore|Gurgaon|Aligarh|Jalandhar|Bhubaneswar|Salem|Warangal|Guntur|Bhiwandi|Saharanpur|Gorakhpur|Bikaner|Amravati|Noida|Jamshedpur|Bhilai|Cuttack|Firozabad|Kochi|Bhavnagar|Dehradun|Durgapur|Asansol|Nanded|Kolhapur|Ajmer|Gulbarga|Jamnagar|Ujjain|Loni|Siliguri|Jhansi|Ulhasnagar|Jammu|Sangli|Mira|Latur|Rohtak|Tumkur|Alwar|Davanagere|Kurnool|Bokaro|Rajahmundry|Ballari|Agartala|Bhagalpur|Muzaffarnagar|Bhatpara|Panihati|Latur|Dhule|Rohtak|Sagar|Bilaspur|Mathura|Kamarhati|Patiala|Saharsa)$/i.test(governingLawRaw.trim());
-                  const isTimePeriod = /\d+\s*(days?|months?|years?|weeks?)/i.test(governingLawRaw);
-                  
-                  let governingLaw = '';
-                  let termLabel = 'Governing Law';
-                  
-                  if (isLocation) {
-                    governingLaw = governingLawRaw.trim();
-                    termLabel = 'Governing Law';
-                  } else if (isTimePeriod) {
-                    // This is a time period, show as Termination Notice Period or Exclusivity Duration
-                    const daysMatch = governingLawRaw.match(/(\d+)\s*days?/i);
-                    if (daysMatch) {
-                      const days = daysMatch[1];
-                      termLabel = 'Termination Notice Period';
-                      governingLaw = `${days} days`;
-                    } else {
-                      termLabel = 'Exclusivity Duration';
-                      governingLaw = governingLawRaw.trim();
-                    }
-                  } else if (governingLawRaw && governingLawRaw !== 'None' && governingLawRaw !== 'Not specified') {
-                    // Check if it contains location keywords
-                    if (/india|delhi|mumbai|bangalore|kolkata|chennai|hyderabad|pune|ahmedabad|jaipur/i.test(governingLawRaw)) {
-                      governingLaw = governingLawRaw.trim();
-                      termLabel = 'Governing Law';
-                    } else {
-                      // Likely a time period or other term
-                      termLabel = 'Termination Notice Period';
-                      governingLaw = governingLawRaw.trim();
-                    }
-                  }
-                  
-                  const hasGoverningLaw = governingLaw && governingLaw !== 'None' && governingLaw !== 'Not specified';
-                  const status = hasGoverningLaw 
-                    ? { badge: '✅', color: 'bg-green-500/20 text-green-400', label: 'Defined' }
-                    : { badge: '⚠', color: 'bg-yellow-500/20 text-yellow-400', label: 'Missing' };
-                  
-                  return (
-                    <div className="flex items-center justify-between p-4 md:p-3 border-b border-white/5 last:border-b-0">
-                      <div className="flex items-center gap-4 flex-1">
-                        <span className="text-2xl">{status.badge}</span>
-                        <div>
-                          <div className="font-semibold">
-                            <span className="text-purple-200">{termLabel}:</span>
-                            <span className="text-white font-bold ml-2 md:text-sm">{governingLaw || 'Not specified'}</span>
-                          </div>
-                        </div>
-                      </div>
-                      <span className={`px-3 py-1.5 rounded-full text-xs font-medium ${status.color}`}>
-                        {status.label}
-                      </span>
-                    </div>
-                  );
-                })()}
-              </div>
-            </div>
-
-            {/* Contract Safety Progress Bar - Dynamic Risk-Based Status */}
-            {analysisResults && analysisResults.issues && analysisResults.issues.length > 0 && (() => {
-              const progress = getContractSafetyProgress();
-              const clampedProgress = Math.min(100, Math.max(0, progress));
-              const status = getProtectionStatus(clampedProgress);
-              const unresolvedCount = analysisResults.issues.length - (resolvedIssues?.size || 0);
-              const roundedProgress = Math.round(clampedProgress);
-              
-              return (
-                <div className={`${status.bgColor} backdrop-blur-md rounded-2xl p-5 md:p-4 border ${status.borderColor} md:border-white/10 md:border-t shadow-lg mb-6 transition-all duration-300`}>
-                  <div className="flex items-center justify-between mb-3">
-                    <h3 className="font-semibold text-lg flex items-center gap-2 md:text-left">
-                      <Shield className={`w-5 h-5 ${status.shieldColor} transition-colors duration-300`} />
-                      <span className="text-white">Protection Status</span>
-                    </h3>
-                    <div className="flex flex-col items-end md:items-end">
-                      <div className="flex items-center gap-2">
-                        <span className={`text-xl font-bold ${status.color} transition-colors duration-300`}>
-                          {status.icon} {status.label}
-                        </span>
-                      </div>
-                      {roundedProgress === 100 ? (
-                        <span className="text-xs text-green-300 mt-1 font-medium">
-                          All risks resolved. Your contract is fully protected ✅
-                        </span>
-                      ) : (
-                        <span className={`text-xs ${status.color} mt-1 transition-colors duration-300`}>
-                          {unresolvedCount} {unresolvedCount === 1 ? 'risk' : 'risks'} still unresolved
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                  <div className="relative h-3 bg-white/10 rounded-full overflow-hidden max-w-2xl">
-                    {/* Animated glow effect based on risk level - Reduced intensity on md+ */}
+            {/* Old Issues Section - Removed */}
+            {false && analysisResults.issues.length > 0 && (
+              <div id="issues-section-old" className="bg-white/10 backdrop-blur-md rounded-2xl p-4 md:p-6 md:p-8 border border-white/10 md:border-t shadow-lg">
+                <button
+                  onClick={() => setIsIssuesExpanded(!isIssuesExpanded)}
+                  className="w-full flex items-center justify-between mb-4 hover:opacity-80 transition-opacity"
+                >
+                  <h3 className="font-semibold text-xl md:text-2xl flex items-center gap-2">
+                    <AlertTriangle className="w-5 h-5 md:w-6 md:h-6 text-yellow-400" />
+                    Issues Found
+                    <span className="text-sm font-normal text-purple-300 ml-2">
+                      ({analysisResults.issues.length} {analysisResults.issues.length === 1 ? 'issue' : 'issues'})
+                    </span>
+                  </h3>
+                  <motion.div
+                    animate={{ rotate: isIssuesExpanded ? 180 : 0 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <ChevronDown className="w-5 h-5 md:w-6 md:h-6 text-purple-300" />
+                  </motion.div>
+                </button>
+                
+                <AnimatePresence>
+                  {isIssuesExpanded && (
                     <motion.div
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: [0.4, 0.8, 0.4] }}
-                      transition={{ 
-                        duration: 2, 
-                        repeat: Infinity, 
-                        ease: "easeInOut" 
-                      }}
-                      className="absolute inset-0 rounded-full"
-                      style={{
-                        boxShadow: `0 0 ${typeof window !== 'undefined' && window.innerWidth >= 768 ? '15px' : '20px'} ${status.glowColor}`,
-                        zIndex: 1
-                      }}
-                    />
-                    {/* Progress bar with smooth dynamic gradient (Red → Orange → Yellow → Blue → Green) */}
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: 'auto', opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.3, ease: 'easeInOut' }}
+                      className="overflow-hidden"
+                    >
+                      {/* Safety Progress Tracker */}
+                <div className="mb-6 p-4 bg-purple-900/40 rounded-xl border border-purple-700/50">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-semibold text-purple-200">Safety Progress:</span>
+                    <span className="text-lg font-bold text-white">
+                      {fixedIssuesCount} of {totalIssuesCount} issues fixed
+                    </span>
+                  </div>
+                  <div className="w-full bg-white/10 rounded-full h-2 overflow-hidden">
                     <motion.div
                       initial={{ width: 0 }}
-                      animate={{ width: `${clampedProgress}%` }}
-                      transition={{ duration: 1, ease: "easeOut" }}
-                      className="absolute inset-y-0 left-0 rounded-full z-10"
-                      style={{
-                        background: (() => {
-                          const gradient = getProgressGradient(clampedProgress);
-                          return `linear-gradient(to right, ${gradient.start}, ${gradient.end})`;
-                        })()
-                      }}
+                      animate={{ width: `${(fixedIssuesCount / totalIssuesCount) * 100}%` }}
+                      transition={{ duration: 0.5 }}
+                      className="h-full bg-gradient-to-r from-green-500 to-emerald-500"
                     />
-                    {/* Progress percentage text overlay (optional, for very high contrast) */}
-                    {clampedProgress > 10 && (
-                      <div className="absolute inset-0 flex items-center justify-center z-20">
-                        <span className="text-xs font-bold text-white drop-shadow-lg">
-                          {roundedProgress}%
-                        </span>
-                      </div>
-                    )}
                   </div>
                 </div>
-              );
-            })()}
-
-            {/* Issues Table - Premium Action-Driven */}
-            {analysisResults.issues.length > 0 && (
-              <div id="issues-section" className="bg-white/10 backdrop-blur-md rounded-2xl p-4 md:p-6 border border-white/10 md:border-t shadow-lg">
-                <h3 className="font-semibold text-xl mb-5 flex items-center gap-2">
-                  <AlertTriangle className="w-5 h-5 text-yellow-400" />
-                  Issues Found ({analysisResults.issues.length - resolvedIssues.size})
-                </h3>
+                
+                {/* Quick Fix Mode Banner */}
+                {analysisResults.issues.length > 1 && (
+                  <div className="mb-4">
+                    <motion.button
+                      onClick={async () => {
+                        if (!session?.access_token) {
+                          toast.error('Please log in to generate safe clauses');
+                          return;
+                        }
+                        if (!reportId) {
+                          toast.error('Report information not available. Please re-analyze the contract.');
+                          return;
+                        }
+                        
+                        const unresolvedIssues = analysisResults.issues.filter(issue => !resolvedIssues.has(issue.id));
+                        if (unresolvedIssues.length === 0) {
+                          toast.info('All issues are already resolved!');
+                          return;
+                        }
+                        
+                        triggerHaptic(HapticPatterns.medium);
+                        toast.loading(`Generating ${unresolvedIssues.length} safer clauses...`, { id: 'quick-fix' });
+                        
+                        try {
+                          const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 
+                            (typeof window !== 'undefined' && window.location.origin.includes('noticebazaar.com') 
+                              ? 'https://api.noticebazaar.com' 
+                              : 'http://localhost:3001');
+                          
+                          // Generate clauses for all unresolved issues
+                          const clausePromises = unresolvedIssues.slice(0, 5).map(async (issue) => {
+                            try {
+                              const response = await fetch(`${apiBaseUrl}/api/protection/generate-fix`, {
+                                method: 'POST',
+                                headers: {
+                                  'Content-Type': 'application/json',
+                                  'Authorization': `Bearer ${session.access_token}`
+                                },
+                                body: JSON.stringify({
+                                  reportId,
+                                  issueIndex: issue.id - 1,
+                                  originalClause: issue.clause || issue.title
+                                })
+                              });
+                              
+                              const data = await response.json();
+                              if (response.ok && data.success) {
+                                const safeClause = `SAFER VERSION:\n\n${data.safeClause}\n\n${data.explanation ? `Explanation: ${data.explanation}` : ''}`;
+                                setGeneratedClauses(new Map(generatedClauses.set(issue.id, safeClause)));
+                                setClauseStates(new Map(clauseStates.set(issue.id, 'success')));
+                                return true;
+                              }
+                              return false;
+                            } catch (error) {
+                              console.error(`Failed to generate clause for issue ${issue.id}:`, error);
+                              return false;
+                            }
+                          });
+                          
+                          const results = await Promise.all(clausePromises);
+                          const successCount = results.filter(r => r).length;
+                          
+                          toast.success(`Generated ${successCount} safer clauses!`, { id: 'quick-fix' });
+                        } catch (error: any) {
+                          console.error('[ContractUploadFlow] Quick fix error:', error);
+                          toast.error('Some clauses failed to generate. Please try individual fixes.', { id: 'quick-fix' });
+                        }
+                      }}
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white px-4 py-2 rounded-lg font-semibold transition-all duration-200 flex items-center gap-2 text-sm shadow-lg shadow-purple-500/30"
+                    >
+                      <Zap className="w-4 h-4" />
+                      <span className="hidden md:inline">Quick Fix: Fix All Issues</span>
+                      <span className="md:hidden">Quick Fix</span>
+                    </motion.button>
+                  </div>
+                )}
+                
+                {/* Missing Price Alert - DEAL BREAKER */}
+                {(() => {
+                  const dealValue = analysisResults.keyTerms?.dealValue;
+                  const isMissingPrice = !dealValue || 
+                    dealValue.trim() === '' || 
+                    dealValue.toLowerCase() === 'not specified' ||
+                    dealValue.toLowerCase() === 'not mentioned' ||
+                    dealValue === '0' ||
+                    dealValue === '₹0';
+                  
+                  if (isMissingPrice) {
+                    return (
+                      <MissingPriceAlert
+                        onAskBrand={async () => {
+                          // Generate negotiation message focused on price
+                          if (!negotiationMessage) {
+                            // Generate message first
+                            setIsGeneratingMessage(true);
+                            try {
+                              const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 
+                                (typeof window !== 'undefined' && window.location.origin.includes('noticebazaar.com') 
+                                  ? 'https://api.noticebazaar.com' 
+                                  : 'http://localhost:3001');
+                              const response = await fetch(`${apiBaseUrl}/api/protection/generate-negotiation-message`, {
+                                method: 'POST',
+                                headers: {
+                                  'Content-Type': 'application/json',
+                                  'Authorization': `Bearer ${session?.access_token}`
+                                },
+                                body: JSON.stringify({
+                                  reportId: reportId || null,
+                                  brandName: 'the Brand',
+                                  issues: [{
+                                    title: 'Payment amount is missing',
+                                    category: 'Payment',
+                                    description: 'The contract does not specify the payment amount.',
+                                    recommendation: 'Request the brand to add the exact payment amount to the contract.',
+                                    severity: 'high',
+                                    clause_reference: 'Payment Terms'
+                                  }]
+                                })
+                              });
+                              const data = await response.json();
+                              if (data.success) {
+                                const formattedMessage = formatNegotiationMessage(data.message);
+                                setNegotiationMessage(formattedMessage);
+                                await navigator.clipboard.writeText(formattedMessage);
+                                toast.success('Copied for Email');
+                                setShowNegotiationModal(true);
+                              }
+                            } catch (error) {
+                              toast.error('Failed to generate message');
+                            } finally {
+                              setIsGeneratingMessage(false);
+                            }
+                          } else {
+                            const emailMessage = formatNegotiationMessage(negotiationMessage);
+                            await navigator.clipboard.writeText(emailMessage);
+                            toast.success('Copied for Email');
+                            setShowNegotiationModal(true);
+                          }
+                        }}
+                      />
+                    );
+                  }
+                  return null;
+                })()}
                 
                 {/* Group Issues by Category */}
                 {(() => {
+                  // Get unresolved issues
+                  const unresolvedIssues = analysisResults.issues.filter(issue => !resolvedIssues.has(issue.id));
+                  
+                  // Get top 2 most dangerous issues
+                  const topIssues = getTopIssues(unresolvedIssues);
+                  const issuesToShow = showAllIssues ? unresolvedIssues : topIssues;
+                  
                   const groupedIssues = new Map<string, typeof analysisResults.issues>();
-                  analysisResults.issues.forEach(issue => {
-                    if (resolvedIssues.has(issue.id)) return;
+                  issuesToShow.forEach(issue => {
                     const category = getIssueCategory(issue);
                     const key = category.label;
                     if (!groupedIssues.has(key)) {
@@ -1785,187 +3234,207 @@ ${creatorName}`;
                   });
 
                   return (
-                    <div className="md:grid md:grid-cols-2 md:gap-6">
+                    <>
+                    <div className="md:grid md:grid-cols-2 md:gap-8 lg:gap-10">
                       {Array.from(groupedIssues.entries()).map(([categoryLabel, issues]) => {
-                        const categoryInfo = getIssueCategory(issues[0]);
-                        const CategoryIcon = categoryInfo.icon;
-                        
-                        return (
-                          <div key={categoryLabel} className="mb-6 md:mb-0">
-                        <div className="flex items-center gap-2 mb-4">
-                          <CategoryIcon className="w-5 h-5 text-purple-400" />
-                          <h4 className="font-semibold text-lg">{categoryInfo.emoji} {categoryLabel} ({issues.length})</h4>
+                    const categoryInfo = getIssueCategory(issues[0]);
+                    const CategoryIcon = categoryInfo.icon;
+                    
+                    return (
+                          <div key={categoryLabel} className="mb-8 md:mb-0">
+                        <div className="flex items-center gap-3 mb-5 md:mb-6 pb-3 border-b border-white/10">
+                          <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-purple-500/20 flex items-center justify-center">
+                            <CategoryIcon className="w-5 h-5 md:w-6 md:h-6 text-purple-400" />
+                          </div>
+                          <h4 className="font-semibold text-lg md:text-xl">{categoryInfo.emoji} {categoryLabel} ({issues.length})</h4>
                         </div>
                         
-                        {/* Desktop Table View - Compact with Expandable Details */}
-                        <div className="hidden md:block overflow-x-auto">
-                          <table className="w-full">
-                            <thead>
-                              <tr className="border-b border-white/10">
-                                <th className="text-left py-3 px-4 text-sm font-semibold text-purple-300">Issue</th>
-                                <th className="text-left py-3 px-4 text-sm font-semibold text-purple-300">Severity</th>
-                                <th className="text-left py-3 px-4 text-sm font-semibold text-purple-300">Score Impact</th>
-                                <th className="text-center py-3 px-4 text-sm font-semibold text-purple-300">Action</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {issues.map((issue, index) => {
-                                const severityConfig = {
-                                  high: { 
-                                    border: 'border-l-4 border-red-500', 
-                                    badge: 'bg-red-500/30 text-red-300 border-red-500/50',
-                                    label: 'High'
-                                  },
-                                  medium: { 
-                                    border: 'border-l-4 border-orange-500', 
-                                    badge: 'bg-orange-500/30 text-orange-300 border-orange-500/50',
-                                    label: 'Medium'
-                                  },
-                                  low: { 
-                                    border: 'border-l-4 border-yellow-500', 
-                                    badge: 'bg-yellow-500/30 text-yellow-300 border-yellow-500/50',
-                                    label: 'Warning'
-                                  },
-                                  warning: {
-                                    border: 'border-l-4 border-yellow-500',
-                                    badge: 'bg-yellow-500/30 text-yellow-300 border-yellow-500/50',
-                                    label: 'Warning'
-                                  }
-                                };
-                                const config = severityConfig[issue.severity] || severityConfig.medium;
-                                const clauseState = clauseStates.get(issue.id) || 'default';
-                                const generatedClause = generatedClauses.get(issue.id);
-                                const negotiationStrength = getNegotiationStrength(issue);
-                                const isExpanded = expandedFixes.has(issue.id);
-                                
-                                // Calculate potential score improvement
-                                const currentScore = analysisResults?.score || 0;
-                                const potentialScore = Math.min(100, currentScore + (issue.severity === 'high' ? 8 : issue.severity === 'medium' ? 5 : 3));
-                                
-                                return (
-                                  <React.Fragment key={issue.id}>
-                                    <motion.tr 
-                                      initial={{ opacity: 0, x: -20 }}
-                                      animate={{ opacity: resolvedIssues.has(issue.id) ? 0.5 : 1, x: 0 }}
-                                      exit={{ opacity: 0, height: 0 }}
-                                      className={`${config.border} border-b border-white/5 hover:bg-white/10 hover:border-purple-400/30 transition-all duration-200 group`}
-                                      style={{ animationDelay: `${index * 50}ms` }}
-                                    >
-                                      <td className="py-4 px-4">
-                                        <div className="flex items-center gap-2">
-                                          <span className="font-semibold">{issue.title}</span>
+                        {/* Desktop/iPad Table View - Clean and Organized */}
+                        <div className="hidden md:block">
+                          <div className="space-y-4">
+                            {issues.map((issue, index) => {
+                              const severityConfig = {
+                                high: { 
+                                  border: 'border-l-4 border-red-500', 
+                                  badge: 'bg-red-500/30 text-red-300 border-red-500/50',
+                                  label: 'High'
+                                },
+                                medium: { 
+                                  border: 'border-l-4 border-orange-500', 
+                                  badge: 'bg-orange-500/30 text-orange-300 border-orange-500/50',
+                                  label: 'Medium'
+                                },
+                                low: { 
+                                  border: 'border-l-4 border-yellow-500', 
+                                  badge: 'bg-yellow-500/30 text-yellow-300 border-yellow-500/50',
+                                  label: 'Warning'
+                                },
+                                warning: {
+                                  border: 'border-l-4 border-yellow-500',
+                                  badge: 'bg-yellow-500/30 text-yellow-300 border-yellow-500/50',
+                                  label: 'Warning'
+                                }
+                              };
+                              const config = severityConfig[issue.severity] || severityConfig.medium;
+                              const clauseState = clauseStates.get(issue.id) || 'default';
+                              const generatedClause = generatedClauses.get(issue.id);
+                              const negotiationStrength = getNegotiationStrength(issue);
+                              const isExpanded = expandedFixes.has(issue.id);
+                              
+                              // Calculate potential score improvement
+                              const currentScore = analysisResults?.score || 0;
+                              const potentialScore = Math.min(100, currentScore + (issue.severity === 'high' ? 8 : issue.severity === 'medium' ? 5 : 3));
+                              
+                              return (
+                                <React.Fragment key={issue.id}>
+                                  <motion.div
+                                    initial={{ opacity: 0, y: 10 }}
+                                    animate={{ opacity: resolvedIssues.has(issue.id) ? 0.5 : 1, y: 0 }}
+                                    exit={{ opacity: 0, height: 0 }}
+                                    className={`${config.border} bg-white/5 rounded-xl border border-white/10 hover:bg-white/10 hover:border-purple-400/30 transition-all duration-200 p-5`}
+                                    style={{ animationDelay: `${index * 50}ms` }}
+                                  >
+                                    {/* Issue Header Row */}
+                                    <div className="flex items-start justify-between gap-4 mb-4">
+                                      <div className="flex-1 min-w-0">
+                                        <div className="flex items-center gap-3 mb-2 flex-wrap">
+                                          <h5 className="font-semibold text-base md:text-lg text-white">{issue.title}</h5>
+                                          <span className={`px-3 py-1 rounded-full text-xs font-semibold border flex-shrink-0 ${config.badge}`}>
+                                            {config.label}
+                                          </span>
                                         </div>
                                         <button
                                           onClick={() => toggleFixExpansion(issue.id)}
-                                          className="text-xs text-purple-400 hover:text-purple-300 transition-colors mt-1 flex items-center gap-1"
+                                          className="text-xs text-purple-400 hover:text-purple-300 transition-colors flex items-center gap-1 mt-1"
                                         >
                                           {isExpanded ? 'Hide Details' : 'Tap to View Details'}
                                           {isExpanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
                                         </button>
-                                      </td>
-                                      <td className="py-4 px-4">
-                                        <span className={`px-2.5 py-1 rounded-full text-xs font-semibold border ${config.badge}`}>
-                                          {config.label}
+                                      </div>
+                                    </div>
+
+                                    {/* Score Impact */}
+                                    <div className="mb-4 pb-4 border-b border-white/10">
+                                      <div className="flex items-center gap-2 mb-2">
+                                        <Clock className="w-4 h-4 text-purple-400" />
+                                        <span className="text-xs text-purple-400 font-medium">
+                                          {issue.severity === 'high' ? '2-3 min fix' : issue.severity === 'medium' ? '1-2 min fix' : '1 min fix'}
                                         </span>
-                                      </td>
-                                      <td className="py-4 px-4">
-                                        <div className="text-sm text-purple-300">
-                                          Fixing this will improve your score to ~{potentialScore}/100
+                                      </div>
+                                      <p className="text-sm md:text-base text-purple-300/70">
+                                        Fixing this will improve your score to ~<span className="font-black text-purple-200">{potentialScore}/100</span>
+                                      </p>
+                                    </div>
+
+                                    {/* Impact Preview - Risk if Ignored */}
+                                    <div className="mb-4 bg-red-900/20 border-l-4 border-red-500 p-3 rounded-r-lg">
+                                      <div className="flex items-start gap-2">
+                                        <AlertCircle className="w-4 h-4 text-red-400 flex-shrink-0 mt-0.5" />
+                                        <div>
+                                          <span className="text-xs font-semibold text-red-300 block mb-1">Risk if ignored:</span>
+                                          <p className="text-xs text-red-200/80 leading-relaxed">{getImpactIfIgnored(issue)}</p>
                                         </div>
-                                      </td>
-                                      <td className="py-4 px-4 text-center">
-                                        {clauseState === 'success' && generatedClause ? (
-                                          <div className="flex flex-col gap-2">
-                                            <div className="flex items-center gap-2 text-green-400 text-xs mb-1 justify-center">
-                                              <CheckCircle className="w-4 h-4" />
-                                              ✅ Generated
-                                            </div>
+                                      </div>
+                                    </div>
+
+                                    {/* Action Button */}
+                                    <div className="mt-4">
+                                      {clauseState === 'success' && generatedClause ? (
+                                        <div className="flex flex-col gap-3">
+                                          <div className="flex items-center gap-2 text-green-400 text-sm justify-center">
+                                            <CheckCircle className="w-4 h-4" />
+                                            ✅ Clause Generated
+                                          </div>
+                                          <div className="grid grid-cols-2 gap-3">
                                             <button
                                               onClick={async () => {
                                                 await navigator.clipboard.writeText(generatedClause);
                                                 toast.success('Clause copied!');
                                               }}
-                                              className="bg-green-600/80 hover:bg-green-600 text-white px-3 py-2 rounded-lg text-xs font-medium transition-all flex items-center justify-center gap-1 min-h-[48px]"
+                                              className="bg-green-600/80 hover:bg-green-600 text-white px-4 py-3 rounded-lg text-sm font-semibold transition-all flex items-center justify-center gap-2 min-h-[48px]"
                                             >
-                                              <Copy className="w-3 h-3" />
+                                              <Copy className="w-4 h-4" />
                                               Copy
                                             </button>
                                             <button
                                               onClick={() => handleMarkAsResolved(issue.id)}
-                                              className="bg-purple-600/80 hover:bg-purple-600 text-white px-3 py-2 rounded-lg text-xs font-medium transition-all min-h-[48px]"
+                                              className="bg-purple-600/80 hover:bg-purple-600 text-white px-4 py-3 rounded-lg text-sm font-semibold transition-all min-h-[48px] flex flex-col items-center"
                                             >
-                                              Mark Resolved
+                                              Issue Fixed
+                                              <span className="text-xs text-purple-300 mt-1">This risk is now secured</span>
                                             </button>
                                           </div>
-                                        ) : (
-                                          <motion.button
-                                            onClick={() => {
-                                              triggerHaptic(HapticPatterns.light);
-                                              handleGenerateClause(issue);
-                                            }}
-                                            disabled={clauseState === 'loading'}
-                                            whileTap={{ scale: 0.98 }}
-                                            className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 hover:shadow-lg hover:shadow-purple-500/50 text-white px-4 py-3 rounded-lg text-sm font-semibold transition-all duration-200 flex items-center gap-2 disabled:opacity-50 group-hover:scale-105 min-h-[48px]"
-                                          >
-                                            {clauseState === 'loading' ? (
-                                              <>
-                                                <Loader2 className="w-4 h-4 animate-spin" />
-                                                Generating...
-                                              </>
-                                            ) : (
-                                              <>
-                                                <Wand2 className="w-4 h-4 group-hover:animate-pulse" />
-                                                Fix This Clause
-                                              </>
-                                            )}
-                                          </motion.button>
-                                        )}
-                                      </td>
-                                    </motion.tr>
-                                    {/* Expanded Details Row */}
+                                        </div>
+                                      ) : (
+                                        <motion.button
+                                          onClick={() => {
+                                            triggerHaptic(HapticPatterns.light);
+                                            handleGenerateClause(issue);
+                                          }}
+                                          disabled={clauseState === 'loading'}
+                                          whileTap={{ scale: 0.98 }}
+                                          className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 hover:shadow-lg hover:shadow-purple-500/50 text-white px-4 py-3 rounded-lg text-sm font-semibold transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-50 min-h-[48px]"
+                                        >
+                                          {clauseState === 'loading' ? (
+                                            <>
+                                              <Loader2 className="w-4 h-4 animate-spin" />
+                                              Generating...
+                                            </>
+                                          ) : (
+                                            <>
+                                              <Wand2 className="w-4 h-4" />
+                                              Generate Safer Clause
+                                            </>
+                                          )}
+                                        </motion.button>
+                                      )}
+                                      {clauseState !== 'loading' && clauseState !== 'success' && (
+                                        <span className="text-xs text-purple-300 mt-1 block text-center">AI rewrites this clause in your favor</span>
+                                      )}
+                                    </div>
+
+                                    {/* Expanded Details */}
                                     {isExpanded && (
-                                      <motion.tr
-                                        initial={{ opacity: 0, height: 0 }}
-                                        animate={{ opacity: 1, height: 'auto' }}
-                                        exit={{ opacity: 0, height: 0 }}
-                                        className="border-b border-white/5"
+                                      <motion.div
+                                        initial={{ height: 0, opacity: 0 }}
+                                        animate={{ height: 'auto', opacity: 1 }}
+                                        exit={{ height: 0, opacity: 0 }}
+                                        className="mt-5 pt-5 border-t border-white/10 overflow-hidden"
                                       >
-                                        <td colSpan={4} className="py-4 px-4">
-                                          <div className="grid grid-cols-2 gap-4">
-                                            <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3">
-                                              <div className="text-xs text-red-300 mb-1 flex items-center gap-1 font-medium">
-                                                <XCircle className="w-3 h-3" />
-                                                Problem Detected
-                                              </div>
-                                              <div className="text-sm text-purple-200 leading-relaxed">{issue.clause || issue.description || 'N/A'}</div>
+                                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                                          <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-4">
+                                            <div className="text-xs text-red-300 mb-2 flex items-center gap-1 font-medium">
+                                              <XCircle className="w-3 h-3" />
+                                              Problem Detected
                                             </div>
-                                            <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-3">
-                                              <div className="text-xs text-green-300 mb-1 flex items-center gap-1 font-medium">
-                                                <CheckCircle className="w-3 h-3" />
-                                                Recommended Fix
-                                              </div>
-                                              <div className="text-sm text-purple-200 leading-relaxed">{issue.recommendation}</div>
-                                              <div className="mt-2">
-                                                <span className={`px-2 py-1 rounded-full text-xs font-medium border ${negotiationStrength.color}`}>
-                                                  {negotiationStrength.emoji} {negotiationStrength.label}
-                                                </span>
-                                              </div>
-                                              <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-2 mt-2">
-                                                <div className="text-xs text-yellow-300 flex items-center gap-1">
-                                                  <AlertTriangle className="w-3 h-3" />
-                                                  If ignored: {getImpactIfIgnored(issue)}
-                                                </div>
+                                            <div className="text-sm text-purple-200 leading-relaxed">{issue.clause || issue.description || 'N/A'}</div>
+                                          </div>
+                                          <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-4">
+                                            <div className="text-xs text-green-300 mb-2 flex items-center gap-1 font-medium">
+                                              <CheckCircle className="w-3 h-3" />
+                                              Recommended Fix
+                                            </div>
+                                            <div className="text-sm text-purple-200 leading-relaxed mb-3">{issue.recommendation}</div>
+                                            <div className="mb-3">
+                                              <span className={`px-2 py-1 rounded-full text-xs font-medium border ${negotiationStrength.color}`}>
+                                                {negotiationStrength.emoji} {negotiationStrength.label}
+                                              </span>
+                                            </div>
+                                            <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-2">
+                                              <div className="text-xs text-yellow-300 flex items-center gap-1">
+                                                <AlertTriangle className="w-3 h-3" />
+                                                If ignored: {getImpactIfIgnored(issue)}
                                               </div>
                                             </div>
                                           </div>
-                                        </td>
-                                      </motion.tr>
+                                        </div>
+                                      </motion.div>
                                     )}
-                                  </React.Fragment>
-                                );
-                              })}
-                            </tbody>
-                          </table>
+                                  </motion.div>
+                                </React.Fragment>
+                              );
+                            })}
+                          </div>
                         </div>
                         
                         {/* Mobile Card View - Compact by Default */}
@@ -2030,25 +3499,25 @@ ${creatorName}`;
                                       </p>
                                       
                                       {/* Tap to View Details Link */}
-                                      <button
-                                        onClick={() => toggleFixExpansion(issue.id)}
+                                        <button
+                                          onClick={() => toggleFixExpansion(issue.id)}
                                         className="text-xs text-purple-400 hover:text-purple-300 transition-colors flex items-center gap-1 mb-3"
                                       >
                                         {isExpanded ? 'Hide Details' : 'Tap to View Details'}
                                         {isExpanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
-                                      </button>
+                                        </button>
                                     </div>
                                   </div>
                                   
                                   {/* Expanded Details - Only on Tap */}
-                                  <AnimatePresence>
+                                        <AnimatePresence>
                                     {isExpanded && (
-                                      <motion.div
-                                        initial={{ height: 0, opacity: 0 }}
-                                        animate={{ height: 'auto', opacity: 1 }}
-                                        exit={{ height: 0, opacity: 0 }}
+                                            <motion.div
+                                              initial={{ height: 0, opacity: 0 }}
+                                              animate={{ height: 'auto', opacity: 1 }}
+                                              exit={{ height: 0, opacity: 0 }}
                                         className="overflow-hidden space-y-3 mb-3"
-                                      >
+                                            >
                                         {/* Problem Section */}
                                         <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3">
                                           <div className="text-xs text-red-300 mb-1 flex items-center gap-1 font-medium">
@@ -2065,23 +3534,23 @@ ${creatorName}`;
                                             Recommended Fix
                                           </div>
                                           <div className="text-sm text-purple-200 leading-relaxed">{issue.recommendation}</div>
-                                          <div className="mt-2">
+                                                <div className="mt-2">
                                             <span className={`px-2 py-1 rounded-full text-xs font-medium border ${negotiationStrength.color}`}>
-                                              {negotiationStrength.emoji} {negotiationStrength.label}
-                                            </span>
-                                          </div>
-                                        </div>
+                                                    {negotiationStrength.emoji} {negotiationStrength.label}
+                                                  </span>
+                                                </div>
+                                              </div>
                                         
                                         {/* Impact Warning */}
-                                        <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-2">
-                                          <div className="text-xs text-yellow-300 flex items-center gap-1">
-                                            <AlertTriangle className="w-3 h-3" />
+                                              <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-2">
+                                                <div className="text-xs text-yellow-300 flex items-center gap-1">
+                                                  <AlertTriangle className="w-3 h-3" />
                                             If ignored: {getImpactIfIgnored(issue)}
-                                          </div>
-                                        </div>
-                                      </motion.div>
-                                    )}
-                                  </AnimatePresence>
+                                                </div>
+                                              </div>
+                                            </motion.div>
+                                          )}
+                                        </AnimatePresence>
                                   
                                   {/* Primary CTA Button - Always Visible */}
                                   {clauseState === 'success' && generatedClause ? (
@@ -2103,9 +3572,10 @@ ${creatorName}`;
                                         </button>
                                         <button
                                           onClick={() => handleMarkAsResolved(issue.id)}
-                                          className="flex-1 bg-purple-600/80 hover:bg-purple-600 text-white px-4 py-3 rounded-lg text-sm font-semibold transition-all min-h-[48px]"
+                                          className="flex-1 bg-purple-600/80 hover:bg-purple-600 text-white px-4 py-3 rounded-lg text-sm font-semibold transition-all min-h-[48px] flex flex-col items-center justify-center"
                                         >
-                                          Mark Resolved
+                                          Issue Fixed
+                                          <span className="text-xs text-purple-300 mt-1">This risk is now secured</span>
                                         </button>
                                       </div>
                                     </div>
@@ -2127,10 +3597,13 @@ ${creatorName}`;
                                       ) : (
                                         <>
                                           <Wand2 className="w-4 h-4" />
-                                          Fix This Clause
+                                          Generate Safer Clause
                                         </>
                                       )}
                                     </motion.button>
+                                  )}
+                                  {clauseState !== 'loading' && clauseState !== 'success' && (
+                                    <span className="text-xs text-purple-300 mt-1 block text-center">AI rewrites this clause in your favor</span>
                                   )}
                                 </motion.div>
                               </AnimatePresence>
@@ -2141,61 +3614,253 @@ ${creatorName}`;
                     );
                   })}
                     </div>
+                    {!showAllIssues && unresolvedIssues.length > 2 && (
+                      <div className="mt-6 text-center">
+                        <motion.button
+                          onClick={() => {
+                            setShowAllIssues(true);
+                            triggerHaptic(HapticPatterns.light);
+                          }}
+                          whileHover={{ scale: 1.02 }}
+                          whileTap={{ scale: 0.98 }}
+                          className="bg-purple-600/80 hover:bg-purple-600 text-white px-6 py-3 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 mx-auto"
+                        >
+                          Show all issues ({unresolvedIssues.length})
+                        </motion.button>
+                      </div>
+                    )}
+                    </>
                   );
                 })()}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
             )}
 
-            {/* Strong Clauses - Visual Trust Boost */}
-            {analysisResults.verified.length > 0 && (
-              <div className="bg-white/10 backdrop-blur-md rounded-2xl p-5 md:p-6 border border-green-500/30 md:border-t shadow-lg">
-                <h3 className="font-semibold text-xl mb-5 flex items-center gap-2">
-                  <CheckCircle className="w-5 h-5 text-green-400" />
-                  Strong Clauses ({analysisResults.verified.length})
+            {/* Share & Brand Actions - Moved higher, right after Issues */}
+            {analysisResults.issues.length > 0 && negotiationMessage && (
+              <div className="mt-6 mb-6">
+                <h3 className="font-semibold text-lg mb-4 flex items-center gap-2">
+                  <Send className="w-5 h-5 text-purple-300" />
+                  <span className="text-white">Share Fixes with Brand</span>
                 </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  {analysisResults.verified.map((item, index) => (
-                    <div 
-                      key={item.id} 
-                      className="flex items-start gap-3 p-4 bg-green-500/10 border-2 border-green-500/40 rounded-xl hover:border-green-500/60 transition-all duration-300"
-                      style={{ 
-                        animation: `fadeIn 0.5s ease-out ${index * 100}ms both`
-                      }}
-                    >
-                      <div className="flex items-center gap-2 flex-shrink-0">
-                        <CheckCircle className="w-6 h-6 text-green-400 mt-0.5" />
-                        <Lock className="w-4 h-4 text-green-400/70" />
-                      </div>
-                      <div className="flex-1 max-w-[85%]">
-                        <div className="flex items-center gap-2 mb-2">
-                          <h4 className="font-medium">{item.title}</h4>
-                          <span className="px-2 py-0.5 bg-green-500/30 text-green-300 rounded-full text-xs font-semibold border border-green-500/50">
-                            {item.category}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-1 mb-2">
-                          <Lock className="w-3 h-3 text-green-400/70" />
-                          <span className="text-xs text-green-400/90 font-medium">Legally Strong</span>
-                        </div>
-                        <p className="text-sm text-purple-200 leading-relaxed mb-1">{item.description}</p>
-                        {item.clause && (
-                          <div className="text-xs text-purple-400 mt-2">📄 {item.clause}</div>
-                        )}
-                      </div>
-                    </div>
-                  ))}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                  {/* Copy Email Button */}
+                  <motion.button
+                    onClick={handleCopyEmail}
+                    disabled={!negotiationMessage}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    className="bg-blue-600/90 hover:bg-blue-600 text-white px-4 py-3 rounded-xl font-semibold transition-all duration-200 flex items-center justify-center gap-2 min-h-[48px] disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <Mail className="w-5 h-5" />
+                    <span className="text-sm font-semibold">Copy Email</span>
+                  </motion.button>
+                  
+                  {/* Copy WhatsApp Button */}
+                  <motion.button
+                    onClick={handleCopyWhatsApp}
+                    disabled={!negotiationMessage}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    className="bg-green-600/90 hover:bg-green-600 text-white px-4 py-3 rounded-xl font-semibold transition-all duration-200 flex items-center justify-center gap-2 min-h-[48px] disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <MessageSquare className="w-5 h-5" />
+                    <span className="text-sm font-semibold">Copy WhatsApp</span>
+                  </motion.button>
+                  
+                  {/* Send Fixes to Brand Button */}
+                  <motion.button
+                    onClick={() => {
+                      if (!negotiationMessage) {
+                        toast.error('Please generate a negotiation message first');
+                        return;
+                      }
+                      setShowShareFeedbackModal(true);
+                    }}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    className="bg-purple-600/90 hover:bg-purple-600 text-white px-4 py-3 rounded-xl font-semibold transition-all duration-200 flex items-center justify-center gap-2 min-h-[48px]"
+                  >
+                    <Send className="w-5 h-5" />
+                    <span className="text-sm font-semibold">Send Fixes to Brand</span>
+                  </motion.button>
                 </div>
               </div>
             )}
 
-            {/* Smart Next Steps Panel - Action Buttons - Conversion Optimized */}
-            {analysisResults.issues.length > 0 && (
+
+
+            {/* Old Recommended Actions - Removed */}
+            {false && analysisResults.issues.length > 0 && (
               <>
-              <div className="bg-gradient-to-br from-purple-600/30 to-indigo-600/30 backdrop-blur-md rounded-2xl p-5 md:p-6 border border-purple-400/30 shadow-lg mb-24 md:mb-0 hidden md:block" style={{ marginBottom: 'max(96px, calc(96px + env(safe-area-inset-bottom)))' }}>
+              <div className="bg-gradient-to-br from-purple-600/30 to-indigo-600/30 backdrop-blur-md rounded-2xl p-5 md:p-6 border border-purple-400/30 shadow-lg mb-24 md:mb-0" style={{ marginBottom: 'max(96px, calc(96px + env(safe-area-inset-bottom)))' }}>
                 <h3 className="font-semibold text-xl mb-4">Recommended Actions</h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                  {/* Primary Green Button */}
-                  <button
+                  {/* Critical Action - Ask Brand for Revisions */}
+                  <motion.button
+                    onClick={async () => {
+                      if (!session?.access_token) {
+                        toast.error('Please log in to generate negotiation message');
+                        return;
+                      }
+
+                      if (!analysisResults || analysisResults.issues.length === 0) {
+                        toast.error('No issues found to negotiate');
+                        return;
+                      }
+
+                      triggerHaptic(HapticPatterns.light);
+                      setIsGeneratingMessage(true);
+                      
+                      try {
+                        const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 
+                          (typeof window !== 'undefined' && window.location.origin.includes('noticebazaar.com') 
+                            ? 'https://api.noticebazaar.com' 
+                            : 'http://localhost:3001');
+                        
+                        const requestBody: any = {
+                          brandName: 'the Brand'
+                        };
+                        
+                        if (reportId) {
+                          requestBody.reportId = reportId;
+                        } else {
+                          requestBody.issues = analysisResults.issues
+                            .filter((issue: any) => issue.severity === 'high' || issue.severity === 'medium')
+                            .map((issue: any) => ({
+                              title: issue.title,
+                              category: issue.category,
+                              description: issue.description,
+                              recommendation: issue.recommendation,
+                              severity: issue.severity,
+                              clause_reference: issue.clause
+                            }));
+                        }
+                        
+                        const response = await fetch(`${apiBaseUrl}/api/protection/generate-negotiation-message`, {
+                          method: 'POST',
+                          headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${session.access_token}`
+                          },
+                          body: JSON.stringify(requestBody)
+                        });
+
+                        const contentType = response.headers.get('content-type');
+                        let data: any = {};
+                        
+                        if (contentType?.includes('application/json')) {
+                          data = await response.json();
+                        } else {
+                          const text = await response.text();
+                          throw new Error(`Server returned ${response.status}: ${text.substring(0, 100)}`);
+                        }
+
+                        if (!response.ok || !data.success) {
+                          throw new Error(data.error || 'Failed to generate negotiation message');
+                        }
+
+                        const formattedMessage = formatNegotiationMessage(data.message);
+                        setNegotiationMessage(formattedMessage);
+                        setShowShareFeedbackModal(true);
+                        toast.success('Negotiation message generated!');
+                      } catch (error: any) {
+                        console.error('[ContractUploadFlow] Generate negotiation message error:', error);
+                        toast.error(error.message || 'Failed to generate negotiation message. Please try again.');
+                      } finally {
+                        setIsGeneratingMessage(false);
+                      }
+                    }}
+                    disabled={isGeneratingMessage}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    className="bg-red-600/90 hover:bg-red-600 hover:shadow-xl hover:shadow-red-500/50 hover:-translate-y-1 text-white px-4 py-4 rounded-xl font-semibold transition-all duration-200 flex flex-col items-center justify-center gap-1.5 min-h-[48px] relative overflow-hidden"
+                  >
+                    <motion.div
+                      animate={{ opacity: [0.5, 1, 0.5] }}
+                      transition={{ duration: 2, repeat: Infinity }}
+                      className="absolute inset-0 bg-red-500/20"
+                    />
+                    <div className="flex items-center gap-2 relative z-10">
+                      <AlertTriangle className="w-5 h-5" />
+                      <div className="flex flex-col items-start">
+                        <strong className="text-sm">Critical: Ask Brand for Revisions</strong>
+                        <span className="text-xs text-red-100/80">Must do before signing</span>
+                      </div>
+                    </div>
+                  </motion.button>
+                  
+                  {/* Important Action - Get Lawyer Review */}
+                  <motion.button
+                    onClick={async () => {
+                      if (!session?.access_token) {
+                        toast.error('Please log in to send for legal review');
+                        return;
+                      }
+
+                      if (!reportId) {
+                        toast.error('Report information not available. Please re-analyze the contract.');
+                        return;
+                      }
+
+                      triggerHaptic(HapticPatterns.light);
+                      
+                      try {
+                        const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 
+                          (typeof window !== 'undefined' && window.location.origin.includes('noticebazaar.com') 
+                            ? 'https://api.noticebazaar.com' 
+                            : 'http://localhost:3001');
+                        const response = await fetch(`${apiBaseUrl}/api/protection/send-for-legal-review`, {
+                          method: 'POST',
+                          headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${session.access_token}`
+                          },
+                          body: JSON.stringify({
+                            reportId,
+                            userEmail: session.user?.email || '',
+                            userPhone: profile?.phone
+                          })
+                        });
+
+                        const contentType = response.headers.get('content-type');
+                        let data: any = {};
+                        
+                        if (contentType?.includes('application/json')) {
+                          data = await response.json();
+                        } else {
+                          const text = await response.text();
+                          throw new Error(`Server returned ${response.status}: ${text.substring(0, 100)}`);
+                        }
+
+                        if (!response.ok || !data.success) {
+                          throw new Error(data.error || 'Failed to send for legal review');
+                        }
+
+                        toast.success('Sent for Legal Review');
+                        navigate('/messages');
+                      } catch (error: any) {
+                        console.error('[ContractUploadFlow] Send for legal review error:', error);
+                        toast.error(error.message || 'Failed to send for legal review. Please try again.');
+                      }
+                    }}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    className="bg-yellow-600/80 hover:bg-yellow-600 hover:shadow-xl hover:shadow-yellow-500/50 hover:-translate-y-1 text-white px-4 py-4 rounded-xl font-semibold transition-all duration-200 flex flex-col items-center justify-center gap-1.5 min-h-[48px]"
+                  >
+                    <div className="flex items-center gap-2">
+                      <Clock className="w-5 h-5" />
+                      <div className="flex flex-col items-start">
+                        <strong className="text-sm">Get Lawyer Review</strong>
+                        <span className="text-xs text-yellow-100/80">Within 24-48 hours</span>
+                      </div>
+                    </div>
+                  </motion.button>
+                  
+                  {/* Optional Action - Download Brand-Safe Contract */}
+                  <motion.button
                     onClick={async () => {
                       if (!session?.access_token) {
                         toast.error('Please log in to download safe contract');
@@ -2279,461 +3944,270 @@ ${creatorName}`;
                         toast.error(error.message || 'Failed to generate safe contract. Please try again.');
                       }
                     }}
-                    className="bg-green-600/90 hover:bg-green-600 hover:shadow-xl hover:shadow-green-500/50 hover:-translate-y-1 text-white px-4 py-4 rounded-xl font-semibold transition-all duration-200 flex flex-col items-center justify-center gap-1.5 md:col-span-1 min-h-[48px]"
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    className="bg-green-600/90 hover:bg-green-600 hover:shadow-xl hover:shadow-green-500/50 hover:-translate-y-1 text-white px-4 py-4 rounded-xl font-semibold transition-all duration-200 flex flex-col items-center justify-center gap-1.5 min-h-[48px]"
                   >
                     <div className="flex items-center gap-2">
-                      <CheckCircle className="w-5 h-5" />
-                      <span className="text-sm font-semibold">Download Safe Version</span>
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Info className="w-4 h-4 text-green-200 hover:text-green-100 cursor-help" />
-                          </TooltipTrigger>
-                          <TooltipContent side="top" className="bg-purple-900/95 border-white/20 text-white max-w-xs z-[10001]">
-                            <p className="font-medium mb-1">Download Safe Version</p>
-                            <p className="text-sm">We replace clauses that need improvement with legally stronger alternatives and create a new, renegotiation-ready contract PDF for you.</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
-                    </div>
-                    <span className="text-xs text-green-100 font-normal">Auto-fixed, renegotiation ready</span>
-                  </button>
-                  {/* Secondary Orange Button */}
-                  <button
-                    onClick={async () => {
-                      if (!session?.access_token) {
-                        toast.error('Please log in to send for legal review');
-                        return;
-                      }
-
-                      if (!reportId) {
-                        toast.error('Report information not available. Please re-analyze the contract.');
-                        return;
-                      }
-
-                      triggerHaptic(HapticPatterns.light);
-                      
-                      try {
-                        const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 
-                          (typeof window !== 'undefined' && window.location.origin.includes('noticebazaar.com') 
-                            ? 'https://api.noticebazaar.com' 
-                            : 'http://localhost:3001');
-                        const response = await fetch(`${apiBaseUrl}/api/protection/send-for-legal-review`, {
-                          method: 'POST',
-                          headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${session.access_token}`
-                          },
-                          body: JSON.stringify({
-                            reportId,
-                            userEmail: profile?.email || session.user?.email,
-                            userPhone: profile?.phone
-                          })
-                        });
-
-                        // Check if response is JSON
-                        const contentType = response.headers.get('content-type');
-                        let data: any = {};
-                        
-                        if (contentType?.includes('application/json')) {
-                          data = await response.json();
-                        } else {
-                          const text = await response.text();
-                          throw new Error(`Server returned ${response.status}: ${text.substring(0, 100)}`);
-                        }
-
-                        if (!response.ok || !data.success) {
-                          throw new Error(data.error || 'Failed to send for legal review');
-                        }
-
-                        toast.success('Sent for Legal Review');
-                        navigate('/messages');
-                      } catch (error: any) {
-                        console.error('[ContractUploadFlow] Send for legal review error:', error);
-                        toast.error(error.message || 'Failed to send for legal review. Please try again.');
-                      }
-                    }}
-                    className="bg-yellow-600/80 hover:bg-yellow-600 hover:shadow-xl hover:shadow-yellow-500/50 hover:-translate-y-1 text-white px-4 py-3 rounded-xl font-semibold transition-all duration-200 flex flex-col items-center justify-center gap-1.5 min-h-[48px]"
-                  >
-                    <div className="flex items-center gap-2">
-                      <Send className="w-5 h-5" />
-                      <span className="text-sm">Send for Legal Review</span>
-                    </div>
-                    <span className="text-xs text-yellow-100 font-normal">Reviewed by professionals</span>
-                  </button>
-                  {/* Tertiary Red Button */}
-                  <div className="relative">
-                    <button
-                      onClick={async () => {
-                        if (!session?.access_token) {
-                          toast.error('Please log in to generate negotiation message');
-                          return;
-                        }
-
-                        if (!reportId) {
-                          toast.error('Report information not available. Please re-analyze the contract.');
-                          return;
-                        }
-
-                        if (!analysisResults || analysisResults.issues.length === 0) {
-                          toast.error('No issues found to negotiate');
-                          return;
-                        }
-
-                        triggerHaptic(HapticPatterns.light);
-                        setIsGeneratingMessage(true);
-                        
-                        try {
-                          const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 
-                            (typeof window !== 'undefined' && window.location.origin.includes('noticebazaar.com') 
-                              ? 'https://api.noticebazaar.com' 
-                              : 'http://localhost:3001');
-                          const response = await fetch(`${apiBaseUrl}/api/protection/generate-negotiation-message`, {
-                            method: 'POST',
-                            headers: {
-                              'Content-Type': 'application/json',
-                              'Authorization': `Bearer ${session.access_token}`
-                            },
-                            body: JSON.stringify({
-                              reportId: reportId || null,
-                              brandName: 'the Brand', // Could be extracted from contract or user input
-                              // Send issues if reportId is not available
-                              ...(reportId ? {} : {
-                                issues: analysisResults?.issues
-                                  ?.filter((issue: any) => issue.severity === 'high' || issue.severity === 'medium')
-                                  .map((issue: any) => ({
-                                    title: issue.title,
-                                    category: issue.category,
-                                    description: issue.description,
-                                    recommendation: issue.recommendation,
-                                    severity: issue.severity,
-                                    clause_reference: issue.clause
-                                  })) || []
-                              })
-                            })
-                          });
-
-                          // Check if response is JSON
-                          const contentType = response.headers.get('content-type');
-                          let data: any = {};
-                          
-                          if (contentType?.includes('application/json')) {
-                            data = await response.json();
-                          } else {
-                            const text = await response.text();
-                            throw new Error(`Server returned ${response.status}: ${text.substring(0, 100)}`);
-                          }
-
-                          if (!response.ok || !data.success) {
-                            throw new Error(data.error || 'Failed to generate negotiation message');
-                          }
-
-                          // Set message and show modal
-                          // Format message with dynamic fields (creator name, deal value, duration)
-                          const formattedMessage = formatNegotiationMessage(data.message);
-                          setNegotiationMessage(formattedMessage);
-                          setShowNegotiationModal(true);
-                          toast.success('Negotiation message generated!');
-                        } catch (error: any) {
-                          console.error('[ContractUploadFlow] Generate negotiation message error:', error);
-                          toast.error(error.message || 'Failed to generate negotiation message. Please try again.');
-                        } finally {
-                          setIsGeneratingMessage(false);
-                        }
-                      }}
-                      disabled={isGeneratingMessage}
-                      className="bg-red-600/80 hover:bg-red-600 hover:shadow-xl hover:shadow-red-500/50 hover:-translate-y-1 disabled:opacity-50 disabled:cursor-not-allowed text-white px-4 py-3 rounded-xl font-semibold transition-all duration-200 flex flex-col items-center justify-center gap-1.5 w-full min-h-[48px]"
-                    >
-                      <div className="flex items-center gap-2">
-                        {isGeneratingMessage ? (
-                          <Loader2 className="w-5 h-5 animate-spin" />
-                        ) : (
-                          <FileCheck className="w-5 h-5" />
-                        )}
-                        <span className="text-sm">
-                          {isGeneratingMessage ? 'Preparing legal request…' : 'Request Clause Changes'}
-                        </span>
-                        <TooltipProvider>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Info className="w-4 h-4 text-red-200 hover:text-red-100 cursor-help" />
-                            </TooltipTrigger>
-                            <TooltipContent side="top" className="bg-purple-900/95 border-white/20 text-white max-w-xs z-[10001]">
-                              <p className="font-medium mb-1">Request Clause Changes</p>
-                              <p className="text-sm">We generate a polite, legally worded negotiation message you can send on WhatsApp or Email to request changes from the brand.</p>
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
+                      <Download className="w-5 h-5" />
+                      <div className="flex flex-col items-start">
+                        <strong className="text-sm">Download Brand-Safe Contract</strong>
+                        <span className="text-xs text-green-100/80">Ready to share</span>
                       </div>
-                      <span className="text-xs text-red-100 font-normal">Send editable change request</span>
-                    </button>
-                  </div>
+                    </div>
+                  </motion.button>
                 </div>
               </div>
               
-              {/* Sticky Mobile Action Bar */}
-              <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-gradient-to-br from-purple-900/95 to-indigo-900/95 backdrop-blur-xl border-t border-purple-500/30 shadow-2xl p-4" style={{ paddingBottom: 'max(16px, calc(64px + env(safe-area-inset-bottom)))' }}>
-                <div className="grid grid-cols-2 gap-3 max-w-md mx-auto">
-                  <button
-                    onClick={async () => {
-                      if (!session?.access_token) {
-                        toast.error('Please log in to download safe contract');
-                        return;
-                      }
 
-                      // Check if we have the contract file path (required)
-                      const filePath = originalContractPath || contractUrl;
-                      if (!filePath || filePath.trim() === '') {
-                        toast.error('Contract file information not available. Please re-analyze the contract.');
-                        return;
-                      }
+              {/* Brand Approval Tracker */}
+              {brandApprovalStatus && (
+                <div className="mt-6 bg-white/10 backdrop-blur-md rounded-2xl p-5 md:p-6 border border-white/10 shadow-lg">
+                  <h4 className="font-semibold text-lg mb-4 flex items-center gap-2">
+                    <FileCheck className="w-5 h-5 text-purple-400" />
+                    Brand Approval Status
+                  </h4>
+                  
+                  <div className="space-y-3">
+                    {/* Status Badge */}
+                    <div className="flex items-center gap-3">
+                      {brandApprovalStatus === 'sent' && (
+                        <>
+                          <div className="w-3 h-3 rounded-full bg-yellow-400 animate-pulse"></div>
+                          <span className="font-medium text-yellow-300">Sent to Brand</span>
+                          <span className="text-sm text-white/60 ml-auto">Waiting for their response</span>
+                        </>
+                      )}
+                      {brandApprovalStatus === 'viewed' && (
+                        <>
+                          <div className="w-3 h-3 rounded-full bg-blue-400"></div>
+                          <span className="font-medium text-blue-300">Brand Viewed</span>
+                          <span className="text-sm text-white/60 ml-auto">Brand opened your message</span>
+                        </>
+                      )}
+                      {brandApprovalStatus === 'negotiating' && (
+                        <>
+                          <div className="w-3 h-3 rounded-full bg-orange-400 animate-pulse"></div>
+                          <span className="font-medium text-orange-300">Negotiating</span>
+                          <span className="text-sm text-white/60 ml-auto">Changes being discussed</span>
+                        </>
+                      )}
+                      {brandApprovalStatus === 'approved' && (
+                        <>
+                          <div className="w-3 h-3 rounded-full bg-green-400"></div>
+                          <span className="font-medium text-green-300">Approved</span>
+                          <span className="text-sm text-white/60 ml-auto">Contract finalized</span>
+                        </>
+                      )}
+                      {brandApprovalStatus === 'rejected' && (
+                        <>
+                          <div className="w-3 h-3 rounded-full bg-red-400"></div>
+                          <span className="font-medium text-red-300">Rejected</span>
+                          <span className="text-sm text-white/60 ml-auto">Brand declined changes</span>
+                        </>
+                      )}
+                    </div>
 
-                      // Log what we're sending
-                      console.log('[ContractUploadFlow] Generating safe contract:', {
-                        hasReportId: !!reportId,
-                        hasFilePath: !!filePath,
-                        filePath: filePath.substring(0, 50) + '...'
-                      });
-
-                      triggerHaptic(HapticPatterns.medium);
-                      
-                      try {
-                        const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 
-                          (typeof window !== 'undefined' && window.location.origin.includes('noticebazaar.com') 
-                            ? 'https://api.noticebazaar.com' 
-                            : 'http://localhost:3001');
-                        const response = await fetch(`${apiBaseUrl}/api/protection/generate-safe-contract`, {
-                          method: 'POST',
-                          headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${session.access_token}`
-                          },
-                          body: JSON.stringify({
-                            reportId: reportId || null, // Send null explicitly if not available
-                            originalFilePath: filePath // Use the validated filePath
-                          })
-                        });
-
-                        const contentType = response.headers.get('content-type');
-                        
-                        // Check if response is a file download (not JSON)
-                        if (contentType && !contentType.includes('application/json')) {
-                          // Direct file download - server returned file buffer
-                          const blob = await response.blob();
-                          const url = window.URL.createObjectURL(blob);
-                          const a = document.createElement('a');
-                          a.href = url;
+                    {/* Auto Actions */}
+                    {brandApprovalStatus === 'approved' && (
+                      <button
+                        onClick={async () => {
+                          // Auto-move to Active Deals
+                          const creatorId = profile?.id || session?.user?.id;
+                          if (!creatorId || !uploadedFile) return;
                           
-                          // Get filename from Content-Disposition header or use default
-                          const contentDisposition = response.headers.get('content-disposition');
-                          const filenameMatch = contentDisposition?.match(/filename="?(.+)"?/i);
-                          a.download = filenameMatch ? filenameMatch[1] : `safe-contract-version-${Date.now()}.pdf`;
-                          
-                          document.body.appendChild(a);
-                          a.click();
-                          window.URL.revokeObjectURL(url);
-                          document.body.removeChild(a);
-                          toast.success('Safe Version Downloaded');
-                        } else {
-                          // JSON response with URL (legacy fallback)
-                          const data = await response.json();
-                          
-                          if (!response.ok || !data.success) {
-                            throw new Error(data.error || 'Failed to generate safe contract');
+                          try {
+                            const dealValueStr = (analysisResults?.keyTerms?.dealValue || '0').replace(/[₹,]/g, '').trim();
+                            const dealAmount = parseFloat(dealValueStr) || 0;
+                            const dueDate = new Date();
+                            dueDate.setDate(dueDate.getDate() + 30);
+                            const dueDateStr = dueDate.toISOString().split('T')[0];
+
+                            await addDealMutation.mutateAsync({
+                              creator_id: creatorId,
+                              organization_id: null,
+                              brand_name: 'Contract Upload',
+                              deal_amount: dealAmount,
+                              deliverables: analysisResults?.keyTerms?.deliverables || 'As per contract',
+                              contract_file: uploadedFile,
+                              due_date: dueDateStr,
+                              payment_expected_date: dueDateStr,
+                              contact_person: null,
+                              platform: 'Other',
+                              status: 'Active' as const,
+                              invoice_file: null,
+                              utr_number: null,
+                              brand_email: brandEmail || null,
+                              payment_received_date: null,
+                            });
+
+                            toast.success('Deal moved to Active!');
+                            navigate('/creator-contracts');
+                          } catch (error: any) {
+                            toast.error('Failed to create deal', { description: error?.message });
                           }
+                        }}
+                        className="w-full bg-green-600/80 hover:bg-green-600 text-white px-4 py-3 rounded-lg text-sm font-semibold transition-all"
+                      >
+                        ✅ Move to Active Deals
+                      </button>
+                    )}
 
-                          const downloadResponse = await fetch(data.safeContractUrl);
-                          const blob = await downloadResponse.blob();
-                          const url = window.URL.createObjectURL(blob);
-                          const a = document.createElement('a');
-                          a.href = url;
-                          a.download = `safe-contract-version-${Date.now()}.pdf`;
-                          document.body.appendChild(a);
-                          a.click();
-                          window.URL.revokeObjectURL(url);
-                          document.body.removeChild(a);
-                          toast.success('Safe Version Downloaded');
-                        }
-                      } catch (error: any) {
-                        console.error('[ContractUploadFlow] Download safe contract error:', error);
-                        toast.error(error.message || 'Failed to generate safe contract. Please try again.');
-                      }
-                    }}
-                    className="bg-green-600/90 hover:bg-green-600 text-white px-4 py-3 rounded-xl font-semibold transition-all duration-200 flex items-center justify-center gap-2 min-h-[48px]"
-                  >
-                    <Download className="w-5 h-5" />
-                    <span className="text-sm font-semibold">Download Safe Version</span>
-                  </button>
-                  <button
-                    onClick={async () => {
-                      if (!session?.access_token) {
-                        toast.error('Please log in to generate negotiation message');
-                        return;
-                      }
+                    {brandApprovalStatus === 'sent' && approvalStatusUpdatedAt && (
+                      <div className="text-xs text-white/60">
+                        Sent {new Date(approvalStatusUpdatedAt).toLocaleDateString()} • 
+                        {Math.floor((Date.now() - approvalStatusUpdatedAt.getTime()) / (1000 * 60 * 60)) > 48 && (
+                          <button
+                            onClick={() => {
+                              toast.info('Reminder sent to brand');
+                            }}
+                            className="ml-2 text-purple-400 hover:text-purple-300 underline"
+                          >
+                            Send Reminder
+                          </button>
+                        )}
+                      </div>
+                    )}
 
-                      if (!analysisResults || analysisResults.issues.length === 0) {
-                        toast.error('No issues found to negotiate');
-                        return;
-                      }
-
-                      triggerHaptic(HapticPatterns.light);
-                      setIsGeneratingMessage(true);
-                      
-                      try {
-                        const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 
-                          (typeof window !== 'undefined' && window.location.origin.includes('noticebazaar.com') 
-                            ? 'https://api.noticebazaar.com' 
-                            : 'http://localhost:3001');
-                        
-                        // Prepare request body - send issues if reportId is not available
-                        const requestBody: any = {
-                          brandName: 'the Brand'
-                        };
-                        
-                        if (reportId) {
-                          requestBody.reportId = reportId;
-                        } else {
-                          // Send issues directly when reportId is not available
-                          requestBody.issues = analysisResults.issues
-                            .filter((issue: any) => issue.severity === 'high' || issue.severity === 'medium')
-                            .map((issue: any) => ({
-                              title: issue.title,
-                              category: issue.category,
-                              description: issue.description,
-                              recommendation: issue.recommendation,
-                              severity: issue.severity,
-                              clause_reference: issue.clause
-                            }));
-                        }
-                        
-                        const response = await fetch(`${apiBaseUrl}/api/protection/generate-negotiation-message`, {
-                          method: 'POST',
-                          headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${session.access_token}`
-                          },
-                          body: JSON.stringify(requestBody)
-                        });
-
-                        const contentType = response.headers.get('content-type');
-                        let data: any = {};
-                        
-                        if (contentType?.includes('application/json')) {
-                          data = await response.json();
-                        } else {
-                          const text = await response.text();
-                          throw new Error(`Server returned ${response.status}: ${text.substring(0, 100)}`);
-                        }
-
-                        if (!response.ok || !data.success) {
-                          throw new Error(data.error || 'Failed to generate negotiation message');
-                        }
-
-                        setNegotiationMessage(data.message);
-                        setShowNegotiationModal(true);
-                        toast.success('Negotiation message generated!');
-                      } catch (error: any) {
-                        console.error('[ContractUploadFlow] Generate negotiation message error:', error);
-                        toast.error(error.message || 'Failed to generate negotiation message. Please try again.');
-                      } finally {
-                        setIsGeneratingMessage(false);
-                      }
-                    }}
-                    className="bg-blue-600/90 hover:bg-blue-600 text-white px-4 py-3 rounded-xl font-semibold transition-all duration-200 flex items-center justify-center gap-2 min-h-[48px]"
-                  >
-                    <Send className="w-5 h-5" />
-                    <span className="text-sm font-semibold">Send to Brand</span>
-                  </button>
+                    {brandApprovalStatus === 'rejected' && (
+                      <button
+                        onClick={() => {
+                          setShowNegotiationModal(true);
+                          toast.info('Try renegotiation with revised terms');
+                        }}
+                        className="w-full bg-orange-600/80 hover:bg-orange-600 text-white px-4 py-3 rounded-lg text-sm font-semibold transition-all"
+                      >
+                        🔄 Try Renegotiation with Revised Terms
+                      </button>
+                    )}
+                  </div>
                 </div>
-              </div>
+              )}
             </>
             )}
 
 
             {/* Desktop Action Buttons */}
             <div className="hidden md:flex gap-3 max-w-3xl mx-auto">
-              <button 
-                onClick={() => {
-                  navigate('/messages');
-                  toast.success('Sent for Legal Review');
-                }}
-                className="flex-1 bg-white/10 hover:bg-white/15 font-semibold py-3 rounded-xl transition-colors flex items-center justify-center gap-2"
+              {/* Copy Email Button */}
+              <motion.button
+                onClick={handleCopyEmail}
+                disabled={!negotiationMessage}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                className="flex-1 bg-blue-600/90 hover:bg-blue-600 font-semibold py-3 rounded-xl transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <FileText className="w-5 h-5" />
-                Get Legal Review
-              </button>
-              <button 
+                <Mail className="w-5 h-5" />
+                Copy Email
+              </motion.button>
+              
+              {/* Copy WhatsApp Button */}
+              <motion.button
+                onClick={handleCopyWhatsApp}
+                disabled={!negotiationMessage}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                className="flex-1 bg-green-600/90 hover:bg-green-600 font-semibold py-3 rounded-xl transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <MessageSquare className="w-5 h-5" />
+                Copy WhatsApp
+              </motion.button>
+              
+              {/* Share Feedback Button */}
+              <motion.button
                 onClick={async () => {
-                  // Get creator_id - use profile.id or fallback to session.user.id for new accounts
-                  const creatorId = profile?.id || session?.user?.id;
+                  if (!session?.access_token) {
+                    toast.error('Please log in to generate negotiation message');
+                    return;
+                  }
+
+                  if (!analysisResults || analysisResults.issues.length === 0) {
+                    toast.error('No issues found to negotiate');
+                    return;
+                  }
+
+                  triggerHaptic(HapticPatterns.light);
+                  setIsGeneratingMessage(true);
                   
-                  if (!creatorId) {
-                    toast.error('Unable to create deal. Please log in again.');
-                    return;
-                  }
-
-                  if (!uploadedFile) {
-                    toast.error('Contract file is missing. Please upload again.');
-                    return;
-                  }
-
                   try {
-                    // Extract deal value from keyTerms (remove ₹ and commas)
-                    const dealValueStr = (analysisResults.keyTerms.dealValue || '0').replace(/[₹,]/g, '').trim();
-                    const dealAmount = parseFloat(dealValueStr) || 0;
-
-                    // Calculate due date (30 days from now as default)
-                    const dueDate = new Date();
-                    dueDate.setDate(dueDate.getDate() + 30);
-                    const dueDateStr = dueDate.toISOString().split('T')[0];
-
-                    // Create deal
-                    await addDealMutation.mutateAsync({
-                      creator_id: creatorId,
-                      organization_id: null,
-                      brand_name: 'Contract Upload', // Default brand name, user can edit later
-                      deal_amount: dealAmount,
-                      deliverables: analysisResults?.keyTerms?.deliverables || 'As per contract',
-                      contract_file: uploadedFile,
-                      due_date: dueDateStr,
-                      payment_expected_date: dueDateStr,
-                      contact_person: null,
-                      platform: 'Other',
-                      status: 'Negotiation' as const,
-                      invoice_file: null,
-                      utr_number: null,
-                      brand_email: null,
-                      payment_received_date: null,
+                    const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 
+                      (typeof window !== 'undefined' && window.location.origin.includes('noticebazaar.com') 
+                        ? 'https://api.noticebazaar.com' 
+                        : 'http://localhost:3001');
+                    
+                    // Prepare request body - send issues if reportId is not available
+                    const requestBody: any = {
+                      brandName: 'the Brand'
+                    };
+                    
+                    if (reportId) {
+                      requestBody.reportId = reportId;
+                    } else {
+                      // Send issues directly when reportId is not available
+                      requestBody.issues = analysisResults.issues
+                        .filter((issue: any) => issue.severity === 'high' || issue.severity === 'medium')
+                        .map((issue: any) => ({
+                          title: issue.title,
+                          category: issue.category,
+                          description: issue.description,
+                          recommendation: issue.recommendation,
+                          severity: issue.severity,
+                          clause_reference: issue.clause
+                        }));
+                    }
+                    
+                    const response = await fetch(`${apiBaseUrl}/api/protection/generate-negotiation-message`, {
+                      method: 'POST',
+                      headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${session.access_token}`
+                      },
+                      body: JSON.stringify(requestBody)
                     });
 
-                    toast.success('Deal created successfully!', {
-                      description: 'Your contract has been added to your deals.',
-                    });
+                    const contentType = response.headers.get('content-type');
+                    let data: any = {};
+                    
+                    if (contentType?.includes('application/json')) {
+                      data = await response.json();
+                    } else {
+                      const text = await response.text();
+                      throw new Error(`Server returned ${response.status}: ${text.substring(0, 100)}`);
+                    }
 
-                    // Navigate to deals page
-                    navigate('/creator-contracts');
+                    if (!response.ok || !data.success) {
+                      throw new Error(data.error || 'Failed to generate negotiation message');
+                    }
+
+                    // Format message with India-optimized template
+                    const formattedMessage = formatNegotiationMessage(data.message);
+                    setNegotiationMessage(formattedMessage);
+                    setShowShareFeedbackModal(true);
+                    toast.success('Negotiation message generated!');
                   } catch (error: any) {
-                    console.error('[ContractUploadFlow] Error creating deal:', error);
-                    toast.error('Failed to create deal', {
-                      description: error?.message || 'Please try again or contact support.',
-                    });
+                    console.error('[ContractUploadFlow] Generate negotiation message error:', error);
+                    toast.error(error.message || 'Failed to generate negotiation message. Please try again.');
+                  } finally {
+                    setIsGeneratingMessage(false);
                   }
                 }}
-                disabled={addDealMutation.isPending || !uploadedFile}
-                className="flex-1 bg-green-600 hover:bg-green-700 font-semibold py-4 rounded-xl transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={isGeneratingMessage}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                className="flex-1 bg-purple-600/90 hover:bg-purple-600 font-semibold py-3 rounded-xl transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {addDealMutation.isPending ? (
+                {isGeneratingMessage ? (
                   <>
                     <Loader2 className="w-5 h-5 animate-spin" />
-                    Creating Deal...
+                    Generating...
                   </>
                 ) : (
                   <>
-                    <CheckCircle className="w-5 h-5" />
-                    Add to Dashboard
+                    <Send className="w-5 h-5" />
+                    Share Feedback
                   </>
                 )}
-              </button>
+              </motion.button>
             </div>
             </div>
             {/* End Content Width Container for iPad/Tablet */}
@@ -2826,58 +4300,109 @@ ${creatorName}`;
 
                   {/* Action Buttons */}
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-3 pt-4">
-                    {/* Copy Button */}
-                    <button
-                      onClick={async () => {
-                        if (!negotiationMessage) return;
-                        try {
-                          // Ensure message is formatted with latest data
-                          const formattedMessage = formatNegotiationMessage(negotiationMessage);
-                          await navigator.clipboard.writeText(formattedMessage);
-                          triggerHaptic(HapticPatterns.light);
-                          toast.success('Negotiation message copied');
-                        } catch (error) {
-                          toast.error('Failed to copy message');
-                        }
-                      }}
-                      className="bg-purple-600/80 hover:bg-purple-600 text-white px-4 py-3 rounded-xl font-semibold transition-all duration-200 flex items-center justify-center gap-2"
-                    >
-                      <Copy className="w-5 h-5" />
-                      Copy Message
-                    </button>
-
-                    {/* WhatsApp Button */}
-                    <button
-                      onClick={() => {
-                        if (!negotiationMessage) return;
-                        // Ensure message is formatted with latest data
-                        const formattedMessage = formatNegotiationMessage(negotiationMessage);
-                        const encodedMessage = encodeURIComponent(formattedMessage);
-                        const whatsappUrl = `https://wa.me/?text=${encodedMessage}`;
-                        triggerHaptic(HapticPatterns.medium);
-                        window.open(whatsappUrl, '_blank');
-                        toast.success('Opening WhatsApp...');
-                      }}
-                      className="bg-green-600/80 hover:bg-green-600 text-white px-4 py-3 rounded-xl font-semibold transition-all duration-200 flex items-center justify-center gap-2"
-                    >
-                      <MessageSquare className="w-5 h-5" />
-                      Send on WhatsApp
-                    </button>
-
-                    {/* Email Button */}
-                    <button
-                      onClick={() => {
-                        // Show email input modal or use existing brandEmail state
-                        const email = prompt('Enter brand email address:');
-                        if (!email) return;
-                        setBrandEmail(email);
-                        handleSendEmail(email);
-                      }}
+                    {/* Copy Email Button */}
+                    <motion.button
+                      onClick={handleCopyEmail}
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
                       className="bg-blue-600/80 hover:bg-blue-600 text-white px-4 py-3 rounded-xl font-semibold transition-all duration-200 flex items-center justify-center gap-2"
                     >
                       <Mail className="w-5 h-5" />
-                      Send via Email
-                    </button>
+                      Copy Email
+                    </motion.button>
+
+                    {/* Copy WhatsApp Button */}
+                    <motion.button
+                      onClick={handleCopyWhatsApp}
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      className="bg-green-600/80 hover:bg-green-600 text-white px-4 py-3 rounded-xl font-semibold transition-all duration-200 flex items-center justify-center gap-2"
+                    >
+                      <MessageSquare className="w-5 h-5" />
+                      Copy WhatsApp
+                    </motion.button>
+
+                    {/* Download PDF Button (Secondary) */}
+                    <motion.button
+                      onClick={async () => {
+                        if (!session?.access_token) {
+                          toast.error('Please log in to download safe contract');
+                          return;
+                        }
+
+                        const filePath = originalContractPath || contractUrl;
+                        if (!filePath || filePath.trim() === '') {
+                          toast.error('Contract file information not available. Please re-analyze the contract.');
+                          return;
+                        }
+
+                        triggerHaptic(HapticPatterns.medium);
+                        
+                        try {
+                          const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 
+                            (typeof window !== 'undefined' && window.location.origin.includes('noticebazaar.com') 
+                              ? 'https://api.noticebazaar.com' 
+                              : 'http://localhost:3001');
+                          const response = await fetch(`${apiBaseUrl}/api/protection/generate-safe-contract`, {
+                            method: 'POST',
+                            headers: {
+                              'Content-Type': 'application/json',
+                              'Authorization': `Bearer ${session.access_token}`
+                            },
+                            body: JSON.stringify({
+                              reportId: reportId || null,
+                              originalFilePath: filePath
+                            })
+                          });
+
+                          const contentType = response.headers.get('content-type');
+                          
+                          if (contentType && !contentType.includes('application/json')) {
+                            const blob = await response.blob();
+                            const url = window.URL.createObjectURL(blob);
+                            const a = document.createElement('a');
+                            a.href = url;
+                            
+                            const contentDisposition = response.headers.get('content-disposition');
+                            const filenameMatch = contentDisposition?.match(/filename="?(.+)"?/i);
+                            a.download = filenameMatch ? filenameMatch[1] : `safe-contract-version-${Date.now()}.pdf`;
+                            
+                            document.body.appendChild(a);
+                            a.click();
+                            window.URL.revokeObjectURL(url);
+                            document.body.removeChild(a);
+                            toast.success('Safe Version Downloaded');
+                          } else {
+                            const data = await response.json();
+                            
+                            if (!response.ok || !data.success) {
+                              throw new Error(data.error || 'Failed to generate safe contract');
+                            }
+
+                            const downloadResponse = await fetch(data.safeContractUrl);
+                            const blob = await downloadResponse.blob();
+                            const url = window.URL.createObjectURL(blob);
+                            const a = document.createElement('a');
+                            a.href = url;
+                            a.download = `safe-contract-version-${Date.now()}.pdf`;
+                            document.body.appendChild(a);
+                            a.click();
+                            window.URL.revokeObjectURL(url);
+                            document.body.removeChild(a);
+                            toast.success('Safe Version Downloaded');
+                          }
+                        } catch (error: any) {
+                          console.error('[ContractUploadFlow] Download safe contract error:', error);
+                          toast.error(error.message || 'Failed to generate safe contract. Please try again.');
+                        }
+                      }}
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      className="bg-gray-600/80 hover:bg-gray-600 text-white px-4 py-3 rounded-xl font-semibold transition-all duration-200 flex items-center justify-center gap-2"
+                    >
+                      <Download className="w-5 h-5" />
+                      Download PDF
+                    </motion.button>
                   </div>
 
                   {/* Email Input Section (if email button clicked) */}
@@ -2921,6 +4446,156 @@ ${creatorName}`;
                     <X className="w-5 h-5" />
                     Close
                   </button>
+                </div>
+              </DialogContent>
+            </Dialog>
+
+            {/* Share Feedback Modal */}
+            <Dialog open={showShareFeedbackModal} onOpenChange={setShowShareFeedbackModal}>
+              <DialogContent className="max-w-2xl max-h-[90vh] bg-gradient-to-br from-purple-900/95 to-indigo-900/95 backdrop-blur-xl border border-purple-500/30 text-white overflow-y-auto">
+                <DialogHeader>
+                  <DialogTitle className="text-2xl font-bold text-white mb-2">
+                    Send Fixes to Brand
+                  </DialogTitle>
+                  <DialogDescription className="text-purple-200">
+                    Choose how you'd like to share your contract feedback
+                  </DialogDescription>
+                </DialogHeader>
+
+                <div className="space-y-4 mt-4">
+                  {/* Share via WhatsApp */}
+                  <motion.button
+                    onClick={() => {
+                      if (!negotiationMessage) return;
+                      const formattedMessage = formatNegotiationMessage(negotiationMessage);
+                      const whatsappMessage = createWhatsAppMessage(formattedMessage);
+                      const encodedMessage = encodeURIComponent(whatsappMessage);
+                      const whatsappUrl = `https://wa.me/?text=${encodedMessage}`;
+                      triggerHaptic(HapticPatterns.medium);
+                      window.open(whatsappUrl, '_blank');
+                      toast.success('Opening WhatsApp...');
+                      setBrandApprovalStatus('sent');
+                      setApprovalStatusUpdatedAt(new Date());
+                    }}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    className="w-full bg-green-600/80 hover:bg-green-600 text-white px-6 py-4 rounded-xl font-semibold transition-all duration-200 flex items-center justify-center gap-3"
+                  >
+                    <MessageSquare className="w-6 h-6" />
+                    <div className="flex flex-col items-start">
+                      <span className="text-lg">Share via WhatsApp</span>
+                      <span className="text-sm text-green-100/80">Opens WhatsApp with pre-filled message</span>
+                    </div>
+                  </motion.button>
+
+                  {/* Share via Email */}
+                  <motion.button
+                    onClick={() => {
+                      if (!negotiationMessage) return;
+                      const formattedMessage = formatNegotiationMessage(negotiationMessage);
+                      const subject = encodeURIComponent('Requested Revisions for Collaboration Agreement');
+                      const body = encodeURIComponent(formattedMessage);
+                      const mailtoUrl = `mailto:?subject=${subject}&body=${body}`;
+                      triggerHaptic(HapticPatterns.medium);
+                      window.location.href = mailtoUrl;
+                      toast.success('Opening email client...');
+                      setBrandApprovalStatus('sent');
+                      setApprovalStatusUpdatedAt(new Date());
+                    }}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    className="w-full bg-blue-600/80 hover:bg-blue-600 text-white px-6 py-4 rounded-xl font-semibold transition-all duration-200 flex items-center justify-center gap-3"
+                  >
+                    <Mail className="w-6 h-6" />
+                    <div className="flex flex-col items-start">
+                      <span className="text-lg">Share via Email</span>
+                      <span className="text-sm text-blue-100/80">Opens your email client with pre-filled message</span>
+                    </div>
+                  </motion.button>
+
+                  {/* Copy Shareable Link */}
+                  <motion.button
+                    onClick={async () => {
+                      if (!reportId) {
+                        toast.error('Report ID not available. Please re-analyze the contract.');
+                        return;
+                      }
+                      
+                      const shareableUrl = `${window.location.origin}/#/feedback/${reportId}`;
+                      await navigator.clipboard.writeText(shareableUrl);
+                      triggerHaptic(HapticPatterns.light);
+                      toast.success('Shareable link copied!');
+                    }}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    className="w-full bg-purple-600/80 hover:bg-purple-600 text-white px-6 py-4 rounded-xl font-semibold transition-all duration-200 flex items-center justify-center gap-3"
+                  >
+                    <Copy className="w-6 h-6" />
+                    <div className="flex flex-col items-start">
+                      <span className="text-lg">Copy Shareable Link</span>
+                      <span className="text-sm text-purple-100/80">Share a read-only feedback page with the brand</span>
+                    </div>
+                  </motion.button>
+
+                  {/* Close Button */}
+                  <button
+                    onClick={() => {
+                      setShowShareFeedbackModal(false);
+                    }}
+                    className="w-full bg-gray-600/80 hover:bg-gray-600 text-white px-4 py-3 rounded-xl font-semibold transition-all duration-200 flex items-center justify-center gap-2 mt-4"
+                  >
+                    <X className="w-5 h-5" />
+                    Close
+                  </button>
+                </div>
+              </DialogContent>
+            </Dialog>
+            
+            {/* WhatsApp Preview Modal */}
+            <Dialog open={showWhatsAppPreview} onOpenChange={setShowWhatsAppPreview}>
+              <DialogContent className="max-w-lg bg-gradient-to-br from-green-900/95 to-emerald-900/95 backdrop-blur-xl border border-green-500/30 text-white">
+                <DialogHeader>
+                  <DialogTitle className="text-2xl font-bold text-white mb-2 flex items-center gap-2">
+                    <MessageSquare className="w-6 h-6" />
+                    WhatsApp Message Preview
+                  </DialogTitle>
+                  <DialogDescription className="text-green-200">
+                    Review your message before sending
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="mt-4 p-4 bg-white/10 rounded-xl border border-white/20 max-h-96 overflow-y-auto">
+                  <pre className="text-sm text-white whitespace-pre-wrap font-sans">
+                    {negotiationMessage ? createWhatsAppMessage(formatNegotiationMessage(negotiationMessage)) : 'No message available'}
+                  </pre>
+                </div>
+                <div className="flex gap-3 mt-6">
+                  <motion.button
+                    onClick={handleConfirmWhatsAppCopy}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    className="flex-1 bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-xl font-semibold transition-all flex items-center justify-center gap-2"
+                  >
+                    <Copy className="w-5 h-5" />
+                    Copy & Close
+                  </motion.button>
+                  <motion.button
+                    onClick={() => {
+                      if (!negotiationMessage) return;
+                      const fullMessage = formatNegotiationMessage(negotiationMessage);
+                      const whatsappMessage = createWhatsAppMessage(fullMessage);
+                      const encodedMessage = encodeURIComponent(whatsappMessage);
+                      const whatsappUrl = `https://wa.me/?text=${encodedMessage}`;
+                      window.open(whatsappUrl, '_blank');
+                      toast.success('Opening WhatsApp...');
+                      setShowWhatsAppPreview(false);
+                    }}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    className="flex-1 bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-xl font-semibold transition-all flex items-center justify-center gap-2"
+                  >
+                    <MessageSquare className="w-5 h-5" />
+                    Open WhatsApp
+                  </motion.button>
                 </div>
               </DialogContent>
             </Dialog>
