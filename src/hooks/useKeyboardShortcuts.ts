@@ -67,8 +67,8 @@ export function useDashboardShortcuts() {
     {
       key: '4',
       metaKey: true,
-      action: () => navigate('/creator-content-protection'),
-      description: 'Go to Protection',
+      action: () => navigate('/creator-contracts'),
+      description: 'Go to Deals',
     },
   ]);
 }

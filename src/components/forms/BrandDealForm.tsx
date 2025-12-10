@@ -4,7 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Loader2, Upload, FileText, CalendarDays, DollarSign, User, Globe, Mail, ReceiptText, X } from 'lucide-react';
+import { Loader2, Upload, FileText, CalendarDays, DollarSign, User, Globe, Mail, ReceiptText, X, Phone } from 'lucide-react';
 import { toast } from 'sonner';
 import { useSession } from '@/contexts/SessionContext';
 import { useAddBrandDeal, useUpdateBrandDeal } from '@/lib/hooks/useBrandDeals';
@@ -274,6 +274,7 @@ const BrandDealForm = ({ initialData, onSaveSuccess, onClose }: BrandDealFormPro
   const [platform, setPlatform] = useState(initialData?.platform || '');
   const [status, setStatus] = useState<BrandDeal['status']>(initialData?.status || 'Negotiation');
   const [brandEmail, setBrandEmail] = useState(initialData?.brand_email || '');
+  const [brandPhone, setBrandPhone] = useState(initialData?.brand_phone || '');
   const [invoiceFile, setInvoiceFile] = useState<File | null>(null);
   const [existingInvoiceFileUrl, setExistingInvoiceFileUrl] = useState(initialData?.invoice_file_url || null);
   const [utrNumber, setUtrNumber] = useState(initialData?.utr_number || '');
@@ -294,6 +295,7 @@ const BrandDealForm = ({ initialData, onSaveSuccess, onClose }: BrandDealFormPro
       setPlatform(initialData.platform || '');
       setStatus(initialData.status);
       setBrandEmail(initialData.brand_email || '');
+      setBrandPhone(initialData.brand_phone || '');
       setExistingInvoiceFileUrl(initialData.invoice_file_url || null);
       setUtrNumber(initialData.utr_number || '');
       setPaymentReceivedDate(initialData.payment_received_date ? initialData.payment_received_date.split('T')[0] : '');
@@ -367,6 +369,7 @@ const BrandDealForm = ({ initialData, onSaveSuccess, onClose }: BrandDealFormPro
       platform: platform || null,
       status: status,
       brand_email: brandEmail.trim() || null,
+      brand_phone: brandPhone.trim() || null,
       utr_number: utrNumber.trim() || null,
       payment_received_date: finalPaymentReceivedDate,
     };

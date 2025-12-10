@@ -402,7 +402,7 @@ const ActionCenter: React.FC<ActionCenterProps> = ({
                     if (action.type === 'contract_review' && action.dealId) {
                       navigate(`/creator-contracts/${action.dealId}`);
                     } else if (action.type === 'content_stolen') {
-                      navigate('/creator-content-protection');
+                      navigate('/creator-contracts');
                     }
                   }}
                 >

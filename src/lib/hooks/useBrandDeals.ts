@@ -341,6 +341,7 @@ interface AddBrandDealVariables {
   invoice_file: File | null; // New: invoice file
   utr_number: string | null; // New: UTR number
   brand_email: string | null; // New: brand email
+  brand_phone: string | null; // New: brand phone
   payment_received_date: string | null; // New: payment received date
 }
 
@@ -446,6 +447,7 @@ export const useAddBrandDeal = () => {
           platform: platform || null,
           utr_number: utr_number || null,
           brand_email: brand_email || null,
+          brand_phone: brand_phone || null,
           payment_received_date: payment_received_date || null,
       };
 
@@ -523,6 +525,7 @@ interface UpdateBrandDealVariables {
   original_invoice_file_url?: string | null; // New: original invoice file URL
   utr_number?: string | null; // New: UTR number
   brand_email?: string | null; // New: brand email
+  brand_phone?: string | null; // New: brand phone
   payment_received_date?: string | null; // New: payment received date
   proof_of_payment_url?: string | null; // New: proof of payment URL
 }

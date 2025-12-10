@@ -63,9 +63,8 @@ export const CreatorNavigationWrapper: React.FC<CreatorNavigationWrapperProps> =
       setActiveTab('deals');
     } else if (location.pathname.startsWith('/creator-payments')) {
       setActiveTab('payments');
-    } else if (location.pathname.startsWith('/creator-content-protection')) {
-      setActiveTab('protection');
     }
+    // Protection tab removed - protection features are now integrated into Deals
   }, [location]);
 
   // Auto-detect title from location if not provided
@@ -73,7 +72,6 @@ export const CreatorNavigationWrapper: React.FC<CreatorNavigationWrapperProps> =
     if (location.pathname === '/creator-dashboard') return 'Dashboard';
     if (location.pathname.startsWith('/creator-contracts')) return 'Brand Deals';
     if (location.pathname.startsWith('/creator-payments')) return 'Payments';
-    if (location.pathname.startsWith('/creator-content-protection')) return 'Content Protection';
     return 'NoticeBazaar';
   })();
 
@@ -115,7 +113,6 @@ export const CreatorNavigationWrapper: React.FC<CreatorNavigationWrapperProps> =
             const tabRoutes: Record<string, string> = {
               deals: '/creator-contracts',
               payments: '/creator-payments',
-              protection: '/creator-content-protection',
             };
             navigate(tabRoutes[tab] || '/creator-dashboard');
           }

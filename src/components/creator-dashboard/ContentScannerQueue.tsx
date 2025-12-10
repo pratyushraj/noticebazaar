@@ -27,7 +27,7 @@ const ContentScannerQueue: React.FC = () => {
       transition={{ delay: 0.45 }}
     >
       <Card className="bg-gradient-to-br from-blue-900/20 to-blue-950/20 border border-white/5 hover:border-white/10 transition-all rounded-2xl shadow-[0px_4px_24px_rgba(0,0,0,0.25)] cursor-pointer px-5 py-4"
-        onClick={() => navigate('/creator-content-protection')}
+        onClick={() => navigate('/creator-contracts')}
       >
         <CardContent className="p-0">
           <div className="flex items-center justify-between mb-3">
@@ -41,7 +41,7 @@ const ContentScannerQueue: React.FC = () => {
               className="h-6 px-2 text-xs"
               onClick={(e) => {
                 e.stopPropagation();
-                navigate('/creator-content-protection');
+                navigate('/creator-contracts');
               }}
             >
               View

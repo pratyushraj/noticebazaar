@@ -425,23 +425,57 @@ const CreatorDashboard = () => {
     deadline: deal.dueDate ? new Date(deal.dueDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'TBD'
   }));
 
-  // Upcoming payments
-  const upcomingPayments = [
-    {
-      id: 1,
-      title: "TechGear Pro Sponsorship",
-      amount: 75000,
-      date: "Nov 30, 2024",
-      status: "pending"
-    },
-    {
-      id: 2,
-      title: "SkillShare Affiliate",
-      amount: 45000,
-      date: "Dec 5, 2024",
-      status: "processing"
-    }
-  ];
+  // Upcoming payments - Real data from brand deals
+  const upcomingPayments = useMemo(() => {
+    if (!brandDeals || brandDeals.length === 0) return [];
+    
+    const now = new Date();
+    now.setHours(0, 0, 0, 0);
+    
+    return brandDeals
+      .filter(deal => {
+        // Only show deals with Payment Pending status that haven't been received yet
+        if (deal.status !== 'Payment Pending' || deal.payment_received_date) return false;
+        
+        // Must have a payment expected date
+        if (!deal.payment_expected_date) return false;
+        
+        const dueDate = new Date(deal.payment_expected_date);
+        dueDate.setHours(0, 0, 0, 0);
+        const daysUntil = Math.ceil((dueDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+        
+        // Only show future payments (or today)
+        return daysUntil >= 0;
+      })
+      .map(deal => {
+        const dueDate = new Date(deal.payment_expected_date!);
+        const daysUntil = Math.ceil((dueDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+        
+        // Determine status based on days until payment
+        let status: 'pending' | 'processing' | 'overdue' = 'pending';
+        if (daysUntil === 0) {
+          status = 'processing'; // Due today
+        } else if (daysUntil < 0) {
+          status = 'overdue';
+        }
+        
+        return {
+          id: deal.id,
+          title: deal.brand_name || 'Unknown Brand',
+          amount: deal.deal_amount || 0,
+          date: dueDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+          status: status,
+          dealId: deal.id
+        };
+      })
+      .sort((a, b) => {
+        // Sort by date (earliest first)
+        const dateA = new Date(a.date).getTime();
+        const dateB = new Date(b.date).getTime();
+        return dateA - dateB;
+      })
+      .slice(0, 5); // Limit to top 5 upcoming payments
+  }, [brandDeals]);
 
   // Quick actions
   const quickActions = [
@@ -932,7 +966,7 @@ const CreatorDashboard = () => {
                     <motion.div
                       onClick={() => {
                         triggerHaptic(HapticPatterns.light);
-                        navigate('/creator-content-protection');
+                        navigate('/creator-contracts');
                       }}
                       whileTap={animations.microTap}
                       whileHover={{ y: -2, transition: { duration: 0.2 } }}

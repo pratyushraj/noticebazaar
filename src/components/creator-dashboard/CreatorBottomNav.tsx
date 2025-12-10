@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Briefcase, Wallet, Shield, MessageSquare } from 'lucide-react';
+import { LayoutDashboard, Briefcase, Wallet, MessageSquare, User } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { iconSizes, animations, spotlight, shadows, radius } from '@/lib/design-system';
 import { triggerHaptic, HapticPatterns } from '@/lib/utils/haptics';
@@ -28,7 +28,7 @@ const CreatorBottomNav = () => {
       to: "/creator-contracts", 
       icon: Briefcase, 
       label: "Deals",
-      matchPaths: ["/creator-contracts"]
+      matchPaths: ["/creator-contracts", "/contract-upload", "/contract-protection"]
     },
     { 
       to: "/creator-payments", 
@@ -37,16 +37,16 @@ const CreatorBottomNav = () => {
       matchPaths: ["/creator-payments", "/insights"]
     },
     { 
-      to: "/creator-content-protection", 
-      icon: Shield, 
-      label: "Protection",
-      matchPaths: ["/creator-content-protection"]
-    },
-    { 
       to: "/messages", 
       icon: MessageSquare, 
       label: "Messages",
       matchPaths: ["/messages"]
+    },
+    { 
+      to: "/creator-profile", 
+      icon: User, 
+      label: "Profile",
+      matchPaths: ["/creator-profile"]
     },
   ];
 

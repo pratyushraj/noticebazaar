@@ -59,7 +59,7 @@ const QuickActionsFAB: React.FC<QuickActionsFABProps> = ({
         onScanContent?.();
         setShowQuickActions(false);
         setShowRadialMenu(false);
-        navigate('/creator-content-protection');
+        navigate('/creator-contracts');
         triggerHaptic(HapticPatterns.medium);
       },
     },

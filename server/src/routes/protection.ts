@@ -543,13 +543,14 @@ router.post('/generate-negotiation-message', async (req: AuthenticatedRequest, r
         });
       }
 
-      // Fetch HIGH + MEDIUM severity issues from database
+      // Fetch HIGH + MEDIUM + WARNING severity issues from database
+      // WARNING severity = missing clauses
       const { data: dbIssues, error: issuesError } = await supabase
         .from('protection_issues')
         .select('*')
         .eq('report_id', reportId)
-        .in('severity', ['high', 'medium'])
-        .order('severity', { ascending: false }); // High first, then medium
+        .in('severity', ['high', 'medium', 'warning'])
+        .order('severity', { ascending: false }); // High first, then medium, then warning
 
       if (issuesError) {
         throw new Error(`Failed to fetch issues: ${issuesError.message}`);
@@ -558,21 +559,22 @@ router.post('/generate-negotiation-message', async (req: AuthenticatedRequest, r
       if (!dbIssues || dbIssues.length === 0) {
         return res.status(400).json({ 
           success: false,
-          error: 'No high or medium severity issues found for this report' 
+          error: 'No issues found for this report' 
         });
       }
 
       issuesList = dbIssues;
     } else if (issuesFromBody && Array.isArray(issuesFromBody) && issuesFromBody.length > 0) {
       // Use issues from request body (when reportId is not available)
+      // Include high, medium, and warning (missing clauses) severity
       issuesList = issuesFromBody.filter((issue: any) => 
-        issue.severity === 'high' || issue.severity === 'medium'
+        issue.severity === 'high' || issue.severity === 'medium' || issue.severity === 'warning'
       );
       
       if (issuesList.length === 0) {
         return res.status(400).json({ 
           success: false,
-          error: 'No high or medium severity issues provided' 
+          error: 'No issues provided' 
         });
       }
     } else {
@@ -582,8 +584,16 @@ router.post('/generate-negotiation-message', async (req: AuthenticatedRequest, r
       });
     }
 
-    // Build issues context for Gemini prompt
-    const issuesContext = issuesList.map((issue: any, index: number) => {
+    // Separate issues into two groups: risky clauses (high/medium) and missing clauses (warning)
+    const riskyClauses = issuesList.filter((issue: any) => 
+      issue.severity === 'high' || issue.severity === 'medium'
+    );
+    const missingClauses = issuesList.filter((issue: any) => 
+      issue.severity === 'warning'
+    );
+
+    // Build risky clauses context
+    const riskyClausesContext = riskyClauses.map((issue: any, index: number) => {
       const severityLabel = issue.severity === 'high' ? 'HIGH PRIORITY' : 'MEDIUM PRIORITY';
       return `${index + 1}. [${severityLabel}] ${issue.title || 'Issue'}
 
@@ -596,6 +606,19 @@ Recommendation: ${issue.recommendation || 'Please review and revise this clause.
 ${issue.clause_reference ? `Clause Reference: ${issue.clause_reference}` : ''}`;
     }).join('\n\n');
 
+    // Build missing clauses context
+    const missingClausesContext = missingClauses.map((issue: any, index: number) => {
+      return `${index + 1}. ${issue.title || 'Missing Clause'}
+
+Category: ${issue.category || 'General'}
+
+Description: ${issue.description || 'This important point is not specified in the contract.'}
+
+Recommendation: ${issue.recommendation || 'Please add this clause to the contract.'}
+
+${issue.clause_reference ? `Clause Reference: ${issue.clause_reference}` : ''}`;
+    }).join('\n\n');
+
     // Build Gemini prompt
     const prompt = `You are a professional legal advisor helping a creator negotiate better contract terms with a brand.
 
@@ -603,19 +626,25 @@ TASK: Write a professional, polite, but firm legal negotiation message requestin
 
 BRAND NAME: ${brandName || 'the Brand'}
 
-CONTRACT ISSUES REQUIRING REVISION:
-${issuesContext}
+${riskyClauses.length > 0 ? `A. CLAUSES TO IMPROVE (These terms are in the contract but need revision):
+${riskyClausesContext}
 
-REQUIREMENTS:
+` : ''}${missingClauses.length > 0 ? `B. IMPORTANT POINTS MISSING (These clauses are not written anywhere yet):
+${missingClausesContext}
+
+` : ''}REQUIREMENTS:
 1. Professional and respectful tone - maintain positive working relationship
-2. Clear explanation of each requested change
-3. Reference specific clauses or sections when mentioned
-4. Suggest fair alternatives that benefit both parties
-5. Legally sound and business-friendly language
-6. Suitable for email or formal communication (WhatsApp/Email)
-7. Keep it concise but comprehensive
-8. Start with a friendly greeting
-9. End with a call to action requesting a revised contract
+2. Group your response into two clear sections:
+   ${riskyClauses.length > 0 ? '- Section A: "Clauses to improve" - List the risky/unfair clauses that need revision' : ''}
+   ${missingClauses.length > 0 ? '- Section B: "Important points missing" - List the missing clauses that need to be added' : ''}
+3. Clear explanation of each requested change
+4. Reference specific clauses or sections when mentioned
+5. Suggest fair alternatives that benefit both parties
+6. Legally sound and business-friendly language
+7. Suitable for email or formal communication (WhatsApp/Email)
+8. Keep it concise but comprehensive
+9. Start with a friendly greeting
+10. End with a call to action requesting a revised contract
 
 TONE GUIDELINES:
 - Cooperative, not confrontational

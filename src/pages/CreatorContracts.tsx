@@ -35,52 +35,64 @@ const CreatorContracts = () => {
 
     return brandDeals.map(deal => {
       // Map status from database to UI status
-      let status = 'pending';
+      // Preserve "Draft" and "Sent" statuses for filtering
+      const statusLower = (deal.status || '').toLowerCase();
+      let status: string = 'pending';
       let progress = 0;
       let nextStep = 'Review contract';
 
-      // Use progress_percentage if available, otherwise map from status
-      if (deal.progress_percentage !== null && deal.progress_percentage !== undefined) {
-        progress = deal.progress_percentage;
-        if (progress >= 100) {
-          status = 'completed';
-          nextStep = 'Deal completed';
-        } else if (progress >= 90) {
-          status = 'content_delivered';
-          nextStep = 'Awaiting payment';
-        } else if (progress >= 80) {
-          status = 'content_making';
-          nextStep = 'Complete content creation';
-        } else if (progress >= 70) {
-          status = 'signed';
-          nextStep = 'Start content creation';
-        } else {
-          status = 'negotiation';
-          nextStep = 'Complete negotiation';
-        }
+      // Preserve Draft and Sent statuses
+      if (statusLower === 'draft') {
+        status = 'draft';
+        progress = 10;
+        nextStep = 'Review and send to brand';
+      } else if (statusLower === 'sent') {
+        status = 'sent';
+        progress = 20;
+        nextStep = 'Waiting for brand response';
       } else {
-        // Fallback mapping from status
-        const statusLower = (deal.status || '').toLowerCase();
-        if (statusLower.includes('completed')) {
-          status = 'completed';
-          progress = 100;
-          nextStep = 'Deal completed';
-        } else if (statusLower.includes('content_delivered') || statusLower.includes('content delivered')) {
-          status = 'content_delivered';
-          progress = 90;
-          nextStep = 'Awaiting payment';
-        } else if (statusLower.includes('content_making') || statusLower.includes('content making')) {
-          status = 'content_making';
-          progress = 80;
-          nextStep = 'Complete content creation';
-        } else if (statusLower.includes('signed')) {
-          status = 'signed';
-          progress = 70;
-          nextStep = 'Start content creation';
+        // Use progress_percentage if available, otherwise map from status
+        if (deal.progress_percentage !== null && deal.progress_percentage !== undefined) {
+          progress = deal.progress_percentage;
+          if (progress >= 100) {
+            status = 'completed';
+            nextStep = 'Deal completed';
+          } else if (progress >= 90) {
+            status = 'content_delivered';
+            nextStep = 'Awaiting payment';
+          } else if (progress >= 80) {
+            status = 'content_making';
+            nextStep = 'Complete content creation';
+          } else if (progress >= 70) {
+            status = 'signed';
+            nextStep = 'Start content creation';
+          } else {
+            status = 'negotiation';
+            nextStep = 'Complete negotiation';
+          }
         } else {
-          status = 'negotiation';
-          progress = 30;
-          nextStep = 'Complete negotiation';
+          // Fallback mapping from status
+          if (statusLower.includes('completed')) {
+            status = 'completed';
+            progress = 100;
+            nextStep = 'Deal completed';
+          } else if (statusLower.includes('content_delivered') || statusLower.includes('content delivered')) {
+            status = 'content_delivered';
+            progress = 90;
+            nextStep = 'Awaiting payment';
+          } else if (statusLower.includes('content_making') || statusLower.includes('content making')) {
+            status = 'content_making';
+            progress = 80;
+            nextStep = 'Complete content creation';
+          } else if (statusLower.includes('signed')) {
+            status = 'signed';
+            progress = 70;
+            nextStep = 'Start content creation';
+          } else {
+            status = 'negotiation';
+            progress = 30;
+            nextStep = 'Complete negotiation';
+          }
         }
       }
 
@@ -91,6 +103,7 @@ const CreatorContracts = () => {
         value: deal.deal_amount || 0,
         status,
         progress,
+        brandResponseStatus: (deal as any).brand_response_status || null,
         deadline: deal.due_date ? new Date(deal.due_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'TBD',
         platform: deal.platform || 'Multiple',
         type: 'Brand Partnership',
@@ -111,6 +124,22 @@ const CreatorContracts = () => {
       return status.includes('negotiation') || status.includes('draft') || !d.status;
     }).length;
     const completed = brandDeals.filter(d => d.status === 'Completed').length;
+    const drafts = brandDeals.filter(d => {
+      const status = d.status?.toLowerCase() || '';
+      return status === 'draft' || status.includes('draft');
+    }).length;
+    const sent = brandDeals.filter(d => {
+      const status = d.status?.toLowerCase() || '';
+      return status === 'sent' || status.includes('sent');
+    }).length;
+    const accepted = brandDeals.filter(d => {
+      const brandResponseStatus = (d as any).brand_response_status;
+      return brandResponseStatus === 'accepted';
+    }).length;
+    const rejected = brandDeals.filter(d => {
+      const brandResponseStatus = (d as any).brand_response_status;
+      return brandResponseStatus === 'rejected';
+    }).length;
     const totalValue = brandDeals.reduce((sum, d) => sum + (d.deal_amount || 0), 0);
     
     // Calculate this month's deals
@@ -126,6 +155,10 @@ const CreatorContracts = () => {
       active,
       pending,
       completed,
+      drafts,
+      sent,
+      accepted,
+      rejected,
       totalValue,
       thisMonth
     };
@@ -153,14 +186,63 @@ const CreatorContracts = () => {
 
   const filters = useMemo(() => [
     { id: 'all', label: 'All Deals', count: stats.total },
+    { id: 'drafts', label: 'Drafts', count: stats.drafts },
+    { id: 'sent', label: 'Sent', count: stats.sent },
+    { id: 'accepted', label: 'Accepted', count: stats.accepted },
+    { id: 'rejected', label: 'Rejected', count: stats.rejected },
     { id: 'active', label: 'Active', count: stats.active },
-    { id: 'pending', label: 'Pending', count: stats.pending },
     { id: 'completed', label: 'Completed', count: stats.completed }
   ], [stats]);
 
-  const filteredDeals = activeFilter === 'all' 
-    ? deals 
-    : deals.filter(deal => deal.status === activeFilter);
+  const filteredDeals = useMemo(() => {
+    let filtered = deals;
+    
+    if (activeFilter === 'all') {
+      // Sort: drafts first, then by created date
+      filtered = [...deals].sort((a, b) => {
+        const aDeal = brandDeals.find(d => d.id === a.id);
+        const bDeal = brandDeals.find(d => d.id === b.id);
+        const aIsDraft = aDeal?.status?.toLowerCase() === 'draft';
+        const bIsDraft = bDeal?.status?.toLowerCase() === 'draft';
+        
+        if (aIsDraft && !bIsDraft) return -1;
+        if (!aIsDraft && bIsDraft) return 1;
+        
+        // Both same type, sort by created date (newest first)
+        const aDate = aDeal?.created_at ? new Date(aDeal.created_at).getTime() : 0;
+        const bDate = bDeal?.created_at ? new Date(bDeal.created_at).getTime() : 0;
+        return bDate - aDate;
+      });
+    } else if (activeFilter === 'drafts') {
+      filtered = deals.filter(deal => {
+        const dealData = brandDeals.find(d => d.id === deal.id);
+        const status = dealData?.status?.toLowerCase() || '';
+        return status === 'draft' || status.includes('draft');
+      });
+    } else if (activeFilter === 'sent') {
+      filtered = deals.filter(deal => {
+        const dealData = brandDeals.find(d => d.id === deal.id);
+        const status = dealData?.status?.toLowerCase() || '';
+        return status === 'sent' || status.includes('sent');
+      });
+    } else if (activeFilter === 'accepted') {
+      filtered = deals.filter(deal => {
+        const dealData = brandDeals.find(d => d.id === deal.id);
+        const brandResponseStatus = (dealData as any)?.brand_response_status;
+        return brandResponseStatus === 'accepted';
+      });
+    } else if (activeFilter === 'rejected') {
+      filtered = deals.filter(deal => {
+        const dealData = brandDeals.find(d => d.id === deal.id);
+        const brandResponseStatus = (dealData as any)?.brand_response_status;
+        return brandResponseStatus === 'rejected';
+      });
+    } else {
+      filtered = deals.filter(deal => deal.status === activeFilter);
+    }
+    
+    return filtered;
+  }, [deals, activeFilter, brandDeals]);
 
   return (
     <ErrorBoundary>
@@ -296,11 +378,58 @@ const CreatorContracts = () => {
                   </div>
 
                   {/* Deal Value */}
-                  <div className={cn("flex items-center gap-2 mb-4")}>
+                  <div className={cn("flex items-center gap-2 mb-4 flex-wrap")}>
                     <div className={cn("bg-green-500/20 text-green-400", spacing.cardPadding.tertiary, radius.md, typography.bodySmall, "font-semibold")}>
                       ₹{Math.round(deal.value).toLocaleString('en-IN')}
                     </div>
                     <div className={cn(typography.caption, "text-purple-300")}>{deal.type}</div>
+                    {/* Brand Response Status Chip */}
+                    {deal.brandResponseStatus && (() => {
+                      const statusConfig = {
+                        pending: {
+                          label: '🕒 Waiting for brand',
+                          color: 'text-yellow-400',
+                          bgColor: 'bg-yellow-500/20',
+                          borderColor: 'border-yellow-500/30',
+                          glowColor: 'shadow-yellow-500/20',
+                        },
+                        accepted: {
+                          label: '✅ Brand Accepted',
+                          color: 'text-green-400',
+                          bgColor: 'bg-green-500/20',
+                          borderColor: 'border-green-500/30',
+                          glowColor: 'shadow-green-500/20',
+                        },
+                        negotiating: {
+                          label: '🟡 Negotiating',
+                          color: 'text-orange-400',
+                          bgColor: 'bg-orange-500/20',
+                          borderColor: 'border-orange-500/30',
+                          glowColor: 'shadow-orange-500/20',
+                        },
+                        rejected: {
+                          label: '❌ Rejected',
+                          color: 'text-red-400',
+                          bgColor: 'bg-red-500/20',
+                          borderColor: 'border-red-500/30',
+                          glowColor: 'shadow-red-500/20',
+                        },
+                      };
+                      const config = statusConfig[deal.brandResponseStatus as keyof typeof statusConfig];
+                      if (!config) return null;
+                      return (
+                        <div className={cn(
+                          "rounded-full px-2 py-1 text-[10px] font-semibold border",
+                          config.color,
+                          config.bgColor,
+                          config.borderColor,
+                          config.glowColor,
+                          "shadow-sm"
+                        )}>
+                          {config.label}
+                        </div>
+                      );
+                    })()}
                   </div>
 
                   {/* Progress Bar - Matching Payments Style */}

@@ -26,6 +26,10 @@ import attachmentsRouter from './routes/attachments.js';
 import paymentsRouter from './routes/payments.js';
 import protectionRouter from './routes/protection.js';
 import adminRouter from './routes/admin.js';
+import brandResponseRouter from './routes/brandResponse.js';
+import aiRouter from './routes/ai.js';
+import esignRouter from './routes/esign.js';
+import dealsRouter from './routes/deals.js';
 import { authMiddleware } from './middleware/auth.js';
 import { rateLimitMiddleware } from './middleware/rateLimit.js';
 import { errorHandler } from './middleware/errorHandler.js';
@@ -204,6 +208,12 @@ app.get('/health', (req: express.Request, res: express.Response) => {
   }
 });
 
+// Public API Routes (no auth required)
+app.use('/api/brand-response', brandResponseRouter);
+// Import public router for eSign webhook (must be before protected routes)
+import { publicRouter as esignPublicRouter } from './routes/esign.js';
+app.use('/api/esign', esignPublicRouter); // Public webhook endpoint
+
 // API Routes (protected)
 app.use('/api/conversations', authMiddleware, rateLimitMiddleware, conversationsRouter);
 app.use('/api/conversations', authMiddleware, rateLimitMiddleware, messagesRouter);
@@ -211,6 +221,9 @@ app.use('/api/conversations', authMiddleware, rateLimitMiddleware, attachmentsRo
 app.use('/api/payments', authMiddleware, rateLimitMiddleware, paymentsRouter);
 app.use('/api/protection', authMiddleware, rateLimitMiddleware, protectionRouter);
 app.use('/api/admin', authMiddleware, adminRouter);
+app.use('/api/ai', authMiddleware, rateLimitMiddleware, aiRouter);
+app.use('/api/deals', authMiddleware, rateLimitMiddleware, dealsRouter);
+app.use('/api/esign', authMiddleware, rateLimitMiddleware, esignRouter); // Protected eSign routes
 
 // 404 handler for API routes (must be before error handler)
 app.use('/api/*', (req: express.Request, res: express.Response) => {

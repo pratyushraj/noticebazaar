@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ArrowLeft, Upload, FileText, CheckCircle, AlertTriangle, XCircle, Loader, Sparkles, Shield, Eye, Download, IndianRupee, Calendar, Loader2, Copy, Wrench, Send, FileCheck, X, Wand2, Lock, Info, MessageSquare, Mail, ChevronDown, ChevronUp, TrendingUp, DollarSign, FileCode, Ban, AlertCircle, ArrowDown, Clock, Star, Heart, Zap, CreditCard, Building2, Gift, Package } from 'lucide-react';
+import { ArrowLeft, Upload, FileText, CheckCircle, AlertTriangle, XCircle, Loader, Sparkles, Shield, Eye, Download, IndianRupee, Calendar, Loader2, Copy, Wrench, Send, FileCheck, X, Wand2, Lock, Info, MessageSquare, Mail, ChevronDown, ChevronUp, TrendingUp, DollarSign, FileCode, Ban, AlertCircle, ArrowDown, Clock, Star, Heart, Zap, CreditCard, Building2, Gift, Package, Edit } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { SkeletonLoader } from '@/components/ui/SkeletonLoader';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '@/components/ui/tooltip';
+import { AICounterProposal } from '@/components/contract/AICounterProposal';
 import { useNavigate } from 'react-router-dom';
 import { ContextualTipsProvider } from '@/components/contextual-tips/ContextualTipsProvider';
 import { useSession } from '@/contexts/SessionContext';
@@ -49,6 +50,11 @@ const ContractUploadFlow = () => {
   const [contractUrl, setContractUrl] = useState<string | null>(null);
   const [pdfReportUrl, setPdfReportUrl] = useState<string | null>(null);
   const [reportId, setReportId] = useState<string | null>(null);
+  const [savedDealId, setSavedDealId] = useState<string | null>(null);
+  const [isAutoSaved, setIsAutoSaved] = useState(false); // Track if deal was auto-saved
+  const [hasOpenedFixModal, setHasOpenedFixModal] = useState(false); // Track if Fix & Send modal was opened
+  const [brandResponseStatus, setBrandResponseStatus] = useState<'pending' | 'accepted' | 'negotiating' | 'rejected' | null>(null);
+  const [aiCounterProposal, setAiCounterProposal] = useState<string | null>(null);
   const [originalContractPath, setOriginalContractPath] = useState<string | null>(null);
   const [negotiationMessage, setNegotiationMessage] = useState<string | null>(null);
   const [showNegotiationModal, setShowNegotiationModal] = useState(false);
@@ -129,7 +135,282 @@ ${creatorName}`;
       formattedMessage += `\n\n${creatorPhone ? `${creatorPhone} | ` : ''}${creatorEmail}`;
     }
 
+    // Add brand response tracking link if dealId is available
+    const dealId = savedDealId;
+    if (dealId) {
+      const baseUrl = typeof window !== 'undefined' 
+        ? window.location.origin 
+        : 'https://noticebazaar.com';
+      const trackingLink = `${baseUrl}/#/brand-reply/${dealId}`;
+      formattedMessage += `\n\n---\nPlease confirm your decision on the requested changes:\n${trackingLink}`;
+    }
+
     return formattedMessage;
+  };
+
+  // Helper to open share feedback modal with auto-save
+  const openShareFeedbackModal = async () => {
+    // Auto-save when Fix & Send modal opens for the first time
+    if (!hasOpenedFixModal) {
+      setHasOpenedFixModal(true);
+      await autoSaveDraftDeal();
+    }
+    setShowShareFeedbackModal(true);
+  };
+
+  // Auto-save to Draft Deals function
+  const autoSaveDraftDeal = async (options?: {
+    updateExisting?: boolean;
+    updateStatus?: string;
+  }) => {
+    // Only auto-save if user is logged in
+    if (!session?.access_token || !profile?.id) {
+      return;
+    }
+
+    // Only auto-save if we have analysis results
+    if (!analysisResults) {
+      return;
+    }
+
+    try {
+      const creatorId = profile.id;
+
+      // Parse deal amount - default to 0 if not specified
+      let dealAmount = 0;
+      const dealValueStr = analysisResults.keyTerms?.dealValue || '';
+      
+      if (dealValueStr && dealValueStr.trim() !== '' && 
+          dealValueStr.toLowerCase() !== 'not specified' && 
+          dealValueStr.toLowerCase() !== 'not mentioned') {
+        
+        // Try multiple parsing strategies
+        const commaMatch = dealValueStr.match(/(\d{1,3}(?:,\d{2,3})*(?:\.\d+)?)/);
+        if (commaMatch) {
+          const valueWithCommas = commaMatch[1].replace(/,/g, '');
+          const parsed = parseFloat(valueWithCommas);
+          if (!isNaN(parsed) && parsed > 0 && isFinite(parsed)) {
+            dealAmount = parsed;
+          }
+        }
+        
+        if (dealAmount === 0) {
+          let cleanedValue = dealValueStr
+            .replace(/[₹Rs$€£,\s]/g, '')
+            .trim();
+          const parsed = parseFloat(cleanedValue);
+          if (!isNaN(parsed) && parsed > 0 && isFinite(parsed)) {
+            dealAmount = parsed;
+          }
+        }
+        
+        if (dealAmount === 0) {
+          const digitMatch = dealValueStr.match(/(\d+)/);
+          if (digitMatch) {
+            const parsed = parseFloat(digitMatch[1]);
+            if (!isNaN(parsed) && parsed > 0 && isFinite(parsed)) {
+              dealAmount = parsed;
+            }
+          }
+        }
+      }
+
+      // Calculate due date (default to 30 days from now)
+      const dueDate = new Date();
+      dueDate.setDate(dueDate.getDate() + 30);
+      const dueDateStr = dueDate.toISOString().split('T')[0];
+      const paymentExpectedDateStr = dueDateStr;
+
+      // Extract brand name
+      const extractedBrandName = analysisResults.keyTerms?.brandName || 
+        fileName?.replace(/\.(pdf|docx?)$/i, '').replace(/[_-]/g, ' ') || 
+        'Unknown Brand';
+
+      // Determine deal type
+      const currentDealType = dealType === 'barter' ? 'barter' : 'paid';
+
+      // Check if draft already exists for this reportId
+      // Note: analysis_report_id column might not exist if migration hasn't run yet
+      let existingDealId: string | null = null;
+      if (reportId) {
+        try {
+          // Try to query with analysis_report_id - if column doesn't exist, this will fail
+          const { data: existingDeal, error: queryError } = await supabase
+            .from('brand_deals')
+            .select('id, analysis_report_id')
+            .eq('creator_id', creatorId)
+            .eq('analysis_report_id', reportId)
+            .eq('status', 'Draft')
+            .maybeSingle();
+          
+          // Check if error is due to missing column
+          const isColumnError = 
+            queryError?.message?.includes('column') ||
+            queryError?.message?.includes('analysis_report_id') ||
+            queryError?.code === '42703' || // undefined_column
+            queryError?.code === 'PGRST116' || // PostgREST column not found
+            queryError?.code === '400'; // Bad request (column doesn't exist)
+          
+          if (isColumnError) {
+            // Column doesn't exist, skip duplicate check - allow creating new deal
+            console.log('[ContractUploadFlow] analysis_report_id column not found, skipping duplicate check');
+          } else if (!queryError && existingDeal) {
+            // Column exists and we found a matching deal
+            existingDealId = existingDeal.id;
+          }
+        } catch (error) {
+          // Any other error, proceed with creating new deal
+          console.warn('[ContractUploadFlow] Could not check for existing draft:', error);
+        }
+      }
+
+      // If updating existing deal
+      if (options?.updateExisting && savedDealId) {
+        const updateData: any = {};
+        
+        if (options.updateStatus) {
+          updateData.status = options.updateStatus;
+        }
+        
+        // Update brand name if changed
+        if (extractedBrandName && extractedBrandName !== 'Unknown Brand') {
+          updateData.brand_name = extractedBrandName;
+        }
+        
+        // Update deal amount if changed
+        if (dealAmount > 0) {
+          updateData.deal_amount = dealAmount;
+        }
+
+        if (Object.keys(updateData).length > 0) {
+          const { error: updateError } = await supabase
+            .from('brand_deals')
+            .update(updateData)
+            .eq('id', savedDealId)
+            .eq('creator_id', creatorId);
+
+          if (updateError) {
+            console.error('[ContractUploadFlow] Auto-save update error:', updateError);
+          }
+        }
+        return;
+      }
+
+      // If draft already exists, don't create duplicate
+      if (existingDealId) {
+        setSavedDealId(existingDealId);
+        setIsAutoSaved(true);
+        return;
+      }
+
+      // Create new draft deal
+      const insertData: any = {
+        creator_id: creatorId,
+        organization_id: null,
+        brand_name: extractedBrandName,
+        deal_amount: dealAmount,
+        deliverables: analysisResults.keyTerms?.deliverables || 'As per contract',
+        due_date: dueDateStr,
+        payment_expected_date: paymentExpectedDateStr,
+        contact_person: null,
+        platform: 'Other',
+        status: options?.updateStatus || 'Draft',
+        invoice_file_url: null,
+        utr_number: null,
+        brand_email: null,
+        payment_received_date: null,
+      };
+
+      // Add optional fields only if columns exist (migration might not have run)
+      // These will be ignored if columns don't exist, preventing 400 errors
+      try {
+        // Try to add new fields - if columns don't exist, Supabase will ignore them
+        // We'll catch the error and retry without them
+        insertData.deal_type = currentDealType;
+        insertData.created_via = 'scanner';
+        if (reportId) {
+          insertData.analysis_report_id = reportId;
+        }
+        insertData.brand_response_status = 'pending';
+      } catch {
+        // Fields might not exist, continue without them
+      }
+
+      // Add contract file URL if available
+      if (contractUrl) {
+        insertData.contract_file_url = contractUrl;
+      }
+
+      let newDeal: any = null;
+      let insertError: any = null;
+
+      // Try inserting with all fields first
+      const { data, error } = await supabase
+        .from('brand_deals')
+        .insert(insertData)
+        .select('id')
+        .single();
+
+      if (error) {
+        // Check if error is due to missing columns (deal_type, created_via, analysis_report_id, brand_response_status)
+        const isColumnError = 
+          error.message?.includes('column') ||
+          error.code === '42703' || // undefined_column
+          error.code === 'PGRST116'; // PostgREST column not found
+
+        if (isColumnError) {
+          // Retry without the optional fields (migration might not have run)
+          console.warn('[ContractUploadFlow] Optional columns missing, retrying without them');
+          const fallbackData: any = {
+            creator_id: creatorId,
+            organization_id: null,
+            brand_name: extractedBrandName,
+            deal_amount: dealAmount,
+            deliverables: analysisResults.keyTerms?.deliverables || 'As per contract',
+            due_date: dueDateStr,
+            payment_expected_date: paymentExpectedDateStr,
+            contact_person: null,
+            platform: 'Other',
+            status: options?.updateStatus || 'Draft',
+            invoice_file_url: null,
+            utr_number: null,
+            brand_email: null,
+            payment_received_date: null,
+          };
+
+          if (contractUrl) {
+            fallbackData.contract_file_url = contractUrl;
+          }
+
+          const { data: fallbackDeal, error: fallbackError } = await supabase
+            .from('brand_deals')
+            .insert(fallbackData)
+            .select('id')
+            .single();
+
+          if (fallbackError) {
+            console.error('[ContractUploadFlow] Auto-save error (fallback):', fallbackError);
+            return;
+          }
+
+          newDeal = fallbackDeal;
+        } else {
+          console.error('[ContractUploadFlow] Auto-save error:', error);
+          return;
+        }
+      } else {
+        newDeal = data;
+      }
+
+      if (newDeal) {
+        setSavedDealId(newDeal.id);
+        setIsAutoSaved(true);
+        console.log('[ContractUploadFlow] Draft deal auto-saved:', newDeal.id);
+      }
+    } catch (error) {
+      console.error('[ContractUploadFlow] Auto-save exception:', error);
+      // Silent fail - don't show toast
+    }
   };
 
   const [analysisResults, setAnalysisResults] = useState<{
@@ -184,11 +465,32 @@ ${creatorName}`;
   // Helper function to get risk score color and label
   const getRiskScoreInfo = (score: number) => {
     if (score >= 71) {
-      return { color: 'text-green-400', bgColor: 'bg-green-500', label: 'Low Legal Risk', progressColor: 'from-green-500 to-emerald-500', glowColor: 'rgba(16, 185, 129, 0.3)' };
+      return { 
+        color: 'text-green-400', 
+        bgColor: 'bg-green-500', 
+        label: 'Low Legal Risk', 
+        progressColor: 'from-green-500 to-emerald-500', 
+        glowColor: 'rgba(16, 185, 129, 0.3)',
+        dotColor: '#10b981' // green-500
+      };
     } else if (score >= 41) {
-      return { color: 'text-orange-400', bgColor: 'bg-orange-500', label: 'Moderate Legal Risk', progressColor: 'from-orange-500 to-yellow-500', glowColor: 'rgba(249, 115, 22, 0.3)' };
+      return { 
+        color: 'text-orange-400', 
+        bgColor: 'bg-orange-500', 
+        label: 'Moderate Legal Risk', 
+        progressColor: 'from-orange-500 to-yellow-500', 
+        glowColor: 'rgba(249, 115, 22, 0.3)',
+        dotColor: '#f97316' // orange-500
+      };
     } else {
-      return { color: 'text-red-400', bgColor: 'bg-red-500', label: 'High Legal Risk', progressColor: 'from-red-500 to-rose-500', glowColor: 'rgba(239, 68, 68, 0.3)' };
+      return { 
+        color: 'text-red-400', 
+        bgColor: 'bg-red-500', 
+        label: 'High Legal Risk', 
+        progressColor: 'from-red-500 to-rose-500', 
+        glowColor: 'rgba(239, 68, 68, 0.3)',
+        dotColor: '#ef4444' // red-500
+      };
     }
   };
 
@@ -219,6 +521,86 @@ ${creatorName}`;
       .filter(issue => !resolvedIssues.has(issue.id))
       .sort((a, b) => (severityOrder[b.severity as keyof typeof severityOrder] || 0) - (severityOrder[a.severity as keyof typeof severityOrder] || 0))
       .slice(0, 2);
+  };
+
+  // Generate brand-specific requests from issues and missing clauses
+  const generateBrandRequests = () => {
+    const requests: Array<{
+      text: string;
+      impact: '💰 Money Protection' | '🛡️ Rights Protection' | '⏱️ Time Protection';
+      category: string;
+    }> = [];
+
+    // Add requests from issues
+    analysisResults?.issues.forEach((issue) => {
+      if (issue.severity === 'high' || issue.severity === 'medium') {
+        let impact: '💰 Money Protection' | '🛡️ Rights Protection' | '⏱️ Time Protection' = '🛡️ Rights Protection';
+        let requestText = '';
+
+        // Determine impact type and generate request text based on category
+        if (issue.category.toLowerCase().includes('payment') || issue.title.toLowerCase().includes('payment')) {
+          impact = '💰 Money Protection';
+          requestText = `Revise ${issue.title.toLowerCase()} to ensure fair payment terms`;
+        } else if (issue.category.toLowerCase().includes('termination') || issue.title.toLowerCase().includes('termination')) {
+          impact = '⏱️ Time Protection';
+          requestText = `Update ${issue.title.toLowerCase()} to provide reasonable notice period`;
+        } else if (issue.category.toLowerCase().includes('ip') || issue.category.toLowerCase().includes('intellectual')) {
+          impact = '🛡️ Rights Protection';
+          requestText = `Clarify ${issue.title.toLowerCase()} to protect your content ownership`;
+        } else if (issue.category.toLowerCase().includes('exclusivity')) {
+          impact = '⏱️ Time Protection';
+          requestText = `Limit ${issue.title.toLowerCase()} to reasonable duration and scope`;
+        } else {
+          requestText = `Revise ${issue.title.toLowerCase()} for better protection`;
+        }
+
+        requests.push({
+          text: requestText,
+          impact,
+          category: issue.category
+        });
+      }
+    });
+
+    // Add requests from missing clauses
+    if (!analysisResults?.keyTerms?.dealValue || analysisResults.keyTerms.dealValue === 'Not specified') {
+      const dealValue = analysisResults?.keyTerms?.dealValue || 'the agreed amount';
+      requests.push({
+        text: `Confirm final payment amount as ${dealValue.includes('₹') ? dealValue : `₹${dealValue}`} in the contract`,
+        impact: '💰 Money Protection',
+        category: 'Payment'
+      });
+    }
+
+    if (!analysisResults?.keyTerms?.paymentSchedule || analysisResults.keyTerms.paymentSchedule === 'Not specified') {
+      requests.push({
+        text: 'Specify payment timeline (e.g., within 10 days after content submission)',
+        impact: '💰 Money Protection',
+        category: 'Payment'
+      });
+    }
+
+    if (!analysisResults?.keyTerms?.exclusivity || analysisResults.keyTerms.exclusivity === 'Not specified') {
+      requests.push({
+        text: 'Limit content usage to 6 months, Instagram only (or specify your preferred terms)',
+        impact: '⏱️ Time Protection',
+        category: 'Exclusivity'
+      });
+    }
+
+    // Add revision rounds if mentioned in issues
+    const revisionIssue = analysisResults?.issues.find(i => 
+      i.title.toLowerCase().includes('revision') || i.title.toLowerCase().includes('edit')
+    );
+    if (revisionIssue) {
+      requests.push({
+        text: 'Add maximum 2 revision rounds for content approval',
+        impact: '⏱️ Time Protection',
+        category: 'Deliverables'
+      });
+    }
+
+    return requests;
   };
 
   // Progressive analysis animation
@@ -317,6 +699,20 @@ ${creatorName}`;
       // Set brand approval status to 'sent' when email is successfully sent
       setBrandApprovalStatus('sent');
       setApprovalStatusUpdatedAt(new Date());
+      
+      // Set brand_response_status to 'pending' when sending
+      if (savedDealId) {
+        try {
+          await fetch(`${apiBaseUrl}/api/brand-response/${savedDealId}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status: 'pending' })
+          });
+        } catch (error) {
+          console.warn('Failed to set brand response status:', error);
+        }
+      }
+      
       toast.success('Email sent successfully!');
       setBrandEmail('');
     } catch (error: any) {
@@ -558,9 +954,32 @@ ${creatorName}`;
     // Add closing
     whatsappMessage += '\nPlease share the revised contract. Thanks! 🙏';
     
-    // Truncate if still too long
+    // Add brand response tracking link if dealId is available
+    const dealId = savedDealId;
+    if (dealId) {
+      const baseUrl = typeof window !== 'undefined' 
+        ? window.location.origin 
+        : 'https://noticebazaar.com';
+      const trackingLink = `${baseUrl}/#/brand-reply/${dealId}`;
+      whatsappMessage += `\n\nConfirm your decision: ${trackingLink}`;
+    }
+    
+    // Truncate if still too long (but try to keep the link)
     if (whatsappMessage.length > 600) {
-      whatsappMessage = whatsappMessage.substring(0, 597) + '...';
+      // If we have a link, try to keep it
+      const linkMatch = whatsappMessage.match(/Confirm your decision: (.+)$/);
+      if (linkMatch) {
+        const link = linkMatch[1];
+        const messageWithoutLink = whatsappMessage.replace(/\n\nConfirm your decision: .+$/, '');
+        const availableSpace = 600 - messageWithoutLink.length - 25; // 25 for "Confirm your decision: "
+        if (availableSpace > link.length) {
+          whatsappMessage = messageWithoutLink + `\n\nConfirm your decision: ${link}`;
+        } else {
+          whatsappMessage = messageWithoutLink.substring(0, 597) + '...';
+        }
+      } else {
+        whatsappMessage = whatsappMessage.substring(0, 597) + '...';
+      }
     }
     
     return whatsappMessage;
@@ -887,6 +1306,9 @@ ${creatorName}`;
       setIsBarterDeal(true);
       setStep('results');
       toast.success('Barter protection report generated!');
+      
+      // Auto-save to Draft Deals
+      await autoSaveDraftDeal();
       
     } catch (err: any) {
       console.error('[ContractUploadFlow] Barter report generation error:', err);
@@ -1372,6 +1794,9 @@ ${creatorName}`;
       });
 
       setStep('results');
+      
+      // Auto-save to Draft Deals after analysis completes
+      await autoSaveDraftDeal();
     } catch (error: any) {
       console.error('[ContractUploadFlow] Analysis error:', error);
       
@@ -2279,7 +2704,7 @@ ${creatorName}`;
 
             {/* Premium Risk Score Card with Circular Gauge */}
             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 md:p-8 border border-white/10 shadow-xl" style={{ transform: 'translateZ(0)' }}>
-              <div className="flex flex-col items-center gap-6">
+              <div className="flex flex-col items-center gap-4 md:gap-6">
                 {/* Brand Name and Deal Amount Display */}
                 {(analysisResults.keyTerms?.brandName || analysisResults.keyTerms?.dealValue) && (
                   <div className="w-full mb-2 space-y-2">
@@ -2344,21 +2769,72 @@ ${creatorName}`;
                     </defs>
                   </svg>
                   <div className="absolute inset-0 flex flex-col items-center justify-center z-10">
-                    <div className="relative">
-                      <div className={`text-5xl md:text-6xl font-black ${resultsRiskInfo.color} transition-all duration-300 leading-none drop-shadow-lg`} style={{ textShadow: '0 2px 8px rgba(0,0,0,0.3)' }}>
-                        {scoreAnimation || analysisResults.score}
-                      </div>
-                      <div className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-white/40 animate-pulse"></div>
+                    <div className={`text-6xl md:text-7xl font-black ${resultsRiskInfo.color} transition-all duration-300 leading-none`}>
+                      {scoreAnimation || analysisResults.score}
                     </div>
-                    <div className="text-[11px] md:text-xs text-white/60 mt-2 font-semibold tracking-widest uppercase letter-spacing-wide">Score</div>
+                    <div className="text-xs text-white/50 mt-1 font-medium">out of 100</div>
                   </div>
                 </div>
 
                 {/* Risk Label and Info */}
                 <div className="flex-1 text-center w-full">
                   <h2 className="text-2xl md:text-3xl font-bold mb-3 text-white">Contract Analysis</h2>
+                  
+                  {/* Creator-First Risk Message */}
+                  {(() => {
+                    const issuesCount = analysisResults.issues.length;
+                    const missingCount = [
+                      !analysisResults.keyTerms?.dealValue || analysisResults.keyTerms.dealValue === 'Not specified' ? 1 : 0,
+                      !analysisResults.keyTerms?.paymentSchedule || analysisResults.keyTerms.paymentSchedule === 'Not specified' ? 1 : 0,
+                      !analysisResults.keyTerms?.exclusivity || analysisResults.keyTerms.exclusivity === 'Not specified' ? 1 : 0,
+                    ].reduce((a, b) => a + b, 0);
+                    const totalRiskAreas = issuesCount + missingCount;
+                    const potentialScore = Math.min(100, (analysisResults.score || 0) + (totalRiskAreas * 5));
+                    
+                    if (totalRiskAreas > 0) {
+                      return (
+                        <>
+                          <div className="mb-2">
+                            <p className={`text-sm md:text-base font-semibold ${resultsRiskInfo.color} flex items-center justify-center gap-2`}>
+                              <span>⚠️</span>
+                              <span>Your Deal Needs Fixes</span>
+                            </p>
+                            <p className="text-xs md:text-sm text-white/70 mt-1 max-w-xs mx-auto">
+                              You're at risk in {totalRiskAreas} key {totalRiskAreas === 1 ? 'area' : 'areas'}. Fixing them can push your score above {potentialScore >= 90 ? '90' : potentialScore} ✅
+                            </p>
+                          </div>
+                          
+                          {/* Issues & Missing Clauses Chip */}
+                          <div className="mb-3 flex items-center justify-center">
+                            <div className="px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-xs text-white/70">
+                              {issuesCount > 0 && (
+                                <span className="text-orange-300">{issuesCount} {issuesCount === 1 ? 'Issue' : 'Issues'}</span>
+                              )}
+                              {issuesCount > 0 && missingCount > 0 && <span className="mx-1.5 text-white/40">•</span>}
+                              {missingCount > 0 && (
+                                <span className="text-yellow-300">{missingCount} Missing {missingCount === 1 ? 'Clause' : 'Clauses'}</span>
+                              )}
+                            </div>
+                          </div>
+                        </>
+                      );
+                    } else {
+                      // Perfect contract state
+                      return (
+                        <div className="mb-3">
+                          <p className="text-base md:text-lg font-semibold text-green-400 flex items-center justify-center gap-2">
+                            <span>✅</span>
+                            <span>Your Deal Looks Safe</span>
+                          </p>
+                          <p className="text-sm text-white/70 mt-1">
+                            All key areas are protected
+                          </p>
+                        </div>
+                      );
+                    }
+                  })()}
+                  
                   <div className="flex items-center justify-center gap-2 mb-3">
-                    <p className={`text-base md:text-lg font-semibold ${resultsRiskInfo.color}`}>{resultsRiskInfo.label}</p>
                     <div className="group relative">
                       <Info className="w-4 h-4 text-white/40 cursor-help hover:text-white/60 transition-colors" />
                       <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-purple-900/95 backdrop-blur-sm rounded-lg text-xs text-white whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-20 border border-purple-400/30">
@@ -2367,9 +2843,6 @@ ${creatorName}`;
                       </div>
                     </div>
                   </div>
-                  <p className="text-sm text-white/70 font-medium">
-                    Protection Score: <span className={`font-black ${resultsRiskInfo.color}`}>{analysisResults.score}</span>/100
-                  </p>
                 </div>
 
                 {/* Primary CTA */}
@@ -2428,7 +2901,7 @@ ${creatorName}`;
                           }
                           const formattedMessage = formatNegotiationMessage(data.message);
                           setNegotiationMessage(formattedMessage);
-                          setShowShareFeedbackModal(true);
+                          await openShareFeedbackModal();
                           toast.success('Negotiation message generated!');
                         } catch (error: any) {
                           console.error('[ContractUploadFlow] Generate negotiation message error:', error);
@@ -2576,13 +3049,16 @@ ${creatorName}`;
                 >
                   <div className="flex items-center gap-3">
                     <AlertTriangle className="w-5 h-5 text-orange-400" />
-                    <span className="text-white font-medium">Issues Found</span>
-                    <span className="text-xs px-3 py-1 rounded-full bg-orange-500/20 text-orange-400 border border-orange-500/30">
+                    <div className="flex flex-col items-start">
+                      <span className="text-white font-medium">Issues Found</span>
+                      <span className="text-xs text-white/50 mt-0.5">These terms are in the contract but not in your favor.</span>
+                    </div>
+                    <span className="text-xs px-3 py-1 rounded-full bg-orange-500/20 text-orange-400 border border-orange-500/30 ml-auto">
                       {analysisResults.issues.length} {analysisResults.issues.length === 1 ? 'Issue' : 'Issues'}
                     </span>
                   </div>
                   <ChevronDown 
-                    className={`w-5 h-5 text-white/60 transition-transform ${isIssuesExpanded ? 'rotate-180' : ''}`}
+                    className={`w-5 h-5 text-white/60 transition-transform ${isIssuesExpanded ? 'rotate-180' : ''} ml-2`}
                   />
                 </button>
                 <AnimatePresence>
@@ -2618,6 +3094,90 @@ ${creatorName}`;
                           ))
                         ) : (
                           <div className="text-white/60 text-sm">No issues found.</div>
+                        )}
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+
+              {/* 3.5. Missing Clauses */}
+              <div className="bg-white/5 backdrop-blur-md rounded-xl border border-yellow-500/30 overflow-hidden">
+                <button
+                  onClick={() => setIsMissingClausesExpanded(!isMissingClausesExpanded)}
+                  className="w-full p-4 flex items-center justify-between hover:bg-white/5 transition-colors"
+                >
+                  <div className="flex items-center gap-3">
+                    <AlertCircle className="w-5 h-5 text-yellow-400" />
+                    <div className="flex flex-col items-start">
+                      <span className="text-white font-medium">Missing Clauses</span>
+                      <span className="text-xs text-white/50 mt-0.5">These important points are not written anywhere yet.</span>
+                    </div>
+                    <span className="text-xs px-3 py-1 rounded-full bg-yellow-500/20 text-yellow-400 border border-yellow-500/30 ml-auto">
+                      {(() => {
+                        // Count missing clauses - common ones to check
+                        const missingCount = [
+                          !analysisResults.keyTerms?.dealValue || analysisResults.keyTerms.dealValue === 'Not specified' ? 1 : 0,
+                          !analysisResults.keyTerms?.paymentSchedule || analysisResults.keyTerms.paymentSchedule === 'Not specified' ? 1 : 0,
+                          !analysisResults.keyTerms?.exclusivity || analysisResults.keyTerms.exclusivity === 'Not specified' ? 1 : 0,
+                        ].reduce((a, b) => a + b, 0);
+                        return missingCount > 0 ? `${missingCount} Missing` : '0 Missing';
+                      })()}
+                    </span>
+                  </div>
+                  <ChevronDown 
+                    className={`w-5 h-5 text-white/60 transition-transform ${isMissingClausesExpanded ? 'rotate-180' : ''} ml-2`}
+                  />
+                </button>
+                <AnimatePresence>
+                  {isMissingClausesExpanded && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: 'auto', opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.3 }}
+                      className="overflow-hidden"
+                    >
+                      <div className="px-4 pb-4 space-y-3">
+                        {(!analysisResults.keyTerms?.dealValue || analysisResults.keyTerms.dealValue === 'Not specified') && (
+                          <div className="flex items-start gap-2 text-sm p-3 bg-yellow-500/10 border border-yellow-500/20 rounded-lg">
+                            <AlertCircle className="w-4 h-4 text-yellow-400 mt-0.5 flex-shrink-0" />
+                            <div className="flex-1">
+                              <div className="text-white font-medium">Payment Amount</div>
+                              <div className="text-white/60 text-xs mt-1">Payment amount is not specified in the contract.</div>
+                            </div>
+                          </div>
+                        )}
+                        {(!analysisResults.keyTerms?.paymentSchedule || analysisResults.keyTerms.paymentSchedule === 'Not specified') && (
+                          <div className="flex items-start gap-2 text-sm p-3 bg-yellow-500/10 border border-yellow-500/20 rounded-lg">
+                            <AlertCircle className="w-4 h-4 text-yellow-400 mt-0.5 flex-shrink-0" />
+                            <div className="flex-1">
+                              <div className="text-white font-medium">Payment Schedule</div>
+                              <div className="text-white/60 text-xs mt-1">Payment timeline is not clearly defined.</div>
+                            </div>
+                          </div>
+                        )}
+                        {(!analysisResults.keyTerms?.exclusivity || analysisResults.keyTerms.exclusivity === 'Not specified') && (
+                          <div className="flex items-start gap-2 text-sm p-3 bg-yellow-500/10 border border-yellow-500/20 rounded-lg">
+                            <AlertCircle className="w-4 h-4 text-yellow-400 mt-0.5 flex-shrink-0" />
+                            <div className="flex-1">
+                              <div className="text-white font-medium">Exclusivity Terms</div>
+                              <div className="text-white/60 text-xs mt-1">Exclusivity period is not specified.</div>
+                            </div>
+                          </div>
+                        )}
+                        {analysisResults.keyTerms?.dealValue && 
+                         analysisResults.keyTerms.dealValue !== 'Not specified' &&
+                         analysisResults.keyTerms?.paymentSchedule && 
+                         analysisResults.keyTerms.paymentSchedule !== 'Not specified' &&
+                         analysisResults.keyTerms?.exclusivity && 
+                         analysisResults.keyTerms.exclusivity !== 'Not specified' && (
+                          <div className="text-center py-4">
+                            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-green-500/10 border border-green-500/20">
+                              <CheckCircle className="w-4 h-4 text-green-400" />
+                              <span className="text-sm text-green-300 font-medium">No key clauses missing – good job ✅</span>
+                            </div>
+                          </div>
                         )}
                       </div>
                     </motion.div>
@@ -2673,21 +3233,33 @@ ${creatorName}`;
                 </AnimatePresence>
               </div>
 
-              {/* 6. Recommended Actions */}
-              <div className="bg-white/5 backdrop-blur-md rounded-xl border border-white/10 overflow-hidden">
+              {/* 6. What We Will Ask the Brand */}
+              <div className="bg-gradient-to-br from-blue-600/20 to-indigo-600/20 backdrop-blur-md rounded-xl border border-blue-500/30 overflow-hidden">
                 <button
                   onClick={() => setIsRecommendedActionsExpanded(!isRecommendedActionsExpanded)}
                   className="w-full p-4 flex items-center justify-between hover:bg-white/5 transition-colors"
                 >
                   <div className="flex items-center gap-3">
-                    <Sparkles className="w-5 h-5 text-purple-400" />
-                    <span className="text-white font-medium">Recommended Actions</span>
-                    <span className="text-xs px-3 py-1 rounded-full bg-blue-500/20 text-blue-400 border border-blue-500/30">
-                      {analysisResults.issues.length > 0 ? '4 Actions' : '0 Actions'}
+                    <Send className="w-5 h-5 text-blue-400" />
+                    <div className="flex flex-col items-start">
+                      <span className="text-white font-medium">What We Will Ask the Brand</span>
+                      <span className="text-xs text-white/60 mt-0.5">This is what protects your money</span>
+                    </div>
+                    <span className="text-xs px-3 py-1 rounded-full bg-blue-500/20 text-blue-400 border border-blue-500/30 ml-auto">
+                      {(() => {
+                        const requests = generateBrandRequests();
+                        const count = requests.length;
+                        if (count >= 5) {
+                          return '🔴 High Risk Deal';
+                        } else if (count >= 3) {
+                          return '🟡 Moderate Risk';
+                        }
+                        return `${count} ${count === 1 ? 'Request' : 'Requests'}`;
+                      })()}
                     </span>
                   </div>
                   <ChevronDown 
-                    className={`w-5 h-5 text-white/60 transition-transform ${isRecommendedActionsExpanded ? 'rotate-180' : ''}`}
+                    className={`w-5 h-5 text-white/60 transition-transform ${isRecommendedActionsExpanded ? 'rotate-180' : ''} ml-2`}
                   />
                 </button>
                 <AnimatePresence>
@@ -2699,33 +3271,316 @@ ${creatorName}`;
                       transition={{ duration: 0.3 }}
                       className="overflow-hidden"
                     >
-                      <div className="px-4 pb-4 space-y-2">
-                        {analysisResults.issues.length > 0 && (
-                          <>
-                            <div className="text-sm text-white font-medium mb-2">Next Steps:</div>
-                            <div className="space-y-2">
-                              <div className="flex items-start gap-2 text-sm">
-                                <span className="text-orange-400">1.</span>
-                                <span className="text-white">Ask brand for revisions</span>
+                      <div className="px-4 pb-4 space-y-4">
+                        {(() => {
+                          const requests = generateBrandRequests();
+                          if (requests.length === 0) {
+                            return (
+                              <div className="text-center py-4">
+                                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-green-500/10 border border-green-500/20">
+                                  <CheckCircle className="w-4 h-4 text-green-400" />
+                                  <span className="text-sm text-green-300 font-medium">No requests needed. Contract looks safe! ✅</span>
+                                </div>
                               </div>
-                              <div className="flex items-start gap-2 text-sm">
-                                <span className="text-yellow-400">2.</span>
-                                <span className="text-white">Get lawyer review</span>
+                            );
+                          }
+
+                          return (
+                            <>
+                              {/* Brand Requests List */}
+                              <div className="space-y-3">
+                                {requests.map((request, index) => (
+                                  <div key={index} className="flex items-start gap-3 p-3 bg-white/5 rounded-lg border border-white/10">
+                                    <CheckCircle className="w-4 h-4 text-blue-400 mt-0.5 flex-shrink-0" />
+                                    <div className="flex-1">
+                                      <p className="text-sm text-white font-medium mb-1.5">{request.text}</p>
+                                      <div className="flex items-center gap-2 flex-wrap">
+                                        <span className="text-xs px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/30">
+                                          {request.impact}
+                                        </span>
+                                        <span className="text-xs text-white/50">Will be added to brand message</span>
+                                      </div>
+                                    </div>
+                                  </div>
+                                ))}
                               </div>
-                              <div className="flex items-start gap-2 text-sm">
-                                <span className="text-green-400">3.</span>
-                                <span className="text-white">Download brand-safe contract</span>
+
+                              {/* Expected Outcome */}
+                              <div className="mt-4 p-3 bg-green-500/10 rounded-lg border border-green-500/20">
+                                <div className="flex items-start gap-2">
+                                  <CheckCircle className="w-4 h-4 text-green-400 mt-0.5 flex-shrink-0" />
+                                  <div className="flex-1">
+                                    <p className="text-xs font-semibold text-green-300 mb-1">Likely outcome:</p>
+                                    <p className="text-xs text-green-200/80">Brand will revise and resend contract</p>
+                                  </div>
+                                </div>
+                                <div className="flex items-start gap-2 mt-2 pt-2 border-t border-green-500/20">
+                                  <AlertCircle className="w-4 h-4 text-yellow-400 mt-0.5 flex-shrink-0" />
+                                  <div className="flex-1">
+                                    <p className="text-xs font-semibold text-yellow-300 mb-1">If rejected:</p>
+                                    <p className="text-xs text-yellow-200/80">We help you decide whether to proceed safely</p>
+                                  </div>
+                                </div>
                               </div>
-                              <div className="flex items-start gap-2 text-sm">
-                                <span className="text-purple-400">4.</span>
-                                <span className="text-white">Share feedback with brand</span>
+
+                              {/* Message Preview Box */}
+                              <div className="mt-4 p-4 bg-white/5 rounded-lg border border-blue-500/20">
+                                <div className="flex items-center gap-2 mb-3">
+                                  <MessageSquare className="w-4 h-4 text-blue-400" />
+                                  <h4 className="text-sm font-semibold text-white">Final Message to Brand (Preview)</h4>
+                                </div>
+                                <div className="bg-white/5 rounded-lg p-3 border border-white/10">
+                                  {negotiationMessage ? (
+                                    <div className="space-y-1">
+                                      {negotiationMessage.split('\n').slice(0, 3).map((line, index) => (
+                                        <p key={index} className="text-xs text-white/70 leading-relaxed">
+                                          {line || '\u00A0'}
+                                        </p>
+                                      ))}
+                                      {negotiationMessage.split('\n').length > 3 && (
+                                        <p className="text-xs text-white/50 italic mt-2">...</p>
+                                      )}
+                                    </div>
+                                  ) : (
+                                    <div className="space-y-1">
+                                      <p className="text-xs text-white/70 leading-relaxed">
+                                        Hi {analysisResults?.keyTerms?.brandName || '[Brand Name]'},
+                                      </p>
+                                      <p className="text-xs text-white/70 leading-relaxed">
+                                        Thanks for sharing the contract. I'd like to clarify a few points before proceeding...
+                                      </p>
+                                      <p className="text-xs text-white/50 italic mt-2">Full message will be generated when you click "Send to Brand"</p>
+                                    </div>
+                                  )}
+                                </div>
                               </div>
-                            </div>
-                          </>
-                        )}
-                        {analysisResults.issues.length === 0 && (
-                          <div className="text-white/60 text-sm">No actions needed. Contract looks safe!</div>
-                        )}
+
+                              {/* AI Counter-Proposal Button - Show when conditions are met */}
+                              {((brandResponseStatus === 'rejected' || brandResponseStatus === 'negotiating') || 
+                                (analysisResults && analysisResults.issues.length >= 2)) && 
+                                savedDealId && (
+                                <div className="mt-4">
+                                  <AICounterProposal
+                                    dealId={savedDealId}
+                                    dealValue={analysisResults?.keyTerms?.dealValue}
+                                    issues={analysisResults?.issues.map(issue => ({
+                                      title: issue.title,
+                                      severity: issue.severity,
+                                      category: issue.category,
+                                      description: issue.description,
+                                      recommendation: issue.recommendation
+                                    })) || []}
+                                    missingClauses={(() => {
+                                      const missing: Array<{ title: string; category: string; description: string }> = [];
+                                      if (!analysisResults?.keyTerms?.dealValue || analysisResults.keyTerms.dealValue === 'Not specified') {
+                                        missing.push({
+                                          title: 'Payment Amount Missing',
+                                          category: 'Payment',
+                                          description: 'Payment amount is not specified in the contract.'
+                                        });
+                                      }
+                                      if (!analysisResults?.keyTerms?.paymentSchedule || analysisResults.keyTerms.paymentSchedule === 'Not specified') {
+                                        missing.push({
+                                          title: 'Payment Schedule Missing',
+                                          category: 'Payment',
+                                          description: 'Payment timeline is not clearly defined.'
+                                        });
+                                      }
+                                      if (!analysisResults?.keyTerms?.exclusivity || analysisResults.keyTerms.exclusivity === 'Not specified') {
+                                        missing.push({
+                                          title: 'Exclusivity Terms Missing',
+                                          category: 'Exclusivity',
+                                          description: 'Exclusivity period is not specified.'
+                                        });
+                                      }
+                                      return missing;
+                                    })()}
+                                    brandResponseMessage={undefined} // TODO: Fetch from deal if available
+                                    previousNegotiationMessage={negotiationMessage || undefined}
+                                    brandName={analysisResults?.keyTerms?.brandName}
+                                    onProposalGenerated={(proposal) => {
+                                      setAiCounterProposal(proposal.message);
+                                      // Track analytics
+                                      if (typeof window !== 'undefined' && (window as any).gtag) {
+                                        (window as any).gtag('event', 'ai_counter_generated', {
+                                          deal_id: savedDealId,
+                                          approval_probability: proposal.approval_probability,
+                                          risk_level: proposal.risk_level
+                                        });
+                                      }
+                                    }}
+                                    onUseProposal={(message) => {
+                                      setNegotiationMessage(message);
+                                      // Track analytics
+                                      if (typeof window !== 'undefined' && (window as any).gtag) {
+                                        (window as any).gtag('event', 'ai_counter_used', {
+                                          deal_id: savedDealId
+                                        });
+                                      }
+                                    }}
+                                    sessionToken={session?.access_token}
+                                  />
+                                </div>
+                              )}
+
+                              {/* Action Buttons */}
+                              <div className="flex gap-2 mt-4">
+                                <motion.button
+                                  onClick={async () => {
+                                    // Trigger the same logic as "Fix Issues & Missing Clauses, Then Send to Brand"
+                                    const button = document.querySelector('[data-action="fix-and-send"]') as HTMLButtonElement;
+                                    if (button) {
+                                      button.click();
+                                    } else {
+                                      // Fallback: open the share feedback modal
+                                      await openShareFeedbackModal();
+                                    }
+                                  }}
+                                  whileHover={{ scale: 1.02 }}
+                                  whileTap={{ scale: 0.98 }}
+                                  className="flex-1 px-4 py-2.5 bg-purple-600/90 hover:bg-purple-600 text-white rounded-lg font-semibold transition-all flex items-center justify-center gap-2 text-sm"
+                                >
+                                  <Edit className="w-4 h-4" />
+                                  Edit Message
+                                </motion.button>
+                                <motion.button
+                                  onClick={async () => {
+                                    // Use the same logic as the "Fix Issues & Missing Clauses" button
+                                    if (!session?.access_token) {
+                                      toast.error('Please log in to send to brand');
+                                      return;
+                                    }
+
+                                    const hasIssues = analysisResults && analysisResults.issues.length > 0;
+                                    const hasMissingClauses = !analysisResults?.keyTerms?.dealValue || 
+                                      analysisResults.keyTerms.dealValue === 'Not specified' ||
+                                      !analysisResults?.keyTerms?.paymentSchedule || 
+                                      analysisResults.keyTerms.paymentSchedule === 'Not specified' ||
+                                      !analysisResults?.keyTerms?.exclusivity || 
+                                      analysisResults.keyTerms.exclusivity === 'Not specified';
+
+                                    if (!analysisResults || (!hasIssues && !hasMissingClauses)) {
+                                      toast.error('No issues or missing clauses found to fix');
+                                      return;
+                                    }
+
+                                    triggerHaptic(HapticPatterns.medium);
+                                    setIsGeneratingMessage(true);
+                                    
+                                    try {
+                                      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 
+                                        (typeof window !== 'undefined' && window.location.origin.includes('noticebazaar.com') 
+                                          ? 'https://api.noticebazaar.com' 
+                                          : 'http://localhost:3001');
+                                      
+                                      const requestBody: any = {
+                                        brandName: 'the Brand'
+                                      };
+                                      
+                                      if (reportId) {
+                                        requestBody.reportId = reportId;
+                                      } else {
+                                        const issuesList = analysisResults.issues
+                                          .filter((issue: any) => issue.severity === 'high' || issue.severity === 'medium')
+                                          .map((issue: any) => ({
+                                            title: issue.title,
+                                            category: issue.category,
+                                            description: issue.description,
+                                            recommendation: issue.recommendation,
+                                            severity: issue.severity,
+                                            clause_reference: issue.clause
+                                          }));
+                                        
+                                        const missingClausesList: any[] = [];
+                                        if (!analysisResults.keyTerms?.dealValue || analysisResults.keyTerms.dealValue === 'Not specified') {
+                                          missingClausesList.push({
+                                            title: 'Payment Amount Missing',
+                                            category: 'Payment',
+                                            description: 'Payment amount is not specified in the contract.',
+                                            recommendation: 'Please add a clear payment amount (₹) to the contract.',
+                                            severity: 'warning',
+                                            clause_reference: 'Payment Amount'
+                                          });
+                                        }
+                                        if (!analysisResults.keyTerms?.paymentSchedule || analysisResults.keyTerms.paymentSchedule === 'Not specified') {
+                                          missingClausesList.push({
+                                            title: 'Payment Schedule Missing',
+                                            category: 'Payment',
+                                            description: 'Payment timeline is not clearly defined.',
+                                            recommendation: 'Please specify when payment will be made (e.g., within 10 days of content submission).',
+                                            severity: 'warning',
+                                            clause_reference: 'Payment Schedule'
+                                          });
+                                        }
+                                        if (!analysisResults.keyTerms?.exclusivity || analysisResults.keyTerms.exclusivity === 'Not specified') {
+                                          missingClausesList.push({
+                                            title: 'Exclusivity Terms Missing',
+                                            category: 'Exclusivity',
+                                            description: 'Exclusivity period is not specified.',
+                                            recommendation: 'Please clarify the exclusivity period and usage rights.',
+                                            severity: 'warning',
+                                            clause_reference: 'Exclusivity Terms'
+                                          });
+                                        }
+                                        
+                                        requestBody.issues = [...issuesList, ...missingClausesList];
+                                      }
+                                      
+                                      const response = await fetch(`${apiBaseUrl}/api/protection/generate-negotiation-message`, {
+                                        method: 'POST',
+                                        headers: {
+                                          'Content-Type': 'application/json',
+                                          'Authorization': `Bearer ${session.access_token}`
+                                        },
+                                        body: JSON.stringify(requestBody)
+                                      });
+
+                                      const contentType = response.headers.get('content-type');
+                                      let data: any = {};
+                                      
+                                      if (contentType?.includes('application/json')) {
+                                        data = await response.json();
+                                      } else {
+                                        const text = await response.text();
+                                        throw new Error(`Server returned ${response.status}: ${text.substring(0, 100)}`);
+                                      }
+
+                                      if (!response.ok || !data.success) {
+                                        throw new Error(data.error || 'Failed to generate negotiation message');
+                                      }
+
+                                      const formattedMessage = formatNegotiationMessage(data.message);
+                                      setNegotiationMessage(formattedMessage);
+                                      await openShareFeedbackModal();
+                                      toast.success('Ready to send to brand!');
+                                    } catch (error: any) {
+                                      console.error('[ContractUploadFlow] Generate negotiation message error:', error);
+                                      toast.error(error.message || 'Failed to generate message. Please try again.');
+                                    } finally {
+                                      setIsGeneratingMessage(false);
+                                    }
+                                  }}
+                                  disabled={isGeneratingMessage}
+                                  whileHover={{ scale: 1.02 }}
+                                  whileTap={{ scale: 0.98 }}
+                                  className="flex-1 px-4 py-2.5 bg-green-600/90 hover:bg-green-600 text-white rounded-lg font-semibold transition-all flex items-center justify-center gap-2 text-sm disabled:opacity-50"
+                                >
+                                  {isGeneratingMessage ? (
+                                    <>
+                                      <Loader2 className="w-4 h-4 animate-spin" />
+                                      Generating...
+                                    </>
+                                  ) : (
+                                    <>
+                                      <Send className="w-4 h-4" />
+                                      Send to Brand
+                                    </>
+                                  )}
+                                </motion.button>
+                              </div>
+                            </>
+                          );
+                        })()}
                       </div>
                     </motion.div>
                   )}
@@ -2736,148 +3591,33 @@ ${creatorName}`;
 
             {/* Action Buttons */}
             {analysisResults && (
-              <div className="mt-6 flex flex-col sm:flex-row gap-3">
-                {/* Save This Deal Button */}
-                <motion.button
-                  onClick={async () => {
-                    if (!session?.access_token) {
-                      toast.error('Please log in to save this deal');
-                      return;
-                    }
-
-                    if (!analysisResults) {
-                      toast.error('No contract data to save');
-                      return;
-                    }
-
-                    triggerHaptic(HapticPatterns.light);
-                    
-                    try {
-                      const creatorId = session?.user?.id;
-                      if (!creatorId) {
-                        toast.error('User ID not found');
+              <div className="mt-6 flex flex-col gap-3">
+                {/* Fix & Send to Brand - Primary CTA */}
+                <div className="flex-1 flex flex-col">
+                  <motion.button
+                    data-action="fix-and-send"
+                    onClick={async () => {
+                      if (!session?.access_token) {
+                        toast.error('Please log in to send to brand');
                         return;
                       }
 
-                      // Parse deal amount - default to 0 if not specified (required field)
-                      let dealAmount = 0;
-                      const dealValueStr = analysisResults.keyTerms?.dealValue || '';
-                      
-                      if (dealValueStr && dealValueStr.trim() !== '' && 
-                          dealValueStr.toLowerCase() !== 'not specified' && 
-                          dealValueStr.toLowerCase() !== 'not mentioned') {
-                        
-                        // Try multiple parsing strategies
-                        // Strategy 1: Extract number with commas (e.g., "Rs. 75,000" or "₹75,000")
-                        const commaMatch = dealValueStr.match(/(\d{1,3}(?:,\d{2,3})*(?:\.\d+)?)/);
-                        if (commaMatch) {
-                          const valueWithCommas = commaMatch[1].replace(/,/g, '');
-                          const parsed = parseFloat(valueWithCommas);
-                          if (!isNaN(parsed) && parsed > 0 && isFinite(parsed)) {
-                            dealAmount = parsed;
-                          }
-                        }
-                        
-                        // Strategy 2: If Strategy 1 failed, try removing all non-digits except decimal point
-                        if (dealAmount === 0) {
-                          let cleanedValue = dealValueStr
-                            .replace(/[₹Rs$€£,\s]/g, '')
-                            .trim();
-                          const parsed = parseFloat(cleanedValue);
-                          if (!isNaN(parsed) && parsed > 0 && isFinite(parsed)) {
-                            dealAmount = parsed;
-                          }
-                        }
-                        
-                        // Strategy 3: Try to find any sequence of digits
-                        if (dealAmount === 0) {
-                          const digitMatch = dealValueStr.match(/(\d+)/);
-                          if (digitMatch) {
-                            const parsed = parseFloat(digitMatch[1]);
-                            if (!isNaN(parsed) && parsed > 0 && isFinite(parsed)) {
-                              dealAmount = parsed;
-                            }
-                          }
-                        }
-                      }
-                      
-                      // If still 0, show a warning but allow saving
-                      if (dealAmount === 0 && dealValueStr) {
-                        console.warn('[ContractUploadFlow] Could not parse deal amount from:', dealValueStr);
-                        toast.warning(`Could not extract payment amount from "${dealValueStr}". Deal saved with ₹0. You can update it later.`);
-                      } else if (dealAmount === 0) {
-                        toast.warning('No payment amount found in contract. Deal saved with amount ₹0. You can update it later.');
+                      // Check for issues OR missing clauses
+                      const hasIssues = analysisResults && analysisResults.issues.length > 0;
+                      const hasMissingClauses = !analysisResults?.keyTerms?.dealValue || 
+                        analysisResults.keyTerms.dealValue === 'Not specified' ||
+                        !analysisResults?.keyTerms?.paymentSchedule || 
+                        analysisResults.keyTerms.paymentSchedule === 'Not specified' ||
+                        !analysisResults?.keyTerms?.exclusivity || 
+                        analysisResults.keyTerms.exclusivity === 'Not specified';
+
+                      if (!analysisResults || (!hasIssues && !hasMissingClauses)) {
+                        toast.error('No issues or missing clauses found to fix');
+                        return;
                       }
 
-                      // Calculate due date (default to 30 days from now) - required field
-                      const dueDate = new Date();
-                      dueDate.setDate(dueDate.getDate() + 30);
-                      const dueDateStr = dueDate.toISOString().split('T')[0];
-                      
-                      // Payment expected date (same as due date) - required field
-                      const paymentExpectedDateStr = dueDateStr;
-                      
-                      // Extract brand name from contract or use default
-                      const extractedBrandName = analysisResults.keyTerms?.brandName || 
-                        fileName?.replace(/\.(pdf|docx?)$/i, '').replace(/[_-]/g, ' ') || 
-                        'Contract Upload';
-                      
-                      await addDealMutation.mutateAsync({
-                        creator_id: creatorId,
-                        organization_id: null,
-                        brand_name: extractedBrandName,
-                        deal_amount: dealAmount, // Always a number, never null
-                        deliverables: analysisResults.keyTerms?.deliverables || 'As per contract',
-                        contract_file: uploadedFile, // File object or null
-                        due_date: dueDateStr, // Required
-                        payment_expected_date: paymentExpectedDateStr, // Required
-                        contact_person: null,
-                        platform: 'Other',
-                        status: 'Draft' as const,
-                        invoice_file: null,
-                        utr_number: null,
-                        brand_email: null,
-                        payment_received_date: null,
-                      });
-                      toast.success('✅ Deal saved successfully!');
-                    } catch (error: any) {
-                      console.error('[ContractUploadFlow] Save deal error:', error);
-                      toast.error(error.message || 'Failed to save deal. Please try again.');
-                    }
-                  }}
-                  disabled={addDealMutation.isPending}
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  className="flex-1 bg-white/10 hover:bg-white/15 border border-white/20 text-white px-6 py-3 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 disabled:opacity-50"
-                >
-                  {addDealMutation.isPending ? (
-                    <>
-                      <Loader2 className="w-5 h-5 animate-spin" />
-                      Saving...
-                    </>
-                  ) : (
-                    <>
-                      <CheckCircle className="w-5 h-5" />
-                      Save This Deal
-                    </>
-                  )}
-                </motion.button>
-
-                {/* Fix Contract & Send to Brand Button */}
-                <motion.button
-                  onClick={async () => {
-                    if (!session?.access_token) {
-                      toast.error('Please log in to send to brand');
-                      return;
-                    }
-
-                    if (!analysisResults || analysisResults.issues.length === 0) {
-                      toast.error('No issues found to fix');
-                      return;
-                    }
-
-                    triggerHaptic(HapticPatterns.medium);
-                    setIsGeneratingMessage(true);
+                      triggerHaptic(HapticPatterns.medium);
+                      setIsGeneratingMessage(true);
                     
                     try {
                       const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 
@@ -2892,7 +3632,8 @@ ${creatorName}`;
                       if (reportId) {
                         requestBody.reportId = reportId;
                       } else {
-                        requestBody.issues = analysisResults.issues
+                        // Include issues
+                        const issuesList = analysisResults.issues
                           .filter((issue: any) => issue.severity === 'high' || issue.severity === 'medium')
                           .map((issue: any) => ({
                             title: issue.title,
@@ -2902,6 +3643,41 @@ ${creatorName}`;
                             severity: issue.severity,
                             clause_reference: issue.clause
                           }));
+                        
+                        // Include missing clauses as issues with yellow/warning severity
+                        const missingClausesList: any[] = [];
+                        if (!analysisResults.keyTerms?.dealValue || analysisResults.keyTerms.dealValue === 'Not specified') {
+                          missingClausesList.push({
+                            title: 'Payment Amount Missing',
+                            category: 'Payment',
+                            description: 'Payment amount is not specified in the contract.',
+                            recommendation: 'Please add a clear payment amount (₹) to the contract.',
+                            severity: 'warning',
+                            clause_reference: 'Payment Amount'
+                          });
+                        }
+                        if (!analysisResults.keyTerms?.paymentSchedule || analysisResults.keyTerms.paymentSchedule === 'Not specified') {
+                          missingClausesList.push({
+                            title: 'Payment Schedule Missing',
+                            category: 'Payment',
+                            description: 'Payment timeline is not clearly defined.',
+                            recommendation: 'Please specify when payment will be made (e.g., within 10 days of content submission).',
+                            severity: 'warning',
+                            clause_reference: 'Payment Schedule'
+                          });
+                        }
+                        if (!analysisResults.keyTerms?.exclusivity || analysisResults.keyTerms.exclusivity === 'Not specified') {
+                          missingClausesList.push({
+                            title: 'Exclusivity Terms Missing',
+                            category: 'Exclusivity',
+                            description: 'Exclusivity period is not specified.',
+                            recommendation: 'Please clarify the exclusivity period and usage rights.',
+                            severity: 'warning',
+                            clause_reference: 'Exclusivity Terms'
+                          });
+                        }
+                        
+                        requestBody.issues = [...issuesList, ...missingClausesList];
                       }
                       
                       const response = await fetch(`${apiBaseUrl}/api/protection/generate-negotiation-message`, {
@@ -2929,7 +3705,7 @@ ${creatorName}`;
 
                       const formattedMessage = formatNegotiationMessage(data.message);
                       setNegotiationMessage(formattedMessage);
-                      setShowShareFeedbackModal(true);
+                      await openShareFeedbackModal();
                       toast.success('Ready to send to brand!');
                     } catch (error: any) {
                       console.error('[ContractUploadFlow] Generate negotiation message error:', error);
@@ -2951,7 +3727,82 @@ ${creatorName}`;
                   ) : (
                     <>
                       <Sparkles className="w-5 h-5" />
-                      Fix Contract & Send to Brand
+                      Fix & Send to Brand
+                    </>
+                  )}
+                </motion.button>
+                <p className="text-xs text-white/50 mt-2 text-center px-2">
+                  We'll combine all risks + missing points into one clear message.
+                </p>
+                <p className="text-xs text-green-300/70 mt-1 text-center px-2 flex items-center justify-center gap-1">
+                  <CheckCircle className="w-3 h-3" />
+                  You can edit before sending
+                </p>
+              </div>
+
+              {/* Soft Fear Line */}
+              <div className="mt-4 mb-2 text-center">
+                <p className="text-xs text-white/50 italic">
+                  Most creators lose money due to unclear contracts. You're already ahead.
+                </p>
+              </div>
+
+                {/* Save Deal - Secondary CTA (shows "Saved to Drafts" if auto-saved) */}
+                <motion.button
+                  onClick={async () => {
+                    // If already auto-saved, just show a message
+                    if (isAutoSaved || savedDealId) {
+                      toast.info('Deal is already saved to drafts');
+                      return;
+                    }
+
+                    if (!session?.access_token) {
+                      toast.error('Please log in to save this deal');
+                      return;
+                    }
+
+                    if (!analysisResults) {
+                      toast.error('No contract data to save');
+                      return;
+                    }
+
+                    triggerHaptic(HapticPatterns.light);
+                    
+                    // Use auto-save function
+                    await autoSaveDraftDeal();
+                    
+                    // Check if save was successful by checking savedDealId after a brief delay
+                    // This handles async state updates
+                    setTimeout(() => {
+                      if (savedDealId) {
+                        toast.success('✅ Deal saved to drafts!');
+                      }
+                    }, 100);
+                  }}
+                  disabled={(isAutoSaved || savedDealId) || addDealMutation.isPending}
+                  whileHover={!(isAutoSaved || savedDealId) ? { scale: 1.02 } : {}}
+                  whileTap={!(isAutoSaved || savedDealId) ? { scale: 0.98 } : {}}
+                  className="flex-1 bg-white/10 hover:bg-white/15 border border-white/20 text-white px-6 py-3 rounded-xl font-semibold transition-all flex flex-col items-center justify-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {(isAutoSaved || savedDealId) ? (
+                    <>
+                      <div className="flex items-center gap-2">
+                        <CheckCircle className="w-5 h-5 text-green-400" />
+                        <span>Saved to Drafts</span>
+                      </div>
+                      <span className="text-xs text-white/50 font-normal">Auto-saved while you work</span>
+                    </>
+                  ) : addDealMutation.isPending ? (
+                    <>
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                      <span>Saving...</span>
+                    </>
+                  ) : (
+                    <>
+                      <div className="flex items-center gap-2">
+                        <CheckCircle className="w-5 h-5" />
+                        <span>Save Deal</span>
+                      </div>
                     </>
                   )}
                 </motion.button>
@@ -3638,57 +4489,6 @@ ${creatorName}`;
               </div>
             )}
 
-            {/* Share & Brand Actions - Moved higher, right after Issues */}
-            {analysisResults.issues.length > 0 && negotiationMessage && (
-              <div className="mt-6 mb-6">
-                <h3 className="font-semibold text-lg mb-4 flex items-center gap-2">
-                  <Send className="w-5 h-5 text-purple-300" />
-                  <span className="text-white">Share Fixes with Brand</span>
-                </h3>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                  {/* Copy Email Button */}
-                  <motion.button
-                    onClick={handleCopyEmail}
-                    disabled={!negotiationMessage}
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    className="bg-blue-600/90 hover:bg-blue-600 text-white px-4 py-3 rounded-xl font-semibold transition-all duration-200 flex items-center justify-center gap-2 min-h-[48px] disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    <Mail className="w-5 h-5" />
-                    <span className="text-sm font-semibold">Copy Email</span>
-                  </motion.button>
-                  
-                  {/* Copy WhatsApp Button */}
-                  <motion.button
-                    onClick={handleCopyWhatsApp}
-                    disabled={!negotiationMessage}
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    className="bg-green-600/90 hover:bg-green-600 text-white px-4 py-3 rounded-xl font-semibold transition-all duration-200 flex items-center justify-center gap-2 min-h-[48px] disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    <MessageSquare className="w-5 h-5" />
-                    <span className="text-sm font-semibold">Copy WhatsApp</span>
-                  </motion.button>
-                  
-                  {/* Send Fixes to Brand Button */}
-                  <motion.button
-                    onClick={() => {
-                      if (!negotiationMessage) {
-                        toast.error('Please generate a negotiation message first');
-                        return;
-                      }
-                      setShowShareFeedbackModal(true);
-                    }}
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    className="bg-purple-600/90 hover:bg-purple-600 text-white px-4 py-3 rounded-xl font-semibold transition-all duration-200 flex items-center justify-center gap-2 min-h-[48px]"
-                  >
-                    <Send className="w-5 h-5" />
-                    <span className="text-sm font-semibold">Send Fixes to Brand</span>
-                  </motion.button>
-                </div>
-              </div>
-            )}
 
 
 
@@ -3764,7 +4564,7 @@ ${creatorName}`;
 
                         const formattedMessage = formatNegotiationMessage(data.message);
                         setNegotiationMessage(formattedMessage);
-                        setShowShareFeedbackModal(true);
+                        await openShareFeedbackModal();
                         toast.success('Negotiation message generated!');
                       } catch (error: any) {
                         console.error('[ContractUploadFlow] Generate negotiation message error:', error);
@@ -4182,7 +4982,7 @@ ${creatorName}`;
                     // Format message with India-optimized template
                     const formattedMessage = formatNegotiationMessage(data.message);
                     setNegotiationMessage(formattedMessage);
-                    setShowShareFeedbackModal(true);
+                    await openShareFeedbackModal();
                     toast.success('Negotiation message generated!');
                   } catch (error: any) {
                     console.error('[ContractUploadFlow] Generate negotiation message error:', error);
@@ -4209,8 +5009,6 @@ ${creatorName}`;
                 )}
               </motion.button>
             </div>
-            </div>
-            {/* End Content Width Container for iPad/Tablet */}
 
             {/* Clause Generation Modal */}
             {selectedIssueForClause !== null && generatedClause && (() => {
@@ -4462,58 +5260,178 @@ ${creatorName}`;
                   </DialogDescription>
                 </DialogHeader>
 
-                <div className="space-y-4 mt-4">
-                  {/* Share via WhatsApp */}
+                <div className="space-y-6 mt-4">
+                  {/* Message Preview Section */}
+                  <div className="bg-white/5 rounded-xl p-4 border border-purple-400/20">
+                    <div className="flex items-center gap-2 mb-3">
+                      <MessageSquare className="w-5 h-5 text-purple-300" />
+                      <h3 className="text-sm font-semibold text-white">Message Preview</h3>
+                    </div>
+                    <div className="space-y-2">
+                      {(() => {
+                        const requests = generateBrandRequests();
+                        const previewItems = requests.slice(0, 5).map(req => {
+                          // Convert request text to a concise bullet point
+                          if (req.text.includes('payment amount')) {
+                            return '💰 Confirm final payment amount in the contract';
+                          } else if (req.text.includes('payment timeline') || req.text.includes('payment schedule')) {
+                            return '💰 Specify payment timeline (e.g., within 10 days)';
+                          } else if (req.text.includes('usage') || req.text.includes('exclusivity')) {
+                            return '⏱️ Limit content usage to reasonable duration and scope';
+                          } else if (req.text.includes('revision')) {
+                            return '⏱️ Add maximum revision rounds for content approval';
+                          } else if (req.text.includes('termination')) {
+                            return '⏱️ Provide reasonable notice period for termination';
+                          } else if (req.text.includes('IP') || req.text.includes('ownership')) {
+                            return '🛡️ Clarify content ownership and usage rights';
+                          } else {
+                            return `🛡️ ${req.text}`;
+                          }
+                        });
+
+                        if (previewItems.length === 0) {
+                          return (
+                            <p className="text-sm text-purple-200/70">No specific requests. General contract review message will be sent.</p>
+                          );
+                        }
+
+                        return (
+                          <ul className="space-y-2">
+                            {previewItems.map((item, index) => (
+                              <li key={index} className="flex items-start gap-2 text-sm text-purple-100">
+                                <span className="text-purple-400 mt-0.5">•</span>
+                                <span>{item}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        );
+                      })()}
+                    </div>
+                  </div>
+
+                  {/* Trust Line */}
+                  <div className="flex items-center justify-center gap-2 px-4 py-2 bg-green-500/10 rounded-lg border border-green-500/20">
+                    <Shield className="w-4 h-4 text-green-400" />
+                    <p className="text-xs text-green-200 font-medium">This message is legally vetted and safe to send.</p>
+                  </div>
+
+                  {/* Share via WhatsApp - Primary Action */}
                   <motion.button
-                    onClick={() => {
+                    onClick={async () => {
                       if (!negotiationMessage) return;
                       const formattedMessage = formatNegotiationMessage(negotiationMessage);
                       const whatsappMessage = createWhatsAppMessage(formattedMessage);
                       const encodedMessage = encodeURIComponent(whatsappMessage);
                       const whatsappUrl = `https://wa.me/?text=${encodedMessage}`;
                       triggerHaptic(HapticPatterns.medium);
+                      
+                      // Set brand_response_status to 'pending' and update deal status to 'Sent' when sending
+                      if (savedDealId) {
+                        try {
+                          const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 
+                            (typeof window !== 'undefined' && window.location.origin.includes('noticebazaar.com') 
+                              ? 'https://api.noticebazaar.com' 
+                              : 'http://localhost:3001');
+                          await fetch(`${apiBaseUrl}/api/brand-response/${savedDealId}`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ status: 'pending' })
+                          });
+                          
+                          // Update deal status to 'Sent'
+                          await autoSaveDraftDeal({ updateExisting: true, updateStatus: 'Sent' });
+                        } catch (error) {
+                          console.warn('Failed to set brand response status:', error);
+                        }
+                      }
+                      
                       window.open(whatsappUrl, '_blank');
-                      toast.success('Opening WhatsApp...');
                       setBrandApprovalStatus('sent');
                       setApprovalStatusUpdatedAt(new Date());
+                      setShowShareFeedbackModal(false);
+                      
+                      // Track analytics if AI counter-proposal was used
+                      if (aiCounterProposal && negotiationMessage === aiCounterProposal) {
+                        if (typeof window !== 'undefined' && (window as any).gtag) {
+                          (window as any).gtag('event', 'ai_counter_sent', {
+                            deal_id: savedDealId,
+                            method: 'whatsapp'
+                          });
+                        }
+                      }
+                      
+                      toast.success('✅ Fixes sent. We\'ll remind you in 48 hours if the brand doesn\'t reply.');
                     }}
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
-                    className="w-full bg-green-600/80 hover:bg-green-600 text-white px-6 py-4 rounded-xl font-semibold transition-all duration-200 flex items-center justify-center gap-3"
+                    className="w-full bg-green-600/90 hover:bg-green-600 text-white px-6 py-5 rounded-xl font-semibold transition-all duration-200 flex items-center justify-center gap-3 shadow-lg shadow-green-500/30"
                   >
                     <MessageSquare className="w-6 h-6" />
-                    <div className="flex flex-col items-start">
-                      <span className="text-lg">Share via WhatsApp</span>
-                      <span className="text-sm text-green-100/80">Opens WhatsApp with pre-filled message</span>
+                    <div className="flex flex-col items-start flex-1">
+                      <span className="text-lg">Send Fixes on WhatsApp (Fastest)</span>
+                      <span className="text-sm text-green-100/80 font-normal">Best for fast brand managers</span>
                     </div>
                   </motion.button>
 
                   {/* Share via Email */}
                   <motion.button
-                    onClick={() => {
+                    onClick={async () => {
                       if (!negotiationMessage) return;
                       const formattedMessage = formatNegotiationMessage(negotiationMessage);
                       const subject = encodeURIComponent('Requested Revisions for Collaboration Agreement');
                       const body = encodeURIComponent(formattedMessage);
                       const mailtoUrl = `mailto:?subject=${subject}&body=${body}`;
                       triggerHaptic(HapticPatterns.medium);
+                      
+                      // Set brand_response_status to 'pending' and update deal status to 'Sent' when sending
+                      if (savedDealId) {
+                        try {
+                          const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 
+                            (typeof window !== 'undefined' && window.location.origin.includes('noticebazaar.com') 
+                              ? 'https://api.noticebazaar.com' 
+                              : 'http://localhost:3001');
+                          await fetch(`${apiBaseUrl}/api/brand-response/${savedDealId}`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ status: 'pending' })
+                          });
+                          
+                          // Update deal status to 'Sent'
+                          await autoSaveDraftDeal({ updateExisting: true, updateStatus: 'Sent' });
+                        } catch (error) {
+                          console.warn('Failed to set brand response status:', error);
+                        }
+                      }
+                      
                       window.location.href = mailtoUrl;
-                      toast.success('Opening email client...');
                       setBrandApprovalStatus('sent');
                       setApprovalStatusUpdatedAt(new Date());
+                      setShowShareFeedbackModal(false);
+                      
+                      // Track analytics if AI counter-proposal was used
+                      if (aiCounterProposal && negotiationMessage === aiCounterProposal) {
+                        if (typeof window !== 'undefined' && (window as any).gtag) {
+                          (window as any).gtag('event', 'ai_counter_sent', {
+                            deal_id: savedDealId,
+                            method: 'email'
+                          });
+                        }
+                      }
+                      
+                      toast.success('✅ Fixes sent. We\'ll remind you in 48 hours if the brand doesn\'t reply.');
                     }}
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                     className="w-full bg-blue-600/80 hover:bg-blue-600 text-white px-6 py-4 rounded-xl font-semibold transition-all duration-200 flex items-center justify-center gap-3"
                   >
                     <Mail className="w-6 h-6" />
-                    <div className="flex flex-col items-start">
-                      <span className="text-lg">Share via Email</span>
-                      <span className="text-sm text-blue-100/80">Opens your email client with pre-filled message</span>
+                    <div className="flex flex-col items-start flex-1">
+                      <span className="text-lg">Send Formal Email to Brand</span>
+                      <span className="text-sm text-blue-100/80 font-normal">Best for agency & legal teams</span>
                     </div>
                   </motion.button>
 
-                  {/* Copy Shareable Link */}
+                  {/* Create Shareable Review Link */}
                   <motion.button
                     onClick={async () => {
                       if (!reportId) {
@@ -4521,19 +5439,47 @@ ${creatorName}`;
                         return;
                       }
                       
-                      const shareableUrl = `${window.location.origin}/#/feedback/${reportId}`;
-                      await navigator.clipboard.writeText(shareableUrl);
+                      // Include both feedback link and brand response link if dealId exists
+                      let shareableText = `${window.location.origin}/#/feedback/${reportId}`;
+                      
+                      // Try to get dealId from savedDealId first, or fetch from report if available
+                      let dealId = savedDealId;
+                      
+                      // If savedDealId is not available, try to fetch deal_id from the report using Supabase
+                      if (!dealId && reportId && session?.access_token) {
+                        try {
+                          const { data: report, error } = await supabase
+                            .from('protection_reports')
+                            .select('deal_id')
+                            .eq('id', reportId)
+                            .single();
+                          
+                          if (!error && report?.deal_id) {
+                            dealId = report.deal_id;
+                          }
+                        } catch (error) {
+                          // Silently fail - we'll just use the feedback link without brand response link
+                          console.warn('Could not fetch deal_id from report:', error);
+                        }
+                      }
+                      
+                      if (dealId) {
+                        const brandReplyLink = `${window.location.origin}/#/brand-reply/${dealId}`;
+                        shareableText += `\n\nPlease confirm your decision: ${brandReplyLink}`;
+                      }
+                      
+                      await navigator.clipboard.writeText(shareableText);
                       triggerHaptic(HapticPatterns.light);
-                      toast.success('Shareable link copied!');
+                      toast.success('Shareable link copied to clipboard');
                     }}
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                     className="w-full bg-purple-600/80 hover:bg-purple-600 text-white px-6 py-4 rounded-xl font-semibold transition-all duration-200 flex items-center justify-center gap-3"
                   >
                     <Copy className="w-6 h-6" />
-                    <div className="flex flex-col items-start">
-                      <span className="text-lg">Copy Shareable Link</span>
-                      <span className="text-sm text-purple-100/80">Share a read-only feedback page with the brand</span>
+                    <div className="flex flex-col items-start flex-1">
+                      <span className="text-lg">Create Shareable Review Link</span>
+                      <span className="text-sm text-purple-100/80 font-normal">Brand can view without editing</span>
                     </div>
                   </motion.button>
 
@@ -4542,7 +5488,7 @@ ${creatorName}`;
                     onClick={() => {
                       setShowShareFeedbackModal(false);
                     }}
-                    className="w-full bg-gray-600/80 hover:bg-gray-600 text-white px-4 py-3 rounded-xl font-semibold transition-all duration-200 flex items-center justify-center gap-2 mt-4"
+                    className="w-full bg-gray-600/80 hover:bg-gray-600 text-white px-4 py-3 rounded-xl font-semibold transition-all duration-200 flex items-center justify-center gap-2 mt-2"
                   >
                     <X className="w-5 h-5" />
                     Close
@@ -4600,6 +5546,8 @@ ${creatorName}`;
               </DialogContent>
             </Dialog>
             </div>
+            {/* End Content Width Container for iPad/Tablet */}
+          </div>
         )}
       </div>
     </div>

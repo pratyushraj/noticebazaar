@@ -2,7 +2,7 @@
 
 import { useState, useCallback, lazy, Suspense, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Eye, Download, Flag, Loader2, Building2, Calendar, FileText, CheckCircle, Clock, Trash2 } from 'lucide-react';
+import { ArrowLeft, Eye, Download, Flag, Loader2, Building2, Calendar, FileText, CheckCircle, Clock, Trash2, AlertCircle, XCircle, Bell, Mail, MessageSquare, FileSignature, Phone, Edit, X, Check } from 'lucide-react';
 import { toast } from 'sonner';
 import { useDeal, DealProvider } from '@/contexts/DealContext';
 import { useIssues } from '@/lib/hooks/useIssues';
@@ -17,12 +17,14 @@ import { createCalendarEvent, downloadEventAsICal, openEventInGoogleCalendar } f
 import { DeliverableAutoInfo } from '@/components/deals/DeliverableAutoInfo';
 import { MessageBrandModal } from '@/components/brand-messages/MessageBrandModal';
 import ProgressUpdateSheet from '@/components/deals/ProgressUpdateSheet';
-import { useUpdateDealProgress, DealStage, STAGE_TO_PROGRESS, useDeleteBrandDeal } from '@/lib/hooks/useBrandDeals';
+import { useUpdateDealProgress, DealStage, STAGE_TO_PROGRESS, useDeleteBrandDeal, useUpdateBrandDeal } from '@/lib/hooks/useBrandDeals';
 import { triggerHaptic, HapticPatterns } from '@/lib/utils/haptics';
 import { animations, iconSizes } from '@/lib/design-system';
 import { motion } from 'framer-motion';
 import { TrendingUp } from 'lucide-react';
 import { NativeLoadingSheet } from '@/components/mobile/NativeLoadingSheet';
+import { cn } from '@/lib/utils';
+import { supabase } from '@/integrations/supabase/client';
 
 // Lazy load heavy components
 const ContractPreviewModal = lazy(() => import('@/components/deals/ContractPreviewModal').then(m => ({ default: m.ContractPreviewModal })));
@@ -35,7 +37,7 @@ const OverduePaymentCard = lazy(() => import('@/components/deals/OverduePaymentC
 function DealDetailPageContent() {
   const navigate = useNavigate();
   const { dealId } = useParams<{ dealId: string }>();
-  const { profile } = useSession();
+  const { profile, session } = useSession();
   
   // Hooks
   const { deal, isLoadingDeal, refreshAll } = useDeal();
@@ -59,6 +61,14 @@ function DealDetailPageContent() {
   
   // Delete confirmation state
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  
+  // Remind brand state
+  const [isSendingReminder, setIsSendingReminder] = useState(false);
+  
+  // Brand phone edit state
+  const [isEditingBrandPhone, setIsEditingBrandPhone] = useState(false);
+  const [brandPhoneInput, setBrandPhoneInput] = useState('');
+  const updateBrandDealMutation = useUpdateBrandDeal();
   
   // Get current stage from deal status - helper function
   const getCurrentStage = (status: string | null | undefined, progressPercentage?: number | null): DealStage | undefined => {
@@ -547,6 +557,351 @@ Best regards`;
           </div>
         </div>
 
+        {/* Brand Response Tracker */}
+        {(deal as any)?.brand_response_status && (
+          <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-4 md:p-6 shadow-lg shadow-black/20">
+            <h2 className="font-semibold text-lg mb-4 flex items-center gap-2">
+              <Clock className="w-5 h-5" />
+              Brand Response
+            </h2>
+            
+            {(() => {
+              const responseStatus = (deal as any).brand_response_status || 'pending';
+              const responseMessage = (deal as any).brand_response_message;
+              const responseAt = (deal as any).brand_response_at;
+              
+              // Handle remind brand
+              const handleRemindBrand = async () => {
+                if (!deal || !dealId || !profile) {
+                  toast.error('Deal information not available');
+                  return;
+                }
+                
+                // Check if brand phone is available
+                if (!deal.brand_phone) {
+                  toast.error('Brand phone number is required for WhatsApp reminder');
+                  return;
+                }
+                
+                setIsSendingReminder(true);
+                triggerHaptic(HapticPatterns.medium);
+                
+                try {
+                  // Generate brand reply link
+                  const baseUrl = typeof window !== 'undefined' 
+                    ? window.location.origin 
+                    : 'https://noticebazaar.com';
+                  const brandReplyLink = `${baseUrl}/#/brand-reply/${dealId}`;
+                  
+                  // Reminder message template (exact format as requested)
+                  const reminderMessage = `Hi, just following up on the contract revisions sent earlier.  
+
+Please review and share your decision here:  
+
+${brandReplyLink}`;
+                  
+                  // Format phone number (remove spaces, +, etc.)
+                  const phoneNumber = deal.brand_phone.replace(/[\s\+\-\(\)]/g, '');
+                  
+                  // Open WhatsApp with phone number and message
+                  const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(reminderMessage)}`;
+                  window.open(whatsappUrl, '_blank');
+                  
+                  // Log reminder to API
+                  try {
+                    const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 
+                      (typeof window !== 'undefined' && window.location.origin.includes('noticebazaar.com') 
+                        ? 'https://api.noticebazaar.com' 
+                        : 'http://localhost:3001');
+                    
+                    await fetch(`${apiBaseUrl}/api/deals/log-reminder`, {
+                      method: 'POST',
+                      headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${session?.access_token}`,
+                      },
+                      body: JSON.stringify({
+                        dealId: dealId,
+                        reminder_type: 'whatsapp',
+                        message: reminderMessage,
+                      }),
+                    });
+                  } catch (logError) {
+                    console.error('[DealDetailPage] Failed to log reminder:', logError);
+                    // Don't fail the whole operation if logging fails
+                  }
+                  
+                  // Refresh deal data
+                  await refreshAll();
+                  
+                  toast.success('✅ Reminder sent to brand on WhatsApp');
+                } catch (error: any) {
+                  console.error('[DealDetailPage] Remind brand error:', error);
+                  toast.error('Failed to send reminder. Please try again.');
+                } finally {
+                  setIsSendingReminder(false);
+                }
+              };
+              
+              const statusConfig = {
+                pending: {
+                  icon: Clock,
+                  label: '⏳ Waiting for brand response',
+                  color: 'text-yellow-400',
+                  bgColor: 'bg-yellow-500/20',
+                  borderColor: 'border-yellow-500/30',
+                },
+                accepted: {
+                  icon: CheckCircle,
+                  label: '✅ Accepted',
+                  color: 'text-green-400',
+                  bgColor: 'bg-green-500/20',
+                  borderColor: 'border-green-500/30',
+                },
+                negotiating: {
+                  icon: AlertCircle,
+                  label: '🟡 Negotiation in progress',
+                  color: 'text-yellow-400',
+                  bgColor: 'bg-yellow-500/20',
+                  borderColor: 'border-yellow-500/30',
+                },
+                rejected: {
+                  icon: XCircle,
+                  label: '❌ Rejected',
+                  color: 'text-red-400',
+                  bgColor: 'bg-red-500/20',
+                  borderColor: 'border-red-500/30',
+                },
+              };
+              
+              const config = statusConfig[responseStatus as keyof typeof statusConfig] || statusConfig.pending;
+              const StatusIcon = config.icon;
+              
+              return (
+                <div className="space-y-4">
+                  <div className={cn(
+                    "flex items-center gap-3 p-4 rounded-xl border-2",
+                    config.bgColor,
+                    config.borderColor
+                  )}>
+                    <StatusIcon className={cn("w-6 h-6 flex-shrink-0", config.color)} />
+                    <div className="flex-1">
+                      <div className={cn("font-semibold", config.color)}>
+                        {config.label}
+                      </div>
+                      {responseAt && (
+                        <div className="text-xs text-white/60 mt-1">
+                          Responded on {new Date(responseAt).toLocaleDateString('en-US', { 
+                            month: 'short', 
+                            day: 'numeric', 
+                            year: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  
+                  {responseMessage && (
+                    <div className="bg-purple-500/10 border border-purple-500/30 rounded-xl p-4">
+                      <div className="text-sm font-medium text-purple-300 mb-2">Brand's Message:</div>
+                      <div className="text-white/90 whitespace-pre-wrap">{responseMessage}</div>
+                      <p className="text-xs text-white/50 mt-1 italic">
+                        This response was submitted via your secure NoticeBazaar link and is saved for records.
+                      </p>
+                    </div>
+                  )}
+                  
+                  {/* Remind Brand Button - Only show if status is pending */}
+                  {responseStatus === 'pending' && (
+                    <div className="mt-3 space-y-2">
+                      <motion.button
+                        onClick={handleRemindBrand}
+                        disabled={isSendingReminder || !deal.brand_phone}
+                        whileHover={!isSendingReminder && deal.brand_phone ? { scale: 1.02 } : {}}
+                        whileTap={!isSendingReminder && deal.brand_phone ? { scale: 0.98 } : {}}
+                        className={cn(
+                          "w-full py-3 px-4 rounded-xl font-semibold transition-all flex items-center justify-center gap-2",
+                          !isSendingReminder && deal.brand_phone
+                            ? "bg-yellow-500/20 text-yellow-300 border border-yellow-400/30 hover:bg-yellow-500/30"
+                            : "bg-yellow-500/10 text-yellow-300/50 border border-yellow-400/20 cursor-not-allowed"
+                        )}
+                      >
+                        {isSendingReminder ? (
+                          <>
+                            <Loader2 className="w-5 h-5 animate-spin" />
+                            <span>Sending...</span>
+                          </>
+                        ) : (
+                          <>
+                            <Bell className="w-5 h-5" />
+                            <span>🔔 Remind Brand on WhatsApp</span>
+                          </>
+                        )}
+                      </motion.button>
+                      
+                      {!deal.brand_phone && (
+                        <p className="text-xs text-yellow-400/70 text-center">
+                          Brand phone number is required for WhatsApp reminder
+                        </p>
+                      )}
+                    </div>
+                  )}
+                  
+                  {/* Send for Legal eSign Button - Show when brand accepted */}
+                  {responseStatus === 'accepted' && (
+                    <div className="mt-4 space-y-3">
+                      {/* eSign Status Chip */}
+                      {(() => {
+                        const esignStatus = (deal as any)?.esign_status;
+                        if (esignStatus) {
+                          const statusConfig = {
+                            pending: {
+                              label: '🕒 Awaiting Signatures',
+                              color: 'text-yellow-400',
+                              bgColor: 'bg-yellow-500/20',
+                              borderColor: 'border-yellow-500/30',
+                            },
+                            sent: {
+                              label: '🕒 Awaiting Signatures',
+                              color: 'text-yellow-400',
+                              bgColor: 'bg-yellow-500/20',
+                              borderColor: 'border-yellow-500/30',
+                            },
+                            signed: {
+                              label: '✅ Legally Signed',
+                              color: 'text-green-400',
+                              bgColor: 'bg-green-500/20',
+                              borderColor: 'border-green-500/30',
+                            },
+                            failed: {
+                              label: '❌ Signing Failed',
+                              color: 'text-red-400',
+                              bgColor: 'bg-red-500/20',
+                              borderColor: 'border-red-500/30',
+                            },
+                          };
+                          const config = statusConfig[esignStatus as keyof typeof statusConfig] || statusConfig.pending;
+                          return (
+                            <div className={cn(
+                              "flex items-center gap-2 px-3 py-2 rounded-lg border",
+                              config.bgColor,
+                              config.borderColor
+                            )}>
+                              <span className={cn("text-sm font-semibold", config.color)}>
+                                {config.label}
+                              </span>
+                              {(deal as any)?.signed_at && (
+                                <span className="text-xs text-white/60">
+                                  Signed on {new Date((deal as any).signed_at).toLocaleDateString()}
+                                </span>
+                              )}
+                            </div>
+                          );
+                        }
+                        return null;
+                      })()}
+                      
+                      {/* Send for eSign Button - Only show if not already sent */}
+                      {!(deal as any)?.esign_status || (deal as any)?.esign_status === 'pending' || (deal as any)?.esign_status === 'failed' ? (
+                        <motion.button
+                          onClick={async () => {
+                            if (!deal || !dealId || !profile) {
+                              toast.error('Deal information not available');
+                              return;
+                            }
+                            
+                            if (!deal.contract_file_url) {
+                              toast.error('Contract file is required for eSign');
+                              return;
+                            }
+                            
+                            setIsSendingESign(true);
+                            triggerHaptic(HapticPatterns.medium);
+                            
+                            try {
+                              const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 
+                                (typeof window !== 'undefined' && window.location.origin.includes('noticebazaar.com') 
+                                  ? 'https://api.noticebazaar.com' 
+                                  : 'http://localhost:3001');
+                              
+                              const response = await fetch(`${apiBaseUrl}/api/esign/send`, {
+                                method: 'POST',
+                                headers: {
+                                  'Content-Type': 'application/json',
+                                  'Authorization': `Bearer ${session?.access_token}`,
+                                },
+                                body: JSON.stringify({
+                                  dealId: dealId,
+                                  pdfUrl: deal.contract_file_url,
+                                  brandName: deal.brand_name,
+                                  creatorName: `${profile.first_name || ''} ${profile.last_name || ''}`.trim() || 'Creator',
+                                  brandPhone: deal.brand_phone || '',
+                                  creatorPhone: profile.phone || '',
+                                  brandEmail: deal.brand_email,
+                                  creatorEmail: profile.email,
+                                }),
+                              });
+                              
+                              const data = await response.json();
+                              
+                              if (data.success) {
+                                toast.success('✅ Signing link sent to Brand & Creator');
+                                await refreshAll();
+                              } else {
+                                throw new Error(data.error || 'Failed to send for eSign');
+                              }
+                            } catch (error: any) {
+                              console.error('[DealDetailPage] eSign error:', error);
+                              toast.error(error.message || 'Failed to send for eSign. Please try again.');
+                            } finally {
+                              setIsSendingESign(false);
+                            }
+                          }}
+                          disabled={isSendingESign}
+                          whileHover={!isSendingESign ? { scale: 1.02 } : {}}
+                          whileTap={!isSendingESign ? { scale: 0.98 } : {}}
+                          className={cn(
+                            "w-full py-3 px-4 rounded-xl font-semibold transition-all flex items-center justify-center gap-2",
+                            "bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700",
+                            "text-white shadow-lg",
+                            isSendingESign && "opacity-50 cursor-not-allowed"
+                          )}
+                        >
+                          {isSendingESign ? (
+                            <>
+                              <Loader2 className="w-5 h-5 animate-spin" />
+                              <span>Sending for eSign...</span>
+                            </>
+                          ) : (
+                            <>
+                              <FileSignature className="w-5 h-5" />
+                              <span>Send for Legal eSign</span>
+                            </>
+                          )}
+                        </motion.button>
+                      ) : (deal as any)?.esign_url ? (
+                        <motion.a
+                          href={(deal as any).esign_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          whileHover={{ scale: 1.02 }}
+                          whileTap={{ scale: 0.98 }}
+                          className="w-full py-3 px-4 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 bg-blue-600/80 hover:bg-blue-600 text-white"
+                        >
+                          <Eye className="w-5 h-5" />
+                          <span>View Signing Link</span>
+                        </motion.a>
+                      ) : null}
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
+          </div>
+        )}
+
         {/* Grid Layout */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Left Column */}
@@ -677,12 +1032,13 @@ Best regards`;
                 <Building2 className="w-5 h-5" />
                 Brand Contact
               </h2>
-              <div className="space-y-2 text-sm">
+              <div className="space-y-3 text-sm">
                 <div className="flex items-center gap-2 text-white/80">
                   <span className="font-medium">{deal.brand_name}</span>
                 </div>
                 {deal.brand_email && (
                   <div className="flex items-center gap-2 text-white/60 break-words">
+                    <Mail className="w-4 h-4 text-white/40 flex-shrink-0" />
                     <span>{deal.brand_email}</span>
                   </div>
                 )}
@@ -691,6 +1047,92 @@ Best regards`;
                     <span>Contact: {deal.contact_person}</span>
                   </div>
                 )}
+                
+                {/* Brand Phone Number */}
+                <div className="flex items-center gap-2">
+                  {!isEditingBrandPhone ? (
+                    <>
+                      {deal.brand_phone ? (
+                        <div className="flex items-center gap-2 text-white/60 flex-1">
+                          <Phone className="w-4 h-4 text-white/40 flex-shrink-0" />
+                          <span>{deal.brand_phone}</span>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-2 text-white/40 flex-1">
+                          <Phone className="w-4 h-4 text-white/30 flex-shrink-0" />
+                          <span className="text-xs">No phone number</span>
+                        </div>
+                      )}
+                      <motion.button
+                        onClick={() => {
+                          setBrandPhoneInput(deal.brand_phone || '');
+                          setIsEditingBrandPhone(true);
+                        }}
+                        whileTap={{ scale: 0.95 }}
+                        className="p-1.5 hover:bg-white/10 rounded-lg transition-colors"
+                        title="Edit phone number"
+                      >
+                        <Edit className="w-4 h-4 text-white/60" />
+                      </motion.button>
+                    </>
+                  ) : (
+                    <div className="flex items-center gap-2 flex-1">
+                      <Phone className="w-4 h-4 text-white/40 flex-shrink-0" />
+                      <input
+                        type="tel"
+                        value={brandPhoneInput}
+                        onChange={(e) => setBrandPhoneInput(e.target.value)}
+                        placeholder="+91 9876543210"
+                        className="flex-1 bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-white text-sm placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-purple-500/50"
+                        autoFocus
+                      />
+                      <motion.button
+                        onClick={async () => {
+                          if (!profile?.id) {
+                            toast.error('User not found');
+                            return;
+                          }
+                          
+                          try {
+                            await updateBrandDealMutation.mutateAsync({
+                              id: deal.id,
+                              creator_id: profile.id,
+                              brand_phone: brandPhoneInput.trim() || null,
+                            });
+                            
+                            toast.success('Brand phone number updated');
+                            setIsEditingBrandPhone(false);
+                            await refreshAll();
+                          } catch (error: any) {
+                            console.error('[DealDetailPage] Update phone error:', error);
+                            toast.error(error.message || 'Failed to update phone number');
+                          }
+                        }}
+                        disabled={updateBrandDealMutation.isPending}
+                        whileTap={{ scale: 0.95 }}
+                        className="p-1.5 hover:bg-green-500/20 rounded-lg transition-colors disabled:opacity-50"
+                        title="Save"
+                      >
+                        {updateBrandDealMutation.isPending ? (
+                          <Loader2 className="w-4 h-4 text-green-400 animate-spin" />
+                        ) : (
+                          <Check className="w-4 h-4 text-green-400" />
+                        )}
+                      </motion.button>
+                      <motion.button
+                        onClick={() => {
+                          setIsEditingBrandPhone(false);
+                          setBrandPhoneInput('');
+                        }}
+                        whileTap={{ scale: 0.95 }}
+                        className="p-1.5 hover:bg-red-500/20 rounded-lg transition-colors"
+                        title="Cancel"
+                      >
+                        <X className="w-4 h-4 text-red-400" />
+                      </motion.button>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
 
@@ -715,6 +1157,72 @@ Best regards`;
                       )}
                     </div>
                   </div>
+                </div>
+              </div>
+            )}
+
+            {/* Signed Contract Download */}
+            {(deal as any)?.esign_status === 'signed' && (deal as any)?.signed_pdf_url && (
+              <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-4 shadow-lg shadow-black/20">
+                <h2 className="font-semibold text-lg mb-4 flex items-center gap-2">
+                  <FileText className="w-5 h-5" />
+                  📄 Signed Contract
+                </h2>
+                <div className="space-y-3">
+                  <p className="text-sm text-white/80">
+                    A legally signed PDF is ready to download.
+                  </p>
+                  <motion.button
+                    onClick={() => {
+                      if ((deal as any)?.signed_pdf_url) {
+                        window.open((deal as any).signed_pdf_url, '_blank');
+                        trackEvent('signed_contract_downloaded', { dealId: deal.id });
+                      }
+                    }}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    className="w-full bg-green-500/20 hover:bg-green-500/30 border border-green-400/30 text-green-300 px-4 py-3 rounded-xl font-semibold transition-all flex items-center justify-center gap-2"
+                  >
+                    <Download className="w-5 h-5" />
+                    Download Signed Contract
+                  </motion.button>
+                  <p className="text-xs text-white/50 italic">
+                    Signed PDF includes audit trail and signatures.
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* Invoice Ready */}
+            {(deal as any)?.invoice_url && (
+              <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-4 shadow-lg shadow-black/20">
+                <h2 className="font-semibold text-lg mb-4 flex items-center gap-2">
+                  <FileText className="w-5 h-5" />
+                  🧾 Invoice Ready
+                </h2>
+                <div className="space-y-3">
+                  <p className="text-sm text-white/80">
+                    Download your invoice for this campaign
+                  </p>
+                  {(deal as any)?.invoice_number && (
+                    <p className="text-xs text-white/60">
+                      Invoice #: {(deal as any).invoice_number}
+                    </p>
+                  )}
+                  <motion.button
+                    onClick={() => {
+                      if ((deal as any)?.invoice_url) {
+                        window.open((deal as any).invoice_url, '_blank');
+                        trackEvent('invoice_downloaded', { dealId: deal.id });
+                      }
+                    }}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    className="w-full bg-purple-500/20 hover:bg-purple-500/30 border border-purple-400/30 text-purple-300 px-4 py-3 rounded-xl font-semibold transition-all flex items-center justify-center gap-2"
+                  >
+                    <Download className="w-5 h-5" />
+                    Download Invoice
+                  </motion.button>
                 </div>
               </div>
             )}

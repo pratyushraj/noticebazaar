@@ -382,7 +382,6 @@ export default function PremiumDrawer({
     main: [
       { id: 'deals', label: 'Brand Deals', icon: Briefcase, tab: 'deals' },
       { id: 'payments', label: 'Payments', icon: Wallet, tab: 'payments' },
-      { id: 'protection', label: 'Content Protection', icon: Shield, tab: 'protection' },
       { id: 'messages', label: 'Messages', icon: MessageCircle, path: '/messages', badge: counts.messages },
       { id: 'calendar', label: 'Calendar', icon: Calendar, path: '/calendar' },
     ],
@@ -420,7 +419,6 @@ export default function PremiumDrawer({
         home: '/creator-dashboard',
         deals: '/creator-contracts',
         payments: '/creator-payments',
-        protection: '/creator-content-protection',
       };
       return location.pathname === tabRoutes[item.tab] || location.pathname.startsWith(tabRoutes[item.tab] + '/');
     }
@@ -444,7 +442,6 @@ export default function PremiumDrawer({
         const tabRoutes: Record<string, string> = {
           deals: '/creator-contracts',
           payments: '/creator-payments',
-          protection: '/creator-content-protection',
         };
         navigate(tabRoutes[item.tab] || '/creator-dashboard');
       }
@@ -591,7 +588,6 @@ export const DEFAULT_MENU_DATA: DrawerMenuData = {
   main: [
     { id: 'deals', label: 'Brand Deals', icon: Briefcase, tab: 'deals' },
     { id: 'payments', label: 'Payments', icon: Wallet, tab: 'payments' },
-    { id: 'protection', label: 'Content Protection', icon: Shield, tab: 'protection' },
     { id: 'messages', label: 'Messages', icon: MessageCircle, path: '/messages' },
     { id: 'calendar', label: 'Calendar', icon: Calendar, path: '/calendar' },
   ],

@@ -216,7 +216,7 @@ const CriticalActions: React.FC<CriticalActionsProps> = ({
                       if (action.type === 'contract_review' && action.dealId) {
                     navigate(`/creator-contracts/${action.dealId}`);
                   } else if (action.type === 'content_stolen') {
-                    navigate('/creator-content-protection');
+                    navigate('/creator-contracts');
                   }
                 }}
               >
@@ -298,7 +298,7 @@ const CriticalActions: React.FC<CriticalActionsProps> = ({
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
-                              navigate('/creator-content-protection');
+                              navigate('/creator-contracts');
                             }}
                             className="px-3 py-1.5 bg-gray-800 hover:bg-gray-700 text-gray-300 text-xs font-medium rounded-lg transition-colors"
                           >
