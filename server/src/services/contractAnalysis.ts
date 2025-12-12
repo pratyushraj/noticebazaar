@@ -3,7 +3,6 @@
 // Uses configured LLM provider (Groq, Hugging Face, etc.)
 
 import { analyzeContractWithAI } from './aiContractAnalysis.js';
-import { classifyDocumentTypeWithAI } from './contractClassifier.js';
 import { calculateNegotiationPowerScore } from './negotiationPowerScore.js';
 import { extractTextFromDocument, detectDocumentType } from './documentTextExtractor.js';
 
@@ -140,35 +139,17 @@ export async function analyzeContract(documentBuffer: Buffer, documentUrl?: stri
     throw new Error(`Failed to extract text from document: ${error.message || 'Unknown error'}`);
   }
   
-  if (!fullText || fullText.trim().length < 100) {
+  if (!fullText || fullText.trim().length < 50) {
     throw new Error('Document contains insufficient text for analysis. Please ensure the document has readable text content.');
   }
 
-  // 🚨 VALIDATION: AI-based classification ONLY (using configured LLM provider)
-  // ✅ ACCEPT if AI says it's a brand deal
-  // ❌ REJECT if AI rejects it
-  const provider = process.env.LLM_PROVIDER || 'huggingface';
-  console.log(`[ContractAnalysis] Performing AI-based document classification (${provider} only)...`);
-  const classification = await classifyDocumentTypeWithAI(fullText);
+  // 🚀 PURE AI-DRIVEN ANALYSIS: Always proceed to AI analysis
+  // NO keyword-based, signal-based, or rule-based rejection
+  // AI receives FULL extracted text and decides everything
+  console.log('[ContractAnalysis] Sending FULL extracted text to AI for comprehensive analysis...');
+  console.log('[ContractAnalysis] Text length:', fullText.length, 'characters');
 
-  console.log('[ContractAnalysis] AI result:', classification.type, '(confidence:', classification.confidence, ')');
-
-  // ✅ ACCEPT only if AI classifies as brand deal
-  if (classification.type !== "brand_deal_contract") {
-    console.log('[ContractAnalysis] ❌ AI REJECTED');
-    console.log('[ContractAnalysis] Classification details:', JSON.stringify(classification, null, 2));
-    const err: any = new Error(
-      `⚠️ This document is NOT a brand deal contract. Only influencer–brand collaboration agreements are supported. ${classification.reasoning ? `Reason: ${classification.reasoning}` : ''}`
-    );
-    err.name = "ValidationError";
-    err.validationError = true;
-    err.details = { classification };
-    throw err;
-  }
-
-  console.log('[ContractAnalysis] ✅ AI classification passed (confidence:', classification.confidence, ')');
-
-  // Analyze contract text using Hugging Face AI ONLY - NO RULE-BASED FALLBACK
+  // Analyze contract text using AI - sends FULL text, no truncation
   const analysis = await analyzeContractText(fullText);
 
   // Calculate Negotiation Power Score
@@ -180,25 +161,52 @@ export async function analyzeContract(documentBuffer: Buffer, documentUrl?: stri
 }
 
 /**
- * Analyze contract text using AI (any configured provider) - NO RULE-BASED FALLBACK
+ * Analyze contract text using AI - PURE AI-DRIVEN
+ * Sends FULL text to AI, no truncation, no rule-based fallback
  */
-async function analyzeContractText(text: string): Promise<AnalysisResult> {
+async function analyzeContractText(text: string): Promise<AnalysisResult & {
+  documentType?: string;
+  detectedContractCategory?: string;
+  brandDetected?: boolean;
+  riskScore?: 'LOW' | 'MEDIUM' | 'HIGH';
+  parties?: {
+    brandName?: string;
+    influencerName?: string;
+  };
+  extractedTerms?: {
+    paymentTerms?: string;
+    deliverables?: string;
+    usageRights?: string;
+    exclusivity?: string;
+    termination?: string;
+  };
+  negotiationPoints?: string[];
+}> {
   const provider = process.env.LLM_PROVIDER || 'huggingface';
   const model = process.env.LLM_MODEL || 'mistralai/Mistral-7B-Instruct-v0.2';
   
   console.log(`[ContractAnalysis] Using ${provider} AI-powered analysis with model: ${model}`);
+  console.log(`[ContractAnalysis] Sending FULL text (${text.length} characters) to AI`);
 
-    try {
-      const aiAnalysis = await analyzeContractWithAI(text);
+  try {
+    const aiAnalysis = await analyzeContractWithAI(text);
     console.log(`[ContractAnalysis] ${provider} AI analysis completed successfully`);
-      
-      // Calculate Negotiation Power Score for AI analysis
-      const result = aiAnalysis as AnalysisResult;
-      result.negotiationPowerScore = calculateNegotiationPowerScore(result);
-      console.log('[ContractAnalysis] Negotiation Power Score calculated:', result.negotiationPowerScore);
-      
-      return result;
-    } catch (error: any) {
+    
+    // Log AI decisions
+    console.log('[ContractAnalysis] AI Decisions:', {
+      documentType: aiAnalysis.documentType,
+      contractCategory: aiAnalysis.detectedContractCategory,
+      brandDetected: aiAnalysis.brandDetected,
+      riskScore: aiAnalysis.riskScore,
+    });
+    
+    // Calculate Negotiation Power Score for AI analysis
+    const result = aiAnalysis as AnalysisResult & typeof aiAnalysis;
+    result.negotiationPowerScore = calculateNegotiationPowerScore(result);
+    console.log('[ContractAnalysis] Negotiation Power Score calculated:', result.negotiationPowerScore);
+    
+    return result;
+  } catch (error: any) {
     console.error(`[ContractAnalysis] ${provider} AI analysis failed:`, error);
     // NO FALLBACK - throw error instead of falling back to rules
     throw new Error(`${provider} AI analysis failed: ${error.message || 'Unknown error'}. No rule-based fallback available.`);

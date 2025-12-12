@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useCallback, lazy, Suspense, useMemo } from 'react';
+import { useState, useCallback, lazy, Suspense, useMemo, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Eye, Download, Flag, Loader2, Building2, Calendar, FileText, CheckCircle, Clock, Trash2, AlertCircle, XCircle, Bell, Mail, MessageSquare, FileSignature, Phone, Edit, X, Check } from 'lucide-react';
+import { ArrowLeft, Eye, Download, Flag, Loader2, Building2, Calendar, FileText, CheckCircle, Clock, Trash2, AlertCircle, XCircle, Bell, Mail, MessageSquare, Phone, Edit, X, Check, Share2, Copy, Link2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useDeal, DealProvider } from '@/contexts/DealContext';
 import { useIssues } from '@/lib/hooks/useIssues';
@@ -25,6 +25,7 @@ import { TrendingUp } from 'lucide-react';
 import { NativeLoadingSheet } from '@/components/mobile/NativeLoadingSheet';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
+import { generateContractSummaryPDF, extractBrandContactInfo, ContractSummaryData } from '@/lib/utils/contractSummaryPDF';
 
 // Lazy load heavy components
 const ContractPreviewModal = lazy(() => import('@/components/deals/ContractPreviewModal').then(m => ({ default: m.ContractPreviewModal })));
@@ -65,10 +66,17 @@ function DealDetailPageContent() {
   // Remind brand state
   const [isSendingReminder, setIsSendingReminder] = useState(false);
   
+  
   // Brand phone edit state
   const [isEditingBrandPhone, setIsEditingBrandPhone] = useState(false);
-  const [brandPhoneInput, setBrandPhoneInput] = useState('');
+  const [brandPhoneInput, setBrandPhoneInput] = useState('+91 ');
   const updateBrandDealMutation = useUpdateBrandDeal();
+  
+  // PDF generation state
+  const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
+  const [protectionReport, setProtectionReport] = useState<any>(null);
+  const [protectionIssues, setProtectionIssues] = useState<any[]>([]);
+  
   
   // Get current stage from deal status - helper function
   const getCurrentStage = (status: string | null | undefined, progressPercentage?: number | null): DealStage | undefined => {
@@ -101,15 +109,113 @@ function DealDetailPageContent() {
   // Parse deliverables - useMemo must be called unconditionally
   const deliverables = useMemo(() => {
     if (!deal?.deliverables) return [];
+    
     try {
-      const parsed = typeof deal.deliverables === 'string' 
-        ? JSON.parse(deal.deliverables) 
-        : deal.deliverables;
-      return Array.isArray(parsed) ? parsed : [];
-    } catch {
+      let parsed: any;
+      
+      if (typeof deal.deliverables === 'string') {
+        // Try to parse as JSON first
+        try {
+          parsed = JSON.parse(deal.deliverables);
+        } catch {
+          // If JSON parsing fails, treat as plain string
+          // Split by newlines and filter out empty strings
+          const lines = deal.deliverables
+            .split(/\r?\n/)
+            .map(line => line.trim())
+            .filter(line => line.length > 0);
+          
+          // If we have lines, return as array of strings
+          // Otherwise, return as single-item array
+          return lines.length > 0 
+            ? lines.map((line, idx) => ({ title: line, name: line, index: idx }))
+            : [{ title: deal.deliverables, name: deal.deliverables }];
+        }
+      } else {
+        parsed = deal.deliverables;
+      }
+      
+      // If parsed is already an array, return it (with proper structure)
+      if (Array.isArray(parsed)) {
+        return parsed.map((item, idx) => {
+          // If item is already an object with title/name, return as-is
+          if (typeof item === 'object' && item !== null) {
+            return item;
+          }
+          // If item is a string, wrap it in an object
+          return { title: String(item), name: String(item), index: idx };
+        });
+      }
+      
+      // If parsed is a single value (string/number), wrap it
+      return [{ title: String(parsed), name: String(parsed) }];
+    } catch (error) {
+      console.error('[DealDetailPage] Error parsing deliverables:', error);
+      // Fallback: if it's a string, return it as a single deliverable
+      if (typeof deal.deliverables === 'string' && deal.deliverables.trim().length > 0) {
+        return [{ title: deal.deliverables, name: deal.deliverables }];
+      }
       return [];
     }
   }, [deal?.deliverables]);
+
+  // Fetch protection report and issues
+  useEffect(() => {
+    const fetchProtectionData = async () => {
+      if (!deal?.id) return;
+
+      try {
+        // Try to get analysis_report_id from deal
+        const analysisReportId = (deal as any).analysis_report_id;
+        let reportId = analysisReportId;
+
+        if (!reportId) {
+          // Try to find report by deal_id
+          const { data: reports, error: reportError } = await supabase
+            .from('protection_reports')
+            .select('*')
+            .eq('deal_id', deal.id)
+            .order('created_at', { ascending: false })
+            .limit(1);
+
+          if (!reportError && reports && reports.length > 0) {
+            setProtectionReport(reports[0]);
+            reportId = reports[0].id;
+          }
+        } else {
+          // Fetch by analysis_report_id
+          const { data: report, error: reportError } = await supabase
+            .from('protection_reports')
+            .select('*')
+            .eq('id', analysisReportId)
+            .single();
+
+          if (!reportError && report) {
+            setProtectionReport(report);
+          }
+        }
+
+        // Fetch protection issues if we have a reportId
+        if (reportId) {
+          const { data: issuesData, error: issuesError } = await supabase
+            .from('protection_issues')
+            .select('*')
+            .eq('report_id', reportId)
+            .order('severity', { ascending: false })
+            .order('created_at', { ascending: true });
+
+          if (!issuesError && issuesData) {
+            setProtectionIssues(issuesData);
+          }
+        }
+      } catch (error) {
+        console.error('[DealDetailPage] Error fetching protection data:', error);
+      }
+    };
+
+    fetchProtectionData();
+  }, [deal?.id, (deal as any)?.analysis_report_id]);
+
 
   // Get latest issue - useMemo must be called unconditionally
   const latestIssue = useMemo(() => {
@@ -208,6 +314,90 @@ function DealDetailPageContent() {
     
     setShowContractPreview(true);
   }, [deal?.id, deal?.contract_file_url, deal?.brand_name]);
+
+  // Generate Contract Summary PDF
+  const handleDownloadContractSummary = useCallback(async () => {
+    if (!deal) {
+      toast.error('Deal information not available');
+      return;
+    }
+
+    setIsGeneratingPDF(true);
+    const progressToast = toast.loading('Generating Contract Summary PDF...');
+    triggerHaptic(HapticPatterns.medium);
+
+    try {
+      // Extract brand contact info from analysis
+      const analysisData = protectionReport?.analysis_json || null;
+      const brandContactInfo = extractBrandContactInfo(analysisData);
+
+      // Prepare deliverables
+      const deliverablesList = deliverables.map((d: any) => 
+        typeof d === 'string' ? d : (d.title || d.name || String(d))
+      );
+
+      // Separate risks and missing clauses from protection issues
+      const risks = protectionIssues
+        .filter(issue => issue.severity !== 'warning' && issue.category !== 'missing_clause')
+        .map(issue => ({
+          severity: issue.severity,
+          title: issue.title,
+          description: issue.description,
+          category: issue.category,
+        }));
+
+      const missingClauses = protectionIssues
+        .filter(issue => issue.category === 'missing_clause' || issue.severity === 'warning')
+        .map(issue => ({
+          title: issue.title,
+          description: issue.description,
+          category: issue.category,
+        }));
+
+      // Get AI recommendations from analysis
+      const aiRecommendations = analysisData?.recommendations || 
+                                analysisData?.negotiationPoints || 
+                                [];
+
+      // Get creator's fix requests from issues
+      const creatorFixRequests = (issues || []).map((issue: any) => ({
+        title: issue.title || issue.issue_type || 'Fix Request',
+        description: issue.description || issue.message || '',
+        issueType: issue.issue_type || 'other',
+      }));
+
+      // Prepare PDF data
+      const pdfData: ContractSummaryData = {
+        dealValue: deal.deal_amount,
+        brandName: deal.brand_name,
+        deliverables: deliverablesList,
+        brandEmail: deal.brand_email || brandContactInfo.brandEmail,
+        brandPhone: deal.brand_phone || null,
+        brandLegalContact: brandContactInfo.brandLegalContact,
+        brandAddress: brandContactInfo.brandAddress,
+        risks,
+        missingClauses,
+        aiRecommendations,
+        creatorFixRequests,
+        protectionScore: protectionReport?.protection_score,
+        overallRisk: protectionReport?.overall_risk,
+        analyzedAt: protectionReport?.analyzed_at,
+      };
+
+      // Generate PDF
+      await generateContractSummaryPDF(pdfData);
+
+      toast.success('Contract Summary PDF downloaded successfully', { id: progressToast });
+      triggerHaptic(HapticPatterns.success);
+      trackEvent('contract_summary_pdf_downloaded', { dealId: deal.id });
+    } catch (error: any) {
+      console.error('[DealDetailPage] PDF generation error:', error);
+      toast.error(error.message || 'Failed to generate PDF. Please try again.', { id: progressToast });
+      triggerHaptic(HapticPatterns.error);
+    } finally {
+      setIsGeneratingPDF(false);
+    }
+  }, [deal, deliverables, protectionReport, protectionIssues, issues]);
 
   const handleDownloadContract = useCallback(async () => {
     if (!deal?.contract_file_url) {
@@ -423,6 +613,10 @@ Best regards`;
     }
   }, [deal?.id, profile?.id, updateDealProgress, refreshAll]);
 
+  // Note: We trust that if the deal exists in the UI (loaded via useBrandDealById),
+  // it's safe to generate and share the brand reply link.
+  // The deal verification was causing false negatives due to timing/replication delays.
+
   // Loading state - EARLY RETURNS AFTER ALL HOOKS
   if (isLoadingDeal) {
     return (
@@ -475,6 +669,7 @@ Best regards`;
 
       {/* Content */}
       <div className="space-y-6 p-4 md:p-6 pb-24">
+        
         {/* Header Section */}
         <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-4 md:p-6 shadow-lg shadow-black/20">
           <div className="flex items-start gap-4 mb-4">
@@ -499,7 +694,7 @@ Best regards`;
           </div>
 
           {/* Action Buttons */}
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+          <div className="grid grid-cols-2 md:grid-cols-6 gap-3">
             <motion.button
               onClick={() => {
                 triggerHaptic(HapticPatterns.light);
@@ -531,6 +726,62 @@ Best regards`;
               )}
               <span className="text-xs font-medium">Download</span>
             </button>
+            <motion.button
+              onClick={async () => {
+                if (!deal || !deal.id) {
+                  toast.error('Deal information not available');
+                  return;
+                }
+                
+                triggerHaptic(HapticPatterns.light);
+                
+                // Prepare share content
+                const shareText = `${dealTitle}\n\nDeal Value: ₹${Math.round(dealAmount).toLocaleString('en-IN')}\nStatus: ${deal.status || 'Active'}\nBrand: ${deal.brand_name}`;
+                const shareUrl = `${window.location.origin}${window.location.pathname}`;
+                
+                // Try Web Share API first
+                if (navigator.share) {
+                  try {
+                    await navigator.share({
+                      title: `${dealTitle} - NoticeBazaar`,
+                      text: shareText,
+                      url: shareUrl,
+                    });
+                    toast.success('Shared successfully');
+                    trackEvent('deal_shared', {
+                      dealId: deal.id,
+                      method: 'native',
+                    });
+                  } catch (error: any) {
+                    // User cancelled or share failed, fallback to copy
+                    if (error.name !== 'AbortError') {
+                      // Only show error if not user cancellation
+                      const fullText = `${shareText}\n\nView deal: ${shareUrl}`;
+                      await navigator.clipboard.writeText(fullText);
+                      toast.success('Deal details copied to clipboard');
+                      trackEvent('deal_shared', {
+                        dealId: deal.id,
+                        method: 'copy',
+                      });
+                    }
+                  }
+                } else {
+                  // Fallback: Copy to clipboard
+                  const fullText = `${shareText}\n\nView deal: ${shareUrl}`;
+                  await navigator.clipboard.writeText(fullText);
+                  toast.success('Deal details copied to clipboard');
+                  trackEvent('deal_shared', {
+                    dealId: deal.id,
+                    method: 'copy',
+                  });
+                }
+              }}
+              whileTap={animations.microTap}
+              className="flex flex-col items-center justify-center gap-2 p-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl transition-all active:scale-[0.98]"
+            >
+              <Share2 className="w-5 h-5" />
+              <span className="text-xs font-medium">Share</span>
+            </motion.button>
             <button
               onClick={handleReportIssue}
               className="flex flex-col items-center justify-center gap-2 p-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl transition-all active:scale-[0.98]"
@@ -557,8 +808,8 @@ Best regards`;
           </div>
         </div>
 
-        {/* Brand Response Tracker */}
-        {(deal as any)?.brand_response_status && (
+        {/* Brand Response Tracker - Only show if deal exists and has brand_response_status */}
+        {deal && deal.id && (deal as any)?.brand_response_status && (
           <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-4 md:p-6 shadow-lg shadow-black/20">
             <h2 className="font-semibold text-lg mb-4 flex items-center gap-2">
               <Clock className="w-5 h-5" />
@@ -566,21 +817,61 @@ Best regards`;
             </h2>
             
             {(() => {
+              // Double-check that deal exists and has an ID
+              if (!deal || !deal.id) {
+                return (
+                  <div className="p-4 bg-red-500/20 border border-red-500/50 rounded-xl">
+                    <p className="text-red-300 text-sm">Deal information not available. Please refresh the page.</p>
+                  </div>
+                );
+              }
+              
               const responseStatus = (deal as any).brand_response_status || 'pending';
               const responseMessage = (deal as any).brand_response_message;
               const responseAt = (deal as any).brand_response_at;
               
-              // Handle remind brand
+              // Handle remind brand with universal system share
               const handleRemindBrand = async () => {
-                if (!deal || !dealId || !profile) {
+                if (!deal || !deal.id || !profile) {
                   toast.error('Deal information not available');
                   return;
                 }
                 
-                // Check if brand phone is available
-                if (!deal.brand_phone) {
-                  toast.error('Brand phone number is required for WhatsApp reminder');
-                  return;
+                // Verify deal exists in database before sharing
+                try {
+                  const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 
+                    (typeof window !== 'undefined' && window.location.origin.includes('noticebazaar.com') 
+                      ? 'https://api.noticebazaar.com' 
+                      : 'http://localhost:3001');
+                  
+                  const verifyResponse = await fetch(`${apiBaseUrl}/api/brand-response/${deal.id}`, {
+                    method: 'GET',
+                  });
+                  
+                  if (!verifyResponse.ok) {
+                    const verifyData = await verifyResponse.json();
+                    if (verifyData.error === 'Deal not found') {
+                      toast.error('Deal not found. Please save the deal first or check the deal ID.');
+                      return;
+                    }
+                  }
+                } catch (verifyError) {
+                  console.warn('[DealDetailPage] Could not verify deal existence:', verifyError);
+                  // Continue anyway - might be a network issue
+                }
+                
+                // Check 24-hour cooldown
+                const lastRemindedAt = (deal as any).last_reminded_at;
+                if (lastRemindedAt) {
+                  const lastReminded = new Date(lastRemindedAt);
+                  const now = new Date();
+                  const hoursSinceLastReminder = (now.getTime() - lastReminded.getTime()) / (1000 * 60 * 60);
+                  
+                  if (hoursSinceLastReminder < 24) {
+                    const hoursRemaining = Math.ceil(24 - hoursSinceLastReminder);
+                    toast.error(`Reminder sent • Try again in ${hoursRemaining}h`);
+                    return;
+                  }
                 }
                 
                 setIsSendingReminder(true);
@@ -591,21 +882,49 @@ Best regards`;
                   const baseUrl = typeof window !== 'undefined' 
                     ? window.location.origin 
                     : 'https://noticebazaar.com';
-                  const brandReplyLink = `${baseUrl}/#/brand-reply/${dealId}`;
+                  const brandReplyLink = `${baseUrl}/#/brand-reply/${deal.id}`;
                   
-                  // Reminder message template (exact format as requested)
-                  const reminderMessage = `Hi, just following up on the contract revisions sent earlier.  
+                  // Reminder message template
+                  const reminderMessage = `Hi, just following up on the contract revisions sent earlier.
 
-Please review and share your decision here:  
+Please review and confirm your decision here:
 
 ${brandReplyLink}`;
                   
-                  // Format phone number (remove spaces, +, etc.)
-                  const phoneNumber = deal.brand_phone.replace(/[\s\+\-\(\)]/g, '');
+                  // Try native share API first
+                  let sharePlatform: string | null = null;
+                  if (navigator.share) {
+                    try {
+                      await navigator.share({
+                        title: 'Contract Review Reminder',
+                        text: reminderMessage,
+                        url: brandReplyLink,
+                      });
+                      sharePlatform = 'native-share';
+                    } catch (shareError: any) {
+                      // User cancelled or share failed, fall back to clipboard
+                      if (shareError.name !== 'AbortError') {
+                        console.warn('[DealDetailPage] Share API failed, falling back to clipboard:', shareError);
+                      } else {
+                        // User cancelled, don't proceed
+                        setIsSendingReminder(false);
+                        return;
+                      }
+                    }
+                  }
                   
-                  // Open WhatsApp with phone number and message
-                  const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(reminderMessage)}`;
-                  window.open(whatsappUrl, '_blank');
+                  // Fallback to clipboard if share API not available or failed
+                  if (!sharePlatform) {
+                    try {
+                      await navigator.clipboard.writeText(`${reminderMessage}\n\n${brandReplyLink}`);
+                      toast.success('Share message copied');
+                    } catch (clipboardError) {
+                      console.error('[DealDetailPage] Clipboard copy failed:', clipboardError);
+                      toast.error('Failed to copy message. Please try again.');
+                      setIsSendingReminder(false);
+                      return;
+                    }
+                  }
                   
                   // Log reminder to API
                   try {
@@ -621,9 +940,13 @@ ${brandReplyLink}`;
                         'Authorization': `Bearer ${session?.access_token}`,
                       },
                       body: JSON.stringify({
-                        dealId: dealId,
-                        reminder_type: 'whatsapp',
+                        dealId: deal.id,
+                        reminder_type: 'system-share',
                         message: reminderMessage,
+                        metadata: {
+                          channel: 'system-share',
+                          platform: sharePlatform || 'clipboard',
+                        },
                       }),
                     });
                   } catch (logError) {
@@ -634,12 +957,36 @@ ${brandReplyLink}`;
                   // Refresh deal data
                   await refreshAll();
                   
-                  toast.success('✅ Reminder sent to brand on WhatsApp');
+                  if (sharePlatform) {
+                    toast.success('✅ Reminder shared');
+                  }
                 } catch (error: any) {
                   console.error('[DealDetailPage] Remind brand error:', error);
-                  toast.error('Failed to send reminder. Please try again.');
+                  toast.error('Failed to share reminder. Please try again.');
                 } finally {
                   setIsSendingReminder(false);
+                }
+              };
+              
+              // Handle copy link
+              const handleCopyLink = async () => {
+                if (!deal || !dealId) {
+                  toast.error('Deal information not available');
+                  return;
+                }
+                
+                try {
+                  const baseUrl = typeof window !== 'undefined' 
+                    ? window.location.origin 
+                    : 'https://noticebazaar.com';
+                  const brandReplyLink = `${baseUrl}/#/brand-reply/${deal.id}`;
+                  
+                  await navigator.clipboard.writeText(brandReplyLink);
+                  triggerHaptic(HapticPatterns.light);
+                  toast.success('Link copied to clipboard');
+                } catch (error) {
+                  console.error('[DealDetailPage] Copy link failed:', error);
+                  toast.error('Failed to copy link. Please try again.');
                 }
               };
               
@@ -714,186 +1061,158 @@ ${brandReplyLink}`;
                   )}
                   
                   {/* Remind Brand Button - Only show if status is pending */}
-                  {responseStatus === 'pending' && (
-                    <div className="mt-3 space-y-2">
-                      <motion.button
-                        onClick={handleRemindBrand}
-                        disabled={isSendingReminder || !deal.brand_phone}
-                        whileHover={!isSendingReminder && deal.brand_phone ? { scale: 1.02 } : {}}
-                        whileTap={!isSendingReminder && deal.brand_phone ? { scale: 0.98 } : {}}
-                        className={cn(
-                          "w-full py-3 px-4 rounded-xl font-semibold transition-all flex items-center justify-center gap-2",
-                          !isSendingReminder && deal.brand_phone
-                            ? "bg-yellow-500/20 text-yellow-300 border border-yellow-400/30 hover:bg-yellow-500/30"
-                            : "bg-yellow-500/10 text-yellow-300/50 border border-yellow-400/20 cursor-not-allowed"
-                        )}
-                      >
-                        {isSendingReminder ? (
-                          <>
-                            <Loader2 className="w-5 h-5 animate-spin" />
-                            <span>Sending...</span>
-                          </>
-                        ) : (
-                          <>
-                            <Bell className="w-5 h-5" />
-                            <span>🔔 Remind Brand on WhatsApp</span>
-                          </>
-                        )}
-                      </motion.button>
+                  {responseStatus === 'pending' && deal && deal.id && (() => {
+                    const lastRemindedAt = (deal as any).last_reminded_at;
+                    let canSendReminder = true;
+                    let hoursRemaining = 0;
+                    
+                    if (lastRemindedAt) {
+                      const lastReminded = new Date(lastRemindedAt);
+                      const now = new Date();
+                      const hoursSinceLastReminder = (now.getTime() - lastReminded.getTime()) / (1000 * 60 * 60);
                       
-                      {!deal.brand_phone && (
-                        <p className="text-xs text-yellow-400/70 text-center">
-                          Brand phone number is required for WhatsApp reminder
-                        </p>
-                      )}
-                    </div>
-                  )}
+                      if (hoursSinceLastReminder < 24) {
+                        canSendReminder = false;
+                        hoursRemaining = Math.ceil(24 - hoursSinceLastReminder);
+                      }
+                    }
+                    
+                    // Generate brand reply link using actual deal ID (not URL param)
+                    const baseUrl = typeof window !== 'undefined' 
+                      ? window.location.origin 
+                      : 'https://noticebazaar.com';
+                    const brandReplyLink = `${baseUrl}/#/brand-reply/${deal.id}`;
+                    
+                    // Test link handler - verify deal exists before sharing
+                    const handleTestLink = async () => {
+                      // If deal exists in the current context, trust it and open the link
+                      if (deal && deal.id) {
+                        // Open link in new tab
+                        window.open(brandReplyLink, '_blank');
+                        toast.success('✅ Opening brand reply link');
+                      } else {
+                        toast.error('Deal information not available. Please refresh the page.');
+                      }
+                    };
+                    
+                    return (
+                      <div className="mt-3 space-y-3">
+                        {/* Brand Reply Link Display */}
+                        <div className="bg-white/5 border border-white/10 rounded-xl p-3 space-y-2">
+                          <label className="text-xs font-medium text-white/70">Brand Reply Link</label>
+                          <div className="flex items-center gap-2">
+                            <input
+                              type="text"
+                              readOnly
+                              value={brandReplyLink}
+                              className="flex-1 px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-sm text-white/90 font-mono truncate focus:outline-none focus:ring-2 focus:ring-purple-500/50"
+                              onClick={(e) => (e.target as HTMLInputElement).select()}
+                            />
+                            <motion.button
+                              onClick={handleTestLink}
+                              whileHover={{ scale: 1.05 }}
+                              whileTap={{ scale: 0.95 }}
+                              className="p-2 rounded-lg bg-blue-500/20 hover:bg-blue-500/30 border border-blue-400/30 text-blue-300 transition-all"
+                              title="Test link"
+                            >
+                              <Link2 className="w-4 h-4" />
+                            </motion.button>
+                            <motion.button
+                              onClick={handleCopyLink}
+                              whileHover={{ scale: 1.05 }}
+                              whileTap={{ scale: 0.95 }}
+                              className="p-2 rounded-lg bg-purple-500/20 hover:bg-purple-500/30 border border-purple-400/30 text-purple-300 transition-all"
+                              title="Copy link"
+                            >
+                              <Copy className="w-4 h-4" />
+                            </motion.button>
+                          </div>
+                          <p className="text-xs text-white/50">Share this link with the brand to get their response</p>
+                        </div>
+                        
+                        <div className="grid grid-cols-2 gap-2">
+                          <motion.button
+                            onClick={handleRemindBrand}
+                            disabled={isSendingReminder || !canSendReminder}
+                            whileHover={!isSendingReminder && canSendReminder ? { scale: 1.02 } : {}}
+                            whileTap={!isSendingReminder && canSendReminder ? { scale: 0.98 } : {}}
+                            className={cn(
+                              "py-3 px-4 rounded-xl font-semibold transition-all flex items-center justify-center gap-2",
+                              !isSendingReminder && canSendReminder
+                                ? "bg-yellow-500/20 text-yellow-300 border border-yellow-400/30 hover:bg-yellow-500/30"
+                                : "bg-yellow-500/10 text-yellow-300/50 border border-yellow-400/20 cursor-not-allowed"
+                            )}
+                          >
+                            {isSendingReminder ? (
+                              <>
+                                <Loader2 className="w-5 h-5 animate-spin" />
+                                <span className="text-sm">Sending...</span>
+                              </>
+                            ) : !canSendReminder ? (
+                              <>
+                                <Check className="w-5 h-5" />
+                                <span className="text-xs">Sent • {hoursRemaining}h</span>
+                              </>
+                            ) : (
+                              <>
+                                <Share2 className="w-5 h-5" />
+                                <span className="text-sm">🔗 Share Reminder</span>
+                              </>
+                            )}
+                          </motion.button>
+                          
+                          <motion.button
+                            onClick={handleCopyLink}
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.98 }}
+                            className="py-3 px-4 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 bg-purple-500/20 text-purple-300 border border-purple-400/30 hover:bg-purple-500/30"
+                          >
+                            <Link2 className="w-5 h-5" />
+                            <span className="text-sm">Copy Link</span>
+                          </motion.button>
+                        </div>
+                      </div>
+                    );
+                  })()}
                   
-                  {/* Send for Legal eSign Button - Show when brand accepted */}
-                  {responseStatus === 'accepted' && (
+                  {/* OTP Verification Status - Show when brand accepted */}
+                  {responseStatus === 'accepted' || responseStatus === 'accepted_verified' && (
                     <div className="mt-4 space-y-3">
-                      {/* eSign Status Chip */}
+                      {/* OTP Status Chip */}
                       {(() => {
-                        const esignStatus = (deal as any)?.esign_status;
-                        if (esignStatus) {
-                          const statusConfig = {
-                            pending: {
-                              label: '🕒 Awaiting Signatures',
-                              color: 'text-yellow-400',
-                              bgColor: 'bg-yellow-500/20',
-                              borderColor: 'border-yellow-500/30',
-                            },
-                            sent: {
-                              label: '🕒 Awaiting Signatures',
-                              color: 'text-yellow-400',
-                              bgColor: 'bg-yellow-500/20',
-                              borderColor: 'border-yellow-500/30',
-                            },
-                            signed: {
-                              label: '✅ Legally Signed',
-                              color: 'text-green-400',
-                              bgColor: 'bg-green-500/20',
-                              borderColor: 'border-green-500/30',
-                            },
-                            failed: {
-                              label: '❌ Signing Failed',
-                              color: 'text-red-400',
-                              bgColor: 'bg-red-500/20',
-                              borderColor: 'border-red-500/30',
-                            },
-                          };
-                          const config = statusConfig[esignStatus as keyof typeof statusConfig] || statusConfig.pending;
+                        const otpVerified = (deal as any)?.otp_verified;
+                        const otpVerifiedAt = (deal as any)?.otp_verified_at;
+                        
+                        if (responseStatus === 'accepted_verified' && otpVerified) {
                           return (
                             <div className={cn(
                               "flex items-center gap-2 px-3 py-2 rounded-lg border",
-                              config.bgColor,
-                              config.borderColor
+                              "bg-green-500/20 border-green-500/30"
                             )}>
-                              <span className={cn("text-sm font-semibold", config.color)}>
-                                {config.label}
+                              <span className="text-sm font-semibold text-green-400">
+                                ✅ Brand Accepted (OTP Verified)
                               </span>
-                              {(deal as any)?.signed_at && (
+                              {otpVerifiedAt && (
                                 <span className="text-xs text-white/60">
-                                  Signed on {new Date((deal as any).signed_at).toLocaleDateString()}
+                                  Verified on {new Date(otpVerifiedAt).toLocaleDateString()}
                                 </span>
                               )}
+                            </div>
+                          );
+                        } else if (responseStatus === 'accepted' && !otpVerified) {
+                          return (
+                            <div className={cn(
+                              "flex items-center gap-2 px-3 py-2 rounded-lg border",
+                              "bg-yellow-500/20 border-yellow-500/30"
+                            )}>
+                              <span className="text-sm font-semibold text-yellow-400">
+                                ⏳ Awaiting OTP Verification
+                              </span>
                             </div>
                           );
                         }
                         return null;
                       })()}
-                      
-                      {/* Send for eSign Button - Only show if not already sent */}
-                      {!(deal as any)?.esign_status || (deal as any)?.esign_status === 'pending' || (deal as any)?.esign_status === 'failed' ? (
-                        <motion.button
-                          onClick={async () => {
-                            if (!deal || !dealId || !profile) {
-                              toast.error('Deal information not available');
-                              return;
-                            }
-                            
-                            if (!deal.contract_file_url) {
-                              toast.error('Contract file is required for eSign');
-                              return;
-                            }
-                            
-                            setIsSendingESign(true);
-                            triggerHaptic(HapticPatterns.medium);
-                            
-                            try {
-                              const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 
-                                (typeof window !== 'undefined' && window.location.origin.includes('noticebazaar.com') 
-                                  ? 'https://api.noticebazaar.com' 
-                                  : 'http://localhost:3001');
-                              
-                              const response = await fetch(`${apiBaseUrl}/api/esign/send`, {
-                                method: 'POST',
-                                headers: {
-                                  'Content-Type': 'application/json',
-                                  'Authorization': `Bearer ${session?.access_token}`,
-                                },
-                                body: JSON.stringify({
-                                  dealId: dealId,
-                                  pdfUrl: deal.contract_file_url,
-                                  brandName: deal.brand_name,
-                                  creatorName: `${profile.first_name || ''} ${profile.last_name || ''}`.trim() || 'Creator',
-                                  brandPhone: deal.brand_phone || '',
-                                  creatorPhone: profile.phone || '',
-                                  brandEmail: deal.brand_email,
-                                  creatorEmail: profile.email,
-                                }),
-                              });
-                              
-                              const data = await response.json();
-                              
-                              if (data.success) {
-                                toast.success('✅ Signing link sent to Brand & Creator');
-                                await refreshAll();
-                              } else {
-                                throw new Error(data.error || 'Failed to send for eSign');
-                              }
-                            } catch (error: any) {
-                              console.error('[DealDetailPage] eSign error:', error);
-                              toast.error(error.message || 'Failed to send for eSign. Please try again.');
-                            } finally {
-                              setIsSendingESign(false);
-                            }
-                          }}
-                          disabled={isSendingESign}
-                          whileHover={!isSendingESign ? { scale: 1.02 } : {}}
-                          whileTap={!isSendingESign ? { scale: 0.98 } : {}}
-                          className={cn(
-                            "w-full py-3 px-4 rounded-xl font-semibold transition-all flex items-center justify-center gap-2",
-                            "bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700",
-                            "text-white shadow-lg",
-                            isSendingESign && "opacity-50 cursor-not-allowed"
-                          )}
-                        >
-                          {isSendingESign ? (
-                            <>
-                              <Loader2 className="w-5 h-5 animate-spin" />
-                              <span>Sending for eSign...</span>
-                            </>
-                          ) : (
-                            <>
-                              <FileSignature className="w-5 h-5" />
-                              <span>Send for Legal eSign</span>
-                            </>
-                          )}
-                        </motion.button>
-                      ) : (deal as any)?.esign_url ? (
-                        <motion.a
-                          href={(deal as any).esign_url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          whileHover={{ scale: 1.02 }}
-                          whileTap={{ scale: 0.98 }}
-                          className="w-full py-3 px-4 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 bg-blue-600/80 hover:bg-blue-600 text-white"
-                        >
-                          <Eye className="w-5 h-5" />
-                          <span>View Signing Link</span>
-                        </motion.a>
-                      ) : null}
                     </div>
                   )}
                 </div>
@@ -1028,10 +1347,47 @@ ${brandReplyLink}`;
 
             {/* Brand Info */}
             <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-4 shadow-lg shadow-black/20">
-              <h2 className="font-semibold text-lg mb-4 flex items-center gap-2">
-                <Building2 className="w-5 h-5" />
-                Brand Contact
-              </h2>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="font-semibold text-lg flex items-center gap-2">
+                  <Building2 className="w-5 h-5" />
+                  Brand Contact
+                </h2>
+                {/* Auto-fill button if analysis data exists */}
+                {protectionReport?.analysis_json && !deal.brand_email && (
+                  <motion.button
+                    onClick={async () => {
+                      const contactInfo = extractBrandContactInfo(protectionReport.analysis_json);
+                      if (contactInfo.brandEmail || contactInfo.brandLegalContact || contactInfo.brandAddress) {
+                        try {
+                          const updateData: any = {};
+                          if (contactInfo.brandEmail && !deal.brand_email) {
+                            updateData.brand_email = contactInfo.brandEmail;
+                          }
+                          
+                          await updateBrandDealMutation.mutateAsync({
+                            id: deal.id,
+                            creator_id: profile?.id || '',
+                            ...updateData,
+                          });
+                          
+                          toast.success('Brand contact info auto-filled from contract');
+                          await refreshAll();
+                        } catch (error: any) {
+                          console.error('[DealDetailPage] Auto-fill error:', error);
+                          toast.error('Failed to auto-fill contact info');
+                        }
+                      } else {
+                        toast.info('No contact information found in contract analysis');
+                      }
+                    }}
+                    whileTap={{ scale: 0.95 }}
+                    className="px-3 py-1.5 text-xs bg-purple-500/20 hover:bg-purple-500/30 border border-purple-500/30 rounded-lg transition-colors text-purple-300"
+                    title="Auto-fill from contract analysis"
+                  >
+                    ✨ Auto-fill
+                  </motion.button>
+                )}
+              </div>
               <div className="space-y-3 text-sm">
                 <div className="flex items-center gap-2 text-white/80">
                   <span className="font-medium">{deal.brand_name}</span>
@@ -1042,6 +1398,28 @@ ${brandReplyLink}`;
                     <span>{deal.brand_email}</span>
                   </div>
                 )}
+                {(() => {
+                  // Show extracted contact info if available
+                  const analysisData = protectionReport?.analysis_json;
+                  const contactInfo = analysisData ? extractBrandContactInfo(analysisData) : {};
+                  
+                  return (
+                    <>
+                      {contactInfo.brandLegalContact && (
+                        <div className="flex items-center gap-2 text-white/60">
+                          <span className="text-white/40">Legal Contact:</span>
+                          <span>{contactInfo.brandLegalContact}</span>
+                        </div>
+                      )}
+                      {contactInfo.brandAddress && (
+                        <div className="flex items-start gap-2 text-white/60">
+                          <span className="text-white/40 flex-shrink-0">Address:</span>
+                          <span className="break-words">{contactInfo.brandAddress}</span>
+                        </div>
+                      )}
+                    </>
+                  );
+                })()}
                 {deal.contact_person && (
                   <div className="flex items-center gap-2 text-white/60">
                     <span>Contact: {deal.contact_person}</span>
@@ -1065,7 +1443,14 @@ ${brandReplyLink}`;
                       )}
                       <motion.button
                         onClick={() => {
-                          setBrandPhoneInput(deal.brand_phone || '');
+                          // Ensure phone starts with +91 when editing
+                          let phoneValue = deal.brand_phone || '';
+                          if (phoneValue && !phoneValue.startsWith('+91')) {
+                            phoneValue = phoneValue.startsWith('+') ? phoneValue : `+91 ${phoneValue}`;
+                          } else if (!phoneValue) {
+                            phoneValue = '+91 ';
+                          }
+                          setBrandPhoneInput(phoneValue);
                           setIsEditingBrandPhone(true);
                         }}
                         whileTap={{ scale: 0.95 }}
@@ -1081,7 +1466,20 @@ ${brandReplyLink}`;
                       <input
                         type="tel"
                         value={brandPhoneInput}
-                        onChange={(e) => setBrandPhoneInput(e.target.value)}
+                        onChange={(e) => {
+                          let value = e.target.value;
+                          // Ensure +91 prefix is always present
+                          if (!value.startsWith('+91')) {
+                            // If user tries to delete +91, restore it
+                            if (value.length < 3) {
+                              value = '+91 ';
+                            } else {
+                              // If user pastes or types a number without +91, add it
+                              value = '+91 ' + value.replace(/^\+91\s*/, '');
+                            }
+                          }
+                          setBrandPhoneInput(value);
+                        }}
                         placeholder="+91 9876543210"
                         className="flex-1 bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-white text-sm placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-purple-500/50"
                         autoFocus
@@ -1094,10 +1492,27 @@ ${brandReplyLink}`;
                           }
                           
                           try {
+                            // Clean phone number - validate it has more than just the prefix
+                            let phoneValue = brandPhoneInput.trim();
+                            if (phoneValue === '+91' || phoneValue === '+91 ' || phoneValue === '') {
+                              toast.error('Please enter a valid phone number');
+                              return;
+                            } else if (!phoneValue.startsWith('+91')) {
+                              // If somehow +91 is missing, add it
+                              phoneValue = '+91 ' + phoneValue.replace(/^\+91\s*/, '');
+                            }
+                            
+                            // Validate phone has digits after +91
+                            const digitsAfterPrefix = phoneValue.replace(/^\+91\s*/, '').replace(/\D/g, '');
+                            if (digitsAfterPrefix.length < 10) {
+                              toast.error('Please enter a valid 10-digit phone number');
+                              return;
+                            }
+                            
                             await updateBrandDealMutation.mutateAsync({
                               id: deal.id,
                               creator_id: profile.id,
-                              brand_phone: brandPhoneInput.trim() || null,
+                              brand_phone: phoneValue,
                             });
                             
                             toast.success('Brand phone number updated');
@@ -1157,41 +1572,32 @@ ${brandReplyLink}`;
                       )}
                     </div>
                   </div>
+                  
+                  {/* Download Contract Summary PDF Button */}
+                  {(protectionReport || protectionIssues.length > 0) && (
+                    <motion.button
+                      onClick={handleDownloadContractSummary}
+                      disabled={isGeneratingPDF}
+                      whileTap={{ scale: 0.98 }}
+                      className="w-full mt-4 px-4 py-2.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 rounded-xl transition-all duration-200 flex items-center justify-center gap-2 text-sm font-medium text-white shadow-lg shadow-purple-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {isGeneratingPDF ? (
+                        <>
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                          Generating PDF...
+                        </>
+                      ) : (
+                        <>
+                          <Download className="w-4 h-4" />
+                          Download Contract Summary PDF
+                        </>
+                      )}
+                    </motion.button>
+                  )}
                 </div>
               </div>
             )}
 
-            {/* Signed Contract Download */}
-            {(deal as any)?.esign_status === 'signed' && (deal as any)?.signed_pdf_url && (
-              <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-4 shadow-lg shadow-black/20">
-                <h2 className="font-semibold text-lg mb-4 flex items-center gap-2">
-                  <FileText className="w-5 h-5" />
-                  📄 Signed Contract
-                </h2>
-                <div className="space-y-3">
-                  <p className="text-sm text-white/80">
-                    A legally signed PDF is ready to download.
-                  </p>
-                  <motion.button
-                    onClick={() => {
-                      if ((deal as any)?.signed_pdf_url) {
-                        window.open((deal as any).signed_pdf_url, '_blank');
-                        trackEvent('signed_contract_downloaded', { dealId: deal.id });
-                      }
-                    }}
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    className="w-full bg-green-500/20 hover:bg-green-500/30 border border-green-400/30 text-green-300 px-4 py-3 rounded-xl font-semibold transition-all flex items-center justify-center gap-2"
-                  >
-                    <Download className="w-5 h-5" />
-                    Download Signed Contract
-                  </motion.button>
-                  <p className="text-xs text-white/50 italic">
-                    Signed PDF includes audit trail and signatures.
-                  </p>
-                </div>
-              </div>
-            )}
 
             {/* Invoice Ready */}
             {(deal as any)?.invoice_url && (

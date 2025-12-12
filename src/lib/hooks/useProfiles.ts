@@ -411,6 +411,7 @@ export const useUpdateProfile = () => {
         updateData.facebook_followers = facebook_followers;
       }
       if (phone !== undefined) {
+        // Only include phone if it's not null or empty (null is valid to clear the field)
         updateData.phone = phone;
       }
       if (location !== undefined) {

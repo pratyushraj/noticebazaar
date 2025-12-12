@@ -54,23 +54,81 @@ export async function callLLM(prompt: string): Promise<string> {
 }
 
 /**
- * Analyze contract using AI (Hugging Face - free, no API key needed)
+ * Analyze contract using AI - PURE AI-DRIVEN ANALYSIS
+ * Sends FULL extracted text to AI for comprehensive analysis
  */
-export async function analyzeContractWithAI(contractText: string): Promise<AIContractAnalysis> {
+export async function analyzeContractWithAI(contractText: string): Promise<AIContractAnalysis & {
+  documentType?: string;
+  detectedContractCategory?: string;
+  brandDetected?: boolean;
+  riskScore?: 'LOW' | 'MEDIUM' | 'HIGH';
+  parties?: {
+    brandName?: string;
+    influencerName?: string;
+  };
+  extractedTerms?: {
+    paymentTerms?: string;
+    deliverables?: string;
+    usageRights?: string;
+    exclusivity?: string;
+    termination?: string;
+  };
+  negotiationPoints?: string[];
+}> {
   const provider = process.env.LLM_PROVIDER || 'huggingface';
   const model = process.env.LLM_MODEL || 'mistralai/Mistral-7B-Instruct-v0.2';
   const apiKey = process.env.LLM_API_KEY; // Optional for Hugging Face
 
-  // Limit text to first 3000 characters to avoid token limits
-  const truncatedText = contractText.substring(0, 3000);
+  // Send FULL text - no truncation (AI must analyze complete document)
+  // Note: Some models have token limits, but we'll let the model handle it
+  const fullText = contractText;
 
-  const prompt = `You are an expert contract analyst specializing in influencer-brand collaboration agreements. Analyze the following contract text and provide a detailed analysis in JSON format.
+  const systemPrompt = `You are a legal contract analysis engine. You must analyze the FULL document text provided and make ALL decisions about document type, contract category, risk assessment, and extraction.
 
-CONTRACT TEXT:
-${truncatedText}
+YOUR TASKS:
+1. Identify document type (e.g., "Brand Deal Contract", "NDA", "MoU", "Barter Agreement", "Sponsorship Agreement", "Email Export", "Scanned Contract", etc.)
+2. Detect if this is a brand-influencer collaboration (true/false)
+3. Extract parties:
+   - Brand name (if applicable)
+   - Influencer/Creator name (if applicable)
+4. Extract payment terms (amount, schedule, method, TDS/GST if mentioned)
+5. Extract deliverables (content type, quantity, platforms, timelines)
+6. Extract usage/IP rights (who owns content, usage duration, geographic scope)
+7. Extract exclusivity terms (duration, scope, restrictions)
+8. Extract termination clauses (notice period, penalties, conditions)
+9. Assign Risk Score: LOW, MEDIUM, or HIGH based on:
+   - Unfair payment terms
+   - Excessive exclusivity (>30 days)
+   - Unclear IP ownership
+   - Unfair termination penalties
+   - Missing critical clauses
+   - Unbalanced terms favoring brand
+10. Generate 5-10 negotiation improvement points (specific, actionable suggestions)
 
-Analyze this contract and return ONLY a valid JSON object with this exact structure:
+IMPORTANT:
+- Analyze the ENTIRE document text provided
+- Be thorough and extract ALL relevant information
+- If information is missing, indicate "Not specified" or "Not found"
+- Risk score should reflect overall contract fairness and creator protection
+- Negotiation points should be specific and actionable
+
+Return ONLY a valid JSON object with this exact structure:
 {
+  "documentType": "<identified document type>",
+  "detectedContractCategory": "<category: brand_deal|nda|mou|barter|sponsorship|other>",
+  "brandDetected": <boolean>,
+  "riskScore": "<LOW|MEDIUM|HIGH>",
+  "parties": {
+    "brandName": "<brand name or 'Not specified'>",
+    "influencerName": "<influencer/creator name or 'Not specified'>"
+  },
+  "extractedTerms": {
+    "paymentTerms": "<detailed payment terms>",
+    "deliverables": "<detailed deliverables>",
+    "usageRights": "<IP and usage rights>",
+    "exclusivity": "<exclusivity terms>",
+    "termination": "<termination clauses>"
+  },
   "protectionScore": <number 0-100>,
   "overallRisk": "<low|medium|high>",
   "issues": [
@@ -97,16 +155,14 @@ Analyze this contract and return ONLY a valid JSON object with this exact struct
     "exclusivity": "<exclusivity period>",
     "brandName": "<brand or company name>"
   },
+  "negotiationPoints": ["<point 1>", "<point 2>", "<point 3>", "<point 4>", "<point 5>"],
   "recommendations": ["<recommendation 1>", "<recommendation 2>"]
-}
+}`;
 
-Focus on:
-- Payment terms and schedules
-- Exclusivity clauses (flag if > 30 days)
-- IP rights and ownership
-- Termination clauses (flag unfair penalties)
-- Deliverables and timelines
-- Any unfair terms or red flags
+  const prompt = `${systemPrompt}
+
+FULL CONTRACT TEXT:
+${fullText}
 
 Return ONLY the JSON object, no markdown, no explanations, no additional text.`;
 
@@ -130,6 +186,27 @@ Return ONLY the JSON object, no markdown, no explanations, no additional text.`;
 
     // Parse AI response
     const analysis = parseAIResponse(aiResponse);
+    
+    // Extract additional fields from AI response if present
+    try {
+      const jsonMatch = aiResponse.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        const parsed = JSON.parse(jsonMatch[0]);
+        return {
+          ...analysis,
+          documentType: parsed.documentType,
+          detectedContractCategory: parsed.detectedContractCategory,
+          brandDetected: parsed.brandDetected,
+          riskScore: parsed.riskScore,
+          parties: parsed.parties,
+          extractedTerms: parsed.extractedTerms,
+          negotiationPoints: parsed.negotiationPoints || analysis.recommendations,
+        };
+      }
+    } catch (e) {
+      console.warn('[AIContractAnalysis] Could not extract additional fields from AI response');
+    }
+    
     return analysis;
   } catch (error: any) {
     console.error('[AIContractAnalysis] AI analysis failed:', error);

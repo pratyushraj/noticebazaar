@@ -333,6 +333,7 @@ interface AddBrandDealVariables {
   deal_amount: number;
   deliverables: string;
   contract_file: File | null; // Allow null for no file
+  contract_file_url?: string | null; // NEW: Optional - use existing URL instead of uploading
   due_date: string;
   payment_expected_date: string;
   contact_person: string | null;
@@ -355,6 +356,7 @@ export const useAddBrandDeal = () => {
       deal_amount, 
       deliverables, 
       contract_file, 
+      contract_file_url: providedContractUrl, // NEW: Use provided URL if available
       due_date, 
       payment_expected_date, 
       contact_person, 
@@ -371,8 +373,12 @@ export const useAddBrandDeal = () => {
       const sanitizeName = (name: string) => name.trim().replace(/\s/g, '_').replace(/[^a-zA-Z0-9_.-]/g, '');
       const sanitizedBrandName = sanitizeName(brand_name);
 
-      // Upload contract file
-      if (contract_file) {
+      // Use provided URL if available (file already uploaded), otherwise upload the file
+      if (providedContractUrl) {
+        console.log('[useAddBrandDeal] Using provided contract_file_url:', providedContractUrl);
+        contract_file_url = providedContractUrl;
+      } else if (contract_file) {
+        // Upload contract file only if URL not provided
         const fileExtension = contract_file.name.split('.').pop();
         const filePath = `${creator_id}/brand_deals/${sanitizedBrandName}-contract-${Date.now()}.${fileExtension}`;
 
@@ -631,9 +637,18 @@ export const useUpdateBrandDeal = () => {
           queryKey: ['brand_deals'],
           exact: false 
         });
+        // Also invalidate the specific deal query (singular 'brand_deal')
+        queryClient.invalidateQueries({ 
+          queryKey: ['brand_deal', variables.id],
+          exact: false 
+        });
         // Also refetch immediately to ensure UI updates
         queryClient.refetchQueries({ 
           queryKey: ['brand_deals', variables.creator_id],
+          exact: false 
+        });
+        queryClient.refetchQueries({ 
+          queryKey: ['brand_deal', variables.id],
           exact: false 
         });
       },

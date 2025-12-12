@@ -50,7 +50,7 @@ const ProfileSettings = () => {
     name: "",
     displayName: "",
     email: "",
-    phone: "",
+    phone: "+91 ",
     location: "",
     bio: ""
   });
@@ -58,11 +58,20 @@ const ProfileSettings = () => {
   // Load user data from session
   useEffect(() => {
     if (profile && user) {
+      // Ensure phone starts with +91
+      let phoneValue = profile.phone || '';
+      if (phoneValue && !phoneValue.startsWith('+91')) {
+        // If phone exists but doesn't start with +91, prepend it
+        phoneValue = phoneValue.startsWith('+') ? phoneValue : `+91 ${phoneValue}`;
+      } else if (!phoneValue) {
+        phoneValue = '+91 ';
+      }
+      
       setFormData({
         name: `${profile.first_name || ''} ${profile.last_name || ''}`.trim() || 'Creator',
         displayName: profile.instagram_handle?.replace('@', '') || user.email?.split('@')[0] || 'creator',
         email: user.email || '',
-        phone: profile.phone || '',
+        phone: phoneValue,
         location: profile.location || '',
         bio: profile.bio || ''
       });
@@ -322,16 +331,46 @@ const ProfileSettings = () => {
       const firstName = nameParts[0];
       const lastName = nameParts.slice(1).join(' ') || '';
 
-      await updateProfileMutation.mutateAsync({
+      // Build update payload with only essential fields
+      // Skip instagram_handle and other optional columns that may not exist
+      // Clean phone number - remove +91 if it's just the default
+      let phoneValue: string | null = formData.phone.trim();
+      if (phoneValue === '+91' || phoneValue === '+91 ' || phoneValue === '') {
+        phoneValue = null; // Save as null if empty or just the prefix
+      } else if (!phoneValue.startsWith('+91')) {
+        // If user typed a number without +91, add it
+        phoneValue = '+91 ' + phoneValue.replace(/^\+91\s*/, '');
+      }
+      
+      const updatePayload: any = {
         id: profile.id,
         first_name: firstName,
         last_name: lastName,
-        avatar_url: profile.avatar_url,
-        instagram_handle: formData.displayName ? `@${formData.displayName.replace('@', '')}` : profile.instagram_handle,
-        phone: formData.phone || null,
-        location: formData.location || null,
-        bio: formData.bio || null,
-      });
+      };
+      
+      // Only include phone if it has a value (null is valid to clear)
+      if (phoneValue !== null) {
+        updatePayload.phone = phoneValue;
+      } else {
+        // Explicitly set to null to clear the field
+        updatePayload.phone = null;
+      }
+      
+      // Only include optional fields if they're provided and likely exist
+      if (profile.avatar_url) {
+        updatePayload.avatar_url = profile.avatar_url;
+      }
+      if (formData.location) {
+        updatePayload.location = formData.location;
+      }
+      if (formData.bio) {
+        updatePayload.bio = formData.bio;
+      }
+      
+      // Note: instagram_handle is skipped to avoid schema errors
+      // If needed, add a migration to create the column first
+      
+      await updateProfileMutation.mutateAsync(updatePayload);
 
       await refetchProfile();
       toast.success('Profile updated successfully!');
@@ -581,7 +620,20 @@ const ProfileSettings = () => {
                     <input
                       type="tel"
                       value={formData.phone}
-                      onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
+                      onChange={(e) => {
+                        let value = e.target.value;
+                        // Ensure +91 prefix is always present
+                        if (!value.startsWith('+91')) {
+                          // If user tries to delete +91, restore it
+                          if (value.length < 3) {
+                            value = '+91 ';
+                          } else {
+                            // If user pastes or types a number without +91, add it
+                            value = '+91 ' + value.replace(/^\+91\s*/, '');
+                          }
+                        }
+                        setFormData(prev => ({ ...prev, phone: value }));
+                      }}
                       disabled={!editMode}
                       placeholder="+91 98765 43210"
                       className={`flex-1 bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-white placeholder-purple-400 outline-none transition-colors ${editMode ? 'focus:border-purple-500 focus:bg-white/10' : 'cursor-not-allowed'}`}

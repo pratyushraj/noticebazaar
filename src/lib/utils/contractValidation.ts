@@ -393,7 +393,9 @@ export async function extractTextFromPDF(file: File): Promise<string> {
 }
 
 /**
- * Validates a contract file (PDF, DOCX, DOC) to check if it's a brand deal contract
+ * Validates a contract file (PDF, DOCX, DOC) - PURE AI-DRIVEN
+ * NO keyword-based or rule-based rejection
+ * Only validates file type and basic file integrity
  */
 export async function validateContractFile(file: File): Promise<{ isValid: boolean; error?: string }> {
   // Support PDF, DOCX, and DOC files
@@ -406,95 +408,28 @@ export async function validateContractFile(file: File): Promise<{ isValid: boole
   if (!supportedTypes.includes(file.type)) {
     return { 
       isValid: false, 
-      error: '⚠️ Only PDF, DOCX, and DOC files are supported for contract validation.\n\nPlease upload a PDF, DOCX, or DOC brand collaboration contract.' 
+      error: '⚠️ Only PDF, DOCX, and DOC files are supported.\n\nPlease upload a PDF, DOCX, or DOC document.' 
     };
   }
   
-  // For DOC files, skip client-side validation (backend will handle it)
-  if (file.type === 'application/msword') {
-    console.log('[ContractValidation] DOC file detected - skipping client-side validation, backend will validate');
-    return { isValid: true }; // Allow through, backend will validate
-  }
-  
-  try {
-    console.log('[ContractValidation] Starting validation for file:', file.name, file.type, file.size);
-    
-    // Extract text from PDF
-    let text: string;
-    try {
-      text = await extractTextFromPDF(file);
-      console.log('[ContractValidation] Extracted text length:', text?.length || 0);
-    } catch (extractionError: any) {
-      console.error('[ContractValidation] PDF extraction failed:', extractionError);
-      // If extraction fails, allow through to backend for validation
-      // Backend has better PDF processing capabilities and can handle image-based PDFs
-      // This prevents blocking valid brand deal contracts that might have extraction issues
-      console.warn('[ContractValidation] Extraction failed, allowing through for backend validation');
-      return {
-        isValid: true, // Allow through, backend will validate
-      };
-    }
-    
-    // Check if we got any text
-    if (!text || text.trim().length < 20) {
-      console.warn('[ContractValidation] Insufficient text extracted:', text?.length || 0);
-      // If we have some text (even minimal), STRICTLY check for rejection patterns
-      if (text && text.trim().length > 0) {
-        // AGGRESSIVE: Check for legal notice patterns even with minimal text
-        const quickCheck = isValidBrandDealContract(text);
-        if (!quickCheck.isValid) {
-          console.warn('[ContractValidation] Rejected based on minimal text:', quickCheck.reason);
-          return {
-            isValid: false,
-            error: '⚠️ This document does not appear to be a brand deal contract.\n\nThe Contract Scanner only supports influencer–brand collaboration agreements.\n\nPlease upload a brand deal contract.'
-          };
-        }
-        // Even if no rejection patterns, require at least ONE brand deal indicator with minimal text
-        const hasAnyBrandDealIndicator = /brand|creator|influencer|collaboration|sponsorship|deliverable|payment|campaign|content|social.*media|posts|videos|reels|stories/i.test(text);
-        if (!hasAnyBrandDealIndicator) {
-          console.warn('[ContractValidation] Minimal text with no brand deal indicators - rejecting to be safe');
-          return {
-            isValid: false,
-            error: '⚠️ This document does not appear to be a brand deal contract.\n\nThe Contract Scanner only supports influencer–brand collaboration agreements.\n\nPlease upload a brand deal contract.'
-          };
-        }
-        // If minimal text has brand deal indicators and no rejection patterns, allow through
-        console.warn('[ContractValidation] Minimal text with brand deal indicators - allowing through for backend validation');
-        return {
-          isValid: true, // Allow through, backend will do full validation
-        };
-      } else {
-        // If we truly can't extract any text, allow through to backend
-        // Backend has better PDF processing and can handle image-based PDFs
-        console.warn('[ContractValidation] No text extracted - allowing through for backend validation');
-        return {
-          isValid: true, // Allow through, backend will validate
-        };
-      }
-    }
-    
-    // Validate
-    const validation = isValidBrandDealContract(text);
-    
-    if (!validation.isValid) {
-      console.warn('[ContractValidation] Validation failed:', validation.reason);
-      console.log('[ContractValidation] Sample text:', text.substring(0, 500));
-      return {
-        isValid: false,
-        error: '⚠️ This document does not appear to be a brand deal contract.\n\nThe Contract Scanner only supports influencer–brand collaboration agreements.\n\nPlease upload a brand deal contract.'
-      };
-    }
-    
-    console.log('[ContractValidation] Validation passed');
-    return { isValid: true };
-  } catch (error: any) {
-    // If validation throws an unexpected error, reject to be safe
-    // Don't allow potentially invalid documents through
-    console.error('[ContractValidation] Unexpected validation error:', error);
+  // Basic file integrity check - file size should be reasonable
+  if (file.size === 0) {
     return {
       isValid: false,
-      error: '⚠️ Failed to validate this PDF file.\n\nPlease ensure the file is a valid PDF with readable text.\n\nIf this is a brand deal contract, please try again or contact support.'
+      error: '⚠️ File is empty. Please upload a valid document.'
     };
   }
+  
+  if (file.size > 50 * 1024 * 1024) { // 50MB limit
+    return {
+      isValid: false,
+      error: '⚠️ File is too large (max 50MB). Please upload a smaller file.'
+    };
+  }
+  
+  // ✅ ALLOW ALL VALID FILE TYPES - AI will analyze everything
+  // NO keyword-based, signal-based, or rule-based rejection
+  console.log('[ContractValidation] File type validated, allowing through for AI analysis:', file.name, file.type, file.size);
+  return { isValid: true };
 }
 

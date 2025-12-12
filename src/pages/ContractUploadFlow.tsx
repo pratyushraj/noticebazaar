@@ -1,14 +1,16 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ArrowLeft, Upload, FileText, CheckCircle, AlertTriangle, XCircle, Loader, Sparkles, Shield, Eye, Download, IndianRupee, Calendar, Loader2, Copy, Wrench, Send, FileCheck, X, Wand2, Lock, Info, MessageSquare, Mail, ChevronDown, ChevronUp, TrendingUp, DollarSign, FileCode, Ban, AlertCircle, ArrowDown, Clock, Star, Heart, Zap, CreditCard, Building2, Gift, Package, Edit } from 'lucide-react';
+import { ArrowLeft, Upload, FileText, CheckCircle, AlertTriangle, XCircle, Loader, Sparkles, Shield, Eye, Download, IndianRupee, Calendar, Loader2, Copy, Wrench, Send, FileCheck, X, Wand2, Lock, Info, MessageSquare, Mail, ChevronDown, ChevronUp, TrendingUp, DollarSign, FileCode, Ban, AlertCircle, ArrowDown, Clock, Star, Heart, Zap, CreditCard, Building2, Gift, Package, Edit, Share2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { SkeletonLoader } from '@/components/ui/SkeletonLoader';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '@/components/ui/tooltip';
 import { AICounterProposal } from '@/components/contract/AICounterProposal';
+import { UniversalShareModal } from '@/components/deals/UniversalShareModal';
 import { useNavigate } from 'react-router-dom';
 import { ContextualTipsProvider } from '@/components/contextual-tips/ContextualTipsProvider';
 import { useSession } from '@/contexts/SessionContext';
 import { useAddBrandDeal } from '@/lib/hooks/useBrandDeals';
+import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { validateContractFile } from '@/lib/utils/contractValidation';
 import { supabase } from '@/integrations/supabase/client';
@@ -20,6 +22,7 @@ type RiskLevel = 'low' | 'medium' | 'high';
 const ContractUploadFlow = () => {
   const navigate = useNavigate();
   const { profile, session } = useSession();
+  const queryClient = useQueryClient();
   const addDealMutation = useAddBrandDeal();
   const [step, setStep] = useState('upload'); // upload, uploading, scanning, analyzing, results, upload-error, review-error, validation-error
   const [dealType, setDealType] = useState<'contract' | 'barter'>('contract'); // 'contract' or 'barter'
@@ -46,6 +49,10 @@ const ContractUploadFlow = () => {
   const [reviewError, setReviewError] = useState<string | null>(null);
   const [validationError, setValidationError] = useState<string | null>(null);
   const [retryCount, setRetryCount] = useState(0);
+  const [isAutoRetrying, setIsAutoRetrying] = useState(false);
+  const [retryAttempt, setRetryAttempt] = useState(0);
+  const [retryDelay, setRetryDelay] = useState(0);
+  const MAX_AUTO_RETRIES = 5;
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [contractUrl, setContractUrl] = useState<string | null>(null);
   const [pdfReportUrl, setPdfReportUrl] = useState<string | null>(null);
@@ -149,28 +156,102 @@ ${creatorName}`;
   };
 
   // Helper to open share feedback modal with auto-save
-  const openShareFeedbackModal = async () => {
-    // Auto-save when Fix & Send modal opens for the first time
-    if (!hasOpenedFixModal) {
-      setHasOpenedFixModal(true);
-      await autoSaveDraftDeal();
+  const openShareFeedbackModal = async (): Promise<boolean> => {
+    // Ensure deal is saved before opening modal
+    let currentDealId = savedDealId;
+    let justSaved = false;
+    
+    if (!currentDealId) {
+      // Auto-save when Fix & Send modal opens for the first time
+      if (!hasOpenedFixModal) {
+        setHasOpenedFixModal(true);
+      }
+      
+      // Try to save the deal
+      currentDealId = await autoSaveDraftDeal();
+      
+      if (!currentDealId) {
+        toast.error('Failed to save deal. Please try saving manually first.');
+        return false;
+      }
+      
+      // Mark that we just saved it
+      justSaved = true;
+      
+      // Update state
+      setSavedDealId(currentDealId);
+      
+      // Wait a moment for the database to be ready (deal might not be immediately queryable)
+      await new Promise(resolve => setTimeout(resolve, 500));
     }
+    
+    // Verify deal exists in database before opening modal (with retry)
+    const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 
+      (typeof window !== 'undefined' && window.location.origin.includes('noticebazaar.com') 
+        ? 'https://api.noticebazaar.com' 
+        : 'http://localhost:3001');
+    
+    let verified = false;
+    let lastError: any = null;
+    
+    // Retry up to 3 times with exponential backoff
+    for (let attempt = 0; attempt < 3; attempt++) {
+      try {
+        if (attempt > 0) {
+          // Wait before retry (exponential backoff: 500ms, 1000ms)
+          await new Promise(resolve => setTimeout(resolve, 500 * attempt));
+        }
+        
+        const verifyResponse = await fetch(`${apiBaseUrl}/api/brand-response/${currentDealId}`, {
+          method: 'GET',
+        });
+        
+        const verifyData = await verifyResponse.json();
+        
+        if (verifyResponse.ok && verifyData.success && verifyData.deal) {
+          verified = true;
+          break;
+        }
+        
+        lastError = verifyData.error || 'Deal not found';
+      } catch (verifyError) {
+        lastError = verifyError;
+        console.warn(`[ContractUploadFlow] Deal verification attempt ${attempt + 1} failed:`, verifyError);
+      }
+    }
+    
+    if (!verified) {
+      console.error('[ContractUploadFlow] Deal verification failed after retries:', lastError);
+      // If we just saved it, trust that it exists and proceed anyway
+      // The deal might not be immediately queryable due to database replication delay
+      if (justSaved) {
+        console.log('[ContractUploadFlow] Deal was just saved, proceeding without verification');
+        // Proceed - we trust our own save
+      } else {
+        toast.error('Deal not found. Please try saving again.');
+        return false;
+      }
+    }
+    
+    // All checks passed - open modal
     setShowShareFeedbackModal(true);
+    return true;
   };
 
   // Auto-save to Draft Deals function
+  // Returns the deal ID if successful, null otherwise
   const autoSaveDraftDeal = async (options?: {
     updateExisting?: boolean;
     updateStatus?: string;
-  }) => {
+  }): Promise<string | null> => {
     // Only auto-save if user is logged in
     if (!session?.access_token || !profile?.id) {
-      return;
+      return null;
     }
 
     // Only auto-save if we have analysis results
     if (!analysisResults) {
-      return;
+      return null;
     }
 
     try {
@@ -291,16 +372,27 @@ ${creatorName}`;
 
           if (updateError) {
             console.error('[ContractUploadFlow] Auto-save update error:', updateError);
+            return null;
           }
+          
+          // Invalidate cache to refresh deals list
+          queryClient.invalidateQueries({ 
+            queryKey: ['brand_deals'],
+            exact: false 
+          });
+          queryClient.refetchQueries({ 
+            queryKey: ['brand_deals', creatorId],
+            exact: false 
+          });
         }
-        return;
+        return savedDealId;
       }
 
       // If draft already exists, don't create duplicate
       if (existingDealId) {
         setSavedDealId(existingDealId);
         setIsAutoSaved(true);
-        return;
+        return existingDealId;
       }
 
       // Create new draft deal
@@ -390,26 +482,40 @@ ${creatorName}`;
 
           if (fallbackError) {
             console.error('[ContractUploadFlow] Auto-save error (fallback):', fallbackError);
-            return;
+            return null;
           }
 
           newDeal = fallbackDeal;
         } else {
           console.error('[ContractUploadFlow] Auto-save error:', error);
-          return;
+          return null;
         }
       } else {
         newDeal = data;
       }
 
-      if (newDeal) {
+      if (newDeal && newDeal.id) {
         setSavedDealId(newDeal.id);
         setIsAutoSaved(true);
         console.log('[ContractUploadFlow] Draft deal auto-saved:', newDeal.id);
+        
+        // Invalidate cache to refresh deals list
+        queryClient.invalidateQueries({ 
+          queryKey: ['brand_deals'],
+          exact: false 
+        });
+        queryClient.refetchQueries({ 
+          queryKey: ['brand_deals', creatorId],
+          exact: false 
+        });
+        
+        return newDeal.id;
       }
+      
+      return null;
     } catch (error) {
       console.error('[ContractUploadFlow] Auto-save exception:', error);
-      // Silent fail - don't show toast
+      return null;
     }
   };
 
@@ -917,11 +1023,41 @@ ${creatorName}`;
     setExpandedFixes(newExpanded);
   };
 
+  // WhatsApp Safety Firewall: Sanitize AI-generated text before sending
+  const sanitizeWhatsAppMessage = (text: string): string => {
+    // Max 1500 characters (WhatsApp limit is ~4096, but we use 1500 for safety)
+    let sanitized = text.substring(0, 1500);
+    
+    // Remove URLs except platform links (noticebazaar.com, app.noticebazaar.com)
+    sanitized = sanitized.replace(/https?:\/\/(?!.*noticebazaar\.com)[^\s]+/gi, '[Link removed]');
+    
+    // Remove monetary hallucinations (suspicious amounts that might be AI errors)
+    // Keep legitimate amounts like ₹75,000, $500, etc. but remove extreme values
+    sanitized = sanitized.replace(/₹[\d,]+(?:,\d{3})*(?:\.\d{2})?/g, (match) => {
+      const amount = parseFloat(match.replace(/[₹,]/g, ''));
+      // If amount is suspiciously high (>10 crore) or negative, remove it
+      if (amount > 100000000 || amount < 0) {
+        return '[Amount]';
+      }
+      return match;
+    });
+    
+    // Remove email addresses (except noticebazaar domains)
+    sanitized = sanitized.replace(/\b[A-Za-z0-9._%+-]+@(?!.*noticebazaar\.com)[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b/g, '[Email]');
+    
+    // Remove phone numbers (except in specific contexts)
+    sanitized = sanitized.replace(/\b(?:\+91|91)?[6-9]\d{9}\b/g, '[Phone]');
+    
+    return sanitized.trim();
+  };
+
   // Helper function to create WhatsApp-optimized message (under 600 chars)
   const createWhatsAppMessage = (fullMessage: string): string => {
+    // Apply safety sanitization first
+    const sanitizedMessage = sanitizeWhatsAppMessage(fullMessage);
     // Extract key points from the full message
     const lines = fullMessage.split('\n');
-    let whatsappMessage = '';
+    let whatsappMessage = sanitizedMessage;
     
     // Start with greeting
     if (lines[0].includes('Dear') || lines[0].includes('Subject')) {
@@ -1510,6 +1646,80 @@ ${creatorName}`;
     }
   }, [step, contractUrl]);
 
+  // Auto-retry with exponential backoff
+  const performAnalysisWithRetry = async (
+    apiEndpoint: string,
+    session: any,
+    attempt: number = 0
+  ): Promise<Response | null> => {
+    const baseDelay = 2000; // Start with 2 seconds
+    const maxDelay = 30000; // Max 30 seconds
+    const delay = Math.min(baseDelay * Math.pow(2, attempt), maxDelay);
+
+    if (attempt > 0) {
+      setIsAutoRetrying(true);
+      setRetryAttempt(attempt);
+      setRetryDelay(delay / 1000); // Convert to seconds for display
+      
+      // Show countdown
+      let remainingSeconds = Math.ceil(delay / 1000);
+      const countdownInterval = setInterval(() => {
+        remainingSeconds--;
+        setRetryDelay(remainingSeconds);
+        if (remainingSeconds <= 0) {
+          clearInterval(countdownInterval);
+        }
+      }, 1000);
+
+      console.log(`[ContractUploadFlow] Auto-retry attempt ${attempt}/${MAX_AUTO_RETRIES} in ${delay}ms...`);
+      await new Promise(resolve => setTimeout(resolve, delay));
+      clearInterval(countdownInterval);
+    }
+
+    try {
+      const response = await fetch(apiEndpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({
+          contract_url: contractUrl,
+        }),
+      });
+
+      // If successful, return the response
+      if (response.ok) {
+        setIsAutoRetrying(false);
+        setRetryAttempt(0);
+        setRetryDelay(0);
+        return response;
+      }
+
+      // If not successful and we have retries left, retry
+      if (attempt < MAX_AUTO_RETRIES) {
+        console.log(`[ContractUploadFlow] Request failed (${response.status}), retrying...`);
+        return performAnalysisWithRetry(apiEndpoint, session, attempt + 1);
+      }
+
+      // Max retries reached
+      return response;
+    } catch (fetchError: any) {
+      // Check if it's a network error
+      const isNetworkError = fetchError.message?.includes('Failed to fetch') || 
+                             fetchError.message?.includes('NetworkError') ||
+                             fetchError.name === 'TypeError';
+
+      if (isNetworkError && attempt < MAX_AUTO_RETRIES) {
+        console.log(`[ContractUploadFlow] Network error on attempt ${attempt + 1}, retrying...`);
+        return performAnalysisWithRetry(apiEndpoint, session, attempt + 1);
+      }
+
+      // Max retries reached or non-network error
+      throw fetchError;
+    }
+  };
+
   const handleRealAnalysis = async () => {
     if (!contractUrl) return;
 
@@ -1570,29 +1780,29 @@ ${creatorName}`;
       console.log('[ContractUploadFlow] Calling API:', apiEndpoint);
       console.log('[ContractUploadFlow] Current origin:', typeof window !== 'undefined' ? window.location.origin : 'server');
 
-      let response;
+      let response: Response | null = null;
       try {
-        response = await fetch(apiEndpoint, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${session.access_token}`,
-          },
-          body: JSON.stringify({
-            contract_url: contractUrl,
-          }),
-        });
+        // Use auto-retry function for network errors
+        response = await performAnalysisWithRetry(apiEndpoint, session, 0);
+        
+        if (!response) {
+          throw new Error('Failed to get response after retries');
+        }
       } catch (fetchError: any) {
-        console.error('[ContractUploadFlow] Analysis error:', fetchError);
+        console.error('[ContractUploadFlow] Analysis error after retries:', fetchError);
         
         // Check if it's a network error (API might be sleeping on free tier)
         const isNetworkError = fetchError.message?.includes('Failed to fetch') || 
                                fetchError.message?.includes('NetworkError') ||
                                fetchError.name === 'TypeError';
         
+        setIsAutoRetrying(false);
+        setRetryAttempt(0);
+        setRetryDelay(0);
+        
         if (isNetworkError) {
           // API might be sleeping (Render free tier spins down after inactivity)
-          const errorMessage = 'The analysis service is starting up. Please wait a moment and try again. This usually takes 30-50 seconds after the first request.';
+          const errorMessage = `The analysis service is starting up. We tried ${MAX_AUTO_RETRIES} times automatically. Please wait a moment and try again manually.`;
           setReviewError(errorMessage);
           setStep('review-error');
           setIsAnalyzing(false);
@@ -1605,17 +1815,14 @@ ${creatorName}`;
           const sameOriginUrl = `${window.location.origin}/api/protection/analyze`;
           console.log('[ContractUploadFlow] Retrying with same origin:', sameOriginUrl);
           try {
-            response = await fetch(sameOriginUrl, {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${session.access_token}`,
-              },
-              body: JSON.stringify({
-                contract_url: contractUrl,
-              }),
-            });
+            response = await performAnalysisWithRetry(sameOriginUrl, session, 0);
+            if (!response) {
+              throw new Error('Failed to get response after retries');
+            }
           } catch (retryError) {
+            setIsAutoRetrying(false);
+            setRetryAttempt(0);
+            setRetryDelay(0);
             setReviewError('Unable to connect to the analysis service. Please check your internet connection and try again.');
             setStep('review-error');
             setIsAnalyzing(false);
@@ -1662,26 +1869,15 @@ ${creatorName}`;
           data: responseData
         });
         
-        if (response.status === 400 && responseData.validationError === true) {
-          // Validation error - show specific error message with details
-          const errorMessage = responseData.error || 'This document is NOT a brand deal contract.';
-          const details = responseData.details?.classification;
-          
-          console.error('[ContractUploadFlow] Validation error details:', details);
-          
-          // Build detailed error message
-          let fullErrorMessage = errorMessage;
-          if (details?.reasoning) {
-            fullErrorMessage += `\n\nReason: ${details.reasoning}`;
-          }
-          if (details?.confidence !== undefined) {
-            fullErrorMessage += `\nConfidence: ${(details.confidence * 100).toFixed(0)}%`;
-          }
-          
-          setValidationError(fullErrorMessage);
-          setStep('validation-error');
+        // PURE AI-DRIVEN: No validation errors - AI analyzes everything
+        // If API returns 400, it's a different error (file corruption, extraction failure, etc.)
+        if (response.status === 400) {
+          // Only reject for file corruption or extraction failures
+          const errorMessage = responseData.error || 'Failed to analyze document. Please ensure the file is valid and try again.';
+          setReviewError(errorMessage);
+          setStep('review-error');
           setIsAnalyzing(false);
-          return; // HARD STOP - do not proceed
+          return;
         }
         
         // Other API errors
@@ -1824,8 +2020,12 @@ ${creatorName}`;
 
   const handleRetryReview = () => {
     setReviewError(null);
+    setRetryAttempt(0);
+    setIsAutoRetrying(false);
+    setRetryDelay(0);
     if (contractUrl) {
       setStep('analyzing');
+      setIsAnalyzing(true);
     } else {
       // If no contract URL, go back to upload
       setStep('upload');
@@ -1860,17 +2060,8 @@ ${creatorName}`;
           const validation = await validateContractFile(file);
           
           if (!validation.isValid) {
-            // Set validation error and show validation error screen
-            const errorMessage = validation.error || '⚠️ This document does not appear to be a brand deal contract.\n\nThe Contract Scanner only supports influencer–brand collaboration agreements.\n\nPlease upload a brand deal contract.';
-            setValidationError(errorMessage);
-            setStep('validation-error');
-            // Reset file input
-            if (fileInputRef.current) {
-              fileInputRef.current.value = '';
-            }
-            setFileName('');
-            setFileSize('');
-            setUploadedFile(null);
+            // Only reject for file type or corruption issues
+            toast.error(validation.error || 'Invalid file. Please upload a PDF, DOCX, or DOC file.');
             return;
           }
           
@@ -1880,9 +2071,7 @@ ${creatorName}`;
         } catch (error) {
           console.error('[ContractUploadFlow] Validation error:', error);
           // If validation throws an error, show validation error screen
-          const errorMessage = '⚠️ Failed to validate this PDF file.\n\nPlease ensure the file is a valid PDF with readable text.\n\nIf this is a brand deal contract, please try again or contact support.';
-          setValidationError(errorMessage);
-          setStep('validation-error');
+          toast.error('Failed to validate file. Please ensure the file is valid and try again.');
           // Reset file input
           if (fileInputRef.current) {
             fileInputRef.current.value = '';
@@ -1938,7 +2127,10 @@ ${creatorName}`;
             // Set validation error and show validation error screen
             const errorMessage = validation.error || '⚠️ This document does not appear to be a brand deal contract.\n\nThe Contract Scanner only supports influencer–brand collaboration agreements.\n\nPlease upload a brand deal contract.';
             setValidationError(errorMessage);
-            setStep('validation-error');
+            // PURE AI-DRIVEN: No validation errors - proceed to analysis
+            setStep('analyzing');
+            setIsAnalyzing(true);
+            handleRealAnalysis();
             // Reset file state
             setFileName('');
             setFileSize('');
@@ -1952,9 +2144,7 @@ ${creatorName}`;
         } catch (error) {
           console.error('[ContractUploadFlow] Validation error:', error);
           // If validation throws an error, show validation error screen
-          const errorMessage = '⚠️ Failed to validate this PDF file.\n\nPlease ensure the file is a valid PDF with readable text.\n\nIf this is a brand deal contract, please try again or contact support.';
-          setValidationError(errorMessage);
-          setStep('validation-error');
+          toast.error('Failed to validate file. Please ensure the file is valid and try again.');
           // Reset file state
           setFileName('');
           setFileSize('');
@@ -2513,8 +2703,35 @@ ${creatorName}`;
                 <Sparkles className="w-12 h-12 text-white" />
               </div>
               
-              <h2 className="text-2xl font-bold mb-2">AI Analyzing Contract...</h2>
-              <p className="text-purple-300/70 mb-8">Checking for potential issues</p>
+              <h2 className="text-2xl font-bold mb-2">
+                {isAutoRetrying ? 'Service Starting Up...' : 'AI Analyzing Contract...'}
+              </h2>
+              <p className="text-purple-300/70 mb-8">
+                {isAutoRetrying ? (
+                  <span>
+                    Retrying in {retryDelay}s (Attempt {retryAttempt}/{MAX_AUTO_RETRIES})
+                  </span>
+                ) : (
+                  'Checking for potential issues'
+                )}
+              </p>
+              
+              {/* Auto-retry indicator */}
+              {isAutoRetrying && (
+                <div className="bg-yellow-500/20 border border-yellow-500/30 rounded-xl p-4 mb-6 max-w-md mx-auto">
+                  <div className="flex items-center gap-3">
+                    <Loader2 className="w-5 h-5 text-yellow-400 animate-spin" />
+                    <div className="text-left flex-1">
+                      <div className="text-sm font-medium text-yellow-300">
+                        Waiting for analysis service to start...
+                      </div>
+                      <div className="text-xs text-yellow-400/70 mt-1">
+                        This usually takes 30-50 seconds. We'll retry automatically.
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
               
               <div className="space-y-3 text-sm max-w-xs mx-auto">
                 {['Payment terms', 'Termination rights', 'IP ownership', 'Exclusivity clause', 'Liability terms'].map((item) => (
@@ -2901,7 +3118,8 @@ ${creatorName}`;
                           }
                           const formattedMessage = formatNegotiationMessage(data.message);
                           setNegotiationMessage(formattedMessage);
-                          await openShareFeedbackModal();
+                          const opened = await openShareFeedbackModal();
+                          if (!opened) return;
                           toast.success('Negotiation message generated!');
                         } catch (error: any) {
                           console.error('[ContractUploadFlow] Generate negotiation message error:', error);
@@ -3349,7 +3567,7 @@ ${creatorName}`;
                                       <p className="text-xs text-white/70 leading-relaxed">
                                         Thanks for sharing the contract. I'd like to clarify a few points before proceeding...
                                       </p>
-                                      <p className="text-xs text-white/50 italic mt-2">Full message will be generated when you click "Send to Brand"</p>
+                                      <p className="text-xs text-white/50 italic mt-2">Full message will be generated when you click "Share with Brand"</p>
                                     </div>
                                   )}
                                 </div>
@@ -3427,7 +3645,7 @@ ${creatorName}`;
                               <div className="flex gap-2 mt-4">
                                 <motion.button
                                   onClick={async () => {
-                                    // Trigger the same logic as "Fix Issues & Missing Clauses, Then Send to Brand"
+                                    // Trigger the same logic as "Fix Issues & Missing Clauses, Then Share with Brand"
                                     const button = document.querySelector('[data-action="fix-and-send"]') as HTMLButtonElement;
                                     if (button) {
                                       button.click();
@@ -3447,7 +3665,7 @@ ${creatorName}`;
                                   onClick={async () => {
                                     // Use the same logic as the "Fix Issues & Missing Clauses" button
                                     if (!session?.access_token) {
-                                      toast.error('Please log in to send to brand');
+                                      toast.error('Please log in to share with brand');
                                       return;
                                     }
 
@@ -3551,8 +3769,24 @@ ${creatorName}`;
 
                                       const formattedMessage = formatNegotiationMessage(data.message);
                                       setNegotiationMessage(formattedMessage);
-                                      await openShareFeedbackModal();
-                                      toast.success('Ready to send to brand!');
+                                      
+                                      // Ensure deal is saved before opening share modal
+                                      let currentDealId = savedDealId;
+                                      if (!currentDealId) {
+                                        // Auto-save the deal if not already saved
+                                        currentDealId = await autoSaveDraftDeal();
+                                        if (!currentDealId) {
+                                          toast.error('Failed to save deal. Please try again.');
+                                          return;
+                                        }
+                                        // Update state
+                                        setSavedDealId(currentDealId);
+                                      }
+                                      
+                                      const opened = await openShareFeedbackModal();
+                                      if (opened) {
+                                        toast.success('Ready to share with brand!');
+                                      }
                                     } catch (error: any) {
                                       console.error('[ContractUploadFlow] Generate negotiation message error:', error);
                                       toast.error(error.message || 'Failed to generate message. Please try again.');
@@ -3572,8 +3806,8 @@ ${creatorName}`;
                                     </>
                                   ) : (
                                     <>
-                                      <Send className="w-4 h-4" />
-                                      Send to Brand
+                                      <Share2 className="w-4 h-4" />
+                                      Share with Brand
                                     </>
                                   )}
                                 </motion.button>
@@ -3592,7 +3826,7 @@ ${creatorName}`;
             {/* Action Buttons */}
             {analysisResults && (
               <div className="mt-6 flex flex-col gap-3">
-                {/* Fix & Send to Brand - Primary CTA */}
+                {/* Fix & Share with Brand - Primary CTA */}
                 <div className="flex-1 flex flex-col">
                   <motion.button
                     data-action="fix-and-send"
@@ -3705,8 +3939,12 @@ ${creatorName}`;
 
                       const formattedMessage = formatNegotiationMessage(data.message);
                       setNegotiationMessage(formattedMessage);
-                      await openShareFeedbackModal();
-                      toast.success('Ready to send to brand!');
+                      
+                      // Open share modal (it will handle saving and verification)
+                      const modalOpened = await openShareFeedbackModal();
+                      if (modalOpened) {
+                        toast.success('Ready to share with brand!');
+                      }
                     } catch (error: any) {
                       console.error('[ContractUploadFlow] Generate negotiation message error:', error);
                       toast.error(error.message || 'Failed to generate message. Please try again.');
@@ -3726,8 +3964,8 @@ ${creatorName}`;
                     </>
                   ) : (
                     <>
-                      <Sparkles className="w-5 h-5" />
-                      Fix & Send to Brand
+                      <Share2 className="w-5 h-5" />
+                      Fix & Share with Brand
                     </>
                   )}
                 </motion.button>
@@ -4562,10 +4800,12 @@ ${creatorName}`;
                           throw new Error(data.error || 'Failed to generate negotiation message');
                         }
 
-                        const formattedMessage = formatNegotiationMessage(data.message);
-                        setNegotiationMessage(formattedMessage);
-                        await openShareFeedbackModal();
-                        toast.success('Negotiation message generated!');
+                          const formattedMessage = formatNegotiationMessage(data.message);
+                          setNegotiationMessage(formattedMessage);
+                          const opened = await openShareFeedbackModal();
+                          if (opened) {
+                            toast.success('Negotiation message generated!');
+                          }
                       } catch (error: any) {
                         console.error('[ContractUploadFlow] Generate negotiation message error:', error);
                         toast.error(error.message || 'Failed to generate negotiation message. Please try again.');
@@ -4829,7 +5069,8 @@ ${creatorName}`;
                               brand_name: 'Contract Upload',
                               deal_amount: dealAmount,
                               deliverables: analysisResults?.keyTerms?.deliverables || 'As per contract',
-                              contract_file: uploadedFile,
+                              contract_file: null, // Don't upload again - use existing URL
+                              contract_file_url: contractUrl, // Use the already-uploaded file URL
                               due_date: dueDateStr,
                               payment_expected_date: dueDateStr,
                               contact_person: null,
@@ -4980,10 +5221,12 @@ ${creatorName}`;
                     }
 
                     // Format message with India-optimized template
-                    const formattedMessage = formatNegotiationMessage(data.message);
-                    setNegotiationMessage(formattedMessage);
-                    await openShareFeedbackModal();
-                    toast.success('Negotiation message generated!');
+                          const formattedMessage = formatNegotiationMessage(data.message);
+                          setNegotiationMessage(formattedMessage);
+                          const opened = await openShareFeedbackModal();
+                          if (opened) {
+                            toast.success('Negotiation message generated!');
+                          }
                   } catch (error: any) {
                     console.error('[ContractUploadFlow] Generate negotiation message error:', error);
                     toast.error(error.message || 'Failed to generate negotiation message. Please try again.');
@@ -5248,254 +5491,62 @@ ${creatorName}`;
               </DialogContent>
             </Dialog>
 
-            {/* Share Feedback Modal */}
-            <Dialog open={showShareFeedbackModal} onOpenChange={setShowShareFeedbackModal}>
-              <DialogContent className="max-w-2xl max-h-[90vh] bg-gradient-to-br from-purple-900/95 to-indigo-900/95 backdrop-blur-xl border border-purple-500/30 text-white overflow-y-auto">
-                <DialogHeader>
-                  <DialogTitle className="text-2xl font-bold text-white mb-2">
-                    Send Fixes to Brand
-                  </DialogTitle>
-                  <DialogDescription className="text-purple-200">
-                    Choose how you'd like to share your contract feedback
-                  </DialogDescription>
-                </DialogHeader>
-
-                <div className="space-y-6 mt-4">
-                  {/* Message Preview Section */}
-                  <div className="bg-white/5 rounded-xl p-4 border border-purple-400/20">
-                    <div className="flex items-center gap-2 mb-3">
-                      <MessageSquare className="w-5 h-5 text-purple-300" />
-                      <h3 className="text-sm font-semibold text-white">Message Preview</h3>
-                    </div>
-                    <div className="space-y-2">
-                      {(() => {
-                        const requests = generateBrandRequests();
-                        const previewItems = requests.slice(0, 5).map(req => {
-                          // Convert request text to a concise bullet point
-                          if (req.text.includes('payment amount')) {
-                            return '💰 Confirm final payment amount in the contract';
-                          } else if (req.text.includes('payment timeline') || req.text.includes('payment schedule')) {
-                            return '💰 Specify payment timeline (e.g., within 10 days)';
-                          } else if (req.text.includes('usage') || req.text.includes('exclusivity')) {
-                            return '⏱️ Limit content usage to reasonable duration and scope';
-                          } else if (req.text.includes('revision')) {
-                            return '⏱️ Add maximum revision rounds for content approval';
-                          } else if (req.text.includes('termination')) {
-                            return '⏱️ Provide reasonable notice period for termination';
-                          } else if (req.text.includes('IP') || req.text.includes('ownership')) {
-                            return '🛡️ Clarify content ownership and usage rights';
-                          } else {
-                            return `🛡️ ${req.text}`;
-                          }
-                        });
-
-                        if (previewItems.length === 0) {
-                          return (
-                            <p className="text-sm text-purple-200/70">No specific requests. General contract review message will be sent.</p>
-                          );
-                        }
-
-                        return (
-                          <ul className="space-y-2">
-                            {previewItems.map((item, index) => (
-                              <li key={index} className="flex items-start gap-2 text-sm text-purple-100">
-                                <span className="text-purple-400 mt-0.5">•</span>
-                                <span>{item}</span>
-                              </li>
-                            ))}
-                          </ul>
-                        );
-                      })()}
-                    </div>
-                  </div>
-
-                  {/* Trust Line */}
-                  <div className="flex items-center justify-center gap-2 px-4 py-2 bg-green-500/10 rounded-lg border border-green-500/20">
-                    <Shield className="w-4 h-4 text-green-400" />
-                    <p className="text-xs text-green-200 font-medium">This message is legally vetted and safe to send.</p>
-                  </div>
-
-                  {/* Share via WhatsApp - Primary Action */}
-                  <motion.button
-                    onClick={async () => {
-                      if (!negotiationMessage) return;
-                      const formattedMessage = formatNegotiationMessage(negotiationMessage);
-                      const whatsappMessage = createWhatsAppMessage(formattedMessage);
-                      const encodedMessage = encodeURIComponent(whatsappMessage);
-                      const whatsappUrl = `https://wa.me/?text=${encodedMessage}`;
-                      triggerHaptic(HapticPatterns.medium);
+            {/* Universal Share Modal */}
+            {negotiationMessage && (
+              <UniversalShareModal
+                open={showShareFeedbackModal}
+                onClose={() => setShowShareFeedbackModal(false)}
+                message={formatNegotiationMessage(negotiationMessage)}
+                brandReplyLink={(() => {
+                  const baseUrl = typeof window !== 'undefined' 
+                    ? window.location.origin 
+                    : 'https://noticebazaar.com';
+                  // Only generate link if we have a valid dealId
+                  if (savedDealId) {
+                    return `${baseUrl}/#/brand-reply/${savedDealId}`;
+                  }
+                  // If no dealId, show error instead of generating invalid link
+                  return '';
+                })()}
+                dealId={savedDealId || undefined}
+                onShareComplete={async (method) => {
+                  // Set brand_response_status to 'pending' and update deal status to 'Sent'
+                  if (savedDealId) {
+                    try {
+                      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 
+                        (typeof window !== 'undefined' && window.location.origin.includes('noticebazaar.com') 
+                          ? 'https://api.noticebazaar.com' 
+                          : 'http://localhost:3001');
+                      await fetch(`${apiBaseUrl}/api/brand-response/${savedDealId}`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ status: 'pending' })
+                      });
                       
-                      // Set brand_response_status to 'pending' and update deal status to 'Sent' when sending
-                      if (savedDealId) {
-                        try {
-                          const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 
-                            (typeof window !== 'undefined' && window.location.origin.includes('noticebazaar.com') 
-                              ? 'https://api.noticebazaar.com' 
-                              : 'http://localhost:3001');
-                          await fetch(`${apiBaseUrl}/api/brand-response/${savedDealId}`, {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ status: 'pending' })
-                          });
-                          
-                          // Update deal status to 'Sent'
-                          await autoSaveDraftDeal({ updateExisting: true, updateStatus: 'Sent' });
-                        } catch (error) {
-                          console.warn('Failed to set brand response status:', error);
-                        }
-                      }
-                      
-                      window.open(whatsappUrl, '_blank');
-                      setBrandApprovalStatus('sent');
-                      setApprovalStatusUpdatedAt(new Date());
-                      setShowShareFeedbackModal(false);
-                      
-                      // Track analytics if AI counter-proposal was used
-                      if (aiCounterProposal && negotiationMessage === aiCounterProposal) {
-                        if (typeof window !== 'undefined' && (window as any).gtag) {
-                          (window as any).gtag('event', 'ai_counter_sent', {
-                            deal_id: savedDealId,
-                            method: 'whatsapp'
-                          });
-                        }
-                      }
-                      
-                      toast.success('✅ Fixes sent. We\'ll remind you in 48 hours if the brand doesn\'t reply.');
-                    }}
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    className="w-full bg-green-600/90 hover:bg-green-600 text-white px-6 py-5 rounded-xl font-semibold transition-all duration-200 flex items-center justify-center gap-3 shadow-lg shadow-green-500/30"
-                  >
-                    <MessageSquare className="w-6 h-6" />
-                    <div className="flex flex-col items-start flex-1">
-                      <span className="text-lg">Send Fixes on WhatsApp (Fastest)</span>
-                      <span className="text-sm text-green-100/80 font-normal">Best for fast brand managers</span>
-                    </div>
-                  </motion.button>
-
-                  {/* Share via Email */}
-                  <motion.button
-                    onClick={async () => {
-                      if (!negotiationMessage) return;
-                      const formattedMessage = formatNegotiationMessage(negotiationMessage);
-                      const subject = encodeURIComponent('Requested Revisions for Collaboration Agreement');
-                      const body = encodeURIComponent(formattedMessage);
-                      const mailtoUrl = `mailto:?subject=${subject}&body=${body}`;
-                      triggerHaptic(HapticPatterns.medium);
-                      
-                      // Set brand_response_status to 'pending' and update deal status to 'Sent' when sending
-                      if (savedDealId) {
-                        try {
-                          const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 
-                            (typeof window !== 'undefined' && window.location.origin.includes('noticebazaar.com') 
-                              ? 'https://api.noticebazaar.com' 
-                              : 'http://localhost:3001');
-                          await fetch(`${apiBaseUrl}/api/brand-response/${savedDealId}`, {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ status: 'pending' })
-                          });
-                          
-                          // Update deal status to 'Sent'
-                          await autoSaveDraftDeal({ updateExisting: true, updateStatus: 'Sent' });
-                        } catch (error) {
-                          console.warn('Failed to set brand response status:', error);
-                        }
-                      }
-                      
-                      window.location.href = mailtoUrl;
-                      setBrandApprovalStatus('sent');
-                      setApprovalStatusUpdatedAt(new Date());
-                      setShowShareFeedbackModal(false);
-                      
-                      // Track analytics if AI counter-proposal was used
-                      if (aiCounterProposal && negotiationMessage === aiCounterProposal) {
-                        if (typeof window !== 'undefined' && (window as any).gtag) {
-                          (window as any).gtag('event', 'ai_counter_sent', {
-                            deal_id: savedDealId,
-                            method: 'email'
-                          });
-                        }
-                      }
-                      
-                      toast.success('✅ Fixes sent. We\'ll remind you in 48 hours if the brand doesn\'t reply.');
-                    }}
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    className="w-full bg-blue-600/80 hover:bg-blue-600 text-white px-6 py-4 rounded-xl font-semibold transition-all duration-200 flex items-center justify-center gap-3"
-                  >
-                    <Mail className="w-6 h-6" />
-                    <div className="flex flex-col items-start flex-1">
-                      <span className="text-lg">Send Formal Email to Brand</span>
-                      <span className="text-sm text-blue-100/80 font-normal">Best for agency & legal teams</span>
-                    </div>
-                  </motion.button>
-
-                  {/* Create Shareable Review Link */}
-                  <motion.button
-                    onClick={async () => {
-                      if (!reportId) {
-                        toast.error('Report ID not available. Please re-analyze the contract.');
-                        return;
-                      }
-                      
-                      // Include both feedback link and brand response link if dealId exists
-                      let shareableText = `${window.location.origin}/#/feedback/${reportId}`;
-                      
-                      // Try to get dealId from savedDealId first, or fetch from report if available
-                      let dealId = savedDealId;
-                      
-                      // If savedDealId is not available, try to fetch deal_id from the report using Supabase
-                      if (!dealId && reportId && session?.access_token) {
-                        try {
-                          const { data: report, error } = await supabase
-                            .from('protection_reports')
-                            .select('deal_id')
-                            .eq('id', reportId)
-                            .single();
-                          
-                          if (!error && report?.deal_id) {
-                            dealId = report.deal_id;
-                          }
-                        } catch (error) {
-                          // Silently fail - we'll just use the feedback link without brand response link
-                          console.warn('Could not fetch deal_id from report:', error);
-                        }
-                      }
-                      
-                      if (dealId) {
-                        const brandReplyLink = `${window.location.origin}/#/brand-reply/${dealId}`;
-                        shareableText += `\n\nPlease confirm your decision: ${brandReplyLink}`;
-                      }
-                      
-                      await navigator.clipboard.writeText(shareableText);
-                      triggerHaptic(HapticPatterns.light);
-                      toast.success('Shareable link copied to clipboard');
-                    }}
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    className="w-full bg-purple-600/80 hover:bg-purple-600 text-white px-6 py-4 rounded-xl font-semibold transition-all duration-200 flex items-center justify-center gap-3"
-                  >
-                    <Copy className="w-6 h-6" />
-                    <div className="flex flex-col items-start flex-1">
-                      <span className="text-lg">Create Shareable Review Link</span>
-                      <span className="text-sm text-purple-100/80 font-normal">Brand can view without editing</span>
-                    </div>
-                  </motion.button>
-
-                  {/* Close Button */}
-                  <button
-                    onClick={() => {
-                      setShowShareFeedbackModal(false);
-                    }}
-                    className="w-full bg-gray-600/80 hover:bg-gray-600 text-white px-4 py-3 rounded-xl font-semibold transition-all duration-200 flex items-center justify-center gap-2 mt-2"
-                  >
-                    <X className="w-5 h-5" />
-                    Close
-                  </button>
-                </div>
-              </DialogContent>
-            </Dialog>
+                      // Update deal status to 'Sent'
+                      await autoSaveDraftDeal({ updateExisting: true, updateStatus: 'Sent' });
+                    } catch (error) {
+                      console.warn('Failed to set brand response status:', error);
+                    }
+                  }
+                  
+                  setBrandApprovalStatus('sent');
+                  setApprovalStatusUpdatedAt(new Date());
+                  
+                  // Track analytics if AI counter-proposal was used
+                  if (aiCounterProposal && negotiationMessage === aiCounterProposal) {
+                    if (typeof window !== 'undefined' && (window as any).gtag) {
+                      (window as any).gtag('event', 'ai_counter_sent', {
+                        deal_id: savedDealId,
+                        method: method
+                      });
+                    }
+                  }
+                  
+                  toast.success('✅ Message shared. We\'ll remind you in 48 hours if the brand doesn\'t reply.');
+                }}
+              />
+            )}
             
             {/* WhatsApp Preview Modal */}
             <Dialog open={showWhatsAppPreview} onOpenChange={setShowWhatsAppPreview}>

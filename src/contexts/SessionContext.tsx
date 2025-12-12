@@ -33,9 +33,10 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
     try {
       // Start with core fields that should always exist to avoid 400 errors
       // Extended creator profile fields will be fetched separately if needed
+      // Include phone for eSign functionality (email is in auth.users, not profiles)
       const { data, error } = await (supabase
         .from('profiles')
-        .select('id, first_name, last_name, avatar_url, role, updated_at, business_name, gstin, business_entity_type, onboarding_complete, organization_id, is_trial, trial_started_at, trial_expires_at, trial_locked') as any)
+        .select('id, first_name, last_name, avatar_url, role, updated_at, business_name, gstin, business_entity_type, onboarding_complete, organization_id, is_trial, trial_started_at, trial_expires_at, trial_locked, phone') as any)
         .eq('id', user.id)
         .single();
 
@@ -58,10 +59,10 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
     if (isColumnError) {
       // Silently handle missing columns - expected if migrations haven't run yet
       
-      // Retry with basic + trial fields only (excluding bank fields that may not exist)
+      // Retry with basic + trial fields only (excluding bank fields and social media fields that may not exist)
       const { data: trialData, error: trialError } = await (supabase
         .from('profiles')
-          .select('id, first_name, last_name, avatar_url, role, updated_at, business_name, gstin, business_entity_type, onboarding_complete, organization_id, is_trial, trial_started_at, trial_expires_at, trial_locked, instagram_handle, youtube_channel_id, tiktok_handle, facebook_profile_url, twitter_handle, phone, location, bio, platforms, goals') as any)
+          .select('id, first_name, last_name, avatar_url, role, updated_at, business_name, gstin, business_entity_type, onboarding_complete, organization_id, is_trial, trial_started_at, trial_expires_at, trial_locked, phone') as any)
         .eq('id', user.id)
         .single();
 
@@ -126,6 +127,8 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
             trial_started_at: null,
             trial_expires_at: null,
             trial_locked: false,
+            phone: null,
+            email: null,
             bank_account_name: null,
             bank_account_number: null,
             bank_ifsc: null,

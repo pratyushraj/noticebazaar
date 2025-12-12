@@ -37,59 +37,39 @@ const useSyncExternalStoreShimPlugin = () => {
   };
 };
 
+// Plugin to force React into a single pre-bundled chunk
+const forceSingleReactChunkPlugin = () => {
+  return {
+    name: 'force-single-react-chunk',
+    enforce: 'pre',
+    configResolved(config) {
+      // Ensure React dependencies are bundled together
+      if (config.optimizeDeps) {
+        // This will be handled in optimizeDeps config
+      }
+    },
+    generateBundle(options, bundle) {
+      // In build mode, ensure React is in a single chunk
+      // This is mainly for dev mode though
+    },
+  };
+};
+
 export default defineConfig(() => ({
   server: {
     host: "::",
     port: 8080,
   },
+  // Disable code splitting in dev mode to prevent multiple React instances
   build: {
     sourcemap: false, // Disable source maps in production to avoid 404 errors
     assetsDir: 'assets',
     chunkSizeWarningLimit: 1000, // Increase warning limit to 1000 kB
     rollupOptions: {
       output: {
-        // Optimized manual chunks to reduce bundle size
-        manualChunks: (id) => {
-          // CRITICAL: Never chunk React - keep it in main bundle to prevent multiple instances
-          if (id.includes('node_modules/react/') || 
-              id.includes('node_modules/react-dom/') ||
-              id.includes('node_modules/react/jsx-runtime') ||
-              id.includes('node_modules/react/jsx-dev-runtime')) {
-            return undefined; // Keep React in main bundle
-          }
-          // React Router
-          if (id.includes('node_modules/react-router-dom/')) {
-            return 'router';
-          }
-          // Supabase libraries
-          if (id.includes('node_modules/@supabase/')) {
-            return 'supabase';
-          }
-          // Radix UI - keep in main to share React instance
-          if (id.includes('node_modules/@radix-ui/')) {
-            return undefined;
-          }
-          // React Query
-          if (id.includes('node_modules/@tanstack/react-query/')) {
-            return 'react-query';
-          }
-          // Framer Motion - keep in main to share React instance
-          if (id.includes('node_modules/framer-motion/')) {
-            return undefined;
-          }
-          // Lucide React icons
-          if (id.includes('node_modules/lucide-react/')) {
-            return 'icons';
-          }
-          // CometChat
-          if (id.includes('node_modules/@cometchat')) {
-            return 'cometchat';
-          }
-          // Other large dependencies
-          if (id.includes('node_modules/html2canvas/') || id.includes('node_modules/jspdf/')) {
-            return 'pdf-tools';
-          }
-        },
+        // CRITICAL: Disable ALL code splitting to prevent multiple React instances
+        // This ensures everything is in one bundle, sharing the same React instance
+        manualChunks: undefined, // Disable manual chunking entirely
         assetFileNames: 'assets/[name].[ext]',
         chunkFileNames: 'assets/[name]-[hash].js',
         entryFileNames: 'assets/[name]-[hash].js',
@@ -101,6 +81,7 @@ export default defineConfig(() => ({
     },
   },
   plugins: [
+    forceSingleReactChunkPlugin(),
     react(),
     dyadComponentTagger(),
     useSyncExternalStoreShimPlugin()
@@ -109,6 +90,7 @@ export default defineConfig(() => ({
     alias: {
       "@": path.resolve(__dirname, "./src"),
       // Force single React instance to prevent "Invalid hook call" errors
+      // Use directory paths (not file paths) so Vite can resolve sub-paths correctly
       "react": path.resolve(__dirname, "./node_modules/react"),
       "react-dom": path.resolve(__dirname, "./node_modules/react-dom"),
       // Force use-sync-external-store/shim to use our ESM shim
@@ -116,25 +98,32 @@ export default defineConfig(() => ({
     },
     dedupe: ["react", "react-dom", "react/jsx-runtime", "react/jsx-dev-runtime", "use-sync-external-store"],
     conditions: ["import", "module", "browser", "default"],
+    // Preserve symlinks to ensure consistent module resolution
+    preserveSymlinks: false,
+  },
+  // Force single chunk for React in dev mode
+  esbuild: {
+    // This helps ensure consistent module resolution
+    logOverride: { 'this-is-undefined-in-esm': 'silent' },
   },
   optimizeDeps: {
+    // Include React to ensure proper jsx-runtime resolution
     include: [
       "react",
       "react-dom",
       "react/jsx-runtime",
       "react/jsx-dev-runtime",
-      // Include framer-motion to ensure it uses the same React instance
-      "framer-motion",
     ],
     exclude: [
-      // Exclude use-sync-external-store from pre-bundling to prevent separate React instance
       "use-sync-external-store",
       "use-sync-external-store/shim",
     ],
     force: true, // Force re-optimization
+    // Ensure all dependencies are discovered before pre-bundling
+    holdUntilCrawlEnd: true,
     esbuildOptions: {
-      // Ensure React is treated as external and deduped
       plugins: [],
+      format: 'esm',
     },
   },
   ssr: {

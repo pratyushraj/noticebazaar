@@ -8,6 +8,7 @@ import { generateReportPdf } from '../services/pdfGenerator.js';
 import { generateSafeClause } from '../services/clauseGenerator.js';
 import { generateSafeContract } from '../services/safeContractGenerator.js';
 import { callLLM } from '../services/aiContractAnalysis.js';
+import crypto from 'crypto';
 
 const router = Router();
 
@@ -28,11 +29,42 @@ router.post('/analyze', async (req: AuthenticatedRequest, res) => {
     }
     const contractBuffer = Buffer.from(await contractResponse.arrayBuffer());
 
-    // Analyze contract (HARD validation happens inside analyzeContract)
+    // Analyze contract - PURE AI-DRIVEN (no keyword/rule-based rejection)
     // Supports PDF, DOCX, and DOC files
+    // AI receives FULL extracted text and decides everything
     let analysis;
+    const provider = process.env.LLM_PROVIDER || 'huggingface';
+    const model = process.env.LLM_MODEL || 'mistralai/Mistral-7B-Instruct-v0.2';
+    
     try {
       analysis = await analyzeContract(contractBuffer, contract_url);
+      
+      // Log AI decision to contract_ai_logs table
+      try {
+        const aiAnalysis = analysis as any;
+        const promptHash = crypto.createHash('sha256')
+          .update(JSON.stringify({ provider, model, timestamp: Date.now() }))
+          .digest('hex');
+        
+        await supabase.from('contract_ai_logs').insert({
+          report_id: null, // Will be updated after report is saved
+          user_id: userId,
+          model_used: `${provider}/${model}`,
+          prompt_hash: promptHash,
+          risk_score: aiAnalysis.riskScore || null,
+          detected_type: aiAnalysis.documentType || null,
+          detected_category: aiAnalysis.detectedContractCategory || null,
+          brand_detected: aiAnalysis.brandDetected ?? null,
+          analysis_metadata: {
+            parties: aiAnalysis.parties || null,
+            extractedTerms: aiAnalysis.extractedTerms || null,
+            negotiationPoints: aiAnalysis.negotiationPoints || null,
+          },
+        } as any);
+      } catch (logError: any) {
+        console.warn('[Protection] Failed to log AI decision:', logError.message);
+        // Continue - logging failure shouldn't block analysis
+      }
     } catch (err: any) {
       console.error('[Protection] Contract analysis error:', err);
       
@@ -95,6 +127,8 @@ router.post('/analyze', async (req: AuthenticatedRequest, res) => {
     // Save protection report (optional - if table doesn't exist, continue without saving)
     let reportId: string | null = null;
     try {
+      // Extract additional AI analysis fields
+      const aiAnalysis = analysis as any;
       const { data: report, error: reportError } = await supabase
         .from('protection_reports')
         .insert({
@@ -105,8 +139,13 @@ router.post('/analyze', async (req: AuthenticatedRequest, res) => {
           protection_score: analysis.protectionScore,
           negotiation_power_score: analysis.negotiationPowerScore || null, // Negotiation Power Score
           overall_risk: analysis.overallRisk,
-          analysis_json: analysis
-        })
+          analysis_json: analysis,
+          // New AI-driven fields (if columns exist)
+          document_type: aiAnalysis.documentType || null,
+          detected_contract_category: aiAnalysis.detectedContractCategory || null,
+          brand_detected: aiAnalysis.brandDetected ?? null,
+          risk_score: aiAnalysis.riskScore || null,
+        } as any)
         .select()
         .single();
 
@@ -127,6 +166,7 @@ router.post('/analyze', async (req: AuthenticatedRequest, res) => {
         if (isUserIdError) {
           console.log('[Protection] 🔄 Retrying without user_id column (column may not exist yet)...');
           try {
+            const aiAnalysis = analysis as any;
             const { data: reportRetry, error: retryError } = await supabase
               .from('protection_reports')
               .insert({
@@ -136,8 +176,13 @@ router.post('/analyze', async (req: AuthenticatedRequest, res) => {
                 protection_score: analysis.protectionScore,
                 negotiation_power_score: analysis.negotiationPowerScore || null, // Negotiation Power Score
                 overall_risk: analysis.overallRisk,
-                analysis_json: analysis
-              })
+                analysis_json: analysis,
+                // New AI-driven fields (if columns exist)
+                document_type: aiAnalysis.documentType || null,
+                detected_contract_category: aiAnalysis.detectedContractCategory || null,
+                brand_detected: aiAnalysis.brandDetected ?? null,
+                risk_score: aiAnalysis.riskScore || null,
+              } as any)
               .select()
               .single();
             

@@ -50,7 +50,7 @@ export async function generateInvoice(dealId: string): Promise<{ success: boolea
         due_date,
         payment_expected_date,
         creator_id,
-        signed_at
+        otp_verified_at
       `)
       .eq('id', dealId)
       .single();
@@ -94,7 +94,7 @@ export async function generateInvoice(dealId: string): Promise<{ success: boolea
       paymentExpectedDate: deal.payment_expected_date || undefined,
       deliverables: deal.deliverables || '',
       invoiceNumber,
-      signedAt: deal.signed_at || undefined,
+      signedAt: deal.otp_verified_at || undefined,
     });
 
     // Upload to Supabase storage
@@ -219,7 +219,7 @@ async function generateInvoicePDF(data: InvoiceData): Promise<Buffer> {
 
       // Footer
       doc.fontSize(9).fillColor('#999').text(
-        'This invoice is generated automatically after contract signing via Leegality eSign.',
+        'This invoice is generated automatically after contract acceptance via OTP verification.',
         50,
         700,
         { align: 'center', width: 500 }

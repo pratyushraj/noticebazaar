@@ -1,210 +1,223 @@
 // eSign API Routes
-// Handles Leegality eSign integration for contract signing
+// Handles Meon eSign integration for contract signing
 
 import express, { Router, Response } from 'express';
 import { supabase } from '../index.js';
 import { AuthenticatedRequest } from '../middleware/auth.js';
 import {
-  sendDocumentForSigning,
-  verifyWebhookSignature,
+  uploadPDF,
+  createInvite,
+  getInviteStatus,
   downloadSignedPDF,
-  getDocumentStatus,
-} from '../services/leegalityService.js';
+  verifyWebhookSignature,
+  downloadPDFFromUrl,
+} from '../services/meonService.js';
 import { generateInvoice } from '../services/invoiceService.js';
 
 const router = Router();
 const publicRouter = Router(); // Separate router for public webhook endpoint
 
+// GET /api/esign/config
+// Check if Meon is configured (public endpoint for frontend to check)
+publicRouter.get('/config', (req: express.Request, res: Response) => {
+  return res.json({
+    success: true,
+    configured:
+      !!process.env.MEON_USERNAME &&
+      !!process.env.MEON_CLIENT_SECRET_KEY &&
+      !!process.env.MEON_BASE_URL,
+  });
+});
+
 // POST /api/esign/send
-// Send contract document to Leegality for eSign
+// Send contract document to Meon for eSign
 router.post('/send', async (req: AuthenticatedRequest, res: Response) => {
   try {
-    const userId = req.user!.id;
+    // Verify user is authenticated
+    if (!req.user || !req.user.id) {
+      return res.status(401).json({
+        success: false,
+        error: 'Authentication required'
+      });
+    }
+    
+    const userId = req.user.id;
     const { dealId, pdfUrl, brandName, creatorName, brandPhone, creatorPhone, brandEmail, creatorEmail } = req.body;
 
     // Validate required fields
-    if (!dealId || !pdfUrl) {
+    if (!dealId) {
       return res.status(400).json({
         success: false,
-        error: 'Missing required fields: dealId, pdfUrl'
+        error: 'Missing required field: dealId'
       });
     }
 
     // Verify deal exists and user has access
+    console.log('[eSign] Looking up deal:', dealId);
     const { data: deal, error: dealError } = await supabase
       .from('brand_deals')
-      .select('id, creator_id, brand_name, brand_phone, brand_email')
+      .select('*')
       .eq('id', dealId)
-      .single();
+      .maybeSingle();
     
-    if (dealError || !deal) {
+    if (dealError) {
+      console.error('[eSign] Error fetching deal:', dealError);
+      return res.status(500).json({
+        success: false,
+        error: `Database error: ${dealError.message}`
+      });
+    }
+    
+    if (!deal) {
       return res.status(404).json({
         success: false,
         error: 'Deal not found'
       });
     }
-
+    
     // Verify user has access
-    if (deal.creator_id !== userId && req.user!.role !== 'admin') {
+    if (deal.creator_id !== userId && req.user?.role !== 'admin') {
       return res.status(403).json({
         success: false,
         error: 'Access denied'
       });
     }
     
+    // Use provided pdfUrl or fallback to deal's contract_file_url
+    const finalPdfUrl = pdfUrl || (deal as any).contract_file_url;
+    
+    if (!finalPdfUrl) {
+      return res.status(400).json({
+        success: false,
+        error: 'Contract PDF URL is required. Please ensure the deal has a contract file uploaded.'
+      });
+    }
+    
     // Fetch creator profile for phone and email
-    const { data: creatorProfile, error: creatorError } = await supabase
+    const { data: creatorProfile } = await supabase
       .from('profiles')
       .select('id, first_name, last_name, phone, email')
       .eq('id', deal.creator_id)
-      .single();
+      .maybeSingle();
     
-    if (creatorError || !creatorProfile) {
-      return res.status(404).json({
-        success: false,
-        error: 'Creator profile not found'
-      });
-    }
-
-    // Use provided data or fallback to deal/creator data
-    const finalCreatorName = creatorName || `${creatorProfile.first_name || ''} ${creatorProfile.last_name || ''}`.trim() || 'Creator';
-    const signingRequest = {
-      pdfUrl: pdfUrl,
-      brandName: brandName || deal.brand_name,
-      creatorName: finalCreatorName,
-      brandPhone: brandPhone || deal.brand_phone || '',
-      creatorPhone: creatorPhone || creatorProfile.phone || '',
-      brandEmail: brandEmail || deal.brand_email,
-      creatorEmail: creatorEmail || creatorProfile.email || '',
-    };
+    // Prepare signer information
+    const finalCreatorName = creatorName || 
+      (creatorProfile ? `${creatorProfile.first_name || ''} ${creatorProfile.last_name || ''}`.trim() : '') || 
+      'Creator';
+    
+    const finalCreatorPhone = creatorPhone || (creatorProfile?.phone || '');
+    const finalCreatorEmail = creatorEmail || (creatorProfile?.email || '');
+    const dealBrandPhone = (deal as any).brand_phone || brandPhone || '';
+    const dealBrandEmail = (deal as any).brand_email || brandEmail || '';
+    const finalBrandName = brandName || deal.brand_name;
     
     // Validate required phone numbers
-    if (!signingRequest.brandPhone) {
+    if (!dealBrandPhone || dealBrandPhone.trim() === '' || dealBrandPhone === '+91' || dealBrandPhone === '+91 ') {
       return res.status(400).json({
         success: false,
         error: 'Brand phone number is required for eSign'
       });
     }
     
-    if (!signingRequest.creatorPhone) {
+    if (!finalCreatorPhone || finalCreatorPhone.trim() === '') {
       return res.status(400).json({
         success: false,
         error: 'Creator phone number is required for eSign'
       });
     }
 
-    // Send to Leegality
-    const result = await sendDocumentForSigning(signingRequest);
-
-    if (!result.success || !result.documentId) {
+    // Validate Meon configuration
+    if (!process.env.MEON_USERNAME || !process.env.MEON_CLIENT_SECRET_KEY) {
       return res.status(500).json({
         success: false,
-        error: result.error || 'Failed to send document to Leegality'
+        error: 'Meon eSign is not configured. Please set MEON_USERNAME and MEON_CLIENT_SECRET_KEY environment variables.'
       });
     }
 
-    // Update deal with eSign information
+    console.log('[eSign] Starting eSign workflow:', {
+      dealId: deal.id,
+      pdfUrl: finalPdfUrl,
+      brandName: finalBrandName,
+      creatorName: finalCreatorName,
+    });
+
+    // Step 1: Download PDF from URL
+    let pdfBuffer: Buffer;
+    try {
+      pdfBuffer = await downloadPDFFromUrl(finalPdfUrl);
+      console.log('[eSign] PDF downloaded successfully, size:', pdfBuffer.length, 'bytes');
+    } catch (error: any) {
+      console.error('[eSign] PDF download failed:', error);
+      return res.status(500).json({
+        success: false,
+        error: `Failed to download contract PDF: ${error.message}`
+      });
+    }
+
+    // Step 2: Upload PDF to Meon
+    const fileName = `${finalBrandName}_${finalCreatorName}_Contract_${Date.now()}.pdf`;
+    const uploadResult = await uploadPDF(pdfBuffer, fileName);
+    
+    if (!uploadResult.success || !uploadResult.fileId) {
+      console.error('[eSign] Upload failed:', uploadResult.error);
+      return res.status(500).json({
+        success: false,
+        error: uploadResult.error || 'Failed to upload PDF to Meon'
+      });
+    }
+    
+    console.log('[eSign] PDF uploaded to Meon, token:', uploadResult.fileId);
+
+    // Step 3: Meon returns token and esign_url directly from uploadPDF
+    // The uploadResult.fileId is actually the token, and esignUrl is in the response
+    const token = uploadResult.fileId; // This is the token from Meon
+    const esignUrl = (uploadResult as any).esignUrl;
+    
+    if (!token) {
+      console.error('[eSign] No token received from Meon upload');
+      return res.status(500).json({
+        success: false,
+        error: 'Failed to get signing token from Meon'
+      });
+    }
+    
+    console.log('[eSign] Meon upload successful:', {
+      token: token,
+      esignUrl: esignUrl,
+    });
+
+    // Step 4: Update deal with eSign information
+    const updateData: any = {
+      esign_provider: 'meon',
+      esign_invitation_id: token, // Meon token
+      esign_status: 'sent',
+      esign_url: esignUrl || null,
+      updated_at: new Date().toISOString(),
+    };
+    
     const { error: updateError } = await supabase
       .from('brand_deals')
-      .update({
-        esign_provider: 'leegality',
-        esign_document_id: result.documentId,
-        esign_status: 'sent',
-        esign_url: result.signingUrl,
-        updated_at: new Date().toISOString(),
-      })
+      .update(updateData)
       .eq('id', dealId);
 
     if (updateError) {
       console.error('[eSign] Failed to update deal:', updateError);
       return res.status(500).json({
         success: false,
-        error: 'Failed to update deal with eSign information'
+        error: `Failed to update deal: ${updateError.message}`
       });
     }
 
+    console.log('[eSign] Deal updated successfully with eSign information');
+
     return res.json({
       success: true,
-      documentId: result.documentId,
-      signingUrl: result.signingUrl,
+      invitationId: token,
+      signUrl: esignUrl,
       message: 'Document sent for eSign successfully'
     });
   } catch (error: any) {
-    console.error('[eSign] Send error:', error);
-    return res.status(500).json({
-      success: false,
-      error: error.message || 'Internal server error'
-    });
-  }
-});
-
-// GET /api/esign/status/:dealId
-// Get eSign status for a deal
-router.get('/status/:dealId', async (req: AuthenticatedRequest, res: Response) => {
-  try {
-    const userId = req.user!.id;
-    const { dealId } = req.params;
-
-    // Verify deal exists and user has access
-    const { data: deal, error: dealError } = await supabase
-      .from('brand_deals')
-      .select('id, creator_id, esign_document_id, esign_status')
-      .eq('id', dealId)
-      .single();
-
-    if (dealError || !deal) {
-      return res.status(404).json({
-        success: false,
-        error: 'Deal not found'
-      });
-    }
-
-    // Verify user has access
-    if (deal.creator_id !== userId && req.user!.role !== 'admin') {
-      return res.status(403).json({
-        success: false,
-        error: 'Access denied'
-      });
-    }
-
-    // If no document ID, return current status
-    if (!deal.esign_document_id) {
-      return res.json({
-        success: true,
-        status: deal.esign_status || 'pending',
-        message: 'No eSign document found'
-      });
-    }
-
-    // Get status from Leegality
-    const statusResult = await getDocumentStatus(deal.esign_document_id);
-
-    if (!statusResult.success) {
-      return res.status(500).json({
-        success: false,
-        error: statusResult.error || 'Failed to get document status'
-      });
-    }
-
-    // Update deal status if changed
-    if (statusResult.status !== deal.esign_status) {
-      await supabase
-        .from('brand_deals')
-        .update({
-          esign_status: statusResult.status,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', dealId);
-    }
-
-    return res.json({
-      success: true,
-      status: statusResult.status,
-      documentId: deal.esign_document_id,
-      message: 'Status retrieved successfully'
-    });
-  } catch (error: any) {
-    console.error('[eSign] Status error:', error);
+    console.error('[eSign] Unhandled error:', error);
     return res.status(500).json({
       success: false,
       error: error.message || 'Internal server error'
@@ -213,15 +226,15 @@ router.get('/status/:dealId', async (req: AuthenticatedRequest, res: Response) =
 });
 
 // POST /api/esign/webhook
-// Webhook endpoint for Leegality callbacks (public, no auth required)
-publicRouter.post('/webhook', async (req: express.Request, res: express.Response) => {
+// Handle Meon webhook callbacks (public endpoint)
+publicRouter.post('/webhook', async (req: express.Request, res: Response) => {
   try {
-    // Get signature from headers
-    const signature = req.headers['x-leegality-signature'] as string;
+    // Get raw body for signature verification
     const rawBody = JSON.stringify(req.body);
-
+    
     // Verify webhook signature
-    if (signature && !verifyWebhookSignature(rawBody, signature)) {
+    const isValid = verifyWebhookSignature(req, rawBody);
+    if (!isValid) {
       console.error('[eSign Webhook] Invalid signature');
       return res.status(401).json({
         success: false,
@@ -229,47 +242,66 @@ publicRouter.post('/webhook', async (req: express.Request, res: express.Response
       });
     }
 
-    const { event, document_id, status, signed_pdf_url } = req.body;
+    const { invitationId, status, event } = req.body;
+    
+    console.log('[eSign Webhook] Received webhook:', {
+      invitationId,
+      status,
+      event,
+      body: req.body,
+    });
 
-    if (!document_id) {
+    if (!invitationId) {
       return res.status(400).json({
         success: false,
-        error: 'Missing document_id in webhook payload'
+        error: 'Missing invitationId in webhook payload'
       });
     }
 
-    // Find deal by document ID
+    // Find deal by invitation ID
     const { data: deal, error: dealError } = await supabase
       .from('brand_deals')
-      .select('id, esign_status')
-      .eq('esign_document_id', document_id)
-      .single();
+      .select('*')
+      .eq('esign_invitation_id', invitationId)
+      .maybeSingle();
 
     if (dealError || !deal) {
-      console.error('[eSign Webhook] Deal not found for document:', document_id);
+      console.error('[eSign Webhook] Deal not found for invitationId:', invitationId);
       return res.status(404).json({
         success: false,
-        error: 'Deal not found'
+        error: 'Deal not found for this invitation'
       });
     }
 
-    // Handle different event types
-    if (event === 'document.signed' && status === 'signed') {
+    // Handle different webhook events
+    if (status === 'SIGNED' || event === 'document.signed' || status === 'signed') {
+      console.log('[eSign Webhook] Document signed, downloading signed PDF...');
+      
       // Download signed PDF
-      const downloadResult = await downloadSignedPDF(document_id);
-
+      const downloadResult = await downloadSignedPDF(invitationId);
+      
       if (!downloadResult.success || !downloadResult.pdfBuffer) {
-        console.error('[eSign Webhook] Failed to download signed PDF');
+        console.error('[eSign Webhook] Failed to download signed PDF:', downloadResult.error);
+        // Update status to failed but don't fail the webhook
+        await supabase
+          .from('brand_deals')
+          .update({
+            esign_status: 'failed',
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', deal.id);
+        
         return res.status(500).json({
           success: false,
-          error: 'Failed to download signed PDF'
+          error: downloadResult.error || 'Failed to download signed PDF'
         });
       }
 
-      // Upload to Supabase storage
+      // Upload signed PDF to Supabase Storage
+      const creatorId = deal.creator_id;
       const fileName = `signed-contract-${deal.id}-${Date.now()}.pdf`;
-      const filePath = `${deal.id}/signed-contracts/${fileName}`;
-
+      const filePath = `${creatorId}/signed-contracts/${fileName}`;
+      
       const { error: uploadError } = await supabase.storage
         .from('creator-assets')
         .upload(filePath, downloadResult.pdfBuffer, {
@@ -282,55 +314,64 @@ publicRouter.post('/webhook', async (req: express.Request, res: express.Response
         console.error('[eSign Webhook] Failed to upload signed PDF:', uploadError);
         return res.status(500).json({
           success: false,
-          error: 'Failed to upload signed PDF'
+          error: `Failed to upload signed PDF: ${uploadError.message}`
         });
       }
 
-      // Get public URL
-      const { data: urlData } = supabase.storage
+      // Get public URL for signed PDF
+      const { data: publicUrlData } = supabase.storage
         .from('creator-assets')
         .getPublicUrl(filePath);
 
-      // Update deal
+      if (!publicUrlData?.publicUrl) {
+        console.error('[eSign Webhook] Failed to get public URL for signed PDF');
+        return res.status(500).json({
+          success: false,
+          error: 'Failed to get public URL for signed PDF'
+        });
+      }
+
+      console.log('[eSign Webhook] Signed PDF uploaded:', publicUrlData.publicUrl);
+
+      // Update deal with signed PDF and status
+      const updateData: any = {
+        esign_status: 'signed',
+        signed_pdf_url: publicUrlData.publicUrl,
+        signed_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      };
+
       const { error: updateError } = await supabase
         .from('brand_deals')
-        .update({
-          esign_status: 'signed',
-          signed_pdf_url: urlData?.publicUrl || signed_pdf_url,
-          signed_at: new Date().toISOString(),
-          status: 'Completed',
-          updated_at: new Date().toISOString(),
-        })
+        .update(updateData)
         .eq('id', deal.id);
 
       if (updateError) {
         console.error('[eSign Webhook] Failed to update deal:', updateError);
         return res.status(500).json({
           success: false,
-          error: 'Failed to update deal'
+          error: `Failed to update deal: ${updateError.message}`
         });
       }
 
-      // Generate invoice automatically after signing
+      // Generate invoice after signing
       try {
-        const invoiceResult = await generateInvoice(deal.id);
-        if (invoiceResult.success) {
-          console.log(`[eSign Webhook] Invoice generated: ${invoiceResult.invoiceNumber}`);
-        } else {
-          console.error('[eSign Webhook] Failed to generate invoice:', invoiceResult.error);
-          // Don't fail the webhook if invoice generation fails
-        }
-      } catch (invoiceError) {
-        console.error('[eSign Webhook] Invoice generation error:', invoiceError);
+        console.log('[eSign Webhook] Generating invoice for signed deal...');
+        await generateInvoice(deal.id, creatorId);
+        console.log('[eSign Webhook] Invoice generated successfully');
+      } catch (invoiceError: any) {
+        console.error('[eSign Webhook] Invoice generation failed (non-fatal):', invoiceError.message);
         // Don't fail the webhook if invoice generation fails
       }
 
+      console.log('[eSign Webhook] Deal updated successfully, status: signed');
+      
       return res.json({
         success: true,
         message: 'Webhook processed successfully'
       });
-    } else if (event === 'document.failed' || status === 'failed') {
-      // Update deal status to failed
+    } else if (status === 'FAILED' || event === 'document.failed' || status === 'failed') {
+      // Update status to failed
       await supabase
         .from('brand_deals')
         .update({
@@ -338,34 +379,108 @@ publicRouter.post('/webhook', async (req: express.Request, res: express.Response
           updated_at: new Date().toISOString(),
         })
         .eq('id', deal.id);
-
+      
+      console.log('[eSign Webhook] Deal status updated to failed');
+      
       return res.json({
         success: true,
-        message: 'Webhook processed successfully'
+        message: 'Webhook processed, status: failed'
       });
-    } else if (event === 'document.sent' || status === 'sent') {
-      // Update deal status to sent
+    } else {
+      // Update status to pending or sent
+      const newStatus = status === 'PENDING' || status === 'pending' ? 'pending' : 'sent';
       await supabase
         .from('brand_deals')
         .update({
-          esign_status: 'sent',
+          esign_status: newStatus,
           updated_at: new Date().toISOString(),
         })
         .eq('id', deal.id);
-
+      
+      console.log('[eSign Webhook] Deal status updated to:', newStatus);
+      
       return res.json({
         success: true,
-        message: 'Webhook processed successfully'
+        message: `Webhook processed, status: ${newStatus}`
+      });
+    }
+  } catch (error: any) {
+    console.error('[eSign Webhook] Unhandled error:', error);
+    return res.status(500).json({
+      success: false,
+      error: error.message || 'Internal server error'
+    });
+  }
+});
+
+// GET /api/esign/status/:dealId
+// Get eSign status for a deal
+router.get('/status/:dealId', async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    if (!req.user || !req.user.id) {
+      return res.status(401).json({
+        success: false,
+        error: 'Authentication required'
+      });
+    }
+    
+    const userId = req.user.id;
+    const { dealId } = req.params;
+
+    // Verify deal exists and user has access
+    const { data: deal, error: dealError } = await supabase
+      .from('brand_deals')
+      .select('*')
+      .eq('id', dealId)
+      .maybeSingle();
+    
+    if (dealError || !deal) {
+      return res.status(404).json({
+        success: false,
+        error: 'Deal not found'
+      });
+    }
+    
+    if (deal.creator_id !== userId && req.user?.role !== 'admin') {
+      return res.status(403).json({
+        success: false,
+        error: 'Access denied'
       });
     }
 
-    // Unknown event, but acknowledge receipt
+    const invitationId = (deal as any).esign_invitation_id;
+    
+    if (!invitationId) {
+      return res.json({
+        success: true,
+        status: 'not_sent',
+        message: 'Document has not been sent for eSign yet'
+      });
+    }
+
+    // Get status from Meon
+    const statusResult = await getInviteStatus(invitationId);
+    
+    if (!statusResult.success) {
+      return res.json({
+        success: true,
+        status: (deal as any).esign_status || 'unknown',
+        signedPdfUrl: (deal as any).signed_pdf_url || null,
+        error: statusResult.error,
+      });
+    }
+
     return res.json({
       success: true,
-      message: 'Webhook received'
+      status: statusResult.status || (deal as any).esign_status,
+      invitationId,
+      signUrl: (deal as any).esign_url,
+      signedPdfUrl: (deal as any).signed_pdf_url || null,
+      signedAt: (deal as any).signed_at || null,
+      meonStatus: statusResult.data,
     });
   } catch (error: any) {
-    console.error('[eSign Webhook] Error:', error);
+    console.error('[eSign] Get status error:', error);
     return res.status(500).json({
       success: false,
       error: error.message || 'Internal server error'
