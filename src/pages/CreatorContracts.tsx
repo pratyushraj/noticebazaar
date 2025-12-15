@@ -98,16 +98,18 @@ const CreatorContracts = () => {
 
       return {
         id: deal.id,
-        title: `${deal.brand_name} Deal`,
+        title: `${deal.brand_name} Sponsorship`,
         brand: deal.brand_name,
         value: deal.deal_amount || 0,
         status,
         progress,
         brandResponseStatus: (deal as any).brand_response_status || null,
-        deadline: deal.due_date ? new Date(deal.due_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'TBD',
+        deadline: deal.payment_expected_date 
+          ? new Date(deal.payment_expected_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+          : (deal.due_date ? new Date(deal.due_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'TBD'),
         platform: deal.platform || 'Multiple',
         type: 'Brand Partnership',
-        nextStep
+        nextStep: status === 'draft' ? 'Review contract & send to brand' : nextStep
       };
     });
   }, [brandDeals]);
@@ -186,12 +188,12 @@ const CreatorContracts = () => {
 
   const filters = useMemo(() => [
     { id: 'all', label: 'All Deals', count: stats.total },
-    { id: 'drafts', label: 'Drafts', count: stats.drafts },
-    { id: 'sent', label: 'Sent', count: stats.sent },
-    { id: 'accepted', label: 'Accepted', count: stats.accepted },
-    { id: 'rejected', label: 'Rejected', count: stats.rejected },
-    { id: 'active', label: 'Active', count: stats.active },
-    { id: 'completed', label: 'Completed', count: stats.completed }
+    { id: 'drafts', label: 'Needs Prep', count: stats.drafts },
+    { id: 'sent', label: 'Sent to Brand', count: stats.sent },
+    { id: 'accepted', label: 'Accepted (Not Paid)', count: stats.accepted },
+    { id: 'rejected', label: 'Closed – Rejected', count: stats.rejected },
+    { id: 'active', label: 'Under Watch', count: stats.active },
+    { id: 'completed', label: 'Closed – Paid', count: stats.completed }
   ], [stats]);
 
   const filteredDeals = useMemo(() => {
@@ -255,8 +257,8 @@ const CreatorContracts = () => {
           {/* Header - Matching Payments Page */}
           <div className="flex items-center justify-between mb-4 md:mb-6">
             <div className="space-y-1 md:space-y-2">
-              <h1 className={cn(typography.h1, "mb-0")}>Brand Deals</h1>
-              <p className={cn(typography.body, "font-medium")}>Track and manage your partnerships</p>
+              <h1 className={cn(typography.h1, "mb-0")}>Deals Under Protection</h1>
+              <p className={cn(typography.body, "font-medium")}>We monitor payments, risks, and next actions for every deal.</p>
             </div>
           </div>
 
@@ -271,20 +273,20 @@ const CreatorContracts = () => {
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                   <StatCard
-                    label="Total Deals"
+                    label="Deals Monitored"
                     value={stats.total}
                     icon={<Briefcase className={cn(iconSizes.md, "text-white")} />}
                     variant="secondary"
-                    subtitle={stats.total === 0 ? "No deals yet" : (stats.thisMonth > 0 ? `+${stats.thisMonth} this month` : undefined)}
+                    subtitle={stats.total === 0 ? "No deals yet" : (stats.thisMonth > 0 ? `${stats.thisMonth} added this month` : undefined)}
                     trend={stats.thisMonth > 0 ? { value: stats.thisMonth, isPositive: true } : undefined}
                     isEmpty={stats.total === 0}
                   />
                   <StatCard
-                    label="Total Value"
+                    label="Total Value Under Watch"
                     value={stats.totalValue}
                     icon={<IndianRupee className={cn(iconSizes.md, "text-white")} />}
                     variant="secondary"
-                    subtitle={stats.totalValue === 0 ? "Start your first deal to see total earnings" : "Across all deals"}
+                    subtitle={stats.totalValue === 0 ? "Start your first deal to see total earnings" : "Across monitored deals"}
                     isEmpty={stats.totalValue === 0}
                   />
                 </div>
@@ -387,7 +389,7 @@ const CreatorContracts = () => {
                     {deal.brandResponseStatus && (() => {
                       const statusConfig = {
                         pending: {
-                          label: '🕒 Waiting for brand',
+                          label: 'Payment Not Secured',
                           color: 'text-yellow-400',
                           bgColor: 'bg-yellow-500/20',
                           borderColor: 'border-yellow-500/30',
@@ -432,11 +434,10 @@ const CreatorContracts = () => {
                     })()}
                   </div>
 
-                  {/* Progress Bar - Matching Payments Style */}
+                  {/* Protection Status - Matching Payments Style */}
                   <div className="mb-4">
                     <div className={cn("flex items-center justify-between", typography.caption, "text-purple-200 mb-1")}>
-                      <span>Progress</span>
-                      <span>{deal.progress}%</span>
+                      <span>Protection Status — {deal.progress < 30 ? 'Low' : deal.progress < 70 ? 'Medium' : 'High'}</span>
                     </div>
                     <div className={cn("w-full bg-white/10", radius.full, "h-2")}>
                       <motion.div
@@ -452,9 +453,19 @@ const CreatorContracts = () => {
                         )}
                       />
                     </div>
+                    <p className={cn(typography.caption, "text-purple-300/70 mt-1")}>
+                      {deal.status === 'draft' ? 'Contract in draft stage' :
+                       deal.status === 'sent' ? 'Contract sent to brand' :
+                       deal.status === 'negotiation' ? 'Negotiation in progress' :
+                       deal.status === 'signed' ? 'Contract signed' :
+                       deal.status === 'content_making' ? 'Content creation in progress' :
+                       deal.status === 'content_delivered' ? 'Content delivered, awaiting payment' :
+                       deal.status === 'completed' ? 'Payment received' :
+                       'Status pending'}
+                    </p>
                   </div>
 
-                  {/* Status and Deadline */}
+                  {/* Status and Payment Due */}
                   <div className={cn("flex items-center justify-between mb-3")}>
                     <div className={cn("flex items-center gap-2")}>
                       <StatusIcon className={iconSizes.sm} />
@@ -462,15 +473,15 @@ const CreatorContracts = () => {
                     </div>
                     <div className={cn("flex items-center gap-1", typography.caption)}>
                       <Calendar className={iconSizes.xs} />
-                      <span>{deal.deadline}</span>
+                      <span>Payment Due: {deal.deadline}</span>
                     </div>
                   </div>
 
-                  {/* Next Step */}
+                  {/* Next Action */}
                   <div className={cn("pt-3 border-t border-white/10")}>
                     <div className={cn("flex items-center gap-2", typography.bodySmall)}>
                       <AlertCircle className={cn(iconSizes.sm, "text-purple-300")} />
-                      <span className="text-purple-200">Next: </span>
+                      <span className="text-purple-200">Next Action: </span>
                       <span className="text-white">{deal.nextStep}</span>
                     </div>
                   </div>

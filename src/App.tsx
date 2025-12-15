@@ -83,6 +83,8 @@ import FeedbackPage from "./pages/FeedbackPage";
 import BrandEsignStatusPage from "./pages/BrandEsignStatusPage";
 import AdvisorDashboard from "./pages/AdvisorDashboard";
 import LawyerDashboard from "./pages/LawyerDashboard";
+import ConsumerComplaintsPage from "./pages/ConsumerComplaintsPage";
+import UpgradePage from "./pages/UpgradePage";
 import { ErrorBoundary } from "./components/ui/error-boundary";
 import NetworkStatusWrapper from "./components/NetworkStatusWrapper";
 
@@ -260,7 +262,13 @@ const App = () => {
               <Route path="/feedback/:reportId" element={<FeedbackPage />} />
               {/* Public Brand eSign Status Page - No auth required */}
               <Route path="/rate-calculator" element={<ProtectedLayout allowedRoles={['creator']}><RateCalculator /></ProtectedLayout>} />
-              <Route path="/ai-pitch-generator" element={<ProtectedLayout allowedRoles={['creator']}><AIPitchGenerator /></ProtectedLayout>} />
+              <Route path="/ai-pitch-generator" element={<ProtectedLayout allowedRoles={['creator']}><AIPitchGenerator /></ProtectedLayout> } />
+              
+              {/* Lifestyle Shield - Pro-only features */}
+              <Route path="/lifestyle/consumer-complaints" element={<ProtectedLayout allowedRoles={['creator']}><ConsumerComplaintsPage /></ProtectedLayout>} />
+              
+              {/* Upgrade page */}
+              <Route path="/upgrade" element={<ProtectedLayout allowedRoles={['creator']}><UpgradePage /></ProtectedLayout>} />
 
               {/* Shared routes (accessible by client, admin, CA, and creator - NOT lawyer) */}
               <Route path="/messages" element={<ProtectedLayout allowedRoles={['client', 'admin', 'chartered_accountant', 'creator']}><MessagesPage /></ProtectedLayout>} />

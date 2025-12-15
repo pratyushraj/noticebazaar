@@ -161,15 +161,23 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-[#2A40A0] p-4">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 p-4">
       <div 
-        className="w-full max-w-md p-8 rounded-lg shadow-lg border border-blue-400/30" 
-        style={{ backdropFilter: 'blur(10px)', backgroundColor: 'rgba(255, 255, 255, 0.1)' }}
+        className="w-full max-w-md p-8 rounded-3xl shadow-2xl border border-purple-400/20" 
+        style={{ backdropFilter: 'blur(20px)', backgroundColor: 'rgba(139, 92, 246, 0.15)' }}
       >
-        <div className="flex flex-col items-center mb-6">
-          <Scale className="h-12 w-12 text-blue-300 mb-4" />
-          <h1 className="text-3xl font-bold text-white mb-2">Law Client Portal</h1>
-          <p className="text-center text-blue-200 mb-8">Access your cases securely</p>
+        {/* Branding */}
+        <div className="flex items-center gap-3 mb-8">
+          <div className="w-10 h-10 bg-purple-600 rounded-lg flex items-center justify-center">
+            <Scale className="h-6 w-6 text-white" />
+          </div>
+          <h1 className="text-2xl font-bold text-white">NoticeBazaar</h1>
+        </div>
+
+        {/* Title and Subtitle */}
+        <div className="mb-8">
+          <h2 className="text-3xl font-bold text-white mb-2">Sign In</h2>
+          <p className="text-white/80 text-sm">Access your account to manage your deals and earnings.</p>
         </div>
         
         {/* Primary: Email/Password Login */}
@@ -180,7 +188,7 @@ const Login = () => {
                 <>
                   <form onSubmit={handleEmailPasswordLogin} className="space-y-3">
                     <div>
-                      <Label htmlFor="email" className="text-blue-200 text-sm mb-2 block">
+                      <Label htmlFor="email" className="text-white text-sm mb-2 block">
                         Email
                       </Label>
                       <Input
@@ -189,13 +197,13 @@ const Login = () => {
                         placeholder="Enter your email"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
-                        className="bg-white/5 border-white/10 text-white placeholder:text-white/40 text-base h-12"
+                        className="bg-white/10 border-white/20 text-white placeholder:text-purple-200/60 text-base h-12 rounded-xl"
                         required
                         autoComplete="email"
                       />
                     </div>
                     <div>
-                      <Label htmlFor="password" className="text-blue-200 text-sm mb-2 block">
+                      <Label htmlFor="password" className="text-white text-sm mb-2 block">
                         Password
                       </Label>
                       <Input
@@ -204,7 +212,7 @@ const Login = () => {
                         placeholder="Enter your password"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
-                        className="bg-white/5 border-white/10 text-white placeholder:text-white/40 text-base h-12"
+                        className="bg-white/10 border-white/20 text-white placeholder:text-purple-200/60 text-base h-12 rounded-xl"
                         required
                         autoComplete="current-password"
                       />
@@ -212,7 +220,7 @@ const Login = () => {
                     <Button
                       type="submit"
                       disabled={isLoading || !email.trim() || !password.trim()}
-                      className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold h-12"
+                      className="w-full bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white font-semibold h-12 rounded-xl shadow-lg"
                       style={{ 
                         WebkitTapHighlightColor: 'transparent',
                         touchAction: 'manipulation',
@@ -223,18 +231,18 @@ const Login = () => {
                       {isLoading ? 'Signing in...' : 'Sign In'}
                     </Button>
                   </form>
-                  <div className="flex items-center justify-between text-sm">
+                  <div className="flex items-center justify-between text-sm mt-4">
                     <button
                       type="button"
                       onClick={handleForgotPassword}
-                      className="text-blue-200 hover:text-white transition-colors"
+                      className="text-white hover:text-purple-200 transition-colors"
                     >
                       Forgot password?
                     </button>
                     <button
                       type="button"
                       onClick={() => setShowFaceIDLogin(true)}
-                      className="text-blue-200 hover:text-white transition-colors"
+                      className="text-white hover:text-purple-200 transition-colors"
                     >
                       Use Face ID instead
                     </button>
@@ -302,7 +310,7 @@ const Login = () => {
                 <span className="w-full border-t border-white/20" />
               </div>
               <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-transparent px-2 text-blue-200">Or sign in with</span>
+                <span className="bg-transparent px-2 text-white">OR SIGN IN WITH</span>
               </div>
             </div>
             <div className="space-y-3">
@@ -350,7 +358,7 @@ const Login = () => {
                   }
                 }}
                 variant="outline"
-                className="w-full bg-white/5 border-white/20 text-white hover:bg-white/10"
+                className="w-full bg-purple-500/20 border-white/20 text-white hover:bg-purple-500/30 rounded-xl h-12"
               >
                 <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
                   <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -359,52 +367,6 @@ const Login = () => {
                   <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
                 </svg>
                 Sign in with Google
-              </Button>
-              <Button
-                onClick={async () => {
-                  try {
-                    const redirectUrl = `${window.location.origin}/#/creator-dashboard`;
-                    // Store intended route in sessionStorage BEFORE OAuth call
-                    sessionStorage.setItem('oauth_intended_route', 'creator-dashboard');
-                    console.log('[Login] Starting GitHub OAuth with redirect:', redirectUrl);
-                    console.log('[Login] Stored intended route: creator-dashboard');
-                    const { data, error } = await supabase.auth.signInWithOAuth({
-                      provider: 'github',
-                      options: {
-                        redirectTo: redirectUrl,
-                      },
-                    });
-                    if (error) {
-                      console.error('[Login] GitHub OAuth error:', error);
-                      toast.error('Failed to sign in with GitHub: ' + error.message);
-                    } else if (data?.url) {
-                      // Redirect to GitHub OAuth
-                      // Use replace instead of href for Safari compatibility
-                      console.log('[Login] Redirecting to GitHub OAuth:', data.url);
-                      try {
-                        // Try using location.replace first (better for Safari)
-                        window.location.replace(data.url);
-                      } catch (err) {
-                        // Fallback to href if replace fails
-                        console.warn('[Login] location.replace failed, using href:', err);
-                        window.location.href = data.url;
-                      }
-                    } else {
-                      console.error('[Login] No OAuth URL received from Supabase');
-                      toast.error('Failed to start GitHub sign-in. Please try again.');
-                    }
-                  } catch (err: any) {
-                    console.error('[Login] GitHub OAuth exception:', err);
-                    toast.error('Failed to sign in with GitHub');
-                  }
-                }}
-                variant="outline"
-                className="w-full bg-white/5 border-white/20 text-white hover:bg-white/10"
-              >
-                <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 24 24">
-                  <path fillRule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482C19.138 20.197 22 16.425 22 12.017 22 6.484 17.522 2 12 2z" clipRule="evenodd"/>
-                </svg>
-                Sign in with Github
               </Button>
             </div>
           </div>
@@ -461,23 +423,34 @@ const Login = () => {
           </div>
         )}
         
+        {/* Sign Up Link */}
+        {!session && (
+          <div className="mt-6 text-center">
+            <p className="text-white text-sm mb-2">Don't have an account?</p>
+            <Link to="/signup" className="text-white hover:text-purple-200 transition-colors text-sm flex items-center justify-center gap-1">
+              <ArrowLeft className="h-4 w-4" /> Sign up instead
+            </Link>
+          </div>
+        )}
+
+        {/* Back to Homepage */}
         <div className="mt-6">
-          <Button variant="link" asChild className="w-full text-blue-200 hover:text-white">
+          <Button variant="link" asChild className="w-full text-white hover:text-purple-200">
             <Link to="/">
               <ArrowLeft className="h-4 w-4 mr-2" /> Back to Homepage
             </Link>
           </Button>
         </div>
       </div>
-      <div className="p-4 text-center">
-        <a
-          href="https://www.dyad.sh/"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-sm text-blue-200 hover:text-blue-100"
-        >
-          Made with Dyad
-        </a>
+      
+      {/* Legal Text */}
+      <div className="mt-6 text-center px-4">
+        <p className="text-white/60 text-xs">
+          By signing up, you agree to our{' '}
+          <a href="/terms" className="text-purple-300 hover:text-purple-200 underline">Terms of Service</a>
+          {' '}and{' '}
+          <a href="/privacy" className="text-purple-300 hover:text-purple-200 underline">Privacy Policy</a>
+        </p>
       </div>
     </div>
   );

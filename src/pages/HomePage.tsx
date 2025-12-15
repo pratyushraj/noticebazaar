@@ -60,55 +60,55 @@ const HomePage = () => {
 
   const features = [
     {
-      icon: Shield,
-      title: "Content Protection",
-      description: "AI-powered scanning to protect your original content from theft and unauthorized use.",
-      color: "from-purple-500 to-pink-500"
-    },
-    {
       icon: FileText,
-      title: "Contract Review",
-      description: "Get your brand deals reviewed by legal experts to ensure fair terms and maximum earnings.",
+      title: "Contract Protection",
+      description: "Scan contracts to identify risky clauses before you sign.",
       color: "from-blue-500 to-cyan-500"
     },
     {
       icon: DollarSign,
-      title: "Payment Tracking",
-      description: "Never miss a payment. Track all your earnings, pending payments, and financial goals.",
+      title: "Payment Recovery",
+      description: "Send legal notices when brands delay or refuse payment.",
       color: "from-green-500 to-emerald-500"
     },
     {
       icon: MessageCircle,
-      title: "Expert Advisors",
-      description: "Chat with legal and financial experts specialized in creator economy and brand partnerships.",
+      title: "Legal Assistance",
+      description: "Talk to verified legal advisors when disputes arise.",
       color: "from-orange-500 to-red-500"
+    },
+    {
+      icon: Clock,
+      title: "Payment Monitoring",
+      description: "Track pending payouts and amounts at risk in real time.",
+      color: "from-purple-500 to-pink-500"
     }
   ];
 
   const stats = [
-    { value: "₹50Cr+", label: "Creator Earnings Protected" },
-    { value: "2,500+", label: "Contracts Reviewed" },
-    { value: "10K+", label: "Content Pieces Secured" },
-    { value: "98%", label: "Client Satisfaction" }
+    { value: "₹50Cr+", label: "value under protection" },
+    { value: "5,000+", label: "deals monitored" },
+    { value: "85%", label: "payment recovery rate*" },
+    { value: "90%", label: "creators avoid disputes" }
   ];
 
   const howItWorks = [
     {
       step: 1,
-      title: "Sign Up Free",
-      description: "Create your account in under 2 minutes. No credit card required.",
-      icon: Users
+      title: "Add Your Deal",
+      description: "Upload a contract or enter deal details.",
+      icon: FileText
     },
     {
       step: 2,
-      title: "Connect Your Platforms",
-      description: "Link your Instagram, YouTube, and other social accounts securely.",
-      icon: Link
+      title: "We Monitor Risk",
+      description: "We track payments, deadlines, and potential issues.",
+      icon: Clock
     },
     {
       step: 3,
-      title: "Get Protected",
-      description: "Start tracking deals, scanning content, and getting expert advice instantly.",
+      title: "Take Legal Action If Needed",
+      description: "Escalate with legal notices or expert advisors.",
       icon: Shield
     }
   ];
@@ -118,7 +118,8 @@ const HomePage = () => {
       name: "Priya Sharma",
       role: "Fashion Influencer",
       avatar: "PS",
-      content: "NoticeBazaar helped me negotiate a 2X better deal and caught someone stealing my content. Worth every rupee!",
+      content: "A brand delayed my ₹4.8 Lakh payment for 3 months. NoticeBazaar sent a legal notice and I got paid within 2 weeks. Worth every rupee!",
+      painLine: "I was unpaid for weeks. The legal notice worked.",
       rating: 5,
       followers: "250K"
     },
@@ -126,7 +127,7 @@ const HomePage = () => {
       name: "Rahul Mehta",
       role: "Tech YouTuber",
       avatar: "RM",
-      content: "Finally, someone who understands the creator economy. The contract review saved me from a terrible exclusivity clause.",
+      content: "I almost signed a contract with a terrible exclusivity clause. NoticeBazaar flagged it and helped me negotiate better terms. Saved me from a huge mistake.",
       rating: 5,
       followers: "500K"
     },
@@ -134,7 +135,7 @@ const HomePage = () => {
       name: "Ananya Singh",
       role: "Lifestyle Creator",
       avatar: "AS",
-      content: "The payment tracking is a game-changer. I recovered ₹2.5 lakhs in missed payments within the first month!",
+      content: "Recovered ₹2.5 Lakhs in missed payments within the first month. The payment tracking and legal notices actually work.",
       rating: 5,
       followers: "180K"
     }
@@ -145,47 +146,67 @@ const HomePage = () => {
       name: "Free",
       price: "₹0",
       period: "/month",
-      description: "Perfect for getting started",
+      description: "For monitoring deals & risks",
+      helperText: "No legal action included",
       features: [
-        "Up to 5 contracts/month",
-        "Basic content scanning",
-        "Payment tracking",
-        "Email support",
-        "Community access"
+        "Limited deal tracking",
+        "Limited AI contract scans",
+        "Basic payment monitoring",
+        "Invoice creation (basic)",
+        "Dashboard access"
       ],
-      cta: "Start Free",
+      cta: "Start Monitoring Deals",
       popular: false
     },
     {
-      name: "Pro",
-      price: "₹999",
+      name: "Creator Lite",
+      price: "₹399",
       period: "/month",
-      description: "For serious creators",
+      description: "For creators who want structure & clarity",
+      helperText: "Best before you face unpaid brands or disputes",
       features: [
-        "Unlimited contracts",
-        "Advanced AI scanning",
-        "Priority expert advice",
-        "Automated DMCA takedowns",
-        "Revenue analytics",
-        "24/7 support"
+        "Unlimited AI contract scans (AI summary only)",
+        "Deals dashboard (brands, deadlines, deliverables)",
+        "Invoice generator (GST / Non-GST)",
+        "Payment tracking & reminders",
+        "Email / in-app support"
       ],
-      cta: "Start Free Trial",
+      cta: "Get Creator Lite",
+      popular: false
+    },
+    {
+      name: "Creator Pro",
+      price: "₹1,499",
+      period: "/month",
+      description: "For creators who need payment protection",
+      features: [
+        "Everything in Creator Lite",
+        "1 FREE legal notice every month (₹999 value)",
+        "1 human lawyer contract review / month",
+        "Payment recovery & escalation support",
+        "Tax compliance guidance (GST / TDS)",
+        "Lifestyle Shield (consumer complaints)",
+        "Panic Button (priority WhatsApp support)",
+        "Verified Creator badge"
+      ],
+      cta: "Protect My Payments",
       popular: true
     },
     {
       name: "Agency",
-      price: "Custom",
-      period: "",
-      description: "For agencies & teams",
+      price: "₹5,000",
+      period: "/month",
+      description: "For managers & creator teams",
+      helperText: "Covers up to 10 creators",
       features: [
-        "Everything in Pro",
-        "Multi-user accounts",
-        "White-label reports",
-        "Dedicated account manager",
-        "API access",
-        "Custom integrations"
+        "Manage up to 10 creators",
+        "5 legal notices per month",
+        "Bulk deal & payment monitoring",
+        "White-label contract risk reports",
+        "Client view-only dashboards",
+        "Dedicated relationship manager"
       ],
-      cta: "Contact Sales",
+      cta: "Talk to Sales",
       popular: false
     }
   ];
@@ -283,14 +304,14 @@ const HomePage = () => {
               transition={{ duration: 0.8 }}
             >
               <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-tight">
-                Protect Your Content.
+                Protect Your Deals.
                 <br />
                 <span className="bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 text-transparent bg-clip-text">
-                  Grow Your Income.
+                  Get Paid On Time.
                 </span>
               </h1>
               <p className="text-xl md:text-2xl text-purple-200 mb-8 max-w-3xl mx-auto">
-                The all-in-one platform for content creators to manage brand deals, protect intellectual property, and maximize earnings.
+                NoticeBazaar helps creators handle unpaid brand deals, risky contracts, and legal disputes — using software plus real legal action.
               </p>
             </motion.div>
 
@@ -304,12 +325,12 @@ const HomePage = () => {
                 to="/signup"
                 className="group bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 px-8 py-4 rounded-full font-bold text-lg transition-all transform hover:scale-105 shadow-2xl shadow-purple-500/50 flex items-center gap-2"
               >
-                Start Free Trial
+                Protect My Deals
                 <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </Link>
               <button className="flex items-center gap-2 px-8 py-4 rounded-full border-2 border-white/20 hover:border-white/40 transition-all font-semibold">
                 <Play className="w-5 h-5" />
-                Watch Demo
+                See How It Works
               </button>
             </motion.div>
 
@@ -340,6 +361,9 @@ const HomePage = () => {
       {/* Stats Section */}
       <section className="py-16 px-4 sm:px-6 lg:px-8 bg-white/5 backdrop-blur-sm">
         <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-8">
+            <h2 className="text-3xl font-bold mb-2">Trusted by Creators Across India</h2>
+          </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             {stats.map((stat, index) => (
               <motion.div
@@ -357,6 +381,9 @@ const HomePage = () => {
               </motion.div>
             ))}
           </div>
+          <div className="text-center mt-6">
+            <p className="text-xs text-purple-400/70">Based on deals monitored and cases escalated via NoticeBazaar.</p>
+          </div>
         </div>
       </section>
 
@@ -365,7 +392,7 @@ const HomePage = () => {
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-bold mb-4">
-              Everything You Need to Succeed
+              Everything You Need to Stay Protected
             </h2>
             <p className="text-xl text-purple-200 max-w-2xl mx-auto">
               Professional tools built specifically for content creators and influencers
@@ -398,7 +425,7 @@ const HomePage = () => {
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-bold mb-4">
-              Get Started in 3 Simple Steps
+              How NoticeBazaar Protects You
             </h2>
             <p className="text-xl text-purple-200 max-w-2xl mx-auto">
               Join thousands of creators protecting their work and growing their income
@@ -461,6 +488,9 @@ const HomePage = () => {
                     <Star key={i} className="w-5 h-5 fill-yellow-400 text-yellow-400" />
                   ))}
                 </div>
+                {testimonial.painLine && (
+                  <p className="text-purple-100 mb-3 font-bold">"{testimonial.painLine}"</p>
+                )}
                 <p className="text-purple-100 mb-6 italic">"{testimonial.content}"</p>
                 <div className="flex items-center gap-3">
                   <div className="w-12 h-12 rounded-full bg-gradient-to-r from-purple-600 to-pink-600 flex items-center justify-center font-bold">
@@ -482,14 +512,14 @@ const HomePage = () => {
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-bold mb-4">
-              Simple, Transparent Pricing
+              Protection Plans for Every Creator
             </h2>
             <p className="text-xl text-purple-200 max-w-2xl mx-auto">
               Choose the plan that's right for your creator journey
             </p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8">
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
             {pricingPlans.map((plan, index) => (
               <motion.div
                 key={index}
@@ -508,11 +538,17 @@ const HomePage = () => {
                 )}
                 <div className="text-center mb-6">
                   <h3 className="text-2xl font-bold mb-2">{plan.name}</h3>
-                  <p className="text-purple-300 text-sm mb-4">{plan.description}</p>
+                  <p className="text-purple-300 text-sm mb-2">{plan.description}</p>
+                  {plan.helperText && plan.name === "Creator Lite" && (
+                    <p className="text-purple-400 text-xs mb-3">{plan.helperText}</p>
+                  )}
                   <div className="flex items-baseline justify-center gap-1">
                     <span className="text-5xl font-bold">{plan.price}</span>
                     {plan.period && <span className="text-purple-300">{plan.period}</span>}
                   </div>
+                  {plan.helperText && plan.name === "Agency" && (
+                    <p className="text-purple-400 text-xs mt-2">{plan.helperText}</p>
+                  )}
                 </div>
                 <ul className="space-y-3 mb-8">
                   {plan.features.map((feature, idx) => (
@@ -532,8 +568,14 @@ const HomePage = () => {
                 >
                   {plan.cta}
                 </Link>
+                {plan.helperText && plan.name === "Free" && (
+                  <p className="text-purple-400/70 text-xs text-center mt-3">No legal action included</p>
+                )}
               </motion.div>
             ))}
+          </div>
+          <div className="text-center mt-8">
+            <p className="text-purple-300 text-sm">Legal notices included in Creator Pro. No lawyers to chase. No court visits. No confusion.</p>
           </div>
         </div>
       </section>
@@ -556,26 +598,21 @@ const HomePage = () => {
             className="bg-gradient-to-r from-purple-600/20 to-pink-600/20 backdrop-blur-md rounded-3xl p-12 border border-white/10"
           >
             <h2 className="text-4xl md:text-5xl font-bold mb-6">
-              Ready to Protect Your Content?
+              Don't Let Brands Delay Your Payment
             </h2>
             <p className="text-xl text-purple-200 mb-8 max-w-2xl mx-auto">
-              Join thousands of creators who trust NoticeBazaar to manage their brand deals and protect their intellectual property.
+              Start free. Upgrade only if you need legal recovery.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <Link
                 to="/signup"
                 className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 px-8 py-4 rounded-full font-bold text-lg transition-all transform hover:scale-105 shadow-2xl shadow-purple-500/50 flex items-center gap-2"
               >
-                Start Your Free Trial
+                Protect My Deals Now
                 <ArrowRight className="w-5 h-5" />
               </Link>
-              <Link
-                to="/login"
-                className="px-8 py-4 rounded-full border-2 border-white/20 hover:border-white/40 transition-all font-semibold"
-              >
-                Sign In
-              </Link>
             </div>
+            <p className="text-sm text-purple-300 mt-4">No lawyers to chase. No court visits.</p>
           </motion.div>
         </div>
       </section>
@@ -588,8 +625,11 @@ const HomePage = () => {
               <div className="text-2xl font-bold mb-4 bg-gradient-to-r from-purple-400 to-pink-400 text-transparent bg-clip-text">
                 NoticeBazaar
               </div>
-              <p className="text-purple-300 text-sm">
+              <p className="text-purple-300 text-sm mb-2">
                 Empowering creators to protect their content and grow their income.
+              </p>
+              <p className="text-purple-400 text-xs font-medium">
+                NoticeBazaar is India's creator protection platform for contracts, payments, and legal recovery.
               </p>
             </div>
             <div>

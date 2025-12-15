@@ -188,7 +188,7 @@ const ProfileSettings = () => {
       
       achievementList.push({
         id: 1,
-        title: "First Deal",
+        title: "First Deal Monitored",
         icon: Star,
         earned: true,
         date: earnedDate || "Recently"
@@ -196,7 +196,7 @@ const ProfileSettings = () => {
     } else {
       achievementList.push({
         id: 1,
-        title: "First Deal",
+        title: "First Deal Monitored",
         icon: Star,
         earned: false,
         progress: 0
@@ -219,7 +219,7 @@ const ProfileSettings = () => {
       
       achievementList.push({
         id: 2,
-        title: "10 Deals",
+        title: "10 Deals Monitored",
         icon: TrendingUp,
         earned: true,
         date: earnedDate || "Recently"
@@ -227,49 +227,34 @@ const ProfileSettings = () => {
     } else {
       achievementList.push({
         id: 2,
-        title: "10 Deals",
+        title: "10 Deals Monitored",
         icon: TrendingUp,
         earned: false,
         progress: Math.min(100, Math.round((totalDeals / 10) * 100))
       });
     }
     
-    // ₹1M Earned achievement
+    // ₹1M Under Watch achievement
     const oneMillion = 1000000;
-    if (totalEarnings >= oneMillion) {
-      achievementList.push({
-        id: 3,
-        title: "₹1M Earned",
-        icon: Award,
-        earned: true,
-        date: "Recently"
-      });
-    } else {
-      achievementList.push({
-        id: 3,
-        title: "₹1M Earned",
-        icon: Award,
-        earned: false,
-        progress: Math.min(100, Math.round((totalEarnings / oneMillion) * 100))
-      });
-    }
+    const totalUnderWatch = brandDeals
+      .filter(deal => deal.status !== 'Completed' || !deal.payment_received_date)
+      .reduce((sum, deal) => sum + (deal.deal_amount || 0), 0);
     
-    // 100% Protection achievement
-    if (protectionScore >= 100) {
+    if (totalUnderWatch >= oneMillion) {
       achievementList.push({
-        id: 4,
-        title: "100% Protection",
-        icon: Shield,
+        id: 3,
+        title: "₹1M Under Watch",
+        icon: Award,
         earned: true,
         date: "Recently"
       });
     } else {
       achievementList.push({
-        id: 4,
-        title: "100% Protection",
-        icon: Shield,
+        id: 3,
+        title: "₹1M Under Watch",
+        icon: Award,
         earned: false,
-        progress: protectionScore
+        progress: Math.min(100, Math.round((totalUnderWatch / oneMillion) * 100))
       });
     }
     
@@ -494,10 +479,10 @@ const ProfileSettings = () => {
                 <div className="text-purple-200 mb-2">@{userData.displayName}</div>
                 <div className="flex items-center gap-2 text-sm">
                   <span className="px-3 py-1 bg-purple-500/20 text-purple-300 rounded-full">
-                    {userData.userType}
+                    Verified Creator Profile
                   </span>
-                  <span className="px-3 py-1 bg-orange-500/20 text-orange-400 rounded-full flex items-center gap-1">
-                    🔥 {userData.stats.streak} weeks
+                  <span className="px-3 py-1 bg-green-500/20 text-green-400 rounded-full flex items-center gap-1">
+                    Protection Active
                   </span>
                 </div>
               </div>
@@ -514,28 +499,35 @@ const ProfileSettings = () => {
                 className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-white placeholder-purple-400 outline-none resize-none transition-colors focus:border-purple-500 focus:bg-white/10 mb-4"
               />
             ) : (
-              <p className="text-sm text-purple-200 leading-relaxed mb-4">
-                {userData.bio || 'No bio yet. Tap Edit to add one!'}
-              </p>
+              <div className="mb-4">
+                <p className="text-sm text-purple-200 leading-relaxed">
+                  {userData.bio || 'No profile details added yet.'}
+                </p>
+                {!userData.bio && (
+                  <p className="text-xs text-purple-400 mt-1">
+                    Adding details helps advisors assist you faster.
+                  </p>
+                )}
+              </div>
             )}
 
             {/* Stats Grid */}
             <div className="grid grid-cols-4 gap-3">
               <div className="text-center">
                 <div className="text-xl font-bold mb-1">{userData.stats.totalDeals}</div>
-                <div className="text-xs text-purple-300">Deals</div>
+                <div className="text-xs text-purple-300">Deals Monitored</div>
               </div>
               <div className="text-center">
                 <div className="text-xl font-bold mb-1">₹{(userData.stats.totalEarnings / 1000).toFixed(0)}K</div>
-                <div className="text-xs text-purple-300">Earned</div>
+                <div className="text-xs text-purple-300">Amount Recovered</div>
               </div>
               <div className="text-center">
                 <div className="text-xl font-bold mb-1">{userData.stats.protectionScore}</div>
-                <div className="text-xs text-purple-300">Protection</div>
+                <div className="text-xs text-purple-300">Amount Under Watch</div>
               </div>
               <div className="text-center">
                 <div className="text-xl font-bold mb-1">{userData.stats.activeDeals}</div>
-                <div className="text-xs text-purple-300">Active</div>
+                <div className="text-xs text-purple-300">Active Cases</div>
               </div>
             </div>
           </div>
@@ -674,10 +666,11 @@ const ProfileSettings = () => {
 
             {/* Social Platforms */}
             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-5 border border-white/10">
-              <h2 className="font-semibold text-lg mb-4 flex items-center gap-2">
+              <h2 className="font-semibold text-lg mb-1 flex items-center gap-2">
                 <Globe className="w-5 h-5" />
                 Social Platforms
               </h2>
+              <p className="text-xs text-purple-400 mb-4">Used only for deal verification. Not public.</p>
               <div className="space-y-3">
                 {userData.platforms.map(platform => (
                   <div key={platform.name} className="flex items-center justify-between p-3 bg-white/5 rounded-xl border border-white/10">
@@ -713,11 +706,11 @@ const ProfileSettings = () => {
               </div>
             </div>
 
-            {/* Achievements */}
+            {/* Account Milestones */}
             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-5 border border-white/10">
               <h2 className="font-semibold text-lg mb-4 flex items-center gap-2">
                 <Award className="w-5 h-5" />
-                Achievements
+                Account Milestones
               </h2>
               <div className="grid grid-cols-2 gap-3">
                 {userData.achievements.map(achievement => {

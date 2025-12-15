@@ -254,22 +254,22 @@ const MarketingHome = () => {
           
           <div className="relative z-10">
             <h1 className="text-4xl md:text-5xl font-extrabold leading-tight mt-2">
-              Your Personal Legal Team for <span className="gradient-text">Brand Deals & Payments</span>
+              Protect Your Deals. Get Paid On Time.
             </h1>
             <p className="mt-4 text-gray-300 max-w-xl text-lg">
-              Secure every collaboration with airtight contracts, on-time payments, copyright enforcement and on-demand legal help. Built for India’s top creators and agencies.
+              NoticeBazaar helps creators handle unpaid brand deals, risky contracts, and legal disputes — using software plus real legal action.
             </p>
 
             <div className="mt-8 flex flex-col sm:flex-row gap-4">
               <Link to="/free-legal-check" className="cta-primary inline-flex items-center justify-center gap-3 font-bold py-3 px-5 rounded-lg shadow-md text-lg flex-1">
-                Start Creator Legal Check
+                Protect My Deals
                 <ArrowRight className="h-5 w-5" />
               </Link>
               <button
                 onClick={() => openCalendly(CALENDLY_URL)}
                 className="cta-secondary inline-flex items-center justify-center gap-3 font-bold py-3 px-5 rounded-lg shadow-md text-lg flex-1"
               >
-                Book a Brand Deal Review
+                See How It Works
                 <Phone className="h-5 w-5" />
               </button>
             </div>
@@ -290,8 +290,8 @@ const MarketingHome = () => {
         {/* SECTION 2 — Creator Focus */}
         <section className="py-16" data-aos="fade-up">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold">Built for Content Creators & Influencers</h2>
-            <p className="text-gray-400 mt-2 max-w-2xl mx-auto text-lg">Everything you need to protect your brand deals, recover payments, and grow your creator business.</p>
+            <h2 className="text-3xl font-bold">Everything You Need to Stay Protected</h2>
+            <p className="text-gray-400 mt-2 max-w-2xl mx-auto text-lg">Monitor deals, recover payments, and take legal action when brands don't pay.</p>
           </div>
           <div className="max-w-2xl mx-auto">
             <Link to="/pricing-comparison" id="for-creators" className="card p-8 rounded-xl shadow-lg border border-purple-500/30 hover:border-purple-500 transition-all duration-300 hover:scale-[1.02] flex flex-col justify-between">
@@ -327,35 +327,35 @@ const MarketingHome = () => {
             <div className="space-y-6">
               <h2 className="text-4xl font-extrabold leading-tight">What creators manage inside NoticeBazaar</h2>
               <p className="text-gray-300 text-lg">
-                Automate the legal grind so you can focus on content. Every tool is built with Indian brand deals, agencies and platforms in mind.
+                Monitor deals, recover payments, and take legal action when brands don't pay. Every tool is built for Indian creators.
               </p>
               <div className="grid sm:grid-cols-2 gap-3">
                 <div className="card p-4 flex items-start gap-3">
                   <FileText className="h-5 w-5 text-blue-400 mt-1" />
                   <div>
-                    <p className="font-semibold text-foreground">Contract Intelligence</p>
-                    <p className="text-xs text-muted">AI review, unfair clause detection, co-pilot edits.</p>
+                    <p className="font-semibold text-foreground">Contract Protection</p>
+                    <p className="text-xs text-muted">Scan contracts to identify risky clauses before you sign.</p>
                   </div>
                 </div>
                 <div className="card p-4 flex items-start gap-3">
                   <IndianRupee className="h-5 w-5 text-green-400 mt-1" />
                   <div>
-                    <p className="font-semibold text-foreground">Payment Recovery Desk</p>
-                    <p className="text-xs text-muted">Escalation stack, legal notices, follow-up automations.</p>
+                    <p className="font-semibold text-foreground">Payment Recovery</p>
+                    <p className="text-xs text-muted">Send legal notices when brands delay or refuse payment.</p>
                   </div>
                 </div>
                 <div className="card p-4 flex items-start gap-3">
-                  <ShieldCheck className="h-5 w-5 text-purple-400 mt-1" />
+                  <MessageSquare className="h-5 w-5 text-purple-400 mt-1" />
                   <div>
-                    <p className="font-semibold text-foreground">Copyright Radar</p>
-                    <p className="text-xs text-muted">AI monitoring, takedown drafting, screenshot evidence.</p>
+                    <p className="font-semibold text-foreground">Legal Assistance</p>
+                    <p className="text-xs text-muted">Talk to verified legal advisors when disputes arise.</p>
                   </div>
                 </div>
                 <div className="card p-4 flex items-start gap-3">
-                  <MessageSquare className="h-5 w-5 text-yellow-400 mt-1" />
+                  <Clock className="h-5 w-5 text-yellow-400 mt-1" />
                   <div>
-                    <p className="font-semibold text-foreground">Briefs & WhatsApp Vault</p>
-                    <p className="text-xs text-muted">Store briefs, chats, deliverables and invoices securely.</p>
+                    <p className="font-semibold text-foreground">Payment Monitoring</p>
+                    <p className="text-xs text-muted">Track pending payouts and amounts at risk in real time.</p>
                   </div>
                 </div>
               </div>
@@ -419,8 +419,8 @@ const MarketingHome = () => {
         {/* SECTION 6 — Creator Plans Section */}
         <section className="py-16">
           <div className="text-center mb-12" data-aos="fade-up">
-            <h2 className="text-3xl font-bold">Creator Plans</h2>
-            <p className="text-gray-400 text-lg">Legal & financial protection tailored for your creator journey.</p>
+            <h2 className="text-3xl font-bold">Protection Plans for Every Creator</h2>
+            <p className="text-gray-400 text-lg">Monitor deals, recover payments, and escalate with legal action when needed.</p>
           </div>
 
           {/* Monthly / Yearly Toggle */}
@@ -467,28 +467,31 @@ const MarketingHome = () => {
               </div>
             ))}
           </div>
+          <div className="text-center mt-8">
+            <p className="text-gray-400 text-sm">Legal notices included in Pro plans. No hidden fees.</p>
+          </div>
         </section>
 
         {/* SECTION 7 — Creator Social Proof */}
         <section className="py-16" data-aos="fade-up">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold">Creators Trust NoticeBazaar</h2>
-            <p className="text-gray-400 mt-2 max-w-2xl mx-auto text-lg">Real results from creators like you.</p>
+            <h2 className="text-3xl font-bold">Trusted by Creators Across India</h2>
+            <p className="text-gray-400 mt-2 max-w-2xl mx-auto text-lg">Real results from creators who recovered payments and avoided bad contracts.</p>
           </div>
           <div className="grid md:grid-cols-3 gap-6">
             <div className="card p-6 rounded-xl bg-gray-800/50 border-gray-700/50" data-aos="fade-up">
               <div className="flex mb-3 text-yellow-400">
                 <Star className="h-5 w-5 fill-current" /><Star className="h-5 w-5 fill-current" /><Star className="h-5 w-5 fill-current" /><Star className="h-5 w-5 fill-current" /><Star className="h-5 w-5 fill-current" />
               </div>
-              <p className="text-gray-300 text-lg leading-relaxed">"NoticeBazaar saved me **₹4.8 Lakh** on a delayed brand payment. Their legal notice worked wonders!"</p>
+              <p className="text-gray-300 text-lg leading-relaxed">"A brand delayed my ₹4.8 Lakh payment for 3 months. NoticeBazaar sent a legal notice and I got paid within 2 weeks. Worth every rupee!"</p>
               <div className="mt-4 font-bold text-white">Riya S.</div>
               <div className="text-sm text-gray-400">Fashion Influencer (150K followers)</div>
             </div>
             <div className="card p-6 rounded-xl bg-gray-800/50 border-gray-700/50" data-aos="fade-up" data-aos-delay="80">
               <div className="flex mb-3 text-yellow-400">
-                <Star className="h-5 w-5 fill-current" /><Star className="h-5 w-5 fill-current" /><Star className="h-5 w-5 fill-current" /><Star className="h-5 w-5 fill-current" /><Star className="h-5 w-5 text-gray-600" />
+                <Star className="h-5 w-5 fill-current" /><Star className="h-5 w-5 fill-current" /><Star className="h-5 w-5 fill-current" /><Star className="h-5 w-5 fill-current" /><Star className="h-5 w-5 fill-current" />
               </div>
-              <p className="text-gray-300 text-lg leading-relaxed">"They helped me negotiate a better brand contract, increasing my payout by **2X**. Essential for any serious creator."</p>
+              <p className="text-gray-300 text-lg leading-relaxed">"I almost signed a contract with a terrible exclusivity clause. NoticeBazaar flagged it and helped me negotiate better terms. Saved me from a huge mistake."</p>
               <div className="mt-4 font-bold text-white">Aryan K.</div>
               <div className="text-sm text-gray-400">Tech Reviewer (80K subscribers)</div>
             </div>
@@ -496,7 +499,7 @@ const MarketingHome = () => {
               <div className="flex mb-3 text-yellow-400">
                 <Star className="h-5 w-5 fill-current" /><Star className="h-5 w-5 fill-current" /><Star className="h-5 w-5 fill-current" /><Star className="h-5 w-5 fill-current" /><Star className="h-5 w-5 fill-current" />
               </div>
-              <p className="text-gray-300 text-lg leading-relaxed">"Had a copyright strike on my video. NoticeBazaar got it removed in **48 hours**. Peace of mind is priceless."</p>
+              <p className="text-gray-300 text-lg leading-relaxed">"Recovered ₹2.5 Lakhs in missed payments within the first month. The payment tracking and legal notices actually work."</p>
               <div className="mt-4 font-bold text-white">Pooja M.</div>
               <div className="text-sm text-gray-400">Vlogger (200K subscribers)</div>
             </div>
@@ -538,14 +541,11 @@ const MarketingHome = () => {
 
         {/* SECTION 11 — Final CTA */}
         <section className="py-20 text-center" data-aos="fade-up">
-          <h2 className="text-3xl font-bold mb-6">Ready to Get Started?</h2>
-          <p className="text-gray-400 mt-2 max-w-2xl mx-auto text-lg mb-8">Choose the path that's right for you.</p>
+          <h2 className="text-3xl font-bold mb-6">Don't Let Brands Delay Your Payment</h2>
+          <p className="text-gray-400 mt-2 max-w-2xl mx-auto text-lg mb-8">Start free. Upgrade only if you need legal recovery.</p>
           <div className="flex flex-col sm:flex-row justify-center gap-6">
             <Link to="/free-legal-check" className="cta-primary px-8 py-4 rounded-lg font-bold text-xl shadow-lg transition-transform duration-300 hover:scale-[1.02]">
-              I’m a Creator <ArrowRight className="h-6 w-6 ml-2" />
-            </Link>
-            <Link to="/free-legal-check" className="cta-secondary px-8 py-4 rounded-lg font-bold text-xl shadow-lg transition-transform duration-300 hover:scale-[1.02]">
-              I’m a Business <ArrowRight className="h-6 w-6 ml-2" />
+              Protect My Deals Now <ArrowRight className="h-6 w-6 ml-2" />
             </Link>
           </div>
         </section>

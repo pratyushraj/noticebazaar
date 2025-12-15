@@ -13,6 +13,7 @@ import {
   Search,
   ChevronRight,
   MessageSquare,
+  Shield,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
@@ -20,6 +21,7 @@ import { useSidebar } from '@/contexts/SidebarContext';
 import { useSession } from '@/contexts/SessionContext';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { getInitials, DEFAULT_AVATAR_URL } from '@/lib/utils/avatar';
+import { isCreatorProSync } from '@/lib/subscription';
 
 interface SidebarItem {
   name: string;
@@ -27,6 +29,7 @@ interface SidebarItem {
   path: string;
   iconColor: string;
   roles?: string[];
+  isPro?: boolean; // New: Indicates Pro-only feature
 }
 
 interface SidebarSection {
@@ -98,8 +101,11 @@ const SidebarItem: React.FC<{
   item: SidebarItem;
   isActive: boolean;
   onClick: () => void;
-}> = ({ item, isActive, onClick }) => {
+  isProUser?: boolean; // New: Pass Pro status
+}> = ({ item, isActive, onClick, isProUser = false }) => {
   const Icon = item.icon;
+  const isProFeature = item.isPro === true;
+  const showProBadge = isProFeature && isProUser;
   
   return (
     <button
@@ -130,6 +136,13 @@ const SidebarItem: React.FC<{
         {item.name}
       </span>
       
+      {/* PRO Badge */}
+      {showProBadge && (
+        <span className="px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider bg-gradient-to-r from-blue-500/20 to-purple-500/20 border border-blue-500/30 rounded-md text-blue-400 flex-shrink-0">
+          PRO
+        </span>
+      )}
+      
       {/* Chevron */}
       <ChevronRight className={cn(
         "w-4 h-4 flex-shrink-0 transition-colors",
@@ -144,7 +157,8 @@ const SidebarSection: React.FC<{
   section: SidebarSection;
   isActive: (path: string) => boolean;
   onItemClick: (path: string) => void;
-}> = ({ section, isActive, onItemClick }) => {
+  isProUser?: boolean; // New: Pass Pro status
+}> = ({ section, isActive, onItemClick, isProUser = false }) => {
   return (
     <div className="mb-6">
       {/* Section Header */}
@@ -162,6 +176,7 @@ const SidebarSection: React.FC<{
             item={item}
             isActive={isActive(item.path)}
             onClick={() => onItemClick(item.path)}
+            isProUser={isProUser}
           />
         ))}
       </div>
@@ -180,6 +195,9 @@ const Sidebar: React.FC<SidebarProps> = ({ className, profileRole }) => {
   
   // For preview mode, always show sidebar on desktop
   const isPreview = location.pathname === '/dashboard-preview';
+
+  // Check if user is Pro (for showing Pro features)
+  const isProUser = isCreatorProSync(profile);
 
   // Define menu sections with macOS/iOS Settings structure
   const menuSections: SidebarSection[] = [
@@ -229,6 +247,19 @@ const Sidebar: React.FC<SidebarProps> = ({ className, profileRole }) => {
       ]
     },
     {
+      title: "🛡 LIFESTYLE SHIELD",
+      items: [
+        { 
+          name: "Consumer Complaints", 
+          icon: Shield, 
+          path: "/lifestyle/consumer-complaints", 
+          iconColor: "#34D399", // Soft green
+          roles: ['creator'],
+          isPro: true // Pro-only feature
+        },
+      ]
+    },
+    {
       title: "BUSINESS",
       items: [
         { 
@@ -261,12 +292,17 @@ const Sidebar: React.FC<SidebarProps> = ({ className, profileRole }) => {
     }
   ];
 
-  // Filter sections and items based on role
+  // Filter sections and items based on role and Pro status
   const visibleSections = menuSections.map(section => ({
     ...section,
     items: section.items.filter(item => {
-      if (!item.roles) return true;
-      return item.roles.includes(profileRole || '');
+      // Filter by role
+      if (item.roles && !item.roles.includes(profileRole || '')) {
+        return false;
+      }
+      // For Pro-only features, show them to Pro users, or show disabled to non-Pro users
+      // We'll show the section but handle access in the click handler
+      return true;
     })
   })).filter(section => section.items.length > 0);
 
@@ -314,6 +350,21 @@ const Sidebar: React.FC<SidebarProps> = ({ className, profileRole }) => {
 
   // Handle item click
   const handleItemClick = (path: string) => {
+    // Check if this is a Pro-only feature
+    const item = menuSections
+      .flatMap(s => s.items)
+      .find(i => i.path === path);
+    
+    if (item?.isPro && !isProUser) {
+      // Redirect to upgrade page for non-Pro users
+      navigate(`/upgrade?source=consumer-complaints`, { replace: false });
+      // Close sidebar on mobile/tablet
+      if (window.innerWidth < 1024) {
+        setIsOpen(false);
+      }
+      return;
+    }
+
     // Close sidebar on mobile/tablet (only keep open on desktop)
     if (window.innerWidth < 1024) {
       setIsOpen(false);
@@ -424,6 +475,7 @@ const Sidebar: React.FC<SidebarProps> = ({ className, profileRole }) => {
                 section={section}
                 isActive={isActive}
                 onItemClick={handleItemClick}
+                isProUser={isProUser}
               />
             ))}
           </div>
@@ -466,6 +518,7 @@ const Sidebar: React.FC<SidebarProps> = ({ className, profileRole }) => {
                   section={section}
                   isActive={isActive}
                   onItemClick={handleItemClick}
+                  isProUser={isProUser}
                 />
               ))}
             </div>
@@ -516,6 +569,7 @@ const Sidebar: React.FC<SidebarProps> = ({ className, profileRole }) => {
                   section={section}
                   isActive={isActive}
                   onItemClick={handleItemClick}
+                  isProUser={isProUser}
                 />
               ))}
             </div>
