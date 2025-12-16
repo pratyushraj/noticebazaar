@@ -39,6 +39,49 @@ const Signup = () => {
     }
   }, [session, loading, navigate, user]);
 
+  const handleEmailPasswordSignup = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!email.trim() || !password.trim()) {
+      toast.error('Please enter both email and password');
+      return;
+    }
+
+    if (password.length < 6) {
+      toast.error('Password must be at least 6 characters long');
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email: email.trim(),
+        password: password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/#/creator-onboarding`,
+        },
+      });
+
+      if (error) {
+        console.error('[Signup] Email/password signup error:', error);
+        if (error.message.includes('User already registered')) {
+          toast.error('An account with this email already exists. Please sign in instead.');
+          setShowLogin(true);
+        } else {
+          toast.error('Failed to sign up: ' + error.message);
+        }
+      } else if (data.user) {
+        toast.success('Account created! Please check your email to verify your account.');
+        // Optionally redirect to a verification page or show a message
+      }
+    } catch (err: any) {
+      console.error('[Signup] Email/password signup exception:', err);
+      toast.error('An error occurred. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleEmailPasswordLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -331,6 +374,62 @@ const Signup = () => {
               </div>
             )}
 
+            {/* Email/Password Signup Form */}
+            {!showLogin && (
+              <div className="mb-6 space-y-3">
+                <form onSubmit={handleEmailPasswordSignup} className="space-y-3">
+                  <div>
+                    <Label htmlFor="signup-email" className="text-purple-200 text-sm mb-2 block">
+                      Email
+                    </Label>
+                    <Input
+                      id="signup-email"
+                      type="email"
+                      placeholder="Enter your email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className="bg-white/5 border-white/10 text-white placeholder:text-white/40 text-base h-12"
+                      required
+                      autoComplete="email"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="signup-password" className="text-purple-200 text-sm mb-2 block">
+                      Password
+                    </Label>
+                    <Input
+                      id="signup-password"
+                      type="password"
+                      placeholder="Create a password (min. 6 characters)"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      className="bg-white/5 border-white/10 text-white placeholder:text-white/40 text-base h-12"
+                      required
+                      autoComplete="new-password"
+                      minLength={6}
+                    />
+                  </div>
+                  <Button
+                    type="submit"
+                    disabled={isLoading || !email.trim() || !password.trim() || password.length < 6}
+                    className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold h-12"
+                  >
+                    {isLoading ? 'Creating account...' : 'Create Account'}
+                  </Button>
+                </form>
+
+                {/* Divider */}
+                <div className="relative my-4">
+                  <div className="absolute inset-0 flex items-center">
+                    <div className="w-full border-t border-white/10"></div>
+                  </div>
+                  <div className="relative flex justify-center text-sm">
+                    <span className="px-4 bg-transparent text-purple-200">Or</span>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* OAuth Sign-up/Sign-in Buttons */}
             {!showLogin && (
               <div className="mb-6 space-y-3">
@@ -480,6 +579,15 @@ const Signup = () => {
                 <ArrowLeft className="w-4 h-4" />
                 {showLogin ? 'Sign up instead' : 'Sign in instead'}
               </button>
+            </div>
+
+            {/* Back to Homepage */}
+            <div className="mt-6">
+              <Button variant="link" asChild className="w-full text-purple-300 hover:text-purple-200">
+                <Link to="/">
+                  <ArrowLeft className="h-4 w-4 mr-2" /> Back to Homepage
+                </Link>
+              </Button>
             </div>
 
             {/* Terms */}
