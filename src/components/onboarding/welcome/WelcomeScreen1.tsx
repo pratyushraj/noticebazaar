@@ -13,7 +13,7 @@ interface WelcomeScreen1Props {
 }
 
 /**
- * Welcome Screen 1: Introduction to NoticeBazaar
+ * Welcome Screen 1: Introduction to CreatorArmour
  * - Features grid with 3 cards
  * - Animated icon bubble
  * - Standardized typography and spacing
@@ -68,7 +68,7 @@ export const WelcomeScreen1: React.FC<WelcomeScreen1Props> = ({ onNext }) => {
         transition={{ duration: 0.4, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
         className="text-2xl md:text-3xl font-bold leading-tight mb-3 md:mb-4"
       >
-        Welcome to NoticeBazaar
+        Welcome to CreatorArmour
       </motion.h1>
 
       {/* Subtitle - Slide up */}

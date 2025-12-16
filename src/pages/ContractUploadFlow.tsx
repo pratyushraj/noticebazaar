@@ -188,8 +188,8 @@ ${creatorName}`;
     
     // Verify deal exists in database before opening modal (with retry)
     const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 
-      (typeof window !== 'undefined' && window.location.origin.includes('noticebazaar.com') 
-        ? 'https://api.noticebazaar.com' 
+      (typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com') 
+        ? 'https://api.creatorarmour.com' 
         : 'http://localhost:3001');
     
     let verified = false;
@@ -773,8 +773,8 @@ ${creatorName}`;
 
     try {
       const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 
-        (typeof window !== 'undefined' && window.location.origin.includes('noticebazaar.com') 
-          ? 'https://api.noticebazaar.com' 
+      (typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com') 
+        ? 'https://api.creatorarmour.com'
           : 'http://localhost:3001');
       const response = await fetch(`${apiBaseUrl}/api/protection/send-negotiation-email`, {
         method: 'POST',
@@ -849,8 +849,8 @@ ${creatorName}`;
     
     try {
       const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 
-        (typeof window !== 'undefined' && window.location.origin.includes('noticebazaar.com') 
-          ? 'https://api.noticebazaar.com' 
+      (typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com') 
+        ? 'https://api.creatorarmour.com'
           : 'http://localhost:3001');
       const response = await fetch(`${apiBaseUrl}/api/protection/generate-fix`, {
         method: 'POST',
@@ -3088,8 +3088,8 @@ ${creatorName}`;
                         setIsGeneratingMessage(true);
                         try {
                           const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 
-                            (typeof window !== 'undefined' && window.location.origin.includes('noticebazaar.com') 
-                              ? 'https://api.noticebazaar.com' 
+      (typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com') 
+        ? 'https://api.creatorarmour.com'
                               : 'http://localhost:3001');
                           const requestBody: any = { brandName: 'the Brand' };
                           if (reportId) {
@@ -3699,8 +3699,8 @@ ${creatorName}`;
                                     
                                     try {
                                       const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 
-                                        (typeof window !== 'undefined' && window.location.origin.includes('noticebazaar.com') 
-                                          ? 'https://api.noticebazaar.com' 
+      (typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com') 
+        ? 'https://api.creatorarmour.com'
                                           : 'http://localhost:3001');
                                       
                                       const requestBody: any = {
@@ -3924,8 +3924,8 @@ ${creatorName}${session?.user?.email ? `\n${session.user.email}` : ''}`;
                     
                     try {
                       const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 
-                        (typeof window !== 'undefined' && window.location.origin.includes('noticebazaar.com') 
-                          ? 'https://api.noticebazaar.com' 
+      (typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com') 
+        ? 'https://api.creatorarmour.com'
                           : 'http://localhost:3001');
                       
                       const requestBody: any = {
@@ -4389,8 +4389,8 @@ ${creatorName}${session?.user?.email ? `\n${session.user.email}` : ''}`;
                         
                         try {
                           const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 
-                            (typeof window !== 'undefined' && window.location.origin.includes('noticebazaar.com') 
-                              ? 'https://api.noticebazaar.com' 
+      (typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com') 
+        ? 'https://api.creatorarmour.com'
                               : 'http://localhost:3001');
                           
                           // Generate clauses for all unresolved issues
@@ -4463,8 +4463,8 @@ ${creatorName}${session?.user?.email ? `\n${session.user.email}` : ''}`;
                             setIsGeneratingMessage(true);
                             try {
                               const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 
-                                (typeof window !== 'undefined' && window.location.origin.includes('noticebazaar.com') 
-                                  ? 'https://api.noticebazaar.com' 
+      (typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com') 
+        ? 'https://api.creatorarmour.com'
                                   : 'http://localhost:3001');
                               const response = await fetch(`${apiBaseUrl}/api/protection/generate-negotiation-message`, {
                                 method: 'POST',
@@ -4962,8 +4962,8 @@ ${creatorName}${session?.user?.email ? `\n${session.user.email}` : ''}`;
                       
                       try {
                         const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 
-                          (typeof window !== 'undefined' && window.location.origin.includes('noticebazaar.com') 
-                            ? 'https://api.noticebazaar.com' 
+      (typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com') 
+        ? 'https://api.creatorarmour.com'
                             : 'http://localhost:3001');
                         
                         const requestBody: any = {
@@ -5057,8 +5057,8 @@ ${creatorName}${session?.user?.email ? `\n${session.user.email}` : ''}`;
                       
                       try {
                         const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 
-                          (typeof window !== 'undefined' && window.location.origin.includes('noticebazaar.com') 
-                            ? 'https://api.noticebazaar.com' 
+      (typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com') 
+        ? 'https://api.creatorarmour.com'
                             : 'http://localhost:3001');
                         const response = await fetch(`${apiBaseUrl}/api/protection/send-for-legal-review`, {
                           method: 'POST',
@@ -5131,8 +5131,8 @@ ${creatorName}${session?.user?.email ? `\n${session.user.email}` : ''}`;
                       
                       try {
                         const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 
-                          (typeof window !== 'undefined' && window.location.origin.includes('noticebazaar.com') 
-                            ? 'https://api.noticebazaar.com' 
+      (typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com') 
+        ? 'https://api.creatorarmour.com'
                             : 'http://localhost:3001');
                         const response = await fetch(`${apiBaseUrl}/api/protection/generate-safe-contract`, {
                           method: 'POST',
@@ -5380,8 +5380,8 @@ ${creatorName}${session?.user?.email ? `\n${session.user.email}` : ''}`;
                   
                   try {
                     const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 
-                      (typeof window !== 'undefined' && window.location.origin.includes('noticebazaar.com') 
-                        ? 'https://api.noticebazaar.com' 
+      (typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com') 
+        ? 'https://api.creatorarmour.com'
                         : 'http://localhost:3001');
                     
                     // Prepare request body - send issues if reportId is not available
@@ -5590,8 +5590,8 @@ ${creatorName}${session?.user?.email ? `\n${session.user.email}` : ''}`;
                         
                         try {
                           const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 
-                            (typeof window !== 'undefined' && window.location.origin.includes('noticebazaar.com') 
-                              ? 'https://api.noticebazaar.com' 
+      (typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com') 
+        ? 'https://api.creatorarmour.com'
                               : 'http://localhost:3001');
                           const response = await fetch(`${apiBaseUrl}/api/protection/generate-safe-contract`, {
                             method: 'POST',
@@ -5724,8 +5724,8 @@ ${creatorName}${session?.user?.email ? `\n${session.user.email}` : ''}`;
                   if (savedDealId) {
                     try {
                       const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 
-                        (typeof window !== 'undefined' && window.location.origin.includes('noticebazaar.com') 
-                          ? 'https://api.noticebazaar.com' 
+      (typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com') 
+        ? 'https://api.creatorarmour.com'
                           : 'http://localhost:3001');
                       await fetch(`${apiBaseUrl}/api/brand-response/${savedDealId}`, {
                         method: 'POST',

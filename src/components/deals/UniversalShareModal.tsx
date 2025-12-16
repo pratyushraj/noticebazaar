@@ -36,8 +36,8 @@ const sanitizeMessage = (message: string, brandReplyLink: string): string => {
     return '';
   });
   
-  // Remove emails (except noticebazaar.com)
-  sanitized = sanitized.replace(/\b[A-Za-z0-9._%+-]+@(?!.*noticebazaar\.com)[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b/g, '[Email]');
+  // Remove emails (except creatorarmour.com)
+  sanitized = sanitized.replace(/\b[A-Za-z0-9._%+-]+@(?!.*creatorarmour\.com)[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b/g, '[Email]');
   
   // Remove phone numbers
   sanitized = sanitized.replace(/\b(?:\+91|91)?[6-9]\d{9}\b/g, '[Phone]');
@@ -108,8 +108,8 @@ export const UniversalShareModal: React.FC<UniversalShareModalProps> = ({
     
     try {
       const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 
-        (typeof window !== 'undefined' && window.location.origin.includes('noticebazaar.com') 
-          ? 'https://api.noticebazaar.com' 
+        (typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com') 
+          ? 'https://api.creatorarmour.com' 
           : 'http://localhost:3001');
       
       const { supabase } = await import('@/integrations/supabase/client');

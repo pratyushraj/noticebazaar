@@ -118,7 +118,7 @@ const HomePage = () => {
       name: "Priya Sharma",
       role: "Fashion Influencer",
       avatar: "PS",
-      content: "A brand delayed my ₹4.8 Lakh payment for 3 months. NoticeBazaar sent a legal notice and I got paid within 2 weeks. Worth every rupee!",
+      content: "A brand delayed my ₹4.8 Lakh payment for 3 months. CreatorArmour sent a legal notice and I got paid within 2 weeks. Worth every rupee!",
       painLine: "I was unpaid for weeks. The legal notice worked.",
       rating: 5,
       followers: "250K"
@@ -127,7 +127,7 @@ const HomePage = () => {
       name: "Rahul Mehta",
       role: "Tech YouTuber",
       avatar: "RM",
-      content: "I almost signed a contract with a terrible exclusivity clause. NoticeBazaar flagged it and helped me negotiate better terms. Saved me from a huge mistake.",
+      content: "I almost signed a contract with a terrible exclusivity clause. CreatorArmour flagged it and helped me negotiate better terms. Saved me from a huge mistake.",
       rating: 5,
       followers: "500K"
     },
@@ -224,7 +224,7 @@ const HomePage = () => {
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center">
               <Link to="/" className="text-2xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 text-transparent bg-clip-text">
-                NoticeBazaar
+                CreatorArmour
               </Link>
             </div>
 
@@ -311,7 +311,7 @@ const HomePage = () => {
                 </span>
               </h1>
               <p className="text-xl md:text-2xl text-purple-200 mb-8 max-w-3xl mx-auto">
-                NoticeBazaar helps creators handle unpaid brand deals, risky contracts, and legal disputes — using software plus real legal action.
+                CreatorArmour helps creators handle unpaid brand deals, risky contracts, and legal disputes — using software plus real legal action.
               </p>
             </motion.div>
 
@@ -382,7 +382,7 @@ const HomePage = () => {
             ))}
           </div>
           <div className="text-center mt-6">
-            <p className="text-xs text-purple-400/70">Based on deals monitored and cases escalated via NoticeBazaar.</p>
+            <p className="text-xs text-purple-400/70">Based on deals monitored and cases escalated via CreatorArmour.</p>
           </div>
         </div>
       </section>
@@ -425,7 +425,7 @@ const HomePage = () => {
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-bold mb-4">
-              How NoticeBazaar Protects You
+              How CreatorArmour Protects You
             </h2>
             <p className="text-xl text-purple-200 max-w-2xl mx-auto">
               Join thousands of creators protecting their work and growing their income
@@ -469,7 +469,7 @@ const HomePage = () => {
               Loved by Creators Everywhere
             </h2>
             <p className="text-xl text-purple-200 max-w-2xl mx-auto">
-              See what successful creators are saying about NoticeBazaar
+              See what successful creators are saying about CreatorArmour
             </p>
           </div>
 
@@ -623,13 +623,13 @@ const HomePage = () => {
           <div className="grid md:grid-cols-4 gap-8 mb-8">
             <div>
               <div className="text-2xl font-bold mb-4 bg-gradient-to-r from-purple-400 to-pink-400 text-transparent bg-clip-text">
-                NoticeBazaar
+                CreatorArmour
               </div>
               <p className="text-purple-300 text-sm mb-2">
                 Empowering creators to protect their content and grow their income.
               </p>
               <p className="text-purple-400 text-xs font-medium">
-                NoticeBazaar is India's creator protection platform for contracts, payments, and legal recovery.
+                CreatorArmour is India's creator protection platform for contracts, payments, and legal recovery.
               </p>
             </div>
             <div>
@@ -659,7 +659,7 @@ const HomePage = () => {
           </div>
           <div className="pt-8 border-t border-white/10 flex flex-col md:flex-row items-center justify-between gap-4">
             <p className="text-sm text-purple-300">
-              © 2024 NoticeBazaar. All rights reserved.
+              © 2024 CreatorArmour. All rights reserved.
             </p>
             <div className="flex items-center gap-4">
               <a href="#" className="text-purple-300 hover:text-white transition-colors">

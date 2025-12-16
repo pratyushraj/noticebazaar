@@ -175,7 +175,7 @@ async function generateInvoicePDF(data: InvoiceData): Promise<Buffer> {
       doc.on('error', reject);
 
       // Header
-      doc.fontSize(24).fillColor('#7C3AED').text('NoticeBazaar', 50, 50);
+      doc.fontSize(24).fillColor('#7C3AED').text('CreatorArmour', 50, 50);
       doc.fontSize(12).fillColor('#666').text('Legal Invoice & Receipt', 50, 80);
 
       // Invoice Number and Date
@@ -234,7 +234,7 @@ async function generateInvoicePDF(data: InvoiceData): Promise<Buffer> {
         );
       }
 
-      doc.text('NoticeBazaar • Secure Legal Portal', 50, 750, { align: 'center', width: 500 });
+      doc.text('CreatorArmour • Secure Legal Portal', 50, 750, { align: 'center', width: 500 });
 
       doc.end();
     } catch (error) {

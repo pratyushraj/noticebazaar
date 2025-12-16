@@ -24,7 +24,7 @@ const PrivacyPolicy = () => {
 
         <div className="prose dark:prose-invert max-w-none space-y-6 text-muted-foreground">
           <p>
-            NoticeBazaar ("we," "our," or "us") is committed to protecting your privacy. This Privacy Policy explains how your personal information is collected, used, and disclosed by NoticeBazaar. This policy applies to our website, client portal, and related services.
+            CreatorArmour ("we," "our," or "us") is committed to protecting your privacy. This Privacy Policy explains how your personal information is collected, used, and disclosed by CreatorArmour. This policy applies to our website, client portal, and related services.
           </p>
 
           <h2 className="text-2xl font-bold text-foreground">1. Information We Collect</h2>
@@ -65,7 +65,7 @@ const PrivacyPolicy = () => {
           <h2 className="text-2xl font-bold text-foreground">6. Contact Us</h2>
           <p>If you have any questions about this Privacy Policy or our data practices, please contact us:</p>
           <p className="font-semibold">
-            Email: <a href="mailto:support@noticebazaar.com" className="text-primary hover:underline">support@noticebazaar.com</a>
+            Email: <a href="mailto:support@creatorarmour.com" className="text-primary hover:underline">support@creatorarmour.com</a>
             <br />
             Phone: <a href="tel:+919205376316" className="text-primary hover:underline">+91 92053 76316</a>
           </p>

@@ -375,8 +375,8 @@ const BrandResponsePage = () => {
 
       try {
         const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 
-          (typeof window !== 'undefined' && window.location.origin.includes('noticebazaar.com') 
-            ? 'https://api.noticebazaar.com' 
+          (typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com') 
+            ? 'https://api.creatorarmour.com' 
             : 'http://localhost:3001');
         
         const response = await fetch(`${apiBaseUrl}/api/brand-response/${token}`);
@@ -447,8 +447,8 @@ const BrandResponsePage = () => {
     setIsSendingOTP(true);
     try {
       const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 
-        (typeof window !== 'undefined' && window.location.origin.includes('noticebazaar.com') 
-          ? 'https://api.noticebazaar.com' 
+        (typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com') 
+          ? 'https://api.creatorarmour.com' 
           : 'http://localhost:3001');
       
       const response = await fetch(`${apiBaseUrl}/api/otp/send`, {
@@ -505,8 +505,8 @@ const BrandResponsePage = () => {
     setIsVerifyingOTP(true);
     try {
       const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 
-        (typeof window !== 'undefined' && window.location.origin.includes('noticebazaar.com') 
-          ? 'https://api.noticebazaar.com' 
+        (typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com') 
+          ? 'https://api.creatorarmour.com' 
           : 'http://localhost:3001');
       
       const response = await fetch(`${apiBaseUrl}/api/otp/verify`, {
@@ -555,8 +555,8 @@ const BrandResponsePage = () => {
 
     try {
       const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 
-        (typeof window !== 'undefined' && window.location.origin.includes('noticebazaar.com') 
-          ? 'https://api.noticebazaar.com' 
+        (typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com') 
+          ? 'https://api.creatorarmour.com' 
           : 'http://localhost:3001');
       
       // Build message with negotiation points if negotiating

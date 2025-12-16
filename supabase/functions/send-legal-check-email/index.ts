@@ -6,7 +6,7 @@ const corsHeaders = {
 };
 
 // Define the Calendly link once
-const CALENDLY_LINK = 'https://calendly.com/noticebazaar/15-minute-legal-consultation';
+const CALENDLY_LINK = 'https://calendly.com/creatorarmour/15-minute-legal-consultation';
 
 // Define the personalized email templates
 const getPersonalizedEmailTemplate = (companyType: string, firstName: string) => {
@@ -19,7 +19,7 @@ const getPersonalizedEmailTemplate = (companyType: string, firstName: string) =>
       subject = `Your Legal Health Report — E-Commerce & Retail Compliance Review Inside`;
       bodyHtml = `
         <p style="font-size: 16px;">Hi ${firstName},</p>
-        <p style="font-size: 16px;">Thanks for completing your Legal Health Check with <strong>NoticeBazaar</strong>. Our experts reviewed your business for retail/e-commerce–specific compliance risks — from <strong>GST and TCS filings</strong> to <strong>consumer protection and trademark health</strong>.</p>
+        <p style="font-size: 16px;">Thanks for completing your Legal Health Check with <strong>CreatorArmour</strong>. Our experts reviewed your business for retail/e-commerce–specific compliance risks — from <strong>GST and TCS filings</strong> to <strong>consumer protection and trademark health</strong>.</p>
         <p style="font-size: 16px;">Here’s what we’ll share in your personalized report:</p>
         <ul style="padding-left: 20px; font-size: 16px;">
           <li>Status of <strong>GST, UDYAM & company filings</strong></li>
@@ -194,7 +194,7 @@ serve(async (req) => {
       });
     }
 
-    const senderEmail = 'onboarding@noticebazaar.com';
+    const senderEmail = 'onboarding@creatorarmour.com';
     const firstName = fullName.split(' ')[0];
 
     const sendEmail = async (to: string, subject: string, html: string, isInternal: boolean) => {
@@ -205,7 +205,7 @@ serve(async (req) => {
                 'Authorization': `Bearer ${RESEND_API_KEY}`,
             },
             body: JSON.stringify({
-                from: `NoticeBazaar Onboarding <${senderEmail}>`,
+                from: `CreatorArmour Onboarding <${senderEmail}>`,
                 to: to,
                 subject: subject,
                 html: html,

@@ -154,7 +154,7 @@ const ProtectionDashboardHeader: React.FC<ProtectionDashboardHeaderProps> = ({
           Content Protection Center
         </h1>
         <p className="text-sm text-muted-foreground">
-          NoticeBazaar scans major platforms automatically for stolen content using AI-powered visual + audio matching.
+          CreatorArmour scans major platforms automatically for stolen content using AI-powered visual + audio matching.
         </p>
       </div>
 

@@ -67,8 +67,8 @@ serve(async (req) => {
       });
     }
 
-    const senderEmail = 'noreply@noticebazaar.com';
-    const recipientEmail = 'support@noticebazaar.com'; // In a real scenario, this would be the platform's legal/copyright email
+    const senderEmail = 'noreply@creatorarmour.com';
+    const recipientEmail = 'support@creatorarmour.com'; // In a real scenario, this would be the platform's legal/copyright email
 
     const subject = `DMCA Takedown Notice: Infringement of Copyrighted Content on ${platform}`;
     const htmlContent = `
@@ -87,7 +87,7 @@ serve(async (req) => {
         <p><strong>${creatorFirstName} ${creatorLastName}</strong></p>
         <p>Email: ${user.email}</p>
         <p style="font-size: 12px; color: #888; margin-top: 20px;">
-          This notice was generated and sent via NoticeBazaar.
+          This notice was generated and sent via CreatorArmour.
         </p>
       </div>
     `;
@@ -99,7 +99,7 @@ serve(async (req) => {
         'Authorization': `Bearer ${RESEND_API_KEY}`,
       },
       body: JSON.stringify({
-        from: `NoticeBazaar <${senderEmail}>`,
+        from: `CreatorArmour <${senderEmail}>`,
         to: recipientEmail,
         subject: subject,
         html: htmlContent,

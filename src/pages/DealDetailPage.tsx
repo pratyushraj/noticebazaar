@@ -743,7 +743,7 @@ Best regards`;
                 if (navigator.share) {
                   try {
                     await navigator.share({
-                      title: `${dealTitle} - NoticeBazaar`,
+                      title: `${dealTitle} - CreatorArmour`,
                       text: shareText,
                       url: shareUrl,
                     });
@@ -840,8 +840,8 @@ Best regards`;
                 // Verify deal exists in database before sharing
                 try {
                   const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 
-                    (typeof window !== 'undefined' && window.location.origin.includes('noticebazaar.com') 
-                      ? 'https://api.noticebazaar.com' 
+                    (typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com') 
+                      ? 'https://api.creatorarmour.com' 
                       : 'http://localhost:3001');
                   
                   const verifyResponse = await fetch(`${apiBaseUrl}/api/brand-response/${deal.id}`, {

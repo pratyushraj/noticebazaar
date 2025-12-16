@@ -54,7 +54,7 @@ const Sitemap = () => {
         <header className="mb-8 border-b border-border/50 pb-4">
           <Map className="h-8 w-8 text-primary mb-3" />
           <h1 className="text-3xl font-bold text-foreground mb-2">Site Map</h1>
-          <p className="text-sm text-muted-foreground">A comprehensive list of all accessible pages within the NoticeBazaar application.</p>
+          <p className="text-sm text-muted-foreground">A comprehensive list of all accessible pages within the CreatorArmour application.</p>
         </header>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">

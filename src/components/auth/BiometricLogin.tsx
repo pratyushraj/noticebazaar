@@ -115,8 +115,8 @@ const BiometricLogin: React.FC<BiometricLoginProps> = ({
           },
           user: {
             id: userIdBytes,
-            name: user.email || 'user@noticebazaar.com',
-            displayName: user.email || 'NoticeBazaar User',
+            name: user.email || 'user@creatorarmour.com',
+            displayName: user.email || 'CreatorArmour User',
           },
           pubKeyCredParams: [
             { alg: -7, type: 'public-key' }, // ES256

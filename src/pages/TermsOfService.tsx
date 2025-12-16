@@ -24,12 +24,12 @@ const TermsOfService = () => {
 
         <div className="prose dark:prose-invert max-w-none space-y-6 text-muted-foreground">
           <p>
-            Welcome to NoticeBazaar. These Terms of Service ("Terms") govern your access to and use of the NoticeBazaar website, client portal, and subscription services (collectively, the "Service"). By accessing or using the Service, you agree to be bound by these Terms.
+            Welcome to CreatorArmour. These Terms of Service ("Terms") govern your access to and use of the CreatorArmour website, client portal, and subscription services (collectively, the "Service"). By accessing or using the Service, you agree to be bound by these Terms.
           </p>
 
           <h2 className="text-2xl font-bold text-foreground">1. Service Description</h2>
           <p>
-            NoticeBazaar provides a technology platform connecting small and medium enterprises (SMEs) with independent, licensed legal advocates and chartered accountants on a subscription basis. We facilitate communication, document management, and compliance tracking.
+            CreatorArmour provides a technology platform connecting small and medium enterprises (SMEs) with independent, licensed legal advocates and chartered accountants on a subscription basis. We facilitate communication, document management, and compliance tracking.
           </p>
           <ul className="list-disc list-inside ml-4 space-y-2">
             <li><strong>Disclaimer:</strong> NoticeBazaar is a technology platform and is NOT a law firm or accounting firm. Legal and financial advice is provided solely by the independent professionals in our network.</li>

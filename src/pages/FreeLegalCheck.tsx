@@ -18,8 +18,8 @@ const updateMetadata = (title: string, description: string) => {
   // Update OG tags dynamically (best effort without a dedicated library)
   document.querySelector('meta[property="og:title"]')?.setAttribute('content', title);
   document.querySelector('meta[property="og:description"]')?.setAttribute('content', description);
-  document.querySelector('meta[property="og:url"]')?.setAttribute('content', 'https://noticebazaar.com/free-legal-check');
-  document.querySelector('meta[property="og:image"]')?.setAttribute('content', 'https://noticebazaar.com/legal-check-banner.png'); // Updated image path
+  document.querySelector('meta[property="og:url"]')?.setAttribute('content', 'https://creatorarmour.com/free-legal-check');
+  document.querySelector('meta[property="og:image"]')?.setAttribute('content', 'https://creatorarmour.com/legal-check-banner.png'); // Updated image path
   document.querySelector('meta[name="twitter:card"]')?.setAttribute('content', 'summary_large_image');
 };
 

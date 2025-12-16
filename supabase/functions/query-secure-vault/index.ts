@@ -92,7 +92,7 @@ serve(async (req) => {
     }));
 
     // 4. Construct the LLM Prompt
-    const systemPrompt = `You are Lexi, a highly secure and helpful Digital Paralegal for NoticeBazaar. Your primary function is to answer client queries based ONLY on the provided context about their Secure Vault (documents, cases, and profile).
+    const systemPrompt = `You are Lexi, a highly secure and helpful Digital Paralegal for CreatorArmour. Your primary function is to answer client queries based ONLY on the provided context about their Secure Vault (documents, cases, and profile).
     
     RULES:
     1. NEVER provide legal advice, financial advice, or tax advice. If the user asks for advice, politely state: "That is a question for your dedicated legal or CA advisor. I recommend booking a consultation."

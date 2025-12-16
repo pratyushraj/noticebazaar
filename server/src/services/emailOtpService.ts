@@ -42,7 +42,7 @@ export async function sendEmailOTP(
 
     const url = 'https://api.resend.com/emails';
     
-    const emailSubject = 'Your OTP for NoticeBazaar Contract Acceptance';
+    const emailSubject = 'Your OTP for CreatorArmour Contract Acceptance';
     const emailHtml = `
       <!DOCTYPE html>
       <html>
@@ -52,7 +52,7 @@ export async function sendEmailOTP(
         </head>
         <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
           <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; border-radius: 10px 10px 0 0; text-align: center;">
-            <h1 style="color: white; margin: 0; font-size: 24px;">NoticeBazaar</h1>
+            <h1 style="color: white; margin: 0; font-size: 24px;">CreatorArmour</h1>
           </div>
           <div style="background: #f9fafb; padding: 30px; border-radius: 0 0 10px 10px; border: 1px solid #e5e7eb; border-top: none;">
             <h2 style="color: #1f2937; margin-top: 0; font-size: 20px;">Your OTP for Contract Acceptance</h2>
@@ -60,7 +60,7 @@ export async function sendEmailOTP(
               ${brandName ? `Hello ${brandName},` : 'Hello,'}
             </p>
             <p style="color: #4b5563; font-size: 16px;">
-              You have requested to accept a contract on NoticeBazaar. Please use the following OTP to verify your action:
+              You have requested to accept a contract on CreatorArmour. Please use the following OTP to verify your action:
             </p>
             <div style="background: white; border: 2px dashed #667eea; border-radius: 8px; padding: 20px; text-align: center; margin: 30px 0;">
               <div style="font-size: 32px; font-weight: bold; color: #667eea; letter-spacing: 8px; font-family: 'Courier New', monospace;">
@@ -77,7 +77,7 @@ export async function sendEmailOTP(
             </ul>
             <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
               <p style="color: #9ca3af; font-size: 12px; margin: 0;">
-                This is an automated email from NoticeBazaar. Please do not reply to this email.
+                This is an automated email from CreatorArmour. Please do not reply to this email.
               </p>
             </div>
           </div>
@@ -86,7 +86,7 @@ export async function sendEmailOTP(
     `;
 
     const requestBody = {
-      from: 'NoticeBazaar <noreply@noticebazaar.com>',
+      from: 'CreatorArmour <noreply@creatorarmour.com>',
       to: email,
       subject: emailSubject,
       html: emailHtml,

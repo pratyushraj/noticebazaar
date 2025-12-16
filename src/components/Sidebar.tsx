@@ -462,7 +462,7 @@ const Sidebar: React.FC<SidebarProps> = ({ className, profileRole }) => {
           {(profile || (!profile && !user)) && (
             <UserCard 
               name={profile ? userName : 'Demo Creator'}
-              email={profile ? userEmail : 'demo@noticebazaar.com'}
+              email={profile ? userEmail : 'demo@creatorarmour.com'}
               avatarUrl={profile?.avatar_url || null}
             />
           )}
@@ -505,7 +505,7 @@ const Sidebar: React.FC<SidebarProps> = ({ className, profileRole }) => {
             {(profile || (!profile && !user)) && (
               <UserCard 
                 name={profile ? userName : 'Demo Creator'}
-                email={profile ? userEmail : 'demo@noticebazaar.com'}
+                email={profile ? userEmail : 'demo@creatorarmour.com'}
                 avatarUrl={profile?.avatar_url || null}
               />
             )}
@@ -556,7 +556,7 @@ const Sidebar: React.FC<SidebarProps> = ({ className, profileRole }) => {
             {(profile || (!profile && !user)) && (
               <UserCard 
                 name={profile ? userName : 'Demo Creator'}
-                email={profile ? userEmail : 'demo@noticebazaar.com'}
+                email={profile ? userEmail : 'demo@creatorarmour.com'}
                 avatarUrl={profile?.avatar_url || null}
               />
             )}

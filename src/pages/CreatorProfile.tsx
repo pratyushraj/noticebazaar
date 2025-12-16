@@ -886,9 +886,9 @@ const ProfileSettings = () => {
             <div className="bg-white/5 rounded-xl p-4 border border-white/10">
               <h2 className="font-semibold text-base mb-3">About</h2>
               <div className="text-center text-sm text-white/70">
-                <div className="font-semibold mb-1">NoticeBazaar</div>
+                <div className="font-semibold mb-1">CreatorArmour</div>
                 <div className="mb-1">Version 1.0.0</div>
-                <div className="text-xs text-white/50">© 2024 NoticeBazaar. All rights reserved.</div>
+                <div className="text-xs text-white/50">© 2024 CreatorArmour. All rights reserved.</div>
               </div>
             </div>
 

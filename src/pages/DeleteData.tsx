@@ -31,14 +31,14 @@ const DeleteData = () => {
         <div className="prose dark:prose-invert max-w-none space-y-6 text-muted-foreground">
           <p>
             We respect your right to control your personal information. If you would like to delete
-            your NoticeBazaar account or remove associated data, please follow the steps below. Data
+            your CreatorArmour account or remove associated data, please follow the steps below. Data
             deletion requests are handled in line with applicable Indian IT laws and Bar Council
             regulations for legal records.
           </p>
 
           <h2 className="text-2xl font-bold text-foreground">Option 1 — In-App Request</h2>
           <ol className="list-decimal list-inside ml-4 space-y-2">
-            <li>Log into the NoticeBazaar client portal.</li>
+            <li>Log into the CreatorArmour client portal.</li>
             <li>Navigate to <strong>Settings &gt; Account</strong>.</li>
             <li>Click <strong>"Request Data Deletion"</strong> and confirm the prompt.</li>
             <li>

@@ -24,12 +24,12 @@ const RefundPolicy = () => {
 
         <div className="prose dark:prose-invert max-w-none space-y-6 text-muted-foreground">
           <p>
-            This Refund Policy outlines the terms and conditions under which NoticeBazaar provides refunds for its subscription services. By subscribing to our services, you agree to this policy.
+            This Refund Policy outlines the terms and conditions under which CreatorArmour provides refunds for its subscription services. By subscribing to our services, you agree to this policy.
           </p>
 
           <h2 className="text-2xl font-bold text-foreground">1. General Policy (Non-Refundable Fees)</h2>
           <p>
-            All subscription fees for NoticeBazaar services are generally non-refundable. We operate on a subscription model where access to our platform, dedicated advisors, and resources is provided immediately upon payment.
+            All subscription fees for CreatorArmour services are generally non-refundable. We operate on a subscription model where access to our platform, dedicated advisors, and resources is provided immediately upon payment.
           </p>
           <ul className="list-disc list-inside ml-4 space-y-2">
             <li><strong>Monthly Subscriptions:</strong> Fees paid for monthly plans are non-refundable. If you cancel, your service will continue until the end of the current billing cycle.</li>

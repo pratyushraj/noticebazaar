@@ -149,7 +149,7 @@ const Signup = () => {
               <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-indigo-500 flex items-center justify-center">
                 <Scale className="w-7 h-7 text-white" />
               </div>
-              <h1 className="text-3xl font-bold">NoticeBazaar</h1>
+              <h1 className="text-3xl font-bold">CreatorArmour</h1>
             </div>
             
             <h2 className="text-4xl font-bold leading-tight">
@@ -207,7 +207,7 @@ const Signup = () => {
               <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-indigo-500 flex items-center justify-center">
                 <Scale className="w-6 h-6 text-white" />
               </div>
-              <h1 className="text-2xl font-bold text-white">NoticeBazaar</h1>
+              <h1 className="text-2xl font-bold text-white">CreatorArmour</h1>
             </div>
 
             <div className="mb-6">

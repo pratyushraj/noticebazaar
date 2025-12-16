@@ -1,4 +1,4 @@
-// NoticeBazaar Backend API Server
+// CreatorArmour Backend API Server
 // Express server with Supabase auth, rate limiting, and all messaging endpoints
 
 // Load environment variables
@@ -130,9 +130,9 @@ app.use(cors({
       'http://localhost:5173',
       'http://127.0.0.1:8080',
       'http://127.0.0.1:5173',
-      'https://www.noticebazaar.com',
-      'https://noticebazaar.com',
-      'https://api.noticebazaar.com'
+      'https://www.creatorarmour.com',
+      'https://creatorarmour.com',
+      'https://api.creatorarmour.com'
     ];
     
     // Allow Render frontend URLs
@@ -146,7 +146,7 @@ app.use(cors({
     }
     
     // Allow cloudflared tunnel URLs (trycloudflare.com)
-    if (origin.includes('trycloudflare.com') || origin.includes('noticebazaar.com')) {
+    if (origin.includes('trycloudflare.com') || origin.includes('creatorarmour.com')) {
       return callback(null, true);
     }
     
@@ -168,7 +168,7 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 // Root route - API information
 app.get('/', (req: express.Request, res: express.Response) => {
   res.json({
-    name: 'NoticeBazaar API',
+    name: 'CreatorArmour API',
     version: '1.0.0',
     status: 'running',
     endpoints: {
@@ -243,7 +243,7 @@ export default app;
 // For local development, start the server
 if (process.env.VERCEL !== '1') {
   app.listen(PORT, () => {
-    console.log(`🚀 NoticeBazaar API server running on port ${PORT}`);
+    console.log(`🚀 CreatorArmour API server running on port ${PORT}`);
   });
 }
 

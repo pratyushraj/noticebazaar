@@ -15,7 +15,7 @@ import { CREATOR_PLAN_DETAILS, CreatorPlanName } from '@/data/creatorPlanDetails
 
 // The Google Forms URL provided by the user (kept for other CTAs)
 const GOOGLE_FORMS_URL = "https://docs.google.com/forms/d/e/1FAIpQLSdWyn_m5orgxNtxMhM7fginjoFnNDJM8KbbM-dcbCrC8E-ygg/viewform?usp=sharing";
-const CALENDLY_URL = 'https://calendly.com/noticebazaar/15-minute-legal-consultation'; // Define the new constant
+const CALENDLY_URL = 'https://calendly.com/creatorarmour/15-minute-legal-consultation'; // Define the new constant
 
 // Function to open the Calendly widget
 const openCalendly = (url: string) => {
@@ -210,7 +210,7 @@ const MarketingHome = () => {
       <header className="sticky top-0 z-50 bg-black/40 backdrop-blur-sm border-b border-white/5">
         <div className="container mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <span className="font-bold text-lg">NoticeBazaar</span>
+            <span className="font-bold text-lg">CreatorArmour</span>
           </div>
 
           {/* Desktop Navigation */}
@@ -230,7 +230,7 @@ const MarketingHome = () => {
             >
               Book Free Call
             </button>
-            <a href="https://wa.me/919205376316?text=Hi%20NoticeBazaar,%20I%20need%20help" target="_blank" rel="noopener" className="bg-green-500/95 hover:bg-green-600 px-3 py-2 rounded-lg text-sm font-semibold hidden md:inline-flex items-center gap-2">
+            <a href="https://wa.me/919205376316?text=Hi%20CreatorArmour,%20I%20need%20help" target="_blank" rel="noopener" className="bg-green-500/95 hover:bg-green-600 px-3 py-2 rounded-lg text-sm font-semibold hidden md:inline-flex items-center gap-2">
               <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="white"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
               WhatsApp
             </a>
@@ -257,7 +257,7 @@ const MarketingHome = () => {
               Protect Your Deals. Get Paid On Time.
             </h1>
             <p className="mt-4 text-gray-300 max-w-xl text-lg">
-              NoticeBazaar helps creators handle unpaid brand deals, risky contracts, and legal disputes — using software plus real legal action.
+              CreatorArmour helps creators handle unpaid brand deals, risky contracts, and legal disputes — using software plus real legal action.
             </p>
 
             <div className="mt-8 flex flex-col sm:flex-row gap-4">
@@ -278,7 +278,7 @@ const MarketingHome = () => {
           <div className="relative flex items-center justify-center z-10">
             <img
               src="/mobile_team_and_cases.png"
-              alt="NoticeBazaar creator dashboard on mobile"
+              alt="CreatorArmour creator dashboard on mobile"
               className="rounded-[2.5rem] shadow-[0_40px_120px_rgba(2,6,23,0.55)] w-full max-w-md object-cover border border-white/10 rotate-3 md:rotate-2"
               loading="lazy"
               data-aos="zoom-in"
@@ -325,7 +325,7 @@ const MarketingHome = () => {
               />
             </div>
             <div className="space-y-6">
-              <h2 className="text-4xl font-extrabold leading-tight">What creators manage inside NoticeBazaar</h2>
+              <h2 className="text-4xl font-extrabold leading-tight">What creators manage inside CreatorArmour</h2>
               <p className="text-gray-300 text-lg">
                 Monitor deals, recover payments, and take legal action when brands don't pay. Every tool is built for Indian creators.
               </p>
@@ -411,7 +411,7 @@ const MarketingHome = () => {
             </div>
           </div>
           <div className="text-center mt-8">
-            <h3 className="text-2xl font-bold text-green-400">NoticeBazaar Solutions:</h3>
+            <h3 className="text-2xl font-bold text-green-400">CreatorArmour Solutions:</h3>
             <p className="text-gray-300 mt-2 text-lg">We turn your legal headaches into peace of mind.</p>
           </div>
         </section>
@@ -483,7 +483,7 @@ const MarketingHome = () => {
               <div className="flex mb-3 text-yellow-400">
                 <Star className="h-5 w-5 fill-current" /><Star className="h-5 w-5 fill-current" /><Star className="h-5 w-5 fill-current" /><Star className="h-5 w-5 fill-current" /><Star className="h-5 w-5 fill-current" />
               </div>
-              <p className="text-gray-300 text-lg leading-relaxed">"A brand delayed my ₹4.8 Lakh payment for 3 months. NoticeBazaar sent a legal notice and I got paid within 2 weeks. Worth every rupee!"</p>
+              <p className="text-gray-300 text-lg leading-relaxed">"A brand delayed my ₹4.8 Lakh payment for 3 months. CreatorArmour sent a legal notice and I got paid within 2 weeks. Worth every rupee!"</p>
               <div className="mt-4 font-bold text-white">Riya S.</div>
               <div className="text-sm text-gray-400">Fashion Influencer (150K followers)</div>
             </div>
@@ -491,7 +491,7 @@ const MarketingHome = () => {
               <div className="flex mb-3 text-yellow-400">
                 <Star className="h-5 w-5 fill-current" /><Star className="h-5 w-5 fill-current" /><Star className="h-5 w-5 fill-current" /><Star className="h-5 w-5 fill-current" /><Star className="h-5 w-5 fill-current" />
               </div>
-              <p className="text-gray-300 text-lg leading-relaxed">"I almost signed a contract with a terrible exclusivity clause. NoticeBazaar flagged it and helped me negotiate better terms. Saved me from a huge mistake."</p>
+              <p className="text-gray-300 text-lg leading-relaxed">"I almost signed a contract with a terrible exclusivity clause. CreatorArmour flagged it and helped me negotiate better terms. Saved me from a huge mistake."</p>
               <div className="mt-4 font-bold text-white">Aryan K.</div>
               <div className="text-sm text-gray-400">Tech Reviewer (80K subscribers)</div>
             </div>

@@ -171,7 +171,7 @@ const Login = () => {
           <div className="w-10 h-10 bg-purple-600 rounded-lg flex items-center justify-center">
             <Scale className="h-6 w-6 text-white" />
           </div>
-          <h1 className="text-2xl font-bold text-white">NoticeBazaar</h1>
+          <h1 className="text-2xl font-bold text-white">CreatorArmour</h1>
         </div>
 
         {/* Title and Subtitle */}

@@ -43,7 +43,7 @@ export async function sendOTP(
     
     // For DLT SMS, we need to use 'q' route with message template
     // Format: OTP message with the OTP code
-    const message = `Your OTP for NoticeBazaar contract acceptance is ${otp}. This OTP is valid for 5 minutes. Do not share this OTP with anyone.`;
+    const message = `Your OTP for CreatorArmour contract acceptance is ${otp}. This OTP is valid for 5 minutes. Do not share this OTP with anyone.`;
     
     const requestBody = {
       route: 'q', // DLT SMS route (doesn't require verification)

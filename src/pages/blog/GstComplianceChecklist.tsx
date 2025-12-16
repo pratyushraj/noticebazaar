@@ -134,7 +134,7 @@ const GstComplianceChecklist = () => {
             <li>**Interest:** 18% per annum on the outstanding tax liability.</li>
           </ul>
 
-          <h2 className="text-3xl font-bold text-foreground">How NoticeBazaar Ensures Flawless GST Compliance</h2>
+          <h2 className="text-3xl font-bold text-foreground">How CreatorArmour Ensures Flawless GST Compliance</h2>
           <p>
             Our Business Growth and Strategic Partner plans include dedicated Chartered Accountant support to manage your entire GST lifecycle.
           </p>

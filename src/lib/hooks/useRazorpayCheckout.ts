@@ -134,7 +134,7 @@ export const useRazorpayCheckout = () => {
 
       const options: RazorpayOptions = {
         key: RAZORPAY_KEY_ID,
-        name: 'NoticeBazaar',
+        name: 'CreatorArmour',
         description: description,
         subscription_id: subscriptionResult.subscriptionId, // Use subscription_id
         handler: handlePaymentResponse,

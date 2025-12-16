@@ -13,7 +13,7 @@ export function generateICalContent(events: CalendarEvent[]): string {
   const lines: string[] = [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
-    'PRODID:-//NoticeBazaar//Calendar Export//EN',
+    'PRODID:-//CreatorArmour//Calendar Export//EN',
     'CALSCALE:GREGORIAN',
     'METHOD:PUBLISH',
   ];
@@ -23,14 +23,14 @@ export function generateICalContent(events: CalendarEvent[]): string {
     const endDate = formatICalDate(new Date(event.date.getTime() + 60 * 60 * 1000)); // 1 hour default
 
     lines.push('BEGIN:VEVENT');
-    lines.push(`UID:${event.id}@noticebazaar.com`);
+    lines.push(`UID:${event.id}@creatorarmour.com`);
     lines.push(`DTSTART:${startDate}`);
     lines.push(`DTEND:${endDate}`);
     lines.push(`SUMMARY:${escapeICalText(event.title)}`);
     if (event.description) {
       lines.push(`DESCRIPTION:${escapeICalText(event.description)}`);
     }
-    lines.push(`LOCATION:NoticeBazaar`);
+    lines.push(`LOCATION:CreatorArmour`);
     lines.push(`STATUS:CONFIRMED`);
     lines.push('END:VEVENT');
   });
@@ -66,7 +66,7 @@ function escapeICalText(text: string): string {
 /**
  * Download iCal file
  */
-export function downloadICalFile(events: CalendarEvent[], filename: string = 'noticebazaar-calendar.ics'): void {
+export function downloadICalFile(events: CalendarEvent[], filename: string = 'creatorarmour-calendar.ics'): void {
   const content = generateICalContent(events);
   const blob = new Blob([content], { type: 'text/calendar;charset=utf-8' });
   const url = URL.createObjectURL(blob);
@@ -91,7 +91,7 @@ export function generateGoogleCalendarUrl(event: CalendarEvent): string {
     text: event.title,
     dates: `${startDate}/${endDate}`,
     details: event.description || '',
-    location: 'NoticeBazaar',
+    location: 'CreatorArmour',
   });
 
   return `https://calendar.google.com/calendar/render?${params.toString()}`;

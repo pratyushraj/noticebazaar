@@ -13,7 +13,7 @@ interface ConsultationBookingFormProps {
 
 // Function to initialize and open the Calendly widget
 const openCalendlyWidget = () => {
-  const calendlyUrl = 'https://calendly.com/noticebazaar/15-minute-legal-consultation';
+  const calendlyUrl = 'https://calendly.com/creatorarmour/15-minute-legal-consultation';
   if (typeof (window as any).Calendly !== 'undefined') {
     (window as any).Calendly.initPopupWidget({ url: calendlyUrl });
   } else {

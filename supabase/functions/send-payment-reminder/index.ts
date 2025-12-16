@@ -93,7 +93,7 @@ serve(async (req) => {
       .single();
 
     const creatorName = `${creatorProfile?.first_name || 'Creator'} ${creatorProfile?.last_name || ''}`;
-    const recipientEmail = brandDeal.brand_email || 'support@noticebazaar.com'; // Fallback to support email
+    const recipientEmail = brandDeal.brand_email || 'support@creatorarmour.com'; // Fallback to support email
     const overdueDays = calculateOverdueDays(brandDeal.payment_expected_date);
     const formattedAmount = `₹${brandDeal.deal_amount.toLocaleString('en-IN')}`;
     const expectedDate = new Date(brandDeal.payment_expected_date).toLocaleDateString();
@@ -143,7 +143,7 @@ serve(async (req) => {
                         'Authorization': `Bearer ${RESEND_API_KEY}`,
                     },
                     body: JSON.stringify({
-                        from: `NoticeBazaar <noreply@noticebazaar.com>`,
+                        from: `CreatorArmour <noreply@creatorarmour.com>`,
                         to: recipientEmail,
                         subject: subject,
                         html: htmlContent,

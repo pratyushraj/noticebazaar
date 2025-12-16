@@ -14,11 +14,11 @@ export const NextSteps: React.FC<NextStepsProps> = ({ riskLevel }) => {
     if (riskLevel === 'High') {
       return [
         { text: 'Do Not Sign Yet: This contract has critical issues that put you at financial and legal risk.', strong: true },
-        { text: 'Schedule Legal Review: Consult with NoticeBazaar\'s legal advisor to discuss specific changes needed.' },
+        { text: 'Schedule Legal Review: Consult with CreatorArmour\'s legal advisor to discuss specific changes needed.' },
         { text: 'Request Revisions: Send the brand a list of required changes based on the issues identified above.' },
         { text: 'Use This Report: Share this analysis with the brand to justify your requested changes professionally.' },
         { text: 'Get Written Confirmation: Ensure all changes are made in writing before signing the final contract.' },
-        { text: 'Re-Upload for Review: Once revised, upload the new contract to NoticeBazaar for verification.' },
+        { text: 'Re-Upload for Review: Once revised, upload the new contract to CreatorArmour for verification.' },
       ];
     } else if (riskLevel === 'Medium') {
       return [
@@ -26,7 +26,7 @@ export const NextSteps: React.FC<NextStepsProps> = ({ riskLevel }) => {
         { text: 'Request Clarifications: Address the issues identified above with the brand.' },
         { text: 'Use This Report: Share this analysis with the brand to justify your requested changes professionally.' },
         { text: 'Get Written Confirmation: Ensure all changes are made in writing before signing the final contract.' },
-        { text: 'Re-Upload for Review: Once revised, upload the new contract to NoticeBazaar for verification.' },
+        { text: 'Re-Upload for Review: Once revised, upload the new contract to CreatorArmour for verification.' },
       ];
     } else {
       return [

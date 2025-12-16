@@ -67,7 +67,7 @@ import {
 const DEMO_DATA = {
   referralLink: {
     code: 'NB4F7X9D2KQ',
-    url: 'https://noticebazaar.com/r/NB4F7X9D2KQ',
+    url: 'https://creatorarmour.com/r/NB4F7X9D2KQ',
   },
   stats: {
     total_earnings: 8750,
@@ -109,7 +109,7 @@ const DEMO_DATA = {
     { name: '@stylebyRiya', referrals: 47, earnings: 22200, tier: 'pro' as PartnerTier, avatar: null },
     { name: '@foodloverSam', referrals: 35, earnings: 15950, tier: 'elite' as PartnerTier, avatar: null },
     { name: '@gamingwithsid', referrals: 23, earnings: 9100, tier: 'partner' as PartnerTier, avatar: null },
-    { name: '@noticebazaar.legal', referrals: 17, earnings: 8750, tier: 'growth' as PartnerTier, avatar: null, isCurrentUser: true },
+    { name: '@creatorarmour.legal', referrals: 17, earnings: 8750, tier: 'growth' as PartnerTier, avatar: null, isCurrentUser: true },
   ],
   nextTier: {
     tier: 'elite' as PartnerTier,

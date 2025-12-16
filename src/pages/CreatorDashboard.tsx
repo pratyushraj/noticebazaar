@@ -766,7 +766,7 @@ const CreatorDashboard = () => {
                     <Sparkles className={cn(iconSizes.md, "text-white")} />
                   </div>
                   <div className="flex-1">
-                    <h3 className={cn(typography.h4, "mb-1")}>Welcome to NoticeBazaar! 🎉</h3>
+                    <h3 className={cn(typography.h4, "mb-1")}>Welcome to CreatorArmour! 🎉</h3>
                     <p className={cn(typography.bodySmall, "break-words")}>
                       Your dashboard is ready. Start by adding your first brand deal to track payments and contracts.
                     </p>
