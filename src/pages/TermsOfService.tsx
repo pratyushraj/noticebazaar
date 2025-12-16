@@ -32,8 +32,8 @@ const TermsOfService = () => {
             CreatorArmour provides a technology platform connecting small and medium enterprises (SMEs) with independent, licensed legal advocates and chartered accountants on a subscription basis. We facilitate communication, document management, and compliance tracking.
           </p>
           <ul className="list-disc list-inside ml-4 space-y-2">
-            <li><strong>Disclaimer:</strong> NoticeBazaar is a technology platform and is NOT a law firm or accounting firm. Legal and financial advice is provided solely by the independent professionals in our network.</li>
-            <li><strong>No Attorney-Client Relationship:</strong> Use of the platform does not automatically create an attorney-client relationship with NoticeBazaar itself. That relationship is formed directly between you and the assigned advocate/CA.</li>
+            <li><strong>Disclaimer:</strong> CreatorArmour is a technology platform and is NOT a law firm or accounting firm. Legal and financial advice is provided solely by the independent professionals in our network.</li>
+            <li><strong>No Attorney-Client Relationship:</strong> Use of the platform does not automatically create an attorney-client relationship with CreatorArmour itself. That relationship is formed directly between you and the assigned advocate/CA.</li>
           </ul>
 
           <h2 className="text-2xl font-bold text-foreground">2. Subscription and Payment</h2>
@@ -66,7 +66,7 @@ const TermsOfService = () => {
           <h2 className="text-2xl font-bold text-foreground">6. Contact Information</h2>
           <p>For any questions regarding these Terms, please contact us:</p>
           <p className="font-semibold">
-            Email: <a href="mailto:support@noticebazaar.com" className="text-primary hover:underline">support@noticebazaar.com</a>
+            Email: <a href="mailto:support@creatorarmour.com" className="text-primary hover:underline">support@creatorarmour.com</a>
           </p>
         </div>
       </Card>

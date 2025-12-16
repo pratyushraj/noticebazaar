@@ -30,6 +30,8 @@ import AdminProfile from "./pages/AdminProfile";
 import CreatorProfile from "./pages/CreatorProfile";
 import Blog from "./pages/Blog";
 import BlogPostDetail from "./pages/BlogPostDetail"; // Corrected path
+import About from "./pages/About";
+import Careers from "./pages/Careers";
 import PricingComparison from "./pages/PricingComparison";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
@@ -181,6 +183,8 @@ const App = () => {
               {/* Public routes */}
               <Route path="/blog" element={<Blog />} />
               <Route path="/blog/:slug" element={<BlogPostDetail />} />
+              <Route path="/about" element={<About />} />
+              <Route path="/careers" element={<Careers />} />
               <Route path="/pricing-comparison" element={<PricingComparison />} />
               <Route path="/privacy-policy" element={<PrivacyPolicy />} />
               <Route path="/terms-of-service" element={<TermsOfService />} />

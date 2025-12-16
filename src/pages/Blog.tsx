@@ -6,6 +6,7 @@ import { ArrowRight, FileText, ArrowLeft, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import NewsletterSignup from '@/components/NewsletterSignup';
+import ImageWithPlaceholder from '@/components/ui/ImageWithPlaceholder';
 
 interface BlogPost {
   slug: string;
@@ -82,7 +83,7 @@ const getCategoryBadgeVariant = (category: BlogPost['category']) => {
   switch (category) {
     case 'Legal': return 'default';
     case 'Compliance': return 'secondary';
-    case 'Finance': return 'accent';
+    case 'Finance': return 'pink';
     case 'Tech': return 'outline';
     default: return 'outline';
   }
@@ -109,7 +110,7 @@ const Blog = () => {
       </Button>
       <header className="text-center mb-8">
         <FileText className="h-10 w-10 text-primary mx-auto mb-3" />
-        <h1 className="text-4xl font-bold text-foreground mb-2">NoticeBazaar Insights</h1>
+        <h1 className="text-4xl font-bold text-foreground mb-2">CreatorArmour Insights</h1>
         <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
           Expert articles on legal compliance, tax strategy, and business growth for Indian SMEs.
         </p>

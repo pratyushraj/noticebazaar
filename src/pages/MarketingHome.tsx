@@ -608,7 +608,7 @@ const MarketingHome = () => {
               </div>
               <div className="mt-1 flex items-center gap-2">
                 <MessageSquare className="h-4 w-4 text-blue-400" />
-                <a href="mailto:support@noticebazaar.com" className="hover:text-white">Email Support</a>
+                <a href="mailto:support@creatorarmour.com" className="hover:text-white">Email Support</a>
               </div>
             </div>
           </div>

@@ -105,7 +105,7 @@ export const MaintenancePage: React.FC = () => {
             )}
           </Button>
           
-          <a href="mailto:support@noticebazaar.com?subject=Maintenance Inquiry" className="block">
+          <a href="mailto:support@creatorarmour.com?subject=Maintenance Inquiry" className="block">
             <Button variant="outline" className="w-full bg-white/10 text-white hover:bg-white/20 border-white/20">
               <Mail className="w-4 h-4 mr-2" />
               Contact Support

@@ -27,6 +27,29 @@ const HomePage = () => {
   // const opacity = useTransform(scrollYProgress, [0, 0.2], [1, 0]);
   // const scale = useTransform(scrollYProgress, [0, 0.2], [1, 0.95]);
 
+  // Scroll to section handler
+  const scrollToSection = (sectionId: string) => {
+    const element = document.getElementById(sectionId);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      // Update URL hash without triggering navigation
+      window.history.replaceState(null, '', `#${sectionId}`);
+    }
+  };
+
+  useEffect(() => {
+    // Handle hash navigation on mount (for direct links like #testimonials)
+    const hash = window.location.hash.replace('#', '');
+    if (hash) {
+      setTimeout(() => {
+        const element = document.getElementById(hash);
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }, 100);
+    }
+  }, []);
+
   useEffect(() => {
     if (session && profile) {
       // Default to Creator Dashboard for ALL users (including clients)
@@ -230,10 +253,10 @@ const HomePage = () => {
 
             {/* Desktop Navigation */}
             <div className="hidden md:flex items-center space-x-8">
-              <a href="#features" className="text-purple-200 hover:text-white transition-colors">Features</a>
-              <a href="#how-it-works" className="text-purple-200 hover:text-white transition-colors">How It Works</a>
-              <a href="#testimonials" className="text-purple-200 hover:text-white transition-colors">Testimonials</a>
-              <a href="#pricing" className="text-purple-200 hover:text-white transition-colors">Pricing</a>
+              <button onClick={() => scrollToSection('features')} className="text-purple-200 hover:text-white transition-colors">Features</button>
+              <button onClick={() => scrollToSection('how-it-works')} className="text-purple-200 hover:text-white transition-colors">How It Works</button>
+              <button onClick={() => scrollToSection('testimonials')} className="text-purple-200 hover:text-white transition-colors">Testimonials</button>
+              <button onClick={() => scrollToSection('pricing')} className="text-purple-200 hover:text-white transition-colors">Pricing</button>
               <Link to="/login" className="text-purple-200 hover:text-white transition-colors">Login</Link>
               <Link 
                 to="/signup" 
@@ -266,10 +289,10 @@ const HomePage = () => {
             }}
           >
             <div className="px-4 py-4 space-y-3">
-              <a href="#features" className="block py-2 text-purple-200 hover:text-white transition-colors">Features</a>
-              <a href="#how-it-works" className="block py-2 text-purple-200 hover:text-white transition-colors">How It Works</a>
-              <a href="#testimonials" className="block py-2 text-purple-200 hover:text-white transition-colors">Testimonials</a>
-              <a href="#pricing" className="block py-2 text-purple-200 hover:text-white transition-colors">Pricing</a>
+              <button onClick={() => { scrollToSection('features'); setIsMenuOpen(false); }} className="block py-2 text-purple-200 hover:text-white transition-colors w-full text-left">Features</button>
+              <button onClick={() => { scrollToSection('how-it-works'); setIsMenuOpen(false); }} className="block py-2 text-purple-200 hover:text-white transition-colors w-full text-left">How It Works</button>
+              <button onClick={() => { scrollToSection('testimonials'); setIsMenuOpen(false); }} className="block py-2 text-purple-200 hover:text-white transition-colors w-full text-left">Testimonials</button>
+              <button onClick={() => { scrollToSection('pricing'); setIsMenuOpen(false); }} className="block py-2 text-purple-200 hover:text-white transition-colors w-full text-left">Pricing</button>
               <Link to="/login" className="block py-2 text-purple-200 hover:text-white transition-colors">Login</Link>
               <Link 
                 to="/signup" 
@@ -643,9 +666,9 @@ const HomePage = () => {
             <div>
               <h4 className="font-semibold mb-3">Company</h4>
               <ul className="space-y-2 text-sm text-purple-300">
-                <li><a href="#" className="hover:text-white transition-colors">About</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Blog</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Careers</a></li>
+                <li><Link to="/about" className="hover:text-white transition-colors">About</Link></li>
+                <li><Link to="/blog" className="hover:text-white transition-colors">Blog</Link></li>
+                <li><Link to="/careers" className="hover:text-white transition-colors">Careers</Link></li>
               </ul>
             </div>
             <div>

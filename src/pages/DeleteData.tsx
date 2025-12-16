@@ -54,10 +54,10 @@ const DeleteData = () => {
               <p>
                 Send an email from your registered email address to
                 <a
-                  href="mailto:support@noticebazaar.com?subject=Data%20Deletion%20Request"
+                  href="mailto:support@creatorarmour.com?subject=Data%20Deletion%20Request"
                   className="text-primary font-semibold ml-1"
                 >
-                  support@noticebazaar.com
+                  support@creatorarmour.com
                 </a>
               </p>
               <p className="text-sm text-muted">
@@ -92,10 +92,10 @@ const DeleteData = () => {
           <p>
             Contact our Data Protection Officer at
             <a
-              href="mailto:dpo@noticebazaar.com"
+              href="mailto:dpo@creatorarmour.com"
               className="text-primary font-semibold ml-1"
             >
-              dpo@noticebazaar.com
+              dpo@creatorarmour.com
             </a>
             or via WhatsApp at
             <a href="https://wa.me/919205376316" target="_blank" rel="noopener" className="text-primary font-semibold ml-1">
