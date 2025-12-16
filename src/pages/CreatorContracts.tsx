@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Briefcase, TrendingUp, Clock, CheckCircle, AlertCircle, IndianRupee, Calendar, ChevronRight } from 'lucide-react';
 import { useSession } from '@/contexts/SessionContext';
@@ -18,7 +18,6 @@ import { cn } from '@/lib/utils';
 const CreatorContracts = () => {
   const navigate = useNavigate();
   const { profile } = useSession();
-  const [activeFilter, setActiveFilter] = useState('all');
   
   // Fetch real brand deals data (single call for both data and loading state)
   const { data: brandDeals = [], isLoading: isLoadingDeals } = useBrandDeals({
@@ -186,15 +185,50 @@ const CreatorContracts = () => {
     return { color: 'bg-gray-500', label: status, icon: Clock };
   };
 
+  // Calculate closed count (paid + rejected)
+  const closedCount = useMemo(() => {
+    return brandDeals.filter(deal => {
+      const status = deal.status?.toLowerCase() || '';
+      const brandResponseStatus = (deal as any)?.brand_response_status?.toLowerCase() || '';
+      return status.includes('completed') || 
+             status.includes('paid') ||
+             brandResponseStatus === 'rejected';
+    }).length;
+  }, [brandDeals]);
+
+  // Calculate action needed count (deals with next_action OR status in [draft, sent_to_brand, accepted_not_paid, under_watch])
+  const actionNeededCount = useMemo(() => {
+    return brandDeals.filter(deal => {
+      const status = deal.status?.toLowerCase() || '';
+      const hasNextAction = !!(deal as any)?.next_action;
+      return hasNextAction ||
+             status === 'draft' ||
+             status.includes('sent') ||
+             status.includes('accepted') ||
+             status.includes('under_watch') ||
+             status.includes('under watch');
+    }).length;
+  }, [brandDeals]);
+
+  // Initialize activeFilter state - default to "Action Needed" if count > 0, otherwise "All Deals"
+  const [activeFilter, setActiveFilter] = useState<'all' | 'action_needed' | 'closed'>('all');
+  const [hasInitialized, setHasInitialized] = useState(false);
+
+  // Update activeFilter to "Action Needed" on initial load if there are action-needed deals
+  useEffect(() => {
+    if (!hasInitialized && actionNeededCount > 0) {
+      setActiveFilter('action_needed');
+      setHasInitialized(true);
+    } else if (!hasInitialized) {
+      setHasInitialized(true);
+    }
+  }, [actionNeededCount, hasInitialized]);
+
   const filters = useMemo(() => [
     { id: 'all', label: 'All Deals', count: stats.total },
-    { id: 'drafts', label: 'Needs Prep', count: stats.drafts },
-    { id: 'sent', label: 'Sent to Brand', count: stats.sent },
-    { id: 'accepted', label: 'Accepted (Not Paid)', count: stats.accepted },
-    { id: 'rejected', label: 'Closed – Rejected', count: stats.rejected },
-    { id: 'active', label: 'Under Watch', count: stats.active },
-    { id: 'completed', label: 'Closed – Paid', count: stats.completed }
-  ], [stats]);
+    { id: 'action_needed', label: 'Action Needed', count: actionNeededCount },
+    { id: 'closed', label: 'Closed', count: closedCount }
+  ], [stats.total, actionNeededCount, closedCount]);
 
   const filteredDeals = useMemo(() => {
     let filtered = deals;
@@ -215,32 +249,31 @@ const CreatorContracts = () => {
         const bDate = bDeal?.created_at ? new Date(bDeal.created_at).getTime() : 0;
         return bDate - aDate;
       });
-    } else if (activeFilter === 'drafts') {
+    } else if (activeFilter === 'action_needed') {
+      // Action Needed: deals with next_action OR status in [draft, sent_to_brand, accepted_not_paid, under_watch]
       filtered = deals.filter(deal => {
         const dealData = brandDeals.find(d => d.id === deal.id);
         const status = dealData?.status?.toLowerCase() || '';
-        return status === 'draft' || status.includes('draft');
+        const brandResponseStatus = (dealData as any)?.brand_response_status?.toLowerCase() || '';
+        const hasNextAction = (dealData as any)?.next_action || false;
+        
+        return hasNextAction || 
+               status === 'draft' || 
+               status.includes('sent') ||
+               brandResponseStatus === 'accepted' ||
+               status.includes('under_watch') ||
+               status.includes('under watch');
       });
-    } else if (activeFilter === 'sent') {
+    } else if (activeFilter === 'closed') {
+      // Closed: paid + rejected deals
       filtered = deals.filter(deal => {
         const dealData = brandDeals.find(d => d.id === deal.id);
         const status = dealData?.status?.toLowerCase() || '';
-        return status === 'sent' || status.includes('sent');
+        const brandResponseStatus = (dealData as any)?.brand_response_status?.toLowerCase() || '';
+        return status.includes('completed') || 
+               status.includes('paid') ||
+               brandResponseStatus === 'rejected';
       });
-    } else if (activeFilter === 'accepted') {
-      filtered = deals.filter(deal => {
-        const dealData = brandDeals.find(d => d.id === deal.id);
-        const brandResponseStatus = (dealData as any)?.brand_response_status;
-        return brandResponseStatus === 'accepted';
-      });
-    } else if (activeFilter === 'rejected') {
-      filtered = deals.filter(deal => {
-        const dealData = brandDeals.find(d => d.id === deal.id);
-        const brandResponseStatus = (dealData as any)?.brand_response_status;
-        return brandResponseStatus === 'rejected';
-      });
-    } else {
-      filtered = deals.filter(deal => deal.status === activeFilter);
     }
     
     return filtered;
@@ -306,7 +339,7 @@ const CreatorContracts = () => {
                     key={filter.id}
                     onClick={() => {
                       triggerHaptic(HapticPatterns.light);
-                      setActiveFilter(filter.id);
+                      setActiveFilter(filter.id as 'all' | 'action_needed' | 'closed');
                     }}
                     whileTap={animations.microTap}
                     className={cn(
@@ -319,10 +352,10 @@ const CreatorContracts = () => {
                     )}
                   >
                     {filter.label}
-                    {filter.count !== undefined && (
+                    {filter.id === 'action_needed' && filter.count !== undefined && filter.count > 0 && (
                       <span className={cn(
-                        "ml-1.5 px-1.5 py-0.5 rounded-full text-xs",
-                        isActive ? "bg-white/25" : "bg-white/10"
+                        "ml-1.5 px-1.5 py-0.5 rounded-full text-xs font-semibold",
+                        isActive ? "bg-white/25 text-white" : "bg-white/10 text-white/80"
                       )}>
                         {filter.count}
                       </span>
@@ -385,48 +418,42 @@ const CreatorContracts = () => {
                       ₹{Math.round(deal.value).toLocaleString('en-IN')}
                     </div>
                     <div className={cn(typography.caption, "text-purple-300")}>{deal.type}</div>
-                    {/* Brand Response Status Chip */}
+                    {/* Brand Response Status Chip - Smaller and muted */}
                     {deal.brandResponseStatus && (() => {
                       const statusConfig = {
                         pending: {
                           label: 'Payment Not Secured',
-                          color: 'text-yellow-400',
-                          bgColor: 'bg-yellow-500/20',
-                          borderColor: 'border-yellow-500/30',
-                          glowColor: 'shadow-yellow-500/20',
+                          color: 'text-yellow-400/70',
+                          bgColor: 'bg-yellow-500/10',
+                          borderColor: 'border-yellow-500/20',
                         },
                         accepted: {
                           label: '✅ Brand Accepted',
-                          color: 'text-green-400',
-                          bgColor: 'bg-green-500/20',
-                          borderColor: 'border-green-500/30',
-                          glowColor: 'shadow-green-500/20',
+                          color: 'text-green-400/70',
+                          bgColor: 'bg-green-500/10',
+                          borderColor: 'border-green-500/20',
                         },
                         negotiating: {
                           label: '🟡 Negotiating',
-                          color: 'text-orange-400',
-                          bgColor: 'bg-orange-500/20',
-                          borderColor: 'border-orange-500/30',
-                          glowColor: 'shadow-orange-500/20',
+                          color: 'text-orange-400/70',
+                          bgColor: 'bg-orange-500/10',
+                          borderColor: 'border-orange-500/20',
                         },
                         rejected: {
                           label: '❌ Rejected',
-                          color: 'text-red-400',
-                          bgColor: 'bg-red-500/20',
-                          borderColor: 'border-red-500/30',
-                          glowColor: 'shadow-red-500/20',
+                          color: 'text-red-400/70',
+                          bgColor: 'bg-red-500/10',
+                          borderColor: 'border-red-500/20',
                         },
                       };
                       const config = statusConfig[deal.brandResponseStatus as keyof typeof statusConfig];
                       if (!config) return null;
                       return (
                         <div className={cn(
-                          "rounded-full px-2 py-1 text-[10px] font-semibold border",
+                          "rounded-full px-1.5 py-0.5 text-[9px] font-medium border",
                           config.color,
                           config.bgColor,
-                          config.borderColor,
-                          config.glowColor,
-                          "shadow-sm"
+                          config.borderColor
                         )}>
                           {config.label}
                         </div>
@@ -502,7 +529,7 @@ const CreatorContracts = () => {
                       />
                     ) : (
                       <FilteredNoMatchesEmptyState
-                        onClearFilters={() => setActiveFilter('all')}
+                        onClearFilters={() => setActiveFilter('all' as 'all' | 'action_needed' | 'closed')}
                         filterCount={activeFilter !== 'all' ? 1 : 0}
                       />
                     )}

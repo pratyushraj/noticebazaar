@@ -27,6 +27,7 @@ import paymentsRouter from './routes/payments.js';
 import protectionRouter from './routes/protection.js';
 import adminRouter from './routes/admin.js';
 import brandResponseRouter from './routes/brandResponse.js';
+import brandReplyTokensRouter from './routes/brandReplyTokens.js';
 import aiRouter from './routes/ai.js';
 import otpRouter, { publicRouter as otpPublicRouter } from './routes/otp.js';
 import dealsRouter from './routes/deals.js';
@@ -213,6 +214,7 @@ app.use('/api/brand-response', brandResponseRouter);
 app.use('/api/otp', otpPublicRouter); // Public OTP routes for brand response page
 
 // API Routes (protected)
+app.use('/api/brand-reply-tokens', authMiddleware, rateLimitMiddleware, brandReplyTokensRouter);
 app.use('/api/conversations', authMiddleware, rateLimitMiddleware, conversationsRouter);
 app.use('/api/conversations', authMiddleware, rateLimitMiddleware, messagesRouter);
 app.use('/api/conversations', authMiddleware, rateLimitMiddleware, attachmentsRouter);

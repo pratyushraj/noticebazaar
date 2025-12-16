@@ -47,3 +47,4 @@ export function isCreatorProSync(profile: Profile | null): boolean {
   return !profile.is_trial || profile.trial_locked === false;
 }
 
+

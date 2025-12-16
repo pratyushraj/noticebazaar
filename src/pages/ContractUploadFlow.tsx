@@ -66,6 +66,7 @@ const ContractUploadFlow = () => {
   const [negotiationMessage, setNegotiationMessage] = useState<string | null>(null);
   const [showNegotiationModal, setShowNegotiationModal] = useState(false);
   const [isGeneratingMessage, setIsGeneratingMessage] = useState(false);
+  const [isContractSummary, setIsContractSummary] = useState(false); // Track if sharing summary (no issues) vs negotiation (has issues)
   const [brandEmail, setBrandEmail] = useState('');
   const [isSendingEmail, setIsSendingEmail] = useState(false);
   
@@ -2929,7 +2930,7 @@ ${creatorName}`;
                       <div className="flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-purple-500/20 to-indigo-500/20 border border-purple-400/40 rounded-xl backdrop-blur-sm">
                         <Building2 className="w-4 h-4 text-purple-300 flex-shrink-0" />
                         <span className="text-sm font-semibold text-white tracking-wide">
-                          {analysisResults.keyTerms.brandName}
+                          Brand: {analysisResults.keyTerms.brandName}
                         </span>
                       </div>
                     )}
@@ -2937,65 +2938,58 @@ ${creatorName}`;
                       <div className="flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-green-500/20 to-emerald-500/20 border border-green-400/40 rounded-xl backdrop-blur-sm">
                         <IndianRupee className="w-4 h-4 text-green-300 flex-shrink-0" />
                         <span className="text-sm font-semibold text-white tracking-wide">
-                          {analysisResults.keyTerms.dealValue}
+                          Deal Value: {analysisResults.keyTerms.dealValue}
                         </span>
                       </div>
                     )}
                   </div>
                 )}
-                {/* Circular Progress Gauge with Animation and Glow */}
-                <div className="relative w-32 h-32 md:w-40 md:h-40 flex-shrink-0" style={{ willChange: 'transform' }}>
-                  {/* Pulse glow effect based on risk level */}
-                  <div 
-                    className="absolute inset-0 rounded-full animate-pulse"
-                    style={{
-                      boxShadow: `0 0 40px ${resultsRiskInfo.glowColor}`,
-                      opacity: 0.5
-                    }}
-                  />
-                  <svg className="transform -rotate-90 w-32 h-32 md:w-40 md:h-40 relative z-10">
-                    {/* Background circle */}
-                    <circle
-                      cx={analysisResults.score >= 80 ? "64" : "80"}
-                      cy={analysisResults.score >= 80 ? "64" : "80"}
-                      r={analysisResults.score >= 80 ? "36" : "45"}
-                      stroke="rgba(255,255,255,0.1)"
-                      strokeWidth="6"
-                      fill="none"
-                    />
-                    {/* Progress circle - animated */}
-                    <circle
-                      cx={analysisResults.score >= 80 ? "64" : "80"}
-                      cy={analysisResults.score >= 80 ? "64" : "80"}
-                      r={analysisResults.score >= 80 ? "36" : "45"}
-                      stroke={`url(#gradient-${analysisResults.score})`}
-                      strokeWidth="6"
-                      fill="none"
-                      strokeDasharray={resultsStrokeDasharray}
-                      strokeDashoffset={step === 'results' && analysisResults 
-                        ? resultsCircumference - (resultsCircumference * (scoreAnimation || analysisResults.score) / 100)
-                        : resultsCircumference}
-                      strokeLinecap="round"
-                      className="transition-all duration-1500 ease-out"
-                    />
-                    <defs>
-                      <linearGradient id={`gradient-${analysisResults.score}`} x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" stopColor={resultsRiskInfo.bgColor.replace('bg-', '').split('/')[0] === 'green' ? '#10b981' : resultsRiskInfo.bgColor.replace('bg-', '').split('/')[0] === 'orange' ? '#f97316' : '#ef4444'} />
-                        <stop offset="100%" stopColor={resultsRiskInfo.bgColor.replace('bg-', '').split('/')[0] === 'green' ? '#059669' : resultsRiskInfo.bgColor.replace('bg-', '').split('/')[0] === 'orange' ? '#ea580c' : '#dc2626'} />
-                      </linearGradient>
-                    </defs>
-                  </svg>
-                  <div className="absolute inset-0 flex flex-col items-center justify-center z-10">
-                    <div className={`text-6xl md:text-7xl font-black ${resultsRiskInfo.color} transition-all duration-300 leading-none`}>
+                {/* Risk Status Badge and Score Display */}
+                <div className="w-full flex flex-col items-center gap-4">
+                  {/* Risk Status Badge */}
+                  <div className={`px-4 py-2 rounded-full font-bold text-sm uppercase tracking-wide ${
+                    analysisResults.overallRisk === 'high' 
+                      ? 'bg-red-500/20 text-red-400 border border-red-500/40' 
+                      : analysisResults.overallRisk === 'medium'
+                      ? 'bg-amber-500/20 text-amber-400 border border-amber-500/40'
+                      : 'bg-green-500/20 text-green-400 border border-green-500/40'
+                  }`}>
+                    {analysisResults.overallRisk === 'high' 
+                      ? 'HIGH RISK' 
+                      : analysisResults.overallRisk === 'medium'
+                      ? 'MEDIUM RISK'
+                      : 'LOW RISK'}
+                  </div>
+                  
+                  {/* Score Text */}
+                  <div className="text-center">
+                    <div className={`text-4xl md:text-5xl font-black ${resultsRiskInfo.color} transition-all duration-300 leading-none`}>
                       {scoreAnimation || analysisResults.score}
                     </div>
-                    <div className="text-xs text-white/50 mt-1 font-medium">out of 100</div>
+                    <div className="text-sm text-white/70 mt-2 font-medium">
+                      Risk Score: {scoreAnimation || analysisResults.score} / 100
+                    </div>
+                  </div>
+                  
+                  {/* Horizontal Risk Bar */}
+                  <div className="w-full max-w-xs">
+                    <div className="relative h-3 bg-white/10 rounded-full overflow-hidden">
+                      <div 
+                        className="absolute top-0 left-0 h-full bg-gradient-to-r from-red-500 via-amber-500 to-green-500 transition-all duration-1000 ease-out"
+                        style={{ 
+                          width: `${scoreAnimation || analysisResults.score}%`
+                        }}
+                      />
+                    </div>
+                    <div className="text-xs text-white/50 mt-2 text-center">
+                      Low safety → High safety
+                    </div>
                   </div>
                 </div>
 
                 {/* Risk Label and Info */}
                 <div className="flex-1 text-center w-full">
-                  <h2 className="text-2xl md:text-3xl font-bold mb-3 text-white">Contract Analysis</h2>
+                  <h2 className="text-2xl md:text-3xl font-bold mb-3 text-white">Deal Risk Analysis</h2>
                   
                   {/* Creator-First Risk Message */}
                   {(() => {
@@ -3009,29 +3003,44 @@ ${creatorName}`;
                     const potentialScore = Math.min(100, (analysisResults.score || 0) + (totalRiskAreas * 5));
                     
                     if (totalRiskAreas > 0) {
+                      const isLowRisk = (analysisResults.score || 0) >= 75;
+                      
                       return (
                         <>
                           <div className="mb-2">
-                            <p className={`text-sm md:text-base font-semibold ${resultsRiskInfo.color} flex items-center justify-center gap-2`}>
-                              <span>⚠️</span>
-                              <span>Your Deal Needs Fixes</span>
+                            <p className={`text-sm md:text-base font-semibold ${isLowRisk ? 'text-green-400' : resultsRiskInfo.color} flex items-center justify-center gap-2`}>
+                              <span>{isLowRisk ? '✅' : '⚠️'}</span>
+                              <span>{isLowRisk ? 'This Deal Is Largely Safe' : 'This Deal Is High Risk'}</span>
                             </p>
                             <p className="text-xs md:text-sm text-white/70 mt-1 max-w-xs mx-auto">
-                              You're at risk in {totalRiskAreas} key {totalRiskAreas === 1 ? 'area' : 'areas'}. Fixing them can push your score above {potentialScore >= 90 ? '90' : potentialScore} ✅
+                              {isLowRisk 
+                                ? 'This contract is mostly creator-friendly. Fixing the points below can further reduce edge-case payment risk.'
+                                : `You're exposed in ${totalRiskAreas} key risk ${totalRiskAreas === 1 ? 'area' : 'areas'}. Fixing them can raise your score above ${potentialScore >= 90 ? '90' : potentialScore} and reduce payment risk.`
+                              }
                             </p>
                           </div>
                           
                           {/* Issues & Missing Clauses Chip */}
-                          <div className="mb-3 flex items-center justify-center">
+                          <div className="mb-3 flex flex-col items-center justify-center gap-2">
                             <div className="px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-xs text-white/70">
                               {issuesCount > 0 && (
-                                <span className="text-orange-300">{issuesCount} {issuesCount === 1 ? 'Issue' : 'Issues'}</span>
+                                <span className={isLowRisk ? 'text-green-300' : 'text-orange-300'}>
+                                  {isLowRisk ? `Review ${issuesCount} ${issuesCount === 1 ? 'Suggestion' : 'Suggestions'}` : `View ${issuesCount} Risk ${issuesCount === 1 ? 'Issue' : 'Issues'}`}
+                                </span>
                               )}
                               {issuesCount > 0 && missingCount > 0 && <span className="mx-1.5 text-white/40">•</span>}
                               {missingCount > 0 && (
                                 <span className="text-yellow-300">{missingCount} Missing {missingCount === 1 ? 'Clause' : 'Clauses'}</span>
                               )}
                             </div>
+                            {issuesCount > 0 && (
+                              <p className="text-[10px] text-white/40 text-center max-w-xs">
+                                {isLowRisk 
+                                  ? 'Pro users can get a human lawyer to polish this contract further.'
+                                  : 'Pro users can get a human lawyer review for this contract.'
+                                }
+                              </p>
+                            )}
                           </div>
                         </>
                       );
@@ -3270,6 +3279,9 @@ ${creatorName}`;
                     <div className="flex flex-col items-start">
                       <span className="text-white font-medium">Issues Found</span>
                       <span className="text-xs text-white/50 mt-0.5">These terms are in the contract but not in your favor.</span>
+                      {analysisResults.issues.length > 0 && analysisResults.issues.every((issue: any) => issue.severity === 'low') && (
+                        <span className="text-xs text-yellow-400/80 mt-1 italic">These are negotiable terms, not deal-breakers.</span>
+                      )}
                     </div>
                     <span className="text-xs px-3 py-1 rounded-full bg-orange-500/20 text-orange-400 border border-orange-500/30 ml-auto">
                       {analysisResults.issues.length} {analysisResults.issues.length === 1 ? 'Issue' : 'Issues'}
@@ -3836,19 +3848,76 @@ ${creatorName}`;
                         return;
                       }
 
-                      // Check for issues OR missing clauses
-                      const hasIssues = analysisResults && analysisResults.issues.length > 0;
-                      const hasMissingClauses = !analysisResults?.keyTerms?.dealValue || 
-                        analysisResults.keyTerms.dealValue === 'Not specified' ||
-                        !analysisResults?.keyTerms?.paymentSchedule || 
-                        analysisResults.keyTerms.paymentSchedule === 'Not specified' ||
-                        !analysisResults?.keyTerms?.exclusivity || 
-                        analysisResults.keyTerms.exclusivity === 'Not specified';
+                      // Check for critical issues (high/medium) vs all issues (including low)
+                      const allIssuesCount = analysisResults?.issues.length || 0;
+                      const criticalIssuesCount = analysisResults?.issues.filter((issue: any) => 
+                        issue.severity === 'high' || issue.severity === 'medium'
+                      ).length || 0;
+                      const missingClausesCount = [
+                        !analysisResults?.keyTerms?.dealValue || analysisResults.keyTerms.dealValue === 'Not specified' ? 1 : 0,
+                        !analysisResults?.keyTerms?.paymentSchedule || analysisResults.keyTerms.paymentSchedule === 'Not specified' ? 1 : 0,
+                        !analysisResults?.keyTerms?.exclusivity || analysisResults.keyTerms.exclusivity === 'Not specified' ? 1 : 0,
+                      ].reduce((a, b) => a + b, 0);
+                      const requestsCount = 0; // User-requested changes (not currently tracked, assume 0)
+                      
+                      const hasNoCriticalIssues = criticalIssuesCount === 0 && missingClausesCount === 0 && requestsCount === 0;
+                      const hasOnlyNonCriticalIssues = allIssuesCount > 0 && criticalIssuesCount === 0 && missingClausesCount === 0;
 
-                      if (!analysisResults || (!hasIssues && !hasMissingClauses)) {
-                        toast.error('No issues or missing clauses found to fix');
+                      // If no issues, show success and allow sharing contract summary
+                      if (!analysisResults) {
+                        toast.error('Contract analysis not available');
                         return;
                       }
+
+                      if (hasNoCriticalIssues && !hasOnlyNonCriticalIssues) {
+                        // Show success message and open share modal with contract summary
+                        toast.success('This contract is already strong. You can share a clean summary with the brand.');
+                        triggerHaptic(HapticPatterns.success);
+                        setIsGeneratingMessage(true);
+                        setIsContractSummary(true); // Mark as summary mode
+                        
+                        try {
+                          // Generate a clean contract summary message (no issues to fix)
+                          const creatorName = (profile?.first_name && profile?.last_name ? `${profile.first_name} ${profile.last_name}` : null) ||
+                            profile?.first_name ||
+                            session?.user?.email?.split('@')[0] ||
+                            'Creator';
+                          
+                          const brandName = analysisResults.keyTerms?.brandName || 'Brand Team';
+                          const dealValue = analysisResults.keyTerms?.dealValue || 'the agreed amount';
+                          
+                          const summaryMessage = `Subject: Contract Summary - ${brandName} Collaboration
+
+Dear ${brandName},
+
+Thank you for sharing the collaboration agreement. I've reviewed the contract and am pleased to confirm that all key terms are clearly defined and the agreement is well-structured.
+
+Contract Summary:
+- Deal Value: ${dealValue}
+${analysisResults.keyTerms?.paymentSchedule && analysisResults.keyTerms.paymentSchedule !== 'Not specified' ? `- Payment Schedule: ${analysisResults.keyTerms.paymentSchedule}\n` : ''}${analysisResults.keyTerms?.duration && analysisResults.keyTerms.duration !== 'Not specified' ? `- Duration: ${analysisResults.keyTerms.duration}\n` : ''}${analysisResults.keyTerms?.deliverables && analysisResults.keyTerms.deliverables !== 'Not specified' ? `- Deliverables: ${analysisResults.keyTerms.deliverables}\n` : ''}
+I'm ready to proceed with this collaboration and look forward to working together.
+
+Best regards,
+${creatorName}${session?.user?.email ? `\n${session.user.email}` : ''}`;
+
+                          setNegotiationMessage(summaryMessage);
+                          
+                          // Open share modal
+                          const modalOpened = await openShareFeedbackModal();
+                          if (modalOpened) {
+                            toast.success('Ready to share contract summary!');
+                          }
+                        } catch (error: any) {
+                          console.error('[ContractUploadFlow] Share summary error:', error);
+                          toast.error('Failed to prepare share. Please try again.');
+                        } finally {
+                          setIsGeneratingMessage(false);
+                        }
+                        return;
+                      }
+
+                      // Mark as negotiation mode (has issues)
+                      setIsContractSummary(false);
 
                       triggerHaptic(HapticPatterns.medium);
                       setIsGeneratingMessage(true);
@@ -3866,17 +3935,25 @@ ${creatorName}`;
                       if (reportId) {
                         requestBody.reportId = reportId;
                       } else {
-                        // Include issues
-                        const issuesList = analysisResults.issues
-                          .filter((issue: any) => issue.severity === 'high' || issue.severity === 'medium')
-                          .map((issue: any) => ({
-                            title: issue.title,
-                            category: issue.category,
-                            description: issue.description,
-                            recommendation: issue.recommendation,
-                            severity: issue.severity,
-                            clause_reference: issue.clause
-                          }));
+                        // Include issues - prioritize critical (high/medium), but include low if no critical issues
+                        const criticalIssues = analysisResults.issues.filter((issue: any) => 
+                          issue.severity === 'high' || issue.severity === 'medium'
+                        );
+                        const hasCriticalIssues = criticalIssues.length > 0;
+                        
+                        // If we have critical issues, only include those. Otherwise, include all issues (including low)
+                        const issuesToInclude = hasCriticalIssues 
+                          ? criticalIssues 
+                          : analysisResults.issues;
+                        
+                        const issuesList = issuesToInclude.map((issue: any) => ({
+                          title: issue.title,
+                          category: issue.category,
+                          description: issue.description,
+                          recommendation: issue.recommendation,
+                          severity: issue.severity,
+                          clause_reference: issue.clause
+                        }));
                         
                         // Include missing clauses as issues with yellow/warning severity
                         const missingClausesList: any[] = [];
@@ -3911,8 +3988,50 @@ ${creatorName}`;
                           });
                         }
                         
-                        requestBody.issues = [...issuesList, ...missingClausesList];
+                        const allIssues = [...issuesList, ...missingClausesList];
+                        
+                        // Ensure we always set issues when we have them
+                        if (allIssues.length > 0) {
+                          requestBody.issues = allIssues;
+                        } else if (analysisResults.issues.length > 0) {
+                          // Fallback: if issuesList is empty but we have issues, include all issues
+                          requestBody.issues = analysisResults.issues.map((issue: any) => ({
+                            title: issue.title,
+                            category: issue.category,
+                            description: issue.description,
+                            recommendation: issue.recommendation,
+                            severity: issue.severity,
+                            clause_reference: issue.clause
+                          }));
+                        }
+                        
+                        // Safety check: Don't call API if no issues and no reportId
+                        if (!requestBody.reportId && (!requestBody.issues || requestBody.issues.length === 0)) {
+                          toast.success('No issues or missing clauses to share. This contract is already strong!');
+                          setIsGeneratingMessage(false);
+                          return;
+                        }
                       }
+                      
+                      // Final validation before API call
+                      if (!requestBody.reportId && (!requestBody.issues || requestBody.issues.length === 0)) {
+                        console.error('[ContractUploadFlow] Validation failed:', {
+                          hasReportId: !!requestBody.reportId,
+                          hasIssues: !!requestBody.issues,
+                          issuesLength: requestBody.issues?.length || 0,
+                          allIssuesCount: analysisResults?.issues.length || 0
+                        });
+                        toast.error('Cannot generate message: No issues or report ID available');
+                        setIsGeneratingMessage(false);
+                        return;
+                      }
+                      
+                      // Debug log
+                      console.log('[ContractUploadFlow] Sending request:', {
+                        hasReportId: !!requestBody.reportId,
+                        issuesCount: requestBody.issues?.length || 0,
+                        issues: requestBody.issues?.map((i: any) => ({ title: i.title, severity: i.severity })) || []
+                      });
                       
                       const response = await fetch(`${apiBaseUrl}/api/protection/generate-negotiation-message`, {
                         method: 'POST',
@@ -3965,12 +4084,51 @@ ${creatorName}`;
                   ) : (
                     <>
                       <Share2 className="w-5 h-5" />
-                      Fix & Share with Brand
+                      {(() => {
+                        const allIssuesCount = analysisResults?.issues.length || 0;
+                        const criticalIssuesCount = analysisResults?.issues.filter((issue: any) => 
+                          issue.severity === 'high' || issue.severity === 'medium'
+                        ).length || 0;
+                        const missingClausesCount = [
+                          !analysisResults?.keyTerms?.dealValue || analysisResults?.keyTerms?.dealValue === 'Not specified' ? 1 : 0,
+                          !analysisResults?.keyTerms?.paymentSchedule || analysisResults?.keyTerms?.paymentSchedule === 'Not specified' ? 1 : 0,
+                          !analysisResults?.keyTerms?.exclusivity || analysisResults?.keyTerms?.exclusivity === 'Not specified' ? 1 : 0,
+                        ].reduce((a, b) => a + b, 0);
+                        const requestsCount = 0;
+                        
+                        // Determine CTA text based on issue severity
+                        if (criticalIssuesCount > 0 || missingClausesCount > 0) {
+                          return 'Fix & Share with Brand';
+                        } else if (allIssuesCount > 0) {
+                          return 'Review & Share with Brand';
+                        } else {
+                          return 'Share Contract Summary';
+                        }
+                      })()}
                     </>
                   )}
                 </motion.button>
                 <p className="text-xs text-white/50 mt-2 text-center px-2">
-                  We'll combine all risks + missing points into one clear message.
+                  {(() => {
+                    const allIssuesCount = analysisResults?.issues.length || 0;
+                    const criticalIssuesCount = analysisResults?.issues.filter((issue: any) => 
+                      issue.severity === 'high' || issue.severity === 'medium'
+                    ).length || 0;
+                    const missingClausesCount = [
+                      !analysisResults?.keyTerms?.dealValue || analysisResults?.keyTerms?.dealValue === 'Not specified' ? 1 : 0,
+                      !analysisResults?.keyTerms?.paymentSchedule || analysisResults?.keyTerms?.paymentSchedule === 'Not specified' ? 1 : 0,
+                      !analysisResults?.keyTerms?.exclusivity || analysisResults?.keyTerms?.exclusivity === 'Not specified' ? 1 : 0,
+                    ].reduce((a, b) => a + b, 0);
+                    const requestsCount = 0;
+                    
+                    if (allIssuesCount === 0 && missingClausesCount === 0 && requestsCount === 0) {
+                      return 'Share a clean contract summary via email, WhatsApp, or download PDF.';
+                    } else if (criticalIssuesCount > 0 || missingClausesCount > 0) {
+                      return 'We\'ll combine all risks + missing points into one clear message.';
+                    } else {
+                      return 'We\'ll include optional improvements in your message to the brand.';
+                    }
+                  })()}
                 </p>
                 <p className="text-xs text-green-300/70 mt-1 text-center px-2 flex items-center justify-center gap-1">
                   <CheckCircle className="w-3 h-3" />
@@ -4049,16 +4207,13 @@ ${creatorName}`;
 
             {/* Perfect Contract Empty State */}
             {analysisResults.issues.length === 0 && analysisResults.score >= 75 && (
-              <div className="bg-gradient-to-br from-green-500/20 to-emerald-500/20 backdrop-blur-md rounded-2xl p-8 md:p-12 border-2 border-green-500/60 shadow-lg text-center mb-6">
+              <div className="bg-gradient-to-br from-purple-900/40 to-indigo-900/40 backdrop-blur-md rounded-2xl p-8 md:p-12 border border-white/10 shadow-lg text-center mb-6">
                 <motion.div
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
                   transition={{ type: "spring", stiffness: 200, damping: 15 }}
                   className="mb-6"
                 >
-                  <div className="text-6xl md:text-8xl mb-4">
-                    🎉 ✨ 🎊
-                  </div>
                   <motion.div
                     animate={{ scale: [1, 1.1, 1] }}
                     transition={{ duration: 2, repeat: Infinity }}
@@ -4066,11 +4221,14 @@ ${creatorName}`;
                     <CheckCircle className="w-16 h-16 text-green-400 mx-auto mb-4" />
                   </motion.div>
                 </motion.div>
-                <h2 className="text-3xl md:text-4xl font-bold text-green-300 mb-3">Perfect Contract! 💯</h2>
-                <p className="text-lg text-green-200/80 mb-6 max-w-2xl mx-auto">
-                  This is one of the safest contracts we've analyzed. All key terms are properly defined and there are no critical risks.
+                <h2 className="text-3xl md:text-4xl font-bold text-green-400 mb-3">This Is a Strong Contract ✅</h2>
+                <p className="text-lg text-white/90 mb-3 max-w-2xl mx-auto">
+                  This is a well-balanced, creator-friendly contract. Key terms are clearly defined and there are no critical payment or legal risks.
                 </p>
-                <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                <p className="text-sm text-white/50 max-w-2xl mx-auto">
+                  Score is based on contract clauses, not brand reputation.
+                </p>
+                <div className="flex flex-col sm:flex-row gap-3 justify-center mt-6">
                   <motion.button
                     onClick={async () => {
                       if (contractUrl) {
@@ -4083,24 +4241,74 @@ ${creatorName}`;
                         toast.success('Contract downloaded!');
                       }
                     }}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-xl font-semibold transition-all flex items-center justify-center gap-2"
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    className="bg-white/5 hover:bg-white/10 border border-white/20 text-white px-6 py-3 rounded-xl font-semibold transition-all flex items-center justify-center gap-2"
                   >
                     <Download className="w-5 h-5" />
                     Download for Records
                   </motion.button>
                   <motion.button
-                    onClick={() => {
-                      if (contractUrl) {
-                        window.open(contractUrl, '_blank', 'noopener,noreferrer');
+                    onClick={async () => {
+                      // Trigger the share flow
+                      if (!session?.access_token) {
+                        toast.error('Please log in to share with brand');
+                        return;
+                      }
+                      if (!analysisResults) {
+                        toast.error('Contract analysis not available');
+                        return;
+                      }
+                      
+                      // Check if we have no issues (summary mode)
+                      const issuesCount = analysisResults.issues.length || 0;
+                      const missingClausesCount = [
+                        !analysisResults?.keyTerms?.dealValue || analysisResults.keyTerms.dealValue === 'Not specified' ? 1 : 0,
+                        !analysisResults?.keyTerms?.paymentSchedule || analysisResults.keyTerms.paymentSchedule === 'Not specified' ? 1 : 0,
+                        !analysisResults?.keyTerms?.exclusivity || analysisResults.keyTerms.exclusivity === 'Not specified' ? 1 : 0,
+                      ].reduce((a, b) => a + b, 0);
+                      const hasNoIssues = issuesCount === 0 && missingClausesCount === 0;
+                      
+                      if (hasNoIssues) {
+                        // Generate summary message
+                        const creatorName = (profile?.first_name && profile?.last_name ? `${profile.first_name} ${profile.last_name}` : null) ||
+                          profile?.first_name ||
+                          session?.user?.email?.split('@')[0] ||
+                          'Creator';
+                        
+                        const brandName = analysisResults.keyTerms?.brandName || 'Brand Team';
+                        const dealValue = analysisResults.keyTerms?.dealValue || 'the agreed amount';
+                        
+                        const summaryMessage = `Subject: Contract Summary - ${brandName} Collaboration
+
+Dear ${brandName},
+
+Thank you for sharing the collaboration agreement. I've reviewed the contract and am pleased to confirm that all key terms are clearly defined and the agreement is well-structured.
+
+Contract Summary:
+- Deal Value: ${dealValue}
+${analysisResults.keyTerms?.paymentSchedule && analysisResults.keyTerms.paymentSchedule !== 'Not specified' ? `- Payment Schedule: ${analysisResults.keyTerms.paymentSchedule}\n` : ''}${analysisResults.keyTerms?.duration && analysisResults.keyTerms.duration !== 'Not specified' ? `- Duration: ${analysisResults.keyTerms.duration}\n` : ''}${analysisResults.keyTerms?.deliverables && analysisResults.keyTerms.deliverables !== 'Not specified' ? `- Deliverables: ${analysisResults.keyTerms.deliverables}\n` : ''}
+I'm ready to proceed with this collaboration and look forward to working together.
+
+Best regards,
+${creatorName}${session?.user?.email ? `\n${session.user.email}` : ''}`;
+
+                        setNegotiationMessage(summaryMessage);
+                        setIsContractSummary(true);
+                        const modalOpened = await openShareFeedbackModal();
+                        if (modalOpened) {
+                          toast.success('Ready to share contract summary!');
+                        }
+                      } else {
+                        // Should not happen in this success state, but handle gracefully
+                        toast.info('Please use the share options below');
                       }
                     }}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-xl font-semibold transition-all flex items-center justify-center gap-2"
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white px-6 py-3 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 shadow-lg shadow-purple-500/30"
                   >
-                    <Send className="w-5 h-5" />
+                    <Share2 className="w-5 h-5" />
                     Share with Brand
                   </motion.button>
                 </div>
@@ -5136,7 +5344,7 @@ ${creatorName}`;
                 disabled={!negotiationMessage}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                className="flex-1 bg-blue-600/90 hover:bg-blue-600 font-semibold py-3 rounded-xl transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-1 bg-white/5 hover:bg-white/10 border border-white/10 text-white font-semibold py-3 rounded-xl transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <Mail className="w-5 h-5" />
                 Copy Email
@@ -5148,7 +5356,7 @@ ${creatorName}`;
                 disabled={!negotiationMessage}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                className="flex-1 bg-green-600/90 hover:bg-green-600 font-semibold py-3 rounded-xl transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-1 bg-white/5 hover:bg-white/10 border border-white/10 text-white font-semibold py-3 rounded-xl transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <MessageSquare className="w-5 h-5" />
                 Copy WhatsApp
@@ -5223,6 +5431,7 @@ ${creatorName}`;
                     // Format message with India-optimized template
                           const formattedMessage = formatNegotiationMessage(data.message);
                           setNegotiationMessage(formattedMessage);
+                          setIsContractSummary(false);
                           const opened = await openShareFeedbackModal();
                           if (opened) {
                             toast.success('Negotiation message generated!');
@@ -5237,7 +5446,7 @@ ${creatorName}`;
                 disabled={isGeneratingMessage}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                className="flex-1 bg-purple-600/90 hover:bg-purple-600 font-semibold py-3 rounded-xl transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-1 bg-white/5 hover:bg-white/10 border border-white/10 text-white font-semibold py-3 rounded-xl transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isGeneratingMessage ? (
                   <>
@@ -5346,7 +5555,7 @@ ${creatorName}`;
                       onClick={handleCopyEmail}
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
-                      className="bg-blue-600/80 hover:bg-blue-600 text-white px-4 py-3 rounded-xl font-semibold transition-all duration-200 flex items-center justify-center gap-2"
+                      className="bg-white/5 hover:bg-white/10 border border-white/10 text-white px-4 py-3 rounded-xl font-semibold transition-all duration-200 flex items-center justify-center gap-2"
                     >
                       <Mail className="w-5 h-5" />
                       Copy Email
@@ -5357,7 +5566,7 @@ ${creatorName}`;
                       onClick={handleCopyWhatsApp}
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
-                      className="bg-green-600/80 hover:bg-green-600 text-white px-4 py-3 rounded-xl font-semibold transition-all duration-200 flex items-center justify-center gap-2"
+                      className="bg-white/5 hover:bg-white/10 border border-white/10 text-white px-4 py-3 rounded-xl font-semibold transition-all duration-200 flex items-center justify-center gap-2"
                     >
                       <MessageSquare className="w-5 h-5" />
                       Copy WhatsApp
@@ -5508,6 +5717,7 @@ ${creatorName}`;
                   // If no dealId, show error instead of generating invalid link
                   return '';
                 })()}
+                primaryCtaText={isContractSummary ? 'Share Contract Summary' : 'Share with Brand'}
                 dealId={savedDealId || undefined}
                 onShareComplete={async (method) => {
                   // Set brand_response_status to 'pending' and update deal status to 'Sent'

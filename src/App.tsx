@@ -80,7 +80,6 @@ import ContractProtectionDetails from "./pages/ContractProtectionDetails";
 import PaymentDetailPage from "./pages/PaymentDetailPage";
 import BrandResponsePage from "./pages/BrandResponsePage";
 import FeedbackPage from "./pages/FeedbackPage";
-import BrandEsignStatusPage from "./pages/BrandEsignStatusPage";
 import AdvisorDashboard from "./pages/AdvisorDashboard";
 import LawyerDashboard from "./pages/LawyerDashboard";
 import ConsumerComplaintsPage from "./pages/ConsumerComplaintsPage";
@@ -257,7 +256,7 @@ const App = () => {
               <Route path="/contract-comparison" element={<ProtectedLayout allowedRoles={['creator']}><ContractComparison /></ProtectedLayout>} />
               <Route path="/contract-protection/:contractId" element={<ProtectedLayout allowedRoles={['creator']}><ContractProtectionDetails /></ProtectedLayout>} />
               {/* Public Brand Response Page - No auth required */}
-              <Route path="/brand-reply/:dealId" element={<BrandResponsePage />} />
+              <Route path="/brand-reply/:token" element={<BrandResponsePage />} />
               {/* Public Feedback Page - No auth required (read-only view) */}
               <Route path="/feedback/:reportId" element={<FeedbackPage />} />
               {/* Public Brand eSign Status Page - No auth required */}

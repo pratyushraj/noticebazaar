@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import { Share2, Copy, Mail, MessageSquare, Send, X, Check, Link2, Instagram, Phone } from 'lucide-react';
+import { Share2, Copy, Mail, MessageSquare, Send, X, Check, Link2, Instagram } from 'lucide-react';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 import { triggerHaptic, HapticPatterns } from '@/lib/utils/haptics';
@@ -13,6 +13,7 @@ interface UniversalShareModalProps {
   brandReplyLink: string;
   dealId?: string;
   onShareComplete?: (method: string) => void;
+  primaryCtaText?: string; // Optional: "Share with Brand" or "Share Contract Summary"
 }
 
 // Sanitize message for sharing
@@ -61,6 +62,7 @@ export const UniversalShareModal: React.FC<UniversalShareModalProps> = ({
   brandReplyLink,
   dealId,
   onShareComplete,
+  primaryCtaText = 'Share with Brand',
 }) => {
   const [copiedItem, setCopiedItem] = useState<string | null>(null);
   
@@ -71,7 +73,7 @@ export const UniversalShareModal: React.FC<UniversalShareModalProps> = ({
   
   // Handle native share
   const handleNativeShare = async () => {
-    if (!navigator.share) {
+    if (typeof navigator.share !== 'function') {
       // Fallback to modal options
       return false;
     }
@@ -209,13 +211,13 @@ export const UniversalShareModal: React.FC<UniversalShareModalProps> = ({
   
   // Try native share first when modal opens
   const handleOpen = async () => {
-    if (navigator.share) {
+    if (typeof navigator.share === 'function') {
       const shared = await handleNativeShare();
       if (shared) {
         return; // Native share succeeded or was cancelled
       }
     }
-    // If native share not available or failed, show modal
+    // If native share not available or failed, modal is already shown
   };
   
   return (
@@ -224,7 +226,7 @@ export const UniversalShareModal: React.FC<UniversalShareModalProps> = ({
         className="max-w-2xl max-h-[90vh] bg-gradient-to-br from-purple-900/95 to-indigo-900/95 backdrop-blur-xl border border-purple-500/30 text-white overflow-y-auto"
         onOpenAutoFocus={(e) => {
           // Try native share when modal opens
-          if (navigator.share) {
+          if (typeof navigator.share === 'function') {
             e.preventDefault();
             handleOpen();
           }
@@ -255,6 +257,25 @@ export const UniversalShareModal: React.FC<UniversalShareModalProps> = ({
           </div>
         ) : (
           <div className="space-y-4 mt-4">
+          {/* Primary CTA */}
+          <motion.button
+            onClick={async () => {
+              if (typeof navigator.share === 'function') {
+                const shared = await handleNativeShare();
+                if (shared) {
+                  return; // Native share succeeded or was cancelled
+                }
+              }
+              // If native share not available or failed, do nothing (user can use other buttons)
+            }}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white px-6 py-4 rounded-xl font-semibold transition-all flex items-center justify-center gap-3 shadow-lg shadow-purple-500/30"
+          >
+            <Share2 className="w-6 h-6" />
+            <span>{primaryCtaText}</span>
+          </motion.button>
+
           {/* Copy Options */}
           <div className="grid grid-cols-2 gap-3">
             <motion.button
@@ -264,8 +285,8 @@ export const UniversalShareModal: React.FC<UniversalShareModalProps> = ({
               className={cn(
                 "p-4 rounded-xl font-semibold transition-all flex items-center justify-center gap-2",
                 copiedItem === 'full'
-                  ? "bg-green-600/90 text-white"
-                  : "bg-white/10 hover:bg-white/15 border border-white/20 text-white"
+                  ? "bg-purple-600/80 text-white border border-purple-400/50"
+                  : "bg-white/5 hover:bg-white/10 border border-white/10 text-white/90"
               )}
             >
               {copiedItem === 'full' ? (
@@ -288,8 +309,8 @@ export const UniversalShareModal: React.FC<UniversalShareModalProps> = ({
               className={cn(
                 "p-4 rounded-xl font-semibold transition-all flex items-center justify-center gap-2",
                 copiedItem === 'link'
-                  ? "bg-green-600/90 text-white"
-                  : "bg-white/10 hover:bg-white/15 border border-white/20 text-white"
+                  ? "bg-purple-600/80 text-white border border-purple-400/50"
+                  : "bg-white/5 hover:bg-white/10 border border-white/10 text-white/90"
               )}
             >
               {copiedItem === 'link' ? (
@@ -312,7 +333,7 @@ export const UniversalShareModal: React.FC<UniversalShareModalProps> = ({
               onClick={handleOpenWhatsApp}
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
-              className="w-full bg-green-600/90 hover:bg-green-600 text-white px-6 py-4 rounded-xl font-semibold transition-all flex items-center justify-center gap-3"
+              className="w-full bg-white/5 hover:bg-white/10 border border-white/10 text-white px-6 py-4 rounded-xl font-semibold transition-all flex items-center justify-center gap-3"
             >
               <MessageSquare className="w-6 h-6" />
               <span>Open WhatsApp</span>
@@ -322,7 +343,7 @@ export const UniversalShareModal: React.FC<UniversalShareModalProps> = ({
               onClick={handleOpenEmail}
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
-              className="w-full bg-blue-600/80 hover:bg-blue-600 text-white px-6 py-4 rounded-xl font-semibold transition-all flex items-center justify-center gap-3"
+              className="w-full bg-white/5 hover:bg-white/10 border border-white/10 text-white px-6 py-4 rounded-xl font-semibold transition-all flex items-center justify-center gap-3"
             >
               <Mail className="w-6 h-6" />
               <span>Open Email</span>
@@ -332,7 +353,7 @@ export const UniversalShareModal: React.FC<UniversalShareModalProps> = ({
               onClick={handleOpenTelegram}
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
-              className="w-full bg-cyan-600/80 hover:bg-cyan-600 text-white px-6 py-4 rounded-xl font-semibold transition-all flex items-center justify-center gap-3"
+              className="w-full bg-white/5 hover:bg-white/10 border border-white/10 text-white px-6 py-4 rounded-xl font-semibold transition-all flex items-center justify-center gap-3"
             >
               <Send className="w-6 h-6" />
               <span>Open Telegram</span>
@@ -342,7 +363,7 @@ export const UniversalShareModal: React.FC<UniversalShareModalProps> = ({
               onClick={handleOpenInstagram}
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
-              className="w-full bg-pink-600/80 hover:bg-pink-600 text-white px-6 py-4 rounded-xl font-semibold transition-all flex items-center justify-center gap-3"
+              className="w-full bg-white/5 hover:bg-white/10 border border-white/10 text-white px-6 py-4 rounded-xl font-semibold transition-all flex items-center justify-center gap-3"
             >
               <Instagram className="w-6 h-6" />
               <span>Copy for Instagram DM</span>
@@ -352,7 +373,7 @@ export const UniversalShareModal: React.FC<UniversalShareModalProps> = ({
           {/* Close Button */}
           <button
             onClick={onClose}
-            className="w-full bg-gray-600/80 hover:bg-gray-600 text-white px-4 py-3 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 mt-2"
+            className="w-full bg-white/5 hover:bg-white/10 border border-white/10 text-white/80 px-4 py-3 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 mt-2"
           >
             <X className="w-5 h-5" />
             Close

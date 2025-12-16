@@ -10,7 +10,6 @@ import {
   Loader2,
   X,
   ChevronDown,
-  ChevronUp,
   Download
 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -25,7 +24,7 @@ interface RequestedChange {
 }
 
 const BrandResponsePage = () => {
-  const { dealId } = useParams<{ dealId: string }>();
+  const { token } = useParams<{ token: string }>();
   const [selectedStatus, setSelectedStatus] = useState<'accepted' | 'negotiating' | 'rejected' | null>(null);
   const [message, setMessage] = useState('');
   const [brandTeamName, setBrandTeamName] = useState('');
@@ -51,8 +50,8 @@ const BrandResponsePage = () => {
   const [isSendingOTP, setIsSendingOTP] = useState(false);
   const [isVerifyingOTP, setIsVerifyingOTP] = useState(false);
   const [otpResendCooldown, setOtpResendCooldown] = useState(0);
-  const [brandPhone, setBrandPhone] = useState<string>('');
-  const [brandPhoneInput, setBrandPhoneInput] = useState<string>('+91 ');
+  const [brandEmail, setBrandEmail] = useState<string>('');
+  const [brandEmailInput, setBrandEmailInput] = useState<string>('');
 
   // Brand Summary Card Component - matches mockup exactly
   const BrandSummaryCard = ({ 
@@ -85,24 +84,24 @@ const BrandResponsePage = () => {
       >
         {/* Title Row */}
         <h2 className="text-lg font-semibold text-white flex items-center gap-2">
-          <span>📄</span> Summary of Requested Updates
+          <span>📄</span> Requested Contract Changes
         </h2>
 
         {/* Deal Value Row */}
         {dealValue && (
-          <div className="flex justify-between text-sm">
-            <span className="text-white/80">Deal Value</span>
-            <span className="font-semibold text-green-300">
+          <div className="flex justify-between items-center py-2">
+            <span className="text-white/70 text-sm">Deal Value</span>
+            <span className="font-medium text-green-400/80 text-sm">
               ₹{Number(dealValue).toLocaleString('en-IN')}
             </span>
           </div>
         )}
 
         {/* Deliverables Section */}
-        {deliverablesList.length > 0 && (
-          <div className="text-sm">
-            <span className="font-medium text-white/80">Deliverables:</span>
-            <ul className="mt-1 space-y-1 list-none">
+        {deliverablesList.length > 0 ? (
+          <div className="text-sm space-y-2">
+            <span className="font-medium text-white/80 block">Deliverables:</span>
+            <ul className="space-y-1.5 list-none">
               {deliverablesList.map((d, i) => (
                 <li key={i} className="flex items-start gap-2">
                   <span className="text-[#d8caff] mt-1">▪</span>
@@ -111,16 +110,21 @@ const BrandResponsePage = () => {
               ))}
             </ul>
           </div>
+        ) : (
+          <div className="text-sm">
+            <span className="font-medium text-white/80">Deliverables:</span>
+            <span className="text-white/60 ml-2">To be mutually confirmed</span>
+          </div>
         )}
 
         {/* Expected Outcome Card */}
-        <div className="mt-2 p-3 bg-white/5 border border-white/10 rounded-xl text-sm">
+        <div className="mt-3 p-3 bg-gradient-to-br from-green-500/10 to-blue-500/10 border border-green-400/20 rounded-xl text-sm">
           <div className="flex items-start gap-2 mb-1">
-            <span className="text-yellow-300">⭐</span>
+            <span className="text-green-400">✓</span>
             <span className="font-medium text-white">Expected Outcome:</span>
           </div>
           <p className="text-white/80 text-xs mt-1">
-            Most brands accept these revisions and send a clarified contract.
+            Most brands accept these standard safety updates and proceed smoothly.
           </p>
         </div>
       </motion.div>
@@ -338,13 +342,13 @@ const BrandResponsePage = () => {
 
                 {/* Download PDF Button */}
                 <div className="pt-4 mt-4 border-t border-white/10 flex justify-end">
-                  <button
-                    onClick={downloadFullSummaryPDF}
-                    className="px-4 py-2.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 rounded-xl transition-all duration-200 flex items-center gap-2 text-sm font-medium text-white shadow-lg shadow-purple-500/20 active:scale-[0.98]"
-                  >
-                    <Download className="w-4 h-4" />
-                    Download Full Summary PDF
-                  </button>
+                <button
+                  onClick={downloadFullSummaryPDF}
+                  className="px-4 py-2.5 bg-purple-600 hover:bg-purple-700 rounded-xl transition-all duration-200 flex items-center gap-2 text-sm font-medium text-white active:scale-[0.98]"
+                >
+                  <Download className="w-4 h-4" />
+                  Download Full Summary PDF
+                </button>
                 </div>
               </div>
             </motion.div>
@@ -363,8 +367,8 @@ const BrandResponsePage = () => {
   // Fetch deal info and requested changes on mount
   useEffect(() => {
     const fetchDealInfo = async () => {
-      if (!dealId) {
-        toast.error('Invalid deal ID');
+      if (!token) {
+        toast.error('Invalid token');
         setIsLoading(false);
         return;
       }
@@ -375,15 +379,26 @@ const BrandResponsePage = () => {
             ? 'https://api.noticebazaar.com' 
             : 'http://localhost:3001');
         
-        const response = await fetch(`${apiBaseUrl}/api/brand-response/${dealId}`);
+        const response = await fetch(`${apiBaseUrl}/api/brand-response/${token}`);
         const data = await response.json();
 
-        if (!response.ok || !data.success || !data.deal) {
-          setDealInfo(null);
-          setRequestedChanges([]);
-          setAnalysisData(null);
-          setIsSubmitted(false);
-          return;
+        if (!response.ok || !data.success) {
+          // Handle token validation errors
+          if (data.errorType === 'token_not_found' || data.errorType === 'token_revoked' || data.errorType === 'token_expired') {
+            setDealInfo(null);
+            setRequestedChanges([]);
+            setAnalysisData(null);
+            setIsSubmitted(false);
+            return;
+          }
+          
+          if (!data.deal) {
+            setDealInfo(null);
+            setRequestedChanges([]);
+            setAnalysisData(null);
+            setIsSubmitted(false);
+            return;
+          }
         }
 
         setDealInfo(data.deal);
@@ -396,9 +411,10 @@ const BrandResponsePage = () => {
         if (data.deal.response_status !== 'pending') {
           setIsSubmitted(true);
         }
-        // Extract brand phone for OTP
-        if (data.deal.brand_phone) {
-          setBrandPhone(data.deal.brand_phone);
+        // Extract brand email for OTP
+        if (data.deal.brand_email) {
+          setBrandEmail(data.deal.brand_email);
+          setBrandEmailInput(data.deal.brand_email);
         }
       } catch (error: any) {
         console.error('[BrandResponsePage] Fetch error:', error);
@@ -409,27 +425,22 @@ const BrandResponsePage = () => {
     };
 
     fetchDealInfo();
-  }, [dealId]);
+  }, [token]);
 
   // OTP Functions
   const sendOTP = async () => {
-    if (!dealId) {
-      toast.error('Invalid deal ID');
+    if (!token) {
+      toast.error('Invalid token');
       return;
     }
 
-    // Use input phone if provided, otherwise use deal's brand_phone
-    let phoneToUse = brandPhoneInput.trim() || brandPhone;
+    // Use input email if provided, otherwise use deal's brand_email
+    let emailToUse = brandEmailInput.trim() || brandEmail;
     
-    // Ensure +91 prefix is present
-    if (phoneToUse && !phoneToUse.startsWith('+91')) {
-      phoneToUse = '+91 ' + phoneToUse.replace(/^\+91\s*/, '').trim();
-    }
-    
-    // Validate phone number (must have +91 and at least 10 digits)
-    const digitsOnly = phoneToUse.replace(/\D/g, '');
-    if (!phoneToUse || phoneToUse.trim() === '' || phoneToUse === '+91' || phoneToUse === '+91 ' || digitsOnly.length < 12) {
-      toast.error('Please enter a valid 10-digit phone number (with +91 prefix).');
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailToUse || emailToUse.trim() === '' || !emailRegex.test(emailToUse)) {
+      toast.error('Please enter a valid email address.');
       return;
     }
 
@@ -446,15 +457,15 @@ const BrandResponsePage = () => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ 
-          dealId,
-          phone: phoneToUse, // Send phone number
+          token,
+          email: emailToUse, // Send email address
         }),
       });
 
       const data = await response.json();
 
       if (data.success) {
-        toast.success('OTP sent successfully!');
+        toast.success('OTP sent successfully to your email!');
         triggerHaptic(HapticPatterns.success);
         // Set 30 second cooldown
         setOtpResendCooldown(30);
@@ -486,8 +497,8 @@ const BrandResponsePage = () => {
       return;
     }
 
-    if (!dealId) {
-      toast.error('Invalid deal ID');
+    if (!token) {
+      toast.error('Invalid token');
       return;
     }
 
@@ -503,7 +514,7 @@ const BrandResponsePage = () => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ dealId, otp: otpString }),
+        body: JSON.stringify({ token, otp: otpString }),
       });
 
       const data = await response.json();
@@ -534,8 +545,8 @@ const BrandResponsePage = () => {
       return;
     }
 
-    if (!dealId) {
-      toast.error('Invalid deal ID');
+    if (!token) {
+      toast.error('Invalid token');
       return;
     }
 
@@ -558,7 +569,7 @@ const BrandResponsePage = () => {
         }
       }
       
-      const response = await fetch(`${apiBaseUrl}/api/brand-response/${dealId}`, {
+      const response = await fetch(`${apiBaseUrl}/api/brand-response/${token}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -600,19 +611,14 @@ const BrandResponsePage = () => {
       return;
     }
 
-    // If accepting, validate phone number first
+    // If accepting, validate email first
     if (selectedStatus === 'accepted') {
-      let phoneToUse = brandPhoneInput.trim() || brandPhone;
+      let emailToUse = brandEmailInput.trim() || brandEmail;
       
-      // Ensure +91 prefix is present
-      if (phoneToUse && !phoneToUse.startsWith('+91')) {
-        phoneToUse = '+91 ' + phoneToUse.replace(/^\+91\s*/, '').trim();
-      }
-      
-      // Validate phone number (must have +91 and at least 10 digits)
-      const digitsOnly = phoneToUse.replace(/\D/g, '');
-      if (!phoneToUse || phoneToUse.trim() === '' || phoneToUse === '+91' || phoneToUse === '+91 ' || digitsOnly.length < 12) {
-        toast.error('Please enter a valid 10-digit phone number (with +91 prefix).');
+      // Validate email format
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailToUse || emailToUse.trim() === '' || !emailRegex.test(emailToUse)) {
+        toast.error('Please enter a valid email address.');
         return;
       }
       
@@ -679,20 +685,23 @@ const BrandResponsePage = () => {
     }
   };
 
-  // Mask phone number for display
-  const getMaskedPhone = () => {
-    const phoneToUse = brandPhoneInput.trim() || brandPhone;
-    if (!phoneToUse) return '****';
-    const cleaned = phoneToUse.replace(/[\s\-+()]/g, '');
-    if (cleaned.length >= 4) {
-      return cleaned.slice(-4);
+  // Mask email for display
+  const getMaskedEmail = () => {
+    const emailToUse = brandEmailInput.trim() || brandEmail;
+    if (!emailToUse) return '****';
+    const [localPart, domain] = emailToUse.split('@');
+    if (localPart && domain) {
+      const maskedLocal = localPart.length > 2 
+        ? localPart.substring(0, 2) + '***' 
+        : '***';
+      return `${maskedLocal}@${domain}`;
     }
     return '****';
   };
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-purple-950 via-purple-900 to-indigo-950 flex items-center justify-center">
         <div className="text-center">
           <Loader2 className="w-8 h-8 animate-spin text-white mx-auto mb-4" />
           <p className="text-white/70">Loading...</p>
@@ -703,7 +712,7 @@ const BrandResponsePage = () => {
 
   if (!dealInfo) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-gradient-to-br from-purple-950 via-purple-900 to-indigo-950 flex items-center justify-center p-4">
         <div className="text-center max-w-md">
           <motion.div
             initial={{ scale: 0 }}
@@ -712,55 +721,33 @@ const BrandResponsePage = () => {
           >
             <XCircle className="w-16 h-16 text-red-400 mx-auto mb-4" />
           </motion.div>
-          <h1 className="text-2xl font-bold text-white mb-2">Deal Not Found</h1>
+          <h1 className="text-2xl font-bold text-white mb-2">Link No Longer Valid</h1>
           <p className="text-white/70 mb-6">
-            The deal you're looking for doesn't exist or has been removed.
+            This link is no longer valid. Please contact the creator.
           </p>
-          <div className="space-y-3">
-            <p className="text-sm text-white/60">
-              This could happen if:
-            </p>
-            <ul className="text-sm text-white/50 text-left space-y-2 mb-6">
-              <li className="flex items-start gap-2">
-                <span className="text-red-400 mt-1">•</span>
-                <span>The deal link has expired or was invalid</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-red-400 mt-1">•</span>
-                <span>The deal was deleted or never created</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-red-400 mt-1">•</span>
-                <span>The deal ID in the URL is incorrect</span>
-              </li>
-            </ul>
-            <p className="text-sm text-white/70">
-              Please contact the creator to request a new link, or check if you have the correct deal ID.
-            </p>
-          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 text-white pb-8 md:pb-12">
+    <div className="min-h-screen bg-gradient-to-br from-purple-950 via-purple-900 to-indigo-950 text-white pb-8 md:pb-12">
       <div className="max-w-2xl mx-auto px-4 py-6 md:py-8 space-y-6">
         {/* 1. TOP HEADER SECTION */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-center mb-8"
+          className="text-center mb-6"
         >
-          <h1 className="text-4xl md:text-5xl font-bold mb-3 bg-gradient-to-r from-white via-purple-200 to-white bg-clip-text text-transparent">
+          <h1 className="text-3xl md:text-4xl font-bold mb-2 bg-gradient-to-r from-white via-purple-200 to-white bg-clip-text text-transparent">
             NoticeBazaar
           </h1>
-          <div className="h-0.5 w-32 bg-gradient-to-r from-blue-500 via-purple-500 to-indigo-500 mx-auto rounded-full mb-4" />
-          <h2 className="text-2xl md:text-3xl font-semibold mb-2">
+          <div className="h-0.5 w-32 bg-gradient-to-r from-blue-500 via-purple-500 to-indigo-500 mx-auto rounded-full mb-3" />
+          <h2 className="text-xl md:text-2xl font-semibold mb-1">
             {dealInfo.brand_name} Collaboration
           </h2>
-          <p className="text-white/70 text-sm md:text-base">
-            Please confirm your decision on the requested contract updates
+          <p className="text-white/60 text-xs md:text-sm">
+            This response helps finalize the collaboration terms
           </p>
         </motion.div>
 
@@ -775,39 +762,38 @@ const BrandResponsePage = () => {
             {/* Full Contract Summary */}
             <FullContractSummary />
 
-            {/* 2. DECISION CARD COMPONENTS */}
+            {/* 2. DECISION CARD COMPONENTS - Radio Style */}
             {/* Accept All Changes */}
             <motion.button
               onClick={() => handleStatusSelect('accepted')}
               className={cn(
-                "w-full rounded-xl p-5 md:p-6 text-left transition-all duration-300",
-                "border-2 backdrop-blur-xl shadow-lg",
+                "w-full rounded-xl p-5 md:p-6 text-left transition-all duration-200",
+                "border-2 backdrop-blur-xl",
                 selectedStatus === 'accepted'
-                  ? "bg-gradient-to-br from-green-500/20 to-emerald-500/10 border-green-400 shadow-green-500/20"
-                  : "bg-white/5 border-white/20 hover:border-white/30 hover:bg-white/10"
+                  ? "bg-white/8 border-green-400/60 shadow-sm"
+                  : "bg-white/5 border-white/20 hover:border-white/30 hover:bg-white/8"
               )}
-              whileHover={selectedStatus !== 'accepted' ? { scale: 1.01 } : {}}
-              whileTap={{ scale: 0.99 }}
+              whileHover={selectedStatus !== 'accepted' ? { scale: 1.02 } : {}}
+              whileTap={{ scale: 0.98 }}
+              transition={{ duration: 0.15 }}
             >
               <div className="flex items-start gap-4">
                 <div className={cn(
-                  "w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 border-2 transition-all",
+                  "w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 border-2 transition-all duration-200",
                   selectedStatus === 'accepted'
-                    ? "bg-green-500/30 border-green-400"
+                    ? "bg-green-500/20 border-green-400"
                     : "bg-white/10 border-white/30"
                 )}>
-                  <CheckCircle className={cn(
-                    "w-6 h-6",
-                    selectedStatus === 'accepted' ? "text-green-300" : "text-white/60"
-                  )} />
+                  {selectedStatus === 'accepted' ? (
+                    <CheckCircle className="w-6 h-6 text-green-400" />
+                  ) : (
+                    <div className="w-4 h-4 rounded-full border-2 border-white/40" />
+                  )}
                 </div>
                 <div className="flex-1">
-                  <h3 className="text-lg md:text-xl font-semibold mb-1">Accept All Changes</h3>
-                  <p className="text-white/70 text-sm md:text-base mb-1">
-                    I agree to all requested contract revisions
-                  </p>
-                  <p className="text-white/50 text-xs md:text-sm italic">
-                    Most creators request these standard safety updates
+                  <h3 className="text-lg md:text-xl font-semibold mb-1.5">Accept All Changes</h3>
+                  <p className="text-white/70 text-sm leading-relaxed">
+                    Proceed with all requested safety updates (recommended)
                   </p>
                 </div>
               </div>
@@ -817,34 +803,33 @@ const BrandResponsePage = () => {
             <motion.button
               onClick={() => handleStatusSelect('negotiating')}
               className={cn(
-                "w-full rounded-xl p-5 md:p-6 text-left transition-all duration-300",
-                "border-2 backdrop-blur-xl shadow-lg",
+                "w-full rounded-xl p-5 md:p-6 text-left transition-all duration-200",
+                "border-2 backdrop-blur-xl",
                 selectedStatus === 'negotiating'
-                  ? "bg-gradient-to-br from-blue-500/20 to-cyan-500/10 border-blue-400 shadow-blue-500/20"
-                  : "bg-white/5 border-white/20 hover:border-white/30 hover:bg-white/10"
+                  ? "bg-white/8 border-blue-400/60 shadow-sm"
+                  : "bg-white/5 border-white/20 hover:border-white/30 hover:bg-white/8"
               )}
-              whileHover={selectedStatus !== 'negotiating' ? { scale: 1.01 } : {}}
-              whileTap={{ scale: 0.99 }}
+              whileHover={selectedStatus !== 'negotiating' ? { scale: 1.02 } : {}}
+              whileTap={{ scale: 0.98 }}
+              transition={{ duration: 0.15 }}
             >
               <div className="flex items-start gap-4">
                 <div className={cn(
-                  "w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 border-2 transition-all",
+                  "w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 border-2 transition-all duration-200",
                   selectedStatus === 'negotiating'
-                    ? "bg-blue-500/30 border-blue-400"
+                    ? "bg-blue-500/20 border-blue-400"
                     : "bg-white/10 border-white/30"
                 )}>
-                  <AlertCircle className={cn(
-                    "w-6 h-6",
-                    selectedStatus === 'negotiating' ? "text-blue-300" : "text-white/60"
-                  )} />
+                  {selectedStatus === 'negotiating' ? (
+                    <CheckCircle className="w-6 h-6 text-blue-400" />
+                  ) : (
+                    <div className="w-4 h-4 rounded-full border-2 border-white/40" />
+                  )}
                 </div>
                 <div className="flex-1">
-                  <h3 className="text-lg md:text-xl font-semibold mb-1">Want to Negotiate</h3>
-                  <p className="text-white/70 text-sm md:text-base mb-1">
-                    I'd like to discuss some of the requested changes
-                  </p>
-                  <p className="text-white/50 text-xs md:text-sm italic">
-                    You can discuss specific points after submitting
+                  <h3 className="text-lg md:text-xl font-semibold mb-1.5">Want to Negotiate</h3>
+                  <p className="text-white/70 text-sm leading-relaxed">
+                    Discuss specific points before finalizing
                   </p>
                 </div>
               </div>
@@ -854,142 +839,129 @@ const BrandResponsePage = () => {
             <motion.button
               onClick={() => handleStatusSelect('rejected')}
               className={cn(
-                "w-full rounded-xl p-5 md:p-6 text-left transition-all duration-300",
-                "border-2 backdrop-blur-xl shadow-lg",
+                "w-full rounded-xl p-5 md:p-6 text-left transition-all duration-200",
+                "border-2 backdrop-blur-xl",
                 selectedStatus === 'rejected'
-                  ? "bg-gradient-to-br from-red-500/20 to-rose-500/10 border-red-400 shadow-red-500/20"
-                  : "bg-white/5 border-white/20 hover:border-white/30 hover:bg-white/10"
+                  ? "bg-white/8 border-orange-400/60 shadow-sm"
+                  : "bg-white/5 border-white/20 hover:border-white/30 hover:bg-white/8"
               )}
-              whileHover={selectedStatus !== 'rejected' ? { scale: 1.01 } : {}}
-              whileTap={{ scale: 0.99 }}
+              whileHover={selectedStatus !== 'rejected' ? { scale: 1.02 } : {}}
+              whileTap={{ scale: 0.98 }}
+              transition={{ duration: 0.15 }}
             >
               <div className="flex items-start gap-4">
                 <div className={cn(
-                  "w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 border-2 transition-all",
+                  "w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 border-2 transition-all duration-200",
                   selectedStatus === 'rejected'
-                    ? "bg-red-500/30 border-red-400"
+                    ? "bg-orange-500/20 border-orange-400"
                     : "bg-white/10 border-white/30"
                 )}>
-                  <XCircle className={cn(
-                    "w-6 h-6",
-                    selectedStatus === 'rejected' ? "text-red-300" : "text-white/60"
-                  )} />
+                  {selectedStatus === 'rejected' ? (
+                    <CheckCircle className="w-6 h-6 text-orange-400" />
+                  ) : (
+                    <div className="w-4 h-4 rounded-full border-2 border-white/40" />
+                  )}
                 </div>
                 <div className="flex-1">
-                  <h3 className="text-lg md:text-xl font-semibold mb-1">Reject Changes</h3>
-                  <p className="text-white/70 text-sm md:text-base mb-1">
-                    I cannot accept the requested revisions
-                  </p>
-                  <p className="text-white/50 text-xs md:text-sm italic">
-                    You may continue the deal, but some unclear terms may remain
+                  <h3 className="text-lg md:text-xl font-semibold mb-1.5">Reject Changes</h3>
+                  <p className="text-white/70 text-sm leading-relaxed">
+                    Proceed without these updates (higher risk)
                   </p>
                 </div>
               </div>
             </motion.button>
 
-            {/* 3. NAME + COMMENTS SECTION */}
-            <div className="bg-white/5 backdrop-blur-xl rounded-xl p-5 md:p-6 border border-white/20 shadow-lg space-y-5">
-              {/* Phone Number Input - Required for OTP if accepting - Show FIRST when accepting */}
-              {selectedStatus === 'accepted' && (
-                <div className="bg-gradient-to-r from-purple-500/10 to-indigo-500/10 border border-purple-400/30 rounded-xl p-4 space-y-2">
-                  <label className="block text-sm font-semibold mb-2 text-white">
-                    📱 Phone Number <span className="text-red-400">*</span>
-                    <span className="text-xs font-normal text-white/60 ml-2">(Required for OTP verification)</span>
-                  </label>
-                  <input
-                    type="tel"
-                    value={brandPhoneInput}
-                    onChange={(e) => {
-                      let value = e.target.value;
-                      
-                      // Ensure +91 prefix is always present
-                      if (!value.startsWith('+91')) {
-                        // If user deletes the prefix, restore it
-                        if (value.trim() === '' || value === '+') {
-                          value = '+91 ';
-                        } else if (!value.startsWith('+91 ')) {
-                          // If user types something without +91, prepend it
-                          value = '+91 ' + value.replace(/^\+91\s*/, '');
-                        }
-                      }
-                      
-                      // Allow only digits, spaces, +, -, and () after +91
-                      value = value.replace(/[^\d\s\+\-\(\)]/g, '');
-                      
-                      // Ensure +91 is followed by a space
-                      if (value.startsWith('+91') && value.length > 3 && value[3] !== ' ') {
-                        value = '+91 ' + value.substring(3).replace(/\s+/g, '');
-                      }
-                      
-                      setBrandPhoneInput(value);
-                    }}
-                    onFocus={(e) => {
-                      // If field is empty or just +91, ensure +91 is there
-                      if (!e.target.value || e.target.value === '+91') {
-                        setBrandPhoneInput('+91 ');
-                      }
-                    }}
-                    placeholder="+91 98765 43210"
-                    className="w-full p-4 rounded-xl bg-white/10 border-2 border-purple-400/50 text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all text-lg font-medium"
-                    maxLength={18}
-                    autoFocus
-                  />
-                  <p className="text-xs text-white/70 mt-1 flex items-center gap-1">
-                    <span className="text-yellow-400">⚠️</span>
-                    We'll send a 6-digit OTP to this number to verify your acceptance
-                  </p>
-                </div>
+            {/* 3. NAME + COMMENTS SECTION - Show only after decision selected */}
+            <AnimatePresence>
+              {selectedStatus && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  transition={{ duration: 0.2 }}
+                  className="bg-white/5 backdrop-blur-xl rounded-xl p-5 md:p-6 border border-white/20 shadow-lg space-y-5"
+                >
+                  {/* Email Input - Required for OTP if accepting - Show FIRST when accepting */}
+                  {selectedStatus === 'accepted' && (
+                    <div className="bg-white/5 border border-white/20 rounded-xl p-4 space-y-2">
+                      <label className="block text-sm font-semibold mb-2 text-white">
+                        📧 Email Address <span className="text-red-400">*</span>
+                        <span className="text-xs font-normal text-white/60 ml-2">(Required for OTP verification)</span>
+                      </label>
+                      <input
+                        type="email"
+                        value={brandEmailInput}
+                        onChange={(e) => {
+                          setBrandEmailInput(e.target.value);
+                        }}
+                        onFocus={(e) => {
+                          // Auto-fill if empty and we have brand email
+                          if (!e.target.value && brandEmail) {
+                            setBrandEmailInput(brandEmail);
+                          }
+                        }}
+                        placeholder="brand@example.com"
+                        className="w-full p-4 rounded-xl bg-white/10 border-2 border-white/30 text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 transition-all duration-200 text-lg font-medium"
+                        autoFocus
+                      />
+                      <p className="text-xs text-white/70 mt-1 flex items-center gap-1">
+                        <span className="text-yellow-400">⚠️</span>
+                        We'll send a 6-digit OTP to this email address to verify your acceptance
+                      </p>
+                    </div>
+                  )}
+
+                  <div>
+                    <label className="block text-sm font-medium mb-2 text-white/90">
+                      Your Name / Team (Optional)
+                    </label>
+                    <input
+                      type="text"
+                      value={brandTeamName}
+                      onChange={(e) => setBrandTeamName(e.target.value)}
+                      placeholder="Aditi – Brand Partnerships"
+                      className="w-full p-4 rounded-xl bg-white/5 border border-white/20 text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 transition-all duration-200"
+                      maxLength={100}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium mb-2 text-white/90">
+                      Additional Comments (Optional)
+                    </label>
+                    <textarea
+                      value={message}
+                      onChange={(e) => setMessage(e.target.value)}
+                      placeholder="Optional notes for the creator…"
+                      className="w-full p-4 rounded-xl bg-white/5 border border-white/20 text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 resize-none min-h-[120px] transition-all duration-200"
+                      maxLength={1000}
+                      style={{ 
+                        minHeight: '120px',
+                        height: message ? `${Math.max(120, message.split('\n').length * 24 + 32)}px` : '120px'
+                      }}
+                    />
+                    <div className="text-xs text-white/50 mt-2 text-right">
+                      {message.length}/1000
+                    </div>
+                  </div>
+                </motion.div>
               )}
-
-              <div>
-                <label className="block text-sm font-medium mb-2 text-white/90">
-                  Your Name / Team (Optional)
-                </label>
-                <input
-                  type="text"
-                  value={brandTeamName}
-                  onChange={(e) => setBrandTeamName(e.target.value)}
-                  placeholder="e.g. Aditi – Brand Partnerships Team"
-                  className="w-full p-4 rounded-xl bg-white/5 border border-white/20 text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 transition-all"
-                  maxLength={100}
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium mb-2 text-white/90">
-                  Additional Comments (Optional)
-                </label>
-                <textarea
-                  value={message}
-                  onChange={(e) => setMessage(e.target.value)}
-                  placeholder="Add any additional notes or questions..."
-                  className="w-full p-4 rounded-xl bg-white/5 border border-white/20 text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 resize-none min-h-[120px] transition-all"
-                  maxLength={1000}
-                  style={{ 
-                    minHeight: '120px',
-                    height: message ? `${Math.max(120, message.split('\n').length * 24 + 32)}px` : '120px'
-                  }}
-                />
-                <div className="text-xs text-white/50 mt-2 text-right">
-                  {message.length}/1000
-                </div>
-              </div>
-            </div>
+            </AnimatePresence>
 
             {/* 4. TRUST NOTES SECTION */}
-            <div className="bg-white/5 backdrop-blur-xl rounded-xl p-4 md:p-5 border border-white/20 shadow-lg">
-              <div className="space-y-3">
-                <div className="flex items-start gap-3">
-                  <CheckCircle className="w-5 h-5 text-green-400 mt-0.5 flex-shrink-0" />
-                  <p className="text-sm text-white/80">Your reply will be shared with the creator</p>
+            <div className="bg-white/3 backdrop-blur-xl rounded-xl p-4 md:p-5 border border-white/10">
+              <div className="space-y-2">
+                <div className="flex items-start gap-2">
+                  <CheckCircle className="w-4 h-4 text-green-400/70 mt-0.5 flex-shrink-0" />
+                  <p className="text-xs text-white/50">Your reply will be shared with the creator</p>
                 </div>
-                <div className="flex items-start gap-3">
-                  <CheckCircle className="w-5 h-5 text-green-400 mt-0.5 flex-shrink-0" />
-                  <p className="text-sm text-white/80">You can update your response later</p>
+                <div className="flex items-start gap-2">
+                  <CheckCircle className="w-4 h-4 text-green-400/70 mt-0.5 flex-shrink-0" />
+                  <p className="text-xs text-white/50">You can update your response later</p>
                 </div>
-                <div className="flex items-start gap-3">
-                  <CheckCircle className="w-5 h-5 text-green-400 mt-0.5 flex-shrink-0" />
-                  <p className="text-sm text-white/80">This decision does not legally bind you</p>
+                <div className="flex items-start gap-2">
+                  <CheckCircle className="w-4 h-4 text-green-400/70 mt-0.5 flex-shrink-0" />
+                  <p className="text-xs text-white/50">This decision does not legally bind you</p>
                 </div>
               </div>
             </div>
@@ -998,17 +970,18 @@ const BrandResponsePage = () => {
             <motion.button
               onClick={handleSubmit}
               disabled={!selectedStatus || isSubmitting}
-              whileHover={selectedStatus && !isSubmitting ? { scale: 1.02 } : {}}
-              whileTap={selectedStatus && !isSubmitting ? { scale: 0.98 } : {}}
+              whileHover={selectedStatus && !isSubmitting ? { scale: 1.01 } : {}}
+              whileTap={selectedStatus && !isSubmitting ? { scale: 0.99 } : {}}
+              transition={{ duration: 0.15 }}
               className={cn(
-                "w-full py-4 rounded-xl font-semibold transition-all duration-300",
-                "flex items-center justify-center gap-2 min-h-[56px] shadow-xl",
+                "w-full py-4 rounded-xl font-semibold transition-all duration-200",
+                "flex items-center justify-center gap-2 min-h-[56px]",
                 selectedStatus === 'accepted' && !isSubmitting
-                  ? "bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white"
+                  ? "bg-green-600 hover:bg-green-700 text-white"
                   : selectedStatus === 'negotiating' && !isSubmitting
-                  ? "bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white"
+                  ? "bg-blue-600 hover:bg-blue-700 text-white"
                   : selectedStatus === 'rejected' && !isSubmitting
-                  ? "bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 text-white"
+                  ? "bg-orange-600 hover:bg-orange-700 text-white"
                   : "bg-white/10 text-white/50 cursor-not-allowed border border-white/20"
               )}
             >
@@ -1020,17 +993,17 @@ const BrandResponsePage = () => {
               ) : selectedStatus === 'accepted' ? (
                 <>
                   <CheckCircle className="w-5 h-5" />
-                  Confirm Acceptance
+                  Confirm & Proceed
                 </>
               ) : selectedStatus === 'negotiating' ? (
                 <>
                   <AlertCircle className="w-5 h-5" />
-                  Submit Negotiation Request
+                  Submit for Discussion
                 </>
               ) : selectedStatus === 'rejected' ? (
                 <>
                   <XCircle className="w-5 h-5" />
-                  Submit Rejection
+                  Send Decision
                 </>
               ) : (
                 'Select a decision to continue'
@@ -1089,7 +1062,7 @@ const BrandResponsePage = () => {
                 initial={{ opacity: 0, scale: 0.9, y: 20 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.9, y: 20 }}
-                className="fixed inset-4 md:inset-auto md:left-1/2 md:top-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:max-w-lg md:w-full z-50 bg-gradient-to-br from-blue-500/20 via-cyan-500/10 to-blue-600/20 backdrop-blur-xl rounded-2xl p-6 border border-blue-400/30 shadow-2xl"
+                className="fixed inset-4 md:inset-auto md:left-1/2 md:top-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:max-w-lg md:w-full z-50 bg-white/8 backdrop-blur-xl rounded-2xl p-6 border border-blue-400/30 shadow-lg"
               >
                 <div className="flex items-center justify-between mb-4">
                   <h4 className="text-lg font-semibold">What would you like to negotiate?</h4>
@@ -1140,7 +1113,7 @@ const BrandResponsePage = () => {
                 
                 <button
                   onClick={() => setShowNegotiateModal(false)}
-                  className="mt-4 w-full py-3 bg-blue-500/30 hover:bg-blue-500/40 rounded-xl text-sm font-medium transition-colors"
+                  className="mt-4 w-full py-3 bg-blue-600 hover:bg-blue-700 rounded-xl text-sm font-medium transition-all duration-200 text-white"
                 >
                   Done
                 </button>
@@ -1172,12 +1145,12 @@ const BrandResponsePage = () => {
                 initial={{ opacity: 0, scale: 0.9, y: 20 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.9, y: 20 }}
-                className="fixed inset-4 md:inset-auto md:left-1/2 md:top-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:max-w-md md:w-full z-50 bg-gradient-to-br from-purple-500/20 via-indigo-500/10 to-purple-600/20 backdrop-blur-xl rounded-2xl p-6 border border-purple-400/30 shadow-2xl"
+                className="fixed inset-4 md:inset-auto md:left-1/2 md:top-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:max-w-md md:w-full z-50 bg-white/8 backdrop-blur-xl rounded-2xl p-6 border border-purple-400/30 shadow-lg"
               >
                 <div className="text-center mb-6">
                   <h3 className="text-2xl font-semibold mb-2">Verify your acceptance</h3>
                   <p className="text-white/70 text-sm">
-                    Enter the 6-digit OTP sent to your phone ending in <span className="font-medium text-white">{getMaskedPhone()}</span>
+                    Enter the 6-digit OTP sent to <span className="font-medium text-white">{getMaskedEmail()}</span>
                   </p>
                 </div>
 
@@ -1236,8 +1209,7 @@ const BrandResponsePage = () => {
                     onClick={verifyOTP}
                     disabled={isVerifyingOTP || isSendingOTP || otp.join('').length !== 6}
                     className={cn(
-                      "flex-1 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 rounded-xl text-sm font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2",
-                      !isVerifyingOTP && !isSendingOTP && otp.join('').length === 6 && "shadow-lg shadow-purple-500/20"
+                      "flex-1 py-3 bg-purple-600 hover:bg-purple-700 rounded-xl text-sm font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-white"
                     )}
                   >
                     {isVerifyingOTP ? (

@@ -1,11 +1,11 @@
 // OTP API Routes
-// Handles Fast2SMS OTP sending and verification for contract acceptance
+// Handles Email OTP sending and verification for contract acceptance
 
 import express, { Router, Response } from 'express';
 import crypto from 'crypto';
 import { supabase } from '../index.js';
 import { AuthenticatedRequest } from '../middleware/auth.js';
-import { sendOTP } from '../services/fast2smsService.js';
+import { sendEmailOTP } from '../services/emailOtpService.js';
 
 const router = Router();
 const publicRouter = Router(); // Public router for brand response page
@@ -45,23 +45,57 @@ async function logDealAction(
 }
 
 // POST /api/otp/send (PUBLIC - for brand response page)
-// Send OTP to brand's phone number - no auth required
+// Send OTP to brand's email address - no auth required
 publicRouter.post('/send', async (req: express.Request, res: Response) => {
   try {
-    const { dealId, phone } = req.body;
+    const { token, email } = req.body;
 
-    if (!dealId) {
+    if (!token) {
       return res.status(400).json({
         success: false,
-        error: 'Missing required field: dealId',
+        error: 'Missing required field: token',
       });
+    }
+
+    // Validate token and get deal
+    const { data: tokenData, error: tokenError } = await supabase
+      .from('brand_reply_tokens')
+      .select('id, deal_id, is_active, expires_at, revoked_at')
+      .eq('id', token)
+      .maybeSingle();
+
+    if (tokenError || !tokenData) {
+      return res.status(404).json({
+        success: false,
+        error: 'Invalid token',
+      });
+    }
+
+    // Check if token is active
+    if (!tokenData.is_active || tokenData.revoked_at) {
+      return res.status(403).json({
+        success: false,
+        error: 'This link is no longer valid',
+      });
+    }
+
+    // Check if token is expired
+    if (tokenData.expires_at) {
+      const now = new Date();
+      const expiresAt = new Date(tokenData.expires_at);
+      if (now > expiresAt) {
+        return res.status(403).json({
+          success: false,
+          error: 'This request has expired',
+        });
+      }
     }
 
     // Verify deal exists
     const { data: deal, error: dealError } = await supabase
       .from('brand_deals')
       .select('*')
-      .eq('id', dealId)
+      .eq('id', tokenData.deal_id)
       .maybeSingle();
 
     if (dealError) {
@@ -79,15 +113,24 @@ publicRouter.post('/send', async (req: express.Request, res: Response) => {
       });
     }
 
-    // Get brand phone number - use provided phone or deal's brand_phone
-    const brandPhone = (phone && phone.trim() && phone !== '+91' && phone !== '+91 ') 
-      ? phone.trim() 
-      : (deal as any).brand_phone;
+    // Get brand email - use provided email or deal's brand_email
+    const brandEmail = (email && email.trim()) 
+      ? email.trim() 
+      : (deal as any).brand_email;
     
-    if (!brandPhone || brandPhone.trim() === '' || brandPhone === '+91' || brandPhone === '+91 ') {
+    if (!brandEmail || brandEmail.trim() === '') {
       return res.status(400).json({
         success: false,
-        error: 'Phone number is required to send OTP. Please provide a phone number.',
+        error: 'Email address is required to send OTP. Please provide an email address.',
+      });
+    }
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(brandEmail)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid email address format',
       });
     }
 
@@ -112,18 +155,18 @@ publicRouter.post('/send', async (req: express.Request, res: Response) => {
     const otpHash = hashOTP(otp);
     const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes from now
 
-    console.log('[OTP] Generated OTP for deal:', dealId);
+    console.log('[OTP] Generated OTP for deal:', tokenData.deal_id);
     console.log('[OTP] OTP hash:', otpHash.substring(0, 16) + '...');
     console.log('[OTP] Expires at:', expiresAt.toISOString());
 
-    // Send OTP via Fast2SMS
-    const smsResult = await sendOTP(brandPhone, otp);
+    // Send OTP via Email (Resend)
+    const emailResult = await sendEmailOTP(brandEmail, otp, (deal as any).brand_name);
 
-    if (!smsResult.success) {
-      console.error('[OTP] Failed to send SMS:', smsResult.error);
+    if (!emailResult.success) {
+      console.error('[OTP] Failed to send email:', emailResult.error);
       return res.status(500).json({
         success: false,
-        error: smsResult.error || 'Failed to send OTP',
+        error: emailResult.error || 'Failed to send OTP',
       });
     }
 
@@ -139,7 +182,7 @@ publicRouter.post('/send', async (req: express.Request, res: Response) => {
     const { error: updateError } = await supabase
       .from('brand_deals')
       .update(updateData)
-      .eq('id', dealId);
+      .eq('id', tokenData.deal_id);
 
     if (updateError) {
       console.error('[OTP] Failed to update deal:', updateError);
@@ -150,17 +193,17 @@ publicRouter.post('/send', async (req: express.Request, res: Response) => {
     }
 
     // Log the action
-    await logDealAction(dealId, 'OTP_SENT', {
-      phone: brandPhone.replace(/(\d{2})\d{6}(\d{2})/, '$1****$2'), // Mask phone
-      requestId: smsResult.requestId,
+    await logDealAction(tokenData.deal_id, 'OTP_SENT', {
+      email: brandEmail.replace(/(.{2})(.*)(@.*)/, '$1***$3'), // Mask email (keep first 2 chars and domain)
+      emailId: emailResult.emailId,
     });
 
-    console.log('[OTP] OTP sent successfully to brand phone');
+    console.log('[OTP] OTP sent successfully to brand email');
 
     return res.json({
       success: true,
-      message: 'OTP sent successfully',
-      requestId: smsResult.requestId,
+      message: 'OTP sent successfully to your email',
+      emailId: emailResult.emailId,
     });
   } catch (error: any) {
     console.error('[OTP] Unhandled error:', error);
@@ -175,13 +218,47 @@ publicRouter.post('/send', async (req: express.Request, res: Response) => {
 // Verify OTP entered by brand - no auth required
 publicRouter.post('/verify', async (req: express.Request, res: Response) => {
   try {
-    const { dealId, otp } = req.body;
+    const { token, otp } = req.body;
 
-    if (!dealId || !otp) {
+    if (!token || !otp) {
       return res.status(400).json({
         success: false,
-        error: 'Missing required fields: dealId and otp',
+        error: 'Missing required fields: token and otp',
       });
+    }
+
+    // Validate token and get deal
+    const { data: tokenData, error: tokenError } = await supabase
+      .from('brand_reply_tokens')
+      .select('id, deal_id, is_active, expires_at, revoked_at')
+      .eq('id', token)
+      .maybeSingle();
+
+    if (tokenError || !tokenData) {
+      return res.status(404).json({
+        success: false,
+        error: 'Invalid token',
+      });
+    }
+
+    // Check if token is active
+    if (!tokenData.is_active || tokenData.revoked_at) {
+      return res.status(403).json({
+        success: false,
+        error: 'This link is no longer valid',
+      });
+    }
+
+    // Check if token is expired
+    if (tokenData.expires_at) {
+      const now = new Date();
+      const expiresAt = new Date(tokenData.expires_at);
+      if (now > expiresAt) {
+        return res.status(403).json({
+          success: false,
+          error: 'This request has expired',
+        });
+      }
     }
 
     // Verify OTP format (6 digits)
@@ -196,7 +273,7 @@ publicRouter.post('/verify', async (req: express.Request, res: Response) => {
     const { data: deal, error: dealError } = await supabase
       .from('brand_deals')
       .select('*')
-      .eq('id', dealId)
+      .eq('id', tokenData.deal_id)
       .maybeSingle();
 
     if (dealError || !deal) {
@@ -262,10 +339,10 @@ publicRouter.post('/verify', async (req: express.Request, res: Response) => {
           otp_attempts: newAttempts,
           updated_at: new Date().toISOString(),
         })
-        .eq('id', dealId);
+        .eq('id', tokenData.deal_id);
 
       // Log failed attempt
-      await logDealAction(dealId, 'OTP_FAILED_ATTEMPT', {
+      await logDealAction(tokenData.deal_id, 'OTP_FAILED_ATTEMPT', {
         attempts: newAttempts,
       });
 
@@ -287,7 +364,7 @@ publicRouter.post('/verify', async (req: express.Request, res: Response) => {
     const { error: updateError } = await supabase
       .from('brand_deals')
       .update(updateData)
-      .eq('id', dealId);
+      .eq('id', tokenData.deal_id);
 
     if (updateError) {
       console.error('[OTP] Failed to update deal:', updateError);
@@ -298,7 +375,7 @@ publicRouter.post('/verify', async (req: express.Request, res: Response) => {
     }
 
     // Log successful verification
-    await logDealAction(dealId, 'OTP_VERIFIED', {
+    await logDealAction(tokenData.deal_id, 'OTP_VERIFIED', {
       verifiedAt: updateData.otp_verified_at,
     });
 
@@ -306,14 +383,14 @@ publicRouter.post('/verify', async (req: express.Request, res: Response) => {
     try {
       const { generateInvoice } = await import('../services/invoiceService.js');
       console.log('[OTP] Generating invoice for OTP-verified deal...');
-      await generateInvoice(dealId);
+      await generateInvoice(tokenData.deal_id);
       console.log('[OTP] Invoice generated successfully');
     } catch (invoiceError: any) {
       console.error('[OTP] Invoice generation failed (non-fatal):', invoiceError.message);
       // Don't fail the OTP verification if invoice generation fails
     }
 
-    console.log('[OTP] OTP verified successfully for deal:', dealId);
+    console.log('[OTP] OTP verified successfully for deal:', tokenData.deal_id);
 
     return res.json({
       success: true,
@@ -435,10 +512,10 @@ router.post('/verify', async (req: AuthenticatedRequest, res: Response) => {
           otp_attempts: newAttempts,
           updated_at: new Date().toISOString(),
         })
-        .eq('id', dealId);
+        .eq('id', tokenData.deal_id);
 
       // Log failed attempt
-      await logDealAction(dealId, 'OTP_FAILED_ATTEMPT', {
+      await logDealAction(tokenData.deal_id, 'OTP_FAILED_ATTEMPT', {
         attempts: newAttempts,
       });
 
@@ -471,7 +548,7 @@ router.post('/verify', async (req: AuthenticatedRequest, res: Response) => {
     }
 
     // Log successful verification
-    await logDealAction(dealId, 'OTP_VERIFIED', {
+      await logDealAction(tokenData.deal_id, 'OTP_VERIFIED', {
       verifiedAt: updateData.otp_verified_at,
     });
 
@@ -479,14 +556,14 @@ router.post('/verify', async (req: AuthenticatedRequest, res: Response) => {
     try {
       const { generateInvoice } = await import('../services/invoiceService.js');
       console.log('[OTP] Generating invoice for OTP-verified deal...');
-      await generateInvoice(dealId);
+      await generateInvoice(tokenData.deal_id);
       console.log('[OTP] Invoice generated successfully');
     } catch (invoiceError: any) {
       console.error('[OTP] Invoice generation failed (non-fatal):', invoiceError.message);
       // Don't fail the OTP verification if invoice generation fails
     }
 
-    console.log('[OTP] OTP verified successfully for deal:', dealId);
+    console.log('[OTP] OTP verified successfully for deal:', tokenData.deal_id);
 
     return res.json({
       success: true,

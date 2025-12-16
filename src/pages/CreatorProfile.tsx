@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { ArrowLeft, Camera, User, Mail, Phone, MapPin, Instagram, Youtube, Twitter, Globe, Edit, Bell, Lock, CreditCard, Shield, HelpCircle, FileText, LogOut, ChevronRight, Check, X, Download, Trash2, Star, TrendingUp, Award, MessageCircle, Loader2, Sparkles } from 'lucide-react';
+import { ArrowLeft, User, Mail, Phone, MapPin, Instagram, Youtube, Twitter, Globe, Edit, Lock, CreditCard, Shield, HelpCircle, FileText, LogOut, ChevronRight, Check, X, Download, Trash2, Star, TrendingUp, Award, MessageCircle, Loader2, Sparkles } from 'lucide-react';
 import NotificationPreferences from '@/components/notifications/NotificationPreferences';
 import { useNavigate } from 'react-router-dom';
 import { useSession } from '@/contexts/SessionContext';
@@ -30,12 +30,7 @@ const ProfileSettings = () => {
   const [editMode, setEditMode] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [showLogoutDialog, setShowLogoutDialog] = useState(false);
-  const [notificationsEnabled, setNotificationsEnabled] = useState({
-    deals: true,
-    payments: true,
-    contracts: true,
-    marketing: false
-  });
+  const [showStats, setShowStats] = useState(false);
 
   // Fetch real data for stats
   const { data: brandDeals = [] } = useBrandDeals({
@@ -448,89 +443,67 @@ const ProfileSettings = () => {
         </div>
       </div>
 
-      <div className="p-4 pb-24">
-        {/* Profile Header Card */}
-        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/10 mb-6 relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-purple-500/10 rounded-full blur-3xl"></div>
-          
-          <div className="relative">
-            {/* Avatar */}
-            <div className="flex items-start gap-4 mb-4">
-              <div className="relative">
-                <div className="w-24 h-24 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-3xl font-bold">
-                  {userData.avatar}
-                </div>
-                {editMode && (
-                  <button className="absolute bottom-0 right-0 w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center border-2 border-purple-900">
-                    <Camera className="w-4 h-4" />
-                  </button>
-                )}
-                {userData.verified && (
-                  <div className="absolute -top-1 -right-1 w-7 h-7 bg-blue-500 rounded-full flex items-center justify-center border-2 border-purple-900">
-                    <Check className="w-4 h-4" />
-                  </div>
-                )}
+      <div className="p-4 pb-24 space-y-3">
+        {/* Profile Summary - Reduced height and visual dominance */}
+        <div className="bg-white/5 rounded-xl p-4 border border-white/10 mb-4">
+          <div className="flex items-center gap-3">
+            {/* Avatar - Smaller */}
+            <div className="relative flex-shrink-0">
+              <div className="w-16 h-16 rounded-full bg-purple-600 flex items-center justify-center text-xl font-bold">
+                {userData.avatar}
               </div>
-              
-              <div className="flex-1">
-                <div className="flex items-center gap-2 mb-1">
-                  <h1 className="text-2xl font-bold">{userData.name}</h1>
+              {userData.verified && (
+                <div className="absolute -top-0.5 -right-0.5 w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center border-2 border-white/10">
+                  <Check className="w-3 h-3" />
                 </div>
-                <div className="text-purple-200 mb-2">@{userData.displayName}</div>
-                <div className="flex items-center gap-2 text-sm">
-                  <span className="px-3 py-1 bg-purple-500/20 text-purple-300 rounded-full">
-                    Verified Creator Profile
-                  </span>
-                  <span className="px-3 py-1 bg-green-500/20 text-green-400 rounded-full flex items-center gap-1">
-                    Protection Active
-                  </span>
-                </div>
+              )}
+            </div>
+            
+            {/* Name and Role */}
+            <div className="flex-1 min-w-0">
+              <h1 className="text-lg font-semibold truncate">{userData.name}</h1>
+              <div className="flex items-center gap-2 mt-1 flex-wrap">
+                <span className="px-2 py-0.5 bg-purple-500/20 text-purple-300 rounded-full text-xs">
+                  Verified Creator Profile
+                </span>
+                <span className="px-2 py-0.5 bg-green-500/20 text-green-400 rounded-full text-xs flex items-center gap-1">
+                  Protection Active
+                </span>
               </div>
             </div>
 
-            {/* Bio */}
-            {editMode ? (
-              <textarea
-                value={formData.bio}
-                onChange={(e) => setFormData(prev => ({ ...prev, bio: e.target.value }))}
-                rows={3}
-                placeholder="Tell us about yourself..."
-                maxLength={500}
-                className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-white placeholder-purple-400 outline-none resize-none transition-colors focus:border-purple-500 focus:bg-white/10 mb-4"
-              />
-            ) : (
-              <div className="mb-4">
-                <p className="text-sm text-purple-200 leading-relaxed">
-                  {userData.bio || 'No profile details added yet.'}
-                </p>
-                {!userData.bio && (
-                  <p className="text-xs text-purple-400 mt-1">
-                    Adding details helps advisors assist you faster.
-                  </p>
-                )}
-              </div>
-            )}
-
-            {/* Stats Grid */}
-            <div className="grid grid-cols-4 gap-3">
-              <div className="text-center">
-                <div className="text-xl font-bold mb-1">{userData.stats.totalDeals}</div>
-                <div className="text-xs text-purple-300">Deals Monitored</div>
-              </div>
-              <div className="text-center">
-                <div className="text-xl font-bold mb-1">₹{(userData.stats.totalEarnings / 1000).toFixed(0)}K</div>
-                <div className="text-xs text-purple-300">Amount Recovered</div>
-              </div>
-              <div className="text-center">
-                <div className="text-xl font-bold mb-1">{userData.stats.protectionScore}</div>
-                <div className="text-xs text-purple-300">Amount Under Watch</div>
-              </div>
-              <div className="text-center">
-                <div className="text-xl font-bold mb-1">{userData.stats.activeDeals}</div>
-                <div className="text-xs text-purple-300">Active Cases</div>
-              </div>
-            </div>
+            {/* View Stats Button */}
+            <button
+              onClick={() => setShowStats(!showStats)}
+              className="px-3 py-1.5 bg-white/10 hover:bg-white/15 rounded-lg text-sm font-medium transition-colors flex-shrink-0"
+            >
+              {showStats ? 'Hide Stats' : 'View Stats'}
+            </button>
           </div>
+
+          {/* Stats Grid - Hidden by default, shown on "View Stats" click */}
+          {showStats && (
+            <div className="mt-4 pt-4 border-t border-white/10">
+              <div className="grid grid-cols-4 gap-3">
+                <div className="text-center">
+                  <div className="text-lg font-bold mb-1">{userData.stats.totalDeals}</div>
+                  <div className="text-xs text-white/60">Deals Monitored</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-lg font-bold mb-1">₹{(userData.stats.totalEarnings / 1000).toFixed(0)}K</div>
+                  <div className="text-xs text-white/60">Amount Recovered</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-lg font-bold mb-1">{userData.stats.protectionScore}</div>
+                  <div className="text-xs text-white/60">Amount Under Watch</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-lg font-bold mb-1">{userData.stats.activeDeals}</div>
+                  <div className="text-xs text-white/60">Active Cases</div>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Navigation Tabs */}
@@ -572,43 +545,43 @@ const ProfileSettings = () => {
 
         {/* Profile Section */}
         {activeSection === 'profile' && (
-          <div className="space-y-4">
+          <div className="space-y-3">
             {/* Basic Information */}
-            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-5 border border-white/10">
-              <h2 className="font-semibold text-lg mb-4 flex items-center gap-2">
-                <User className="w-5 h-5" />
+            <div className="bg-white/5 rounded-xl p-4 border border-white/10">
+              <h2 className="font-semibold text-base mb-3 flex items-center gap-2">
+                <User className="w-4 h-4" />
                 Basic Information
               </h2>
-              <div className="space-y-4">
+              <div className="space-y-3">
                 <div>
-                  <label className="text-sm text-purple-300 mb-1 block">Full Name *</label>
+                  <label className="text-xs text-white/60 mb-1.5 block">Full Name *</label>
                   <input
                     type="text"
                     value={formData.name}
                     onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
                     disabled={!editMode}
                     placeholder="Enter your full name"
-                    className={`w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-white placeholder-purple-400 outline-none transition-colors ${editMode ? 'focus:border-purple-500 focus:bg-white/10' : 'cursor-not-allowed'}`}
+                    className={`w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder-white/40 outline-none transition-colors ${editMode ? 'focus:border-purple-500 focus:bg-white/10' : 'cursor-not-allowed'}`}
                   />
                 </div>
                 <div>
-                  <label className="text-sm text-purple-300 mb-1 block">Email</label>
+                  <label className="text-xs text-white/60 mb-1.5 block">Email</label>
                   <div className="flex items-center gap-2">
-                    <Mail className="w-4 h-4 text-purple-400 flex-shrink-0" />
+                    <Mail className="w-4 h-4 text-white/50 flex-shrink-0" />
                     <input
                       type="email"
                       value={formData.email}
                       disabled={true}
                       title="Email cannot be changed"
-                      className="flex-1 bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-white/60 placeholder-purple-400 outline-none cursor-not-allowed"
+                      className="flex-1 bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white/60 placeholder-white/40 outline-none cursor-not-allowed"
                     />
                   </div>
-                  <p className="text-xs text-purple-400 mt-1">Email cannot be changed for security reasons</p>
+                  <p className="text-xs text-white/50 mt-1">Email cannot be changed for security reasons</p>
                 </div>
                 <div>
-                  <label className="text-sm text-purple-300 mb-1 block">Phone</label>
+                  <label className="text-xs text-white/60 mb-1.5 block">Phone</label>
                   <div className="flex items-center gap-2">
-                    <Phone className="w-4 h-4 text-purple-400 flex-shrink-0" />
+                    <Phone className="w-4 h-4 text-white/50 flex-shrink-0" />
                     <input
                       type="tel"
                       value={formData.phone}
@@ -628,26 +601,26 @@ const ProfileSettings = () => {
                       }}
                       disabled={!editMode}
                       placeholder="+91 98765 43210"
-                      className={`flex-1 bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-white placeholder-purple-400 outline-none transition-colors ${editMode ? 'focus:border-purple-500 focus:bg-white/10' : 'cursor-not-allowed'}`}
+                      className={`flex-1 bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder-white/40 outline-none transition-colors ${editMode ? 'focus:border-purple-500 focus:bg-white/10' : 'cursor-not-allowed'}`}
                     />
                   </div>
                 </div>
                 <div>
-                  <label className="text-sm text-purple-300 mb-1 block">Location</label>
+                  <label className="text-xs text-white/60 mb-1.5 block">Location</label>
                   <div className="flex items-center gap-2">
-                    <MapPin className="w-4 h-4 text-purple-400 flex-shrink-0" />
+                    <MapPin className="w-4 h-4 text-white/50 flex-shrink-0" />
                     <input
                       type="text"
                       value={formData.location}
                       onChange={(e) => setFormData(prev => ({ ...prev, location: e.target.value }))}
                       disabled={!editMode}
                       placeholder="City, Country"
-                      className={`flex-1 bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-white placeholder-purple-400 outline-none transition-colors ${editMode ? 'focus:border-purple-500 focus:bg-white/10' : 'cursor-not-allowed'}`}
+                      className={`flex-1 bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder-white/40 outline-none transition-colors ${editMode ? 'focus:border-purple-500 focus:bg-white/10' : 'cursor-not-allowed'}`}
                     />
                   </div>
                 </div>
                 <div>
-                  <label className="text-sm text-purple-300 mb-1 block">Bio</label>
+                  <label className="text-xs text-white/60 mb-1.5 block">Bio</label>
                   <textarea
                     value={formData.bio}
                     onChange={(e) => setFormData(prev => ({ ...prev, bio: e.target.value }))}
@@ -655,25 +628,25 @@ const ProfileSettings = () => {
                     rows={3}
                     placeholder="Tell us about yourself..."
                     maxLength={500}
-                    className={`w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-white placeholder-purple-400 outline-none resize-none transition-colors ${editMode ? 'focus:border-purple-500 focus:bg-white/10' : 'cursor-not-allowed'}`}
+                    className={`w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder-white/40 outline-none resize-none transition-colors ${editMode ? 'focus:border-purple-500 focus:bg-white/10' : 'cursor-not-allowed'}`}
                   />
                   {editMode && (
-                    <p className="text-xs text-purple-400 mt-1 text-right">{formData.bio.length}/500 characters</p>
+                    <p className="text-xs text-white/50 mt-1 text-right">{formData.bio.length}/500 characters</p>
                   )}
                 </div>
               </div>
             </div>
 
             {/* Social Platforms */}
-            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-5 border border-white/10">
-              <h2 className="font-semibold text-lg mb-1 flex items-center gap-2">
-                <Globe className="w-5 h-5" />
+            <div className="bg-white/5 rounded-xl p-4 border border-white/10">
+              <h2 className="font-semibold text-base mb-1 flex items-center gap-2">
+                <Globe className="w-4 h-4" />
                 Social Platforms
               </h2>
-              <p className="text-xs text-purple-400 mb-4">Used only for deal verification. Not public.</p>
-              <div className="space-y-3">
+              <p className="text-xs text-white/50 mb-3">Used only for deal verification. Not public.</p>
+              <div className="space-y-2">
                 {userData.platforms.map(platform => (
-                  <div key={platform.name} className="flex items-center justify-between p-3 bg-white/5 rounded-xl border border-white/10">
+                  <div key={platform.name} className="flex items-center justify-between p-2.5 bg-white/5 rounded-lg border border-white/10">
                     <div className="flex items-center gap-3">
                       <div className={`w-10 h-10 ${platform.color} rounded-lg flex items-center justify-center`}>
                         {platform.name === 'YouTube' && <Youtube className="w-5 h-5" />}
@@ -707,33 +680,33 @@ const ProfileSettings = () => {
             </div>
 
             {/* Account Milestones */}
-            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-5 border border-white/10">
-              <h2 className="font-semibold text-lg mb-4 flex items-center gap-2">
-                <Award className="w-5 h-5" />
+            <div className="bg-white/5 rounded-xl p-4 border border-white/10">
+              <h2 className="font-semibold text-base mb-3 flex items-center gap-2">
+                <Award className="w-4 h-4" />
                 Account Milestones
               </h2>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 gap-2">
                 {userData.achievements.map(achievement => {
                   const Icon = achievement.icon;
                   return (
                     <div
                       key={achievement.id}
-                      className={`p-4 rounded-xl border ${
+                      className={`p-3 rounded-lg border ${
                         achievement.earned
-                          ? 'bg-gradient-to-br from-yellow-500/20 to-orange-500/20 border-yellow-500/30'
+                          ? 'bg-yellow-500/10 border-yellow-500/20'
                           : 'bg-white/5 border-white/10'
                       }`}
                     >
-                      <div className={`w-12 h-12 rounded-xl ${
-                        achievement.earned ? 'bg-yellow-500/30' : 'bg-white/10'
-                      } flex items-center justify-center mb-3`}>
-                        <Icon className={`w-6 h-6 ${achievement.earned ? 'text-yellow-400' : 'text-purple-400'}`} />
+                      <div className={`w-10 h-10 rounded-lg ${
+                        achievement.earned ? 'bg-yellow-500/20' : 'bg-white/10'
+                      } flex items-center justify-center mb-2`}>
+                        <Icon className={`w-5 h-5 ${achievement.earned ? 'text-yellow-400' : 'text-white/60'}`} />
                       </div>
-                      <div className="font-medium mb-1">{achievement.title}</div>
+                      <div className="font-medium text-sm mb-1">{achievement.title}</div>
                       {achievement.earned ? (
-                        <div className="text-xs text-yellow-400">Earned {achievement.date}</div>
+                        <div className="text-xs text-yellow-400/80">Earned {achievement.date}</div>
                       ) : (
-                        <div className="text-xs text-purple-300">{achievement.progress}% complete</div>
+                        <div className="text-xs text-white/50">{achievement.progress}% complete</div>
                       )}
                     </div>
                   );
@@ -745,87 +718,87 @@ const ProfileSettings = () => {
 
         {/* Account Section */}
         {activeSection === 'account' && (
-          <div className="space-y-4">
+          <div className="space-y-3">
             {/* Notifications */}
             <NotificationPreferences />
 
-            {/* Security */}
-            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-5 border border-white/10">
-              <h2 className="font-semibold text-lg mb-4 flex items-center gap-2">
-                <Lock className="w-5 h-5" />
-                Security & Privacy
+            {/* Subscription - Moved above Security */}
+            <div className="bg-white/5 rounded-xl p-4 border border-white/10">
+              <h2 className="font-semibold text-base mb-3 flex items-center gap-2">
+                <CreditCard className="w-4 h-4" />
+                Subscription
               </h2>
-              <div className="space-y-3">
-                <button className="w-full flex items-center justify-between p-3 bg-white/5 rounded-xl border border-white/10 hover:bg-white/10 transition-colors">
-                  <div className="flex items-center gap-3">
-                    <Lock className="w-5 h-5 text-purple-400" />
-                    <div className="text-left">
-                      <div className="font-medium">Change Password</div>
-                      <div className="text-xs text-purple-300">Last changed 2 months ago</div>
-                    </div>
-                  </div>
-                  <ChevronRight className="w-5 h-5 text-purple-400" />
+              <div className="flex items-start justify-between mb-3">
+                <div>
+                  <div className="text-xl font-bold mb-1">{userData.subscription.plan} Plan</div>
+                  <div className="text-sm text-white/70">₹{userData.subscription.amount}/month</div>
+                </div>
+                <span className="px-2.5 py-1 bg-green-500/20 text-green-400 rounded-full text-xs font-medium">
+                  Active
+                </span>
+              </div>
+              <div className="text-xs text-white/60 mb-3">
+                Next billing: {userData.subscription.nextBilling}
+              </div>
+              <div className="flex gap-2">
+                <button className="flex-1 bg-white/10 hover:bg-white/15 font-medium py-2 rounded-lg transition-colors text-sm">
+                  Manage Plan
                 </button>
-
-                <button className="w-full flex items-center justify-between p-3 bg-white/5 rounded-xl border border-white/10 hover:bg-white/10 transition-colors">
-                  <div className="flex items-center gap-3">
-                    <Shield className="w-5 h-5 text-purple-400" />
-                    <div className="text-left">
-                      <div className="font-medium">Two-Factor Authentication</div>
-                      <div className="text-xs text-green-400">Enabled</div>
-                    </div>
-                  </div>
-                  <ChevronRight className="w-5 h-5 text-purple-400" />
-                </button>
-
-                <button className="w-full flex items-center justify-between p-3 bg-white/5 rounded-xl border border-white/10 hover:bg-white/10 transition-colors">
-                  <div className="flex items-center gap-3">
-                    <Download className="w-5 h-5 text-purple-400" />
-                    <div className="text-left">
-                      <div className="font-medium">Download Your Data</div>
-                      <div className="text-xs text-purple-300">Export all your information</div>
-                    </div>
-                  </div>
-                  <ChevronRight className="w-5 h-5 text-purple-400" />
-                </button>
-
-                <button className="w-full flex items-center justify-between p-3 bg-white/5 rounded-xl border border-white/10 hover:bg-red-500/10 transition-colors">
-                  <div className="flex items-center gap-3">
-                    <Trash2 className="w-5 h-5 text-red-400" />
-                    <div className="text-left">
-                      <div className="font-medium text-red-400">Delete Account</div>
-                      <div className="text-xs text-purple-300">Permanently remove your account</div>
-                    </div>
-                  </div>
-                  <ChevronRight className="w-5 h-5 text-red-400" />
+                <button className="flex-1 bg-purple-600 hover:bg-purple-700 font-medium py-2 rounded-lg transition-colors text-sm">
+                  Upgrade
                 </button>
               </div>
             </div>
 
-            {/* Subscription */}
-            <div className="bg-gradient-to-br from-purple-600/30 to-indigo-600/30 backdrop-blur-md rounded-2xl p-5 border border-purple-400/30">
-              <h2 className="font-semibold text-lg mb-4 flex items-center gap-2">
-                <CreditCard className="w-5 h-5" />
-                Subscription
+            {/* Security & Privacy - Reduced visual weight */}
+            <div className="bg-white/5 rounded-xl p-4 border border-white/10">
+              <h2 className="font-semibold text-base mb-3 flex items-center gap-2">
+                <Lock className="w-4 h-4 text-white/60" />
+                Security & Privacy
               </h2>
-              <div className="flex items-start justify-between mb-4">
-                <div>
-                  <div className="text-2xl font-bold mb-1">{userData.subscription.plan} Plan</div>
-                  <div className="text-sm text-purple-200">₹{userData.subscription.amount}/month</div>
-                </div>
-                <span className="px-3 py-1 bg-green-500/20 text-green-400 rounded-full text-sm font-medium">
-                  Active
-                </span>
-              </div>
-              <div className="text-sm text-purple-200 mb-4">
-                Next billing: {userData.subscription.nextBilling}
-              </div>
-              <div className="flex gap-2">
-                <button className="flex-1 bg-white/10 hover:bg-white/15 font-medium py-2.5 rounded-lg transition-colors">
-                  Manage Plan
+              <div className="space-y-2">
+                <button className="w-full flex items-center justify-between p-2.5 bg-white/5 rounded-lg border border-white/10 hover:bg-white/10 transition-colors">
+                  <div className="flex items-center gap-2.5">
+                    <Lock className="w-4 h-4 text-white/50" />
+                    <div className="text-left">
+                      <div className="font-medium text-sm">Change Password</div>
+                      <div className="text-xs text-white/50">Last changed 2 months ago</div>
+                    </div>
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-white/50" />
                 </button>
-                <button className="flex-1 bg-purple-600 hover:bg-purple-700 font-medium py-2.5 rounded-lg transition-colors">
-                  Upgrade
+
+                <button className="w-full flex items-center justify-between p-2.5 bg-white/5 rounded-lg border border-white/10 hover:bg-white/10 transition-colors">
+                  <div className="flex items-center gap-2.5">
+                    <Shield className="w-4 h-4 text-white/50" />
+                    <div className="text-left">
+                      <div className="font-medium text-sm">Two-Factor Authentication</div>
+                      <div className="text-xs text-green-400/70">Enabled</div>
+                    </div>
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-white/50" />
+                </button>
+
+                <button className="w-full flex items-center justify-between p-2.5 bg-white/5 rounded-lg border border-white/10 hover:bg-white/10 transition-colors">
+                  <div className="flex items-center gap-2.5">
+                    <Download className="w-4 h-4 text-white/50" />
+                    <div className="text-left">
+                      <div className="font-medium text-sm">Download Your Data</div>
+                      <div className="text-xs text-white/50">Export all your information</div>
+                    </div>
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-white/50" />
+                </button>
+
+                <button className="w-full flex items-center justify-between p-2.5 bg-white/5 rounded-lg border border-white/10 hover:bg-red-500/10 transition-colors">
+                  <div className="flex items-center gap-2.5">
+                    <Trash2 className="w-4 h-4 text-red-400/70" />
+                    <div className="text-left">
+                      <div className="font-medium text-sm text-red-400/80">Delete Account</div>
+                      <div className="text-xs text-white/50">Permanently remove your account</div>
+                    </div>
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-red-400/70" />
                 </button>
               </div>
             </div>
@@ -834,30 +807,30 @@ const ProfileSettings = () => {
 
         {/* Support Section */}
         {activeSection === 'support' && (
-          <div className="space-y-4">
-            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-5 border border-white/10">
-              <h2 className="font-semibold text-lg mb-4">Help & Support</h2>
-              <div className="space-y-3">
-                <button className="w-full flex items-center justify-between p-3 bg-white/5 rounded-xl border border-white/10 hover:bg-white/10 transition-colors">
-                  <div className="flex items-center gap-3">
-                    <HelpCircle className="w-5 h-5 text-purple-400" />
+          <div className="space-y-3">
+            <div className="bg-white/5 rounded-xl p-4 border border-white/10">
+              <h2 className="font-semibold text-base mb-3">Help & Support</h2>
+              <div className="space-y-2">
+                <button className="w-full flex items-center justify-between p-2.5 bg-white/5 rounded-lg border border-white/10 hover:bg-white/10 transition-colors">
+                  <div className="flex items-center gap-2.5">
+                    <HelpCircle className="w-4 h-4 text-white/50" />
                     <div className="text-left">
-                      <div className="font-medium">Help Center</div>
-                      <div className="text-xs text-purple-300">FAQs and guides</div>
+                      <div className="font-medium text-sm">Help Center</div>
+                      <div className="text-xs text-white/50">FAQs and guides</div>
                     </div>
                   </div>
-                  <ChevronRight className="w-5 h-5 text-purple-400" />
+                  <ChevronRight className="w-4 h-4 text-white/50" />
                 </button>
 
-                <button className="w-full flex items-center justify-between p-3 bg-white/5 rounded-xl border border-white/10 hover:bg-white/10 transition-colors">
-                  <div className="flex items-center gap-3">
-                    <MessageCircle className="w-5 h-5 text-purple-400" />
+                <button className="w-full flex items-center justify-between p-2.5 bg-white/5 rounded-lg border border-white/10 hover:bg-white/10 transition-colors">
+                  <div className="flex items-center gap-2.5">
+                    <MessageCircle className="w-4 h-4 text-white/50" />
                     <div className="text-left">
-                      <div className="font-medium">Contact Support</div>
-                      <div className="text-xs text-purple-300">Chat with our team</div>
+                      <div className="font-medium text-sm">Contact Support</div>
+                      <div className="text-xs text-white/50">Chat with our team</div>
                     </div>
                   </div>
-                  <ChevronRight className="w-5 h-5 text-purple-400" />
+                  <ChevronRight className="w-4 h-4 text-white/50" />
                 </button>
 
                 <button 
@@ -873,54 +846,54 @@ const ProfileSettings = () => {
                       }, 1000);
                     }
                   }}
-                  className="w-full flex items-center justify-between p-3 bg-white/5 rounded-xl border border-white/10 hover:bg-white/10 transition-colors"
+                  className="w-full flex items-center justify-between p-2.5 bg-white/5 rounded-lg border border-white/10 hover:bg-white/10 transition-colors"
                 >
-                  <div className="flex items-center gap-3">
-                    <Sparkles className="w-5 h-5 text-purple-400" />
+                  <div className="flex items-center gap-2.5">
+                    <Sparkles className="w-4 h-4 text-white/50" />
                     <div className="text-left">
-                      <div className="font-medium">Restart Dashboard Tutorial</div>
-                      <div className="text-xs text-purple-300">Show the guided tour again</div>
+                      <div className="font-medium text-sm">Restart Dashboard Tutorial</div>
+                      <div className="text-xs text-white/50">Show the guided tour again</div>
                     </div>
                   </div>
-                  <ChevronRight className="w-5 h-5 text-purple-400" />
+                  <ChevronRight className="w-4 h-4 text-white/50" />
                 </button>
 
-                <button className="w-full flex items-center justify-between p-3 bg-white/5 rounded-xl border border-white/10 hover:bg-white/10 transition-colors">
-                  <div className="flex items-center gap-3">
-                    <FileText className="w-5 h-5 text-purple-400" />
+                <button className="w-full flex items-center justify-between p-2.5 bg-white/5 rounded-lg border border-white/10 hover:bg-white/10 transition-colors">
+                  <div className="flex items-center gap-2.5">
+                    <FileText className="w-4 h-4 text-white/50" />
                     <div className="text-left">
-                      <div className="font-medium">Terms of Service</div>
-                      <div className="text-xs text-purple-300">Read our terms</div>
+                      <div className="font-medium text-sm">Terms of Service</div>
+                      <div className="text-xs text-white/50">Read our terms</div>
                     </div>
                   </div>
-                  <ChevronRight className="w-5 h-5 text-purple-400" />
+                  <ChevronRight className="w-4 h-4 text-white/50" />
                 </button>
 
-                <button className="w-full flex items-center justify-between p-3 bg-white/5 rounded-xl border border-white/10 hover:bg-white/10 transition-colors">
-                  <div className="flex items-center gap-3">
-                    <Shield className="w-5 h-5 text-purple-400" />
+                <button className="w-full flex items-center justify-between p-2.5 bg-white/5 rounded-lg border border-white/10 hover:bg-white/10 transition-colors">
+                  <div className="flex items-center gap-2.5">
+                    <Shield className="w-4 h-4 text-white/50" />
                     <div className="text-left">
-                      <div className="font-medium">Privacy Policy</div>
-                      <div className="text-xs text-purple-300">How we protect your data</div>
+                      <div className="font-medium text-sm">Privacy Policy</div>
+                      <div className="text-xs text-white/50">How we protect your data</div>
                     </div>
                   </div>
-                  <ChevronRight className="w-5 h-5 text-purple-400" />
+                  <ChevronRight className="w-4 h-4 text-white/50" />
                 </button>
               </div>
             </div>
 
             {/* App Info */}
-            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-5 border border-white/10">
-              <h2 className="font-semibold text-lg mb-4">About</h2>
-              <div className="text-center text-sm text-purple-200">
-                <div className="font-semibold mb-2">NoticeBazaar</div>
+            <div className="bg-white/5 rounded-xl p-4 border border-white/10">
+              <h2 className="font-semibold text-base mb-3">About</h2>
+              <div className="text-center text-sm text-white/70">
+                <div className="font-semibold mb-1">NoticeBazaar</div>
                 <div className="mb-1">Version 1.0.0</div>
-                <div className="text-xs">© 2024 NoticeBazaar. All rights reserved.</div>
+                <div className="text-xs text-white/50">© 2024 NoticeBazaar. All rights reserved.</div>
               </div>
             </div>
 
-            {/* Logout Button - Prominent and Clear */}
-            <div className="bg-gradient-to-br from-red-500/10 to-red-600/10 backdrop-blur-md rounded-2xl p-5 border border-red-500/20">
+            {/* Logout Button - Reduced visual weight */}
+            <div className="bg-white/5 rounded-xl p-4 border border-white/10">
               <button 
                 onClick={() => {
                   // Haptic feedback on click
@@ -930,23 +903,23 @@ const ProfileSettings = () => {
                   setShowLogoutDialog(true);
                 }}
                 disabled={signOutMutation.isPending}
-                className="w-full bg-red-500/20 hover:bg-red-500/30 border border-red-500/40 text-red-400 font-semibold py-4 rounded-xl transition-all flex items-center justify-center gap-3 active:scale-[0.97] shadow-lg hover:shadow-xl hover:shadow-red-500/20 disabled:opacity-50 disabled:cursor-not-allowed min-h-[56px] touch-manipulation"
+                className="w-full bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 text-red-400 font-medium py-3 rounded-lg transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
                 aria-label="Log out of your account"
                 aria-describedby="logout-description"
               >
                 {signOutMutation.isPending ? (
                   <>
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                    <span className="text-base">Logging out...</span>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span>Logging out...</span>
                   </>
                 ) : (
                   <>
-                    <LogOut className="w-5 h-5" />
-                    <span className="text-base">Log Out</span>
+                    <LogOut className="w-4 h-4" />
+                    <span>Log Out</span>
                   </>
                 )}
               </button>
-              <p id="logout-description" className="text-xs text-center text-red-300/60 mt-3">
+              <p id="logout-description" className="text-xs text-center text-white/50 mt-2">
                 You'll be signed out of your account
               </p>
             </div>

@@ -224,3 +224,4 @@ const ConsumerComplaintsPage: React.FC = () => {
 
 export default ConsumerComplaintsPage;
 
+
