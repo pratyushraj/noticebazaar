@@ -124,7 +124,21 @@ router.post('/analyze', async (req: AuthenticatedRequest, res) => {
       // Continue without PDF - analysis results are still valid
     }
 
-    // Save protection report (optional - if table doesn't exist, continue without saving)
+    // Normalize core analysis fields before saving
+    const rawProtectionScore = Number((analysis as any).protectionScore ?? 0);
+    const protectionScore = Number.isFinite(rawProtectionScore)
+      ? Math.min(100, Math.max(0, rawProtectionScore))
+      : 0;
+
+    const rawOverallRisk = String((analysis as any).overallRisk || '').toLowerCase();
+    let normalizedOverallRisk: 'low' | 'medium' | 'high' = 'medium';
+    if (rawOverallRisk.includes('low')) {
+      normalizedOverallRisk = 'low';
+    } else if (rawOverallRisk.includes('high')) {
+      normalizedOverallRisk = 'high';
+    }
+
+    // Save protection report (optional - if table doesn't exist or insert fails, continue without saving)
     let reportId: string | null = null;
     try {
       // Extract additional AI analysis fields
@@ -136,15 +150,14 @@ router.post('/analyze', async (req: AuthenticatedRequest, res) => {
           user_id: userId, // Track who created the report
           contract_file_url: contract_url,
           pdf_report_url: pdfUrl, // Can be null if PDF generation failed
-          protection_score: analysis.protectionScore,
-          negotiation_power_score: analysis.negotiationPowerScore || null, // Negotiation Power Score
-          overall_risk: analysis.overallRisk,
+          protection_score: protectionScore,
+          negotiation_power_score: (analysis as any).negotiationPowerScore || null, // Negotiation Power Score
+          overall_risk: normalizedOverallRisk,
           analysis_json: analysis,
           // New AI-driven fields (if columns exist)
           document_type: aiAnalysis.documentType || null,
           detected_contract_category: aiAnalysis.detectedContractCategory || null,
           brand_detected: aiAnalysis.brandDetected ?? null,
-          risk_score: aiAnalysis.riskScore || null,
         } as any)
         .select()
         .single();
@@ -166,22 +179,20 @@ router.post('/analyze', async (req: AuthenticatedRequest, res) => {
         if (isUserIdError) {
           console.log('[Protection] 🔄 Retrying without user_id column (column may not exist yet)...');
           try {
-            const aiAnalysis = analysis as any;
             const { data: reportRetry, error: retryError } = await supabase
               .from('protection_reports')
               .insert({
                 deal_id: deal_id || null,
                 contract_file_url: contract_url,
                 pdf_report_url: pdfUrl,
-                protection_score: analysis.protectionScore,
-                negotiation_power_score: analysis.negotiationPowerScore || null, // Negotiation Power Score
-                overall_risk: analysis.overallRisk,
+                protection_score: protectionScore,
+                negotiation_power_score: (analysis as any).negotiationPowerScore || null, // Negotiation Power Score
+                overall_risk: normalizedOverallRisk,
                 analysis_json: analysis,
                 // New AI-driven fields (if columns exist)
                 document_type: aiAnalysis.documentType || null,
                 detected_contract_category: aiAnalysis.detectedContractCategory || null,
                 brand_detected: aiAnalysis.brandDetected ?? null,
-                risk_score: aiAnalysis.riskScore || null,
               } as any)
               .select()
               .single();

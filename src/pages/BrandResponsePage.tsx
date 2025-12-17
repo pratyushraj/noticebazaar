@@ -3,14 +3,14 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  CheckCircle, 
-  AlertCircle, 
-  XCircle, 
+import {
+  CheckCircle,
+  XCircle,
   Loader2,
   X,
   ChevronDown,
-  Download
+  Download,
+  Info,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { triggerHaptic, HapticPatterns } from '@/lib/utils/haptics';
@@ -25,7 +25,9 @@ interface RequestedChange {
 
 const BrandResponsePage = () => {
   const { token } = useParams<{ token: string }>();
-  const [selectedStatus, setSelectedStatus] = useState<'accepted' | 'negotiating' | 'rejected' | null>(null);
+  const [selectedStatus, setSelectedStatus] = useState<
+    'accepted' | 'negotiating' | 'rejected' | null
+  >('accepted');
   const [message, setMessage] = useState('');
   const [brandTeamName, setBrandTeamName] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -53,13 +55,13 @@ const BrandResponsePage = () => {
   const [brandEmail, setBrandEmail] = useState<string>('');
   const [brandEmailInput, setBrandEmailInput] = useState<string>('');
 
-  // Brand Summary Card Component - matches mockup exactly
-  const BrandSummaryCard = ({ 
-    dealValue, 
-    deliverables 
-  }: { 
-    dealValue?: number | string | null; 
-    deliverables?: string | string[] | null; 
+  // Brand Summary Card Component - Deal Snapshot only
+  const BrandSummaryCard = ({
+    dealValue,
+    deliverables,
+  }: {
+    dealValue?: number | string | null;
+    deliverables?: string | string[] | null;
   }) => {
     // Parse deliverables - handle JSON string or array
     let deliverablesList: string[] = [];
@@ -80,53 +82,154 @@ const BrandResponsePage = () => {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-2xl mx-auto mt-6 mb-6 bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6 shadow-lg text-white space-y-4"
+        className="w-full max-w-2xl mx-auto mt-4 mb-4 rounded-2xl border border-purple-900/70 bg-[#080021]/90 p-5 md:p-6 text-violet-50 space-y-4"
       >
-        {/* Title Row */}
-        <h2 className="text-lg font-semibold text-white flex items-center gap-2">
-          <span>📄</span> Requested Contract Changes
-        </h2>
+        {/* Deal snapshot */}
+        <div className="space-y-3">
+          <div className="flex flex-col items-start gap-1">
+            <p className="text-[0.65rem] uppercase tracking-[0.18em] text-violet-300/80">
+              Deal snapshot
+            </p>
+            <p className="text-xs text-violet-200/80">
+              Quick view of value and deliverables for this collaboration.
+            </p>
+          </div>
 
-        {/* Deal Value Row */}
-        {dealValue && (
-          <div className="flex justify-between items-center py-2">
-            <span className="text-white/70 text-sm">Deal Value</span>
-            <span className="font-medium text-green-400/80 text-sm">
-              ₹{Number(dealValue).toLocaleString('en-IN')}
-            </span>
-          </div>
-        )}
+          {/* Deal Value Row */}
+          {dealValue && (
+            <div className="flex justify-between items-center py-1.5 text-sm">
+              <span className="text-violet-100/90">Deal value</span>
+              <span className="font-medium text-emerald-300">
+                ₹{Number(dealValue).toLocaleString('en-IN')}
+              </span>
+            </div>
+          )}
 
-        {/* Deliverables Section */}
-        {deliverablesList.length > 0 ? (
-          <div className="text-sm space-y-2">
-            <span className="font-medium text-white/80 block">Deliverables:</span>
-            <ul className="space-y-1.5 list-none">
-              {deliverablesList.map((d, i) => (
-                <li key={i} className="flex items-start gap-2">
-                  <span className="text-[#d8caff] mt-1">▪</span>
-                  <span className="text-white/90">{d}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        ) : (
-          <div className="text-sm">
-            <span className="font-medium text-white/80">Deliverables:</span>
-            <span className="text-white/60 ml-2">To be mutually confirmed</span>
-          </div>
-        )}
+          {/* Deliverables Section */}
+          {deliverablesList.length > 0 ? (
+            <div className="space-y-1.5 text-sm">
+              <span className="font-medium text-violet-50 block">
+                Deliverables
+              </span>
+              <ul className="space-y-1.5 list-none">
+                {deliverablesList.map((d, i) => (
+                  <li
+                    key={i}
+                    className="flex items-start gap-2 text-violet-100 text-xs md:text-sm"
+                  >
+                    <span className="mt-[3px] text-violet-400/80">•</span>
+                    <span>{d}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ) : (
+            <div className="text-sm">
+              <span className="font-medium text-violet-50">Deliverables</span>
+              <span className="ml-2 text-violet-200/80">
+                To be mutually confirmed
+              </span>
+            </div>
+          )}
+        </div>
 
-        {/* Expected Outcome Card */}
-        <div className="mt-3 p-3 bg-gradient-to-br from-green-500/10 to-blue-500/10 border border-green-400/20 rounded-xl text-sm">
-          <div className="flex items-start gap-2 mb-1">
-            <span className="text-green-400">✓</span>
-            <span className="font-medium text-white">Expected Outcome:</span>
-          </div>
-          <p className="text-white/80 text-xs mt-1">
-            Most brands accept these standard safety updates and proceed smoothly.
+      </motion.div>
+    );
+  };
+
+  // Helper to derive a friendly "Reason" label for requested changes
+  const getReasonLabel = (change: RequestedChange) => {
+    const title = change.title.toLowerCase();
+    const category = (change.category || '').toLowerCase();
+
+    if (
+      category.includes('payment') ||
+      title.includes('payment') ||
+      title.includes('fee') ||
+      title.includes('payout')
+    ) {
+      return 'Reason: payment clarity';
+    }
+
+    if (
+      category.includes('timeline') ||
+      category.includes('schedule') ||
+      title.includes('timeline') ||
+      title.includes('schedule') ||
+      title.includes('deadline')
+    ) {
+      return 'Reason: timeline clarity';
+    }
+
+    return 'Reason: overall clarity';
+  };
+
+  // Requested Updates / Clarifications card
+  const RequestedUpdatesCard = ({
+    requestedChanges,
+  }: {
+    requestedChanges: RequestedChange[];
+  }) => {
+    const hasRequests = requestedChanges && requestedChanges.length > 0;
+
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="w-full max-w-2xl mx-auto rounded-2xl border border-purple-900/70 bg-[#080021]/90 p-5 md:p-6 text-violet-50 space-y-3"
+      >
+        <div className="space-y-1">
+          <h2 className="text-sm md:text-base font-semibold text-violet-50">
+            Requested Contract Clarifications
+          </h2>
+          <p className="text-xs text-violet-200/80">
+            These clarifications help avoid confusion later without changing the
+            commercial intent of the deal.
           </p>
         </div>
+
+        {!hasRequests ? (
+          <div className="mt-2 rounded-xl border border-emerald-400/30 bg-emerald-500/10 px-3 py-2.5 text-xs md:text-sm text-emerald-50">
+            <p className="font-medium">No changes requested. Contract looks good.</p>
+          </div>
+        ) : (
+          <ul className="mt-2 space-y-2">
+            {requestedChanges.map((change, index) => (
+              <li
+                key={`${change.title}-${index}`}
+                className="flex items-start gap-3 rounded-xl border border-purple-900/70 bg-[#090024] px-3 py-2.5"
+              >
+                <div className="mt-1">
+                  <CheckCircle className="w-3.5 h-3.5 text-emerald-300" />
+                </div>
+                <div className="flex-1 space-y-1">
+                  <p className="text-xs md:text-sm text-violet-50 truncate">
+                    {change.title}
+                  </p>
+                  <p className="text-[0.7rem] text-violet-300/85">
+                    {getReasonLabel(change)}
+                  </p>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+      </motion.div>
+    );
+  };
+
+  // Expected Outcome card - confidence builder
+  const ExpectedOutcomeCard = () => {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="w-full max-w-2xl mx-auto rounded-2xl border border-emerald-400/25 bg-emerald-500/10 px-5 py-4 md:px-6 md:py-5 text-emerald-50 space-y-1"
+      >
+        <p className="text-sm md:text-base font-semibold">Expected Outcome</p>
+        <p className="text-xs md:text-sm text-emerald-100/90">
+          Most brands approve these standard clarifications and proceed smoothly.
+        </p>
       </motion.div>
     );
   };
@@ -182,7 +285,7 @@ const BrandResponsePage = () => {
 
         // Create canvas from the summary content
         const canvas = await html2canvas(summaryElement, {
-          backgroundColor: '#1e1b4b', // Purple background
+          backgroundColor: '#020617', // Match calm dark background
           scale: 2,
           useCORS: true,
           logging: false,
@@ -231,7 +334,7 @@ const BrandResponsePage = () => {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-2xl mx-auto mb-6 bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6 shadow-lg text-white space-y-4"
+        className="w-full max-w-2xl mx-auto mb-6 rounded-2xl border border-purple-900/70 bg-[#080021]/90 p-5 md:p-6 text-violet-50 space-y-4"
       >
         {/* Title Row with Chevron */}
         <button
@@ -239,7 +342,7 @@ const BrandResponsePage = () => {
           className="w-full flex items-center justify-between text-left"
         >
           <div className="flex flex-col items-start gap-1">
-            <h2 className="text-lg font-semibold text-white flex items-center gap-2">
+            <h2 className="text-lg font-semibold text-slate-50 flex items-center gap-2">
               {isContractSummaryExpanded ? (
                 <ChevronDown className="w-5 h-5 text-white/60" />
               ) : (
@@ -255,7 +358,7 @@ const BrandResponsePage = () => {
             animate={{ rotate: isContractSummaryExpanded ? 180 : 0 }}
             transition={{ duration: 0.2 }}
           >
-            <ChevronDown className="w-5 h-5 text-white/60" />
+            <ChevronDown className="w-5 h-5 text-slate-400" />
           </motion.div>
         </button>
 
@@ -269,19 +372,26 @@ const BrandResponsePage = () => {
               transition={{ duration: 0.3, ease: 'easeInOut' }}
               className="overflow-hidden"
             >
-              <div id="full-contract-summary-content" className="pt-4 space-y-4 border-t border-white/10">
+              <div
+                id="full-contract-summary-content"
+                className="pt-4 space-y-4 border-t border-slate-800"
+              >
                 {/* Brand Name */}
                 <div>
-                  <div className="text-xs text-white/60 uppercase tracking-wide mb-1">Brand Name</div>
-                  <div className="text-white font-medium">{brandName}</div>
+                  <div className="text-xs text-slate-400 uppercase tracking-wide mb-1">
+                    Brand Name
+                  </div>
+                  <div className="text-slate-50 font-medium">{brandName}</div>
                 </div>
 
                 {/* Deal Value */}
                 {dealValue && (
                   <div>
-                    <div className="text-xs text-white/60 uppercase tracking-wide mb-1">Deal Value</div>
-                    <div className="text-white font-medium">
-                      {typeof dealValue === 'number' 
+                    <div className="text-xs text-slate-400 uppercase tracking-wide mb-1">
+                      Deal Value
+                    </div>
+                    <div className="text-slate-50 font-medium">
+                      {typeof dealValue === 'number'
                         ? `₹${Number(dealValue).toLocaleString('en-IN')}`
                         : dealValue}
                     </div>
@@ -291,8 +401,10 @@ const BrandResponsePage = () => {
                 {/* Deliverables */}
                 {deliverablesList.length > 0 && (
                   <div>
-                    <div className="text-xs text-white/60 uppercase tracking-wide mb-1">Deliverables</div>
-                    <ul className="text-white/80 list-disc list-inside space-y-1">
+                    <div className="text-xs text-slate-400 uppercase tracking-wide mb-1">
+                      Deliverables
+                    </div>
+                    <ul className="text-slate-200 list-disc list-inside space-y-1">
                       {deliverablesList.map((d, i) => (
                         <li key={i}>{d}</li>
                       ))}
@@ -303,48 +415,66 @@ const BrandResponsePage = () => {
                 {/* Timeline / Duration */}
                 {duration !== 'Not specified' && (
                   <div>
-                    <div className="text-xs text-white/60 uppercase tracking-wide mb-1">Timeline / Duration</div>
-                    <div className="text-white font-medium">{duration}</div>
+                    <div className="text-xs text-slate-400 uppercase tracking-wide mb-1">
+                      Timeline / Duration
+                    </div>
+                    <div className="text-slate-50 font-medium">{duration}</div>
                   </div>
                 )}
 
                 {/* Payment Terms */}
                 {paymentTerms !== 'Not specified' && (
                   <div>
-                    <div className="text-xs text-white/60 uppercase tracking-wide mb-1">Payment Terms</div>
-                    <div className="text-white font-medium">{paymentTerms}</div>
+                    <div className="text-xs text-slate-400 uppercase tracking-wide mb-1">
+                      Payment Terms
+                    </div>
+                    <div className="text-slate-50 font-medium">
+                      {paymentTerms}
+                    </div>
                   </div>
                 )}
 
                 {/* Usage Rights */}
                 {usageRights !== 'Not specified' && (
                   <div>
-                    <div className="text-xs text-white/60 uppercase tracking-wide mb-1">Usage Rights</div>
-                    <div className="text-white font-medium">{usageRights}</div>
+                    <div className="text-xs text-slate-400 uppercase tracking-wide mb-1">
+                      Usage Rights
+                    </div>
+                    <div className="text-slate-50 font-medium">
+                      {usageRights}
+                    </div>
                   </div>
                 )}
 
                 {/* Exclusivity Terms */}
                 {exclusivity !== 'Not specified' && (
                   <div>
-                    <div className="text-xs text-white/60 uppercase tracking-wide mb-1">Exclusivity Terms</div>
-                    <div className="text-white font-medium">{exclusivity}</div>
+                    <div className="text-xs text-slate-400 uppercase tracking-wide mb-1">
+                      Exclusivity Terms
+                    </div>
+                    <div className="text-slate-50 font-medium">
+                      {exclusivity}
+                    </div>
                   </div>
                 )}
 
                 {/* Termination Clause */}
                 {termination !== 'Not specified' && (
                   <div>
-                    <div className="text-xs text-white/60 uppercase tracking-wide mb-1">Termination Clause</div>
-                    <div className="text-white font-medium">{termination}</div>
+                    <div className="text-xs text-slate-400 uppercase tracking-wide mb-1">
+                      Termination Clause
+                    </div>
+                    <div className="text-slate-50 font-medium">
+                      {termination}
+                    </div>
                   </div>
                 )}
 
                 {/* Download PDF Button */}
-                <div className="pt-4 mt-4 border-t border-white/10 flex justify-end">
+                <div className="pt-4 mt-4 border-t border-slate-800 flex justify-end">
                   <button
                     onClick={downloadFullSummaryPDF}
-                  className="px-4 py-2.5 bg-purple-600 hover:bg-purple-700 rounded-xl transition-all duration-200 flex items-center gap-2 text-sm font-medium text-white active:scale-[0.98]"
+                    className="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 transition-all duration-200 flex items-center gap-2 text-sm font-medium text-slate-50 active:scale-[0.98]"
                   >
                     <Download className="w-4 h-4" />
                     Download Full Summary PDF
@@ -377,7 +507,7 @@ const BrandResponsePage = () => {
         const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 
           (typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com') 
             ? 'https://api.creatorarmour.com' 
-            : 'http://localhost:3001');
+            : 'https://noticebazaar-api.onrender.com');
         
         const response = await fetch(`${apiBaseUrl}/api/brand-response/${token}`);
         const data = await response.json();
@@ -402,11 +532,43 @@ const BrandResponsePage = () => {
         }
 
         setDealInfo(data.deal);
+
         if (data.requested_changes && Array.isArray(data.requested_changes)) {
           setRequestedChanges(data.requested_changes);
         }
+
         if (data.analysis_data) {
           setAnalysisData(data.analysis_data);
+
+          // Fallback: if backend has no requested_changes, derive from analysis issues
+          if (
+            (!data.requested_changes ||
+              !Array.isArray(data.requested_changes) ||
+              data.requested_changes.length === 0) &&
+            Array.isArray(data.analysis_data.issues)
+          ) {
+            const derived = data.analysis_data.issues
+              .filter(
+                (issue: any) =>
+                  issue &&
+                  ['high', 'medium', 'warning'].includes(
+                    String(issue.severity || '').toLowerCase()
+                  )
+              )
+              .map((issue: any) => ({
+                title: issue.title || 'Requested clarification',
+                severity: (issue.severity || 'medium') as
+                  | 'high'
+                  | 'medium'
+                  | 'warning',
+                category: issue.category || '',
+                description: issue.description || '',
+              }));
+
+            if (derived.length > 0) {
+              setRequestedChanges(derived);
+            }
+          }
         }
         if (data.deal.response_status !== 'pending') {
           setIsSubmitted(true);
@@ -449,7 +611,7 @@ const BrandResponsePage = () => {
       const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 
         (typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com') 
           ? 'https://api.creatorarmour.com' 
-          : 'http://localhost:3001');
+          : 'https://noticebazaar-api.onrender.com');
       
       const response = await fetch(`${apiBaseUrl}/api/otp/send`, {
         method: 'POST',
@@ -507,7 +669,7 @@ const BrandResponsePage = () => {
       const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 
         (typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com') 
           ? 'https://api.creatorarmour.com' 
-          : 'http://localhost:3001');
+          : 'https://noticebazaar-api.onrender.com');
       
       const response = await fetch(`${apiBaseUrl}/api/otp/verify`, {
         method: 'POST',
@@ -557,7 +719,7 @@ const BrandResponsePage = () => {
       const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 
         (typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com') 
           ? 'https://api.creatorarmour.com' 
-          : 'http://localhost:3001');
+          : 'https://noticebazaar-api.onrender.com');
       
       // Build message with negotiation points if negotiating
       let finalMessage = message.trim();
@@ -701,10 +863,10 @@ const BrandResponsePage = () => {
 
   if (isLoading) {
     return (
-      <div className="nb-screen-height bg-gradient-to-br from-purple-950 via-purple-900 to-indigo-950 flex items-center justify-center">
+      <div className="nb-screen-height bg-[#050019] flex items-center justify-center">
         <div className="text-center">
-          <Loader2 className="w-8 h-8 animate-spin text-white mx-auto mb-4" />
-          <p className="text-white/70">Loading...</p>
+          <Loader2 className="w-8 h-8 animate-spin text-slate-100 mx-auto mb-4" />
+          <p className="text-slate-400">Loading...</p>
         </div>
       </div>
     );
@@ -712,7 +874,7 @@ const BrandResponsePage = () => {
 
   if (!dealInfo) {
     return (
-      <div className="nb-screen-height bg-gradient-to-br from-purple-950 via-purple-900 to-indigo-950 flex items-center justify-center p-4">
+      <div className="nb-screen-height bg-[#050019] flex items-center justify-center p-4">
         <div className="text-center max-w-md">
           <motion.div
             initial={{ scale: 0 }}
@@ -721,79 +883,129 @@ const BrandResponsePage = () => {
           >
             <XCircle className="w-16 h-16 text-red-400 mx-auto mb-4" />
           </motion.div>
-          <h1 className="text-2xl font-bold text-white mb-2">Link No Longer Valid</h1>
-          <p className="text-white/70 mb-6">
+          <h1 className="text-2xl font-bold text-slate-50 mb-2">
+            Link No Longer Valid
+          </h1>
+          <p className="text-slate-400 mb-6">
             This link is no longer valid. Please contact the creator.
-            </p>
+          </p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="nb-screen-height bg-gradient-to-br from-purple-950 via-purple-900 to-indigo-950 text-white pb-8 md:pb-12">
+    <div className="nb-screen-height bg-[#050019] text-slate-50 pb-8 md:pb-12">
       <div className="max-w-2xl mx-auto px-4 py-6 md:py-8 space-y-6">
         {/* 1. TOP HEADER SECTION */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-center mb-6"
+          className="text-center mb-3 space-y-3"
         >
-          <h1 className="text-3xl md:text-4xl font-bold mb-2 bg-gradient-to-r from-white via-purple-200 to-white bg-clip-text text-transparent">
-            NoticeBazaar
-          </h1>
-          <div className="h-0.5 w-32 bg-gradient-to-r from-blue-500 via-purple-500 to-indigo-500 mx-auto rounded-full mb-3" />
-          <h2 className="text-xl md:text-2xl font-semibold mb-1">
-            {dealInfo.brand_name} Collaboration
-          </h2>
-          <p className="text-white/60 text-xs md:text-sm">
-            This response helps finalize the collaboration terms
+          <div className="space-y-1">
+            <p className="text-[0.7rem] font-semibold uppercase tracking-[0.2em] text-violet-300/90">
+              Creator Armour
+            </p>
+            <h1 className="text-2xl md:text-3xl font-semibold text-violet-50">
+              Collaboration Response
+            </h1>
+          </div>
+          <p className="text-sm md:text-base font-medium text-violet-100">
+            {dealInfo.brand_name} × Creator Collaboration
+          </p>
+          <p className="text-xs md:text-sm text-violet-200/80 max-w-md mx-auto">
+            This response helps finalize collaboration terms clearly and
+            professionally.
           </p>
         </motion.div>
 
+        {/* 2. Calm reassurance / context card */}
+        <div className="w-full max-w-2xl mx-auto rounded-2xl border border-emerald-400/25 bg-emerald-500/7 px-4 py-3 md:px-5 md:py-4 text-left text-xs md:text-sm text-emerald-50/90 flex gap-3">
+          <div className="mt-0.5">
+            <Info className="w-4 h-4 text-emerald-300" />
+          </div>
+          <div className="space-y-1.5">
+            <p className="font-semibold text-emerald-100 text-sm">
+              What this response is (and isn&apos;t)
+            </p>
+            <ul className="space-y-1">
+              <li className="flex items-start gap-2">
+                <span className="mt-[3px] h-1 w-1 rounded-full bg-emerald-300" />
+                <span>Standard creator-safety clarifications</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="mt-[3px] h-1 w-1 rounded-full bg-emerald-300" />
+                <span>Not a legal notice or payment escalation</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="mt-[3px] h-1 w-1 rounded-full bg-emerald-300" />
+                <span>Commonly accepted by brands</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+
         {!isSubmitted ? (
-          <div className="space-y-4">
-            {/* Brand Summary Card */}
-            <BrandSummaryCard 
+          <div className="space-y-6">
+            {/* Deal Snapshot */}
+            <BrandSummaryCard
               dealValue={dealInfo?.deal_amount}
               deliverables={dealInfo?.deliverables}
             />
 
-            {/* Full Contract Summary */}
+            {/* Requested clarifications */}
+            <RequestedUpdatesCard requestedChanges={requestedChanges} />
+
+            {/* Expected outcome */}
+            <ExpectedOutcomeCard />
+
+            {/* Optional full summary */}
             <FullContractSummary />
 
-            {/* 2. DECISION CARD COMPONENTS - Radio Style */}
-            {/* Accept All Changes */}
+            {/* 3. DECISION SECTION */}
+            <div className="space-y-3">
+              <h2 className="text-base md:text-lg font-semibold text-slate-50">
+                How would you like to proceed?
+              </h2>
+              <p className="text-xs md:text-sm text-slate-400">
+                Choose how you&apos;d like to respond to these suggested
+                updates.
+              </p>
+            </div>
+
+            {/* Accept All Updates (Recommended) */}
             <motion.button
               onClick={() => handleStatusSelect('accepted')}
               className={cn(
-                "w-full rounded-xl p-5 md:p-6 text-left transition-all duration-200",
-                "border-2 backdrop-blur-xl",
+                'w-full rounded-2xl p-5 md:p-6 text-left transition-all duration-200',
+                'border bg-[#080021]/90',
                 selectedStatus === 'accepted'
-                  ? "bg-white/8 border-green-400/60 shadow-sm"
-                  : "bg-white/5 border-white/20 hover:border-white/30 hover:bg-white/8"
+                  ? 'border-emerald-400/70 shadow-[0_0_0_1px_rgba(16,185,129,0.5)]'
+                  : 'border-purple-900/70 hover:border-purple-700'
               )}
-              whileHover={selectedStatus !== 'accepted' ? { scale: 1.02 } : {}}
-              whileTap={{ scale: 0.98 }}
+              whileHover={selectedStatus !== 'accepted' ? { scale: 1.01 } : {}}
+              whileTap={{ scale: 0.99 }}
               transition={{ duration: 0.15 }}
             >
               <div className="flex items-start gap-4">
-                <div className={cn(
-                  "w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 border-2 transition-all duration-200",
-                  selectedStatus === 'accepted'
-                    ? "bg-green-500/20 border-green-400"
-                    : "bg-white/10 border-white/30"
-                )}>
-                  {selectedStatus === 'accepted' ? (
-                    <CheckCircle className="w-6 h-6 text-green-400" />
-                  ) : (
-                    <div className="w-4 h-4 rounded-full border-2 border-white/40" />
+                <div
+                  className={cn(
+                    'w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 border transition-all duration-200',
+                    selectedStatus === 'accepted'
+                      ? 'border-emerald-400 bg-emerald-500/10'
+                      : 'border-purple-700 bg-[#0b0128]'
                   )}
+                >
+                  <CheckCircle className="w-6 h-6 text-emerald-400" />
                 </div>
                 <div className="flex-1">
-                  <h3 className="text-lg md:text-xl font-semibold mb-1.5">Accept All Changes</h3>
-                  <p className="text-white/70 text-sm leading-relaxed">
-                    Proceed with all requested safety updates (recommended)
+                  <h3 className="text-lg md:text-xl font-semibold mb-1.5">
+                    Accept All Updates (Recommended)
+                  </h3>
+                  <p className="text-xs md:text-sm text-slate-300 leading-relaxed">
+                    Proceed with all suggested clarifications. Fastest way to
+                    finalize this collaboration.
                   </p>
                 </div>
               </div>
@@ -803,75 +1015,79 @@ const BrandResponsePage = () => {
             <motion.button
               onClick={() => handleStatusSelect('negotiating')}
               className={cn(
-                "w-full rounded-xl p-5 md:p-6 text-left transition-all duration-200",
-                "border-2 backdrop-blur-xl",
+                'w-full rounded-2xl p-5 md:p-6 text-left transition-all duration-200',
+                'border bg-[#080021]/90',
                 selectedStatus === 'negotiating'
-                  ? "bg-white/8 border-blue-400/60 shadow-sm"
-                  : "bg-white/5 border-white/20 hover:border-white/30 hover:bg-white/8"
+                  ? 'border-amber-300/70 bg-amber-500/5'
+                  : 'border-purple-900/70 hover:border-purple-700'
               )}
-              whileHover={selectedStatus !== 'negotiating' ? { scale: 1.02 } : {}}
-              whileTap={{ scale: 0.98 }}
+              whileHover={
+                selectedStatus !== 'negotiating' ? { scale: 1.01 } : {}
+              }
+              whileTap={{ scale: 0.99 }}
               transition={{ duration: 0.15 }}
             >
               <div className="flex items-start gap-4">
-                <div className={cn(
-                  "w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 border-2 transition-all duration-200",
-                  selectedStatus === 'negotiating'
-                    ? "bg-blue-500/20 border-blue-400"
-                    : "bg-white/10 border-white/30"
-                )}>
-                  {selectedStatus === 'negotiating' ? (
-                    <CheckCircle className="w-6 h-6 text-blue-400" />
-                  ) : (
-                    <div className="w-4 h-4 rounded-full border-2 border-white/40" />
+                <div
+                  className={cn(
+                    'w-11 h-11 rounded-full flex items-center justify-center flex-shrink-0 border transition-all duration-200',
+                    selectedStatus === 'negotiating'
+                      ? 'border-amber-300 bg-amber-500/10'
+                      : 'border-purple-700 bg-[#0b0128]'
                   )}
+                >
+                  <span className="text-sm font-semibold text-amber-200">
+                    …
+                  </span>
                 </div>
                 <div className="flex-1">
-                  <h3 className="text-lg md:text-xl font-semibold mb-1.5">Want to Negotiate</h3>
-                  <p className="text-white/70 text-sm leading-relaxed">
-                    Discuss specific points before finalizing
+                  <h3 className="text-lg md:text-xl font-semibold mb-1.5">
+                    Want to Negotiate
+                  </h3>
+                  <p className="text-xs md:text-sm text-slate-300 leading-relaxed">
+                    Discuss specific points before finalizing.
                   </p>
                 </div>
               </div>
             </motion.button>
 
-            {/* Reject Changes */}
+            {/* Reject Updates */}
             <motion.button
               onClick={() => handleStatusSelect('rejected')}
               className={cn(
-                "w-full rounded-xl p-5 md:p-6 text-left transition-all duration-200",
-                "border-2 backdrop-blur-xl",
+                'w-full rounded-2xl p-5 md:p-6 text-left transition-all duration-200',
+                'border bg-[#080021]/90',
                 selectedStatus === 'rejected'
-                  ? "bg-white/8 border-orange-400/60 shadow-sm"
-                  : "bg-white/5 border-white/20 hover:border-white/30 hover:bg-white/8"
+                  ? 'border-red-300/70 bg-red-500/5'
+                  : 'border-purple-900/70 hover:border-purple-700'
               )}
-              whileHover={selectedStatus !== 'rejected' ? { scale: 1.02 } : {}}
-              whileTap={{ scale: 0.98 }}
+              whileHover={selectedStatus !== 'rejected' ? { scale: 1.01 } : {}}
+              whileTap={{ scale: 0.99 }}
               transition={{ duration: 0.15 }}
             >
               <div className="flex items-start gap-4">
-                <div className={cn(
-                  "w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 border-2 transition-all duration-200",
-                  selectedStatus === 'rejected'
-                    ? "bg-orange-500/20 border-orange-400"
-                    : "bg-white/10 border-white/30"
-                )}>
-                  {selectedStatus === 'rejected' ? (
-                    <CheckCircle className="w-6 h-6 text-orange-400" />
-                  ) : (
-                    <div className="w-4 h-4 rounded-full border-2 border-white/40" />
+                <div
+                  className={cn(
+                    'w-11 h-11 rounded-full flex items-center justify-center flex-shrink-0 border transition-all duration-200',
+                    selectedStatus === 'rejected'
+                      ? 'border-red-300 bg-red-500/10'
+                      : 'border-purple-700 bg-[#0b0128]'
                   )}
+                >
+                  <XCircle className="w-5 h-5 text-red-300" />
                 </div>
                 <div className="flex-1">
-                  <h3 className="text-lg md:text-xl font-semibold mb-1.5">Reject Changes</h3>
-                  <p className="text-white/70 text-sm leading-relaxed">
-                    Proceed without these updates (higher risk)
+                  <h3 className="text-lg md:text-xl font-semibold mb-1.5">
+                    Reject Updates
+                  </h3>
+                  <p className="text-xs md:text-sm text-slate-300 leading-relaxed">
+                    Proceed without these clarifications.
                   </p>
                 </div>
               </div>
             </motion.button>
 
-            {/* 3. NAME + COMMENTS SECTION - Show only after decision selected */}
+            {/* 4. NAME + COMMENTS SECTION - Show only after decision selected */}
             <AnimatePresence>
               {selectedStatus && (
                 <motion.div
@@ -879,136 +1095,138 @@ const BrandResponsePage = () => {
                   animate={{ opacity: 1, height: 'auto' }}
                   exit={{ opacity: 0, height: 0 }}
                   transition={{ duration: 0.2 }}
-                  className="bg-white/5 backdrop-blur-xl rounded-xl p-5 md:p-6 border border-white/20 shadow-lg space-y-5"
+                  className="rounded-2xl border border-purple-900/70 bg-[#080021]/90 p-5 md:p-6 space-y-5"
                 >
+                  <p className="text-xs text-violet-200/80">
+                    This response is shared instantly and can be updated later.
+                  </p>
+
                   {/* Email Input - Required for OTP if accepting - Show FIRST when accepting */}
-              {selectedStatus === 'accepted' && (
-                    <div className="bg-white/5 border border-white/20 rounded-xl p-4 space-y-2">
-                  <label className="block text-sm font-semibold mb-2 text-white">
-                        📧 Email Address <span className="text-red-400">*</span>
-                    <span className="text-xs font-normal text-white/60 ml-2">(Required for OTP verification)</span>
-                  </label>
-                  <input
+                  {selectedStatus === 'accepted' && (
+                    <div className="rounded-xl border border-purple-900/70 bg-[#0b0128]/90 p-4 space-y-2">
+                      <label className="block text-sm font-semibold mb-2 text-slate-100">
+                        Email Address{' '}
+                        <span className="text-red-400">*</span>
+                        <span className="text-xs font-normal text-slate-400 ml-2">
+                          (Required for OTP verification)
+                        </span>
+                      </label>
+                      <input
                         type="email"
                         value={brandEmailInput}
-                    onChange={(e) => {
+                        onChange={(e) => {
                           setBrandEmailInput(e.target.value);
-                    }}
-                    onFocus={(e) => {
+                        }}
+                        onFocus={(e) => {
                           // Auto-fill if empty and we have brand email
                           if (!e.target.value && brandEmail) {
                             setBrandEmailInput(brandEmail);
-                      }
-                    }}
+                          }
+                        }}
                         placeholder="brand@example.com"
-                        className="w-full p-4 rounded-xl bg-white/10 border-2 border-white/30 text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 transition-all duration-200 text-lg font-medium"
-                    autoFocus
-                  />
-                  <p className="text-xs text-white/70 mt-1 flex items-center gap-1">
-                    <span className="text-yellow-400">⚠️</span>
-                        We'll send a 6-digit OTP to this email address to verify your acceptance
-                  </p>
-                </div>
-              )}
+                        className="w-full p-3.5 rounded-xl bg-[#090024] border border-purple-800 text-slate-50 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-purple-500/70 focus:border-purple-500/70 transition-all duration-200 text-sm md:text-base"
+                        autoFocus
+                      />
+                      <p className="text-xs text-slate-400 mt-1">
+                        We&apos;ll send a 6-digit OTP to this email address to
+                        verify your acceptance.
+                      </p>
+                    </div>
+                  )}
 
-              <div>
-                <label className="block text-sm font-medium mb-2 text-white/90">
-                  Your Name / Team (Optional)
-                </label>
-                <input
-                  type="text"
-                  value={brandTeamName}
-                  onChange={(e) => setBrandTeamName(e.target.value)}
+                  <div>
+                    <label className="block text-sm font-medium mb-2 text-slate-100">
+                      Your Name / Team (Optional)
+                    </label>
+                    <input
+                      type="text"
+                      value={brandTeamName}
+                      onChange={(e) => setBrandTeamName(e.target.value)}
                       placeholder="Aditi – Brand Partnerships"
-                      className="w-full p-4 rounded-xl bg-white/5 border border-white/20 text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 transition-all duration-200"
-                  maxLength={100}
-                />
-              </div>
+                      className="w-full p-3.5 rounded-xl bg-[#090024] border border-purple-800 text-slate-50 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-purple-500/70 focus:border-purple-500/70 transition-all duration-200 text-sm md:text-base"
+                      maxLength={100}
+                    />
+                  </div>
 
-              <div>
-                <label className="block text-sm font-medium mb-2 text-white/90">
-                  Additional Comments (Optional)
-                </label>
-                <textarea
-                  value={message}
-                  onChange={(e) => setMessage(e.target.value)}
+                  <div>
+                    <label className="block text-sm font-medium mb-2 text-slate-100">
+                      Additional Comments (Optional)
+                    </label>
+                    <textarea
+                      value={message}
+                      onChange={(e) => setMessage(e.target.value)}
                       placeholder="Optional notes for the creator…"
-                      className="w-full p-4 rounded-xl bg-white/5 border border-white/20 text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 resize-none min-h-[120px] transition-all duration-200"
-                  maxLength={1000}
-                  style={{ 
-                    minHeight: '120px',
-                    height: message ? `${Math.max(120, message.split('\n').length * 24 + 32)}px` : '120px'
-                  }}
-                />
-                <div className="text-xs text-white/50 mt-2 text-right">
-                  {message.length}/1000
-                </div>
-              </div>
+                      className="w-full p-3.5 rounded-xl bg-[#090024] border border-purple-800 text-slate-50 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-purple-500/70 focus:border-purple-500/70 resize-none min-h-[120px] transition-all duration-200 text-sm md:text-base"
+                      maxLength={1000}
+                      style={{
+                        minHeight: '120px',
+                        height: message
+                          ? `${Math.max(
+                              120,
+                              message.split('\n').length * 24 + 32
+                            )}px`
+                          : '120px',
+                      }}
+                    />
+                    <div className="text-xs text-slate-500 mt-2 text-right">
+                      {message.length}/1000
+                    </div>
+                  </div>
                 </motion.div>
               )}
             </AnimatePresence>
 
-            {/* 4. TRUST NOTES SECTION */}
-            <div className="bg-white/3 backdrop-blur-xl rounded-xl p-4 md:p-5 border border-white/10">
-              <div className="space-y-2">
+            {/* 5. TRUST REASSURANCE SECTION */}
+            <div className="rounded-2xl border border-purple-900/70 bg-[#080021]/90 p-4 md:p-5">
+              <div className="space-y-1.5 text-xs text-slate-400">
                 <div className="flex items-start gap-2">
-                  <CheckCircle className="w-4 h-4 text-green-400/70 mt-0.5 flex-shrink-0" />
-                  <p className="text-xs text-white/50">Your reply will be shared with the creator</p>
+                  <span className="mt-[2px] text-emerald-400">✓</span>
+                  <p>Your response is shared with the creator instantly</p>
                 </div>
                 <div className="flex items-start gap-2">
-                  <CheckCircle className="w-4 h-4 text-green-400/70 mt-0.5 flex-shrink-0" />
-                  <p className="text-xs text-white/50">You can update your response later</p>
+                  <span className="mt-[2px] text-emerald-400">✓</span>
+                  <p>You can revise your response later</p>
                 </div>
                 <div className="flex items-start gap-2">
-                  <CheckCircle className="w-4 h-4 text-green-400/70 mt-0.5 flex-shrink-0" />
-                  <p className="text-xs text-white/50">This decision does not legally bind you</p>
+                  <span className="mt-[2px] text-emerald-400">✓</span>
+                  <p>This does not legally bind you</p>
                 </div>
               </div>
             </div>
 
-            {/* 5. BOTTOM CTA BUTTON */}
-            <motion.button
-              onClick={handleSubmit}
-              disabled={!selectedStatus || isSubmitting}
-              whileHover={selectedStatus && !isSubmitting ? { scale: 1.01 } : {}}
-              whileTap={selectedStatus && !isSubmitting ? { scale: 0.99 } : {}}
-              transition={{ duration: 0.15 }}
-              className={cn(
-                "w-full py-4 rounded-xl font-semibold transition-all duration-200",
-                "flex items-center justify-center gap-2 min-h-[56px]",
-                selectedStatus === 'accepted' && !isSubmitting
-                  ? "bg-green-600 hover:bg-green-700 text-white"
-                  : selectedStatus === 'negotiating' && !isSubmitting
-                  ? "bg-blue-600 hover:bg-blue-700 text-white"
-                  : selectedStatus === 'rejected' && !isSubmitting
-                  ? "bg-orange-600 hover:bg-orange-700 text-white"
-                  : "bg-white/10 text-white/50 cursor-not-allowed border border-white/20"
-              )}
-            >
-              {isSubmitting ? (
-                <>
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                  Submitting...
-                </>
-              ) : selectedStatus === 'accepted' ? (
-                <>
-                  <CheckCircle className="w-5 h-5" />
-                  Confirm & Proceed
-                </>
-              ) : selectedStatus === 'negotiating' ? (
-                <>
-                  <AlertCircle className="w-5 h-5" />
-                  Submit for Discussion
-                </>
-              ) : selectedStatus === 'rejected' ? (
-                <>
-                  <XCircle className="w-5 h-5" />
-                  Send Decision
-                </>
-              ) : (
-                'Select a decision to continue'
-              )}
-            </motion.button>
+            {/* 6. FINAL CTA */}
+            <div className="space-y-2">
+              <motion.button
+                onClick={handleSubmit}
+                disabled={!selectedStatus || isSubmitting}
+                whileHover={
+                  selectedStatus && !isSubmitting ? { scale: 1.01 } : {}
+                }
+                whileTap={
+                  selectedStatus && !isSubmitting ? { scale: 0.99 } : {}
+                }
+                transition={{ duration: 0.15 }}
+                className={cn(
+                  'w-full py-3.5 rounded-xl font-semibold transition-all duration-200',
+                  'flex items-center justify-center min-h-[52px]',
+                  selectedStatus && !isSubmitting
+                    ? 'bg-gradient-to-r from-purple-500 via-fuchsia-500 to-indigo-500 text-white shadow-md hover:brightness-110'
+                    : 'bg-[#12052f] text-slate-400 cursor-not-allowed'
+                )}
+              >
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    <span className="ml-2">Submitting...</span>
+                  </>
+                ) : (
+                  'Confirm & Send Response'
+                )}
+              </motion.button>
+              <p className="text-xs text-slate-500 text-center">
+                This does not legally bind you.
+              </p>
+            </div>
           </div>
         ) : (
           /* POST-SUBMISSION CONFIRMATION */
