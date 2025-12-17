@@ -11,6 +11,7 @@ import {
   Lock, Award, BarChart3, Clock
 } from 'lucide-react';
 import { motion, useScroll, useTransform } from 'framer-motion';
+import { lockBodyScroll, unlockBodyScroll } from '@/lib/scrollLock';
 
 const HomePage = () => {
   const { session, loading, profile, user } = useSession();
@@ -72,6 +73,20 @@ const HomePage = () => {
       }
     }
   }, [session, profile, user, navigate]);
+
+  // Lock body scroll when mobile menu is open (fixes iOS Safari viewport/bottom bar issues)
+  useEffect(() => {
+    if (isMenuOpen) {
+      lockBodyScroll();
+    } else {
+      unlockBodyScroll();
+    }
+
+    return () => {
+      // Ensure scroll is unlocked if the component unmounts while the menu is open
+      unlockBodyScroll();
+    };
+  }, [isMenuOpen]);
 
   if (loading) {
     return (
@@ -336,7 +351,7 @@ const HomePage = () => {
                 </span>
               </h1>
               <p className="text-lg md:text-2xl text-white/90 font-medium mb-8 max-w-3xl mx-auto">
-                CreatorArmour helps creators handle unpaid brand deals, risky contracts, and legal disputes — using software plus real legal action.
+                CreatorArmour helps creators handle unpaid brand deals, risky contracts, and legal disputes — using software backed by real legal action.
               </p>
             </motion.div>
 
@@ -346,6 +361,12 @@ const HomePage = () => {
               transition={{ duration: 0.8, delay: 0.2 }}
               className="flex flex-col sm:flex-row items-center justify-center gap-4"
             >
+              {/* Primary CTA copy variants for future A/B tests (default active):
+                  - "Protect My Deals →" (current text + ArrowRight icon)
+                  - "Start Free →"
+                  - "Secure My Deal →"
+                  - "Get Protected →"
+              */}
               <Link
                 to="/signup"
                 className="group bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 px-8 py-4 rounded-full font-bold text-lg transition-all duration-150 ease-out transform hover:scale-105 active:scale-95 active:opacity-90 flex items-center gap-2 border border-white/30"

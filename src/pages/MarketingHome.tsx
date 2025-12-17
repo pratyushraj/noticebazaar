@@ -12,6 +12,7 @@ import LeadCaptureForm from '@/components/LeadCaptureForm'; // Import the new co
 import NewsletterSignup from '@/components/NewsletterSignup'; // Import the new component
 import CaseStudyCard from '@/components/CaseStudyCard'; // Import the new component
 import { CREATOR_PLAN_DETAILS, CreatorPlanName } from '@/data/creatorPlanDetails'; // Import Creator plan details
+import { lockBodyScroll, unlockBodyScroll } from '@/lib/scrollLock';
 
 // The Google Forms URL provided by the user (kept for other CTAs)
 const GOOGLE_FORMS_URL = "https://docs.google.com/forms/d/e/1FAIpQLSdWyn_m5orgxNtxMhM7fginjoFnNDJM8KbbM-dcbCrC8E-ygg/viewform?usp=sharing";
@@ -69,6 +70,19 @@ const MarketingHome = () => {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  // Lock body scroll when the mobile menu dialog is open (iOS-safe scroll handling)
+  useEffect(() => {
+    if (isMenuOpen) {
+      lockBodyScroll();
+    } else {
+      unlockBodyScroll();
+    }
+
+    return () => {
+      unlockBodyScroll();
+    };
+  }, [isMenuOpen]);
 
   if (loading) {
     return (
@@ -218,7 +232,7 @@ const MarketingHome = () => {
       <header className="sticky top-0 z-50 bg-black/40 backdrop-blur-sm border-b border-white/5">
         <div className="container mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <span className="font-bold text-lg">CreatorArmour</span>
+            <span className="font-bold text-lg text-white">CreatorArmour</span>
           </div>
 
           {/* Desktop Navigation */}
@@ -265,10 +279,16 @@ const MarketingHome = () => {
               Protect Your Brand Deals. Get Paid On Time.
             </h1>
             <p className="mt-4 text-gray-300 max-w-xl text-lg">
-              CreatorArmour helps creators handle unpaid brand deals, risky contracts, and legal disputes — using software plus real legal action.
+              CreatorArmour helps creators handle unpaid brand deals, risky contracts, and legal disputes — using software backed by real legal action.
             </p>
 
             <div className="mt-8 flex flex-col sm:flex-row gap-4">
+              {/* Primary CTA copy variants for future tests (keep default active):
+                 - "Protect My Deals →" (current text + ArrowRight icon)
+                 - "Start Free →"
+                 - "Secure My Deal →"
+                 - "Get Protected →"
+              */}
               <Link to="/free-legal-check" className="cta-primary inline-flex items-center justify-center gap-3 font-bold py-3 px-5 rounded-lg shadow-md text-lg flex-1">
                 Protect My Deals
                 <ArrowRight className="h-5 w-5" />
