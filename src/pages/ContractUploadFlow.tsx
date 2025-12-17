@@ -196,7 +196,6 @@ ${creatorName}`;
   const openShareFeedbackModal = async (): Promise<boolean> => {
     // Ensure deal is saved before opening modal
     let currentDealId = savedDealId;
-    let justSaved = false;
     
     if (!currentDealId) {
       // Auto-save when Fix & Send modal opens for the first time
@@ -204,79 +203,24 @@ ${creatorName}`;
         setHasOpenedFixModal(true);
       }
       
-      // Try to save the deal
       currentDealId = await autoSaveDraftDeal();
-      
       if (!currentDealId) {
         toast.error('Failed to save deal. Please try saving manually first.');
         return false;
       }
       
-      // Mark that we just saved it
-      justSaved = true;
-      
-      // Update state
       setSavedDealId(currentDealId);
-      
-      // Wait a moment for the database to be ready (deal might not be immediately queryable)
-      await new Promise(resolve => setTimeout(resolve, 500));
+      // Give Supabase a brief moment to persist the record
+      await new Promise(resolve => setTimeout(resolve, 300));
     }
     
-    // Verify deal exists in database before opening modal (with retry)
-    const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 
-      (typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com') 
-        ? 'https://api.creatorarmour.com' 
-        : 'https://noticebazaar-api.onrender.com');
-    
-    let verified = false;
-    let lastError: any = null;
-    
-    // Retry up to 3 times with exponential backoff
-    for (let attempt = 0; attempt < 3; attempt++) {
-      try {
-        if (attempt > 0) {
-          // Wait before retry (exponential backoff: 500ms, 1000ms)
-          await new Promise(resolve => setTimeout(resolve, 500 * attempt));
-        }
-        
-        const verifyResponse = await fetch(`${apiBaseUrl}/api/brand-response/${currentDealId}`, {
-          method: 'GET',
-        });
-        
-        const verifyData = await verifyResponse.json();
-        
-        if (verifyResponse.ok && verifyData.success && verifyData.deal) {
-          verified = true;
-          break;
-        }
-        
-        lastError = verifyData.error || 'Deal not found';
-      } catch (verifyError) {
-        lastError = verifyError;
-        console.warn(`[ContractUploadFlow] Deal verification attempt ${attempt + 1} failed:`, verifyError);
-      }
-    }
-    
-    if (!verified) {
-      console.warn(
-        '[ContractUploadFlow] Deal verification failed after retries (non-blocking):',
-        lastError
-      );
-      // We still proceed — auto-save already ran, and verification is a soft safety check.
-      // If the deal truly doesn't exist, backend will surface an error on actual share.
-      if (!justSaved) {
-        toast.info(
-          'We could not verify this deal on the server yet, but you can still prepare your message.'
-        );
-      }
-    }
-
     // Ensure we have a secure brand reply link token for this deal
-    if (currentDealId && !brandReplyLink) {
-      await generateBrandReplyLink(currentDealId);
+    if (currentDealId) {
+      if (!brandReplyLink || !brandReplyLink.includes(currentDealId)) {
+        await generateBrandReplyLink(currentDealId);
+      }
     }
     
-    // All checks passed or verification skipped - open modal
     setShowShareFeedbackModal(true);
     return true;
   };
@@ -2986,8 +2930,8 @@ ${creatorName}`;
                     : 'Contract Type'}
                 </span>
                 <span className="font-semibold text-white">
-                  {analysisResults.dealType === 'barter'
-                    ? 'Beta'
+                  {analysisResults.dealType === 'barter' 
+                    ? 'Beta' 
                     : 'Influencer–Brand Paid Collaboration'}
                 </span>
                 {analysisResults.dealType === 'barter' && (
@@ -3294,11 +3238,11 @@ ${creatorName}`;
                 >
                   <div className="flex flex-col items-start gap-1 w-full text-left">
                     <div className="flex items-center gap-2 w-full">
-                      <CheckCircle className="w-5 h-5 text-green-400" />
+                    <CheckCircle className="w-5 h-5 text-green-400" />
                       <span className="text-white font-medium flex-1">Key Terms</span>
                       <span className="text-xs px-3 py-1 rounded-full bg-green-500/20 text-green-400 border border-green-500/30 flex-shrink-0">
                         Safe
-                      </span>
+                    </span>
                     </div>
                     {analysisResults.keyTerms && (
                       <p className="text-[11px] text-white/60 pl-6">
@@ -3306,7 +3250,7 @@ ${creatorName}`;
                       </p>
                     )}
                   </div>
-                  <ChevronDown
+                  <ChevronDown 
                     className={`w-5 h-5 text-white/60 transition-transform ${isKeyTermsExpanded ? 'rotate-180' : ''}`}
                   />
                 </button>
@@ -3381,17 +3325,17 @@ ${creatorName}`;
                 >
                   <div className="flex flex-col items-start gap-1 w-full text-left">
                     <div className="flex items-center gap-2 w-full">
-                      <Shield className="w-5 h-5 text-green-400" />
+                    <Shield className="w-5 h-5 text-green-400" />
                       <span className="text-white font-medium flex-1">Protection Status</span>
                       <span className="text-xs px-3 py-1 rounded-full bg-green-500/20 text-green-300 border border-green-500/30 flex-shrink-0">
-                        {analysisResults.verified.length} Strong Clauses
-                      </span>
+                      {analysisResults.verified.length} Strong Clauses
+                    </span>
                     </div>
                     <p className="text-[11px] text-white/60 pl-6">
                       Safe clauses that already protect you.
                     </p>
                   </div>
-                  <ChevronDown
+                  <ChevronDown 
                     className={`w-5 h-5 text-white/60 transition-transform ${isProtectionStatusExpanded ? 'rotate-180' : ''}`}
                   />
                 </button>
@@ -3432,18 +3376,18 @@ ${creatorName}`;
                 >
                   <div className="flex flex-col items-start gap-1 w-full text-left">
                     <div className="flex items-center gap-2 w-full">
-                      <AlertTriangle className="w-5 h-5 text-orange-400" />
+                    <AlertTriangle className="w-5 h-5 text-orange-400" />
                       <span className="text-white font-medium flex-1">Negotiation Suggestions</span>
                       <span className="text-xs px-3 py-1 rounded-full bg-orange-500/15 text-orange-300 border border-orange-500/30 flex-shrink-0">
                         {analysisResults.issues.length}{' '}
                         {analysisResults.issues.length === 1 ? 'Issue' : 'Issues'}
-                      </span>
+                    </span>
                     </div>
                     <p className="text-[11px] text-white/60 pl-6">
                       Short tasks you can negotiate to make this deal safer.
                     </p>
                   </div>
-                  <ChevronDown
+                  <ChevronDown 
                     className={`w-5 h-5 text-white/60 transition-transform ${isIssuesExpanded ? 'rotate-180' : ''} ml-2`}
                   />
                 </button>
@@ -3525,7 +3469,7 @@ ${creatorName}`;
                 >
                   <div className="flex flex-col items-start gap-1 w-full text-left">
                     <div className="flex items-center gap-2 w-full">
-                      <AlertCircle className="w-5 h-5 text-yellow-400" />
+                    <AlertCircle className="w-5 h-5 text-yellow-400" />
                       <span className="text-white font-medium flex-1">Missing Clauses</span>
                       {(() => {
                         // Count missing clauses - common ones to check
@@ -3553,7 +3497,7 @@ ${creatorName}`;
                               className={`${baseClasses} bg-yellow-500/20 text-yellow-400 border-yellow-500/30`}
                             >
                               {missingCount} Missing
-                            </span>
+                    </span>
                           );
                         }
 
@@ -3570,7 +3514,7 @@ ${creatorName}`;
                       Important points that are not written anywhere yet.
                     </p>
                   </div>
-                  <ChevronDown
+                  <ChevronDown 
                     className={`w-5 h-5 text-white/60 transition-transform ${
                       isMissingClausesExpanded ? 'rotate-180' : ''
                     } ml-2`}
@@ -3640,19 +3584,19 @@ ${creatorName}`;
                 >
                   <div className="flex flex-col items-start gap-1 w-full text-left">
                     <div className="flex items-center gap-2 w-full">
-                      <DollarSign className="w-5 h-5 text-green-400" />
+                    <DollarSign className="w-5 h-5 text-green-400" />
                       <span className="text-white font-medium flex-1">
                         Financial Breakdown
                       </span>
                       <span className="text-xs px-3 py-1 rounded-full bg-green-500/20 text-green-400 border border-green-500/30 flex-shrink-0">
-                        Fair Rate
-                      </span>
+                      Fair Rate
+                    </span>
                     </div>
                     <p className="text-[11px] text-white/60 pl-6">
                       Simple view of payout, certainty, and timeline.
                     </p>
                   </div>
-                  <ChevronDown
+                  <ChevronDown 
                     className={`w-5 h-5 text-white/60 transition-transform ${
                       isFinancialBreakdownExpanded ? 'rotate-180' : ''
                     }`}
@@ -3756,31 +3700,31 @@ ${creatorName}`;
                 >
                   <div className="flex flex-col items-start gap-1 w-full text-left">
                     <div className="flex items-center gap-2 w-full">
-                      <Send className="w-5 h-5 text-blue-400" />
+                    <Send className="w-5 h-5 text-blue-400" />
                       <span className="text-white font-medium flex-1">
                         What We Will Ask the Brand
                       </span>
                       <span className="text-xs px-3 py-1 rounded-full bg-blue-500/20 text-blue-400 border border-blue-500/30 flex-shrink-0">
-                        {(() => {
-                          const requests = generateBrandRequests();
-                          const count = requests.length;
+                      {(() => {
+                        const requests = generateBrandRequests();
+                        const count = requests.length;
                           if (count === 0) {
                             return 'Safe';
                           }
-                          if (count >= 5) {
+                        if (count >= 5) {
                             return '🔴 High Risk';
-                          } else if (count >= 3) {
+                        } else if (count >= 3) {
                             return '🟡 Needs Negotiation';
-                          }
+                        }
                           return 'Needs Negotiation';
-                        })()}
-                      </span>
+                      })()}
+                    </span>
                     </div>
                     <p className="text-[11px] text-white/60 pl-6">
                       Clear, polite asks we’ll send to protect your money.
                     </p>
                   </div>
-                  <ChevronDown
+                  <ChevronDown 
                     className={`w-5 h-5 text-white/60 transition-transform ${
                       isRecommendedActionsExpanded ? 'rotate-180' : ''
                     } ml-2`}
