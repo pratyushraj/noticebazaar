@@ -1024,7 +1024,7 @@ ${link}`;
             toast.error('Could not generate brand reply link. Please try again.');
             return;
           }
-          
+                  
           await navigator.clipboard.writeText(link);
                   triggerHaptic(HapticPatterns.light);
                   toast.success('Link copied to clipboard');
