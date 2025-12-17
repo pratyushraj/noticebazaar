@@ -73,7 +73,7 @@ export const ExpenseModalWrapper: React.FC<ExpenseModalWrapperProps> = ({
         <div 
           className={cn(
             "flex-1 overflow-y-auto overscroll-contain",
-            "max-h-[calc(100vh-200px)]",
+            "max-h-[calc(100dvh-200px)]",
             "pr-2 -mr-2", // Account for scrollbar
             "[&::-webkit-scrollbar]:w-2",
             "[&::-webkit-scrollbar-track]:bg-transparent",

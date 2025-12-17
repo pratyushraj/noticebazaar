@@ -292,14 +292,14 @@ const PartnerProgram: React.FC = () => {
 
   if (!user || !profile) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
+      <div className="nb-screen-height flex items-center justify-center bg-background">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#060A12] via-[#080C14] to-[#0A0E16] text-white relative overflow-x-hidden overflow-y-auto">
+    <div className="nb-screen-height bg-gradient-to-b from-[#060A12] via-[#080C14] to-[#0A0E16] text-white relative overflow-x-hidden overflow-y-auto">
       {/* Ambient background lighting */}
       <div className="fixed inset-0 bg-[radial-gradient(circle_at_top,rgba(23,86,255,0.15),transparent_70%)] pointer-events-none z-0"></div>
       <div className="fixed inset-0 bg-gradient-to-b from-white/5 to-transparent pointer-events-none z-0"></div>

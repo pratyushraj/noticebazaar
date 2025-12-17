@@ -216,7 +216,7 @@ const ContractProtectionDetails = () => {
 
   if (!contract) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 text-white flex items-center justify-center">
+      <div className="nb-screen-height bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 text-white flex items-center justify-center">
         <div className="text-center">
           <AlertCircle className="w-16 h-16 text-purple-400 mx-auto mb-4" />
           <h2 className="text-2xl font-bold mb-2">Contract Not Found</h2>
@@ -233,7 +233,7 @@ const ContractProtectionDetails = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 text-white">
+    <div className="nb-screen-height bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 text-white">
       {/* Header */}
       <div className="sticky top-0 z-50 bg-purple-900/95 backdrop-blur-xl border-b border-white/10">
         <div className="flex items-center gap-4 px-4 md:px-6 py-4">

@@ -102,7 +102,7 @@ export const ErrorFallback: React.FC<ErrorFallbackProps> = ({
 
   // Full page variant
   return (
-    <div className={`min-h-screen ${gradients.page} flex items-center justify-center ${spacing.page}`}>
+    <div className={`nb-screen-height ${gradients.page} flex items-center justify-center ${spacing.page}`}>
       <BaseCard variant="primary" className="max-w-lg w-full">
         {content}
       </BaseCard>

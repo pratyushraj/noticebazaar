@@ -237,7 +237,7 @@ const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
 
   if (loading || isCreatingProfile) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900">
+      <div className="nb-screen-height flex flex-col items-center justify-center bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900">
         <Loader2 className={cn("h-12 w-12 animate-spin text-purple-400")} />
         <p className="mt-4 text-lg text-white/90">
           {isCreatingProfile ? 'Setting up your account...' : 'Loading application...'}
@@ -259,7 +259,7 @@ const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
   // If we have a session but no profile after all attempts, show error message
   if (session && !profile && user) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 p-4">
+      <div className="nb-screen-height flex flex-col items-center justify-center bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 p-4">
         <div className="text-center max-w-md">
           <h2 className="text-2xl font-bold text-white mb-4">Account Setup Issue</h2>
           <p className="text-white/80 mb-6">

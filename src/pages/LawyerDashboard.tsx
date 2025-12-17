@@ -423,7 +423,7 @@ export default function LawyerDashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 text-white fixed inset-0">
+    <div className="nb-screen-height bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 text-white fixed inset-0">
       <div className="flex h-full">
         {/* Left Sidebar - Filters & Conversation List */}
         <aside className={cn(
@@ -521,7 +521,7 @@ export default function LawyerDashboard() {
           </div>
 
           {/* Conversation List */}
-          <div className="overflow-y-auto h-[calc(100vh-200px)]">
+          <div className="overflow-y-auto h-[calc(100dvh-200px)]">
             {isLoading ? (
               <div className="p-4 text-center text-white/50">Loading...</div>
             ) : filteredConversations.length === 0 ? (

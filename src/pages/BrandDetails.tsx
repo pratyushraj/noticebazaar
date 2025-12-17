@@ -28,7 +28,7 @@ const BrandDetails = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 text-white flex items-center justify-center">
+      <div className="nb-screen-height bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 text-white flex items-center justify-center">
         <Loader2 className="w-8 h-8 animate-spin text-white/60" />
       </div>
     );
@@ -37,7 +37,7 @@ const BrandDetails = () => {
   // Error handling
   if (brandError || oppsError) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 text-white p-4">
+      <div className="nb-screen-height bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 text-white p-4">
         <Button
           variant="ghost"
           onClick={() => navigate('/brand-directory')}
@@ -61,7 +61,7 @@ const BrandDetails = () => {
 
   if (!brand) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 text-white p-4">
+      <div className="nb-screen-height bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 text-white p-4">
         <Button
           variant="ghost"
           onClick={() => navigate('/brand-directory')}
@@ -84,7 +84,7 @@ const BrandDetails = () => {
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 text-white pb-24">
+    <div className="nb-screen-height bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 text-white pb-24">
       <div className="max-w-4xl mx-auto px-4 py-6">
         {/* Back Button */}
         <Button

@@ -98,7 +98,7 @@ const PlanComparisonTable = ({ currentPlanName }: { currentPlanName: PlanName })
 
 const PlanDetailLayout: React.FC<PlanDetailLayoutProps> = ({ plan }) => {
   return (
-    <div className="container mx-auto px-6 py-12 min-h-screen bg-background">
+    <div className="container mx-auto px-6 py-12 nb-screen-height bg-background">
       <Button variant="outline" asChild className="mb-8 text-primary border-border hover:bg-accent hover:text-foreground">
         <Link to="/pricing-comparison">
           <ArrowLeft className="h-4 w-4 mr-2" /> Back to Comparison

@@ -621,7 +621,7 @@ Best regards`;
   if (isLoadingDeal) {
     return (
       <>
-        <div className="min-h-screen bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900" />
+        <div className="nb-screen-height bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900" />
         <NativeLoadingSheet isOpen={true} message="Loading deal details..." />
       </>
     );
@@ -630,7 +630,7 @@ Best regards`;
   // Deal not found
   if (!deal) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 text-white flex items-center justify-center p-4">
+      <div className="nb-screen-height bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 text-white flex items-center justify-center p-4">
         <div className="text-center">
           <FileText className="w-16 h-16 mx-auto mb-4 text-white/60" />
           <h2 className="text-2xl font-bold mb-2">Deal not found</h2>
@@ -649,7 +649,7 @@ Best regards`;
   // Deal data already computed above in useMemo hooks
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 text-white">
+    <div className="nb-screen-height bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 text-white">
       {/* Header */}
       <div className="sticky top-0 z-50 bg-purple-900/90 backdrop-blur-lg border-b border-white/10">
         <div className="flex items-center justify-between p-4">

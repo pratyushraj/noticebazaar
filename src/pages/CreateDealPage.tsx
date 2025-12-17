@@ -335,7 +335,7 @@ const CreateDealPage: React.FC = () => {
 
   return (
     <div className={cn(
-      "min-h-screen",
+      "nb-screen-height",
       "bg-gradient-to-b from-[#2A004B] to-[#11001F]",
       spacing.page,
       "pb-24 safe-area-fix"

@@ -749,7 +749,7 @@ const CreatorDashboard = () => {
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            className={`sticky top-16 z-40 ${spacing.page} mt-4 mb-4 max-h-[calc(100vh-120px)] ${scroll.container}`}
+            className={`sticky top-16 z-40 ${spacing.page} mt-4 mb-4 max-h-[calc(100dvh-120px)] ${scroll.container}`}
           >
             <BaseCard variant="primary" className={cn("relative overflow-hidden", glass.apple, shadows.depth)}>
               {/* Spotlight gradient */}

@@ -49,7 +49,7 @@ const ProProtectedRoute = ({ children }: ProProtectedRouteProps) => {
 
   if (loading || isChecking) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-[#0A0A0A] to-[#1A1A1A]">
+      <div className="nb-screen-height flex items-center justify-center bg-gradient-to-b from-[#0A0A0A] to-[#1A1A1A]">
         <div className="text-center">
           <Loader2 className="w-8 h-8 text-emerald-400 animate-spin mx-auto mb-4" />
           <p className="text-white/60">Checking access...</p>
@@ -66,6 +66,7 @@ const ProProtectedRoute = ({ children }: ProProtectedRouteProps) => {
 };
 
 export default ProProtectedRoute;
+
 
 
 

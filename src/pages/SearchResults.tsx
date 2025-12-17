@@ -89,7 +89,7 @@ export default function SearchResults() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#0F121A] via-[#1A1D2E] to-[#0F121A] text-white">
+    <div className="nb-screen-height bg-gradient-to-br from-[#0F121A] via-[#1A1D2E] to-[#0F121A] text-white">
       {/* Header */}
       <div className="sticky top-0 z-50 bg-[#0F121A]/80 backdrop-blur-xl border-b border-white/10">
         <div className="max-w-7xl mx-auto px-4 py-4">

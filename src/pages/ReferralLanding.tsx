@@ -86,7 +86,7 @@ const ReferralLanding: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
+      <div className="nb-screen-height flex items-center justify-center bg-background">
         <div className="text-center">
           <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto mb-4" />
           <p className="text-muted-foreground">Processing referral link...</p>
@@ -97,7 +97,7 @@ const ReferralLanding: React.FC = () => {
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background p-4">
+      <div className="nb-screen-height flex items-center justify-center bg-background p-4">
         <Card className="max-w-md w-full">
           <CardHeader>
             <CardTitle className="text-red-500">Invalid Referral Link</CardTitle>
@@ -114,7 +114,7 @@ const ReferralLanding: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4">
+    <div className="nb-screen-height flex items-center justify-center bg-background p-4">
       <Card className="max-w-md w-full bg-[#0A0F1C] border-white/10">
         <CardHeader className="text-center">
           <div className="mx-auto mb-4 h-16 w-16 rounded-full bg-primary/20 flex items-center justify-center">

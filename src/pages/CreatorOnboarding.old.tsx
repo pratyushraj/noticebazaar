@@ -78,7 +78,7 @@ const CreatorOnboarding = () => {
 
   if (sessionLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 flex items-center justify-center">
+      <div className="nb-screen-height bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 flex items-center justify-center">
         <div className="text-center">
           <Loader2 className="w-12 h-12 animate-spin mx-auto mb-4 text-purple-400" />
           <p className="text-purple-200">Loading...</p>
@@ -227,7 +227,7 @@ const CreatorOnboarding = () => {
   // Welcome Screens
   if (setupStep === 'name' && welcomeStep < 4) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 text-white relative overflow-hidden">
+      <div className="nb-screen-height bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 text-white relative overflow-hidden">
         {/* Skip Button */}
         <button
           onClick={handleSkipWelcome}
@@ -256,7 +256,7 @@ const CreatorOnboarding = () => {
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -20 }}
-              className="flex flex-col items-center justify-center min-h-screen p-6 text-center"
+              className="flex flex-col items-center justify-center nb-screen-height p-6 text-center"
             >
               <motion.div
                 animate={{ scale: [1, 1.1, 1], rotate: [0, 5, -5, 0] }}
@@ -311,7 +311,7 @@ const CreatorOnboarding = () => {
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -20 }}
-              className="flex flex-col items-center justify-center min-h-screen p-6 text-center"
+              className="flex flex-col items-center justify-center nb-screen-height p-6 text-center"
             >
               <motion.div
                 animate={{ y: [0, -10, 0] }}
@@ -363,7 +363,7 @@ const CreatorOnboarding = () => {
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -20 }}
-              className="flex flex-col items-center justify-center min-h-screen p-6 text-center"
+              className="flex flex-col items-center justify-center nb-screen-height p-6 text-center"
             >
               <motion.div
                 animate={{ scale: [1, 1.1, 1] }}
@@ -414,7 +414,7 @@ const CreatorOnboarding = () => {
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -20 }}
-              className="flex flex-col items-center justify-center min-h-screen p-6 text-center"
+              className="flex flex-col items-center justify-center nb-screen-height p-6 text-center"
             >
               <motion.div
                 animate={{ y: [0, -10, 0] }}
@@ -475,7 +475,7 @@ const CreatorOnboarding = () => {
 
   // Setup Steps
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 text-white p-4">
+    <div className="nb-screen-height bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 text-white p-4">
       <div className="max-w-2xl mx-auto">
         {/* Progress Indicator */}
         {setupStep !== 'success' && (

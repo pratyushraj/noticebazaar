@@ -11,7 +11,7 @@ interface SmartInboxZeroProps {
 
 export const SmartInboxZero: React.FC<SmartInboxZeroProps> = ({ onSendMessage }) => {
   return (
-    <div className="h-full min-h-[calc(100vh-400px)] md:min-h-[60vh] flex flex-col items-center justify-center text-center px-4">
+    <div className="h-full min-h-[calc(100dvh-400px)] md:min-h-[60dvh] flex flex-col items-center justify-center text-center px-4">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}

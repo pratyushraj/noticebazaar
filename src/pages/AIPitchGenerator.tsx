@@ -242,7 +242,7 @@ Best regards,
   };
 
   return (
-    <div className="min-h-screen text-white relative pb-24 md:pb-8">
+    <div className="nb-screen-height text-white relative pb-24 md:pb-8">
       <div className="max-w-7xl mx-auto px-4 py-8">
         {/* Header */}
         <div className="mb-8">
@@ -460,7 +460,7 @@ Best regards,
                     <p className="text-xs mt-1">Generated pitches will appear here</p>
                   </div>
                 ) : (
-                  <div className="space-y-2 max-h-[calc(100vh-300px)] overflow-y-auto">
+                  <div className="space-y-2 max-h-[calc(100dvh-300px)] overflow-y-auto">
                     {history.map((item) => (
                       <div
                         key={item.id}

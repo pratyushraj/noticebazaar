@@ -116,10 +116,9 @@ export default function CalendarPage() {
       animate={motionTokens.slide.up.animate}
       exit={motionTokens.fade.out}
       transition={motionTokens.slide.up.transition}
-      className={cn("min-h-screen text-white relative overflow-hidden", gradients.page)}
+      className={cn("nb-screen-height text-white relative overflow-hidden", gradients.page)}
       style={{
         paddingTop: 'max(16px, env(safe-area-inset-top, 16px))',
-        minHeight: '100dvh',
       }}
     >
       {/* Vision Pro depth elevation */}

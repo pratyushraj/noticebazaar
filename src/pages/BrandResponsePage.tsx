@@ -701,7 +701,7 @@ const BrandResponsePage = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-950 via-purple-900 to-indigo-950 flex items-center justify-center">
+      <div className="nb-screen-height bg-gradient-to-br from-purple-950 via-purple-900 to-indigo-950 flex items-center justify-center">
         <div className="text-center">
           <Loader2 className="w-8 h-8 animate-spin text-white mx-auto mb-4" />
           <p className="text-white/70">Loading...</p>
@@ -712,7 +712,7 @@ const BrandResponsePage = () => {
 
   if (!dealInfo) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-950 via-purple-900 to-indigo-950 flex items-center justify-center p-4">
+      <div className="nb-screen-height bg-gradient-to-br from-purple-950 via-purple-900 to-indigo-950 flex items-center justify-center p-4">
         <div className="text-center max-w-md">
           <motion.div
             initial={{ scale: 0 }}
@@ -731,7 +731,7 @@ const BrandResponsePage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-950 via-purple-900 to-indigo-950 text-white pb-8 md:pb-12">
+    <div className="nb-screen-height bg-gradient-to-br from-purple-950 via-purple-900 to-indigo-950 text-white pb-8 md:pb-12">
       <div className="max-w-2xl mx-auto px-4 py-6 md:py-8 space-y-6">
         {/* 1. TOP HEADER SECTION */}
         <motion.div

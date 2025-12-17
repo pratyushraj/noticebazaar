@@ -109,7 +109,7 @@ const FreeLegalCheck = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="nb-screen-height bg-background">
       {/* Inject FAQ Schema */}
       <script 
         type="application/ld+json" 

@@ -246,8 +246,8 @@ export default function AdvisorDashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 text-white">
-      <div className="flex h-screen">
+    <div className="nb-screen-height bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 text-white">
+      <div className="flex min-h-dvh">
         {/* Left Sidebar - Filters & Conversation List */}
         <aside className={cn(
           "w-full md:w-80 border-r border-white/10 bg-white/5 backdrop-blur-xl",
@@ -344,7 +344,7 @@ export default function AdvisorDashboard() {
           </div>
 
           {/* Conversation List */}
-          <div className="overflow-y-auto h-[calc(100vh-200px)]">
+          <div className="overflow-y-auto h-[calc(100dvh-200px)]">
             {isLoading ? (
               <div className="p-4 text-center text-white/50">Loading...</div>
             ) : filteredConversations.length === 0 ? (

@@ -8,7 +8,7 @@ import { Trash2, ArrowLeft, Mail, Shield } from 'lucide-react';
 
 const DeleteData = () => {
   return (
-    <div className="container mx-auto px-6 py-12 min-h-screen bg-background">
+    <div className="container mx-auto px-6 py-12 nb-screen-height bg-background">
       <Button
         variant="outline"
         asChild

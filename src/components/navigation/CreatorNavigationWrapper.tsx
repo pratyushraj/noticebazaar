@@ -80,7 +80,7 @@ export const CreatorNavigationWrapper: React.FC<CreatorNavigationWrapperProps> =
   const shouldShowBottomNav = isCreator && !isOnboarding && !hideBottomNav;
 
   return (
-    <div className={cn("min-h-screen", gradients.page, "text-white overflow-x-hidden", className)}>
+    <div className={cn("nb-screen-height", gradients.page, "text-white overflow-x-hidden", className)}>
       {/* Page Header */}
       {title !== undefined && (
         <PageHeader

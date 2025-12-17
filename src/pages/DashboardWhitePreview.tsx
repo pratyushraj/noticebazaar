@@ -8,7 +8,7 @@ import { Calendar, TrendingUp, IndianRupee, CheckCircle, AlertTriangle, ChevronR
  */
 export default function DashboardWhitePreview() {
   return (
-    <div className="min-h-screen bg-[#FAFAFA] text-gray-900 antialiased p-6">
+    <div className="nb-screen-height bg-[#FAFAFA] text-gray-900 antialiased p-6">
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}
         <div className="mb-8">

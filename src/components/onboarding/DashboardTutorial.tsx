@@ -327,7 +327,7 @@ const DashboardTutorial: React.FC<DashboardTutorialProps> = ({ onComplete, onSki
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-              className="relative rounded-[26px] p-4 sm:p-6 pb-4 sm:pb-5 bg-white/12 backdrop-blur-xl border border-white/15 shadow-[0px_16px_40px_rgba(0,0,0,0.35)] text-white max-h-[calc(100vh-120px)] overflow-y-auto overflow-x-hidden min-w-0 max-w-full"
+              className="relative rounded-[26px] p-4 sm:p-6 pb-4 sm:pb-5 bg-white/12 backdrop-blur-xl border border-white/15 shadow-[0px_16px_40px_rgba(0,0,0,0.35)] text-white max-h-[calc(100dvh-120px)] overflow-y-auto overflow-x-hidden min-w-0 max-w-full"
             >
               {/* Center Arrow */}
               {step.pointer && (

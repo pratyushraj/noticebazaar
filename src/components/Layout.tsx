@@ -50,7 +50,7 @@ const Layout = ({ children }: LayoutProps) => {
                               !isNonCreatorRole; // Don't show if user has a non-creator role
 
   return (
-    <div className="relative h-screen md:min-h-screen bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 text-white overflow-hidden md:overflow-visible">
+    <div className="relative min-h-dvh bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 text-white overflow-hidden md:overflow-visible">
       {/* Skip to main content link */}
       <a 
         href="#main" 
@@ -59,7 +59,7 @@ const Layout = ({ children }: LayoutProps) => {
         Skip to main content
       </a>
       
-      <div className="relative z-10 flex flex-col h-full md:min-h-screen">
+      <div className="relative z-10 flex flex-col min-h-dvh">
         {/* Modern Navbar */}
         <Navbar />
         
@@ -67,10 +67,14 @@ const Layout = ({ children }: LayoutProps) => {
           <main 
             id="main"
             className={cn(
-              "flex-1 w-full py-6 px-4 md:px-6 lg:px-8 pb-20 md:pb-24 transition-all duration-300 ease-in-out",
-              "overflow-y-auto md:overflow-y-visible",
+              "relative min-h-dvh flex-1 w-full py-6 px-4 md:px-6 lg:px-8 transition-all duration-300 ease-in-out",
+              "overflow-y-auto overscroll-contain",
               isOpen && "md:ml-[280px]"
             )}
+            style={{
+              // Ensure main content always clears the bottom nav + Safari bottom toolbar
+              paddingBottom: `calc(88px + env(safe-area-inset-bottom, 0px))`,
+            }}
           >
             {children}
           </main>

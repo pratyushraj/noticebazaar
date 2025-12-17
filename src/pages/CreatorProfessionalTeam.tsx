@@ -29,7 +29,7 @@ const CreatorProfessionalTeamPage = () => {
 
   return (
     <ProtectedRoute requiredRole="creator">
-      <div className="min-h-screen bg-[#0A0F1A]">
+      <div className="nb-screen-height bg-[#0A0F1A]">
         <Navbar />
         
         <div className="container mx-auto px-4 py-6 sm:px-6 sm:py-8 max-w-7xl">

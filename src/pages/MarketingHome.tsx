@@ -86,7 +86,7 @@ const MarketingHome = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-[#0b1020] text-white">
+      <div className="nb-screen-height flex flex-col items-center justify-center bg-[#0b1020] text-white">
         <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
         <p className="mt-3 text-gray-400">Loading...</p>
       </div>

@@ -27,7 +27,7 @@ const ThankYou = () => {
   }, []);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4">
+    <div className="nb-screen-height flex items-center justify-center bg-background p-4">
       <Card className="max-w-xl w-full bg-card p-8 rounded-xl shadow-2xl border border-border text-center">
         <CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-6" />
         <h1 className="text-3xl font-bold text-foreground mb-4">

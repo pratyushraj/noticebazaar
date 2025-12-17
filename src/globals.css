@@ -33,12 +33,10 @@
 /* Prevent flicker by ensuring body has background color */
 html {
   background: linear-gradient(to bottom right, #581c87, #4c1d95, #312e81);
-  min-height: 100vh;
 }
 
 body {
   background: linear-gradient(to bottom right, #581c87, #4c1d95, #312e81);
-  min-height: 100vh;
 }
 
 /* Touch Feedback - Scale Animation */
@@ -109,19 +107,17 @@ body {
 }
 
 /* ============================================
-   MOBILE SCROLLING FIXES - NO NESTED SCROLL
+   MOBILE SCROLLING FIXES - GLOBAL VIEWPORT
    ============================================ */
 
-html, body {
-  height: 100%;
-  height: -webkit-fill-available; /* iOS Safari fix */
-  overflow-x: hidden !important;
+html,
+body {
+  height: auto;
+  min-height: 100dvh;
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
   overscroll-behavior-y: none; /* Disable weird elastic scroll */
-  -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
-  /* Ensure background covers entire viewport including safe areas */
-  background: linear-gradient(to bottom right, #581c87, #4c1d95, #312e81);
-  background-attachment: fixed;
-  background-size: cover;
 }
 
 /* Calendar-specific fixes */
@@ -160,13 +156,6 @@ body {
   }
 }
 
-/* Android Browser Bottom Nav Fix */
-/* Ensure bottom nav is always visible on Android browsers */
-body {
-  /* Prevent body from hiding fixed elements */
-  position: relative;
-}
-
 /* Force bottom nav to be on top layer */
 [data-bottom-nav] {
   position: fixed !important;
@@ -189,26 +178,26 @@ body {
 }
 
 @layer base {
-  html, body {
-    height: 100%;
-    overflow-x: hidden !important;
-    overscroll-behavior-y: none; /* Disable weird elastic scroll */
+  html,
+  body {
+    height: auto;
+    min-height: 100dvh;
+    overflow-x: hidden;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-y: none;
   }
 
   html {
     scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
   }
 
+  /* Prevent nested scroll on most elements while allowing main page scroll */
   body {
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-    min-height: 100vh;
-    min-height: -webkit-fill-available;
-  }
-
-  /* Prevent nested scroll */
-  * {
-    overscroll-behavior: contain;
+    -webkit-font-smoothing: antialiased; /* Better font rendering on Apple devices */
+    text-rendering: optimizeLegibility; /* Improve text rendering */
   }
 
   /* Tutorial Highlight Effect */
@@ -366,18 +355,14 @@ body {
   body {
     @apply bg-background text-foreground;
     line-height: 1.45; /* Increased line height globally */
-    padding-bottom: env(safe-area-inset-bottom);
-    /* Prevent iOS auto-zoom on input focus */
-    -webkit-text-size-adjust: 100%;
-    text-size-adjust: 100%;
+    /* Safe-area padding via padding, not margin */
+    padding-bottom: max(env(safe-area-inset-bottom, 0px), 16px);
   }
 
-
-
-  /* Prevent bottom Safari toolbar overlap */
+  /* Ensure main content clears bottom toolbar + bottom nav */
   main,
   .main-content {
-    padding-bottom: max(80px, env(safe-area-inset-bottom, 0px) + 80px);
+    padding-bottom: max(80px, calc(env(safe-area-inset-bottom, 0px) + 80px));
   }
 
   /* Ensure header respects safe area */
@@ -972,28 +957,22 @@ body {
 /* iOS SAFE AREA SUPPORT */
 /* ============================================ */
 
-/* iOS Safari Scrolling Fix (critical) */
+/* iOS Safe Area support helpers (kept but simplified) */
 @supports (-webkit-touch-callout: none) {
   .safe-area-fix {
-    padding-bottom: calc(96px + env(safe-area-inset-bottom));
-  }
-  
-  .ios-safe-bottom {
-    padding-bottom: calc(env(safe-area-inset-bottom) + 140px) !important;
+    padding-bottom: max(env(safe-area-inset-bottom, 0px), 96px);
   }
 
-  /* Enhanced safe area support for iPhone notch and bottom bar */
+  .ios-safe-bottom {
+    padding-bottom: max(env(safe-area-inset-bottom, 0px), 140px) !important;
+  }
+
   .ios-safe-top {
-    padding-top: max(20px, env(safe-area-inset-top, 0px) + 20px);
+    padding-top: max(env(safe-area-inset-top, 0px), 20px);
   }
 
   .ios-safe-bottom-cta {
-    padding-bottom: max(100px, env(safe-area-inset-bottom, 0px) + 100px);
-  }
-
-  /* Prevent Safari toolbar overlap */
-  body {
-    padding-bottom: max(100px, env(safe-area-inset-bottom, 0px) + 100px);
+    padding-bottom: max(env(safe-area-inset-bottom, 0px), 100px);
   }
 }
 
@@ -1097,13 +1076,7 @@ body {
 
 /* iOS-safe screen height using dynamic viewport height */
 .nb-screen-height {
-  min-height: 100vh;
-}
-
-@supports (height: 100dvh) {
-  .nb-screen-height {
-    min-height: 100dvh;
-  }
+  min-height: 100dvh;
 }
 
 

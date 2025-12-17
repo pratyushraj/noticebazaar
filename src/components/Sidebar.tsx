@@ -445,7 +445,7 @@ const Sidebar: React.FC<SidebarProps> = ({ className, profileRole }) => {
           ref={sidebarRef}
           className={cn(
             "flex flex-shrink-0 flex-col",
-            "h-[calc(100vh-4rem)] w-[320px] overflow-y-auto",
+            "h-[calc(100dvh-4rem)] w-[320px] overflow-y-auto",
             "bg-[#1C1C1E] backdrop-blur-xl border-r border-white/10",
             "shadow-[0_0_40px_rgba(0,0,0,0.35)]",
             "relative z-10",
@@ -488,7 +488,7 @@ const Sidebar: React.FC<SidebarProps> = ({ className, profileRole }) => {
             ref={sidebarRef}
             className={cn(
               "flex flex-shrink-0 flex-col",
-              "h-[calc(100vh-4rem)] w-[320px] overflow-y-auto",
+              "h-[calc(100dvh-4rem)] w-[320px] overflow-y-auto",
               "bg-[#1C1C1E] backdrop-blur-xl border-r border-white/10",
               "shadow-[0_0_40px_rgba(0,0,0,0.35)]",
               "relative z-10",
@@ -539,7 +539,7 @@ const Sidebar: React.FC<SidebarProps> = ({ className, profileRole }) => {
                 }}
                 className={cn(
                   "lg:hidden fixed top-16 left-0 flex flex-col",
-                  "h-[calc(100vh-4rem)] w-[320px] max-w-[85vw] overflow-y-auto",
+                  "h-[calc(100dvh-4rem)] w-[320px] max-w-[85vw] overflow-y-auto",
                   "bg-[#1C1C1E] backdrop-blur-xl border-r border-white/10",
                   "shadow-[0_0_40px_rgba(0,0,0,0.35)]",
                   "z-[150] rounded-r-2xl",

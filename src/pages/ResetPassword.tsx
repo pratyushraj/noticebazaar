@@ -70,7 +70,7 @@ const ResetPassword = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 p-4">
+    <div className="nb-screen-height flex flex-col items-center justify-center bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 p-4">
       <div
         className="w-full max-w-md p-8 rounded-3xl shadow-2xl border border-purple-400/20"
         style={{
@@ -169,6 +169,7 @@ const ResetPassword = () => {
 };
 
 export default ResetPassword;
+
 
 
 

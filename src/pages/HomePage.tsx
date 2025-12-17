@@ -90,7 +90,7 @@ const HomePage = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900">
+      <div className="nb-screen-height flex items-center justify-center bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900">
         <Loader2 className="w-12 h-12 animate-spin text-purple-400" />
       </div>
     );
@@ -250,7 +250,7 @@ const HomePage = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 text-white overflow-hidden">
+    <div className="nb-screen-height bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 text-white overflow-hidden">
       {/* Navigation */}
       <nav 
         className="sticky top-0 z-50 bg-purple-900/80 backdrop-blur-xl border-b border-white/5"

@@ -108,7 +108,7 @@ const ConsumerComplaintsPage: React.FC = () => {
   // Show loading or nothing while checking Pro status
   if (!profile) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="nb-screen-height flex items-center justify-center">
         <div className="text-white/60">Loading...</div>
       </div>
     );
@@ -118,7 +118,7 @@ const ConsumerComplaintsPage: React.FC = () => {
   if (!isProUser) {
     return (
       <>
-        <div className="min-h-screen flex items-center justify-center p-4">
+        <div className="nb-screen-height flex items-center justify-center p-4">
           <div className="text-center">
             <Shield className="w-16 h-16 text-emerald-400 mx-auto mb-4" />
             <h2 className="text-2xl font-bold text-white mb-2">Lifestyle Shield is a Creator Pro benefit</h2>
@@ -141,7 +141,7 @@ const ConsumerComplaintsPage: React.FC = () => {
 
   return (
     <>
-      <div className="min-h-screen bg-gradient-to-b from-[#0A0A0A] to-[#1A1A1A] p-6 md:p-8">
+      <div className="nb-screen-height bg-gradient-to-b from-[#0A0A0A] to-[#1A1A1A] p-6 md:p-8">
         <div className="max-w-7xl mx-auto">
           {/* Header */}
           <div className="mb-8">
@@ -223,6 +223,7 @@ const ConsumerComplaintsPage: React.FC = () => {
 };
 
 export default ConsumerComplaintsPage;
+
 
 
 

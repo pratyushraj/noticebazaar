@@ -58,7 +58,7 @@ const FeedbackPage = () => {
 
   if (loading) {
     return (
-      <div className={cn("min-h-screen flex items-center justify-center", gradients.page, "text-white")}>
+      <div className={cn("nb-screen-height flex items-center justify-center", gradients.page, "text-white")}>
         <div className="text-center">
           <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4 text-purple-400" />
           <p className="text-white/70">Loading report...</p>
@@ -69,7 +69,7 @@ const FeedbackPage = () => {
 
   if (error || !report) {
     return (
-      <div className={cn("min-h-screen flex items-center justify-center p-4", gradients.page, "text-white")}>
+      <div className={cn("nb-screen-height flex items-center justify-center p-4", gradients.page, "text-white")}>
         <div className="text-center max-w-md">
           <AlertTriangle className="w-16 h-16 mx-auto mb-4 text-red-400" />
           <h1 className={cn(typography.h2, "mb-2")}>Report Not Found</h1>
@@ -106,7 +106,7 @@ const FeedbackPage = () => {
   };
 
   return (
-    <div className={cn("min-h-screen", gradients.page, "text-white pb-24")}>
+    <div className={cn("nb-screen-height", gradients.page, "text-white pb-24")}>
       <div className="max-w-4xl mx-auto px-4 py-8">
         {/* Header */}
         <div className="mb-8">

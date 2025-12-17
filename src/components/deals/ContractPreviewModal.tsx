@@ -247,7 +247,7 @@ export const ContractPreviewModal: React.FC<ContractPreviewModalProps> = ({
                     type="application/pdf"
                     className="w-full h-full border-0"
                     style={{ 
-                      minHeight: isMobileDevice() ? 'calc(100vh - 70px)' : '100%',
+                      minHeight: isMobileDevice() ? 'calc(100dvh - 70px)' : '100%',
                       height: '100%'
                     }}
                     onError={() => {

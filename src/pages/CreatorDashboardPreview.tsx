@@ -414,7 +414,7 @@ const CreatorDashboardPreview = () => {
 
   if (!dashboardData || !demoBrandDeals || demoBrandDeals.length === 0) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="nb-screen-height flex items-center justify-center">
         <div className="text-white/60">Loading preview...</div>
       </div>
     );
@@ -424,7 +424,7 @@ const CreatorDashboardPreview = () => {
     <ErrorBoundary>
       <MoneyRain lifetimeEarnings={lifetimeEarnings} />
       <PratyushModeOverlay isActive={isPratyushMode} />
-      <div className="relative min-h-screen overflow-hidden">
+      <div className="relative nb-screen-height overflow-hidden">
         {/* Animated gradient background */}
         <div className="fixed inset-0 animate-gradient-shift" />
         
@@ -435,7 +435,7 @@ const CreatorDashboardPreview = () => {
           style={{ animationDelay: '2s' }} 
         />
         
-        <div className="relative z-10 flex flex-col min-h-screen">
+        <div className="relative z-10 flex flex-col nb-screen-height">
           {/* Navbar */}
           <Navbar />
           

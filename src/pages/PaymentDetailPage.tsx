@@ -308,7 +308,7 @@ const PaymentDetailPage = () => {
   if (isLoading) {
     return (
       <>
-        <div className="min-h-screen bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900" />
+        <div className="nb-screen-height bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900" />
         <NativeLoadingSheet isOpen={true} message="Loading payment details..." />
       </>
     );
@@ -316,7 +316,7 @@ const PaymentDetailPage = () => {
 
   if (error || !paymentData) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 text-white flex items-center justify-center">
+      <div className="nb-screen-height bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 text-white flex items-center justify-center">
         <div className="text-center">
           <AlertCircle className="w-16 h-16 text-white/80 mx-auto mb-4" />
           <h2 className="text-2xl font-bold mb-2">Payment Not Found</h2>
@@ -461,7 +461,7 @@ const PaymentDetailPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 px-4 pb-32 text-white relative">
+    <div className="nb-screen-height bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 px-4 pb-32 text-white relative">
       {/* Page Header */}
       <div className="sticky top-0 z-50 bg-gradient-to-br from-purple-900/95 via-purple-800/95 to-indigo-900/95 backdrop-blur-xl border-b border-white/10 shadow-xl">
         <div className="flex items-center gap-4 px-4 md:px-6 py-4 max-w-4xl mx-auto">

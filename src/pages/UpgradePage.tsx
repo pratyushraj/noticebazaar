@@ -31,7 +31,7 @@ const UpgradePage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#0A0A0A] to-[#1A1A1A] p-6 md:p-8">
+    <div className="nb-screen-height bg-gradient-to-b from-[#0A0A0A] to-[#1A1A1A] p-6 md:p-8">
       <div className="max-w-4xl mx-auto">
         {/* Back Button */}
         <Button
@@ -97,6 +97,7 @@ const UpgradePage: React.FC = () => {
 };
 
 export default UpgradePage;
+
 
 
 
