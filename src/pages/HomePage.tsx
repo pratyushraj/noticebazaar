@@ -311,7 +311,9 @@ const HomePage = () => {
           opacity, 
           scale,
           paddingLeft: 'max(1rem, env(safe-area-inset-left, 0px))',
-          paddingRight: 'max(1rem, env(safe-area-inset-right, 0px))'
+          paddingRight: 'max(1rem, env(safe-area-inset-right, 0px))',
+          paddingTop: 'max(2rem, calc(env(safe-area-inset-top, 0px) + 2rem))',
+          paddingBottom: 'max(5rem, calc(env(safe-area-inset-bottom, 0px) + 3rem))'
         }}
         className="relative pt-8 md:pt-32 pb-20 px-4 sm:px-6 lg:px-8 overflow-hidden"
       >
@@ -327,13 +329,13 @@ const HomePage = () => {
               transition={{ duration: 0.8 }}
             >
               <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-tight">
-                Protect Your Deals.
+                Protect Your Brand Deals.
                 <br />
                 <span className="bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 text-transparent bg-clip-text">
                   Get Paid On Time.
                 </span>
               </h1>
-              <p className="text-xl md:text-2xl text-purple-200 mb-8 max-w-3xl mx-auto">
+              <p className="text-lg md:text-2xl text-white/90 font-medium mb-8 max-w-3xl mx-auto">
                 CreatorArmour helps creators handle unpaid brand deals, risky contracts, and legal disputes — using software plus real legal action.
               </p>
             </motion.div>
@@ -346,13 +348,14 @@ const HomePage = () => {
             >
               <Link
                 to="/signup"
-                className="group bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 px-8 py-4 rounded-full font-bold text-lg transition-all transform hover:scale-105 shadow-2xl shadow-purple-500/50 flex items-center gap-2"
+                className="group bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 px-8 py-4 rounded-full font-bold text-lg transition-all duration-150 ease-out transform hover:scale-105 active:scale-95 active:opacity-90 flex items-center gap-2 border border-white/30"
+                style={{ boxShadow: '0 0 0 1px rgba(255,255,255,0.25), 0 20px 40px rgba(31, 0, 62, 0.75)' }}
               >
                 Protect My Deals
                 <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </Link>
-              <button className="flex items-center gap-2 px-8 py-4 rounded-full border-2 border-white/20 hover:border-white/40 transition-all font-semibold">
-                <Play className="w-5 h-5" />
+              <button className="flex items-center gap-2 px-4 py-2 rounded-full text-base md:text-lg text-purple-100/80 hover:text-white/90 transition-colors font-medium">
+                <Play className="w-5 h-5 text-purple-100/80" />
                 See How It Works
               </button>
             </motion.div>
@@ -362,18 +365,18 @@ const HomePage = () => {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.8, delay: 0.4 }}
-              className="mt-12 flex flex-wrap items-center justify-center gap-8 text-sm text-purple-300"
+              className="mt-12 flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-8 text-sm text-purple-300"
             >
               <div className="flex items-center gap-2">
-                <CheckCircle className="w-4 h-4 text-green-400" />
+                <CheckCircle className="w-5 h-5 text-green-400" />
                 <span>Free for 14 days</span>
               </div>
               <div className="flex items-center gap-2">
-                <CheckCircle className="w-4 h-4 text-green-400" />
+                <CheckCircle className="w-5 h-5 text-green-400" />
                 <span>No credit card required</span>
               </div>
               <div className="flex items-center gap-2">
-                <CheckCircle className="w-4 h-4 text-green-400" />
+                <CheckCircle className="w-5 h-5 text-green-400" />
                 <span>Cancel anytime</span>
               </div>
             </motion.div>

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import { Share2, Copy, Mail, MessageSquare, Send, X, Check, Link2, Instagram } from 'lucide-react';
+import { Share2, Copy, Mail, MessageSquare, X, Check, Link2, Instagram } from 'lucide-react';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 import { triggerHaptic, HapticPatterns } from '@/lib/utils/haptics';
@@ -187,18 +187,6 @@ export const UniversalShareModal: React.FC<UniversalShareModalProps> = ({
     onClose();
   };
   
-  // Open Telegram
-  const handleOpenTelegram = async () => {
-    const encodedMessage = encodeURIComponent(sanitizedMessage);
-    const telegramUrl = `https://t.me/share/url?url=${encodeURIComponent(brandReplyLink)}&text=${encodedMessage}`;
-    window.open(telegramUrl, '_blank');
-    await logShare('telegram', dealId);
-    onShareComplete?.('telegram');
-    triggerHaptic(HapticPatterns.medium);
-    toast.success('Opening Telegram...');
-    onClose();
-  };
-  
   // Open Instagram DM (web)
   const handleOpenInstagram = async () => {
     // Instagram doesn't have a direct DM link, so we'll copy the message
@@ -347,16 +335,6 @@ export const UniversalShareModal: React.FC<UniversalShareModalProps> = ({
             >
               <Mail className="w-6 h-6" />
               <span>Open Email</span>
-            </motion.button>
-            
-            <motion.button
-              onClick={handleOpenTelegram}
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              className="w-full bg-white/5 hover:bg-white/10 border border-white/10 text-white px-6 py-4 rounded-xl font-semibold transition-all flex items-center justify-center gap-3"
-            >
-              <Send className="w-6 h-6" />
-              <span>Open Telegram</span>
             </motion.button>
             
             <motion.button

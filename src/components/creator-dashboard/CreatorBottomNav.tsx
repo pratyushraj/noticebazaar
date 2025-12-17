@@ -137,7 +137,8 @@ const CreatorBottomNav = () => {
         data-bottom-nav="true"
         className={cn(
           "fixed bottom-0 left-0 right-0",
-          "bg-gradient-to-br from-purple-900/95 via-purple-800/95 to-indigo-900/95",
+          // Match the main dashboard background gradient so there’s no visible color band
+          "bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900",
           "backdrop-blur-2xl",
           "border-t border-white/15",
           shadows.depth,

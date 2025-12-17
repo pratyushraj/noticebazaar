@@ -22,10 +22,46 @@ const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
+    // Check for OAuth errors in query parameters first
+    const urlParams = new URLSearchParams(window.location.search);
+    const error = urlParams.get('error');
+    const errorCode = urlParams.get('error_code');
+    const errorDescription = urlParams.get('error_description');
+    
+    if (error || errorCode || errorDescription) {
+      console.error('[Login] OAuth error detected:', { error, errorCode, errorDescription });
+      
+      // Clean the URL immediately to prevent routing issues
+      const cleanUrl = window.location.pathname + window.location.hash;
+      window.history.replaceState({}, '', cleanUrl);
+      
+      // Show user-friendly error message
+      let errorMessage = 'Google sign-in failed. Please try again.';
+      
+      if (errorDescription) {
+        const decodedDescription = decodeURIComponent(errorDescription);
+        if (decodedDescription.includes('Unable to exchange external code')) {
+          errorMessage = 'Google sign-in timed out or was cancelled. Please try signing in again.';
+        } else if (decodedDescription.includes('invalid_client')) {
+          errorMessage = 'Google sign-in is temporarily unavailable. Please try again in a few minutes or use email/password.';
+        } else if (decodedDescription.includes('access_denied')) {
+          errorMessage = 'Google sign-in was cancelled. Please try again.';
+        }
+      }
+      
+      toast.error(errorMessage, {
+        duration: 5000,
+      });
+      
+      // Clear any OAuth-related sessionStorage
+      sessionStorage.removeItem('oauth_intended_route');
+      
+      return; // Don't proceed with normal OAuth callback handling
+    }
+    
     // If session loading is finished and a session exists, redirect.
     // But check if we're coming from OAuth callback first
     const hash = window.location.hash;
-    const urlParams = new URLSearchParams(window.location.search);
     const isOAuthCallback = hash.includes('access_token') || 
                             hash.includes('type=recovery') || 
                             hash.includes('type=magiclink') ||

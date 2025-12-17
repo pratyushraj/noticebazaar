@@ -148,8 +148,16 @@ const MarketingHome = () => {
         }
         html,body{font-family:'Inter',system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial; background:var(--bg); color:#E6EEF8; font-size: 16px; line-height: 1.45;} /* Increased base font size and line height */
         .gradient-text{background:linear-gradient(90deg,var(--accent-blue),var(--accent-purple)); -webkit-background-clip:text; -webkit-text-fill-color:transparent;}
-        .cta-primary{background:linear-gradient(90deg,var(--accent-yellow),#F59E0B); color:#0b1020}
+        .cta-primary{
+          background:linear-gradient(90deg,var(--accent-yellow),#F59E0B);
+          color:#0b1020;
+          transition: transform 150ms ease-out, opacity 150ms ease-out;
+        }
         .cta-primary:hover{transform:translateY(-3px) scale(1.02)}
+        .cta-primary:active{
+          transform:scale(0.98);
+          opacity:0.95;
+        }
         .cta-secondary{background:linear-gradient(90deg,var(--accent-blue),#2563EB); color:white}
         .card{background:var(--card); border:1px solid rgba(255,255,255,0.08); box-shadow: 0 6px 18px rgba(3,7,18,0.6); border-radius: 0.75rem;} /* Increased border radius and subtle border */
         .glass{background:var(--glass); border:1px solid rgba(255,255,255,0.02)}
@@ -253,8 +261,8 @@ const MarketingHome = () => {
           <div className="absolute inset-0 opacity-10" style={{ background: 'radial-gradient(circle at 10% 10%, #3B82F6, transparent 50%), radial-gradient(circle at 90% 90%, #2563EB, transparent 50%)' }}></div>
           
           <div className="relative z-10">
-            <h1 className="text-4xl md:text-5xl font-extrabold leading-tight mt-2">
-              Protect Your Deals. Get Paid On Time.
+          <h1 className="text-4xl md:text-5xl font-extrabold leading-tight mt-2">
+              Protect Your Brand Deals. Get Paid On Time.
             </h1>
             <p className="mt-4 text-gray-300 max-w-xl text-lg">
               CreatorArmour helps creators handle unpaid brand deals, risky contracts, and legal disputes — using software plus real legal action.

@@ -6,6 +6,7 @@ import { SplashScreen } from "@/components/mobile/SplashScreen";
 import NotFound from "./pages/NotFound";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
+import ResetPassword from "./pages/ResetPassword";
 import MarketingHome from "./pages/MarketingHome";
 import HomePage from "./pages/HomePage";
 import AdminDashboard from "./pages/AdminDashboard";
@@ -137,6 +138,27 @@ const App = () => {
     }
   }, []);
 
+  // Handle OAuth errors from query parameters (before routing)
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const error = urlParams.get('error');
+    const errorCode = urlParams.get('error_code');
+    const errorDescription = urlParams.get('error_description');
+    
+    if (error || errorCode || errorDescription) {
+      // Clean the URL immediately to prevent routing to error string
+      const cleanPath = window.location.pathname;
+      const cleanHash = window.location.hash.split('?')[0]; // Remove query params from hash too
+      const cleanUrl = cleanPath + cleanHash;
+      window.history.replaceState({}, '', cleanUrl);
+      
+      // Redirect to login page where error will be displayed
+      if (!window.location.hash.includes('/login')) {
+        window.location.hash = '/login';
+      }
+    }
+  }, []);
+
   const handleSplashComplete = () => {
     setShowSplash(false);
     sessionStorage.setItem('hasSeenSplash', 'true');
@@ -179,6 +201,7 @@ const App = () => {
               {/* Auth routes: Accessible directly, not protected */}
               <Route path="/login" element={<Login />} />
               <Route path="/signup" element={<Signup />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
 
               {/* Public routes */}
               <Route path="/blog" element={<Blog />} />

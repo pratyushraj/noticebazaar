@@ -12,8 +12,8 @@ const router = Router();
 function hashIpAddress(ip: string): { hash: string | null; partial: string | null } {
   if (!ip || ip === 'unknown') {
     return { hash: null, partial: null };
-  }
-  
+    }
+
   // Extract first 3 octets for partial IP (e.g., "192.168.1.xxx")
   const partialMatch = ip.match(/^(\d+\.\d+\.\d+)\.\d+$/);
   const partial = partialMatch ? `${partialMatch[1]}.xxx` : null;
@@ -22,15 +22,15 @@ function hashIpAddress(ip: string): { hash: string | null; partial: string | nul
   const hash = crypto.createHash('sha256').update(ip).digest('hex').substring(0, 16);
   
   return { hash, partial };
-}
+    }
 
 // Helper function to get client IP
 function getClientIp(req: Request): string {
   return req.ip || 
          req.headers['x-forwarded-for']?.toString().split(',')[0]?.trim() || 
-         req.headers['x-real-ip']?.toString() || 
-         req.socket.remoteAddress || 
-         'unknown';
+                     req.headers['x-real-ip']?.toString() || 
+                     req.socket.remoteAddress || 
+                     'unknown';
 }
 
 // Helper function to log audit entry
@@ -114,8 +114,8 @@ async function logAuditEntry(
   } catch (error: any) {
     console.error('[BrandResponse] Audit log exception:', error);
     // Don't fail the request if audit logging fails
-  }
-}
+      }
+    }
 
 // GET /api/brand-response/:token
 // Public endpoint to fetch deal info via secure token
@@ -138,7 +138,7 @@ router.get('/:token', async (req: Request, res: Response) => {
         error: 'Invalid token format'
       });
     }
-
+    
     if (!supabaseInitialized) {
       console.error('[BrandResponse] GET Supabase not initialized');
       return res.status(500).json({
@@ -188,8 +188,8 @@ router.get('/:token', async (req: Request, res: Response) => {
           error: 'This request has expired. Please ask the creator to resend.'
         });
       }
-    }
-    
+      }
+      
     // Log "viewed" action
     await logAuditEntry(tokenData.id, tokenData.deal_id, 'viewed', req);
     
@@ -208,7 +208,7 @@ router.get('/:token', async (req: Request, res: Response) => {
         error: 'This link is no longer valid. Please contact the creator.'
       });
     }
-    
+
     // Fetch requested changes (issues + missing clauses) from protection_issues
     let requestedChanges: any[] = [];
     let analysisData: any = null;
@@ -485,9 +485,9 @@ router.get('/debug/:token', async (req: Request, res: Response) => {
         code: tokenError.code,
         message: tokenError.message
       } : null,
-      deal: deal || null,
+        deal: deal || null,
       dealError: dealError ? {
-        code: dealError.code,
+          code: dealError.code,
         message: dealError.message
       } : null
     });

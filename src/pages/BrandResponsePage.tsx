@@ -342,13 +342,13 @@ const BrandResponsePage = () => {
 
                 {/* Download PDF Button */}
                 <div className="pt-4 mt-4 border-t border-white/10 flex justify-end">
-                <button
-                  onClick={downloadFullSummaryPDF}
+                  <button
+                    onClick={downloadFullSummaryPDF}
                   className="px-4 py-2.5 bg-purple-600 hover:bg-purple-700 rounded-xl transition-all duration-200 flex items-center gap-2 text-sm font-medium text-white active:scale-[0.98]"
-                >
-                  <Download className="w-4 h-4" />
-                  Download Full Summary PDF
-                </button>
+                  >
+                    <Download className="w-4 h-4" />
+                    Download Full Summary PDF
+                  </button>
                 </div>
               </div>
             </motion.div>
@@ -385,11 +385,11 @@ const BrandResponsePage = () => {
         if (!response.ok || !data.success) {
           // Handle token validation errors
           if (data.errorType === 'token_not_found' || data.errorType === 'token_revoked' || data.errorType === 'token_expired') {
-            setDealInfo(null);
-            setRequestedChanges([]);
-            setAnalysisData(null);
-            setIsSubmitted(false);
-            return;
+          setDealInfo(null);
+          setRequestedChanges([]);
+          setAnalysisData(null);
+          setIsSubmitted(false);
+          return;
           }
           
           if (!data.deal) {
@@ -724,7 +724,7 @@ const BrandResponsePage = () => {
           <h1 className="text-2xl font-bold text-white mb-2">Link No Longer Valid</h1>
           <p className="text-white/70 mb-6">
             This link is no longer valid. Please contact the creator.
-          </p>
+            </p>
         </div>
       </div>
     );
@@ -882,68 +882,68 @@ const BrandResponsePage = () => {
                   className="bg-white/5 backdrop-blur-xl rounded-xl p-5 md:p-6 border border-white/20 shadow-lg space-y-5"
                 >
                   {/* Email Input - Required for OTP if accepting - Show FIRST when accepting */}
-                  {selectedStatus === 'accepted' && (
+              {selectedStatus === 'accepted' && (
                     <div className="bg-white/5 border border-white/20 rounded-xl p-4 space-y-2">
-                      <label className="block text-sm font-semibold mb-2 text-white">
+                  <label className="block text-sm font-semibold mb-2 text-white">
                         📧 Email Address <span className="text-red-400">*</span>
-                        <span className="text-xs font-normal text-white/60 ml-2">(Required for OTP verification)</span>
-                      </label>
-                      <input
+                    <span className="text-xs font-normal text-white/60 ml-2">(Required for OTP verification)</span>
+                  </label>
+                  <input
                         type="email"
                         value={brandEmailInput}
-                        onChange={(e) => {
+                    onChange={(e) => {
                           setBrandEmailInput(e.target.value);
-                        }}
-                        onFocus={(e) => {
+                    }}
+                    onFocus={(e) => {
                           // Auto-fill if empty and we have brand email
                           if (!e.target.value && brandEmail) {
                             setBrandEmailInput(brandEmail);
-                          }
-                        }}
+                      }
+                    }}
                         placeholder="brand@example.com"
                         className="w-full p-4 rounded-xl bg-white/10 border-2 border-white/30 text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 transition-all duration-200 text-lg font-medium"
-                        autoFocus
-                      />
-                      <p className="text-xs text-white/70 mt-1 flex items-center gap-1">
-                        <span className="text-yellow-400">⚠️</span>
+                    autoFocus
+                  />
+                  <p className="text-xs text-white/70 mt-1 flex items-center gap-1">
+                    <span className="text-yellow-400">⚠️</span>
                         We'll send a 6-digit OTP to this email address to verify your acceptance
-                      </p>
-                    </div>
-                  )}
+                  </p>
+                </div>
+              )}
 
-                  <div>
-                    <label className="block text-sm font-medium mb-2 text-white/90">
-                      Your Name / Team (Optional)
-                    </label>
-                    <input
-                      type="text"
-                      value={brandTeamName}
-                      onChange={(e) => setBrandTeamName(e.target.value)}
+              <div>
+                <label className="block text-sm font-medium mb-2 text-white/90">
+                  Your Name / Team (Optional)
+                </label>
+                <input
+                  type="text"
+                  value={brandTeamName}
+                  onChange={(e) => setBrandTeamName(e.target.value)}
                       placeholder="Aditi – Brand Partnerships"
                       className="w-full p-4 rounded-xl bg-white/5 border border-white/20 text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 transition-all duration-200"
-                      maxLength={100}
-                    />
-                  </div>
+                  maxLength={100}
+                />
+              </div>
 
-                  <div>
-                    <label className="block text-sm font-medium mb-2 text-white/90">
-                      Additional Comments (Optional)
-                    </label>
-                    <textarea
-                      value={message}
-                      onChange={(e) => setMessage(e.target.value)}
+              <div>
+                <label className="block text-sm font-medium mb-2 text-white/90">
+                  Additional Comments (Optional)
+                </label>
+                <textarea
+                  value={message}
+                  onChange={(e) => setMessage(e.target.value)}
                       placeholder="Optional notes for the creator…"
                       className="w-full p-4 rounded-xl bg-white/5 border border-white/20 text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 resize-none min-h-[120px] transition-all duration-200"
-                      maxLength={1000}
-                      style={{ 
-                        minHeight: '120px',
-                        height: message ? `${Math.max(120, message.split('\n').length * 24 + 32)}px` : '120px'
-                      }}
-                    />
-                    <div className="text-xs text-white/50 mt-2 text-right">
-                      {message.length}/1000
-                    </div>
-                  </div>
+                  maxLength={1000}
+                  style={{ 
+                    minHeight: '120px',
+                    height: message ? `${Math.max(120, message.split('\n').length * 24 + 32)}px` : '120px'
+                  }}
+                />
+                <div className="text-xs text-white/50 mt-2 text-right">
+                  {message.length}/1000
+                </div>
+              </div>
                 </motion.div>
               )}
             </AnimatePresence>

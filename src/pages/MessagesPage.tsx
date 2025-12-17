@@ -1744,7 +1744,7 @@ export default function MessagesPage() {
 
   return (
     <ContextualTipsProvider currentView="messages">
-    <div className="flex flex-col h-screen overflow-hidden bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900">
+    <div className="flex flex-col min-h-full overflow-hidden bg-transparent">
       {/* Content area - simplified structure - Maintain 2-column layout on iPad (≥768px) */}
       <div className="flex-1 min-h-0 flex gap-4 md:gap-6 md:p-6 px-3 md:px-6 overflow-hidden">
         {/* Desktop & iPad: Fixed sidebar - Always visible at ≥768px */}
