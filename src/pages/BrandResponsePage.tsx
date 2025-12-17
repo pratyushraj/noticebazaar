@@ -167,10 +167,72 @@ const BrandResponsePage = () => {
   // Requested Updates / Clarifications card
   const RequestedUpdatesCard = ({
     requestedChanges,
+    analysisData,
   }: {
     requestedChanges: RequestedChange[];
+    analysisData: any;
   }) => {
-    const hasRequests = requestedChanges && requestedChanges.length > 0;
+    // If backend didn't send requests but we have analysis, derive gentle clarifications
+    const derivedRequests: RequestedChange[] = [];
+
+    if ((!requestedChanges || requestedChanges.length === 0) && analysisData) {
+      const extractedTerms = analysisData.extractedTerms || {};
+      const keyTerms = analysisData.keyTerms || {};
+
+      const paymentTerms =
+        extractedTerms.paymentTerms || keyTerms.paymentSchedule || '';
+      const usageRights = extractedTerms.usageRights || '';
+      const exclusivity =
+        extractedTerms.exclusivity || keyTerms.exclusivity || '';
+      const termination = extractedTerms.termination || '';
+
+      if (!usageRights || usageRights === 'Not specified') {
+        derivedRequests.push({
+          title: 'Clarify content usage rights to specific platforms',
+          severity: 'warning',
+          category: 'Usage Rights',
+          description:
+            'Helps ensure content is only used on agreed platforms and formats.',
+        });
+      }
+
+      if (!exclusivity || exclusivity === 'Not specified') {
+        derivedRequests.push({
+          title: 'Limit exclusivity period to a reasonable duration and scope',
+          severity: 'warning',
+          category: 'Exclusivity',
+          description:
+            'Keeps room for other collaborations while this campaign is active.',
+        });
+      }
+
+      if (!paymentTerms || paymentTerms === 'Not specified') {
+        derivedRequests.push({
+          title: 'Confirm payment timing in the contract',
+          severity: 'warning',
+          category: 'Payment',
+          description:
+            'Makes it clear when payment will be processed after deliverables.',
+        });
+      }
+
+      if (!termination || termination === 'Not specified') {
+        derivedRequests.push({
+          title: 'Add a short notice period before termination',
+          severity: 'warning',
+          category: 'Termination',
+          description:
+            'Gives both sides time to adjust if the collaboration needs to end.',
+        });
+      }
+    }
+
+    const effectiveRequests =
+      requestedChanges && requestedChanges.length > 0
+        ? requestedChanges
+        : derivedRequests;
+
+    const hasRequests = effectiveRequests.length > 0;
 
     return (
       <motion.div
@@ -194,7 +256,7 @@ const BrandResponsePage = () => {
           </div>
         ) : (
           <ul className="mt-2 space-y-2">
-            {requestedChanges.map((change, index) => (
+            {effectiveRequests.map((change, index) => (
               <li
                 key={`${change.title}-${index}`}
                 className="flex items-start gap-3 rounded-xl border border-purple-900/70 bg-[#090024] px-3 py-2.5"
@@ -955,7 +1017,10 @@ const BrandResponsePage = () => {
             />
 
             {/* Requested clarifications */}
-            <RequestedUpdatesCard requestedChanges={requestedChanges} />
+            <RequestedUpdatesCard
+              requestedChanges={requestedChanges}
+              analysisData={analysisData}
+            />
 
             {/* Expected outcome */}
             <ExpectedOutcomeCard />
