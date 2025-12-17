@@ -65,6 +65,7 @@ function DealDetailPageContent() {
   
   // Remind brand state
   const [isSendingReminder, setIsSendingReminder] = useState(false);
+  const [brandReplyLink, setBrandReplyLink] = useState<string | null>(null);
   
   
   // Brand phone edit state
@@ -103,6 +104,46 @@ function DealDetailPageContent() {
     }
     
     return undefined;
+  };
+  
+  // Helper to create a secure brand reply link token for this deal
+  const generateBrandReplyLink = async (targetDealId: string): Promise<string | null> => {
+    try {
+      if (!session?.access_token) {
+        console.warn('[DealDetailPage] Cannot generate brand reply link: no session');
+        return null;
+      }
+
+      const apiBaseUrl =
+        import.meta.env.VITE_API_BASE_URL ||
+        (typeof window !== 'undefined' && window.location.origin.includes('noticebazaar.com')
+          ? 'https://api.noticebazaar.com'
+          : 'http://localhost:3001');
+
+      const response = await fetch(`${apiBaseUrl}/api/brand-reply-tokens`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({ dealId: targetDealId, expiresAt: null }),
+      });
+
+      const data = await response.json();
+      if (!response.ok || !data.success || !data.token?.id) {
+        console.error('[DealDetailPage] Failed to create brand reply token:', data);
+        return null;
+      }
+
+      const baseUrl =
+        typeof window !== 'undefined' ? window.location.origin : 'https://noticebazaar.com';
+      const link = `${baseUrl}/#/brand-reply/${data.token.id}`;
+      setBrandReplyLink(link);
+      return link;
+    } catch (error) {
+      console.error('[DealDetailPage] Brand reply token error:', error);
+      return null;
+    }
   };
   
   // ALL HOOKS MUST BE CALLED BEFORE ANY EARLY RETURNS
@@ -878,18 +919,20 @@ Best regards`;
                 triggerHaptic(HapticPatterns.medium);
                 
                 try {
-                  // Generate brand reply link
-                  const baseUrl = typeof window !== 'undefined' 
-                    ? window.location.origin 
-                    : 'https://noticebazaar.com';
-                  const brandReplyLink = `${baseUrl}/#/brand-reply/${deal.id}`;
+                  // Generate secure brand reply link (token-based)
+                  const link = await generateBrandReplyLink(deal.id);
+                  if (!link) {
+                    toast.error('Could not generate brand reply link. Please try again.');
+                    setIsSendingReminder(false);
+                    return;
+                  }
                   
                   // Reminder message template
                   const reminderMessage = `Hi, just following up on the contract revisions sent earlier.
 
 Please review and confirm your decision here:
 
-${brandReplyLink}`;
+${link}`;
                   
                   // Try native share API first
                   let sharePlatform: string | null = null;
@@ -898,7 +941,7 @@ ${brandReplyLink}`;
                       await navigator.share({
                         title: 'Contract Review Reminder',
                         text: reminderMessage,
-                        url: brandReplyLink,
+                        url: link,
                       });
                       sharePlatform = 'native-share';
                     } catch (shareError: any) {
@@ -916,7 +959,7 @@ ${brandReplyLink}`;
                   // Fallback to clipboard if share API not available or failed
                   if (!sharePlatform) {
                     try {
-                      await navigator.clipboard.writeText(`${reminderMessage}\n\n${brandReplyLink}`);
+                      await navigator.clipboard.writeText(`${reminderMessage}\n\n${link}`);
                       toast.success('Share message copied');
                     } catch (clipboardError) {
                       console.error('[DealDetailPage] Clipboard copy failed:', clipboardError);
@@ -976,12 +1019,13 @@ ${brandReplyLink}`;
                 }
                 
                 try {
-                  const baseUrl = typeof window !== 'undefined' 
-                    ? window.location.origin 
-                    : 'https://noticebazaar.com';
-                  const brandReplyLink = `${baseUrl}/#/brand-reply/${deal.id}`;
-                  
-                  await navigator.clipboard.writeText(brandReplyLink);
+          const link = brandReplyLink || (await generateBrandReplyLink(deal.id));
+          if (!link) {
+            toast.error('Could not generate brand reply link. Please try again.');
+            return;
+          }
+          
+          await navigator.clipboard.writeText(link);
                   triggerHaptic(HapticPatterns.light);
                   toast.success('Link copied to clipboard');
                 } catch (error) {
@@ -1078,21 +1122,23 @@ ${brandReplyLink}`;
                     }
                     
                     // Generate brand reply link using actual deal ID (not URL param)
-                    const baseUrl = typeof window !== 'undefined' 
-                      ? window.location.origin 
-                      : 'https://noticebazaar.com';
-                    const brandReplyLink = `${baseUrl}/#/brand-reply/${deal.id}`;
+                    const link = brandReplyLink;
                     
                     // Test link handler - verify deal exists before sharing
                     const handleTestLink = async () => {
-                      // If deal exists in the current context, trust it and open the link
-                      if (deal && deal.id) {
-                        // Open link in new tab
-                        window.open(brandReplyLink, '_blank');
-                        toast.success('✅ Opening brand reply link');
-                      } else {
+                      if (!deal || !deal.id) {
                         toast.error('Deal information not available. Please refresh the page.');
+                        return;
                       }
+                      
+                      const finalLink = link || (await generateBrandReplyLink(deal.id));
+                      if (!finalLink) {
+                        toast.error('Could not generate brand reply link. Please try again.');
+                        return;
+                      }
+                      
+                      window.open(finalLink, '_blank');
+                      toast.success('✅ Opening brand reply link');
                     };
                     
                     return (
@@ -1104,7 +1150,7 @@ ${brandReplyLink}`;
                             <input
                               type="text"
                               readOnly
-                              value={brandReplyLink}
+                            value={link || 'Link will be generated when you share.'}
                               className="flex-1 px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-sm text-white/90 font-mono truncate focus:outline-none focus:ring-2 focus:ring-purple-500/50"
                               onClick={(e) => (e.target as HTMLInputElement).select()}
                             />

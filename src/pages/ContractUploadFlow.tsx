@@ -73,6 +73,7 @@ const ContractUploadFlow = () => {
   // Brand Approval Tracker State
   const [brandApprovalStatus, setBrandApprovalStatus] = useState<'sent' | 'viewed' | 'negotiating' | 'approved' | 'rejected' | null>(null);
   const [approvalStatusUpdatedAt, setApprovalStatusUpdatedAt] = useState<Date | null>(null);
+  const [brandReplyLink, setBrandReplyLink] = useState<string | null>(null);
   
   // Helper function to format negotiation message with dynamic fields
   const formatNegotiationMessage = (baseMessage: string): string => {
@@ -143,17 +144,52 @@ ${creatorName}`;
       formattedMessage += `\n\n${creatorPhone ? `${creatorPhone} | ` : ''}${creatorEmail}`;
     }
 
-    // Add brand response tracking link if dealId is available
-    const dealId = savedDealId;
-    if (dealId) {
-      const baseUrl = typeof window !== 'undefined' 
-        ? window.location.origin 
-        : 'https://noticebazaar.com';
-      const trackingLink = `${baseUrl}/#/brand-reply/${dealId}`;
-      formattedMessage += `\n\n---\nPlease confirm your decision on the requested changes:\n${trackingLink}`;
+    // Add brand response tracking link if available
+    if (brandReplyLink) {
+      formattedMessage += `\n\n---\nPlease confirm your decision on the requested changes:\n${brandReplyLink}`;
     }
 
     return formattedMessage;
+  };
+
+  // Helper to create a secure brand reply link token for a deal
+  const generateBrandReplyLink = async (dealId: string): Promise<string | null> => {
+    try {
+      if (!session?.access_token) {
+        console.warn('[ContractUploadFlow] Cannot generate brand reply link: no session');
+        return null;
+      }
+
+      const apiBaseUrl =
+        import.meta.env.VITE_API_BASE_URL ||
+        (typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com')
+          ? 'https://api.creatorarmour.com'
+          : 'https://noticebazaar-api.onrender.com');
+
+      const response = await fetch(`${apiBaseUrl}/api/brand-reply-tokens`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({ dealId, expiresAt: null }),
+      });
+
+      const data = await response.json();
+      if (!response.ok || !data.success || !data.token?.id) {
+        console.error('[ContractUploadFlow] Failed to create brand reply token:', data);
+        return null;
+      }
+
+      const baseUrl =
+        typeof window !== 'undefined' ? window.location.origin : 'https://noticebazaar.com';
+      const link = `${baseUrl}/#/brand-reply/${data.token.id}`;
+      setBrandReplyLink(link);
+      return link;
+    } catch (error) {
+      console.error('[ContractUploadFlow] Brand reply token error:', error);
+      return null;
+    }
   };
 
   // Helper to open share feedback modal with auto-save
@@ -190,7 +226,7 @@ ${creatorName}`;
     const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 
       (typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com') 
         ? 'https://api.creatorarmour.com' 
-        : 'http://localhost:3001');
+        : 'https://noticebazaar-api.onrender.com');
     
     let verified = false;
     let lastError: any = null;
@@ -222,19 +258,25 @@ ${creatorName}`;
     }
     
     if (!verified) {
-      console.error('[ContractUploadFlow] Deal verification failed after retries:', lastError);
-      // If we just saved it, trust that it exists and proceed anyway
-      // The deal might not be immediately queryable due to database replication delay
-      if (justSaved) {
-        console.log('[ContractUploadFlow] Deal was just saved, proceeding without verification');
-        // Proceed - we trust our own save
-      } else {
-        toast.error('Deal not found. Please try saving again.');
-        return false;
+      console.warn(
+        '[ContractUploadFlow] Deal verification failed after retries (non-blocking):',
+        lastError
+      );
+      // We still proceed — auto-save already ran, and verification is a soft safety check.
+      // If the deal truly doesn't exist, backend will surface an error on actual share.
+      if (!justSaved) {
+        toast.info(
+          'We could not verify this deal on the server yet, but you can still prepare your message.'
+        );
       }
     }
+
+    // Ensure we have a secure brand reply link token for this deal
+    if (currentDealId && !brandReplyLink) {
+      await generateBrandReplyLink(currentDealId);
+    }
     
-    // All checks passed - open modal
+    // All checks passed or verification skipped - open modal
     setShowShareFeedbackModal(true);
     return true;
   };
@@ -562,12 +604,30 @@ ${creatorName}`;
   const [clauseStates, setClauseStates] = useState<Map<number, 'default' | 'loading' | 'success'>>(new Map());
   const [showAllIssues, setShowAllIssues] = useState(false);
   const [showWhatsAppPreview, setShowWhatsAppPreview] = useState(false);
+  // Accordion states - all detail sections collapsed by default
   const [isKeyTermsExpanded, setIsKeyTermsExpanded] = useState(false);
-  const [isIssuesExpanded, setIsIssuesExpanded] = useState(true);
+  const [isIssuesExpanded, setIsIssuesExpanded] = useState(false);
   const [isProtectionStatusExpanded, setIsProtectionStatusExpanded] = useState(false);
   const [isMissingClausesExpanded, setIsMissingClausesExpanded] = useState(false);
   const [isFinancialBreakdownExpanded, setIsFinancialBreakdownExpanded] = useState(false);
   const [isRecommendedActionsExpanded, setIsRecommendedActionsExpanded] = useState(false);
+
+  type AccordionSection =
+    | 'keyTerms'
+    | 'protectionStatus'
+    | 'issues'
+    | 'missingClauses'
+    | 'financialBreakdown'
+    | 'brandRequests';
+
+  const handleAccordionToggle = (section: AccordionSection) => {
+    setIsKeyTermsExpanded((prev) => (section === 'keyTerms' ? !prev : false));
+    setIsProtectionStatusExpanded((prev) => (section === 'protectionStatus' ? !prev : false));
+    setIsIssuesExpanded((prev) => (section === 'issues' ? !prev : false));
+    setIsMissingClausesExpanded((prev) => (section === 'missingClauses' ? !prev : false));
+    setIsFinancialBreakdownExpanded((prev) => (section === 'financialBreakdown' ? !prev : false));
+    setIsRecommendedActionsExpanded((prev) => (section === 'brandRequests' ? !prev : false));
+  };
 
   // Helper function to get risk score color and label
   const getRiskScoreInfo = (score: number) => {
@@ -599,6 +659,13 @@ ${creatorName}`;
         dotColor: '#ef4444' // red-500
       };
     }
+  };
+
+  // Unified verdict label helper
+  const getRiskVerdictLabel = (overallRisk: 'low' | 'medium' | 'high' | string) => {
+    if (overallRisk === 'high') return 'High Risk';
+    if (overallRisk === 'medium') return 'Needs Negotiation';
+    return 'Safe';
   };
 
   // Helper function to get key term status
@@ -775,7 +842,7 @@ ${creatorName}`;
       const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 
       (typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com') 
         ? 'https://api.creatorarmour.com'
-          : 'http://localhost:3001');
+          : 'https://noticebazaar-api.onrender.com');
       const response = await fetch(`${apiBaseUrl}/api/protection/send-negotiation-email`, {
         method: 'POST',
         headers: {
@@ -851,7 +918,7 @@ ${creatorName}`;
       const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 
       (typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com') 
         ? 'https://api.creatorarmour.com'
-          : 'http://localhost:3001');
+          : 'https://noticebazaar-api.onrender.com');
       const response = await fetch(`${apiBaseUrl}/api/protection/generate-fix`, {
         method: 'POST',
         headers: {
@@ -934,6 +1001,28 @@ ${creatorName}`;
       return 'This may limit your flexibility or create future complications';
     }
     return 'This could become a concern in future negotiations';
+  };
+
+  const getSuggestedFix = (issue: typeof analysisResults.issues[0]) => {
+    const title = issue.title.toLowerCase();
+    const category = (issue.category || '').toLowerCase();
+
+    if (title.includes('late fee') || category.includes('late fee')) {
+      return 'Ask the brand to define the late fee % and when it applies.';
+    }
+    if (title.includes('payment') || category.includes('payment')) {
+      return 'Ask the brand to clearly write the amount, due date, and payment method.';
+    }
+    if (title.includes('usage') || title.includes('license') || category.includes('usage')) {
+      return 'Limit how long and where the brand can use your content.';
+    }
+    if (title.includes('termination') || category.includes('termination')) {
+      return 'Add a clear exit option with notice period and payment for work done.';
+    }
+    if (title.includes('exclusiv') || category.includes('exclusiv')) {
+      return 'Clarify which competitors you cannot work with and for how long.';
+    }
+    return 'Ask the brand to add one clear sentence to make this safer for you.';
   };
 
   const getNegotiationStrength = (issue: typeof analysisResults.issues[0]) => {
@@ -1374,7 +1463,7 @@ ${creatorName}`;
       }
       
       if (!apiBaseUrl && typeof window !== 'undefined') {
-        apiBaseUrl = window.location.origin.replace(':8080', ':3001');
+        apiBaseUrl = 'https://noticebazaar-api.onrender.com';
       }
       
       let report: NonNullable<typeof analysisResults> | null = null;
@@ -1757,14 +1846,14 @@ ${creatorName}`;
         const origin = window.location.origin;
         // If on production domain, try api subdomain first, then same origin
         if (origin.includes('noticebazaar.com')) {
-          // Try api subdomain, but fallback to same origin if it fails
+          // Try api subdomain, but fallback to hosted API if it fails
           apiBaseUrl = 'https://api.noticebazaar.com';
         } else {
-          // Local development
-          apiBaseUrl = 'http://localhost:3001';
+          // Local development defaults to hosted API unless overridden by VITE_API_BASE_URL
+          apiBaseUrl = 'https://noticebazaar-api.onrender.com';
         }
       } else if (!apiBaseUrl) {
-        apiBaseUrl = 'http://localhost:3001';
+        apiBaseUrl = 'https://noticebazaar-api.onrender.com';
       }
       
       const { data: { session } } = await supabase.auth.getSession();
@@ -2891,12 +2980,14 @@ ${creatorName}`;
             <div className="bg-gradient-to-r from-purple-600/30 to-indigo-600/30 backdrop-blur-md rounded-2xl px-4 py-3 border border-purple-400/30">
               <div className="flex items-center gap-2 text-sm flex-wrap">
                 <FileText className="w-4 h-4 text-purple-300" />
-                <span className="text-purple-200">
-                  {analysisResults.dealType === 'barter' ? 'Barter Protection (from chat)' : 'Detected Contract Type:'}
+                <span className="text-xs text-white/60">
+                  {analysisResults.dealType === 'barter'
+                    ? 'Barter Protection (from chat)'
+                    : 'Contract Type'}
                 </span>
                 <span className="font-semibold text-white">
-                  {analysisResults.dealType === 'barter' 
-                    ? 'Beta' 
+                  {analysisResults.dealType === 'barter'
+                    ? 'Beta'
                     : 'Influencer–Brand Paid Collaboration'}
                 </span>
                 {analysisResults.dealType === 'barter' && (
@@ -2947,18 +3038,16 @@ ${creatorName}`;
                 {/* Risk Status Badge and Score Display */}
                 <div className="w-full flex flex-col items-center gap-4">
                   {/* Risk Status Badge */}
-                  <div className={`px-4 py-2 rounded-full font-bold text-sm uppercase tracking-wide ${
+                  <div
+                    className={`px-4 py-2 rounded-full font-bold text-sm uppercase tracking-wide ${
                     analysisResults.overallRisk === 'high' 
                       ? 'bg-red-500/20 text-red-400 border border-red-500/40' 
                       : analysisResults.overallRisk === 'medium'
                       ? 'bg-amber-500/20 text-amber-400 border border-amber-500/40'
                       : 'bg-green-500/20 text-green-400 border border-green-500/40'
-                  }`}>
-                    {analysisResults.overallRisk === 'high' 
-                      ? 'HIGH RISK' 
-                      : analysisResults.overallRisk === 'medium'
-                      ? 'MEDIUM RISK'
-                      : 'LOW RISK'}
+                    }`}
+                  >
+                    {getRiskVerdictLabel(analysisResults.overallRisk)}
                   </div>
                   
                   {/* Score Text */}
@@ -2985,6 +3074,42 @@ ${creatorName}`;
                       Low safety → High safety
                     </div>
                   </div>
+
+                  {/* Quick summary chips */}
+                  {(() => {
+                    const issuesCount = analysisResults.issues.length;
+                    const missingCount = [
+                      !analysisResults.keyTerms?.dealValue || analysisResults.keyTerms.dealValue === 'Not specified' ? 1 : 0,
+                      !analysisResults.keyTerms?.paymentSchedule || analysisResults.keyTerms.paymentSchedule === 'Not specified' ? 1 : 0,
+                      !analysisResults.keyTerms?.exclusivity || analysisResults.keyTerms.exclusivity === 'Not specified' ? 1 : 0,
+                    ].reduce((a, b) => a + b, 0);
+
+                    return (
+                      <div className="mt-4 flex flex-wrap justify-center gap-2">
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-[11px] text-white/80">
+                          {issuesCount > 0 ? (
+                            <>
+                              <AlertTriangle className="w-3 h-3 text-amber-300" />
+                              <span>{issuesCount} {issuesCount === 1 ? 'issue to review' : 'issues to review'}</span>
+                            </>
+                          ) : (
+                            <>
+                              <CheckCircle className="w-3 h-3 text-green-300" />
+                              <span>No major issues detected</span>
+                            </>
+                          )}
+                        </span>
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-[11px] text-white/80">
+                          <FileText className="w-3 h-3 text-purple-200" />
+                          <span>
+                            {missingCount > 0
+                              ? `${missingCount} missing ${missingCount === 1 ? 'clause' : 'clauses'}`
+                              : 'All key clauses present'}
+                          </span>
+                        </span>
+                      </div>
+                    );
+                  })()}
                 </div>
 
                 {/* Risk Label and Info */}
@@ -3004,19 +3129,28 @@ ${creatorName}`;
                     
                     if (totalRiskAreas > 0) {
                       const isLowRisk = (analysisResults.score || 0) >= 75;
-                      
+                      const verdictLabel = getRiskVerdictLabel(
+                        isLowRisk ? 'medium' : analysisResults.overallRisk
+                      );
                       return (
                         <>
                           <div className="mb-2">
-                            <p className={`text-sm md:text-base font-semibold ${isLowRisk ? 'text-green-400' : resultsRiskInfo.color} flex items-center justify-center gap-2`}>
+                            <p
+                              className={`text-sm md:text-base font-semibold ${
+                                isLowRisk ? 'text-green-400' : resultsRiskInfo.color
+                              } flex items-center justify-center gap-2`}
+                            >
                               <span>{isLowRisk ? '✅' : '⚠️'}</span>
-                              <span>{isLowRisk ? 'This Deal Is Largely Safe' : 'This Deal Is High Risk'}</span>
+                              <span>{verdictLabel}</span>
                             </p>
                             <p className="text-xs md:text-sm text-white/70 mt-1 max-w-xs mx-auto">
                               {isLowRisk 
-                                ? 'This contract is mostly creator-friendly. Fixing the points below can further reduce edge-case payment risk.'
-                                : `You're exposed in ${totalRiskAreas} key risk ${totalRiskAreas === 1 ? 'area' : 'areas'}. Fixing them can raise your score above ${potentialScore >= 90 ? '90' : potentialScore} and reduce payment risk.`
-                              }
+                                ? 'Mostly safe, with a few points to negotiate below.'
+                                : `You're exposed in ${totalRiskAreas} key risk ${
+                                    totalRiskAreas === 1 ? 'area' : 'areas'
+                                  }. Fixing them can raise your score above ${
+                                    potentialScore >= 90 ? '90' : potentialScore
+                                  } and reduce payment risk.`}
                             </p>
                           </div>
                           
@@ -3050,10 +3184,10 @@ ${creatorName}`;
                         <div className="mb-3">
                           <p className="text-base md:text-lg font-semibold text-green-400 flex items-center justify-center gap-2">
                             <span>✅</span>
-                            <span>Your Deal Looks Safe</span>
+                            <span>Safe</span>
                           </p>
                           <p className="text-sm text-white/70 mt-1">
-                            All key areas are protected
+                            All key areas are protected.
                           </p>
                         </div>
                       );
@@ -3090,7 +3224,7 @@ ${creatorName}`;
                           const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 
       (typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com') 
         ? 'https://api.creatorarmour.com'
-                              : 'http://localhost:3001');
+                              : 'https://noticebazaar-api.onrender.com');
                           const requestBody: any = { brandName: 'the Brand' };
                           if (reportId) {
                             requestBody.reportId = reportId;
@@ -3155,17 +3289,24 @@ ${creatorName}`;
               {/* 1. Key Terms */}
               <div className="bg-white/5 backdrop-blur-md rounded-xl border border-white/10 overflow-hidden">
                 <button
-                  onClick={() => setIsKeyTermsExpanded(!isKeyTermsExpanded)}
+                  onClick={() => handleAccordionToggle('keyTerms')}
                   className="w-full p-4 flex items-center justify-between hover:bg-white/5 transition-colors"
                 >
-                  <div className="flex items-center gap-3">
-                    <CheckCircle className="w-5 h-5 text-green-400" />
-                    <span className="text-white font-medium">Key Terms</span>
-                    <span className="text-xs px-3 py-1 rounded-full bg-green-500/20 text-green-400 border border-green-500/30">
-                      All Clear
-                    </span>
+                  <div className="flex flex-col items-start gap-1 w-full text-left">
+                    <div className="flex items-center gap-2 w-full">
+                      <CheckCircle className="w-5 h-5 text-green-400" />
+                      <span className="text-white font-medium flex-1">Key Terms</span>
+                      <span className="text-xs px-3 py-1 rounded-full bg-green-500/20 text-green-400 border border-green-500/30 flex-shrink-0">
+                        Safe
+                      </span>
+                    </div>
+                    {analysisResults.keyTerms && (
+                      <p className="text-[11px] text-white/60 pl-6">
+                        Brand, money, and timelines in one place.
+                      </p>
+                    )}
                   </div>
-                  <ChevronDown 
+                  <ChevronDown
                     className={`w-5 h-5 text-white/60 transition-transform ${isKeyTermsExpanded ? 'rotate-180' : ''}`}
                   />
                 </button>
@@ -3178,43 +3319,53 @@ ${creatorName}`;
                       transition={{ duration: 0.3 }}
                       className="overflow-hidden"
                     >
-                      <div className="px-4 pb-4 space-y-3">
+                      <div className="px-4 pb-4">
                         {analysisResults.keyTerms && (
-                          <>
+                          <div className="grid gap-2">
                             {analysisResults.keyTerms.brandName && (
-                              <div className="flex justify-between items-center text-sm pb-2 border-b border-white/10">
-                                <span className="text-white/70 flex items-center gap-2">
-                                  <Building2 className="w-4 h-4" />
-                                  Brand Name:
-                                </span>
-                                <span className="text-white font-semibold">{analysisResults.keyTerms.brandName}</span>
+                              <div className="bg-white/5 rounded-lg px-3 py-2 text-sm">
+                                <div className="flex items-start gap-2 text-white/70">
+                                  <Building2 className="w-4 h-4 mt-0.5" />
+                                  <span className="font-medium">Brand Name</span>
+                                </div>
+                                <div className="mt-1 text-white font-semibold text-sm leading-snug break-words">
+                                  {analysisResults.keyTerms.brandName}
+                                </div>
                               </div>
                             )}
                             {analysisResults.keyTerms.dealValue && analysisResults.keyTerms.dealValue !== 'Not specified' && (
-                              <div className="flex justify-between items-center text-sm">
-                                <span className="text-white/70">Deal Value:</span>
-                                <span className="text-white font-medium">{analysisResults.keyTerms.dealValue}</span>
+                              <div className="bg-white/5 rounded-lg px-3 py-2 text-sm">
+                                <span className="text-white/70 font-medium block">Deal Value</span>
+                                <span className="mt-1 block text-white font-medium text-sm leading-snug break-words">
+                                  {analysisResults.keyTerms.dealValue}
+                                </span>
                               </div>
                             )}
                             {analysisResults.keyTerms.deliverables && analysisResults.keyTerms.deliverables !== 'Not specified' && (
-                              <div className="flex justify-between items-center text-sm">
-                                <span className="text-white/70">Deliverables:</span>
-                                <span className="text-white font-medium">{analysisResults.keyTerms.deliverables}</span>
+                              <div className="bg-white/5 rounded-lg px-3 py-2 text-sm">
+                                <span className="text-white/70 font-medium block">Deliverables</span>
+                                <span className="mt-1 block text-white font-medium text-sm leading-snug break-words">
+                                  {analysisResults.keyTerms.deliverables}
+                                </span>
                               </div>
                             )}
                             {analysisResults.keyTerms.paymentSchedule && analysisResults.keyTerms.paymentSchedule !== 'Not specified' && (
-                              <div className="flex justify-between items-center text-sm">
-                                <span className="text-white/70">Payment Schedule:</span>
-                                <span className="text-white font-medium">{analysisResults.keyTerms.paymentSchedule}</span>
+                              <div className="bg-white/5 rounded-lg px-3 py-2 text-sm">
+                                <span className="text-white/70 font-medium block">Payment Schedule</span>
+                                <span className="mt-1 block text-white font-medium text-sm leading-snug break-words">
+                                  {analysisResults.keyTerms.paymentSchedule}
+                                </span>
                               </div>
                             )}
                             {analysisResults.keyTerms.duration && analysisResults.keyTerms.duration !== 'Not specified' && (
-                              <div className="flex justify-between items-center text-sm">
-                                <span className="text-white/70">Duration:</span>
-                                <span className="text-white font-medium">{analysisResults.keyTerms.duration}</span>
+                              <div className="bg-white/5 rounded-lg px-3 py-2 text-sm">
+                                <span className="text-white/70 font-medium block">Duration</span>
+                                <span className="mt-1 block text-white font-medium text-sm leading-snug break-words">
+                                  {analysisResults.keyTerms.duration}
+                                </span>
                               </div>
                             )}
-                          </>
+                          </div>
                         )}
                       </div>
                     </motion.div>
@@ -3225,17 +3376,22 @@ ${creatorName}`;
               {/* 2. Protection Status */}
               <div className="bg-white/5 backdrop-blur-md rounded-xl border border-white/10 overflow-hidden">
                 <button
-                  onClick={() => setIsProtectionStatusExpanded(!isProtectionStatusExpanded)}
+                  onClick={() => handleAccordionToggle('protectionStatus')}
                   className="w-full p-4 flex items-center justify-between hover:bg-white/5 transition-colors"
                 >
-                  <div className="flex items-center gap-3">
-                    <Shield className="w-5 h-5 text-green-400" />
-                    <span className="text-white font-medium">Protection Status</span>
-                    <span className="text-xs px-3 py-1 rounded-full bg-green-500/20 text-green-400 border border-green-500/30">
-                      {analysisResults.verified.length} Strong Clauses
-                    </span>
+                  <div className="flex flex-col items-start gap-1 w-full text-left">
+                    <div className="flex items-center gap-2 w-full">
+                      <Shield className="w-5 h-5 text-green-400" />
+                      <span className="text-white font-medium flex-1">Protection Status</span>
+                      <span className="text-xs px-3 py-1 rounded-full bg-green-500/20 text-green-300 border border-green-500/30 flex-shrink-0">
+                        {analysisResults.verified.length} Strong Clauses
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-white/60 pl-6">
+                      Safe clauses that already protect you.
+                    </p>
                   </div>
-                  <ChevronDown 
+                  <ChevronDown
                     className={`w-5 h-5 text-white/60 transition-transform ${isProtectionStatusExpanded ? 'rotate-180' : ''}`}
                   />
                 </button>
@@ -3268,26 +3424,26 @@ ${creatorName}`;
                 </AnimatePresence>
               </div>
 
-              {/* 3. Issues Found */}
+              {/* 3. Negotiation Suggestions (renamed from Issues Found) */}
               <div className="bg-white/5 backdrop-blur-md rounded-xl border border-white/10 overflow-hidden">
                 <button
-                  onClick={() => setIsIssuesExpanded(!isIssuesExpanded)}
+                  onClick={() => handleAccordionToggle('issues')}
                   className="w-full p-4 flex items-center justify-between hover:bg-white/5 transition-colors"
                 >
-                  <div className="flex items-center gap-3">
-                    <AlertTriangle className="w-5 h-5 text-orange-400" />
-                    <div className="flex flex-col items-start">
-                      <span className="text-white font-medium">Issues Found</span>
-                      <span className="text-xs text-white/50 mt-0.5">These terms are in the contract but not in your favor.</span>
-                      {analysisResults.issues.length > 0 && analysisResults.issues.every((issue: any) => issue.severity === 'low') && (
-                        <span className="text-xs text-yellow-400/80 mt-1 italic">These are negotiable terms, not deal-breakers.</span>
-                      )}
+                  <div className="flex flex-col items-start gap-1 w-full text-left">
+                    <div className="flex items-center gap-2 w-full">
+                      <AlertTriangle className="w-5 h-5 text-orange-400" />
+                      <span className="text-white font-medium flex-1">Negotiation Suggestions</span>
+                      <span className="text-xs px-3 py-1 rounded-full bg-orange-500/15 text-orange-300 border border-orange-500/30 flex-shrink-0">
+                        {analysisResults.issues.length}{' '}
+                        {analysisResults.issues.length === 1 ? 'Issue' : 'Issues'}
+                      </span>
                     </div>
-                    <span className="text-xs px-3 py-1 rounded-full bg-orange-500/20 text-orange-400 border border-orange-500/30 ml-auto">
-                      {analysisResults.issues.length} {analysisResults.issues.length === 1 ? 'Issue' : 'Issues'}
-                    </span>
+                    <p className="text-[11px] text-white/60 pl-6">
+                      Short tasks you can negotiate to make this deal safer.
+                    </p>
                   </div>
-                  <ChevronDown 
+                  <ChevronDown
                     className={`w-5 h-5 text-white/60 transition-transform ${isIssuesExpanded ? 'rotate-180' : ''} ml-2`}
                   />
                 </button>
@@ -3300,25 +3456,55 @@ ${creatorName}`;
                       transition={{ duration: 0.3 }}
                       className="overflow-hidden"
                     >
-                      <div className="px-4 pb-4 space-y-2">
+                      <div className="px-4 pb-4 space-y-3">
                         {analysisResults.issues.length > 0 ? (
                           analysisResults.issues.map((issue) => (
-                            <div key={issue.id} className="flex items-start gap-2 text-sm">
-                              <AlertTriangle className={`w-4 h-4 mt-0.5 flex-shrink-0 ${
-                                issue.severity === 'high' ? 'text-red-400' : 
-                                issue.severity === 'medium' ? 'text-orange-400' : 
-                                'text-yellow-400'
-                              }`} />
+                            <div
+                              key={issue.id}
+                              className="rounded-xl bg-white/5 border border-white/10 p-3 flex items-start gap-3 text-sm"
+                            >
+                              <AlertTriangle
+                                className={`w-4 h-4 mt-0.5 flex-shrink-0 ${
+                                  issue.severity === 'high'
+                                    ? 'text-red-400'
+                                    : issue.severity === 'medium'
+                                    ? 'text-orange-400'
+                                    : 'text-yellow-400'
+                                }`}
+                              />
                               <div className="flex-1">
                                 <div className="text-white font-medium">{issue.title}</div>
-                                <div className="text-white/60 text-xs">{issue.description}</div>
-                                <span className={`text-xs px-2 py-0.5 rounded-full mt-1 inline-block ${
-                                  issue.severity === 'high' ? 'bg-red-500/20 text-red-400 border border-red-500/30' :
-                                  issue.severity === 'medium' ? 'bg-orange-500/20 text-orange-400 border border-orange-500/30' :
-                                  'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30'
-                                }`}>
-                                  {issue.severity}
+                                <div className="text-xs text-white/70 mt-1">
+                                  <span className="font-semibold text-white/80">Suggested fix: </span>
+                                  <span>{getSuggestedFix(issue)}</span>
+                                </div>
+                                <div className="flex flex-wrap items-center gap-2 mt-2">
+                                  <span
+                                    className={`text-[10px] px-2 py-0.5 rounded-full uppercase tracking-wide ${
+                                      issue.severity === 'high'
+                                        ? 'bg-red-500/20 text-red-300 border border-red-500/40'
+                                        : issue.severity === 'medium'
+                                        ? 'bg-orange-500/20 text-orange-300 border border-orange-500/40'
+                                        : 'bg-yellow-500/20 text-yellow-300 border border-yellow-500/40'
+                                    }`}
+                                  >
+                                    {issue.severity} risk
                                 </span>
+                                  {(() => {
+                                    const strength = getNegotiationStrength(issue);
+                                    return (
+                                      <span
+                                        className={`text-[10px] px-2 py-0.5 rounded-full flex items-center gap-1 ${strength.color}`}
+                                      >
+                                        <span>{strength.emoji}</span>
+                                        <span>{strength.label}</span>
+                                      </span>
+                                    );
+                                  })()}
+                                </div>
+                                <div className="mt-1 text-[11px] text-white/50">
+                                  Impact if ignored: {getImpactIfIgnored(issue)}
+                                </div>
                               </div>
                             </div>
                           ))
@@ -3334,29 +3520,60 @@ ${creatorName}`;
               {/* 3.5. Missing Clauses */}
               <div className="bg-white/5 backdrop-blur-md rounded-xl border border-yellow-500/30 overflow-hidden">
                 <button
-                  onClick={() => setIsMissingClausesExpanded(!isMissingClausesExpanded)}
+                  onClick={() => handleAccordionToggle('missingClauses')}
                   className="w-full p-4 flex items-center justify-between hover:bg-white/5 transition-colors"
                 >
-                  <div className="flex items-center gap-3">
-                    <AlertCircle className="w-5 h-5 text-yellow-400" />
-                    <div className="flex flex-col items-start">
-                      <span className="text-white font-medium">Missing Clauses</span>
-                      <span className="text-xs text-white/50 mt-0.5">These important points are not written anywhere yet.</span>
-                    </div>
-                    <span className="text-xs px-3 py-1 rounded-full bg-yellow-500/20 text-yellow-400 border border-yellow-500/30 ml-auto">
+                  <div className="flex flex-col items-start gap-1 w-full text-left">
+                    <div className="flex items-center gap-2 w-full">
+                      <AlertCircle className="w-5 h-5 text-yellow-400" />
+                      <span className="text-white font-medium flex-1">Missing Clauses</span>
                       {(() => {
                         // Count missing clauses - common ones to check
                         const missingCount = [
-                          !analysisResults.keyTerms?.dealValue || analysisResults.keyTerms.dealValue === 'Not specified' ? 1 : 0,
-                          !analysisResults.keyTerms?.paymentSchedule || analysisResults.keyTerms.paymentSchedule === 'Not specified' ? 1 : 0,
-                          !analysisResults.keyTerms?.exclusivity || analysisResults.keyTerms.exclusivity === 'Not specified' ? 1 : 0,
+                          !analysisResults.keyTerms?.dealValue ||
+                          analysisResults.keyTerms.dealValue === 'Not specified'
+                            ? 1
+                            : 0,
+                          !analysisResults.keyTerms?.paymentSchedule ||
+                          analysisResults.keyTerms.paymentSchedule === 'Not specified'
+                            ? 1
+                            : 0,
+                          !analysisResults.keyTerms?.exclusivity ||
+                          analysisResults.keyTerms.exclusivity === 'Not specified'
+                            ? 1
+                            : 0,
                         ].reduce((a, b) => a + b, 0);
-                        return missingCount > 0 ? `${missingCount} Missing` : '0 Missing';
+
+                        const baseClasses =
+                          'text-xs px-3 py-1 rounded-full ml-auto border flex-shrink-0';
+
+                        if (missingCount > 0) {
+                          return (
+                            <span
+                              className={`${baseClasses} bg-yellow-500/20 text-yellow-400 border-yellow-500/30`}
+                            >
+                              {missingCount} Missing
+                            </span>
+                          );
+                        }
+
+                        return (
+                          <span
+                            className={`${baseClasses} bg-green-500/20 text-green-300 border-green-500/30`}
+                          >
+                            Safe
+                          </span>
+                        );
                       })()}
-                    </span>
+                    </div>
+                    <p className="text-[11px] text-white/60 pl-6">
+                      Important points that are not written anywhere yet.
+                    </p>
                   </div>
-                  <ChevronDown 
-                    className={`w-5 h-5 text-white/60 transition-transform ${isMissingClausesExpanded ? 'rotate-180' : ''} ml-2`}
+                  <ChevronDown
+                    className={`w-5 h-5 text-white/60 transition-transform ${
+                      isMissingClausesExpanded ? 'rotate-180' : ''
+                    } ml-2`}
                   />
                 </button>
                 <AnimatePresence>
@@ -3418,18 +3635,27 @@ ${creatorName}`;
               {/* 4. Financial Breakdown */}
               <div className="bg-white/5 backdrop-blur-md rounded-xl border border-white/10 overflow-hidden">
                 <button
-                  onClick={() => setIsFinancialBreakdownExpanded(!isFinancialBreakdownExpanded)}
+                  onClick={() => handleAccordionToggle('financialBreakdown')}
                   className="w-full p-4 flex items-center justify-between hover:bg-white/5 transition-colors"
                 >
-                  <div className="flex items-center gap-3">
-                    <DollarSign className="w-5 h-5 text-green-400" />
-                    <span className="text-white font-medium">Financial Breakdown</span>
-                    <span className="text-xs px-3 py-1 rounded-full bg-green-500/20 text-green-400 border border-green-500/30">
-                      Fair Rate
-                    </span>
+                  <div className="flex flex-col items-start gap-1 w-full text-left">
+                    <div className="flex items-center gap-2 w-full">
+                      <DollarSign className="w-5 h-5 text-green-400" />
+                      <span className="text-white font-medium flex-1">
+                        Financial Breakdown
+                      </span>
+                      <span className="text-xs px-3 py-1 rounded-full bg-green-500/20 text-green-400 border border-green-500/30 flex-shrink-0">
+                        Fair Rate
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-white/60 pl-6">
+                      Simple view of payout, certainty, and timeline.
+                    </p>
                   </div>
-                  <ChevronDown 
-                    className={`w-5 h-5 text-white/60 transition-transform ${isFinancialBreakdownExpanded ? 'rotate-180' : ''}`}
+                  <ChevronDown
+                    className={`w-5 h-5 text-white/60 transition-transform ${
+                      isFinancialBreakdownExpanded ? 'rotate-180' : ''
+                    }`}
                   />
                 </button>
                 <AnimatePresence>
@@ -3442,6 +3668,65 @@ ${creatorName}`;
                       className="overflow-hidden"
                     >
                       <div className="px-4 pb-4 space-y-3">
+                        {/* Creator-friendly financial summary */}
+                        {(() => {
+                          const dealValue = analysisResults.keyTerms?.dealValue;
+                          const hasAmount =
+                            dealValue && dealValue !== 'Not specified';
+                          const hasSchedule =
+                            analysisResults.keyTerms?.paymentSchedule &&
+                            analysisResults.keyTerms.paymentSchedule !==
+                              'Not specified';
+
+                          let certaintyLabel = 'Medium';
+                          let certaintyCopy =
+                            'Most creators would double-check a couple of details here.';
+
+                          if (hasAmount && hasSchedule) {
+                            certaintyLabel = 'High';
+                            certaintyCopy =
+                              'Amount and payment timing are clearly written in the contract.';
+                          } else if (!hasAmount || !hasSchedule) {
+                            certaintyLabel = 'Review';
+                            certaintyCopy =
+                              'Ask the brand to confirm the exact amount and payment date in writing.';
+                          }
+
+                          const timelineRisk = hasSchedule
+                            ? 'Low — the contract mentions when you get paid.'
+                            : 'Needs clarification — payment date is not clearly written.';
+
+                          return (
+                            <div className="rounded-lg bg-white/5 border border-white/10 p-3 text-xs text-white/80 space-y-1.5">
+                              <div className="flex items-center justify-between">
+                                <span className="text-white/70">
+                                  Expected payout
+                                </span>
+                                <span className="font-medium">
+                                  {hasAmount
+                                    ? dealValue
+                                    : 'To be confirmed with brand'}
+                                </span>
+                              </div>
+                              <div className="flex items-center justify-between">
+                                <span className="text-white/70">
+                                  Payment certainty
+                                </span>
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-green-500/10 text-green-300 border border-green-500/30">
+                                  <CheckCircle className="w-3 h-3" />
+                                  <span>{certaintyLabel}</span>
+                                </span>
+                              </div>
+                              <p className="text-[11px] text-white/60 mt-1.5">
+                                {certaintyCopy}
+                              </p>
+                              <p className="text-[11px] text-white/55">
+                                Timeline risk: {timelineRisk}
+                              </p>
+                            </div>
+                          );
+                        })()}
+
                         {analysisResults.keyTerms?.dealValue && analysisResults.keyTerms.dealValue !== 'Not specified' && (
                           <div className="flex justify-between items-center text-sm">
                             <span className="text-white/70">Deal Value:</span>
@@ -3466,30 +3751,39 @@ ${creatorName}`;
               {/* 6. What We Will Ask the Brand */}
               <div className="bg-gradient-to-br from-blue-600/20 to-indigo-600/20 backdrop-blur-md rounded-xl border border-blue-500/30 overflow-hidden">
                 <button
-                  onClick={() => setIsRecommendedActionsExpanded(!isRecommendedActionsExpanded)}
+                  onClick={() => handleAccordionToggle('brandRequests')}
                   className="w-full p-4 flex items-center justify-between hover:bg-white/5 transition-colors"
                 >
-                  <div className="flex items-center gap-3">
-                    <Send className="w-5 h-5 text-blue-400" />
-                    <div className="flex flex-col items-start">
-                      <span className="text-white font-medium">What We Will Ask the Brand</span>
-                      <span className="text-xs text-white/60 mt-0.5">This is what protects your money</span>
+                  <div className="flex flex-col items-start gap-1 w-full text-left">
+                    <div className="flex items-center gap-2 w-full">
+                      <Send className="w-5 h-5 text-blue-400" />
+                      <span className="text-white font-medium flex-1">
+                        What We Will Ask the Brand
+                      </span>
+                      <span className="text-xs px-3 py-1 rounded-full bg-blue-500/20 text-blue-400 border border-blue-500/30 flex-shrink-0">
+                        {(() => {
+                          const requests = generateBrandRequests();
+                          const count = requests.length;
+                          if (count === 0) {
+                            return 'Safe';
+                          }
+                          if (count >= 5) {
+                            return '🔴 High Risk';
+                          } else if (count >= 3) {
+                            return '🟡 Needs Negotiation';
+                          }
+                          return 'Needs Negotiation';
+                        })()}
+                      </span>
                     </div>
-                    <span className="text-xs px-3 py-1 rounded-full bg-blue-500/20 text-blue-400 border border-blue-500/30 ml-auto">
-                      {(() => {
-                        const requests = generateBrandRequests();
-                        const count = requests.length;
-                        if (count >= 5) {
-                          return '🔴 High Risk Deal';
-                        } else if (count >= 3) {
-                          return '🟡 Moderate Risk';
-                        }
-                        return `${count} ${count === 1 ? 'Request' : 'Requests'}`;
-                      })()}
-                    </span>
+                    <p className="text-[11px] text-white/60 pl-6">
+                      Clear, polite asks we’ll send to protect your money.
+                    </p>
                   </div>
-                  <ChevronDown 
-                    className={`w-5 h-5 text-white/60 transition-transform ${isRecommendedActionsExpanded ? 'rotate-180' : ''} ml-2`}
+                  <ChevronDown
+                    className={`w-5 h-5 text-white/60 transition-transform ${
+                      isRecommendedActionsExpanded ? 'rotate-180' : ''
+                    } ml-2`}
                   />
                 </button>
                 <AnimatePresence>
@@ -3509,7 +3803,7 @@ ${creatorName}`;
                               <div className="text-center py-4">
                                 <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-green-500/10 border border-green-500/20">
                                   <CheckCircle className="w-4 h-4 text-green-400" />
-                                  <span className="text-sm text-green-300 font-medium">No requests needed. Contract looks safe! ✅</span>
+                                  <span className="text-sm text-green-300 font-medium">No requests needed. Safe.</span>
                                 </div>
                               </div>
                             );
@@ -3701,7 +3995,7 @@ ${creatorName}`;
                                       const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 
       (typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com') 
         ? 'https://api.creatorarmour.com'
-                                          : 'http://localhost:3001');
+                                          : 'https://noticebazaar-api.onrender.com');
                                       
                                       const requestBody: any = {
                                         brandName: 'the Brand'
@@ -3926,7 +4220,7 @@ ${creatorName}${session?.user?.email ? `\n${session.user.email}` : ''}`;
                       const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 
       (typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com') 
         ? 'https://api.creatorarmour.com'
-                          : 'http://localhost:3001');
+                          : 'https://noticebazaar-api.onrender.com');
                       
                       const requestBody: any = {
                         brandName: 'the Brand'
@@ -4391,7 +4685,7 @@ ${creatorName}${session?.user?.email ? `\n${session.user.email}` : ''}`;
                           const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 
       (typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com') 
         ? 'https://api.creatorarmour.com'
-                              : 'http://localhost:3001');
+                              : 'https://noticebazaar-api.onrender.com');
                           
                           // Generate clauses for all unresolved issues
                           const clausePromises = unresolvedIssues.slice(0, 5).map(async (issue) => {
@@ -4465,7 +4759,7 @@ ${creatorName}${session?.user?.email ? `\n${session.user.email}` : ''}`;
                               const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 
       (typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com') 
         ? 'https://api.creatorarmour.com'
-                                  : 'http://localhost:3001');
+                                  : 'https://noticebazaar-api.onrender.com');
                               const response = await fetch(`${apiBaseUrl}/api/protection/generate-negotiation-message`, {
                                 method: 'POST',
                                 headers: {
@@ -4964,7 +5258,7 @@ ${creatorName}${session?.user?.email ? `\n${session.user.email}` : ''}`;
                         const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 
       (typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com') 
         ? 'https://api.creatorarmour.com'
-                            : 'http://localhost:3001');
+                            : 'https://noticebazaar-api.onrender.com');
                         
                         const requestBody: any = {
                           brandName: 'the Brand'
@@ -5059,7 +5353,7 @@ ${creatorName}${session?.user?.email ? `\n${session.user.email}` : ''}`;
                         const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 
       (typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com') 
         ? 'https://api.creatorarmour.com'
-                            : 'http://localhost:3001');
+                            : 'https://noticebazaar-api.onrender.com');
                         const response = await fetch(`${apiBaseUrl}/api/protection/send-for-legal-review`, {
                           method: 'POST',
                           headers: {
@@ -5133,7 +5427,7 @@ ${creatorName}${session?.user?.email ? `\n${session.user.email}` : ''}`;
                         const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 
       (typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com') 
         ? 'https://api.creatorarmour.com'
-                            : 'http://localhost:3001');
+                        : 'https://noticebazaar-api.onrender.com');
                         const response = await fetch(`${apiBaseUrl}/api/protection/generate-safe-contract`, {
                           method: 'POST',
                           headers: {
@@ -5382,7 +5676,7 @@ ${creatorName}${session?.user?.email ? `\n${session.user.email}` : ''}`;
                     const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 
       (typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com') 
         ? 'https://api.creatorarmour.com'
-                        : 'http://localhost:3001');
+                              : 'https://noticebazaar-api.onrender.com');
                     
                     // Prepare request body - send issues if reportId is not available
                     const requestBody: any = {
@@ -5592,7 +5886,7 @@ ${creatorName}${session?.user?.email ? `\n${session.user.email}` : ''}`;
                           const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 
       (typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com') 
         ? 'https://api.creatorarmour.com'
-                              : 'http://localhost:3001');
+                          : 'https://noticebazaar-api.onrender.com');
                           const response = await fetch(`${apiBaseUrl}/api/protection/generate-safe-contract`, {
                             method: 'POST',
                             headers: {
@@ -5706,17 +6000,7 @@ ${creatorName}${session?.user?.email ? `\n${session.user.email}` : ''}`;
                 open={showShareFeedbackModal}
                 onClose={() => setShowShareFeedbackModal(false)}
                 message={formatNegotiationMessage(negotiationMessage)}
-                brandReplyLink={(() => {
-                  const baseUrl = typeof window !== 'undefined' 
-                    ? window.location.origin 
-                    : 'https://noticebazaar.com';
-                  // Only generate link if we have a valid dealId
-                  if (savedDealId) {
-                    return `${baseUrl}/#/brand-reply/${savedDealId}`;
-                  }
-                  // If no dealId, show error instead of generating invalid link
-                  return '';
-                })()}
+                brandReplyLink={brandReplyLink || ''}
                 primaryCtaText={isContractSummary ? 'Share Contract Summary' : 'Share with Brand'}
                 dealId={savedDealId || undefined}
                 onShareComplete={async (method) => {

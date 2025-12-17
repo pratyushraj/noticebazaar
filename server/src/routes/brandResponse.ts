@@ -194,12 +194,49 @@ router.get('/:token', async (req: Request, res: Response) => {
     await logAuditEntry(tokenData.id, tokenData.deal_id, 'viewed', req);
     
     // Fetch deal (only expose safe fields)
-    const { data: deal, error: dealError } = await supabase
-      .from('brand_deals')
-      .select('id, brand_name, brand_response_status, brand_response_message, brand_response_at, deal_amount, deliverables, analysis_report_id')
-      .eq('id', tokenData.deal_id)
-      .maybeSingle();
-    
+    let deal: any = null;
+    let dealError: any = null;
+
+    try {
+      const { data, error } = await supabase
+        .from('brand_deals')
+        .select(
+          'id, brand_name, brand_response_status, brand_response_message, brand_response_at, deal_amount, deliverables, analysis_report_id'
+        )
+        .eq('id', tokenData.deal_id)
+        .maybeSingle();
+
+      deal = data;
+      dealError = error;
+
+      // If analysis_report_id (or another column) does not exist yet, fall back to a minimal select
+      const isColumnError =
+        error &&
+        (error.code === '42703' ||
+          (typeof error.message === 'string' &&
+            (error.message.includes('column') ||
+              error.message.includes('analysis_report_id'))));
+
+      if (isColumnError) {
+        const { data: fallbackDeal, error: fallbackError } = await supabase
+          .from('brand_deals')
+          .select(
+            'id, brand_name, brand_response_status, brand_response_message, brand_response_at, deal_amount, deliverables'
+          )
+          .eq('id', tokenData.deal_id)
+          .maybeSingle();
+
+        if (!fallbackError && fallbackDeal) {
+          deal = fallbackDeal;
+          dealError = null;
+        } else {
+          dealError = fallbackError;
+        }
+      }
+    } catch (err: any) {
+      dealError = err;
+    }
+
     if (dealError || !deal) {
       console.error('[BrandResponse] GET Deal fetch error:', dealError);
       // Return neutral error (no internal details)
