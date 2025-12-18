@@ -554,7 +554,7 @@ const CreatorDashboard = () => {
 
     return (
     <ContextualTipsProvider currentView="dashboard">
-    <div className={`min-h-full ${gradients.page} text-white overflow-x-hidden`}>
+    <div className={`min-h-screen ${gradients.page} text-white overflow-x-hidden`} style={{ minHeight: '100dvh' }}>
       {/* Top Header - iOS 17 + visionOS Premium */}
       <motion.header
         initial={{ y: -100, opacity: 0 }}
