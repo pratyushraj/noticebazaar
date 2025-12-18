@@ -328,10 +328,10 @@ const CreatorContracts = () => {
 
             {/* Filter Tabs - Centered under stats */}
             <div className={cn(
-              "flex items-center justify-center gap-3 md:gap-4 mt-4 md:mt-6 mb-4 md:mb-6",
-              "overflow-x-auto overflow-y-visible py-1",
+              "flex items-center justify-start md:justify-center gap-2 md:gap-4 mt-4 md:mt-6 mb-4 md:mb-6",
+              "overflow-x-auto overflow-y-visible py-1 -mx-4 px-4 md:mx-0 md:px-0",
               "[&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]",
-              "flex-nowrap"
+              "flex-nowrap snap-x snap-mandatory"
             )}>
               {filters.map((filter) => {
                 const isActive = activeFilter === filter.id;
@@ -345,8 +345,8 @@ const CreatorContracts = () => {
                     whileTap={animations.microTap}
                     className={cn(
                       "whitespace-nowrap rounded-full border transition-all select-none",
-                      "text-sm md:text-base px-4 py-1.5 md:px-5 md:py-2",
-                      "flex-shrink-0 font-semibold",
+                      "text-sm md:text-base px-3 md:px-5 py-1.5 md:py-2",
+                      "flex-shrink-0 font-semibold snap-start",
                       isActive
                         ? "bg-white/15 text-white border-2 border-white/20 scale-[1.02] shadow-sm"
                         : "bg-white/5 text-white/70 border border-white/10 hover:bg-white/8"
