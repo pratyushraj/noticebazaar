@@ -232,7 +232,9 @@ const MarketingHome = () => {
       <header className="sticky top-0 z-50 bg-black/40 backdrop-blur-sm border-b border-white/5">
         <div className="container mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <span className="font-bold text-lg text-white">CreatorArmour</span>
+            <span className="font-bold text-lg bg-gradient-to-r from-purple-200 via-pink-200 to-purple-100 text-transparent bg-clip-text drop-shadow-[0_0_8px_rgba(0,0,0,0.45)]">
+              CreatorArmour
+            </span>
           </div>
 
           {/* Desktop Navigation */}
@@ -259,7 +261,13 @@ const MarketingHome = () => {
             <Link to="/login" className="text-sm border border-white/10 px-3 py-2 rounded-lg hidden md:inline-block">Client Login</Link>
 
             {/* Mobile Menu Trigger */}
-            <Button variant="ghost" size="icon" onClick={() => setIsMenuOpen(true)} className="md:hidden text-white hover:bg-white/10">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setIsMenuOpen(true)}
+              className="md:hidden text-white hover:bg-white/10 active:bg-white/15 min-h-[44px] min-w-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-300/70 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0b1020]"
+              aria-label="Open menu"
+            >
               <Menu className="h-6 w-6" />
             </Button>
           </div>
@@ -289,9 +297,12 @@ const MarketingHome = () => {
                  - "Secure My Deal →"
                  - "Get Protected →"
               */}
-              <Link to="/free-legal-check" className="cta-primary inline-flex items-center justify-center gap-3 font-bold py-3 px-5 rounded-lg shadow-md text-lg flex-1">
+              <Link
+                to="/free-legal-check"
+                className="cta-primary nb-hero-cta inline-flex items-center justify-center gap-3 font-bold py-3 px-5 rounded-lg text-lg flex-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-300/70 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0b1020]"
+              >
                 Protect My Deals
-                <ArrowRight className="h-5 w-5" />
+                <ArrowRight className="h-5 w-5 transition-transform duration-150 ease-out group-hover:translate-x-1 group-active:translate-x-0.5" />
               </Link>
               <button
                 onClick={() => openCalendly(CALENDLY_URL)}

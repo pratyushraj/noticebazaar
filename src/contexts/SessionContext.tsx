@@ -7,11 +7,25 @@ import { lockTrialIfExpired, getTrialStatus, TrialStatus } from '@/lib/trial';
 import { analytics } from '@/utils/analytics';
 import { logger } from '@/lib/utils/logger';
 
+type AuthStatus = 'loading' | 'authenticated' | 'unauthenticated';
+
 interface SessionContextType {
   session: Session | null;
   user: User | null;
   profile: Profile | null;
+  /**
+   * Overall loading flag for auth + profile.
+   * This remains true until we've resolved the current session
+   * AND finished (or skipped) initial profile fetch.
+   */
   loading: boolean;
+  /**
+   * Single source of truth for auth state.
+   * - "loading": still resolving session/profile
+   * - "authenticated": session + (attempted) profile fetch complete
+   * - "unauthenticated": no active session after initial check
+   */
+  authStatus: AuthStatus;
   isAdmin: boolean;
   isCreator: boolean; // New: Add isCreator
   organizationId: string | null; // NEW: Add organizationId
@@ -257,6 +271,11 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
   const trialStatus = useMemo(() => getTrialStatus(profile), [profile]); // Calculate trial status
   // Overall loading state: true if initial session load is not complete OR profile is still loading
   const loading = !initialLoadComplete || isLoadingProfile;
+  const authStatus: AuthStatus = loading
+    ? 'loading'
+    : session
+      ? 'authenticated'
+      : 'unauthenticated';
 
   // Check and lock trial if expired on profile load
   useEffect(() => {
@@ -407,10 +426,27 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
             // onAuthStateChange will clean the hash after processing tokens
           }
           
-          // If we have a session but we're on root or login page, redirect to dashboard
-          // This handles the case where Supabase redirects to Site URL after OAuth
-          if (currentSession && (window.location.pathname === '/' || window.location.pathname === '/login') && !hasAccessToken) {
-            console.log('[SessionContext] Session exists but on root/login, redirecting to dashboard...');
+          // If we have a session but we're truly on a "no-route" root/login page, redirect to dashboard.
+          // IMPORTANT: We MUST NOT do this when there's a hash-based route like "#/brand-reply/:token"
+          // because public, token-based pages (brand reply, feedback, etc.) rely on hash routing.
+          //
+          // Heuristic:
+          // - pathname is "/" or "/login"
+          // - no OAuth tokens in the hash
+          // - AND the hash does NOT start with "#/" (i.e. no hash-route segment present)
+          const hashValue = window.location.hash || '';
+          const hasRouteInHash = hashValue.startsWith('#/');
+          const isRootOrLoginPath = window.location.pathname === '/' || window.location.pathname === '/login';
+          const hasOauthTokensInHash = hashValue.includes('access_token') || hashValue.includes('type=');
+
+          if (
+            currentSession &&
+            isRootOrLoginPath &&
+            !hasAccessToken &&
+            !hasOauthTokensInHash &&
+            !hasRouteInHash
+          ) {
+            console.log('[SessionContext] Session exists on bare root/login, redirecting to dashboard...');
             setTimeout(() => {
               window.location.href = '/#/creator-dashboard';
             }, 100);
@@ -553,12 +589,13 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
     user,
     profile,
     loading,
+    authStatus,
     isAdmin,
     isCreator, // Include isCreator
     organizationId, // Include organizationId
     refetchProfile: refetchProfileQuery, // Expose refetch function
     trialStatus, // Include trial status
-  }), [session, user, profile, loading, isAdmin, isCreator, organizationId, refetchProfileQuery, trialStatus]);
+  }), [session, user, profile, loading, authStatus, isAdmin, isCreator, organizationId, refetchProfileQuery, trialStatus]);
 
   return (
     <SessionContext.Provider value={contextValue}>

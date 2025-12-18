@@ -3,9 +3,7 @@
 import { ReactNode, useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useSession } from '@/contexts/SessionContext';
-import { Loader2 } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { MadeWithDyad } from '@/components/made-with-dyad';
+import FullScreenLoader from '@/components/FullScreenLoader';
 import { supabase } from '@/integrations/supabase/client';
 
 interface ProtectedRouteProps {
@@ -16,7 +14,7 @@ interface ProtectedRouteProps {
 const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { session, loading, profile, isAdmin, isCreator, refetchProfile, user } = useSession(); // Added refetchProfile and user
+  const { session, loading, authStatus, profile, isAdmin, isCreator, refetchProfile, user } = useSession();
   const [isCreatingProfile, setIsCreatingProfile] = useState(false);
   const [profileCreationAttempts, setProfileCreationAttempts] = useState(0);
 
@@ -47,7 +45,8 @@ const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
   };
 
   useEffect(() => {
-    if (loading) {
+    // Don't run any routing logic until auth + profile state are resolved
+    if (authStatus === 'loading') {
       return;
     }
 
@@ -225,7 +224,7 @@ const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
           return; // Allow the route to render
         }
       }
-    } else if (!session) {
+    } else if (!session && authStatus === 'unauthenticated') {
       const isRootPath = location.pathname === '/';
       const isLoginPage = location.pathname === '/login';
 
@@ -233,22 +232,15 @@ const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
         navigate('/login', { replace: true });
       }
     }
-  }, [session, loading, profile, isAdmin, isCreator, allowedRoles, navigate, location.pathname, user, refetchProfile, profileCreationAttempts]);
+  }, [session, authStatus, loading, profile, isAdmin, isCreator, allowedRoles, navigate, location.pathname, user, refetchProfile, profileCreationAttempts]);
 
-  if (loading || isCreatingProfile) {
+  // Global auth/profile loading gate for all protected routes
+  if (authStatus === 'loading' || isCreatingProfile) {
     return (
-      <div className="nb-screen-height flex flex-col items-center justify-center bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900">
-        <Loader2 className={cn("h-12 w-12 animate-spin text-purple-400")} />
-        <p className="mt-4 text-lg text-white/90">
-          {isCreatingProfile ? 'Setting up your account...' : 'Loading application...'}
-        </p>
-        {isCreatingProfile && (
-          <p className="mt-2 text-sm text-white/70">
-            This may take a few seconds
-          </p>
-        )}
-        <MadeWithDyad />
-      </div>
+      <FullScreenLoader
+        message={isCreatingProfile ? 'Setting up your account...' : 'Loading your workspace...'}
+        secondaryMessage={isCreatingProfile ? 'This may take a few seconds' : undefined}
+      />
     );
   }
 

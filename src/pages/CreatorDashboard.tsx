@@ -176,13 +176,21 @@ const CreatorDashboard = () => {
   };
 
   // User data from session
-  const userData = useMemo(() => ({
-    name: `${profile?.first_name || ''} ${profile?.last_name || ''}`.trim() || 'Creator',
-    displayName: profile?.instagram_handle?.replace('@', '') || user?.email?.split('@')[0] || 'creator',
-    userType: "Content Creator",
-    streak: 0, // TODO: Calculate from actual streak data when available
-    avatar: getInitials(profile?.first_name || null, profile?.last_name || null)
-  }), [profile, user, partnerStats]);
+  const userData = useMemo(() => {
+    const fullName = `${profile?.first_name || ''} ${profile?.last_name || ''}`.trim();
+    const displayName = fullName || 
+      profile?.instagram_handle?.replace('@', '') || 
+      user?.email?.split('@')[0] || 
+      'Creator';
+    
+    return {
+      name: fullName || 'Creator',
+      displayName: displayName,
+      userType: "Content Creator",
+      streak: 0, // TODO: Calculate from actual streak data when available
+      avatar: getInitials(profile?.first_name || null, profile?.last_name || null)
+    };
+  }, [profile, user, partnerStats]);
 
   // Calculate real stats from brand deals
   const calculatedStats = useMemo(() => {
@@ -1008,7 +1016,7 @@ const CreatorDashboard = () => {
               <h1 className={cn(typography.h1, "mb-2 leading-tight md:text-xl")}>
                 {getGreeting()}, <br />
                 <span className="bg-gradient-to-r from-purple-400 to-pink-400 text-transparent bg-clip-text">
-                  {userData.displayName}!
+                  {userData.name}!
                 </span> 👋
               </h1>
               <p className={cn(typography.body, "mt-2 mb-3 leading-relaxed text-purple-200")}>

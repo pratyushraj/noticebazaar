@@ -18,6 +18,7 @@ import { uploadFile } from '@/lib/services/fileService';
 import { triggerHaptic, HapticPatterns } from '@/lib/utils/haptics';
 
 type RiskLevel = 'low' | 'medium' | 'high';
+type ActionType = 'NEGOTIATION' | 'CLARIFICATION' | 'SUMMARY';
 
 const ContractUploadFlow = () => {
   const navigate = useNavigate();
@@ -607,7 +608,7 @@ ${creatorName}`;
 
   // Unified verdict label helper
   const getRiskVerdictLabel = (overallRisk: 'low' | 'medium' | 'high' | string) => {
-    if (overallRisk === 'high') return 'High Risk';
+    if (overallRisk === 'high') return 'Needs Attention';
     if (overallRisk === 'medium') return 'Needs Negotiation';
     return 'Safe';
   };
@@ -719,6 +720,28 @@ ${creatorName}`;
     }
 
     return requests;
+  };
+
+  // Determine what kind of action we should take when sharing with the brand
+  const getActionType = (): ActionType => {
+    const issues = Array.isArray(analysisResults?.issues) ? analysisResults!.issues : [];
+    const hasHighOrMediumRisk = issues.some(
+      (issue: any) => issue.severity === 'high' || issue.severity === 'medium'
+    );
+
+    if (hasHighOrMediumRisk) {
+      return 'NEGOTIATION';
+    }
+
+    const clarifications = generateBrandRequests();
+    const hasClarifications = clarifications.length > 0;
+
+    if (hasClarifications) {
+      return 'CLARIFICATION';
+    }
+
+    // No high/medium issues and no clarifications: treat as safe/summary state
+    return 'SUMMARY';
   };
 
   // Progressive analysis animation
@@ -2999,8 +3022,13 @@ ${creatorName}`;
                     <div className={`text-4xl md:text-5xl font-black ${resultsRiskInfo.color} transition-all duration-300 leading-none`}>
                       {scoreAnimation || analysisResults.score}
                     </div>
-                    <div className="text-sm text-white/70 mt-2 font-medium">
-                      Risk Score: {scoreAnimation || analysisResults.score} / 100
+                    <div className="mt-2 space-y-1">
+                      <div className="text-sm text-white/70 font-medium">
+                        Risk Score: {scoreAnimation || analysisResults.score} / 100
+                      </div>
+                      <p className="text-[11px] text-white/60 max-w-xs mx-auto">
+                        Score reflects missing protections, payment certainty, and usage rights — not deal quality.
+                      </p>
                     </div>
                   </div>
                   
@@ -3158,10 +3186,20 @@ ${creatorName}`;
                           toast.error('Please log in to generate negotiation message');
                           return;
                         }
-                        if (!analysisResults || analysisResults.issues.length === 0) {
-                          toast.error('No issues found to negotiate');
-                          return;
-                        }
+                      if (!analysisResults) {
+                        toast.error('Contract analysis not available');
+                        return;
+                      }
+
+                      const hasHighOrMediumRisk = analysisResults.issues?.some(
+                        (issue: any) =>
+                          issue.severity === 'high' || issue.severity === 'medium'
+                      );
+
+                      if (!hasHighOrMediumRisk) {
+                        toast.info('No risks detected. This contract is safe to proceed.');
+                        return;
+                      }
                         triggerHaptic(HapticPatterns.light);
                         setIsGeneratingMessage(true);
                         try {
@@ -3368,7 +3406,7 @@ ${creatorName}`;
                 </AnimatePresence>
               </div>
 
-              {/* 3. Negotiation Suggestions (renamed from Issues Found) */}
+              {/* 3. Negotiation Suggestions / Optional Improvements */}
               <div className="bg-white/5 backdrop-blur-md rounded-xl border border-white/10 overflow-hidden">
                 <button
                   onClick={() => handleAccordionToggle('issues')}
@@ -3376,15 +3414,51 @@ ${creatorName}`;
                 >
                   <div className="flex flex-col items-start gap-1 w-full text-left">
                     <div className="flex items-center gap-2 w-full">
-                    <AlertTriangle className="w-5 h-5 text-orange-400" />
-                      <span className="text-white font-medium flex-1">Negotiation Suggestions</span>
-                      <span className="text-xs px-3 py-1 rounded-full bg-orange-500/15 text-orange-300 border border-orange-500/30 flex-shrink-0">
-                        {analysisResults.issues.length}{' '}
-                        {analysisResults.issues.length === 1 ? 'Issue' : 'Issues'}
-                    </span>
+                      {(() => {
+                        const issues = analysisResults.issues || [];
+                        const hasSingleLowIssue =
+                          issues.length === 1 && issues[0].severity === 'low';
+
+                        if (hasSingleLowIssue) {
+                          return (
+                            <>
+                              <CheckCircle className="w-5 h-5 text-green-400" />
+                              <span className="text-white font-medium flex-1">
+                                Optional Improvements
+                              </span>
+                              <span className="text-xs px-3 py-1 rounded-full bg-green-500/15 text-green-300 border border-green-500/30 flex-shrink-0">
+                                1 Optional item
+                              </span>
+                            </>
+                          );
+                        }
+
+                        return (
+                          <>
+                            <AlertTriangle className="w-5 h-5 text-orange-400" />
+                            <span className="text-white font-medium flex-1">
+                              Negotiation Suggestions
+                            </span>
+                            <span className="text-xs px-3 py-1 rounded-full bg-orange-500/15 text-orange-300 border border-orange-500/30 flex-shrink-0">
+                              {analysisResults.issues.length}{' '}
+                              {analysisResults.issues.length === 1 ? 'Issue' : 'Issues'}
+                            </span>
+                          </>
+                        );
+                      })()}
                     </div>
                     <p className="text-[11px] text-white/60 pl-6">
-                      Short tasks you can negotiate to make this deal safer.
+                      {(() => {
+                        const issues = analysisResults.issues || [];
+                        const hasSingleLowIssue =
+                          issues.length === 1 && issues[0].severity === 'low';
+
+                        if (hasSingleLowIssue) {
+                          return 'Optional suggestions you may include for extra clarity. Not required to proceed.';
+                        }
+
+                        return 'Short tasks you can negotiate to make this deal safer.';
+                      })()}
                     </p>
                   </div>
                   <ChevronDown 
@@ -3402,58 +3476,101 @@ ${creatorName}`;
                     >
                       <div className="px-4 pb-4 space-y-3">
                         {analysisResults.issues.length > 0 ? (
-                          analysisResults.issues.map((issue) => (
-                            <div
-                              key={issue.id}
-                              className="rounded-xl bg-white/5 border border-white/10 p-3 flex items-start gap-3 text-sm"
-                            >
-                              <AlertTriangle
-                                className={`w-4 h-4 mt-0.5 flex-shrink-0 ${
-                                  issue.severity === 'high'
-                                    ? 'text-red-400'
-                                    : issue.severity === 'medium'
-                                    ? 'text-orange-400'
-                                    : 'text-yellow-400'
-                                }`}
-                              />
-                              <div className="flex-1">
-                                <div className="text-white font-medium">{issue.title}</div>
-                                <div className="text-xs text-white/70 mt-1">
-                                  <span className="font-semibold text-white/80">Suggested fix: </span>
-                                  <span>{getSuggestedFix(issue)}</span>
-                                </div>
-                                <div className="flex flex-wrap items-center gap-2 mt-2">
-                                  <span
-                                    className={`text-[10px] px-2 py-0.5 rounded-full uppercase tracking-wide ${
-                                      issue.severity === 'high'
-                                        ? 'bg-red-500/20 text-red-300 border border-red-500/40'
-                                        : issue.severity === 'medium'
-                                        ? 'bg-orange-500/20 text-orange-300 border border-orange-500/40'
-                                        : 'bg-yellow-500/20 text-yellow-300 border border-yellow-500/40'
-                                    }`}
+                          (() => {
+                            const issues = analysisResults.issues || [];
+                            const hasSingleLowIssue =
+                              issues.length === 1 && issues[0].severity === 'low';
+
+                            return issues.map((issue) => {
+                              const isLowOnlyMode =
+                                hasSingleLowIssue && issue.severity === 'low';
+
+                              if (isLowOnlyMode) {
+                                return (
+                                  <div
+                                    key={issue.id}
+                                    className="rounded-xl bg-white/5 border border-white/10 p-3 flex items-start gap-3 text-sm"
                                   >
-                                    {issue.severity} risk
-                                </span>
-                                  {(() => {
-                                    const strength = getNegotiationStrength(issue);
-                                    return (
-                                      <span
-                                        className={`text-[10px] px-2 py-0.5 rounded-full flex items-center gap-1 ${strength.color}`}
-                                      >
-                                        <span>{strength.emoji}</span>
-                                        <span>{strength.label}</span>
+                                    <CheckCircle className="w-4 h-4 mt-0.5 flex-shrink-0 text-green-400" />
+                                    <div className="flex-1">
+                                      <div className="text-white font-medium">{issue.title}</div>
+                                      <div className="text-xs text-white/70 mt-1">
+                                        <span className="font-semibold text-white/80">
+                                          Suggested fix:{' '}
+                                        </span>
+                                        <span>{getSuggestedFix(issue)}</span>
+                                      </div>
+                                      <div className="flex flex-wrap items-center gap-2 mt-2">
+                                        <span className="text-[10px] px-2 py-0.5 rounded-full bg-green-500/15 text-green-300 border border-green-500/30">
+                                          Low Impact
+                                        </span>
+                                        <span className="text-[10px] px-2 py-0.5 rounded-full bg-blue-500/15 text-blue-200 border border-blue-500/30">
+                                          Easy to Clarify
+                                        </span>
+                                      </div>
+                                    </div>
+                                  </div>
+                                );
+                              }
+
+                              return (
+                                <div
+                                  key={issue.id}
+                                  className="rounded-xl bg-white/5 border border-white/10 p-3 flex items-start gap-3 text-sm"
+                                >
+                                  <AlertTriangle
+                                    className={`w-4 h-4 mt-0.5 flex-shrink-0 ${
+                                      issue.severity === 'high'
+                                        ? 'text-red-400'
+                                        : issue.severity === 'medium'
+                                        ? 'text-orange-400'
+                                        : 'text-yellow-400'
+                                    }`}
+                                  />
+                                  <div className="flex-1">
+                                    <div className="text-white font-medium">{issue.title}</div>
+                                    <div className="text-xs text-white/70 mt-1">
+                                      <span className="font-semibold text-white/80">
+                                        Suggested fix:{' '}
                                       </span>
-                                    );
-                                  })()}
+                                      <span>{getSuggestedFix(issue)}</span>
+                                    </div>
+                                    <div className="flex flex-wrap items-center gap-2 mt-2">
+                                      <span
+                                        className={`text-[10px] px-2 py-0.5 rounded-full uppercase tracking-wide ${
+                                          issue.severity === 'high'
+                                            ? 'bg-red-500/20 text-red-300 border border-red-500/40'
+                                            : issue.severity === 'medium'
+                                            ? 'bg-orange-500/20 text-orange-300 border border-orange-500/40'
+                                            : 'bg-yellow-500/20 text-yellow-300 border border-yellow-500/40'
+                                        }`}
+                                      >
+                                        {issue.severity} risk
+                                      </span>
+                                      {(() => {
+                                        const strength = getNegotiationStrength(issue);
+                                        return (
+                                          <span
+                                            className={`text-[10px] px-2 py-0.5 rounded-full flex items-center gap-1 ${strength.color}`}
+                                          >
+                                            <span>{strength.emoji}</span>
+                                            <span>{strength.label}</span>
+                                          </span>
+                                        );
+                                      })()}
+                                    </div>
+                                    <div className="mt-1 text-[11px] text-white/50">
+                                      Impact if ignored: {getImpactIfIgnored(issue)}
+                                    </div>
+                                  </div>
                                 </div>
-                                <div className="mt-1 text-[11px] text-white/50">
-                                  Impact if ignored: {getImpactIfIgnored(issue)}
-                                </div>
-                              </div>
-                            </div>
-                          ))
+                              );
+                            });
+                          })()
                         ) : (
-                          <div className="text-white/60 text-sm">No issues found.</div>
+                          <div className="text-white/60 text-sm">
+                            No risks detected. This contract is safe to proceed.
+                          </div>
                         )}
                       </div>
                     </motion.div>
@@ -3705,20 +3822,27 @@ ${creatorName}`;
                         What We Will Ask the Brand
                       </span>
                       <span className="text-xs px-3 py-1 rounded-full bg-blue-500/20 text-blue-400 border border-blue-500/30 flex-shrink-0">
-                      {(() => {
-                        const requests = generateBrandRequests();
-                        const count = requests.length;
-                          if (count === 0) {
-                            return 'Safe';
-                          }
-                        if (count >= 5) {
-                            return '🔴 High Risk';
-                        } else if (count >= 3) {
-                            return '🟡 Needs Negotiation';
+                        {(() => {
+                          const requests = generateBrandRequests();
+                          const count = requests.length;
+                          const issuesCount = analysisResults?.issues?.length || 0;
+
+                        if (count === 0) {
+                          return 'Safe';
                         }
-                          return 'Needs Negotiation';
-                      })()}
-                    </span>
+
+                        const hasHighOrMediumRisk = analysisResults?.issues?.some(
+                          (issue: any) =>
+                            issue.severity === 'high' || issue.severity === 'medium'
+                        );
+
+                        if (!hasHighOrMediumRisk) {
+                          return 'Optional Clarifications';
+                        }
+
+                        return 'Needs Negotiation';
+                        })()}
+                      </span>
                     </div>
                     <p className="text-[11px] text-white/60 pl-6">
                       Clear, polite asks we’ll send to protect your money.
@@ -3747,7 +3871,9 @@ ${creatorName}`;
                               <div className="text-center py-4">
                                 <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-green-500/10 border border-green-500/20">
                                   <CheckCircle className="w-4 h-4 text-green-400" />
-                                  <span className="text-sm text-green-300 font-medium">No requests needed. Safe.</span>
+                                  <span className="text-sm text-green-300 font-medium">
+                                    No requests needed. You&apos;re good to go.
+                                  </span>
                                 </div>
                               </div>
                             );
@@ -3927,8 +4053,26 @@ ${creatorName}`;
                                       !analysisResults?.keyTerms?.exclusivity || 
                                       analysisResults.keyTerms.exclusivity === 'Not specified';
 
-                                    if (!analysisResults || (!hasIssues && !hasMissingClauses)) {
-                                      toast.error('No issues or missing clauses found to fix');
+                                    if (!analysisResults) {
+                                      toast.error('Contract analysis not available');
+                                      return;
+                                    }
+
+                                    const hasHighOrMediumRisk = analysisResults.issues?.some(
+                                      (issue: any) =>
+                                        issue.severity === 'high' || issue.severity === 'medium'
+                                    );
+
+                                    const hasWarningMissingClauses =
+                                      !analysisResults.keyTerms?.dealValue ||
+                                      analysisResults.keyTerms.dealValue === 'Not specified' ||
+                                      !analysisResults.keyTerms?.paymentSchedule ||
+                                      analysisResults.keyTerms.paymentSchedule === 'Not specified' ||
+                                      !analysisResults.keyTerms?.exclusivity ||
+                                      analysisResults.keyTerms.exclusivity === 'Not specified';
+
+                                    if (!hasHighOrMediumRisk && !hasWarningMissingClauses) {
+                                      toast.info('No risks detected. This contract is safe to proceed.');
                                       return;
                                     }
 
@@ -4078,7 +4222,7 @@ ${creatorName}`;
               <div className="mt-6 flex flex-col gap-3">
                 {/* Fix & Share with Brand - Primary CTA */}
                 <div className="flex-1 flex flex-col">
-                  <motion.button
+                <motion.button
                     data-action="fix-and-send"
                     onClick={async () => {
                       if (!session?.access_token) {
@@ -4086,61 +4230,40 @@ ${creatorName}`;
                         return;
                       }
 
-                      // Check for critical issues (high/medium) vs all issues (including low)
-                      const allIssuesCount = analysisResults?.issues.length || 0;
-                      const criticalIssuesCount = analysisResults?.issues.filter((issue: any) => 
-                        issue.severity === 'high' || issue.severity === 'medium'
-                      ).length || 0;
-                      const missingClausesCount = [
-                        !analysisResults?.keyTerms?.dealValue || analysisResults.keyTerms.dealValue === 'Not specified' ? 1 : 0,
-                        !analysisResults?.keyTerms?.paymentSchedule || analysisResults.keyTerms.paymentSchedule === 'Not specified' ? 1 : 0,
-                        !analysisResults?.keyTerms?.exclusivity || analysisResults.keyTerms.exclusivity === 'Not specified' ? 1 : 0,
-                      ].reduce((a, b) => a + b, 0);
-                      const requestsCount = 0; // User-requested changes (not currently tracked, assume 0)
-                      
-                      const hasNoCriticalIssues = criticalIssuesCount === 0 && missingClausesCount === 0 && requestsCount === 0;
-                      const hasOnlyNonCriticalIssues = allIssuesCount > 0 && criticalIssuesCount === 0 && missingClausesCount === 0;
-
-                      // If no issues, show success and allow sharing contract summary
                       if (!analysisResults) {
                         toast.error('Contract analysis not available');
                         return;
                       }
 
-                      if (hasNoCriticalIssues && !hasOnlyNonCriticalIssues) {
-                        // Show success message and open share modal with contract summary
-                        toast.success('This contract is already strong. You can share a clean summary with the brand.');
+                      const actionType = getActionType();
+
+                      // SUMMARY: No issues and no clarifications – simple approval message
+                      if (actionType === 'SUMMARY') {
                         triggerHaptic(HapticPatterns.success);
                         setIsGeneratingMessage(true);
-                        setIsContractSummary(true); // Mark as summary mode
-                        
+                        setIsContractSummary(true);
+
                         try {
-                          // Generate a clean contract summary message (no issues to fix)
-                          const creatorName = (profile?.first_name && profile?.last_name ? `${profile.first_name} ${profile.last_name}` : null) ||
+                          const brandName = analysisResults.keyTerms?.brandName || 'Brand Team';
+                          const creatorName =
+                            (profile?.first_name && profile?.last_name
+                              ? `${profile.first_name} ${profile.last_name}`
+                              : null) ||
                             profile?.first_name ||
                             session?.user?.email?.split('@')[0] ||
                             'Creator';
-                          
-                          const brandName = analysisResults.keyTerms?.brandName || 'Brand Team';
-                          const dealValue = analysisResults.keyTerms?.dealValue || 'the agreed amount';
-                          
-                          const summaryMessage = `Subject: Contract Summary - ${brandName} Collaboration
 
-Dear ${brandName},
+                          const summaryMessage = `Hi ${brandName},
 
-Thank you for sharing the collaboration agreement. I've reviewed the contract and am pleased to confirm that all key terms are clearly defined and the agreement is well-structured.
+I’ve reviewed the contract and everything looks good to proceed.
 
-Contract Summary:
-- Deal Value: ${dealValue}
-${analysisResults.keyTerms?.paymentSchedule && analysisResults.keyTerms.paymentSchedule !== 'Not specified' ? `- Payment Schedule: ${analysisResults.keyTerms.paymentSchedule}\n` : ''}${analysisResults.keyTerms?.duration && analysisResults.keyTerms.duration !== 'Not specified' ? `- Duration: ${analysisResults.keyTerms.duration}\n` : ''}${analysisResults.keyTerms?.deliverables && analysisResults.keyTerms.deliverables !== 'Not specified' ? `- Deliverables: ${analysisResults.keyTerms.deliverables}\n` : ''}
-I'm ready to proceed with this collaboration and look forward to working together.
+Looking forward to collaborating.
 
-Best regards,
-${creatorName}${session?.user?.email ? `\n${session.user.email}` : ''}`;
+Best,
+${creatorName}`;
 
                           setNegotiationMessage(summaryMessage);
-                          
-                          // Open share modal
+
                           const modalOpened = await openShareFeedbackModal();
                           if (modalOpened) {
                             toast.success('Ready to share contract summary!');
@@ -4154,13 +4277,62 @@ ${creatorName}${session?.user?.email ? `\n${session.user.email}` : ''}`;
                         return;
                       }
 
-                      // Mark as negotiation mode (has issues)
-                      setIsContractSummary(false);
+                      // CLARIFICATION: No issues, but we have standard clarifications to share
+                      if (actionType === 'CLARIFICATION') {
+                        triggerHaptic(HapticPatterns.success);
+                        setIsGeneratingMessage(true);
+                        setIsContractSummary(false);
 
+                        try {
+                          const brandName = analysisResults.keyTerms?.brandName || 'Brand Team';
+                          const creatorName =
+                            (profile?.first_name && profile?.last_name
+                              ? `${profile.first_name} ${profile.last_name}`
+                              : null) ||
+                            profile?.first_name ||
+                            session?.user?.email?.split('@')[0] ||
+                            'Creator';
+
+                          const requests = generateBrandRequests();
+                          const clarificationsList = requests
+                            .map((request) => `- ${request.text}`)
+                            .join('\n');
+
+                          const clarificationMessage = `Hi ${brandName},
+
+Thanks for sharing the contract. Everything looks good from a creator-safety
+perspective. I just want to clarify a few standard points so we’re aligned:
+
+${clarificationsList}
+
+These don’t change the commercial intent.
+
+Looking forward to proceeding.
+
+Best,
+${creatorName}`;
+
+                          setNegotiationMessage(clarificationMessage);
+
+                          const modalOpened = await openShareFeedbackModal();
+                          if (modalOpened) {
+                            toast.success('Ready to share clarifications with the brand.');
+                          }
+                        } catch (error: any) {
+                          console.error('[ContractUploadFlow] Share clarifications error:', error);
+                          toast.error('Failed to prepare clarifications. Please try again.');
+                        } finally {
+                          setIsGeneratingMessage(false);
+                        }
+                        return;
+                      }
+
+                      // NEGOTIATION: There are issues to negotiate – call backend message generator
+                      setIsContractSummary(false);
                       triggerHaptic(HapticPatterns.medium);
                       setIsGeneratingMessage(true);
-                    
-                    try {
+
+                      try {
                       const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 
       (typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com') 
         ? 'https://api.creatorarmour.com'
@@ -4303,8 +4475,16 @@ ${creatorName}${session?.user?.email ? `\n${session.user.email}` : ''}`;
                         toast.success('Ready to share with brand!');
                       }
                     } catch (error: any) {
-                      console.error('[ContractUploadFlow] Generate negotiation message error:', error);
-                      toast.error(error.message || 'Failed to generate message. Please try again.');
+                      const message = (error && error.message) || '';
+
+                      // If backend reports no issues for this report, treat as a safe contract instead of an error
+                      if (typeof message === 'string' && message.includes('No issues found for this report')) {
+                        console.warn('[ContractUploadFlow] No issues returned from negotiation API, treating as safe contract.');
+                        toast.success('No risks detected. This contract is safe to proceed.');
+                      } else {
+                        console.error('[ContractUploadFlow] Generate negotiation message error:', error);
+                        toast.error(message || 'Failed to generate message. Please try again.');
+                      }
                     } finally {
                       setIsGeneratingMessage(false);
                     }
@@ -4323,49 +4503,47 @@ ${creatorName}${session?.user?.email ? `\n${session.user.email}` : ''}`;
                     <>
                       <Share2 className="w-5 h-5" />
                       {(() => {
-                        const allIssuesCount = analysisResults?.issues.length || 0;
-                        const criticalIssuesCount = analysisResults?.issues.filter((issue: any) => 
-                          issue.severity === 'high' || issue.severity === 'medium'
-                        ).length || 0;
-                        const missingClausesCount = [
-                          !analysisResults?.keyTerms?.dealValue || analysisResults?.keyTerms?.dealValue === 'Not specified' ? 1 : 0,
-                          !analysisResults?.keyTerms?.paymentSchedule || analysisResults?.keyTerms?.paymentSchedule === 'Not specified' ? 1 : 0,
-                          !analysisResults?.keyTerms?.exclusivity || analysisResults?.keyTerms?.exclusivity === 'Not specified' ? 1 : 0,
-                        ].reduce((a, b) => a + b, 0);
-                        const requestsCount = 0;
-                        
-                        // Determine CTA text based on issue severity
-                        if (criticalIssuesCount > 0 || missingClausesCount > 0) {
-                          return 'Fix & Share with Brand';
-                        } else if (allIssuesCount > 0) {
-                          return 'Review & Share with Brand';
-                        } else {
-                          return 'Share Contract Summary';
-                        }
+                        const actionType = getActionType();
+                        return actionType === 'NEGOTIATION'
+                          ? 'Fix & Share with Brand'
+                          : 'Share with Brand';
                       })()}
                     </>
                   )}
                 </motion.button>
+                {(() => {
+                  const issues = Array.isArray(analysisResults?.issues)
+                    ? analysisResults!.issues
+                    : [];
+                  const hasAnyIssues = issues.length > 0;
+                  const hasOnlyLowIssues =
+                    hasAnyIssues &&
+                    issues.every((issue: any) => issue.severity === 'low');
+
+                  const isSafeState = !hasAnyIssues || hasOnlyLowIssues;
+
+                  if (!isSafeState) return null;
+
+                  return (
+                    <div className="mt-2 flex justify-center">
+                      <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-green-500/10 border border-green-500/30 text-[11px] text-green-200">
+                        <CheckCircle className="w-3 h-3" />
+                        No risks detected. This contract is safe to proceed.
+                      </span>
+                    </div>
+                  );
+                })()}
+
                 <p className="text-xs text-white/50 mt-2 text-center px-2">
                   {(() => {
-                    const allIssuesCount = analysisResults?.issues.length || 0;
-                    const criticalIssuesCount = analysisResults?.issues.filter((issue: any) => 
-                      issue.severity === 'high' || issue.severity === 'medium'
-                    ).length || 0;
-                    const missingClausesCount = [
-                      !analysisResults?.keyTerms?.dealValue || analysisResults?.keyTerms?.dealValue === 'Not specified' ? 1 : 0,
-                      !analysisResults?.keyTerms?.paymentSchedule || analysisResults?.keyTerms?.paymentSchedule === 'Not specified' ? 1 : 0,
-                      !analysisResults?.keyTerms?.exclusivity || analysisResults?.keyTerms?.exclusivity === 'Not specified' ? 1 : 0,
-                    ].reduce((a, b) => a + b, 0);
-                    const requestsCount = 0;
-                    
-                    if (allIssuesCount === 0 && missingClausesCount === 0 && requestsCount === 0) {
+                    const actionType = getActionType();
+                    if (actionType === 'SUMMARY') {
                       return 'Share a clean contract summary via email, WhatsApp, or download PDF.';
-                    } else if (criticalIssuesCount > 0 || missingClausesCount > 0) {
-                      return 'We\'ll combine all risks + missing points into one clear message.';
-                    } else {
-                      return 'We\'ll include optional improvements in your message to the brand.';
                     }
+                    if (actionType === 'CLARIFICATION') {
+                      return 'We’ll share these standard clarifications in a clear, polite message.';
+                    }
+                    return 'We’ll combine all key points into one clear message for the brand.';
                   })()}
                 </p>
                 <p className="text-xs text-green-300/70 mt-1 text-center px-2 flex items-center justify-center gap-1">
@@ -5190,8 +5368,18 @@ ${creatorName}${session?.user?.email ? `\n${session.user.email}` : ''}`;
                         return;
                       }
 
-                      if (!analysisResults || analysisResults.issues.length === 0) {
-                        toast.error('No issues found to negotiate');
+                      if (!analysisResults) {
+                        toast.error('Contract analysis not available');
+                        return;
+                      }
+
+                      const hasHighOrMediumRisk = analysisResults.issues?.some(
+                        (issue: any) =>
+                          issue.severity === 'high' || issue.severity === 'medium'
+                      );
+
+                      if (!hasHighOrMediumRisk) {
+                        toast.info('No risks detected. This contract is safe to proceed.');
                         return;
                       }
 
@@ -5608,8 +5796,18 @@ ${creatorName}${session?.user?.email ? `\n${session.user.email}` : ''}`;
                     return;
                   }
 
-                  if (!analysisResults || analysisResults.issues.length === 0) {
-                    toast.error('No issues found to negotiate');
+                    if (!analysisResults) {
+                    toast.error('Contract analysis not available');
+                    return;
+                  }
+
+                  const hasHighOrMediumRisk = analysisResults.issues?.some(
+                    (issue: any) =>
+                      issue.severity === 'high' || issue.severity === 'medium'
+                  );
+
+                  if (!hasHighOrMediumRisk) {
+                    toast.info('No risks detected. This contract is safe to proceed.');
                     return;
                   }
 

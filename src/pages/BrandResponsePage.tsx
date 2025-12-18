@@ -35,6 +35,8 @@ const BrandResponsePage = () => {
     response_status: string;
     deal_amount?: number;
     deliverables?: string | string[];
+    signed_contract_url?: string | null;
+    deal_execution_status?: string | null;
   } | null>(null);
   const [requestedChanges, setRequestedChanges] = useState<RequestedChange[]>([]);
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -53,7 +55,7 @@ const BrandResponsePage = () => {
   const [brandEmail, setBrandEmail] = useState<string>('');
   const [brandEmailInput, setBrandEmailInput] = useState<string>('');
 
-  // Brand Summary Card Component - matches mockup exactly
+  // Brand Summary Card Component
   const BrandSummaryCard = ({ 
     dealValue, 
     deliverables 
@@ -76,6 +78,107 @@ const BrandResponsePage = () => {
       }
     }
 
+    // Derive a concise checklist of suggested updates for the brand
+    const getClarificationChecklist = (): string[] => {
+      const checklist: string[] = [];
+
+      // 1) Prefer backend-requested changes (titles are already creator-facing)
+      if (requestedChanges && requestedChanges.length > 0) {
+        requestedChanges.forEach((change) => {
+          if (!change?.title) return;
+          checklist.push(change.title.trim());
+        });
+        // Keep it light: show at most 4 items
+        return checklist.slice(0, 4);
+      }
+
+      // 2) Fallback: derive from analysis data key terms (missing clarifications)
+      const keyTerms = analysisData?.keyTerms || {};
+      const issues = Array.isArray(analysisData?.issues) ? analysisData.issues : [];
+
+      const usageMissing =
+        !keyTerms?.usageRights || keyTerms.usageRights === 'Not specified';
+      const exclusivityMissing =
+        !keyTerms?.exclusivity || keyTerms.exclusivity === 'Not specified';
+      const paymentMissing =
+        !keyTerms?.paymentSchedule || keyTerms.paymentSchedule === 'Not specified';
+      const terminationMissing =
+        !keyTerms?.termination || keyTerms.termination === 'Not specified';
+
+      if (usageMissing) {
+        checklist.push('Clarify usage rights to specific platforms');
+      }
+      if (exclusivityMissing) {
+        checklist.push('Limit exclusivity to a reasonable duration');
+      }
+      if (paymentMissing) {
+        checklist.push('Confirm payment timeline and method');
+      }
+      if (terminationMissing) {
+        checklist.push('Add notice period for termination');
+      }
+
+      if (checklist.length > 0) {
+        return checklist.slice(0, 4);
+      }
+
+      // 3) Final fallback: top issues from analysis, sorted by severity
+      if (issues && issues.length > 0) {
+        const severityOrder: Record<string, number> = {
+          high: 3,
+          medium: 2,
+          warning: 1,
+          low: 0,
+        };
+
+        issues
+          .slice()
+          .sort(
+            (a: any, b: any) =>
+              (severityOrder[b.severity] || 0) - (severityOrder[a.severity] || 0)
+          )
+          .slice(0, 4)
+          .forEach((issue: any) => {
+            if (issue?.title) {
+              checklist.push(String(issue.title).trim());
+            }
+          });
+      }
+
+      return checklist.slice(0, 4);
+    };
+
+    const transformClarificationTitle = (title: string): string => {
+      const lower = title.toLowerCase();
+
+      if (lower.includes('usage rights') || lower.includes('unlimited usage')) {
+        return 'Confirm content usage duration and platforms';
+      }
+
+      if (
+        lower.includes('payment') &&
+        (lower.includes('not specified') || lower.includes('missing') || lower.includes('unclear'))
+      ) {
+        return 'Clarify payment amount and payment timeline';
+      }
+
+      if (lower.includes('exclusivity')) {
+        return 'Clarify exclusivity duration and competitors covered';
+      }
+
+      if (lower.includes('termination')) {
+        return 'Align termination notice period for both parties';
+      }
+
+      if (lower.includes('revision') || lower.includes('edit')) {
+        return 'Confirm number of revision rounds for approval';
+      }
+
+      return title;
+    };
+
+    const clarificationItems = getClarificationChecklist();
+
     return (
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -84,7 +187,7 @@ const BrandResponsePage = () => {
       >
         {/* Title Row */}
         <h2 className="text-lg font-semibold text-white flex items-center gap-2">
-          <span>📄</span> Requested Contract Changes
+          <span>📄</span> Requested Clarifications for Finalizing the Collaboration
         </h2>
 
         {/* Deal Value Row */}
@@ -117,14 +220,40 @@ const BrandResponsePage = () => {
           </div>
         )}
 
+        {/* Clarifications Checklist (one-line items) */}
+        {clarificationItems.length > 0 && (
+          <div className="mt-4 rounded-xl bg-white/5 border border-white/10 p-3 space-y-2">
+            <div className="flex flex-col gap-1">
+              <p className="text-sm font-medium text-white">
+                Requested Clarifications for Finalizing the Collaboration
+              </p>
+              <p className="text-xs text-white/60">
+                These are common clarifications creators request to avoid confusion later. They
+                do not change the commercial intent of the deal.
+              </p>
+            </div>
+            <ul className="mt-1.5 space-y-1.5 text-xs md:text-sm">
+              {clarificationItems.map((item, index) => (
+                <li key={index} className="flex items-start gap-2">
+                  <span className="text-green-400 mt-0.5">✔</span>
+                  <span className="text-white/80">
+                    {transformClarificationTitle(item)}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
         {/* Expected Outcome Card */}
-        <div className="mt-3 p-3 bg-gradient-to-br from-green-500/10 to-blue-500/10 border border-green-400/20 rounded-xl text-sm">
+        <div className="mt-3 p-3 bg-green-500/10 border border-green-400/20 rounded-xl text-sm">
           <div className="flex items-start gap-2 mb-1">
             <span className="text-green-400">✓</span>
-            <span className="font-medium text-white">Expected Outcome:</span>
+            <span className="font-medium text-white">Expected Outcome</span>
           </div>
           <p className="text-white/80 text-xs mt-1">
-            Most brands accept these standard safety updates and proceed smoothly.
+            Most brands approve these standard updates and proceed smoothly without delaying the
+            campaign.
           </p>
         </div>
       </motion.div>
@@ -731,8 +860,8 @@ const BrandResponsePage = () => {
   }
 
   return (
-    <div className="nb-screen-height bg-gradient-to-br from-purple-950 via-purple-900 to-indigo-950 text-white pb-8 md:pb-12">
-      <div className="max-w-2xl mx-auto px-4 py-6 md:py-8 space-y-6">
+    <div className="nb-screen-height bg-gradient-to-br from-purple-950 via-purple-900 to-indigo-950 text-white pb-8 md:pb-12 flex flex-col">
+      <div className="max-w-2xl mx-auto px-4 py-6 md:py-8 space-y-6 flex-1 w-full">
         {/* 1. TOP HEADER SECTION */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
@@ -740,7 +869,7 @@ const BrandResponsePage = () => {
           className="text-center mb-6"
         >
           <h1 className="text-3xl md:text-4xl font-bold mb-2 bg-gradient-to-r from-white via-purple-200 to-white bg-clip-text text-transparent">
-            NoticeBazaar
+            Creator Armour
           </h1>
           <div className="h-0.5 w-32 bg-gradient-to-r from-blue-500 via-purple-500 to-indigo-500 mx-auto rounded-full mb-3" />
           <h2 className="text-xl md:text-2xl font-semibold mb-1">
@@ -749,10 +878,13 @@ const BrandResponsePage = () => {
           <p className="text-white/60 text-xs md:text-sm">
             This response helps finalize the collaboration terms
           </p>
+          <p className="text-white/50 text-[11px] md:text-xs mt-1 max-w-md mx-auto">
+            Accepting these updates does not automatically amend the contract — it simply confirms alignment before the revised contract is shared.
+          </p>
         </motion.div>
 
         {!isSubmitted ? (
-          <div className="space-y-4">
+          <div className="space-y-5">
             {/* Brand Summary Card */}
             <BrandSummaryCard 
               dealValue={dealInfo?.deal_amount}
@@ -763,15 +895,23 @@ const BrandResponsePage = () => {
             <FullContractSummary />
 
             {/* 2. DECISION CARD COMPONENTS - Radio Style */}
+            <p className="text-xs text-white/60 mt-1">
+              Choose the option that best fits your internal approval process.
+            </p>
+            <p className="text-[11px] text-white/60">
+              These updates do not change pricing or deliverables — they only clarify rights, timelines, and payment protection.
+            </p>
+
             {/* Accept All Changes */}
             <motion.button
               onClick={() => handleStatusSelect('accepted')}
               className={cn(
-                "w-full rounded-xl p-5 md:p-6 text-left transition-all duration-200",
+                "w-full rounded-xl p-5 md:p-6 text-left transition-all duration-200 relative",
                 "border-2 backdrop-blur-xl",
                 selectedStatus === 'accepted'
-                  ? "bg-white/8 border-green-400/60 shadow-sm"
-                  : "bg-white/5 border-white/20 hover:border-white/30 hover:bg-white/8"
+                  ? "bg-white/10 border-green-400/70 shadow-[0_0_0_1px_rgba(34,197,94,0.35)]"
+                  : "bg-white/5 border-white/20 hover:border-white/40 hover:bg-white/10",
+                selectedStatus && selectedStatus !== 'accepted' && "opacity-60"
               )}
               whileHover={selectedStatus !== 'accepted' ? { scale: 1.02 } : {}}
               whileTap={{ scale: 0.98 }}
@@ -791,9 +931,17 @@ const BrandResponsePage = () => {
                   )}
                 </div>
                 <div className="flex-1">
-                  <h3 className="text-lg md:text-xl font-semibold mb-1.5">Accept All Changes</h3>
+                  <div className="flex items-start justify-between gap-2">
+                    <h3 className="text-lg md:text-xl font-semibold mb-1.5">
+                      Accept All Changes
+                    </h3>
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-green-500/10 border border-green-500/25 text-[10px] font-medium text-green-200">
+                      <CheckCircle className="w-3 h-3" />
+                      Recommended
+                    </span>
+                  </div>
                   <p className="text-white/70 text-sm leading-relaxed">
-                    Proceed with all requested safety updates (recommended)
+                    Proceed with all requested clarifications and safety updates.
                   </p>
                 </div>
               </div>
@@ -806,8 +954,9 @@ const BrandResponsePage = () => {
                 "w-full rounded-xl p-5 md:p-6 text-left transition-all duration-200",
                 "border-2 backdrop-blur-xl",
                 selectedStatus === 'negotiating'
-                  ? "bg-white/8 border-blue-400/60 shadow-sm"
-                  : "bg-white/5 border-white/20 hover:border-white/30 hover:bg-white/8"
+                  ? "bg-white/10 border-blue-400/60 shadow-sm"
+                  : "bg-white/4 border-white/15 hover:border-white/30 hover:bg-white/8",
+                selectedStatus && selectedStatus !== 'negotiating' && "opacity-60"
               )}
               whileHover={selectedStatus !== 'negotiating' ? { scale: 1.02 } : {}}
               whileTap={{ scale: 0.98 }}
@@ -829,7 +978,7 @@ const BrandResponsePage = () => {
                 <div className="flex-1">
                   <h3 className="text-lg md:text-xl font-semibold mb-1.5">Want to Negotiate</h3>
                   <p className="text-white/70 text-sm leading-relaxed">
-                    Discuss specific points before finalizing
+                    Discuss specific points before finalizing.
                   </p>
                 </div>
               </div>
@@ -842,8 +991,9 @@ const BrandResponsePage = () => {
                 "w-full rounded-xl p-5 md:p-6 text-left transition-all duration-200",
                 "border-2 backdrop-blur-xl",
                 selectedStatus === 'rejected'
-                  ? "bg-white/8 border-orange-400/60 shadow-sm"
-                  : "bg-white/5 border-white/20 hover:border-white/30 hover:bg-white/8"
+                  ? "bg-red-500/5 border-red-300/60 shadow-sm"
+                  : "bg-white/4 border-white/15 hover:border-white/30 hover:bg-white/8",
+                selectedStatus && selectedStatus !== 'rejected' && "opacity-60"
               )}
               whileHover={selectedStatus !== 'rejected' ? { scale: 1.02 } : {}}
               whileTap={{ scale: 0.98 }}
@@ -853,20 +1003,27 @@ const BrandResponsePage = () => {
                 <div className={cn(
                   "w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 border-2 transition-all duration-200",
                   selectedStatus === 'rejected'
-                    ? "bg-orange-500/20 border-orange-400"
-                    : "bg-white/10 border-white/30"
+                    ? "bg-red-500/15 border-red-300"
+                    : "bg-white/8 border-white/25"
                 )}>
                   {selectedStatus === 'rejected' ? (
-                    <CheckCircle className="w-6 h-6 text-orange-400" />
+                    <CheckCircle className="w-6 h-6 text-red-300" />
                   ) : (
                     <div className="w-4 h-4 rounded-full border-2 border-white/40" />
                   )}
                 </div>
                 <div className="flex-1">
-                  <h3 className="text-lg md:text-xl font-semibold mb-1.5">Reject Changes</h3>
+                  <h3 className="text-lg md:text-xl font-semibold mb-1.5">
+                    Proceed Without Updates
+                  </h3>
                   <p className="text-white/70 text-sm leading-relaxed">
-                    Proceed without these updates (higher risk)
+                    Proceed with the original contract terms. Creator may request safeguards later.
                   </p>
+                  {selectedStatus === 'rejected' && (
+                    <p className="mt-2 text-[11px] text-white/50">
+                      The creator can still follow up to confirm protections if needed.
+                    </p>
+                  )}
                 </div>
               </div>
             </motion.button>
@@ -1006,9 +1163,12 @@ const BrandResponsePage = () => {
                   Send Decision
                 </>
               ) : (
-                'Select a decision to continue'
+                'Confirm Response'
               )}
             </motion.button>
+            <p className="mt-2 text-xs text-white/60 text-center">
+              You can revise this later.
+            </p>
           </div>
         ) : (
           /* POST-SUBMISSION CONFIRMATION */
@@ -1021,26 +1181,14 @@ const BrandResponsePage = () => {
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
               transition={{ type: "spring", stiffness: 200, damping: 15 }}
-              className="mb-6"
+              className="mb-4"
             >
-              <CheckCircle className="w-16 h-16 text-green-400 mx-auto mb-4" />
+              <CheckCircle className="w-16 h-16 text-green-400 mx-auto mb-3" />
             </motion.div>
-            <h3 className="text-2xl font-bold mb-4">Response Submitted Successfully!</h3>
-            
-            <div className="space-y-3 mb-6 text-left max-w-md mx-auto">
-              <div className="flex items-start gap-3">
-                <CheckCircle className="w-5 h-5 text-green-400 mt-0.5 flex-shrink-0" />
-                <p className="text-white/90 text-sm">Response sent securely</p>
-              </div>
-              <div className="flex items-start gap-3">
-                <CheckCircle className="w-5 h-5 text-green-400 mt-0.5 flex-shrink-0" />
-                <p className="text-white/90 text-sm">Creator notified instantly</p>
-              </div>
-              <div className="flex items-start gap-3">
-                <CheckCircle className="w-5 h-5 text-green-400 mt-0.5 flex-shrink-0" />
-                <p className="text-white/90 text-sm">This response is legally time-stamped</p>
-              </div>
-            </div>
+            <h3 className="text-2xl font-bold mb-2">Response shared with the creator</h3>
+            <p className="text-white/80 text-sm max-w-md mx-auto">
+              You can revisit or revise this decision anytime.
+            </p>
           </motion.div>
         )}
 
@@ -1226,6 +1374,31 @@ const BrandResponsePage = () => {
             </>
           )}
         </AnimatePresence>
+      </div>
+
+      {/* Signed Contract Confirmation (read-only for brand) */}
+      {dealInfo?.signed_contract_url && (
+        <div className="mt-4 px-4">
+          <div className="max-w-2xl mx-auto bg-white/5 backdrop-blur-xl border border-green-500/25 rounded-2xl p-4 text-sm">
+            <div className="flex items-start gap-2">
+              <CheckCircle className="w-4 h-4 text-green-400 mt-0.5 flex-shrink-0" />
+              <div className="flex-1">
+                <p className="font-semibold text-white">
+                  Final contract signed and stored
+                </p>
+                <p className="text-xs text-white/70 mt-1">
+                  This collaboration is now fully executed.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Trust Footer */}
+      <div className="mt-4 pb-4 px-4 text-center text-[11px] text-white/50 space-y-1">
+        <p>Only the creator you’re collaborating with can view this response.</p>
+        <p>Prepared by CreatorArmour — used by creators and brands across India</p>
       </div>
     </div>
   );

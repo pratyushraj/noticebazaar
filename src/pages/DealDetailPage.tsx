@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useCallback, lazy, Suspense, useMemo, useEffect } from 'react';
+import { useState, useCallback, lazy, Suspense, useMemo, useEffect, useRef } from 'react';
+import type { ChangeEvent } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Eye, Download, Flag, Loader2, Building2, Calendar, FileText, CheckCircle, Clock, Trash2, AlertCircle, XCircle, Bell, Mail, MessageSquare, Phone, Edit, X, Check, Share2, Copy, Link2 } from 'lucide-react';
+import { ArrowLeft, Eye, Download, Flag, Loader2, Building2, Calendar, FileText, CheckCircle, Clock, Trash2, AlertCircle, XCircle, Bell, Mail, MessageSquare, Phone, Edit, X, Check, Share2, Copy, Link2, Upload } from 'lucide-react';
 import { toast } from 'sonner';
 import { useDeal, DealProvider } from '@/contexts/DealContext';
 import { useIssues } from '@/lib/hooks/useIssues';
@@ -77,6 +78,8 @@ function DealDetailPageContent() {
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
   const [protectionReport, setProtectionReport] = useState<any>(null);
   const [protectionIssues, setProtectionIssues] = useState<any[]>([]);
+  const signedContractInputRef = useRef<HTMLInputElement | null>(null);
+  const [isUploadingSignedContract, setIsUploadingSignedContract] = useState(false);
   
   
   // Get current stage from deal status - helper function
@@ -264,6 +267,106 @@ function DealDetailPageContent() {
     return issues[0];
   }, [issues]);
 
+  // Extract requested contract clarifications - useMemo must be called unconditionally
+  const requestedClarifications = useMemo(() => {
+    const clarifications: string[] = [];
+    
+    // First, try to get from deal.requested_changes if it exists
+    const dealRequestedChanges = (deal as any)?.requested_changes;
+    if (dealRequestedChanges && Array.isArray(dealRequestedChanges)) {
+      dealRequestedChanges.forEach((item: any) => {
+        const text = item.title || item.text || item.description;
+        if (text && typeof text === 'string') {
+          // Convert to short, creator-friendly one-line string
+          const shortText = text.length > 100 ? text.substring(0, 100) + '...' : text;
+          clarifications.push(shortText);
+        }
+      });
+    }
+    
+      // If no clarifications from deal.requested_changes, derive from protection issues
+      if (clarifications.length === 0) {
+        // Helper function to convert issue to creator-friendly string
+        const convertIssueToClarification = (issue: any): string | null => {
+          if (!issue.title) return null;
+          
+          let text = issue.title;
+          // Remove severity labels and technical prefixes
+          text = text.replace(/\[(HIGH|MEDIUM|WARNING)\s*PRIORITY\]/gi, '').trim();
+          text = text.replace(/^Category:\s*/i, '').trim();
+          text = text.replace(/^Issue:\s*/i, '').trim();
+          
+          // Convert common technical terms to creator-friendly language
+          text = text.replace(/payment terms?/gi, 'payment amount and payment timeline');
+          text = text.replace(/exclusivity/gi, 'exclusivity duration and scope');
+          text = text.replace(/usage rights?|ip rights?|content ownership/gi, 'content usage rights duration');
+          text = text.replace(/termination/gi, 'termination notice period');
+          
+          // Capitalize first letter
+          text = text.charAt(0).toUpperCase() + text.slice(1);
+          
+          // Take first sentence or truncate to 100 chars
+          const firstSentence = text.split(/[.!?]/)[0].trim();
+          if (firstSentence.length > 0 && firstSentence.length <= 100) {
+            return firstSentence;
+          }
+          return text.length > 100 ? text.substring(0, 100).trim() + '...' : text.trim();
+        };
+        
+        // Try from protectionIssues (already fetched)
+        if (protectionIssues && Array.isArray(protectionIssues)) {
+          protectionIssues
+            .filter((issue: any) => issue.severity && issue.severity !== 'low')
+            .forEach((issue: any) => {
+              const clarification = convertIssueToClarification(issue);
+              if (clarification && !clarifications.includes(clarification)) {
+                clarifications.push(clarification);
+              }
+            });
+        }
+        
+        // If still empty, try from analysis_json issues
+        if (clarifications.length === 0 && protectionReport?.analysis_json?.issues) {
+          const analysisIssues = protectionReport.analysis_json.issues;
+          if (Array.isArray(analysisIssues)) {
+            analysisIssues
+              .filter((issue: any) => issue.severity && issue.severity !== 'low')
+              .forEach((issue: any) => {
+                const clarification = convertIssueToClarification(issue);
+                if (clarification && !clarifications.includes(clarification)) {
+                  clarifications.push(clarification);
+                }
+              });
+          }
+        }
+      
+      // If still empty, check for missing key terms
+      if (clarifications.length === 0 && protectionReport?.analysis_json?.keyTerms) {
+        const keyTerms = protectionReport.analysis_json.keyTerms;
+        const missingTerms: string[] = [];
+        
+        // Check for common missing terms
+        if (!keyTerms.dealValue || keyTerms.dealValue === 'Not specified') {
+          missingTerms.push('Clarify payment amount and payment timeline');
+        }
+        if (!keyTerms.exclusivity || keyTerms.exclusivity === 'Not specified' || 
+            (typeof keyTerms.exclusivity === 'string' && keyTerms.exclusivity.toLowerCase().includes('unlimited'))) {
+          missingTerms.push('Limit exclusivity duration and scope');
+        }
+        if (!keyTerms.usageRights || keyTerms.usageRights === 'Not specified') {
+          missingTerms.push('Clarify content usage rights duration');
+        }
+        if (!keyTerms.termination || keyTerms.termination === 'Not specified') {
+          missingTerms.push('Add reasonable termination notice period');
+        }
+        
+        clarifications.push(...missingTerms);
+      }
+    }
+    
+    return clarifications;
+  }, [deal, protectionIssues, protectionReport]);
+
   // Transform action logs - useMemo must be called unconditionally
   const actionLogEntries = useMemo(() => {
     // replaced-by-ultra-polish: replaced any[] with proper ActionLog type
@@ -339,6 +442,77 @@ function DealDetailPageContent() {
   const dealAmount = useMemo(() => Number(deal?.deal_amount || 0), [deal?.deal_amount]);
   const dealTitle = useMemo(() => `${deal?.brand_name || ''} ${deal?.platform || 'Partnership'} Agreement`, [deal?.brand_name, deal?.platform]);
   const contractFileName = useMemo(() => deal?.contract_file_url ? getFilenameFromUrl(deal.contract_file_url) : null, [deal?.contract_file_url]);
+  
+  // Extract deal status fields (must be defined before getContractStatus)
+  const signedContractUrl = (deal as any)?.signed_contract_url as string | null | undefined;
+  const signedContractUploadedAt = (deal as any)?.signed_contract_uploaded_at as string | null | undefined;
+  const dealExecutionStatus = (deal as any)?.deal_execution_status as string | null | undefined;
+  const brandResponseStatus = (deal as any)?.brand_response_status as string | null | undefined;
+  
+  // Map deal status to display status (shared logic)
+  const getContractStatus = useCallback((): string => {
+    // Check signed contract status first
+    if (dealExecutionStatus === 'signed' || dealExecutionStatus === 'completed') {
+      return 'Signed';
+    }
+    
+    // Check brand response status
+    if (brandResponseStatus === 'accepted_verified') {
+      return 'Approved';
+    }
+    if (brandResponseStatus === 'accepted') {
+      return 'Approved';
+    }
+    if (brandResponseStatus === 'sent') {
+      return 'Shared';
+    }
+    if (brandResponseStatus === 'negotiating') {
+      return 'Draft';
+    }
+    if (brandResponseStatus === 'rejected') {
+      return 'Draft';
+    }
+    
+    // Check deal status
+    const statusLower = deal?.status?.toLowerCase() || '';
+    if (statusLower.includes('signed') || statusLower.includes('completed')) {
+      return 'Signed';
+    }
+    if (statusLower.includes('approved') || statusLower.includes('accepted')) {
+      return 'Approved';
+    }
+    if (statusLower.includes('sent') || statusLower.includes('shared')) {
+      return 'Shared';
+    }
+    
+    // Default to Draft
+    return 'Draft';
+  }, [deal?.status, dealExecutionStatus, brandResponseStatus]);
+
+  // Compute clean display name for contract (UI-only, doesn't change stored filename)
+  // Status is shown separately as a badge, so we don't include it in the name
+  const displayContractName = useMemo(() => {
+    if (!deal?.contract_file_url || !deal?.brand_name) return null;
+    
+    // Get creator name
+    const creatorFirstName = profile?.first_name || '';
+    const creatorLastName = profile?.last_name || '';
+    const creatorName = `${creatorFirstName} ${creatorLastName}`.trim() || 'Creator';
+    
+    const contractType = 'Collaboration Agreement';
+    
+    // Format: {Brand} × {Creator} — Collaboration Agreement
+    // Status is shown separately as a badge
+    return `${deal.brand_name} × ${creatorName} — ${contractType}`;
+  }, [deal?.contract_file_url, deal?.brand_name, profile?.first_name, profile?.last_name]);
+
+  // Get contract status for badge display
+  const contractStatus = useMemo(() => getContractStatus(), [getContractStatus]);
+  const showContractExecutionSection =
+    !!deal &&
+    (brandResponseStatus === 'accepted_verified' ||
+      !!signedContractUrl ||
+      !!dealExecutionStatus);
 
   // ALL HANDLERS MUST BE DEFINED BEFORE EARLY RETURNS
   // Handlers (must be useCallback and defined before early returns)
@@ -477,6 +651,86 @@ function DealDetailPageContent() {
       setIsDownloading(false);
     }
   }, [deal?.id, deal?.contract_file_url, profile?.id, createActionLog]);
+
+  // Upload final signed contract PDF (Phase 2 - storage only, no e-sign)
+  const handleSignedContractUpload = useCallback(
+    async (file: File) => {
+      if (!deal?.id) {
+        toast.error('Deal not available. Please reopen this page.');
+        return;
+      }
+
+      if (!session?.access_token) {
+        toast.error('Please log in to upload the signed contract.');
+        return;
+      }
+
+      if (file.size > 10 * 1024 * 1024) {
+        toast.error('Signed contract must be under 10 MB.');
+        return;
+      }
+
+      const isPdf =
+        file.type === 'application/pdf' ||
+        file.type === 'application/x-pdf' ||
+        file.name.toLowerCase().endsWith('.pdf');
+
+      if (!isPdf) {
+        toast.error('Please upload a PDF file.');
+        return;
+      }
+
+      try {
+        setIsUploadingSignedContract(true);
+        const apiBaseUrl =
+          import.meta.env.VITE_API_BASE_URL ||
+          (typeof window !== 'undefined' &&
+          window.location.origin.includes('creatorarmour.com')
+            ? 'https://api.creatorarmour.com'
+            : 'https://noticebazaar-api.onrender.com');
+
+        const formData = new FormData();
+        formData.append('file', file);
+
+        const response = await fetch(
+          `${apiBaseUrl}/api/deals/${deal.id}/upload-signed-contract`,
+          {
+            method: 'POST',
+            headers: {
+              Authorization: `Bearer ${session.access_token}`,
+            },
+            body: formData,
+          }
+        );
+
+        const data = await response.json();
+
+        if (!response.ok || !data.success) {
+          throw new Error(data.error || 'Failed to upload signed contract.');
+        }
+
+        toast.success('Signed contract stored for your records.');
+        triggerHaptic(HapticPatterns.success);
+        refreshAll();
+      } catch (error: any) {
+        console.error('[DealDetailPage] Upload signed contract error:', error);
+        toast.error(error.message || 'Failed to upload signed contract.');
+        triggerHaptic(HapticPatterns.error);
+      } finally {
+        setIsUploadingSignedContract(false);
+      }
+    },
+    [deal?.id, session?.access_token, refreshAll]
+  );
+
+  const handleSignedContractFileChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      void handleSignedContractUpload(file);
+    }
+    // Allow selecting the same file twice
+    event.target.value = '';
+  };
 
   const handleReportIssue = useCallback(() => {
     if (!deal) {
@@ -1267,6 +1521,75 @@ ${link}`;
           </div>
         )}
 
+        {/* Requested Contract Clarifications - Only show if brand reply link exists or brand_response_status exists */}
+        {(() => {
+          // Check if we should show this section
+          // Show if brand reply link has been generated (or can be generated) OR brand_response_status exists
+          const hasBrandReplyLink = !!brandReplyLink || (deal?.id && brandResponseStatus);
+          const hasBrandResponseStatus = !!brandResponseStatus && 
+            ['sent', 'accepted', 'accepted_verified', 'negotiating', 'rejected'].includes(brandResponseStatus);
+          
+          // Must have clarifications to show
+          if (requestedClarifications.length === 0) {
+            return null;
+          }
+          
+          // Show if either condition is met
+          const shouldShow = hasBrandReplyLink || hasBrandResponseStatus;
+          
+          if (!shouldShow) {
+            return null;
+          }
+          
+          // Get status indicator text
+          const getStatusText = () => {
+            if (!brandResponseStatus) return null;
+            switch (brandResponseStatus) {
+              case 'sent':
+                return '⏳ Awaiting brand response';
+              case 'accepted':
+              case 'accepted_verified':
+                return '✅ Accepted by brand';
+              case 'negotiating':
+                return '🔁 In discussion';
+              case 'rejected':
+                return '⚠️ Brand chose to proceed without updates';
+              default:
+                return null;
+            }
+          };
+          
+          const statusText = getStatusText();
+          
+          return (
+            <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-4 md:p-6 shadow-lg shadow-black/20">
+              <h2 className="font-semibold text-lg mb-2 flex items-center gap-2">
+                Requested Contract Clarifications
+              </h2>
+              <p className="text-sm text-white/60 mb-4">
+                These points were shared with the brand for alignment.
+              </p>
+              
+              {/* Clarifications List */}
+              <div className="space-y-2 mb-4">
+                {requestedClarifications.map((clarification, index) => (
+                  <div key={index} className="flex items-start gap-3">
+                    <CheckCircle className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
+                    <span className="text-sm text-white/90 flex-1">{clarification}</span>
+                  </div>
+                ))}
+              </div>
+              
+              {/* Status Indicator */}
+              {statusText && (
+                <div className="pt-3 border-t border-white/10">
+                  <p className="text-sm text-white/60">{statusText}</p>
+                </div>
+              )}
+            </div>
+          );
+        })()}
+
         {/* Grid Layout */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Left Column */}
@@ -1605,15 +1928,43 @@ ${link}`;
                   Contract
                 </h2>
                 <div className="space-y-3">
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-start gap-3">
                     <div className="w-10 h-10 rounded-xl bg-green-500/20 flex items-center justify-center flex-shrink-0">
                       <CheckCircle className="w-5 h-5 text-green-400" />
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="font-medium break-words">{contractFileName}</div>
+                    <div className="flex-1 min-w-0 space-y-1.5">
+                      {/* Clean display name with status badge */}
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <h3 className="font-semibold text-base text-white/95 break-words flex-1 min-w-0">
+                          {displayContractName || contractFileName}
+                        </h3>
+                        {/* Status badge */}
+                        {contractStatus && displayContractName && (
+                          <span className={cn(
+                            "px-2.5 py-1 rounded-full text-xs font-medium flex-shrink-0 whitespace-nowrap",
+                            contractStatus === 'Signed' && "bg-green-500/20 text-green-400 border border-green-500/30",
+                            contractStatus === 'Approved' && "bg-blue-500/20 text-blue-400 border border-blue-500/30",
+                            contractStatus === 'Shared' && "bg-purple-500/20 text-purple-400 border border-purple-500/30",
+                            contractStatus === 'Draft' && "bg-yellow-500/20 text-yellow-400 border border-yellow-500/30"
+                          )}>
+                            {contractStatus}
+                          </span>
+                        )}
+                      </div>
+                      {/* Original filename as secondary metadata - truncated */}
+                      {contractFileName && displayContractName && (
+                        <div className="text-xs text-white/50 truncate" title={contractFileName}>
+                          Original file: <span className="font-mono">{contractFileName}</span>
+                        </div>
+                      )}
+                      {/* Upload date */}
                       {deal.created_at && (
                         <div className="text-xs text-white/60">
-                          Uploaded {new Date(deal.created_at).toLocaleDateString()}
+                          Uploaded {new Date(deal.created_at).toLocaleDateString('en-US', { 
+                            month: 'short', 
+                            day: 'numeric', 
+                            year: 'numeric' 
+                          })}
                         </div>
                       )}
                     </div>
@@ -1641,6 +1992,123 @@ ${link}`;
                     </motion.button>
                   )}
                 </div>
+              </div>
+            )}
+
+            {/* Contract Execution - Signed Contract Storage */}
+            {showContractExecutionSection && (
+              <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-4 shadow-lg shadow-black/20">
+                <h2 className="font-semibold text-lg mb-2 flex items-center gap-2">
+                  <CheckCircle className="w-5 h-5 text-emerald-400" />
+                  Contract Execution
+                </h2>
+                <p className="text-xs text-white/60 mb-3">
+                  Upload the final signed contract once both parties have signed. This file is stored securely for your records.
+                </p>
+
+                {(!signedContractUrl || dealExecutionStatus === 'pending_signature') && (
+                  <div className="space-y-3">
+                    <motion.button
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      disabled={isUploadingSignedContract}
+                      onClick={() => signedContractInputRef.current?.click()}
+                      className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white text-sm font-medium shadow-lg shadow-emerald-500/30 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {isUploadingSignedContract ? (
+                        <>
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                          Uploading…
+                        </>
+                      ) : (
+                        <>
+                          <Upload className="w-4 h-4" />
+                          Upload Signed Contract (PDF)
+                        </>
+                      )}
+                    </motion.button>
+                    <p className="text-[11px] text-white/60">
+                      PDF only, up to 10 MB. This does not change deal status automatically.
+                    </p>
+                  </div>
+                )}
+
+                {signedContractUrl && dealExecutionStatus === 'signed' && (
+                  <div className="space-y-3">
+                    <div className="flex items-start gap-2">
+                      <CheckCircle className="w-4 h-4 text-green-400 mt-0.5 flex-shrink-0" />
+                      <div className="flex-1">
+                        <p className="text-sm font-medium text-white">
+                          Signed contract uploaded
+                        </p>
+                        {signedContractUploadedAt && (
+                          <p className="text-xs text-white/60">
+                            Uploaded on {new Date(signedContractUploadedAt).toLocaleDateString()}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex flex-col sm:flex-row gap-2">
+                      <motion.button
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        onClick={() => {
+                          if (signedContractUrl) {
+                            window.open(signedContractUrl, '_blank');
+                          }
+                        }}
+                        className="w-full sm:w-auto flex-1 px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/15 border border-white/25 text-sm font-medium text-white flex items-center justify-center gap-2"
+                      >
+                        <Eye className="w-4 h-4" />
+                        View Signed PDF
+                      </motion.button>
+                      <motion.button
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        disabled={isUploadingSignedContract}
+                        onClick={() => signedContractInputRef.current?.click()}
+                        className="w-full sm:w-auto flex-1 px-4 py-2.5 rounded-xl bg-purple-500/20 hover:bg-purple-500/30 border border-purple-400/40 text-sm font-medium text-purple-100 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        <Edit className="w-4 h-4" />
+                        Replace Contract
+                      </motion.button>
+                    </div>
+                    <p className="text-[11px] text-white/60">
+                      Updated files replace the previous version for your records.
+                    </p>
+                  </div>
+                )}
+
+                {signedContractUrl && dealExecutionStatus === 'completed' && (
+                  <div className="space-y-2">
+                    <div className="flex items-start gap-2">
+                      <CheckCircle className="w-4 h-4 text-green-400 mt-0.5 flex-shrink-0" />
+                      <div className="flex-1">
+                        <p className="text-sm font-medium text-white">
+                          Execution complete
+                        </p>
+                        {signedContractUploadedAt && (
+                          <p className="text-xs text-white/60">
+                            Signed contract stored on{' '}
+                            {new Date(signedContractUploadedAt).toLocaleDateString()}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                    <p className="text-[11px] text-white/60">
+                      You can view the signed PDF from here whenever needed.
+                    </p>
+                  </div>
+                )}
+
+                {/* Hidden input used by both Upload and Replace buttons */}
+                <input
+                  ref={signedContractInputRef}
+                  type="file"
+                  accept="application/pdf"
+                  className="hidden"
+                  onChange={handleSignedContractFileChange}
+                />
               </div>
             )}
 

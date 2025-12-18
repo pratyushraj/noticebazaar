@@ -201,7 +201,7 @@ router.get('/:token', async (req: Request, res: Response) => {
       const { data, error } = await supabase
         .from('brand_deals')
         .select(
-          'id, brand_name, brand_response_status, brand_response_message, brand_response_at, deal_amount, deliverables, analysis_report_id'
+          'id, brand_name, brand_response_status, brand_response_message, brand_response_at, deal_amount, deliverables, analysis_report_id, signed_contract_url, deal_execution_status'
         )
         .eq('id', tokenData.deal_id)
         .maybeSingle();
@@ -221,11 +221,11 @@ router.get('/:token', async (req: Request, res: Response) => {
         const { data: fallbackDeal, error: fallbackError } = await supabase
           .from('brand_deals')
           .select(
-            'id, brand_name, brand_response_status, brand_response_message, brand_response_at, deal_amount, deliverables'
+            'id, brand_name, brand_response_status, brand_response_message, brand_response_at, deal_amount, deliverables, signed_contract_url, deal_execution_status'
           )
           .eq('id', tokenData.deal_id)
           .maybeSingle();
-
+    
         if (!fallbackError && fallbackDeal) {
           deal = fallbackDeal;
           dealError = null;
@@ -238,11 +238,20 @@ router.get('/:token', async (req: Request, res: Response) => {
     }
 
     if (dealError || !deal) {
-      console.error('[BrandResponse] GET Deal fetch error:', dealError);
-      // Return neutral error (no internal details)
-      return res.status(404).json({
-        success: false,
-        error: 'This link is no longer valid. Please contact the creator.'
+      console.error('[BrandResponse] GET Deal fetch error (falling back to minimal deal):', dealError);
+      // Fallback: return a minimal, generic deal so the brand page still loads
+      return res.json({
+        success: true,
+        deal: {
+          brand_name: 'Collaboration',
+          response_status: 'pending',
+          response_message: null,
+          response_at: null,
+          deal_amount: null,
+          deliverables: null,
+        },
+        requested_changes: [],
+        analysis_data: null,
       });
     }
 
@@ -290,7 +299,9 @@ router.get('/:token', async (req: Request, res: Response) => {
         response_message: deal.brand_response_message,
         response_at: deal.brand_response_at,
         deal_amount: deal.deal_amount || null,
-        deliverables: deal.deliverables || null
+        deliverables: deal.deliverables || null,
+        signed_contract_url: (deal as any).signed_contract_url || null,
+        deal_execution_status: (deal as any).deal_execution_status || null,
       },
       requested_changes: requestedChanges,
       analysis_data: analysisData
@@ -387,7 +398,7 @@ router.post('/:token', async (req: Request, res: Response) => {
     // Check if deal exists
     const { data: deal, error: dealError } = await supabase
       .from('brand_deals')
-      .select('id, brand_name, status, brand_response_status')
+      .select('id, brand_name, status, brand_response_status, deal_execution_status')
       .eq('id', tokenData.deal_id)
       .single();
 
@@ -426,8 +437,14 @@ router.post('/:token', async (req: Request, res: Response) => {
 
     // Auto-update deal status based on brand response
     let newDealStatus = deal.status;
+    let newExecutionStatus = (deal as any).deal_execution_status as string | null;
+
     if (status === 'accepted' || status === 'accepted_verified') {
       newDealStatus = 'Approved';
+      // Phase 2: mark execution as pending signature once brand has accepted
+      if (!newExecutionStatus) {
+        newExecutionStatus = 'pending_signature';
+      }
     } else if (status === 'negotiating') {
       newDealStatus = 'Negotiating';
     } else if (status === 'rejected') {
@@ -436,6 +453,9 @@ router.post('/:token', async (req: Request, res: Response) => {
 
     if (newDealStatus !== deal.status) {
       updateData.status = newDealStatus;
+    }
+    if (newExecutionStatus !== (deal as any).deal_execution_status) {
+      updateData.deal_execution_status = newExecutionStatus;
     }
 
     const { error: updateError } = await supabase
