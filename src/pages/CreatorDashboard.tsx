@@ -1262,13 +1262,14 @@ const CreatorDashboard = () => {
                       whileTap={animations.microTap}
                       whileHover={window.innerWidth > 768 ? animations.microHover : undefined}
                       style={{ pointerEvents: 'auto' }}
+                      className="aspect-square"
                     >
                       <BaseCard
                         variant="tertiary"
                         className={cn(
                           action.color,
                           "flex flex-col items-center justify-center gap-2 text-center cursor-pointer p-4 md:p-5",
-                          "pointer-events-auto"
+                          "pointer-events-auto h-full"
                         )}
                         onClick={(e) => {
                           if (e) {

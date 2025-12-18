@@ -328,9 +328,10 @@ const CreatorContracts = () => {
 
             {/* Filter Tabs - Centered under stats */}
             <div className={cn(
-              "flex flex-wrap items-center justify-center gap-3 md:gap-4 mt-4 md:mt-6 mb-4 md:mb-6",
+              "flex items-center justify-center gap-3 md:gap-4 mt-4 md:mt-6 mb-4 md:mb-6",
               "overflow-x-auto overflow-y-visible py-1",
-              "[&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
+              "[&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]",
+              "flex-nowrap"
             )}>
               {filters.map((filter) => {
                 const isActive = activeFilter === filter.id;
