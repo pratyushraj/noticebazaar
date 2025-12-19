@@ -765,6 +765,9 @@ const BrandDealDetailsPage = () => {
                   required
                   disabled={isFormUsed}
                 />
+                <p className="text-xs text-white/50 mt-1">
+                  This will be converted into a legally usable barter agreement.
+                </p>
               </div>
               {/* Product/Service Value - Required for Barter */}
               <div>

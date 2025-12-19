@@ -16,6 +16,7 @@ import { validateContractFile } from '@/lib/utils/contractValidation';
 import { supabase } from '@/integrations/supabase/client';
 import { uploadFile } from '@/lib/services/fileService';
 import { triggerHaptic, HapticPatterns } from '@/lib/utils/haptics';
+import { cn } from '@/lib/utils';
 
 type RiskLevel = 'low' | 'medium' | 'high';
 type ActionType = 'NEGOTIATION' | 'CLARIFICATION' | 'SUMMARY';
@@ -27,6 +28,83 @@ const ContractUploadFlow = () => {
   const addDealMutation = useAddBrandDeal();
   const [step, setStep] = useState('upload'); // upload, uploading, scanning, analyzing, results, upload-error, review-error, validation-error
   const [dealType, setDealType] = useState<'contract' | 'barter'>('contract'); // 'contract' or 'barter'
+  const [selectedOption, setSelectedOption] = useState<'upload' | 'request_details' | null>(null);
+  const [showUploadArea, setShowUploadArea] = useState(false);
+  const uploadAreaRef = useRef<HTMLDivElement>(null);
+  
+  // Handle Request Details Click
+  const handleRequestDetailsClick = async () => {
+    if (!session?.access_token || !profile?.id) {
+      toast.error('Please log in to request collaboration details');
+      return;
+    }
+
+    try {
+      triggerHaptic(HapticPatterns.medium);
+      const apiBaseUrl =
+        import.meta.env.VITE_API_BASE_URL ||
+        (typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com')
+          ? 'https://api.creatorarmour.com'
+          : typeof window !== 'undefined' && window.location.hostname === 'localhost'
+          ? 'http://localhost:3001'
+          : 'https://noticebazaar-api.onrender.com');
+
+      const response = await fetch(`${apiBaseUrl}/api/deal-details-tokens`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({ expiresAt: null }),
+      });
+
+      if (!response.ok) {
+        // Try to parse error response
+        let errorMessage = 'Failed to generate link';
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.error || errorMessage;
+        } catch {
+          errorMessage = `Server error: ${response.status} ${response.statusText}`;
+        }
+        throw new Error(errorMessage);
+      }
+
+      const data = await response.json();
+      if (!data.success || !data.token?.id) {
+        throw new Error(data.error || 'Failed to generate link');
+      }
+
+      const baseUrl =
+        typeof window !== 'undefined' ? window.location.origin : 'https://creatorarmour.com';
+      const link = `${baseUrl}/#/deal-details/${data.token.id}`;
+
+      // Copy to clipboard and show share options
+      await navigator.clipboard.writeText(link);
+      toast.success('Link copied! Share it with the brand.', {
+        duration: 4000,
+      });
+
+      // Try native share if available
+      if (navigator.share) {
+        try {
+          await navigator.share({
+            title: 'Finalize Collaboration Details',
+            text: `Hi, please help finalize our collaboration details here: ${link}`,
+            url: link,
+          });
+        } catch (shareError: any) {
+          // User cancelled or share failed - that's okay
+          if (shareError.name !== 'AbortError') {
+            console.warn('[ContractUploadFlow] Share failed:', shareError);
+          }
+        }
+      }
+    } catch (error: any) {
+      console.error('[ContractUploadFlow] Request collaboration details error:', error);
+      toast.error(error.message || 'Failed to generate link. Please try again.');
+    }
+  };
   
   // Barter Deal State
   const [barterChatText, setBarterChatText] = useState('');
@@ -2262,151 +2340,112 @@ ${creatorName}`;
           </button>
           
           <div className="text-lg font-semibold">
-            {dealType === 'contract' ? 'Upload Contract' : 'Barter Deal'}
+            Upload Contract
           </div>
           
           <div className="w-10"></div>
         </div>
         
-        {/* Deal Type Toggle */}
-        {step === 'upload' && (
-          <div className="flex gap-2 mb-4 bg-white/5 rounded-xl p-1">
-            <button
-              onClick={() => {
-                setDealType('contract');
-                triggerHaptic(HapticPatterns.light);
-              }}
-              className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg font-medium transition-all ${
-                dealType === 'contract'
-                  ? 'bg-purple-600 text-white shadow-lg'
-                  : 'text-white/60 hover:text-white/80 hover:bg-white/5'
-              }`}
-            >
-              <FileText className="w-4 h-4" />
-              Upload Contract
-            </button>
-            <button
-              onClick={() => {
-                setDealType('barter');
-                triggerHaptic(HapticPatterns.light);
-              }}
-              className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg font-medium transition-all ${
-                dealType === 'barter'
-                  ? 'bg-purple-600 text-white shadow-lg'
-                  : 'text-white/60 hover:text-white/80 hover:bg-white/5'
-              }`}
-            >
-              <Gift className="w-4 h-4" />
-              Barter Deal (No Contract)
-            </button>
-          </div>
-        )}
       </div>
 
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 overflow-y-auto pb-20">
         {/* Upload Step */}
         {step === 'upload' && (
           <>
-            {dealType === 'contract' ? (
-              <div className="space-y-6">
-                {/* Request Collaboration Details Option */}
-                <div className="bg-gradient-to-br from-green-500/20 to-emerald-500/20 backdrop-blur-md rounded-2xl p-5 border border-green-400/30">
-                  <div className="flex items-start gap-3 mb-3">
-                    <div className="w-10 h-10 rounded-xl bg-green-500/30 flex items-center justify-center flex-shrink-0">
-                      <MessageSquare className="w-5 h-5 text-green-400" />
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="font-semibold mb-1">Don't have a contract yet?</h3>
-                      <p className="text-sm text-purple-200 mb-3">Request collaboration details from the brand. We'll generate a clean contract for you.</p>
-                      <button
-                        onClick={async () => {
-                          if (!session?.access_token || !profile?.id) {
-                            toast.error('Please log in to request collaboration details');
-                            return;
-                          }
-
-                          try {
-                            triggerHaptic(HapticPatterns.medium);
-                            const apiBaseUrl =
-                              import.meta.env.VITE_API_BASE_URL ||
-                              (typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com')
-                                ? 'https://api.creatorarmour.com'
-                                : typeof window !== 'undefined' && window.location.hostname === 'localhost'
-                                ? 'http://localhost:3001'
-                                : 'https://noticebazaar-api.onrender.com');
-
-                            const response = await fetch(`${apiBaseUrl}/api/deal-details-tokens`, {
-                              method: 'POST',
-                              headers: {
-                                'Content-Type': 'application/json',
-                                Authorization: `Bearer ${session.access_token}`,
-                              },
-                              body: JSON.stringify({ expiresAt: null }),
-                            });
-
-                            if (!response.ok) {
-                              // Try to parse error response
-                              let errorMessage = 'Failed to generate link';
-                              try {
-                                const errorData = await response.json();
-                                errorMessage = errorData.error || errorMessage;
-                              } catch {
-                                errorMessage = `Server error: ${response.status} ${response.statusText}`;
-                              }
-                              throw new Error(errorMessage);
-                            }
-
-                            const data = await response.json();
-                            if (!data.success || !data.token?.id) {
-                              throw new Error(data.error || 'Failed to generate link');
-                            }
-
-                            const baseUrl =
-                              typeof window !== 'undefined' ? window.location.origin : 'https://creatorarmour.com';
-                            const link = `${baseUrl}/#/deal-details/${data.token.id}`;
-
-                            // Copy to clipboard and show share options
-                            await navigator.clipboard.writeText(link);
-                            toast.success('Link copied! Share it with the brand.', {
-                              duration: 4000,
-                            });
-
-                            // Try native share if available
-                            if (navigator.share) {
-                              try {
-                                await navigator.share({
-                                  title: 'Finalize Collaboration Details',
-                                  text: `Hi, please help finalize our collaboration details here: ${link}`,
-                                  url: link,
-                                });
-                              } catch (shareError: any) {
-                                // User cancelled or share failed - that's okay
-                                if (shareError.name !== 'AbortError') {
-                                  console.warn('[ContractUploadFlow] Share failed:', shareError);
-                                }
-                              }
-                            }
-                          } catch (error: any) {
-                            console.error('[ContractUploadFlow] Request collaboration details error:', error);
-                            toast.error(error.message || 'Failed to generate link. Please try again.');
-                          }
-                        }}
-                        className="bg-green-600 hover:bg-green-700 px-4 py-2 rounded-lg font-medium transition-colors text-sm flex items-center gap-2"
-                      >
-                        <Share2 className="w-4 h-4" />
-                        Request Collaboration Details from Brand
-                      </button>
+            {/* Option Selection Cards */}
+            <div className="space-y-3 mb-8">
+              {/* Card A: Upload Contract */}
+              <button
+                onClick={() => {
+                  setSelectedOption('upload');
+                  setDealType('contract');
+                  setShowUploadArea(false);
+                  triggerHaptic(HapticPatterns.light);
+                }}
+                className={`w-full text-left p-5 rounded-2xl border-2 transition-all ${
+                  selectedOption === 'upload'
+                    ? 'border-purple-400 bg-purple-500/10 shadow-lg shadow-purple-500/20'
+                    : 'border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/10'
+                }`}
+              >
+                <div className="flex items-start gap-4">
+                  {/* Radio Indicator */}
+                  <div className="flex-shrink-0 mt-1">
+                    <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${
+                      selectedOption === 'upload'
+                        ? 'border-purple-400 bg-purple-500/20'
+                        : 'border-white/30 bg-transparent'
+                    }`}>
+                      {selectedOption === 'upload' && (
+                        <div className="w-2.5 h-2.5 rounded-full bg-purple-400" />
+                      )}
                     </div>
                   </div>
+                  
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-semibold text-lg mb-1 flex items-center gap-2">
+                      <FileText className="w-5 h-5 flex-shrink-0" />
+                      Upload Contract
+                    </h3>
+                    <p className="text-sm text-white/60">
+                      Upload an existing contract to analyze and protect it.
+                    </p>
+                  </div>
+                  
+                  {selectedOption === 'upload' && (
+                    <CheckCircle className="w-6 h-6 text-purple-400 flex-shrink-0" />
+                  )}
                 </div>
+              </button>
 
-                {/* Divider */}
-                <div className="flex items-center gap-4">
-                  <div className="flex-1 h-px bg-white/10"></div>
-                  <span className="text-sm text-white/60">OR</span>
-                  <div className="flex-1 h-px bg-white/10"></div>
+              {/* Card B: Request Details from Brand */}
+              <button
+                onClick={() => {
+                  setSelectedOption('request_details');
+                  setDealType('contract');
+                  setShowUploadArea(false);
+                  triggerHaptic(HapticPatterns.light);
+                }}
+                className={`w-full text-left p-5 rounded-2xl border-2 transition-all ${
+                  selectedOption === 'request_details'
+                    ? 'border-purple-400 bg-purple-500/10 shadow-lg shadow-purple-500/20'
+                    : 'border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/10'
+                }`}
+              >
+                <div className="flex items-start gap-4">
+                  {/* Radio Indicator */}
+                  <div className="flex-shrink-0 mt-1">
+                    <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${
+                      selectedOption === 'request_details'
+                        ? 'border-purple-400 bg-purple-500/20'
+                        : 'border-white/30 bg-transparent'
+                    }`}>
+                      {selectedOption === 'request_details' && (
+                        <div className="w-2.5 h-2.5 rounded-full bg-purple-400" />
+                      )}
+                    </div>
+                  </div>
+                  
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-semibold text-lg mb-1 flex items-center gap-2">
+                      <MessageSquare className="w-5 h-5 flex-shrink-0" />
+                      Request Details from Brand
+                    </h3>
+                    <p className="text-sm text-white/60">
+                      No contract yet? Brands can share paid or barter deal details in under 2 minutes.
+                    </p>
+                  </div>
+                  
+                  {selectedOption === 'request_details' && (
+                    <CheckCircle className="w-6 h-6 text-purple-400 flex-shrink-0" />
+                  )}
                 </div>
+              </button>
+            </div>
 
+            {/* Conditional Content Based on Selection */}
+            {selectedOption === 'upload' && (
+              <div className="space-y-6">
                 {/* Info Card */}
                 <div className="bg-gradient-to-br from-blue-500/20 to-purple-500/20 backdrop-blur-md rounded-2xl p-5 border border-blue-400/30">
                   <div className="flex items-start gap-3 mb-3">
@@ -2484,266 +2523,65 @@ ${creatorName}`;
                   </div>
                 </div>
               </div>
-            ) : (
+            )}
+
+            {selectedOption === 'request_details' && showUploadArea && (
               <div className="space-y-6">
-                {/* Info Card */}
-                <div className="bg-gradient-to-br from-green-500/20 to-purple-500/20 backdrop-blur-md rounded-2xl p-5 border border-green-400/30">
+                {/* Request Collaboration Details Card */}
+                <div className="bg-white/5 backdrop-blur-md rounded-2xl p-5 border border-white/10">
                   <div className="flex items-start gap-3 mb-3">
-                    <div className="w-10 h-10 rounded-xl bg-green-500/30 flex items-center justify-center flex-shrink-0">
-                      <Gift className="w-5 h-5 text-green-400" />
+                    <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center flex-shrink-0">
+                      <MessageSquare className="w-5 h-5 text-white/60" />
                     </div>
-                    <div>
-                      <h3 className="font-semibold mb-1">Barter Deal Protection</h3>
-                      <p className="text-sm text-purple-200">Convert your chat conversations into legal proof and protect your rights.</p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Input Mode Toggle */}
-                <div className="flex gap-2 bg-white/5 rounded-xl p-1">
-                  <button
-                    onClick={() => {
-                      setBarterInputMode('chat');
-                      triggerHaptic(HapticPatterns.light);
-                    }}
-                    className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg font-medium transition-all ${
-                      barterInputMode === 'chat'
-                        ? 'bg-purple-600 text-white shadow-lg'
-                        : 'text-white/60 hover:text-white/80 hover:bg-white/5'
-                    }`}
-                  >
-                    <MessageSquare className="w-4 h-4" />
-                    Paste Chat
-                  </button>
-                  <button
-                    onClick={() => {
-                      setBarterInputMode('form');
-                      triggerHaptic(HapticPatterns.light);
-                    }}
-                    className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg font-medium transition-all ${
-                      barterInputMode === 'form'
-                        ? 'bg-purple-600 text-white shadow-lg'
-                        : 'text-white/60 hover:text-white/80 hover:bg-white/5'
-                    }`}
-                  >
-                    <FileText className="w-4 h-4" />
-                    Manual Form
-                  </button>
-                </div>
-
-                {/* Chat Input Mode */}
-                {barterInputMode === 'chat' && (
-                  <div className="bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 p-6">
-                    <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
-                      <MessageSquare className="w-5 h-5 text-purple-300" />
-                      Paste WhatsApp / Instagram Chat
-                    </h3>
-                    <textarea
-                      value={barterChatText}
-                      onChange={(e) => {
-                        setBarterChatText(e.target.value);
-                        setBarterError(null); // Clear error on input
-                      }}
-                      placeholder="Paste your full brand conversation here..."
-                      className="w-full h-64 bg-white/5 border border-white/10 rounded-xl p-4 text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-purple-500/50 resize-none"
-                    />
-                    {barterError && (
-                      <p className="mt-2 text-sm text-red-400 flex items-center gap-1">
-                        <AlertCircle className="w-4 h-4" />
-                        {barterError}
-                      </p>
-                    )}
-                  </div>
-                )}
-
-                {/* Manual Form Mode */}
-                {barterInputMode === 'form' && (
-                  <div className="bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 p-6 space-y-4">
-                    <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                      <FileText className="w-5 h-5 text-purple-300" />
-                      Deal Details
-                    </h3>
-                    
-                    <div>
-                      <label className="block text-sm font-medium text-white/80 mb-2">Brand Name</label>
-                      <input
-                        type="text"
-                        value={barterFormData.brandName}
-                        onChange={(e) => {
-                          setBarterFormData({ ...barterFormData, brandName: e.target.value });
-                          setBarterError(null);
-                        }}
-                        placeholder="Enter brand name"
-                        className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-purple-500/50"
-                      />
-                    </div>
-                    
-                    <div>
-                      <label className="block text-sm font-medium text-white/80 mb-2">Product Name</label>
-                      <input
-                        type="text"
-                        value={barterFormData.productName}
-                        onChange={(e) => {
-                          setBarterFormData({ ...barterFormData, productName: e.target.value });
-                          setBarterError(null);
-                        }}
-                        placeholder="What product/service are you receiving?"
-                        className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-purple-500/50"
-                      />
-                    </div>
-                    
-                    <div>
-                      <label className="block text-sm font-medium text-white/80 mb-2">Deliverables</label>
-                      <input
-                        type="text"
-                        value={barterFormData.deliverables}
-                        onChange={(e) => {
-                          setBarterFormData({ ...barterFormData, deliverables: e.target.value });
-                          setBarterError(null);
-                        }}
-                        placeholder="e.g., 2 Instagram Reels, 3 Posts"
-                        className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-purple-500/50"
-                      />
-                    </div>
-                    
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-medium text-white/80 mb-2">Product Value (₹)</label>
-                        <input
-                          type="text"
-                          value={barterFormData.productValue}
-                          onChange={(e) => {
-                            setBarterFormData({ ...barterFormData, productValue: e.target.value });
-                            setBarterError(null);
-                          }}
-                          placeholder="Optional"
-                          className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-purple-500/50"
-                        />
-                      </div>
-                      
-                      <div>
-                        <label className="block text-sm font-medium text-white/80 mb-2">Timeline</label>
-                        <input
-                          type="text"
-                          value={barterFormData.timeline}
-                          onChange={(e) => {
-                            setBarterFormData({ ...barterFormData, timeline: e.target.value });
-                            setBarterError(null);
-                          }}
-                          placeholder="e.g., 15 days"
-                          className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-purple-500/50"
-                        />
-                      </div>
-                    </div>
-                    
-                    <div>
-                      <label className="block text-sm font-medium text-white/80 mb-2">Usage Rights</label>
-                      <input
-                        type="text"
-                        value={barterFormData.usageRights}
-                        onChange={(e) => {
-                          setBarterFormData({ ...barterFormData, usageRights: e.target.value });
-                          setBarterError(null);
-                        }}
-                        placeholder="e.g., 6 months, unlimited usage"
-                        className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-purple-500/50"
-                      />
-                    </div>
-                  </div>
-                )}
-                
-                {/* Error Display for Form Mode */}
-                {barterInputMode === 'form' && barterError && (
-                  <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-4">
-                    <p className="text-sm text-red-400 flex items-center gap-2">
-                      <AlertCircle className="w-4 h-4" />
-                      {barterError}
-                    </p>
-                  </div>
-                )}
-
-                {/* Generate Button */}
-                <motion.button
-                  onClick={handleGenerateBarterReport}
-                  whileHover={{ scale: isGeneratingBarter ? 1 : 1.02 }}
-                  whileTap={{ scale: isGeneratingBarter ? 1 : 0.98 }}
-                  disabled={isGeneratingBarter}
-                  aria-busy={isGeneratingBarter}
-                  className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white px-6 py-4 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {isGeneratingBarter ? (
-                    <>
-                      <Loader2 className="w-5 h-5 animate-spin" />
-                      Generating Report...
-                    </>
-                  ) : (
-                    <>
-                      <CheckCircle className="w-5 h-5" />
-                      Generate Barter Protection Report
-                    </>
-                  )}
-                </motion.button>
-
-                {/* Benefits */}
-                <div className="bg-white/5 backdrop-blur-md rounded-2xl border border-white/10 p-5">
-                  <h4 className="font-semibold mb-4 text-center">What You Get</h4>
-                  <div className="space-y-3">
-                    <div className="flex items-start gap-3 text-sm">
-                      <CheckCircle className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
-                      <div>
-                        <div className="font-medium">Converts chat into legal proof</div>
-                      </div>
-                    </div>
-                    <div className="flex items-start gap-3 text-sm">
-                      <CheckCircle className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
-                      <div>
-                        <div className="font-medium">Generates Barter Agreement PDF</div>
-                      </div>
-                    </div>
-                    <div className="flex items-start gap-3 text-sm">
-                      <CheckCircle className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
-                      <div>
-                        <div className="font-medium">Detects misuse & unlimited usage risk</div>
-                      </div>
-                    </div>
-                    <div className="flex items-start gap-3 text-sm">
-                      <CheckCircle className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
-                      <div>
-                        <div className="font-medium">Helps you send a legal notice later</div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Features List */}
-                <div className="space-y-3">
-                  <div className="flex items-start gap-3 text-sm">
-                    <CheckCircle className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
-                    <div>
-                      <div className="font-medium">Instant Analysis</div>
-                      <div className="text-purple-300">Get results in under 30 seconds</div>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-start gap-3 text-sm">
-                    <Shield className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
-                    <div>
-                      <div className="font-medium">100% Confidential</div>
-                      <div className="text-purple-300">Your contracts are encrypted and secure</div>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-start gap-3 text-sm">
-                    <Sparkles className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
-                    <div>
-                      <div className="font-medium">Expert Insights</div>
-                      <div className="text-purple-300">AI trained on 10,000+ creator contracts</div>
+                    <div className="flex-1">
+                      <h3 className="font-semibold mb-1 text-white/90">No contract yet?</h3>
+                      <p className="text-sm text-white/60 mb-3">Let the brand share deal details — we'll generate a clean agreement for you.</p>
+                      <button
+                        onClick={handleRequestDetailsClick}
+                        className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 px-4 py-2 rounded-lg font-medium transition-colors text-sm flex items-center gap-2"
+                      >
+                        <Share2 className="w-4 h-4" />
+                        Request Collaboration Details from Brand
+                      </button>
                     </div>
                   </div>
                 </div>
               </div>
             )}
           </>
+        )}
+
+        {/* Sticky Bottom CTA */}
+        {step === 'upload' && (
+          <div className="fixed bottom-0 left-0 right-0 bg-gradient-to-t from-purple-900/95 via-purple-900/95 to-transparent backdrop-blur-lg border-t border-white/10 px-4 md:px-6 lg:px-8 py-4 -mx-4 md:-mx-6 lg:-mx-8 z-50">
+            <button
+              onClick={() => {
+                if (!selectedOption) return;
+                
+                if (selectedOption === 'upload') {
+                  setShowUploadArea(true);
+                  // Scroll to upload area after a brief delay to allow render
+                  setTimeout(() => {
+                    uploadAreaRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                  }, 100);
+                } else if (selectedOption === 'request_details') {
+                  // Trigger the link generation flow
+                  setShowUploadArea(true);
+                  handleRequestDetailsClick();
+                }
+                triggerHaptic(HapticPatterns.medium);
+              }}
+              disabled={!selectedOption}
+              className={cn(
+                "w-full py-4 rounded-xl font-semibold text-lg transition-all",
+                "bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500",
+                "disabled:opacity-50 disabled:cursor-not-allowed",
+                "flex items-center justify-center gap-2 shadow-lg"
+              )}
+            >
+              Continue
+            </button>
+          </div>
         )}
 
         {/* Uploading Step */}
