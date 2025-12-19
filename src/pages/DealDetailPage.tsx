@@ -4,6 +4,7 @@ import { useState, useCallback, lazy, Suspense, useMemo, useEffect, useRef } fro
 import type { ChangeEvent } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Eye, Download, Flag, Loader2, Building2, Calendar, FileText, CheckCircle, Clock, Trash2, AlertCircle, XCircle, Bell, Mail, MessageSquare, Phone, Edit, X, Check, Share2, Copy, Link2, Upload } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 import { useDeal, DealProvider } from '@/contexts/DealContext';
 import { useIssues } from '@/lib/hooks/useIssues';
@@ -81,6 +82,14 @@ function DealDetailPageContent() {
   const signedContractInputRef = useRef<HTMLInputElement | null>(null);
   const [isUploadingSignedContract, setIsUploadingSignedContract] = useState(false);
   
+  // Final contract generation state
+  const [isGeneratingSafeContract, setIsGeneratingSafeContract] = useState(false);
+  const [showMarkSignedModal, setShowMarkSignedModal] = useState(false);
+  
+  // Brand details submission state
+  const [brandSubmissionDetails, setBrandSubmissionDetails] = useState<any>(null);
+  const [isLoadingSubmission, setIsLoadingSubmission] = useState(false);
+  const [hasReviewedDetails, setHasReviewedDetails] = useState(false);
   
   // Get current stage from deal status - helper function
   const getCurrentStage = (status: string | null | undefined, progressPercentage?: number | null): DealStage | undefined => {
@@ -448,6 +457,10 @@ function DealDetailPageContent() {
   const signedContractUploadedAt = (deal as any)?.signed_contract_uploaded_at as string | null | undefined;
   const dealExecutionStatus = (deal as any)?.deal_execution_status as string | null | undefined;
   const brandResponseStatus = (deal as any)?.brand_response_status as string | null | undefined;
+  const safeContractUrl = (deal as any)?.safe_contract_url as string | null | undefined;
+  const contractVersion = (deal as any)?.contract_version as string | null | undefined;
+  const signedAt = (deal as any)?.signed_at as string | null | undefined;
+  const signedVia = (deal as any)?.signed_via as string | null | undefined;
   
   // Map deal status to display status (shared logic)
   const getContractStatus = useCallback((): string => {
@@ -908,6 +921,49 @@ Best regards`;
     }
   }, [deal?.id, profile?.id, updateDealProgress, refreshAll]);
 
+  // Fetch brand submission details if deal was created via form
+  useEffect(() => {
+    const fetchSubmissionDetails = async () => {
+      if (!deal?.id || !session?.access_token) return;
+      
+      const createdVia = (deal as any)?.created_via;
+      const status = deal?.status?.toLowerCase();
+      
+      // Only fetch if deal was created via deal_details_form and status indicates brand details submitted
+      if (createdVia === 'deal_details_form' && (status === 'brand_details_submitted' || status?.includes('brand'))) {
+        setIsLoadingSubmission(true);
+        try {
+          const apiBaseUrl =
+            import.meta.env.VITE_API_BASE_URL ||
+            (typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com')
+              ? 'https://api.creatorarmour.com'
+              : typeof window !== 'undefined' && window.location.hostname === 'localhost'
+              ? 'http://localhost:3001'
+              : 'https://noticebazaar-api.onrender.com');
+
+          const response = await fetch(`${apiBaseUrl}/api/deal-details-tokens/deal/${deal.id}`, {
+            headers: {
+              Authorization: `Bearer ${session.access_token}`,
+            },
+          });
+
+          if (response.ok) {
+            const data = await response.json();
+            if (data.success) {
+              setBrandSubmissionDetails(data.formData);
+            }
+          }
+        } catch (error) {
+          console.error('[DealDetailPage] Error fetching submission details:', error);
+        } finally {
+          setIsLoadingSubmission(false);
+        }
+      }
+    };
+
+    fetchSubmissionDetails();
+  }, [deal?.id, deal?.status, (deal as any)?.created_via, session?.access_token]);
+
   // Note: We trust that if the deal exists in the UI (loaded via useBrandDealById),
   // it's safe to generate and share the brand reply link.
   // The deal verification was causing false negatives due to timing/replication delays.
@@ -965,6 +1021,126 @@ Best regards`;
       {/* Content */}
       <div className="space-y-6 p-4 md:p-6 pb-24">
         
+        {/* Brand Details Review Section - Show if deal was created via form */}
+        {brandSubmissionDetails && !hasReviewedDetails && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-gradient-to-br from-green-500/20 to-emerald-500/20 backdrop-blur-xl border-2 border-green-400/30 rounded-2xl p-6 shadow-lg shadow-green-500/10"
+          >
+            <div className="flex items-start gap-4 mb-4">
+              <div className="w-12 h-12 rounded-xl bg-green-500/30 flex items-center justify-center flex-shrink-0">
+                <FileText className="w-6 h-6 text-green-400" />
+              </div>
+              <div className="flex-1">
+                <div className="flex items-center gap-2 mb-2 flex-wrap">
+                  <h2 className="text-xl font-bold">Brand-Submitted Collaboration Details</h2>
+                  <span className="px-2 py-1 rounded-full text-xs font-medium bg-green-500/30 text-green-300 border border-green-400/50">
+                    🏷️ Provided by Brand (via CreatorArmour)
+                  </span>
+                </div>
+                <p className="text-white/70 text-sm mb-4">
+                  Review brand-submitted details before drafting agreement
+                </p>
+              </div>
+            </div>
+
+            {/* Details Display */}
+            <div className="bg-white/5 rounded-xl p-4 space-y-4 mb-4">
+              <div>
+                <div className="text-sm text-white/60 mb-1">Brand Name</div>
+                <div className="text-white font-medium">{brandSubmissionDetails.brandName || 'Not provided'}</div>
+              </div>
+              
+              {brandSubmissionDetails.campaignName && (
+                <div>
+                  <div className="text-sm text-white/60 mb-1">Campaign Name</div>
+                  <div className="text-white font-medium">{brandSubmissionDetails.campaignName}</div>
+                </div>
+              )}
+
+              <div>
+                <div className="text-sm text-white/60 mb-1">Deal Type</div>
+                <div className="text-white font-medium capitalize">{brandSubmissionDetails.dealType || 'paid'}</div>
+              </div>
+
+              {brandSubmissionDetails.dealType === 'paid' && brandSubmissionDetails.paymentAmount && (
+                <div>
+                  <div className="text-sm text-white/60 mb-1">Payment Amount</div>
+                  <div className="text-white font-medium">₹{parseFloat(brandSubmissionDetails.paymentAmount).toLocaleString('en-IN')}</div>
+                </div>
+              )}
+
+              {brandSubmissionDetails.deliverables && brandSubmissionDetails.deliverables.length > 0 && (
+                <div>
+                  <div className="text-sm text-white/60 mb-1">Deliverables</div>
+                  <ul className="list-disc list-inside space-y-1">
+                    {brandSubmissionDetails.deliverables.map((d: string, idx: number) => (
+                      <li key={idx} className="text-white">{d}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {brandSubmissionDetails.deadline && (
+                <div>
+                  <div className="text-sm text-white/60 mb-1">Timeline / Deadline</div>
+                  <div className="text-white font-medium">{brandSubmissionDetails.deadline}</div>
+                </div>
+              )}
+
+              {brandSubmissionDetails.usageRights && (
+                <div>
+                  <div className="text-sm text-white/60 mb-1">Usage Rights</div>
+                  <div className="text-white font-medium">{brandSubmissionDetails.usageRights}</div>
+                </div>
+              )}
+
+              {brandSubmissionDetails.exclusivity && (
+                <div>
+                  <div className="text-sm text-white/60 mb-1">Exclusivity Period</div>
+                  <div className="text-white font-medium">{brandSubmissionDetails.exclusivity}</div>
+                </div>
+              )}
+
+              {brandSubmissionDetails.revisions && (
+                <div>
+                  <div className="text-sm text-white/60 mb-1">Revisions</div>
+                  <div className="text-white font-medium">{brandSubmissionDetails.revisions}</div>
+                </div>
+              )}
+            </div>
+
+            {/* Review Button */}
+            <button
+              onClick={async () => {
+                triggerHaptic(HapticPatterns.medium);
+                setHasReviewedDetails(true);
+                
+                // Update deal status to draft after review
+                try {
+                  const { error } = await supabase
+                    .from('brand_deals')
+                    .update({ status: 'Draft' })
+                    .eq('id', deal.id);
+
+                  if (error) throw error;
+
+                  toast.success('Details reviewed. You can now generate the draft contract.');
+                  refreshAll();
+                } catch (error: any) {
+                  console.error('[DealDetailPage] Error updating deal status:', error);
+                  toast.error('Failed to update status');
+                }
+              }}
+              className="w-full bg-green-600 hover:bg-green-700 px-6 py-3 rounded-xl font-semibold transition-colors flex items-center justify-center gap-2"
+            >
+              <CheckCircle className="w-5 h-5" />
+              Review Details & Generate Draft Contract
+            </button>
+          </motion.div>
+        )}
+
         {/* Header Section */}
         <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-4 md:p-6 shadow-lg shadow-black/20">
           <div className="flex items-start gap-4 mb-4">
@@ -2111,6 +2287,395 @@ ${link}`;
                 />
               </div>
             )}
+
+            {/* Final Contract Section - Show when deal is Approved */}
+            {brandResponseStatus === 'accepted_verified' && (
+              <div className="bg-gradient-to-br from-emerald-500/20 to-green-500/20 backdrop-blur-xl border-2 border-emerald-400/30 rounded-2xl p-6 shadow-lg shadow-emerald-500/10">
+                <h2 className="font-semibold text-xl mb-2 flex items-center gap-2">
+                  <FileText className="w-6 h-6 text-emerald-400" />
+                  {safeContractUrl ? 'Send Contract for Signature' : 'Final Contract'}
+                </h2>
+                
+                {!safeContractUrl ? (
+                  <>
+                    <p className="text-sm text-white/70 mb-4">
+                      Generate the final brand-safe contract with all accepted clarifications incorporated.
+                    </p>
+                    <motion.button
+                      onClick={async () => {
+                        if (!deal || !deal.id || !session?.access_token) {
+                          toast.error('Missing required information');
+                          return;
+                        }
+
+                        setIsGeneratingSafeContract(true);
+                        triggerHaptic(HapticPatterns.medium);
+
+                        try {
+                          const apiBaseUrl =
+                            import.meta.env.VITE_API_BASE_URL ||
+                            (typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com')
+                              ? 'https://api.creatorarmour.com'
+                              : typeof window !== 'undefined' && window.location.hostname === 'localhost'
+                              ? 'http://localhost:3001'
+                              : 'https://noticebazaar-api.onrender.com');
+
+                          // Get reportId and original contract path
+                          const reportId = protectionReport?.id || null;
+                          const originalContractPath = deal.contract_file_url || '';
+
+                          if (!originalContractPath) {
+                            throw new Error('Original contract URL is required');
+                          }
+
+                          const response = await fetch(`${apiBaseUrl}/api/protection/generate-safe-contract`, {
+                            method: 'POST',
+                            headers: {
+                              'Content-Type': 'application/json',
+                              Authorization: `Bearer ${session.access_token}`,
+                            },
+                            body: JSON.stringify({
+                              reportId,
+                              originalFilePath: originalContractPath,
+                              dealId: deal.id,
+                            }),
+                          });
+
+                          if (!response.ok) {
+                            const errorData = await response.json();
+                            throw new Error(errorData.error || 'Failed to generate safe contract');
+                          }
+
+                          const data = await response.json();
+                          
+                          if (data.success && data.safeContractUrl) {
+                            toast.success('Brand-safe contract generated successfully!');
+                            refreshAll();
+                          } else {
+                            throw new Error('Unexpected response format');
+                          }
+                        } catch (error: any) {
+                          console.error('[DealDetailPage] Generate safe contract error:', error);
+                          toast.error(error.message || 'Failed to generate safe contract');
+                        } finally {
+                          setIsGeneratingSafeContract(false);
+                        }
+                      }}
+                      disabled={isGeneratingSafeContract}
+                      whileTap={{ scale: 0.98 }}
+                      className="w-full bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-500 hover:to-green-500 px-6 py-3 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {isGeneratingSafeContract ? (
+                        <>
+                          <Loader2 className="w-5 h-5 animate-spin" />
+                          Generating Contract...
+                        </>
+                      ) : (
+                        <>
+                          <FileText className="w-5 h-5" />
+                          Generate Brand-Safe Contract
+                        </>
+                      )}
+                    </motion.button>
+                  </>
+                ) : (
+                  <>
+                    {/* Execution Status Badge */}
+                    <div className="flex items-center gap-2 mb-4">
+                      {signedAt ? (
+                        <span className="px-3 py-1 rounded-full text-xs font-medium bg-green-500/20 text-green-400 border border-green-500/30 flex items-center gap-1.5">
+                          <span className="text-sm">🟢</span>
+                          Signed (Externally)
+                        </span>
+                      ) : (
+                        <span className="px-3 py-1 rounded-full text-xs font-medium bg-yellow-500/20 text-yellow-400 border border-yellow-500/30 flex items-center gap-1.5">
+                          <span className="text-sm">🟡</span>
+                          Pending Signature
+                        </span>
+                      )}
+                    </div>
+
+                    <p className="text-sm text-white/70 mb-2">
+                      Your final contract is ready. Choose your preferred signing method below.
+                    </p>
+                    <p className="text-xs text-white/50 mb-4">
+                      Use any signing method your brand already trusts.
+                    </p>
+
+                    {/* Signing Handoff Buttons */}
+                    <div className="space-y-3 mb-4">
+                      {/* Leegality */}
+                      <motion.button
+                        onClick={async () => {
+                          if (!safeContractUrl) return;
+                          
+                          triggerHaptic(HapticPatterns.light);
+                          
+                          // Download the contract first
+                          try {
+                            const response = await fetch(safeContractUrl);
+                            const blob = await response.blob();
+                            const url = window.URL.createObjectURL(blob);
+                            const a = document.createElement('a');
+                            a.href = url;
+                            a.download = `${deal.brand_name} × ${profile?.first_name || 'Creator'} – Final Agreement.pdf`;
+                            document.body.appendChild(a);
+                            a.click();
+                            document.body.removeChild(a);
+                            window.URL.revokeObjectURL(url);
+                          } catch (error) {
+                            console.error('[DealDetailPage] Download error:', error);
+                            toast.error('Failed to download contract');
+                            return;
+                          }
+                          
+                          // Track signing method (optional metadata)
+                          try {
+                            await supabase
+                              .from('brand_deals')
+                              .update({ signed_via: 'leegality' })
+                              .eq('id', deal.id);
+                          } catch (error) {
+                            // Non-blocking - just for audit trail
+                            console.warn('[DealDetailPage] Failed to track signing method:', error);
+                          }
+                          
+                          // Open Leegality upload page
+                          window.open('https://leegality.com/upload', '_blank');
+                          toast.success('Contract downloaded. Upload it to Leegality for Aadhaar eSign.');
+                        }}
+                        whileTap={{ scale: 0.98 }}
+                        className="w-full bg-white/10 hover:bg-white/15 border border-white/20 px-4 py-3 rounded-xl transition-all flex items-center justify-center gap-2 text-white"
+                        title="Upload this contract to Leegality to collect Aadhaar eSign."
+                      >
+                        <span className="text-lg">🖊</span>
+                        Send via Leegality
+                      </motion.button>
+
+                      {/* DocuSign */}
+                      <motion.button
+                        onClick={async () => {
+                          if (!safeContractUrl) return;
+                          
+                          triggerHaptic(HapticPatterns.light);
+                          
+                          // Download the contract first
+                          try {
+                            const response = await fetch(safeContractUrl);
+                            const blob = await response.blob();
+                            const url = window.URL.createObjectURL(blob);
+                            const a = document.createElement('a');
+                            a.href = url;
+                            a.download = `${deal.brand_name} × ${profile?.first_name || 'Creator'} – Final Agreement.pdf`;
+                            document.body.appendChild(a);
+                            a.click();
+                            document.body.removeChild(a);
+                            window.URL.revokeObjectURL(url);
+                          } catch (error) {
+                            console.error('[DealDetailPage] Download error:', error);
+                            toast.error('Failed to download contract');
+                            return;
+                          }
+                          
+                          // Track signing method (optional metadata)
+                          try {
+                            await supabase
+                              .from('brand_deals')
+                              .update({ signed_via: 'docusign' })
+                              .eq('id', deal.id);
+                          } catch (error) {
+                            // Non-blocking - just for audit trail
+                            console.warn('[DealDetailPage] Failed to track signing method:', error);
+                          }
+                          
+                          // Open DocuSign new envelope page
+                          window.open('https://app.docusign.com/home', '_blank');
+                          toast.success('Contract downloaded. Upload it to DocuSign to request signatures.');
+                        }}
+                        whileTap={{ scale: 0.98 }}
+                        className="w-full bg-white/10 hover:bg-white/15 border border-white/20 px-4 py-3 rounded-xl transition-all flex items-center justify-center gap-2 text-white"
+                        title="Upload this contract to DocuSign to request signatures."
+                      >
+                        <span className="text-lg">🖊</span>
+                        Send via DocuSign
+                      </motion.button>
+
+                      {/* Email */}
+                      <motion.button
+                        onClick={async () => {
+                          if (!safeContractUrl) return;
+                          
+                          triggerHaptic(HapticPatterns.light);
+                          
+                          // Track signing method (optional metadata)
+                          try {
+                            await supabase
+                              .from('brand_deals')
+                              .update({ signed_via: 'email' })
+                              .eq('id', deal.id);
+                          } catch (error) {
+                            // Non-blocking - just for audit trail
+                            console.warn('[DealDetailPage] Failed to track signing method:', error);
+                          }
+                          
+                          const subject = encodeURIComponent('Final collaboration agreement for signature');
+                          const body = encodeURIComponent(
+                            `Hi,\n\n` +
+                            `Please find attached the final collaboration agreement for our project: ${deal.brand_name}.\n\n` +
+                            `This contract incorporates all mutually agreed terms and clarifications.\n\n` +
+                            `Download link: ${safeContractUrl}\n\n` +
+                            `Please review and sign at your earliest convenience. The commercial terms remain unchanged from our previous discussions.\n\n` +
+                            `Thank you,\n${profile?.first_name || 'Creator'}`
+                          );
+                          
+                          window.location.href = `mailto:${deal.brand_email || ''}?subject=${subject}&body=${body}`;
+                        }}
+                        whileTap={{ scale: 0.98 }}
+                        className="w-full bg-white/10 hover:bg-white/15 border border-white/20 px-4 py-3 rounded-xl transition-all flex items-center justify-center gap-2 text-white"
+                      >
+                        <Mail className="w-5 h-5" />
+                        Send via Email
+                      </motion.button>
+                    </div>
+
+                    {/* Legal Positioning Text */}
+                    <div className="bg-white/5 rounded-xl p-4 mb-4">
+                      <p className="text-xs text-white/60 mb-2">
+                        CreatorArmour prepares a clean, mutually agreed contract. Signing is completed via your preferred e-signature provider.
+                      </p>
+                      <p className="text-[10px] text-white/40 italic">
+                        CreatorArmour does not act as a signing authority or legal intermediary.
+                      </p>
+                    </div>
+
+                    {/* Confirm Signed Contract Received Button */}
+                    <motion.button
+                      onClick={() => setShowMarkSignedModal(true)}
+                      whileTap={{ scale: 0.98 }}
+                      className="w-full bg-purple-500/20 hover:bg-purple-500/30 border border-purple-400/40 px-4 py-2.5 rounded-xl transition-all flex items-center justify-center gap-2 text-purple-200 text-sm font-medium"
+                    >
+                      <CheckCircle className="w-4 h-4" />
+                      Confirm Signed Contract Received
+                    </motion.button>
+                  </>
+                )}
+              </div>
+            )}
+
+            {/* Confirm Signed Contract Received Modal */}
+            <Dialog open={showMarkSignedModal} onOpenChange={setShowMarkSignedModal}>
+              <DialogContent className="bg-purple-900/95 backdrop-blur-xl border border-white/10 text-white max-w-md">
+                <DialogHeader>
+                  <DialogTitle className="text-xl font-semibold">Confirm Signed Contract Received</DialogTitle>
+                  <DialogDescription className="text-white/70">
+                    Have you received the signed contract from both parties?
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4 mt-4">
+                  <p className="text-sm text-white/80">
+                    This will update the deal status to "Signed" for organizational purposes. This is not a legal validation.
+                  </p>
+                  
+                  {/* Optional: Upload signed contract */}
+                  <div>
+                    <label className="block text-sm font-medium mb-2 text-white/70">
+                      Upload Signed Contract (Optional)
+                    </label>
+                    <input
+                      type="file"
+                      accept="application/pdf"
+                      onChange={async (e) => {
+                        const file = e.target.files?.[0];
+                        if (!file || !deal?.id) return;
+
+                        try {
+                          setIsUploadingSignedContract(true);
+                          const formData = new FormData();
+                          formData.append('file', file);
+                          formData.append('dealId', deal.id);
+
+                          const apiBaseUrl =
+                            import.meta.env.VITE_API_BASE_URL ||
+                            (typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com')
+                              ? 'https://api.creatorarmour.com'
+                              : typeof window !== 'undefined' && window.location.hostname === 'localhost'
+                              ? 'http://localhost:3001'
+                              : 'https://noticebazaar-api.onrender.com');
+
+                          const response = await fetch(`${apiBaseUrl}/api/deals/${deal.id}/signed-contract`, {
+                            method: 'POST',
+                            headers: {
+                              Authorization: `Bearer ${session?.access_token}`,
+                            },
+                            body: formData,
+                          });
+
+                          if (!response.ok) {
+                            throw new Error('Failed to upload signed contract');
+                          }
+
+                          toast.success('Signed contract uploaded');
+                        } catch (error: any) {
+                          console.error('[DealDetailPage] Upload signed contract error:', error);
+                          toast.error('Failed to upload signed contract');
+                        } finally {
+                          setIsUploadingSignedContract(false);
+                        }
+                      }}
+                      className="w-full text-sm text-white/60 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-medium file:bg-purple-500/20 file:text-purple-200 hover:file:bg-purple-500/30"
+                    />
+                    <p className="text-xs text-white/50 mt-1">
+                      PDF only. This helps with records and audits.
+                    </p>
+                  </div>
+
+                  <div className="flex gap-3">
+                    <button
+                      onClick={async () => {
+                        if (!deal?.id) return;
+                        
+                        try {
+                          const updateData: any = {
+                            status: 'Signed',
+                            contract_version: 'signed',
+                            signed_at: new Date().toISOString(),
+                            updated_at: new Date().toISOString(),
+                          };
+
+                          // Keep existing signed_via if already set
+                          if (!signedVia) {
+                            updateData.signed_via = null; // Will be set when user clicks signing button
+                          }
+
+                          const { error } = await supabase
+                            .from('brand_deals')
+                            .update(updateData)
+                            .eq('id', deal.id);
+
+                          if (error) throw error;
+
+                          toast.success('Signed contract confirmed');
+                          setShowMarkSignedModal(false);
+                          refreshAll();
+                        } catch (error: any) {
+                          console.error('[DealDetailPage] Confirm signed error:', error);
+                          toast.error('Failed to update status');
+                        }
+                      }}
+                      className="flex-1 bg-green-600 hover:bg-green-700 px-4 py-2 rounded-xl font-medium transition-colors"
+                    >
+                      Confirm
+                    </button>
+                    <button
+                      onClick={() => setShowMarkSignedModal(false)}
+                      className="flex-1 bg-white/10 hover:bg-white/20 px-4 py-2 rounded-xl font-medium transition-colors"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              </DialogContent>
+            </Dialog>
 
 
             {/* Invoice Ready */}

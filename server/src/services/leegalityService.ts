@@ -284,7 +284,7 @@ export async function createInvite(
       };
     }
 
-    const data = await response.json();
+    const data = await response.json() as any;
     console.log('[Leegality] Invitation created:', {
       invitationId: data.invitationId || data.id || data.invitation_id || data.data?.invitationId,
       signUrl: data.signUrl || data.sign_url || data.data?.signUrl,
@@ -353,7 +353,7 @@ export async function getInviteStatus(
       };
     }
 
-    const data = await response.json();
+    const data = await response.json() as any;
     console.log('[Leegality] Invitation status:', {
       invitationId,
       status: data.status || data.data?.status,

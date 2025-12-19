@@ -2309,6 +2309,104 @@ ${creatorName}`;
           <>
             {dealType === 'contract' ? (
               <div className="space-y-6">
+                {/* Request Collaboration Details Option */}
+                <div className="bg-gradient-to-br from-green-500/20 to-emerald-500/20 backdrop-blur-md rounded-2xl p-5 border border-green-400/30">
+                  <div className="flex items-start gap-3 mb-3">
+                    <div className="w-10 h-10 rounded-xl bg-green-500/30 flex items-center justify-center flex-shrink-0">
+                      <MessageSquare className="w-5 h-5 text-green-400" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="font-semibold mb-1">Don't have a contract yet?</h3>
+                      <p className="text-sm text-purple-200 mb-3">Request collaboration details from the brand. We'll generate a clean contract for you.</p>
+                      <button
+                        onClick={async () => {
+                          if (!session?.access_token || !profile?.id) {
+                            toast.error('Please log in to request collaboration details');
+                            return;
+                          }
+
+                          try {
+                            triggerHaptic(HapticPatterns.medium);
+                            const apiBaseUrl =
+                              import.meta.env.VITE_API_BASE_URL ||
+                              (typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com')
+                                ? 'https://api.creatorarmour.com'
+                                : typeof window !== 'undefined' && window.location.hostname === 'localhost'
+                                ? 'http://localhost:3001'
+                                : 'https://noticebazaar-api.onrender.com');
+
+                            const response = await fetch(`${apiBaseUrl}/api/deal-details-tokens`, {
+                              method: 'POST',
+                              headers: {
+                                'Content-Type': 'application/json',
+                                Authorization: `Bearer ${session.access_token}`,
+                              },
+                              body: JSON.stringify({ expiresAt: null }),
+                            });
+
+                            if (!response.ok) {
+                              // Try to parse error response
+                              let errorMessage = 'Failed to generate link';
+                              try {
+                                const errorData = await response.json();
+                                errorMessage = errorData.error || errorMessage;
+                              } catch {
+                                errorMessage = `Server error: ${response.status} ${response.statusText}`;
+                              }
+                              throw new Error(errorMessage);
+                            }
+
+                            const data = await response.json();
+                            if (!data.success || !data.token?.id) {
+                              throw new Error(data.error || 'Failed to generate link');
+                            }
+
+                            const baseUrl =
+                              typeof window !== 'undefined' ? window.location.origin : 'https://creatorarmour.com';
+                            const link = `${baseUrl}/#/deal-details/${data.token.id}`;
+
+                            // Copy to clipboard and show share options
+                            await navigator.clipboard.writeText(link);
+                            toast.success('Link copied! Share it with the brand.', {
+                              duration: 4000,
+                            });
+
+                            // Try native share if available
+                            if (navigator.share) {
+                              try {
+                                await navigator.share({
+                                  title: 'Finalize Collaboration Details',
+                                  text: `Hi, please help finalize our collaboration details here: ${link}`,
+                                  url: link,
+                                });
+                              } catch (shareError: any) {
+                                // User cancelled or share failed - that's okay
+                                if (shareError.name !== 'AbortError') {
+                                  console.warn('[ContractUploadFlow] Share failed:', shareError);
+                                }
+                              }
+                            }
+                          } catch (error: any) {
+                            console.error('[ContractUploadFlow] Request collaboration details error:', error);
+                            toast.error(error.message || 'Failed to generate link. Please try again.');
+                          }
+                        }}
+                        className="bg-green-600 hover:bg-green-700 px-4 py-2 rounded-lg font-medium transition-colors text-sm flex items-center gap-2"
+                      >
+                        <Share2 className="w-4 h-4" />
+                        Request Collaboration Details from Brand
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Divider */}
+                <div className="flex items-center gap-4">
+                  <div className="flex-1 h-px bg-white/10"></div>
+                  <span className="text-sm text-white/60">OR</span>
+                  <div className="flex-1 h-px bg-white/10"></div>
+                </div>
+
                 {/* Info Card */}
                 <div className="bg-gradient-to-br from-blue-500/20 to-purple-500/20 backdrop-blur-md rounded-2xl p-5 border border-blue-400/30">
                   <div className="flex items-start gap-3 mb-3">

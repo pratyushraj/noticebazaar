@@ -104,7 +104,7 @@ export async function sendOTP(
       };
     }
 
-    const data: Fast2SMSSendOTPResponse = await response.json();
+    const data = (await response.json()) as Fast2SMSSendOTPResponse;
     
     console.log('[Fast2SMS] Response:', data);
 

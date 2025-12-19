@@ -54,7 +54,7 @@ export async function createBrandReplyToken(
       created_by: creatorId,
       expires_at: expiresAt ? expiresAt.toISOString() : null,
       is_active: true,
-    })
+    } as any)
     .select()
     .single();
 
@@ -76,11 +76,14 @@ export async function revokeBrandReplyToken(
   creatorId: string
 ): Promise<void> {
   // Verify token belongs to creator
-  const { data: token, error: tokenError } = await supabase
+  const result = await supabase
     .from('brand_reply_tokens')
     .select('id, created_by')
     .eq('id', tokenId)
     .maybeSingle();
+  
+  const token = result.data as { id: string; created_by: string } | null;
+  const tokenError = result.error;
 
   if (tokenError || !token) {
     throw new Error('Token not found');
@@ -97,7 +100,7 @@ export async function revokeBrandReplyToken(
       is_active: false,
       revoked_at: new Date().toISOString(),
       revoked_by: creatorId,
-    })
+    } as any)
     .eq('id', tokenId);
 
   if (updateError) {
@@ -151,10 +154,10 @@ export async function getAuditSummary(
     };
   }
 
-  const tokenIds = tokens.map(t => t.id);
+  const tokenIds = (tokens as any[]).map((t: any) => t.id);
 
   // Get first viewed action (data minimization: only timestamp)
-  const { data: firstViewed } = await supabase
+  const firstViewedResult = await supabase
     .from('brand_reply_audit_log')
     .select('action_timestamp')
     .eq('deal_id', dealId) // Uses index: idx_brand_reply_audit_log_deal_id
@@ -163,9 +166,11 @@ export async function getAuditSummary(
     .order('action_timestamp', { ascending: true })
     .limit(1)
     .maybeSingle();
+  
+  const firstViewed = firstViewedResult.data as { action_timestamp: string } | null;
 
   // Get latest decision (data minimization: only action_type and timestamp)
-  const { data: latestDecision } = await supabase
+  const latestDecisionResult = await supabase
     .from('brand_reply_audit_log')
     .select('action_type, action_timestamp')
     .eq('deal_id', dealId) // Uses index
@@ -174,12 +179,14 @@ export async function getAuditSummary(
     .order('action_timestamp', { ascending: false }) // Uses index: idx_brand_reply_audit_log_timestamp
     .limit(1)
     .maybeSingle();
+  
+  const latestDecision = latestDecisionResult.data as { action_type: string; action_timestamp: string } | null;
 
   // Return only safe, minimal data (no IP, user agent, or internal metadata)
   return {
-    firstViewedAt: firstViewed?.action_timestamp || null,
-    latestDecision: latestDecision?.action_type || null,
-    lastUpdatedAt: latestDecision?.action_timestamp || null,
+    firstViewedAt: firstViewed ? firstViewed.action_timestamp : null,
+    latestDecision: latestDecision ? latestDecision.action_type : null,
+    lastUpdatedAt: latestDecision ? latestDecision.action_timestamp : null,
   };
 }
 

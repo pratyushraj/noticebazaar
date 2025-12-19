@@ -364,7 +364,7 @@ router.get('/:id/report.pdf', async (req: AuthenticatedRequest, res: Response) =
 router.post('/generate-safe-contract', async (req: AuthenticatedRequest, res: Response) => {
   try {
     const userId = req.user!.id;
-    const { reportId, originalFilePath } = req.body;
+    const { reportId, originalFilePath, dealId } = req.body;
 
     // Validate originalFilePath (required)
     if (!originalFilePath || originalFilePath.trim() === '') {
@@ -416,7 +416,86 @@ router.post('/generate-safe-contract', async (req: AuthenticatedRequest, res: Re
       userId
     });
 
-    // If file buffer is returned directly, send it as download (bypasses storage upload)
+    // If we have a file buffer and dealId, upload to storage and save to database
+    if (result.fileBuffer && dealId) {
+      // Verify user owns the deal
+      const { data: deal, error: dealError } = await supabase
+        .from('brand_deals')
+        .select('creator_id')
+        .eq('id', dealId)
+        .single();
+
+      if (dealError || !deal) {
+        return res.status(404).json({
+          success: false,
+          error: 'Deal not found'
+        });
+      }
+
+      if (deal.creator_id !== userId && req.user!.role !== 'admin') {
+        return res.status(403).json({
+          success: false,
+          error: 'Access denied'
+        });
+      }
+
+      // Upload to Supabase Storage
+      const timestamp = Date.now();
+      const fileName = result.fileName || `safe-contract-${timestamp}.pdf`;
+      const storagePath = `safe-contracts/${dealId}/${timestamp}_${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('creator-assets')
+        .upload(storagePath, result.fileBuffer, {
+          contentType: result.contentType || 'application/pdf',
+          upsert: false,
+        });
+
+      if (uploadError) {
+        console.error('[Protection] Failed to upload safe contract:', uploadError);
+        // Fallback: return file buffer for download
+        res.setHeader('Content-Type', result.contentType || 'application/octet-stream');
+        res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
+        res.setHeader('Content-Length', result.fileBuffer.length.toString());
+        return res.send(result.fileBuffer);
+      }
+
+      // Get public URL
+      const { data: publicUrlData } = supabase.storage
+        .from('creator-assets')
+        .getPublicUrl(storagePath);
+
+      const safeContractUrl = publicUrlData?.publicUrl;
+
+      if (!safeContractUrl) {
+        return res.status(500).json({
+          success: false,
+          error: 'Failed to generate URL for safe contract'
+        });
+      }
+
+      // Update deal with safe contract URL
+      const { error: updateError } = await supabase
+        .from('brand_deals')
+        .update({
+          safe_contract_url: safeContractUrl,
+          contract_version: 'safe_final',
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', dealId);
+
+      if (updateError) {
+        console.error('[Protection] Failed to update deal:', updateError);
+        // Still return the URL even if update fails
+      }
+
+      return res.json({
+        success: true,
+        safeContractUrl,
+      });
+    }
+
+    // If file buffer is returned directly (no dealId), send it as download
     if (result.fileBuffer) {
       res.setHeader('Content-Type', result.contentType || 'application/octet-stream');
       res.setHeader('Content-Disposition', `attachment; filename="${result.fileName || 'safe-contract.pdf'}"`);

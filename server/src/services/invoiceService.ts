@@ -24,13 +24,15 @@ interface InvoiceData {
 export async function generateInvoice(dealId: string): Promise<{ success: boolean; invoiceUrl?: string; invoiceNumber?: string; error?: string }> {
   try {
     // Check if invoice already exists (idempotent)
-    const { data: existingDeal } = await supabase
+    const result = await supabase
       .from('brand_deals')
       .select('invoice_url, invoice_number')
       .eq('id', dealId)
       .single();
+    
+    const existingDeal = result.data as { invoice_url: string | null; invoice_number: string | null } | null;
 
-    if (existingDeal?.invoice_url && existingDeal?.invoice_number) {
+    if (existingDeal && existingDeal.invoice_url && existingDeal.invoice_number) {
       console.log(`[InvoiceService] Invoice already exists for deal ${dealId}`);
       return {
         success: true,
@@ -40,7 +42,7 @@ export async function generateInvoice(dealId: string): Promise<{ success: boolea
     }
 
     // Fetch deal details
-    const { data: deal, error: dealError } = await supabase
+    const dealResult = await supabase
       .from('brand_deals')
       .select(`
         id,
@@ -54,6 +56,18 @@ export async function generateInvoice(dealId: string): Promise<{ success: boolea
       `)
       .eq('id', dealId)
       .single();
+    
+    const deal = dealResult.data as {
+      id: string;
+      brand_name: string | null;
+      deal_amount: number | null;
+      deliverables: string | null;
+      due_date: string | null;
+      payment_expected_date: string | null;
+      creator_id: string;
+      otp_verified_at: string | null;
+    } | null;
+    const dealError = dealResult.error;
 
     if (dealError || !deal) {
       return {
@@ -63,11 +77,25 @@ export async function generateInvoice(dealId: string): Promise<{ success: boolea
     }
 
     // Fetch creator profile
-    const { data: creatorProfile, error: creatorError } = await supabase
+    const profileResult = await supabase
       .from('profiles')
       .select('id, first_name, last_name, email, phone, gst_number, pan_number, bank_account_name, bank_account_number, bank_ifsc')
       .eq('id', deal.creator_id)
       .single();
+    
+    const creatorProfile = profileResult.data as {
+      id: string;
+      first_name: string | null;
+      last_name: string | null;
+      email: string | null;
+      phone: string | null;
+      gst_number: string | null;
+      pan_number: string | null;
+      bank_account_name: string | null;
+      bank_account_number: string | null;
+      bank_ifsc: string | null;
+    } | null;
+    const creatorError = profileResult.error;
 
     if (creatorError || !creatorProfile) {
       return {
@@ -136,7 +164,7 @@ export async function generateInvoice(dealId: string): Promise<{ success: boolea
         invoice_url: urlData.publicUrl,
         invoice_number: invoiceNumber,
         updated_at: new Date().toISOString(),
-      })
+      } as any)
       .eq('id', dealId);
 
     if (updateError) {

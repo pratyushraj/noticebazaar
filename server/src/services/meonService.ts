@@ -177,7 +177,7 @@ export async function getInviteStatus(invitationId: string) {
 
     if (!res.ok) return { success: false, error: 'Could not get invitation status.' };
 
-    const data = await res.json();
+    const data = await res.json() as any;
     return {
       success: true,
       status: data?.status || data?.data?.status,

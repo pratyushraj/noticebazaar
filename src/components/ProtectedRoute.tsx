@@ -238,7 +238,7 @@ const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
   if (authStatus === 'loading' || isCreatingProfile) {
     return (
       <FullScreenLoader
-        message={isCreatingProfile ? 'Setting up your account...' : 'Loading your workspace...'}
+        message={isCreatingProfile ? 'Setting up your account...' : 'Preparing your protected workspace...'}
         secondaryMessage={isCreatingProfile ? 'This may take a few seconds' : undefined}
       />
     );
