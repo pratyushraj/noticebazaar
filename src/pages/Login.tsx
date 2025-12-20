@@ -162,7 +162,7 @@ const Login = () => {
           toast.error('Failed to sign in: ' + error.message);
         }
       } else if (data.session) {
-        toast.success('Signed in successfully!');
+        // Don't show toast - AuthLoadingScreen will handle the transition
         // SessionContext will handle the redirect
         navigate('/creator-dashboard', { replace: true });
       }

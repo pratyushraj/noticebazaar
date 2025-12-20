@@ -1140,7 +1140,7 @@ Best regards`;
             </button>
           </motion.div>
         )}
-
+        
         {/* Header Section */}
         <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-4 md:p-6 shadow-lg shadow-black/20">
           <div className="flex items-start gap-4 mb-4">

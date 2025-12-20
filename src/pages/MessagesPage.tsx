@@ -3,8 +3,8 @@
 // IMPORTANT: This file is a self-contained React + TypeScript snapshot designed to avoid duplicate
 // declaration issues by keeping all components scoped in this file.
 
-import { useEffect, useRef, useState, useMemo } from 'react';
-import { Lock, MessageSquare, ArrowUp, Loader2, Mic, Paperclip, Smile, Check, CheckCheck, AlertCircle, RefreshCw } from 'lucide-react';
+import React, { useEffect, useRef, useState, useMemo } from 'react';
+import { Lock, MessageSquare, ArrowUp, Loader2, Mic, Paperclip, Check, CheckCheck, AlertCircle, RefreshCw } from 'lucide-react';
 import { useSession } from '@/contexts/SessionContext';
 import { toast } from 'sonner';
 import { useProfiles } from '@/lib/hooks/useProfiles';
@@ -320,18 +320,24 @@ function ChatHeaderScoped({
   return (
     <div className={cn(
       "flex items-center justify-between",
-      "px-3 py-3 md:px-5 md:py-4",
-      "border-b border-white/10",
-      "bg-white/5 backdrop-blur-xl md:bg-white/10",
-      "flex-shrink-0 mb-3 md:mb-8",
+      "px-3 py-2.5 md:px-5 md:py-3",
+      "border-b border-white/15",
+      "bg-white/5 backdrop-blur-lg md:bg-white/8",
+      "flex-shrink-0",
       "md:rounded-t-[20px]",
-      "relative overflow-hidden"
+      "relative overflow-hidden",
+      // Soft shadow under header to connect with chat area
+      "shadow-[0_4px_12px_rgba(0,0,0,0.15)]",
+      // Always visible - fixed on mobile, sticky on desktop
+      "md:sticky md:top-0",
+      "fixed top-0 left-0 right-0 z-[10000]",
+      "md:relative md:z-10"
     )}>
-      {/* Vision Pro depth elevation - desktop only */}
-      <div className={cn("hidden md:block", vision.depth.elevation)} />
+      {/* Vision Pro depth elevation - desktop only - reduced intensity */}
+      <div className={cn("hidden md:block", vision.depth.elevation, "opacity-60")} />
       
-      {/* Spotlight gradient - desktop only */}
-      <div className={cn("hidden md:block", vision.spotlight.base, "opacity-40")} />
+      {/* Spotlight gradient - desktop only - reduced intensity */}
+      <div className={cn("hidden md:block", vision.spotlight.base, "opacity-25")} />
       
       <div className={cn("flex items-center gap-2 md:gap-3 flex-1 min-w-0 relative z-10")}>
         <LocalAvatar size="sm" src={advisor?.avatarUrl} alt={advisor?.name || 'Advisor'} />
@@ -377,7 +383,8 @@ function MessageInputScoped({
   const [value, setValue] = useState('');
   const [isRecording, setIsRecording] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
-  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
@@ -433,18 +440,88 @@ function MessageInputScoped({
     }
   };
 
-  const handleSend = () => {
-    if (!value.trim() || isLoading) return;
-    onSend?.(value.trim());
-    setValue('');
-    if (textareaRef.current) {
-      textareaRef.current.style.height = 'auto';
-    }
+  const handleSend = async () => {
+    if ((!value.trim() && !selectedFile) || isLoading || isUploading) return;
     
-    // Refocus textarea so keyboard stays up on mobile
-    setTimeout(() => {
-      textareaRef.current?.focus();
-    }, 30);
+    try {
+      setIsUploading(true);
+      
+      // If there's a file, upload it first
+      let attachmentId: string | null = null;
+      if (selectedFile && conversationId) {
+        try {
+          // Request upload URL
+          const { data: sessionData } = await supabase.auth.getSession();
+          if (!sessionData?.session) {
+            throw new Error('Not authenticated');
+          }
+          
+          const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+          const response = await fetch(
+            `${apiUrl}/api/conversations/${conversationId}/attachments/request-upload`,
+            {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${sessionData.session.access_token}`,
+              },
+              body: JSON.stringify({
+                file_name: selectedFile.name,
+                file_size: selectedFile.size,
+                file_type: selectedFile.type,
+              }),
+            }
+          );
+          
+          if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.error || 'Failed to request upload URL');
+          }
+          
+          const { signedUrl, attachment_id } = await response.json();
+          
+          // Upload file to signed URL
+          const uploadResponse = await fetch(signedUrl, {
+            method: 'PUT',
+            body: selectedFile,
+            headers: {
+              'Content-Type': selectedFile.type,
+            },
+          });
+          
+          if (!uploadResponse.ok) {
+            throw new Error('Failed to upload file');
+          }
+          
+          attachmentId = attachment_id;
+          toast.success('File uploaded successfully');
+        } catch (error: any) {
+          toast.error(`Failed to upload file: ${error.message}`);
+          setIsUploading(false);
+          return;
+        }
+      }
+      
+      // Send message (with or without attachment)
+      const messageText = value.trim() || (selectedFile ? `📎 ${selectedFile.name}` : '');
+      onSend?.(messageText);
+      
+      // Clear form
+      setValue('');
+      setSelectedFile(null);
+      if (textareaRef.current) {
+        textareaRef.current.style.height = 'auto';
+      }
+      
+      // Refocus textarea so keyboard stays up on mobile
+      setTimeout(() => {
+        textareaRef.current?.focus();
+      }, 30);
+    } catch (error: any) {
+      toast.error(`Failed to send: ${error.message}`);
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -561,9 +638,9 @@ function MessageInputScoped({
           "min-h-[56px] sm:min-h-[64px]",
           // Flex container with items centered
           "flex items-center gap-2",
-          // Glass morphism
-          "bg-white/10 backdrop-blur-xl",
-          "border border-white/10",
+          // Glass morphism - reduced intensity
+          "bg-white/8 backdrop-blur-md",
+          "border border-white/8",
           "rounded-2xl",
           // Padding
           "py-2.5 px-3",
@@ -571,9 +648,9 @@ function MessageInputScoped({
           "overflow-visible",
           // Smooth transitions
           "transition-all duration-300 ease-out",
-          // Focus state: subtle lift
+          // Focus state: subtle lift - reduced intensity
           isFocused 
-            ? "shadow-[0_8px_24px_rgba(138,60,255,0.3)] border-white/20" 
+            ? "shadow-[0_4px_12px_rgba(138,60,255,0.2)] border-white/15" 
             : ""
         )
       : cn(
@@ -643,64 +720,30 @@ function MessageInputScoped({
           onChange={(e) => {
             const file = e.target.files?.[0];
             if (file) {
-              // TODO: Implement file upload
-              toast.info(`File selected: ${file.name} (Upload functionality coming soon)`);
-              e.target.value = ''; // Reset input
+              // Validate file
+              const maxSize = 5 * 1024 * 1024; // 5MB
+              const validTypes = ['image/*', 'application/pdf'];
+              const isValidType = file.type.startsWith('image/') || file.type === 'application/pdf';
+              
+              if (!isValidType) {
+                toast.error('Invalid file type. Please select an image or PDF.');
+                e.target.value = '';
+                return;
+              }
+              
+              if (file.size > maxSize) {
+                toast.error(`File too large. Maximum size is 5MB.`);
+                e.target.value = '';
+                return;
+              }
+              
+              setSelectedFile(file);
+              toast.success(`File selected: ${file.name}`);
             }
+            e.target.value = ''; // Reset input
           }}
         />
 
-        {/* Emoji picker button */}
-        {variant === 'mobile-fixed' ? (
-          <motion.button
-            className={cn(
-              "h-10 w-10 rounded-xl flex items-center justify-center flex-shrink-0",
-              "bg-white/10 backdrop-blur-xl",
-              "mr-2",
-              "transition-all duration-200",
-              showEmojiPicker
-                ? "bg-white/20 text-white"
-                : "text-white/80 hover:bg-white/20 active:scale-95"
-            )}
-            whileTap={animations.microTap}
-            style={{ touchAction: 'manipulation' }}
-            type="button"
-            onClick={() => {
-              setShowEmojiPicker(!showEmojiPicker);
-              // TODO: Implement emoji picker
-              toast.info('Emoji picker coming soon');
-            }}
-            aria-label="Add emoji"
-          >
-            <Smile className="text-lg text-white/80" />
-          </motion.button>
-        ) : (
-          <motion.button
-            className={cn(
-              "h-11 w-11 md:w-12 md:h-12 flex items-center justify-center flex-shrink-0",
-              radius.full,
-              "border border-white/20 transition-all duration-200",
-              showEmojiPicker
-                ? "bg-white/20 text-white"
-                : cn(
-                    "bg-white/10 text-white/80",
-                    "hover:bg-white/20 hover:scale-105",
-                    "active:scale-95"
-                  )
-            )}
-            whileTap={animations.microTap}
-            style={{ touchAction: 'manipulation' }}
-            type="button"
-            onClick={() => {
-              setShowEmojiPicker(!showEmojiPicker);
-              // TODO: Implement emoji picker
-              toast.info('Emoji picker coming soon');
-            }}
-            aria-label="Add emoji"
-          >
-            <Smile className={cn(iconSizes.sm, "md:w-5 md:h-5")} />
-          </motion.button>
-        )}
 
         {/* Voice message button (hold to record) - iOS 17 + visionOS */}
         {variant === 'mobile-fixed' ? (
@@ -813,7 +856,7 @@ function MessageInputScoped({
               triggerHaptic(HapticPatterns.light);
               handleSend();
             }}
-            disabled={!value.trim() || isLoading}
+            disabled={(!value.trim() && !selectedFile) || isLoading || isUploading}
             whileTap={animations.microTap}
             className={cn(
               // Compact mobile button
@@ -823,7 +866,7 @@ function MessageInputScoped({
               "ml-2",
               "transition-all duration-300 ease-out",
               "disabled:cursor-not-allowed",
-              value.trim()
+              (value.trim() || selectedFile)
                 ? cn(
                     gradients.primary,
                     "text-white",
@@ -835,7 +878,7 @@ function MessageInputScoped({
             aria-label="Send message"
             type="button"
           >
-            {isLoading ? (
+            {(isLoading || isUploading) ? (
               <Loader2 className="text-lg animate-spin" />
             ) : (
               <ArrowUp className="text-lg text-white/80" />
@@ -847,7 +890,7 @@ function MessageInputScoped({
               triggerHaptic(HapticPatterns.light);
               handleSend();
             }}
-            disabled={!value.trim() || isLoading}
+            disabled={(!value.trim() && !selectedFile) || isLoading || isUploading}
             whileTap={animations.microTap}
             className={cn(
               // Desktop button
@@ -858,7 +901,7 @@ function MessageInputScoped({
               "disabled:cursor-not-allowed",
               "border border-white/20",
               "relative z-10",
-              value.trim()
+              (value.trim() || selectedFile)
                 ? cn(
                     gradients.primary,
                     "text-white",
@@ -875,7 +918,7 @@ function MessageInputScoped({
             aria-label="Send message"
             type="button"
           >
-            {isLoading ? (
+            {(isLoading || isUploading) ? (
               <Loader2 className={cn(iconSizes.md, "animate-spin")} />
             ) : (
               <ArrowUp className={iconSizes.md} />
@@ -898,6 +941,7 @@ function MessageBubbleScoped({
   advisorName,
   isGrouped = false,
   showTail = false,
+  isLastInGroup = false,
   onRetry
 }: { 
   message: Message; 
@@ -908,6 +952,7 @@ function MessageBubbleScoped({
   advisorName?: string;
   isGrouped?: boolean;
   showTail?: boolean;
+  isLastInGroup?: boolean;
   onRetry?: (messageId: string) => void;
 }) {
   const time = new Date(message.createdAt).toLocaleTimeString([], { 
@@ -915,19 +960,38 @@ function MessageBubbleScoped({
     minute: '2-digit' 
   });
 
+  // Only show avatar for advisor messages, on the first message of a group
+  const showAdvisorAvatar = !isCurrentUser && !isGrouped;
+
   return (
     <motion.div 
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.15 }}
       className={cn(
-        'flex mb-1',
+        'flex items-end gap-2',
         isCurrentUser ? 'justify-end' : 'justify-start',
-        isGrouped && 'mt-0.5'
+        isGrouped ? 'mt-1' : 'mt-3'
       )}
     >
+      {/* Avatar - Only for advisor messages, last in group */}
+      {!isCurrentUser && (
+        <div className="flex-shrink-0 w-7">
+          {showAdvisorAvatar ? (
+            <LocalAvatar 
+              src={advisorAvatar} 
+              alt={advisorName || 'Advisor'} 
+              size="sm"
+              className="w-7 h-7"
+            />
+          ) : (
+            <div className="w-7" /> 
+          )}
+        </div>
+      )}
+      
       <div className={cn(
-        "max-w-[80%] px-3 py-2.5 text-sm",
+        "max-w-[90%] px-3 py-2.5 text-sm",
         // Enhanced color differentiation
         isCurrentUser
           ? cn(
@@ -937,9 +1001,11 @@ function MessageBubbleScoped({
               showTail ? "rounded-2xl rounded-br-sm" : "rounded-2xl"
             )
           : cn(
-              // Advisor message: softer purple (more transparent, muted)
-              "bg-white/8 backdrop-blur-sm text-white/95",
-              "border border-white/5",
+              // Advisor message: solid, authoritative, muted gray-purple for contrast
+              "bg-slate-700/40 backdrop-blur-md text-white",
+              "border border-slate-500/30",
+              // Combined shadow for depth and inner glow
+              "shadow-[0_2px_8px_rgba(0,0,0,0.2),inset_0_1px_0_rgba(255,255,255,0.08)]",
               showTail ? "rounded-2xl rounded-bl-sm" : "rounded-2xl"
             ),
         // Failed message styling
@@ -948,10 +1014,10 @@ function MessageBubbleScoped({
         <p className="text-sm leading-relaxed break-words">{message.text}</p>
         <div className={cn(
           "text-[10px] mt-1.5 flex items-center gap-1.5",
-          isCurrentUser ? "text-white/60 justify-end" : "text-white/40 justify-start"
+          isCurrentUser ? "text-white/60 justify-end" : "text-white/50 justify-start"
         )}>
-          {/* Time - subtle */}
-          <span className="opacity-70">{time}</span>
+          {/* Time - show only on last message of group */}
+          {(isLastInGroup || !isGrouped) && <span className="opacity-70">{time}</span>}
           
           {/* Seen status (only for user messages) */}
           {isCurrentUser && !message.failed && (
@@ -982,6 +1048,8 @@ function MessageBubbleScoped({
           )}
         </div>
       </div>
+      
+      {/* No avatar for user messages - cleaner like iMessage */}
     </motion.div>
   );
 }
@@ -1099,11 +1167,16 @@ function ChatWindowScoped({
         id="MessagesScrollContainer"
         ref={messagesContainerRef}
         className={cn(
-          "flex-1 overflow-y-auto min-h-0 p-2",
-          // Mobile: Minimal padding to account for fixed input bar (just enough to clear it)
-          "pb-[calc(100px+env(safe-area-inset-bottom,0px))]",
-          // Desktop: no extra padding needed (input is sticky inside container)
-          "md:pb-2"
+          "flex-1 overflow-y-auto min-h-0",
+          // Better horizontal padding for balanced layout
+          "px-4 md:px-6",
+          // Mobile: Padding to account for fixed header and input bar
+          "pt-[calc(60px+env(safe-area-inset-top,0px))]",
+          "pb-[calc(124px+env(safe-area-inset-bottom,0px))]",
+          // Desktop: no extra padding needed (header is sticky, input is inside container)
+          "md:pt-2 md:pb-2",
+          // Subtle rounded top corners to visually connect with header
+          "md:rounded-t-none"
         )}
         style={{ WebkitOverflowScrolling: 'touch' }}
       >
@@ -1121,45 +1194,83 @@ function ChatWindowScoped({
               const prevMsg = index > 0 ? messageList[index - 1] : null;
               const nextMsg = index < messageList.length - 1 ? messageList[index + 1] : null;
               
+              // Check if this is a new day
+              const currentDate = new Date(m.createdAt);
+              const prevDate = prevMsg ? new Date(prevMsg.createdAt) : null;
+              const isNewDay = !prevDate || 
+                currentDate.toDateString() !== prevDate.toDateString();
+              
+              // Format date for separator
+              const formatDateSeparator = (date: Date): string => {
+                const today = new Date();
+                const yesterday = new Date(today);
+                yesterday.setDate(yesterday.getDate() - 1);
+                
+                if (date.toDateString() === today.toDateString()) {
+                  return 'Today';
+                } else if (date.toDateString() === yesterday.toDateString()) {
+                  return 'Yesterday';
+                } else {
+                  return date.toLocaleDateString('en-US', { 
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                  });
+                }
+              };
+              
               const isFirstOfGroup = 
                 index === 0 ||
                 !prevMsg ||
                 prevMsg.author !== m.author ||
-                new Date(m.createdAt).getTime() - new Date(prevMsg.createdAt).getTime() > 60000; // 1 minute gap
+                new Date(m.createdAt).getTime() - new Date(prevMsg.createdAt).getTime() > 300000; // 5 minute gap
               
               const isLastInGroup = !nextMsg || 
                 nextMsg.author !== m.author ||
-                new Date(nextMsg.createdAt).getTime() - new Date(m.createdAt).getTime() > 60000;
+                new Date(nextMsg.createdAt).getTime() - new Date(m.createdAt).getTime() > 300000; // 5 minute gap
               
               const showTail = isFirstOfGroup;
               const isGrouped = !isFirstOfGroup;
               
               return (
-                <motion.div
-                  key={m.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.15 }}
-                >
-                  <MessageBubbleScoped
-                    message={m}
-                    isCurrentUser={m.author === 'user'}
-                    currentUserAvatar={currentUserAvatar}
-                    advisorAvatar={advisor?.avatarUrl}
-                    currentUserName={currentUserName}
-                    advisorName={advisor?.name}
-                    isGrouped={isGrouped}
-                    showTail={showTail}
-                  />
-                </motion.div>
+                <React.Fragment key={m.id}>
+                  {/* Date separator */}
+                  {isNewDay && (
+                    <div className="flex items-center justify-center my-4">
+                      <div className={cn(
+                        "px-3 py-1.5 rounded-full",
+                        "bg-white/10 backdrop-blur-sm",
+                        "border border-white/10",
+                        "text-xs font-medium text-white/70"
+                      )}>
+                        {formatDateSeparator(currentDate)}
+                      </div>
+                    </div>
+                  )}
+                  
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.15 }}
+                  >
+                    <MessageBubbleScoped
+                      message={m}
+                      isCurrentUser={m.author === 'user'}
+                      currentUserAvatar={currentUserAvatar}
+                      advisorAvatar={advisor?.avatarUrl}
+                      currentUserName={currentUserName}
+                      advisorName={advisor?.name}
+                      isGrouped={isGrouped}
+                      showTail={showTail}
+                      isLastInGroup={isLastInGroup}
+                    />
+                  </motion.div>
+                </React.Fragment>
               );
             })}
             {/* Scroll target element at the bottom of messages */}
             <div id="messagesEnd" />
-            {/* Minimal spacer to ensure last message is visible above mobile input */}
-            <div 
-              className="h-[calc(100px+env(safe-area-inset-bottom,0px))] md:h-0"
-            />
           </>
         )}
       </div>
@@ -1211,7 +1322,11 @@ function ChatWindowScoped({
       })()}
 
       {/* Input bar - matching LawyerDashboard style - Show on tablet (768px+) and desktop */}
-      <div className={cn("p-4 border-t border-white/10 flex-shrink-0 hidden md:flex", glass.apple)}>
+      <div className={cn(
+        "p-4 border-t border-white/8 flex-shrink-0 hidden md:flex",
+        "bg-white/5 backdrop-blur-md",
+        "transition-all duration-200"
+      )}>
         <div className="flex gap-2">
           <input
             ref={inputRef}
@@ -1222,12 +1337,11 @@ function ChatWindowScoped({
             placeholder="Type your message..."
             className={cn(
               "flex-1 px-4 py-2 rounded-xl",
-              glass.appleSubtle,
-              "border border-white/15",
+              "border border-white/10",
               "text-white placeholder:text-white/50",
-              "bg-white/10 backdrop-blur-xl",
-              "shadow-[0_2px_8px_rgba(0,0,0,0.2)]",
-              "focus:outline-none focus:ring-2 focus:ring-purple-400/50 focus:border-purple-400/30",
+              "bg-white/8 backdrop-blur-md",
+              "shadow-[0_1px_4px_rgba(0,0,0,0.1)]",
+              "focus:outline-none focus:ring-2 focus:ring-purple-400/30 focus:border-purple-400/20",
               "transition-all duration-200"
             )}
           />
@@ -1241,8 +1355,8 @@ function ChatWindowScoped({
               "bg-purple-500 hover:bg-purple-600",
               "disabled:opacity-50 disabled:cursor-not-allowed",
               "transition-all duration-200",
-              "shadow-[0_2px_8px_rgba(138,60,255,0.3)]",
-              "focus:shadow-[0_4px_12px_rgba(138,60,255,0.5)]",
+              "shadow-[0_1px_4px_rgba(138,60,255,0.2)]",
+              "focus:shadow-[0_2px_8px_rgba(138,60,255,0.3)]",
               newMessage.trim() && !isLoading && "brightness-110"
             )}
           >

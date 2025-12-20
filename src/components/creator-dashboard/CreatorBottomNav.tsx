@@ -158,6 +158,8 @@ const CreatorBottomNav = () => {
           width: '100%',
           maxWidth: '100vw', // Ensure it doesn't overflow
           pointerEvents: 'auto',
+          // iOS safe area support - add padding to container
+          paddingBottom: 'env(safe-area-inset-bottom, 0px)',
           // Android-specific fixes
           WebkitTransform: 'translateZ(0)', // Force hardware acceleration
           transform: 'translateZ(0)',
@@ -171,12 +173,11 @@ const CreatorBottomNav = () => {
         <div className="absolute inset-x-0 top-0 h-[1px] bg-white/10" />
         
         <nav 
-          className="flex justify-around h-16 md:h-12 items-center px-2 md:px-4 relative z-10 pointer-events-auto"
+          className="flex justify-around h-14 md:h-12 items-center px-2 md:px-4 relative z-10 pointer-events-auto"
           style={{ 
-            paddingBottom: `max(8px, env(safe-area-inset-bottom, 8px))`, 
-            paddingTop: '8px',
-            // Android browser fix: ensure nav is visible
-            minHeight: '64px',
+            paddingTop: '6px',
+            paddingBottom: '6px',
+            // Remove hardcoded minHeight - let height class handle it
             pointerEvents: 'auto',
           }}
           role="navigation"

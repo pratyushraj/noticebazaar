@@ -4,6 +4,7 @@ import { ReactNode, useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useSession } from '@/contexts/SessionContext';
 import FullScreenLoader from '@/components/FullScreenLoader';
+import AuthLoadingScreen from '@/components/AuthLoadingScreen';
 import { supabase } from '@/integrations/supabase/client';
 
 interface ProtectedRouteProps {
@@ -14,7 +15,7 @@ interface ProtectedRouteProps {
 const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { session, loading, authStatus, profile, isAdmin, isCreator, refetchProfile, user } = useSession();
+  const { session, loading, authStatus, profile, isAdmin, isCreator, refetchProfile, user, isAuthInitializing } = useSession();
   const [isCreatingProfile, setIsCreatingProfile] = useState(false);
   const [profileCreationAttempts, setProfileCreationAttempts] = useState(0);
 
@@ -233,6 +234,18 @@ const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
       }
     }
   }, [session, authStatus, loading, profile, isAdmin, isCreator, allowedRoles, navigate, location.pathname, user, refetchProfile, profileCreationAttempts]);
+
+  // Show AuthLoadingScreen during auth initialization (after login, before dashboard is ready)
+  // Keep showing it until profile is loaded and we're ready to render the dashboard
+  if (isAuthInitializing && session) {
+    // If profile is not loaded yet, show loading screen
+    if (!profile) {
+      return <AuthLoadingScreen />;
+    }
+    // If profile is loaded, show loading screen briefly to ensure smooth transition
+    // The dashboard will handle its own loading states after this
+    return <AuthLoadingScreen />;
+  }
 
   // Global auth/profile loading gate for all protected routes
   if (authStatus === 'loading' || isCreatingProfile) {

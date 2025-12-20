@@ -1,7 +1,7 @@
 "use client";
 
 import { supabase } from '@/integrations/supabase/client';
-import { Scale, ArrowLeft, Sparkles, Shield, TrendingUp, MessageCircle } from 'lucide-react';
+import { Scale, ArrowLeft, Sparkles, Shield, TrendingUp, MessageCircle, Eye, EyeOff, Loader2 } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useSession } from '@/contexts/SessionContext';
 import { useEffect, useState } from 'react';
@@ -19,9 +19,31 @@ const Signup = () => {
   const [showLogin, setShowLogin] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [emailError, setEmailError] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [showFaceIDLogin, setShowFaceIDLogin] = useState(false);
   const [passkeyEmail, setPasskeyEmail] = useState('');
   const [showPasskeyAuth, setShowPasskeyAuth] = useState(false);
+
+  // Password strength calculator
+  const getPasswordStrength = (pwd: string) => {
+    if (pwd.length === 0) return { strength: 0, label: '', color: '' };
+    if (pwd.length < 6) return { strength: 1, label: 'Too short', color: 'bg-red-500' };
+    if (pwd.length < 8) return { strength: 2, label: 'Weak', color: 'bg-yellow-500' };
+    if (!/[A-Z]/.test(pwd) || !/[0-9]/.test(pwd)) return { strength: 3, label: 'Fair', color: 'bg-blue-500' };
+    return { strength: 4, label: 'Strong', color: 'bg-green-500' };
+  };
+
+  const handleEmailChange = (value: string) => {
+    setEmail(value);
+    if (value && !value.includes('@')) {
+      setEmailError('Please enter a valid email address');
+    } else if (value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+      setEmailError('Invalid email format');
+    } else {
+      setEmailError('');
+    }
+  };
 
   useEffect(() => {
     // Check for OAuth errors in query parameters first
@@ -101,19 +123,87 @@ const Signup = () => {
 
       if (error) {
         console.error('[Signup] Email/password signup error:', error);
-        if (error.message.includes('User already registered')) {
-          toast.error('An account with this email already exists. Please sign in instead.');
+        // Check for various "user already exists" error messages
+        const errorMsg = error.message.toLowerCase();
+        const errorCode = error.status?.toString() || '';
+        
+        if (
+          errorMsg.includes('user already registered') ||
+          errorMsg.includes('already registered') ||
+          errorMsg.includes('email already exists') ||
+          errorMsg.includes('user already exists') ||
+          errorMsg.includes('already been registered') ||
+          errorMsg.includes('duplicate') ||
+          errorCode === '422' ||
+          error.status === 422
+        ) {
+          toast.error('An account with this email already exists.', {
+            description: 'Would you like to sign in instead?',
+            action: {
+              label: 'Sign In',
+              onClick: () => {
+                setShowLogin(true);
+                // Pre-fill email
+                setEmail(email.trim());
+              },
+            },
+            duration: 5000,
+          });
           setShowLogin(true);
         } else {
           toast.error('Failed to sign up: ' + error.message);
         }
       } else if (data.user) {
-        toast.success('Account created! Please check your email to verify your account.');
-        // Optionally redirect to a verification page or show a message
+        // Supabase signUp returns user even if already exists in some cases
+        // Check if identities array is empty (indicates user already existed)
+        if (data.user.identities && data.user.identities.length === 0) {
+          toast.error('An account with this email already exists.', {
+            description: 'Would you like to sign in instead?',
+            action: {
+              label: 'Sign In',
+              onClick: () => {
+                setShowLogin(true);
+                setEmail(email.trim());
+              },
+            },
+            duration: 5000,
+          });
+          setShowLogin(true);
+        } else {
+          // New user was created
+          toast.success('Account created!', {
+            description: 'Please check your email to verify your account. You can sign in after verification.',
+            duration: 5000,
+          });
+          // Clear form after successful signup
+          setEmail('');
+          setPassword('');
+          setEmailError('');
+        }
       }
     } catch (err: any) {
       console.error('[Signup] Email/password signup exception:', err);
-      toast.error('An error occurred. Please try again.');
+      const errMsg = err?.message?.toLowerCase() || '';
+      if (
+        errMsg.includes('user already registered') ||
+        errMsg.includes('already registered') ||
+        errMsg.includes('email already exists')
+      ) {
+        toast.error('An account with this email already exists.', {
+          description: 'Would you like to sign in instead?',
+          action: {
+            label: 'Sign In',
+            onClick: () => {
+              setShowLogin(true);
+              setEmail(email.trim());
+            },
+          },
+          duration: 5000,
+        });
+        setShowLogin(true);
+      } else {
+        toast.error('An error occurred. Please try again.');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -144,7 +234,7 @@ const Signup = () => {
           toast.error('Failed to sign in: ' + error.message);
         }
       } else if (data.session) {
-        toast.success('Signed in successfully!');
+        // Don't show toast - AuthLoadingScreen will handle the transition
         navigate('/creator-dashboard', { replace: true });
       }
     } catch (err: any) {
@@ -424,34 +514,83 @@ const Signup = () => {
                       type="email"
                       placeholder="Enter your email"
                       value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      className="bg-white/5 border-white/10 text-white placeholder:text-white/40 text-base h-12"
+                      onChange={(e) => handleEmailChange(e.target.value)}
+                      className={`bg-white/5 border-white/10 text-white placeholder:text-white/40 text-base h-12 ${
+                        emailError ? 'border-red-500/50' : ''
+                      }`}
                       required
                       autoComplete="email"
+                      autoFocus
                     />
+                    {emailError && (
+                      <p className="text-xs text-red-400 mt-1">{emailError}</p>
+                    )}
                   </div>
                   <div>
                     <Label htmlFor="signup-password" className="text-purple-200 text-sm mb-2 block">
                       Password
                     </Label>
-                    <Input
-                      id="signup-password"
-                      type="password"
-                      placeholder="Create a password (min. 6 characters)"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      className="bg-white/5 border-white/10 text-white placeholder:text-white/40 text-base h-12"
-                      required
-                      autoComplete="new-password"
-                      minLength={6}
-                    />
+                    <div className="relative">
+                      <Input
+                        id="signup-password"
+                        type={showPassword ? 'text' : 'password'}
+                        placeholder="Create a password (min. 6 characters)"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        className="bg-white/5 border-white/10 text-white placeholder:text-white/40 text-base h-12 pr-10"
+                        required
+                        autoComplete="new-password"
+                        minLength={6}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition-colors"
+                        aria-label={showPassword ? 'Hide password' : 'Show password'}
+                      >
+                        {showPassword ? (
+                          <EyeOff className="h-4 w-4" />
+                        ) : (
+                          <Eye className="h-4 w-4" />
+                        )}
+                      </button>
+                    </div>
+                    {password && (
+                      <div className="mt-2">
+                        <div className="flex gap-1 h-1">
+                          {[1, 2, 3, 4].map((level) => {
+                            const { strength, color } = getPasswordStrength(password);
+                            return (
+                              <div
+                                key={level}
+                                className={`flex-1 rounded transition-colors ${
+                                  level <= strength ? color : 'bg-gray-700'
+                                }`}
+                              />
+                            );
+                          })}
+                        </div>
+                        {password.length > 0 && (
+                          <p className="text-xs text-gray-400 mt-1">
+                            {getPasswordStrength(password).label}
+                          </p>
+                        )}
+                      </div>
+                    )}
                   </div>
                   <Button
                     type="submit"
-                    disabled={isLoading || !email.trim() || !password.trim() || password.length < 6}
-                    className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold h-12"
+                    disabled={isLoading || !email.trim() || !password.trim() || password.length < 6 || !!emailError}
+                    className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold h-12 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    {isLoading ? 'Creating account...' : 'Create Account'}
+                    {isLoading ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Creating account...
+                      </>
+                    ) : (
+                      'Create Account'
+                    )}
                   </Button>
                 </form>
 

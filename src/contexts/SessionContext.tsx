@@ -26,6 +26,11 @@ interface SessionContextType {
    * - "unauthenticated": no active session after initial check
    */
   authStatus: AuthStatus;
+  /**
+   * True when user just authenticated and we're bootstrapping (loading profile + initial data).
+   * This is used to show AuthLoadingScreen instead of dashboard during the transition.
+   */
+  isAuthInitializing: boolean;
   isAdmin: boolean;
   isCreator: boolean; // New: Add isCreator
   organizationId: string | null; // NEW: Add organizationId
@@ -39,6 +44,7 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [initialLoadComplete, setInitialLoadComplete] = useState(false);
+  const [isAuthInitializing, setIsAuthInitializing] = useState(false);
 
   // Use useSupabaseQuery to fetch the profile, leveraging React Query's caching and stability
   const profileQueryFn = useCallback(async () => { // Memoize queryFn here
@@ -277,6 +283,19 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
       ? 'authenticated'
       : 'unauthenticated';
 
+  // Clear auth initialization state once profile is loaded
+  // Add a small delay to ensure smooth transition and let dashboard start fetching data
+  useEffect(() => {
+    if (isAuthInitializing && profile && !isLoadingProfile) {
+      // Delay to ensure smooth transition and give dashboard time to start fetching
+      // This prevents flicker between loading screen and dashboard loading states
+      const timer = setTimeout(() => {
+        setIsAuthInitializing(false);
+      }, 800); // Increased delay to ensure dashboard has time to start fetching
+      return () => clearTimeout(timer);
+    }
+  }, [isAuthInitializing, profile, isLoadingProfile]);
+
   // Check and lock trial if expired on profile load
   useEffect(() => {
     if (user?.id && profile && profile.is_trial && !profile.trial_locked) {
@@ -476,6 +495,13 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
         setUser(currentUser);
         setInitialLoadComplete(true); // Ensure this is set after any auth change
         
+        // Track auth initialization state - true when user just signed in
+        if (event === 'SIGNED_IN' && session) {
+          setIsAuthInitializing(true);
+        } else if (event === 'SIGNED_OUT') {
+          setIsAuthInitializing(false);
+        }
+        
         // Initialize analytics with user ID
         if (currentUser?.id) {
           analytics.setUserId(currentUser.id);
@@ -537,6 +563,8 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
         // If we have a session after OAuth callback or SIGNED_IN event
         // Also check sessionStorage for intended route in case hash was already normalized
         if (session && (event === 'SIGNED_IN' || isOAuthCallback || (event === 'INITIAL_SESSION' && hasHashTokens))) {
+          // Set auth initializing state for OAuth callbacks too
+          setIsAuthInitializing(true);
           // Get intended route from sessionStorage if not already extracted from hash
           if (!intendedRoute) {
             const storedRoute = sessionStorage.getItem('oauth_intended_route');
@@ -590,12 +618,13 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
     profile,
     loading,
     authStatus,
+    isAuthInitializing,
     isAdmin,
     isCreator, // Include isCreator
     organizationId, // Include organizationId
     refetchProfile: refetchProfileQuery, // Expose refetch function
     trialStatus, // Include trial status
-  }), [session, user, profile, loading, authStatus, isAdmin, isCreator, organizationId, refetchProfileQuery, trialStatus]);
+  }), [session, user, profile, loading, authStatus, isAuthInitializing, isAdmin, isCreator, organizationId, refetchProfileQuery, trialStatus]);
 
   return (
     <SessionContext.Provider value={contextValue}>

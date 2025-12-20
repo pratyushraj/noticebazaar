@@ -19,8 +19,26 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Upload, X, CheckCircle2 } from 'lucide-react';
+import { Upload, X, CheckCircle2, Scale, FileText, HelpCircle } from 'lucide-react';
 import { toast } from 'sonner';
+import { cn } from '@/lib/utils';
+import { useSession } from '@/contexts/SessionContext';
+import { supabase } from '@/integrations/supabase/client';
+
+// Helper to get API base URL
+function getApiBaseUrl(): string {
+  if (typeof window === 'undefined') return 'http://localhost:3001';
+  
+  const envUrl = import.meta.env.VITE_API_BASE_URL;
+  if (envUrl) return envUrl.replace(/\/$/, '');
+  
+  const origin = window.location.origin;
+  if (origin.includes('noticebazaar.com')) {
+    return 'https://api.noticebazaar.com';
+  }
+  
+  return 'http://localhost:3001';
+}
 
 interface ConsumerComplaintModalProps {
   open: boolean;
@@ -40,6 +58,8 @@ const issueTypes = [
   'Other',
 ];
 
+type Step = 'form' | 'pre_filing' | 'success';
+
 const ConsumerComplaintModal: React.FC<ConsumerComplaintModalProps> = ({
   open,
   onOpenChange,
@@ -47,6 +67,8 @@ const ConsumerComplaintModal: React.FC<ConsumerComplaintModalProps> = ({
   categoryName,
   onSubmit,
 }) => {
+  const { profile, user } = useSession();
+  const [currentStep, setCurrentStep] = useState<Step>('form');
   const [formData, setFormData] = useState({
     companyName: '',
     issueType: '',
@@ -56,6 +78,13 @@ const ConsumerComplaintModal: React.FC<ConsumerComplaintModalProps> = ({
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [complaintId, setComplaintId] = useState<string | null>(null);
+  
+  // Pre-filing actions state
+  const [preFilingActions, setPreFilingActions] = useState({
+    wants_lawyer_review: false,
+    wants_notice_draft: false,
+  });
 
   const handleInputChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -92,16 +121,125 @@ const ConsumerComplaintModal: React.FC<ConsumerComplaintModalProps> = ({
       return;
     }
 
+    if (!profile?.id || !user?.id) {
+      toast.error('Please log in to submit a complaint');
+      return;
+    }
+
     setIsSubmitting(true);
 
-    // Mock submission - simulate API call
-    setTimeout(() => {
+    try {
+      // Upload file if exists
+      let proofFileUrl: string | null = null;
+      if (uploadedFile) {
+        const fileExt = uploadedFile.name.split('.').pop();
+        const fileName = `${user.id}/${Date.now()}.${fileExt}`;
+        const { error: uploadError } = await supabase.storage
+          .from('complaint-proofs')
+          .upload(fileName, uploadedFile);
+
+        if (uploadError) {
+          console.error('File upload error:', uploadError);
+          toast.error('Failed to upload proof file');
+        } else {
+          const { data: urlData } = supabase.storage
+            .from('complaint-proofs')
+            .getPublicUrl(fileName);
+          proofFileUrl = urlData.publicUrl;
+        }
+      }
+
+      // Create complaint draft (without pre-filing actions yet)
+      const { data: complaintData, error: complaintError } = await supabase
+        .from('consumer_complaints')
+        .insert({
+          creator_id: profile.id,
+          category: category || 'others',
+          category_name: categoryName || '',
+          company_name: formData.companyName,
+          issue_type: formData.issueType,
+          description: formData.description,
+          amount: formData.amount ? parseFloat(formData.amount) : null,
+          proof_file_url: proofFileUrl,
+          status: 'draft_created',
+        } as any)
+        .select()
+        .single();
+
+      if (complaintError) {
+        console.error('Complaint creation error:', complaintError);
+        toast.error('Failed to create complaint. Please try again.');
+        setIsSubmitting(false);
+        return;
+      }
+
+      if (!complaintData || !('id' in complaintData)) {
+        console.error('Invalid complaint data returned');
+        toast.error('Failed to create complaint. Please try again.');
+        setIsSubmitting(false);
+        return;
+      }
+
+      setComplaintId(complaintData.id as string);
       setIsSubmitting(false);
-      setIsSuccess(true);
+      setCurrentStep('pre_filing');
+      toast.success('Complaint draft created!');
+    } catch (error: any) {
+      console.error('Error creating complaint:', error);
+      toast.error('Failed to create complaint. Please try again.');
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleContinue = async () => {
+    if (!complaintId || !profile?.id || !user?.id) {
+      toast.error('Missing complaint data');
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      // Determine status based on selections
+      let newStatus = 'ready_to_file';
+      if (preFilingActions.wants_lawyer_review && preFilingActions.wants_notice_draft) {
+        // If both selected, prioritize lawyer review first
+        newStatus = 'lawyer_review_requested';
+      } else if (preFilingActions.wants_lawyer_review) {
+        newStatus = 'lawyer_review_requested';
+      } else if (preFilingActions.wants_notice_draft) {
+        newStatus = 'notice_generated';
+      }
+
+      // Call backend to update complaint and trigger notifications
+      const apiBaseUrl = getApiBaseUrl();
+      const token = (await supabase.auth.getSession()).data.session?.access_token;
+
+      const response = await fetch(`${apiBaseUrl}/api/complaints/${complaintId}/status`, {
+        method: 'PATCH',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          status: newStatus,
+          wants_lawyer_review: preFilingActions.wants_lawyer_review,
+          wants_notice_draft: preFilingActions.wants_notice_draft,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: 'Failed to update complaint' }));
+        throw new Error(errorData.error || 'Failed to update complaint');
+      }
+
+      setIsSubmitting(false);
+      setCurrentStep('success');
       
       // Reset form after showing success
       setTimeout(() => {
         setIsSuccess(false);
+        setCurrentStep('form');
         setFormData({
           companyName: '',
           issueType: '',
@@ -109,15 +247,31 @@ const ConsumerComplaintModal: React.FC<ConsumerComplaintModalProps> = ({
           amount: '',
         });
         setUploadedFile(null);
+        setPreFilingActions({
+          wants_lawyer_review: false,
+          wants_notice_draft: false,
+        });
+        setComplaintId(null);
         onOpenChange(false);
         onSubmit();
-        toast.success('Your complaint has been received. Our team will take it forward.');
+        
+        if (newStatus === 'lawyer_review_requested') {
+          toast.success('Complaint submitted for lawyer review. You\'ll be notified when the review is complete.');
+        } else if (newStatus === 'notice_generated') {
+          toast.success('Legal notice will be generated. You\'ll be notified when it\'s ready.');
+        } else {
+          toast.success('Complaint is ready to file. You can proceed with filing.');
+        }
       }, 2000);
-    }, 1500);
+    } catch (error: any) {
+      console.error('Error updating complaint:', error);
+      toast.error(error.message || 'Failed to save selections. Please try again.');
+      setIsSubmitting(false);
+    }
   };
 
   const handleClose = () => {
-    if (!isSubmitting && !isSuccess) {
+    if (!isSubmitting && !isSuccess && currentStep !== 'success') {
       setFormData({
         companyName: '',
         issueType: '',
@@ -125,14 +279,27 @@ const ConsumerComplaintModal: React.FC<ConsumerComplaintModalProps> = ({
         amount: '',
       });
       setUploadedFile(null);
+      setPreFilingActions({
+        wants_lawyer_review: false,
+        wants_notice_draft: false,
+      });
+      setCurrentStep('form');
+      setComplaintId(null);
       onOpenChange(false);
     }
+  };
+
+  const togglePreFilingAction = (action: 'wants_lawyer_review' | 'wants_notice_draft') => {
+    setPreFilingActions(prev => ({
+      ...prev,
+      [action]: !prev[action],
+    }));
   };
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-[600px] bg-gray-900 border-gray-800 text-white">
-        {isSuccess ? (
+        {currentStep === 'success' ? (
           <div className="flex flex-col items-center justify-center py-8 space-y-4">
             <div className="w-16 h-16 rounded-full bg-emerald-500/20 flex items-center justify-center">
               <CheckCircle2 className="w-8 h-8 text-emerald-400" />
@@ -144,12 +311,170 @@ const ConsumerComplaintModal: React.FC<ConsumerComplaintModalProps> = ({
               Your complaint has been received. Our team will take it forward.
             </DialogDescription>
           </div>
-        ) : (
+        ) : currentStep === 'pre_filing' ? (
           <>
             <DialogHeader>
               <DialogTitle className="text-2xl font-bold">
-                Raise Consumer Complaint
+                Before you proceed
               </DialogTitle>
+              <DialogDescription className="text-gray-300">
+                Optional services to strengthen your complaint (Free during pilot)
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="space-y-4 py-4">
+              {/* Lawyer Review Toggle Card */}
+              <button
+                type="button"
+                onClick={() => togglePreFilingAction('wants_lawyer_review')}
+                className={cn(
+                  "w-full p-5 rounded-xl border-2 transition-all text-left",
+                  "bg-gradient-to-br from-purple-900/50 to-indigo-900/50",
+                  preFilingActions.wants_lawyer_review
+                    ? "border-purple-400 bg-purple-500/10 shadow-lg shadow-purple-500/20"
+                    : "border-purple-500/30 hover:border-purple-400/50"
+                )}
+              >
+                <div className="flex items-start gap-4">
+                  <div className={cn(
+                    "w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0",
+                    preFilingActions.wants_lawyer_review
+                      ? "bg-purple-500/20"
+                      : "bg-purple-500/10"
+                  )}>
+                    <Scale className="w-6 h-6 text-purple-300" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="font-semibold text-white">
+                        Lawyer Review (Free • Pilot)
+                      </span>
+                      <span className="px-2 py-0.5 rounded text-xs font-medium bg-purple-500/20 text-purple-300 border border-purple-400/30">
+                        Pilot
+                      </span>
+                    </div>
+                    <p className="text-sm text-white/70 mb-2">
+                      A legal advisor will review your complaint and suggest improvements before you file.
+                    </p>
+                    <p className="text-xs text-white/50">
+                      Best-effort review during beta. No legal representation.
+                    </p>
+                  </div>
+                  <div className={cn(
+                    "w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0",
+                    preFilingActions.wants_lawyer_review
+                      ? "bg-purple-500 border-purple-400"
+                      : "border-purple-400/50"
+                  )}>
+                    {preFilingActions.wants_lawyer_review && (
+                      <CheckCircle2 className="w-4 h-4 text-white" />
+                    )}
+                  </div>
+                </div>
+              </button>
+
+              {/* Legal Notice Drafting Toggle Card */}
+              <button
+                type="button"
+                onClick={() => togglePreFilingAction('wants_notice_draft')}
+                className={cn(
+                  "w-full p-5 rounded-xl border-2 transition-all text-left",
+                  "bg-gradient-to-br from-purple-900/50 to-indigo-900/50",
+                  preFilingActions.wants_notice_draft
+                    ? "border-purple-400 bg-purple-500/10 shadow-lg shadow-purple-500/20"
+                    : "border-purple-500/30 hover:border-purple-400/50"
+                )}
+              >
+                <div className="flex items-start gap-4">
+                  <div className={cn(
+                    "w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0",
+                    preFilingActions.wants_notice_draft
+                      ? "bg-purple-500/20"
+                      : "bg-purple-500/10"
+                  )}>
+                    <FileText className="w-6 h-6 text-purple-300" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="font-semibold text-white">
+                        Generate Legal Notice (Free • Pilot)
+                      </span>
+                      <span className="px-2 py-0.5 rounded text-xs font-medium bg-purple-500/20 text-purple-300 border border-purple-400/30">
+                        Pilot
+                      </span>
+                    </div>
+                    <p className="text-sm text-white/70 mb-2">
+                      We'll draft a formal legal notice you can send to the company.
+                    </p>
+                    <p className="text-xs text-white/50">
+                      Draft only. Sending and enforcement remain with you.
+                    </p>
+                  </div>
+                  <div className={cn(
+                    "w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0",
+                    preFilingActions.wants_notice_draft
+                      ? "bg-purple-500 border-purple-400"
+                      : "border-purple-400/50"
+                  )}>
+                    {preFilingActions.wants_notice_draft && (
+                      <CheckCircle2 className="w-4 h-4 text-white" />
+                    )}
+                  </div>
+                </div>
+              </button>
+
+              {/* Disclaimer */}
+              <div className="pt-2 border-t border-purple-500/20">
+                <p className="text-xs text-white/50 text-center">
+                  These services are complimentary during a limited pilot. CreatorArmour does not act as legal counsel unless explicitly agreed.
+                </p>
+              </div>
+
+              {/* Helper text if neither selected */}
+              {!preFilingActions.wants_lawyer_review && !preFilingActions.wants_notice_draft && (
+                <p className="text-sm text-white/60 text-center pt-2">
+                  You can file the complaint yourself without review.
+                </p>
+              )}
+            </div>
+
+            <div className="flex gap-3 justify-end pt-4 border-t border-gray-800">
+              <Button
+                variant="outline"
+                onClick={() => setCurrentStep('form')}
+                disabled={isSubmitting}
+                className="border-gray-700 text-gray-300 hover:bg-gray-800"
+              >
+                Back
+              </Button>
+              <Button
+                onClick={handleContinue}
+                disabled={isSubmitting}
+                className="bg-emerald-500 hover:bg-emerald-600 text-white"
+              >
+                {isSubmitting ? 'Processing...' : 'Continue'}
+              </Button>
+            </div>
+          </>
+        ) : (
+          <>
+            <DialogHeader>
+              <div className="flex items-start justify-between gap-4 mb-2">
+                <DialogTitle className="text-2xl font-bold flex-1">
+                  Raise Consumer Complaint
+                </DialogTitle>
+                <a
+                  href="/#/consumer-complaints/how-it-works"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-1.5 text-sm text-gray-400 hover:text-white hover:underline cursor-pointer flex-shrink-0 mt-1"
+                  aria-label="Learn how consumer complaints work on CreatorArmour"
+                >
+                  <HelpCircle className="h-4 w-4" />
+                  <span className="hidden sm:inline">How this works</span>
+                  <span className="sm:hidden">Help</span>
+                </a>
+              </div>
               <DialogDescription className="text-gray-300">
                 {categoryName && (
                   <span className="text-emerald-400">Category: {categoryName}</span>
@@ -161,13 +486,13 @@ const ConsumerComplaintModal: React.FC<ConsumerComplaintModalProps> = ({
               {/* Company Name */}
               <div className="space-y-2">
                 <Label htmlFor="companyName" className="text-white">
-                  Company / Platform Name *
+                  Company / Service Name *
                 </Label>
                 <Input
                   id="companyName"
                   value={formData.companyName}
                   onChange={(e) => handleInputChange('companyName', e.target.value)}
-                  placeholder="e.g., Amazon, Swiggy, IRCTC"
+                  placeholder="e.g. Ola, Urban Company, Pronto, Porter"
                   className="bg-gray-800 border-gray-700 text-white placeholder:text-gray-500"
                 />
               </div>

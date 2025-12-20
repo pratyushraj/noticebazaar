@@ -86,7 +86,10 @@ import BrandDealDetailsPage from "./pages/BrandDealDetailsPage";
 import FeedbackPage from "./pages/FeedbackPage";
 import AdvisorDashboard from "./pages/AdvisorDashboard";
 import LawyerDashboard from "./pages/LawyerDashboard";
+import ConsumerComplaints from "./pages/lawyer/ConsumerComplaints";
 import ConsumerComplaintsPage from "./pages/ConsumerComplaintsPage";
+import MyConsumerComplaintsPage from "./pages/MyConsumerComplaintsPage";
+import ConsumerComplaintsHowItWorks from "./pages/ConsumerComplaintsHowItWorks";
 import UpgradePage from "./pages/UpgradePage";
 import { ErrorBoundary } from "./components/ui/error-boundary";
 import NetworkStatusWrapper from "./components/NetworkStatusWrapper";
@@ -215,6 +218,7 @@ const App = () => {
               <Route path="/refund-policy" element={<RefundPolicy />} />
               <Route path="/delete-data" element={<DeleteData />} />
               <Route path="/sitemap" element={<Sitemap />} />
+              <Route path="/consumer-complaints/how-it-works" element={<ConsumerComplaintsHowItWorks />} />
               
               {/* Plan Detail Routes */}
               <Route path="/plan/essential" element={<EssentialPlan />} />
@@ -295,6 +299,7 @@ const App = () => {
               
               {/* Lifestyle Shield - Pro-only features */}
               <Route path="/lifestyle/consumer-complaints" element={<ProtectedLayout allowedRoles={['creator']}><ConsumerComplaintsPage /></ProtectedLayout>} />
+              <Route path="/dashboard/consumer-complaints" element={<ProtectedLayout allowedRoles={['creator']}><MyConsumerComplaintsPage /></ProtectedLayout>} />
               
               {/* Upgrade page */}
               <Route path="/upgrade" element={<ProtectedLayout allowedRoles={['creator']}><UpgradePage /></ProtectedLayout>} />
@@ -307,6 +312,7 @@ const App = () => {
               
               {/* Lawyer Dashboard (for lawyer role) */}
               <Route path="/lawyer-dashboard" element={<ProtectedLayout allowedRoles={['lawyer']}><LawyerDashboard /></ProtectedLayout>} />
+              <Route path="/lawyer/consumer-complaints" element={<ProtectedLayout allowedRoles={['lawyer', 'admin']}><ConsumerComplaints /></ProtectedLayout>} />
 
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="/maintenance" element={<MaintenancePage />} />

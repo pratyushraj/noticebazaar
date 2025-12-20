@@ -47,6 +47,7 @@ export interface DrawerMenuItem {
 export interface DrawerMenuData {
   main: DrawerMenuItem[];
   quickActions: DrawerMenuItem[];
+  lifestyleShield?: DrawerMenuItem[];
   settings: DrawerMenuItem[];
 }
 
@@ -390,6 +391,9 @@ export default function PremiumDrawer({
       { id: 'add-deal', label: 'Add New Deal', icon: Plus, path: '/contract-upload', variant: 'primary' },
       { id: 'schedule-call', label: 'Schedule Call', icon: CalendarCheck, variant: 'accent' },
     ],
+    lifestyleShield: [
+      { id: 'consumer-complaints', label: 'Consumer Complaints', icon: Shield, path: '/lifestyle/consumer-complaints', variant: 'accent' },
+    ],
     settings: [
       { id: 'profile', label: 'Profile Settings', icon: Settings, path: '/creator-profile' },
       { id: 'help', label: 'Help & Support', icon: HelpCircle },
@@ -496,7 +500,7 @@ export default function PremiumDrawer({
             transition={animations.spring}
             className={cn(
               "fixed top-0 left-0 h-full",
-              "w-[88vw] max-w-[380px]",
+              "w-[75vw] max-w-[320px]",
               "bg-[radial-gradient(ellipse_at_top,_rgba(130,60,255,0.25),_rgba(60,0,130,0.35))]",
               "backdrop-blur-2xl",
               "rounded-r-3xl shadow-2xl shadow-black/40",
@@ -554,6 +558,20 @@ export default function PremiumDrawer({
                 ))}
               </DrawerSection>
 
+              {/* LIFESTYLE SHIELD */}
+              {menuData.lifestyleShield && menuData.lifestyleShield.length > 0 && (
+                <DrawerSection title="🛡 LIFESTYLE SHIELD">
+                  {menuData.lifestyleShield.map((item) => (
+                    <DrawerItem
+                      key={item.id}
+                      item={item}
+                      isActive={getActiveItem(item)}
+                      onClick={() => handleItemClick(item)}
+                    />
+                  ))}
+                </DrawerSection>
+              )}
+
               {/* Settings */}
               <DrawerSection title="SETTINGS">
                 {menuData.settings.map((item) => (
@@ -595,6 +613,9 @@ export const DEFAULT_MENU_DATA: DrawerMenuData = {
     { id: 'upload-contract', label: 'Upload Contract', icon: Upload, path: '/contract-upload', variant: 'default' },
     { id: 'add-deal', label: 'Add New Deal', icon: Plus, path: '/contract-upload', variant: 'primary' },
     { id: 'schedule-call', label: 'Schedule Call', icon: CalendarCheck, variant: 'accent' },
+  ],
+  lifestyleShield: [
+    { id: 'consumer-complaints', label: 'Consumer Complaints', icon: Shield, path: '/lifestyle/consumer-complaints', variant: 'accent' },
   ],
   settings: [
     { id: 'profile', label: 'Profile Settings', icon: Settings, path: '/creator-profile' },

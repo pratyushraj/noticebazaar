@@ -33,6 +33,7 @@ import gstRouter from './routes/gst.js';
 import aiRouter from './routes/ai.js';
 import otpRouter, { publicRouter as otpPublicRouter } from './routes/otp.js';
 import dealsRouter from './routes/deals.js';
+import complaintsRouter from './routes/complaints.js';
 import { authMiddleware } from './middleware/auth.js';
 import { rateLimitMiddleware } from './middleware/rateLimit.js';
 import { errorHandler } from './middleware/errorHandler.js';
@@ -227,6 +228,7 @@ app.use('/api/protection', authMiddleware, rateLimitMiddleware, protectionRouter
 app.use('/api/admin', authMiddleware, adminRouter);
 app.use('/api/ai', authMiddleware, rateLimitMiddleware, aiRouter);
 app.use('/api/deals', authMiddleware, rateLimitMiddleware, dealsRouter);
+app.use('/api/complaints', authMiddleware, rateLimitMiddleware, complaintsRouter);
 // OTP routes - protected routes require auth
 app.use('/api/otp', authMiddleware, rateLimitMiddleware, otpRouter);
 

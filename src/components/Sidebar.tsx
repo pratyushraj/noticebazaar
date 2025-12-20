@@ -254,8 +254,8 @@ const Sidebar: React.FC<SidebarProps> = ({ className, profileRole }) => {
           icon: Shield, 
           path: "/lifestyle/consumer-complaints", 
           iconColor: "#34D399", // Soft green
-          roles: ['creator'],
-          isPro: true // Pro-only feature
+          roles: ['creator']
+          // Removed isPro: true for testing phase - available to all users
         },
       ]
     },
@@ -293,11 +293,13 @@ const Sidebar: React.FC<SidebarProps> = ({ className, profileRole }) => {
   ];
 
   // Filter sections and items based on role and Pro status
+  // Use profile.role from session if profileRole prop is not provided
+  const userRole = profileRole || profile?.role || 'creator';
   const visibleSections = menuSections.map(section => ({
     ...section,
     items: section.items.filter(item => {
-      // Filter by role
-      if (item.roles && !item.roles.includes(profileRole || '')) {
+      // Filter by role - default to 'creator' if no role specified
+      if (item.roles && !item.roles.includes(userRole)) {
         return false;
       }
       // For Pro-only features, show them to Pro users, or show disabled to non-Pro users
@@ -350,20 +352,18 @@ const Sidebar: React.FC<SidebarProps> = ({ className, profileRole }) => {
 
   // Handle item click
   const handleItemClick = (path: string) => {
-    // Check if this is a Pro-only feature
-    const item = menuSections
-      .flatMap(s => s.items)
-      .find(i => i.path === path);
-    
-    if (item?.isPro && !isProUser) {
-      // Redirect to upgrade page for non-Pro users
-      navigate(`/upgrade?source=consumer-complaints`, { replace: false });
-      // Close sidebar on mobile/tablet
-      if (window.innerWidth < 1024) {
-        setIsOpen(false);
-      }
-      return;
-    }
+    // Pro check removed for testing phase - Consumer Complaints available to all
+    // const item = menuSections
+    //   .flatMap(s => s.items)
+    //   .find(i => i.path === path);
+    // 
+    // if (item?.isPro && !isProUser) {
+    //   navigate(`/upgrade?source=consumer-complaints`, { replace: false });
+    //   if (window.innerWidth < 1024) {
+    //     setIsOpen(false);
+    //   }
+    //   return;
+    // }
 
     // Close sidebar on mobile/tablet (only keep open on desktop)
     if (window.innerWidth < 1024) {

@@ -9,7 +9,7 @@ import { UniversalShareModal } from '@/components/deals/UniversalShareModal';
 import { useNavigate } from 'react-router-dom';
 import { ContextualTipsProvider } from '@/components/contextual-tips/ContextualTipsProvider';
 import { useSession } from '@/contexts/SessionContext';
-import { useAddBrandDeal } from '@/lib/hooks/useBrandDeals';
+import { useAddBrandDeal, useBrandDeals } from '@/lib/hooks/useBrandDeals';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { validateContractFile } from '@/lib/utils/contractValidation';
@@ -17,6 +17,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { uploadFile } from '@/lib/services/fileService';
 import { triggerHaptic, HapticPatterns } from '@/lib/utils/haptics';
 import { cn } from '@/lib/utils';
+import { trackEvent } from '@/lib/utils/analytics';
 
 type RiskLevel = 'low' | 'medium' | 'high';
 type ActionType = 'NEGOTIATION' | 'CLARIFICATION' | 'SUMMARY';
@@ -31,6 +32,26 @@ const ContractUploadFlow = () => {
   const [selectedOption, setSelectedOption] = useState<'upload' | 'request_details' | null>(null);
   const [showUploadArea, setShowUploadArea] = useState(false);
   const uploadAreaRef = useRef<HTMLDivElement>(null);
+  
+  // Get user's deal history to determine recommendation
+  const { data: brandDeals = [] } = useBrandDeals({
+    creatorId: profile?.id,
+    enabled: !!profile?.id,
+  });
+  
+  // Helper to determine recommended option
+  const getRecommendedOption = (): 'upload' | 'request_details' | null => {
+    if (!profile?.id) return null;
+    
+    // Check if user has uploaded contracts before
+    const hasUploadedContracts = brandDeals.some(deal => deal.contract_file_url);
+    
+    // If user has uploaded contracts before → recommend Upload Contract
+    // If user has no previous deals → recommend Request Details from Brand
+    return hasUploadedContracts ? 'upload' : 'request_details';
+  };
+  
+  const recommendedOption = getRecommendedOption();
   
   // Handle Request Details Click
   const handleRequestDetailsClick = async () => {
@@ -2355,19 +2376,34 @@ ${creatorName}`;
             {/* Option Selection Cards */}
             <div className="space-y-3 mb-8">
               {/* Card A: Upload Contract */}
-              <button
-                onClick={() => {
+            <button
+              onClick={() => {
                   setSelectedOption('upload');
-                  setDealType('contract');
+                setDealType('contract');
                   setShowUploadArea(false);
-                  triggerHaptic(HapticPatterns.light);
+                triggerHaptic(HapticPatterns.light);
+                  
+                  // Track analytics
+                  trackEvent('upload_flow_option_selected', {
+                    option: 'upload_contract',
+                    source: 'upload_contract_page',
+                  }).catch(() => {
+                    // Silently fail - don't block UI
+                  });
                 }}
-                className={`w-full text-left p-5 rounded-2xl border-2 transition-all ${
+                className={`w-full text-left p-5 rounded-2xl border-2 transition-all relative ${
                   selectedOption === 'upload'
                     ? 'border-purple-400 bg-purple-500/10 shadow-lg shadow-purple-500/20'
                     : 'border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/10'
                 }`}
               >
+                {/* Recommendation Badge */}
+                {!selectedOption && recommendedOption === 'upload' && (
+                  <div className="absolute top-3 right-3 px-2.5 py-1 rounded-full bg-gradient-to-r from-blue-500/20 to-cyan-500/20 border border-blue-400/30 backdrop-blur-sm">
+                    <span className="text-xs font-medium text-blue-300">Most creators choose this</span>
+                  </div>
+                )}
+                
                 <div className="flex items-start gap-4">
                   {/* Radio Indicator */}
                   <div className="flex-shrink-0 mt-1">
@@ -2385,7 +2421,7 @@ ${creatorName}`;
                   <div className="flex-1 min-w-0">
                     <h3 className="font-semibold text-lg mb-1 flex items-center gap-2">
                       <FileText className="w-5 h-5 flex-shrink-0" />
-                      Upload Contract
+              Upload Contract
                     </h3>
                     <p className="text-sm text-white/60">
                       Upload an existing contract to analyze and protect it.
@@ -2396,22 +2432,37 @@ ${creatorName}`;
                     <CheckCircle className="w-6 h-6 text-purple-400 flex-shrink-0" />
                   )}
                 </div>
-              </button>
+            </button>
 
               {/* Card B: Request Details from Brand */}
-              <button
-                onClick={() => {
+            <button
+              onClick={() => {
                   setSelectedOption('request_details');
                   setDealType('contract');
                   setShowUploadArea(false);
-                  triggerHaptic(HapticPatterns.light);
+                triggerHaptic(HapticPatterns.light);
+                  
+                  // Track analytics
+                  trackEvent('upload_flow_option_selected', {
+                    option: 'request_details',
+                    source: 'upload_contract_page',
+                  }).catch(() => {
+                    // Silently fail - don't block UI
+                  });
                 }}
-                className={`w-full text-left p-5 rounded-2xl border-2 transition-all ${
+                className={`w-full text-left p-5 rounded-2xl border-2 transition-all relative ${
                   selectedOption === 'request_details'
                     ? 'border-purple-400 bg-purple-500/10 shadow-lg shadow-purple-500/20'
                     : 'border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/10'
-                }`}
-              >
+              }`}
+            >
+                {/* Recommendation Badge */}
+                {!selectedOption && recommendedOption === 'request_details' && (
+                  <div className="absolute top-3 right-3 px-2.5 py-1 rounded-full bg-gradient-to-r from-blue-500/20 to-cyan-500/20 border border-blue-400/30 backdrop-blur-sm">
+                    <span className="text-xs font-medium text-blue-300">Most creators choose this</span>
+          </div>
+        )}
+                
                 <div className="flex items-start gap-4">
                   {/* Radio Indicator */}
                   <div className="flex-shrink-0 mt-1">
@@ -2424,8 +2475,8 @@ ${creatorName}`;
                         <div className="w-2.5 h-2.5 rounded-full bg-purple-400" />
                       )}
                     </div>
-                  </div>
-                  
+      </div>
+
                   <div className="flex-1 min-w-0">
                     <h3 className="font-semibold text-lg mb-1 flex items-center gap-2">
                       <MessageSquare className="w-5 h-5 flex-shrink-0" />
@@ -2536,17 +2587,17 @@ ${creatorName}`;
                     <div className="flex-1">
                       <h3 className="font-semibold mb-1 text-white/90">No contract yet?</h3>
                       <p className="text-sm text-white/60 mb-3">Let the brand share deal details — we'll generate a clean agreement for you.</p>
-                      <button
+                  <button
                         onClick={handleRequestDetailsClick}
                         className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 px-4 py-2 rounded-lg font-medium transition-colors text-sm flex items-center gap-2"
-                      >
+                  >
                         <Share2 className="w-4 h-4" />
                         Request Collaboration Details from Brand
-                      </button>
-                    </div>
-                  </div>
+                  </button>
                 </div>
-              </div>
+                  </div>
+                    </div>
+                    </div>
             )}
           </>
         )}
@@ -2581,7 +2632,7 @@ ${creatorName}`;
             >
               Continue
             </button>
-          </div>
+              </div>
         )}
 
         {/* Uploading Step */}

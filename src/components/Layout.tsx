@@ -72,8 +72,10 @@ const Layout = ({ children }: LayoutProps) => {
               isOpen && "md:ml-[280px]"
             )}
             style={{
-              // Ensure main content always clears the bottom nav + Safari bottom toolbar
-              paddingBottom: `calc(88px + env(safe-area-inset-bottom, 0px))`,
+              // Ensure main content always clears the bottom nav (56px) + safe area
+              // Bottom nav is h-14 (56px) + 12px padding (6px top + 6px bottom) = 68px base
+              // Plus safe area inset for iOS
+              paddingBottom: `calc(68px + env(safe-area-inset-bottom, 0px))`,
             }}
           >
             {children}

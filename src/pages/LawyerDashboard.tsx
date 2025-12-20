@@ -29,11 +29,24 @@ interface Conversation {
   participants: Array<{
     user_id: string;
     role: string;
+    email?: string | null;
     profiles: {
-      first_name: string;
-      last_name: string;
-      avatar_url: string;
-    };
+      id: string;
+      first_name: string | null;
+      last_name: string | null;
+      avatar_url: string | null;
+      instagram_handle: string | null;
+      youtube_channel_id: string | null;
+      twitter_handle: string | null;
+    } | null;
+  }>;
+  // Extended context (fetched separately)
+  creatorDeals?: Array<{
+    id: string;
+    brand_name: string | null;
+    status: string | null;
+    deal_type: string | null;
+    deal_amount: number | null;
   }>;
 }
 
@@ -58,12 +71,121 @@ const QUICK_REPLIES = [
   "The payment terms are acceptable from a legal standpoint."
 ];
 
+// Helper function to get conversation display metadata
+// Returns both title and subtitle with comprehensive fallback logic
+const getConversationDisplayMeta = (conv: Conversation): { title: string; subtitle: string; meta?: string } => {
+  // ========== TITLE LOGIC (Priority Order) ==========
+  
+  // 1️⃣ Creator email (preferred - most reliable)
+  const creator = conv.participants.find(p => p.role === 'creator');
+  if (creator?.email) {
+    const title = creator.email;
+    const { subtitle, meta } = getConversationSubtitle(conv);
+    return { title, subtitle, meta };
+  }
+  
+  // 2️⃣ Creator name (fallback if email not available)
+  if (creator?.profiles) {
+    const { first_name, last_name } = creator.profiles;
+    const fullName = [first_name, last_name].filter(Boolean).join(' ').trim();
+    
+    if (fullName) {
+      const title = fullName;
+      const { subtitle, meta } = getConversationSubtitle(conv);
+      return { title, subtitle, meta };
+    }
+  }
+  
+  // 3️⃣ User ID (fallback if no email or name)
+  if (creator?.user_id) {
+    const title = creator.user_id.substring(0, 8) + '...';
+    const { subtitle, meta } = getConversationSubtitle(conv);
+    return { title, subtitle, meta };
+  }
+  
+  // 4️⃣ Brand name (fallback)
+  if (conv.creatorDeals && conv.creatorDeals.length > 0) {
+    const firstDeal = conv.creatorDeals[0];
+    if (firstDeal.brand_name) {
+      const title = `Brand: ${firstDeal.brand_name}`;
+      const { subtitle, meta } = getConversationSubtitle(conv);
+      return { title, subtitle, meta };
+    }
+  }
+  
+  // 5️⃣ Fallback: "New Contract Review"
+  const title = 'New Contract Review';
+  const { subtitle, meta } = getConversationSubtitle(conv);
+  return { title, subtitle, meta };
+};
+
+// Helper function to get conversation subtitle and meta (used internally by getConversationDisplayMeta)
+const getConversationSubtitle = (conv: Conversation): { subtitle: string; meta?: string } => {
+  // Get issue type from risk_tag
+  const issueTypeMap: Record<string, string> = {
+    'legal': 'Contract Review',
+    'payment': 'Payment Issue',
+    'high_risk': 'High Risk Issue',
+    'tax': 'Tax Issue',
+  };
+  const issueType = conv.risk_tag ? (issueTypeMap[conv.risk_tag] || `${conv.risk_tag.replace('_', ' ')} Issue`) : null;
+  
+  // Get deal context
+  const firstDeal = conv.creatorDeals && conv.creatorDeals.length > 0 ? conv.creatorDeals[0] : null;
+  
+  // Build subtitle: Issue type + Deal context
+  let subtitleParts: string[] = [];
+  
+  if (issueType) {
+    subtitleParts.push(issueType);
+  }
+  
+  // Add deal context (brand name, deal amount, or deal type)
+  if (firstDeal) {
+    if (firstDeal.brand_name) {
+      // Use brand name as context
+      subtitleParts.push(firstDeal.brand_name);
+    } else if (firstDeal.deal_amount && firstDeal.deal_amount > 0) {
+      // Format amount with rupee symbol
+      const formattedAmount = new Intl.NumberFormat('en-IN', {
+        style: 'currency',
+        currency: 'INR',
+        maximumFractionDigits: 0,
+      }).format(Number(firstDeal.deal_amount));
+      const dealTypeLabel = firstDeal.deal_type === 'barter' ? 'Barter' : 'Paid';
+      subtitleParts.push(`${formattedAmount} ${dealTypeLabel} Deal`);
+    } else if (firstDeal.deal_type === 'barter') {
+      subtitleParts.push('Barter collaboration');
+    }
+  }
+  
+  // Determine meta chip (Paid/Barter/High Risk)
+  let meta: string | undefined;
+  if (conv.risk_tag === 'high_risk') {
+    meta = 'High Risk';
+  } else if (firstDeal?.deal_type) {
+    meta = firstDeal.deal_type === 'barter' ? 'Barter' : 'Paid';
+  }
+  
+  // Build subtitle string
+  const subtitle = subtitleParts.length > 0 
+    ? subtitleParts.join(' · ')
+    : (conv.last_message?.content 
+        ? (conv.last_message.content.length > 60 
+            ? `${conv.last_message.content.substring(0, 60)}...` 
+            : conv.last_message.content)
+        : 'Awaiting first message');
+  
+  return { subtitle, meta };
+};
+
 export default function LawyerDashboard() {
   const { profile, user } = useSession();
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [selectedConversation, setSelectedConversation] = useState<string | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [filter, setFilter] = useState<'all' | 'high_risk' | 'payment' | 'legal'>('all');
+  const [selectedAdvisor, setSelectedAdvisor] = useState<'all' | 'legal_advisor' | 'anjali_sharma'>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const signOutMutation = useSignOut();
@@ -71,6 +193,16 @@ export default function LawyerDashboard() {
   // Mobile view state
   const [showListOnMobile, setShowListOnMobile] = useState(true);
   const [showChatOnMobile, setShowChatOnMobile] = useState(false);
+  
+  // Ref to track current subscription to prevent premature cleanup
+  const messageSubscriptionRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
+  // Ref to track selected conversation for use in callbacks (avoids stale closures)
+  const selectedConversationRef = useRef<string | null>(null);
+  
+  // Keep ref in sync with state
+  useEffect(() => {
+    selectedConversationRef.current = selectedConversation;
+  }, [selectedConversation]);
 
   // Fetch conversations
   useEffect(() => {
@@ -166,6 +298,7 @@ export default function LawyerDashboard() {
             .from('conversations')
             .select('*')
             .in('id', participantConversationIds)
+            .order('last_message_at', { ascending: false, nullsFirst: false })
             .order('updated_at', { ascending: false });
           
           console.log('[LawyerDashboard] Direct query result:', {
@@ -238,16 +371,50 @@ export default function LawyerDashboard() {
 
         if (participantsError) throw participantsError;
 
-        // Get unique user IDs and fetch profiles
+        // Get unique user IDs and fetch profiles + emails
         const userIds = [...new Set(allParticipants?.map(p => p.user_id) || [])];
-        const { data: profilesData, error: profilesError } = await supabase
+        
+        // Fetch profiles (basic fields only - no social handles)
+        let profilesData: any[] = [];
+        const { data: basicProfiles, error: profilesError } = await supabase
           .from('profiles')
           .select('id, first_name, last_name, avatar_url')
           .in('id', userIds);
 
-        if (profilesError) throw profilesError;
+        if (profilesError) {
+          console.error('[LawyerDashboard] Error fetching profiles:', profilesError);
+          throw profilesError;
+        }
+        
+        profilesData = basicProfiles || [];
+        
+        // Fetch emails from auth.users via RPC function
+        const emailsMap = new Map<string, string>();
+        if (userIds.length > 0) {
+          try {
+            const { data: emailsData, error: emailsError } = await supabase.rpc('get_user_emails', {
+              user_ids: userIds
+            });
+            
+            if (!emailsError && emailsData) {
+              emailsData.forEach((item: any) => {
+                if (item.user_id && item.email) {
+                  emailsMap.set(item.user_id, item.email);
+                }
+              });
+              console.log('[LawyerDashboard] Fetched emails:', emailsMap.size, 'out of', userIds.length);
+            } else if (emailsError) {
+              console.warn('[LawyerDashboard] RPC get_user_emails error:', emailsError.message);
+              // RPC might not exist yet - that's okay, we'll use user_id as fallback
+            }
+          } catch (err) {
+            // If RPC doesn't exist, that's okay - we'll use user_id as display name
+            console.warn('[LawyerDashboard] RPC get_user_emails not available:', err);
+          }
+        }
 
-        // Create a map of user_id -> profile
+        // Create a map of user_id (profile.id) -> profile
+        // Note: profiles.id matches conversation_participants.user_id (both reference auth.users.id)
         const profilesMap = new Map(profilesData?.map(p => [p.id, p]) || []);
 
         // Fetch last messages for each conversation
@@ -273,21 +440,128 @@ export default function LawyerDashboard() {
           }
         }
 
-        // Join conversations with participants, profiles, and last messages
-        const conversationsWithParticipants = filteredConversations.map(conv => ({
+        // Get creator IDs from participants
+        const creatorIds = new Set<string>();
+        allParticipants?.forEach(p => {
+          if (p.role === 'creator') {
+            creatorIds.add(p.user_id);
+          }
+        });
+        
+        // Fetch deals for creators (to get brand names, deal type, and amount)
+        const dealsMap = new Map<string, Array<{ id: string; brand_name: string | null; status: string | null; deal_type: string | null; deal_amount: number | null }>>();
+        if (creatorIds.size > 0) {
+          console.log('[LawyerDashboard] Fetching deals for creators:', Array.from(creatorIds));
+          const { data: dealsData, error: dealsError } = await supabase
+            .from('brand_deals')
+            .select('id, creator_id, brand_name, status, deal_type, deal_amount')
+            .in('creator_id', Array.from(creatorIds));
+          
+          if (dealsError) {
+            console.error('[LawyerDashboard] Error fetching deals:', dealsError);
+          } else {
+            console.log('[LawyerDashboard] Fetched deals:', dealsData?.length || 0);
+            if (dealsData && dealsData.length > 0) {
+              dealsData.forEach((deal: any) => {
+                if (deal.creator_id) {
+                  if (!dealsMap.has(deal.creator_id)) {
+                    dealsMap.set(deal.creator_id, []);
+                  }
+                  dealsMap.get(deal.creator_id)!.push({
+                    id: deal.id,
+                    brand_name: deal.brand_name,
+                    status: deal.status,
+                    deal_type: deal.deal_type || null,
+                    deal_amount: deal.deal_amount || null,
+                  });
+                }
+              });
+              console.log('[LawyerDashboard] Deals map:', Array.from(dealsMap.entries()).map(([id, deals]) => ({ creatorId: id, dealCount: deals.length })));
+            }
+          }
+        }
+        
+        // Join conversations with participants, profiles, last messages, and deals
+        const conversationsWithParticipants = filteredConversations.map(conv => {
+          const creatorParticipant = allParticipants?.find(
+            p => p.conversation_id === conv.id && p.role === 'creator'
+          );
+          const creatorDeals = creatorParticipant?.user_id 
+            ? dealsMap.get(creatorParticipant.user_id) || []
+            : [];
+          
+          // Debug logging for first conversation
+          if (conv.id === filteredConversations[0]?.id) {
+            console.log('[LawyerDashboard] Sample conversation debug:', {
+              convId: conv.id,
+              creatorParticipant: creatorParticipant ? { userId: creatorParticipant.user_id, role: creatorParticipant.role } : null,
+              creatorDealsCount: creatorDeals.length,
+              creatorDeals: creatorDeals,
+              hasCreatorProfile: creatorParticipant?.user_id ? !!profilesMap.get(creatorParticipant.user_id) : false,
+            });
+          }
+          
+          return {
           ...conv,
           last_message: lastMessagesMap.get(conv.id) || null,
+            creatorDeals: creatorDeals.map((deal: any) => ({
+              id: deal.id,
+              brand_name: deal.brand_name,
+              status: deal.status,
+              deal_type: deal.deal_type,
+              deal_amount: deal.deal_amount,
+            })),
           participants: allParticipants
             ?.filter(p => p.conversation_id === conv.id)
-            .map(p => ({
+              .map(p => {
+                const profile = profilesMap.get(p.user_id);
+                const email = emailsMap.get(p.user_id) || null;
+                return {
               user_id: p.user_id,
               role: p.role,
-              profiles: profilesMap.get(p.user_id) || null
-            })) || []
-        })) || [];
+                  email: email,
+                  profiles: profile ? {
+                    id: profile.id,
+                    first_name: profile.first_name,
+                    last_name: profile.last_name,
+                    avatar_url: profile.avatar_url,
+                    instagram_handle: null,
+                    youtube_channel_id: null,
+                    twitter_handle: null,
+                  } : null
+                };
+              }) || []
+          };
+        }) || [];
 
-        console.log('[LawyerDashboard] Setting conversations:', conversationsWithParticipants.length);
-        setConversations(conversationsWithParticipants);
+        // Sort conversations by last_message_at (most recent first), then by updated_at
+        const sortedConversations = [...conversationsWithParticipants].sort((a, b) => {
+          // First, sort by last_message_at (most recent first)
+          if (a.last_message_at && b.last_message_at) {
+            return new Date(b.last_message_at).getTime() - new Date(a.last_message_at).getTime();
+          }
+          if (a.last_message_at && !b.last_message_at) return -1;
+          if (!a.last_message_at && b.last_message_at) return 1;
+          // If both are null, sort by updated_at
+          if (a.updated_at && b.updated_at) {
+            return new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime();
+          }
+          return 0;
+        });
+        
+        console.log('[LawyerDashboard] Setting conversations:', sortedConversations.length);
+        setConversations(sortedConversations);
+        
+        // Auto-select first conversation if none is selected
+        // Use setTimeout to avoid state update during render
+        if (!selectedConversation && conversationsWithParticipants.length > 0) {
+          const firstConvId = conversationsWithParticipants[0].id;
+          console.log('[LawyerDashboard] Auto-selecting first conversation:', firstConvId);
+          // Use setTimeout to ensure this happens after state is set
+          setTimeout(() => {
+            setSelectedConversation(firstConvId);
+          }, 0);
+        }
       } catch (err: any) {
         console.error('[LawyerDashboard] Error in fetchConversations:', err);
         toast.error('Failed to load conversations', { description: err.message });
@@ -298,29 +572,166 @@ export default function LawyerDashboard() {
 
     fetchConversations();
 
-    // Subscribe to realtime updates
-    const channel = supabase
-      .channel('conversations')
+    // Subscribe to realtime updates for conversations
+    const conversationsChannel = supabase
+      .channel('lawyer-conversations')
       .on('postgres_changes', {
         event: '*',
         schema: 'public',
         table: 'conversations'
-      }, () => {
+      }, (payload) => {
+        console.log('[LawyerDashboard] 🔔 Conversation changed:', {
+          event: payload.eventType,
+          conversationId: payload.new?.id || payload.old?.id,
+          table: payload.table
+        });
+        // Add small delay to ensure related participant records are committed
+        setTimeout(() => {
+          console.log('[LawyerDashboard] Refetching conversations after conversation change...');
         fetchConversations();
+        }, 300);
+      })
+      .subscribe((status) => {
+        console.log('[LawyerDashboard] Conversations subscription status:', status);
+        if (status === 'SUBSCRIBED') {
+          console.log('[LawyerDashboard] ✅ Successfully subscribed to conversations table');
+        }
+      });
+
+    // Subscribe to conversation_participants to catch when lawyer is added to a new conversation
+    // Get authUserId for the filter - we'll listen to all inserts and filter in callback
+    // (This avoids scope issues with authUserId)
+    const participantsChannel = supabase
+      .channel('lawyer-participants')
+      .on('postgres_changes', {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'conversation_participants'
+      }, async (payload) => {
+        const newParticipant = payload.new as any;
+        console.log('[LawyerDashboard] 🔔 New participant inserted:', {
+          conversationId: newParticipant?.conversation_id,
+          userId: newParticipant?.user_id,
+          role: newParticipant?.role
+        });
+        
+        // Get current auth user ID to check if this participant is the lawyer
+        const { data: { session } } = await supabase.auth.getSession();
+        const currentAuthUserId = session?.user?.id;
+        
+        console.log('[LawyerDashboard] Checking if new participant is current lawyer:', {
+          newParticipantUserId: newParticipant?.user_id,
+          currentAuthUserId: currentAuthUserId,
+          matches: newParticipant?.user_id === currentAuthUserId
+        });
+        
+        // Only process if this participant is the current lawyer
+        if (currentAuthUserId && newParticipant?.user_id === currentAuthUserId) {
+          console.log('[LawyerDashboard] ✅ New conversation participant added (lawyer added to conversation):', {
+            conversationId: newParticipant?.conversation_id,
+            userId: newParticipant?.user_id
+          });
+          // Refetch conversations to show the new conversation
+          // Add a small delay to ensure database has committed the change
+          setTimeout(() => {
+            console.log('[LawyerDashboard] Refetching conversations after new participant added...');
+            fetchConversations();
+          }, 500);
+        } else {
+          console.log('[LawyerDashboard] New participant is not the current lawyer, skipping...');
+        }
+      })
+      .subscribe((status) => {
+        console.log('[LawyerDashboard] Participants subscription status:', status);
+        if (status === 'SUBSCRIBED') {
+          console.log('[LawyerDashboard] ✅ Successfully subscribed to conversation_participants');
+        }
+      });
+
+    // Also subscribe to messages to catch new messages immediately
+    // This ensures conversation list updates when new messages arrive
+    const messagesChannel = supabase
+      .channel('lawyer-messages')
+      .on('postgres_changes', {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'messages'
+      }, (payload) => {
+        const newMessage = payload.new as any;
+        console.log('[LawyerDashboard] New message inserted, refetching conversations...', {
+          messageId: newMessage?.id,
+          conversationId: newMessage?.conversation_id,
+          selectedConversation: selectedConversationRef.current,
+          matches: newMessage?.conversation_id === selectedConversationRef.current
+        });
+        
+        // Refetch conversations to update last_message and unread counts
+        fetchConversations();
+        
+        // If this message belongs to the currently selected conversation, also update messages state
+        // This is a backup in case the per-conversation subscription doesn't fire
+        // Use ref to avoid stale closure issues
+        const currentSelectedConversation = selectedConversationRef.current;
+        if (currentSelectedConversation && newMessage?.conversation_id === currentSelectedConversation) {
+          console.log('[LawyerDashboard] 🔔 Global channel: Message belongs to selected conversation, updating messages state', {
+            messageId: newMessage.id,
+            conversationId: newMessage.conversation_id,
+            selectedConversation: currentSelectedConversation
+          });
+          setMessages(prev => {
+            // Avoid duplicates
+            if (prev.some(m => m.id === newMessage.id)) {
+              console.log('[LawyerDashboard] Global channel: Message already exists, skipping duplicate');
+              return prev;
+            }
+            console.log('[LawyerDashboard] Global channel: Adding new message to UI:', newMessage.id);
+            return [...prev, {
+              id: newMessage.id,
+              content: newMessage.content,
+              sender_id: newMessage.sender_id,
+              sent_at: newMessage.sent_at,
+              is_read: newMessage.is_read || false,
+              attachments: []
+            }];
+          });
+        } else {
+          console.log('[LawyerDashboard] Global channel: Message does not belong to selected conversation, skipping messages update', {
+            messageConversationId: newMessage?.conversation_id,
+            selectedConversation: currentSelectedConversation
+          });
+        }
       })
       .subscribe();
 
     return () => {
-      supabase.removeChannel(channel);
+      supabase.removeChannel(conversationsChannel);
+      if (participantsChannel) {
+        supabase.removeChannel(participantsChannel);
+      }
+      supabase.removeChannel(messagesChannel);
     };
-  }, [user?.id]);
+  }, [user?.id, selectedConversation]);
 
   // Fetch messages for selected conversation
   useEffect(() => {
-    if (!selectedConversation || !user?.id) return;
+    console.log('[LawyerDashboard] Message subscription effect running:', {
+      selectedConversation,
+      userId: user?.id,
+      willSubscribe: !!(selectedConversation && user?.id)
+    });
+    
+    if (!selectedConversation || !user?.id) {
+      // Clear messages if no conversation selected
+      console.log('[LawyerDashboard] No conversation selected or no user, clearing messages');
+      setMessages([]);
+      return;
+    }
 
-    const fetchMessages = async () => {
+    let isMounted = true;
+
+    const fetchMessages = async (retryCount = 0) => {
       try {
+        console.log('[LawyerDashboard] Fetching messages for conversation:', selectedConversation, `(attempt ${retryCount + 1})`);
         const { data, error } = await supabase
           .from('messages')
           .select(`
@@ -331,37 +742,93 @@ export default function LawyerDashboard() {
           .eq('is_deleted', false)
           .order('sent_at', { ascending: true });
 
-        if (error) throw error;
+        if (error) {
+          console.error('[LawyerDashboard] Supabase query error:', error);
+          throw error;
+        }
+        
+        console.log('[LawyerDashboard] Successfully fetched messages:', data?.length || 0);
+        if (isMounted) {
         setMessages(data || []);
+        }
       } catch (err: any) {
-        toast.error('Failed to load messages', { description: err.message });
+        console.error('[LawyerDashboard] Error fetching messages:', {
+          error: err,
+          message: err?.message,
+          code: err?.code,
+          details: err?.details,
+          retryCount
+        });
+        
+        // Retry on network errors (up to 2 retries)
+        if (retryCount < 2 && (err?.message?.includes('Load failed') || err?.message?.includes('Failed to fetch'))) {
+          console.log('[LawyerDashboard] Retrying message fetch in 1 second...');
+          setTimeout(() => {
+            if (isMounted) {
+              fetchMessages(retryCount + 1);
+            }
+          }, 1000);
+          return;
+        }
+        
+        if (isMounted) {
+          // Only show toast on final failure
+          if (retryCount >= 2) {
+            toast.error('Failed to load messages', { description: err?.message || 'Network error' });
+          }
+        }
       }
     };
 
     fetchMessages();
 
+    // Clean up previous subscription if it exists
+    if (messageSubscriptionRef.current) {
+      console.log('[LawyerDashboard] Cleaning up previous message subscription');
+      supabase.removeChannel(messageSubscriptionRef.current);
+      messageSubscriptionRef.current = null;
+    }
+
     // Subscribe to new messages (listen for INSERT, UPDATE, DELETE)
+    // Note: Using separate event listeners for better compatibility with RLS
     const channel = supabase
-      .channel(`messages:${selectedConversation}`)
+      .channel(`lawyer-messages:${selectedConversation}`)
       .on('postgres_changes', {
-        event: '*',
+        event: 'INSERT',
         schema: 'public',
         table: 'messages',
         filter: `conversation_id=eq.${selectedConversation}`
       }, (payload) => {
-        console.log('[LawyerDashboard] Real-time message update:', {
+        console.log('[LawyerDashboard] 🔔 Real-time INSERT received:', {
           event: payload.eventType,
-          new: payload.new,
-          old: payload.old,
+          messageId: payload.new?.id,
+          conversationId: selectedConversation,
+          payloadNew: payload.new,
+          timestamp: new Date().toISOString(),
         });
-        // Optimistically update UI for INSERT events
-        if (payload.eventType === 'INSERT' && payload.new) {
+        
+        if (!isMounted) {
+          console.log('[LawyerDashboard] ⚠️ Component unmounted, ignoring update');
+          return;
+        }
+        
+        // Process INSERT
+        if (payload.new) {
           const newMessage = payload.new as any;
+          // Double-check conversation_id matches (safety check)
+          if (newMessage.conversation_id !== selectedConversation) {
+            console.log('[LawyerDashboard] ⚠️ Message conversation_id mismatch, ignoring');
+            return;
+          }
+          
+          console.log('[LawyerDashboard] Processing INSERT event for message:', newMessage.id);
           setMessages(prev => {
             // Avoid duplicates
             if (prev.some(m => m.id === newMessage.id)) {
+              console.log('[LawyerDashboard] Message already exists, skipping duplicate');
               return prev;
             }
+            console.log('[LawyerDashboard] Adding new message to UI:', newMessage.id);
             return [...prev, {
               id: newMessage.id,
               content: newMessage.content,
@@ -371,26 +838,196 @@ export default function LawyerDashboard() {
               attachments: []
             }];
           });
+          
+          // Refetch after a delay to get attachments if any
+          setTimeout(() => {
+            if (isMounted) {
+              console.log('[LawyerDashboard] Refetching messages to get attachments...');
+              fetchMessages();
+            }
+          }, 500);
         }
-        // Refetch messages to ensure we have the latest (handles UPDATE, DELETE)
+      })
+      .on('postgres_changes', {
+        event: 'UPDATE',
+        schema: 'public',
+        table: 'messages',
+        filter: `conversation_id=eq.${selectedConversation}`
+      }, (payload) => {
+        console.log('[LawyerDashboard] 🔔 Real-time UPDATE received:', {
+          event: payload.eventType,
+          messageId: payload.new?.id || payload.old?.id,
+          conversationId: selectedConversation,
+        });
+        
+        if (!isMounted) return;
+        
+        // For UPDATE, refetch to get latest state
+        setTimeout(() => {
+          if (isMounted) {
         fetchMessages();
+          }
+        }, 100);
+      })
+      .on('postgres_changes', {
+        event: 'DELETE',
+        schema: 'public',
+        table: 'messages',
+        filter: `conversation_id=eq.${selectedConversation}`
+      }, (payload) => {
+        console.log('[LawyerDashboard] 🔔 Real-time DELETE received:', {
+          event: payload.eventType,
+          messageId: payload.old?.id,
+          conversationId: selectedConversation,
+        });
+        
+        if (!isMounted) return;
+        
+        // For DELETE, refetch to get latest state
+        setTimeout(() => {
+          if (isMounted) {
+            fetchMessages();
+          }
+        }, 100);
       })
       .subscribe((status) => {
-        console.log('[LawyerDashboard] Realtime subscription status:', status);
+        console.log('[LawyerDashboard] Realtime subscription status for conversation:', selectedConversation, status);
+        if (status === 'SUBSCRIBED') {
+          console.log('[LawyerDashboard] ✅ Successfully subscribed to messages for conversation:', selectedConversation);
+          messageSubscriptionRef.current = channel;
+          
+          // Test the subscription by checking channel state
+          setTimeout(() => {
+            const channelState = channel.state;
+            console.log('[LawyerDashboard] Channel state after subscription:', channelState);
+            if (channelState !== 'joined') {
+              console.warn('[LawyerDashboard] ⚠️ Channel not in joined state:', channelState);
+            }
+          }, 500);
+        } else if (status === 'CHANNEL_ERROR') {
+          console.error('[LawyerDashboard] ❌ Channel error for conversation:', selectedConversation);
+          messageSubscriptionRef.current = null;
+          // Try to resubscribe after a delay
+          if (isMounted) {
+            setTimeout(() => {
+              console.log('[LawyerDashboard] Attempting to resubscribe...');
+              fetchMessages();
+            }, 1000);
+          }
+        } else if (status === 'CLOSED') {
+          console.warn('[LawyerDashboard] ⚠️ Channel closed for conversation:', selectedConversation, '- This should only happen on cleanup');
+          messageSubscriptionRef.current = null;
+        } else if (status === 'TIMED_OUT') {
+          console.warn('[LawyerDashboard] ⚠️ Channel timed out for conversation:', selectedConversation);
+          messageSubscriptionRef.current = null;
+        } else {
+          console.log('[LawyerDashboard] Subscription status:', status);
+        }
+      });
+    
+    // Fallback: Also listen to all messages and filter manually (in case filter doesn't work with RLS)
+    const fallbackChannel = supabase
+      .channel(`lawyer-messages-fallback:${selectedConversation}`)
+      .on('postgres_changes', {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'messages'
+      }, (payload) => {
+        if (!isMounted) return;
+        
+        const newMessage = payload.new as any;
+        // Filter by conversation_id in callback
+        if (newMessage?.conversation_id === selectedConversation) {
+          console.log('[LawyerDashboard] 🔔 Fallback subscription caught message:', newMessage.id);
+          setMessages(prev => {
+            if (prev.some(m => m.id === newMessage.id)) return prev;
+            return [...prev, {
+              id: newMessage.id,
+              content: newMessage.content,
+              sender_id: newMessage.sender_id,
+              sent_at: newMessage.sent_at,
+              is_read: newMessage.is_read || false,
+              attachments: []
+            }];
+          });
+          setTimeout(() => {
+            if (isMounted) fetchMessages();
+          }, 500);
+        }
+      })
+      .subscribe((status) => {
+        console.log('[LawyerDashboard] Fallback subscription status:', status);
       });
 
     return () => {
+      isMounted = false;
+      console.log('[LawyerDashboard] Cleanup: Removing message subscription for conversation:', selectedConversation);
+      if (messageSubscriptionRef.current) {
+        supabase.removeChannel(messageSubscriptionRef.current);
+        messageSubscriptionRef.current = null;
+      } else if (channel) {
       supabase.removeChannel(channel);
+      }
+      if (fallbackChannel) {
+        supabase.removeChannel(fallbackChannel);
+      }
     };
   }, [selectedConversation, user?.id]);
 
   const filteredConversations = useMemo(() => {
     let filtered = conversations;
 
+    // Filter by risk tag
     if (filter !== 'all') {
       filtered = filtered.filter(c => c.risk_tag === filter);
     }
 
+    // Filter by advisor
+    if (selectedAdvisor !== 'all') {
+      filtered = filtered.filter(c => {
+        const titleLower = c.title?.toLowerCase() || '';
+        
+        if (selectedAdvisor === 'legal_advisor') {
+          // Check if title includes "Legal Advisor"
+          if (titleLower.includes('legal advisor')) {
+            return true;
+          }
+          
+          // Check if any advisor participant name equals "Legal Advisor"
+          const advisorParticipants = c.participants.filter(p => p.role === 'advisor');
+          for (const advisor of advisorParticipants) {
+            if (advisor.profiles) {
+              const fullName = `${advisor.profiles.first_name || ''} ${advisor.profiles.last_name || ''}`.trim();
+              if (fullName.toLowerCase() === 'legal advisor') {
+                return true;
+              }
+            }
+          }
+          return false;
+        } else if (selectedAdvisor === 'anjali_sharma') {
+          // Check if title includes "Anjali Sharma"
+          if (titleLower.includes('anjali sharma') || titleLower.includes('anjali')) {
+            return true;
+          }
+          
+          // Check if any advisor participant name equals "Anjali Sharma"
+          const advisorParticipants = c.participants.filter(p => p.role === 'advisor');
+          for (const advisor of advisorParticipants) {
+            if (advisor.profiles) {
+              const fullName = `${advisor.profiles.first_name || ''} ${advisor.profiles.last_name || ''}`.trim();
+              if (fullName.toLowerCase() === 'anjali sharma' || fullName.toLowerCase().includes('anjali')) {
+                return true;
+              }
+            }
+          }
+          return false;
+        }
+        
+        return false;
+      });
+    }
+
+    // Filter by search query
     if (searchQuery) {
       filtered = filtered.filter(c => 
         c.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -399,13 +1036,14 @@ export default function LawyerDashboard() {
     }
 
     return filtered;
-  }, [conversations, filter, searchQuery]);
+  }, [conversations, filter, selectedAdvisor, searchQuery]);
 
   const selectedConv = conversations.find(c => c.id === selectedConversation);
   const creatorParticipant = selectedConv?.participants.find(p => p.role === 'creator');
 
   // Handle conversation selection
   const handleSelectConversation = (convId: string) => {
+    console.log('[LawyerDashboard] Conversation selected:', convId);
     triggerHaptic(HapticPatterns.medium);
     setSelectedConversation(convId);
     // On mobile, hide list and show chat
@@ -498,7 +1136,7 @@ export default function LawyerDashboard() {
               />
             </div>
 
-            {/* Filters */}
+            {/* Risk Tag Filters */}
             <div className="flex gap-2 flex-wrap">
               {(['all', 'high_risk', 'payment', 'legal'] as const).map((f) => (
                 <button
@@ -515,6 +1153,27 @@ export default function LawyerDashboard() {
                   )}
                 >
                   {f.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                </button>
+              ))}
+            </div>
+
+            {/* Advisor Filter Toggle */}
+            <div className="flex gap-2 flex-wrap">
+              {(['all', 'legal_advisor', 'anjali_sharma'] as const).map((advisor) => (
+                <button
+                  key={advisor}
+                  onClick={() => {
+                    triggerHaptic(HapticPatterns.light);
+                    setSelectedAdvisor(advisor);
+                  }}
+                  className={cn(
+                    "px-3 py-1.5 rounded-full text-xs font-medium transition-all",
+                    selectedAdvisor === advisor
+                      ? "bg-purple-500 text-white"
+                      : "bg-white/10 text-white/70 hover:bg-white/15"
+                  )}
+                >
+                  {advisor === 'all' ? 'All' : advisor === 'legal_advisor' ? 'Legal Advisor' : 'Anjali Sharma'}
                 </button>
               ))}
             </div>
@@ -546,29 +1205,30 @@ export default function LawyerDashboard() {
                       <MessageSquare className={iconSizes.md} />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between mb-1">
-                        <div className="font-semibold truncate">
-                          {conv.title || creatorParticipant?.profiles?.first_name || 'Conversation'}
+                      <div className="flex items-center justify-between mb-1 gap-2">
+                        <div className="font-semibold truncate flex-1">
+                          {getConversationDisplayMeta(conv).title}
                         </div>
+                        <div className="flex items-center gap-2 flex-shrink-0">
+                          {/* Meta chip (Paid/Barter/High Risk) */}
+                          {getConversationDisplayMeta(conv).meta && (
+                            <span className={cn(
+                              "px-2 py-0.5 rounded text-xs font-medium",
+                              getConversationDisplayMeta(conv).meta === 'High Risk' && "bg-red-500/20 text-red-300",
+                              getConversationDisplayMeta(conv).meta === 'Barter' && "bg-orange-500/20 text-orange-300",
+                              getConversationDisplayMeta(conv).meta === 'Paid' && "bg-green-500/20 text-green-300"
+                            )}>
+                              {getConversationDisplayMeta(conv).meta}
+                            </span>
+                          )}
+                          {/* Unread count */}
                         {conv.unread_count_advisor > 0 && (
                           <span className="px-2 py-0.5 rounded-full bg-purple-500 text-xs font-semibold">
                             {conv.unread_count_advisor}
                           </span>
                         )}
                       </div>
-                      <div className="text-sm text-white/60 truncate">
-                        {conv.last_message?.content || 'No messages yet'}
                       </div>
-                      {conv.risk_tag && (
-                        <div className={cn(
-                          "inline-block px-2 py-0.5 rounded text-xs mt-1",
-                          conv.risk_tag === 'high_risk' && "bg-red-500/20 text-red-300",
-                          conv.risk_tag === 'payment' && "bg-yellow-500/20 text-yellow-300",
-                          conv.risk_tag === 'legal' && "bg-blue-500/20 text-blue-300"
-                        )}>
-                          {conv.risk_tag.replace('_', ' ')}
-                        </div>
-                      )}
                     </div>
                   </div>
                 </motion.button>
@@ -684,7 +1344,19 @@ function ConversationView({
     container.scrollTop = container.scrollHeight - container.clientHeight;
   };
 
-  // Auto-scroll when messages change
+  // Auto-scroll when conversation changes (initial load)
+  useEffect(() => {
+    if (!messages || messages.length === 0) return;
+    
+    // Scroll to bottom immediately when conversation opens
+    const t = setTimeout(() => {
+      scrollToLast(false); // Use instant scroll for initial load
+    }, 100);
+    
+    return () => clearTimeout(t);
+  }, [conversation.id]); // Trigger when conversation changes
+
+  // Auto-scroll when messages change (new messages arrive)
   useEffect(() => {
     if (!messages || messages.length === 0) return;
     
@@ -728,7 +1400,7 @@ function ConversationView({
     }
   };
 
-  const creatorParticipant = conversation.participants.find(p => p.role === 'creator');
+  // Removed unused creatorParticipant variable
 
   return (
     <div className="flex flex-col h-full">
@@ -751,10 +1423,10 @@ function ConversationView({
             </div>
             <div>
               <div className="font-semibold">
-                {conversation.title || creatorParticipant?.profiles?.first_name || 'Conversation'}
+                {getConversationDisplayMeta(conversation).title}
               </div>
               <div className="text-sm text-white/60">
-                {creatorParticipant?.profiles?.first_name || ''} {creatorParticipant?.profiles?.last_name || ''}
+                {getConversationDisplayMeta(conversation).subtitle}
               </div>
             </div>
           </div>

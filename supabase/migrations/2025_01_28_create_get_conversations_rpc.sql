@@ -42,7 +42,7 @@ BEGIN
     WHERE cp.conversation_id = c.id
       AND cp.user_id = auth.uid()
   )
-  ORDER BY c.updated_at DESC;
+  ORDER BY c.last_message_at DESC NULLS LAST, c.updated_at DESC;
 END;
 $$;
 

@@ -10,7 +10,11 @@ import {
   Wallet, 
   MoreHorizontal,
   Shield,
-  ArrowRight
+  ArrowRight,
+  Car,
+  Wrench,
+  Heart,
+  Hotel
 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -29,39 +33,60 @@ interface Category {
 
 const categories: Category[] = [
   {
-    id: 'ecommerce',
-    name: 'Amazon / Flipkart',
+    id: 'ecommerce_marketplaces',
+    name: 'E-commerce & Marketplaces',
     icon: ShoppingBag,
     color: '#FF6B35',
     bgColor: 'rgba(255, 107, 53, 0.15)',
   },
   {
-    id: 'food',
-    name: 'Swiggy / Zomato',
+    id: 'food_grocery',
+    name: 'Food & Grocery Apps',
     icon: UtensilsCrossed,
     color: '#FF6B9D',
     bgColor: 'rgba(255, 107, 157, 0.15)',
   },
   {
-    id: 'travel',
-    name: 'Airlines / IRCTC',
+    id: 'rides_transport',
+    name: 'Rides, Transport & Delivery',
+    icon: Car,
+    color: '#3B82F6',
+    bgColor: 'rgba(59, 130, 246, 0.15)',
+  },
+  {
+    id: 'home_services',
+    name: 'Home & Local Services',
+    icon: Wrench,
+    color: '#F59E0B',
+    bgColor: 'rgba(245, 158, 11, 0.15)',
+  },
+  {
+    id: 'travel_hotels',
+    name: 'Travel & Hotels',
     icon: Plane,
     color: '#0EA5E9',
     bgColor: 'rgba(14, 165, 233, 0.15)',
   },
   {
-    id: 'telecom',
-    name: 'Telecom / Internet',
+    id: 'telecom_internet',
+    name: 'Telecom & Internet',
     icon: Phone,
     color: '#10B981',
     bgColor: 'rgba(16, 185, 129, 0.15)',
   },
   {
-    id: 'banking',
-    name: 'Banking / Wallets',
+    id: 'banking_wallets',
+    name: 'Banking & Wallets',
     icon: Wallet,
     color: '#8B5CF6',
     bgColor: 'rgba(139, 92, 246, 0.15)',
+  },
+  {
+    id: 'healthcare_insurance',
+    name: 'Healthcare & Insurance',
+    icon: Heart,
+    color: '#EC4899',
+    bgColor: 'rgba(236, 72, 153, 0.15)',
   },
   {
     id: 'others',
@@ -77,23 +102,25 @@ const ConsumerComplaintsPage: React.FC = () => {
   const navigate = useNavigate();
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [showComplaintModal, setShowComplaintModal] = useState(false);
-  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  // Removed for testing phase - no upgrade modal needed
+  // const [showUpgradeModal, setShowUpgradeModal] = useState(false);
 
-  const isProUser = isCreatorProSync(profile);
+  // Pro check removed for testing phase - available to all users
+  // const isProUser = isCreatorProSync(profile);
 
-  // Check Pro status on mount - redirect if not Pro
-  React.useEffect(() => {
-    if (profile && !isProUser) {
-      // Redirect to upgrade page
-      navigate('/upgrade?source=consumer-complaints', { replace: true });
-    }
-  }, [profile, isProUser, navigate]);
+  // Pro redirect removed for testing phase
+  // React.useEffect(() => {
+  //   if (profile && !isProUser) {
+  //     navigate('/upgrade?source=consumer-complaints', { replace: true });
+  //   }
+  // }, [profile, isProUser, navigate]);
 
   const handleRaiseComplaint = (categoryId: string) => {
-    if (!isProUser) {
-      setShowUpgradeModal(true);
-      return;
-    }
+    // Pro check removed for testing phase - allow all users
+    // if (!isProUser) {
+    //   setShowUpgradeModal(true);
+    //   return;
+    // }
     setSelectedCategory(categoryId);
     setShowComplaintModal(true);
   };
@@ -114,39 +141,39 @@ const ConsumerComplaintsPage: React.FC = () => {
     );
   }
 
-  // If not Pro, the redirect will happen, but show upgrade modal as fallback
-  if (!isProUser) {
-    return (
-      <>
-        <div className="nb-screen-height flex items-center justify-center p-4">
-          <div className="text-center">
-            <Shield className="w-16 h-16 text-emerald-400 mx-auto mb-4" />
-            <h2 className="text-2xl font-bold text-white mb-2">Lifestyle Shield is a Creator Pro benefit</h2>
-            <p className="text-white/70 mb-6">Get unlimited consumer complaints, faster resolutions, and priority support.</p>
-            <Button
-              onClick={() => navigate('/upgrade?source=consumer-complaints')}
-              className="bg-emerald-500 hover:bg-emerald-600 text-white"
-            >
-              Upgrade to Creator Pro
-            </Button>
-          </div>
-        </div>
-        <UpgradeModal
-          open={showUpgradeModal}
-          onOpenChange={setShowUpgradeModal}
-        />
-      </>
-    );
-  }
+  // Pro check removed for testing phase - show page to all users
+  // if (!isProUser) {
+  //   return (
+  //     <>
+  //       <div className="nb-screen-height flex items-center justify-center p-4">
+  //         <div className="text-center">
+  //           <Shield className="w-16 h-16 text-emerald-400 mx-auto mb-4" />
+  //           <h2 className="text-2xl font-bold text-white mb-2">Lifestyle Shield is a Creator Pro benefit</h2>
+  //           <p className="text-white/70 mb-6">Get unlimited consumer complaints, faster resolutions, and priority support.</p>
+  //           <Button
+  //             onClick={() => navigate('/upgrade?source=consumer-complaints')}
+  //             className="bg-emerald-500 hover:bg-emerald-600 text-white"
+  //           >
+  //             Upgrade to Creator Pro
+  //           </Button>
+  //         </div>
+  //       </div>
+  //       <UpgradeModal
+  //         open={showUpgradeModal}
+  //         onOpenChange={setShowUpgradeModal}
+  //       />
+  //     </>
+  //   );
+  // }
 
   return (
     <>
-      <div className="nb-screen-height bg-gradient-to-b from-[#0A0A0A] to-[#1A1A1A] p-6 md:p-8">
+      <div className="nb-screen-height bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 p-6 md:p-8">
         <div className="max-w-7xl mx-auto">
           {/* Header */}
           <div className="mb-8">
             <div className="flex items-center gap-3 mb-2">
-              <Shield className="w-8 h-8 text-emerald-400" />
+              <Shield className="w-8 h-8 text-purple-400" />
               <h1 className="text-3xl md:text-4xl font-bold text-white">
                 Consumer Complaints
               </h1>
@@ -163,9 +190,9 @@ const ConsumerComplaintsPage: React.FC = () => {
               return (
                 <Card
                   key={category.id}
-                  variant="default"
+                  variant="tertiary"
                   interactive
-                  className="group hover:scale-[1.02] transition-transform duration-200"
+                  className="group hover:scale-[1.02] transition-transform duration-200 bg-white/5 border-white/10"
                 >
                   <CardContent className="p-6">
                     <div className="flex flex-col items-center text-center space-y-4">
@@ -190,7 +217,7 @@ const ConsumerComplaintsPage: React.FC = () => {
                       {/* CTA Button */}
                       <Button
                         onClick={() => handleRaiseComplaint(category.id)}
-                        className="w-full bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-500/30 text-emerald-400 hover:text-emerald-300 transition-all"
+                        className="w-full bg-gradient-to-r from-purple-600/30 to-indigo-600/30 hover:from-purple-600/40 hover:to-indigo-600/40 border border-purple-500/30 text-purple-200 hover:text-purple-100 transition-all"
                       >
                         Raise Complaint
                         <ArrowRight className="w-4 h-4 ml-2" />
@@ -213,11 +240,11 @@ const ConsumerComplaintsPage: React.FC = () => {
         onSubmit={handleComplaintSubmit}
       />
 
-      {/* Upgrade Modal (fallback) */}
-      <UpgradeModal
+      {/* Upgrade Modal removed for testing phase - available to all users */}
+      {/* <UpgradeModal
         open={showUpgradeModal}
         onOpenChange={setShowUpgradeModal}
-      />
+      /> */}
     </>
   );
 };

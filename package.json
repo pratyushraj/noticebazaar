@@ -26,6 +26,7 @@
     "seed": "tsx scripts/seed-test-data.ts",
     "create-demo": "tsx scripts/create-demo-user.ts",
     "create-user": "tsx scripts/create-user-account.ts",
+    "setup-complaint-bucket": "tsx scripts/setup-complaint-proofs-bucket.ts",
     "update-role": "tsx scripts/update-user-role.ts",
     "update-prateek-profile": "tsx scripts/update-prateek-profile.ts",
     "verify-migrations": "tsx scripts/verify-migrations.ts",

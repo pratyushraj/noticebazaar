@@ -31,6 +31,7 @@ import { DashboardSkeleton as EnhancedDashboardSkeleton } from '@/components/ske
 import { NotificationDropdown } from '@/components/notifications/NotificationDropdown';
 import { QuickSearch } from '@/components/dashboard/QuickSearch';
 import PremiumDrawer from '@/components/drawer/PremiumDrawer';
+import AuthLoadingScreen from '@/components/AuthLoadingScreen';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -46,7 +47,7 @@ const CreatorDashboard = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const signOutMutation = useSignOut();
-  const { profile, user, loading: sessionLoading, session } = useSession();
+  const { profile, user, loading: sessionLoading, session, isAuthInitializing } = useSession();
   const [activeTab, setActiveTab] = useState('home');
   const [showMenu, setShowMenu] = useState(false);
   const [showLogoutDialog, setShowLogoutDialog] = useState(false);
@@ -550,6 +551,14 @@ const CreatorDashboard = () => {
     return "Good evening";
   };
 
+  // Show AuthLoadingScreen during auth initialization OR while initial data is loading
+  // This prevents skeleton from showing during the transition
+  // Only show if we have session and profile (to avoid showing on first page load)
+  // IMPORTANT: This check must come AFTER all hooks to avoid React Hooks violations
+  if (isAuthInitializing || (isLoadingDeals && !!creatorId && !brandDealsError && session && profile)) {
+    return <AuthLoadingScreen />;
+  }
+
   // Import enhanced skeleton (fallback to inline if import fails)
 
     return (
@@ -833,7 +842,7 @@ const CreatorDashboard = () => {
       </a>
 
       {/* Main Content */}
-      <main id="main-content" className={`${sectionLayout.container} ${scroll.container} pb-20 md:pb-28`} style={{ paddingBottom: 'max(80px, calc(80px + env(safe-area-inset-bottom, 0px)))' }}>
+      <main id="main-content" className={`${sectionLayout.container} ${scroll.container} pb-20 md:pb-28`} style={{ paddingBottom: 'max(100px, calc(100px + env(safe-area-inset-bottom, 0px)))' }}>
         {/* Home Tab */}
         {activeTab === 'home' && (
           <>
@@ -1010,55 +1019,137 @@ const CreatorDashboard = () => {
                 </SectionCard>
                     </div>
             ) : (
-              <div className={cn(spacing.section, "max-w-5xl mx-auto")}>
-            {/* Greeting */}
-            <div className={cn(sectionLayout.header, "md:pt-4 md:text-left")}>
-              <h1 className={cn(typography.h1, "mb-2 leading-tight md:text-xl")}>
-                {getGreeting()}, <br />
-                <span className="bg-gradient-to-r from-purple-400 to-pink-400 text-transparent bg-clip-text">
-                  {userData.name}!
-                </span> 👋
-              </h1>
-              <p className={cn(typography.body, "mt-2 mb-3 leading-relaxed text-purple-200")}>
-                We're protecting your deals today.
-              </p>
-              {/* Compact Summary Strip */}
-              <div className={`mt-3 flex flex-wrap items-center gap-2 ${typography.bodySmall}`}>
-                <span className="px-2.5 py-1 bg-green-500/20 text-green-400 rounded-full flex items-center gap-1.5 font-medium">
-                  No active risks
-                </span>
-                <span className="text-purple-300/60">•</span>
-                <span className="px-2.5 py-1 bg-blue-500/20 text-blue-400 rounded-full flex items-center gap-1.5 font-medium">
-                  {stats.activeDeals} deal{stats.activeDeals === 1 ? '' : 's'} under watch
-                </span>
-                <span className="text-purple-300/60">•</span>
-                <span className="px-2.5 py-1 bg-purple-500/20 text-purple-400 rounded-full flex items-center gap-1.5 font-medium">
-                  ₹0 protected so far
-                </span>
-                  </div>
+              <div className="space-y-6">
+            {/* Hero Section - Edge-to-edge with gradient background */}
+            <div className={cn(
+              "-mx-4 md:mx-0",
+              "bg-gradient-to-br from-purple-500/10 via-purple-500/5 to-transparent",
+              "pt-6 pb-4 md:pt-8 md:pb-6",
+              "px-4 md:px-0"
+            )}>
+              {/* Greeting */}
+              <div className={cn(sectionLayout.header, "md:pt-0 md:text-left")}>
+                <h1 className={cn(typography.h1, "mb-2 leading-tight md:text-xl")}>
+                  {getGreeting()}, <br />
+                  <span className="bg-gradient-to-r from-purple-400 to-pink-400 text-transparent bg-clip-text">
+                    {userData.name}!
+                  </span> 👋
+                </h1>
+                {stats.activeDeals === 0 && (
+                  <p className={cn(typography.bodySmall, "mt-2 mb-2 text-purple-300/70")}>
+                    Your next step: protect a deal by uploading a contract or requesting details from a brand.
+                  </p>
+                )}
+                {stats.activeDeals > 0 && (
+                  <p className={cn(typography.body, "mt-2 mb-3 leading-relaxed text-purple-200")}>
+                    We're protecting your deals today.
+                  </p>
+                )}
+                {/* Compact Summary Strip - Improved color hierarchy */}
+                <div className={`mt-3 flex items-center gap-1.5 overflow-x-auto ${typography.bodySmall} [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]`}>
+                  <span className="px-2 py-0.5 bg-green-500/25 text-green-300 rounded-full flex items-center gap-1 font-semibold whitespace-nowrap text-[10px] sm:text-xs">
+                    All clear
+                  </span>
+                  <span className="text-purple-300/40 flex-shrink-0">•</span>
+                  <span className="px-2 py-0.5 bg-white/5 text-white/60 rounded-full flex items-center gap-1 font-medium whitespace-nowrap text-[10px] sm:text-xs">
+                    {stats.activeDeals} deal{stats.activeDeals === 1 ? '' : 's'} being monitored
+                  </span>
+                  <span className="text-purple-300/40 flex-shrink-0">•</span>
+                  <span className="px-2 py-0.5 bg-white/5 text-white/60 rounded-full flex items-center gap-1 font-medium whitespace-nowrap text-[10px] sm:text-xs">
+                    {stats.pendingPayments === 0 ? "No money at risk yet" : `₹${Math.round(stats.pendingPayments).toLocaleString('en-IN')} at risk`}
+                  </span>
                 </div>
+              </div>
 
-            {/* Quick Stats Row */}
-            <div data-tutorial="stats-grid" className="grid grid-cols-3 gap-2 sm:gap-4 w-full max-w-full px-2 mb-4">
-              <StatCard
-                label="Deals Monitored"
-                value={stats.totalDeals}
-                icon={<Briefcase className={`${iconSizes.sm} text-blue-400`} />}
-                variant="tertiary"
-              />
-              <StatCard
-                label="Under Protection"
-                value={stats.activeDeals}
-                icon={<BarChart3 className={`${iconSizes.sm} text-green-400`} />}
-                variant="tertiary"
-              />
-              <StatCard
-                label="Action Required"
-                value={Math.round(stats.pendingPayments)}
-                icon={<CreditCard className={`${iconSizes.sm} text-orange-400`} />}
-                variant="tertiary"
-              />
+              {/* Primary CTA - Attached to hero section */}
+              {stats.totalDeals <= 2 && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="mt-4"
+                >
+                  <motion.button
+                    onClick={() => {
+                      triggerHaptic(HapticPatterns.medium);
+                      navigate('/contract-upload');
+                    }}
+                    whileTap={animations.microTap}
+                    whileHover={window.innerWidth > 768 ? { scale: 1.02 } : undefined}
+                    className={cn(
+                      "w-full",
+                      "bg-gradient-to-r from-purple-600 to-pink-600",
+                      "hover:from-purple-700 hover:to-pink-700",
+                      "text-white font-semibold",
+                      "px-6 py-3.5",
+                      radius.lg,
+                      "flex items-center justify-center gap-2",
+                      "transition-all duration-200",
+                      "shadow-lg shadow-purple-500/20",
+                      "min-h-[48px]"
+                    )}
+                  >
+                    <Shield className={iconSizes.md} />
+                    Protect a New Deal
+                  </motion.button>
+                  <p className="text-[10px] sm:text-[11px] text-purple-300/50 text-center mt-1.5 hidden sm:block">
+                    Upload a contract or let the brand share details
+                  </p>
+                </motion.div>
+              )}
             </div>
+
+            {/* Quick Stats Row - Action Required full-width when > 0, otherwise 3 columns */}
+            {Math.round(stats.pendingPayments) > 0 ? (
+              <div data-tutorial="stats-grid" className="space-y-3 mb-4">
+                <StatCard
+                  label="Action Required"
+                  value={Math.round(stats.pendingPayments)}
+                  icon={<CreditCard className={`${iconSizes.sm} text-amber-400`} />}
+                  variant="tertiary"
+                  className="border-amber-500/30 bg-amber-500/5"
+                />
+                <div className="grid grid-cols-2 gap-2 sm:gap-4">
+                  <StatCard
+                    label="Deals Monitored"
+                    value={stats.totalDeals}
+                    icon={<Briefcase className={`${iconSizes.sm} text-blue-400`} />}
+                    variant="tertiary"
+                    showAffordance={true}
+                  />
+                  <StatCard
+                    label="Under Protection"
+                    value={stats.activeDeals}
+                    icon={<BarChart3 className={`${iconSizes.sm} text-green-400`} />}
+                    variant="tertiary"
+                    showAffordance={true}
+                  />
+                </div>
+              </div>
+            ) : (
+              <div data-tutorial="stats-grid" className="grid grid-cols-3 gap-2 sm:gap-4 w-full max-w-full mb-4">
+                <StatCard
+                  label="Deals Monitored"
+                  value={stats.totalDeals}
+                  icon={<Briefcase className={`${iconSizes.sm} text-blue-400`} />}
+                  variant="tertiary"
+                  showAffordance={true}
+                />
+                <StatCard
+                  label="Under Protection"
+                  value={stats.activeDeals}
+                  icon={<BarChart3 className={`${iconSizes.sm} text-green-400`} />}
+                  variant="tertiary"
+                  showAffordance={true}
+                />
+                <StatCard
+                  label="Action Required"
+                  value={Math.round(stats.pendingPayments)}
+                  icon={<CreditCard className={`${iconSizes.sm} text-orange-400`} />}
+                  variant="tertiary"
+                  subtitle="No action needed 🎉"
+                />
+              </div>
+            )}
 
             {/* Money Protection Card */}
             <motion.div 
@@ -1081,11 +1172,13 @@ const CreatorDashboard = () => {
                 glass.apple,
                 shadows.vision,
                 radius.lg,
-                "p-4 sm:p-6",
+                "p-3 sm:p-6",
                 animations.cardHover,
                 "transition-all duration-200",
-                "cursor-pointer"
+                "cursor-pointer",
+                "mb-4"
               )}
+              style={{ marginBottom: 'max(16px, calc(16px + env(safe-area-inset-bottom, 0px)))' }}
               role="button"
               tabIndex={0}
               aria-label="View money protection details"
@@ -1151,10 +1244,14 @@ const CreatorDashboard = () => {
                     <motion.button
                       onClick={(e) => {
                         e.stopPropagation();
+                        if (stats.pendingPayments === 0 && stats.earnings === 0) {
+                          return; // Disable if no data
+                        }
                         setMoneyProtectionTab('atRisk');
                         triggerHaptic(HapticPatterns.light);
                       }}
                       whileTap={animations.microTap}
+                      disabled={stats.pendingPayments === 0 && stats.earnings === 0}
                       className={cn(
                         "px-3 py-2 sm:px-2 sm:py-1.5",
                         "text-xs sm:text-sm",
@@ -1163,19 +1260,25 @@ const CreatorDashboard = () => {
                         "min-h-[36px] sm:min-h-0",
                         moneyProtectionTab === 'atRisk'
                           ? 'bg-purple-600 text-white'
-                          : 'text-purple-300 hover:text-white'
+                          : 'text-purple-300 hover:text-white',
+                        (stats.pendingPayments === 0 && stats.earnings === 0) && 'opacity-50 cursor-not-allowed'
                       )}
                       aria-label="View amount at risk"
+                      title={(stats.pendingPayments === 0 && stats.earnings === 0) ? "Amounts will appear here if a payment becomes overdue" : undefined}
                     >
                       At Risk
                     </motion.button>
                     <motion.button
                       onClick={(e) => {
                         e.stopPropagation();
+                        if (stats.pendingPayments === 0 && stats.earnings === 0) {
+                          return; // Disable if no data
+                        }
                         setMoneyProtectionTab('allTime');
                         triggerHaptic(HapticPatterns.light);
                       }}
                       whileTap={animations.microTap}
+                      disabled={stats.pendingPayments === 0 && stats.earnings === 0}
                       className={cn(
                         "px-3 py-2 sm:px-2 sm:py-1.5",
                         "text-xs sm:text-sm",
@@ -1184,7 +1287,8 @@ const CreatorDashboard = () => {
                         "min-h-[36px] sm:min-h-0",
                         moneyProtectionTab === 'allTime'
                           ? 'bg-purple-600 text-white'
-                          : 'text-purple-300 hover:text-white'
+                          : 'text-purple-300 hover:text-white',
+                        (stats.pendingPayments === 0 && stats.earnings === 0) && 'opacity-50 cursor-not-allowed'
                       )}
                       aria-label="View all time protection"
                     >
@@ -1204,17 +1308,17 @@ const CreatorDashboard = () => {
                       "leading-tight"
                     )}>
                       {moneyProtectionTab === 'recovered' 
-                        ? `₹0 recovered`
+                        ? (stats.pendingPayments === 0 && stats.earnings === 0 ? "No money at risk 🎉" : `₹0 recovered`)
                         : moneyProtectionTab === 'atRisk'
-                        ? `₹${Math.round(stats.pendingPayments).toLocaleString('en-IN')} at risk`
+                        ? (stats.pendingPayments === 0 ? "No money at risk 🎉" : `₹${Math.round(stats.pendingPayments).toLocaleString('en-IN')} at risk`)
                         : `₹${stats.earnings.toLocaleString('en-IN', { maximumFractionDigits: 0 })} protected`
                       }
                     </div>
                     <div className={cn(typography.bodySmall, "text-purple-300")}>
                       {moneyProtectionTab === 'recovered' 
-                        ? `₹${Math.round(stats.pendingPayments).toLocaleString('en-IN')} currently at risk`
+                        ? (stats.pendingPayments === 0 && stats.earnings === 0 ? "We'll alert you instantly if anything changes." : `₹${Math.round(stats.pendingPayments).toLocaleString('en-IN')} currently at risk`)
                         : moneyProtectionTab === 'atRisk'
-                        ? `From ${stats.activeDeals} active deal${stats.activeDeals === 1 ? '' : 's'}`
+                        ? (stats.pendingPayments === 0 ? "We'll alert you instantly if anything changes." : `From ${stats.activeDeals} active deal${stats.activeDeals === 1 ? '' : 's'}`)
                         : `Total amount protected across all deals`
                       }
                     </div>
@@ -1235,8 +1339,44 @@ const CreatorDashboard = () => {
             {/* Section Separator */}
             <div className={separators.section} />
 
+            {/* Optional Calm-State Nudge - Show when Action Required = 0 and Money at risk = 0 */}
+            {Math.round(stats.pendingPayments) === 0 && stats.earnings === 0 && (() => {
+              const hintDismissed = localStorage.getItem(`dashboard-hint-dismissed-${user?.id || 'anonymous'}`);
+              if (hintDismissed === 'true') return null;
+              
+              return (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="mb-4 px-2"
+                >
+                  <BaseCard variant="secondary" className={cn(
+                    "relative p-4",
+                    "bg-gradient-to-r from-purple-500/10 to-indigo-500/10",
+                    "border border-purple-500/20"
+                  )}>
+                    <div className="flex items-start justify-between gap-3">
+                      <p className={cn(typography.bodySmall, "text-purple-200/90 leading-relaxed flex-1")}>
+                        💡 Most payment issues start from unclear contracts. Protecting deals early saves weeks later.
+                      </p>
+                      <button
+                        onClick={() => {
+                          localStorage.setItem(`dashboard-hint-dismissed-${user?.id || 'anonymous'}`, 'true');
+                          triggerHaptic(HapticPatterns.light);
+                        }}
+                        className="flex-shrink-0 text-purple-300/60 hover:text-purple-300 transition-colors"
+                        aria-label="Dismiss hint"
+                      >
+                        <XCircle className={iconSizes.sm} />
+                      </button>
+                    </div>
+                  </BaseCard>
+                </motion.div>
+              );
+            })()}
+
             {/* Quick Actions - Enhanced with spacing and animations */}
-            <div data-tutorial="quick-actions" className={spacing.loose}>
+            <div data-tutorial="quick-actions" className={cn(spacing.loose, "mb-6 md:mb-8")}>
               <div className={sectionHeader.base}>
                 <h2 className={sectionHeader.title}>Quick Actions</h2>
                 {/* Mobile: Show bottom sheet button */}
@@ -1448,7 +1588,7 @@ const CreatorDashboard = () => {
             <div className={separators.section} />
 
             {/* Recent Activity - iOS 17 + visionOS */}
-            <div className={spacing.loose}>
+            <div className={cn(spacing.loose, "pb-6 md:pb-8")}>
               <div className={sectionHeader.base}>
                 <h2 className={sectionHeader.title}>Recent Activity</h2>
               </div>

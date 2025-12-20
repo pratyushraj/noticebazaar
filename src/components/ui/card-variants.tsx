@@ -101,6 +101,7 @@ interface StatCardProps {
   variant?: 'primary' | 'secondary' | 'tertiary';
   className?: string;
   isEmpty?: boolean; // When value is 0, show placeholder text
+  showAffordance?: boolean; // Show chevron to indicate tappable
 }
 
 export const StatCard = ({ 
@@ -111,7 +112,8 @@ export const StatCard = ({
   subtitle,
   variant = 'tertiary',
   className,
-  isEmpty = false
+  isEmpty = false,
+  showAffordance = false
 }: StatCardProps) => {
   const displayValue = isEmpty 
     ? (label === 'Total Value' ? '₹0' : '0')
@@ -120,7 +122,7 @@ export const StatCard = ({
   return (
     <BaseCard variant={variant} className={cn(
       "text-left flex flex-col justify-between",
-      "min-w-0 w-full px-4 py-4 md:py-5",
+      "min-w-0 w-full px-2.5 py-2.5 md:px-4 md:py-4",
       "border border-white/8 shadow-[0_18px_50px_rgba(0,0,0,0.35)]",
       "scale-[0.96] sm:scale-100",
       className
@@ -141,21 +143,26 @@ export const StatCard = ({
       </div>
       
       {/* Subtitle or Trend - Show on second line */}
-      {subtitle ? (
-        <div className={cn(
-          "text-xs md:text-sm font-medium leading-relaxed",
-          isEmpty ? "text-white/60" : (trend?.isPositive ? "text-green-400" : "text-white/70")
-        )}>
-          {subtitle}
-        </div>
-      ) : trend && (
-        <div className={cn(
-          "text-xs md:text-sm font-medium",
-          trend.isPositive ? "text-green-400" : "text-red-400"
-        )}>
-          {trend.isPositive ? '+' : ''}{trend.value}%
-        </div>
-      )}
+      <div className="flex items-center justify-between">
+        {subtitle ? (
+          <div className={cn(
+            "text-xs md:text-sm font-medium leading-relaxed",
+            isEmpty ? "text-white/60" : (trend?.isPositive ? "text-green-400" : "text-white/70")
+          )}>
+            {subtitle}
+          </div>
+        ) : trend && (
+          <div className={cn(
+            "text-xs md:text-sm font-medium",
+            trend.isPositive ? "text-green-400" : "text-red-400"
+          )}>
+            {trend.isPositive ? '+' : ''}{trend.value}%
+          </div>
+        )}
+        {showAffordance && (
+          <span className="text-purple-300/60 text-lg leading-none ml-auto">›</span>
+        )}
+      </div>
     </BaseCard>
   );
 };
