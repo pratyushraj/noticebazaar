@@ -151,7 +151,7 @@ const CreatorBottomNav = () => {
         transition={animations.spring}
         style={{
           position: 'fixed',
-          bottom: 0,
+          bottom: 'env(safe-area-inset-bottom, 0px)',
           left: 0,
           right: 0,
           zIndex: 9999, // Increased for Android browser compatibility

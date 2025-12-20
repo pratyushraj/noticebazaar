@@ -285,8 +285,8 @@ const CreatorContracts = () => {
         <div className={cn(
           `min-h-full ${gradients.page} text-white`,
           "px-4 pt-4 sm:px-5 md:px-6 md:pt-6 lg:px-8",
-          "pb-[88px] md:pb-[96px] lg:pb-[104px] safe-area-fix"
-        )} style={{ paddingBottom: 'max(88px, calc(88px + env(safe-area-inset-bottom, 0px)))' }}>
+          "safe-area-fix"
+        )}>
           {/* Header - Matching Payments Page */}
           <div className="flex items-center justify-between mb-4 md:mb-6">
             <div className="space-y-1 md:space-y-2">

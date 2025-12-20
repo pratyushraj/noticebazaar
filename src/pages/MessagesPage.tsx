@@ -266,9 +266,7 @@ function AdvisorListScoped({
       shadows.sm,
       "flex flex-col overflow-hidden relative",
       // Match height with chat window on iPad
-      "h-full",
-      // Add bottom padding on iPad to account for bottom navigation (48px nav height + safe area)
-      "md:pb-[calc(48px+env(safe-area-inset-bottom,0px))]"
+      "h-full"
     )}>
       {/* Vision Pro depth elevation */}
       <div className={vision.depth.elevation} />
@@ -620,8 +618,8 @@ function MessageInputScoped({
     variant === 'mobile-fixed'
       ? cn(
           "md:hidden fixed left-0 right-0",
-          // Position above bottom nav (reduced gap: 64px nav + 4px spacing = 68px + safe-area)
-          "bottom-[calc(68px+env(safe-area-inset-bottom))]",
+          // Position above bottom nav with safe area
+          "bottom-[calc(56px+env(safe-area-inset-bottom,0px))]",
           // z-index above bottom nav (bottom nav is z-9999, input should be z-[10000])
           "z-[10000]",
           // Sticky bottom with gradient
@@ -1170,9 +1168,8 @@ function ChatWindowScoped({
           "flex-1 overflow-y-auto min-h-0",
           // Better horizontal padding for balanced layout
           "px-4 md:px-6",
-          // Mobile: Padding to account for fixed header and input bar
+          // Mobile: Padding to account for fixed header
           "pt-[calc(60px+env(safe-area-inset-top,0px))]",
-          "pb-[calc(124px+env(safe-area-inset-bottom,0px))]",
           // Desktop: no extra padding needed (header is sticky, input is inside container)
           "md:pt-2 md:pb-2",
           // Subtle rounded top corners to visually connect with header
@@ -1872,8 +1869,7 @@ export default function MessagesPage() {
         )}
 
         {/* Chat Window - simplified to single flex container, no h-full */}
-        {/* Add bottom padding on iPad to account for bottom navigation */}
-        <div className="flex-1 min-w-0 flex flex-col min-h-0 -mx-3 md:mx-0 overflow-hidden md:pb-[calc(48px+env(safe-area-inset-bottom,0px))]">
+        <div className="flex-1 min-w-0 flex flex-col min-h-0 -mx-3 md:mx-0 overflow-hidden">
           <ChatWindowScoped
             advisor={selectedAdvisor}
             advisors={advisors}

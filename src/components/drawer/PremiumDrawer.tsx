@@ -144,55 +144,6 @@ function DrawerHeader({ userName, userHandle, userAvatar, userInitials, onProfil
         </div>
         <ChevronRight className={cn(iconSizes.xs, "md:w-4 md:h-4 flex-shrink-0 text-white/70")} />
       </motion.button>
-
-      {/* Icon Buttons Row - More compact on mobile */}
-      <div className="flex items-center gap-1.5 md:gap-2">
-        <button
-          className={cn(
-            "w-8 h-8 md:w-10 md:h-10 rounded-lg md:rounded-xl",
-            "bg-[#ffffff0f] hover:bg-[#ffffff1A]",
-            "text-white/70 hover:text-white",
-            "shadow-[0_10px_30px_-10px_rgba(0,0,0,0.5)]",
-            "flex items-center justify-center transition-all",
-            animations.cardPress
-          )}
-          aria-label="Refresh"
-          onClick={() => triggerHaptic(HapticPatterns.light)}
-        >
-          <RefreshCw className={cn(iconSizes.sm, "md:w-5 md:h-5")} />
-        </button>
-        <button
-          className={cn(
-            "w-8 h-8 md:w-10 md:h-10 rounded-lg md:rounded-xl",
-            "bg-[#ffffff0f] hover:bg-[#ffffff1A]",
-            "text-white/70 hover:text-white",
-            "shadow-[0_10px_30px_-10px_rgba(0,0,0,0.5)]",
-            "flex items-center justify-center transition-all",
-            animations.cardPress
-          )}
-          aria-label="Calendar"
-          onClick={() => {
-            triggerHaptic(HapticPatterns.light);
-            onCalendarClick?.();
-          }}
-        >
-          <Calendar className={cn(iconSizes.sm, "md:w-5 md:h-5")} />
-        </button>
-        <button
-          className={cn(
-            "w-8 h-8 md:w-10 md:h-10 rounded-lg md:rounded-xl",
-            "bg-[#ffffff0f] hover:bg-[#ffffff1A]",
-            "text-white/70 hover:text-white",
-            "shadow-[0_10px_30px_-10px_rgba(0,0,0,0.5)]",
-            "flex items-center justify-center transition-all",
-            animations.cardPress
-          )}
-          aria-label="Search"
-          onClick={() => triggerHaptic(HapticPatterns.light)}
-        >
-          <Search className={cn(iconSizes.sm, "md:w-5 md:h-5")} />
-        </button>
-      </div>
     </motion.div>
   );
 }
@@ -547,17 +498,6 @@ export default function PremiumDrawer({
                 msOverflowStyle: 'none',
               }}
             >
-              {/* Quick Actions */}
-              <DrawerSection title="QUICK ACTIONS">
-                {menuData.quickActions.map((item) => (
-                  <QuickActionButton
-                    key={item.id}
-                    item={item}
-                    onClick={() => handleItemClick(item)}
-                  />
-                ))}
-              </DrawerSection>
-
               {/* LIFESTYLE SHIELD */}
               {menuData.lifestyleShield && menuData.lifestyleShield.length > 0 && (
                 <DrawerSection title="🛡 LIFESTYLE SHIELD">

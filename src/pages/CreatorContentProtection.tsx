@@ -225,7 +225,7 @@ const CreatorContentProtection = () => {
         <div className={cn("absolute inset-0 pointer-events-none", vision.glare.soft, "opacity-50")} />
         {/* Scrollable content */}
         <div className={cn("flex-1 min-h-0 relative z-10 overflow-visible")}>
-          <div className={cn(spacing.page, "pb-[calc(100px+env(safe-area-inset-bottom,0px))]")}>
+          <div className={cn(spacing.page)}>
             {/* Header - Improved spacing */}
             <motion.div 
               initial={{ opacity: 0, y: -10 }}

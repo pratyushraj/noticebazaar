@@ -127,7 +127,7 @@ export default function CalendarPage() {
       {/* Spotlight gradient */}
       <div className={cn(vision.spotlight.base, "opacity-30")} />
       
-      <div className={cn("w-full max-w-[900px] mx-auto px-4 sm:px-6 pb-[calc(120px+env(safe-area-inset-bottom,0px))] relative z-10")}>
+      <div className={cn("w-full max-w-[900px] mx-auto px-4 sm:px-6 relative z-10")}>
         {/* Header - iOS 17 + visionOS */}
         <div className={cn("flex items-start justify-between gap-3")}>
           <div className="flex-1 min-w-0">

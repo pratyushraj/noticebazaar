@@ -563,7 +563,7 @@ const CreatorDashboard = () => {
 
     return (
     <ContextualTipsProvider currentView="dashboard">
-    <div className={`min-h-screen ${gradients.page} text-white overflow-x-hidden`} style={{ minHeight: '100dvh' }}>
+    <div className={`min-h-[100dvh] ${gradients.page} text-white overflow-x-hidden flex flex-col`}>
       {/* Top Header - iOS 17 + visionOS Premium */}
       <motion.header
         initial={{ y: -100, opacity: 0 }}
@@ -842,7 +842,7 @@ const CreatorDashboard = () => {
       </a>
 
       {/* Main Content */}
-      <main id="main-content" className={`${sectionLayout.container} ${scroll.container} pb-20 md:pb-28`} style={{ paddingBottom: 'max(100px, calc(100px + env(safe-area-inset-bottom, 0px)))' }}>
+      <main id="main-content" className={`${sectionLayout.container} ${scroll.container} flex-1 overflow-y-auto`}>
         {/* Home Tab */}
         {activeTab === 'home' && (
           <>
@@ -1178,7 +1178,6 @@ const CreatorDashboard = () => {
                 "cursor-pointer",
                 "mb-4"
               )}
-              style={{ marginBottom: 'max(16px, calc(16px + env(safe-area-inset-bottom, 0px)))' }}
               role="button"
               tabIndex={0}
               aria-label="View money protection details"

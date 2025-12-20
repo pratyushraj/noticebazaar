@@ -10,6 +10,7 @@ import { usePartnerStats } from '@/lib/hooks/usePartnerProgram';
 import { toast } from 'sonner';
 import { getInitials } from '@/lib/utils/avatar';
 import { logger } from '@/lib/utils/logger';
+import { cn } from '@/lib/utils';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -443,7 +444,49 @@ const ProfileSettings = () => {
         </div>
       </div>
 
-      <div className="p-4 pb-24 space-y-3">
+      {/* Sticky Segmented Control */}
+      <div className="sticky top-[57px] z-40 bg-purple-900/95 backdrop-blur-lg border-b border-white/10 px-4 py-3">
+        <div className="flex gap-1 bg-white/5 rounded-lg p-1 border border-white/10 max-w-2xl mx-auto">
+          <button
+            onClick={() => setActiveSection('profile')}
+            className={cn(
+              "flex-1 min-h-[44px] px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 text-center flex items-center justify-center gap-1.5",
+              activeSection === 'profile'
+                ? "bg-white/10 text-white shadow-sm"
+                : "text-white/60 hover:text-white/80"
+            )}
+          >
+            <User className="w-4 h-4" />
+            <span>Profile</span>
+          </button>
+          <button
+            onClick={() => setActiveSection('account')}
+            className={cn(
+              "flex-1 min-h-[44px] px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 text-center flex items-center justify-center gap-1.5",
+              activeSection === 'account'
+                ? "bg-white/10 text-white shadow-sm"
+                : "text-white/60 hover:text-white/80"
+            )}
+          >
+            <Lock className="w-4 h-4" />
+            <span>Account</span>
+          </button>
+          <button
+            onClick={() => setActiveSection('support')}
+            className={cn(
+              "flex-1 min-h-[44px] px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 text-center flex items-center justify-center gap-1.5",
+              activeSection === 'support'
+                ? "bg-white/10 text-white shadow-sm"
+                : "text-white/60 hover:text-white/80"
+            )}
+          >
+            <HelpCircle className="w-4 h-4" />
+            <span>Support</span>
+          </button>
+        </div>
+      </div>
+
+      <div className="p-4 space-y-3" style={{ paddingBottom: 'calc(120px + env(safe-area-inset-bottom, 0px))' }}>
         {/* Profile Summary - Reduced height and visual dominance */}
         <div className="bg-white/5 rounded-xl p-4 border border-white/10 mb-4">
           <div className="flex items-center gap-3">
@@ -462,20 +505,17 @@ const ProfileSettings = () => {
             {/* Name and Role */}
             <div className="flex-1 min-w-0">
               <h1 className="text-lg font-semibold truncate">{userData.name}</h1>
-              <div className="flex items-center gap-2 mt-1 flex-wrap">
-                <span className="px-2 py-0.5 bg-purple-500/20 text-purple-300 rounded-full text-xs">
-                  Verified Creator Profile
-                </span>
-                <span className="px-2 py-0.5 bg-green-500/20 text-green-400 rounded-full text-xs flex items-center gap-1">
-                  Protection Active
-                </span>
+              <div className="mt-1">
+                <p className="text-xs text-white/60">
+                  Verified Creator Profile • Protection Active
+                </p>
               </div>
             </div>
 
-            {/* View Stats Button */}
+            {/* View Stats Button - Right aligned, secondary style */}
             <button
               onClick={() => setShowStats(!showStats)}
-              className="px-3 py-1.5 bg-white/10 hover:bg-white/15 rounded-lg text-sm font-medium transition-colors flex-shrink-0"
+              className="px-3 py-1.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-xs font-medium text-white/70 hover:text-white/90 transition-colors flex-shrink-0"
             >
               {showStats ? 'Hide Stats' : 'View Stats'}
             </button>
@@ -504,43 +544,6 @@ const ProfileSettings = () => {
               </div>
             </div>
           )}
-        </div>
-
-        {/* Navigation Tabs */}
-        <div className="flex gap-2 mb-6 overflow-x-auto pb-2 scrollbar-hide">
-          <button
-            onClick={() => setActiveSection('profile')}
-            className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all ${
-              activeSection === 'profile'
-                ? 'bg-purple-600 text-white shadow-lg'
-                : 'bg-white/10 text-purple-200 hover:bg-white/15'
-            }`}
-          >
-            <User className="w-4 h-4 inline mr-1" />
-            Profile
-          </button>
-          <button
-            onClick={() => setActiveSection('account')}
-            className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all ${
-              activeSection === 'account'
-                ? 'bg-purple-600 text-white shadow-lg'
-                : 'bg-white/10 text-purple-200 hover:bg-white/15'
-            }`}
-          >
-            <Lock className="w-4 h-4 inline mr-1" />
-            Account
-          </button>
-          <button
-            onClick={() => setActiveSection('support')}
-            className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all ${
-              activeSection === 'support'
-                ? 'bg-purple-600 text-white shadow-lg'
-                : 'bg-white/10 text-purple-200 hover:bg-white/15'
-            }`}
-          >
-            <HelpCircle className="w-4 h-4 inline mr-1" />
-            Support
-          </button>
         </div>
 
         {/* Profile Section */}
@@ -605,77 +608,6 @@ const ProfileSettings = () => {
                     />
                   </div>
                 </div>
-                <div>
-                  <label className="text-xs text-white/60 mb-1.5 block">Location</label>
-                  <div className="flex items-center gap-2">
-                    <MapPin className="w-4 h-4 text-white/50 flex-shrink-0" />
-                    <input
-                      type="text"
-                      value={formData.location}
-                      onChange={(e) => setFormData(prev => ({ ...prev, location: e.target.value }))}
-                      disabled={!editMode}
-                      placeholder="City, Country"
-                      className={`flex-1 bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder-white/40 outline-none transition-colors ${editMode ? 'focus:border-purple-500 focus:bg-white/10' : 'cursor-not-allowed'}`}
-                    />
-                  </div>
-                </div>
-                <div>
-                  <label className="text-xs text-white/60 mb-1.5 block">Bio</label>
-                  <textarea
-                    value={formData.bio}
-                    onChange={(e) => setFormData(prev => ({ ...prev, bio: e.target.value }))}
-                    disabled={!editMode}
-                    rows={3}
-                    placeholder="Tell us about yourself..."
-                    maxLength={500}
-                    className={`w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder-white/40 outline-none resize-none transition-colors ${editMode ? 'focus:border-purple-500 focus:bg-white/10' : 'cursor-not-allowed'}`}
-                  />
-                  {editMode && (
-                    <p className="text-xs text-white/50 mt-1 text-right">{formData.bio.length}/500 characters</p>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            {/* Social Platforms */}
-            <div className="bg-white/5 rounded-xl p-4 border border-white/10">
-              <h2 className="font-semibold text-base mb-1 flex items-center gap-2">
-                <Globe className="w-4 h-4" />
-                Social Platforms
-              </h2>
-              <p className="text-xs text-white/50 mb-3">Used only for deal verification. Not public.</p>
-              <div className="space-y-2">
-                {userData.platforms.map(platform => (
-                  <div key={platform.name} className="flex items-center justify-between p-2.5 bg-white/5 rounded-lg border border-white/10">
-                    <div className="flex items-center gap-3">
-                      <div className={`w-10 h-10 ${platform.color} rounded-lg flex items-center justify-center`}>
-                        {platform.name === 'YouTube' && <Youtube className="w-5 h-5" />}
-                        {platform.name === 'Instagram' && <Instagram className="w-5 h-5" />}
-                        {platform.name === 'Twitter' && <Twitter className="w-5 h-5" />}
-                        {platform.name === 'Website' && <Globe className="w-5 h-5" />}
-                      </div>
-                      <div>
-                        <div className="font-medium">{platform.name}</div>
-                        <div className="text-xs text-purple-300">{platform.handle} • {platform.followers}</div>
-                      </div>
-                    </div>
-                    {platform.connected ? (
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs text-green-400 flex items-center gap-1">
-                          <Check className="w-3 h-3" />
-                          Connected
-                        </span>
-                        <button className="p-1 hover:bg-white/10 rounded transition-colors">
-                          <X className="w-4 h-4 text-red-400" />
-                        </button>
-                      </div>
-                    ) : (
-                      <button className="px-3 py-1.5 bg-purple-600 hover:bg-purple-700 rounded-lg text-sm font-medium transition-colors">
-                        Connect
-                      </button>
-                    )}
-                  </div>
-                ))}
               </div>
             </div>
 
@@ -722,8 +654,8 @@ const ProfileSettings = () => {
             {/* Notifications */}
             <NotificationPreferences />
 
-            {/* Subscription - Moved above Security */}
-            <div className="bg-white/5 rounded-xl p-4 border border-white/10">
+            {/* Subscription - Utility Emphasis */}
+            <div className="bg-white/5 rounded-lg p-3.5 border border-white/10">
               <h2 className="font-semibold text-base mb-3 flex items-center gap-2">
                 <CreditCard className="w-4 h-4" />
                 Subscription
@@ -750,8 +682,8 @@ const ProfileSettings = () => {
               </div>
             </div>
 
-            {/* Security & Privacy - Reduced visual weight */}
-            <div className="bg-white/5 rounded-xl p-4 border border-white/10">
+            {/* Security & Privacy - Utility Emphasis */}
+            <div className="bg-white/5 rounded-lg p-3.5 border border-white/10">
               <h2 className="font-semibold text-base mb-3 flex items-center gap-2">
                 <Lock className="w-4 h-4 text-white/60" />
                 Security & Privacy
@@ -811,28 +743,31 @@ const ProfileSettings = () => {
             <div className="bg-white/5 rounded-xl p-4 border border-white/10">
               <h2 className="font-semibold text-base mb-3">Help & Support</h2>
               <div className="space-y-2">
-                <button className="w-full flex items-center justify-between p-2.5 bg-white/5 rounded-lg border border-white/10 hover:bg-white/10 transition-colors">
+                {/* Contact Support - Primary */}
+                <button className="w-full flex items-center justify-between min-h-[44px] p-2 bg-gradient-to-r from-purple-600/20 to-indigo-600/20 rounded-lg border border-purple-500/30 hover:from-purple-600/30 hover:to-indigo-600/30 transition-all backdrop-blur-sm">
                   <div className="flex items-center gap-2.5">
-                    <HelpCircle className="w-4 h-4 text-white/50" />
+                    <MessageCircle className="w-4 h-4 text-purple-300" />
+                    <div className="text-left">
+                      <div className="font-semibold text-sm text-white">Contact Support</div>
+                      <div className="text-xs text-white/60">Chat with our team</div>
+                    </div>
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-purple-300" />
+                </button>
+
+                {/* Help Center - Secondary */}
+                <button className="w-full flex items-center justify-between min-h-[44px] p-2 bg-white/5 rounded-lg border border-white/10 hover:bg-white/10 transition-colors">
+                  <div className="flex items-center gap-2.5">
+                    <HelpCircle className="w-3.5 h-3.5 text-white/50" />
                     <div className="text-left">
                       <div className="font-medium text-sm">Help Center</div>
-                      <div className="text-xs text-white/50">FAQs and guides</div>
+                      <div className="text-xs text-white/60">FAQs and guides</div>
                     </div>
                   </div>
                   <ChevronRight className="w-4 h-4 text-white/50" />
                 </button>
 
-                <button className="w-full flex items-center justify-between p-2.5 bg-white/5 rounded-lg border border-white/10 hover:bg-white/10 transition-colors">
-                  <div className="flex items-center gap-2.5">
-                    <MessageCircle className="w-4 h-4 text-white/50" />
-                    <div className="text-left">
-                      <div className="font-medium text-sm">Contact Support</div>
-                      <div className="text-xs text-white/50">Chat with our team</div>
-                    </div>
-                  </div>
-                  <ChevronRight className="w-4 h-4 text-white/50" />
-                </button>
-
+                {/* Restart Tutorial - Secondary */}
                 <button 
                   onClick={() => {
                     if (profile?.id) {
@@ -846,35 +781,13 @@ const ProfileSettings = () => {
                       }, 1000);
                     }
                   }}
-                  className="w-full flex items-center justify-between p-2.5 bg-white/5 rounded-lg border border-white/10 hover:bg-white/10 transition-colors"
+                  className="w-full flex items-center justify-between min-h-[44px] p-2 bg-white/5 rounded-lg border border-white/10 hover:bg-white/10 transition-colors"
                 >
                   <div className="flex items-center gap-2.5">
-                    <Sparkles className="w-4 h-4 text-white/50" />
+                    <Sparkles className="w-3.5 h-3.5 text-white/50" />
                     <div className="text-left">
                       <div className="font-medium text-sm">Restart Dashboard Tutorial</div>
-                      <div className="text-xs text-white/50">Show the guided tour again</div>
-                    </div>
-                  </div>
-                  <ChevronRight className="w-4 h-4 text-white/50" />
-                </button>
-
-                <button className="w-full flex items-center justify-between p-2.5 bg-white/5 rounded-lg border border-white/10 hover:bg-white/10 transition-colors">
-                  <div className="flex items-center gap-2.5">
-                    <FileText className="w-4 h-4 text-white/50" />
-                    <div className="text-left">
-                      <div className="font-medium text-sm">Terms of Service</div>
-                      <div className="text-xs text-white/50">Read our terms</div>
-                    </div>
-                  </div>
-                  <ChevronRight className="w-4 h-4 text-white/50" />
-                </button>
-
-                <button className="w-full flex items-center justify-between p-2.5 bg-white/5 rounded-lg border border-white/10 hover:bg-white/10 transition-colors">
-                  <div className="flex items-center gap-2.5">
-                    <Shield className="w-4 h-4 text-white/50" />
-                    <div className="text-left">
-                      <div className="font-medium text-sm">Privacy Policy</div>
-                      <div className="text-xs text-white/50">How we protect your data</div>
+                      <div className="text-xs text-white/60">Show the guided tour again</div>
                     </div>
                   </div>
                   <ChevronRight className="w-4 h-4 text-white/50" />
@@ -882,18 +795,48 @@ const ProfileSettings = () => {
               </div>
             </div>
 
-            {/* App Info */}
-            <div className="bg-white/5 rounded-xl p-4 border border-white/10">
-              <h2 className="font-semibold text-base mb-3">About</h2>
-              <div className="text-center text-sm text-white/70">
-                <div className="font-semibold mb-1">CreatorArmour</div>
-                <div className="mb-1">Version 1.0.0</div>
-                <div className="text-xs text-white/50">© 2024 CreatorArmour. All rights reserved.</div>
+            {/* Legal Subsection - Muted */}
+            <div className="bg-white/3 rounded-lg p-3 border border-white/8">
+              <h3 className="text-xs font-medium text-white/50 mb-2 uppercase tracking-wide">Legal</h3>
+              <div className="space-y-1.5">
+                <button className="w-full flex items-center justify-between min-h-[44px] p-2 bg-white/5 rounded-lg border border-white/10 hover:bg-white/10 transition-colors">
+                  <div className="flex items-center gap-2.5">
+                    <FileText className="w-3.5 h-3.5 text-white/40" />
+                    <div className="text-left">
+                      <div className="font-medium text-sm text-white/80">Terms of Service</div>
+                      <div className="text-xs text-white/60">Read our terms</div>
+                    </div>
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-white/40" />
+                </button>
+
+                <button className="w-full flex items-center justify-between min-h-[44px] p-2 bg-white/5 rounded-lg border border-white/10 hover:bg-white/10 transition-colors">
+                  <div className="flex items-center gap-2.5">
+                    <Shield className="w-3.5 h-3.5 text-white/40" />
+                    <div className="text-left">
+                      <div className="font-medium text-sm text-white/80">Privacy Policy</div>
+                      <div className="text-xs text-white/60">How we protect your data</div>
+                    </div>
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-white/40" />
+                </button>
               </div>
             </div>
 
-            {/* Logout Button - Reduced visual weight */}
-            <div className="bg-white/5 rounded-xl p-4 border border-white/10">
+            {/* Divider before About */}
+            <div className="border-t border-white/10 my-4"></div>
+
+            {/* App Info - Muted and Centered */}
+            <div className="bg-white/3 rounded-lg p-3 border border-white/8">
+              <div className="text-center text-sm text-white/50">
+                <div className="font-medium mb-0.5">CreatorArmour</div>
+                <div className="text-xs mb-1">Version 1.0.0</div>
+                <div className="text-xs text-white/40">© 2024 CreatorArmour. All rights reserved.</div>
+              </div>
+            </div>
+
+            {/* Logout Button - Danger Zone Card */}
+            <div className="bg-red-500/5 rounded-lg p-3 border border-red-500/20">
               <button 
                 onClick={() => {
                   // Haptic feedback on click
@@ -903,7 +846,7 @@ const ProfileSettings = () => {
                   setShowLogoutDialog(true);
                 }}
                 disabled={signOutMutation.isPending}
-                className="w-full bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 text-red-400 font-medium py-3 rounded-lg transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                className="w-full bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 text-red-400 font-medium py-2.5 rounded-lg transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed text-sm min-h-[44px]"
                 aria-label="Log out of your account"
                 aria-describedby="logout-description"
               >
@@ -919,7 +862,7 @@ const ProfileSettings = () => {
                   </>
                 )}
               </button>
-              <p id="logout-description" className="text-xs text-center text-white/50 mt-2">
+              <p id="logout-description" className="text-xs text-center text-white/40 mt-2">
                 You'll be signed out of your account
               </p>
             </div>

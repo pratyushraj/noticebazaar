@@ -50,7 +50,7 @@ const Layout = ({ children }: LayoutProps) => {
                               !isNonCreatorRole; // Don't show if user has a non-creator role
 
   return (
-    <div className="relative min-h-dvh bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 text-white overflow-hidden md:overflow-visible">
+    <div className="relative min-h-[100dvh] bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 text-white overflow-hidden md:overflow-visible flex flex-col">
       {/* Skip to main content link */}
       <a 
         href="#main" 
@@ -59,7 +59,7 @@ const Layout = ({ children }: LayoutProps) => {
         Skip to main content
       </a>
       
-      <div className="relative z-10 flex flex-col min-h-dvh">
+      <div className="relative z-10 flex flex-col flex-1 min-h-0">
         {/* Modern Navbar */}
         <Navbar />
         
@@ -67,16 +67,10 @@ const Layout = ({ children }: LayoutProps) => {
           <main 
             id="main"
             className={cn(
-              "relative min-h-dvh flex-1 w-full py-6 px-4 md:px-6 lg:px-8 transition-all duration-300 ease-in-out",
+              "relative flex-1 w-full py-6 px-4 md:px-6 lg:px-8 transition-all duration-300 ease-in-out",
               "overflow-y-auto overscroll-contain",
               isOpen && "md:ml-[280px]"
             )}
-            style={{
-              // Ensure main content always clears the bottom nav (56px) + safe area
-              // Bottom nav is h-14 (56px) + 12px padding (6px top + 6px bottom) = 68px base
-              // Plus safe area inset for iOS
-              paddingBottom: `calc(68px + env(safe-area-inset-bottom, 0px))`,
-            }}
           >
             {children}
           </main>

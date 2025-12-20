@@ -91,7 +91,7 @@ export default function ConsumerComplaintsHowItWorks() {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-indigo-900 to-purple-900">
+    <div className="min-h-[100dvh] bg-gradient-to-br from-purple-900 via-indigo-900 to-purple-900">
       {/* Hero Section */}
       <div className="relative overflow-hidden">
         <div className="max-w-4xl mx-auto px-4 py-16 md:py-24 text-center">

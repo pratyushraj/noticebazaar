@@ -2927,7 +2927,7 @@ ${creatorName}`;
 
         {/* Results Step - ONLY render if we have real API data */}
         {step === 'results' && analysisResults && resultsRiskInfo && (
-          <div className="space-y-8 md:space-y-10 animate-fadeIn pb-40 md:pb-6" style={{ paddingBottom: 'max(160px, calc(160px + env(safe-area-inset-bottom)))', willChange: 'scroll-position' }}>
+          <div className="space-y-8 md:space-y-10 animate-fadeIn" style={{ willChange: 'scroll-position' }}>
             {/* Content Width Container for iPad/Tablet */}
             <div className="max-w-4xl mx-auto space-y-8 md:space-y-10">
             {/* Contract Type Badge */}
@@ -5344,7 +5344,7 @@ ${creatorName}${session?.user?.email ? `\n${session.user.email}` : ''}`;
             {/* Old Recommended Actions - Removed */}
             {false && analysisResults.issues.length > 0 && (
               <>
-              <div className="bg-gradient-to-br from-purple-600/30 to-indigo-600/30 backdrop-blur-md rounded-2xl p-5 md:p-6 border border-purple-400/30 shadow-lg mb-24 md:mb-0" style={{ marginBottom: 'max(96px, calc(96px + env(safe-area-inset-bottom)))' }}>
+              <div className="bg-gradient-to-br from-purple-600/30 to-indigo-600/30 backdrop-blur-md rounded-2xl p-5 md:p-6 border border-purple-400/30 shadow-lg mb-24 md:mb-0">
                 <h3 className="font-semibold text-xl mb-4">Recommended Actions</h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                   {/* Critical Action - Ask Brand for Revisions */}
