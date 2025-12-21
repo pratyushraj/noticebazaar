@@ -2604,7 +2604,14 @@ ${creatorName}`;
 
         {/* Sticky Bottom CTA */}
         {step === 'upload' && (
-          <div className="fixed bottom-0 left-0 right-0 bg-gradient-to-t from-purple-900/95 via-purple-900/95 to-transparent backdrop-blur-lg border-t border-white/10 px-4 md:px-6 lg:px-8 py-4 -mx-4 md:-mx-6 lg:-mx-8 z-50">
+          <div 
+            className="fixed left-0 right-0 bg-gradient-to-t from-purple-900/95 via-purple-900/95 to-transparent backdrop-blur-lg border-t border-white/10 px-4 md:px-6 lg:px-8 py-4 -mx-4 md:-mx-6 lg:-mx-8"
+            style={{
+              bottom: 'calc(68px + env(safe-area-inset-bottom, 0px))', // Account for bottom nav height + safe area
+              zIndex: 10000, // Above bottom nav (z-9999)
+              paddingBottom: 'calc(16px + env(safe-area-inset-bottom, 0px))',
+            }}
+          >
             <button
               onClick={() => {
                 if (!selectedOption) return;
@@ -2632,7 +2639,7 @@ ${creatorName}`;
             >
               Continue
             </button>
-              </div>
+          </div>
         )}
 
         {/* Uploading Step */}

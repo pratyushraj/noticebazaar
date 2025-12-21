@@ -626,15 +626,6 @@ const CreatorDashboard = () => {
           </motion.button>
           
           <div className="flex items-center gap-2">
-            <motion.button 
-              onClick={handleRefresh}
-              disabled={isRefreshing}
-              whileTap={animations.microTap}
-              className={cn(buttons.icon, isRefreshing && 'animate-spin')}
-              aria-label="Refresh data"
-            >
-              <RefreshCw className={iconSizes.md} />
-            </motion.button>
             <NotificationDropdown />
             <motion.button 
               onClick={() => {
@@ -1019,13 +1010,14 @@ const CreatorDashboard = () => {
                 </SectionCard>
                     </div>
             ) : (
-              <div className="space-y-6">
+              <>
             {/* Hero Section - Edge-to-edge with gradient background */}
             <div className={cn(
               "-mx-4 md:mx-0",
               "bg-gradient-to-br from-purple-500/10 via-purple-500/5 to-transparent",
               "pt-6 pb-4 md:pt-8 md:pb-6",
-              "px-4 md:px-0"
+              "px-4 md:px-0",
+              "lg:mb-6"
             )}>
               {/* Greeting */}
               <div className={cn(sectionLayout.header, "md:pt-0 md:text-left")}>
@@ -1098,90 +1090,127 @@ const CreatorDashboard = () => {
               )}
             </div>
 
-            {/* Quick Stats Row - Action Required full-width when > 0, otherwise 3 columns */}
-            {Math.round(stats.pendingPayments) > 0 ? (
-              <div data-tutorial="stats-grid" className="space-y-3 mb-4">
-                <StatCard
-                  label="Action Required"
-                  value={Math.round(stats.pendingPayments)}
-                  icon={<CreditCard className={`${iconSizes.sm} text-amber-400`} />}
-                  variant="tertiary"
-                  className="border-amber-500/30 bg-amber-500/5"
-                />
-                <div className="grid grid-cols-2 gap-2 sm:gap-4">
-                  <StatCard
-                    label="Deals Monitored"
-                    value={stats.totalDeals}
-                    icon={<Briefcase className={`${iconSizes.sm} text-blue-400`} />}
-                    variant="tertiary"
-                    showAffordance={true}
-                  />
-                  <StatCard
-                    label="Under Protection"
-                    value={stats.activeDeals}
-                    icon={<BarChart3 className={`${iconSizes.sm} text-green-400`} />}
-                    variant="tertiary"
-                    showAffordance={true}
-                  />
-                </div>
-              </div>
-            ) : (
-              <div data-tutorial="stats-grid" className="grid grid-cols-3 gap-2 sm:gap-4 w-full max-w-full mb-4">
-                <StatCard
-                  label="Deals Monitored"
-                  value={stats.totalDeals}
-                  icon={<Briefcase className={`${iconSizes.sm} text-blue-400`} />}
-                  variant="tertiary"
-                  showAffordance={true}
-                />
-                <StatCard
-                  label="Under Protection"
-                  value={stats.activeDeals}
-                  icon={<BarChart3 className={`${iconSizes.sm} text-green-400`} />}
-                  variant="tertiary"
-                  showAffordance={true}
-                />
-                <StatCard
-                  label="Action Required"
-                  value={Math.round(stats.pendingPayments)}
-                  icon={<CreditCard className={`${iconSizes.sm} text-orange-400`} />}
-                  variant="tertiary"
-                  subtitle="No action needed 🎉"
-                />
-              </div>
-            )}
+            {/* Desktop 2-Column Layout (≥1024px) */}
+            <div className="lg:grid lg:grid-cols-[65%_35%] lg:gap-6 space-y-6 lg:space-y-0">
+              {/* LEFT COLUMN - Primary Information */}
+              <div className="space-y-6 lg:space-y-4">
 
-            {/* Money Protection Card */}
-            <motion.div 
-              data-tutorial="money-protection-card"
-              onClick={() => {
-                triggerHaptic(HapticPatterns.medium);
-                navigate('/creator-payments');
-              }}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                  e.preventDefault();
-                  triggerHaptic(HapticPatterns.medium);
-                  navigate('/creator-payments');
-                }
-              }}
-              whileTap={animations.microTap}
-              whileHover={window.innerWidth > 768 ? animations.microHover : undefined}
-              className={cn(
-                "w-full relative overflow-hidden text-left",
-                glass.apple,
-                shadows.vision,
-                radius.lg,
-                "p-3 sm:p-6",
-                animations.cardHover,
-                "transition-all duration-200",
-                "cursor-pointer",
-                "mb-4"
-              )}
-              role="button"
-              tabIndex={0}
-              aria-label="View money protection details"
-            >
+                {/* Active Deals Preview - Enhanced spacing (Moved to top of left column) */}
+                <div className={spacing.loose}>
+                  <div className={sectionHeader.base}>
+                    <h2 className={sectionHeader.title}>Active Deals Under Protection</h2>
+                    <button 
+                      onClick={() => {
+                        triggerHaptic(HapticPatterns.light);
+                        navigate('/creator-contracts');
+                      }}
+                      className={sectionHeader.action}
+                    >
+                      View All →
+                    </button>
+                  </div>
+                  {activeDeals.length === 0 ? (
+                    <BaseCard variant="tertiary" className={cn(spacing.cardPadding.secondary, "text-center relative overflow-hidden")}>
+                      {/* Spotlight */}
+                      <div className={cn(vision.spotlight.base, "opacity-20")} />
+                      <Briefcase className={cn(iconSizes.xl, "text-purple-400/50 mx-auto mb-3")} />
+                      <p className={typography.bodySmall}>No active deals yet</p>
+                      <motion.button
+                        onClick={() => {
+                          triggerHaptic(HapticPatterns.light);
+                          navigate('/creator-contracts');
+                        }}
+                        whileTap={animations.microTap}
+                        className={cn("mt-4", sectionHeader.action)}
+                      >
+                        View all deals →
+                      </motion.button>
+                    </BaseCard>
+                  ) : (
+                    <div className={spacing.card}>
+                      {activeDeals.map((deal, index) => (
+                      <motion.div
+                        key={deal.id}
+                        initial={motionTokens.slide.up.initial}
+                        animate={motionTokens.slide.up.animate}
+                        transition={{ ...motionTokens.slide.up.transition, delay: index * 0.1 }}
+                        whileHover={window.innerWidth > 768 ? animations.microHover : undefined}
+                        whileTap={animations.microTap}
+                      >
+                        <BaseCard 
+                          variant="tertiary" 
+                          className={cn(
+                            animations.cardHover,
+                            "cursor-pointer relative overflow-hidden"
+                          )}
+                          onClick={() => {
+                            triggerHaptic(HapticPatterns.light);
+                            navigate(`/creator-contracts/${deal.id}`);
+                          }}
+                        >
+                          {/* Spotlight on hover */}
+                          <div className={cn(vision.spotlight.hover, "opacity-0 group-hover:opacity-100")} />
+                          
+                          <div className={cn("flex items-start justify-between", spacing.compact)}>
+                            <div>
+                              <h3 className={cn(typography.h4, "mb-1")}>{deal.title}</h3>
+                              <div className={typography.bodySmall}>{deal.brand}</div>
+                            </div>
+                            <div className={cn(typography.amountSmall, "text-orange-400")}>
+                              ₹{Math.round(deal.value).toLocaleString('en-IN')} at risk
+                            </div>
+                          </div>
+                          
+                          <div className={cn("mt-3")}>
+                            <div className={cn(typography.bodySmall, "text-purple-200")}>
+                              Payment not secured
+                            </div>
+                          </div>
+
+                          <div className={cn("flex items-center justify-between", typography.caption, "mt-2")}>
+                            <span>{deal.status === 'active' ? '✅ Active' : '🔵 Negotiation'}</span>
+                            <span>Due: {deal.deadline}</span>
+                          </div>
+                        </BaseCard>
+                      </motion.div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Section Separator */}
+                <div className={separators.section} />
+
+                {/* Money Protection Card */}
+                <motion.div 
+                  data-tutorial="money-protection-card"
+                  onClick={() => {
+                    triggerHaptic(HapticPatterns.medium);
+                    navigate('/creator-payments');
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      triggerHaptic(HapticPatterns.medium);
+                      navigate('/creator-payments');
+                    }
+                  }}
+                  whileTap={animations.microTap}
+                  whileHover={window.innerWidth > 768 ? animations.microHover : undefined}
+                  className={cn(
+                    "w-full relative overflow-hidden text-left",
+                    glass.apple,
+                    shadows.vision,
+                    radius.lg,
+                    "p-3 sm:p-6",
+                    animations.cardHover,
+                    "transition-all duration-200",
+                    "cursor-pointer"
+                  )}
+                  role="button"
+                  tabIndex={0}
+                  aria-label="View money protection details"
+                >
               {/* Vision Pro depth elevation */}
               <div className={vision.depth.elevation} />
               
@@ -1335,323 +1364,409 @@ const CreatorDashboard = () => {
               </div>
             </motion.div>
 
+                {/* Section Separator */}
+                <div className={separators.section} />
+
             {/* Section Separator */}
             <div className={separators.section} />
 
-            {/* Optional Calm-State Nudge - Show when Action Required = 0 and Money at risk = 0 */}
-            {Math.round(stats.pendingPayments) === 0 && stats.earnings === 0 && (() => {
-              const hintDismissed = localStorage.getItem(`dashboard-hint-dismissed-${user?.id || 'anonymous'}`);
-              if (hintDismissed === 'true') return null;
-              
-              return (
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="mb-4 px-2"
-                >
-                  <BaseCard variant="secondary" className={cn(
-                    "relative p-4",
-                    "bg-gradient-to-r from-purple-500/10 to-indigo-500/10",
-                    "border border-purple-500/20"
-                  )}>
-                    <div className="flex items-start justify-between gap-3">
-                      <p className={cn(typography.bodySmall, "text-purple-200/90 leading-relaxed flex-1")}>
-                        💡 Most payment issues start from unclear contracts. Protecting deals early saves weeks later.
-                      </p>
-                      <button
-                        onClick={() => {
-                          localStorage.setItem(`dashboard-hint-dismissed-${user?.id || 'anonymous'}`, 'true');
-                          triggerHaptic(HapticPatterns.light);
-                        }}
-                        className="flex-shrink-0 text-purple-300/60 hover:text-purple-300 transition-colors"
-                        aria-label="Dismiss hint"
-                      >
-                        <XCircle className={iconSizes.sm} />
-                      </button>
+                {/* Legal Power Ready Card */}
+                <div className={spacing.loose}>
+                  <BaseCard variant="secondary" className={cn("relative overflow-hidden")}>
+                    {/* Background glow */}
+                    <div className={cn("absolute top-0 right-0 w-32 h-32", radius.full, "bg-orange-500/10 blur-3xl")} />
+                    
+                    <div className="relative z-10">
+                      <div className={cn("flex items-start justify-between gap-4 mb-4")}>
+                        <div className="flex-1">
+                          <h3 className={cn(typography.h3, "mb-2")}>Legal Power Ready</h3>
+                          <p className={cn(typography.bodySmall, "text-purple-200")}>
+                            Send a legal notice instantly if a brand delays or refuses payment.
+                          </p>
+                        </div>
+                        <div className={cn(
+                          "w-12 h-12",
+                          radius.full,
+                          "bg-orange-500/20 flex items-center justify-center flex-shrink-0",
+                          shadows.sm
+                        )}>
+                          <Shield className={cn(iconSizes.md, "text-orange-400")} />
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        <motion.button
+                          onClick={() => {
+                            triggerHaptic(HapticPatterns.medium);
+                            if (isPro) {
+                              navigate('/creator-contracts');
+                            } else {
+                              setShowMenu(true);
+                            }
+                          }}
+                          whileTap={animations.microTap}
+                          className={cn(
+                            buttons.primary,
+                            "w-full flex items-center justify-center gap-2",
+                            "min-h-[44px]"
+                          )}
+                        >
+                          <Shield className={iconSizes.md} />
+                          {isPro ? "Send Legal Notice" : "Unlock Legal Recovery"}
+                        </motion.button>
+                        {!isPro && (
+                          <p className={cn(typography.caption, "text-center text-purple-300/60")}>
+                            Includes free legal notices & lawyer reviews
+                          </p>
+                        )}
+                      </div>
                     </div>
                   </BaseCard>
-                </motion.div>
-              );
-            })()}
-
-            {/* Quick Actions - Enhanced with spacing and animations */}
-            <div data-tutorial="quick-actions" className={cn(spacing.loose, "mb-6 md:mb-8")}>
-              <div className={sectionHeader.base}>
-                <h2 className={sectionHeader.title}>Quick Actions</h2>
-                {/* Mobile: Show bottom sheet button */}
-                <button
-                  onClick={() => {
-                    triggerHaptic(HapticPatterns.light);
-                    setShowQuickActionsSheet(true);
-                  }}
-                  className={`${sectionHeader.action} md:hidden`}
-                >
-                  View All
-                </button>
                 </div>
-              <div className="grid grid-cols-2 gap-4 md:gap-5">
-                {quickActions.map((action, index) => {
-                  const Icon = action.icon;
+
+                {/* Section Separator */}
+                <div className={separators.section} />
+
+                {/* Recent Activity - iOS 17 + visionOS */}
+                <div className={cn(spacing.loose, "pb-6 md:pb-8 lg:pb-0")}>
+                  <div className={sectionHeader.base}>
+                    <h2 className={sectionHeader.title}>Recent Activity</h2>
+                  </div>
+                  {recentActivity.length === 0 ? (
+                    <BaseCard variant="tertiary" className={cn(spacing.cardPadding.secondary, "text-center relative overflow-hidden")}>
+                      {/* Spotlight */}
+                      <div className={cn(vision.spotlight.base, "opacity-20")} />
+                      <Clock className={cn(iconSizes.xl, "text-purple-400/50 mx-auto mb-3")} />
+                      <p className={typography.bodySmall}>No legal actions yet</p>
+                      <p className={cn(typography.caption, "mt-1")}>Your activity will appear here once contracts are scanned or notices are sent.</p>
+                    </BaseCard>
+                  ) : (
+                    <div className={spacing.card}>
+                      {recentActivity.map((activity, index) => {
+                        const Icon = activity.icon;
+                        return (
+                          <motion.div
+                            key={activity.id}
+                            initial={motionTokens.slide.up.initial}
+                            animate={motionTokens.slide.up.animate}
+                            transition={{ ...motionTokens.slide.up.transition, delay: index * 0.1 }}
+                            whileHover={window.innerWidth > 768 ? animations.microHover : undefined}
+                            whileTap={animations.microTap}
+                          >
+                            <BaseCard 
+                              variant="tertiary" 
+                              className={cn(
+                                animations.cardHover,
+                                "cursor-pointer relative overflow-hidden"
+                              )}
+                              onClick={() => triggerHaptic(HapticPatterns.light)}
+                            >
+                              {/* Spotlight on hover */}
+                              <div className={cn(vision.spotlight.hover, "opacity-0 group-hover:opacity-100")} />
+                              
+                              <div className={cn("flex items-start gap-3")}>
+                                <div className={cn(
+                                  "w-10 h-10",
+                                  radius.md,
+                                  activity.bgColor,
+                                  "flex items-center justify-center flex-shrink-0",
+                                  shadows.sm
+                                )}>
+                                  <Icon className={cn(iconSizes.md, activity.color)} />
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <h3 className={cn(typography.h4, "mb-1")}>{activity.title}</h3>
+                                  <p className={cn(typography.bodySmall, "text-purple-200 mb-1")}>{activity.description}</p>
+                                  <p className={cn(typography.caption, "text-purple-300")}>{activity.time}</p>
+                                </div>
+                              </div>
+                            </BaseCard>
+                          </motion.div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* RIGHT COLUMN - Secondary Actions and Status */}
+              <div className="space-y-6 lg:space-y-4">
+                {/* Quick Actions - Desktop: Vertical Command Panel */}
+                <div data-tutorial="quick-actions" className="hidden lg:block">
+                  <div className={sectionHeader.base}>
+                    <h2 className={sectionHeader.title}>Quick Actions</h2>
+                  </div>
+                  <BaseCard variant="tertiary" className="p-3 space-y-2">
+                    {quickActions.map((action, index) => {
+                      const Icon = action.icon;
+                      return (
+                        <motion.button
+                          key={action.id}
+                          initial={motionTokens.slide.up.initial}
+                          animate={motionTokens.slide.up.animate}
+                          transition={{ ...motionTokens.slide.up.transition, delay: index * 0.05 }}
+                          whileTap={animations.microTap}
+                          whileHover={animations.microHover}
+                          onClick={(e) => {
+                            if (e) {
+                              e.preventDefault();
+                              e.stopPropagation();
+                            }
+                            triggerHaptic(HapticPatterns.light);
+                            if (import.meta.env.DEV) {
+                              console.log('[CreatorDashboard] Action clicked:', action.label);
+                            }
+                            try {
+                              action.onClick();
+                            } catch (error) {
+                              console.error('[CreatorDashboard] Error in action onClick:', error);
+                            }
+                          }}
+                          className={cn(
+                            "w-full flex items-center gap-3 px-3 py-2.5",
+                            "bg-white/5 hover:bg-white/10",
+                            "border border-white/10 hover:border-white/20",
+                            "rounded-lg transition-all duration-200",
+                            "text-left"
+                          )}
+                        >
+                          <div className={cn(
+                            "w-8 h-8 rounded-lg",
+                            action.color,
+                            "flex items-center justify-center flex-shrink-0"
+                          )}>
+                            <Icon className={cn(iconSizes.sm, action.iconColor)} />
+                          </div>
+                          <span className={cn(typography.bodySmall, "font-medium text-white/90")}>
+                            {action.label}
+                          </span>
+                        </motion.button>
+                      );
+                    })}
+                  </BaseCard>
+                </div>
+
+                {/* Quick Actions - Mobile: Keep existing 2x2 grid */}
+                <div data-tutorial="quick-actions" className={cn(spacing.loose, "mb-6 md:mb-8 lg:hidden")}>
+                  <div className={sectionHeader.base}>
+                    <h2 className={sectionHeader.title}>Quick Actions</h2>
+                    <button
+                      onClick={() => {
+                        triggerHaptic(HapticPatterns.light);
+                        setShowQuickActionsSheet(true);
+                      }}
+                      className={sectionHeader.action}
+                    >
+                      View All
+                    </button>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4 md:gap-5">
+                    {quickActions.map((action, index) => {
+                      const Icon = action.icon;
+                      return (
+                        <motion.div
+                          key={action.id}
+                          initial={motionTokens.slide.up.initial}
+                          animate={motionTokens.slide.up.animate}
+                          transition={{ ...motionTokens.slide.up.transition, delay: index * 0.1 }}
+                          whileTap={animations.microTap}
+                          whileHover={window.innerWidth > 768 ? animations.microHover : undefined}
+                          style={{ pointerEvents: 'auto' }}
+                          className="aspect-square"
+                        >
+                          <BaseCard
+                            variant="tertiary"
+                            className={cn(
+                              action.color,
+                              "flex flex-col items-center justify-center gap-2 text-center cursor-pointer p-4 md:p-5",
+                              "pointer-events-auto h-full"
+                            )}
+                            onClick={(e) => {
+                              if (e) {
+                                e.preventDefault();
+                                e.stopPropagation();
+                              }
+                              triggerHaptic(HapticPatterns.light);
+                              if (import.meta.env.DEV) {
+                                console.log('[CreatorDashboard] Action clicked:', action.label);
+                              }
+                              try {
+                                action.onClick();
+                              } catch (error) {
+                                console.error('[CreatorDashboard] Error in action onClick:', error);
+                              }
+                            }}
+                            interactive
+                          >
+                            <div className="p-3 rounded-xl bg-white/5 pointer-events-none">
+                              <Icon className={cn(iconSizes.lg, action.iconColor)} />
+                            </div>
+                            <span className={cn(typography.bodySmall, "pointer-events-none font-medium")}>{action.label}</span>
+                            {action.subtitle && (
+                              <span className={cn(typography.caption, "pointer-events-none text-purple-300/70 mt-0.5")}>{action.subtitle}</span>
+                            )}
+                          </BaseCard>
+                        </motion.div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Status Summary Cards - Desktop Only */}
+                <div className="hidden lg:block space-y-3">
+                  <div className={sectionHeader.base}>
+                    <h2 className={sectionHeader.title}>Status Summary</h2>
+                  </div>
+                  {Math.round(stats.pendingPayments) > 0 ? (
+                    <div className="space-y-2">
+                      <StatCard
+                        label="Action Required"
+                        value={Math.round(stats.pendingPayments)}
+                        icon={<CreditCard className={`${iconSizes.sm} text-amber-400`} />}
+                        variant="tertiary"
+                        className="border-amber-500/30 bg-amber-500/5"
+                      />
+                      <div className="grid grid-cols-2 gap-2">
+                        <StatCard
+                          label="Deals Monitored"
+                          value={stats.totalDeals}
+                          icon={<Briefcase className={`${iconSizes.sm} text-blue-400`} />}
+                          variant="tertiary"
+                          showAffordance={true}
+                        />
+                        <StatCard
+                          label="Under Protection"
+                          value={stats.activeDeals}
+                          icon={<BarChart3 className={`${iconSizes.sm} text-green-400`} />}
+                          variant="tertiary"
+                          showAffordance={true}
+                        />
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      <StatCard
+                        label="Deals Monitored"
+                        value={stats.totalDeals}
+                        icon={<Briefcase className={`${iconSizes.sm} text-blue-400`} />}
+                        variant="tertiary"
+                        showAffordance={true}
+                      />
+                      <StatCard
+                        label="Under Protection"
+                        value={stats.activeDeals}
+                        icon={<BarChart3 className={`${iconSizes.sm} text-green-400`} />}
+                        variant="tertiary"
+                        showAffordance={true}
+                      />
+                      <StatCard
+                        label="Action Required"
+                        value={Math.round(stats.pendingPayments)}
+                        icon={<CreditCard className={`${iconSizes.sm} text-orange-400`} />}
+                        variant="tertiary"
+                        subtitle="No action needed 🎉"
+                      />
+                    </div>
+                  )}
+                </div>
+
+                {/* Quick Stats Row - Mobile/Tablet Only */}
+                {Math.round(stats.pendingPayments) > 0 ? (
+                  <div data-tutorial="stats-grid" className="space-y-3 mb-4 lg:hidden">
+                    <StatCard
+                      label="Action Required"
+                      value={Math.round(stats.pendingPayments)}
+                      icon={<CreditCard className={`${iconSizes.sm} text-amber-400`} />}
+                      variant="tertiary"
+                      className="border-amber-500/30 bg-amber-500/5"
+                    />
+                    <div className="grid grid-cols-2 gap-2 sm:gap-4">
+                      <StatCard
+                        label="Deals Monitored"
+                        value={stats.totalDeals}
+                        icon={<Briefcase className={`${iconSizes.sm} text-blue-400`} />}
+                        variant="tertiary"
+                        showAffordance={true}
+                      />
+                      <StatCard
+                        label="Under Protection"
+                        value={stats.activeDeals}
+                        icon={<BarChart3 className={`${iconSizes.sm} text-green-400`} />}
+                        variant="tertiary"
+                        showAffordance={true}
+                      />
+                    </div>
+                  </div>
+                ) : (
+                  <div data-tutorial="stats-grid" className="grid grid-cols-3 gap-2 sm:gap-4 w-full max-w-full mb-4 lg:hidden">
+                    <StatCard
+                      label="Deals Monitored"
+                      value={stats.totalDeals}
+                      icon={<Briefcase className={`${iconSizes.sm} text-blue-400`} />}
+                      variant="tertiary"
+                      showAffordance={true}
+                    />
+                    <StatCard
+                      label="Under Protection"
+                      value={stats.activeDeals}
+                      icon={<BarChart3 className={`${iconSizes.sm} text-green-400`} />}
+                      variant="tertiary"
+                      showAffordance={true}
+                    />
+                    <StatCard
+                      label="Action Required"
+                      value={Math.round(stats.pendingPayments)}
+                      icon={<CreditCard className={`${iconSizes.sm} text-orange-400`} />}
+                      variant="tertiary"
+                      subtitle="No action needed 🎉"
+                    />
+                  </div>
+                )}
+
+                {/* Optional Calm-State Nudge - Show when Action Required = 0 and Money at risk = 0 */}
+                {Math.round(stats.pendingPayments) === 0 && stats.earnings === 0 && (() => {
+                  const hintDismissed = localStorage.getItem(`dashboard-hint-dismissed-${user?.id || 'anonymous'}`);
+                  if (hintDismissed === 'true') return null;
+                  
                   return (
                     <motion.div
-                      key={action.id}
-                      initial={motionTokens.slide.up.initial}
-                      animate={motionTokens.slide.up.animate}
-                      transition={{ ...motionTokens.slide.up.transition, delay: index * 0.1 }}
-                      whileTap={animations.microTap}
-                      whileHover={window.innerWidth > 768 ? animations.microHover : undefined}
-                      style={{ pointerEvents: 'auto' }}
-                      className="aspect-square"
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="mb-4 px-2"
                     >
-                      <BaseCard
-                        variant="tertiary"
-                        className={cn(
-                          action.color,
-                          "flex flex-col items-center justify-center gap-2 text-center cursor-pointer p-4 md:p-5",
-                          "pointer-events-auto h-full"
-                        )}
-                        onClick={(e) => {
-                          if (e) {
-                            e.preventDefault();
-                            e.stopPropagation();
-                          }
-                          triggerHaptic(HapticPatterns.light);
-                          if (import.meta.env.DEV) {
-                            console.log('[CreatorDashboard] Action clicked:', action.label);
-                          }
-                          try {
-                            action.onClick();
-                          } catch (error) {
-                            console.error('[CreatorDashboard] Error in action onClick:', error);
-                          }
-                        }}
-                        interactive
-                      >
-                        <div className="p-3 rounded-xl bg-white/5 pointer-events-none">
-                          <Icon className={cn(iconSizes.lg, action.iconColor)} />
+                      <BaseCard variant="secondary" className={cn(
+                        "relative p-4",
+                        "bg-gradient-to-r from-purple-500/10 to-indigo-500/10",
+                        "border border-purple-500/20"
+                      )}>
+                        <div className="flex items-start justify-between gap-3">
+                          <p className={cn(typography.bodySmall, "text-purple-200/90 leading-relaxed flex-1")}>
+                            💡 Most payment issues start from unclear contracts. Protecting deals early saves weeks later.
+                          </p>
+                          <button
+                            onClick={() => {
+                              localStorage.setItem(`dashboard-hint-dismissed-${user?.id || 'anonymous'}`, 'true');
+                              triggerHaptic(HapticPatterns.light);
+                            }}
+                            className="flex-shrink-0 text-purple-300/60 hover:text-purple-300 transition-colors"
+                            aria-label="Dismiss hint"
+                          >
+                            <XCircle className={iconSizes.sm} />
+                          </button>
                         </div>
-                        <span className={cn(typography.bodySmall, "pointer-events-none font-medium")}>{action.label}</span>
-                        {action.subtitle && (
-                          <span className={cn(typography.caption, "pointer-events-none text-purple-300/70 mt-0.5")}>{action.subtitle}</span>
-                        )}
                       </BaseCard>
                     </motion.div>
                   );
-                })}
-                </div>
-                </div>
-
-            {/* Section Separator */}
-            <div className={separators.section} />
-
-            {/* Active Deals Preview - Enhanced spacing */}
-            <div className={spacing.loose}>
-              <div className={sectionHeader.base}>
-                <h2 className={sectionHeader.title}>Active Deals Under Protection</h2>
-                <button 
-                  onClick={() => {
-                    triggerHaptic(HapticPatterns.light);
-                    navigate('/creator-contracts');
-                  }}
-                  className={sectionHeader.action}
-                >
-                  View All →
-                </button>
+                })()}
               </div>
-              {activeDeals.length === 0 ? (
-                <BaseCard variant="tertiary" className={cn(spacing.cardPadding.secondary, "text-center relative overflow-hidden")}>
-                  {/* Spotlight */}
-                  <div className={cn(vision.spotlight.base, "opacity-20")} />
-                  <Briefcase className={cn(iconSizes.xl, "text-purple-400/50 mx-auto mb-3")} />
-                  <p className={typography.bodySmall}>No active deals yet</p>
-                  <motion.button
-                    onClick={() => {
-                      triggerHaptic(HapticPatterns.light);
-                      navigate('/creator-contracts');
-                    }}
-                    whileTap={animations.microTap}
-                    className={cn("mt-4", sectionHeader.action)}
-                  >
-                    View all deals →
-                  </motion.button>
-                </BaseCard>
-              ) : (
-                <div className={spacing.card}>
-                  {activeDeals.map((deal, index) => (
-                  <motion.div
-                    key={deal.id}
-                    initial={motionTokens.slide.up.initial}
-                    animate={motionTokens.slide.up.animate}
-                    transition={{ ...motionTokens.slide.up.transition, delay: index * 0.1 }}
-                    whileHover={window.innerWidth > 768 ? animations.microHover : undefined}
-                    whileTap={animations.microTap}
-                  >
-                    <BaseCard 
-                      variant="tertiary" 
-                      className={cn(
-                        animations.cardHover,
-                        "cursor-pointer relative overflow-hidden"
-                      )}
-                      onClick={() => {
-                        triggerHaptic(HapticPatterns.light);
-                        navigate(`/creator-contracts/${deal.id}`);
-                      }}
-                    >
-                      {/* Spotlight on hover */}
-                      <div className={cn(vision.spotlight.hover, "opacity-0 group-hover:opacity-100")} />
-                      
-                      <div className={cn("flex items-start justify-between", spacing.compact)}>
-                        <div>
-                          <h3 className={cn(typography.h4, "mb-1")}>{deal.title}</h3>
-                          <div className={typography.bodySmall}>{deal.brand}</div>
-                        </div>
-                        <div className={cn(typography.amountSmall, "text-orange-400")}>
-                          ₹{Math.round(deal.value).toLocaleString('en-IN')} at risk
-                        </div>
-                      </div>
-                      
-                      <div className={cn("mt-3")}>
-                        <div className={cn(typography.bodySmall, "text-purple-200")}>
-                          Payment not secured
-                        </div>
-                      </div>
-
-                      <div className={cn("flex items-center justify-between", typography.caption, "mt-2")}>
-                        <span>{deal.status === 'active' ? '✅ Active' : '🔵 Negotiation'}</span>
-                        <span>Due: {deal.deadline}</span>
-                      </div>
-                    </BaseCard>
-                  </motion.div>
-                  ))}
-                </div>
-              )}
-              </div>
-
-            {/* Section Separator */}
-            <div className={separators.section} />
-
-            {/* Legal Power Ready Card */}
-            <div className={spacing.loose}>
-              <BaseCard variant="secondary" className={cn("relative overflow-hidden")}>
-                {/* Background glow */}
-                <div className={cn("absolute top-0 right-0 w-32 h-32", radius.full, "bg-orange-500/10 blur-3xl")} />
-                
-                <div className="relative z-10">
-                  <div className={cn("flex items-start justify-between gap-4 mb-4")}>
-                    <div className="flex-1">
-                      <h3 className={cn(typography.h3, "mb-2")}>Legal Power Ready</h3>
-                      <p className={cn(typography.bodySmall, "text-purple-200")}>
-                        Send a legal notice instantly if a brand delays or refuses payment.
-                      </p>
-                    </div>
-                    <div className={cn(
-                      "w-12 h-12",
-                      radius.full,
-                      "bg-orange-500/20 flex items-center justify-center flex-shrink-0",
-                      shadows.sm
-                    )}>
-                      <Shield className={cn(iconSizes.md, "text-orange-400")} />
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <motion.button
-                      onClick={() => {
-                        triggerHaptic(HapticPatterns.medium);
-                        if (isPro) {
-                          navigate('/creator-contracts');
-                        } else {
-                          setShowMenu(true);
-                        }
-                      }}
-                      whileTap={animations.microTap}
-                      className={cn(
-                        buttons.primary,
-                        "w-full flex items-center justify-center gap-2",
-                        "min-h-[44px]"
-                      )}
-                    >
-                      <Shield className={iconSizes.md} />
-                      {isPro ? "Send Legal Notice" : "Unlock Legal Recovery"}
-                    </motion.button>
-                    {!isPro && (
-                      <p className={cn(typography.caption, "text-center text-purple-300/60")}>
-                        Includes free legal notices & lawyer reviews
-                      </p>
-                    )}
-                  </div>
-                </div>
-              </BaseCard>
             </div>
 
-            {/* Section Separator */}
-            <div className={separators.section} />
+            {/* Payments Under Watch - Full width below columns */}
+            <div className="mt-6">
+              {/* Section Separator */}
+              <div className={separators.section} />
 
-            {/* Recent Activity - iOS 17 + visionOS */}
-            <div className={cn(spacing.loose, "pb-6 md:pb-8")}>
-              <div className={sectionHeader.base}>
-                <h2 className={sectionHeader.title}>Recent Activity</h2>
-              </div>
-              {recentActivity.length === 0 ? (
-                <BaseCard variant="tertiary" className={cn(spacing.cardPadding.secondary, "text-center relative overflow-hidden")}>
-                  {/* Spotlight */}
-                  <div className={cn(vision.spotlight.base, "opacity-20")} />
-                  <Clock className={cn(iconSizes.xl, "text-purple-400/50 mx-auto mb-3")} />
-                  <p className={typography.bodySmall}>No legal actions yet</p>
-                  <p className={cn(typography.caption, "mt-1")}>Your activity will appear here once contracts are scanned or notices are sent.</p>
-                </BaseCard>
-              ) : (
-                <div className={spacing.card}>
-                  {recentActivity.map((activity, index) => {
-                    const Icon = activity.icon;
-                    return (
-                      <motion.div
-                        key={activity.id}
-                        initial={motionTokens.slide.up.initial}
-                        animate={motionTokens.slide.up.animate}
-                        transition={{ ...motionTokens.slide.up.transition, delay: index * 0.1 }}
-                        whileHover={window.innerWidth > 768 ? animations.microHover : undefined}
-                        whileTap={animations.microTap}
-                      >
-                        <BaseCard 
-                          variant="tertiary" 
-                          className={cn(
-                            animations.cardHover,
-                            "cursor-pointer relative overflow-hidden"
-                          )}
-                          onClick={() => triggerHaptic(HapticPatterns.light)}
-                        >
-                          {/* Spotlight on hover */}
-                          <div className={cn(vision.spotlight.hover, "opacity-0 group-hover:opacity-100")} />
-                          
-                          <div className={cn("flex items-start gap-3")}>
-                            <div className={cn(
-                              "w-10 h-10",
-                              radius.md,
-                              activity.bgColor,
-                              "flex items-center justify-center flex-shrink-0",
-                              shadows.sm
-                            )}>
-                              <Icon className={cn(iconSizes.md, activity.color)} />
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <h3 className={cn(typography.h4, "mb-1")}>{activity.title}</h3>
-                              <p className={cn(typography.bodySmall, "text-purple-200 mb-1")}>{activity.description}</p>
-                              <p className={cn(typography.caption, "text-purple-300")}>{activity.time}</p>
-                            </div>
-                          </div>
-                        </BaseCard>
-                      </motion.div>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-
-            {/* Section Separator */}
-            <div className={separators.section} />
-
-            {/* Payments Under Watch - iOS 17 + visionOS */}
-            <div>
+              {/* Payments Under Watch - iOS 17 + visionOS */}
+              <div>
               <div className={sectionHeader.base}>
                 <h2 className={sectionHeader.title}>Payments Under Watch</h2>
                 <motion.button 
@@ -1723,9 +1838,10 @@ const CreatorDashboard = () => {
                     </BaseCard>
                   </motion.div>
                 ))}
-            </div>
-            </div>
               </div>
+            </div>
+            </div>
+              </>
             )}
           </>
         )}
