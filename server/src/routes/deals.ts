@@ -75,15 +75,42 @@ router.post('/log-share', async (req: AuthenticatedRequest, res: Response) => {
       // Don't fail the request if logging fails
     }
 
-    // Update brand_response_status to 'pending' and deal status to 'Sent' if not already set
-    const { error: updateError } = await supabase
+    // Update brand_response_status to 'pending' and deal status to 'Sent' ONLY if not already accepted_verified
+    // Once accepted_verified, status should never be reset
+    const { data: currentDeal } = await supabase
       .from('brand_deals')
-      .update({
-        brand_response_status: 'pending',
-        status: 'Sent',
-        updated_at: new Date().toISOString(),
-      })
-      .eq('id', dealId);
+      .select('brand_response_status')
+      .eq('id', dealId)
+      .single();
+    
+    // Don't reset status if already accepted_verified (final state)
+    if (currentDeal?.brand_response_status === 'accepted_verified') {
+      // Only update updated_at, don't change status
+      const { error: updateError } = await supabase
+        .from('brand_deals')
+        .update({
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', dealId);
+      
+      if (updateError) {
+        console.error('[Deals] Failed to update deal timestamp:', updateError);
+      }
+    } else {
+      // Safe to update status for non-final states
+      const { error: updateError } = await supabase
+        .from('brand_deals')
+        .update({
+          brand_response_status: 'pending',
+          status: 'Sent',
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', dealId);
+      
+      if (updateError) {
+        console.error('[Deals] Failed to update deal status:', updateError);
+      }
+    }
 
     if (updateError) {
       console.error('[Deals] Failed to update deal status:', updateError);

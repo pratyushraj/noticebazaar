@@ -7,13 +7,27 @@ import dotenv from 'dotenv';
 // Load environment variables
 // In Vercel, environment variables are already set, so dotenv is only needed for local dev
 // Try to load .env files, but don't fail if they don't exist (Vercel provides env vars directly)
+import { fileURLToPath } from 'url';
+import { dirname, resolve } from 'path';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
 try {
+  // Load from server directory (where .env file is located)
+  dotenv.config({ path: resolve(__dirname, '../.env') });
+  // Also try current directory as fallback
   dotenv.config();
-  // Also try server-specific .env if it exists
-  dotenv.config({ path: '.env' });
 } catch (error) {
   // In Vercel serverless, env vars are provided directly, so this is fine
   console.log('⚠️ Could not load .env files (this is normal in Vercel)');
+}
+
+// Debug: Log if RESEND_API_KEY is loaded (only first few chars for security)
+if (process.env.RESEND_API_KEY) {
+  console.log('[Server] RESEND_API_KEY loaded:', process.env.RESEND_API_KEY.substring(0, 8) + '...');
+} else {
+  console.warn('[Server] ⚠️ RESEND_API_KEY not found in environment variables');
 }
 
 import express from 'express';

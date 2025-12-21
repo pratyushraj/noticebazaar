@@ -506,7 +506,9 @@ const BrandResponsePage = () => {
         const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 
           (typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com') 
             ? 'https://api.creatorarmour.com' 
-            : 'https://noticebazaar-api.onrender.com');
+            : (typeof window !== 'undefined' && window.location.hostname === 'localhost'
+              ? 'http://localhost:3001'
+              : 'https://noticebazaar-api.onrender.com'));
         
         const response = await fetch(`${apiBaseUrl}/api/brand-response/${token}`);
         const data = await response.json();
@@ -530,6 +532,11 @@ const BrandResponsePage = () => {
           }
         }
 
+        // Check if deal is already accepted/accepted_verified BEFORE setting state
+        const responseStatus = data.deal?.response_status || data.deal?.brand_response_status || 'pending';
+        console.log('[BrandResponsePage] Response status:', responseStatus, 'Full deal data:', data.deal);
+        
+        // Set deal info first
         setDealInfo(data.deal);
         if (data.requested_changes && Array.isArray(data.requested_changes)) {
           setRequestedChanges(data.requested_changes);
@@ -537,8 +544,22 @@ const BrandResponsePage = () => {
         if (data.analysis_data) {
           setAnalysisData(data.analysis_data);
         }
-        if (data.deal.response_status !== 'pending') {
+        
+        // Check status and set submitted state
+        if (responseStatus && responseStatus !== 'pending') {
+          console.log('[BrandResponsePage] Deal already has response status:', responseStatus, '- showing success page');
           setIsSubmitted(true);
+          // Store the response status for display
+          if (responseStatus === 'accepted_verified' || responseStatus === 'accepted') {
+            setSelectedStatus('accepted');
+          } else if (responseStatus === 'negotiating') {
+            setSelectedStatus('negotiating');
+          } else if (responseStatus === 'rejected') {
+            setSelectedStatus('rejected');
+          }
+        } else {
+          console.log('[BrandResponsePage] Deal is pending - showing form');
+          setIsSubmitted(false);
         }
         // Extract brand email for OTP
         if (data.deal.brand_email) {
@@ -578,7 +599,9 @@ const BrandResponsePage = () => {
       const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 
         (typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com') 
           ? 'https://api.creatorarmour.com' 
-          : 'https://noticebazaar-api.onrender.com');
+          : (typeof window !== 'undefined' && window.location.hostname === 'localhost'
+            ? 'http://localhost:3001'
+            : 'https://noticebazaar-api.onrender.com'));
       
       const response = await fetch(`${apiBaseUrl}/api/otp/send`, {
         method: 'POST',
@@ -608,11 +631,32 @@ const BrandResponsePage = () => {
           });
         }, 1000);
       } else {
-        throw new Error(data.error || 'Failed to send OTP');
+        // Check if error is about API key configuration (server-side issue)
+        const errorMessage = data.error || 'Failed to send OTP';
+        if (errorMessage.includes('Resend API key') || errorMessage.includes('RESEND_API_KEY')) {
+          // This is a server configuration issue - show user-friendly message
+          throw new Error('Email service is temporarily unavailable. Please contact the creator or try again later.');
+        }
+        throw new Error(errorMessage);
       }
     } catch (error: any) {
       console.error('[BrandResponsePage] OTP send error:', error);
-      toast.error(error.message || 'Failed to send OTP. Please try again.');
+      
+      // Provide user-friendly error messages
+      let userMessage = error.message || 'Failed to send OTP. Please try again.';
+      
+      // Hide technical server configuration errors from users
+      if (error.message && (
+        error.message.includes('Resend API key') || 
+        error.message.includes('RESEND_API_KEY') ||
+        error.message.includes('server/.env')
+      )) {
+        userMessage = 'Email service is temporarily unavailable. Please contact the creator or try again later.';
+      }
+      
+      toast.error(userMessage, {
+        duration: 5000,
+      });
       triggerHaptic(HapticPatterns.error);
     } finally {
       setIsSendingOTP(false);
@@ -636,7 +680,9 @@ const BrandResponsePage = () => {
       const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 
         (typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com') 
           ? 'https://api.creatorarmour.com' 
-          : 'https://noticebazaar-api.onrender.com');
+          : (typeof window !== 'undefined' && window.location.hostname === 'localhost'
+            ? 'http://localhost:3001'
+            : 'https://noticebazaar-api.onrender.com'));
       
       const response = await fetch(`${apiBaseUrl}/api/otp/verify`, {
         method: 'POST',
@@ -655,10 +701,28 @@ const BrandResponsePage = () => {
         setShowOTPModal(false);
         await submitBrandResponse();
       } else {
+        // Check if OTP is already verified - if so, proceed with submission
+        if (data.error && data.error.includes('already been verified')) {
+          toast.success('OTP was already verified. Proceeding...');
+          triggerHaptic(HapticPatterns.success);
+          setShowOTPModal(false);
+          // Proceed with submission since OTP is already verified
+          await submitBrandResponse();
+          return;
+        }
         throw new Error(data.error || 'Invalid OTP');
       }
     } catch (error: any) {
       console.error('[BrandResponsePage] OTP verify error:', error);
+      // Check if error is about OTP already being verified
+      if (error.message && error.message.includes('already been verified')) {
+        toast.success('OTP was already verified. Proceeding...');
+        triggerHaptic(HapticPatterns.success);
+        setShowOTPModal(false);
+        // Proceed with submission since OTP is already verified
+        await submitBrandResponse();
+        return;
+      }
       toast.error(error.message || 'Invalid OTP. Please try again.');
       triggerHaptic(HapticPatterns.error);
       // Clear OTP on error
@@ -686,7 +750,9 @@ const BrandResponsePage = () => {
       const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 
         (typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com') 
           ? 'https://api.creatorarmour.com' 
-          : 'https://noticebazaar-api.onrender.com');
+          : (typeof window !== 'undefined' && window.location.hostname === 'localhost'
+            ? 'http://localhost:3001'
+            : 'https://noticebazaar-api.onrender.com'));
       
       // Build message with negotiation points if negotiating
       let finalMessage = message.trim();
@@ -735,8 +801,9 @@ const BrandResponsePage = () => {
       return;
     }
 
-    if (!dealId) {
-      toast.error('Invalid deal ID');
+    if (!token) {
+      toast.error('Invalid token');
+      triggerHaptic(HapticPatterns.error);
       return;
     }
 
@@ -753,7 +820,8 @@ const BrandResponsePage = () => {
       
       setShowOTPModal(true);
       // Auto-send OTP when modal opens
-      await sendOTP();
+      const otpResult = await sendOTP();
+      // If OTP sending failed, keep modal open but user can try resending
       return;
     }
 
@@ -1171,11 +1239,11 @@ const BrandResponsePage = () => {
             </p>
           </div>
         ) : (
-          /* POST-SUBMISSION CONFIRMATION */
+          /* POST-SUBMISSION CONFIRMATION / ALREADY ACCEPTED */
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="bg-white/10 backdrop-blur-xl rounded-2xl p-8 md:p-12 border border-white/20 shadow-xl text-center"
+            className="bg-white/10 backdrop-blur-xl rounded-2xl p-8 md:p-12 border border-white/20 shadow-xl text-center space-y-6"
           >
             <motion.div
               initial={{ scale: 0 }}
@@ -1183,12 +1251,59 @@ const BrandResponsePage = () => {
               transition={{ type: "spring", stiffness: 200, damping: 15 }}
               className="mb-4"
             >
-              <CheckCircle className="w-16 h-16 text-green-400 mx-auto mb-3" />
+              <CheckCircle className="w-20 h-20 text-green-400 mx-auto mb-4" />
             </motion.div>
-            <h3 className="text-2xl font-bold mb-2">Response shared with the creator</h3>
-            <p className="text-white/80 text-sm max-w-md mx-auto">
-              You can revisit or revise this decision anytime.
-            </p>
+            
+            {(dealInfo?.response_status === 'accepted_verified' || dealInfo?.response_status === 'accepted') ? (
+              <>
+                <h3 className="text-3xl font-bold mb-3 bg-gradient-to-r from-green-400 to-emerald-400 bg-clip-text text-transparent">
+                  Collaboration Accepted ✓
+                </h3>
+                <p className="text-white/90 text-base max-w-md mx-auto mb-4">
+                  Your acceptance has been verified and shared with the creator.
+                </p>
+                <div className="bg-green-500/10 border border-green-500/30 rounded-xl p-4 mb-4">
+                  <p className="text-sm text-green-300 font-medium mb-1">OTP Verified</p>
+                  <p className="text-xs text-white/70">
+                    Your email verification was successful. The creator has been notified of your acceptance.
+                  </p>
+                </div>
+                <p className="text-white/60 text-sm max-w-md mx-auto">
+                  The creator will proceed with finalizing the contract details. You'll be notified of any updates.
+                </p>
+              </>
+            ) : dealInfo?.response_status === 'negotiating' ? (
+              <>
+                <h3 className="text-3xl font-bold mb-3 bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
+                  Negotiation Requested
+                </h3>
+                <p className="text-white/90 text-base max-w-md mx-auto mb-4">
+                  Your negotiation request has been shared with the creator.
+                </p>
+                <p className="text-white/60 text-sm max-w-md mx-auto">
+                  The creator will review your points and get back to you soon.
+                </p>
+              </>
+            ) : dealInfo?.response_status === 'rejected' ? (
+              <>
+                <h3 className="text-3xl font-bold mb-3 bg-gradient-to-r from-red-400 to-orange-400 bg-clip-text text-transparent">
+                  Response Received
+                </h3>
+                <p className="text-white/90 text-base max-w-md mx-auto mb-4">
+                  Your response has been shared with the creator.
+                </p>
+                <p className="text-white/60 text-sm max-w-md mx-auto">
+                  The creator has been notified of your decision.
+                </p>
+              </>
+            ) : (
+              <>
+                <h3 className="text-2xl font-bold mb-2">Response shared with the creator</h3>
+                <p className="text-white/80 text-sm max-w-md mx-auto">
+                  You can revisit or revise this decision anytime.
+                </p>
+              </>
+            )}
           </motion.div>
         )}
 

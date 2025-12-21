@@ -34,21 +34,50 @@ const CreatorContracts = () => {
 
     return brandDeals.map(deal => {
       // Map status from database to UI status
-      // Preserve "Draft" and "Sent" statuses for filtering
+      // Check brand_response_status FIRST - it's the source of truth for brand acceptance
+      const brandResponseStatus = (deal as any).brand_response_status;
+      
+      // If brand has accepted_verified, never show "waiting" - it's final
+      if (brandResponseStatus === 'accepted_verified') {
+        return {
+          id: deal.id,
+          title: `${deal.brand_name} Sponsorship`,
+          brand: deal.brand_name,
+          value: deal.deal_amount || 0,
+          status: 'signed', // Treat accepted_verified as signed/approved
+          progress: 70, // Progress to signed stage
+          brandResponseStatus: brandResponseStatus,
+          deadline: deal.payment_expected_date 
+            ? new Date(deal.payment_expected_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+            : (deal.due_date ? new Date(deal.due_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'TBD'),
+          platform: deal.platform || 'Multiple',
+          nextStep: 'Start content creation',
+          createdAt: deal.created_at,
+          updatedAt: deal.updated_at,
+        };
+      }
+      
+      // Preserve Draft and Sent statuses (only if not accepted_verified)
       const statusLower = (deal.status || '').toLowerCase();
       let status: string = 'pending';
       let progress = 0;
       let nextStep = 'Review contract';
 
-      // Preserve Draft and Sent statuses
       if (statusLower === 'draft') {
         status = 'draft';
         progress = 10;
         nextStep = 'Review and send to brand';
       } else if (statusLower === 'sent') {
-        status = 'sent';
-        progress = 20;
-        nextStep = 'Waiting for brand response';
+        // Only show "waiting" if brand_response_status is not accepted/accepted_verified
+        if (brandResponseStatus === 'accepted' || brandResponseStatus === 'accepted_verified') {
+          status = 'signed';
+          progress = 70;
+          nextStep = 'Start content creation';
+        } else {
+          status = 'sent';
+          progress = 20;
+          nextStep = 'Waiting for brand response';
+        }
       } else {
         // Use progress_percentage if available, otherwise map from status
         if (deal.progress_percentage !== null && deal.progress_percentage !== undefined) {

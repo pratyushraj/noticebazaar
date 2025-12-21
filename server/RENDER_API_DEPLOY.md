@@ -24,10 +24,17 @@ Click "Add Environment Variable" and add:
 ```
 SUPABASE_URL=https://ooaxtwmqrvfzdqzoijcj.supabase.co
 SUPABASE_SERVICE_ROLE_KEY=<your-service-role-key-here>
+RESEND_API_KEY=<your-resend-api-key-here>
 FRONTEND_URL=https://noticebazaar.com
 NODE_ENV=production
 PORT=10000
 ```
+
+**Important:** Get your Resend API key from https://resend.com/api-keys
+- Sign up/login to Resend
+- Go to API Keys section
+- Create a new API key or use an existing one
+- Copy the key (starts with `re_`) and paste it as the value for `RESEND_API_KEY`
 
 ### Step 4: Deploy
 - Click **"Create Web Service"**

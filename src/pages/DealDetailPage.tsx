@@ -1262,12 +1262,18 @@ Best regards`;
             </button>
             <motion.button
               onClick={() => {
+                // Prevent deletion of accepted_verified deals
+                if (brandResponseStatus === 'accepted_verified') {
+                  toast.error('Cannot delete a deal that has been accepted by the brand');
+                  return;
+                }
                 triggerHaptic(HapticPatterns.medium);
                 setShowDeleteConfirm(true);
               }}
               whileTap={animations.microTap}
-              disabled={deleteDeal.isPending}
+              disabled={deleteDeal.isPending || brandResponseStatus === 'accepted_verified'}
               className="flex flex-col items-center justify-center gap-2 p-3 bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 rounded-xl transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
+              title={brandResponseStatus === 'accepted_verified' ? 'Cannot delete accepted deals' : 'Delete deal'}
             >
               {deleteDeal.isPending ? (
                 <Loader2 className="w-5 h-5 animate-spin text-red-400" />
@@ -1464,6 +1470,13 @@ ${link}`;
                 }
               };
               
+              // Normalize response status - treat accepted_verified as final, accepted as intermediate
+              const normalizedStatus = responseStatus === 'accepted_verified' ? 'accepted_verified' :
+                                     responseStatus === 'accepted' ? 'accepted' :
+                                     responseStatus === 'negotiating' ? 'negotiating' :
+                                     responseStatus === 'rejected' ? 'rejected' :
+                                     'pending';
+              
               const statusConfig = {
                 pending: {
                   icon: Clock,
@@ -1475,6 +1488,13 @@ ${link}`;
                 accepted: {
                   icon: CheckCircle,
                   label: '✅ Accepted',
+                  color: 'text-green-400',
+                  bgColor: 'bg-green-500/20',
+                  borderColor: 'border-green-500/30',
+                },
+                accepted_verified: {
+                  icon: CheckCircle,
+                  label: '✅ Brand Accepted (OTP Verified)',
                   color: 'text-green-400',
                   bgColor: 'bg-green-500/20',
                   borderColor: 'border-green-500/30',
@@ -1495,7 +1515,7 @@ ${link}`;
                 },
               };
               
-              const config = statusConfig[responseStatus as keyof typeof statusConfig] || statusConfig.pending;
+              const config = statusConfig[normalizedStatus as keyof typeof statusConfig] || statusConfig.pending;
               const StatusIcon = config.icon;
               
               return (
@@ -1521,6 +1541,18 @@ ${link}`;
                           })}
                         </div>
                       )}
+                      {/* Show OTP verification date for accepted_verified */}
+                      {normalizedStatus === 'accepted_verified' && (deal as any)?.otp_verified_at && (
+                        <div className="text-xs text-green-300/80 mt-1">
+                          Verified on {new Date((deal as any).otp_verified_at).toLocaleDateString('en-US', { 
+                            month: 'short', 
+                            day: 'numeric', 
+                            year: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                          })}
+                        </div>
+                      )}
                     </div>
                   </div>
                   
@@ -1534,8 +1566,25 @@ ${link}`;
                     </div>
                   )}
                   
-                  {/* Remind Brand Button - Only show if status is pending */}
-                  {responseStatus === 'pending' && deal && deal.id && (() => {
+                  {/* Next Step Highlight for accepted_verified */}
+                  {normalizedStatus === 'accepted_verified' && (
+                    <div className="mt-4 bg-gradient-to-r from-emerald-500/20 to-green-500/20 border border-emerald-400/30 rounded-xl p-4">
+                      <div className="flex items-start gap-3">
+                        <CheckCircle className="w-5 h-5 text-emerald-400 mt-0.5 flex-shrink-0" />
+                        <div className="flex-1">
+                          <div className="text-sm font-semibold text-emerald-300 mb-1">
+                            Next Step: Finalize Contract & Proceed
+                          </div>
+                          <p className="text-xs text-white/70">
+                            The brand has accepted and verified. You can now generate the final contract and proceed with content creation.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {/* Remind Brand Button - Only show if status is pending (NOT accepted_verified) */}
+                  {normalizedStatus === 'pending' && deal && deal.id && (() => {
                     const lastRemindedAt = (deal as any).last_reminded_at;
                     let canSendReminder = true;
                     let hoursRemaining = 0;
@@ -1651,44 +1700,17 @@ ${link}`;
                     );
                   })()}
                   
-                  {/* OTP Verification Status - Show when brand accepted */}
-                  {responseStatus === 'accepted' || responseStatus === 'accepted_verified' && (
-                    <div className="mt-4 space-y-3">
-                      {/* OTP Status Chip */}
-                      {(() => {
-                        const otpVerified = (deal as any)?.otp_verified;
-                        const otpVerifiedAt = (deal as any)?.otp_verified_at;
-                        
-                        if (responseStatus === 'accepted_verified' && otpVerified) {
-                          return (
-                            <div className={cn(
-                              "flex items-center gap-2 px-3 py-2 rounded-lg border",
-                              "bg-green-500/20 border-green-500/30"
-                            )}>
-                              <span className="text-sm font-semibold text-green-400">
-                                ✅ Brand Accepted (OTP Verified)
-                              </span>
-                              {otpVerifiedAt && (
-                                <span className="text-xs text-white/60">
-                                  Verified on {new Date(otpVerifiedAt).toLocaleDateString()}
-                                </span>
-                              )}
-                            </div>
-                          );
-                        } else if (responseStatus === 'accepted' && !otpVerified) {
-                          return (
-                            <div className={cn(
-                              "flex items-center gap-2 px-3 py-2 rounded-lg border",
-                              "bg-yellow-500/20 border-yellow-500/30"
-                            )}>
-                              <span className="text-sm font-semibold text-yellow-400">
-                                ⏳ Awaiting OTP Verification
-                              </span>
-                            </div>
-                          );
-                        }
-                        return null;
-                      })()}
+                  {/* OTP Verification Status - Only show for accepted (not verified yet) */}
+                  {normalizedStatus === 'accepted' && !(deal as any)?.otp_verified && (
+                    <div className="mt-4">
+                      <div className={cn(
+                        "flex items-center gap-2 px-3 py-2 rounded-lg border",
+                        "bg-yellow-500/20 border-yellow-500/30"
+                      )}>
+                        <span className="text-sm font-semibold text-yellow-400">
+                          ⏳ Awaiting OTP Verification
+                        </span>
+                      </div>
                     </div>
                   )}
                 </div>
@@ -1717,14 +1739,21 @@ ${link}`;
             return null;
           }
           
-          // Get status indicator text
+          // Get status indicator text - treat accepted_verified as final
           const getStatusText = () => {
             if (!brandResponseStatus) return null;
-            switch (brandResponseStatus) {
+            // Normalize status - treat accepted_verified as final, never show "waiting"
+            const normalizedStatus = brandResponseStatus === 'accepted_verified' ? 'accepted_verified' :
+                                     brandResponseStatus === 'accepted' ? 'accepted' :
+                                     brandResponseStatus;
+            
+            switch (normalizedStatus) {
               case 'sent':
+              case 'pending':
                 return '⏳ Awaiting brand response';
-              case 'accepted':
               case 'accepted_verified':
+                return '✅ Brand Accepted (OTP Verified)';
+              case 'accepted':
                 return '✅ Accepted by brand';
               case 'negotiating':
                 return '🔁 In discussion';

@@ -198,6 +198,7 @@ router.get('/:token', async (req: Request, res: Response) => {
     let dealError: any = null;
 
     try {
+      // First try with all columns
       const { data, error } = await supabase
         .from('brand_deals')
         .select(
@@ -209,19 +210,21 @@ router.get('/:token', async (req: Request, res: Response) => {
       deal = data;
       dealError = error;
 
-      // If analysis_report_id (or another column) does not exist yet, fall back to a minimal select
+      // If there's a column error, try with a minimal set that definitely exists
       const isColumnError =
         error &&
         (error.code === '42703' ||
           (typeof error.message === 'string' &&
             (error.message.includes('column') ||
-              error.message.includes('analysis_report_id'))));
+              error.message.includes('does not exist'))));
 
       if (isColumnError) {
+        console.log('[BrandResponse] Column error detected, trying minimal select:', error.message);
+        // Try with only essential columns that should always exist
         const { data: fallbackDeal, error: fallbackError } = await supabase
           .from('brand_deals')
           .select(
-            'id, brand_name, brand_response_status, brand_response_message, brand_response_at, deal_amount, deliverables, signed_contract_url, deal_execution_status'
+            'id, brand_name, brand_response_status, brand_response_message, brand_response_at, deal_amount, deliverables'
           )
           .eq('id', tokenData.deal_id)
           .maybeSingle();
@@ -229,17 +232,48 @@ router.get('/:token', async (req: Request, res: Response) => {
         if (!fallbackError && fallbackDeal) {
           deal = fallbackDeal;
           dealError = null;
+          console.log('[BrandResponse] Successfully fetched deal with minimal select, response_status:', fallbackDeal.brand_response_status);
         } else {
+          console.error('[BrandResponse] Fallback query also failed:', fallbackError);
           dealError = fallbackError;
         }
+      } else if (!error && deal) {
+        console.log('[BrandResponse] Successfully fetched deal, response_status:', deal.brand_response_status);
       }
     } catch (err: any) {
+      console.error('[BrandResponse] Exception fetching deal:', err);
       dealError = err;
     }
 
     if (dealError || !deal) {
       console.error('[BrandResponse] GET Deal fetch error (falling back to minimal deal):', dealError);
-      // Fallback: return a minimal, generic deal so the brand page still loads
+      
+      // Try to fetch at least the response status even if other fields fail
+      if (tokenData?.deal_id) {
+        const { data: minimalDeal } = await supabase
+          .from('brand_deals')
+          .select('brand_name, brand_response_status, brand_response_message, brand_response_at, deal_amount, deliverables')
+          .eq('id', tokenData.deal_id)
+          .maybeSingle();
+        
+        if (minimalDeal) {
+          return res.json({
+            success: true,
+            deal: {
+              brand_name: minimalDeal.brand_name || 'Collaboration',
+              response_status: minimalDeal.brand_response_status || 'pending',
+              response_message: minimalDeal.brand_response_message || null,
+              response_at: minimalDeal.brand_response_at || null,
+              deal_amount: minimalDeal.deal_amount || null,
+              deliverables: minimalDeal.deliverables || null,
+            },
+            requested_changes: [],
+            analysis_data: null,
+          });
+        }
+      }
+      
+      // Final fallback: return a minimal, generic deal so the brand page still loads
       return res.json({
         success: true,
         deal: {
