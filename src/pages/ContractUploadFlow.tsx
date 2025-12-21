@@ -29,9 +29,53 @@ const ContractUploadFlow = () => {
   const addDealMutation = useAddBrandDeal();
   const [step, setStep] = useState('upload'); // upload, uploading, scanning, analyzing, results, upload-error, review-error, validation-error
   const [dealType, setDealType] = useState<'contract' | 'barter'>('contract'); // 'contract' or 'barter'
-  const [selectedOption, setSelectedOption] = useState<'upload' | 'request_details' | null>(null);
   const [showUploadArea, setShowUploadArea] = useState(false);
   const uploadAreaRef = useRef<HTMLDivElement>(null);
+
+  // Global error handler to prevent browser error banners for permission errors
+  useEffect(() => {
+    const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
+      const error = event.reason;
+      const errorMessage = error?.message || String(error);
+      
+      // Suppress browser error banners for permission-related errors
+      if (
+        errorMessage.includes('user agent') ||
+        errorMessage.includes('platform') ||
+        errorMessage.includes('permission') ||
+        errorMessage.includes('NotAllowedError') ||
+        error?.name === 'NotAllowedError'
+      ) {
+        event.preventDefault();
+        console.warn('[ContractUploadFlow] Suppressed permission error:', error);
+        return;
+      }
+    };
+
+    const handleError = (event: ErrorEvent) => {
+      const errorMessage = event.message || String(event.error);
+      
+      // Suppress browser error banners for permission-related errors
+      if (
+        errorMessage.includes('user agent') ||
+        errorMessage.includes('platform') ||
+        errorMessage.includes('permission') ||
+        errorMessage.includes('NotAllowedError')
+      ) {
+        event.preventDefault();
+        console.warn('[ContractUploadFlow] Suppressed permission error:', event.error);
+        return;
+      }
+    };
+
+    window.addEventListener('unhandledrejection', handleUnhandledRejection);
+    window.addEventListener('error', handleError);
+
+    return () => {
+      window.removeEventListener('unhandledrejection', handleUnhandledRejection);
+      window.removeEventListener('error', handleError);
+    };
+  }, []);
   
   // Get user's deal history to determine recommendation
   const { data: brandDeals = [] } = useBrandDeals({
@@ -52,6 +96,9 @@ const ContractUploadFlow = () => {
   };
   
   const recommendedOption = getRecommendedOption();
+  
+  // Initialize selectedOption with recommended option (default-highlight)
+  const [selectedOption, setSelectedOption] = useState<'upload' | 'request_details' | null>(recommendedOption);
   
   // Handle Request Details Click
   const handleRequestDetailsClick = async () => {
@@ -100,30 +147,90 @@ const ContractUploadFlow = () => {
         typeof window !== 'undefined' ? window.location.origin : 'https://creatorarmour.com';
       const link = `${baseUrl}/#/deal-details/${data.token.id}`;
 
-      // Copy to clipboard and show share options
-      await navigator.clipboard.writeText(link);
-      toast.success('Link copied! Share it with the brand.', {
-        duration: 4000,
-      });
+      // Copy to clipboard with proper error handling
+      let clipboardSuccess = false;
+      const isSecureContext = typeof window !== 'undefined' && (window.isSecureContext || window.location.protocol === 'https:' || window.location.hostname === 'localhost');
+      
+      if (navigator.clipboard && isSecureContext) {
+        try {
+          await navigator.clipboard.writeText(link);
+          clipboardSuccess = true;
+          toast.success('Link copied! Share it with the brand.', {
+            duration: 4000,
+          });
+        } catch (clipboardError: any) {
+          // Silently handle clipboard errors - don't show error to user
+          console.warn('[ContractUploadFlow] Clipboard write failed:', clipboardError);
+          clipboardSuccess = false;
+        }
+      } else {
+        // Not in secure context or clipboard not available
+        clipboardSuccess = false;
+      }
 
-      // Try native share if available
+      // Try native share if available (only if clipboard failed or as additional option)
+      // Note: Share API requires user gesture, which we have from the button click
       if (navigator.share) {
         try {
-          await navigator.share({
+          const shareData = {
             title: 'Finalize Collaboration Details',
             text: `Hi, please help finalize our collaboration details here: ${link}`,
             url: link,
-          });
+          };
+          
+          // Check if we can share this data (if canShare is available)
+          if (navigator.canShare && !navigator.canShare(shareData)) {
+            throw new Error('Cannot share this data');
+          }
+          
+          await navigator.share(shareData);
+          // If share succeeds, don't show clipboard success toast
+          if (!clipboardSuccess) {
+            toast.success('Share dialog opened');
+          }
         } catch (shareError: any) {
-          // User cancelled or share failed - that's okay
-          if (shareError.name !== 'AbortError') {
+          // Silently handle share errors - user cancelled or permission denied
+          // Don't show error banner for AbortError (user cancelled) or NotAllowedError (permission denied)
+          if (shareError.name === 'AbortError') {
+            // User cancelled - that's fine, link is already copied if clipboard worked
+            if (!clipboardSuccess) {
+              toast.info('Link generated! You can copy it from below.', {
+                duration: 4000,
+              });
+            }
+          } else if (shareError.name === 'NotAllowedError') {
+            // Permission denied - that's okay, link is already copied if clipboard worked
+            if (!clipboardSuccess) {
+              toast.info('Link generated! You can copy it manually.', {
+                duration: 4000,
+              });
+            }
+          } else {
+            // Other errors - log but don't show error banner
             console.warn('[ContractUploadFlow] Share failed:', shareError);
+            if (!clipboardSuccess) {
+              toast.info('Link generated! You can copy it manually.', {
+                duration: 4000,
+              });
+            }
           }
         }
+      } else if (!clipboardSuccess) {
+        // Neither clipboard nor share available - show friendly message
+        toast.info('Link generated! Please copy it manually.', {
+          duration: 5000,
+        });
       }
     } catch (error: any) {
       console.error('[ContractUploadFlow] Request collaboration details error:', error);
-      toast.error(error.message || 'Failed to generate link. Please try again.');
+      // Only show user-friendly error messages, not technical browser errors
+      const errorMessage = error.message || 'Failed to generate link. Please try again.';
+      // Don't show browser permission errors to users
+      if (errorMessage.includes('user agent') || errorMessage.includes('platform') || errorMessage.includes('permission')) {
+        toast.error('Unable to share link. Please copy it manually from the page.');
+      } else {
+        toast.error(errorMessage);
+      }
     }
   };
   
@@ -1284,10 +1391,22 @@ ${creatorName}`;
       return;
     }
     
-    const emailMessage = formatNegotiationMessage(negotiationMessage);
-    await navigator.clipboard.writeText(emailMessage);
-    toast.success('Copied for Email');
-    triggerHaptic(HapticPatterns.light);
+    try {
+      const emailMessage = formatNegotiationMessage(negotiationMessage);
+      const isSecureContext = typeof window !== 'undefined' && (window.isSecureContext || window.location.protocol === 'https:' || window.location.hostname === 'localhost');
+      
+      if (navigator.clipboard && isSecureContext) {
+        await navigator.clipboard.writeText(emailMessage);
+        toast.success('Copied for Email');
+      } else {
+        // Fallback: show message for manual copy
+        toast.info('Please copy the message manually');
+      }
+      triggerHaptic(HapticPatterns.light);
+    } catch (error: any) {
+      console.warn('[ContractUploadFlow] Copy email failed:', error);
+      toast.info('Unable to copy automatically. Please copy the message manually.');
+    }
   };
 
   // Copy WhatsApp handler
@@ -1308,11 +1427,23 @@ ${creatorName}`;
   const handleConfirmWhatsAppCopy = async () => {
     if (!negotiationMessage) return;
     
-    const fullMessage = formatNegotiationMessage(negotiationMessage);
-    const whatsappMessage = createWhatsAppMessage(fullMessage);
-    await navigator.clipboard.writeText(whatsappMessage);
-    toast.success('Copied for WhatsApp');
-    setShowWhatsAppPreview(false);
+    try {
+      const fullMessage = formatNegotiationMessage(negotiationMessage);
+      const whatsappMessage = createWhatsAppMessage(fullMessage);
+      const isSecureContext = typeof window !== 'undefined' && (window.isSecureContext || window.location.protocol === 'https:' || window.location.hostname === 'localhost');
+      
+      if (navigator.clipboard && isSecureContext) {
+        await navigator.clipboard.writeText(whatsappMessage);
+        toast.success('Copied for WhatsApp');
+      } else {
+        toast.info('Please copy the message manually');
+      }
+      setShowWhatsAppPreview(false);
+    } catch (error: any) {
+      console.warn('[ContractUploadFlow] Copy WhatsApp failed:', error);
+      toast.info('Unable to copy automatically. Please copy the message manually.');
+      setShowWhatsAppPreview(false);
+    }
   };
 
   // Share Feedback modal state
@@ -2374,7 +2505,7 @@ ${creatorName}`;
         {step === 'upload' && (
           <>
             {/* Option Selection Cards */}
-            <div className="space-y-3 mb-8">
+            <div className="space-y-4 mb-8">
               {/* Card A: Upload Contract */}
             <button
               onClick={() => {
@@ -2391,46 +2522,60 @@ ${creatorName}`;
                     // Silently fail - don't block UI
                   });
                 }}
-                className={`w-full text-left p-5 rounded-2xl border-2 transition-all relative ${
+                className={cn(
+                  "w-full text-left p-5 rounded-2xl border-2 transition-all relative",
+                  "cursor-pointer group",
                   selectedOption === 'upload'
-                    ? 'border-purple-400 bg-purple-500/10 shadow-lg shadow-purple-500/20'
-                    : 'border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/10'
-                }`}
+                    ? 'border-purple-400 bg-purple-500/15 shadow-lg shadow-purple-500/30 ring-2 ring-purple-400/20'
+                    : recommendedOption === 'upload'
+                    ? 'border-purple-300/40 bg-purple-500/8 hover:border-purple-300/60 hover:bg-purple-500/12 shadow-md shadow-purple-500/10'
+                    : 'border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/10 opacity-75'
+                )}
               >
-                {/* Recommendation Badge */}
-                {!selectedOption && recommendedOption === 'upload' && (
-                  <div className="absolute top-3 right-3 px-2.5 py-1 rounded-full bg-gradient-to-r from-blue-500/20 to-cyan-500/20 border border-blue-400/30 backdrop-blur-sm">
-                    <span className="text-xs font-medium text-blue-300">Most creators choose this</span>
+                {/* Recommendation Badge - Top Right (only when not selected) */}
+                {recommendedOption === 'upload' && selectedOption !== 'upload' && (
+                  <div className="absolute top-3 right-3 px-2 py-0.5 rounded-full bg-gradient-to-r from-blue-500/15 to-cyan-500/15 border border-blue-400/20 backdrop-blur-sm opacity-75">
+                    <span className="text-[10px] font-medium text-blue-300/90">Most creators choose this</span>
                   </div>
                 )}
                 
-                <div className="flex items-start gap-4">
-                  {/* Radio Indicator */}
-                  <div className="flex-shrink-0 mt-1">
-                    <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${
+                {/* Check Icon - Top Right (when selected) */}
+                {selectedOption === 'upload' && (
+                  <div className="absolute top-3 right-3">
+                    <CheckCircle className="w-5 h-5 text-purple-400" />
+                  </div>
+                )}
+                
+                <div className="flex items-start gap-4 pr-8">
+                  {/* Radio Indicator - Secondary for accessibility */}
+                  <div className="flex-shrink-0 mt-1 opacity-60">
+                    <div className={cn(
+                      "w-4 h-4 rounded-full border-2 flex items-center justify-center transition-all",
                       selectedOption === 'upload'
                         ? 'border-purple-400 bg-purple-500/20'
                         : 'border-white/30 bg-transparent'
-                    }`}>
+                    )}>
                       {selectedOption === 'upload' && (
-                        <div className="w-2.5 h-2.5 rounded-full bg-purple-400" />
+                        <div className="w-2 h-2 rounded-full bg-purple-400" />
                       )}
                     </div>
                   </div>
                   
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-lg mb-1 flex items-center gap-2">
+                    <h3 className={cn(
+                      "font-semibold text-lg mb-1.5 flex items-center gap-2",
+                      selectedOption === 'upload' ? 'text-white' : recommendedOption === 'upload' ? 'text-white/95' : 'text-white/80'
+                    )}>
                       <FileText className="w-5 h-5 flex-shrink-0" />
-              Upload Contract
+                      Upload Contract
                     </h3>
-                    <p className="text-sm text-white/60">
+                    <p className="text-sm text-white/60 mb-2">
                       Upload an existing contract to analyze and protect it.
                     </p>
+                    <p className="text-xs text-white/50 font-medium">
+                      PDF / DOC • Takes ~2 minutes • Lawyer-reviewed
+                    </p>
                   </div>
-                  
-                  {selectedOption === 'upload' && (
-                    <CheckCircle className="w-6 h-6 text-purple-400 flex-shrink-0" />
-                  )}
                 </div>
             </button>
 
@@ -2450,46 +2595,60 @@ ${creatorName}`;
                     // Silently fail - don't block UI
                   });
                 }}
-                className={`w-full text-left p-5 rounded-2xl border-2 transition-all relative ${
+                className={cn(
+                  "w-full text-left p-5 rounded-2xl border-2 transition-all relative",
+                  "cursor-pointer group",
                   selectedOption === 'request_details'
-                    ? 'border-purple-400 bg-purple-500/10 shadow-lg shadow-purple-500/20'
-                    : 'border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/10'
-              }`}
+                    ? 'border-purple-400 bg-purple-500/15 shadow-lg shadow-purple-500/30 ring-2 ring-purple-400/20'
+                    : recommendedOption === 'request_details'
+                    ? 'border-purple-300/40 bg-purple-500/8 hover:border-purple-300/60 hover:bg-purple-500/12 shadow-md shadow-purple-500/10'
+                    : 'border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/10 opacity-75'
+                )}
             >
-                {/* Recommendation Badge */}
-                {!selectedOption && recommendedOption === 'request_details' && (
-                  <div className="absolute top-3 right-3 px-2.5 py-1 rounded-full bg-gradient-to-r from-blue-500/20 to-cyan-500/20 border border-blue-400/30 backdrop-blur-sm">
-                    <span className="text-xs font-medium text-blue-300">Most creators choose this</span>
-          </div>
-        )}
+                {/* Recommendation Badge - Top Right (only when not selected) */}
+                {recommendedOption === 'request_details' && selectedOption !== 'request_details' && (
+                  <div className="absolute top-3 right-3 px-2 py-0.5 rounded-full bg-gradient-to-r from-blue-500/15 to-cyan-500/15 border border-blue-400/20 backdrop-blur-sm opacity-75">
+                    <span className="text-[10px] font-medium text-blue-300/90">Most creators choose this</span>
+                  </div>
+                )}
                 
-                <div className="flex items-start gap-4">
-                  {/* Radio Indicator */}
-                  <div className="flex-shrink-0 mt-1">
-                    <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${
+                {/* Check Icon - Top Right (when selected) */}
+                {selectedOption === 'request_details' && (
+                  <div className="absolute top-3 right-3">
+                    <CheckCircle className="w-5 h-5 text-purple-400" />
+                  </div>
+                )}
+                
+                <div className="flex items-start gap-4 pr-8">
+                  {/* Radio Indicator - Secondary for accessibility */}
+                  <div className="flex-shrink-0 mt-1 opacity-60">
+                    <div className={cn(
+                      "w-4 h-4 rounded-full border-2 flex items-center justify-center transition-all",
                       selectedOption === 'request_details'
                         ? 'border-purple-400 bg-purple-500/20'
                         : 'border-white/30 bg-transparent'
-                    }`}>
+                    )}>
                       {selectedOption === 'request_details' && (
-                        <div className="w-2.5 h-2.5 rounded-full bg-purple-400" />
+                        <div className="w-2 h-2 rounded-full bg-purple-400" />
                       )}
                     </div>
       </div>
 
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-lg mb-1 flex items-center gap-2">
+                    <h3 className={cn(
+                      "font-semibold text-lg mb-1.5 flex items-center gap-2",
+                      selectedOption === 'request_details' ? 'text-white' : recommendedOption === 'request_details' ? 'text-white/95' : 'text-white/80'
+                    )}>
                       <MessageSquare className="w-5 h-5 flex-shrink-0" />
                       Request Details from Brand
                     </h3>
-                    <p className="text-sm text-white/60">
+                    <p className="text-sm text-white/60 mb-2">
                       No contract yet? Brands can share paid or barter deal details in under 2 minutes.
                     </p>
+                    <p className="text-xs text-white/50 font-medium">
+                      We send a secure link • No follow-ups needed
+                    </p>
                   </div>
-                  
-                  {selectedOption === 'request_details' && (
-                    <CheckCircle className="w-6 h-6 text-purple-400 flex-shrink-0" />
-                  )}
                 </div>
               </button>
             </div>
@@ -2612,6 +2771,11 @@ ${creatorName}`;
               paddingBottom: 'calc(16px + env(safe-area-inset-bottom, 0px))',
             }}
           >
+            {/* Helper Text */}
+            <p className="text-xs text-white/50 text-center mb-2.5">
+              You can change this later
+            </p>
+            
             <button
               onClick={() => {
                 if (!selectedOption) return;
@@ -2632,9 +2796,11 @@ ${creatorName}`;
               disabled={!selectedOption}
               className={cn(
                 "w-full py-4 rounded-xl font-semibold text-lg transition-all",
-                "bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500",
+                selectedOption
+                  ? "bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 shadow-lg shadow-purple-500/30 text-white"
+                  : "bg-white/10 border border-white/20 text-white/40",
                 "disabled:opacity-50 disabled:cursor-not-allowed",
-                "flex items-center justify-center gap-2 shadow-lg"
+                "flex items-center justify-center gap-2"
               )}
             >
               Continue
@@ -4899,8 +5065,18 @@ ${creatorName}${session?.user?.email ? `\n${session.user.email}` : ''}`;
                               if (data.success) {
                                 const formattedMessage = formatNegotiationMessage(data.message);
                                 setNegotiationMessage(formattedMessage);
-                                await navigator.clipboard.writeText(formattedMessage);
-                                toast.success('Copied for Email');
+                                try {
+                                  const isSecureContext = typeof window !== 'undefined' && (window.isSecureContext || window.location.protocol === 'https:' || window.location.hostname === 'localhost');
+                                  if (navigator.clipboard && isSecureContext) {
+                                    await navigator.clipboard.writeText(formattedMessage);
+                                    toast.success('Copied for Email');
+                                  } else {
+                                    toast.info('Please copy the message manually');
+                                  }
+                                } catch (clipError: any) {
+                                  console.warn('[ContractUploadFlow] Copy failed:', clipError);
+                                  toast.info('Please copy the message manually');
+                                }
                                 setShowNegotiationModal(true);
                               }
                             } catch (error) {
@@ -4910,8 +5086,18 @@ ${creatorName}${session?.user?.email ? `\n${session.user.email}` : ''}`;
                             }
                           } else {
                             const emailMessage = formatNegotiationMessage(negotiationMessage);
-                            await navigator.clipboard.writeText(emailMessage);
-                            toast.success('Copied for Email');
+                            try {
+                              const isSecureContext = typeof window !== 'undefined' && (window.isSecureContext || window.location.protocol === 'https:' || window.location.hostname === 'localhost');
+                              if (navigator.clipboard && isSecureContext) {
+                                await navigator.clipboard.writeText(emailMessage);
+                                toast.success('Copied for Email');
+                              } else {
+                                toast.info('Please copy the message manually');
+                              }
+                            } catch (clipError: any) {
+                              console.warn('[ContractUploadFlow] Copy failed:', clipError);
+                              toast.info('Please copy the message manually');
+                            }
                             setShowNegotiationModal(true);
                           }
                         }}
@@ -5055,8 +5241,18 @@ ${creatorName}${session?.user?.email ? `\n${session.user.email}` : ''}`;
                                           <div className="grid grid-cols-2 gap-3">
                                             <button
                                               onClick={async () => {
-                                                await navigator.clipboard.writeText(generatedClause);
-                                                toast.success('Clause copied!');
+                                                try {
+                                                  const isSecureContext = typeof window !== 'undefined' && (window.isSecureContext || window.location.protocol === 'https:' || window.location.hostname === 'localhost');
+                                                  if (navigator.clipboard && isSecureContext) {
+                                                    await navigator.clipboard.writeText(generatedClause);
+                                                    toast.success('Clause copied!');
+                                                  } else {
+                                                    toast.info('Please copy the clause manually');
+                                                  }
+                                                } catch (error: any) {
+                                                  console.warn('[ContractUploadFlow] Copy clause failed:', error);
+                                                  toast.info('Please copy the clause manually');
+                                                }
                                               }}
                                               className="bg-green-600/80 hover:bg-green-600 text-white px-4 py-3 rounded-lg text-sm font-semibold transition-all flex items-center justify-center gap-2 min-h-[48px]"
                                             >
@@ -5269,8 +5465,18 @@ ${creatorName}${session?.user?.email ? `\n${session.user.email}` : ''}`;
                                       <div className="flex gap-2">
                                         <button
                                           onClick={async () => {
-                                            await navigator.clipboard.writeText(generatedClause);
-                                            toast.success('Clause copied!');
+                                            try {
+                                              const isSecureContext = typeof window !== 'undefined' && (window.isSecureContext || window.location.protocol === 'https:' || window.location.hostname === 'localhost');
+                                              if (navigator.clipboard && isSecureContext) {
+                                                await navigator.clipboard.writeText(generatedClause);
+                                                toast.success('Clause copied!');
+                                              } else {
+                                                toast.info('Please copy the clause manually');
+                                              }
+                                            } catch (error: any) {
+                                              console.warn('[ContractUploadFlow] Copy clause failed:', error);
+                                              toast.info('Please copy the clause manually');
+                                            }
                                           }}
                                           className="flex-1 bg-green-600/80 hover:bg-green-600 text-white px-4 py-3 rounded-lg text-sm font-semibold transition-all flex items-center justify-center gap-2 min-h-[48px]"
                                         >
@@ -5937,9 +6143,20 @@ ${creatorName}${session?.user?.email ? `\n${session.user.email}` : ''}`;
 
                       {/* Copy Button */}
                       <button
-                        onClick={() => {
-                          navigator.clipboard.writeText(generatedClause);
-                          toast.success('Clause copied to clipboard!');
+                        onClick={async () => {
+                          try {
+                            const isSecureContext = typeof window !== 'undefined' && (window.isSecureContext || window.location.protocol === 'https:' || window.location.hostname === 'localhost');
+                            
+                            if (navigator.clipboard && isSecureContext) {
+                              await navigator.clipboard.writeText(generatedClause);
+                              toast.success('Clause copied to clipboard!');
+                            } else {
+                              toast.info('Please copy the clause manually');
+                            }
+                          } catch (error: any) {
+                            console.warn('[ContractUploadFlow] Copy clause failed:', error);
+                            toast.info('Unable to copy automatically. Please copy the clause manually.');
+                          }
                         }}
                         className="w-full bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-xl font-semibold transition-colors flex items-center justify-center gap-2"
                       >
