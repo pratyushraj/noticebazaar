@@ -1174,7 +1174,7 @@ router.post('/generate-contract-from-scratch', async (req: AuthenticatedRequest,
       console.error('[Protection] CRITICAL: Failed to update deal with new contract:', {
         error: updateError,
         dealId,
-        updateData,
+        baseUpdateData,
         safeContractUrl
       });
       // Still return the URL even if update fails - frontend can use temp state
