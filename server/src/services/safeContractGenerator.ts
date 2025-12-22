@@ -454,9 +454,9 @@ export async function generateSafeContractPdf(text: string, reportId: string): P
       }
     }
     
-    const browser = await puppeteer.default.launch({
+    // Build launch options
+    const launchOptions: any = {
       headless: 'new',
-      executablePath,
       args: [
         '--no-sandbox',
         '--disable-setuid-sandbox',
@@ -468,14 +468,28 @@ export async function generateSafeContractPdf(text: string, reportId: string): P
         '--disable-renderer-backgrounding',
         '--disable-features=TranslateUI',
         '--disable-ipc-flooding-protection',
-        // Remove --single-process as it can cause crashes on macOS
-        // Add macOS-specific flags
         '--disable-software-rasterizer',
         '--disable-web-security',
         '--disable-features=VizDisplayCompositor',
+        // macOS-specific: Disable crash reporting to avoid the warnings
+        '--disable-crash-reporter',
+        '--disable-breakpad',
       ],
       timeout: 30000, // 30 second timeout
+    };
+    
+    // Only set executablePath if we have a valid path
+    if (executablePath) {
+      launchOptions.executablePath = executablePath;
+    }
+    
+    console.log('[SafeContractGenerator] Launching Chrome with options:', {
+      hasExecutablePath: !!executablePath,
+      executablePath: executablePath ? executablePath.substring(0, 50) + '...' : 'default',
+      argsCount: launchOptions.args.length
     });
+    
+    const browser = await puppeteer.default.launch(launchOptions);
 
     try {
       // Wrap structured HTML in full document
