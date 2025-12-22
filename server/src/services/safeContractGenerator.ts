@@ -305,18 +305,18 @@ export async function generateSafeContractPdf(text: string, reportId: string): P
 
     try {
       // CRITICAL: Escape HTML and preserve ₹ symbol
-      // Replace ₹ with HTML entity to ensure it renders correctly
+      // Keep ₹ as Unicode - Puppeteer/Chrome handles it correctly
+      // HTML entity might not render in all contexts
       const escapedText = text
         .replace(/&/g, '&amp;')
         .replace(/</g, '&lt;')
         .replace(/>/g, '&gt;')
         .replace(/"/g, '&quot;')
         .replace(/'/g, '&#39;')
-        // CRITICAL: Preserve ₹ symbol - use HTML entity
-        .replace(/₹/g, '&#8377;') // ₹ (U+20B9) as HTML entity
-        .replace(/\u20B9/g, '&#8377;') // Explicit Unicode to HTML entity
-        // Fix any corrupted ¹ symbols
-        .replace(/¹/g, '&#8377;'); // ¹ (U+00B9) corruption to ₹
+        // CRITICAL: Preserve ₹ symbol as Unicode (Puppeteer supports it)
+        // Fix corrupted ¹ symbols first, then ensure ₹ is present
+        .replace(/¹/g, '₹') // Fix ¹ corruption to ₹
+        .replace(/\u00B9/g, '\u20B9'); // Explicit Unicode fix
       
       console.log('[SafeContractGenerator] Text processing:', {
         originalLength: text.length,
