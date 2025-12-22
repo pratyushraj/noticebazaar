@@ -304,6 +304,28 @@ export async function generateSafeContractPdf(text: string, reportId: string): P
     });
 
     try {
+      // CRITICAL: Escape HTML and preserve ₹ symbol
+      // Replace ₹ with HTML entity to ensure it renders correctly
+      const escapedText = text
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;')
+        // CRITICAL: Preserve ₹ symbol - use HTML entity
+        .replace(/₹/g, '&#8377;') // ₹ (U+20B9) as HTML entity
+        .replace(/\u20B9/g, '&#8377;') // Explicit Unicode to HTML entity
+        // Fix any corrupted ¹ symbols
+        .replace(/¹/g, '&#8377;'); // ¹ (U+00B9) corruption to ₹
+      
+      console.log('[SafeContractGenerator] Text processing:', {
+        originalLength: text.length,
+        escapedLength: escapedText.length,
+        hasRupeeSymbol: text.includes('₹') || text.includes('\u20B9'),
+        hasCorruptedSymbol: text.includes('¹'),
+        escapedHasRupee: escapedText.includes('&#8377;')
+      });
+
       // Create a simple HTML representation of the safe contract
       const html = `
 <!DOCTYPE html>
@@ -375,7 +397,7 @@ export async function generateSafeContractPdf(text: string, reportId: string): P
     <p>Report ID: ${reportId}</p>
     <p>Generated: ${new Date().toLocaleString()}</p>
   </div>
-  <div class="content">${text}</div>
+  <div class="content">${escapedText}</div>
   <div class="footer">
     <p>This agreement was generated using the CreatorArmour Contract Scanner based on information provided by the Parties. CreatorArmour is not a party to this agreement and does not provide legal representation.</p>
     <p style="margin-top: 8px; font-weight: 500;">The Parties are advised to independently review this agreement before execution.</p>
@@ -431,7 +453,21 @@ export async function generateSafeContractPdf(text: string, reportId: string): P
         
         // Add content
         doc.fontSize(11);
-        const lines = text.split('\n');
+        // CRITICAL: Fix currency symbol before adding to PDF
+        // Replace any corrupted ¹ with proper ₹
+        const cleanedText = text
+          .replace(/¹/g, '₹') // Fix ¹ corruption
+          .replace(/\u00B9/g, '\u20B9'); // Explicit Unicode fix
+        
+        console.log('[SafeContractGenerator] PDFKit: Text cleaning:', {
+          originalLength: text.length,
+          cleanedLength: cleanedText.length,
+          hasRupeeSymbol: text.includes('₹') || text.includes('\u20B9'),
+          hasCorruptedSymbol: text.includes('¹'),
+          cleanedHasRupee: cleanedText.includes('₹') || cleanedText.includes('\u20B9')
+        });
+        
+        const lines = cleanedText.split('\n');
         for (const line of lines) {
           if (line.trim()) {
             doc.text(line, { align: 'left', continued: false });
