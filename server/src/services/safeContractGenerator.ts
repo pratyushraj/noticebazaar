@@ -430,25 +430,42 @@ export async function generateSafeContractPdf(text: string, reportId: string): P
   // Try Puppeteer (REQUIRED - no fallback)
   try {
     const puppeteer = await import('puppeteer');
+    
+    // Try to find Chrome executable path
+    let executablePath: string | undefined = process.env.PUPPETEER_EXECUTABLE_PATH;
+    
+    // If not set, try to use Puppeteer's default
+    if (!executablePath) {
+      try {
+        const { executablePath: defaultPath } = await puppeteer.default.createBrowserFetcher().canDownload('chrome');
+        if (defaultPath) {
+          executablePath = defaultPath;
+        }
+      } catch (e) {
+        // Ignore - will use default
+      }
+    }
+    
     const browser = await puppeteer.default.launch({
       headless: 'new',
+      executablePath,
       args: [
         '--no-sandbox',
         '--disable-setuid-sandbox',
         '--disable-dev-shm-usage',
-        '--disable-accelerated-2d-canvas',
         '--disable-gpu',
-        '--disable-software-rasterizer',
         '--disable-extensions',
         '--disable-background-timer-throttling',
         '--disable-backgrounding-occluded-windows',
         '--disable-renderer-backgrounding',
         '--disable-features=TranslateUI',
         '--disable-ipc-flooding-protection',
-        '--single-process', // Use single process mode (helps on macOS)
+        // Remove --single-process as it can cause crashes on macOS
+        // Add macOS-specific flags
+        '--disable-software-rasterizer',
+        '--disable-web-security',
+        '--disable-features=VizDisplayCompositor',
       ],
-      // macOS-specific: Use executablePath if Chrome is installed via puppeteer
-      executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || undefined,
       timeout: 30000, // 30 second timeout
     });
 
