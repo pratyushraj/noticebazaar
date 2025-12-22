@@ -40,10 +40,13 @@ export type Database = {
       }
       brand_deals: {
         Row: {
+          brand_address: string | null
           brand_email: string | null
           brand_name: string
           contact_person: string | null
           contract_file_url: string | null
+          contract_metadata: Json | null
+          contract_version: string | null
           created_at: string
           creator_id: string
           deal_amount: number
@@ -51,19 +54,26 @@ export type Database = {
           due_date: string
           id: string
           invoice_file_url: string | null
+          invoice_url: string | null
+          invoice_number: string | null
           organization_id: string
+          otp_verified_at: string | null
           payment_expected_date: string
           payment_received_date: string | null
           platform: string | null
+          safe_contract_url: string | null
           status: string
           updated_at: string | null
           utr_number: string | null
         }
         Insert: {
+          brand_address?: string | null
           brand_email?: string | null
           brand_name: string
           contact_person?: string | null
           contract_file_url?: string | null
+          contract_metadata?: Json | null
+          contract_version?: string | null
           created_at?: string
           creator_id: string
           deal_amount: number
@@ -71,19 +81,26 @@ export type Database = {
           due_date: string
           id?: string
           invoice_file_url?: string | null
+          invoice_url?: string | null
+          invoice_number?: string | null
           organization_id: string
+          otp_verified_at?: string | null
           payment_expected_date: string
           payment_received_date?: string | null
           platform?: string | null
+          safe_contract_url?: string | null
           status?: string
           updated_at?: string | null
           utr_number?: string | null
         }
         Update: {
+          brand_address?: string | null
           brand_email?: string | null
           brand_name?: string
           contact_person?: string | null
           contract_file_url?: string | null
+          contract_metadata?: Json | null
+          contract_version?: string | null
           created_at?: string
           creator_id?: string
           deal_amount?: number
@@ -91,10 +108,14 @@ export type Database = {
           due_date?: string
           id?: string
           invoice_file_url?: string | null
+          invoice_url?: string | null
+          invoice_number?: string | null
           organization_id?: string
+          otp_verified_at?: string | null
           payment_expected_date?: string
           payment_received_date?: string | null
           platform?: string | null
+          safe_contract_url?: string | null
           status?: string
           updated_at?: string | null
           utr_number?: string | null
@@ -765,18 +786,27 @@ export type Database = {
       }
       profiles: {
         Row: {
+          address: string | null
           avatar_url: string | null
+          bank_account_name: string | null
+          bank_account_number: string | null
+          bank_ifsc: string | null
           business_entity_type: string | null
           business_name: string | null
+          email: string | null
           facebook_profile_url: string | null
           first_name: string | null
+          gst_number: string | null
           gstin: string | null
           id: string
           instagram_handle: string | null
           last_name: string | null
+          location: string | null
           onboarding_complete: boolean | null
           organization_id: string | null
           pan: string | null
+          pan_number: string | null
+          phone: string | null
           role: string
           tiktok_handle: string | null
           twitter_handle: string | null
@@ -784,18 +814,27 @@ export type Database = {
           youtube_channel_id: string | null
         }
         Insert: {
+          address?: string | null
           avatar_url?: string | null
+          bank_account_name?: string | null
+          bank_account_number?: string | null
+          bank_ifsc?: string | null
           business_entity_type?: string | null
           business_name?: string | null
+          email?: string | null
           facebook_profile_url?: string | null
           first_name?: string | null
+          gst_number?: string | null
           gstin?: string | null
           id: string
           instagram_handle?: string | null
           last_name?: string | null
+          location?: string | null
           onboarding_complete?: boolean | null
           organization_id?: string | null
           pan?: string | null
+          pan_number?: string | null
+          phone?: string | null
           role?: string
           tiktok_handle?: string | null
           twitter_handle?: string | null
@@ -803,18 +842,27 @@ export type Database = {
           youtube_channel_id?: string | null
         }
         Update: {
+          address?: string | null
           avatar_url?: string | null
+          bank_account_name?: string | null
+          bank_account_number?: string | null
+          bank_ifsc?: string | null
           business_entity_type?: string | null
           business_name?: string | null
+          email?: string | null
           facebook_profile_url?: string | null
           first_name?: string | null
+          gst_number?: string | null
           gstin?: string | null
           id?: string
           instagram_handle?: string | null
           last_name?: string | null
+          location?: string | null
           onboarding_complete?: boolean | null
           organization_id?: string | null
           pan?: string | null
+          pan_number?: string | null
+          phone?: string | null
           role?: string
           tiktok_handle?: string | null
           twitter_handle?: string | null
@@ -1025,6 +1073,342 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      brand_reply_audit_log: {
+        Row: {
+          id: string
+          token_id: string
+          action_type: string
+          action_timestamp: string
+          metadata: Json | null
+        }
+        Insert: {
+          id?: string
+          token_id: string
+          action_type: string
+          action_timestamp?: string
+          metadata?: Json | null
+        }
+        Update: {
+          id?: string
+          token_id?: string
+          action_type?: string
+          action_timestamp?: string
+          metadata?: Json | null
+        }
+        Relationships: []
+      }
+      brand_reply_tokens: {
+        Row: {
+          id: string
+          deal_id: string
+          created_by: string
+          token: string
+          expires_at: string
+          is_active: boolean
+          revoked_at: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          deal_id: string
+          created_by: string
+          token: string
+          expires_at: string
+          is_active?: boolean
+          revoked_at?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          deal_id?: string
+          created_by?: string
+          token?: string
+          expires_at?: string
+          is_active?: boolean
+          revoked_at?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      deal_details_submissions: {
+        Row: {
+          id: string
+          token_id: string
+          creator_id: string
+          form_data: Json
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          token_id: string
+          creator_id: string
+          form_data: Json
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          token_id?: string
+          creator_id?: string
+          form_data?: Json
+          created_at?: string
+        }
+        Relationships: []
+      }
+      deal_details_tokens: {
+        Row: {
+          id: string
+          creator_id: string
+          expires_at: string
+          is_active: boolean
+          revoked_at: string | null
+          used_at: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          creator_id: string
+          expires_at: string
+          is_active?: boolean
+          revoked_at?: string | null
+          used_at?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          creator_id?: string
+          expires_at?: string
+          is_active?: boolean
+          revoked_at?: string | null
+          used_at?: string | null
+          created_at?: string
+        }
+        Relationships: []
+      }
+      gst_company_cache: {
+        Row: {
+          gstin: string
+          legal_name: string
+          trade_name: string
+          address: string
+          state: string
+          status: 'Active' | 'Cancelled' | 'Suspended'
+          fetched_at: string
+          updated_at: string
+        }
+        Insert: {
+          gstin: string
+          legal_name: string
+          trade_name: string
+          address: string
+          state: string
+          status: 'Active' | 'Cancelled' | 'Suspended'
+          fetched_at?: string
+          updated_at?: string
+        }
+        Update: {
+          gstin?: string
+          legal_name?: string
+          trade_name?: string
+          address?: string
+          state?: string
+          status?: 'Active' | 'Cancelled' | 'Suspended'
+          fetched_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      legal_review_requests: {
+        Row: {
+          id: string
+          report_id: string
+          user_id: string
+          status: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          report_id: string
+          user_id: string
+          status?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          report_id?: string
+          user_id?: string
+          status?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      negotiation_messages: {
+        Row: {
+          id: string
+          report_id: string
+          user_id: string
+          message: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          report_id: string
+          user_id: string
+          message: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          report_id?: string
+          user_id?: string
+          message?: string
+          created_at?: string
+        }
+        Relationships: []
+      }
+      protection_issues: {
+        Row: {
+          id: string
+          report_id: string
+          severity: 'high' | 'medium' | 'low' | 'warning'
+          category: string
+          title: string
+          description: string
+          clause_reference: string | null
+          recommendation: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          report_id: string
+          severity: 'high' | 'medium' | 'low' | 'warning'
+          category: string
+          title: string
+          description: string
+          clause_reference?: string | null
+          recommendation?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          report_id?: string
+          severity?: 'high' | 'medium' | 'low' | 'warning'
+          category?: string
+          title?: string
+          description?: string
+          clause_reference?: string | null
+          recommendation?: string | null
+          created_at?: string
+        }
+        Relationships: []
+      }
+      protection_reports: {
+        Row: {
+          id: string
+          deal_id: string | null
+          user_id: string | null
+          contract_file_url: string
+          protection_score: number
+          negotiation_power_score: number | null
+          overall_risk: 'low' | 'medium' | 'high'
+          analysis_json: Json
+          pdf_report_url: string | null
+          safe_contract_url: string | null
+          analyzed_at: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          deal_id?: string | null
+          user_id?: string | null
+          contract_file_url: string
+          protection_score: number
+          negotiation_power_score?: number | null
+          overall_risk: 'low' | 'medium' | 'high'
+          analysis_json: Json
+          pdf_report_url?: string | null
+          safe_contract_url?: string | null
+          analyzed_at?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          deal_id?: string | null
+          user_id?: string | null
+          contract_file_url?: string
+          protection_score?: number
+          negotiation_power_score?: number | null
+          overall_risk?: 'low' | 'medium' | 'high'
+          analysis_json?: Json
+          pdf_report_url?: string | null
+          safe_contract_url?: string | null
+          analyzed_at?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      safe_clauses: {
+        Row: {
+          id: string
+          report_id: string
+          issue_id: string | null
+          original_clause: string
+          safe_clause: string
+          explanation: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          report_id: string
+          issue_id?: string | null
+          original_clause: string
+          safe_clause: string
+          explanation?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          report_id?: string
+          issue_id?: string | null
+          original_clause?: string
+          safe_clause?: string
+          explanation?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      saved_reports: {
+        Row: {
+          id: string
+          user_id: string
+          report_id: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          report_id: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          report_id?: string
+          created_at?: string
+        }
+        Relationships: []
       }
       lawyer_requests: {
         Row: {
