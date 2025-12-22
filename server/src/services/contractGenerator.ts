@@ -219,6 +219,10 @@ export async function generateContractFromScratch(
         .replace(/\s*[.;]\s*([A-Z])/g, ' $1') // Clean up before capital letters
         .replace(/\s*[.;]\s*([0-9])/g, ' $1') // Clean up before numbers
         .replace(/\s*[.;]\s*([a-z])/g, ' $1') // Clean up before lowercase
+        // CRITICAL: Remove .; at start of lines before numbers (e.g., ".; 1 Scope")
+        .replace(/^\.\s*;\s*([0-9])/gm, '$1') // ".; 1" -> "1"
+        .replace(/^;\s*\.\s*([0-9])/gm, '$1') // ";. 1" -> "1"
+        .replace(/^\.;\s*([0-9])/gm, '$1') // ".;1" -> "1"
         // Remove .; followed by newline (common artifact)
         .replace(/\.\s*;\s*\n/g, '.\n')
         .replace(/;\s*\.\s*\n/g, '.\n');
