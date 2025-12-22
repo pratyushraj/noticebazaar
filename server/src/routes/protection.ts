@@ -1117,9 +1117,8 @@ router.post('/generate-contract-from-scratch', async (req: AuthenticatedRequest,
     }
 
     // Update deal with safe contract URL - ALWAYS overwrite old contracts with new v2 contract
-    // Start with minimal required fields that definitely exist
+    // Start with minimal required fields that definitely exist (contract_file_url is the standard column)
     const baseUpdateData: any = {
-      safe_contract_url: safeContractUrl,
       contract_file_url: safeContractUrl, // ALWAYS update contract_file_url with new contract (overwrites old)
       updated_at: new Date().toISOString()
     };
@@ -1136,9 +1135,10 @@ router.post('/generate-contract-from-scratch', async (req: AuthenticatedRequest,
     let updateError: any = null;
     let updateResult: any = null;
     
-    // Attempt 1: Try with all optional fields (contract_version and contract_metadata)
+    // Attempt 1: Try with all optional fields (safe_contract_url, contract_version, contract_metadata)
     const updateDataWithAll = {
       ...baseUpdateData,
+      ...(safeContractUrl && { safe_contract_url: safeContractUrl }), // Only include if column might exist
       contract_version: 'v2',
       ...(result.metadata && { contract_metadata: result.metadata })
     };
@@ -1147,20 +1147,22 @@ router.post('/generate-contract-from-scratch', async (req: AuthenticatedRequest,
       .from('brand_deals')
       .update(updateDataWithAll)
       .eq('id', dealId)
-      .select('safe_contract_url, contract_file_url');
+      .select('contract_file_url');
     
     if (!errorWithAll) {
       // Success with all fields
       updateError = null;
       updateResult = resultWithAll;
-    } else if (errorWithAll.message?.includes('contract_version') || errorWithAll.message?.includes('contract_metadata')) {
-      // Attempt 2: Try without optional fields (just the required URLs)
-      console.warn('[Protection] Optional columns not found, updating with base fields only:', errorWithAll.message);
+    } else if (errorWithAll.message?.includes('safe_contract_url') || 
+               errorWithAll.message?.includes('contract_version') || 
+               errorWithAll.message?.includes('contract_metadata')) {
+      // Attempt 2: Try without optional fields (just contract_file_url)
+      console.warn('[Protection] Optional columns not found, updating with contract_file_url only:', errorWithAll.message);
       const { error: errorBase, data: resultBase } = await supabase
         .from('brand_deals')
         .update(baseUpdateData)
         .eq('id', dealId)
-        .select('safe_contract_url, contract_file_url');
+        .select('contract_file_url');
       
       updateError = errorBase;
       updateResult = resultBase;
