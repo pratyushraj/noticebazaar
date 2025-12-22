@@ -327,11 +327,13 @@ export async function generateSafeContractPdf(text: string, reportId: string): P
       });
 
       // Create a simple HTML representation of the safe contract
+      // CRITICAL: Use UTF-8 encoding and ensure ₹ symbol is preserved
       const html = `
 <!DOCTYPE html>
 <html>
 <head>
   <meta charset="UTF-8">
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
   <style>
     body {
       font-family: 'Times New Roman', serif;
