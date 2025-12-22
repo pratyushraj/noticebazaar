@@ -189,9 +189,13 @@ export async function generateContractFromScratch(
     
     // SECOND: Remove .; artifacts (common template delimiter leak) - ULTRA AGGRESSIVE patterns
     // Multiple passes to catch all variations, including standalone .; on their own lines
-    for (let i = 0; i < 5; i++) {
+    for (let i = 0; i < 10; i++) {
       contractText = contractText
-        // CRITICAL: Remove standalone .; on their own lines FIRST (most common case)
+        // CRITICAL: Remove .; before numbers in ANY context (most important first)
+        .replace(/\.\s*;\s*([0-9])/g, '$1') // ".; 1" -> "1" (anywhere)
+        .replace(/;\s*\.\s*([0-9])/g, '$1') // ";. 1" -> "1" (anywhere)
+        .replace(/\.;\s*([0-9])/g, '$1') // ".;1" -> "1" (anywhere)
+        // CRITICAL: Remove standalone .; on their own lines
         .replace(/^\s*\.\s*;\s*$/gm, '') // Remove lines that are just .;
         .replace(/^\s*;\s*\.\s*$/gm, '') // Remove lines that are just ;.
         // Remove .; in all contexts - most aggressive patterns
@@ -219,12 +223,7 @@ export async function generateContractFromScratch(
         // Remove any remaining stray punctuation artifacts
         .replace(/[.;]{2,}/g, '.') // Multiple . or ; become single .
         .replace(/\s*[.;]\s*([A-Z])/g, ' $1') // Clean up before capital letters
-        .replace(/\s*[.;]\s*([0-9])/g, ' $1') // Clean up before numbers
         .replace(/\s*[.;]\s*([a-z])/g, ' $1') // Clean up before lowercase
-        // CRITICAL: Remove .; at start of lines before numbers (e.g., ".; 1 Scope")
-        .replace(/^\.\s*;\s*([0-9])/gm, '$1') // ".; 1" -> "1"
-        .replace(/^;\s*\.\s*([0-9])/gm, '$1') // ";. 1" -> "1"
-        .replace(/^\.;\s*([0-9])/gm, '$1') // ".;1" -> "1"
         // Remove .; followed by newline (common artifact)
         .replace(/\.\s*;\s*\n/g, '.\n')
         .replace(/;\s*\.\s*\n/g, '.\n');
@@ -254,10 +253,15 @@ export async function generateContractFromScratch(
     
     // THIRD: Final currency symbol validation and fix
     // Ensure ₹ symbol is present in currency amounts
-    // Also replace any "Rs." that might have leaked in
-    // Note: rupeeSymbol is already declared above
+    // CRITICAL: Replace ANY "Rs." with ₹ BEFORE PDF generation
     contractText = contractText
-      .replace(/\bRs\.\s*(\d[\d,]*)\s*\(Rupees\s+([^)]+)\s+Only\)/g, `${rupeeSymbol}$1 (Rupees $2 Only)`) // Replace "Rs. 1,000" with "₹1,000"
+      // Replace "Rs. 1,000" or "Rs 1,000" with "₹1,000" in currency context
+      .replace(/\bRs\.\s*(\d[\d,]*)\s*\(Rupees\s+([^)]+)\s+Only\)/g, `${rupeeSymbol}$1 (Rupees $2 Only)`)
+      .replace(/\bRs\s+(\d[\d,]*)\s*\(Rupees\s+([^)]+)\s+Only\)/g, `${rupeeSymbol}$1 (Rupees $2 Only)`)
+      // Also replace standalone "Rs." before numbers (in case format is different)
+      .replace(/\bRs\.\s*(\d[\d,]*)/g, `${rupeeSymbol}$1`)
+      .replace(/\bRs\s+(\d[\d,]*)/g, `${rupeeSymbol}$1`)
+      // Ensure ₹ is present in currency amounts (add if missing)
       .replace(/(\d[\d,]*)\s*\(Rupees\s+([^)]+)\s+Only\)/g, (match, amount, words) => {
         if (!amount.includes(rupeeSymbol) && !amount.includes('₹')) {
           return `${rupeeSymbol}${amount} (Rupees ${words} Only)`;
