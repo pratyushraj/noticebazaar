@@ -307,19 +307,19 @@ export async function generateSafeContractPdf(text: string, reportId: string): P
       // CRITICAL: Escape HTML and preserve ₹ symbol
       // Keep ₹ as Unicode - Puppeteer/Chrome handles it correctly
       // IMPORTANT: Do NOT replace ₹ with "Rs." here - Puppeteer supports ₹ natively
-      const escapedText = text
+      // FIRST: Replace any "Rs." with ₹ BEFORE HTML escaping
+      let processedText = text
+        .replace(/\bRs\.\s*(\d[\d,]*)/g, '₹$1') // Replace "Rs. 1,000" with "₹1,000"
+        .replace(/\bRs\s+(\d[\d,]*)/g, '₹$1') // Replace "Rs 1,000" with "₹1,000"
+        .replace(/¹/g, '₹') // Fix ¹ corruption to ₹
+        .replace(/\u00B9/g, '\u20B9'); // Explicit Unicode fix
+      
+      const escapedText = processedText
         .replace(/&/g, '&amp;')
         .replace(/</g, '&lt;')
         .replace(/>/g, '&gt;')
         .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#39;')
-        // CRITICAL: Preserve ₹ symbol as Unicode (Puppeteer supports it)
-        // Fix corrupted ¹ symbols first, then ensure ₹ is present
-        .replace(/¹/g, '₹') // Fix ¹ corruption to ₹
-        .replace(/\u00B9/g, '\u20B9') // Explicit Unicode fix
-        // If text already has "Rs." (from previous processing), replace with ₹
-        .replace(/\bRs\.\s*/g, '₹') // Replace "Rs. " with ₹
-        .replace(/\bRs\s+/g, '₹'); // Replace "Rs " with ₹
+        .replace(/'/g, '&#39;');
       
       console.log('[SafeContractGenerator] Text processing:', {
         originalLength: text.length,

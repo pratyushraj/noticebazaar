@@ -211,9 +211,11 @@ export async function generateContractFromScratch(
         // Remove standalone semicolons and periods that are artifacts
         .replace(/^\s*[.;]\s*/gm, '') // Remove lines starting with . or ;
         .replace(/\s*[.;]\s*$/gm, '') // Remove lines ending with . or ;
-        // Remove .; after periods
+        // Remove .; after periods (e.g., "India.;" -> "India.")
         .replace(/\.\s*\.\s*;\s*/g, '.') // ..; -> .
         .replace(/\.\s*;\s*\./g, '.') // .;. -> .
+        .replace(/([a-zA-Z0-9])\s*\.\s*;\s*/g, '$1.') // "India.;" -> "India."
+        .replace(/([a-zA-Z0-9])\s*;\s*\.\s*/g, '$1.') // "India;." -> "India."
         // Remove any remaining stray punctuation artifacts
         .replace(/[.;]{2,}/g, '.') // Multiple . or ; become single .
         .replace(/\s*[.;]\s*([A-Z])/g, ' $1') // Clean up before capital letters
@@ -230,6 +232,9 @@ export async function generateContractFromScratch(
     
     // Final cleanup pass
     contractText = contractText
+      // CRITICAL: Remove .; after text (e.g., "India.;" -> "India.")
+      .replace(/([a-zA-Z0-9])\s*\.\s*;\s*/g, '$1.') // "India.;" -> "India."
+      .replace(/([a-zA-Z0-9])\s*;\s*\.\s*/g, '$1.') // "India;." -> "India."
       // Clean up spacing issues
       .replace(/\s+\./g, '.') // Remove spaces before periods
       .replace(/\.\s*\./g, '.') // Remove double periods
