@@ -249,16 +249,16 @@ export async function generateContractFromScratch(
     
     // THIRD: Final currency symbol validation and fix
     // Ensure ₹ symbol is present in currency amounts
-    contractText = contractText.replace(
-      /(\d[\d,]*)\s*\(Rupees\s+([^)]+)\s+Only\)/g,
-      (match, amount, words) => {
-        // If amount doesn't start with ₹, add it
-        if (!match.includes(rupeeSymbol) && !match.includes('₹')) {
+    // Also replace any "Rs." that might have leaked in
+    const rupeeSymbol = '\u20B9';
+    contractText = contractText
+      .replace(/\bRs\.\s*(\d[\d,]*)\s*\(Rupees\s+([^)]+)\s+Only\)/g, `${rupeeSymbol}$1 (Rupees $2 Only)`) // Replace "Rs. 1,000" with "₹1,000"
+      .replace(/(\d[\d,]*)\s*\(Rupees\s+([^)]+)\s+Only\)/g, (match, amount, words) => {
+        if (!amount.includes(rupeeSymbol) && !amount.includes('₹')) {
           return `${rupeeSymbol}${amount} (Rupees ${words} Only)`;
         }
         return match;
-      }
-    );
+      });
     
     // Log cleanup results
     const artifactsRemoved = (beforeCleanup.match(/\.;/g) || []).length;
