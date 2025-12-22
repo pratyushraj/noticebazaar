@@ -185,6 +185,25 @@ export function mapDealSchemaToContractVariables(
     throw new Error(`Currency formatting incomplete: Missing words in formatted amount: ${formattedAmount}`);
   }
 
+  // CRITICAL: Final validation before returning - ensure currency symbol is correct
+  const finalFormattedAmount = formattedAmount.replace(/¹/g, rupeeSymbol);
+  if (!finalFormattedAmount.includes(rupeeSymbol) && !finalFormattedAmount.includes('₹')) {
+    console.error('[ContractTemplate] CRITICAL: Currency symbol missing after all fixes!', {
+      original: formattedAmount,
+      final: finalFormattedAmount,
+      charCodes: Array.from(finalFormattedAmount).map(c => c.charCodeAt(0))
+    });
+    throw new Error(`Currency symbol validation failed: ${finalFormattedAmount}`);
+  }
+  
+  console.log('[ContractTemplate] Currency formatting complete:', {
+    amount: dealSchema.deal_amount,
+    formatted: finalFormattedAmount,
+    hasRupeeSymbol: finalFormattedAmount.includes(rupeeSymbol) || finalFormattedAmount.includes('₹'),
+    hasCorruptedSymbol: finalFormattedAmount.includes('¹'),
+    firstChars: finalFormattedAmount.substring(0, 20)
+  });
+
   return {
     contract_date: contractDate,
     brand_name: brandInfo.name,
@@ -196,7 +215,7 @@ export function mapDealSchemaToContractVariables(
     deliverables_list: deliverablesList,
     delivery_deadline: deliveryDeadline,
     deal_amount: dealSchema.deal_amount, // Keep raw amount for calculations if needed
-    deal_amount_formatted: formattedAmount, // Formatted currency string
+    deal_amount_formatted: finalFormattedAmount, // Formatted currency string (validated)
     payment_method: paymentMethod,
     payment_timeline: paymentTimeline,
     usage_type: usageType,

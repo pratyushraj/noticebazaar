@@ -160,9 +160,20 @@ export async function generateContractFromScratch(
     console.log('[ContractGenerator] Generating contract with v2 template (with all fixes applied)...');
     console.log('[ContractGenerator] Currency amount:', dealSchema.deal_amount);
     console.log('[ContractGenerator] Deliverables:', JSON.stringify(dealSchema.deliverables));
+    console.log('[ContractGenerator] Variables deal_amount_formatted:', variables.deal_amount_formatted);
+    console.log('[ContractGenerator] Variables currency check:', {
+      hasRupee: variables.deal_amount_formatted?.includes('₹') || variables.deal_amount_formatted?.includes('\u20B9'),
+      hasCorrupted: variables.deal_amount_formatted?.includes('¹'),
+      firstChars: variables.deal_amount_formatted?.substring(0, 30)
+    });
     let contractText = generateContractFromTemplate(variables);
     console.log('[ContractGenerator] Contract text generated, length:', contractText.length);
     console.log('[ContractGenerator] Contract preview (first 500 chars):', contractText.substring(0, 500));
+    console.log('[ContractGenerator] Currency in contract text:', {
+      hasRupee: contractText.includes('₹') || contractText.includes('\u20B9'),
+      hasCorrupted: contractText.includes('¹'),
+      currencyMatch: contractText.match(/[₹¹]\s*\d[\d,]*\s*\(Rupees[^)]+Only\)/)?.[0] || 'Not found'
+    });
 
     // CRITICAL: Post-process cleanup to remove template artifacts before PDF render
     // This prevents internal template delimiters from leaking into final PDF
