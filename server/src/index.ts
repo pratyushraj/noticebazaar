@@ -267,7 +267,14 @@ async function checkPuppeteerAvailability() {
     const puppeteer = await import('puppeteer');
     const browser = await puppeteer.default.launch({
       headless: 'new',
-      args: ['--no-sandbox', '--disable-setuid-sandbox']
+      args: [
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+        '--disable-dev-shm-usage',
+        '--disable-gpu',
+        '--single-process',
+      ],
+      timeout: 10000, // 10 second timeout for startup check
     });
     await browser.close();
     console.log('✅ Puppeteer/Chrome is available for contract PDF generation');
@@ -276,8 +283,18 @@ async function checkPuppeteerAvailability() {
     console.error('   Contract PDF generation will FAIL.');
     console.error('   Error:', error.message);
     console.error('');
-    console.error('   To fix this, run:');
-    console.error('   cd server && npx puppeteer browsers install chrome');
+    if (error.message?.includes('Could not find Chrome')) {
+      console.error('   Chrome is not installed. To fix this, run:');
+      console.error('   cd server && npx puppeteer browsers install chrome');
+    } else if (error.message?.includes('Failed to launch')) {
+      console.error('   Chrome is installed but failing to launch.');
+      console.error('   This may be a macOS compatibility issue.');
+      console.error('   Try: cd server && npx puppeteer browsers install chrome@latest');
+      console.error('   Or check Chrome binary permissions.');
+    } else {
+      console.error('   To fix this, run:');
+      console.error('   cd server && npx puppeteer browsers install chrome');
+    }
     console.error('');
     console.error('   Or set PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=false in your environment.');
     console.error('');

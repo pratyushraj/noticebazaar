@@ -432,7 +432,24 @@ export async function generateSafeContractPdf(text: string, reportId: string): P
     const puppeteer = await import('puppeteer');
     const browser = await puppeteer.default.launch({
       headless: 'new',
-      args: ['--no-sandbox', '--disable-setuid-sandbox']
+      args: [
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+        '--disable-dev-shm-usage',
+        '--disable-accelerated-2d-canvas',
+        '--disable-gpu',
+        '--disable-software-rasterizer',
+        '--disable-extensions',
+        '--disable-background-timer-throttling',
+        '--disable-backgrounding-occluded-windows',
+        '--disable-renderer-backgrounding',
+        '--disable-features=TranslateUI',
+        '--disable-ipc-flooding-protection',
+        '--single-process', // Use single process mode (helps on macOS)
+      ],
+      // macOS-specific: Use executablePath if Chrome is installed via puppeteer
+      executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || undefined,
+      timeout: 30000, // 30 second timeout
     });
 
     try {
