@@ -261,10 +261,37 @@ app.use(errorHandler);
 // Export for Vercel serverless functions
 export default app;
 
+// Check Puppeteer availability on startup
+async function checkPuppeteerAvailability() {
+  try {
+    const puppeteer = await import('puppeteer');
+    const browser = await puppeteer.default.launch({
+      headless: 'new',
+      args: ['--no-sandbox', '--disable-setuid-sandbox']
+    });
+    await browser.close();
+    console.log('✅ Puppeteer/Chrome is available for contract PDF generation');
+  } catch (error: any) {
+    console.error('❌ FATAL: Puppeteer/Chrome is NOT available!');
+    console.error('   Contract PDF generation will FAIL.');
+    console.error('   Error:', error.message);
+    console.error('');
+    console.error('   To fix this, run:');
+    console.error('   cd server && npx puppeteer browsers install chrome');
+    console.error('');
+    console.error('   Or set PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=false in your environment.');
+    console.error('');
+    // Don't exit - allow server to start, but contracts will fail
+  }
+}
+
 // For local development, start the server
 if (process.env.VERCEL !== '1') {
-  app.listen(PORT, () => {
+  app.listen(PORT, async () => {
     console.log(`🚀 CreatorArmour API server running on port ${PORT}`);
+    
+    // Check Puppeteer after server starts
+    await checkPuppeteerAvailability();
   });
 }
 

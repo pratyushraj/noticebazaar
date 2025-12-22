@@ -1199,6 +1199,17 @@ router.post('/generate-contract-from-scratch', async (req: AuthenticatedRequest,
   } catch (error: any) {
     console.error('[Protection] Generate contract from scratch error:', error);
     
+    // Check if it's a Puppeteer/Chrome error
+    if (error.message?.includes('Chrome/Puppeteer is required') || 
+        error.message?.includes('Could not find Chrome') ||
+        error.message?.includes('Puppeteer is required')) {
+      return res.status(500).json({
+        success: false,
+        error: error.message || 'Contract PDF generation failed. Chrome/Puppeteer is required.',
+        requiresPuppeteer: true
+      });
+    }
+    
     // Check if it's a validation error (client error)
     const isValidationError = error.message && (
       error.message.includes('Missing required fields') ||

@@ -294,8 +294,140 @@ async function extractTextFromPdf(buffer: Buffer): Promise<string> {
  * Generate PDF from safe contract text
  * Falls back to text file if Puppeteer is unavailable
  */
+/**
+ * Convert plain text contract to structured HTML
+ * Preserves sections, headings, lists, and formatting
+ */
+function convertTextToStructuredHtml(text: string): string {
+  let html = '';
+  const lines = text.split('\n');
+  let inList = false;
+  
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i].trim();
+    const nextLine = i < lines.length - 1 ? lines[i + 1].trim() : '';
+    
+    // Skip empty lines (will be handled by spacing)
+    if (!line) {
+      if (inList) {
+        html += '</ul>\n';
+        inList = false;
+      }
+      continue;
+    }
+    
+    // Main title
+    if (line.includes('CREATOR–BRAND COLLABORATION AGREEMENT')) {
+      if (inList) {
+        html += '</ul>\n';
+        inList = false;
+      }
+      html += `<h1>${escapeHtml(line)}</h1>\n`;
+      continue;
+    }
+    
+    // Section headings (numbered sections like "1. Scope of Work")
+    if (/^\d+\.\s+[A-Z]/.test(line)) {
+      if (inList) {
+        html += '</ul>\n';
+        inList = false;
+      }
+      html += `<div class="section"><h2>${escapeHtml(line)}</h2>\n`;
+      continue;
+    }
+    
+    // Subheadings (like "Late Payment Protection" - all caps or title case, short)
+    if (line.length < 60 && /^[A-Z][a-zA-Z\s]+$/.test(line) && !line.includes(':') && !line.includes('•')) {
+      if (inList) {
+        html += '</ul>\n';
+        inList = false;
+      }
+      html += `<h3>${escapeHtml(line)}</h3>\n`;
+      continue;
+    }
+    
+    // Bullet points
+    if (line.startsWith('•') || line.startsWith('-')) {
+      if (!inList) {
+        html += '<ul>\n';
+        inList = true;
+      }
+      const listItem = line.substring(1).trim();
+      html += `<li>${escapeHtml(listItem)}</li>\n`;
+      continue;
+    }
+    
+    // Close list if we hit a non-list item
+    if (inList) {
+      html += '</ul>\n';
+      inList = false;
+    }
+    
+    // Regular paragraphs
+    html += `<p>${escapeHtml(line)}</p>\n`;
+  }
+  
+  // Close any open list
+  if (inList) {
+    html += '</ul>\n';
+  }
+  
+  return html;
+}
+
+function escapeHtml(text: string): string {
+  return text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 export async function generateSafeContractPdf(text: string, reportId: string): Promise<Buffer> {
-  // Try to use Puppeteer first (better quality PDF)
+  // CRITICAL: Contracts MUST use Puppeteer only - PDFKit is not acceptable for legal documents
+  // PDFKit destroys formatting (line breaks, headings, lists) and is only suitable for invoices/receipts
+  
+  // SAFETY ASSERTION: Verify contract text structure before generation
+  if (!text || text.length < 500) {
+    throw new Error('Contract text is too short or empty. Cannot generate PDF.');
+  }
+  
+  // Assert that text contains newlines (structure indicator)
+  if (!text.includes('\n')) {
+    throw new Error('Contract text appears malformed (no line breaks). Cannot generate PDF.');
+  }
+  
+  // Assert that key sections exist
+  const requiredSections = [
+    'CREATOR–BRAND COLLABORATION AGREEMENT',
+    'Scope of Work',
+    'Compensation & Payment Terms'
+  ];
+  
+  const missingSections = requiredSections.filter(section => !text.includes(section));
+  if (missingSections.length > 0) {
+    throw new Error(`Contract text is missing required sections: ${missingSections.join(', ')}`);
+  }
+  
+  // POST-PROCESSING: Clean artifacts before HTML conversion
+  let processedText = text
+    // Remove .; artifacts
+    .replace(/\.\s*;\s*(\d)/g, '$1') // Remove .; before numbers
+    .replace(/([a-zA-Z0-9])\s*\.\s*;\s*/g, '$1.') // Remove .; after text
+    .replace(/\.\s*;\s*/g, '.') // Remove any remaining .;
+    // Normalize newlines (ensure double breaks between sections)
+    .replace(/\n{3,}/g, '\n\n') // Max 2 newlines
+    .replace(/\n\n\n/g, '\n\n') // Triple -> double
+    // Fix currency
+    .replace(/\bRs\.\s*(\d[\d,]*)/g, '₹$1')
+    .replace(/\bRs\s+(\d[\d,]*)/g, '₹$1')
+    .replace(/¹/g, '₹');
+  
+  // Convert plain text to structured HTML
+  const structuredHtml = convertTextToStructuredHtml(processedText);
+  
+  // Try Puppeteer (REQUIRED - no fallback)
   try {
     const puppeteer = await import('puppeteer');
     const browser = await puppeteer.default.launch({
@@ -304,33 +436,7 @@ export async function generateSafeContractPdf(text: string, reportId: string): P
     });
 
     try {
-      // CRITICAL: Escape HTML and preserve ₹ symbol
-      // Keep ₹ as Unicode - Puppeteer/Chrome handles it correctly
-      // IMPORTANT: Do NOT replace ₹ with "Rs." here - Puppeteer supports ₹ natively
-      // FIRST: Replace any "Rs." with ₹ BEFORE HTML escaping
-      let processedText = text
-        .replace(/\bRs\.\s*(\d[\d,]*)/g, '₹$1') // Replace "Rs. 1,000" with "₹1,000"
-        .replace(/\bRs\s+(\d[\d,]*)/g, '₹$1') // Replace "Rs 1,000" with "₹1,000"
-        .replace(/¹/g, '₹') // Fix ¹ corruption to ₹
-        .replace(/\u00B9/g, '\u20B9'); // Explicit Unicode fix
-      
-      const escapedText = processedText
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#39;');
-      
-      console.log('[SafeContractGenerator] Text processing:', {
-        originalLength: text.length,
-        escapedLength: escapedText.length,
-        hasRupeeSymbol: text.includes('₹') || text.includes('\u20B9'),
-        hasCorruptedSymbol: text.includes('¹'),
-        escapedHasRupee: escapedText.includes('&#8377;')
-      });
-
-      // Create a simple HTML representation of the safe contract
-      // CRITICAL: Use UTF-8 encoding and ensure ₹ symbol is preserved
+      // Wrap structured HTML in full document
       const html = `
 <!DOCTYPE html>
 <html>
@@ -349,6 +455,32 @@ export async function generateSafeContractPdf(text: string, reportId: string): P
       text-align: center;
       margin-bottom: 30px;
       color: #667eea;
+      font-size: 18pt;
+    }
+    h2 {
+      font-size: 14pt;
+      font-weight: bold;
+      margin-top: 24px;
+      margin-bottom: 12px;
+      page-break-after: avoid;
+    }
+    h3 {
+      font-size: 12pt;
+      font-weight: bold;
+      margin-top: 18px;
+      margin-bottom: 8px;
+    }
+    p {
+      margin: 12px 0;
+      text-align: justify;
+    }
+    ul, ol {
+      margin: 12px 0;
+      padding-left: 24px;
+    }
+    li {
+      margin: 6px 0;
+      line-height: 1.7;
     }
     .header {
       text-align: center;
@@ -356,43 +488,17 @@ export async function generateSafeContractPdf(text: string, reportId: string): P
       padding-bottom: 20px;
       border-bottom: 2px solid #e5e7eb;
     }
-    .content {
-      white-space: pre-wrap;
-      text-align: justify;
-      word-wrap: break-word;
-      overflow-wrap: break-word;
-      hyphens: auto;
-    }
-    .content ul, .content ol {
-      margin: 12px 0;
-      padding-left: 24px;
-    }
-    .content li {
-      margin: 6px 0;
-      line-height: 1.7;
-      list-style-position: outside;
-      padding-left: 0;
-    }
-    .content ul, .content ol {
-      margin: 12px 0;
-      padding-left: 24px;
-      list-style-position: outside;
-    }
-    .content p {
-      margin: 12px 0;
+    .section {
+      margin-bottom: 24px;
+      page-break-inside: avoid;
     }
     .footer {
       margin-top: 40px;
       padding-top: 20px;
       border-top: 1px solid #e5e7eb;
       text-align: center;
-      font-size: 12px;
+      font-size: 10pt;
       color: #6b7280;
-    }
-    .highlight {
-      background-color: #fef3c7;
-      padding: 2px 4px;
-      border-radius: 3px;
     }
   </style>
 </head>
@@ -402,7 +508,7 @@ export async function generateSafeContractPdf(text: string, reportId: string): P
     <p>Report ID: ${reportId}</p>
     <p>Generated: ${new Date().toLocaleString()}</p>
   </div>
-  <div class="content">${escapedText}</div>
+  ${structuredHtml}
   <div class="footer">
     <p>This agreement was generated using the CreatorArmour Contract Scanner based on information provided by the Parties. CreatorArmour is not a party to this agreement and does not provide legal representation.</p>
     <p style="margin-top: 8px; font-weight: 500;">The Parties are advised to independently review this agreement before execution.</p>
@@ -427,91 +533,24 @@ export async function generateSafeContractPdf(text: string, reportId: string): P
       throw error;
     }
   } catch (puppeteerError: any) {
-    // Fallback: Use pdfkit if Puppeteer fails
-    console.warn('[SafeContractGenerator] Puppeteer failed, trying pdfkit fallback:', puppeteerError.message);
+    // CRITICAL: Do NOT fallback to PDFKit for contracts
+    // PDFKit destroys formatting and is unacceptable for legal documents
+    console.error('[SafeContractGenerator] Puppeteer failed:', puppeteerError.message);
     
-    try {
-      const PDFDocument = (await import('pdfkit')).default;
-      
-      return new Promise<Buffer>((resolve, reject) => {
-        const doc = new PDFDocument({
-          size: 'A4',
-          margins: { top: 50, bottom: 50, left: 50, right: 50 }
-        });
-        
-        const chunks: Buffer[] = [];
-        
-        doc.on('data', (chunk: Buffer) => chunks.push(chunk));
-        doc.on('end', () => {
-          resolve(Buffer.concat(chunks));
-        });
-        doc.on('error', (err: Error) => {
-          reject(err);
-        });
-        
-        // Add header
-        doc.fontSize(16).text('Safe Contract Version', { align: 'center' });
-        doc.moveDown();
-        doc.fontSize(10).text(`Report ID: ${reportId}`, { align: 'center' });
-        doc.fontSize(10).text(`Generated: ${new Date().toLocaleString()}`, { align: 'center' });
-        doc.moveDown(2);
-        
-        // Add content
-        doc.fontSize(11);
-        // CRITICAL: PDFKit default fonts don't support ₹ symbol
-        // Replace ₹ with "Rs." for PDFKit compatibility
-        // This ensures the currency is always visible in the PDF
-        // IMPORTANT: Prevent "Rs.Rs." duplication by normalizing first
-        let cleanedText = text
-          // First, normalize all currency symbols to a placeholder
-          .replace(/₹/g, '{{CURRENCY}}')
-          .replace(/\u20B9/g, '{{CURRENCY}}')
-          .replace(/¹/g, '{{CURRENCY}}')
-          .replace(/\u00B9/g, '{{CURRENCY}}')
-          // Replace any existing "Rs." or "Rs" with placeholder to prevent duplication
-          .replace(/\bRs\.?\s*/gi, '{{CURRENCY}}')
-          // Now replace placeholder with single "Rs. " (with space)
-          .replace(/\{\{CURRENCY\}\}/g, 'Rs. ')
-          // Fix "Rs. Rs." patterns (space between) - multiple passes
-          .replace(/Rs\.\s+Rs\./g, 'Rs.')
-          .replace(/Rs\.\s+Rs\./g, 'Rs.') // Second pass
-          // Fix "Rs.Rs." patterns (no space)
-          .replace(/Rs\.Rs\./g, 'Rs.')
-          .replace(/Rs\.Rs\./g, 'Rs.') // Second pass
-          // Clean up any double spaces (but preserve single space after Rs.)
-          .replace(/\s{2,}/g, ' ')
-          // Final: Ensure single "Rs. " before numbers
-          .replace(/(Rs\.\s*){2,}/g, 'Rs. ');
-        
-        console.log('[SafeContractGenerator] PDFKit: Text cleaning:', {
-          originalLength: text.length,
-          cleanedLength: cleanedText.length,
-          hasRupeeSymbol: text.includes('₹') || text.includes('\u20B9'),
-          hasCorruptedSymbol: text.includes('¹'),
-          replacedWithRs: cleanedText.includes('Rs.')
-        });
-        
-        const lines = cleanedText.split('\n');
-        for (const line of lines) {
-          if (line.trim()) {
-            doc.text(line, { align: 'left', continued: false });
-          } else {
-            doc.moveDown(0.5);
-          }
-        }
-        
-        // Add footer
-        doc.moveDown(2);
-        doc.fontSize(9).fillColor('#6b7280').text('This agreement was generated using the CreatorArmour Contract Scanner based on information provided by the Parties. CreatorArmour is not a party to this agreement and does not provide legal representation.', { align: 'center' });
-        doc.moveDown(0.5);
-        doc.fontSize(9).fillColor('#6b7280').font('Helvetica-Bold').text('The Parties are advised to independently review this agreement before execution.', { align: 'center' });
-        
-        doc.end();
-      });
-    } catch (pdfkitError: any) {
-      console.error('[SafeContractGenerator] PDFKit fallback also failed:', pdfkitError.message);
-      throw new Error('PDF generation failed. Please ensure Puppeteer or PDFKit dependencies are installed.');
+    // Provide helpful error message
+    if (puppeteerError.message?.includes('Could not find Chrome')) {
+      throw new Error(
+        'Contract PDF generation failed. Chrome/Puppeteer is required.\n\n' +
+        'To fix this, run: npx puppeteer browsers install chrome\n\n' +
+        'PDFKit fallback is disabled for legal contracts to ensure proper formatting.'
+      );
     }
+    
+    throw new Error(
+      `Contract PDF generation failed. Puppeteer is required for legal documents.\n\n` +
+      `Error: ${puppeteerError.message}\n\n` +
+      `PDFKit fallback is intentionally disabled to prevent formatting corruption.`
+    );
   }
 }
 
