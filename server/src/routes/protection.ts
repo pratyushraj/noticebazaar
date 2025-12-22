@@ -1121,12 +1121,18 @@ router.post('/generate-contract-from-scratch', async (req: AuthenticatedRequest,
     const updateData: any = {
       safe_contract_url: safeContractUrl,
       contract_file_url: safeContractUrl, // ALWAYS update contract_file_url with new contract (overwrites old)
-      contract_version: 'v2', // Template-first architecture with all fixes
       updated_at: new Date().toISOString(),
       // Store metadata if available
       ...(result.metadata && {
         contract_metadata: result.metadata
       })
+    };
+    
+    // Only include contract_version if the column exists (it might not in older schemas)
+    // Try to update with it first, but don't fail if it doesn't exist
+    const updateDataWithVersion = {
+      ...updateData,
+      contract_version: 'v2' // Template-first architecture with all fixes
     };
     
     console.log('[Protection] Updating deal with new v2 contract:', {
@@ -1137,11 +1143,31 @@ router.post('/generate-contract-from-scratch', async (req: AuthenticatedRequest,
       hasMetadata: !!result.metadata
     });
 
-    const { error: updateError, data: updateResult } = await supabase
+    // Try update with contract_version first
+    let updateError: any = null;
+    let updateResult: any = null;
+    
+    const { error: errorWithVersion, data: resultWithVersion } = await supabase
       .from('brand_deals')
-      .update(updateData)
+      .update(updateDataWithVersion)
       .eq('id', dealId)
-      .select('safe_contract_url, contract_file_url, contract_version');
+      .select('safe_contract_url, contract_file_url');
+    
+    // If update failed due to missing contract_version column, retry without it
+    if (errorWithVersion && errorWithVersion.message?.includes('contract_version')) {
+      console.warn('[Protection] contract_version column not found, updating without it:', errorWithVersion.message);
+      const { error: errorWithoutVersion, data: resultWithoutVersion } = await supabase
+        .from('brand_deals')
+        .update(updateData)
+        .eq('id', dealId)
+        .select('safe_contract_url, contract_file_url');
+      
+      updateError = errorWithoutVersion;
+      updateResult = resultWithoutVersion;
+    } else {
+      updateError = errorWithVersion;
+      updateResult = resultWithVersion;
+    }
 
     if (updateError) {
       console.error('[Protection] CRITICAL: Failed to update deal with new contract:', {
