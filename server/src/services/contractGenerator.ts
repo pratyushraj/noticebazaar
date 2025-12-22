@@ -250,7 +250,7 @@ export async function generateContractFromScratch(
     // THIRD: Final currency symbol validation and fix
     // Ensure ₹ symbol is present in currency amounts
     // Also replace any "Rs." that might have leaked in
-    const rupeeSymbol = '\u20B9';
+    // Note: rupeeSymbol is already declared above
     contractText = contractText
       .replace(/\bRs\.\s*(\d[\d,]*)\s*\(Rupees\s+([^)]+)\s+Only\)/g, `${rupeeSymbol}$1 (Rupees $2 Only)`) // Replace "Rs. 1,000" with "₹1,000"
       .replace(/(\d[\d,]*)\s*\(Rupees\s+([^)]+)\s+Only\)/g, (match, amount, words) => {
