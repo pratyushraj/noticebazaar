@@ -453,18 +453,21 @@ export async function generateSafeContractPdf(text: string, reportId: string): P
         
         // Add content
         doc.fontSize(11);
-        // CRITICAL: Fix currency symbol before adding to PDF
-        // Replace any corrupted ¹ with proper ₹
+        // CRITICAL: PDFKit default fonts don't support ₹ symbol
+        // Replace ₹ with "Rs." for PDFKit compatibility
+        // This ensures the currency is always visible in the PDF
         const cleanedText = text
-          .replace(/¹/g, '₹') // Fix ¹ corruption
-          .replace(/\u00B9/g, '\u20B9'); // Explicit Unicode fix
+          .replace(/¹/g, 'Rs.') // Fix ¹ corruption to Rs.
+          .replace(/\u00B9/g, 'Rs.') // Explicit Unicode fix
+          .replace(/₹/g, 'Rs.') // Replace ₹ with Rs. for PDFKit
+          .replace(/\u20B9/g, 'Rs.'); // Explicit Unicode replacement
         
         console.log('[SafeContractGenerator] PDFKit: Text cleaning:', {
           originalLength: text.length,
           cleanedLength: cleanedText.length,
           hasRupeeSymbol: text.includes('₹') || text.includes('\u20B9'),
           hasCorruptedSymbol: text.includes('¹'),
-          cleanedHasRupee: cleanedText.includes('₹') || cleanedText.includes('\u20B9')
+          replacedWithRs: cleanedText.includes('Rs.')
         });
         
         const lines = cleanedText.split('\n');
