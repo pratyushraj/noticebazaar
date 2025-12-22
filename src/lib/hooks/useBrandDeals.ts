@@ -532,6 +532,7 @@ interface UpdateBrandDealVariables {
   utr_number?: string | null; // New: UTR number
   brand_email?: string | null; // New: brand email
   brand_phone?: string | null; // New: brand phone
+  brand_address?: string | null; // New: brand address (required for contract generation)
   payment_received_date?: string | null; // New: payment received date
   proof_of_payment_url?: string | null; // New: proof of payment URL
 }

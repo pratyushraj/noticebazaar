@@ -54,9 +54,10 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
       // Start with core fields that should always exist to avoid 400 errors
       // Extended creator profile fields will be fetched separately if needed
       // Include phone for eSign functionality (email is in auth.users, not profiles)
+      // Include location and bio for profile settings
       const { data, error } = await (supabase
         .from('profiles')
-        .select('id, first_name, last_name, avatar_url, role, updated_at, business_name, gstin, business_entity_type, onboarding_complete, organization_id, is_trial, trial_started_at, trial_expires_at, trial_locked, phone') as any)
+        .select('id, first_name, last_name, avatar_url, role, updated_at, business_name, gstin, business_entity_type, onboarding_complete, organization_id, is_trial, trial_started_at, trial_expires_at, trial_locked, phone, location, bio') as any)
         .eq('id', user.id)
         .single();
 
@@ -82,7 +83,7 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
       // Retry with basic + trial fields only (excluding bank fields and social media fields that may not exist)
       const { data: trialData, error: trialError } = await (supabase
         .from('profiles')
-          .select('id, first_name, last_name, avatar_url, role, updated_at, business_name, gstin, business_entity_type, onboarding_complete, organization_id, is_trial, trial_started_at, trial_expires_at, trial_locked, phone') as any)
+          .select('id, first_name, last_name, avatar_url, role, updated_at, business_name, gstin, business_entity_type, onboarding_complete, organization_id, is_trial, trial_started_at, trial_expires_at, trial_locked, phone, location, bio') as any)
         .eq('id', user.id)
         .single();
 
@@ -100,7 +101,7 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
         // If trial fields also don't exist, try with just core basic fields (no social media)
         const { data: basicData, error: basicError } = await (supabase
           .from('profiles')
-          .select('id, first_name, last_name, avatar_url, role, updated_at, business_name, gstin, business_entity_type, onboarding_complete, organization_id') as any)
+          .select('id, first_name, last_name, avatar_url, role, updated_at, business_name, gstin, business_entity_type, onboarding_complete, organization_id, phone, location, bio') as any)
           .eq('id', user.id)
           .single();
 
@@ -148,6 +149,8 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
             trial_expires_at: null,
             trial_locked: false,
             phone: null,
+            location: null,
+            bio: null,
             email: null,
             bank_account_name: null,
             bank_account_number: null,
@@ -181,6 +184,8 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
           trial_started_at: null,
           trial_expires_at: null,
           trial_locked: false,
+          location: (basicData as any)?.location || null,
+          bio: (basicData as any)?.bio || null,
           creator_category: null,
           pricing_min: null,
           pricing_avg: null,
@@ -229,6 +234,9 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
         tiktok_followers: null,
         twitter_followers: null,
         facebook_followers: null,
+        // Ensure location and bio are included if not in trialData
+        location: (trialData as any)?.location || null,
+        bio: (trialData as any)?.bio || null,
         // Ensure social handles are included if not in trialData
         instagram_handle: (trialData as any)?.instagram_handle || null,
         youtube_channel_id: (trialData as any)?.youtube_channel_id || null,

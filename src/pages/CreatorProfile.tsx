@@ -293,6 +293,11 @@ const ProfileSettings = () => {
       toast.error('Please enter a valid phone number');
       return false;
     }
+    // Validate address is required (marked with * in UI)
+    if (!formData.location.trim()) {
+      toast.error('Please enter your address (required for generating legal contracts)');
+      return false;
+    }
     return true;
   };
 
@@ -305,7 +310,7 @@ const ProfileSettings = () => {
     }
 
     setIsSaving(true);
-    logger.info('Saving profile updates', { profileId: profile.id });
+    logger.info('Saving profile updates', { profileId: profile.id, location: formData.location });
 
     try {
       const nameParts = formData.name.trim().split(' ');
@@ -327,6 +332,9 @@ const ProfileSettings = () => {
         id: profile.id,
         first_name: firstName,
         last_name: lastName,
+        // Always include location (address) - required for contracts
+        // Save trimmed value, even if empty string
+        location: formData.location.trim(),
       };
       
       // Only include phone if it has a value (null is valid to clear)
@@ -341,22 +349,35 @@ const ProfileSettings = () => {
       if (profile.avatar_url) {
         updatePayload.avatar_url = profile.avatar_url;
       }
-      if (formData.location) {
-        updatePayload.location = formData.location;
-      }
       if (formData.bio) {
         updatePayload.bio = formData.bio;
       }
+      
+      logger.info('Update payload', { 
+        updatePayload, 
+        locationValue: updatePayload.location,
+        locationLength: updatePayload.location?.length || 0,
+        formDataLocation: formData.location
+      });
       
       // Note: instagram_handle is skipped to avoid schema errors
       // If needed, add a migration to create the column first
       
       await updateProfileMutation.mutateAsync(updatePayload);
 
+      // Update formData immediately with saved location to ensure UI reflects the change
+      const savedLocation = formData.location.trim();
+      setFormData(prev => ({ ...prev, location: savedLocation }));
+      
       await refetchProfile();
+      
       toast.success('Profile updated successfully!');
       setEditMode(false);
-      logger.success('Profile updated', { profileId: profile.id });
+      logger.success('Profile updated', { 
+        profileId: profile.id, 
+        location: updatePayload.location,
+        savedLocation: savedLocation
+      });
     } catch (error: any) {
       logger.error('Failed to update profile', error);
       toast.error(error.message || 'Failed to update profile');
@@ -607,6 +628,21 @@ const ProfileSettings = () => {
                       className={`flex-1 bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder-white/40 outline-none transition-colors ${editMode ? 'focus:border-purple-500 focus:bg-white/10' : 'cursor-not-allowed'}`}
                     />
                   </div>
+                </div>
+                <div>
+                  <label className="text-xs text-white/60 mb-1.5 block">Address *</label>
+                  <div className="flex items-center gap-2">
+                    <MapPin className="w-4 h-4 text-white/50 flex-shrink-0" />
+                    <input
+                      type="text"
+                      value={formData.location}
+                      onChange={(e) => setFormData(prev => ({ ...prev, location: e.target.value }))}
+                      disabled={!editMode}
+                      placeholder="Enter your address (required for contracts)"
+                      className={`flex-1 bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder-white/40 outline-none transition-colors ${editMode ? 'focus:border-purple-500 focus:bg-white/10' : 'cursor-not-allowed'}`}
+                    />
+                  </div>
+                  <p className="text-xs text-white/50 mt-1">Required for generating legal contracts</p>
                 </div>
               </div>
             </div>

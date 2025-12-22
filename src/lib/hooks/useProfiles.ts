@@ -414,6 +414,7 @@ export const useUpdateProfile = () => {
         // Only include phone if it's not null or empty (null is valid to clear the field)
         updateData.phone = phone;
       }
+      // Always include location if provided (even if empty string) - required for contracts
       if (location !== undefined) {
         updateData.location = location;
       }

@@ -30,6 +30,7 @@ const BrandResponsePage = () => {
   const [brandTeamName, setBrandTeamName] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [dealInfo, setDealInfo] = useState<{
     brand_name: string;
     response_status: string;
@@ -514,23 +515,32 @@ const BrandResponsePage = () => {
         const data = await response.json();
 
         if (!response.ok || !data.success) {
-          // Handle token validation errors
-          if (data.errorType === 'token_not_found' || data.errorType === 'token_revoked' || data.errorType === 'token_expired') {
+          // Handle token validation errors - show error message to user
+          const errorMessage = data.error || 'Failed to load deal information';
+          console.error('[BrandResponsePage] API error:', errorMessage, 'Status:', response.status);
+          
+          // Set error state
           setDealInfo(null);
           setRequestedChanges([]);
           setAnalysisData(null);
           setIsSubmitted(false);
+          setLoadError(errorMessage);
           return;
-          }
-          
-          if (!data.deal) {
-            setDealInfo(null);
-            setRequestedChanges([]);
-            setAnalysisData(null);
-            setIsSubmitted(false);
-            return;
-          }
         }
+        
+        // Validate that we have deal data
+        if (!data.deal) {
+          console.error('[BrandResponsePage] No deal data in response');
+          setDealInfo(null);
+          setRequestedChanges([]);
+          setAnalysisData(null);
+          setIsSubmitted(false);
+          setLoadError('Failed to load deal information');
+          return;
+        }
+        
+        // Clear any previous errors
+        setLoadError(null);
 
         // Check if deal is already accepted/accepted_verified BEFORE setting state
         const responseStatus = data.deal?.response_status || data.deal?.brand_response_status || 'pending';
@@ -778,16 +788,63 @@ const BrandResponsePage = () => {
 
       const data = await response.json();
 
+      if (!response.ok || !data.success) {
+        // Handle token validation errors
+        const errorMessage = data.error || 'Failed to submit response';
+        console.error('[BrandResponsePage] Submit error:', errorMessage);
+        
+        // If token is invalid/expired, show error and reset state
+        if (response.status === 404 || response.status === 403 || errorMessage.includes('no longer valid')) {
+          setLoadError(errorMessage);
+          setIsSubmitted(false);
+          setDealInfo(null);
+          toast.error(errorMessage);
+          return;
+        }
+        
+        toast.error(errorMessage);
+        return;
+      }
+
+      if (!response.ok || !data.success) {
+        // Handle token validation errors
+        const errorMessage = data.error || 'Failed to submit response';
+        console.error('[BrandResponsePage] Submit error:', errorMessage, 'Status:', response.status);
+        
+        // If token is invalid/expired, show error and reset state
+        if (response.status === 404 || response.status === 403 || errorMessage.includes('no longer valid') || errorMessage.includes('expired')) {
+          setLoadError(errorMessage);
+          setIsSubmitted(false);
+          setDealInfo(null);
+          setSelectedStatus(null);
+          toast.error(errorMessage);
+          triggerHaptic(HapticPatterns.error);
+          return;
+        }
+        
+        toast.error(errorMessage);
+        triggerHaptic(HapticPatterns.error);
+        return;
+      }
+
       if (data.success) {
         setIsSubmitted(true);
         toast.success('Response submitted successfully!');
         triggerHaptic(HapticPatterns.success);
-      } else {
-        throw new Error(data.error || 'Failed to submit response');
       }
     } catch (error: any) {
       console.error('[BrandResponsePage] Submit error:', error);
-      toast.error(error.message || 'Failed to submit response. Please try again.');
+      const errorMessage = error.message || 'Failed to submit response. Please try again.';
+      
+      // Check if it's a token-related error
+      if (errorMessage.includes('no longer valid') || errorMessage.includes('expired') || errorMessage.includes('404')) {
+        setLoadError('This link is no longer valid. Please contact the creator.');
+        setIsSubmitted(false);
+        setDealInfo(null);
+        setSelectedStatus(null);
+      }
+      
+      toast.error(errorMessage);
       triggerHaptic(HapticPatterns.error);
     } finally {
       setIsSubmitting(false);
@@ -907,7 +964,7 @@ const BrandResponsePage = () => {
     );
   }
 
-  if (!dealInfo) {
+  if (loadError || !dealInfo) {
     return (
       <div className="nb-screen-height bg-gradient-to-br from-purple-950 via-purple-900 to-indigo-950 flex items-center justify-center p-4">
         <div className="text-center max-w-md">
@@ -920,8 +977,8 @@ const BrandResponsePage = () => {
           </motion.div>
           <h1 className="text-2xl font-bold text-white mb-2">Link No Longer Valid</h1>
           <p className="text-white/70 mb-6">
-            This link is no longer valid. Please contact the creator.
-            </p>
+            {loadError || 'This link is no longer valid. Please contact the creator.'}
+          </p>
         </div>
       </div>
     );
@@ -1254,7 +1311,7 @@ const BrandResponsePage = () => {
               <CheckCircle className="w-20 h-20 text-green-400 mx-auto mb-4" />
             </motion.div>
             
-            {(dealInfo?.response_status === 'accepted_verified' || dealInfo?.response_status === 'accepted') ? (
+            {dealInfo && (dealInfo.response_status === 'accepted_verified' || dealInfo.response_status === 'accepted') ? (
               <>
                 <h3 className="text-3xl font-bold mb-3 bg-gradient-to-r from-green-400 to-emerald-400 bg-clip-text text-transparent">
                   Collaboration Accepted ✓
@@ -1272,7 +1329,7 @@ const BrandResponsePage = () => {
                   The creator will proceed with finalizing the contract details. You'll be notified of any updates.
                 </p>
               </>
-            ) : dealInfo?.response_status === 'negotiating' ? (
+            ) : dealInfo && dealInfo.response_status === 'negotiating' ? (
               <>
                 <h3 className="text-3xl font-bold mb-3 bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
                   Negotiation Requested
@@ -1284,7 +1341,7 @@ const BrandResponsePage = () => {
                   The creator will review your points and get back to you soon.
                 </p>
               </>
-            ) : dealInfo?.response_status === 'rejected' ? (
+            ) : dealInfo && dealInfo.response_status === 'rejected' ? (
               <>
                 <h3 className="text-3xl font-bold mb-3 bg-gradient-to-r from-red-400 to-orange-400 bg-clip-text text-transparent">
                   Response Received

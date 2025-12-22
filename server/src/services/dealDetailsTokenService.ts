@@ -162,7 +162,7 @@ export async function submitDealDetails(
   // Create draft deal from form data
   let dealId: string | null = null;
   try {
-    const dealData = {
+    const dealData: any = {
       creator_id: token.creator_id,
       brand_name: formData.brandName || 'Brand',
       deal_amount: formData.dealType === 'paid' && formData.paymentAmount
@@ -175,6 +175,9 @@ export async function submitDealDetails(
       platform: 'Other',
       deal_type: formData.dealType || 'paid',
       created_via: 'deal_details_form',
+      // Save brand address from company address (fetched via GST lookup)
+      brand_address: formData.companyAddress || null,
+      brand_email: formData.companyEmail || null,
     };
 
     const { data: deal, error: dealError } = await supabase
@@ -191,6 +194,26 @@ export async function submitDealDetails(
         .from('deal_details_submissions')
         .update({ deal_id: deal.id })
         .eq('id', submission.id);
+    } else if (dealError) {
+      console.error('[DealDetailsTokenService] Deal creation error:', dealError);
+      // If deal creation failed, try to update existing deal if deal_id exists in submission
+      if (submission.deal_id) {
+        console.log('[DealDetailsTokenService] Attempting to update existing deal with brand address');
+        const { error: updateError } = await supabase
+          .from('brand_deals')
+          .update({
+            brand_address: formData.companyAddress || null,
+            brand_email: formData.companyEmail || null,
+          })
+          .eq('id', submission.deal_id);
+        
+        if (updateError) {
+          console.error('[DealDetailsTokenService] Deal update error:', updateError);
+        } else {
+          console.log('[DealDetailsTokenService] Successfully updated existing deal with brand address');
+          dealId = submission.deal_id;
+        }
+      }
     }
   } catch (error) {
     console.error('[DealDetailsTokenService] Deal creation error:', error);

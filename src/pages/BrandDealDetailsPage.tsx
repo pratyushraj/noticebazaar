@@ -17,49 +17,59 @@ import {
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 
+// Structured deliverable interface
+interface Deliverable {
+  platform: string;
+  contentType: string;
+  quantity: number;
+  duration?: number; // in seconds, optional
+}
+
 interface DealDetailsFormData {
   brandName: string;
   campaignName: string;
-  deliverables: string[];
+  deliverables: Deliverable[]; // Changed from string[] to structured
   deadline: string;
   dealType: 'paid' | 'barter';
   // Content Approval & Revisions
-  approvalProcess?: string; // "Single approval before posting" | "Approval with limited revisions"
-  numberOfRevisions?: string; // "1" | "2" | "3"
-  approvalTurnaroundTime?: string; // "Within 2 business days" | "Within 3 business days" | "Within 5 business days"
+  approvalProcess?: 'no_approval' | 'one_time' | 'limited_revisions' | 'unlimited_revisions';
+  numberOfRevisions?: number; // Changed from string to number (1-5)
+  approvalTurnaroundTime?: '24_hours' | '48_hours' | '3_business_days' | '5_business_days';
   // Posting Window
-  postingWindow?: string; // Optional text input
+  postingWindow?: string; // Optional text input (descriptive, not legally binding)
   // Platform Handles
-  brandHandle?: string; // Optional
-  creatorHandle?: string; // Optional
+  brandHandle?: string; // Optional (validated with regex)
+  creatorHandle?: string; // Optional (validated with regex)
   // Paid fields
   paymentAmount?: string;
-  paymentTimeline?: string;
-  paymentTrigger?: string; // New: required for paid
-  paymentMethod?: string;
+  paymentTimeline?: 'on_delivery' | '7_days' | '15_days' | '30_days';
+  paymentTrigger?: 'on_submission' | 'on_approval' | 'on_publishing' | 'on_completion';
+  paymentMethod?: string[]; // Changed to array for multi-select
   // Barter fields
   productDescription?: string;
-  barterValue?: string; // Renamed from productValue for clarity
-  barterApproximateValue?: string; // New: optional approximate value for barter
-  barterShippingResponsibility?: string; // Renamed from shippingResponsibility
-  barterReplacementAllowed?: boolean; // New
+  barterValue?: string;
+  barterApproximateValue?: string;
+  barterShippingResponsibility?: string;
+  barterReplacementAllowed?: boolean;
   // Rights & safety
-  usageRights: string;
-  exclusivity: string;
-  revisions: string;
-  cancellationTerms?: string; // New: required for all
+  usageRightsDuration?: '1_month' | '3_months' | '6_months' | '12_months' | 'perpetual';
+  paidAdsAllowed?: boolean; // New: explicit toggle
+  whitelistingAllowed?: boolean; // New: explicit toggle
+  exclusivityPeriod?: 'none' | '7_days' | '15_days' | '30_days' | 'custom';
+  revisions?: string; // Keep for backward compatibility
+  cancellationTerms?: 'full_payment_after_approval' | 'pro_rata_completed_work' | 'no_payment_before_start';
   // Jurisdiction / Governing Law
   governingLaw?: string; // Default: "India"
+  companyState?: string; // Changed to dropdown (Indian states)
   // Company Contact Details
   companyLegalName?: string; // Required
   authorizedSignatoryName?: string; // Required
   companyEmail?: string; // Required
-  companyAddress?: string; // Required
-  companyState?: string; // Required (from GST or manual)
+  companyAddress?: string; // Required (multiline text)
   companyPhone?: string; // Optional
   companyGstin?: string; // Optional
   // Auto-set (not in UI)
-  jurisdiction?: string; // Auto-set to "India"
+  jurisdiction?: string; // Auto-derived from state
 }
 
 const BrandDealDetailsPage = () => {
@@ -79,20 +89,36 @@ const BrandDealDetailsPage = () => {
   const [formData, setFormData] = useState<DealDetailsFormData>({
     brandName: '',
     campaignName: '',
-    deliverables: [''],
+    deliverables: [{ platform: 'Instagram', contentType: 'Reel', quantity: 1, duration: 15 }],
     deadline: '',
     dealType: 'paid',
-    approvalProcess: 'Approval with limited revisions',
-    numberOfRevisions: '2',
-    approvalTurnaroundTime: 'Within 3 business days',
+    approvalProcess: 'limited_revisions',
+    numberOfRevisions: 2,
+    approvalTurnaroundTime: '3_business_days',
     postingWindow: '',
     brandHandle: '',
     creatorHandle: '',
-    usageRights: '3 months',
-    exclusivity: 'None',
+    paymentTimeline: '7_days',
+    usageRightsDuration: '3_months',
+    paidAdsAllowed: false,
+    whitelistingAllowed: false,
+    exclusivityPeriod: 'none',
     revisions: '2',
     governingLaw: 'India',
+    paymentMethod: [],
   });
+
+  // Indian states list for dropdown
+  const indianStates = [
+    'Andhra Pradesh', 'Arunachal Pradesh', 'Assam', 'Bihar', 'Chhattisgarh',
+    'Goa', 'Gujarat', 'Haryana', 'Himachal Pradesh', 'Jharkhand',
+    'Karnataka', 'Kerala', 'Madhya Pradesh', 'Maharashtra', 'Manipur',
+    'Meghalaya', 'Mizoram', 'Nagaland', 'Odisha', 'Punjab',
+    'Rajasthan', 'Sikkim', 'Tamil Nadu', 'Telangana', 'Tripura',
+    'Uttar Pradesh', 'Uttarakhand', 'West Bengal',
+    'Andaman and Nicobar Islands', 'Chandigarh', 'Dadra and Nagar Haveli and Daman and Diu',
+    'Delhi', 'Jammu and Kashmir', 'Ladakh', 'Lakshadweep', 'Puducherry'
+  ];
 
   // Fetch token info on mount
   useEffect(() => {
@@ -143,14 +169,16 @@ const BrandDealDetailsPage = () => {
   const handleAddDeliverable = () => {
     setFormData(prev => ({
       ...prev,
-      deliverables: [...prev.deliverables, '']
+      deliverables: [...prev.deliverables, { platform: 'Instagram', contentType: 'Reel', quantity: 1, duration: 15 }]
     }));
   };
 
-  const handleDeliverableChange = (index: number, value: string) => {
+  const handleDeliverableChange = (index: number, field: keyof Deliverable, value: string | number) => {
     setFormData(prev => ({
       ...prev,
-      deliverables: prev.deliverables.map((d, i) => i === index ? value : d)
+      deliverables: prev.deliverables.map((d, i) => 
+        i === index ? { ...d, [field]: value } : d
+      )
     }));
   };
 
@@ -249,8 +277,8 @@ const BrandDealDetailsPage = () => {
       toast.error('Please enter a campaign name');
       return;
     }
-    if (formData.deliverables.filter(d => d.trim()).length === 0) {
-      toast.error('Please add at least one deliverable');
+    if (formData.deliverables.length === 0 || formData.deliverables.some(d => !d.platform || !d.contentType || !d.quantity)) {
+      toast.error('Please add at least one complete deliverable');
       return;
     }
     if (!formData.deadline) {
@@ -332,7 +360,9 @@ const BrandDealDetailsPage = () => {
         },
         body: JSON.stringify({
           ...formData,
-          deliverables: formData.deliverables.filter(d => d.trim()),
+          deliverables: formData.deliverables.map(d => 
+            `${d.quantity} ${d.platform} ${d.contentType}${d.duration ? ` (${d.duration}s)` : ''}`
+          ),
           // Auto-set jurisdiction
           jurisdiction: 'India',
         }),
@@ -466,33 +496,85 @@ const BrandDealDetailsPage = () => {
             />
           </div>
 
-          {/* Deliverables */}
+          {/* Deliverables - Structured */}
           <div>
             <label className="block text-sm font-medium mb-2 flex items-center gap-2">
               <Package className="w-4 h-4" />
               Deliverables *
             </label>
-            <div className="space-y-2">
+            <div className="space-y-4">
               {formData.deliverables.map((deliverable, index) => (
-                <div key={index} className="flex gap-2">
-                  <input
-                    type="text"
-                    value={deliverable}
-                    onChange={(e) => handleDeliverableChange(index, e.target.value)}
-                    className="flex-1 px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-purple-400/50 disabled:opacity-50 disabled:cursor-not-allowed"
-                    placeholder={`Deliverable ${index + 1}`}
-                    disabled={isFormUsed}
-                  />
+                <div key={index} className="bg-white/5 border border-white/10 rounded-xl p-4 space-y-3">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm text-white/70">Deliverable {index + 1}</span>
                   {formData.deliverables.length > 1 && (
                     <button
                       type="button"
                       onClick={() => handleRemoveDeliverable(index)}
-                      className="px-4 py-3 bg-red-500/20 text-red-400 rounded-xl hover:bg-red-500/30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="text-xs text-red-400 hover:text-red-300 transition-colors disabled:opacity-50"
                       disabled={isFormUsed}
                     >
                       Remove
                     </button>
                   )}
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-xs text-white/60 mb-1">Platform *</label>
+                      <select
+                        value={deliverable.platform}
+                        onChange={(e) => handleDeliverableChange(index, 'platform', e.target.value)}
+                        className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-purple-400/50 disabled:opacity-50"
+                        disabled={isFormUsed}
+                        required
+                      >
+                        <option value="Instagram">Instagram</option>
+                        <option value="YouTube">YouTube</option>
+                        <option value="X">X (Twitter)</option>
+                        <option value="Blog">Blog</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-xs text-white/60 mb-1">Content Type *</label>
+                      <select
+                        value={deliverable.contentType}
+                        onChange={(e) => handleDeliverableChange(index, 'contentType', e.target.value)}
+                        className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-purple-400/50 disabled:opacity-50"
+                        disabled={isFormUsed}
+                        required
+                      >
+                        <option value="Reel">Reel</option>
+                        <option value="Story">Story</option>
+                        <option value="Post">Post</option>
+                        <option value="Video">Video</option>
+                        <option value="Shorts">Shorts</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-xs text-white/60 mb-1">Quantity *</label>
+                      <input
+                        type="number"
+                        min="1"
+                        value={deliverable.quantity}
+                        onChange={(e) => handleDeliverableChange(index, 'quantity', parseInt(e.target.value) || 1)}
+                        className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-purple-400/50 disabled:opacity-50"
+                        disabled={isFormUsed}
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs text-white/60 mb-1">Min Duration (sec)</label>
+                      <input
+                        type="number"
+                        min="0"
+                        value={deliverable.duration || ''}
+                        onChange={(e) => handleDeliverableChange(index, 'duration', parseInt(e.target.value) || undefined)}
+                        className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-purple-400/50 disabled:opacity-50"
+                        placeholder="15"
+                        disabled={isFormUsed}
+                      />
+                    </div>
+                  </div>
                 </div>
               ))}
               <button
@@ -516,33 +598,37 @@ const BrandDealDetailsPage = () => {
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium mb-2">
-                  Approval Process
+                  Approval Type
                 </label>
                 <select
-                  value={formData.approvalProcess || 'Approval with limited revisions'}
-                  onChange={(e) => setFormData(prev => ({ ...prev, approvalProcess: e.target.value }))}
+                  value={formData.approvalProcess || 'limited_revisions'}
+                  onChange={(e) => setFormData(prev => ({ ...prev, approvalProcess: e.target.value as any }))}
                   className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-purple-400/50 disabled:opacity-50 disabled:cursor-not-allowed"
                   disabled={isFormUsed}
                 >
-                  <option value="Single approval before posting">Single approval before posting</option>
-                  <option value="Approval with limited revisions">Approval with limited revisions</option>
+                  <option value="no_approval">No approval required</option>
+                  <option value="one_time">One-time approval</option>
+                  <option value="limited_revisions">Limited revisions</option>
+                  <option value="unlimited_revisions">Unlimited revisions</option>
                 </select>
               </div>
 
-              {formData.approvalProcess === 'Approval with limited revisions' && (
+              {formData.approvalProcess === 'limited_revisions' && (
                 <div>
                   <label className="block text-sm font-medium mb-2">
-                    Number of Revisions
+                    Number of Revisions (1-5)
                   </label>
                   <select
-                    value={formData.numberOfRevisions || '2'}
-                    onChange={(e) => setFormData(prev => ({ ...prev, numberOfRevisions: e.target.value }))}
+                    value={formData.numberOfRevisions || 2}
+                    onChange={(e) => setFormData(prev => ({ ...prev, numberOfRevisions: parseInt(e.target.value) }))}
                     className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-purple-400/50 disabled:opacity-50 disabled:cursor-not-allowed"
                     disabled={isFormUsed}
                   >
                     <option value="1">1</option>
                     <option value="2">2</option>
                     <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
                   </select>
                 </div>
               )}
@@ -552,14 +638,15 @@ const BrandDealDetailsPage = () => {
                   Approval Turnaround Time
                 </label>
                 <select
-                  value={formData.approvalTurnaroundTime || 'Within 3 business days'}
-                  onChange={(e) => setFormData(prev => ({ ...prev, approvalTurnaroundTime: e.target.value }))}
+                  value={formData.approvalTurnaroundTime || '3_business_days'}
+                  onChange={(e) => setFormData(prev => ({ ...prev, approvalTurnaroundTime: e.target.value as any }))}
                   className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-purple-400/50 disabled:opacity-50 disabled:cursor-not-allowed"
                   disabled={isFormUsed}
                 >
-                  <option value="Within 2 business days">Within 2 business days</option>
-                  <option value="Within 3 business days">Within 3 business days</option>
-                  <option value="Within 5 business days">Within 5 business days</option>
+                  <option value="24_hours">24 hours</option>
+                  <option value="48_hours">48 hours</option>
+                  <option value="3_business_days">3 business days</option>
+                  <option value="5_business_days">5 business days</option>
                 </select>
               </div>
 
@@ -696,14 +783,20 @@ const BrandDealDetailsPage = () => {
                 <label className="block text-sm font-medium mb-2">
                   Payment Timeline
                 </label>
-                <input
-                  type="text"
-                  value={formData.paymentTimeline || ''}
-                  onChange={(e) => setFormData(prev => ({ ...prev, paymentTimeline: e.target.value }))}
-                  className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-purple-400/50 disabled:opacity-50 disabled:cursor-not-allowed"
-                  placeholder="e.g., 50% upfront, 50% on delivery"
+                <select
+                  value={formData.paymentTimeline || '7_days'}
+                  onChange={(e) => setFormData(prev => ({ ...prev, paymentTimeline: e.target.value as any }))}
+                  className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-purple-400/50 disabled:opacity-50 disabled:cursor-not-allowed"
                   disabled={isFormUsed}
-                />
+                >
+                  <option value="on_delivery">On delivery</option>
+                  <option value="7_days">Within 7 days of delivery</option>
+                  <option value="15_days">Within 15 days of delivery</option>
+                  <option value="30_days">Within 30 days of delivery</option>
+                </select>
+                <p className="text-xs text-white/50 mt-1">
+                  Clarifies when payment is expected to avoid delays or disputes.
+                </p>
               </div>
               
               {/* Payment Trigger - Required for Paid */}
@@ -713,39 +806,48 @@ const BrandDealDetailsPage = () => {
                 </label>
                 <select
                   value={formData.paymentTrigger || ''}
-                  onChange={(e) => setFormData(prev => ({ ...prev, paymentTrigger: e.target.value }))}
+                  onChange={(e) => setFormData(prev => ({ ...prev, paymentTrigger: e.target.value as any }))}
                   className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-purple-400/50 disabled:opacity-50 disabled:cursor-not-allowed"
                   required
                   disabled={isFormUsed}
                 >
                   <option value="">Select payment trigger</option>
-                  <option value="On content posting">On content posting</option>
-                  <option value="Within X days of posting">Within X days of posting</option>
-                  <option value="On content approval">On content approval</option>
-                  <option value="On invoice submission">On invoice submission</option>
+                  <option value="on_submission">On content submission</option>
+                  <option value="on_approval">On content approval</option>
+                  <option value="on_publishing">On publishing</option>
+                  <option value="on_completion">On campaign completion</option>
                 </select>
                 <p className="text-xs text-white/50 mt-1">
                   Clarifies when payment is expected to avoid delays or disputes.
                 </p>
               </div>
 
-              {/* Payment Method - Optional for Paid */}
+              {/* Payment Method - Multi-select for Paid */}
               <div>
                 <label className="block text-sm font-medium mb-2">
-                  Payment Method
+                  Payment Method (optional)
                 </label>
-                <select
-                  value={formData.paymentMethod || ''}
-                  onChange={(e) => setFormData(prev => ({ ...prev, paymentMethod: e.target.value || undefined }))}
-                  className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-purple-400/50 disabled:opacity-50 disabled:cursor-not-allowed"
+                <div className="space-y-2">
+                  {['Bank Transfer', 'UPI', 'Cheque', 'Escrow'].map((method) => (
+                    <label key={method} className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={formData.paymentMethod?.includes(method) || false}
+                        onChange={(e) => {
+                          const current = formData.paymentMethod || [];
+                          if (e.target.checked) {
+                            setFormData(prev => ({ ...prev, paymentMethod: [...current, method] }));
+                          } else {
+                            setFormData(prev => ({ ...prev, paymentMethod: current.filter(m => m !== method) }));
+                          }
+                        }}
+                        className="w-4 h-4 rounded border-white/20 bg-white/10 text-purple-600 focus:ring-purple-400/50 disabled:opacity-50"
                   disabled={isFormUsed}
-                >
-                  <option value="">Select payment method (optional)</option>
-                  <option value="Bank Transfer">Bank Transfer</option>
-                  <option value="UPI">UPI</option>
-                  <option value="Cheque">Cheque</option>
-                  <option value="Other">Other</option>
-                </select>
+                      />
+                      <span className="text-sm text-white/80">{method}</span>
+                    </label>
+                  ))}
+                </div>
                 <p className="text-xs text-white/50 mt-1">
                   Used only for clarity and invoicing.
                 </p>
@@ -851,19 +953,82 @@ const BrandDealDetailsPage = () => {
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium mb-2">
-                  Usage Rights
+                  Usage Rights Duration
                 </label>
                 <select
-                  value={formData.usageRights}
-                  onChange={(e) => setFormData(prev => ({ ...prev, usageRights: e.target.value }))}
+                  value={formData.usageRightsDuration || '3_months'}
+                  onChange={(e) => setFormData(prev => ({ ...prev, usageRightsDuration: e.target.value as any }))}
                   className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-purple-400/50 disabled:opacity-50 disabled:cursor-not-allowed"
                   disabled={isFormUsed}
                 >
-                  <option value="3 months">3 months</option>
-                  <option value="6 months">6 months</option>
-                  <option value="1 year">1 year</option>
-                  <option value="2 years">2 years</option>
+                  <option value="1_month">1 month</option>
+                  <option value="3_months">3 months</option>
+                  <option value="6_months">6 months</option>
+                  <option value="12_months">12 months</option>
+                  <option value="perpetual">Perpetual</option>
                 </select>
+              </div>
+
+              {/* Paid Ads Toggle */}
+              <div>
+                <label className="block text-sm font-medium mb-2">
+                  Paid Ads Allowed?
+                </label>
+                <div className="flex gap-4">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="paidAds"
+                      checked={formData.paidAdsAllowed === true}
+                      onChange={() => setFormData(prev => ({ ...prev, paidAdsAllowed: true }))}
+                      className="w-4 h-4 border-white/20 bg-white/10 text-purple-600 focus:ring-purple-400/50 disabled:opacity-50"
+                  disabled={isFormUsed}
+                    />
+                    <span className="text-sm text-white/80">Yes</span>
+                  </label>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="paidAds"
+                      checked={formData.paidAdsAllowed === false}
+                      onChange={() => setFormData(prev => ({ ...prev, paidAdsAllowed: false }))}
+                      className="w-4 h-4 border-white/20 bg-white/10 text-purple-600 focus:ring-purple-400/50 disabled:opacity-50"
+                      disabled={isFormUsed}
+                    />
+                    <span className="text-sm text-white/80">No</span>
+                  </label>
+                </div>
+              </div>
+
+              {/* Whitelisting Toggle */}
+              <div>
+                <label className="block text-sm font-medium mb-2">
+                  Whitelisting Allowed?
+                </label>
+                <div className="flex gap-4">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="whitelisting"
+                      checked={formData.whitelistingAllowed === true}
+                      onChange={() => setFormData(prev => ({ ...prev, whitelistingAllowed: true }))}
+                      className="w-4 h-4 border-white/20 bg-white/10 text-purple-600 focus:ring-purple-400/50 disabled:opacity-50"
+                      disabled={isFormUsed}
+                    />
+                    <span className="text-sm text-white/80">Yes</span>
+                  </label>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="whitelisting"
+                      checked={formData.whitelistingAllowed === false}
+                      onChange={() => setFormData(prev => ({ ...prev, whitelistingAllowed: false }))}
+                      className="w-4 h-4 border-white/20 bg-white/10 text-purple-600 focus:ring-purple-400/50 disabled:opacity-50"
+                      disabled={isFormUsed}
+                    />
+                    <span className="text-sm text-white/80">No</span>
+                  </label>
+                </div>
               </div>
 
               <div>
@@ -871,31 +1036,16 @@ const BrandDealDetailsPage = () => {
                   Exclusivity Period
                 </label>
                 <select
-                  value={formData.exclusivity}
-                  onChange={(e) => setFormData(prev => ({ ...prev, exclusivity: e.target.value }))}
+                  value={formData.exclusivityPeriod || 'none'}
+                  onChange={(e) => setFormData(prev => ({ ...prev, exclusivityPeriod: e.target.value as any }))}
                   className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-purple-400/50 disabled:opacity-50 disabled:cursor-not-allowed"
                   disabled={isFormUsed}
                 >
-                  <option value="None">None</option>
-                  <option value="30 days">30 days</option>
-                  <option value="60 days">60 days</option>
-                  <option value="90 days">90 days</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium mb-2">
-                  Number of Revisions
-                </label>
-                <select
-                  value={formData.revisions}
-                  onChange={(e) => setFormData(prev => ({ ...prev, revisions: e.target.value }))}
-                  className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-purple-400/50 disabled:opacity-50 disabled:cursor-not-allowed"
-                  disabled={isFormUsed}
-                >
-                  <option value="1">1</option>
-                  <option value="2">2</option>
-                  <option value="3">3</option>
+                  <option value="none">None</option>
+                  <option value="7_days">7 days</option>
+                  <option value="15_days">15 days</option>
+                  <option value="30_days">30 days</option>
+                  <option value="custom">Custom (lawyer review)</option>
                 </select>
               </div>
 
@@ -906,15 +1056,15 @@ const BrandDealDetailsPage = () => {
                 </label>
                 <select
                   value={formData.cancellationTerms || ''}
-                  onChange={(e) => setFormData(prev => ({ ...prev, cancellationTerms: e.target.value }))}
+                  onChange={(e) => setFormData(prev => ({ ...prev, cancellationTerms: e.target.value as any }))}
                   className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-purple-400/50 disabled:opacity-50 disabled:cursor-not-allowed"
                   required
                   disabled={isFormUsed}
                 >
                   <option value="">Select cancellation terms</option>
-                  <option value="Full payment to creator">Full payment to creator</option>
-                  <option value="Partial payment for work completed">Partial payment for work completed</option>
-                  <option value="No payment if work not started">No payment if work not started</option>
+                  <option value="full_payment_after_approval">Full payment if cancelled after approval</option>
+                  <option value="pro_rata_completed_work">Pro-rata payment for completed work</option>
+                  <option value="no_payment_before_start">No payment if cancelled before work starts</option>
                 </select>
                 <p className="text-xs text-white/50 mt-1">
                   Sets clear expectations if the campaign is stopped early.
@@ -947,16 +1097,20 @@ const BrandDealDetailsPage = () => {
 
               <div>
                 <label className="block text-sm font-medium mb-2">
-                  State
+                  State *
                 </label>
-                <input
-                  type="text"
+                <select
                   value={formData.companyState || ''}
                   onChange={(e) => setFormData(prev => ({ ...prev, companyState: e.target.value }))}
-                  className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-purple-400/50 disabled:opacity-50 disabled:cursor-not-allowed"
-                  placeholder="State"
+                  className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-purple-400/50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  required
                   disabled={isFormUsed}
-                />
+                >
+                  <option value="">Select state</option>
+                  {indianStates.map((state) => (
+                    <option key={state} value={state}>{state}</option>
+                  ))}
+                </select>
               </div>
 
               <p className="text-xs text-white/50 mt-1">
@@ -1113,15 +1267,18 @@ const BrandDealDetailsPage = () => {
                 <label className="block text-sm font-medium mb-2">
                   State *
                 </label>
-                <input
-                  type="text"
+                <select
                   value={formData.companyState || ''}
                   onChange={(e) => setFormData(prev => ({ ...prev, companyState: e.target.value }))}
-                  className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-purple-400/50 disabled:opacity-50 disabled:cursor-not-allowed"
-                  placeholder="State"
+                  className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-purple-400/50 disabled:opacity-50 disabled:cursor-not-allowed"
                   required
                   disabled={isFormUsed}
-                />
+                >
+                  <option value="">Select state</option>
+                  {indianStates.map((state) => (
+                    <option key={state} value={state}>{state}</option>
+                  ))}
+                </select>
               </div>
 
               {/* Authorized Signatory Name - Required */}

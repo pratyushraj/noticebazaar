@@ -7,6 +7,7 @@ import { analyzeContract } from '../services/contractAnalysis.js';
 import { generateReportPdf } from '../services/pdfGenerator.js';
 import { generateSafeClause } from '../services/clauseGenerator.js';
 import { generateSafeContract } from '../services/safeContractGenerator.js';
+import { generateContractFromScratch } from '../services/contractGenerator.js';
 import { callLLM } from '../services/aiContractAnalysis.js';
 import crypto from 'crypto';
 
@@ -513,6 +514,682 @@ router.post('/generate-safe-contract', async (req: AuthenticatedRequest, res: Re
     res.status(500).json({ 
       success: false,
       error: error.message || 'Failed to generate safe contract' 
+    });
+  }
+});
+
+// POST /protection/generate-contract-from-scratch - Generate complete contract from scratch using AI
+router.post('/generate-contract-from-scratch', async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const userId = req.user!.id;
+    const { dealId } = req.body;
+
+    if (!dealId) {
+      return res.status(400).json({
+        success: false,
+        error: 'dealId is required'
+      });
+    }
+
+    // Fetch deal information
+    const { data: deal, error: dealError } = await supabase
+      .from('brand_deals')
+      .select('*')
+      .eq('id', dealId)
+      .single();
+
+    if (dealError || !deal) {
+      console.error('[Protection] Deal fetch error:', dealError);
+      return res.status(404).json({
+        success: false,
+        error: 'Deal not found'
+      });
+    }
+
+    // Verify user owns the deal
+    if (deal.creator_id !== userId && req.user!.role !== 'admin') {
+      return res.status(403).json({
+        success: false,
+        error: 'Access denied'
+      });
+    }
+
+    // Fetch creator profile separately
+    let creatorName = 'Creator';
+    let creatorEmail: string | undefined = req.user?.email; // Set email from authenticated user first
+    let creatorProfile: any = null;
+    let creatorAddress: string | undefined;
+    
+    console.log('[Protection] Starting profile fetch:', {
+      dealCreatorId: deal.creator_id,
+      currentUserId: userId,
+      isCreator: deal.creator_id === userId,
+      userEmail: req.user?.email,
+    });
+    
+    // Always try to fetch current user's profile first if they're the creator
+    if (deal.creator_id === userId) {
+      console.log('[Protection] Fetching current user profile for userId:', userId);
+      
+      // First, check if profile exists at all
+      const { data: profileExists, error: existsError } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('id', userId)
+        .maybeSingle();
+      
+      console.log('[Protection] Profile existence check:', {
+        userId,
+        exists: !!profileExists,
+        error: existsError,
+        errorCode: existsError?.code,
+        errorMessage: existsError?.message,
+      });
+      
+      // Try selecting all columns first to see if profile exists
+      const { data: allProfileData, error: allProfileError } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .maybeSingle();
+      
+      console.log('[Protection] Full profile query (select *):', {
+        hasData: !!allProfileData,
+        error: allProfileError,
+        errorCode: allProfileError?.code,
+        columns: allProfileData ? Object.keys(allProfileData) : [],
+        location: allProfileData?.location,
+        address: allProfileData?.address,
+        locationType: typeof allProfileData?.location,
+        addressType: typeof allProfileData?.address,
+      });
+      
+      // Now try with specific columns
+      const { data: currentUserProfile, error: profileError } = await supabase
+        .from('profiles')
+        .select('first_name, last_name, address, location')
+        .eq('id', userId)
+        .maybeSingle();
+      
+      console.log('[Protection] Profile query result:', {
+        userId,
+        hasData: !!currentUserProfile,
+        error: profileError,
+        errorCode: profileError?.code,
+        errorMessage: profileError?.message,
+        firstName: currentUserProfile?.first_name,
+        lastName: currentUserProfile?.last_name,
+        location: currentUserProfile?.location,
+        address: currentUserProfile?.address,
+        fullProfile: currentUserProfile,
+      });
+      
+      if (profileError) {
+        console.error('[Protection] Profile fetch error details:', {
+          code: profileError.code,
+          message: profileError.message,
+          details: profileError.details,
+          hint: profileError.hint,
+        });
+      }
+      
+      // Use full profile data if available, otherwise use specific columns
+      const profileToUse = allProfileData || currentUserProfile;
+      
+      if (profileToUse) {
+        creatorProfile = profileToUse;
+        const firstName = (profileToUse.first_name || '').trim();
+        const lastName = (profileToUse.last_name || '').trim();
+        const fullName = `${firstName} ${lastName}`.trim();
+        creatorName = fullName || firstName || lastName || 'Creator';
+        
+        // Try location first (where address is stored), then address field
+        // IMPORTANT: Check both location and address fields, and handle null/undefined explicitly
+        const locationValue = profileToUse.location;
+        const addressValue = profileToUse.address;
+        const profileAddress = (locationValue && typeof locationValue === 'string' && locationValue.trim() !== '') 
+          ? locationValue.trim() 
+          : (addressValue && typeof addressValue === 'string' && addressValue.trim() !== '') 
+            ? addressValue.trim() 
+            : null;
+        
+        creatorAddress = profileAddress || undefined;
+        
+        console.log('[Protection] Set creator info from profile:', {
+          creatorName,
+          creatorAddress,
+          creatorAddressLength: creatorAddress?.length,
+          creatorEmail,
+          hasFirstName: !!firstName,
+          hasLastName: !!lastName,
+          hasLocation: !!profileToUse.location,
+          locationValue: profileToUse.location,
+          locationType: typeof profileToUse.location,
+          locationIsNull: profileToUse.location === null,
+          locationIsUndefined: profileToUse.location === undefined,
+          locationLength: profileToUse.location?.length,
+          hasAddress: !!profileToUse.address,
+          addressValue: profileToUse.address,
+          addressType: typeof profileToUse.address,
+          addressIsNull: profileToUse.address === null,
+          addressIsUndefined: profileToUse.address === undefined,
+          addressLength: profileToUse.address?.length,
+          profileAddress,
+          profileAddressLength: profileAddress?.length,
+        });
+      } else {
+        console.warn('[Protection] No profile data found for current user:', {
+          userId,
+          error: profileError,
+          hasData: !!currentUserProfile,
+        });
+      }
+    } else {
+      console.warn('[Protection] Deal creator_id does not match current user:', {
+        dealCreatorId: deal.creator_id,
+        currentUserId: userId,
+      });
+    }
+    
+    // If creator is different from current user, fetch their profile
+    if (deal.creator_id && deal.creator_id !== userId) {
+      const { data: profileData, error: otherUserError } = await supabase
+        .from('profiles')
+        .select('first_name, last_name, address, location')
+        .eq('id', deal.creator_id)
+        .maybeSingle();
+      
+      if (otherUserError) {
+        console.error('[Protection] Error fetching other user profile:', otherUserError);
+      }
+      
+      if (profileData) {
+        creatorProfile = profileData;
+        const firstName = (profileData.first_name || '').trim();
+        const lastName = (profileData.last_name || '').trim();
+        const fullName = `${firstName} ${lastName}`.trim();
+        creatorName = fullName || firstName || lastName || 'Creator';
+        
+        const profileAddress = profileData.location || profileData.address;
+        creatorAddress = profileAddress && profileAddress.trim() !== '' ? profileAddress.trim() : undefined;
+        
+        // For other users, we can't get their email from auth.users, so it stays undefined
+        // This is okay - email validation will fail and user will need to add it to deal
+      }
+    }
+    
+    // Final fallback: ALWAYS try to fetch current user's profile if we're missing data
+    // This handles cases where the initial fetch failed or returned null
+    if ((!creatorName || creatorName === 'Creator') || !creatorAddress || !creatorProfile) {
+      console.log('[Protection] Missing data, trying fallback profile fetch:', {
+        hasName: !!creatorName && creatorName !== 'Creator',
+        hasAddress: !!creatorAddress,
+        hasProfile: !!creatorProfile,
+        willFetch: true,
+        userId,
+      });
+      
+      const { data: fallbackProfile, error: fallbackError } = await supabase
+        .from('profiles')
+        .select('first_name, last_name, address, location')
+        .eq('id', userId)
+        .maybeSingle(); // Use maybeSingle() instead of single() to avoid error if not found
+      
+      console.log('[Protection] Fallback profile fetch result:', {
+        hasData: !!fallbackProfile,
+        error: fallbackError,
+        errorCode: fallbackError?.code,
+        errorMessage: fallbackError?.message,
+        firstName: fallbackProfile?.first_name,
+        lastName: fallbackProfile?.last_name,
+        location: fallbackProfile?.location,
+        address: fallbackProfile?.address,
+        fullProfile: fallbackProfile,
+      });
+      
+      if (fallbackProfile) {
+        creatorProfile = fallbackProfile;
+        
+        if (!creatorName || creatorName === 'Creator') {
+          const fallbackFirstName = (fallbackProfile.first_name || '').trim();
+          const fallbackLastName = (fallbackProfile.last_name || '').trim();
+          const fallbackFullName = `${fallbackFirstName} ${fallbackLastName}`.trim();
+          creatorName = fallbackFullName || fallbackFirstName || fallbackLastName || creatorName;
+          console.log('[Protection] Updated creatorName from fallback:', creatorName);
+        }
+        if (!creatorAddress) {
+          const fallbackAddress = fallbackProfile.location || fallbackProfile.address;
+          creatorAddress = fallbackAddress && fallbackAddress.trim() !== '' ? fallbackAddress.trim() : creatorAddress;
+          console.log('[Protection] Updated creatorAddress from fallback:', creatorAddress);
+        }
+      } else if (fallbackError) {
+        console.error('[Protection] Fallback profile fetch failed:', {
+          code: fallbackError.code,
+          message: fallbackError.message,
+          details: fallbackError.details,
+          hint: fallbackError.hint,
+        });
+      }
+    }
+    
+    // Ensure email is always set from authenticated user
+    if (!creatorEmail && req.user?.email) {
+      creatorEmail = req.user.email;
+      console.log('[Protection] Set creatorEmail from req.user:', creatorEmail);
+    }
+
+    // Build structured deal schema (v2)
+    const { buildDealSchemaFromDealData, validateRequiredContractFields } = await import('../services/contractTemplate.js');
+    const dealSchema = buildDealSchemaFromDealData(deal);
+
+    // Validate required fields before generation
+    const brandInfo = {
+      name: deal.brand_name || 'Brand',
+      address: (deal as any).brand_address,
+      email: deal.brand_email,
+    };
+
+    // Final check: If address is still missing, try one more time from profile
+    // This is a critical fallback - always try to get address from profile
+    // Also do a fresh database query if needed
+    if ((!creatorAddress || creatorAddress.trim() === '') && creatorProfile) {
+      const finalAddress = creatorProfile.location || creatorProfile.address;
+      if (finalAddress && typeof finalAddress === 'string' && finalAddress.trim() !== '') {
+        creatorAddress = finalAddress.trim();
+        console.log('[Protection] Final address extraction from profile:', {
+          address: creatorAddress,
+          addressLength: creatorAddress.length,
+          fromLocation: !!creatorProfile.location,
+          locationValue: creatorProfile.location,
+          locationType: typeof creatorProfile.location,
+          fromAddress: !!creatorProfile.address,
+          addressValue: creatorProfile.address,
+          addressType: typeof creatorProfile.address,
+          profileKeys: Object.keys(creatorProfile),
+        });
+      } else {
+        console.warn('[Protection] Profile exists but address is empty:', {
+          hasLocation: !!creatorProfile.location,
+          locationValue: creatorProfile.location,
+          locationType: typeof creatorProfile.location,
+          hasAddress: !!creatorProfile.address,
+          addressValue: creatorProfile.address,
+          addressType: typeof creatorProfile.address,
+          profileKeys: Object.keys(creatorProfile),
+        });
+        
+        // Last resort: Do a fresh database query to get the location
+        console.log('[Protection] Attempting fresh database query for location...');
+        const { data: freshProfile, error: freshError } = await supabase
+          .from('profiles')
+          .select('location, address')
+          .eq('id', userId)
+          .maybeSingle();
+        
+        if (freshProfile && !freshError) {
+          const freshLocation = freshProfile.location;
+          const freshAddress = freshProfile.address;
+          const freshFinal = (freshLocation && typeof freshLocation === 'string' && freshLocation.trim() !== '')
+            ? freshLocation.trim()
+            : (freshAddress && typeof freshAddress === 'string' && freshAddress.trim() !== '')
+              ? freshAddress.trim()
+              : null;
+          
+          if (freshFinal) {
+            creatorAddress = freshFinal;
+            console.log('[Protection] SUCCESS: Got address from fresh database query:', {
+              address: creatorAddress,
+              addressLength: creatorAddress.length,
+              fromLocation: !!freshLocation,
+              locationValue: freshLocation,
+              fromAddress: !!freshAddress,
+              addressValue: freshAddress,
+            });
+          } else {
+            console.error('[Protection] Fresh query also returned empty address:', {
+              freshLocation,
+              freshAddress,
+              locationType: typeof freshLocation,
+              addressType: typeof freshAddress,
+            });
+          }
+        } else {
+          console.error('[Protection] Fresh database query failed:', freshError);
+        }
+      }
+    }
+    
+    // If still no address, log a critical error
+    if (!creatorAddress || creatorAddress.trim() === '') {
+      console.error('[Protection] CRITICAL: Creator address is still missing after all attempts:', {
+        hasProfile: !!creatorProfile,
+        profileLocation: creatorProfile?.location,
+        profileAddress: creatorProfile?.address,
+        creatorAddress,
+        userId,
+        dealCreatorId: deal.creator_id,
+      });
+    } else {
+      console.log('[Protection] SUCCESS: Creator address is available:', {
+        address: creatorAddress,
+        addressLength: creatorAddress.length,
+        addressPreview: creatorAddress.substring(0, 50),
+      });
+    }
+    
+    // CRITICAL: Ensure address is set from profile if it exists
+    // This is a final safety check before creating creatorInfo
+    if ((!creatorAddress || creatorAddress.trim() === '') && creatorProfile) {
+      const safetyCheck = creatorProfile.location || creatorProfile.address;
+      if (safetyCheck && typeof safetyCheck === 'string' && safetyCheck.trim() !== '') {
+        creatorAddress = safetyCheck.trim();
+        console.log('[Protection] Safety check: Extracted address from profile:', {
+          address: creatorAddress,
+          addressLength: creatorAddress.length,
+        });
+      }
+    }
+
+    const creatorInfo = {
+      name: creatorName,
+      address: creatorAddress || undefined, // Ensure undefined instead of empty string
+      email: creatorEmail,
+    };
+    
+    // Log final creatorInfo before validation
+    console.log('[Protection] Final creatorInfo before validation:', {
+      name: creatorInfo.name,
+      address: creatorInfo.address,
+      addressLength: creatorInfo.address?.length,
+      addressIsDefined: creatorInfo.address !== undefined,
+      addressIsNull: creatorInfo.address === null,
+      addressIsEmptyString: creatorInfo.address === '',
+      addressType: typeof creatorInfo.address,
+      email: creatorInfo.email,
+      rawCreatorAddress: creatorAddress,
+      rawCreatorAddressType: typeof creatorAddress,
+    });
+
+    // Debug logging BEFORE validation - show exact values
+    console.log('[Protection] === BEFORE VALIDATION ===');
+    console.log('[Protection] Creator Info:', {
+      name: creatorInfo.name,
+      nameType: typeof creatorInfo.name,
+      nameLength: creatorInfo.name?.length,
+      address: creatorInfo.address,
+      addressType: typeof creatorInfo.address,
+      addressLength: creatorInfo.address?.length,
+      addressTrimmed: creatorInfo.address?.trim(),
+      addressIsEmpty: !creatorInfo.address || creatorInfo.address.trim() === '',
+      email: creatorInfo.email,
+      emailType: typeof creatorInfo.email,
+    });
+    console.log('[Protection] Creator Address Details:', {
+      raw: creatorAddress,
+      trimmed: creatorAddress?.trim(),
+      length: creatorAddress?.length,
+      isEmpty: !creatorAddress || creatorAddress.trim() === '',
+      hasLocation: !!creatorProfile?.location,
+      hasAddress: !!creatorProfile?.address,
+      locationValue: creatorProfile?.location,
+      addressValue: creatorProfile?.address,
+    });
+    console.log('[Protection] Brand Info:', {
+      name: brandInfo.name,
+      address: brandInfo.address,
+      email: brandInfo.email,
+    });
+    console.log('[Protection] Profile Data:', {
+      hasProfile: !!creatorProfile,
+      firstName: creatorProfile?.first_name,
+      lastName: creatorProfile?.last_name,
+      location: creatorProfile?.location,
+      address: creatorProfile?.address,
+    });
+    console.log('[Protection] Deal Info:', {
+      creatorId: deal.creator_id,
+      userId: userId,
+      isCreator: deal.creator_id === userId,
+    });
+
+    // Debug logging for validation
+    console.log('[Protection] Validation debug:', {
+      brandInfo: {
+        name: brandInfo.name,
+        hasAddress: !!brandInfo.address,
+        address: brandInfo.address || 'MISSING',
+        addressLength: brandInfo.address?.length || 0,
+        addressTrimmed: brandInfo.address?.trim() || 'MISSING',
+      },
+      creatorInfo: {
+        name: creatorInfo.name,
+        nameLength: creatorInfo.name?.length || 0,
+        nameTrimmed: creatorInfo.name?.trim() || 'MISSING',
+        hasAddress: !!creatorInfo.address,
+        address: creatorInfo.address || 'MISSING',
+        addressLength: creatorInfo.address?.length || 0,
+        addressTrimmed: creatorInfo.address?.trim() || 'MISSING',
+        hasEmail: !!creatorEmail,
+        email: creatorEmail || 'MISSING',
+      },
+      profileData: {
+        firstName: creatorProfile?.first_name,
+        lastName: creatorProfile?.last_name,
+        address: creatorProfile?.address,
+        location: creatorProfile?.location,
+      },
+    });
+
+    const validation = validateRequiredContractFields(brandInfo, creatorInfo);
+    if (!validation.isValid) {
+      console.log('[Protection] Validation failed:', {
+        missingFields: validation.missingFields,
+        brandInfo,
+        creatorInfo,
+      });
+      
+      // Include debug info in response for troubleshooting
+      return res.status(400).json({
+        success: false,
+        error: 'Missing required contract fields',
+        missingFields: validation.missingFields,
+        message: `Please provide the following information before generating the contract: ${validation.missingFields.join(', ')}`,
+        debug: {
+          creatorInfo: {
+            name: creatorInfo.name,
+            nameLength: creatorInfo.name?.length,
+            address: creatorInfo.address ? `${creatorInfo.address.substring(0, 20)}...` : 'MISSING',
+            addressLength: creatorInfo.address?.length,
+            email: creatorInfo.email ? `${creatorInfo.email.substring(0, 20)}...` : 'MISSING',
+          },
+          brandInfo: {
+            name: brandInfo.name,
+            hasAddress: !!brandInfo.address,
+            addressLength: brandInfo.address?.length,
+          },
+          profileData: {
+            hasProfile: !!creatorProfile,
+            firstName: creatorProfile?.first_name,
+            lastName: creatorProfile?.last_name,
+            hasLocation: !!creatorProfile?.location,
+            hasAddress: !!creatorProfile?.address,
+            location: creatorProfile?.location,
+            address: creatorProfile?.address,
+            allColumns: creatorProfile ? Object.keys(creatorProfile) : [],
+          },
+          dealInfo: {
+            creatorId: deal.creator_id,
+            userId: userId,
+            isCreator: deal.creator_id === userId,
+          },
+        },
+      });
+    }
+
+    // Parse deliverables for backward compatibility
+    let deliverables: string[] = [];
+    try {
+      if (typeof deal.deliverables === 'string') {
+        deliverables = JSON.parse(deal.deliverables);
+      } else if (Array.isArray(deal.deliverables)) {
+        deliverables = deal.deliverables;
+      } else {
+        deliverables = ['As per agreement'];
+      }
+    } catch {
+      deliverables = [deal.deliverables || 'As per agreement'];
+    }
+
+    // Generate contract from scratch using v2 template system
+    const result = await generateContractFromScratch({
+      brandName: deal.brand_name || 'Brand',
+      creatorName,
+      creatorEmail,
+      dealAmount: deal.deal_amount || 0,
+      deliverables,
+      paymentTerms: deal.payment_expected_date 
+        ? `Payment expected by ${new Date(deal.payment_expected_date).toLocaleDateString()}`
+        : undefined,
+      dueDate: deal.due_date ? new Date(deal.due_date).toLocaleDateString() : undefined,
+      paymentExpectedDate: deal.payment_expected_date 
+        ? new Date(deal.payment_expected_date).toLocaleDateString() 
+        : undefined,
+      platform: deal.platform || 'Multiple Platforms',
+      brandEmail: deal.brand_email || undefined,
+      brandPhone: (deal as any).brand_phone || undefined,
+      brandAddress: (deal as any).brand_address || undefined,
+      creatorAddress: creatorAddress || creatorProfile?.location || creatorProfile?.address || undefined,
+      // Pass structured schema
+      dealSchema,
+      // Pass usage and exclusivity settings if available
+      usageType: (deal as any).usage_type || undefined,
+      usagePlatforms: deal.platform ? [deal.platform] : (deal as any).usage_platforms || undefined,
+      usageDuration: (deal as any).usage_duration || undefined,
+      paidAdsAllowed: (deal as any).paid_ads_allowed,
+      whitelistingAllowed: (deal as any).whitelisting_allowed,
+      exclusivityEnabled: (deal as any).exclusivity_enabled,
+      exclusivityCategory: (deal as any).exclusivity_category,
+      exclusivityDuration: (deal as any).exclusivity_duration,
+      terminationNoticeDays: (deal as any).termination_notice_days,
+      jurisdictionCity: (deal as any).jurisdiction_city,
+    });
+
+    if (!result.fileBuffer) {
+      return res.status(500).json({
+        success: false,
+        error: 'Failed to generate contract PDF'
+      });
+    }
+
+    // Upload to Supabase Storage
+    const timestamp = Date.now();
+    const fileName = result.fileName || `generated-contract-${timestamp}.pdf`;
+    const storagePath = `safe-contracts/${dealId}/${timestamp}_${fileName}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from('creator-assets')
+      .upload(storagePath, result.fileBuffer, {
+        contentType: result.contentType || 'application/pdf',
+        upsert: false,
+      });
+
+    if (uploadError) {
+      console.error('[Protection] Failed to upload generated contract:', uploadError);
+      // Fallback: return file buffer for download
+      res.setHeader('Content-Type', result.contentType || 'application/octet-stream');
+      res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
+      res.setHeader('Content-Length', result.fileBuffer.length.toString());
+      return res.send(result.fileBuffer);
+    }
+
+    // Get public URL
+    const { data: publicUrlData } = supabase.storage
+      .from('creator-assets')
+      .getPublicUrl(storagePath);
+
+    const safeContractUrl = publicUrlData?.publicUrl;
+
+    if (!safeContractUrl) {
+      return res.status(500).json({
+        success: false,
+        error: 'Failed to generate URL for contract'
+      });
+    }
+
+    // Update deal with safe contract URL - ALWAYS overwrite old contracts with new v2 contract
+    // Store contract metadata for future reference and legal defensibility
+    const updateData: any = {
+      safe_contract_url: safeContractUrl,
+      contract_file_url: safeContractUrl, // ALWAYS update contract_file_url with new contract (overwrites old)
+      contract_version: 'v2', // Template-first architecture with all fixes
+      updated_at: new Date().toISOString(),
+      // Store metadata if available
+      ...(result.metadata && {
+        contract_metadata: result.metadata
+      })
+    };
+    
+    console.log('[Protection] Updating deal with new v2 contract:', {
+      dealId,
+      newContractUrl: safeContractUrl,
+      oldContractUrl: deal.contract_file_url,
+      contractVersion: 'v2',
+      hasMetadata: !!result.metadata
+    });
+
+    const { error: updateError, data: updateResult } = await supabase
+      .from('brand_deals')
+      .update(updateData)
+      .eq('id', dealId)
+      .select('safe_contract_url, contract_file_url, contract_version');
+
+    if (updateError) {
+      console.error('[Protection] CRITICAL: Failed to update deal with new contract:', {
+        error: updateError,
+        dealId,
+        updateData,
+        safeContractUrl
+      });
+      // Still return the URL even if update fails - frontend can use temp state
+    } else {
+      console.log('[Protection] Successfully updated deal with new v2 contract:', {
+        dealId,
+        updatedFields: updateResult?.[0],
+        safeContractUrl
+      });
+    }
+
+    return res.json({
+      success: true,
+      safeContractUrl,
+      contractText: result.contractText,
+      contractVersion: 'v2',
+      databaseUpdated: !updateError, // Let frontend know if DB update succeeded
+      ...(result.metadata && { metadata: result.metadata })
+    });
+  } catch (error: any) {
+    console.error('[Protection] Generate contract from scratch error:', error);
+    
+    // Check if it's a validation error (client error)
+    const isValidationError = error.message && (
+      error.message.includes('Missing required fields') ||
+      error.message.includes('Please complete') ||
+      error.message.includes('Jurisdiction could not be determined')
+    );
+    
+    const statusCode = isValidationError ? 400 : 500;
+    const errorMessage = isValidationError 
+      ? error.message 
+      : 'Failed to generate contract from scratch. Please try again or contact support.';
+    
+    // Extract missingFields from error object if available
+    const missingFields = (error as any).missingFields || 
+      (isValidationError ? error.message.match(/Missing required fields: (.+)/)?.[1]?.split(', ') : undefined);
+    
+    res.status(statusCode).json({
+      success: false,
+      error: errorMessage,
+      missingFields: missingFields
     });
   }
 });

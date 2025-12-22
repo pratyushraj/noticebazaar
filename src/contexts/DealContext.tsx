@@ -66,7 +66,19 @@ export function DealProvider({ dealId, children }: DealProviderProps) {
 
   // Refresh methods
   const refreshDeal = () => {
+    // Invalidate all variations of the query key
     queryClient.invalidateQueries({ queryKey: ['brand-deal', dealId] });
+    queryClient.invalidateQueries({ queryKey: ['brand_deal', dealId] });
+    queryClient.invalidateQueries({ queryKey: ['brand_deal', dealId, profile?.id] });
+    // Force immediate refetch of active queries
+    queryClient.refetchQueries({ 
+      queryKey: ['brand_deal', dealId, profile?.id],
+      type: 'active'
+    });
+    queryClient.refetchQueries({ 
+      queryKey: ['brand-deal', dealId],
+      type: 'active'
+    });
   };
 
   const refreshIssues = () => {
