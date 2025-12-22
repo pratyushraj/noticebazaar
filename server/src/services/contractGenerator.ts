@@ -179,6 +179,8 @@ export async function generateContractFromScratch(
     // This prevents internal template delimiters from leaking into final PDF
     console.log('[ContractGenerator] Starting artifact cleanup...');
     const beforeCleanup = contractText;
+    const artifactCountBefore = (contractText.match(/\.\s*;/g) || []).length;
+    console.log('[ContractGenerator] Artifacts found before cleanup:', artifactCountBefore);
     
     // FIRST: Fix currency symbol corruption BEFORE any other processing
     // Replace any corrupted ¹ (U+00B9) with proper ₹ (U+20B9)
@@ -187,46 +189,46 @@ export async function generateContractFromScratch(
       .replace(/¹/g, rupeeSymbol) // Fix ¹ corruption to ₹
       .replace(/\u00B9/g, rupeeSymbol); // Explicit Unicode fix
     
-    // SECOND: Remove .; artifacts (common template delimiter leak) - ULTRA AGGRESSIVE patterns
-    // Multiple passes to catch all variations, including standalone .; on their own lines
-    for (let i = 0; i < 10; i++) {
-      contractText = contractText
-        // CRITICAL: Remove .; before numbers in ANY context (most important first)
-        .replace(/\.\s*;\s*([0-9])/g, '$1') // ".; 1" -> "1" (anywhere)
-        .replace(/;\s*\.\s*([0-9])/g, '$1') // ";. 1" -> "1" (anywhere)
-        .replace(/\.;\s*([0-9])/g, '$1') // ".;1" -> "1" (anywhere)
-        // CRITICAL: Remove standalone .; on their own lines
-        .replace(/^\s*\.\s*;\s*$/gm, '') // Remove lines that are just .;
-        .replace(/^\s*;\s*\.\s*$/gm, '') // Remove lines that are just ;.
-        // Remove .; in all contexts - most aggressive patterns
-        .replace(/\.\s*;\s*/g, '.') // Remove .; with any spacing
-        .replace(/;\s*\.\s*/g, '.') // Remove ;. with any spacing
-        .replace(/\.;\s*/g, '.') // Remove .; followed by space (no space added)
-        .replace(/\.;\s*$/gm, '.') // Remove .; at end of lines
-        .replace(/^\.;\s*/gm, '') // Remove .; at start of lines
-        .replace(/;\s*\./g, '.') // Remove ;. 
-        .replace(/;\s*\.\s*/g, '.') // Remove ;. with spaces
-        .replace(/\s*\.\s*;\s*/g, '.') // Remove .; with spaces around
-        .replace(/\.\s*;\s*\./g, '.') // Remove .;. pattern
-        .replace(/;\s*\.\s*;/g, '.') // Remove ;.; pattern
-        // Remove after quotes (e.g., "Parties".;)
-        .replace(/"\s*\.\s*;\s*/g, '".') // "Parties".; -> "Parties".
-        .replace(/"\s*;\s*\./g, '".') // "Parties";. -> "Parties".
-        // Remove standalone semicolons and periods that are artifacts
-        .replace(/^\s*[.;]\s*/gm, '') // Remove lines starting with . or ;
-        .replace(/\s*[.;]\s*$/gm, '') // Remove lines ending with . or ;
-        // Remove .; after periods (e.g., "India.;" -> "India.")
-        .replace(/\.\s*\.\s*;\s*/g, '.') // ..; -> .
-        .replace(/\.\s*;\s*\./g, '.') // .;. -> .
-        .replace(/([a-zA-Z0-9])\s*\.\s*;\s*/g, '$1.') // "India.;" -> "India."
-        .replace(/([a-zA-Z0-9])\s*;\s*\.\s*/g, '$1.') // "India;." -> "India."
-        // Remove any remaining stray punctuation artifacts
-        .replace(/[.;]{2,}/g, '.') // Multiple . or ; become single .
-        .replace(/\s*[.;]\s*([A-Z])/g, ' $1') // Clean up before capital letters
-        .replace(/\s*[.;]\s*([a-z])/g, ' $1') // Clean up before lowercase
-        // Remove .; followed by newline (common artifact)
-        .replace(/\.\s*;\s*\n/g, '.\n')
-        .replace(/;\s*\.\s*\n/g, '.\n');
+    // SECOND: Remove .; artifacts using a SINGLE comprehensive regex pattern
+    // This is more efficient than multiple passes and catches all variations
+    // Pattern explanation: Matches .; in any context (with/without spaces, before/after text/numbers)
+    contractText = contractText
+      // Remove .; before numbers (highest priority - most visible issue)
+      .replace(/\.\s*;\s*(\d)/g, '$1') // ".; 1" -> "1"
+      .replace(/;\s*\.\s*(\d)/g, '$1') // ";. 1" -> "1"
+      .replace(/\.;\s*(\d)/g, '$1') // ".;1" -> "1"
+      // Remove .; after text (e.g., "India.;" -> "India.")
+      .replace(/([a-zA-Z0-9])\s*\.\s*;\s*/g, '$1.') // "India.;" -> "India."
+      .replace(/([a-zA-Z0-9])\s*;\s*\.\s*/g, '$1.') // "India;." -> "India."
+      // Remove .; after quotes
+      .replace(/"\s*\.\s*;\s*/g, '".') // "Parties".; -> "Parties".
+      .replace(/"\s*;\s*\./g, '".') // "Parties";. -> "Parties".
+      // Remove standalone .; (entire lines or at line boundaries)
+      .replace(/^\s*\.\s*;\s*$/gm, '') // Lines that are just .;
+      .replace(/^\s*;\s*\.\s*$/gm, '') // Lines that are just ;.
+      .replace(/^\.\s*;\s*/gm, '') // .; at start of line
+      .replace(/\.\s*;\s*$/gm, '.') // .; at end of line
+      // Remove .; in any other context (catch-all)
+      .replace(/\.\s*;\s*/g, '.') // .; with any spacing -> .
+      .replace(/;\s*\.\s*/g, '.') // ;. with any spacing -> .
+      .replace(/\.;\s*/g, '.') // .; followed by space -> .
+      .replace(/;\s*\./g, '.') // ;. -> .
+      // Remove complex patterns
+      .replace(/\.\s*;\s*\./g, '.') // .;. -> .
+      .replace(/;\s*\.\s*;/g, '.') // ;.; -> .
+      .replace(/\.\s*\.\s*;\s*/g, '.') // ..; -> .
+      .replace(/[.;]{2,}/g, '.') // Multiple . or ; -> single .
+      // Clean up spacing artifacts
+      .replace(/\s*[.;]\s*([A-Z])/g, ' $1') // .; before capital -> space + capital
+      .replace(/\s*[.;]\s*([a-z])/g, ' $1') // .; before lowercase -> space + lowercase
+      // Remove .; followed by newline
+      .replace(/\.\s*;\s*\n/g, '.\n')
+      .replace(/;\s*\.\s*\n/g, '.\n');
+    
+    const artifactCountAfter = (contractText.match(/\.\s*;/g) || []).length;
+    console.log('[ContractGenerator] Artifacts found after cleanup:', artifactCountAfter);
+    if (artifactCountAfter > 0) {
+      console.warn('[ContractGenerator] WARNING: Some artifacts may remain. Sample:', contractText.match(/\.\s*;[^\n]{0,50}/)?.[0]);
     }
     
     // Final cleanup pass
