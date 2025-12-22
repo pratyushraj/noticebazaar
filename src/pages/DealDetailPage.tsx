@@ -2838,6 +2838,160 @@ ${link}`;
                       )}
                     </div>
 
+                    {/* Regenerate Contract Button - Always visible when deal is approved */}
+                    <motion.button
+                      onClick={async () => {
+                        if (!deal || !deal.id || !session?.access_token) {
+                          toast.error('Missing required information');
+                          return;
+                        }
+
+                        setIsGeneratingSafeContract(true);
+                        setContractGenerationError(null);
+                        setMissingFields([]);
+                        triggerHaptic(HapticPatterns.medium);
+
+                        try {
+                          const apiBaseUrl =
+                            import.meta.env.VITE_API_BASE_URL ||
+                            (typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com')
+                              ? 'https://api.creatorarmour.com'
+                              : typeof window !== 'undefined' && window.location.hostname === 'localhost'
+                              ? 'http://localhost:3001'
+                              : 'https://noticebazaar-api.onrender.com');
+
+                          const response = await fetch(`${apiBaseUrl}/api/protection/generate-contract-from-scratch`, {
+                            method: 'POST',
+                            headers: {
+                              'Content-Type': 'application/json',
+                              Authorization: `Bearer ${session.access_token}`,
+                            },
+                            body: JSON.stringify({
+                              dealId: deal.id,
+                            }),
+                          });
+
+                          if (!response.ok) {
+                            const errorData = await response.json();
+                            
+                            // Handle validation errors with missing fields
+                            if (response.status === 400 && errorData.missingFields && Array.isArray(errorData.missingFields)) {
+                              setMissingFields(errorData.missingFields);
+                              const missingFieldsList = errorData.missingFields.join(', ');
+                              const needsProfileUpdate = errorData.missingFields.some((field: string) => 
+                                field.toLowerCase().includes('creator')
+                              );
+                              
+                              let errorMessage = `Missing required information: ${missingFieldsList}.`;
+                              if (needsProfileUpdate) {
+                                errorMessage += ` Please update your profile address in Profile → Settings before generating the contract.`;
+                              } else {
+                                errorMessage += ` Please update the deal details before generating the contract.`;
+                              }
+                              
+                              setContractGenerationError(errorMessage);
+                              throw new Error(errorMessage);
+                            }
+                            
+                            // Handle other validation errors
+                            if (response.status === 400 && errorData.error) {
+                              const errorMsg = errorData.error;
+                              if (errorMsg.includes('Creator address') || errorMsg.includes('creator address')) {
+                                setMissingFields(['Creator address']);
+                                const msg = `Missing creator address. Please update your profile address in Profile → Settings, then try again.`;
+                                setContractGenerationError(msg);
+                                throw new Error(msg);
+                              }
+                              setContractGenerationError(errorMsg);
+                              throw new Error(errorMsg);
+                            }
+                            
+                            throw new Error(errorData.error || 'Failed to generate contract');
+                          }
+
+                          const data = await response.json();
+                          
+                          if (data.success && data.safeContractUrl) {
+                            toast.success('Contract regenerated successfully!');
+                            
+                            // Update cache immediately
+                            if (deal?.id && profile?.id) {
+                              const queryKey = ['brand_deal', deal.id, profile.id];
+                              queryClient.setQueryData(queryKey, (oldData: any) => {
+                                if (!oldData) return { id: deal.id, safe_contract_url: data.safeContractUrl, contract_file_url: data.safeContractUrl, contract_version: 'v2' };
+                                return { ...oldData, safe_contract_url: data.safeContractUrl, contract_file_url: data.safeContractUrl, contract_version: 'v2' };
+                              });
+                            }
+                            
+                            setContractJustGenerated(true);
+                            setTimeout(() => {
+                              refreshAll();
+                              setContractJustGenerated(false);
+                            }, 2000);
+                          } else {
+                            throw new Error('Unexpected response format');
+                          }
+                        } catch (error: any) {
+                          console.error('[DealDetailPage] Generate contract from scratch error:', error);
+                          toast.error(error.message || 'Failed to generate contract');
+                        } finally {
+                          setIsGeneratingSafeContract(false);
+                        }
+                      }}
+                      disabled={isGeneratingSafeContract || contractJustGenerated}
+                      whileTap={{ scale: 0.98 }}
+                      className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 px-6 py-3 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed mb-4"
+                    >
+                      {isGeneratingSafeContract ? (
+                        <>
+                          <Loader2 className="w-5 h-5 animate-spin" />
+                          Regenerating Contract...
+                        </>
+                      ) : (
+                        <>
+                          <FileText className="w-5 h-5" />
+                          {safeContractUrl ? 'Regenerate Contract' : 'Generate Contract'}
+                        </>
+                      )}
+                    </motion.button>
+
+                    {/* Validation Error Banner */}
+                    {contractGenerationError && (
+                      <div className="bg-red-500/20 border-2 border-red-500/50 rounded-xl p-4 mb-4">
+                        <div className="flex items-start gap-3">
+                          <div className="w-5 h-5 rounded-full bg-red-500/30 flex items-center justify-center flex-shrink-0 mt-0.5">
+                            <AlertCircle className="w-4 h-4 text-red-400" />
+                          </div>
+                          <div className="flex-1">
+                            <p className="text-sm font-medium text-red-300 mb-2">
+                              Missing Required Information
+                            </p>
+                            <div className="space-y-1 mb-3">
+                              {missingFields.length > 0 && (
+                                <ul className="text-xs text-red-200/80 list-disc list-inside space-y-1">
+                                  {missingFields.map((field, idx) => (
+                                    <li key={idx}>{field}</li>
+                                  ))}
+                                </ul>
+                              )}
+                              <p className="text-xs text-white/70 mt-2">
+                                {contractGenerationError}
+                              </p>
+                            </div>
+                            {missingFields.some(f => f.toLowerCase().includes('creator')) && (
+                              <motion.button
+                                onClick={() => navigate('/creator-profile')}
+                                whileTap={{ scale: 0.98 }}
+                                className="mt-2 px-4 py-2 bg-red-600/30 hover:bg-red-600/40 border border-red-500/50 rounded-lg text-sm font-medium text-white transition-colors"
+                              >
+                                Update Profile Address →
+                              </motion.button>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
                     {/* View & Download Contract Buttons - Primary Actions */}
                     {safeContractUrl ? (
                       <>
