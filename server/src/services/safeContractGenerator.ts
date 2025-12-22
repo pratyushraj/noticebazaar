@@ -440,9 +440,17 @@ export async function generateSafeContractPdf(text: string, reportId: string): P
         // Use Puppeteer's executablePath() method to find installed Chrome
         executablePath = puppeteer.default.executablePath();
         console.log('[SafeContractGenerator] Using Chrome executable:', executablePath);
+        
+        // Verify the executable exists and is executable
+        const fs = await import('fs');
+        if (!fs.existsSync(executablePath)) {
+          console.warn('[SafeContractGenerator] Chrome executable not found at:', executablePath);
+          executablePath = undefined; // Let Puppeteer find it
+        }
       } catch (e) {
         console.warn('[SafeContractGenerator] Could not find Chrome executable path:', (e as Error).message);
         // Will try default launch without explicit path
+        executablePath = undefined;
       }
     }
     
