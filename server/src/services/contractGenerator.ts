@@ -187,31 +187,47 @@ export async function generateContractFromScratch(
       .replace(/¹/g, rupeeSymbol) // Fix ¹ corruption to ₹
       .replace(/\u00B9/g, rupeeSymbol); // Explicit Unicode fix
     
-    // SECOND: Remove .; artifacts (common template delimiter leak) - comprehensive patterns
+    // SECOND: Remove .; artifacts (common template delimiter leak) - ULTRA AGGRESSIVE patterns
+    // Multiple passes to catch all variations
+    for (let i = 0; i < 3; i++) {
+      contractText = contractText
+        // Remove .; in all contexts - most aggressive patterns
+        .replace(/\.\s*;\s*/g, '.') // Remove .; with any spacing
+        .replace(/;\s*\.\s*/g, '.') // Remove ;. with any spacing
+        .replace(/\.;\s*/g, '.') // Remove .; followed by space (no space added)
+        .replace(/\.;\s*$/gm, '.') // Remove .; at end of lines
+        .replace(/^\.;\s*/gm, '') // Remove .; at start of lines
+        .replace(/;\s*\./g, '.') // Remove ;. 
+        .replace(/;\s*\.\s*/g, '.') // Remove ;. with spaces
+        .replace(/\s*\.\s*;\s*/g, '.') // Remove .; with spaces around
+        .replace(/\.\s*;\s*\./g, '.') // Remove .;. pattern
+        .replace(/;\s*\.\s*;/g, '.') // Remove ;.; pattern
+        // Remove after quotes (e.g., "Parties".;)
+        .replace(/"\s*\.\s*;\s*/g, '".') // "Parties".; -> "Parties".
+        .replace(/"\s*;\s*\./g, '".') // "Parties";. -> "Parties".
+        // Remove standalone semicolons and periods that are artifacts
+        .replace(/^\s*[.;]\s*/gm, '') // Remove lines starting with . or ;
+        .replace(/\s*[.;]\s*$/gm, '') // Remove lines ending with . or ;
+        // Remove .; after periods
+        .replace(/\.\s*\.\s*;\s*/g, '.') // ..; -> .
+        .replace(/\.\s*;\s*\./g, '.') // .;. -> .
+        // Remove any remaining stray punctuation artifacts
+        .replace(/[.;]{2,}/g, '.') // Multiple . or ; become single .
+        .replace(/\s*[.;]\s*([A-Z])/g, ' $1') // Clean up before capital letters
+        .replace(/\s*[.;]\s*([0-9])/g, ' $1') // Clean up before numbers
+        .replace(/\s*[.;]\s*([a-z])/g, ' $1'); // Clean up before lowercase
+    }
+    
+    // Final cleanup pass
     contractText = contractText
-      // Remove .; artifacts - most aggressive patterns first
-      .replace(/\.\s*;\s*/g, '.') // Remove .; with any spacing
-      .replace(/;\s*\.\s*/g, '.') // Remove ;. with any spacing
-      .replace(/\.;\s*/g, '. ') // Remove .; followed by space
-      .replace(/;\s*\./g, '.') // Remove ;. 
-      .replace(/;\s*\.\s*/g, '. ') // Remove ;. with spaces
-      .replace(/\s*\.\s*;\s*/g, '. ') // Remove .; with spaces around
-      .replace(/\.\s*;\s*\./g, '.') // Remove .;. pattern
-      .replace(/;\s*\.\s*;/g, '.') // Remove ;.; pattern
-      // Remove standalone semicolons and periods that are artifacts
-      .replace(/^\s*[.;]\s*/gm, '') // Remove lines starting with . or ;
-      .replace(/\s*[.;]\s*$/gm, '') // Remove lines ending with . or ;
-      // Remove empty tokens and template separators
-      .replace(/\s*\.\s*;\s*/g, '. ') // Final pass for .; with spaces
-      .replace(/;\s*\.\s*/g, '. ') // Final pass for ;. with spaces
       // Clean up spacing issues
       .replace(/\s+\./g, '.') // Remove spaces before periods
       .replace(/\.\s*\./g, '.') // Remove double periods
       .replace(/\s+;/g, ' ') // Remove stray semicolons
       .replace(/;\s+/g, ' ') // Remove semicolons with spaces
-      // Remove any remaining stray punctuation artifacts
-      .replace(/[.;]{2,}/g, '.') // Multiple . or ; become single .
-      .replace(/\s*[.;]\s*([A-Z])/g, ' $1') // Clean up before capital letters
+      // Remove any remaining .; patterns (final catch-all)
+      .replace(/\.\s*;\s*/g, '.')
+      .replace(/;\s*\.\s*/g, '.')
       // Normalize whitespace
       .replace(/\n{3,}/g, '\n\n') // Normalize multiple newlines
       .replace(/[ \t]+/g, ' ') // Normalize multiple spaces/tabs
