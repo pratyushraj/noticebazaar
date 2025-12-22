@@ -458,11 +458,23 @@ export async function generateSafeContractPdf(text: string, reportId: string): P
         // CRITICAL: PDFKit default fonts don't support ₹ symbol
         // Replace ₹ with "Rs." for PDFKit compatibility
         // This ensures the currency is always visible in the PDF
-        const cleanedText = text
-          .replace(/¹/g, 'Rs.') // Fix ¹ corruption to Rs.
-          .replace(/\u00B9/g, 'Rs.') // Explicit Unicode fix
-          .replace(/₹/g, 'Rs.') // Replace ₹ with Rs. for PDFKit
-          .replace(/\u20B9/g, 'Rs.'); // Explicit Unicode replacement
+        // IMPORTANT: Prevent "Rs.Rs." duplication by normalizing first
+        let cleanedText = text
+          // First, normalize all currency symbols to a placeholder
+          .replace(/₹/g, '{{CURRENCY}}')
+          .replace(/\u20B9/g, '{{CURRENCY}}')
+          .replace(/¹/g, '{{CURRENCY}}')
+          .replace(/\u00B9/g, '{{CURRENCY}}')
+          // Replace any existing "Rs." or "Rs" with placeholder to prevent duplication
+          .replace(/\bRs\.?\s*/gi, '{{CURRENCY}}')
+          // Now replace placeholder with single "Rs. "
+          .replace(/\{\{CURRENCY\}\}/g, 'Rs. ')
+          // Clean up any double spaces
+          .replace(/\s+/g, ' ')
+          // Fix "Rs. Rs." patterns (space between)
+          .replace(/Rs\.\s+Rs\./g, 'Rs.')
+          // Fix "Rs.Rs." patterns (no space)
+          .replace(/Rs\.Rs\./g, 'Rs.');
         
         console.log('[SafeContractGenerator] PDFKit: Text cleaning:', {
           originalLength: text.length,

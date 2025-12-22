@@ -188,9 +188,12 @@ export async function generateContractFromScratch(
       .replace(/\u00B9/g, rupeeSymbol); // Explicit Unicode fix
     
     // SECOND: Remove .; artifacts (common template delimiter leak) - ULTRA AGGRESSIVE patterns
-    // Multiple passes to catch all variations
-    for (let i = 0; i < 3; i++) {
+    // Multiple passes to catch all variations, including standalone .; on their own lines
+    for (let i = 0; i < 5; i++) {
       contractText = contractText
+        // CRITICAL: Remove standalone .; on their own lines FIRST (most common case)
+        .replace(/^\s*\.\s*;\s*$/gm, '') // Remove lines that are just .;
+        .replace(/^\s*;\s*\.\s*$/gm, '') // Remove lines that are just ;.
         // Remove .; in all contexts - most aggressive patterns
         .replace(/\.\s*;\s*/g, '.') // Remove .; with any spacing
         .replace(/;\s*\.\s*/g, '.') // Remove ;. with any spacing
@@ -215,7 +218,10 @@ export async function generateContractFromScratch(
         .replace(/[.;]{2,}/g, '.') // Multiple . or ; become single .
         .replace(/\s*[.;]\s*([A-Z])/g, ' $1') // Clean up before capital letters
         .replace(/\s*[.;]\s*([0-9])/g, ' $1') // Clean up before numbers
-        .replace(/\s*[.;]\s*([a-z])/g, ' $1'); // Clean up before lowercase
+        .replace(/\s*[.;]\s*([a-z])/g, ' $1') // Clean up before lowercase
+        // Remove .; followed by newline (common artifact)
+        .replace(/\.\s*;\s*\n/g, '.\n')
+        .replace(/;\s*\.\s*\n/g, '.\n');
     }
     
     // Final cleanup pass
