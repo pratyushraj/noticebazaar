@@ -1117,22 +1117,11 @@ router.post('/generate-contract-from-scratch', async (req: AuthenticatedRequest,
     }
 
     // Update deal with safe contract URL - ALWAYS overwrite old contracts with new v2 contract
-    // Store contract metadata for future reference and legal defensibility
-    const updateData: any = {
+    // Start with minimal required fields that definitely exist
+    const baseUpdateData: any = {
       safe_contract_url: safeContractUrl,
       contract_file_url: safeContractUrl, // ALWAYS update contract_file_url with new contract (overwrites old)
-      updated_at: new Date().toISOString(),
-      // Store metadata if available
-      ...(result.metadata && {
-        contract_metadata: result.metadata
-      })
-    };
-    
-    // Only include contract_version if the column exists (it might not in older schemas)
-    // Try to update with it first, but don't fail if it doesn't exist
-    const updateDataWithVersion = {
-      ...updateData,
-      contract_version: 'v2' // Template-first architecture with all fixes
+      updated_at: new Date().toISOString()
     };
     
     console.log('[Protection] Updating deal with new v2 contract:', {
@@ -1143,30 +1132,42 @@ router.post('/generate-contract-from-scratch', async (req: AuthenticatedRequest,
       hasMetadata: !!result.metadata
     });
 
-    // Try update with contract_version first
+    // Try updates with progressively fewer optional fields until one succeeds
     let updateError: any = null;
     let updateResult: any = null;
     
-    const { error: errorWithVersion, data: resultWithVersion } = await supabase
+    // Attempt 1: Try with all optional fields (contract_version and contract_metadata)
+    const updateDataWithAll = {
+      ...baseUpdateData,
+      contract_version: 'v2',
+      ...(result.metadata && { contract_metadata: result.metadata })
+    };
+    
+    const { error: errorWithAll, data: resultWithAll } = await supabase
       .from('brand_deals')
-      .update(updateDataWithVersion)
+      .update(updateDataWithAll)
       .eq('id', dealId)
       .select('safe_contract_url, contract_file_url');
     
-    // If update failed due to missing contract_version column, retry without it
-    if (errorWithVersion && errorWithVersion.message?.includes('contract_version')) {
-      console.warn('[Protection] contract_version column not found, updating without it:', errorWithVersion.message);
-      const { error: errorWithoutVersion, data: resultWithoutVersion } = await supabase
+    if (!errorWithAll) {
+      // Success with all fields
+      updateError = null;
+      updateResult = resultWithAll;
+    } else if (errorWithAll.message?.includes('contract_version') || errorWithAll.message?.includes('contract_metadata')) {
+      // Attempt 2: Try without optional fields (just the required URLs)
+      console.warn('[Protection] Optional columns not found, updating with base fields only:', errorWithAll.message);
+      const { error: errorBase, data: resultBase } = await supabase
         .from('brand_deals')
-        .update(updateData)
+        .update(baseUpdateData)
         .eq('id', dealId)
         .select('safe_contract_url, contract_file_url');
       
-      updateError = errorWithoutVersion;
-      updateResult = resultWithoutVersion;
+      updateError = errorBase;
+      updateResult = resultBase;
     } else {
-      updateError = errorWithVersion;
-      updateResult = resultWithVersion;
+      // Some other error occurred
+      updateError = errorWithAll;
+      updateResult = resultWithAll;
     }
 
     if (updateError) {
