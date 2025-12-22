@@ -67,14 +67,17 @@ console.log(`✅ Successfully deleted ${deleted?.length || 0} contract file(s)`)
 
 // Also clear the contract URLs from the deal record
 console.log('\n🔄 Clearing contract URLs from deal record...');
+const updateData: any = {
+  safe_contract_url: null,
+  contract_file_url: null,
+  updated_at: new Date().toISOString()
+};
+
+// Only include contract_version if the column exists (it might not in older schemas)
+// The update will work without it
 const { error: updateError } = await supabase
   .from('brand_deals')
-  .update({
-    safe_contract_url: null,
-    contract_file_url: null,
-    contract_version: null,
-    updated_at: new Date().toISOString()
-  })
+  .update(updateData)
   .eq('id', dealId);
 
 if (updateError) {
