@@ -168,21 +168,31 @@ export async function generateContractFromScratch(
     // This prevents internal template delimiters from leaking into final PDF
     console.log('[ContractGenerator] Starting artifact cleanup...');
     const beforeCleanup = contractText;
+    
+    // FIRST: Fix currency symbol corruption BEFORE any other processing
+    // Replace any corrupted ¹ (U+00B9) with proper ₹ (U+20B9)
+    const rupeeSymbol = '\u20B9';
     contractText = contractText
-      // Remove .; artifacts (common template delimiter leak) - comprehensive patterns
-      .replace(/\.;\s*/g, '. ')
-      .replace(/;\s*\./g, '.')
-      .replace(/\.\s*;/g, '.')
-      .replace(/;\s*\.\s*/g, '. ')
-      .replace(/\s*\.\s*;\s*/g, '. ')
-      .replace(/\.\s*;\s*\./g, '.')
-      .replace(/;\s*\.\s*;/g, '.')
+      .replace(/¹/g, rupeeSymbol) // Fix ¹ corruption to ₹
+      .replace(/\u00B9/g, rupeeSymbol); // Explicit Unicode fix
+    
+    // SECOND: Remove .; artifacts (common template delimiter leak) - comprehensive patterns
+    contractText = contractText
+      // Remove .; artifacts - most aggressive patterns first
+      .replace(/\.\s*;\s*/g, '.') // Remove .; with any spacing
+      .replace(/;\s*\.\s*/g, '.') // Remove ;. with any spacing
+      .replace(/\.;\s*/g, '. ') // Remove .; followed by space
+      .replace(/;\s*\./g, '.') // Remove ;. 
+      .replace(/;\s*\.\s*/g, '. ') // Remove ;. with spaces
+      .replace(/\s*\.\s*;\s*/g, '. ') // Remove .; with spaces around
+      .replace(/\.\s*;\s*\./g, '.') // Remove .;. pattern
+      .replace(/;\s*\.\s*;/g, '.') // Remove ;.; pattern
       // Remove standalone semicolons and periods that are artifacts
       .replace(/^\s*[.;]\s*/gm, '') // Remove lines starting with . or ;
       .replace(/\s*[.;]\s*$/gm, '') // Remove lines ending with . or ;
       // Remove empty tokens and template separators
-      .replace(/\s*\.\s*;\s*/g, '. ')
-      .replace(/;\s*\.\s*/g, '. ')
+      .replace(/\s*\.\s*;\s*/g, '. ') // Final pass for .; with spaces
+      .replace(/;\s*\.\s*/g, '. ') // Final pass for ;. with spaces
       // Clean up spacing issues
       .replace(/\s+\./g, '.') // Remove spaces before periods
       .replace(/\.\s*\./g, '.') // Remove double periods
@@ -199,6 +209,19 @@ export async function generateContractFromScratch(
       .replace(/\n\s*•\s*•/g, '\n•') // Remove double bullets
       .replace(/\n\s*•\s*\n/g, '\n') // Remove bullets on empty lines
       .trim();
+    
+    // THIRD: Final currency symbol validation and fix
+    // Ensure ₹ symbol is present in currency amounts
+    contractText = contractText.replace(
+      /(\d[\d,]*)\s*\(Rupees\s+([^)]+)\s+Only\)/g,
+      (match, amount, words) => {
+        // If amount doesn't start with ₹, add it
+        if (!match.includes(rupeeSymbol) && !match.includes('₹')) {
+          return `${rupeeSymbol}${amount} (Rupees ${words} Only)`;
+        }
+        return match;
+      }
+    );
     
     // Log cleanup results
     const artifactsRemoved = (beforeCleanup.match(/\.;/g) || []).length;
