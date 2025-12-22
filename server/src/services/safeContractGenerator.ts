@@ -467,14 +467,18 @@ export async function generateSafeContractPdf(text: string, reportId: string): P
           .replace(/\u00B9/g, '{{CURRENCY}}')
           // Replace any existing "Rs." or "Rs" with placeholder to prevent duplication
           .replace(/\bRs\.?\s*/gi, '{{CURRENCY}}')
-          // Now replace placeholder with single "Rs. "
+          // Now replace placeholder with single "Rs. " (with space)
           .replace(/\{\{CURRENCY\}\}/g, 'Rs. ')
-          // Clean up any double spaces
-          .replace(/\s+/g, ' ')
-          // Fix "Rs. Rs." patterns (space between)
+          // Fix "Rs. Rs." patterns (space between) - multiple passes
           .replace(/Rs\.\s+Rs\./g, 'Rs.')
+          .replace(/Rs\.\s+Rs\./g, 'Rs.') // Second pass
           // Fix "Rs.Rs." patterns (no space)
-          .replace(/Rs\.Rs\./g, 'Rs.');
+          .replace(/Rs\.Rs\./g, 'Rs.')
+          .replace(/Rs\.Rs\./g, 'Rs.') // Second pass
+          // Clean up any double spaces (but preserve single space after Rs.)
+          .replace(/\s{2,}/g, ' ')
+          // Final: Ensure single "Rs. " before numbers
+          .replace(/(Rs\.\s*){2,}/g, 'Rs. ');
         
         console.log('[SafeContractGenerator] PDFKit: Text cleaning:', {
           originalLength: text.length,
