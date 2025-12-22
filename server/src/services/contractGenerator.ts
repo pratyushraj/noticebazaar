@@ -226,13 +226,19 @@ export async function generateContractFromScratch(
     // Log cleanup results
     const artifactsRemoved = (beforeCleanup.match(/\.;/g) || []).length;
     const afterArtifacts = (contractText.match(/\.;/g) || []).length;
+    const corruptedCurrencyBefore = (beforeCleanup.match(/¹/g) || []).length;
+    const corruptedCurrencyAfter = (contractText.match(/¹/g) || []).length;
+    const hasRupeeSymbol = contractText.includes(rupeeSymbol) || contractText.includes('₹');
     console.log('[ContractGenerator] Post-process cleanup completed:', {
       beforeLength: beforeCleanup.length,
       afterLength: contractText.length,
       artifactsBefore: artifactsRemoved,
       artifactsAfter: afterArtifacts,
-      currencySymbol: contractText.includes('₹') ? '✅ Present' : '❌ Missing',
-      hasDisclaimer: contractText.includes('CreatorArmour is not a party') ? '✅ Present' : '❌ Missing'
+      corruptedCurrencyBefore: corruptedCurrencyBefore,
+      corruptedCurrencyAfter: corruptedCurrencyAfter,
+      currencySymbol: hasRupeeSymbol ? '✅ Present' : '❌ Missing',
+      hasDisclaimer: contractText.includes('CreatorArmour is not a party') ? '✅ Present' : '❌ Missing',
+      sampleCurrency: contractText.match(/[₹¹]\s*\d[\d,]*\s*\(Rupees[^)]+Only\)/)?.[0] || 'Not found'
     });
 
     // Validate template output (should always succeed if validation passed)
