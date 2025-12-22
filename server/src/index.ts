@@ -34,6 +34,7 @@ import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import { createClient } from '@supabase/supabase-js';
+import type { Database } from './types/supabase.js';
 import conversationsRouter from './routes/conversations.js';
 import messagesRouter from './routes/messages.js';
 import attachmentsRouter from './routes/attachments.js';
@@ -75,7 +76,7 @@ if (supabaseServiceKey.startsWith('${') || supabaseServiceKey === '') {
 
 // Initialize Supabase client with error handling
 // Don't throw errors during module initialization (crashes Vercel serverless functions)
-let supabase: ReturnType<typeof createClient>;
+let supabase: ReturnType<typeof createClient<Database>>;
 let supabaseInitialized = false;
 
 try {
@@ -87,7 +88,7 @@ try {
     supabaseServiceKey !== 'placeholder-key';
   
   if (hasValidCredentials) {
-    supabase = createClient(supabaseUrl, supabaseServiceKey, {
+    supabase = createClient<Database>(supabaseUrl, supabaseServiceKey, {
       auth: {
         autoRefreshToken: false,
         persistSession: false
@@ -97,7 +98,7 @@ try {
     console.log('✅ Supabase client initialized successfully');
   } else {
     // Create a dummy client to prevent crashes (will fail on actual use)
-    supabase = createClient('https://placeholder.supabase.co', 'placeholder-key', {
+    supabase = createClient<Database>('https://placeholder.supabase.co', 'placeholder-key', {
       auth: {
         autoRefreshToken: false,
         persistSession: false
@@ -108,7 +109,7 @@ try {
 } catch (error: any) {
   console.error('❌ Failed to initialize Supabase client:', error.message);
   // Create a dummy client to prevent crashes
-  supabase = createClient('https://placeholder.supabase.co', 'placeholder-key', {
+  supabase = createClient<Database>('https://placeholder.supabase.co', 'placeholder-key', {
     auth: {
       autoRefreshToken: false,
       persistSession: false
