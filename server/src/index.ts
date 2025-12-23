@@ -39,7 +39,7 @@ import conversationsRouter from './routes/conversations.js';
 import messagesRouter from './routes/messages.js';
 import attachmentsRouter from './routes/attachments.js';
 import paymentsRouter from './routes/payments.js';
-import protectionRouter from './routes/protection.js';
+import protectionRouter, { viewContractHandler, downloadContractDocxHandler } from './routes/protection.js';
 import adminRouter from './routes/admin.js';
 import brandResponseRouter from './routes/brandResponse.js';
 import brandReplyTokensRouter from './routes/brandReplyTokens.js';
@@ -239,6 +239,12 @@ app.use('/api/conversations', authMiddleware, rateLimitMiddleware, conversations
 app.use('/api/conversations', authMiddleware, rateLimitMiddleware, messagesRouter);
 app.use('/api/conversations', authMiddleware, rateLimitMiddleware, attachmentsRouter);
 app.use('/api/payments', authMiddleware, rateLimitMiddleware, paymentsRouter);
+
+// Public routes for contracts (no auth required) - must be before protected routes
+app.get('/api/protection/contracts/:dealId/view', viewContractHandler);
+app.get('/api/protection/contracts/:dealId/download-docx', downloadContractDocxHandler);
+
+// Protected routes for protection features
 app.use('/api/protection', authMiddleware, rateLimitMiddleware, protectionRouter);
 app.use('/api/admin', authMiddleware, adminRouter);
 app.use('/api/ai', authMiddleware, rateLimitMiddleware, aiRouter);

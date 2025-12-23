@@ -2,15 +2,15 @@
 // Production-grade, creator-first, brand-safe contract generation
 
 import { callLLM } from './aiContractAnalysis.js';
-import { generateSafeContractPdf } from './safeContractGenerator.js';
+import { generateContractDocx } from './contractDocxGenerator.js';
 import {
   buildDealSchemaFromDealData,
   mapDealSchemaToContractVariables,
-  generateContractFromTemplate,
   validateRequiredContractFields,
   type DealSchema,
   type StructuredDeliverable,
 } from './contractTemplate.js';
+import { variablesToSchema, type ContractSchema } from './contractSchema.js';
 
 export interface ContractGenerationRequest {
   brandName: string;
@@ -42,11 +42,10 @@ export interface ContractGenerationRequest {
 }
 
 export interface ContractGenerationResponse {
-  contractText: string;
-  fileBuffer?: Buffer;
-  fileName?: string;
-  contentType?: string;
-  metadata?: {
+  contractDocx: Buffer; // DOCX is the primary output
+  fileName: string;
+  contentType: string;
+  metadata: {
     contract_version: string;
     jurisdiction_used: string;
     generated_at: string;
@@ -152,238 +151,47 @@ export async function generateContractFromScratch(
       throw new Error('Jurisdiction could not be determined from party addresses. Please ensure addresses include city and state information.');
     }
 
-    // PRIMARY METHOD: Generate contract using template (MANDATORY - no AI hallucination)
-    // This is the ONLY production path. Template ensures:
+    // PRIMARY METHOD: Generate DOCX contract using template engine (MANDATORY - no AI hallucination)
+    // This is the ONLY production path. DOCX template ensures:
     // - No invented addresses, names, or terms
-    // - Consistent legal structure
-    // - Court-defensible output
-    console.log('[ContractGenerator] Generating contract with v2 template (with all fixes applied)...');
+    // - Consistent legal structure with proper Word styles
+    // - Court-defensible output with lawyer-acceptable formatting
+    console.log('[ContractGenerator] Generating DOCX contract with template engine (DOCX-first architecture)...');
     console.log('[ContractGenerator] Currency amount:', dealSchema.deal_amount);
     console.log('[ContractGenerator] Deliverables:', JSON.stringify(dealSchema.deliverables));
     console.log('[ContractGenerator] Variables deal_amount_formatted:', variables.deal_amount_formatted);
-    console.log('[ContractGenerator] Variables currency check:', {
-      hasRupee: variables.deal_amount_formatted?.includes('₹') || variables.deal_amount_formatted?.includes('\u20B9'),
-      hasCorrupted: variables.deal_amount_formatted?.includes('¹'),
-      firstChars: variables.deal_amount_formatted?.substring(0, 30)
-    });
-    let contractText = generateContractFromTemplate(variables);
-    console.log('[ContractGenerator] Contract text generated, length:', contractText.length);
-    console.log('[ContractGenerator] Contract preview (first 500 chars):', contractText.substring(0, 500));
-    console.log('[ContractGenerator] Currency in contract text:', {
-      hasRupee: contractText.includes('₹') || contractText.includes('\u20B9'),
-      hasCorrupted: contractText.includes('¹'),
-      currencyMatch: contractText.match(/[₹¹]\s*\d[\d,]*\s*\(Rupees[^)]+Only\)/)?.[0] || 'Not found'
-    });
 
-    // CRITICAL: Post-process cleanup to remove template artifacts before PDF render
-    // This prevents internal template delimiters from leaking into final PDF
-    console.log('[ContractGenerator] Starting artifact cleanup...');
-    const beforeCleanup = contractText;
-    const artifactCountBefore = (contractText.match(/\.\s*;/g) || []).length;
-    console.log('[ContractGenerator] Artifacts found before cleanup:', artifactCountBefore);
-    
-    // FIRST: Fix currency symbol corruption BEFORE any other processing
-    // Replace any corrupted ¹ (U+00B9) with proper ₹ (U+20B9)
-    const rupeeSymbol = '\u20B9';
-    contractText = contractText
-      .replace(/¹/g, rupeeSymbol) // Fix ¹ corruption to ₹
-      .replace(/\u00B9/g, rupeeSymbol); // Explicit Unicode fix
-    
-    // SECOND: Remove .; artifacts using a SINGLE comprehensive regex pattern
-    // This is more efficient than multiple passes and catches all variations
-    // Pattern explanation: Matches .; in any context (with/without spaces, before/after text/numbers)
-    contractText = contractText
-      // Remove .; before numbers (highest priority - most visible issue)
-      .replace(/\.\s*;\s*(\d)/g, '$1') // ".; 1" -> "1"
-      .replace(/;\s*\.\s*(\d)/g, '$1') // ";. 1" -> "1"
-      .replace(/\.;\s*(\d)/g, '$1') // ".;1" -> "1"
-      // Remove .; after text (e.g., "India.;" -> "India.")
-      .replace(/([a-zA-Z0-9])\s*\.\s*;\s*/g, '$1.') // "India.;" -> "India."
-      .replace(/([a-zA-Z0-9])\s*;\s*\.\s*/g, '$1.') // "India;." -> "India."
-      // Remove .; after quotes
-      .replace(/"\s*\.\s*;\s*/g, '".') // "Parties".; -> "Parties".
-      .replace(/"\s*;\s*\./g, '".') // "Parties";. -> "Parties".
-      // Remove standalone .; (entire lines or at line boundaries)
-      .replace(/^\s*\.\s*;\s*$/gm, '') // Lines that are just .;
-      .replace(/^\s*;\s*\.\s*$/gm, '') // Lines that are just ;.
-      .replace(/^\.\s*;\s*/gm, '') // .; at start of line
-      .replace(/\.\s*;\s*$/gm, '.') // .; at end of line
-      // Remove .; in any other context (catch-all)
-      .replace(/\.\s*;\s*/g, '.') // .; with any spacing -> .
-      .replace(/;\s*\.\s*/g, '.') // ;. with any spacing -> .
-      .replace(/\.;\s*/g, '.') // .; followed by space -> .
-      .replace(/;\s*\./g, '.') // ;. -> .
-      // Remove complex patterns
-      .replace(/\.\s*;\s*\./g, '.') // .;. -> .
-      .replace(/;\s*\.\s*;/g, '.') // ;.; -> .
-      .replace(/\.\s*\.\s*;\s*/g, '.') // ..; -> .
-      .replace(/[.;]{2,}/g, '.') // Multiple . or ; -> single .
-      // Clean up spacing artifacts
-      .replace(/\s*[.;]\s*([A-Z])/g, ' $1') // .; before capital -> space + capital
-      .replace(/\s*[.;]\s*([a-z])/g, ' $1') // .; before lowercase -> space + lowercase
-      // Remove .; followed by newline
-      .replace(/\.\s*;\s*\n/g, '.\n')
-      .replace(/;\s*\.\s*\n/g, '.\n');
-    
-    const artifactCountAfter = (contractText.match(/\.\s*;/g) || []).length;
-    console.log('[ContractGenerator] Artifacts found after cleanup:', artifactCountAfter);
-    if (artifactCountAfter > 0) {
-      console.warn('[ContractGenerator] WARNING: Some artifacts may remain. Sample:', contractText.match(/\.\s*;[^\n]{0,50}/)?.[0]);
-    }
-    
-    // Final cleanup pass
-    contractText = contractText
-      // CRITICAL: Remove .; after text (e.g., "India.;" -> "India.")
-      .replace(/([a-zA-Z0-9])\s*\.\s*;\s*/g, '$1.') // "India.;" -> "India."
-      .replace(/([a-zA-Z0-9])\s*;\s*\.\s*/g, '$1.') // "India;." -> "India."
-      // Clean up spacing issues
-      .replace(/\s+\./g, '.') // Remove spaces before periods
-      .replace(/\.\s*\./g, '.') // Remove double periods
-      .replace(/\s+;/g, ' ') // Remove stray semicolons
-      .replace(/;\s+/g, ' ') // Remove semicolons with spaces
-      // Remove any remaining .; patterns (final catch-all)
-      .replace(/\.\s*;\s*/g, '.')
-      .replace(/;\s*\.\s*/g, '.')
-      // Normalize whitespace
-      .replace(/\n{3,}/g, '\n\n') // Normalize multiple newlines
-      .replace(/[ \t]+/g, ' ') // Normalize multiple spaces/tabs
-      .replace(/\n\s*\n\s*\n/g, '\n\n') // Remove triple newlines
-      // Clean bullet points
-      .replace(/\n\s*•\s*•/g, '\n•') // Remove double bullets
-      .replace(/\n\s*•\s*\n/g, '\n') // Remove bullets on empty lines
-      .trim();
-    
-    // THIRD: Final currency symbol validation and fix
-    // Ensure ₹ symbol is present in currency amounts
-    // CRITICAL: Replace ANY "Rs." with ₹ BEFORE PDF generation
-    contractText = contractText
-      // Replace "Rs. 1,000" or "Rs 1,000" with "₹1,000" in currency context
-      .replace(/\bRs\.\s*(\d[\d,]*)\s*\(Rupees\s+([^)]+)\s+Only\)/g, `${rupeeSymbol}$1 (Rupees $2 Only)`)
-      .replace(/\bRs\s+(\d[\d,]*)\s*\(Rupees\s+([^)]+)\s+Only\)/g, `${rupeeSymbol}$1 (Rupees $2 Only)`)
-      // Also replace standalone "Rs." before numbers (in case format is different)
-      .replace(/\bRs\.\s*(\d[\d,]*)/g, `${rupeeSymbol}$1`)
-      .replace(/\bRs\s+(\d[\d,]*)/g, `${rupeeSymbol}$1`)
-      // Ensure ₹ is present in currency amounts (add if missing)
-      .replace(/(\d[\d,]*)\s*\(Rupees\s+([^)]+)\s+Only\)/g, (match, amount, words) => {
-        if (!amount.includes(rupeeSymbol) && !amount.includes('₹')) {
-          return `${rupeeSymbol}${amount} (Rupees ${words} Only)`;
-        }
-        return match;
-      });
-    
-    // Log cleanup results
-    const artifactsRemoved = (beforeCleanup.match(/\.;/g) || []).length;
-    const afterArtifacts = (contractText.match(/\.;/g) || []).length;
-    const corruptedCurrencyBefore = (beforeCleanup.match(/¹/g) || []).length;
-    const corruptedCurrencyAfter = (contractText.match(/¹/g) || []).length;
-    const hasRupeeSymbol = contractText.includes(rupeeSymbol) || contractText.includes('₹');
-    console.log('[ContractGenerator] Post-process cleanup completed:', {
-      beforeLength: beforeCleanup.length,
-      afterLength: contractText.length,
-      artifactsBefore: artifactsRemoved,
-      artifactsAfter: afterArtifacts,
-      corruptedCurrencyBefore: corruptedCurrencyBefore,
-      corruptedCurrencyAfter: corruptedCurrencyAfter,
-      currencySymbol: hasRupeeSymbol ? '✅ Present' : '❌ Missing',
-      hasDisclaimer: contractText.includes('CreatorArmour is not a party') ? '✅ Present' : '❌ Missing',
-      sampleCurrency: contractText.match(/[₹¹]\s*\d[\d,]*\s*\(Rupees[^)]+Only\)/)?.[0] || 'Not found'
-    });
-
-    // Validate template output (should always succeed if validation passed)
-    if (!contractText || contractText.length < 500) {
-      console.error('[ContractGenerator] CRITICAL: Template generation failed. This should never happen after validation.');
-      throw new Error('Template generation failed. Please ensure all required fields are provided correctly.');
-    }
-
-    // OPTIONAL ENHANCEMENT: If additional terms provided, enhance with AI
-    // This is the ONLY acceptable use of AI - for incorporating user-provided additional terms
-    // The base contract structure remains template-based (no AI hallucination)
-    if (request.additionalTerms && request.additionalTerms.trim().length > 0) {
-      console.log('[ContractGenerator] Enhancing contract with additional terms via AI (template structure preserved)...');
-      
-      const enhancementPrompt = `You are an expert legal contract drafter specializing in influencer-brand agreements under Indian law.
-
-TASK:
-Enhance the provided contract template by incorporating the following additional terms while maintaining ALL existing clauses and structure.
-
-CRITICAL RULES:
-- Follow Indian Contract Act, 1872
-- Default to creator-protective language
-- Do NOT modify existing clauses
-- Do NOT invent new clauses beyond the additional terms
-- Only add or enhance sections as needed
-- Use professional legal formatting
-- No markdown, no bullet emojis
-- Use numbered clauses and clear headings
-- Output must be ready for signing
-
-EXISTING CONTRACT:
-${contractText}
-
-ADDITIONAL TERMS TO INCORPORATE:
-${request.additionalTerms}
-
-OUTPUT:
-Return ONLY the enhanced contract text with additional terms properly integrated.
-Do not include explanations, notes, or commentary.`;
-
-      try {
-        const enhancedText = await callLLM(enhancementPrompt);
-        let cleanedText = enhancedText.trim();
-        
-        // Clean up AI response
-        cleanedText = cleanedText.replace(/```[\s\S]*?```/g, '');
-        cleanedText = cleanedText.replace(/```/g, '');
-        
-        // Validate enhancement maintains contract structure
-        if (cleanedText && cleanedText.length > contractText.length) {
-          // Verify key sections are still present
-          const keySections = [
-            'CREATOR–BRAND COLLABORATION AGREEMENT',
-            'Scope of Work',
-            'Compensation & Payment Terms',
-            'Intellectual Property Ownership',
-            'Dispute Resolution & Jurisdiction'
-          ];
-          
-          const allSectionsPresent = keySections.every(section => 
-            cleanedText.includes(section)
-          );
-          
-          if (allSectionsPresent) {
-          contractText = cleanedText;
-            console.log('[ContractGenerator] Contract enhanced with additional terms (structure verified)');
-          } else {
-            console.warn('[ContractGenerator] AI enhancement removed critical sections, using template version');
-            // Continue with template-based contract
-          }
-        }
-      } catch (enhancementError: any) {
-        console.warn('[ContractGenerator] AI enhancement failed, using template:', enhancementError.message);
-        // Continue with template-based contract (this is safe - template is complete)
+    // Convert ContractVariables to ContractSchema (single source of truth)
+    const contractSchema = variablesToSchema(
+      variables,
+      request.additionalTerms,
+      {
+        contract_version: 'v3',
+        generated_at: new Date().toISOString(),
+        generated_by: request.additionalTerms ? 'ai-assisted' : 'template-first',
+        has_additional_terms: !!(request.additionalTerms && request.additionalTerms.trim().length > 0),
       }
-    }
+    );
+      
+    // Generate DOCX directly from schema (PRIMARY OUTPUT)
+    console.log('[ContractGenerator] Generating DOCX from ContractSchema...');
+    const contractDocx = await generateContractDocx(contractSchema);
+    console.log('[ContractGenerator] DOCX generated successfully, size:', contractDocx.length, 'bytes');
 
-    // ⚠️ FALLBACK REMOVED: AI-only generation is intentionally disabled
-    // Template generation should ALWAYS succeed after validation
-    // If it doesn't, this indicates a system error that must be fixed, not worked around
-
-    console.log('[ContractGenerator] Contract generated successfully (template-first, v2), length:', contractText.length);
-
-    // Generate PDF from contract text
-    const pdfBuffer = await generateSafeContractPdf(contractText, 'generated-from-scratch-v2');
+    // Generate filename: Brand_Creator_Agreement_v3.docx
+    const brandNameClean = request.brandName.replace(/[^a-zA-Z0-9]/g, '_');
+    const creatorNameClean = request.creatorName.replace(/[^a-zA-Z0-9]/g, '_');
+    const fileName = `${brandNameClean}_${creatorNameClean}_Agreement_v3.docx`;
 
     return {
-      contractText,
-      fileBuffer: pdfBuffer,
-      fileName: `${request.brandName.replace(/[^a-zA-Z0-9]/g, '_')}_${request.creatorName.replace(/[^a-zA-Z0-9]/g, '_')}_Contract_v2_${Date.now()}.pdf`,
-      contentType: 'application/pdf',
-      // Metadata for future reference
+      contractDocx, // PRIMARY OUTPUT - DOCX buffer
+      fileName,
+      contentType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
       metadata: {
-        contract_version: 'v2',
+        contract_version: 'v3',
         jurisdiction_used: variables.jurisdiction_city,
         generated_at: new Date().toISOString(),
-        generated_by: 'template-first',
+        generated_by: request.additionalTerms ? 'ai-assisted' : 'template-first',
         has_additional_terms: !!(request.additionalTerms && request.additionalTerms.trim().length > 0)
       }
     };

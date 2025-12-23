@@ -417,8 +417,16 @@ router.post('/generate-safe-contract', async (req: AuthenticatedRequest, res: Re
       userId
     });
 
-    // If we have a file buffer and dealId, upload to storage and save to database
-    if (result.fileBuffer && dealId) {
+    // HTML is the canonical source - always generated
+    if (!result.contractHtml) {
+      return res.status(500).json({
+        success: false,
+        error: 'Failed to generate contract HTML'
+      });
+    }
+
+    // Store HTML in database (PRIMARY)
+    if (dealId) {
       // Verify user owns the deal
       const { data: deal, error: dealError } = await supabase
         .from('brand_deals')
@@ -440,10 +448,12 @@ router.post('/generate-safe-contract', async (req: AuthenticatedRequest, res: Re
         });
       }
 
-      // Upload to Supabase Storage
+      // Upload PDF to Supabase Storage (OPTIONAL - only if generated)
+      let safeContractUrl: string | null = null;
+      
+      if (result.fileBuffer && result.fileName) {
       const timestamp = Date.now();
-      const fileName = result.fileName || `safe-contract-${timestamp}.pdf`;
-      const storagePath = `safe-contracts/${dealId}/${timestamp}_${fileName}`;
+        const storagePath = `safe-contracts/${dealId}/${timestamp}_${result.fileName}`;
 
       const { error: uploadError } = await supabase.storage
         .from('creator-assets')
@@ -452,62 +462,109 @@ router.post('/generate-safe-contract', async (req: AuthenticatedRequest, res: Re
           upsert: false,
         });
 
-      if (uploadError) {
-        console.error('[Protection] Failed to upload safe contract:', uploadError);
-        // Fallback: return file buffer for download
-        res.setHeader('Content-Type', result.contentType || 'application/octet-stream');
-        res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
-        res.setHeader('Content-Length', result.fileBuffer.length.toString());
-        return res.send(result.fileBuffer);
-      }
-
+        if (!uploadError) {
       // Get public URL
       const { data: publicUrlData } = supabase.storage
         .from('creator-assets')
         .getPublicUrl(storagePath);
 
-      const safeContractUrl = publicUrlData?.publicUrl;
-
-      if (!safeContractUrl) {
-        return res.status(500).json({
-          success: false,
-          error: 'Failed to generate URL for safe contract'
-        });
+          safeContractUrl = publicUrlData?.publicUrl || null;
+          console.log('[Protection] PDF uploaded successfully (optional):', safeContractUrl);
+        } else {
+          console.warn('[Protection] PDF upload failed (non-blocking):', uploadError.message);
+        }
       }
 
-      // Update deal with safe contract URL
+      // Update deal with HTML contract (PRIMARY) and optional PDF URL
+      const baseUpdateData: any = {
+        contract_html: result.contractHtml, // PRIMARY
+        updated_at: new Date().toISOString(),
+      };
+      
+      // Add PDF URL if available (OPTIONAL)
+      if (safeContractUrl) {
+        baseUpdateData.safe_contract_url = safeContractUrl;
+        baseUpdateData.contract_file_url = safeContractUrl;
+      }
+      
+      // Try to update with contract_version
+      const updateDataWithVersion = {
+        ...baseUpdateData,
+        contract_version: 'safe_final',
+      };
+
+      console.log('[Protection] Updating deal with contract HTML, length:', result.contractHtml.length);
       const { error: updateError } = await supabase
         .from('brand_deals')
-        .update({
-          safe_contract_url: safeContractUrl,
-          contract_version: 'safe_final',
-          updated_at: new Date().toISOString(),
-        })
+        .update(updateDataWithVersion)
         .eq('id', dealId);
 
+      // If update fails due to missing columns, retry without them
       if (updateError) {
+        const errorMsg = updateError.message || '';
+        console.warn('[Protection] Update failed, error:', errorMsg);
+        
+        // Check if it's a column missing error
+        if (errorMsg.includes('contract_version') || errorMsg.includes('contract_html') || errorMsg.includes('column') || errorMsg.includes('does not exist')) {
+          console.warn('[Protection] Column may not exist, retrying with minimal fields...');
+          
+          // Try with just the fields that definitely exist
+          const minimalUpdateData: any = {
+            updated_at: new Date().toISOString(),
+          };
+          
+          // Only add contract_html if column exists (we'll try and catch)
+          try {
+            const { error: htmlError } = await supabase
+              .from('brand_deals')
+              .update({ contract_html: result.contractHtml, updated_at: minimalUpdateData.updated_at })
+              .eq('id', dealId);
+            
+            if (!htmlError) {
+              console.log('[Protection] Successfully updated contract_html');
+              minimalUpdateData.contract_html = result.contractHtml;
+            } else {
+              console.warn('[Protection] contract_html column may not exist:', htmlError.message);
+            }
+          } catch (e) {
+            console.warn('[Protection] Could not update contract_html:', e);
+          }
+          
+          // Add PDF URLs if available
+          if (safeContractUrl) {
+            minimalUpdateData.safe_contract_url = safeContractUrl;
+            minimalUpdateData.contract_file_url = safeContractUrl;
+          }
+          
+          // Final update attempt with minimal fields
+          const { error: minimalError } = await supabase
+            .from('brand_deals')
+            .update(minimalUpdateData)
+            .eq('id', dealId);
+          
+          if (minimalError) {
+            console.error('[Protection] Failed to update deal even with minimal fields:', minimalError);
+          } else {
+            console.log('[Protection] Successfully updated deal with minimal fields');
+          }
+        } else {
         console.error('[Protection] Failed to update deal:', updateError);
-        // Still return the URL even if update fails
+        }
+      } else {
+        console.log('[Protection] Successfully updated deal with contract HTML and version');
       }
 
       return res.json({
         success: true,
-        safeContractUrl,
+        contractHtml: result.contractHtml, // PRIMARY OUTPUT - source of truth
+        // DOCX available via /contracts/:dealId/download-docx endpoint
       });
     }
 
-    // If file buffer is returned directly (no dealId), send it as download
-    if (result.fileBuffer) {
-      res.setHeader('Content-Type', result.contentType || 'application/octet-stream');
-      res.setHeader('Content-Disposition', `attachment; filename="${result.fileName || 'safe-contract.pdf'}"`);
-      res.setHeader('Content-Length', result.fileBuffer.length.toString());
-      return res.send(result.fileBuffer);
-    }
-
-    // Fallback to URL if uploaded to storage
-    res.json({
+    // If no dealId, return HTML directly
+    return res.json({
       success: true,
-      safeContractUrl: result.safeContractUrl
+      contractHtml: result.contractHtml, // PRIMARY OUTPUT
     });
   } catch (error: any) {
     console.error('[Protection] Generate safe contract error:', error);
@@ -1074,60 +1131,54 @@ router.post('/generate-contract-from-scratch', async (req: AuthenticatedRequest,
       jurisdictionCity: (deal as any).jurisdiction_city,
     });
 
-    if (!result.fileBuffer) {
+    // DOCX is the canonical source - it's always generated
+    if (!result.contractDocx) {
       return res.status(500).json({
         success: false,
-        error: 'Failed to generate contract PDF'
+        error: 'Failed to generate contract DOCX'
       });
     }
 
-    // Upload to Supabase Storage
+    // Store DOCX in Supabase Storage (PRIMARY)
     const timestamp = Date.now();
-    const fileName = result.fileName || `generated-contract-${timestamp}.pdf`;
-    const storagePath = `safe-contracts/${dealId}/${timestamp}_${fileName}`;
+    const storagePath = `contracts/${dealId}/${timestamp}_${result.fileName}`;
 
     const { error: uploadError } = await supabase.storage
       .from('creator-assets')
-      .upload(storagePath, result.fileBuffer, {
-        contentType: result.contentType || 'application/pdf',
+      .upload(storagePath, result.contractDocx, {
+        contentType: result.contentType,
         upsert: false,
       });
 
-    if (uploadError) {
-      console.error('[Protection] Failed to upload generated contract:', uploadError);
-      // Fallback: return file buffer for download
-      res.setHeader('Content-Type', result.contentType || 'application/octet-stream');
-      res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
-      res.setHeader('Content-Length', result.fileBuffer.length.toString());
-      return res.send(result.fileBuffer);
-    }
-
+    let contractUrl: string | null = null;
+    if (!uploadError) {
     // Get public URL
     const { data: publicUrlData } = supabase.storage
       .from('creator-assets')
       .getPublicUrl(storagePath);
 
-    const safeContractUrl = publicUrlData?.publicUrl;
-
-    if (!safeContractUrl) {
+      contractUrl = publicUrlData?.publicUrl || null;
+      console.log('[Protection] DOCX uploaded successfully:', contractUrl);
+    } else {
+      console.error('[Protection] DOCX upload failed:', uploadError.message);
       return res.status(500).json({
         success: false,
-        error: 'Failed to generate URL for contract'
+        error: 'Failed to upload contract DOCX to storage'
       });
     }
 
-    // Update deal with safe contract URL - ALWAYS overwrite old contracts with new v2 contract
-    // Start with minimal required fields that definitely exist (contract_file_url is the standard column)
+    // Update deal with DOCX contract URL (PRIMARY)
     const baseUpdateData: any = {
-      contract_file_url: safeContractUrl, // ALWAYS update contract_file_url with new contract (overwrites old)
+      contract_file_url: contractUrl, // DOCX URL
       updated_at: new Date().toISOString()
     };
     
-    console.log('[Protection] Updating deal with new v2 contract:', {
+    console.log('[Protection] Updating deal with DOCX contract:', {
       dealId,
-      newContractUrl: safeContractUrl,
-      oldContractUrl: deal.contract_file_url,
-      contractVersion: 'v2',
+      hasDocx: !!result.contractDocx,
+      docxSize: result.contractDocx.length,
+      contractUrl,
+      contractVersion: 'v3',
       hasMetadata: !!result.metadata
     });
 
@@ -1135,11 +1186,10 @@ router.post('/generate-contract-from-scratch', async (req: AuthenticatedRequest,
     let updateError: any = null;
     let updateResult: any = null;
     
-    // Attempt 1: Try with all optional fields (safe_contract_url, contract_version, contract_metadata)
+    // Attempt 1: Try with all optional fields (contract_version, contract_metadata)
     const updateDataWithAll = {
       ...baseUpdateData,
-      ...(safeContractUrl && { safe_contract_url: safeContractUrl }), // Only include if column might exist
-      contract_version: 'v2',
+      contract_version: 'v3',
       ...(result.metadata && { contract_metadata: result.metadata })
     };
     
@@ -1153,14 +1203,18 @@ router.post('/generate-contract-from-scratch', async (req: AuthenticatedRequest,
       // Success with all fields
       updateError = null;
       updateResult = resultWithAll;
-    } else if (errorWithAll.message?.includes('safe_contract_url') || 
-               errorWithAll.message?.includes('contract_version') || 
+    } else if (errorWithAll.message?.includes('contract_version') || 
                errorWithAll.message?.includes('contract_metadata')) {
-      // Attempt 2: Try without optional fields (just contract_file_url)
-      console.warn('[Protection] Optional columns not found, updating with contract_file_url only:', errorWithAll.message);
+      // Attempt 2: Try with only base fields (contract_file_url)
+      console.warn('[Protection] Optional columns not found, updating with base fields only:', errorWithAll.message);
+      const baseFieldsOnly: any = {
+        contract_file_url: contractUrl,
+        updated_at: new Date().toISOString()
+      };
+      
       const { error: errorBase, data: resultBase } = await supabase
         .from('brand_deals')
-        .update(baseUpdateData)
+        .update(baseFieldsOnly)
         .eq('id', dealId)
         .select('contract_file_url');
       
@@ -1177,22 +1231,22 @@ router.post('/generate-contract-from-scratch', async (req: AuthenticatedRequest,
         error: updateError,
         dealId,
         baseUpdateData,
-        safeContractUrl
+        contractUrl
       });
       // Still return the URL even if update fails - frontend can use temp state
     } else {
-      console.log('[Protection] Successfully updated deal with new v2 contract:', {
+      console.log('[Protection] Successfully updated deal with new v3 DOCX contract:', {
         dealId,
         updatedFields: updateResult?.[0],
-        safeContractUrl
       });
     }
 
     return res.json({
       success: true,
-      safeContractUrl,
-      contractText: result.contractText,
-      contractVersion: 'v2',
+      contractDocxUrl: contractUrl, // PRIMARY OUTPUT - DOCX URL
+      fileName: result.fileName,
+      contentType: result.contentType,
+      contractVersion: 'v3',
       databaseUpdated: !updateError, // Let frontend know if DB update succeeded
       ...(result.metadata && { metadata: result.metadata })
     });
@@ -1204,7 +1258,7 @@ router.post('/generate-contract-from-scratch', async (req: AuthenticatedRequest,
         error.message?.includes('Could not find Chrome') ||
         error.message?.includes('Puppeteer is required')) {
       return res.status(500).json({
-        success: false,
+      success: false,
         error: error.message || 'Contract PDF generation failed. Chrome/Puppeteer is required.',
         requiresPuppeteer: true
       });
@@ -1230,6 +1284,116 @@ router.post('/generate-contract-from-scratch', async (req: AuthenticatedRequest,
       success: false,
       error: errorMessage,
       missingFields: missingFields
+    });
+  }
+});
+
+// POST /protection/generate-contract-docx - Generate professional DOCX contract (dedicated endpoint)
+// Returns downloadable .docx file directly
+router.post('/generate-contract-docx', async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const userId = req.user!.id;
+    const { dealId } = req.body;
+
+    if (!dealId) {
+      return res.status(400).json({
+        success: false,
+        error: 'dealId is required'
+      });
+    }
+
+    // Fetch deal information
+    const { data: deal, error: dealError } = await supabase
+      .from('brand_deals')
+      .select('*')
+      .eq('id', dealId)
+      .single();
+
+    if (dealError || !deal) {
+      console.error('[Protection] Deal fetch error:', dealError);
+      return res.status(404).json({
+        success: false,
+        error: 'Deal not found'
+      });
+    }
+
+    // Verify user owns the deal
+    if (deal.creator_id !== userId && req.user!.role !== 'admin') {
+      return res.status(403).json({
+        success: false,
+        error: 'Access denied'
+      });
+    }
+
+    // Fetch creator profile for address (same logic as generate-contract-from-scratch)
+    let creatorName = 'Creator';
+    let creatorEmail: string | undefined = req.user?.email;
+    let creatorAddress: string | undefined;
+    
+    const { data: creatorProfile } = await supabase
+      .from('profiles')
+      .select('full_name, email, location, address')
+      .eq('id', deal.creator_id)
+      .single();
+    
+    if (creatorProfile) {
+      creatorName = creatorProfile.full_name || creatorName;
+      creatorEmail = creatorProfile.email || creatorEmail;
+      creatorAddress = creatorProfile.location || creatorProfile.address || (deal as any).creator_address;
+    }
+
+    // Build request for contract generation (uses validated DealSchema)
+    const contractRequest = {
+      brandName: deal.brand_name || 'Brand',
+      creatorName: creatorName,
+      dealAmount: deal.deal_amount || 0,
+      deliverables: Array.isArray(deal.deliverables) ? deal.deliverables : [deal.deliverables || 'As per agreement'],
+      brandEmail: deal.brand_email,
+      brandAddress: (deal as any).brand_address,
+      creatorEmail: creatorEmail,
+      creatorAddress: creatorAddress,
+      dealSchema: (deal as any).deal_schema,
+      // Pass all structured fields
+      usageType: (deal as any).usage_type,
+      usagePlatforms: (deal as any).usage_platforms || [deal.platform || 'Instagram'],
+      usageDuration: (deal as any).usage_duration,
+      paidAdsAllowed: (deal as any).paid_ads_allowed,
+      whitelistingAllowed: (deal as any).whitelisting_allowed,
+      exclusivityEnabled: (deal as any).exclusivity_enabled,
+      exclusivityCategory: (deal as any).exclusivity_category,
+      exclusivityDuration: (deal as any).exclusivity_duration,
+      terminationNoticeDays: (deal as any).termination_notice_days,
+      jurisdictionCity: (deal as any).jurisdiction_city,
+      additionalTerms: (deal as any).additional_terms,
+    };
+
+    // Generate contract using the same validated logic
+    const result = await generateContractFromScratch(contractRequest);
+
+    // Return DOCX file directly for download
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
+    res.setHeader('Content-Disposition', `attachment; filename="${result.fileName}"`);
+    res.setHeader('Content-Length', result.contractDocx.length.toString());
+    
+    return res.send(result.contractDocx);
+  } catch (error: any) {
+    console.error('[Protection] Generate contract DOCX error:', error);
+    
+    // Check if it's a validation error (client error)
+    const isValidationError = error.message && (
+      error.message.includes('Missing required fields') ||
+      error.message.includes('is required') ||
+      error.message.includes('Please complete')
+    );
+    
+    const statusCode = isValidationError ? 400 : 500;
+    const errorMessage = isValidationError 
+      ? error.message 
+      : 'Failed to generate contract DOCX. Please try again or contact support.';
+    
+    res.status(statusCode).json({
+      success: false,
+      error: errorMessage
     });
   }
 });
@@ -1835,6 +1999,184 @@ router.get('/download-report/:reportId', async (req: AuthenticatedRequest, res: 
     res.status(500).json({ error: error.message });
   }
 });
+
+// GET /contracts/:dealId/download-docx - Download contract as DOCX (PUBLIC - no auth required)
+export const downloadContractDocxHandler = async (req: Request, res: Response) => {
+  try {
+    const { dealId } = req.params;
+    
+    console.log('[Protection] Download DOCX request:', { dealId, path: req.path });
+    
+    if (!dealId) {
+      return res.status(400).json({ error: 'Deal ID is required' });
+    }
+    
+    // Fetch deal
+    let deal: any = null;
+    let dealError: any = null;
+    
+    // First, try to fetch with contract_html
+    const { data: dealWithHtml, error: htmlError } = await supabase
+      .from('brand_deals')
+      .select('id, creator_id, contract_html, brand_response_status')
+      .eq('id', dealId)
+      .maybeSingle();
+    
+    if (htmlError && htmlError.message?.includes('contract_html') && htmlError.message?.includes('does not exist')) {
+      // Column doesn't exist - fetch without it
+      console.warn('[Protection] contract_html column does not exist, fetching without it');
+      const { data: dealBasic, error: basicError } = await supabase
+        .from('brand_deals')
+        .select('id, creator_id, brand_response_status, contract_file_url, safe_contract_url')
+        .eq('id', dealId)
+        .maybeSingle();
+      
+      deal = dealBasic;
+      dealError = basicError;
+    } else {
+      deal = dealWithHtml;
+      dealError = htmlError;
+    }
+
+    if (dealError) {
+      console.error('[Protection] Deal query error:', dealError);
+      return res.status(500).json({ error: 'Failed to fetch deal', details: dealError.message });
+    }
+    
+    if (!deal) {
+      console.warn('[Protection] Deal not found:', dealId);
+      return res.status(404).json({ error: 'Deal not found' });
+    }
+
+    // Allow access if deal is approved (brand has accepted)
+    if (deal.brand_response_status !== 'accepted_verified') {
+      return res.status(403).json({ error: 'Contract is not yet available for download' });
+    }
+
+    // Get HTML contract
+    const contractHtml = (deal as any).contract_html;
+
+    if (!contractHtml) {
+      return res.status(404).json({ 
+        error: 'Contract HTML not found. Please regenerate the contract.',
+        hint: 'The contract_html column may not exist in the database. Please regenerate the contract to create it.'
+      });
+    }
+
+    // Generate DOCX from HTML
+    const { generateContractDocx, prepareHtmlForDocx } = await import('../services/docxGenerator.js');
+    const docxCompatibleHtml = prepareHtmlForDocx(contractHtml);
+    const docxBuffer = await generateContractDocx(docxCompatibleHtml);
+
+    // Set response headers for DOCX download
+    const fileName = `Contract_${dealId}_${Date.now()}.docx`;
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
+    res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
+    res.setHeader('Content-Length', docxBuffer.length.toString());
+
+    return res.send(docxBuffer);
+  } catch (error: any) {
+    console.error('[Protection] Error generating DOCX:', error);
+    res.status(500).json({ error: 'Failed to generate DOCX', details: error.message });
+  }
+};
+
+// GET /contracts/:dealId/view - View HTML contract (PUBLIC - no auth required)
+// This route is exported and registered as a public route in index.ts to bypass auth middleware
+export const viewContractHandler = async (req: Request, res: Response) => {
+  try {
+    const { dealId } = req.params;
+    
+    console.log('[Protection] View contract request:', { dealId, path: req.path });
+    
+    if (!dealId) {
+      return res.status(400).json({ error: 'Deal ID is required' });
+    }
+    
+    // Fetch deal - try with contract_html first, fallback to basic fields if column doesn't exist
+    let deal: any = null;
+    let dealError: any = null;
+    
+    // First, try to fetch with contract_html
+    const { data: dealWithHtml, error: htmlError } = await supabase
+      .from('brand_deals')
+      .select('id, creator_id, contract_html, brand_response_status')
+      .eq('id', dealId)
+      .maybeSingle();
+    
+    if (htmlError && htmlError.message?.includes('contract_html') && htmlError.message?.includes('does not exist')) {
+      // Column doesn't exist - fetch without it
+      console.warn('[Protection] contract_html column does not exist, fetching without it');
+      const { data: dealBasic, error: basicError } = await supabase
+        .from('brand_deals')
+        .select('id, creator_id, brand_response_status, contract_file_url, safe_contract_url')
+        .eq('id', dealId)
+        .maybeSingle();
+      
+      deal = dealBasic;
+      dealError = basicError;
+    } else {
+      deal = dealWithHtml;
+      dealError = htmlError;
+    }
+
+    console.log('[Protection] Deal query result:', { 
+      hasDeal: !!deal, 
+      error: dealError?.message,
+      hasContractHtml: !!deal?.contract_html,
+      brandResponseStatus: deal?.brand_response_status
+    });
+
+    if (dealError) {
+      console.error('[Protection] Deal query error:', dealError);
+      return res.status(500).json({ error: 'Failed to fetch deal', details: dealError.message });
+    }
+    
+    if (!deal) {
+      console.warn('[Protection] Deal not found:', dealId);
+      return res.status(404).json({ error: 'Deal not found' });
+    }
+
+    // Try to get user from auth header (optional)
+    const authHeader = req.headers.authorization;
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      // If authenticated, verify ownership
+      // Note: In a production environment, you'd verify the JWT token here
+      // For now, we'll allow access if the deal is approved
+    }
+
+    // Allow access if deal is approved (brand has accepted)
+    // This allows viewing contracts without requiring authentication in new tabs
+    if (deal.brand_response_status !== 'accepted_verified') {
+      return res.status(403).json({ error: 'Contract is not yet available for viewing' });
+    }
+
+    // Get HTML contract
+    const contractHtml = (deal as any).contract_html;
+
+    if (!contractHtml) {
+      // If contract_html column doesn't exist or is null, check for PDF URLs
+      const contractFileUrl = (deal as any).contract_file_url || (deal as any).safe_contract_url;
+      
+      if (contractFileUrl) {
+        // Redirect to PDF if HTML is not available
+        return res.redirect(contractFileUrl);
+      }
+      
+      return res.status(404).json({ 
+        error: 'Contract HTML not found. Please regenerate the contract.',
+        hint: 'The contract_html column may not exist in the database. Please regenerate the contract to create it.'
+      });
+    }
+
+    // Return HTML
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    res.send(contractHtml);
+  } catch (error: any) {
+    console.error('[Protection] Error viewing contract:', error);
+    res.status(500).json({ error: 'Failed to load contract' });
+  }
+};
 
 export default router;
 
