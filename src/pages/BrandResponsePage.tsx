@@ -707,17 +707,81 @@ const BrandResponsePage = () => {
       if (data.success) {
         toast.success('OTP verified successfully!');
         triggerHaptic(HapticPatterns.success);
-        // Close OTP modal and submit the response
+        // Close OTP modal
         setShowOTPModal(false);
-        await submitBrandResponse();
+        
+        // After OTP verification, the deal status is already set to 'accepted_verified'
+        // So we should refresh the deal info instead of trying to submit again
+        // Only submit if user has selected a status and it's different from accepted_verified
+        if (selectedStatus && selectedStatus !== 'accepted') {
+          // User selected a different status, submit it
+          await submitBrandResponse();
+        } else {
+          // OTP verification already set status to accepted_verified
+          // Refresh deal info to show success state
+          setIsSubmitted(true);
+          setSelectedStatus('accepted');
+          
+          // Refresh deal info from server
+          try {
+            const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 
+              (typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com') 
+                ? 'https://api.creatorarmour.com' 
+                : (typeof window !== 'undefined' && window.location.hostname === 'localhost'
+                  ? 'http://localhost:3001'
+                  : 'https://noticebazaar-api.onrender.com'));
+            
+            const refreshResponse = await fetch(`${apiBaseUrl}/api/brand-response/${token}`);
+            const refreshData = await refreshResponse.json();
+            
+            if (refreshResponse.ok && refreshData.success && refreshData.deal) {
+              setDealInfo(refreshData.deal);
+              if (refreshData.requested_changes && Array.isArray(refreshData.requested_changes)) {
+                setRequestedChanges(refreshData.requested_changes);
+              }
+              if (refreshData.analysis_data) {
+                setAnalysisData(refreshData.analysis_data);
+              }
+            }
+          } catch (refreshError) {
+            console.error('[BrandResponsePage] Error refreshing deal info:', refreshError);
+            // Non-fatal - we already set the success state
+          }
+        }
       } else {
-        // Check if OTP is already verified - if so, proceed with submission
+        // Check if OTP is already verified - if so, refresh deal info
         if (data.error && data.error.includes('already been verified')) {
-          toast.success('OTP was already verified. Proceeding...');
+          toast.success('OTP was already verified.');
           triggerHaptic(HapticPatterns.success);
           setShowOTPModal(false);
-          // Proceed with submission since OTP is already verified
-          await submitBrandResponse();
+          
+          // Refresh deal info to show current state
+          setIsSubmitted(true);
+          setSelectedStatus('accepted');
+          
+          try {
+            const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 
+              (typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com') 
+                ? 'https://api.creatorarmour.com' 
+                : (typeof window !== 'undefined' && window.location.hostname === 'localhost'
+                  ? 'http://localhost:3001'
+                  : 'https://noticebazaar-api.onrender.com'));
+            
+            const refreshResponse = await fetch(`${apiBaseUrl}/api/brand-response/${token}`);
+            const refreshData = await refreshResponse.json();
+            
+            if (refreshResponse.ok && refreshData.success && refreshData.deal) {
+              setDealInfo(refreshData.deal);
+              if (refreshData.requested_changes && Array.isArray(refreshData.requested_changes)) {
+                setRequestedChanges(refreshData.requested_changes);
+              }
+              if (refreshData.analysis_data) {
+                setAnalysisData(refreshData.analysis_data);
+              }
+            }
+          } catch (refreshError) {
+            console.error('[BrandResponsePage] Error refreshing deal info:', refreshError);
+          }
           return;
         }
         throw new Error(data.error || 'Invalid OTP');
@@ -726,11 +790,37 @@ const BrandResponsePage = () => {
       console.error('[BrandResponsePage] OTP verify error:', error);
       // Check if error is about OTP already being verified
       if (error.message && error.message.includes('already been verified')) {
-        toast.success('OTP was already verified. Proceeding...');
+        toast.success('OTP was already verified.');
         triggerHaptic(HapticPatterns.success);
         setShowOTPModal(false);
-        // Proceed with submission since OTP is already verified
-        await submitBrandResponse();
+        
+        // Refresh deal info instead of submitting
+        setIsSubmitted(true);
+        setSelectedStatus('accepted');
+        
+        try {
+          const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 
+            (typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com') 
+              ? 'https://api.creatorarmour.com' 
+              : (typeof window !== 'undefined' && window.location.hostname === 'localhost'
+                ? 'http://localhost:3001'
+                : 'https://noticebazaar-api.onrender.com'));
+          
+          const refreshResponse = await fetch(`${apiBaseUrl}/api/brand-response/${token}`);
+          const refreshData = await refreshResponse.json();
+          
+          if (refreshResponse.ok && refreshData.success && refreshData.deal) {
+            setDealInfo(refreshData.deal);
+            if (refreshData.requested_changes && Array.isArray(refreshData.requested_changes)) {
+              setRequestedChanges(refreshData.requested_changes);
+            }
+            if (refreshData.analysis_data) {
+              setAnalysisData(refreshData.analysis_data);
+            }
+          }
+        } catch (refreshError) {
+          console.error('[BrandResponsePage] Error refreshing deal info:', refreshError);
+        }
         return;
       }
       toast.error(error.message || 'Invalid OTP. Please try again.');
@@ -743,6 +833,14 @@ const BrandResponsePage = () => {
   };
 
   const submitBrandResponse = async () => {
+    // If deal is already accepted_verified (from OTP), don't submit again
+    if (dealInfo?.response_status === 'accepted_verified') {
+      console.log('[BrandResponsePage] Deal already accepted_verified, skipping submission');
+      setIsSubmitted(true);
+      setSelectedStatus('accepted');
+      return;
+    }
+
     if (!selectedStatus) {
       toast.error('Please select a decision');
       return;
