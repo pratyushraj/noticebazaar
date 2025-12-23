@@ -100,25 +100,25 @@ const HomePage = () => {
     {
       icon: FileText,
       title: "Contract Protection",
-      description: "Scan contracts to identify risky clauses before you sign.",
+      description: "Scan contracts to identify risky clauses before you sign. This platform helps you prepare, track, and act — not represent you legally.",
       color: "from-blue-500 to-cyan-500"
     },
     {
       icon: DollarSign,
-      title: "Payment Recovery",
-      description: "Send legal notices when brands delay or refuse payment.",
+      title: "Payment Dispute Support",
+      description: "Access tools, documentation, and support for payment disputes when brands delay or refuse payment. This platform helps you prepare, track, and act — not represent you legally.",
       color: "from-green-500 to-emerald-500"
     },
     {
       icon: MessageCircle,
-      title: "Legal Assistance",
-      description: "Talk to verified legal advisors when disputes arise.",
+      title: "Legal Guidance & Tools",
+      description: "Access tools and documentation to connect with verified legal advisors when disputes arise. This platform helps you prepare, track, and act — not represent you legally.",
       color: "from-orange-500 to-red-500"
     },
     {
       icon: Clock,
-      title: "Payment Monitoring",
-      description: "Track pending payouts and amounts at risk in real time.",
+      title: "Risk Indicators & Alerts",
+      description: "Track pending payouts and amounts at risk in real time. This platform helps you prepare, track, and act — not represent you legally.",
       color: "from-purple-500 to-pink-500"
     }
   ];
@@ -134,19 +134,19 @@ const HomePage = () => {
     {
       step: 1,
       title: "Add Your Deal",
-      description: "Upload a contract or enter deal details.",
+      description: "Upload a contract or enter deal details. Takes 2–3 minutes, no legal knowledge needed.",
       icon: FileText
     },
     {
       step: 2,
-      title: "We Monitor Risk",
-      description: "We track payments, deadlines, and potential issues.",
+      title: "Risk Indicators & Alerts",
+      description: "Track payments, deadlines, and potential issues with automated alerts.",
       icon: Clock
     },
     {
       step: 3,
-      title: "Take Legal Action If Needed",
-      description: "Escalate with legal notices or expert advisors.",
+      title: "Enable Legal Action",
+      description: "Access tools and documentation to escalate with expert guidance when needed.",
       icon: Shield
     }
   ];
@@ -173,7 +173,7 @@ const HomePage = () => {
       name: "Ananya Singh",
       role: "Lifestyle Creator",
       avatar: "AS",
-      content: "Recovered ₹2.5 Lakhs in missed payments within the first month. The payment tracking and legal notices actually work.",
+      content: "Tracked ₹2.5 Lakhs in missed payments within the first month. The payment tracking and documentation tools helped me take action.",
       rating: 5,
       followers: "180K"
     }
@@ -187,11 +187,12 @@ const HomePage = () => {
       description: "For monitoring deals & risks",
       helperText: "No legal action included",
       features: [
-        "Limited deal tracking",
-        "Limited AI contract scans",
+        "1 contract generation",
+        "1 contract scan",
         "Basic payment monitoring",
         "Invoice creation (basic)",
-        "Dashboard access"
+        "Dashboard access",
+        "No ongoing monitoring"
       ],
       cta: "Start Monitoring Deals",
       popular: false
@@ -351,11 +352,14 @@ const HomePage = () => {
                 Protect Your Brand Deals.
                 <br />
                 <span className="bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 text-transparent bg-clip-text">
-                  Get Paid On Time.
+                  Generate Contracts. Spot Payment & Usage Risks Early.
                 </span>
               </h1>
-              <p className="text-lg md:text-2xl text-white/90 font-medium mb-8 max-w-3xl mx-auto">
-                CreatorArmour helps creators handle unpaid brand deals, risky contracts, and legal disputes — using software backed by real legal action.
+              <p className="text-lg md:text-2xl text-white/90 font-medium mb-4 max-w-3xl mx-auto">
+                Creator Armour helps creators generate professional contracts, track payment risks, and protect against content misuse — all in one platform.
+              </p>
+              <p className="text-sm text-purple-400/70 mb-8 max-w-3xl mx-auto">
+                For creators and influencers. Not legal advice.
               </p>
             </motion.div>
 
@@ -375,13 +379,15 @@ const HomePage = () => {
                 to="/signup"
                 className="group nb-hero-cta bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 px-8 py-4 rounded-full font-bold text-lg transition-all duration-150 ease-out transform hover:scale-105 active:scale-95 active:opacity-95 flex items-center gap-2 border border-white/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-300/70 focus-visible:ring-offset-2 focus-visible:ring-offset-purple-900"
               >
-                Protect My Deals
+                Generate My First Contract
                 <ArrowRight className="w-5 h-5 transition-transform duration-150 ease-out group-hover:translate-x-1 group-active:translate-x-0.5" />
               </Link>
-              <button className="flex items-center gap-2 px-4 py-2 rounded-full text-base md:text-lg text-purple-100/80 hover:text-white/90 transition-colors font-medium">
-                <Play className="w-5 h-5 text-purple-100/80" />
-                See How It Works
-              </button>
+              <Link
+                to="/signup"
+                className="flex items-center gap-2 px-6 py-3 rounded-full text-base md:text-lg text-purple-100/80 hover:text-white/90 transition-colors font-medium bg-white/10 hover:bg-white/20 border border-white/20"
+              >
+                Scan an Existing Deal
+              </Link>
             </motion.div>
 
             {/* Trust badges */}
@@ -432,7 +438,7 @@ const HomePage = () => {
             ))}
           </div>
           <div className="text-center mt-6">
-            <p className="text-xs text-purple-400/70">Based on deals monitored and cases escalated via CreatorArmour.</p>
+            <p className="text-xs text-purple-400/70">Based on platform activity and user submissions.</p>
           </div>
         </div>
       </section>
@@ -557,6 +563,63 @@ const HomePage = () => {
         </div>
       </section>
 
+      {/* What Creator Armour Is — And Isn't */}
+      <section className="py-20 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-12">
+            <h2 className="text-4xl md:text-5xl font-bold mb-4">
+              What Creator Armour Is — And Isn't
+            </h2>
+          </div>
+          <div className="grid md:grid-cols-2 gap-8">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/10">
+              <h3 className="text-2xl font-semibold mb-6 flex items-center gap-2">
+                <CheckCircle className="w-6 h-6 text-green-400" />
+                <span>What We Are</span>
+              </h3>
+              <ul className="space-y-4 text-purple-200">
+                <li className="flex items-start gap-3">
+                  <CheckCircle className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
+                  <span>Contract automation & risk-tracking software</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <CheckCircle className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
+                  <span>Creator-friendly contract templates</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <CheckCircle className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
+                  <span>Documentation & legal action readiness</span>
+                </li>
+              </ul>
+            </div>
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/10">
+              <h3 className="text-2xl font-semibold mb-6 flex items-center gap-2">
+                <X className="w-6 h-6 text-red-400" />
+                <span>What We're Not</span>
+              </h3>
+              <ul className="space-y-4 text-purple-200">
+                <li className="flex items-start gap-3">
+                  <X className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
+                  <span>Not a law firm</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <X className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
+                  <span>Not legal advice</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <X className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
+                  <span>No payment guarantees</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <X className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
+                  <span>Not a substitute for independent legal advice</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Pricing */}
       <section id="pricing" className="py-20 px-4 sm:px-6 lg:px-8 bg-white/5 backdrop-blur-sm">
         <div className="max-w-7xl mx-auto">
@@ -619,7 +682,11 @@ const HomePage = () => {
                   {plan.cta}
                 </Link>
                 {plan.helperText && plan.name === "Free" && (
-                  <p className="text-purple-400/70 text-xs text-center mt-3">No legal action included</p>
+                  <div className="text-center mt-3">
+                    <p className="text-purple-400/70 text-xs mb-2">No legal action included</p>
+                    <p className="text-purple-300/80 text-xs mb-1">Limited to one contract or scan.</p>
+                    <p className="text-purple-300/80 text-xs">Upgrade to monitor active deals and receive alerts.</p>
+                  </div>
                 )}
               </motion.div>
             ))}
@@ -708,9 +775,14 @@ const HomePage = () => {
             </div>
           </div>
           <div className="pt-8 border-t border-white/10 flex flex-col md:flex-row items-center justify-between gap-4">
-            <p className="text-sm text-purple-300">
-              © 2024 CreatorArmour. All rights reserved.
-            </p>
+            <div className="flex flex-col gap-2">
+              <p className="text-sm text-purple-300">
+                © 2024 CreatorArmour. All rights reserved.
+              </p>
+              <p className="text-xs text-purple-400/70 italic">
+                CreatorArmour is a software platform and does not provide legal advice or representation.
+              </p>
+            </div>
             <div className="flex items-center gap-4">
               <a href="#" className="text-purple-300 hover:text-white transition-colors">
                 <Instagram className="w-5 h-5" />

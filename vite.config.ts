@@ -42,15 +42,19 @@ const forceSingleReactChunkPlugin = () => {
   return {
     name: 'force-single-react-chunk',
     enforce: 'pre',
+    resolveId(id) {
+      // Force all React imports to resolve to the same location
+      if (id === 'react' || id === 'react-dom' || id === 'react/jsx-runtime' || id === 'react/jsx-dev-runtime') {
+        // Return null to let Vite handle it, but ensure dedupe works
+        return null;
+      }
+      return null;
+    },
     configResolved(config) {
       // Ensure React dependencies are bundled together
       if (config.optimizeDeps) {
         // This will be handled in optimizeDeps config
       }
-    },
-    generateBundle(options, bundle) {
-      // In build mode, ensure React is in a single chunk
-      // This is mainly for dev mode though
     },
   };
 };
@@ -89,16 +93,19 @@ export default defineConfig(() => ({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
-      // Force single React instance to prevent "Invalid hook call" errors
-      // Use directory paths (not file paths) so Vite can resolve sub-paths correctly
-      "react": path.resolve(__dirname, "./node_modules/react"),
-      "react-dom": path.resolve(__dirname, "./node_modules/react-dom"),
+      // CRITICAL: Force all React imports to use the same instance
+      // This prevents "Invalid hook call" errors from multiple React instances
+      "react": path.resolve(__dirname, "./node_modules/.pnpm/react@18.3.1/node_modules/react"),
+      "react-dom": path.resolve(__dirname, "./node_modules/.pnpm/react-dom@18.3.1_react@18.3.1/node_modules/react-dom"),
+      "react/jsx-runtime": path.resolve(__dirname, "./node_modules/.pnpm/react@18.3.1/node_modules/react/jsx-runtime"),
+      "react/jsx-dev-runtime": path.resolve(__dirname, "./node_modules/.pnpm/react@18.3.1/node_modules/react/jsx-dev-runtime"),
       // Force use-sync-external-store/shim to use our ESM shim
       "use-sync-external-store/shim": path.resolve(__dirname, "./src/lib/use-sync-external-store-shim.ts"),
     },
+    // Critical: Dedupe React to prevent multiple instances
     dedupe: ["react", "react-dom", "react/jsx-runtime", "react/jsx-dev-runtime", "use-sync-external-store"],
     conditions: ["import", "module", "browser", "default"],
-    // Preserve symlinks to ensure consistent module resolution
+    // Don't preserve symlinks - resolve to actual files for consistent React instance
     preserveSymlinks: false,
   },
   // Force single chunk for React in dev mode
@@ -125,6 +132,10 @@ export default defineConfig(() => ({
       plugins: [],
       format: 'esm',
     },
+    // Force React to be in a single pre-bundled chunk
+    entries: [
+      'src/main.tsx',
+    ],
   },
   ssr: {
     noExternal: ["react", "react-dom"],

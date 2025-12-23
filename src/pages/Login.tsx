@@ -70,9 +70,13 @@ const Login = () => {
     // Check if we just came from OAuth (check sessionStorage for OAuth intent)
     const hasOAuthIntent = sessionStorage.getItem('oauth_intended_route') !== null;
     
+    // Check if we just logged out (query parameter)
+    const justLoggedOut = urlParams.get('loggedOut') === 'true';
+    
     // If we have a session and we're not in the middle of OAuth callback, redirect
     // Also wait a bit if we just came from OAuth to let SessionContext process it
-    if (!loading && session && !isOAuthCallback) {
+    // BUT skip redirect if we just logged out (session might still be clearing)
+    if (!loading && session && !isOAuthCallback && !justLoggedOut) {
       // If we have OAuth intent, wait a bit longer for SessionContext to redirect
       const delay = hasOAuthIntent ? 1000 : 200;
       console.log('[Login] Session exists, redirecting to dashboard', { hasOAuthIntent, delay });
@@ -84,6 +88,17 @@ const Login = () => {
           navigate('/creator-dashboard', { replace: true });
         }
       }, delay);
+      return () => clearTimeout(timer);
+    }
+    
+    // If we just logged out, remove the query parameter after a short delay
+    if (justLoggedOut) {
+      const timer = setTimeout(() => {
+        // Remove the loggedOut parameter from URL
+        const newUrl = new URL(window.location.href);
+        newUrl.searchParams.delete('loggedOut');
+        window.history.replaceState({}, '', newUrl.pathname + newUrl.search + newUrl.hash);
+      }, 1000);
       return () => clearTimeout(timer);
     }
     

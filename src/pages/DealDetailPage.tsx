@@ -135,6 +135,7 @@ function DealDetailPageContent() {
   // Removed tempSafeContractUrl and contractHtml state - DOCX-first architecture
   const [contractGenerationError, setContractGenerationError] = useState<string | null>(null);
   const [missingFields, setMissingFields] = useState<string[]>([]);
+  const [showContractDisclaimerModal, setShowContractDisclaimerModal] = useState(false);
   
   // Brand details submission state
   const [brandSubmissionDetails, setBrandSubmissionDetails] = useState<any>(null);
@@ -2599,6 +2600,9 @@ ${link}`;
                                 if (data.success && data.contractDocxUrl) {
                                   toast.success('Contract generated successfully!');
                                   
+                                  // Show disclaimer modal
+                                  setShowContractDisclaimerModal(true);
+                                  
                                   // Clear any previous errors
                                   setContractGenerationError(null);
                                   setMissingFields([]);
@@ -2825,6 +2829,9 @@ ${link}`;
                           if (data.success && data.contractDocxUrl) {
                             toast.success('Contract generated successfully!');
 
+                            // Show disclaimer modal
+                            setShowContractDisclaimerModal(true);
+
                             // Clear any previous errors
                             setContractGenerationError(null);
                             setMissingFields([]);
@@ -2974,6 +2981,9 @@ ${link}`;
                           
                           if (data.success && data.contractDocxUrl) {
                             toast.success('Contract regenerated successfully!');
+                            
+                            // Show disclaimer modal
+                            setShowContractDisclaimerModal(true);
                             
                             // Update cache immediately (DOCX is primary)
                             if (deal?.id && profile?.id) {
@@ -3221,6 +3231,9 @@ ${link}`;
                           if (data.success && data.contractDocxUrl) {
                             toast.success('Contract generated successfully!');
 
+                            // Show disclaimer modal
+                            setShowContractDisclaimerModal(true);
+
                             // Clear any previous errors
                             setContractGenerationError(null);
                             setMissingFields([]);
@@ -3326,6 +3339,9 @@ ${link}`;
                                   
                                   if (data.success && data.contractDocxUrl) {
                                     toast.success('Contract generated successfully!');
+
+                                    // Show disclaimer modal
+                                    setShowContractDisclaimerModal(true);
 
                                     // Clear any previous errors
                                     setContractGenerationError(null);
@@ -3686,6 +3702,31 @@ ${link}`;
           </motion.div>
         </div>
       )}
+
+      {/* Contract Generation Disclaimer Modal */}
+      <Dialog open={showContractDisclaimerModal} onOpenChange={setShowContractDisclaimerModal}>
+        <DialogContent className="bg-purple-900/95 backdrop-blur-xl border border-white/10 text-white max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-semibold">Contract Generated</DialogTitle>
+            <DialogDescription className="text-white/70">
+              This contract is auto-generated based on the information provided.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 mt-4">
+            <p className="text-sm text-white/80">
+              Please review before signing or sharing.
+            </p>
+            <div className="flex justify-end">
+              <button
+                onClick={() => setShowContractDisclaimerModal(false)}
+                className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-medium transition-colors"
+              >
+                Understood
+              </button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
