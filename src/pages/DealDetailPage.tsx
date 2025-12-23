@@ -37,6 +37,50 @@ const IssueStatusCard = lazy(() => import('@/components/deals/IssueStatusCard').
 const ActionLog = lazy(() => import('@/components/deals/ActionLog').then(m => ({ default: m.ActionLog })));
 const OverduePaymentCard = lazy(() => import('@/components/deals/OverduePaymentCard').then(m => ({ default: m.OverduePaymentCard })));
 
+// Safari-compatible clipboard copy helper
+const copyToClipboard = async (text: string): Promise<boolean> => {
+  // Check for secure context (required for clipboard API)
+  const isSecureContext = typeof window !== 'undefined' && 
+    (window.isSecureContext || 
+     window.location.protocol === 'https:' || 
+     window.location.hostname === 'localhost' ||
+     window.location.hostname === '127.0.0.1');
+  
+  // Try modern Clipboard API first (works in most browsers)
+  if (navigator.clipboard && isSecureContext) {
+    try {
+      await navigator.clipboard.writeText(text);
+      return true;
+    } catch (clipboardError: any) {
+      // If clipboard API fails, fall back to execCommand
+      console.warn('[DealDetailPage] Clipboard API failed, trying fallback:', clipboardError);
+    }
+  }
+  
+  // Fallback for Safari and older browsers: use execCommand
+  // This works better in Safari which has stricter clipboard permissions
+  const textArea = document.createElement('textarea');
+  textArea.value = text;
+  textArea.style.position = 'fixed';
+  textArea.style.left = '-999999px';
+  textArea.style.top = '-999999px';
+  textArea.setAttribute('readonly', '');
+  document.body.appendChild(textArea);
+  
+  // Select and copy
+  textArea.select();
+  textArea.setSelectionRange(0, text.length); // For mobile devices
+  
+  try {
+    const successful = document.execCommand('copy');
+    document.body.removeChild(textArea);
+    return successful;
+  } catch (execError) {
+    document.body.removeChild(textArea);
+    return false;
+  }
+};
+
 // Main content component
 function DealDetailPageContent() {
   const navigate = useNavigate();
@@ -88,7 +132,7 @@ function DealDetailPageContent() {
   const [isGeneratingSafeContract, setIsGeneratingSafeContract] = useState(false);
   const [showMarkSignedModal, setShowMarkSignedModal] = useState(false);
   const [contractJustGenerated, setContractJustGenerated] = useState(false);
-  const [tempSafeContractUrl, setTempSafeContractUrl] = useState<string | null>(null);
+  // Removed tempSafeContractUrl and contractHtml state - DOCX-first architecture
   const [contractGenerationError, setContractGenerationError] = useState<string | null>(null);
   const [missingFields, setMissingFields] = useState<string[]>([]);
   
@@ -466,22 +510,14 @@ function DealDetailPageContent() {
   // Use temporary URL if available, otherwise fall back to deal data
   // Prioritize safe_contract_url (v2) over contract_file_url (legacy)
   // v2 contracts have all fixes applied (currency, artifacts, jurisdiction, etc.)
-  const dealSafeContractUrl = (deal as any)?.safe_contract_url as string | null | undefined;
-  const dealContractFileUrl = deal?.contract_file_url as string | null | undefined;
-  
-  // Use safe_contract_url if available (v2), otherwise fall back to contract_file_url
-  // This ensures we always show the latest contract with all fixes
-  const activeContractUrl = dealSafeContractUrl || dealContractFileUrl;
+  // DOCX contract URL (primary source)
+  const contractDocxUrl = deal?.contract_file_url as string | null | undefined;
   
   console.log('[DealDetailPage] Contract URL resolution:', {
-    safeContractUrl: dealSafeContractUrl,
-    contractFileUrl: dealContractFileUrl,
-    activeContractUrl,
+    contractDocxUrl,
     contractVersion: (deal as any)?.contract_version,
-    hasV2Contract: !!dealSafeContractUrl
+    hasContract: !!contractDocxUrl
   });
-  // Use temp URL if just generated, otherwise use active contract URL (prioritizes v2)
-  const safeContractUrl = tempSafeContractUrl || activeContractUrl;
   const contractVersion = (deal as any)?.contract_version as string | null | undefined;
   const signedAt = (deal as any)?.signed_at as string | null | undefined;
   const signedVia = (deal as any)?.signed_via as string | null | undefined;
@@ -554,14 +590,38 @@ function DealDetailPageContent() {
   // ALL HANDLERS MUST BE DEFINED BEFORE EARLY RETURNS
   // Handlers (must be useCallback and defined before early returns)
   const handlePreviewContract = useCallback(() => {
+    // Check for HTML contract first (primary source)
+    const contractDocxUrl = deal?.contract_file_url as string | null | undefined;
+    
+    if (contractDocxUrl && deal?.id) {
+      // Download DOCX contract
+      const link = document.createElement('a');
+      link.href = contractDocxUrl;
+      link.download = `Contract_${deal.id}.docx`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      trackEvent('contract_downloaded', { 
+        dealId: deal.id,
+        dealTitle: deal.brand_name,
+        contractType: 'html',
+      });
+      
+      window.open(viewUrl, '_blank');
+      return;
+    }
+    
+    // Fallback to PDF preview if HTML not available
     if (!deal?.contract_file_url) {
-      toast.error('No contract file available');
+      toast.error('No contract available');
       return;
     }
     
     trackEvent('contract_preview_opened', { 
       dealId: deal.id,
       dealTitle: deal.brand_name,
+      contractType: 'pdf',
     });
     
     setShowContractPreview(true);
@@ -653,7 +713,7 @@ function DealDetailPageContent() {
 
   const handleDownloadContract = useCallback(async () => {
     // Use active contract URL (prioritizes v2 contract with all fixes)
-    const contractUrl = activeContractUrl || deal?.contract_file_url;
+    const contractUrl = contractDocxUrl;
     if (!contractUrl) {
       toast.error('No contract file available');
       return;
@@ -1254,23 +1314,27 @@ Best regards`;
                     if (error.name !== 'AbortError') {
                       // Only show error if not user cancellation
                       const fullText = `${shareText}\n\nView deal: ${shareUrl}`;
-                      await navigator.clipboard.writeText(fullText);
-                      toast.success('Deal details copied to clipboard');
-                      trackEvent('deal_shared', {
-                        dealId: deal.id,
-                        method: 'copy',
-                      });
+                      const success = await copyToClipboard(fullText);
+                      if (success) {
+                        toast.success('Deal details copied to clipboard');
+                        trackEvent('deal_shared', {
+                          dealId: deal.id,
+                          method: 'copy',
+                        });
+                      }
                     }
                   }
                 } else {
                   // Fallback: Copy to clipboard
                   const fullText = `${shareText}\n\nView deal: ${shareUrl}`;
-                  await navigator.clipboard.writeText(fullText);
-                  toast.success('Deal details copied to clipboard');
-                  trackEvent('deal_shared', {
-                    dealId: deal.id,
-                    method: 'copy',
-                  });
+                  const success = await copyToClipboard(fullText);
+                  if (success) {
+                    toast.success('Deal details copied to clipboard');
+                    trackEvent('deal_shared', {
+                      dealId: deal.id,
+                      method: 'copy',
+                    });
+                  }
                 }
               }}
               whileTap={animations.microTap}
@@ -1430,8 +1494,12 @@ ${link}`;
                   // Fallback to clipboard if share API not available or failed
                   if (!sharePlatform) {
                     try {
-                      await navigator.clipboard.writeText(`${reminderMessage}\n\n${link}`);
-                      toast.success('Share message copied');
+                      const success = await copyToClipboard(`${reminderMessage}\n\n${link}`);
+                      if (success) {
+                        toast.success('Share message copied');
+                      } else {
+                        throw new Error('Copy failed');
+                      }
                     } catch (clipboardError) {
                       console.error('[DealDetailPage] Clipboard copy failed:', clipboardError);
                       toast.error('Failed to copy message. Please try again.');
@@ -1482,7 +1550,7 @@ ${link}`;
                 }
               };
               
-              // Handle copy link
+              // Handle copy link with Safari compatibility
               const handleCopyLink = async () => {
                 if (!deal || !dealId) {
                   toast.error('Deal information not available');
@@ -1490,15 +1558,19 @@ ${link}`;
                 }
                 
                 try {
-          const link = brandReplyLink || (await generateBrandReplyLink(deal.id));
-          if (!link) {
-            toast.error('Could not generate brand reply link. Please try again.');
-            return;
-          }
+                  const link = brandReplyLink || (await generateBrandReplyLink(deal.id));
+                  if (!link) {
+                    toast.error('Could not generate brand reply link. Please try again.');
+                    return;
+                  }
                   
-          await navigator.clipboard.writeText(link);
-                  triggerHaptic(HapticPatterns.light);
-                  toast.success('Link copied to clipboard');
+                  const success = await copyToClipboard(link);
+                  if (success) {
+                    triggerHaptic(HapticPatterns.light);
+                    toast.success('Link copied to clipboard');
+                  } else {
+                    throw new Error('Copy failed');
+                  }
                 } catch (error) {
                   console.error('[DealDetailPage] Copy link failed:', error);
                   toast.error('Failed to copy link. Please try again.');
@@ -2161,7 +2233,7 @@ ${link}`;
             </div>
 
             {/* Contract Info */}
-            {activeContractUrl && (
+            {contractDocxUrl && (
               <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-4 shadow-lg shadow-black/20">
                 <h2 className="font-semibold text-lg mb-4 flex items-center gap-2">
                   <FileText className="w-5 h-5" />
@@ -2357,18 +2429,23 @@ ${link}`;
               <div className="bg-gradient-to-br from-emerald-500/20 to-green-500/20 backdrop-blur-xl border-2 border-emerald-400/30 rounded-2xl p-6 shadow-lg shadow-emerald-500/10">
                 <h2 className="font-semibold text-xl mb-2 flex items-center gap-2">
                   <FileText className="w-6 h-6 text-emerald-400" />
-                  {safeContractUrl ? 'Send Contract for Signature' : 'Final Contract'}
+                  {(() => {
+                    const contractDocxUrl = deal?.contract_file_url as string | null | undefined;
+                    return contractDocxUrl ? 'Send Contract for Signature' : 'Final Contract';
+                  })()}
                 </h2>
                 
                 {(() => {
                   // Debug logging
+                  const contractDocxUrl = deal?.contract_file_url as string | null | undefined;
                   if (typeof window !== 'undefined') {
                     console.log('[DealDetailPage] Final Contract Section Debug:', {
-                      safeContractUrl,
+                      hasContractDocx: !!contractDocxUrl,
+                      contractDocxUrl,
                       contractJustGenerated,
                       dealId: deal?.id,
                       brandResponseStatus,
-                      hasSafeContract: !!safeContractUrl,
+                      hasContract: !!contractDocxUrl,
                       dealSafeContractUrl: (deal as any)?.safe_contract_url,
                       dealContractFileUrl: (deal as any)?.contract_file_url,
                       dealObject: deal ? Object.keys(deal) : null,
@@ -2377,7 +2454,12 @@ ${link}`;
                   return null;
                 })()}
                 
-                {!safeContractUrl && !contractJustGenerated ? (
+                {(() => {
+                  // Check for DOCX contract (stored in contract_file_url)
+                  const contractDocxUrl = deal?.contract_file_url as string | null | undefined;
+                  const hasContract = !!contractDocxUrl;
+                  return !hasContract && !contractJustGenerated;
+                })() ? (
                   <>
                     {/* Validation Error Banner */}
                     {contractGenerationError && (
@@ -2420,7 +2502,11 @@ ${link}`;
                       Generate the final brand-safe contract with all accepted clarifications incorporated.
                     </p>
                     
-                    {!deal.contract_file_url && !safeContractUrl && !contractJustGenerated ? (
+                    {(() => {
+                      // Check for DOCX contract
+                      const contractDocxUrl = deal?.contract_file_url as string | null | undefined;
+                      return !contractDocxUrl && !contractJustGenerated;
+                    })() ? (
                       <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-4 mb-4">
                         <div className="flex items-start gap-3 mb-3">
                           <div className="w-5 h-5 rounded-full bg-amber-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
@@ -2510,107 +2596,57 @@ ${link}`;
 
                                 const data = await response.json();
                                 
-                                if (data.success && data.safeContractUrl) {
-                                  toast.success('Contract generated successfully using AI!');
+                                if (data.success && data.contractDocxUrl) {
+                                  toast.success('Contract generated successfully!');
                                   
                                   // Clear any previous errors
                                   setContractGenerationError(null);
                                   setMissingFields([]);
                                   
-                                  // Set temporary state for immediate UI update
-                                  setTempSafeContractUrl(data.safeContractUrl);
-                                  
-                                  // Directly update the React Query cache with new data for immediate UI update
+                                  // Directly update the React Query cache with new DOCX URL
                                   if (deal?.id && profile?.id) {
                                     const queryKey = ['brand_deal', deal.id, profile.id];
                                     
-                                    // Update cache with proper structure
                                     queryClient.setQueryData(
                                       queryKey,
                                       (oldData: any) => {
-                                        if (!oldData) {
-                                          // If no old data, return a basic structure
-                                          return {
-                                            id: deal.id,
-                                            contract_file_url: data.safeContractUrl,
-                                            safe_contract_url: data.safeContractUrl,
-                                            contract_version: 'ai_generated',
-                                          };
-                                        }
-                                        // Spread old data and update contract fields
-                                        // Use v2 version from backend if available, otherwise use 'v2' as default
                                         const updated = {
                                           ...oldData,
-                                          contract_file_url: data.safeContractUrl,
-                                          safe_contract_url: data.safeContractUrl,
-                                          contract_version: data.contractVersion || 'v2', // Use backend version
+                                          contract_file_url: data.contractDocxUrl, // PRIMARY - DOCX URL
+                                          contract_version: data.contractVersion || 'v3',
                                         };
+                                        if (!oldData) {
+                                          return { id: deal.id, ...updated };
+                                        }
                                         
                                         console.log('[DealDetailPage] Cache update:', {
-                                          oldSafeContractUrl: oldData.safe_contract_url,
-                                          newSafeContractUrl: data.safeContractUrl,
-                                          updatedSafeContractUrl: updated.safe_contract_url,
+                                          hasContractDocx: !!updated.contract_file_url,
+                                          contractVersion: updated.contract_version,
                                         });
                                         
                                         return updated;
                                       }
                                     );
                                     
-                                    console.log('[DealDetailPage] Updated cache with contract URLs:', {
-                                      contract_file_url: data.safeContractUrl,
-                                      safe_contract_url: data.safeContractUrl,
+                                    console.log('[DealDetailPage] Updated cache with DOCX contract:', {
+                                      hasContractDocx: !!data.contractDocxUrl,
                                       dealId: deal.id,
                                       queryKey,
                                     });
                                   }
                                   
                                   // Handle database update status
-                                  const dbUpdateSucceeded = data.databaseUpdated !== false; // Default to true if not specified
+                                  const dbUpdateSucceeded = data.databaseUpdated !== false;
                                   
                                   if (dbUpdateSucceeded) {
-                                    // Database update succeeded - refresh after a short delay to get the updated data
                                     setTimeout(() => {
                                       refreshAll();
-                                      
-                                      // Verify the cache has the URL after refresh
-                                      setTimeout(() => {
-                                        const cachedDeal = queryClient.getQueryData(['brand_deal', deal.id, profile?.id]) as any;
-                                        console.log('[DealDetailPage] Cache verification after refresh:', {
-                                          hasSafeContractUrl: !!cachedDeal?.safe_contract_url,
-                                          safeContractUrl: cachedDeal?.safe_contract_url,
-                                          matchesNewUrl: cachedDeal?.safe_contract_url === data.safeContractUrl,
-                                        });
-                                        
-                                        // If database has the correct URL, clear temp state
-                                        if (cachedDeal?.safe_contract_url === data.safeContractUrl) {
-                                          setTempSafeContractUrl(null);
-                                          console.log('[DealDetailPage] Database confirmed updated, cleared temp state');
-                                        } else if (cachedDeal?.safe_contract_url) {
-                                          // Database has a different URL (old one) - keep temp state
-                                          console.warn('[DealDetailPage] Database has different URL, keeping temp state with new contract');
-                                        } else {
-                                          // Database doesn't have URL yet - keep temp state and retry once
-                                          console.warn('[DealDetailPage] Database not updated yet, retrying...');
-                                          setTimeout(() => {
-                                            refreshAll();
-                                            const finalDeal = queryClient.getQueryData(['brand_deal', deal.id, profile?.id]) as any;
-                                            if (finalDeal?.safe_contract_url === data.safeContractUrl) {
-                                              setTempSafeContractUrl(null);
-                                              console.log('[DealDetailPage] Database confirmed updated on retry');
-                                            } else {
-                                              console.warn('[DealDetailPage] Database update may have failed, temp state will keep UI working');
-                                            }
-                                          }, 2000);
-                                        }
-                                      }, 500);
-                                    }, 1500); // Give database 1.5 seconds to update
+                                    }, 1500);
                                   } else {
-                                    // Database update failed - keep temp state permanently
-                                    console.warn('[DealDetailPage] Database update failed, keeping temp state for UI');
-                                    // Don't refresh - the temp state is our source of truth
+                                    console.warn('[DealDetailPage] Database update may have failed');
                                   }
                                 } else {
-                                  throw new Error('Unexpected response format');
+                                  throw new Error('Unexpected response format: contractDocxUrl is required');
                                 }
                               } catch (error: any) {
                                 console.error('[DealDetailPage] Generate contract from scratch error:', error);
@@ -2724,7 +2760,7 @@ ${link}`;
                         console.log('[DealDetailPage] Generate Brand-Safe Contract button clicked', {
                           dealId: deal?.id,
                           contract_file_url: deal?.contract_file_url,
-                          safe_contract_url: safeContractUrl,
+                          contract_file_url: contractDocxUrl,
                           contractJustGenerated,
                           hasSession: !!session?.access_token,
                           isGenerating: isGeneratingSafeContract
@@ -2786,11 +2822,36 @@ ${link}`;
 
                           const data = await response.json();
                           
-                          if (data.success && data.safeContractUrl) {
-                            toast.success('Brand-safe contract generated successfully!');
-                            refreshAll();
+                          if (data.success && data.contractDocxUrl) {
+                            toast.success('Contract generated successfully!');
+
+                            // Clear any previous errors
+                            setContractGenerationError(null);
+                            setMissingFields([]);
+
+                            // Directly update the React Query cache with new DOCX URL
+                            if (deal?.id && profile?.id) {
+                              const queryKey = ['brand_deal', deal.id, profile.id];
+
+                              queryClient.setQueryData(
+                                queryKey,
+                                (oldData: any) => {
+                                  const updated = {
+                                    ...oldData,
+                                    contract_file_url: data.contractDocxUrl, // PRIMARY - DOCX URL
+                                    contract_version: data.contractVersion || 'v3',
+                                  };
+                                  return updated;
+                                }
+                              );
+                            }
+                            setContractJustGenerated(true);
+                            setTimeout(() => {
+                              refreshAll();
+                              setContractJustGenerated(false);
+                            }, 1500);
                           } else {
-                            throw new Error('Unexpected response format');
+                            throw new Error('Unexpected response format: contractDocxUrl is required');
                           }
                         } catch (error: any) {
                           console.error('[DealDetailPage] Generate safe contract error:', error);
@@ -2911,15 +2972,22 @@ ${link}`;
 
                           const data = await response.json();
                           
-                          if (data.success && data.safeContractUrl) {
+                          if (data.success && data.contractDocxUrl) {
                             toast.success('Contract regenerated successfully!');
                             
-                            // Update cache immediately
+                            // Update cache immediately (DOCX is primary)
                             if (deal?.id && profile?.id) {
                               const queryKey = ['brand_deal', deal.id, profile.id];
                               queryClient.setQueryData(queryKey, (oldData: any) => {
-                                if (!oldData) return { id: deal.id, safe_contract_url: data.safeContractUrl, contract_file_url: data.safeContractUrl, contract_version: 'v2' };
-                                return { ...oldData, safe_contract_url: data.safeContractUrl, contract_file_url: data.safeContractUrl, contract_version: 'v2' };
+                                const updated = {
+                                  ...oldData,
+                                  contract_file_url: data.contractDocxUrl, // PRIMARY - DOCX URL
+                                  contract_version: data.contractVersion || 'v3',
+                                };
+                                if (!oldData) {
+                                  return { id: deal.id, ...updated };
+                                }
+                                return updated;
                               });
                             }
                             
@@ -2929,7 +2997,7 @@ ${link}`;
                               setContractJustGenerated(false);
                             }, 2000);
                           } else {
-                            throw new Error('Unexpected response format');
+                            throw new Error('Unexpected response format: contractDocxUrl is required');
                           }
                         } catch (error: any) {
                           console.error('[DealDetailPage] Generate contract from scratch error:', error);
@@ -2950,7 +3018,7 @@ ${link}`;
                       ) : (
                         <>
                           <FileText className="w-5 h-5" />
-                          {safeContractUrl ? 'Regenerate Contract' : 'Generate Contract'}
+                          {contractDocxUrl ? 'Regenerate Contract' : 'Generate Contract'}
                         </>
                       )}
                     </motion.button>
@@ -2993,69 +3061,42 @@ ${link}`;
                     )}
 
                     {/* View & Download Contract Buttons - Primary Actions */}
-                    {safeContractUrl ? (
-                      <>
-                        <div className="space-y-2 mb-4">
-                          <motion.button
-                            onClick={async () => {
-                              if (!safeContractUrl) return;
-                              
-                              triggerHaptic(HapticPatterns.light);
-                              
-                              try {
-                                const response = await fetch(safeContractUrl);
-                                const blob = await response.blob();
-                                const url = window.URL.createObjectURL(blob);
-                                const a = document.createElement('a');
-                                a.href = url;
-                                a.download = `${deal.brand_name} × ${profile?.first_name || 'Creator'} – Final Agreement.pdf`;
-                                document.body.appendChild(a);
-                                a.click();
-                                document.body.removeChild(a);
-                                window.URL.revokeObjectURL(url);
-                                toast.success('Contract downloaded successfully');
-                              } catch (error) {
-                                console.error('[DealDetailPage] Download error:', error);
-                                toast.error('Failed to download contract');
-                              }
-                            }}
-                            disabled={!!signedContractUrl}
-                            whileTap={{ scale: 0.98 }}
-                            className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed px-4 py-3 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 text-white"
-                          >
-                            <Download className="w-5 h-5" />
-                            Download Final Contract (PDF)
-                          </motion.button>
-                          
-                          <motion.button
-                            onClick={() => {
-                              if (!safeContractUrl) return;
-                              triggerHaptic(HapticPatterns.light);
-                              window.open(safeContractUrl, '_blank');
-                            }}
-                            disabled={!!signedContractUrl}
-                            whileTap={{ scale: 0.98 }}
-                            className="w-full bg-white/10 hover:bg-white/15 border border-white/20 disabled:opacity-50 disabled:cursor-not-allowed px-4 py-3 rounded-xl transition-all flex items-center justify-center gap-2 text-white font-medium"
-                          >
-                            <Eye className="w-5 h-5" />
-                            View Contract
-                          </motion.button>
-                        </div>
-                        
-                        {!signedContractUrl && (
-                          <p className="text-xs text-white/60 mb-4 text-center">
-                            You may sign this contract using any digital or physical signing method you prefer (DocuSign, Leegality, Adobe, or offline).
-                          </p>
-                        )}
-
-                        {signedContractUrl && (
-                          <p className="text-xs text-white/60 mb-4 text-center">
-                            This signed contract has been securely stored for your records.
-                          </p>
-                        )}
-                      </>
-                    ) : (
-                      <div className="space-y-4">
+                    {(() => {
+                      // Check for DOCX contract (stored in contract_file_url)
+                      const contractDocxUrl = deal?.contract_file_url as string | null | undefined;
+                      const hasContract = !!contractDocxUrl;
+                      
+                      return hasContract ? (
+                        <>
+                          <div className="space-y-2 mb-4">
+                            {/* Download Contract as Word (DOCX) - Primary Action */}
+                            <motion.button
+                              onClick={() => {
+                                if (!contractDocxUrl) return;
+                                triggerHaptic(HapticPatterns.light);
+                                
+                                // Trigger download
+                                const link = document.createElement('a');
+                                link.href = contractDocxUrl;
+                                link.download = `Contract_${deal.id || 'contract'}.docx`;
+                                document.body.appendChild(link);
+                                link.click();
+                                document.body.removeChild(link);
+                              }}
+                              whileTap={{ scale: 0.98 }}
+                              className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-500 hover:to-blue-600 px-4 py-3 rounded-xl transition-all flex items-center justify-center gap-2 text-white font-semibold"
+                            >
+                              <FileText className="w-5 h-5" />
+                              Download Contract (DOCX)
+                            </motion.button>
+                            
+                            <p className="text-xs text-white/60 text-center">
+                              Open the downloaded DOCX file in Microsoft Word or Google Docs to view, edit, and sign the contract.
+                            </p>
+                          </div>
+                        </>
+                      ) : (
+                        <div className="space-y-4">
                         {/* Validation Error Banner */}
                         {contractGenerationError && (
                           <div className="bg-red-500/20 border-2 border-red-500/50 rounded-xl p-4">
@@ -3175,16 +3216,39 @@ ${link}`;
                                     throw new Error(errorMsg);
                                   }
 
-                                  const data = await response.json();
-                                  
-                                  if (data.success && data.safeContractUrl) {
-                                    toast.success('Contract generated successfully using AI!');
-                                    refreshAll();
-                                    setTimeout(() => refreshAll(), 500);
-                                    setTimeout(() => refreshAll(), 1500);
-                                  } else {
-                                    throw new Error('Unexpected response format');
-                                  }
+                          const data = await response.json();
+                          
+                          if (data.success && data.contractDocxUrl) {
+                            toast.success('Contract generated successfully!');
+
+                            // Clear any previous errors
+                            setContractGenerationError(null);
+                            setMissingFields([]);
+
+                            // Directly update the React Query cache with new DOCX URL
+                            if (deal?.id && profile?.id) {
+                              const queryKey = ['brand_deal', deal.id, profile.id];
+
+                              queryClient.setQueryData(
+                                queryKey,
+                                (oldData: any) => {
+                                  const updated = {
+                                    ...oldData,
+                                    contract_file_url: data.contractDocxUrl, // PRIMARY - DOCX URL
+                                    contract_version: data.contractVersion || 'v3',
+                                  };
+                                  return updated;
+                                }
+                              );
+                            }
+                            setContractJustGenerated(true);
+                            setTimeout(() => {
+                              refreshAll();
+                              setContractJustGenerated(false);
+                            }, 1500);
+                          } else {
+                            throw new Error('Unexpected response format: contractDocxUrl is required');
+                          }
                                 } catch (error: any) {
                                   console.error('[DealDetailPage] Generate contract from scratch error:', error);
                                   toast.error(error.message || 'Failed to generate contract');
@@ -3260,13 +3324,36 @@ ${link}`;
 
                                   const data = await response.json();
                                   
-                                  if (data.success && data.safeContractUrl) {
-                                    toast.success('Brand-safe contract generated successfully!');
-                                    refreshAll();
-                                    setTimeout(() => refreshAll(), 500);
-                                    setTimeout(() => refreshAll(), 1500);
+                                  if (data.success && data.contractDocxUrl) {
+                                    toast.success('Contract generated successfully!');
+
+                                    // Clear any previous errors
+                                    setContractGenerationError(null);
+                                    setMissingFields([]);
+
+                                    // Directly update the React Query cache with new DOCX URL
+                                    if (deal?.id && profile?.id) {
+                                      const queryKey = ['brand_deal', deal.id, profile.id];
+
+                                      queryClient.setQueryData(
+                                        queryKey,
+                                        (oldData: any) => {
+                                          const updated = {
+                                            ...oldData,
+                                            contract_file_url: data.contractDocxUrl, // PRIMARY - DOCX URL
+                                            contract_version: data.contractVersion || 'v3',
+                                          };
+                                          return updated;
+                                        }
+                                      );
+                                    }
+                                    setContractJustGenerated(true);
+                                    setTimeout(() => {
+                                      refreshAll();
+                                      setContractJustGenerated(false);
+                                    }, 1500);
                                   } else {
-                                    throw new Error('Unexpected response format');
+                                    throw new Error('Unexpected response format: contractDocxUrl is required');
                                   }
                                 } catch (error: any) {
                                   console.error('[DealDetailPage] Generate safe contract error:', error);
@@ -3294,7 +3381,8 @@ ${link}`;
                           )}
                         </div>
                       </div>
-                    )}
+                      );
+                    })()}
                   </>
                 )}
               </div>
