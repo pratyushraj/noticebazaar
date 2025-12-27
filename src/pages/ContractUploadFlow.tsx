@@ -27,7 +27,7 @@ const ContractUploadFlow = () => {
   const { profile, session } = useSession();
   const queryClient = useQueryClient();
   const addDealMutation = useAddBrandDeal();
-  const [step, setStep] = useState('upload'); // upload, uploading, scanning, analyzing, results, upload-error, review-error, validation-error
+  const [step, setStep] = useState('upload'); // upload, select-file, uploading, scanning, analyzing, results, upload-error, review-error, validation-error
   const [dealType, setDealType] = useState<'contract' | 'barter'>('contract'); // 'contract' or 'barter'
   const [showUploadArea, setShowUploadArea] = useState(false);
   const uploadAreaRef = useRef<HTMLDivElement>(null);
@@ -2479,12 +2479,29 @@ ${creatorName}`;
 
   return (
     <ContextualTipsProvider currentView="upload">
-    <div className="w-full text-white flex flex-col">
+    <div 
+      className="w-full text-white flex flex-col"
+      style={{
+        height: '100dvh', // Use dynamic viewport height for iPhone 11
+        maxHeight: '100dvh', // Prevent overflow on iPhone 11
+        paddingTop: 'env(safe-area-inset-top, 0px)', // Account for notch on iPhone 11
+        overflow: 'hidden', // Prevent body scroll
+        boxSizing: 'border-box', // Include padding in height calculation
+      }}
+    >
       {/* Header */}
       <div className="flex-shrink-0 z-50 bg-purple-900/90 backdrop-blur-lg border-b border-white/10 -mx-4 md:-mx-6 lg:-mx-8 px-4 md:px-6 lg:px-8 mb-4">
         <div className="flex items-center justify-between py-4">
           <button 
-            onClick={() => step === 'results' ? setStep('upload') : navigate('/creator-dashboard')}
+            onClick={() => {
+              if (step === 'results') {
+                setStep('upload');
+              } else if (step === 'select-file') {
+                setStep('upload');
+              } else {
+                navigate('/creator-dashboard');
+              }
+            }}
             className="p-2 hover:bg-white/10 rounded-lg transition-colors"
             aria-label="Go back"
           >
@@ -2492,7 +2509,7 @@ ${creatorName}`;
           </button>
           
           <div className="text-lg font-semibold">
-            Upload Contract
+            {step === 'select-file' ? 'Upload Contract' : 'Upload Contract'}
           </div>
           
           <div className="w-10"></div>
@@ -2500,7 +2517,13 @@ ${creatorName}`;
         
       </div>
 
-      <div className="flex-1 overflow-y-auto pb-20">
+      <div 
+        className="flex-1 overflow-y-auto"
+        style={{
+          paddingBottom: 'calc(180px + env(safe-area-inset-bottom, 0px))', // Account for bottom nav (68px) + sticky CTA (~112px) + safe area
+          WebkitOverflowScrolling: 'touch', // Smooth scrolling on iOS
+        }}
+      >
         {/* Upload Step */}
         {step === 'upload' && (
           <>
@@ -2532,13 +2555,6 @@ ${creatorName}`;
                     : 'border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/10 opacity-75'
                 )}
               >
-                {/* Recommendation Badge - Top Right (only when not selected) */}
-                {recommendedOption === 'upload' && selectedOption !== 'upload' && (
-                  <div className="absolute top-3 right-3 px-2 py-0.5 rounded-full bg-gradient-to-r from-blue-500/15 to-cyan-500/15 border border-blue-400/20 backdrop-blur-sm opacity-75">
-                    <span className="text-[10px] font-medium text-blue-300/90">Most creators choose this</span>
-                  </div>
-                )}
-                
                 {/* Check Icon - Top Right (when selected) */}
                 {selectedOption === 'upload' && (
                   <div className="absolute top-3 right-3">
@@ -2654,86 +2670,6 @@ ${creatorName}`;
             </div>
 
             {/* Conditional Content Based on Selection */}
-            {selectedOption === 'upload' && (
-              <div className="space-y-6">
-                {/* Info Card */}
-                <div className="bg-gradient-to-br from-blue-500/20 to-purple-500/20 backdrop-blur-md rounded-2xl p-5 border border-blue-400/30">
-                  <div className="flex items-start gap-3 mb-3">
-                    <div className="w-10 h-10 rounded-xl bg-blue-500/30 flex items-center justify-center flex-shrink-0">
-                      <Sparkles className="w-5 h-5 text-blue-400" />
-                    </div>
-                    <div>
-                      <h3 className="font-semibold mb-1">AI-Powered Review</h3>
-                      <p className="text-sm text-purple-200">Our AI instantly analyzes your contract for potential issues and unfair terms.</p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Upload Area */}
-                <div 
-                  className="bg-white/10 backdrop-blur-md rounded-2xl border-2 border-dashed border-white/20 p-12 text-center hover:bg-white/15 transition-all cursor-pointer"
-                  onDragOver={handleDragOver}
-                  onDrop={handleDrop}
-                  onClick={handleFileSelect}
-                >
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-                    onChange={handleFileChange}
-                    className="hidden"
-                  />
-                  
-                  <div className="w-20 h-20 rounded-full bg-purple-500/20 flex items-center justify-center mx-auto mb-4">
-                    <Upload className="w-10 h-10 text-purple-400" />
-                  </div>
-                  
-                  <h3 className="text-xl font-semibold mb-2">Upload Contract</h3>
-                  <p className="text-sm text-purple-300 mb-4">Drag and drop or click to browse</p>
-                  
-                  <button 
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleFileSelect();
-                    }}
-                    className="bg-purple-600 hover:bg-purple-700 px-6 py-3 rounded-xl font-medium transition-colors"
-                  >
-                    Choose File
-                  </button>
-                  
-                  <div className="mt-4 text-xs text-purple-400">
-                    Supported: PDF, DOCX • Max 10MB
-                  </div>
-                </div>
-
-                {/* Features List */}
-                <div className="space-y-3">
-                  <div className="flex items-start gap-3 text-sm">
-                    <CheckCircle className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
-                    <div>
-                      <div className="font-medium">Instant Analysis</div>
-                      <div className="text-purple-300">Get results in under 30 seconds</div>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-start gap-3 text-sm">
-                    <Shield className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
-                    <div>
-                      <div className="font-medium">100% Confidential</div>
-                      <div className="text-purple-300">Your contracts are encrypted and secure</div>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-start gap-3 text-sm">
-                    <Sparkles className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
-                    <div>
-                      <div className="font-medium">Expert Insights</div>
-                      <div className="text-purple-300">AI trained on 10,000+ creator contracts</div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
 
             {selectedOption === 'request_details' && showUploadArea && (
               <div className="space-y-6">
@@ -2781,11 +2717,7 @@ ${creatorName}`;
                 if (!selectedOption) return;
                 
                 if (selectedOption === 'upload') {
-                  setShowUploadArea(true);
-                  // Scroll to upload area after a brief delay to allow render
-                  setTimeout(() => {
-                    uploadAreaRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                  }, 100);
+                  setStep('select-file');
                 } else if (selectedOption === 'request_details') {
                   // Trigger the link generation flow
                   setShowUploadArea(true);
@@ -2805,6 +2737,88 @@ ${creatorName}`;
             >
               Continue
             </button>
+          </div>
+        )}
+
+        {/* Select File Step */}
+        {step === 'select-file' && (
+          <div className="space-y-6" ref={uploadAreaRef}>
+            {/* Info Card */}
+            <div className="bg-gradient-to-br from-blue-500/20 to-purple-500/20 backdrop-blur-md rounded-2xl p-5 border border-blue-400/30">
+              <div className="flex items-start gap-3 mb-3">
+                <div className="w-10 h-10 rounded-xl bg-blue-500/30 flex items-center justify-center flex-shrink-0">
+                  <Sparkles className="w-5 h-5 text-blue-400" />
+                </div>
+                <div>
+                  <h3 className="font-semibold mb-1">AI-Powered Review</h3>
+                  <p className="text-sm text-purple-200">Our AI instantly analyzes your contract for potential issues and unfair terms.</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Upload Area */}
+            <div 
+              className="bg-white/10 backdrop-blur-md rounded-2xl border-2 border-dashed border-white/20 p-12 text-center hover:bg-white/15 transition-all cursor-pointer"
+              onDragOver={handleDragOver}
+              onDrop={handleDrop}
+              onClick={handleFileSelect}
+            >
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                onChange={handleFileChange}
+                className="hidden"
+              />
+              
+              <div className="w-20 h-20 rounded-full bg-purple-500/20 flex items-center justify-center mx-auto mb-4">
+                <Upload className="w-10 h-10 text-purple-400" />
+              </div>
+              
+              <h3 className="text-xl font-semibold mb-2">Upload Contract</h3>
+              <p className="text-sm text-purple-300 mb-4">Drag and drop or click to browse</p>
+              
+              <button 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleFileSelect();
+                }}
+                className="bg-purple-600 hover:bg-purple-700 px-6 py-3 rounded-xl font-medium transition-colors"
+              >
+                Choose File
+              </button>
+              
+              <div className="mt-4 text-xs text-purple-400">
+                Supported: PDF, DOCX • Max 10MB
+              </div>
+            </div>
+
+            {/* Features List */}
+            <div className="space-y-3">
+              <div className="flex items-start gap-3 text-sm">
+                <CheckCircle className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
+                <div>
+                  <div className="font-medium">Instant Analysis</div>
+                  <div className="text-purple-300">Get results in under 30 seconds</div>
+                </div>
+              </div>
+              
+              <div className="flex items-start gap-3 text-sm">
+                <Shield className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
+                <div>
+                  <div className="font-medium">100% Confidential</div>
+                  <div className="text-purple-300">Your contracts are encrypted and secure</div>
+                </div>
+              </div>
+              
+              <div className="flex items-start gap-3 text-sm">
+                <Sparkles className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
+                <div>
+                  <div className="font-medium">Expert Insights</div>
+                  <div className="text-purple-300">AI trained on 10,000+ creator contracts</div>
+                </div>
+              </div>
+            </div>
           </div>
         )}
 
