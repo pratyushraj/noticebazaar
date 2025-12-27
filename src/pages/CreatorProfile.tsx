@@ -1,10 +1,12 @@
 import { useState, useEffect, useMemo } from 'react';
-import { ArrowLeft, User, Mail, Phone, MapPin, Instagram, Youtube, Twitter, Globe, Edit, Lock, CreditCard, Shield, HelpCircle, FileText, LogOut, ChevronRight, Check, X, Download, Trash2, Star, TrendingUp, Award, MessageCircle, Loader2, Sparkles } from 'lucide-react';
+import { ArrowLeft, User, Mail, Phone, MapPin, Instagram, Youtube, Twitter, Globe, Edit, Lock, CreditCard, Shield, HelpCircle, FileText, LogOut, ChevronRight, Check, X, Download, Trash2, Star, TrendingUp, Award, MessageCircle, Loader2, Sparkles, Camera } from 'lucide-react';
 import NotificationPreferences from '@/components/notifications/NotificationPreferences';
+import AvatarUploader from '@/components/profile/AvatarUploader';
 import { useNavigate } from 'react-router-dom';
 import { useSession } from '@/contexts/SessionContext';
 import { useUpdateProfile } from '@/lib/hooks/useProfiles';
 import { useSignOut } from '@/lib/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
 import { useBrandDeals } from '@/lib/hooks/useBrandDeals';
 import { usePartnerStats } from '@/lib/hooks/usePartnerProgram';
 import { toast } from 'sonner';
@@ -508,35 +510,113 @@ const ProfileSettings = () => {
       </div>
 
       <div className="p-4 space-y-3" style={{ paddingBottom: 'calc(120px + env(safe-area-inset-bottom, 0px))' }}>
-        {/* Profile Summary - Reduced height and visual dominance */}
+        {/* Profile Summary - Mobile Optimized */}
         <div className="bg-white/5 rounded-xl p-4 border border-white/10 mb-4">
-          <div className="flex items-center gap-3">
-            {/* Avatar - Smaller */}
+          <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4">
+            {/* Avatar - Editable - Centered on mobile */}
             <div className="relative flex-shrink-0">
-              <div className="w-16 h-16 rounded-full bg-purple-600 flex items-center justify-center text-xl font-bold">
-                {userData.avatar}
-              </div>
-              {userData.verified && (
-                <div className="absolute -top-0.5 -right-0.5 w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center border-2 border-white/10">
-                  <Check className="w-3 h-3" />
+              {profile?.id ? (
+                <div className="relative">
+                  <div 
+                    className="w-20 h-20 sm:w-16 sm:h-16 rounded-full bg-purple-600 flex items-center justify-center text-2xl sm:text-xl font-bold overflow-hidden cursor-pointer hover:opacity-90 transition-opacity"
+                    onClick={() => {
+                      const fileInput = document.createElement('input');
+                      fileInput.type = 'file';
+                      fileInput.accept = 'image/*';
+                      fileInput.onchange = async (e: any) => {
+                        const file = e.target.files?.[0];
+                        if (!file) return;
+                        
+                        // Validate file type
+                        if (!file.type.startsWith('image/')) {
+                          toast.error('Please select an image file');
+                          return;
+                        }
+                        
+                        // Validate file size (max 5MB)
+                        if (file.size > 5 * 1024 * 1024) {
+                          toast.error('Image size must be less than 5MB');
+                          return;
+                        }
+                        
+                        try {
+                          // Upload to Supabase Storage
+                          const fileExt = file.name.split('.').pop();
+                          const fileName = `${profile.id}/avatar.${fileExt}`;
+                          const { error: uploadError } = await supabase.storage
+                            .from('creator-assets')
+                            .upload(fileName, file, {
+                              cacheControl: '3600',
+                              upsert: true,
+                            });
+                          
+                          if (uploadError) throw uploadError;
+                          
+                          // Get public URL
+                          const { data: { publicUrl } } = supabase.storage
+                            .from('creator-assets')
+                            .getPublicUrl(fileName);
+                          
+                          // Update profile
+                          await updateProfileMutation.mutateAsync({
+                            id: profile.id,
+                            avatar_url: publicUrl,
+                          });
+                          
+                          if (refetchProfile) {
+                            await refetchProfile();
+                          }
+                          
+                          toast.success('Profile photo updated!');
+                        } catch (error: any) {
+                          console.error('Error uploading avatar:', error);
+                          toast.error('Failed to upload photo. Please try again.');
+                        }
+                      };
+                      fileInput.click();
+                    }}
+                  >
+                    {profile.avatar_url ? (
+                      <img 
+                        src={profile.avatar_url} 
+                        alt={userData.name}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <span>{userData.avatar}</span>
+                    )}
+                  </div>
+                  <div className="absolute bottom-0 right-0 w-6 h-6 sm:w-5 sm:h-5 bg-purple-500 rounded-full flex items-center justify-center border-2 border-white/10 cursor-pointer hover:bg-purple-400 transition-colors">
+                    <Camera className="w-3 h-3 sm:w-2.5 sm:h-2.5 text-white" />
+                  </div>
+                  {userData.verified && (
+                    <div className="absolute -top-0.5 -right-0.5 w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center border-2 border-white/10 z-10">
+                      <Check className="w-3 h-3" />
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="w-20 h-20 sm:w-16 sm:h-16 rounded-full bg-purple-600 flex items-center justify-center text-2xl sm:text-xl font-bold">
+                  {userData.avatar}
                 </div>
               )}
             </div>
             
-            {/* Name and Role */}
-            <div className="flex-1 min-w-0">
-              <h1 className="text-lg font-semibold truncate">{userData.name}</h1>
+            {/* Name and Role - Centered on mobile */}
+            <div className="flex-1 min-w-0 text-center sm:text-left w-full sm:w-auto">
+              <h1 className="text-xl sm:text-lg font-semibold">{userData.name}</h1>
               <div className="mt-1">
                 <p className="text-xs text-white/60">
                   Verified Creator Profile • Protection Active
                 </p>
               </div>
+              <p className="text-[10px] text-white/40 mt-1 sm:hidden">Tap camera icon to change photo</p>
             </div>
 
-            {/* View Stats Button - Right aligned, secondary style */}
+            {/* View Stats Button - Full width on mobile */}
             <button
               onClick={() => setShowStats(!showStats)}
-              className="px-3 py-1.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-xs font-medium text-white/70 hover:text-white/90 transition-colors flex-shrink-0"
+              className="w-full sm:w-auto px-4 py-2 sm:px-3 sm:py-1.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-xs font-medium text-white/70 hover:text-white/90 transition-colors"
             >
               {showStats ? 'Hide Stats' : 'View Stats'}
             </button>
@@ -679,6 +759,40 @@ const ProfileSettings = () => {
                     </div>
                   );
                 })}
+              </div>
+            </div>
+
+            {/* Logout Button - At Bottom of Profile Section */}
+            <div className="mt-6 mb-4">
+              <div className="bg-red-500/5 rounded-lg p-3 border border-red-500/20">
+                <button 
+                  onClick={() => {
+                    // Haptic feedback on click
+                    if (navigator.vibrate) {
+                      navigator.vibrate(30);
+                    }
+                    setShowLogoutDialog(true);
+                  }}
+                  disabled={signOutMutation.isPending}
+                  className="w-full bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 text-red-400 font-medium py-2.5 rounded-lg transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed text-sm min-h-[44px]"
+                  aria-label="Log out of your account"
+                  aria-describedby="logout-description"
+                >
+                  {signOutMutation.isPending ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <span>Logging out...</span>
+                    </>
+                  ) : (
+                    <>
+                      <LogOut className="w-4 h-4" />
+                      <span>Log Out</span>
+                    </>
+                  )}
+                </button>
+                <p id="logout-description" className="text-xs text-center text-white/40 mt-2">
+                  You'll be signed out of your account
+                </p>
               </div>
             </div>
           </div>
@@ -871,36 +985,38 @@ const ProfileSettings = () => {
               </div>
             </div>
 
-            {/* Logout Button - Danger Zone Card */}
-            <div className="bg-red-500/5 rounded-lg p-3 border border-red-500/20">
-              <button 
-                onClick={() => {
-                  // Haptic feedback on click
-                  if (navigator.vibrate) {
-                    navigator.vibrate(30);
-                  }
-                  setShowLogoutDialog(true);
-                }}
-                disabled={signOutMutation.isPending}
-                className="w-full bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 text-red-400 font-medium py-2.5 rounded-lg transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed text-sm min-h-[44px]"
-                aria-label="Log out of your account"
-                aria-describedby="logout-description"
-              >
-                {signOutMutation.isPending ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    <span>Logging out...</span>
-                  </>
-                ) : (
-                  <>
-                    <LogOut className="w-4 h-4" />
-                    <span>Log Out</span>
-                  </>
-                )}
-              </button>
-              <p id="logout-description" className="text-xs text-center text-white/40 mt-2">
-                You'll be signed out of your account
-              </p>
+            {/* Logout Button - At Bottom */}
+            <div className="mt-6 mb-4">
+              <div className="bg-red-500/5 rounded-lg p-3 border border-red-500/20">
+                <button 
+                  onClick={() => {
+                    // Haptic feedback on click
+                    if (navigator.vibrate) {
+                      navigator.vibrate(30);
+                    }
+                    setShowLogoutDialog(true);
+                  }}
+                  disabled={signOutMutation.isPending}
+                  className="w-full bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 text-red-400 font-medium py-2.5 rounded-lg transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed text-sm min-h-[44px]"
+                  aria-label="Log out of your account"
+                  aria-describedby="logout-description"
+                >
+                  {signOutMutation.isPending ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <span>Logging out...</span>
+                    </>
+                  ) : (
+                    <>
+                      <LogOut className="w-4 h-4" />
+                      <span>Log Out</span>
+                    </>
+                  )}
+                </button>
+                <p id="logout-description" className="text-xs text-center text-white/40 mt-2">
+                  You'll be signed out of your account
+                </p>
+              </div>
             </div>
 
             {/* Logout Confirmation Dialog */}

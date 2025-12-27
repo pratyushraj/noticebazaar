@@ -135,7 +135,6 @@ function DealDetailPageContent() {
   // Removed tempSafeContractUrl and contractHtml state - DOCX-first architecture
   const [contractGenerationError, setContractGenerationError] = useState<string | null>(null);
   const [missingFields, setMissingFields] = useState<string[]>([]);
-  const [showContractDisclaimerModal, setShowContractDisclaimerModal] = useState(false);
   
   // Brand details submission state
   const [brandSubmissionDetails, setBrandSubmissionDetails] = useState<any>(null);
@@ -1317,11 +1316,11 @@ Best regards`;
                       const fullText = `${shareText}\n\nView deal: ${shareUrl}`;
                       const success = await copyToClipboard(fullText);
                       if (success) {
-                        toast.success('Deal details copied to clipboard');
-                        trackEvent('deal_shared', {
-                          dealId: deal.id,
-                          method: 'copy',
-                        });
+                      toast.success('Deal details copied to clipboard');
+                      trackEvent('deal_shared', {
+                        dealId: deal.id,
+                        method: 'copy',
+                      });
                       }
                     }
                   }
@@ -1330,11 +1329,11 @@ Best regards`;
                   const fullText = `${shareText}\n\nView deal: ${shareUrl}`;
                   const success = await copyToClipboard(fullText);
                   if (success) {
-                    toast.success('Deal details copied to clipboard');
-                    trackEvent('deal_shared', {
-                      dealId: deal.id,
-                      method: 'copy',
-                    });
+                  toast.success('Deal details copied to clipboard');
+                  trackEvent('deal_shared', {
+                    dealId: deal.id,
+                    method: 'copy',
+                  });
                   }
                 }
               }}
@@ -1497,7 +1496,7 @@ ${link}`;
                     try {
                       const success = await copyToClipboard(`${reminderMessage}\n\n${link}`);
                       if (success) {
-                        toast.success('Share message copied');
+                      toast.success('Share message copied');
                       } else {
                         throw new Error('Copy failed');
                       }
@@ -1559,16 +1558,16 @@ ${link}`;
                 }
                 
                 try {
-                  const link = brandReplyLink || (await generateBrandReplyLink(deal.id));
-                  if (!link) {
-                    toast.error('Could not generate brand reply link. Please try again.');
-                    return;
-                  }
+          const link = brandReplyLink || (await generateBrandReplyLink(deal.id));
+          if (!link) {
+            toast.error('Could not generate brand reply link. Please try again.');
+            return;
+          }
                   
                   const success = await copyToClipboard(link);
                   if (success) {
-                    triggerHaptic(HapticPatterns.light);
-                    toast.success('Link copied to clipboard');
+                  triggerHaptic(HapticPatterns.light);
+                  toast.success('Link copied to clipboard');
                   } else {
                     throw new Error('Copy failed');
                   }
@@ -2600,9 +2599,6 @@ ${link}`;
                                 if (data.success && data.contractDocxUrl) {
                                   toast.success('Contract generated successfully!');
                                   
-                                  // Show disclaimer modal
-                                  setShowContractDisclaimerModal(true);
-                                  
                                   // Clear any previous errors
                                   setContractGenerationError(null);
                                   setMissingFields([]);
@@ -2644,11 +2640,11 @@ ${link}`;
                                   
                                   if (dbUpdateSucceeded) {
                                     setTimeout(() => {
-                                      refreshAll();
+                                        refreshAll();
                                     }, 1500);
-                                  } else {
+                                          } else {
                                     console.warn('[DealDetailPage] Database update may have failed');
-                                  }
+                                          }
                                 } else {
                                   throw new Error('Unexpected response format: contractDocxUrl is required');
                                 }
@@ -2829,9 +2825,6 @@ ${link}`;
                           if (data.success && data.contractDocxUrl) {
                             toast.success('Contract generated successfully!');
 
-                            // Show disclaimer modal
-                            setShowContractDisclaimerModal(true);
-
                             // Clear any previous errors
                             setContractGenerationError(null);
                             setMissingFields([]);
@@ -2854,7 +2847,7 @@ ${link}`;
                             }
                             setContractJustGenerated(true);
                             setTimeout(() => {
-                              refreshAll();
+                            refreshAll();
                               setContractJustGenerated(false);
                             }, 1500);
                           } else {
@@ -2907,8 +2900,8 @@ ${link}`;
                     </div>
 
                     {/* Regenerate Contract Button - Always visible when deal is approved */}
-                    <motion.button
-                      onClick={async () => {
+                          <motion.button
+                            onClick={async () => {
                         if (!deal || !deal.id || !session?.access_token) {
                           toast.error('Missing required information');
                           return;
@@ -2918,8 +2911,8 @@ ${link}`;
                         setContractGenerationError(null);
                         setMissingFields([]);
                         triggerHaptic(HapticPatterns.medium);
-
-                        try {
+                              
+                              try {
                           const apiBaseUrl =
                             import.meta.env.VITE_API_BASE_URL ||
                             (typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com')
@@ -2982,9 +2975,6 @@ ${link}`;
                           if (data.success && data.contractDocxUrl) {
                             toast.success('Contract regenerated successfully!');
                             
-                            // Show disclaimer modal
-                            setShowContractDisclaimerModal(true);
-                            
                             // Update cache immediately (DOCX is primary)
                             if (deal?.id && profile?.id) {
                               const queryKey = ['brand_deal', deal.id, profile.id];
@@ -3014,10 +3004,10 @@ ${link}`;
                           toast.error(error.message || 'Failed to generate contract');
                         } finally {
                           setIsGeneratingSafeContract(false);
-                        }
-                      }}
+                              }
+                            }}
                       disabled={isGeneratingSafeContract || contractJustGenerated}
-                      whileTap={{ scale: 0.98 }}
+                            whileTap={{ scale: 0.98 }}
                       className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 px-6 py-3 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed mb-4"
                     >
                       {isGeneratingSafeContract ? (
@@ -3031,8 +3021,8 @@ ${link}`;
                           {contractDocxUrl ? 'Regenerate Contract' : 'Generate Contract'}
                         </>
                       )}
-                    </motion.button>
-
+                          </motion.button>
+                          
                     {/* Validation Error Banner */}
                     {contractGenerationError && (
                       <div className="bg-red-500/20 border-2 border-red-500/50 rounded-xl p-4 mb-4">
@@ -3080,10 +3070,10 @@ ${link}`;
                         <>
                           <div className="space-y-2 mb-4">
                             {/* Download Contract as Word (DOCX) - Primary Action */}
-                            <motion.button
-                              onClick={() => {
+                          <motion.button
+                            onClick={() => {
                                 if (!contractDocxUrl) return;
-                                triggerHaptic(HapticPatterns.light);
+                              triggerHaptic(HapticPatterns.light);
                                 
                                 // Trigger download
                                 const link = document.createElement('a');
@@ -3093,20 +3083,20 @@ ${link}`;
                                 link.click();
                                 document.body.removeChild(link);
                               }}
-                              whileTap={{ scale: 0.98 }}
+                            whileTap={{ scale: 0.98 }}
                               className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-500 hover:to-blue-600 px-4 py-3 rounded-xl transition-all flex items-center justify-center gap-2 text-white font-semibold"
-                            >
+                          >
                               <FileText className="w-5 h-5" />
                               Download Contract (DOCX)
-                            </motion.button>
+                          </motion.button>
                             
                             <p className="text-xs text-white/60 text-center">
                               Open the downloaded DOCX file in Microsoft Word or Google Docs to view, edit, and sign the contract.
-                            </p>
+                          </p>
                           </div>
-                        </>
-                      ) : (
-                        <div className="space-y-4">
+                      </>
+                    ) : (
+                      <div className="space-y-4">
                         {/* Validation Error Banner */}
                         {contractGenerationError && (
                           <div className="bg-red-500/20 border-2 border-red-500/50 rounded-xl p-4">
@@ -3226,13 +3216,10 @@ ${link}`;
                                     throw new Error(errorMsg);
                                   }
 
-                          const data = await response.json();
-                          
+                                  const data = await response.json();
+                                  
                           if (data.success && data.contractDocxUrl) {
                             toast.success('Contract generated successfully!');
-
-                            // Show disclaimer modal
-                            setShowContractDisclaimerModal(true);
 
                             // Clear any previous errors
                             setContractGenerationError(null);
@@ -3256,12 +3243,12 @@ ${link}`;
                             }
                             setContractJustGenerated(true);
                             setTimeout(() => {
-                              refreshAll();
+                                    refreshAll();
                               setContractJustGenerated(false);
                             }, 1500);
-                          } else {
+                                  } else {
                             throw new Error('Unexpected response format: contractDocxUrl is required');
-                          }
+                                  }
                                 } catch (error: any) {
                                   console.error('[DealDetailPage] Generate contract from scratch error:', error);
                                   toast.error(error.message || 'Failed to generate contract');
@@ -3340,9 +3327,6 @@ ${link}`;
                                   if (data.success && data.contractDocxUrl) {
                                     toast.success('Contract generated successfully!');
 
-                                    // Show disclaimer modal
-                                    setShowContractDisclaimerModal(true);
-
                                     // Clear any previous errors
                                     setContractGenerationError(null);
                                     setMissingFields([]);
@@ -3365,7 +3349,7 @@ ${link}`;
                                     }
                                     setContractJustGenerated(true);
                                     setTimeout(() => {
-                                      refreshAll();
+                                    refreshAll();
                                       setContractJustGenerated(false);
                                     }, 1500);
                                   } else {
@@ -3702,31 +3686,6 @@ ${link}`;
           </motion.div>
         </div>
       )}
-
-      {/* Contract Generation Disclaimer Modal */}
-      <Dialog open={showContractDisclaimerModal} onOpenChange={setShowContractDisclaimerModal}>
-        <DialogContent className="bg-purple-900/95 backdrop-blur-xl border border-white/10 text-white max-w-md">
-          <DialogHeader>
-            <DialogTitle className="text-xl font-semibold">Contract Generated</DialogTitle>
-            <DialogDescription className="text-white/70">
-              This contract is auto-generated based on the information provided.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 mt-4">
-            <p className="text-sm text-white/80">
-              Please review before signing or sharing.
-            </p>
-            <div className="flex justify-end">
-              <button
-                onClick={() => setShowContractDisclaimerModal(false)}
-                className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-medium transition-colors"
-              >
-                Understood
-              </button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }

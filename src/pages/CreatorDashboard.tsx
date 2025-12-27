@@ -1393,11 +1393,7 @@ const CreatorDashboard = () => {
                         <motion.button
                           onClick={() => {
                             triggerHaptic(HapticPatterns.medium);
-                            if (isPro) {
-                              navigate('/creator-contracts');
-                            } else {
-                              setShowMenu(true);
-                            }
+                            navigate('/creator-contracts');
                           }}
                           whileTap={animations.microTap}
                           className={cn(
@@ -1407,13 +1403,11 @@ const CreatorDashboard = () => {
                           )}
                         >
                           <Shield className={iconSizes.md} />
-                          {isPro ? "Send Legal Notice" : "Unlock Legal Recovery"}
+                          Send Legal Notice
                         </motion.button>
-                        {!isPro && (
-                          <p className={cn(typography.caption, "text-center text-purple-300/60")}>
-                            Includes free legal notices & lawyer reviews
-                          </p>
-                        )}
+                        <p className={cn(typography.caption, "text-center text-purple-300/60")}>
+                          Includes free legal notices & lawyer reviews
+                        </p>
                       </div>
                     </div>
                   </BaseCard>
@@ -1471,7 +1465,7 @@ const CreatorDashboard = () => {
                                 </div>
                                 <div className="flex-1 min-w-0">
                                   <h3 className={cn(typography.h4, "mb-1")}>{activity.title}</h3>
-                                  <p className={cn(typography.bodySmall, "text-purple-200 mb-1")}>{activity.description}</p>
+                                  <p className={cn("text-sm md:text-base", "text-purple-200 mb-1")}>{activity.description}</p>
                                   <p className={cn(typography.caption, "text-purple-300")}>{activity.time}</p>
                                 </div>
                               </div>

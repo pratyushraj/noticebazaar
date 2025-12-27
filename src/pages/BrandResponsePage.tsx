@@ -715,8 +715,8 @@ const BrandResponsePage = () => {
         // Only submit if user has selected a status and it's different from accepted_verified
         if (selectedStatus && selectedStatus !== 'accepted') {
           // User selected a different status, submit it
-          await submitBrandResponse();
-        } else {
+        await submitBrandResponse();
+      } else {
           // OTP verification already set status to accepted_verified
           // Refresh deal info to show success state
           setIsSubmitted(true);

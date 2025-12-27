@@ -27,7 +27,7 @@ const ContractUploadFlow = () => {
   const { profile, session } = useSession();
   const queryClient = useQueryClient();
   const addDealMutation = useAddBrandDeal();
-  const [step, setStep] = useState('upload'); // upload, select-file, uploading, scanning, analyzing, results, upload-error, review-error, validation-error
+  const [step, setStep] = useState('upload'); // upload, select-file, request-details, uploading, scanning, analyzing, results, upload-error, review-error, validation-error
   const [dealType, setDealType] = useState<'contract' | 'barter'>('contract'); // 'contract' or 'barter'
   const [showUploadArea, setShowUploadArea] = useState(false);
   const uploadAreaRef = useRef<HTMLDivElement>(null);
@@ -2496,7 +2496,7 @@ ${creatorName}`;
             onClick={() => {
               if (step === 'results') {
                 setStep('upload');
-              } else if (step === 'select-file') {
+              } else if (step === 'select-file' || step === 'request-details') {
                 setStep('upload');
               } else {
                 navigate('/creator-dashboard');
@@ -2509,7 +2509,7 @@ ${creatorName}`;
           </button>
           
           <div className="text-lg font-semibold">
-            {step === 'select-file' ? 'Upload Contract' : 'Upload Contract'}
+            {step === 'select-file' ? 'Upload Contract' : step === 'request-details' ? 'Request Details' : 'Upload Contract'}
           </div>
           
           <div className="w-10"></div>
@@ -2670,30 +2670,6 @@ ${creatorName}`;
             </div>
 
             {/* Conditional Content Based on Selection */}
-
-            {selectedOption === 'request_details' && showUploadArea && (
-              <div className="space-y-6">
-                {/* Request Collaboration Details Card */}
-                <div className="bg-white/5 backdrop-blur-md rounded-2xl p-5 border border-white/10">
-                  <div className="flex items-start gap-3 mb-3">
-                    <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center flex-shrink-0">
-                      <MessageSquare className="w-5 h-5 text-white/60" />
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="font-semibold mb-1 text-white/90">No contract yet?</h3>
-                      <p className="text-sm text-white/60 mb-3">Let the brand share deal details — we'll generate a clean agreement for you.</p>
-                  <button
-                        onClick={handleRequestDetailsClick}
-                        className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 px-4 py-2 rounded-lg font-medium transition-colors text-sm flex items-center gap-2"
-                  >
-                        <Share2 className="w-4 h-4" />
-                        Request Collaboration Details from Brand
-                  </button>
-                </div>
-                  </div>
-                    </div>
-                    </div>
-            )}
           </>
         )}
 
@@ -2719,9 +2695,7 @@ ${creatorName}`;
                 if (selectedOption === 'upload') {
                   setStep('select-file');
                 } else if (selectedOption === 'request_details') {
-                  // Trigger the link generation flow
-                  setShowUploadArea(true);
-                  handleRequestDetailsClick();
+                  setStep('request-details');
                 }
                 triggerHaptic(HapticPatterns.medium);
               }}
@@ -2816,6 +2790,31 @@ ${creatorName}`;
                 <div>
                   <div className="font-medium">Expert Insights</div>
                   <div className="text-purple-300">AI trained on 10,000+ creator contracts</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Request Details Step */}
+        {step === 'request-details' && (
+          <div className="space-y-6">
+            {/* Request Collaboration Details Card */}
+            <div className="bg-white/5 backdrop-blur-md rounded-2xl p-5 border border-white/10">
+              <div className="flex items-start gap-3 mb-3">
+                <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center flex-shrink-0">
+                  <MessageSquare className="w-5 h-5 text-white/60" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-semibold mb-1 text-white/90">No contract yet?</h3>
+                  <p className="text-sm text-white/60 mb-3">Let the brand share deal details — we'll generate a clean agreement for you.</p>
+                  <button
+                    onClick={handleRequestDetailsClick}
+                    className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 px-4 py-2 rounded-lg font-medium transition-colors text-sm flex items-center gap-2"
+                  >
+                    <Share2 className="w-4 h-4" />
+                    Request Collaboration Details from Brand
+                  </button>
                 </div>
               </div>
             </div>

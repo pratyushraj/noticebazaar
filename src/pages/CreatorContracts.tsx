@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Briefcase, TrendingUp, Clock, CheckCircle, AlertCircle, IndianRupee, Calendar, ChevronRight } from 'lucide-react';
+import { Briefcase, TrendingUp, Clock, CheckCircle, AlertCircle, IndianRupee, Calendar, ChevronRight, Shield } from 'lucide-react';
 import { useSession } from '@/contexts/SessionContext';
 import { useBrandDeals } from '@/lib/hooks/useBrandDeals';
 import { motion } from 'framer-motion';
@@ -239,19 +239,8 @@ const CreatorContracts = () => {
     }).length;
   }, [brandDeals]);
 
-  // Initialize activeFilter state - default to "Action Needed" if count > 0, otherwise "All Deals"
+  // Initialize activeFilter state - default to "All Deals"
   const [activeFilter, setActiveFilter] = useState<'all' | 'action_needed' | 'closed'>('all');
-  const [hasInitialized, setHasInitialized] = useState(false);
-
-  // Update activeFilter to "Action Needed" on initial load if there are action-needed deals
-  useEffect(() => {
-    if (!hasInitialized && actionNeededCount > 0) {
-      setActiveFilter('action_needed');
-      setHasInitialized(true);
-    } else if (!hasInitialized) {
-      setHasInitialized(true);
-    }
-  }, [actionNeededCount, hasInitialized]);
 
   const filters = useMemo(() => [
     { id: 'all', label: 'All Deals', count: stats.total },
@@ -354,6 +343,35 @@ const CreatorContracts = () => {
                 </div>
               )}
             </section>
+
+            {/* Protect a New Deal CTA */}
+            <div className="mb-4 md:mb-6">
+              <button
+                onClick={() => {
+                  triggerHaptic(HapticPatterns.medium);
+                  navigate('/contract-upload');
+                }}
+                className={cn(
+                  "w-full",
+                  "bg-gradient-to-r from-purple-600 to-pink-600",
+                  "hover:from-purple-700 hover:to-pink-700",
+                  "active:scale-95",
+                  "text-white font-semibold",
+                  "px-6 py-3.5",
+                  "rounded-2xl",
+                  "flex items-center justify-center gap-2",
+                  "transition-all duration-200",
+                  "shadow-lg shadow-purple-500/20",
+                  "min-h-[48px]"
+                )}
+              >
+                <Shield className={cn(iconSizes.md)} />
+                Protect a New Deal
+              </button>
+              <p className="text-[10px] sm:text-[11px] text-purple-300/50 text-center mt-1.5 hidden sm:block">
+                Upload a contract or let the brand share details
+              </p>
+            </div>
 
             {/* Filter Tabs - Centered under stats */}
             <div className={cn(

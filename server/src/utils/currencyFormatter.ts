@@ -21,7 +21,7 @@ export function formatINRCurrency(amount: number): string {
 
   // Convert number to words
   const amountInWords = numberToWords(amount);
-  
+
   // CRITICAL VALIDATION: Verify the words are valid and non-empty
   // The numberToWords function is deterministic, so we validate that words were generated
   if (!amountInWords || amountInWords.trim() === '' || amountInWords.toLowerCase() === 'invalid') {

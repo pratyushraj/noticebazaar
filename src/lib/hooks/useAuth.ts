@@ -58,24 +58,21 @@ export const useSignOut = () => {
         toast.success('Logged out successfully!');
         // Clear React Query cache again to be safe
         queryClient.clear();
-        // Clear any remaining Supabase keys immediately
-        try {
+        // Use replace to prevent back navigation
+        navigate('/login', { replace: true });
+        // Force a page reload after a short delay to ensure all state is cleared
+        setTimeout(() => {
+          // Clear any remaining Supabase keys before reload
           const keys = Object.keys(localStorage);
           keys.forEach(key => {
             if (key.includes('supabase.auth') || key.startsWith('sb-')) {
               localStorage.removeItem(key);
             }
           });
-          // Also clear sessionStorage
-          sessionStorage.clear();
-        } catch (e) {
-          // Ignore errors
-        }
-        // Use hard navigation with loggedOut flag to prevent Login page from redirecting
-        // This ensures a clean state reset
-        window.location.href = '/#/login?loggedOut=true';
+          window.location.href = '/#/login';
+        }, 200);
       },
-      onError: async () => {
+      onError: () => {
         // Even on error, try to navigate and clear state
         queryClient.clear();
         // Clear Supabase keys
@@ -89,8 +86,10 @@ export const useSignOut = () => {
         } catch (e) {
           // Ignore errors
         }
-        // Force hard navigation to ensure all state is cleared
-        window.location.replace('/#/login?loggedOut=true');
+        navigate('/login', { replace: true });
+        setTimeout(() => {
+          window.location.href = '/#/login';
+        }, 200);
       },
       errorMessage: 'Logout failed',
     }
