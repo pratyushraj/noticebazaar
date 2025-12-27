@@ -1053,41 +1053,37 @@ const CreatorDashboard = () => {
                 </div>
               </div>
 
-              {/* Primary CTA - Attached to hero section */}
-              {stats.totalDeals <= 2 && (
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="mt-4"
+              {/* Primary CTA - Attached to hero section - Always visible */}
+              <div className="mt-4">
+                <button
+                  onClick={() => {
+                    triggerHaptic(HapticPatterns.medium);
+                    navigate('/contract-upload');
+                  }}
+                  className={cn(
+                    "w-full",
+                    "bg-gradient-to-r from-purple-600 to-pink-600",
+                    "hover:from-purple-700 hover:to-pink-700",
+                    "active:scale-95",
+                    "text-white font-semibold",
+                    "px-6 py-3.5",
+                    radius.lg,
+                    "flex items-center justify-center gap-2",
+                    "transition-all duration-200",
+                    "shadow-lg shadow-purple-500/20",
+                    "min-h-[48px]",
+                    "relative z-10",
+                    "opacity-100"
+                  )}
+                  style={{ opacity: 1 }}
                 >
-                  <motion.button
-                    onClick={() => {
-                      triggerHaptic(HapticPatterns.medium);
-                      navigate('/contract-upload');
-                    }}
-                    whileTap={animations.microTap}
-                    whileHover={window.innerWidth > 768 ? { scale: 1.02 } : undefined}
-                    className={cn(
-                      "w-full",
-                      "bg-gradient-to-r from-purple-600 to-pink-600",
-                      "hover:from-purple-700 hover:to-pink-700",
-                      "text-white font-semibold",
-                      "px-6 py-3.5",
-                      radius.lg,
-                      "flex items-center justify-center gap-2",
-                      "transition-all duration-200",
-                      "shadow-lg shadow-purple-500/20",
-                      "min-h-[48px]"
-                    )}
-                  >
-                    <Shield className={iconSizes.md} />
-                    Protect a New Deal
-                  </motion.button>
-                  <p className="text-[10px] sm:text-[11px] text-purple-300/50 text-center mt-1.5 hidden sm:block">
-                    Upload a contract or let the brand share details
-                  </p>
-                </motion.div>
-              )}
+                  <Shield className={iconSizes.md} />
+                  Protect a New Deal
+                </button>
+                <p className="text-[10px] sm:text-[11px] text-purple-300/50 text-center mt-1.5 hidden sm:block">
+                  Upload a contract or let the brand share details
+                </p>
+              </div>
             </div>
 
             {/* Desktop 2-Column Layout (≥1024px) */}

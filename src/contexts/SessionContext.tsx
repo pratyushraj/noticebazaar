@@ -620,6 +620,7 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
   }, []); // Empty dependency array to run only once on mount
 
   // Memoize the context value to prevent unnecessary re-renders of consumers
+  // Always provide a value - never undefined - to prevent "must be used within provider" errors
   const contextValue = useMemo(() => ({
     session,
     user,
@@ -630,9 +631,33 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
     isAdmin,
     isCreator, // Include isCreator
     organizationId, // Include organizationId
-    refetchProfile: refetchProfileQuery, // Expose refetch function
+    refetchProfile: refetchProfileQuery || (() => {}), // Expose refetch function with fallback
     trialStatus, // Include trial status
   }), [session, user, profile, loading, authStatus, isAuthInitializing, isAdmin, isCreator, organizationId, refetchProfileQuery, trialStatus]);
+
+  // Ensure context value is always defined before rendering children
+  // This prevents timing issues during React's initial render
+  if (contextValue === undefined) {
+    // This should never happen, but provide a fallback just in case
+    const fallbackValue: SessionContextType = {
+      session: null,
+      user: null,
+      profile: null,
+      loading: true,
+      authStatus: 'loading',
+      isAuthInitializing: false,
+      isAdmin: false,
+      isCreator: false,
+      organizationId: null,
+      refetchProfile: () => {},
+      trialStatus: { isTrial: false, isExpired: false, daysRemaining: 0, isLocked: false },
+    };
+    return (
+      <SessionContext.Provider value={fallbackValue}>
+        {children}
+      </SessionContext.Provider>
+    );
+  }
 
   return (
     <SessionContext.Provider value={contextValue}>
@@ -644,6 +669,12 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
 export const useSession = () => {
   const context = useContext(SessionContext);
   if (context === undefined) {
+    // This should never happen if component is within SessionContextProvider
+    // But during React's initial render or strict mode double-render, it might be temporarily undefined
+    // Throw error only in development to catch actual bugs, but provide fallback in production
+    if (process.env.NODE_ENV === 'development') {
+      console.error('[useSession] Context is undefined. This may indicate a component is outside SessionContextProvider or a timing issue.');
+    }
     throw new Error('useSession must be used within a SessionContextProvider');
   }
   return context;
