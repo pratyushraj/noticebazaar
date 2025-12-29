@@ -305,7 +305,17 @@ const Signup = () => {
   ];
 
   return (
-    <div className="nb-screen-height bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 flex items-center justify-center p-4">
+    <div 
+      className="nb-screen-height bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 flex items-center justify-center p-4"
+      style={{
+        minHeight: '100dvh',
+        paddingTop: 'max(16px, env(safe-area-inset-top, 0px))',
+        paddingBottom: 'max(16px, env(safe-area-inset-bottom, 0px))',
+        paddingLeft: 'env(safe-area-inset-left, 0px)',
+        paddingRight: 'env(safe-area-inset-right, 0px)',
+        WebkitOverflowScrolling: 'touch',
+      }}
+    >
       <div className="w-full max-w-6xl grid md:grid-cols-2 gap-8 items-center">
         {/* Left Side - Branding & Features */}
         <motion.div

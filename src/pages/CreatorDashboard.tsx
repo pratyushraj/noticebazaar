@@ -534,12 +534,12 @@ const CreatorDashboard = () => {
     },
     {
       id: 4,
-      icon: Calendar,
-      label: "Schedule Call",
-      subtitle: "Discuss risks, recovery or disputes",
+      icon: AlertCircle,
+      label: "Consumer Complaint",
+      subtitle: "File complaints against brands or services",
       color: "bg-orange-500/20",
       iconColor: "text-orange-400",
-      onClick: () => navigate('/messages')
+      onClick: () => navigate('/lifestyle/consumer-complaints')
     }
   ];
 

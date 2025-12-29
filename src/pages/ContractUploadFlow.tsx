@@ -147,25 +147,95 @@ const ContractUploadFlow = () => {
         typeof window !== 'undefined' ? window.location.origin : 'https://creatorarmour.com';
       const link = `${baseUrl}/#/deal-details/${data.token.id}`;
 
-      // Copy to clipboard with proper error handling
-      let clipboardSuccess = false;
-      const isSecureContext = typeof window !== 'undefined' && (window.isSecureContext || window.location.protocol === 'https:' || window.location.hostname === 'localhost');
-      
-      if (navigator.clipboard && isSecureContext) {
+      // iOS Safari-optimized clipboard copy - must be synchronous within user gesture
+      const copyToClipboardSync = (text: string): boolean => {
         try {
-          await navigator.clipboard.writeText(link);
-          clipboardSuccess = true;
+          // Create a temporary textarea element (works better on iOS Safari)
+          const textArea = document.createElement('textarea');
+          textArea.value = text;
+          textArea.style.position = 'fixed';
+          textArea.style.left = '0';
+          textArea.style.top = '0';
+          textArea.style.width = '2em';
+          textArea.style.height = '2em';
+          textArea.style.padding = '0';
+          textArea.style.border = 'none';
+          textArea.style.outline = 'none';
+          textArea.style.boxShadow = 'none';
+          textArea.style.background = 'transparent';
+          textArea.style.opacity = '0';
+          textArea.setAttribute('readonly', '');
+          textArea.setAttribute('aria-hidden', 'true');
+          document.body.appendChild(textArea);
+          
+          // Focus and select - critical for iOS Safari
+          textArea.focus();
+          textArea.select();
+          textArea.setSelectionRange(0, text.length);
+          
+          // Execute copy command
+          const successful = document.execCommand('copy');
+          document.body.removeChild(textArea);
+          return successful;
+        } catch (err) {
+          console.warn('[ContractUploadFlow] execCommand copy failed:', err);
+          return false;
+        }
+      };
+
+      // For iOS Safari, always use execCommand synchronously (within user gesture)
+      // Clipboard API requires async/await which can cause delays and permission issues
+      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
+                   (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+      
+      let clipboardSuccess = false;
+      
+      if (isIOS) {
+        // iOS Safari: Use execCommand synchronously (must be within user gesture)
+        clipboardSuccess = copyToClipboardSync(link);
+        if (clipboardSuccess) {
           toast.success('Link copied! Share it with the brand.', {
             duration: 4000,
           });
-        } catch (clipboardError: any) {
-          // Silently handle clipboard errors - don't show error to user
-          console.warn('[ContractUploadFlow] Clipboard write failed:', clipboardError);
-          clipboardSuccess = false;
+        } else {
+          // If execCommand fails, show link for manual copy
+          toast.info('Link generated! Tap to copy manually.', {
+            duration: 5000,
+          });
         }
       } else {
-        // Not in secure context or clipboard not available
-        clipboardSuccess = false;
+        // Other browsers: Try Clipboard API first, fallback to execCommand
+        const isSecureContext = typeof window !== 'undefined' && 
+          (window.isSecureContext || 
+           window.location.protocol === 'https:' || 
+           window.location.hostname === 'localhost');
+        
+        if (navigator.clipboard && isSecureContext) {
+          try {
+            await navigator.clipboard.writeText(link);
+            clipboardSuccess = true;
+            toast.success('Link copied! Share it with the brand.', {
+              duration: 4000,
+            });
+          } catch (clipboardError: any) {
+            // Fallback to execCommand if Clipboard API fails
+            console.warn('[ContractUploadFlow] Clipboard API failed, trying fallback:', clipboardError);
+            clipboardSuccess = copyToClipboardSync(link);
+            if (clipboardSuccess) {
+              toast.success('Link copied! Share it with the brand.', {
+                duration: 4000,
+              });
+            }
+          }
+        } else {
+          // Fallback for older browsers
+          clipboardSuccess = copyToClipboardSync(link);
+          if (clipboardSuccess) {
+            toast.success('Link copied! Share it with the brand.', {
+              duration: 4000,
+            });
+          }
+        }
       }
 
       // Try native share if available (only if clipboard failed or as additional option)

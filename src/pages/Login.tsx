@@ -197,7 +197,17 @@ const Login = () => {
   };
 
   return (
-    <div className="nb-screen-height flex flex-col items-center justify-center bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 p-4">
+    <div 
+      className="nb-screen-height flex flex-col items-center justify-center bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 p-4"
+      style={{
+        minHeight: '100dvh',
+        paddingTop: 'max(16px, env(safe-area-inset-top, 0px))',
+        paddingBottom: 'max(16px, env(safe-area-inset-bottom, 0px))',
+        paddingLeft: 'env(safe-area-inset-left, 0px)',
+        paddingRight: 'env(safe-area-inset-right, 0px)',
+        WebkitOverflowScrolling: 'touch',
+      }}
+    >
       <div 
         className="w-full max-w-md p-8 rounded-3xl shadow-2xl border border-purple-400/20" 
         style={{ backdropFilter: 'blur(20px)', backgroundColor: 'rgba(139, 92, 246, 0.15)' }}
