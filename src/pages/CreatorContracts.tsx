@@ -3,6 +3,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Briefcase, TrendingUp, Clock, CheckCircle, AlertCircle, IndianRupee, Calendar, ChevronRight, Shield } from 'lucide-react';
+import { toast } from 'sonner';
 import { useSession } from '@/contexts/SessionContext';
 import { useBrandDeals } from '@/lib/hooks/useBrandDeals';
 import { motion } from 'framer-motion';
@@ -572,7 +573,12 @@ const CreatorContracts = () => {
                     {deals.length === 0 ? (
                       <NoDealsEmptyState
                         onAddDeal={() => navigate('/contract-upload')}
-                        onExploreBrands={() => navigate('/brand-directory')}
+                        onExploreBrands={() => {
+                          toast.info('Explore Brands coming soon!', {
+                            description: 'We\'re working on bringing you an amazing brand directory experience.',
+                            duration: 3000,
+                          });
+                        }}
                         variant="compact"
                       />
                     ) : (

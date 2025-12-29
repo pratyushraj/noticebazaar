@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ArrowLeft, Upload, FileText, CheckCircle, AlertTriangle, XCircle, Loader, Sparkles, Shield, Eye, Download, IndianRupee, Calendar, Loader2, Copy, Wrench, Send, FileCheck, X, Wand2, Lock, Info, MessageSquare, Mail, ChevronDown, ChevronUp, TrendingUp, DollarSign, FileCode, Ban, AlertCircle, ArrowDown, Clock, Star, Heart, Zap, CreditCard, Building2, Gift, Package, Edit, Share2 } from 'lucide-react';
+import { ArrowLeft, Upload, FileText, CheckCircle, AlertTriangle, XCircle, Loader, Sparkles, Shield, Eye, Download, IndianRupee, Calendar, Loader2, Copy, Wrench, Send, FileCheck, X, Wand2, Lock, Info, MessageSquare, Mail, ChevronDown, ChevronUp, TrendingUp, DollarSign, FileCode, Ban, AlertCircle, ArrowDown, Clock, Star, Heart, Zap, CreditCard, Building2, Gift, Package, Edit, Share2, MessageCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { SkeletonLoader } from '@/components/ui/SkeletonLoader';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
@@ -99,6 +99,8 @@ const ContractUploadFlow = () => {
   
   // Initialize selectedOption with recommended option (default-highlight)
   const [selectedOption, setSelectedOption] = useState<'upload' | 'request_details' | null>(recommendedOption);
+  const [collaborationLink, setCollaborationLink] = useState<string | null>(null);
+  const [isGeneratingLink, setIsGeneratingLink] = useState(false);
   
   // Handle Request Details Click
   const handleRequestDetailsClick = async () => {
@@ -107,9 +109,17 @@ const ContractUploadFlow = () => {
       return;
     }
 
+    if (collaborationLink) {
+      // Link already generated, just show the UI
+      return;
+    }
+
+    setIsGeneratingLink(true);
     try {
       triggerHaptic(HapticPatterns.medium);
-      const apiBaseUrl =
+      
+      // Determine API base URL with fallback logic
+      let apiBaseUrl =
         import.meta.env.VITE_API_BASE_URL ||
         (typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com')
           ? 'https://api.creatorarmour.com'
@@ -117,14 +127,47 @@ const ContractUploadFlow = () => {
           ? 'http://localhost:3001'
           : 'https://noticebazaar-api.onrender.com');
 
-      const response = await fetch(`${apiBaseUrl}/api/deal-details-tokens`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${session.access_token}`,
-        },
-        body: JSON.stringify({ expiresAt: null }),
-      });
+      // Try to fetch from API, with fallback to production if localhost fails
+      let response: Response;
+      let lastError: any;
+
+      try {
+        response = await fetch(`${apiBaseUrl}/api/deal-details-tokens`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${session.access_token}`,
+          },
+          body: JSON.stringify({ expiresAt: null }),
+        });
+      } catch (fetchError: any) {
+        // If localhost fails, try production API as fallback
+        if (
+          (fetchError.message?.includes('Failed to fetch') || 
+           fetchError.message?.includes('ERR_CONNECTION_REFUSED') ||
+           fetchError.name === 'TypeError') &&
+          apiBaseUrl.includes('localhost')
+        ) {
+          console.warn('[ContractUploadFlow] Localhost API unavailable, trying production API...');
+          apiBaseUrl = 'https://noticebazaar-api.onrender.com';
+          try {
+            response = await fetch(`${apiBaseUrl}/api/deal-details-tokens`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${session.access_token}`,
+              },
+              body: JSON.stringify({ expiresAt: null }),
+            });
+          } catch (fallbackError: any) {
+            lastError = fallbackError;
+            throw fallbackError;
+          }
+        } else {
+          lastError = fetchError;
+          throw fetchError;
+        }
+      }
 
       if (!response.ok) {
         // Try to parse error response
@@ -146,162 +189,137 @@ const ContractUploadFlow = () => {
       const baseUrl =
         typeof window !== 'undefined' ? window.location.origin : 'https://creatorarmour.com';
       const link = `${baseUrl}/#/deal-details/${data.token.id}`;
-
-      // iOS Safari-optimized clipboard copy - must be synchronous within user gesture
-      const copyToClipboardSync = (text: string): boolean => {
-        try {
-          // Create a temporary textarea element (works better on iOS Safari)
-          const textArea = document.createElement('textarea');
-          textArea.value = text;
-          textArea.style.position = 'fixed';
-          textArea.style.left = '0';
-          textArea.style.top = '0';
-          textArea.style.width = '2em';
-          textArea.style.height = '2em';
-          textArea.style.padding = '0';
-          textArea.style.border = 'none';
-          textArea.style.outline = 'none';
-          textArea.style.boxShadow = 'none';
-          textArea.style.background = 'transparent';
-          textArea.style.opacity = '0';
-          textArea.setAttribute('readonly', '');
-          textArea.setAttribute('aria-hidden', 'true');
-          document.body.appendChild(textArea);
-          
-          // Focus and select - critical for iOS Safari
-          textArea.focus();
-          textArea.select();
-          textArea.setSelectionRange(0, text.length);
-          
-          // Execute copy command
-          const successful = document.execCommand('copy');
-          document.body.removeChild(textArea);
-          return successful;
-        } catch (err) {
-          console.warn('[ContractUploadFlow] execCommand copy failed:', err);
-          return false;
-        }
-      };
-
-      // For iOS Safari, always use execCommand synchronously (within user gesture)
-      // Clipboard API requires async/await which can cause delays and permission issues
-      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
-                   (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-      
-      let clipboardSuccess = false;
-      
-      if (isIOS) {
-        // iOS Safari: Use execCommand synchronously (must be within user gesture)
-        clipboardSuccess = copyToClipboardSync(link);
-        if (clipboardSuccess) {
-          toast.success('Link copied! Share it with the brand.', {
-            duration: 4000,
-          });
-        } else {
-          // If execCommand fails, show link for manual copy
-          toast.info('Link generated! Tap to copy manually.', {
-            duration: 5000,
-          });
-        }
-      } else {
-        // Other browsers: Try Clipboard API first, fallback to execCommand
-        const isSecureContext = typeof window !== 'undefined' && 
-          (window.isSecureContext || 
-           window.location.protocol === 'https:' || 
-           window.location.hostname === 'localhost');
-        
-        if (navigator.clipboard && isSecureContext) {
-          try {
-            await navigator.clipboard.writeText(link);
-            clipboardSuccess = true;
-            toast.success('Link copied! Share it with the brand.', {
-              duration: 4000,
-            });
-          } catch (clipboardError: any) {
-            // Fallback to execCommand if Clipboard API fails
-            console.warn('[ContractUploadFlow] Clipboard API failed, trying fallback:', clipboardError);
-            clipboardSuccess = copyToClipboardSync(link);
-            if (clipboardSuccess) {
-              toast.success('Link copied! Share it with the brand.', {
-                duration: 4000,
-              });
-            }
-          }
-        } else {
-          // Fallback for older browsers
-          clipboardSuccess = copyToClipboardSync(link);
-          if (clipboardSuccess) {
-            toast.success('Link copied! Share it with the brand.', {
-              duration: 4000,
-            });
-          }
-        }
-      }
-
-      // Try native share if available (only if clipboard failed or as additional option)
-      // Note: Share API requires user gesture, which we have from the button click
-      if (navigator.share) {
-        try {
-          const shareData = {
-            title: 'Finalize Collaboration Details',
-            text: `Hi, please help finalize our collaboration details here: ${link}`,
-            url: link,
-          };
-          
-          // Check if we can share this data (if canShare is available)
-          if (navigator.canShare && !navigator.canShare(shareData)) {
-            throw new Error('Cannot share this data');
-          }
-          
-          await navigator.share(shareData);
-          // If share succeeds, don't show clipboard success toast
-          if (!clipboardSuccess) {
-            toast.success('Share dialog opened');
-          }
-        } catch (shareError: any) {
-          // Silently handle share errors - user cancelled or permission denied
-          // Don't show error banner for AbortError (user cancelled) or NotAllowedError (permission denied)
-          if (shareError.name === 'AbortError') {
-            // User cancelled - that's fine, link is already copied if clipboard worked
-            if (!clipboardSuccess) {
-              toast.info('Link generated! You can copy it from below.', {
-                duration: 4000,
-              });
-            }
-          } else if (shareError.name === 'NotAllowedError') {
-            // Permission denied - that's okay, link is already copied if clipboard worked
-            if (!clipboardSuccess) {
-              toast.info('Link generated! You can copy it manually.', {
-                duration: 4000,
-              });
-            }
-          } else {
-            // Other errors - log but don't show error banner
-            console.warn('[ContractUploadFlow] Share failed:', shareError);
-            if (!clipboardSuccess) {
-              toast.info('Link generated! You can copy it manually.', {
-                duration: 4000,
-              });
-            }
-          }
-        }
-      } else if (!clipboardSuccess) {
-        // Neither clipboard nor share available - show friendly message
-        toast.info('Link generated! Please copy it manually.', {
-          duration: 5000,
-        });
-      }
+      setCollaborationLink(link);
+      setIsGeneratingLink(false);
+      toast.success('Link generated! Share it with the brand.', {
+        duration: 3000,
+      });
     } catch (error: any) {
       console.error('[ContractUploadFlow] Request collaboration details error:', error);
-      // Only show user-friendly error messages, not technical browser errors
+      setIsGeneratingLink(false);
+      
+      // Handle connection errors gracefully
       const errorMessage = error.message || 'Failed to generate link. Please try again.';
-      // Don't show browser permission errors to users
-      if (errorMessage.includes('user agent') || errorMessage.includes('platform') || errorMessage.includes('permission')) {
+      
+      if (
+        errorMessage.includes('Failed to fetch') ||
+        errorMessage.includes('ERR_CONNECTION_REFUSED') ||
+        errorMessage.includes('NetworkError') ||
+        error.name === 'TypeError'
+      ) {
+        toast.error('Unable to connect to server. Please check your internet connection and try again.', {
+          duration: 5000,
+        });
+      } else if (errorMessage.includes('user agent') || errorMessage.includes('platform') || errorMessage.includes('permission')) {
         toast.error('Unable to share link. Please copy it manually from the page.');
       } else {
         toast.error(errorMessage);
       }
     }
+  };
+
+  // Copy link to clipboard
+  const handleCopyLink = async () => {
+    if (!collaborationLink) return;
+
+    triggerHaptic(HapticPatterns.light);
+    const copyToClipboardSync = (text: string): boolean => {
+      try {
+        const textArea = document.createElement('textarea');
+        textArea.value = text;
+        textArea.style.position = 'fixed';
+        textArea.style.left = '0';
+        textArea.style.top = '0';
+        textArea.style.width = '2em';
+        textArea.style.height = '2em';
+        textArea.style.padding = '0';
+        textArea.style.border = 'none';
+        textArea.style.outline = 'none';
+        textArea.style.boxShadow = 'none';
+        textArea.style.background = 'transparent';
+        textArea.style.opacity = '0';
+        textArea.setAttribute('readonly', '');
+        textArea.setAttribute('aria-hidden', 'true');
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        textArea.setSelectionRange(0, text.length);
+        const successful = document.execCommand('copy');
+        document.body.removeChild(textArea);
+        return successful;
+      } catch (err) {
+        console.warn('[ContractUploadFlow] execCommand copy failed:', err);
+        return false;
+      }
+    };
+
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
+                 (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    
+    if (isIOS) {
+      const success = copyToClipboardSync(collaborationLink);
+      if (success) {
+        toast.success('Link copied to clipboard!');
+      } else {
+        toast.error('Failed to copy. Please select and copy manually.');
+      }
+    } else {
+      const isSecureContext = typeof window !== 'undefined' && 
+        (window.isSecureContext || 
+         window.location.protocol === 'https:' || 
+         window.location.hostname === 'localhost');
+      
+      if (navigator.clipboard && isSecureContext) {
+        try {
+          await navigator.clipboard.writeText(collaborationLink);
+          toast.success('Link copied to clipboard!');
+        } catch (clipboardError: any) {
+          const success = copyToClipboardSync(collaborationLink);
+          if (success) {
+            toast.success('Link copied to clipboard!');
+          } else {
+            toast.error('Failed to copy. Please select and copy manually.');
+          }
+        }
+      } else {
+        const success = copyToClipboardSync(collaborationLink);
+        if (success) {
+          toast.success('Link copied to clipboard!');
+        } else {
+          toast.error('Failed to copy. Please select and copy manually.');
+        }
+      }
+    }
+  };
+
+  // Share via Email
+  const handleShareEmail = () => {
+    if (!collaborationLink) return;
+    triggerHaptic(HapticPatterns.light);
+    const subject = encodeURIComponent('Finalize Collaboration Details');
+    const body = encodeURIComponent(`Hi, please help finalize our collaboration details here:\n\n${collaborationLink}`);
+    window.location.href = `mailto:?subject=${subject}&body=${body}`;
+  };
+
+  // Share via WhatsApp
+  const handleShareWhatsApp = () => {
+    if (!collaborationLink) return;
+    triggerHaptic(HapticPatterns.light);
+    const text = encodeURIComponent(`Hi, please help finalize our collaboration details here: ${collaborationLink}`);
+    window.open(`https://wa.me/?text=${text}`, '_blank');
+  };
+
+  // Share via Instagram (opens Instagram DM - user needs to paste link)
+  const handleShareInstagram = () => {
+    if (!collaborationLink) return;
+    triggerHaptic(HapticPatterns.light);
+    // Instagram doesn't have a direct share URL, so we'll copy the link and open Instagram
+    handleCopyLink();
+    toast.info('Link copied! Open Instagram and paste it in a DM.', {
+      duration: 4000,
+    });
+    // Try to open Instagram app or web
+    window.open('https://www.instagram.com/direct/inbox/', '_blank');
   };
   
   // Barter Deal State
@@ -2878,13 +2896,80 @@ ${creatorName}`;
                 <div className="flex-1">
                   <h3 className="font-semibold mb-1 text-white/90">No contract yet?</h3>
                   <p className="text-sm text-white/60 mb-3">Let the brand share deal details — we'll generate a clean agreement for you.</p>
-                  <button
-                    onClick={handleRequestDetailsClick}
-                    className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 px-4 py-2 rounded-lg font-medium transition-colors text-sm flex items-center gap-2"
-                  >
-                    <Share2 className="w-4 h-4" />
-                    Request Collaboration Details from Brand
-                  </button>
+                  
+                  {!collaborationLink ? (
+                    <button
+                      onClick={handleRequestDetailsClick}
+                      disabled={isGeneratingLink}
+                      className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed px-4 py-2 rounded-lg font-medium transition-colors text-sm flex items-center gap-2"
+                    >
+                      {isGeneratingLink ? (
+                        <>
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                          Generating Link...
+                        </>
+                      ) : (
+                        <>
+                          <Share2 className="w-4 h-4" />
+                          Request Collaboration Details from Brand
+                        </>
+                      )}
+                    </button>
+                  ) : (
+                    <div className="space-y-3">
+                      {/* Link Display */}
+                      <div className="bg-white/5 rounded-lg p-3 border border-white/10">
+                        <div className="flex items-center gap-2 mb-2">
+                          <div className="flex-1 min-w-0">
+                            <p className="text-xs text-white/50 mb-1">Share this link:</p>
+                            <div className="flex items-center gap-2">
+                              <input
+                                type="text"
+                                readOnly
+                                value={collaborationLink}
+                                className="flex-1 bg-white/5 border border-white/10 rounded px-2 py-1.5 text-xs text-white/90 font-mono truncate focus:outline-none focus:ring-1 focus:ring-purple-500"
+                                onClick={(e) => (e.target as HTMLInputElement).select()}
+                              />
+                              <button
+                                onClick={handleCopyLink}
+                                className="p-2 bg-white/10 hover:bg-white/20 rounded-lg transition-colors flex-shrink-0"
+                                title="Copy link"
+                              >
+                                <Copy className="w-4 h-4 text-white/80" />
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Share Buttons */}
+                      <div className="flex flex-wrap gap-2">
+                        <button
+                          onClick={handleShareEmail}
+                          className="flex-1 min-w-[100px] bg-white/10 hover:bg-white/20 border border-white/20 px-3 py-2 rounded-lg font-medium transition-colors text-sm flex items-center justify-center gap-2"
+                        >
+                          <Mail className="w-4 h-4" />
+                          Email
+                        </button>
+                        <button
+                          onClick={handleShareWhatsApp}
+                          className="flex-1 min-w-[100px] bg-white/10 hover:bg-white/20 border border-white/20 px-3 py-2 rounded-lg font-medium transition-colors text-sm flex items-center justify-center gap-2"
+                        >
+                          <MessageCircle className="w-4 h-4" />
+                          WhatsApp
+                        </button>
+                        <button
+                          onClick={handleShareInstagram}
+                          className="flex-1 min-w-[100px] bg-white/10 hover:bg-white/20 border border-white/20 px-3 py-2 rounded-lg font-medium transition-colors text-sm flex items-center justify-center gap-2"
+                        >
+                          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+                          </svg>
+                          Instagram
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

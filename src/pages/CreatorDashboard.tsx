@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { Home, Briefcase, CreditCard, Shield, MessageCircle, TrendingUp, DollarSign, Calendar, FileText, AlertCircle, Clock, ChevronRight, Plus, Search, Target, BarChart3, RefreshCw, LogOut, Loader2, Sparkles, XCircle, Menu } from 'lucide-react';
 import { BottomSheet } from '@/components/ui/bottom-sheet';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { toast } from 'sonner';
 import { useSignOut } from '@/lib/hooks/useAuth';
 import { useSession } from '@/contexts/SessionContext';
 import { useBrandDeals } from '@/lib/hooks/useBrandDeals';
@@ -910,7 +911,10 @@ const CreatorDashboard = () => {
                         e.preventDefault();
                         e.stopPropagation();
                         triggerHaptic(HapticPatterns.light);
-                        navigate('/brand-directory');
+                        toast.info('Explore Brands coming soon!', {
+                          description: 'We\'re working on bringing you an amazing brand directory experience.',
+                          duration: 3000,
+                        });
                       }}
                       onMouseDown={(e) => {
                         e.stopPropagation();
@@ -928,7 +932,8 @@ const CreatorDashboard = () => {
                         "select-none",
                         "min-h-[44px] md:min-h-[40px]",
                         "will-change-transform",
-                        "md:text-sm"
+                        "md:text-sm",
+                        "opacity-90"
                       )}
                       type="button"
                       style={{ 
@@ -939,7 +944,7 @@ const CreatorDashboard = () => {
                         zIndex: 50,
                         isolation: 'isolate'
                       }}
-                      aria-label="Explore Brands"
+                      aria-label="Explore Brands - Coming Soon"
                     >
                       <Briefcase className={iconSizes.md} />
                       Explore Brands
