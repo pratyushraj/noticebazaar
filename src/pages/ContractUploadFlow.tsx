@@ -6,10 +6,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '@/components/ui/tooltip';
 import { AICounterProposal } from '@/components/contract/AICounterProposal';
 import { UniversalShareModal } from '@/components/deals/UniversalShareModal';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { ContextualTipsProvider } from '@/components/contextual-tips/ContextualTipsProvider';
 import { useSession } from '@/contexts/SessionContext';
-import { useAddBrandDeal, useBrandDeals } from '@/lib/hooks/useBrandDeals';
+import { useAddBrandDeal, useBrandDeals, useBrandDealById, useUpdateBrandDeal } from '@/lib/hooks/useBrandDeals';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { validateContractFile } from '@/lib/utils/contractValidation';
@@ -24,9 +24,18 @@ type ActionType = 'NEGOTIATION' | 'CLARIFICATION' | 'SUMMARY';
 
 const ContractUploadFlow = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { profile, session } = useSession();
   const queryClient = useQueryClient();
   const addDealMutation = useAddBrandDeal();
+  const updateDealMutation = useUpdateBrandDeal();
+  
+  // Check if we're editing an existing deal
+  const urlParams = new URLSearchParams(location.search);
+  const dealIdToEdit = urlParams.get('dealId');
+  const { data: dealToEdit, isLoading: isLoadingDeal } = useBrandDealById(dealIdToEdit || undefined, profile?.id);
+  const [isEditMode, setIsEditMode] = useState(!!dealIdToEdit);
+  
   const [step, setStep] = useState('upload'); // upload, select-file, request-details, uploading, scanning, analyzing, results, upload-error, review-error, validation-error
   const [dealType, setDealType] = useState<'contract' | 'barter'>('contract'); // 'contract' or 'barter'
   const [showUploadArea, setShowUploadArea] = useState(false);
@@ -2718,7 +2727,13 @@ ${creatorName}`;
           </button>
           
           <div className="text-lg font-semibold">
-            {step === 'select-file' ? 'Upload Contract' : step === 'request-details' ? 'Request Details' : 'Upload Contract'}
+            {isEditMode 
+              ? 'Update Deal' 
+              : step === 'select-file' 
+                ? 'Upload Contract' 
+                : step === 'request-details' 
+                  ? 'Request Details' 
+                  : 'Upload Contract'}
           </div>
           
           <div className="w-10"></div>
@@ -2733,9 +2748,34 @@ ${creatorName}`;
           WebkitOverflowScrolling: 'touch', // Smooth scrolling on iOS
         }}
       >
+        {/* Loading state when fetching deal to edit */}
+        {isEditMode && isLoadingDeal && (
+          <div className="flex items-center justify-center min-h-[60vh]">
+            <div className="text-center">
+              <Loader2 className="w-12 h-12 animate-spin text-purple-400 mx-auto mb-4" />
+              <p className="text-purple-300">Loading deal details...</p>
+            </div>
+          </div>
+        )}
+
         {/* Upload Step */}
-        {step === 'upload' && (
+        {step === 'upload' && !(isEditMode && isLoadingDeal) && (
           <>
+            {/* Edit Mode Notice */}
+            {isEditMode && dealToEdit && (
+              <div className="mb-6 p-4 bg-blue-500/20 border border-blue-500/30 rounded-xl">
+                <div className="flex items-start gap-3">
+                  <Info className="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <h3 className="font-semibold text-blue-300 mb-1">Updating: {dealToEdit.brand_name}</h3>
+                    <p className="text-sm text-blue-200/80">
+                      You can upload a new contract or update deal details. Changes will be saved to this deal.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+            
             {/* Option Selection Cards */}
             <div className="space-y-4 mb-8">
               {/* Card A: Upload Contract */}
