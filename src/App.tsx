@@ -291,6 +291,7 @@ const App = () => {
               <Route path="/brand-reply/:token" element={<BrandResponsePage />} />
               {/* Public Brand Deal Details Page - No auth required */}
               <Route path="/deal-details/:token" element={<BrandDealDetailsPage />} />
+              <Route path="/deal/:token" element={<BrandDealDetailsPage />} />
               {/* Public Feedback Page - No auth required (read-only view) */}
               <Route path="/feedback/:reportId" element={<FeedbackPage />} />
               {/* Public Brand eSign Status Page - No auth required */}

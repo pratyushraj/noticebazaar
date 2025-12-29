@@ -38,6 +38,45 @@ const HomePage = () => {
     }
   };
 
+  // Update Open Graph meta tags for social sharing
+  useEffect(() => {
+    const currentUrl = typeof window !== 'undefined' ? window.location.href : 'https://creatorarmour.com';
+    
+    // Helper function to update or create meta tag
+    const updateMetaTag = (property: string, content: string) => {
+      let meta = document.querySelector(`meta[property="${property}"]`) || 
+                 document.querySelector(`meta[name="${property}"]`);
+      
+      if (!meta) {
+        meta = document.createElement('meta');
+        if (property.startsWith('og:') || property.startsWith('twitter:')) {
+          meta.setAttribute('property', property);
+        } else {
+          meta.setAttribute('name', property);
+        }
+        document.head.appendChild(meta);
+      }
+      
+      meta.setAttribute('content', content);
+    };
+
+    // Update page title
+    document.title = 'CreatorArmour — Protect Your Brand Deals';
+
+    // Update Open Graph tags
+    updateMetaTag('og:type', 'website');
+    updateMetaTag('og:title', 'CreatorArmour — Protect Your Brand Deals');
+    updateMetaTag('og:description', 'Generate contracts, track payments & stay protected — built for creators.');
+    updateMetaTag('og:image', 'https://creatorarmour.com/og-preview.png');
+    updateMetaTag('og:url', currentUrl);
+
+    // Update Twitter Card tags
+    updateMetaTag('twitter:card', 'summary_large_image');
+    updateMetaTag('twitter:title', 'CreatorArmour — Protect Your Brand Deals');
+    updateMetaTag('twitter:description', 'Generate contracts, track payments & stay protected — built for creators.');
+    updateMetaTag('twitter:image', 'https://creatorarmour.com/og-preview.png');
+  }, []);
+
   useEffect(() => {
     // Handle hash navigation on mount (for direct links like #testimonials)
     const hash = window.location.hash.replace('#', '');

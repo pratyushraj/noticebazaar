@@ -188,7 +188,10 @@ const ContractUploadFlow = () => {
 
       const baseUrl =
         typeof window !== 'undefined' ? window.location.origin : 'https://creatorarmour.com';
-      const link = `${baseUrl}/#/deal-details/${data.token.id}`;
+      // Use OG endpoint for better social media previews
+      // The OG endpoint will redirect to the actual deal-details page
+      // Note: Using /og/deal/ prefix so crawlers can read meta tags
+      const link = `${baseUrl}/og/deal/${data.token.id}`;
       setCollaborationLink(link);
       setIsGeneratingLink(false);
       toast.success('Link generated! Share it with the brand.', {
@@ -219,8 +222,8 @@ const ContractUploadFlow = () => {
   };
 
   // Copy link to clipboard
-  const handleCopyLink = async () => {
-    if (!collaborationLink) return;
+  const handleCopyLink = async (): Promise<boolean> => {
+    if (!collaborationLink) return false;
 
     triggerHaptic(HapticPatterns.light);
     const copyToClipboardSync = (text: string): boolean => {
@@ -260,8 +263,10 @@ const ContractUploadFlow = () => {
       const success = copyToClipboardSync(collaborationLink);
       if (success) {
         toast.success('Link copied to clipboard!');
+        return true;
       } else {
         toast.error('Failed to copy. Please select and copy manually.');
+        return false;
       }
     } else {
       const isSecureContext = typeof window !== 'undefined' && 
@@ -273,20 +278,25 @@ const ContractUploadFlow = () => {
         try {
           await navigator.clipboard.writeText(collaborationLink);
           toast.success('Link copied to clipboard!');
+          return true;
         } catch (clipboardError: any) {
           const success = copyToClipboardSync(collaborationLink);
           if (success) {
             toast.success('Link copied to clipboard!');
+            return true;
           } else {
             toast.error('Failed to copy. Please select and copy manually.');
+            return false;
           }
         }
       } else {
         const success = copyToClipboardSync(collaborationLink);
         if (success) {
           toast.success('Link copied to clipboard!');
+          return true;
         } else {
           toast.error('Failed to copy. Please select and copy manually.');
+          return false;
         }
       }
     }
@@ -297,29 +307,140 @@ const ContractUploadFlow = () => {
     if (!collaborationLink) return;
     triggerHaptic(HapticPatterns.light);
     const subject = encodeURIComponent('Finalize Collaboration Details');
-    const body = encodeURIComponent(`Hi, please help finalize our collaboration details here:\n\n${collaborationLink}`);
+    const shareMessage = `Hi, sharing our collaboration details on CreatorArmour.\n\n\n\nSecure Deal Page:\n\n${collaborationLink}\n\nPlease review and confirm so we can proceed smoothly.`;
+    const body = encodeURIComponent(shareMessage);
     window.location.href = `mailto:?subject=${subject}&body=${body}`;
   };
 
   // Share via WhatsApp
-  const handleShareWhatsApp = () => {
+  const handleShareWhatsApp = async () => {
     if (!collaborationLink) return;
     triggerHaptic(HapticPatterns.light);
-    const text = encodeURIComponent(`Hi, please help finalize our collaboration details here: ${collaborationLink}`);
-    window.open(`https://wa.me/?text=${text}`, '_blank');
+    const shareMessage = `Hi, sharing our collaboration details on CreatorArmour.\n\n\n\nSecure Deal Page:\n\n${collaborationLink}\n\nPlease review and confirm so we can proceed smoothly.`;
+    
+    // Try Web Share API first (allows choosing contacts)
+    if (navigator.share) {
+      try {
+        const shareData = {
+          title: 'Finalize Collaboration Details',
+          text: shareMessage,
+          url: collaborationLink,
+        };
+        
+        if (navigator.canShare && navigator.canShare(shareData)) {
+          await navigator.share(shareData);
+          return; // Successfully shared via native share
+        }
+      } catch (shareError: any) {
+        // User cancelled or share failed, fall through to WhatsApp URL
+        if (shareError.name === 'AbortError') {
+          return; // User cancelled, don't show error
+        }
+        console.warn('[ContractUploadFlow] Web Share failed, falling back to WhatsApp URL:', shareError);
+      }
+    }
+    
+    // Fallback to WhatsApp URL (works but may not show contact picker on all devices)
+    const encodedText = encodeURIComponent(shareMessage);
+    // Use wa.me which works better than api.whatsapp.com
+    window.open(`https://wa.me/?text=${encodedText}`, '_blank');
   };
 
   // Share via Instagram (opens Instagram DM - user needs to paste link)
-  const handleShareInstagram = () => {
+  const handleShareInstagram = async () => {
     if (!collaborationLink) return;
     triggerHaptic(HapticPatterns.light);
-    // Instagram doesn't have a direct share URL, so we'll copy the link and open Instagram
-    handleCopyLink();
-    toast.info('Link copied! Open Instagram and paste it in a DM.', {
-      duration: 4000,
-    });
-    // Try to open Instagram app or web
-    window.open('https://www.instagram.com/direct/inbox/', '_blank');
+    const shareMessage = `Hi, sharing our collaboration details on CreatorArmour.\n\n\n\nSecure Deal Page:\n\n${collaborationLink}\n\nPlease review and confirm so we can proceed smoothly.`;
+    
+    // Try Web Share API first (allows choosing Instagram from share sheet)
+    if (navigator.share) {
+      try {
+        const shareData = {
+          title: 'Finalize Collaboration Details',
+          text: shareMessage,
+          url: collaborationLink,
+        };
+        
+        if (navigator.canShare && navigator.canShare(shareData)) {
+          await navigator.share(shareData);
+          return; // Successfully shared via native share (user can choose Instagram)
+        }
+      } catch (shareError: any) {
+        // User cancelled or share failed, fall through to copy + open Instagram
+        if (shareError.name === 'AbortError') {
+          return; // User cancelled, don't show error
+        }
+        console.warn('[ContractUploadFlow] Web Share failed, falling back to copy + Instagram:', shareError);
+      }
+    }
+    
+    // Fallback: Copy message with link and open Instagram
+    // Instagram doesn't support direct sharing via URL, so we copy and guide user
+    const fullMessage = shareMessage;
+    const copyToClipboardSync = (text: string): boolean => {
+      try {
+        const textArea = document.createElement('textarea');
+        textArea.value = text;
+        textArea.style.position = 'fixed';
+        textArea.style.left = '0';
+        textArea.style.top = '0';
+        textArea.style.width = '2em';
+        textArea.style.height = '2em';
+        textArea.style.padding = '0';
+        textArea.style.border = 'none';
+        textArea.style.outline = 'none';
+        textArea.style.boxShadow = 'none';
+        textArea.style.background = 'transparent';
+        textArea.style.opacity = '0';
+        textArea.setAttribute('readonly', '');
+        textArea.setAttribute('aria-hidden', 'true');
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        textArea.setSelectionRange(0, text.length);
+        const successful = document.execCommand('copy');
+        document.body.removeChild(textArea);
+        return successful;
+      } catch (err) {
+        return false;
+      }
+    };
+
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
+                 (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    
+    let copySuccess = false;
+    if (isIOS) {
+      copySuccess = copyToClipboardSync(fullMessage);
+    } else {
+      const isSecureContext = typeof window !== 'undefined' && 
+        (window.isSecureContext || 
+         window.location.protocol === 'https:' || 
+         window.location.hostname === 'localhost');
+      
+      if (navigator.clipboard && isSecureContext) {
+        try {
+          await navigator.clipboard.writeText(fullMessage);
+          copySuccess = true;
+        } catch {
+          copySuccess = copyToClipboardSync(fullMessage);
+        }
+      } else {
+        copySuccess = copyToClipboardSync(fullMessage);
+      }
+    }
+
+    if (copySuccess) {
+      toast.info('Message copied! Open Instagram and paste it in a DM.', {
+        duration: 4000,
+      });
+      // Try to open Instagram app or web
+      setTimeout(() => {
+        window.open('https://www.instagram.com/direct/inbox/', '_blank');
+      }, 500);
+    } else {
+      toast.error('Failed to copy message. Please copy it manually.');
+    }
   };
   
   // Barter Deal State

@@ -49,6 +49,7 @@ import aiRouter from './routes/ai.js';
 import otpRouter, { publicRouter as otpPublicRouter } from './routes/otp.js';
 import dealsRouter from './routes/deals.js';
 import complaintsRouter from './routes/complaints.js';
+import ogRouter from './routes/og.js';
 import { authMiddleware } from './middleware/auth.js';
 import { rateLimitMiddleware } from './middleware/rateLimit.js';
 import { errorHandler } from './middleware/errorHandler.js';
@@ -226,6 +227,9 @@ app.get('/health', (req: express.Request, res: express.Response) => {
     });
   }
 });
+
+// OG Preview Routes (public, no auth required - for social media crawlers)
+app.use('/og', ogRouter);
 
 // Public API Routes (no auth required)
 app.use('/api/brand-response', brandResponseRouter);
