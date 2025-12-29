@@ -107,7 +107,9 @@ router.get('/deal/:dealId', async (req: Request, res: Response) => {
     // Generate OG data
     const ogTitle = `CreatorArmour — ${getDealStatusText(deal)}`;
     const ogDescription = generateOGDescription(deal);
-    const ogImage = `https://creatorarmour.com/og-generated/${dealId}.png`;
+    // Use default OG image (dynamic image generation to be implemented later)
+    // TODO: Implement /og-image/deal/:dealId for dynamic image generation
+    const ogImage = 'https://creatorarmour.com/og-preview.png';
     const ogUrl = `https://creatorarmour.com/deal/${dealId}`;
     
     res.setHeader('Content-Type', 'text/html');
