@@ -19,6 +19,7 @@
   },
   "scripts": {
     "dev": "vite",
+    "prebuild": "node -e \"const pkg = require('./package.json'); const react = pkg.dependencies.react; if (!react || !react.includes('17')) { console.error('ERROR: React version must be 17.x.x, found:', react); process.exit(1); } console.log('✓ React version check passed:', react);\"",
     "build": "vite build",
     "postbuild": "react-snap || true",
     "build:dev": "vite build --mode development",
