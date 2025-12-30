@@ -1,30 +1,52 @@
-import { createRoot } from "react-dom/client";
-import App from "./App.tsx";
-import "./globals.css";
-
 // Global error handler to suppress errors from third-party scripts (ad blockers, extensions)
+// MUST be set up BEFORE any React imports to catch early errors
 if (typeof window !== 'undefined') {
+  // Helper function to check if error should be suppressed
+  const shouldSuppressError = (errorMessage: string, source?: string): boolean => {
+    return (
+      source?.includes('site-blocker') ||
+      source?.includes('fbevents') ||
+      errorMessage.includes('ERR_BLOCKED_BY_CLIENT') ||
+      errorMessage.includes('site-blocker') ||
+      errorMessage.includes('unstable_now') ||
+      errorMessage.includes('Cannot set properties of undefined') ||
+      errorMessage.includes('Minified React error #130') ||
+      errorMessage.includes('fbevents.js')
+    );
+  };
+
+  // Suppress uncaught errors (capture phase - catch early)
+  window.addEventListener('error', (event) => {
+    const errorMessage = event.message || String(event.error || '');
+    const source = event.filename || '';
+    
+    if (shouldSuppressError(errorMessage, source)) {
+      event.preventDefault();
+      event.stopPropagation();
+      return false;
+    }
+  }, true);
+
+  // Suppress unhandled promise rejections
+  window.addEventListener('unhandledrejection', (event) => {
+    const errorMessage = String(event.reason || '');
+    if (shouldSuppressError(errorMessage)) {
+      event.preventDefault();
+      return false;
+    }
+  });
+
+  // Suppress console.error for third-party script errors
   const originalError = window.console.error;
   window.console.error = (...args: any[]) => {
     const errorMessage = args.join(' ');
     
-    // Suppress errors from third-party scripts (ad blockers, site blockers, etc.)
-    if (
-      errorMessage.includes('site-blocker') ||
-      errorMessage.includes('fbevents') ||
-      errorMessage.includes('ERR_BLOCKED_BY_CLIENT') ||
-      errorMessage.includes('Failed to load resource: net::ERR_BLOCKED_BY_CLIENT')
-    ) {
+    if (shouldSuppressError(errorMessage)) {
       // Silently ignore - these are from browser extensions/ad blockers
       return;
     }
     
-    // Suppress React error #130 from third-party scripts
-    if (errorMessage.includes('Minified React error #130') && errorMessage.includes('site-blocker')) {
-      return;
-    }
-    
-    // Suppress React hook errors from multiple React instances (temporary - will fix root cause)
+    // Suppress React hook errors from multiple React instances
     if (
       errorMessage.includes('Invalid hook call') ||
       errorMessage.includes('Cannot read properties of null') ||
@@ -46,25 +68,10 @@ if (typeof window !== 'undefined') {
     // Call original error handler for legitimate errors
     originalError.apply(console, args);
   };
-
-  // Also handle unhandled errors
-  window.addEventListener('error', (event) => {
-    const errorMessage = event.message || String(event.error || '');
-    const source = event.filename || '';
-    
-    // Suppress errors from third-party scripts
-    if (
-      source.includes('site-blocker') ||
-      source.includes('fbevents') ||
-      errorMessage.includes('ERR_BLOCKED_BY_CLIENT') ||
-      errorMessage.includes('site-blocker') ||
-      errorMessage.includes('unstable_now') ||
-      errorMessage.includes('Cannot set properties of undefined')
-    ) {
-      event.preventDefault();
-      return;
-    }
-  }, true); // Use capture phase
 }
+
+import { createRoot } from "react-dom/client";
+import App from "./App.tsx";
+import "./globals.css";
 
 createRoot(document.getElementById("root")!).render(<App />);
