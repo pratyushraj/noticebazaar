@@ -96,4 +96,61 @@ import { createRoot } from "react-dom/client";
 import App from "./App.tsx";
 import "./globals.css";
 
-createRoot(document.getElementById("root")!).render(<App />);
+// Safely render the app with error handling
+const rootElement = document.getElementById("root");
+if (!rootElement) {
+  throw new Error("Root element not found");
+}
+
+try {
+  const root = createRoot(rootElement);
+  root.render(<App />);
+} catch (error: any) {
+  // If React fails to render, show a fallback UI
+  console.error("Failed to render app:", error);
+  rootElement.innerHTML = `
+    <div style="
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      background: linear-gradient(135deg, #6A5CFF 0%, #8B7FFF 100%);
+      color: white;
+      padding: 2rem;
+      text-align: center;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    ">
+      <h1 style="font-size: 2rem; margin-bottom: 1rem;">⚠️ App Loading Error</h1>
+      <p style="font-size: 1.1rem; margin-bottom: 2rem; opacity: 0.9;">
+        The app encountered an error while loading. Please refresh the page.
+      </p>
+      <button 
+        onclick="window.location.reload()" 
+        style="
+          background: white;
+          color: #6A5CFF;
+          border: none;
+          padding: 0.75rem 2rem;
+          border-radius: 0.5rem;
+          font-size: 1rem;
+          font-weight: 600;
+          cursor: pointer;
+          transition: transform 0.2s;
+        "
+        onmouseover="this.style.transform='scale(1.05)'"
+        onmouseout="this.style.transform='scale(1)'"
+      >
+        Refresh Page
+      </button>
+      ${process.env.NODE_ENV === 'development' ? `
+        <details style="margin-top: 2rem; text-align: left; max-width: 600px;">
+          <summary style="cursor: pointer; margin-bottom: 1rem;">Error Details</summary>
+          <pre style="background: rgba(0,0,0,0.2); padding: 1rem; border-radius: 0.5rem; overflow: auto; font-size: 0.875rem;">
+            ${error?.stack || error?.toString() || 'Unknown error'}
+          </pre>
+        </details>
+      ` : ''}
+    </div>
+  `;
+}
