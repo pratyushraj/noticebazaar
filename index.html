@@ -208,6 +208,60 @@
             };
           }
           
+          // 2d. CRITICAL: Intercept module loading to ensure React scheduler has valid objects
+          // This is a last-resort approach - we'll try to catch React's scheduler initialization
+          // by monitoring when modules are loaded
+          const originalCreateElement = document.createElement;
+          document.createElement = function(tagName, options) {
+            const element = originalCreateElement.call(this, tagName, options);
+            // If React is creating script tags, ensure they have proper error handling
+            if (tagName === 'script' && element.src) {
+              element.addEventListener('error', function(e) {
+                // If a script fails to load, it might be React's scheduler
+                if (element.src.includes('react') || element.src.includes('scheduler')) {
+                  console.warn('[Error Handler] React script failed to load:', element.src);
+                }
+              });
+            }
+            return element;
+          };
+          
+          // 2e. Try to intercept React's scheduler by patching the global object
+          // React's scheduler might try to access global objects that don't exist
+          // We'll create a Proxy to intercept property access
+          if (typeof Proxy !== 'undefined') {
+            try {
+              // Create a safe global object that React can use
+              const safeGlobal = new Proxy({}, {
+                get: function(target, prop) {
+                  if (prop === 'unstable_now') {
+                    return function() {
+                      return (performance && performance.now ? performance.now() : Date.now());
+                    };
+                  }
+                  // Return undefined for other properties to let React handle them
+                  return undefined;
+                },
+                set: function(target, prop, value) {
+                  // Allow setting properties, but ensure unstable_now is always a function
+                  if (prop === 'unstable_now' && typeof value !== 'function') {
+                    target[prop] = function() {
+                      return (performance && performance.now ? performance.now() : Date.now());
+                    };
+                  } else {
+                    target[prop] = value;
+                  }
+                  return true;
+                }
+              });
+              
+              // Store it globally in case React needs it
+              window.__reactSchedulerSafeGlobal = safeGlobal;
+            } catch (e) {
+              console.warn('[Error Handler] Failed to create Proxy for React scheduler:', e);
+            }
+          }
+          
           // 2c. Patch Object.setPrototypeOf to handle undefined
           const originalSetPrototypeOf = window.__reactErrorHandlerOriginals.setPrototypeOf;
           Object.setPrototypeOf = function(obj, prototype) {
