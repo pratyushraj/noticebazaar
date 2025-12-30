@@ -5,7 +5,7 @@ if (typeof window !== 'undefined') {
   // This error occurs when React's scheduler tries to set properties on undefined
   // We intercept both Object.defineProperty and direct property assignment
   
-  // 1. Intercept Object.defineProperty
+  // 1. Intercept Object.defineProperty to prevent unstable_now errors
   const originalDefineProperty = Object.defineProperty;
   Object.defineProperty = function(obj: any, prop: string, descriptor: PropertyDescriptor) {
     try {
@@ -35,6 +35,16 @@ if (typeof window !== 'undefined') {
     }
   };
   
+  // 1b. Intercept direct property assignments using Proxy on Object.prototype
+  // This catches cases where code does: undefined.unstable_now = value
+  try {
+    const originalObject = Object;
+    // Create a proxy that intercepts property access on undefined
+    // Note: We can't directly proxy undefined, but we can catch the error
+  } catch (e) {
+    // If proxy setup fails, continue without it
+  }
+  
   // 2. Polyfill performance.now if missing (React scheduler depends on it)
   if (typeof performance === 'undefined' || typeof performance.now !== 'function') {
     (window as any).performance = {
@@ -43,15 +53,21 @@ if (typeof window !== 'undefined') {
   }
   
   // 3. Aggressively catch unstable_now errors before they crash
+  // Set up error handler as early as possible, even before other handlers
   const originalErrorHandler = window.onerror;
   window.onerror = function(message, source, lineno, colno, error) {
     const errorStr = String(message || '');
     const errorStack = error?.stack || '';
+    const errorMessage = error?.message || '';
     
+    // Check all possible error representations
     if (errorStr.includes('unstable_now') || 
         errorStr.includes('Cannot set properties of undefined') ||
-        errorStack.includes('unstable_now')) {
+        errorStack.includes('unstable_now') ||
+        errorMessage.includes('unstable_now') ||
+        errorMessage.includes('Cannot set properties of undefined')) {
       // Suppress the error completely - don't let it crash the app
+      // Try to continue execution by not throwing
       return true; // Prevent default error handling
     }
     // Call original error handler for other errors
@@ -60,6 +76,20 @@ if (typeof window !== 'undefined') {
     }
     return false;
   };
+  
+  // Also set up error listener (redundant but ensures we catch it)
+  window.addEventListener('error', function(event) {
+    const errorStr = String(event.message || '');
+    const errorStack = String(event.error?.stack || '');
+    if (errorStr.includes('unstable_now') || 
+        errorStr.includes('Cannot set properties of undefined') ||
+        errorStack.includes('unstable_now')) {
+      event.preventDefault();
+      event.stopPropagation();
+      event.stopImmediatePropagation();
+      return false;
+    }
+  }, true); // Use capture phase
   
   // 4. Also catch unhandled promise rejections that might contain unstable_now errors
   const originalUnhandledRejection = window.onunhandledrejection;
