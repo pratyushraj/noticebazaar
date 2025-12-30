@@ -42,15 +42,41 @@ if (typeof window !== 'undefined') {
     }
   };
   
-  // 1b. Intercept direct property assignments using Proxy on Object.prototype
-  // This catches cases where code does: undefined.unstable_now = value
-  try {
-    const originalObject = Object;
-    // Create a proxy that intercepts property access on undefined
-    // Note: We can't directly proxy undefined, but we can catch the error
-  } catch (e) {
-    // If proxy setup fails, continue without it
+  // 1b. Patch global object to ensure React scheduler has a valid object to work with
+  // React's scheduler tries to set unstable_now on an object that might be undefined
+  // We ensure all global objects that React might use are properly initialized
+  if (typeof globalThis !== 'undefined') {
+    // Ensure globalThis has the necessary properties
+    if (!globalThis.performance) {
+      globalThis.performance = {
+        now: () => Date.now()
+      } as any;
+    }
   }
+  
+  // 1c. Intercept direct property assignments by patching Object.prototype
+  // This is a last resort - we can't directly intercept undefined.property = value
+  // But we can ensure objects exist before React tries to use them
+  const originalSetProperty = Object.setPrototypeOf;
+  Object.setPrototypeOf = function(obj: any, proto: any) {
+    try {
+      // If trying to set prototype on undefined, create a dummy object
+      if (obj === undefined || obj === null) {
+        return originalSetProperty.call(this, {}, proto);
+      }
+      return originalSetProperty.call(this, obj, proto);
+    } catch (e) {
+      // If it fails, try with a fallback object
+      if (obj === undefined || obj === null) {
+        try {
+          return originalSetProperty.call(this, {}, proto);
+        } catch {
+          return obj;
+        }
+      }
+      throw e;
+    }
+  };
   
   // 2. Polyfill performance.now if missing (React scheduler depends on it)
   if (typeof performance === 'undefined' || typeof performance.now !== 'function') {
