@@ -1,6 +1,38 @@
 // Global error handler to suppress errors from third-party scripts (ad blockers, extensions)
 // MUST be set up BEFORE any React imports to catch early errors
 if (typeof window !== 'undefined') {
+  // Workaround for React scheduler unstable_now error
+  // This error occurs when React's scheduler tries to set properties on undefined
+  // We intercept Object.defineProperty calls to prevent crashes
+  const originalDefineProperty = Object.defineProperty;
+  Object.defineProperty = function(obj: any, prop: string, descriptor: PropertyDescriptor) {
+    try {
+      // If trying to set unstable_now on undefined/null, create a dummy object
+      if (prop === 'unstable_now' && (obj === undefined || obj === null)) {
+        const dummyObj: any = {};
+        return originalDefineProperty.call(this, dummyObj, prop, descriptor);
+      }
+      return originalDefineProperty.call(this, obj, prop, descriptor);
+    } catch (e: any) {
+      // If setting unstable_now fails, create a safe fallback
+      if (prop === 'unstable_now') {
+        try {
+          const fallbackObj: any = obj || {};
+          return originalDefineProperty.call(this, fallbackObj, prop, {
+            ...descriptor,
+            value: descriptor.value || (() => performance.now()),
+            writable: true,
+            configurable: true
+          });
+        } catch {
+          // If all else fails, return the object unchanged
+          return obj;
+        }
+      }
+      throw e;
+    }
+  };
+  
   // Helper function to check if error should be suppressed
   const shouldSuppressError = (errorMessage: string, source?: string): boolean => {
     const message = errorMessage.toLowerCase();
