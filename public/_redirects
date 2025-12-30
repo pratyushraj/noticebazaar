@@ -1,4 +1,9 @@
 # Render SPA Routing Configuration
 # This file ensures all routes redirect to index.html for React Router
+# BUT excludes assets so they can be served directly
 
+# Serve assets directly (no redirect)
+/assets/*    /assets/:splat   200
+
+# All other routes go to index.html for React Router
 /*    /index.html   200
