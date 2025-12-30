@@ -95,14 +95,32 @@ router.get('/deal/:dealId', async (req: Request, res: Response) => {
         const ogTitle = 'CreatorArmour — Share Deal Details';
         const ogDescription = 'Help finalize collaboration details. Secure form powered by CreatorArmour.';
         const ogImage = 'https://creatorarmour.com/og-preview.png';
+        
+        // Determine frontend URL based on environment
+        const frontendUrl = process.env.FRONTEND_URL || 
+                           (process.env.NODE_ENV === 'development' 
+                             ? 'http://localhost:8080' 
+                             : 'https://creatorarmour.com');
+        
         // Use HashRouter format for frontend redirect
-        const ogUrl = `https://creatorarmour.com/#/deal-details/${dealId}`;
+        const ogUrl = `${frontendUrl}/#/deal-details/${dealId}`;
         
         return res.send(generateOGHTML(ogTitle, ogDescription, ogImage, ogUrl));
       }
       
-      // Neither deal nor token found - return generic OG preview
-      return res.send(generateGenericOGHTML());
+      // Neither deal nor token found - return generic OG preview but still redirect to deal page
+      // This allows the frontend to handle the 404 gracefully
+      const frontendUrl = process.env.FRONTEND_URL || 
+                         (process.env.NODE_ENV === 'development' 
+                           ? 'http://localhost:8080' 
+                           : 'https://creatorarmour.com');
+      const ogUrl = `${frontendUrl}/#/deal-details/${dealId}`;
+      return res.send(generateOGHTML(
+        'CreatorArmour — Deal Details',
+        'View deal details on CreatorArmour.',
+        'https://creatorarmour.com/og-preview.png',
+        ogUrl
+      ));
     }
 
     // Generate OG data
@@ -111,9 +129,16 @@ router.get('/deal/:dealId', async (req: Request, res: Response) => {
     // Use default OG image (dynamic image generation to be implemented later)
     // TODO: Implement /og-image/deal/:dealId for dynamic image generation
     const ogImage = 'https://creatorarmour.com/og-preview.png';
+    
+    // Determine frontend URL based on environment
+    const frontendUrl = process.env.FRONTEND_URL || 
+                       (process.env.NODE_ENV === 'development' 
+                         ? 'http://localhost:8080' 
+                         : 'https://creatorarmour.com');
+    
     // Use HashRouter format for frontend redirect (or BrowserRouter if configured)
     // For now, redirect to deal-details page - frontend will handle routing
-    const ogUrl = `https://creatorarmour.com/#/deal-details/${dealId}`;
+    const ogUrl = `${frontendUrl}/#/deal-details/${dealId}`;
     
     res.setHeader('Content-Type', 'text/html');
     return res.send(generateOGHTML(ogTitle, ogDescription, ogImage, ogUrl));
@@ -182,9 +207,14 @@ function generateGenericOGHTML(): string {
   const ogTitle = 'CreatorArmour — Protect Your Brand Deals';
   const ogDescription = 'Generate contracts, track payments & stay protected — built for creators.';
   const ogImage = 'https://creatorarmour.com/og-preview.png';
-  const ogUrl = 'https://creatorarmour.com';
   
-  return generateOGHTML(ogTitle, ogDescription, ogImage, ogUrl);
+  // Determine frontend URL based on environment
+  const frontendUrl = process.env.FRONTEND_URL || 
+                     (process.env.NODE_ENV === 'development' 
+                       ? 'http://localhost:8080' 
+                       : 'https://creatorarmour.com');
+  
+  return generateOGHTML(ogTitle, ogDescription, ogImage, frontendUrl);
 }
 
 export default router;

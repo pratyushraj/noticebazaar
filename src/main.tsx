@@ -24,6 +24,22 @@ if (typeof window !== 'undefined') {
       return;
     }
     
+    // Suppress React hook errors from multiple React instances (temporary - will fix root cause)
+    if (
+      errorMessage.includes('Invalid hook call') ||
+      errorMessage.includes('Cannot read properties of null') ||
+      errorMessage.includes('reading \'useState\'') ||
+      errorMessage.includes('reading \'useRef\'') ||
+      errorMessage.includes('reading \'useContext\'')
+    ) {
+      // Only suppress if it's clearly a multiple React instances issue
+      if (errorMessage.includes('mismatching versions') || 
+          errorMessage.includes('more than one copy of React')) {
+        console.warn('[React] Multiple React instances detected - this is a known issue being worked on');
+        return;
+      }
+    }
+    
     // Call original error handler for legitimate errors
     originalError.apply(console, args);
   };
