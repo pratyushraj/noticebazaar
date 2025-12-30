@@ -95,7 +95,8 @@ router.get('/deal/:dealId', async (req: Request, res: Response) => {
         const ogTitle = 'CreatorArmour — Share Deal Details';
         const ogDescription = 'Help finalize collaboration details. Secure form powered by CreatorArmour.';
         const ogImage = 'https://creatorarmour.com/og-preview.png';
-        const ogUrl = `https://creatorarmour.com/deal/${dealId}`;
+        // Use HashRouter format for frontend redirect
+        const ogUrl = `https://creatorarmour.com/#/deal-details/${dealId}`;
         
         return res.send(generateOGHTML(ogTitle, ogDescription, ogImage, ogUrl));
       }
@@ -110,7 +111,9 @@ router.get('/deal/:dealId', async (req: Request, res: Response) => {
     // Use default OG image (dynamic image generation to be implemented later)
     // TODO: Implement /og-image/deal/:dealId for dynamic image generation
     const ogImage = 'https://creatorarmour.com/og-preview.png';
-    const ogUrl = `https://creatorarmour.com/deal/${dealId}`;
+    // Use HashRouter format for frontend redirect (or BrowserRouter if configured)
+    // For now, redirect to deal-details page - frontend will handle routing
+    const ogUrl = `https://creatorarmour.com/#/deal-details/${dealId}`;
     
     res.setHeader('Content-Type', 'text/html');
     return res.send(generateOGHTML(ogTitle, ogDescription, ogImage, ogUrl));

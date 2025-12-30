@@ -195,13 +195,10 @@ const ContractUploadFlow = () => {
         throw new Error(data.error || 'Failed to generate link');
       }
 
-      const baseUrl =
-        typeof window !== 'undefined' ? window.location.origin : 'https://creatorarmour.com';
-      // Use OG endpoint for better social media previews
-      // The OG endpoint will redirect to the actual deal-details page
-      // Note: Using /og/deal/ prefix so crawlers can read meta tags
-      const link = `${baseUrl}/og/deal/${data.token.id}`;
-      setCollaborationLink(link);
+      // Use backend API URL for OG previews (Render static sites can't proxy)
+      // The backend OG endpoint returns HTML with meta tags for social media crawlers
+      const ogUrl = `${apiBaseUrl}/og/deal/${data.token.id}`;
+      setCollaborationLink(ogUrl);
       setIsGeneratingLink(false);
       toast.success('Link generated! Share it with the brand.', {
         duration: 3000,
