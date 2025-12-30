@@ -103,26 +103,53 @@
           const originalDefineProperty = Object.defineProperty;
           Object.defineProperty = function(obj, prop, descriptor) {
             try {
+              // CRITICAL: If trying to set unstable_now on undefined/null, create a valid object
               if (prop === 'unstable_now' && (obj === undefined || obj === null)) {
+                console.warn('[Error Handler] Intercepted unstable_now on undefined - creating fallback object');
                 const dummyObj = {};
-                return originalDefineProperty.call(this, dummyObj, prop, descriptor);
+                const result = originalDefineProperty.call(this, dummyObj, prop, {
+                  value: descriptor.value || (function() { return (performance && performance.now ? performance.now() : Date.now()); }),
+                  writable: true,
+                  configurable: true,
+                  enumerable: descriptor.enumerable !== false
+                });
+                // Store the dummy object globally so React can find it
+                if (!window.__reactSchedulerFallback) {
+                  window.__reactSchedulerFallback = dummyObj;
+                }
+                return result;
               }
               return originalDefineProperty.call(this, obj, prop, descriptor);
             } catch (e) {
               if (prop === 'unstable_now') {
+                console.warn('[Error Handler] Object.defineProperty failed for unstable_now - using fallback');
                 try {
                   const fallbackObj = obj || {};
                   return originalDefineProperty.call(this, fallbackObj, prop, {
-                    value: descriptor.value || (function() { return performance.now(); }),
+                    value: descriptor.value || (function() { return (performance && performance.now ? performance.now() : Date.now()); }),
                     writable: true,
-                    configurable: true
+                    configurable: true,
+                    enumerable: descriptor.enumerable !== false
                   });
                 } catch {
-                  return obj;
+                  // If all else fails, return the object (or create a new one)
+                  return obj || {};
                 }
               }
               throw e;
             }
+          };
+          
+          // 1b. Also patch Object.prototype to catch direct property assignments
+          // This is a more aggressive approach - we can't directly intercept undefined.property = value
+          // But we can ensure that when React tries to access objects, they exist
+          const originalGetPrototypeOf = Object.getPrototypeOf;
+          Object.getPrototypeOf = function(obj) {
+            if (obj === undefined || obj === null) {
+              // Return a safe prototype for undefined/null
+              return Object.prototype;
+            }
+            return originalGetPrototypeOf.call(this, obj);
           };
           
           // 2. Ensure performance.now exists
