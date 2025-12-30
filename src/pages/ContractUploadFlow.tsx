@@ -195,9 +195,16 @@ const ContractUploadFlow = () => {
         throw new Error(data.error || 'Failed to generate link');
       }
 
-      // Use backend API URL for OG previews (Render static sites can't proxy)
+      // Use api.creatorarmour.com for OG previews (cleaner URLs, no noticebazaar)
       // The backend OG endpoint returns HTML with meta tags for social media crawlers
-      const ogUrl = `${apiBaseUrl}/og/deal/${data.token.id}`;
+      // If api.creatorarmour.com is not configured, it will fallback to the backend URL
+      const ogBaseUrl = typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com')
+        ? 'https://api.creatorarmour.com'
+        : apiBaseUrl.includes('api.creatorarmour.com')
+        ? apiBaseUrl
+        : apiBaseUrl.replace('noticebazaar-api.onrender.com', 'api.creatorarmour.com');
+      
+      const ogUrl = `${ogBaseUrl}/og/deal/${data.token.id}`;
       setCollaborationLink(ogUrl);
       setIsGeneratingLink(false);
       toast.success('Link generated! Share it with the brand.', {
