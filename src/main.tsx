@@ -1,6 +1,14 @@
 // Global error handler to suppress errors from third-party scripts (ad blockers, extensions)
 // MUST be set up BEFORE any React imports to catch early errors
 if (typeof window !== 'undefined') {
+  // CRITICAL: Patch Object.prototype to prevent unstable_now errors
+  // React's scheduler tries to set unstable_now on objects that might be undefined
+  // We create a safe wrapper that prevents this from crashing
+  const originalObject = Object;
+  
+  // Patch Object.defineProperty globally before anything else
+  const originalDefineProperty = Object.defineProperty;
+  
   // Workaround for React scheduler unstable_now error
   // This error occurs when React's scheduler tries to set properties on undefined
   // We intercept both Object.defineProperty and direct property assignment
@@ -218,9 +226,27 @@ if (!rootElement) {
 }
 
 // Wrap React initialization in additional error handling
+// If unstable_now error occurs, React might fail silently, so we check if it actually rendered
+let renderAttempted = false;
+let renderSucceeded = false;
+
 try {
   const root = createRoot(rootElement);
   root.render(<App />);
+  renderAttempted = true;
+  // Give React a moment to initialize
+  setTimeout(() => {
+    // Check if React actually rendered by looking for React root
+    const reactRoot = rootElement.querySelector('[data-reactroot], #root > *');
+    if (reactRoot) {
+      renderSucceeded = true;
+    } else if (renderAttempted && !renderSucceeded) {
+      // React failed to render, likely due to unstable_now error
+      console.warn('[React] App may have failed to render due to scheduler error');
+      // Try to show fallback UI
+      showFallbackUI(rootElement, new Error('React failed to initialize - likely due to scheduler error'));
+    }
+  }, 500);
 } catch (error: any) {
   // If React fails to render, show a fallback UI
   console.error("Failed to render app:", error);
