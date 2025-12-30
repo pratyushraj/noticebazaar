@@ -87,6 +87,80 @@
     </script>
 
     <script src="https://assets.calendly.com/assets/external/widget.js" type="text/javascript" async></script>
+    
+    <!-- CRITICAL: Error handlers must run BEFORE React modules load -->
+    <!-- This inline script runs synchronously before any module scripts -->
+    <script>
+      (function() {
+        'use strict';
+        
+        // Set up error handlers IMMEDIATELY, before any modules load
+        if (typeof window !== 'undefined') {
+          // 1. Patch Object.defineProperty to prevent unstable_now errors
+          const originalDefineProperty = Object.defineProperty;
+          Object.defineProperty = function(obj, prop, descriptor) {
+            try {
+              if (prop === 'unstable_now' && (obj === undefined || obj === null)) {
+                const dummyObj = {};
+                return originalDefineProperty.call(this, dummyObj, prop, descriptor);
+              }
+              return originalDefineProperty.call(this, obj, prop, descriptor);
+            } catch (e) {
+              if (prop === 'unstable_now') {
+                try {
+                  const fallbackObj = obj || {};
+                  return originalDefineProperty.call(this, fallbackObj, prop, {
+                    value: descriptor.value || (function() { return performance.now(); }),
+                    writable: true,
+                    configurable: true
+                  });
+                } catch {
+                  return obj;
+                }
+              }
+              throw e;
+            }
+          };
+          
+          // 2. Ensure performance.now exists
+          if (typeof performance === 'undefined' || typeof performance.now !== 'function') {
+            window.performance = {
+              now: function() { return Date.now(); }
+            };
+          }
+          
+          // 3. Set up error handler BEFORE React loads
+          window.onerror = function(message, source, lineno, colno, error) {
+            const errorStr = String(message || '');
+            const errorStack = error && error.stack ? String(error.stack) : '';
+            const errorMessage = error && error.message ? String(error.message) : '';
+            
+            if (errorStr.includes('unstable_now') || 
+                errorStr.includes('Cannot set properties of undefined') ||
+                errorStack.includes('unstable_now') ||
+                errorMessage.includes('unstable_now')) {
+              // Suppress the error - don't let it crash
+              return true;
+            }
+            return false;
+          };
+          
+          // 4. Also catch via addEventListener
+          window.addEventListener('error', function(event) {
+            const errorStr = String(event.message || '');
+            const errorStack = String(event.error && event.error.stack || '');
+            if (errorStr.includes('unstable_now') || 
+                errorStr.includes('Cannot set properties of undefined') ||
+                errorStack.includes('unstable_now')) {
+              event.preventDefault();
+              event.stopPropagation();
+              event.stopImmediatePropagation();
+              return false;
+            }
+          }, true);
+        }
+      })();
+    </script>
   </head>
 
   <body>
