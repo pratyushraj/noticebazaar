@@ -198,6 +198,43 @@
             };
           }
           
+          // 2a. CRITICAL: Pre-initialize React scheduler objects before React loads
+          // React's scheduler tries to set unstable_now on objects during module initialization
+          // We need to ensure these objects exist and are properly initialized
+          if (!window.__reactSchedulerInit) {
+            window.__reactSchedulerInit = true;
+            
+            // Create a global scheduler object that React can use
+            const schedulerObj = {
+              unstable_now: function() {
+                return (performance && performance.now ? performance.now() : Date.now());
+              },
+              unstable_scheduleCallback: function() {
+                // Fallback implementation
+                return null;
+              },
+              unstable_cancelCallback: function() {
+                // Fallback implementation
+              }
+            };
+            
+            // Make it available globally
+            window.__reactScheduler = schedulerObj;
+            
+            // Also try to patch the global object to ensure React can find it
+            if (typeof globalThis !== 'undefined') {
+              try {
+                Object.defineProperty(globalThis, '__reactScheduler', {
+                  value: schedulerObj,
+                  writable: true,
+                  configurable: true
+                });
+              } catch (e) {
+                console.warn('[Error Handler] Failed to set global scheduler:', e);
+              }
+            }
+          }
+          
           // 2b. Pre-create a scheduler object that React might try to use
           // This is a workaround for React's scheduler trying to set unstable_now on undefined
           if (!window.__reactSchedulerWorkaround) {
