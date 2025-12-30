@@ -209,7 +209,9 @@ export const usePartnerStats = (userId: string | undefined) => {
         error.code === '42P01' ||
         error.code === 'PGRST301' // RLS policy violation
       )) {
-        return null; // Table doesn't exist yet or access denied - migrations not run
+        // Silently handle - table doesn't exist yet or access denied (migrations not run)
+        // Don't log to console to avoid noise
+        return null;
       }
 
       if (error) {

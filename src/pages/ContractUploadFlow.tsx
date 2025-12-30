@@ -257,7 +257,9 @@ const ContractUploadFlow = () => {
         textArea.select();
         textArea.setSelectionRange(0, text.length);
         const successful = document.execCommand('copy');
-        document.body.removeChild(textArea);
+        if (textArea.parentNode) {
+          document.body.removeChild(textArea);
+        }
         return successful;
       } catch (err) {
         console.warn('[ContractUploadFlow] execCommand copy failed:', err);
@@ -408,7 +410,9 @@ const ContractUploadFlow = () => {
         textArea.select();
         textArea.setSelectionRange(0, text.length);
         const successful = document.execCommand('copy');
-        document.body.removeChild(textArea);
+        if (textArea.parentNode) {
+          document.body.removeChild(textArea);
+        }
         return successful;
       } catch (err) {
         return false;
@@ -5142,7 +5146,9 @@ ${creatorName}`;
                         a.download = fileName || 'contract.pdf';
                         document.body.appendChild(a);
                         a.click();
-                        document.body.removeChild(a);
+                        if (a.parentNode) {
+                          document.body.removeChild(a);
+                        }
                         toast.success('Contract downloaded!');
                       }
                     }}
@@ -6119,7 +6125,9 @@ ${creatorName}${session?.user?.email ? `\n${session.user.email}` : ''}`;
                           document.body.appendChild(a);
                           a.click();
                           window.URL.revokeObjectURL(url);
-                          document.body.removeChild(a);
+                          if (a.parentNode) {
+                            document.body.removeChild(a);
+                          }
                           toast.success('Safe Version Downloaded');
                         } else {
                           // JSON response with URL (legacy fallback)
@@ -6139,7 +6147,9 @@ ${creatorName}${session?.user?.email ? `\n${session.user.email}` : ''}`;
                           document.body.appendChild(a);
                           a.click();
                           window.URL.revokeObjectURL(url);
-                          document.body.removeChild(a);
+                          if (a.parentNode) {
+                            document.body.removeChild(a);
+                          }
                           toast.success('Safe Version Downloaded');
                         }
                       } catch (error: any) {
