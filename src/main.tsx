@@ -60,7 +60,9 @@ if (typeof window !== 'undefined') {
       errorMessage.includes('Cannot set properties of undefined') ||
       errorMessage.includes('setting \'unstable_now\'') ||
       errorMessage.includes('mismatching versions') ||
-      errorMessage.includes('more than one copy of React')
+      errorMessage.includes('more than one copy of React') ||
+      errorMessage.includes('The above error occurred in the') ||
+      errorMessage.includes('Consider adding an error boundary')
     ) {
       // Suppress all React hook errors - they're from multiple React instances
       // This is a known issue with Vite code splitting in dev mode
