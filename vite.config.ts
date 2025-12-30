@@ -42,6 +42,14 @@ const forceSingleReactChunkPlugin = () => {
   return {
     name: 'force-single-react-chunk',
     enforce: 'pre',
+    resolveId(id) {
+      // Force all React imports to resolve to the same location
+      if (id === 'react' || id === 'react-dom' || id === 'react/jsx-runtime' || id === 'react/jsx-dev-runtime') {
+        // Return null to let Vite handle it, but ensure dedupe works
+        return null;
+      }
+      return null;
+    },
     configResolved(config) {
       // Ensure React dependencies are bundled together
       if (config.optimizeDeps) {
@@ -55,14 +63,6 @@ export default defineConfig(() => ({
   server: {
     host: "::",
     port: 8080,
-    proxy: {
-      // Proxy OG preview routes to backend for local development
-      '/og': {
-        target: 'http://localhost:3001',
-        changeOrigin: true,
-        secure: false,
-      },
-    },
   },
   // Disable code splitting in dev mode to prevent multiple React instances
   build: {
@@ -71,15 +71,9 @@ export default defineConfig(() => ({
     chunkSizeWarningLimit: 1000, // Increase warning limit to 1000 kB
     rollupOptions: {
       output: {
-        // CRITICAL: Force React into a single chunk to prevent multiple instances
-        manualChunks: (id) => {
-          // Force React and React DOM into the same chunk
-          if (id.includes('node_modules/react') || id.includes('node_modules/react-dom')) {
-            return 'react-vendor';
-          }
-          // All other code goes into one chunk
-          return 'index';
-        },
+        // CRITICAL: Disable ALL code splitting to prevent multiple React instances
+        // This ensures everything is in one bundle, sharing the same React instance
+        manualChunks: undefined, // Disable manual chunking entirely
         assetFileNames: 'assets/[name].[ext]',
         chunkFileNames: 'assets/[name]-[hash].js',
         entryFileNames: 'assets/[name]-[hash].js',
@@ -101,11 +95,10 @@ export default defineConfig(() => ({
       "@": path.resolve(__dirname, "./src"),
       // CRITICAL: Force all React imports to use the same instance
       // This prevents "Invalid hook call" errors from multiple React instances
-      // Use dynamic resolution to find React in pnpm structure
-      "react": path.resolve(__dirname, "./node_modules/react"),
-      "react-dom": path.resolve(__dirname, "./node_modules/react-dom"),
-      "react/jsx-runtime": path.resolve(__dirname, "./node_modules/react/jsx-runtime"),
-      "react/jsx-dev-runtime": path.resolve(__dirname, "./node_modules/react/jsx-dev-runtime"),
+      "react": path.resolve(__dirname, "./node_modules/.pnpm/react@18.3.1/node_modules/react"),
+      "react-dom": path.resolve(__dirname, "./node_modules/.pnpm/react-dom@18.3.1_react@18.3.1/node_modules/react-dom"),
+      "react/jsx-runtime": path.resolve(__dirname, "./node_modules/.pnpm/react@18.3.1/node_modules/react/jsx-runtime"),
+      "react/jsx-dev-runtime": path.resolve(__dirname, "./node_modules/.pnpm/react@18.3.1/node_modules/react/jsx-dev-runtime"),
       // Force use-sync-external-store/shim to use our ESM shim
       "use-sync-external-store/shim": path.resolve(__dirname, "./src/lib/use-sync-external-store-shim.ts"),
     },
@@ -143,12 +136,6 @@ export default defineConfig(() => ({
     entries: [
       'src/main.tsx',
     ],
-    // CRITICAL: Ensure React is in a single optimized chunk
-    // This prevents multiple React instances in dev mode
-    commonjsOptions: {
-      include: [/node_modules/],
-      transformMixedEsModules: true,
-    },
   },
   ssr: {
     noExternal: ["react", "react-dom"],

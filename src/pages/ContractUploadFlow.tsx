@@ -6,10 +6,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '@/components/ui/tooltip';
 import { AICounterProposal } from '@/components/contract/AICounterProposal';
 import { UniversalShareModal } from '@/components/deals/UniversalShareModal';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { ContextualTipsProvider } from '@/components/contextual-tips/ContextualTipsProvider';
 import { useSession } from '@/contexts/SessionContext';
-import { useAddBrandDeal, useBrandDeals, useBrandDealById, useUpdateBrandDeal } from '@/lib/hooks/useBrandDeals';
+import { useAddBrandDeal, useBrandDeals } from '@/lib/hooks/useBrandDeals';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { validateContractFile } from '@/lib/utils/contractValidation';
@@ -24,18 +24,9 @@ type ActionType = 'NEGOTIATION' | 'CLARIFICATION' | 'SUMMARY';
 
 const ContractUploadFlow = () => {
   const navigate = useNavigate();
-  const location = useLocation();
   const { profile, session } = useSession();
   const queryClient = useQueryClient();
   const addDealMutation = useAddBrandDeal();
-  const updateDealMutation = useUpdateBrandDeal();
-  
-  // Check if we're editing an existing deal
-  const urlParams = new URLSearchParams(location.search);
-  const dealIdToEdit = urlParams.get('dealId');
-  const { data: dealToEdit, isLoading: isLoadingDeal } = useBrandDealById(dealIdToEdit || undefined, profile?.id);
-  const [isEditMode, setIsEditMode] = useState(!!dealIdToEdit);
-  
   const [step, setStep] = useState('upload'); // upload, select-file, request-details, uploading, scanning, analyzing, results, upload-error, review-error, validation-error
   const [dealType, setDealType] = useState<'contract' | 'barter'>('contract'); // 'contract' or 'barter'
   const [showUploadArea, setShowUploadArea] = useState(false);
@@ -195,17 +186,11 @@ const ContractUploadFlow = () => {
         throw new Error(data.error || 'Failed to generate link');
       }
 
-      // Use api.creatorarmour.com for OG previews (cleaner URLs, no noticebazaar)
-      // The backend OG endpoint returns HTML with meta tags for social media crawlers
-      // If api.creatorarmour.com is not configured, it will fallback to the backend URL
-      const ogBaseUrl = typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com')
-        ? 'https://api.creatorarmour.com'
-        : apiBaseUrl.includes('api.creatorarmour.com')
-        ? apiBaseUrl
-        : apiBaseUrl.replace('noticebazaar-api.onrender.com', 'api.creatorarmour.com');
-      
-      const ogUrl = `${ogBaseUrl}/og/deal/${data.token.id}`;
-      setCollaborationLink(ogUrl);
+      const baseUrl =
+        typeof window !== 'undefined' ? window.location.origin : 'https://creatorarmour.com';
+      // Use /deal/ format instead of /#/deal-details/ for cleaner URLs
+      const link = `${baseUrl}/deal/${data.token.id}`;
+      setCollaborationLink(link);
       setIsGeneratingLink(false);
       toast.success('Link generated! Share it with the brand.', {
         duration: 3000,
@@ -261,9 +246,7 @@ const ContractUploadFlow = () => {
         textArea.select();
         textArea.setSelectionRange(0, text.length);
         const successful = document.execCommand('copy');
-        if (textArea.parentNode) {
-          document.body.removeChild(textArea);
-        }
+        document.body.removeChild(textArea);
         return successful;
       } catch (err) {
         console.warn('[ContractUploadFlow] execCommand copy failed:', err);
@@ -322,7 +305,7 @@ const ContractUploadFlow = () => {
     if (!collaborationLink) return;
     triggerHaptic(HapticPatterns.light);
     const subject = encodeURIComponent('Finalize Collaboration Details');
-    const shareMessage = `Hi, sharing our collaboration details on CreatorArmour.\n\n\n\nSecure Deal Page:\n\n${collaborationLink}\n\nPlease review and confirm so we can proceed smoothly.`;
+    const shareMessage = `Hi 👋, sharing our collaboration details here on CreatorArmour:\n\n🔐 Secure Deal Page:\n\n${collaborationLink}\n\nPlease review the terms and confirm so we can proceed smoothly 🙂`;
     const body = encodeURIComponent(shareMessage);
     window.location.href = `mailto:?subject=${subject}&body=${body}`;
   };
@@ -331,7 +314,7 @@ const ContractUploadFlow = () => {
   const handleShareWhatsApp = async () => {
     if (!collaborationLink) return;
     triggerHaptic(HapticPatterns.light);
-    const shareMessage = `Hi, sharing our collaboration details on CreatorArmour.\n\n\n\nSecure Deal Page:\n\n${collaborationLink}\n\nPlease review and confirm so we can proceed smoothly.`;
+    const shareMessage = `Hi 👋, sharing our collaboration details here on CreatorArmour:\n\n🔐 Secure Deal Page:\n\n${collaborationLink}\n\nPlease review the terms and confirm so we can proceed smoothly 🙂`;
     
     // Try Web Share API first (allows choosing contacts)
     if (navigator.share) {
@@ -365,7 +348,7 @@ const ContractUploadFlow = () => {
   const handleShareInstagram = async () => {
     if (!collaborationLink) return;
     triggerHaptic(HapticPatterns.light);
-    const shareMessage = `Hi, sharing our collaboration details on CreatorArmour.\n\n\n\nSecure Deal Page:\n\n${collaborationLink}\n\nPlease review and confirm so we can proceed smoothly.`;
+    const shareMessage = `Hi 👋, sharing our collaboration details here on CreatorArmour:\n\n🔐 Secure Deal Page:\n\n${collaborationLink}\n\nPlease review the terms and confirm so we can proceed smoothly 🙂`;
     
     // Try Web Share API first (allows choosing Instagram from share sheet)
     if (navigator.share) {
@@ -414,9 +397,7 @@ const ContractUploadFlow = () => {
         textArea.select();
         textArea.setSelectionRange(0, text.length);
         const successful = document.execCommand('copy');
-        if (textArea.parentNode) {
-          document.body.removeChild(textArea);
-        }
+        document.body.removeChild(textArea);
         return successful;
       } catch (err) {
         return false;
@@ -2735,13 +2716,7 @@ ${creatorName}`;
           </button>
           
           <div className="text-lg font-semibold">
-            {isEditMode 
-              ? 'Update Deal' 
-              : step === 'select-file' 
-                ? 'Upload Contract' 
-                : step === 'request-details' 
-                  ? 'Request Details' 
-                  : 'Upload Contract'}
+            {step === 'select-file' ? 'Upload Contract' : step === 'request-details' ? 'Request Details' : 'Upload Contract'}
           </div>
           
           <div className="w-10"></div>
@@ -2756,34 +2731,9 @@ ${creatorName}`;
           WebkitOverflowScrolling: 'touch', // Smooth scrolling on iOS
         }}
       >
-        {/* Loading state when fetching deal to edit */}
-        {isEditMode && isLoadingDeal && (
-          <div className="flex items-center justify-center min-h-[60vh]">
-            <div className="text-center">
-              <Loader2 className="w-12 h-12 animate-spin text-purple-400 mx-auto mb-4" />
-              <p className="text-purple-300">Loading deal details...</p>
-            </div>
-          </div>
-        )}
-
         {/* Upload Step */}
-        {step === 'upload' && !(isEditMode && isLoadingDeal) && (
+        {step === 'upload' && (
           <>
-            {/* Edit Mode Notice */}
-            {isEditMode && dealToEdit && (
-              <div className="mb-6 p-4 bg-blue-500/20 border border-blue-500/30 rounded-xl">
-                <div className="flex items-start gap-3">
-                  <Info className="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5" />
-                  <div>
-                    <h3 className="font-semibold text-blue-300 mb-1">Updating: {dealToEdit.brand_name}</h3>
-                    <p className="text-sm text-blue-200/80">
-                      You can upload a new contract or update deal details. Changes will be saved to this deal.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            )}
-            
             {/* Option Selection Cards */}
             <div className="space-y-4 mb-8">
               {/* Card A: Upload Contract */}
@@ -5150,9 +5100,7 @@ ${creatorName}`;
                         a.download = fileName || 'contract.pdf';
                         document.body.appendChild(a);
                         a.click();
-                        if (a.parentNode) {
-                          document.body.removeChild(a);
-                        }
+                        document.body.removeChild(a);
                         toast.success('Contract downloaded!');
                       }
                     }}
@@ -6129,9 +6077,7 @@ ${creatorName}${session?.user?.email ? `\n${session.user.email}` : ''}`;
                           document.body.appendChild(a);
                           a.click();
                           window.URL.revokeObjectURL(url);
-                          if (a.parentNode) {
-                            document.body.removeChild(a);
-                          }
+                          document.body.removeChild(a);
                           toast.success('Safe Version Downloaded');
                         } else {
                           // JSON response with URL (legacy fallback)
@@ -6151,9 +6097,7 @@ ${creatorName}${session?.user?.email ? `\n${session.user.email}` : ''}`;
                           document.body.appendChild(a);
                           a.click();
                           window.URL.revokeObjectURL(url);
-                          if (a.parentNode) {
-                            document.body.removeChild(a);
-                          }
+                          document.body.removeChild(a);
                           toast.success('Safe Version Downloaded');
                         }
                       } catch (error: any) {

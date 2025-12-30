@@ -71,10 +71,6 @@ const DropdownMenuContent = React.forwardRef<
         // This fixes the aria-hidden accessibility warning
         e.preventDefault();
       }}
-      onEscapeKeyDown={(e) => {
-        // Prevent focus issues on escape
-        e.preventDefault();
-      }}
       {...props}
     />
   </DropdownMenuPrimitive.Portal>

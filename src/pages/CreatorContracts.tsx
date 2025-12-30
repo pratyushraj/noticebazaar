@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Briefcase, TrendingUp, Clock, CheckCircle, AlertCircle, IndianRupee, Calendar, ChevronRight, Shield, Edit } from 'lucide-react';
+import { Briefcase, TrendingUp, Clock, CheckCircle, AlertCircle, IndianRupee, Calendar, ChevronRight, Shield } from 'lucide-react';
 import { toast } from 'sonner';
 import { useSession } from '@/contexts/SessionContext';
 import { useBrandDeals } from '@/lib/hooks/useBrandDeals';
@@ -458,27 +458,7 @@ const CreatorContracts = () => {
                         <span>{deal.platform}</span>
                       </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          triggerHaptic(HapticPatterns.light);
-                          navigate(`/contract-upload?dealId=${deal.id}`);
-                        }}
-                        className={cn(
-                          "p-2 rounded-lg",
-                          "bg-white/10 hover:bg-white/20",
-                          "text-purple-300 hover:text-white",
-                          "transition-colors",
-                          "flex-shrink-0"
-                        )}
-                        title="Update Deal"
-                        aria-label="Update Deal"
-                      >
-                        <Edit className={cn(iconSizes.sm)} />
-                      </button>
-                      <ChevronRight className={cn(iconSizes.lg, "text-purple-300 flex-shrink-0 transition-transform group-hover:translate-x-1")} />
-                    </div>
+                    <ChevronRight className={cn(iconSizes.lg, "text-purple-300 flex-shrink-0 ml-2 transition-transform group-hover:translate-x-1")} />
                   </div>
 
                   {/* Deal Value */}
