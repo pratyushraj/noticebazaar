@@ -240,7 +240,9 @@ if (typeof window !== 'undefined') {
   };
 }
 
-import { createRoot } from "react-dom/client";
+// React 17 uses ReactDOM.render instead of createRoot
+import React from "react";
+import ReactDOM from "react-dom";
 import App from "./App.tsx";
 import "./globals.css";
 
@@ -257,9 +259,9 @@ let renderSucceeded = false;
 
 // Add a check to see if React actually loaded
 const checkReactLoaded = () => {
-  if (typeof createRoot === 'undefined') {
-    console.error('[React] createRoot is undefined - React failed to load');
-    showFallbackUI(rootElement, new Error('React failed to load - createRoot is undefined'));
+  if (typeof React === 'undefined' || typeof ReactDOM === 'undefined') {
+    console.error('[React] React or ReactDOM is undefined - React failed to load');
+    showFallbackUI(rootElement, new Error('React failed to load - React or ReactDOM is undefined'));
     return false;
   }
   return true;
@@ -269,13 +271,13 @@ if (!checkReactLoaded()) {
   // React didn't load, show fallback
 } else {
   try {
-    const root = createRoot(rootElement);
-    root.render(<App />);
+    ReactDOM.render(<App />, rootElement);
     renderAttempted = true;
     
     // Give React a moment to initialize, then check if it rendered
     setTimeout(() => {
       // Check if React actually rendered by looking for React root or any content
+      // React 17 uses data-reactroot attribute
       const reactRoot = rootElement.querySelector('[data-reactroot], #root > *');
       const hasContent = rootElement.children.length > 0 || rootElement.innerHTML.trim().length > 0;
       
