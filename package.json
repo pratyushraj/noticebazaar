@@ -3,23 +3,21 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
-  "packageManager": "pnpm@10.26.2",
   "pnpm": {
     "overrides": {
-      "react": "17.0.2",
-      "react-dom": "17.0.2"
+      "react": "^18.3.1",
+      "react-dom": "^18.3.1"
     },
     "peerDependencyRules": {
       "allowedVersions": {
-        "react": "17.0.2",
-        "react-dom": "17.0.2"
+        "react": "18.3.1",
+        "react-dom": "18.3.1"
       },
       "ignoreMissing": []
     }
   },
   "scripts": {
     "dev": "vite",
-    "prebuild": "node -e \"const pkg = require('./package.json'); const react = pkg.dependencies.react; if (!react || !react.includes('17')) { console.error('ERROR: React version must be 17.x.x, found:', react); process.exit(1); } console.log('✓ React version check passed:', react);\"",
     "build": "vite build",
     "postbuild": "react-snap || true",
     "build:dev": "vite build --mode development",
@@ -69,9 +67,9 @@
     "jszip": "^3.10.1",
     "lucide-react": "^0.462.0",
     "pdfjs-dist": "^5.4.449",
-    "react": "17.0.2",
+    "react": "^18.3.1",
     "react-countup": "^6.5.3",
-    "react-dom": "17.0.2",
+    "react-dom": "^18.3.1",
     "react-router-dom": "^6.26.2",
     "react-swipeable": "^7.0.2",
     "sonner": "^1.5.0",
@@ -105,7 +103,7 @@
     "vite": "^6.3.4"
   },
   "overrides": {
-    "react": "17.0.2",
-    "react-dom": "17.0.2"
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
   }
 }

@@ -1,11 +1,4 @@
 # Render SPA Routing Configuration
-# Note: Render may require dashboard configuration instead of this file
-# Go to Render Dashboard → Settings → Redirects/Rewrites
-# Add: Source: /*, Destination: /index.html, Status: 200
-
-# This file is a fallback - Render may not read it automatically
-# For assets to work, configure in Render Dashboard:
-# - Add redirect: /* → /index.html (status 200)
-# - But ensure assets are served directly (may need to exclude /assets/* from redirect)
+# This file ensures all routes redirect to index.html for React Router
 
 /*    /index.html   200

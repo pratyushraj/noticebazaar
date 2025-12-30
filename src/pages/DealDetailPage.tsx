@@ -2759,7 +2759,7 @@ ${link}`;
                       onClick={async () => {
                         console.log('[DealDetailPage] Generate Brand-Safe Contract button clicked', {
                           dealId: deal?.id,
-                          existingContractFileUrl: deal?.contract_file_url,
+                          contract_file_url: deal?.contract_file_url,
                           contract_file_url: contractDocxUrl,
                           contractJustGenerated,
                           hasSession: !!session?.access_token,

@@ -1,162 +1,19 @@
 // Global error handler to suppress errors from third-party scripts (ad blockers, extensions)
 // MUST be set up BEFORE any React imports to catch early errors
 if (typeof window !== 'undefined') {
-  // CRITICAL: Patch Object.prototype to prevent unstable_now errors
-  // React's scheduler tries to set unstable_now on objects that might be undefined
-  // We create a safe wrapper that prevents this from crashing
-  const originalObject = Object;
-  
-  // Patch Object.defineProperty globally before anything else
-  const originalDefineProperty = Object.defineProperty;
-  
-  // Workaround for React scheduler unstable_now error
-  // This error occurs when React's scheduler tries to set properties on undefined
-  // We intercept both Object.defineProperty and direct property assignment
-  
-  // 1. Intercept Object.defineProperty to prevent unstable_now errors
-  Object.defineProperty = function(obj: any, prop: string, descriptor: PropertyDescriptor) {
-    try {
-      // If trying to set unstable_now on undefined/null, create a dummy object
-      if (prop === 'unstable_now' && (obj === undefined || obj === null)) {
-        const dummyObj: any = {};
-        return originalDefineProperty.call(this, dummyObj, prop, descriptor);
-      }
-      return originalDefineProperty.call(this, obj, prop, descriptor);
-    } catch (e: any) {
-      // If setting unstable_now fails, create a safe fallback
-      if (prop === 'unstable_now') {
-        try {
-          const fallbackObj: any = obj || {};
-          return originalDefineProperty.call(this, fallbackObj, prop, {
-            ...descriptor,
-            value: descriptor.value || (() => performance.now()),
-            writable: true,
-            configurable: true
-          });
-        } catch {
-          // If all else fails, return the object unchanged
-          return obj;
-        }
-      }
-      throw e;
-    }
-  };
-  
-  // 1b. Patch global object to ensure React scheduler has a valid object to work with
-  // React's scheduler tries to set unstable_now on an object that might be undefined
-  // We ensure all global objects that React might use are properly initialized
-  if (typeof globalThis !== 'undefined') {
-    // Ensure globalThis has the necessary properties
-    if (!globalThis.performance) {
-      globalThis.performance = {
-        now: () => Date.now()
-      } as any;
-    }
-  }
-  
-  // 1c. Intercept direct property assignments by patching Object.prototype
-  // This is a last resort - we can't directly intercept undefined.property = value
-  // But we can ensure objects exist before React tries to use them
-  const originalSetProperty = Object.setPrototypeOf;
-  Object.setPrototypeOf = function(obj: any, proto: any) {
-    try {
-      // If trying to set prototype on undefined, create a dummy object
-      if (obj === undefined || obj === null) {
-        return originalSetProperty.call(this, {}, proto);
-      }
-      return originalSetProperty.call(this, obj, proto);
-    } catch (e) {
-      // If it fails, try with a fallback object
-      if (obj === undefined || obj === null) {
-        try {
-          return originalSetProperty.call(this, {}, proto);
-        } catch {
-          return obj;
-        }
-      }
-      throw e;
-    }
-  };
-  
-  // 2. Polyfill performance.now if missing (React scheduler depends on it)
-  if (typeof performance === 'undefined' || typeof performance.now !== 'function') {
-    (window as any).performance = {
-      now: () => Date.now()
-    };
-  }
-  
-  // 3. Aggressively catch unstable_now errors before they crash
-  // Set up error handler as early as possible, even before other handlers
-  const originalErrorHandler = window.onerror;
-  window.onerror = function(message, source, lineno, colno, error) {
-    const errorStr = String(message || '');
-    const errorStack = error?.stack || '';
-    const errorMessage = error?.message || '';
-    
-    // Check all possible error representations
-    if (errorStr.includes('unstable_now') || 
-        errorStr.includes('Cannot set properties of undefined') ||
-        errorStack.includes('unstable_now') ||
-        errorMessage.includes('unstable_now') ||
-        errorMessage.includes('Cannot set properties of undefined')) {
-      // Suppress the error completely - don't let it crash the app
-      // Try to continue execution by not throwing
-      return true; // Prevent default error handling
-    }
-    // Call original error handler for other errors
-    if (originalErrorHandler) {
-      return originalErrorHandler.call(this, message, source, lineno, colno, error);
-    }
-    return false;
-  };
-  
-  // Also set up error listener (redundant but ensures we catch it)
-  window.addEventListener('error', function(event) {
-    const errorStr = String(event.message || '');
-    const errorStack = String(event.error?.stack || '');
-    if (errorStr.includes('unstable_now') || 
-        errorStr.includes('Cannot set properties of undefined') ||
-        errorStack.includes('unstable_now')) {
-      event.preventDefault();
-      event.stopPropagation();
-      event.stopImmediatePropagation();
-      return false;
-    }
-  }, true); // Use capture phase
-  
-  // 4. Also catch unhandled promise rejections that might contain unstable_now errors
-  const originalUnhandledRejection = window.onunhandledrejection;
-  window.onunhandledrejection = function(event) {
-    const errorStr = String(event.reason || '');
-    if (errorStr.includes('unstable_now') || 
-        errorStr.includes('Cannot set properties of undefined')) {
-      event.preventDefault();
-      return true;
-    }
-    if (originalUnhandledRejection) {
-      return originalUnhandledRejection.call(this, event);
-    }
-    return false;
-  };
-  
   // Helper function to check if error should be suppressed
   const shouldSuppressError = (errorMessage: string, source?: string): boolean => {
-    const message = errorMessage.toLowerCase();
-    const src = (source || '').toLowerCase();
-    
     return (
-      src.includes('site-blocker') ||
-      src.includes('fbevents') ||
-      message.includes('err_blocked_by_client') ||
-      message.includes('site-blocker') ||
-      message.includes('unstable_now') ||
-      message.includes('cannot set properties of undefined') ||
-      message.includes('setting \'unstable_now\'') ||
-      message.includes('cannot read properties of null') ||
-      message.includes('reading \'usestate\'') ||
-      message.includes('minified react error #130') ||
-      message.includes('fbevents.js') ||
-      message.includes('react-vendor') && message.includes('unstable')
+      source?.includes('site-blocker') ||
+      source?.includes('fbevents') ||
+      errorMessage.includes('ERR_BLOCKED_BY_CLIENT') ||
+      errorMessage.includes('site-blocker') ||
+      errorMessage.includes('unstable_now') ||
+      errorMessage.includes('Cannot set properties of undefined') ||
+      errorMessage.includes('Cannot read properties of null') ||
+      errorMessage.includes('reading \'useState\'') ||
+      errorMessage.includes('Minified React error #130') ||
+      errorMessage.includes('fbevents.js')
     );
   };
 
@@ -164,13 +21,8 @@ if (typeof window !== 'undefined') {
   window.addEventListener('error', (event) => {
     const errorMessage = event.message || String(event.error || '');
     const source = event.filename || '';
-    const errorStack = event.error?.stack || '';
     
-    // Check error message, source, and stack trace
-    if (shouldSuppressError(errorMessage, source) || 
-        shouldSuppressError(errorStack, source) ||
-        errorMessage.includes('unstable_now') ||
-        errorStack.includes('unstable_now')) {
+    if (shouldSuppressError(errorMessage, source)) {
       event.preventDefault();
       event.stopPropagation();
       return false;
@@ -240,9 +92,7 @@ if (typeof window !== 'undefined') {
   };
 }
 
-// React 17 uses ReactDOM.render instead of createRoot
-import React from "react";
-import ReactDOM from "react-dom";
+import { createRoot } from "react-dom/client";
 import App from "./App.tsx";
 import "./globals.css";
 
@@ -252,57 +102,10 @@ if (!rootElement) {
   throw new Error("Root element not found");
 }
 
-// Wrap React initialization in additional error handling
-// If unstable_now error occurs, React might fail silently, so we check if it actually rendered
-let renderAttempted = false;
-let renderSucceeded = false;
-
-// Add a check to see if React actually loaded
-const checkReactLoaded = () => {
-  if (typeof React === 'undefined' || typeof ReactDOM === 'undefined') {
-    console.error('[React] React or ReactDOM is undefined - React failed to load');
-    showFallbackUI(rootElement, new Error('React failed to load - React or ReactDOM is undefined'));
-    return false;
-  }
-  return true;
-};
-
-if (!checkReactLoaded()) {
-  // React didn't load, show fallback
-} else {
-  try {
-    ReactDOM.render(<App />, rootElement);
-    renderAttempted = true;
-    
-    // Give React a moment to initialize, then check if it rendered
-    setTimeout(() => {
-      // Check if React actually rendered by looking for React root or any content
-      // React 17 uses data-reactroot attribute
-      const reactRoot = rootElement.querySelector('[data-reactroot], #root > *');
-      const hasContent = rootElement.children.length > 0 || rootElement.innerHTML.trim().length > 0;
-      
-      if (reactRoot || hasContent) {
-        renderSucceeded = true;
-        console.log('[React] App rendered successfully');
-      } else if (renderAttempted && !renderSucceeded) {
-        // React failed to render, likely due to unstable_now error
-        console.error('[React] App failed to render - showing fallback UI');
-        console.error('[React] Root element state:', {
-          children: rootElement.children.length,
-          innerHTML: rootElement.innerHTML.substring(0, 200),
-          hasReactRoot: !!rootElement.querySelector('[data-reactroot], #root > *')
-        });
-        showFallbackUI(rootElement, new Error('React failed to initialize - likely due to scheduler error'));
-      }
-    }, 1000); // Increased timeout to give React more time
-  } catch (error: any) {
-    // If React fails to render, show a fallback UI
-    console.error("Failed to render app:", error);
-    showFallbackUI(rootElement, error);
-  }
-}
-
-function showFallbackUI(rootElement: HTMLElement, error: any) {
+try {
+  const root = createRoot(rootElement);
+  root.render(<App />);
+} catch (error: any) {
   // If React fails to render, show a fallback UI
   console.error("Failed to render app:", error);
   rootElement.innerHTML = `
