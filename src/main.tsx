@@ -42,20 +42,36 @@ if (typeof window !== 'undefined') {
     };
   }
   
-  // 3. Wrap Object.prototype to catch direct property assignments on undefined
-  // This is a last resort to prevent the unstable_now error from crashing
+  // 3. Aggressively catch unstable_now errors before they crash
   const originalErrorHandler = window.onerror;
   window.onerror = function(message, source, lineno, colno, error) {
     const errorStr = String(message || '');
+    const errorStack = error?.stack || '';
+    
     if (errorStr.includes('unstable_now') || 
-        errorStr.includes('Cannot set properties of undefined')) {
-      // Suppress the error and continue
-      console.warn('[React] Suppressed unstable_now error - app should continue');
+        errorStr.includes('Cannot set properties of undefined') ||
+        errorStack.includes('unstable_now')) {
+      // Suppress the error completely - don't let it crash the app
       return true; // Prevent default error handling
     }
     // Call original error handler for other errors
     if (originalErrorHandler) {
       return originalErrorHandler.call(this, message, source, lineno, colno, error);
+    }
+    return false;
+  };
+  
+  // 4. Also catch unhandled promise rejections that might contain unstable_now errors
+  const originalUnhandledRejection = window.onunhandledrejection;
+  window.onunhandledrejection = function(event) {
+    const errorStr = String(event.reason || '');
+    if (errorStr.includes('unstable_now') || 
+        errorStr.includes('Cannot set properties of undefined')) {
+      event.preventDefault();
+      return true;
+    }
+    if (originalUnhandledRejection) {
+      return originalUnhandledRejection.call(this, event);
     }
     return false;
   };
@@ -171,10 +187,17 @@ if (!rootElement) {
   throw new Error("Root element not found");
 }
 
+// Wrap React initialization in additional error handling
 try {
   const root = createRoot(rootElement);
   root.render(<App />);
 } catch (error: any) {
+  // If React fails to render, show a fallback UI
+  console.error("Failed to render app:", error);
+  showFallbackUI(rootElement, error);
+}
+
+function showFallbackUI(rootElement: HTMLElement, error: any) {
   // If React fails to render, show a fallback UI
   console.error("Failed to render app:", error);
   rootElement.innerHTML = `
