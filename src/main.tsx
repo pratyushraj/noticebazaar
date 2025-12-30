@@ -14,7 +14,6 @@ if (typeof window !== 'undefined') {
   // We intercept both Object.defineProperty and direct property assignment
   
   // 1. Intercept Object.defineProperty to prevent unstable_now errors
-  const originalDefineProperty = Object.defineProperty;
   Object.defineProperty = function(obj: any, prop: string, descriptor: PropertyDescriptor) {
     try {
       // If trying to set unstable_now on undefined/null, create a dummy object
