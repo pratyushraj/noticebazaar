@@ -322,6 +322,19 @@
             const errorStr = String(message || '');
             const errorStack = error && error.stack ? String(error.stack) : '';
             const errorMessage = error && error.message ? String(error.message) : '';
+            const sourceStr = String(source || '');
+            
+            // Suppress errors from browser extensions (site-blocker, ad blockers, etc.)
+            if (sourceStr.includes('site-blocker') || 
+                sourceStr.includes('fbevents') ||
+                errorStr.includes('site-blocker') ||
+                errorStr.includes('fbevents') ||
+                errorStack.includes('site-blocker') ||
+                errorStr.includes('Minified React error #130') ||
+                errorMessage.includes('Minified React error #130')) {
+              // Suppress browser extension errors
+              return true;
+            }
             
             if (errorStr.includes('unstable_now') || 
                 errorStr.includes('Cannot set properties of undefined') ||
