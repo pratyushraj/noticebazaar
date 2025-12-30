@@ -94,6 +94,9 @@
       (function() {
         'use strict';
         
+        // Log that error handlers are being set up
+        console.log('[Error Handler] Setting up error handlers before React loads...');
+        
         // Set up error handlers IMMEDIATELY, before any modules load
         if (typeof window !== 'undefined') {
           // 1. Patch Object.defineProperty to prevent unstable_now errors
@@ -140,10 +143,13 @@
                 errorStack.includes('unstable_now') ||
                 errorMessage.includes('unstable_now')) {
               // Suppress the error - don't let it crash
+              console.warn('[Error Handler] Caught unstable_now error via window.onerror - suppressing');
               return true;
             }
             return false;
           };
+          
+          console.log('[Error Handler] Error handlers set up successfully');
           
           // 4. Also catch via addEventListener
           window.addEventListener('error', function(event) {

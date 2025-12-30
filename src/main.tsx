@@ -285,6 +285,11 @@ if (!checkReactLoaded()) {
       } else if (renderAttempted && !renderSucceeded) {
         // React failed to render, likely due to unstable_now error
         console.error('[React] App failed to render - showing fallback UI');
+        console.error('[React] Root element state:', {
+          children: rootElement.children.length,
+          innerHTML: rootElement.innerHTML.substring(0, 200),
+          hasReactRoot: !!rootElement.querySelector('[data-reactroot], #root > *')
+        });
         showFallbackUI(rootElement, new Error('React failed to initialize - likely due to scheduler error'));
       }
     }, 1000); // Increased timeout to give React more time
