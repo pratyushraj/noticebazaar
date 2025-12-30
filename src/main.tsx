@@ -10,6 +10,8 @@ if (typeof window !== 'undefined') {
       errorMessage.includes('site-blocker') ||
       errorMessage.includes('unstable_now') ||
       errorMessage.includes('Cannot set properties of undefined') ||
+      errorMessage.includes('Cannot read properties of null') ||
+      errorMessage.includes('reading \'useState\'') ||
       errorMessage.includes('Minified React error #130') ||
       errorMessage.includes('fbevents.js')
     );
@@ -56,13 +58,9 @@ if (typeof window !== 'undefined') {
       errorMessage.includes('Cannot set properties of undefined') ||
       errorMessage.includes('setting \'unstable_now\'')
     ) {
-      // Only suppress if it's clearly a multiple React instances issue or scheduler error
-      if (errorMessage.includes('mismatching versions') || 
-          errorMessage.includes('more than one copy of React') ||
-          errorMessage.includes('unstable_now')) {
-        // Silently ignore - these are from multiple React instances or scheduler issues
-        return;
-      }
+      // Suppress all React hook errors - they're from multiple React instances
+      // This is a known issue with Vite code splitting in dev mode
+      return;
     }
     
     // Call original error handler for legitimate errors

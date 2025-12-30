@@ -143,6 +143,12 @@ export default defineConfig(() => ({
     entries: [
       'src/main.tsx',
     ],
+    // CRITICAL: Ensure React is in a single optimized chunk
+    // This prevents multiple React instances in dev mode
+    commonjsOptions: {
+      include: [/node_modules/],
+      transformMixedEsModules: true,
+    },
   },
   ssr: {
     noExternal: ["react", "react-dom"],
