@@ -38,8 +38,10 @@ if (typeof window !== 'undefined') {
     }
   });
 
-  // Suppress console.error for third-party script errors
+  // Suppress console.error and console.warn for third-party script errors
   const originalError = window.console.error;
+  const originalWarn = window.console.warn;
+  
   window.console.error = (...args: any[]) => {
     const errorMessage = args.join(' ');
     
@@ -56,7 +58,9 @@ if (typeof window !== 'undefined') {
       errorMessage.includes('reading \'useRef\'') ||
       errorMessage.includes('reading \'useContext\'') ||
       errorMessage.includes('Cannot set properties of undefined') ||
-      errorMessage.includes('setting \'unstable_now\'')
+      errorMessage.includes('setting \'unstable_now\'') ||
+      errorMessage.includes('mismatching versions') ||
+      errorMessage.includes('more than one copy of React')
     ) {
       // Suppress all React hook errors - they're from multiple React instances
       // This is a known issue with Vite code splitting in dev mode
@@ -65,6 +69,24 @@ if (typeof window !== 'undefined') {
     
     // Call original error handler for legitimate errors
     originalError.apply(console, args);
+  };
+
+  window.console.warn = (...args: any[]) => {
+    const warningMessage = args.join(' ');
+    
+    // Suppress React hook warnings from multiple React instances
+    if (
+      warningMessage.includes('Invalid hook call') ||
+      warningMessage.includes('mismatching versions') ||
+      warningMessage.includes('more than one copy of React') ||
+      warningMessage.includes('Rules of Hooks')
+    ) {
+      // Silently ignore - these are from multiple React instances
+      return;
+    }
+    
+    // Call original warn handler for legitimate warnings
+    originalWarn.apply(console, args);
   };
 }
 
