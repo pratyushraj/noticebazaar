@@ -353,6 +353,22 @@
           window.addEventListener('error', function(event) {
             const errorStr = String(event.message || '');
             const errorStack = String(event.error && event.error.stack || '');
+            const sourceStr = String(event.filename || event.source || '');
+            
+            // Suppress errors from browser extensions (site-blocker, ad blockers, etc.)
+            if (sourceStr.includes('site-blocker') || 
+                sourceStr.includes('fbevents') ||
+                errorStr.includes('site-blocker') ||
+                errorStr.includes('fbevents') ||
+                errorStack.includes('site-blocker') ||
+                errorStr.includes('Minified React error #130') ||
+                errorStr.includes('ERR_BLOCKED_BY_CLIENT')) {
+              event.preventDefault();
+              event.stopPropagation();
+              event.stopImmediatePropagation();
+              return false;
+            }
+            
             if (errorStr.includes('unstable_now') || 
                 errorStr.includes('Cannot set properties of undefined') ||
                 errorStack.includes('unstable_now')) {
