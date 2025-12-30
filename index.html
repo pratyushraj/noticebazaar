@@ -159,6 +159,34 @@
             };
           }
           
+          // 2b. Pre-create a scheduler object that React might try to use
+          // This is a workaround for React's scheduler trying to set unstable_now on undefined
+          if (!window.__reactSchedulerWorkaround) {
+            window.__reactSchedulerWorkaround = {
+              unstable_now: function() {
+                return (performance && performance.now ? performance.now() : Date.now());
+              }
+            };
+          }
+          
+          // 2c. Patch Object.setPrototypeOf to handle undefined
+          const originalSetPrototypeOf = Object.setPrototypeOf;
+          Object.setPrototypeOf = function(obj, prototype) {
+            if (obj === undefined || obj === null) {
+              console.warn('[Error Handler] Object.setPrototypeOf called on undefined/null - creating fallback');
+              return prototype;
+            }
+            try {
+              return originalSetPrototypeOf.call(this, obj, prototype);
+            } catch (e) {
+              if (e.message && e.message.includes('unstable_now')) {
+                console.warn('[Error Handler] Caught unstable_now in setPrototypeOf - ignoring');
+                return obj;
+              }
+              throw e;
+            }
+          };
+          
           // 3. Set up error handler BEFORE React loads
           window.onerror = function(message, source, lineno, colno, error) {
             const errorStr = String(message || '');
