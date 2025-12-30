@@ -3,17 +3,22 @@
 if (typeof window !== 'undefined') {
   // Helper function to check if error should be suppressed
   const shouldSuppressError = (errorMessage: string, source?: string): boolean => {
+    const message = errorMessage.toLowerCase();
+    const src = (source || '').toLowerCase();
+    
     return (
-      source?.includes('site-blocker') ||
-      source?.includes('fbevents') ||
-      errorMessage.includes('ERR_BLOCKED_BY_CLIENT') ||
-      errorMessage.includes('site-blocker') ||
-      errorMessage.includes('unstable_now') ||
-      errorMessage.includes('Cannot set properties of undefined') ||
-      errorMessage.includes('Cannot read properties of null') ||
-      errorMessage.includes('reading \'useState\'') ||
-      errorMessage.includes('Minified React error #130') ||
-      errorMessage.includes('fbevents.js')
+      src.includes('site-blocker') ||
+      src.includes('fbevents') ||
+      message.includes('err_blocked_by_client') ||
+      message.includes('site-blocker') ||
+      message.includes('unstable_now') ||
+      message.includes('cannot set properties of undefined') ||
+      message.includes('setting \'unstable_now\'') ||
+      message.includes('cannot read properties of null') ||
+      message.includes('reading \'usestate\'') ||
+      message.includes('minified react error #130') ||
+      message.includes('fbevents.js') ||
+      message.includes('react-vendor') && message.includes('unstable')
     );
   };
 
@@ -21,8 +26,13 @@ if (typeof window !== 'undefined') {
   window.addEventListener('error', (event) => {
     const errorMessage = event.message || String(event.error || '');
     const source = event.filename || '';
+    const errorStack = event.error?.stack || '';
     
-    if (shouldSuppressError(errorMessage, source)) {
+    // Check error message, source, and stack trace
+    if (shouldSuppressError(errorMessage, source) || 
+        shouldSuppressError(errorStack, source) ||
+        errorMessage.includes('unstable_now') ||
+        errorStack.includes('unstable_now')) {
       event.preventDefault();
       event.stopPropagation();
       return false;
