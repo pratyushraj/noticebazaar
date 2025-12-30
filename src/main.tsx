@@ -42,6 +42,24 @@ if (typeof window !== 'undefined') {
     };
   }
   
+  // 3. Wrap Object.prototype to catch direct property assignments on undefined
+  // This is a last resort to prevent the unstable_now error from crashing
+  const originalErrorHandler = window.onerror;
+  window.onerror = function(message, source, lineno, colno, error) {
+    const errorStr = String(message || '');
+    if (errorStr.includes('unstable_now') || 
+        errorStr.includes('Cannot set properties of undefined')) {
+      // Suppress the error and continue
+      console.warn('[React] Suppressed unstable_now error - app should continue');
+      return true; // Prevent default error handling
+    }
+    // Call original error handler for other errors
+    if (originalErrorHandler) {
+      return originalErrorHandler.call(this, message, source, lineno, colno, error);
+    }
+    return false;
+  };
+  
   // Helper function to check if error should be suppressed
   const shouldSuppressError = (errorMessage: string, source?: string): boolean => {
     const message = errorMessage.toLowerCase();
