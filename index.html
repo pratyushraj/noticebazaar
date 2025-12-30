@@ -155,9 +155,23 @@
               event.preventDefault();
               event.stopPropagation();
               event.stopImmediatePropagation();
+              // Log that we caught it (for debugging)
+              console.warn('[Error Handler] Caught unstable_now error - suppressing');
               return false;
             }
           }, true);
+          
+          // 5. Monitor if React loads successfully
+          window.addEventListener('load', function() {
+            setTimeout(function() {
+              const root = document.getElementById('root');
+              if (root && (!root.children || root.children.length === 0)) {
+                console.error('[Error Handler] Root element is empty after page load - React may have failed');
+                // Show a simple fallback message
+                root.innerHTML = '<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;background:linear-gradient(135deg,#6A5CFF 0%,#8B7FFF 100%);color:white;padding:2rem;text-align:center;font-family:-apple-system,BlinkMacSystemFont,\'Segoe UI\',Roboto,sans-serif;"><h1 style="font-size:2rem;margin-bottom:1rem;">⚠️ App Loading Issue</h1><p style="font-size:1.1rem;margin-bottom:2rem;opacity:0.9;">The app is taking longer than expected to load. Please refresh the page.</p><button onclick="window.location.reload()" style="background:white;color:#6A5CFF;border:none;padding:0.75rem 2rem;border-radius:0.5rem;font-size:1rem;font-weight:600;cursor:pointer;">Refresh Page</button></div>';
+              }
+            }, 2000);
+          });
         }
       })();
     </script>

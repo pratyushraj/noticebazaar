@@ -255,27 +255,44 @@ if (!rootElement) {
 let renderAttempted = false;
 let renderSucceeded = false;
 
-try {
-  const root = createRoot(rootElement);
-  root.render(<App />);
-  renderAttempted = true;
-  // Give React a moment to initialize
-  setTimeout(() => {
-    // Check if React actually rendered by looking for React root
-    const reactRoot = rootElement.querySelector('[data-reactroot], #root > *');
-    if (reactRoot) {
-      renderSucceeded = true;
-    } else if (renderAttempted && !renderSucceeded) {
-      // React failed to render, likely due to unstable_now error
-      console.warn('[React] App may have failed to render due to scheduler error');
-      // Try to show fallback UI
-      showFallbackUI(rootElement, new Error('React failed to initialize - likely due to scheduler error'));
-    }
-  }, 500);
-} catch (error: any) {
-  // If React fails to render, show a fallback UI
-  console.error("Failed to render app:", error);
-  showFallbackUI(rootElement, error);
+// Add a check to see if React actually loaded
+const checkReactLoaded = () => {
+  if (typeof createRoot === 'undefined') {
+    console.error('[React] createRoot is undefined - React failed to load');
+    showFallbackUI(rootElement, new Error('React failed to load - createRoot is undefined'));
+    return false;
+  }
+  return true;
+};
+
+if (!checkReactLoaded()) {
+  // React didn't load, show fallback
+} else {
+  try {
+    const root = createRoot(rootElement);
+    root.render(<App />);
+    renderAttempted = true;
+    
+    // Give React a moment to initialize, then check if it rendered
+    setTimeout(() => {
+      // Check if React actually rendered by looking for React root or any content
+      const reactRoot = rootElement.querySelector('[data-reactroot], #root > *');
+      const hasContent = rootElement.children.length > 0 || rootElement.innerHTML.trim().length > 0;
+      
+      if (reactRoot || hasContent) {
+        renderSucceeded = true;
+        console.log('[React] App rendered successfully');
+      } else if (renderAttempted && !renderSucceeded) {
+        // React failed to render, likely due to unstable_now error
+        console.error('[React] App failed to render - showing fallback UI');
+        showFallbackUI(rootElement, new Error('React failed to initialize - likely due to scheduler error'));
+      }
+    }, 1000); // Increased timeout to give React more time
+  } catch (error: any) {
+    // If React fails to render, show a fallback UI
+    console.error("Failed to render app:", error);
+    showFallbackUI(rootElement, error);
+  }
 }
 
 function showFallbackUI(rootElement: HTMLElement, error: any) {
