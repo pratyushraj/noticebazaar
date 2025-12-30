@@ -100,6 +100,7 @@
         // Set up error handlers IMMEDIATELY, before any modules load
         if (typeof window !== 'undefined') {
           // 1. Patch Object.defineProperty to prevent unstable_now errors
+          // CRITICAL: This must be done BEFORE React modules load
           const originalDefineProperty = Object.defineProperty;
           Object.defineProperty = function(obj, prop, descriptor) {
             try {
@@ -119,10 +120,16 @@
                 }
                 return result;
               }
+              // Also handle if obj is a Proxy or has special behavior
+              if (obj === undefined || obj === null) {
+                console.warn('[Error Handler] Object.defineProperty called on undefined/null for prop:', prop);
+                const fallbackObj = {};
+                return originalDefineProperty.call(this, fallbackObj, prop, descriptor);
+              }
               return originalDefineProperty.call(this, obj, prop, descriptor);
             } catch (e) {
-              if (prop === 'unstable_now') {
-                console.warn('[Error Handler] Object.defineProperty failed for unstable_now - using fallback');
+              if (prop === 'unstable_now' || (obj === undefined || obj === null)) {
+                console.warn('[Error Handler] Object.defineProperty failed - using fallback');
                 try {
                   const fallbackObj = obj || {};
                   return originalDefineProperty.call(this, fallbackObj, prop, {
@@ -135,6 +142,23 @@
                   // If all else fails, return the object (or create a new one)
                   return obj || {};
                 }
+              }
+              throw e;
+            }
+          };
+          
+          // 1a. Also patch Object.defineProperties (React might use this too)
+          const originalDefineProperties = Object.defineProperties;
+          Object.defineProperties = function(obj, props) {
+            if (obj === undefined || obj === null) {
+              console.warn('[Error Handler] Object.defineProperties called on undefined/null - creating fallback');
+              return originalDefineProperties.call(this, {}, props);
+            }
+            try {
+              return originalDefineProperties.call(this, obj, props);
+            } catch (e) {
+              if (obj === undefined || obj === null) {
+                return originalDefineProperties.call(this, {}, props);
               }
               throw e;
             }
