@@ -6,13 +6,13 @@
   "packageManager": "pnpm@10.26.2",
   "pnpm": {
     "overrides": {
-      "react": "18.1.0",
-      "react-dom": "18.1.0"
+      "react": "18.0.0",
+      "react-dom": "18.0.0"
     },
     "peerDependencyRules": {
       "allowedVersions": {
-        "react": "18.1.0",
-        "react-dom": "18.1.0"
+        "react": "18.0.0",
+        "react-dom": "18.0.0"
       },
       "ignoreMissing": []
     }
@@ -68,9 +68,9 @@
     "jszip": "^3.10.1",
     "lucide-react": "^0.462.0",
     "pdfjs-dist": "^5.4.449",
-    "react": "18.1.0",
+    "react": "18.0.0",
     "react-countup": "^6.5.3",
-    "react-dom": "18.1.0",
+    "react-dom": "18.0.0",
     "react-router-dom": "^6.26.2",
     "react-swipeable": "^7.0.2",
     "sonner": "^1.5.0",
@@ -104,7 +104,7 @@
     "vite": "^6.3.4"
   },
   "overrides": {
-    "react": "18.1.0",
-    "react-dom": "18.1.0"
+    "react": "18.0.0",
+    "react-dom": "18.0.0"
   }
 }
