@@ -99,9 +99,24 @@
         
         // Set up error handlers IMMEDIATELY, before any modules load
         if (typeof window !== 'undefined') {
+          // CRITICAL: Freeze the patches to prevent React from bypassing them
+          // Store original functions in a way that can't be overridden
+          const _originalDefineProperty = Object.defineProperty;
+          const _originalDefineProperties = Object.defineProperties;
+          const _originalSetPrototypeOf = Object.setPrototypeOf;
+          
+          // Make these available globally but protected
+          if (!window.__reactErrorHandlerOriginals) {
+            window.__reactErrorHandlerOriginals = {
+              defineProperty: _originalDefineProperty,
+              defineProperties: _originalDefineProperties,
+              setPrototypeOf: _originalSetPrototypeOf
+            };
+          }
           // 1. Patch Object.defineProperty to prevent unstable_now errors
           // CRITICAL: This must be done BEFORE React modules load
-          const originalDefineProperty = Object.defineProperty;
+          // Use the stored original to prevent React from bypassing the patch
+          const originalDefineProperty = window.__reactErrorHandlerOriginals.defineProperty;
           Object.defineProperty = function(obj, prop, descriptor) {
             try {
               // CRITICAL: If trying to set unstable_now on undefined/null, create a valid object
@@ -148,7 +163,7 @@
           };
           
           // 1a. Also patch Object.defineProperties (React might use this too)
-          const originalDefineProperties = Object.defineProperties;
+          const originalDefineProperties = window.__reactErrorHandlerOriginals.defineProperties;
           Object.defineProperties = function(obj, props) {
             if (obj === undefined || obj === null) {
               console.warn('[Error Handler] Object.defineProperties called on undefined/null - creating fallback');
@@ -194,7 +209,7 @@
           }
           
           // 2c. Patch Object.setPrototypeOf to handle undefined
-          const originalSetPrototypeOf = Object.setPrototypeOf;
+          const originalSetPrototypeOf = window.__reactErrorHandlerOriginals.setPrototypeOf;
           Object.setPrototypeOf = function(obj, prototype) {
             if (obj === undefined || obj === null) {
               console.warn('[Error Handler] Object.setPrototypeOf called on undefined/null - creating fallback');
