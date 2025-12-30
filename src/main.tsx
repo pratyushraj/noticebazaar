@@ -3,7 +3,9 @@
 if (typeof window !== 'undefined') {
   // Workaround for React scheduler unstable_now error
   // This error occurs when React's scheduler tries to set properties on undefined
-  // We intercept Object.defineProperty calls to prevent crashes
+  // We intercept both Object.defineProperty and direct property assignment
+  
+  // 1. Intercept Object.defineProperty
   const originalDefineProperty = Object.defineProperty;
   Object.defineProperty = function(obj: any, prop: string, descriptor: PropertyDescriptor) {
     try {
@@ -32,6 +34,13 @@ if (typeof window !== 'undefined') {
       throw e;
     }
   };
+  
+  // 2. Polyfill performance.now if missing (React scheduler depends on it)
+  if (typeof performance === 'undefined' || typeof performance.now !== 'function') {
+    (window as any).performance = {
+      now: () => Date.now()
+    };
+  }
   
   // Helper function to check if error should be suppressed
   const shouldSuppressError = (errorMessage: string, source?: string): boolean => {
