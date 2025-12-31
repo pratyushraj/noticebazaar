@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { Wallet, TrendingUp } from 'lucide-react';
+import { formatIndianCurrency } from '@/lib/utils/currency';
 
 interface SummaryCardProps {
   thisMonth: number;
@@ -28,7 +29,7 @@ export const SummaryCard: React.FC<SummaryCardProps> = ({
       
       {/* Main Amount */}
       <div className="mb-6">
-        <div className="text-5xl font-bold mb-2 text-white">₹{(thisMonth / 1000).toFixed(1)}K</div>
+        <div className="text-5xl font-bold mb-2 text-white">{formatIndianCurrency(thisMonth)}</div>
         <div className="flex items-center gap-2 text-sm">
           {growthPercentage > 0 ? (
             <span className="text-green-400 flex items-center gap-1 font-medium">
@@ -50,11 +51,11 @@ export const SummaryCard: React.FC<SummaryCardProps> = ({
       <div className="grid grid-cols-2 gap-6 pt-6 border-t border-white/10">
         <div>
           <div className="text-purple-200 text-xs mb-2 font-medium">Pending</div>
-          <div className="text-2xl md:text-3xl font-bold text-white">₹{(pending / 1000).toFixed(0)}K</div>
+          <div className="text-2xl md:text-3xl font-bold text-white">{formatIndianCurrency(pending)}</div>
         </div>
         <div>
           <div className="text-purple-200 text-xs mb-2 font-medium">Next Payout</div>
-          <div className="text-2xl md:text-3xl font-bold text-white mb-1">₹{(nextPayout / 1000).toFixed(0)}K</div>
+          <div className="text-2xl md:text-3xl font-bold text-white mb-1">{formatIndianCurrency(nextPayout)}</div>
           <div className="text-sm text-purple-300 font-medium">{payoutDate}</div>
         </div>
       </div>

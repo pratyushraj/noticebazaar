@@ -3,6 +3,7 @@
 import React, { memo } from 'react';
 import { ArrowDownRight, CheckCircle, Clock, AlertCircle, CreditCard, MoreVertical } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { formatIndianCurrency } from '@/lib/utils/currency';
 
 interface PaymentCardProps {
   id: string;
@@ -126,7 +127,7 @@ export const PaymentCard: React.FC<PaymentCardProps> = memo(({
           <div className={`text-2xl font-bold ${
             type === 'expense' ? 'text-red-400' : 'text-green-400'
           }`}>
-            {type === 'expense' ? '-' : '+'}₹{(amount / 1000).toFixed(1)}K
+            {type === 'expense' ? '-' : '+'}{formatIndianCurrency(amount)}
           </div>
           
           {/* Risk Badge - Next to Amount */}
@@ -198,7 +199,7 @@ export const PaymentCard: React.FC<PaymentCardProps> = memo(({
             </span>
           ) : tax && tax > 0 ? (
             <span className="text-xs opacity-80 text-white/60">
-              Tax: ₹{(tax / 1000).toFixed(1)}K
+              Tax: {formatIndianCurrency(tax)}
             </span>
           ) : (
             <span className="text-xs opacity-80 text-[#FFD57A]">
