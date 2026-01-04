@@ -12,10 +12,12 @@ import {
   Package,
   Shield,
   Clock,
-  XCircle
+  XCircle,
+  Info
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 // Structured deliverable interface
 interface Deliverable {
@@ -1046,8 +1048,20 @@ const BrandDealDetailsPage = () => {
 
               {/* Whitelisting Toggle */}
               <div>
-                <label className="block text-sm font-medium mb-2">
+                <label className="block text-sm font-medium mb-2 flex items-center gap-2">
                   Whitelisting Allowed?
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Info className="w-4 h-4 text-white/60 hover:text-white/80 cursor-help" />
+                      </TooltipTrigger>
+                      <TooltipContent className="bg-purple-900/95 border-white/20 text-white max-w-xs">
+                        <p className="text-sm">
+                          Whitelisting allows the brand to run your content as paid ads from your profile or identity. Enable only if you want brands to promote your content, and always define duration & platforms.
+                        </p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                 </label>
                 <div className="flex gap-4">
                   <label className="flex items-center gap-2 cursor-pointer">
@@ -1076,8 +1090,20 @@ const BrandDealDetailsPage = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-2">
+                <label className="block text-sm font-medium mb-2 flex items-center gap-2">
                   Exclusivity Period
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Info className="w-4 h-4 text-white/60 hover:text-white/80 cursor-help" />
+                      </TooltipTrigger>
+                      <TooltipContent className="bg-purple-900/95 border-white/20 text-white max-w-xs">
+                        <p className="text-sm">
+                          Exclusivity means you agree not to work with competing brands in the same category for a defined period. Set this only if the brand is compensating fairly for restricting your future collaborations.
+                        </p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                 </label>
                 <select
                   value={formData.exclusivityPeriod || 'none'}
