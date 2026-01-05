@@ -499,7 +499,10 @@ function DealDetailPageContent() {
 
   // Compute deal data for handlers (safe even if deal is undefined)
   const dealAmount = useMemo(() => Number(deal?.deal_amount || 0), [deal?.deal_amount]);
-  const dealTitle = useMemo(() => `${deal?.brand_name || ''} ${deal?.platform || 'Partnership'} Agreement`, [deal?.brand_name, deal?.platform]);
+  const dealTitle = useMemo(() => {
+    if (!deal?.brand_name) return 'Collaboration Agreement';
+    return `${deal.brand_name} · Collaboration Agreement`;
+  }, [deal?.brand_name]);
   const contractFileName = useMemo(() => deal?.contract_file_url ? getFilenameFromUrl(deal.contract_file_url) : null, [deal?.contract_file_url]);
   
   // Extract deal status fields (must be defined before getContractStatus)
@@ -1106,59 +1109,66 @@ Best regards`;
 
       {/* Content */}
       <div className="space-y-6 p-4 md:p-6 pb-24">
+        {/* Page Subtitle */}
+        <p className="text-sm text-white/70 text-center mb-4 px-2">
+          Everything about this collaboration, organized and protected in one place.
+        </p>
         
         {/* Brand Details Review Section - Show if deal was created via form */}
         {brandSubmissionDetails && !hasReviewedDetails && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-gradient-to-br from-green-500/20 to-emerald-500/20 backdrop-blur-xl border-2 border-green-400/30 rounded-2xl p-6 shadow-lg shadow-green-500/10"
+            className="bg-gradient-to-br from-green-500/20 to-emerald-500/20 backdrop-blur-xl border-2 border-green-400/30 rounded-2xl p-4 md:p-6 shadow-lg shadow-green-500/10"
           >
             <div className="flex items-start gap-4 mb-4">
               <div className="w-12 h-12 rounded-xl bg-green-500/30 flex items-center justify-center flex-shrink-0">
                 <FileText className="w-6 h-6 text-green-400" />
               </div>
               <div className="flex-1">
-                <div className="flex items-center gap-2 mb-2 flex-wrap">
-                  <h2 className="text-xl font-bold">Brand-Submitted Collaboration Details</h2>
-                  <span className="px-2 py-1 rounded-full text-xs font-medium bg-green-500/30 text-green-300 border border-green-400/50">
-                    🏷️ Provided by Brand (via CreatorArmour)
+                <div className="flex items-start justify-between gap-2 mb-2">
+                  <h2 className="text-xl font-bold flex-1">New Collaboration Request</h2>
+                  <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-green-500/30 text-green-300 border border-green-400/50 whitespace-nowrap">
+                    New
                   </span>
                 </div>
-                <p className="text-white/70 text-sm mb-4">
-                  Review brand-submitted details before drafting agreement
+                <p className="text-white/80 text-sm mb-1.5 font-medium">
+                  {brandSubmissionDetails.brandName || 'The brand'} has shared their collaboration details
+                </p>
+                <p className="text-white/60 text-sm mb-4 leading-relaxed">
+                  Review the details below, then we'll help you create a protected contract.
                 </p>
               </div>
             </div>
 
             {/* Details Display */}
-            <div className="bg-white/5 rounded-xl p-4 space-y-4 mb-4">
-              <div>
+            <div className="bg-white/5 rounded-xl p-4 md:p-5 space-y-4 mb-4 border border-white/5">
+              <div className="border-b border-white/10 pb-3">
                 <div className="text-sm text-white/60 mb-1">Brand Name</div>
                 <div className="text-white font-medium">{brandSubmissionDetails.brandName || 'Not provided'}</div>
               </div>
               
               {brandSubmissionDetails.campaignName && (
-                <div>
+                <div className="border-b border-white/10 pb-3">
                   <div className="text-sm text-white/60 mb-1">Campaign Name</div>
                   <div className="text-white font-medium">{brandSubmissionDetails.campaignName}</div>
                 </div>
               )}
 
-              <div>
+              <div className="border-b border-white/10 pb-3">
                 <div className="text-sm text-white/60 mb-1">Deal Type</div>
                 <div className="text-white font-medium capitalize">{brandSubmissionDetails.dealType || 'paid'}</div>
               </div>
 
               {brandSubmissionDetails.dealType === 'paid' && brandSubmissionDetails.paymentAmount && (
-                <div>
+                <div className="border-b border-white/10 pb-3">
                   <div className="text-sm text-white/60 mb-1">Payment Amount</div>
-                  <div className="text-white font-medium">₹{parseFloat(brandSubmissionDetails.paymentAmount).toLocaleString('en-IN')}</div>
+                  <div className="text-white font-semibold text-lg">₹{parseFloat(brandSubmissionDetails.paymentAmount).toLocaleString('en-IN')}</div>
                 </div>
               )}
 
               {brandSubmissionDetails.deliverables && brandSubmissionDetails.deliverables.length > 0 && (
-                <div>
+                <div className="border-b border-white/10 pb-3">
                   <div className="text-sm text-white/60 mb-1">Deliverables</div>
                   <ul className="list-disc list-inside space-y-1">
                     {brandSubmissionDetails.deliverables.map((d: string, idx: number) => (
@@ -1169,28 +1179,41 @@ Best regards`;
               )}
 
               {brandSubmissionDetails.deadline && (
-                <div>
+                <div className="border-b border-white/10 pb-3 last:border-0 last:pb-0">
                   <div className="text-sm text-white/60 mb-1">Timeline / Deadline</div>
-                  <div className="text-white font-medium">{brandSubmissionDetails.deadline}</div>
+                  <div className="text-white font-medium">
+                    {(() => {
+                      try {
+                        const date = new Date(brandSubmissionDetails.deadline);
+                        return date.toLocaleDateString('en-IN', {
+                          day: 'numeric',
+                          month: 'long',
+                          year: 'numeric'
+                        });
+                      } catch {
+                        return brandSubmissionDetails.deadline;
+                      }
+                    })()}
+                  </div>
                 </div>
               )}
 
               {brandSubmissionDetails.usageRights && (
-                <div>
+                <div className="border-b border-white/10 pb-3 last:border-0 last:pb-0">
                   <div className="text-sm text-white/60 mb-1">Usage Rights</div>
                   <div className="text-white font-medium">{brandSubmissionDetails.usageRights}</div>
                 </div>
               )}
 
               {brandSubmissionDetails.exclusivity && (
-                <div>
+                <div className="border-b border-white/10 pb-3 last:border-0 last:pb-0">
                   <div className="text-sm text-white/60 mb-1">Exclusivity Period</div>
                   <div className="text-white font-medium">{brandSubmissionDetails.exclusivity}</div>
                 </div>
               )}
 
               {brandSubmissionDetails.revisions && (
-                <div>
+                <div className="border-b border-white/10 pb-3 last:border-0 last:pb-0">
                   <div className="text-sm text-white/60 mb-1">Revisions</div>
                   <div className="text-white font-medium">{brandSubmissionDetails.revisions}</div>
                 </div>
@@ -1219,11 +1242,14 @@ Best regards`;
                   toast.error('Failed to update status');
                 }
               }}
-              className="w-full bg-green-600 hover:bg-green-700 px-6 py-3 rounded-xl font-semibold transition-colors flex items-center justify-center gap-2"
+              className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 px-6 py-4 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 shadow-lg shadow-green-500/20 active:scale-[0.98]"
             >
               <CheckCircle className="w-5 h-5" />
-              Review Details & Generate Draft Contract
+              I've Reviewed — Create Contract
             </button>
+            <p className="text-xs text-white/50 text-center mt-3 leading-relaxed">
+              We'll generate a protected contract based on these details. Takes under 60 seconds.
+            </p>
           </motion.div>
         )}
         
@@ -1248,6 +1274,7 @@ Best regards`;
           <div className="bg-white/5 rounded-xl p-4 mb-4">
             <div className="text-sm text-white/60 mb-1">Total Deal Value</div>
             <div className="text-3xl font-bold text-green-400">₹{Math.round(dealAmount).toLocaleString('en-IN')}</div>
+            <div className="text-xs text-white/50 mt-1">(Protected)</div>
           </div>
 
           {/* Action Buttons */}
@@ -1587,7 +1614,7 @@ ${link}`;
               const statusConfig = {
                 pending: {
                   icon: Clock,
-                  label: '⏳ Waiting for brand response',
+                  label: 'Waiting for brand response',
                   color: 'text-yellow-400',
                   bgColor: 'bg-yellow-500/20',
                   borderColor: 'border-yellow-500/30',
@@ -1646,6 +1673,11 @@ ${link}`;
                             hour: '2-digit',
                             minute: '2-digit'
                           })}
+                        </div>
+                      )}
+                      {normalizedStatus === 'pending' && (
+                        <div className="text-xs text-white/60 mt-2">
+                          The brand has received the link. We'll notify you as soon as they respond.
                         </div>
                       )}
                       {/* Show OTP verification date for accepted_verified */}
@@ -1759,7 +1791,7 @@ ${link}`;
                               <Copy className="w-4 h-4" />
                             </motion.button>
                           </div>
-                          <p className="text-xs text-white/50">Share this link with the brand to get their response</p>
+                          <p className="text-xs text-white/50">Brands usually respond within 24–48 hours.</p>
                         </div>
                         
                         <div className="grid grid-cols-2 gap-2">
@@ -1908,10 +1940,13 @@ ${link}`;
           <div className="space-y-6">
             {/* Deliverables */}
             <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-4 shadow-lg shadow-black/20">
-              <h2 className="font-semibold text-lg mb-4 flex items-center gap-2">
+              <h2 className="font-semibold text-lg mb-2 flex items-center gap-2">
                 <FileText className="w-5 h-5" />
                 Deliverables
               </h2>
+              <p className="text-xs text-white/60 mb-4">
+                These will be automatically tracked and marked completed based on due dates.
+              </p>
               
               {/* Auto-completion info banner */}
               {deliverables.length > 0 && (
@@ -1928,7 +1963,7 @@ ${link}`;
                     className="w-full px-4 py-2.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl transition-all active:scale-[0.98] flex items-center justify-center gap-2 text-sm text-white"
                   >
                     <Calendar className="w-4 h-4" />
-                    Add Deliverable to Calendar
+                    Add to Calendar
                   </button>
                 </div>
               )}
@@ -1975,7 +2010,10 @@ ${link}`;
             {/* Action Log */}
             {actionLogEntries.length > 0 && (
               <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-4 shadow-lg shadow-black/20">
-                <h3 className="font-semibold text-lg mb-4">Action Log</h3>
+                <h3 className="font-semibold text-lg mb-2">Action Log</h3>
+                <p className="text-xs text-white/60 mb-4">
+                  A complete timeline of everything that happens in this deal.
+                </p>
                 <Suspense fallback={<div className="text-white/60 p-4">Loading action log...</div>}>
                   <ActionLog entries={actionLogEntries} />
                 </Suspense>
@@ -2119,7 +2157,7 @@ ${link}`;
                       ) : (
                         <div className="flex items-center gap-2 text-white/40 flex-1">
                           <Phone className="w-4 h-4 text-white/30 flex-shrink-0" />
-                          <span className="text-xs">No phone number</span>
+                          <span className="text-xs">No phone added (optional)</span>
                         </div>
                       )}
                       <motion.button

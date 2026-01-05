@@ -8,3 +8,6 @@ COMMENT ON COLUMN public.brand_deals.brand_address IS 'Brand registered address 
 
 
 
+
+
+
