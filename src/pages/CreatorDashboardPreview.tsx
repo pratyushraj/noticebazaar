@@ -50,24 +50,11 @@ import ExportMonthlyReport from '@/components/reports/ExportMonthlyReport';
 import DealKanban from '@/components/deals/DealKanban';
 import { usePratyushMode, PratyushModeOverlay } from '@/components/easter-egg/PratyushMode';
 
-// Helper functions
+// Helper functions - use canonical status mapping
+import { getDealStageFromStatus } from '@/lib/hooks/useBrandDeals';
+
 const getDealStage = (deal: BrandDeal): DealStage => {
-  if (deal.status === 'Drafting') return 'draft';
-  if (deal.status === 'Approved' && !deal.payment_received_date) {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const dueDate = new Date(deal.due_date || deal.payment_expected_date);
-    dueDate.setHours(0, 0, 0, 0);
-    const daysUntilDue = Math.ceil((dueDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
-    if (daysUntilDue <= 0) return 'deliverables_due';
-    if (daysUntilDue <= 7) return 'deliverables_due';
-    return 'in_progress';
-  }
-  if (deal.status === 'Payment Pending' && deal.payment_received_date === null) {
-    return 'review_pending';
-  }
-  if (deal.status === 'Completed' || deal.payment_received_date) return 'completed';
-  return 'draft';
+  return getDealStageFromStatus(deal.status, deal.progress_percentage);
 };
 
 const getPaymentStatus = (deal: BrandDeal): PaymentStatus => {

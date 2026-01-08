@@ -5,37 +5,16 @@ import { Card, CardContent } from '@/components/ui/card';
 import { IndianRupee, Briefcase, Clock, DollarSign, Loader2, TrendingUp, AlertCircle } from 'lucide-react';
 import { BrandDeal } from '@/types';
 import { cn } from '@/lib/utils';
-import { DealStage } from '@/lib/hooks/useBrandDeals';
+import { DealStage, getDealStageFromStatus } from '@/lib/hooks/useBrandDeals';
 
 interface BrandDealsStatsProps {
   allDeals: BrandDeal[];
   isLoading: boolean;
 }
 
-// Helper function to map old status to new stage
+// Helper function to map status to stage - uses canonical mapping
 const getDealStage = (deal: BrandDeal): DealStage => {
-  const status = deal.status?.toLowerCase() || '';
-  
-  // Map old statuses to new stages
-  if (status.includes('draft')) return 'negotiation';
-  if (status.includes('review')) return 'signed';
-  if (status.includes('negotiation')) return 'negotiation';
-  if (status.includes('signed')) return 'signed';
-  if (status.includes('content_making') || status.includes('content making')) return 'content_making';
-  if (status.includes('content_delivered') || status.includes('content delivered')) return 'content_delivered';
-  if (status.includes('completed')) return 'completed';
-  
-  // Fallback: use progress_percentage if available
-  if (deal.progress_percentage !== null && deal.progress_percentage !== undefined) {
-    if (deal.progress_percentage >= 100) return 'completed';
-    if (deal.progress_percentage >= 90) return 'content_delivered';
-    if (deal.progress_percentage >= 80) return 'content_making';
-    if (deal.progress_percentage >= 70) return 'signed';
-    return 'negotiation';
-  }
-  
-  // Default fallback
-  return 'negotiation';
+  return getDealStageFromStatus(deal.status, deal.progress_percentage);
 };
 
 const BrandDealsStats: React.FC<BrandDealsStatsProps> = ({ allDeals, isLoading }) => {

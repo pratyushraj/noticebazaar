@@ -7,7 +7,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { toast } from 'sonner';
 import { useSignOut } from '@/lib/hooks/useAuth';
 import { useSession } from '@/contexts/SessionContext';
-import { useBrandDeals } from '@/lib/hooks/useBrandDeals';
+import { useBrandDeals, getDealStageFromStatus, STAGE_TO_PROGRESS } from '@/lib/hooks/useBrandDeals';
 import { usePartnerStats } from '@/lib/hooks/usePartnerProgram';
 import { logger } from '@/lib/utils/logger';
 import { isCreatorPro } from '@/lib/subscription';
@@ -434,7 +434,11 @@ const CreatorDashboard = () => {
         amount: deal.deal_amount,
         status: deal.status,
         dueDate: deal.due_date,
-        progress: deal.progress_percentage ?? (deal.status === 'Completed' ? 100 : deal.status === 'Content Delivered' ? 90 : deal.status === 'Content Making' ? 80 : deal.status === 'Signed' ? 70 : 30)
+        progress: deal.progress_percentage ?? (() => {
+          // Use canonical status mapping for progress
+          const stage = getDealStageFromStatus(deal.status, deal.progress_percentage);
+          return STAGE_TO_PROGRESS[stage] ?? 20;
+        })()
       }));
   }, [brandDeals, hasNoData]);
 

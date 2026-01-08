@@ -20,7 +20,7 @@ import { createCalendarEvent, downloadEventAsICal, openEventInGoogleCalendar } f
 import { DeliverableAutoInfo } from '@/components/deals/DeliverableAutoInfo';
 import { MessageBrandModal } from '@/components/brand-messages/MessageBrandModal';
 import ProgressUpdateSheet from '@/components/deals/ProgressUpdateSheet';
-import { useUpdateDealProgress, DealStage, STAGE_TO_PROGRESS, useDeleteBrandDeal, useUpdateBrandDeal } from '@/lib/hooks/useBrandDeals';
+import { useUpdateDealProgress, DealStage, STAGE_TO_PROGRESS, useDeleteBrandDeal, useUpdateBrandDeal, getDealStageFromStatus } from '@/lib/hooks/useBrandDeals';
 import { triggerHaptic, HapticPatterns } from '@/lib/utils/haptics';
 import { animations, iconSizes } from '@/lib/design-system';
 import { motion } from 'framer-motion';
@@ -141,31 +141,9 @@ function DealDetailPageContent() {
   const [isLoadingSubmission, setIsLoadingSubmission] = useState(false);
   const [hasReviewedDetails, setHasReviewedDetails] = useState(false);
   
-  // Get current stage from deal status - helper function
+  // Get current stage from deal status - uses canonical mapping
   const getCurrentStage = (status: string | null | undefined, progressPercentage?: number | null): DealStage | undefined => {
-    if (!status && progressPercentage === undefined) return undefined;
-    
-    const statusLower = status?.toLowerCase() || '';
-    
-    // Map old statuses to new stages
-    if (statusLower.includes('draft')) return 'negotiation';
-    if (statusLower.includes('review')) return 'signed';
-    if (statusLower.includes('negotiation')) return 'negotiation';
-    if (statusLower.includes('signed')) return 'signed';
-    if (statusLower.includes('content_making') || statusLower.includes('content making')) return 'content_making';
-    if (statusLower.includes('content_delivered') || statusLower.includes('content delivered')) return 'content_delivered';
-    if (statusLower.includes('completed')) return 'completed';
-    
-    // Fallback: use progress_percentage if available
-    if (progressPercentage !== null && progressPercentage !== undefined) {
-      if (progressPercentage >= 100) return 'completed';
-      if (progressPercentage >= 90) return 'content_delivered';
-      if (progressPercentage >= 80) return 'content_making';
-      if (progressPercentage >= 70) return 'signed';
-      return 'negotiation';
-    }
-    
-    return undefined;
+    return getDealStageFromStatus(status, progressPercentage);
   };
   
   // Helper to create a secure brand reply link token for this deal
@@ -182,7 +160,8 @@ function DealDetailPageContent() {
           ? 'https://api.noticebazaar.com'
           : 'http://localhost:3001');
 
-      const response = await fetch(`${apiBaseUrl}/api/brand-reply-tokens`, {
+      // Try to create contract-ready token first, fallback to brand-reply-tokens for migration
+      let response = await fetch(`${apiBaseUrl}/api/contract-ready-tokens`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -191,19 +170,34 @@ function DealDetailPageContent() {
         body: JSON.stringify({ dealId: targetDealId, expiresAt: null }),
       });
 
-      const data = await response.json();
+      let data = await response.json();
+      
+      // If contract-ready-tokens endpoint doesn't exist, try legacy brand-reply-tokens
+      if (!response.ok && response.status === 404) {
+        console.log('[DealDetailPage] contract-ready-tokens not found, trying brand-reply-tokens for migration');
+        response = await fetch(`${apiBaseUrl}/api/brand-reply-tokens`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${session.access_token}`,
+          },
+          body: JSON.stringify({ dealId: targetDealId, expiresAt: null }),
+        });
+        data = await response.json();
+      }
+
       if (!response.ok || !data.success || !data.token?.id) {
-        console.error('[DealDetailPage] Failed to create brand reply token:', data);
+        console.error('[DealDetailPage] Failed to create contract ready token:', data);
         return null;
       }
 
       const baseUrl =
         typeof window !== 'undefined' ? window.location.origin : 'https://noticebazaar.com';
-      const link = `${baseUrl}/#/brand-reply/${data.token.id}`;
+      const link = `${baseUrl}/#/contract-ready/${data.token.id}`;
       setBrandReplyLink(link);
       return link;
     } catch (error) {
-      console.error('[DealDetailPage] Brand reply token error:', error);
+      console.error('[DealDetailPage] Contract ready token error:', error);
       return null;
     }
   };
@@ -546,12 +540,40 @@ function DealDetailPageContent() {
       return 'Draft';
     }
     if (brandResponseStatus === 'rejected') {
-      return 'Draft';
+      return 'Declined';
     }
     
-    // Check deal status
+    // Check deal status - use canonical mapping
     const statusLower = deal?.status?.toLowerCase() || '';
-    if (statusLower.includes('signed') || statusLower.includes('completed')) {
+    
+    // New status model - exact matches first
+    if (statusLower === 'signed_by_brand' || statusLower.includes('signed_by_brand')) {
+      return 'Signed';
+    }
+    if (statusLower === 'contract_ready' || statusLower.includes('contract_ready')) {
+      return 'Contract Ready – Awaiting Brand Signature';
+    }
+    if (statusLower === 'brand_details_submitted' || statusLower.includes('brand_details_submitted')) {
+      return 'Details Submitted';
+    }
+    if (statusLower === 'needs_changes' || statusLower.includes('needs_changes') || statusLower.includes('brand_requested_changes')) {
+      return 'Requires Changes';
+    }
+    if (statusLower === 'rejected' || statusLower.includes('rejected') || statusLower.includes('declined')) {
+      return 'Declined';
+    }
+    if (statusLower === 'completed' || statusLower.includes('completed')) {
+      return 'Completed';
+    }
+    
+    // Legacy status mappings
+    if (statusLower.includes('signed_pending_creator')) {
+      return 'Signed';
+    }
+    if (statusLower.includes('agreement_prepared')) {
+      return 'Contract Ready – Awaiting Brand Signature';
+    }
+    if (statusLower.includes('signed') && !statusLower.includes('pending')) {
       return 'Signed';
     }
     if (statusLower.includes('approved') || statusLower.includes('accepted')) {
@@ -561,8 +583,8 @@ function DealDetailPageContent() {
       return 'Shared';
     }
     
-    // Default to Draft
-    return 'Draft';
+    // Default to Details Submitted (new default for form-submitted deals)
+    return 'Details Submitted';
   }, [deal?.status, dealExecutionStatus, brandResponseStatus]);
 
   // Compute clean display name for contract (UI-only, doesn't change stored filename)
@@ -1015,43 +1037,87 @@ Best regards`;
     const fetchSubmissionDetails = async () => {
       if (!deal?.id || !session?.access_token) return;
       
-      const createdVia = (deal as any)?.created_via;
-      const status = deal?.status?.toLowerCase();
+      // If we already have the data, don't fetch again
+      if (brandSubmissionDetails) return;
       
-      // Only fetch if deal was created via deal_details_form and status indicates brand details submitted
-      if (createdVia === 'deal_details_form' && (status === 'brand_details_submitted' || status?.includes('brand'))) {
-        setIsLoadingSubmission(true);
-        try {
-          const apiBaseUrl =
-            import.meta.env.VITE_API_BASE_URL ||
-            (typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com')
-              ? 'https://api.creatorarmour.com'
-              : typeof window !== 'undefined' && window.location.hostname === 'localhost'
-              ? 'http://localhost:3001'
-              : 'https://noticebazaar-api.onrender.com');
+      const createdVia = (deal as any)?.created_via;
+      
+      // Check if form data is already in the deal object
+      if ((deal as any)?.form_data) {
+        console.log('[DealDetailPage] Found form_data in deal object:', (deal as any).form_data);
+        setBrandSubmissionDetails((deal as any).form_data);
+        return;
+      }
+      
+      // Try to fetch submission details for any deal
+      // The API will return empty if no data exists
+      setIsLoadingSubmission(true);
+      try {
+        let apiBaseUrl =
+          import.meta.env.VITE_API_BASE_URL ||
+          (typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com')
+            ? 'https://api.creatorarmour.com'
+            : typeof window !== 'undefined' && window.location.hostname === 'localhost'
+            ? 'http://localhost:3001'
+            : 'https://noticebazaar-api.onrender.com');
 
-          const response = await fetch(`${apiBaseUrl}/api/deal-details-tokens/deal/${deal.id}`, {
+        let response: Response;
+        try {
+          response = await fetch(`${apiBaseUrl}/api/deal-details-tokens/deal/${deal.id}`, {
             headers: {
               Authorization: `Bearer ${session.access_token}`,
             },
           });
-
-          if (response.ok) {
-            const data = await response.json();
-            if (data.success) {
-              setBrandSubmissionDetails(data.formData);
-            }
+        } catch (fetchError: any) {
+          // If localhost fails, try production API as fallback
+          if (
+            (fetchError.message?.includes('Failed to fetch') || 
+             fetchError.message?.includes('ERR_CONNECTION_REFUSED') ||
+             fetchError.name === 'TypeError') &&
+            apiBaseUrl.includes('localhost')
+          ) {
+            console.warn('[DealDetailPage] Localhost API unavailable, trying production API...');
+            apiBaseUrl = 'https://noticebazaar-api.onrender.com';
+            response = await fetch(`${apiBaseUrl}/api/deal-details-tokens/deal/${deal.id}`, {
+              headers: {
+                Authorization: `Bearer ${session.access_token}`,
+              },
+            });
+          } else {
+            throw fetchError;
           }
-        } catch (error) {
-          console.error('[DealDetailPage] Error fetching submission details:', error);
-        } finally {
-          setIsLoadingSubmission(false);
         }
+
+        if (response.ok) {
+          const data = await response.json();
+          console.log('[DealDetailPage] Fetched submission details:', data);
+          if (data.success && data.formData) {
+            console.log('[DealDetailPage] Setting brand submission details:', data.formData);
+            setBrandSubmissionDetails(data.formData);
+          } else {
+            console.log('[DealDetailPage] No form data found in response:', data);
+          }
+        } else {
+          console.log('[DealDetailPage] Failed to fetch submission details, status:', response.status);
+        }
+      } catch (error) {
+        console.error('[DealDetailPage] Error fetching submission details:', error);
+      } finally {
+        setIsLoadingSubmission(false);
       }
     };
 
     fetchSubmissionDetails();
   }, [deal?.id, deal?.status, (deal as any)?.created_via, session?.access_token]);
+
+  // Set hasReviewedDetails based on deal status
+  useEffect(() => {
+    if (deal?.status) {
+      const status = deal.status.toLowerCase();
+      // If status is not 'brand_details_submitted' or doesn't include 'brand', it's been reviewed
+      setHasReviewedDetails(status !== 'brand_details_submitted' && !status.includes('brand'));
+    }
+  }, [deal?.status]);
 
   // Note: We trust that if the deal exists in the UI (loaded via useBrandDealById),
   // it's safe to generate and share the brand reply link.
@@ -1114,142 +1180,35 @@ Best regards`;
           Everything about this collaboration, organized and protected in one place.
         </p>
         
-        {/* Brand Details Review Section - Show if deal was created via form */}
-        {brandSubmissionDetails && !hasReviewedDetails && (
+        {/* Contract Generated Banner */}
+        {(deal as any)?.contract_status === 'DraftGenerated' && deal?.contract_file_url && (
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-gradient-to-br from-green-500/20 to-emerald-500/20 backdrop-blur-xl border-2 border-green-400/30 rounded-2xl p-4 md:p-6 shadow-lg shadow-green-500/10"
+            className="bg-gradient-to-r from-green-500/20 to-emerald-500/20 border border-green-400/30 rounded-2xl p-4 md:p-6 shadow-lg"
           >
-            <div className="flex items-start gap-4 mb-4">
-              <div className="w-12 h-12 rounded-xl bg-green-500/30 flex items-center justify-center flex-shrink-0">
-                <FileText className="w-6 h-6 text-green-400" />
+            <div className="flex items-start gap-4">
+              <div className="w-12 h-12 rounded-xl bg-green-500/20 flex items-center justify-center flex-shrink-0">
+                <CheckCircle className="w-6 h-6 text-green-400" />
               </div>
               <div className="flex-1">
-                <div className="flex items-start justify-between gap-2 mb-2">
-                  <h2 className="text-xl font-bold flex-1">New Collaboration Request</h2>
-                  <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-green-500/30 text-green-300 border border-green-400/50 whitespace-nowrap">
-                    New
-                  </span>
-                </div>
-                <p className="text-white/80 text-sm mb-1.5 font-medium">
-                  {brandSubmissionDetails.brandName || 'The brand'} has shared their collaboration details
+                <h3 className="text-lg font-semibold text-white mb-1">
+                  Contract Generated 🎉
+                </h3>
+                <p className="text-white/80 text-sm mb-2">
+                  We've prepared a protected agreement using the brand's submitted collaboration details.
                 </p>
-                <p className="text-white/60 text-sm mb-4 leading-relaxed">
-                  Review the details below, then we'll help you create a protected contract.
+                <p className="text-white/60 text-xs mb-4">
+                  You can review, sign or request updates anytime.
                 </p>
+                <button
+                  onClick={handlePreviewContract}
+                  className="px-4 py-2 bg-green-600 hover:bg-green-700 rounded-xl text-sm font-medium transition-all duration-200 text-white active:scale-[0.98]"
+                >
+                  Review Contract
+                </button>
               </div>
             </div>
-
-            {/* Details Display */}
-            <div className="bg-white/5 rounded-xl p-4 md:p-5 space-y-4 mb-4 border border-white/5">
-              <div className="border-b border-white/10 pb-3">
-                <div className="text-sm text-white/60 mb-1">Brand Name</div>
-                <div className="text-white font-medium">{brandSubmissionDetails.brandName || 'Not provided'}</div>
-              </div>
-              
-              {brandSubmissionDetails.campaignName && (
-                <div className="border-b border-white/10 pb-3">
-                  <div className="text-sm text-white/60 mb-1">Campaign Name</div>
-                  <div className="text-white font-medium">{brandSubmissionDetails.campaignName}</div>
-                </div>
-              )}
-
-              <div className="border-b border-white/10 pb-3">
-                <div className="text-sm text-white/60 mb-1">Deal Type</div>
-                <div className="text-white font-medium capitalize">{brandSubmissionDetails.dealType || 'paid'}</div>
-              </div>
-
-              {brandSubmissionDetails.dealType === 'paid' && brandSubmissionDetails.paymentAmount && (
-                <div className="border-b border-white/10 pb-3">
-                  <div className="text-sm text-white/60 mb-1">Payment Amount</div>
-                  <div className="text-white font-semibold text-lg">₹{parseFloat(brandSubmissionDetails.paymentAmount).toLocaleString('en-IN')}</div>
-                </div>
-              )}
-
-              {brandSubmissionDetails.deliverables && brandSubmissionDetails.deliverables.length > 0 && (
-                <div className="border-b border-white/10 pb-3">
-                  <div className="text-sm text-white/60 mb-1">Deliverables</div>
-                  <ul className="list-disc list-inside space-y-1">
-                    {brandSubmissionDetails.deliverables.map((d: string, idx: number) => (
-                      <li key={idx} className="text-white">{d}</li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-
-              {brandSubmissionDetails.deadline && (
-                <div className="border-b border-white/10 pb-3 last:border-0 last:pb-0">
-                  <div className="text-sm text-white/60 mb-1">Timeline / Deadline</div>
-                  <div className="text-white font-medium">
-                    {(() => {
-                      try {
-                        const date = new Date(brandSubmissionDetails.deadline);
-                        return date.toLocaleDateString('en-IN', {
-                          day: 'numeric',
-                          month: 'long',
-                          year: 'numeric'
-                        });
-                      } catch {
-                        return brandSubmissionDetails.deadline;
-                      }
-                    })()}
-                  </div>
-                </div>
-              )}
-
-              {brandSubmissionDetails.usageRights && (
-                <div className="border-b border-white/10 pb-3 last:border-0 last:pb-0">
-                  <div className="text-sm text-white/60 mb-1">Usage Rights</div>
-                  <div className="text-white font-medium">{brandSubmissionDetails.usageRights}</div>
-                </div>
-              )}
-
-              {brandSubmissionDetails.exclusivity && (
-                <div className="border-b border-white/10 pb-3 last:border-0 last:pb-0">
-                  <div className="text-sm text-white/60 mb-1">Exclusivity Period</div>
-                  <div className="text-white font-medium">{brandSubmissionDetails.exclusivity}</div>
-                </div>
-              )}
-
-              {brandSubmissionDetails.revisions && (
-                <div className="border-b border-white/10 pb-3 last:border-0 last:pb-0">
-                  <div className="text-sm text-white/60 mb-1">Revisions</div>
-                  <div className="text-white font-medium">{brandSubmissionDetails.revisions}</div>
-                </div>
-              )}
-            </div>
-
-            {/* Review Button */}
-            <button
-              onClick={async () => {
-                triggerHaptic(HapticPatterns.medium);
-                setHasReviewedDetails(true);
-                
-                // Update deal status to draft after review
-                try {
-                  const { error } = await supabase
-                    .from('brand_deals')
-                    .update({ status: 'Draft' })
-                    .eq('id', deal.id);
-
-                  if (error) throw error;
-
-                  toast.success('Details reviewed. You can now generate the draft contract.');
-                  refreshAll();
-                } catch (error: any) {
-                  console.error('[DealDetailPage] Error updating deal status:', error);
-                  toast.error('Failed to update status');
-                }
-              }}
-              className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 px-6 py-4 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 shadow-lg shadow-green-500/20 active:scale-[0.98]"
-            >
-              <CheckCircle className="w-5 h-5" />
-              I've Reviewed — Create Contract
-            </button>
-            <p className="text-xs text-white/50 text-center mt-3 leading-relaxed">
-              We'll generate a protected contract based on these details. Takes under 60 seconds.
-            </p>
           </motion.div>
         )}
         
@@ -1414,11 +1373,6 @@ Best regards`;
         {/* Brand Response Tracker - Only show if deal exists and has brand_response_status */}
         {deal && deal.id && (deal as any)?.brand_response_status && (
           <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-4 md:p-6 shadow-lg shadow-black/20">
-            <h2 className="font-semibold text-lg mb-4 flex items-center gap-2">
-              <Clock className="w-5 h-5" />
-              Brand Response
-            </h2>
-            
             {(() => {
               // Double-check that deal exists and has an ID
               if (!deal || !deal.id) {
@@ -1432,6 +1386,14 @@ Best regards`;
               const responseStatus = (deal as any).brand_response_status || 'pending';
               const responseMessage = (deal as any).brand_response_message;
               const responseAt = (deal as any).brand_response_at;
+              const lastRemindedAt = (deal as any).last_reminded_at;
+              
+              // Normalize response status - treat accepted_verified as final, accepted as intermediate
+              const normalizedStatus = responseStatus === 'accepted_verified' ? 'accepted_verified' :
+                                     responseStatus === 'accepted' ? 'accepted' :
+                                     responseStatus === 'negotiating' ? 'negotiating' :
+                                     responseStatus === 'rejected' ? 'rejected' :
+                                     'pending';
               
               // Handle remind brand with universal system share
               const handleRemindBrand = async () => {
@@ -1604,12 +1566,12 @@ ${link}`;
                 }
               };
               
-              // Normalize response status - treat accepted_verified as final, accepted as intermediate
-              const normalizedStatus = responseStatus === 'accepted_verified' ? 'accepted_verified' :
-                                     responseStatus === 'accepted' ? 'accepted' :
-                                     responseStatus === 'negotiating' ? 'negotiating' :
-                                     responseStatus === 'rejected' ? 'rejected' :
-                                     'pending';
+              // Check if link has been shared (either reminder sent or link exists)
+              const hasBeenShared = !!lastRemindedAt || !!brandReplyLink;
+              
+              // Determine if we're BEFORE or AFTER sharing
+              const isBeforeSharing = normalizedStatus === 'pending' && !hasBeenShared;
+              const isAfterSharing = normalizedStatus === 'pending' && hasBeenShared;
               
               const statusConfig = {
                 pending: {
@@ -1654,18 +1616,38 @@ ${link}`;
               
               return (
                 <div className="space-y-4">
-                  <div className={cn(
-                    "flex items-center gap-3 p-4 rounded-xl border-2",
-                    config.bgColor,
-                    config.borderColor
-                  )}>
-                    <StatusIcon className={cn("w-6 h-6 flex-shrink-0", config.color)} />
-                    <div className="flex-1">
-                      <div className={cn("font-semibold", config.color)}>
+                  {/* Header - Different content for BEFORE vs AFTER sharing */}
+                  {isBeforeSharing ? (
+                    <>
+                      <h2 className="font-semibold text-lg mb-2 flex items-center gap-2">
+                        <Share2 className="w-5 h-5" />
+                        Share with Brand to Finalize
+                      </h2>
+                      <p className="text-sm text-white/70 mb-4">
+                        Send this secure link so the brand can confirm details and proceed.
+                      </p>
+                    </>
+                  ) : isAfterSharing ? (
+                    <>
+                      <h2 className="font-semibold text-lg mb-2 flex items-center gap-2">
+                        <Clock className="w-5 h-5" />
+                        Waiting for Brand Response
+                      </h2>
+                      <p className="text-sm text-white/70 mb-2">
+                        The brand has received the agreement. We'll notify you as soon as they respond.
+                      </p>
+                      <p className="text-xs text-white/60 mb-4">
+                        Brands usually reply within 24–48 hours.
+                      </p>
+                    </>
+                  ) : (
+                    <>
+                      <h2 className="font-semibold text-lg mb-2 flex items-center gap-2">
+                        <StatusIcon className={cn("w-5 h-5", config.color)} />
                         {config.label}
-                      </div>
+                      </h2>
                       {responseAt && (
-                        <div className="text-xs text-white/60 mt-1">
+                        <p className="text-sm text-white/70 mb-4">
                           Responded on {new Date(responseAt).toLocaleDateString('en-US', { 
                             month: 'short', 
                             day: 'numeric', 
@@ -1673,13 +1655,34 @@ ${link}`;
                             hour: '2-digit',
                             minute: '2-digit'
                           })}
-                        </div>
+                        </p>
                       )}
-                      {normalizedStatus === 'pending' && (
-                        <div className="text-xs text-white/60 mt-2">
-                          The brand has received the link. We'll notify you as soon as they respond.
+                    </>
+                  )}
+                  
+                  {/* Status indicator card - only show for non-pending or after sharing */}
+                  {!isBeforeSharing && (
+                    <div className={cn(
+                      "flex items-center gap-3 p-4 rounded-xl border-2",
+                      config.bgColor,
+                      config.borderColor
+                    )}>
+                      <StatusIcon className={cn("w-6 h-6 flex-shrink-0", config.color)} />
+                      <div className="flex-1">
+                        <div className={cn("font-semibold", config.color)}>
+                          {config.label}
                         </div>
-                      )}
+                        {responseAt && (
+                          <div className="text-xs text-white/60 mt-1">
+                            Responded on {new Date(responseAt).toLocaleDateString('en-US', { 
+                              month: 'short', 
+                              day: 'numeric', 
+                              year: 'numeric',
+                              hour: '2-digit',
+                              minute: '2-digit'
+                            })}
+                          </div>
+                        )}
                       {/* Show OTP verification date for accepted_verified */}
                       {normalizedStatus === 'accepted_verified' && (deal as any)?.otp_verified_at && (
                         <div className="text-xs text-green-300/80 mt-1">
@@ -1694,6 +1697,7 @@ ${link}`;
                       )}
                     </div>
                   </div>
+                  )}
                   
                   {responseMessage && (
                     <div className="bg-purple-500/10 border border-purple-500/30 rounded-xl p-4">
@@ -1722,9 +1726,8 @@ ${link}`;
                     </div>
                   )}
                   
-                  {/* Remind Brand Button - Only show if status is pending (NOT accepted_verified) */}
+                  {/* Share/Remind Brand Buttons - Show different content for BEFORE vs AFTER sharing */}
                   {normalizedStatus === 'pending' && deal && deal.id && (() => {
-                    const lastRemindedAt = (deal as any).last_reminded_at;
                     let canSendReminder = true;
                     let hoursRemaining = 0;
                     
@@ -1759,84 +1762,124 @@ ${link}`;
                       toast.success('✅ Opening brand reply link');
                     };
                     
-                    return (
-                      <div className="mt-3 space-y-3">
-                        {/* Brand Reply Link Display */}
-                        <div className="bg-white/5 border border-white/10 rounded-xl p-3 space-y-2">
-                          <label className="text-xs font-medium text-white/70">Brand Reply Link</label>
-                          <div className="flex items-center gap-2">
-                            <input
-                              type="text"
-                              readOnly
-                            value={link || 'Link will be generated when you share.'}
-                              className="flex-1 px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-sm text-white/90 font-mono truncate focus:outline-none focus:ring-2 focus:ring-purple-500/50"
-                              onClick={(e) => (e.target as HTMLInputElement).select()}
-                            />
-                            <motion.button
-                              onClick={handleTestLink}
-                              whileHover={{ scale: 1.05 }}
-                              whileTap={{ scale: 0.95 }}
-                              className="p-2 rounded-lg bg-blue-500/20 hover:bg-blue-500/30 border border-blue-400/30 text-blue-300 transition-all"
-                              title="Test link"
-                            >
-                              <Link2 className="w-4 h-4" />
-                            </motion.button>
-                            <motion.button
-                              onClick={handleCopyLink}
-                              whileHover={{ scale: 1.05 }}
-                              whileTap={{ scale: 0.95 }}
-                              className="p-2 rounded-lg bg-purple-500/20 hover:bg-purple-500/30 border border-purple-400/30 text-purple-300 transition-all"
-                              title="Copy link"
-                            >
-                              <Copy className="w-4 h-4" />
-                            </motion.button>
-                          </div>
-                          <p className="text-xs text-white/50">Brands usually respond within 24–48 hours.</p>
-                        </div>
-                        
-                        <div className="grid grid-cols-2 gap-2">
+                    // Show different UI for BEFORE vs AFTER sharing
+                    if (isBeforeSharing) {
+                      // BEFORE Sharing - Show share button
+                      return (
+                        <div className="mt-4 space-y-3">
                           <motion.button
                             onClick={handleRemindBrand}
-                            disabled={isSendingReminder || !canSendReminder}
-                            whileHover={!isSendingReminder && canSendReminder ? { scale: 1.02 } : {}}
-                            whileTap={!isSendingReminder && canSendReminder ? { scale: 0.98 } : {}}
+                            disabled={isSendingReminder}
+                            whileHover={!isSendingReminder ? { scale: 1.02 } : {}}
+                            whileTap={!isSendingReminder ? { scale: 0.98 } : {}}
                             className={cn(
-                              "py-3 px-4 rounded-xl font-semibold transition-all flex items-center justify-center gap-2",
-                              !isSendingReminder && canSendReminder
-                                ? "bg-yellow-500/20 text-yellow-300 border border-yellow-400/30 hover:bg-yellow-500/30"
-                                : "bg-yellow-500/10 text-yellow-300/50 border border-yellow-400/20 cursor-not-allowed"
+                              "w-full py-3 px-4 rounded-xl font-semibold transition-all flex items-center justify-center gap-2",
+                              !isSendingReminder
+                                ? "bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white"
+                                : "bg-purple-500/20 text-purple-300/50 border border-purple-400/20 cursor-not-allowed"
                             )}
                           >
                             {isSendingReminder ? (
                               <>
                                 <Loader2 className="w-5 h-5 animate-spin" />
-                                <span className="text-sm">Sending...</span>
-                              </>
-                            ) : !canSendReminder ? (
-                              <>
-                                <Check className="w-5 h-5" />
-                                <span className="text-xs">Sent • {hoursRemaining}h</span>
+                                <span className="text-sm">Generating link...</span>
                               </>
                             ) : (
                               <>
                                 <Share2 className="w-5 h-5" />
-                                <span className="text-sm">🔗 Share Reminder</span>
+                                <span className="text-sm">Share with Brand</span>
                               </>
                             )}
                           </motion.button>
-                          
-                          <motion.button
-                            onClick={handleCopyLink}
-                            whileHover={{ scale: 1.02 }}
-                            whileTap={{ scale: 0.98 }}
-                            className="py-3 px-4 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 bg-purple-500/20 text-purple-300 border border-purple-400/30 hover:bg-purple-500/30"
-                          >
-                            <Link2 className="w-5 h-5" />
-                            <span className="text-sm">Copy Link</span>
-                          </motion.button>
+                          <p className="text-xs text-white/50 text-center">
+                            This reply does not legally bind you until approved.
+                          </p>
                         </div>
-                      </div>
-                    );
+                      );
+                    } else {
+                      // AFTER Sharing - Show reminder and copy link buttons
+                      return (
+                        <div className="mt-3 space-y-3">
+                          {/* Brand Reply Link Display */}
+                          <div className="bg-white/5 border border-white/10 rounded-xl p-3 space-y-2">
+                            <label className="text-xs font-medium text-white/70">Brand Reply Link</label>
+                            <div className="flex items-center gap-2">
+                              <input
+                                type="text"
+                                readOnly
+                                value={link || 'Link will be generated when you share.'}
+                                className="flex-1 px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-sm text-white/90 font-mono truncate focus:outline-none focus:ring-2 focus:ring-purple-500/50"
+                                onClick={(e) => (e.target as HTMLInputElement).select()}
+                              />
+                              <motion.button
+                                onClick={handleTestLink}
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
+                                className="p-2 rounded-lg bg-blue-500/20 hover:bg-blue-500/30 border border-blue-400/30 text-blue-300 transition-all"
+                                title="Test link"
+                              >
+                                <Link2 className="w-4 h-4" />
+                              </motion.button>
+                              <motion.button
+                                onClick={handleCopyLink}
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
+                                className="p-2 rounded-lg bg-purple-500/20 hover:bg-purple-500/30 border border-purple-400/30 text-purple-300 transition-all"
+                                title="Copy link"
+                              >
+                                <Copy className="w-4 h-4" />
+                              </motion.button>
+                            </div>
+                          </div>
+                          
+                          <div className="grid grid-cols-2 gap-2">
+                            <motion.button
+                              onClick={handleRemindBrand}
+                              disabled={isSendingReminder || !canSendReminder}
+                              whileHover={!isSendingReminder && canSendReminder ? { scale: 1.02 } : {}}
+                              whileTap={!isSendingReminder && canSendReminder ? { scale: 0.98 } : {}}
+                              className={cn(
+                                "py-3 px-4 rounded-xl font-semibold transition-all flex items-center justify-center gap-2",
+                                !isSendingReminder && canSendReminder
+                                  ? "bg-yellow-500/20 text-yellow-300 border border-yellow-400/30 hover:bg-yellow-500/30"
+                                  : "bg-yellow-500/10 text-yellow-300/50 border border-yellow-400/20 cursor-not-allowed"
+                              )}
+                            >
+                              {isSendingReminder ? (
+                                <>
+                                  <Loader2 className="w-5 h-5 animate-spin" />
+                                  <span className="text-sm">Sending...</span>
+                                </>
+                              ) : !canSendReminder ? (
+                                <>
+                                  <Check className="w-5 h-5" />
+                                  <span className="text-xs">Sent • {hoursRemaining}h</span>
+                                </>
+                              ) : (
+                                <>
+                                  <Share2 className="w-5 h-5" />
+                                  <span className="text-sm">Share Reminder</span>
+                                </>
+                              )}
+                            </motion.button>
+                            
+                            <motion.button
+                              onClick={handleCopyLink}
+                              whileHover={{ scale: 1.02 }}
+                              whileTap={{ scale: 0.98 }}
+                              className="py-3 px-4 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 bg-purple-500/20 text-purple-300 border border-purple-400/30 hover:bg-purple-500/30"
+                            >
+                              <Link2 className="w-5 h-5" />
+                              <span className="text-sm">Copy Link</span>
+                            </motion.button>
+                          </div>
+                          
+                          <p className="text-xs text-white/50 text-center mt-3">
+                            This reply does not legally bind you until approved.
+                          </p>
+                        </div>
+                      );
+                    }
                   })()}
                   
                   {/* OTP Verification Status - Only show for accepted (not verified yet) */}
@@ -1939,13 +1982,13 @@ ${link}`;
           {/* Left Column */}
           <div className="space-y-6">
             {/* Deliverables */}
-            <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-4 shadow-lg shadow-black/20">
+            <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-4 md:p-6 shadow-lg shadow-black/20">
               <h2 className="font-semibold text-lg mb-2 flex items-center gap-2">
                 <FileText className="w-5 h-5" />
                 Deliverables
               </h2>
-              <p className="text-xs text-white/60 mb-4">
-                These will be automatically tracked and marked completed based on due dates.
+              <p className="text-sm text-white/70 mb-6">
+                These will be automatically tracked and marked as completed once due.
               </p>
               
               {/* Auto-completion info banner */}
@@ -1971,25 +2014,30 @@ ${link}`;
               {deliverables.length > 0 ? (
                 <div className="space-y-3">
                   {deliverables.map((item: any, index: number) => (
-                    <div key={index} className="bg-white/5 rounded-xl p-3 border border-white/10">
+                    <div key={index} className="bg-white/5 rounded-xl p-4 border border-white/10 hover:border-white/20 transition-colors">
                       <div className="flex items-start gap-3">
-                        <div className="w-8 h-8 rounded-full bg-purple-500/20 flex items-center justify-center flex-shrink-0 font-semibold text-sm">
-                          {index + 1}
+                        <div className="w-10 h-10 rounded-full bg-purple-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                          <CheckCircle className="w-5 h-5 text-purple-400" />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <div className="font-medium break-words">{item.title || item.name || `Deliverable ${index + 1}`}</div>
+                          <div className="font-medium text-white/90 break-words mb-1">
+                            {item.title || item.name || `Deliverable ${index + 1}`}
+                          </div>
                           {item.dueDate && (
-                            <div className="text-xs text-white/60 mt-1 flex items-center gap-1">
-                              <Calendar className="w-3 h-3 flex-shrink-0" />
+                            <div className="text-xs text-white/60 mt-1.5 flex items-center gap-1.5">
+                              <Calendar className="w-3.5 h-3.5 flex-shrink-0" />
                               <span>Due: {item.dueDate}</span>
                             </div>
                           )}
+                          <div className="text-xs text-white/50 mt-2">
+                            Auto-completion enabled on due date
+                          </div>
                           {item.status && (
-                            <div className="mt-2">
-                              <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                                item.status === 'completed' ? 'bg-green-500/20 text-green-400' :
-                                item.status === 'in_progress' ? 'bg-blue-500/20 text-blue-400' :
-                                'bg-yellow-500/20 text-yellow-400'
+                            <div className="mt-2.5">
+                              <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${
+                                item.status === 'completed' ? 'bg-green-500/20 text-green-400 border border-green-500/30' :
+                                item.status === 'in_progress' ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30' :
+                                'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30'
                               }`}>
                                 {item.status === 'completed' ? 'Completed' :
                                  item.status === 'in_progress' ? 'In Progress' :
@@ -2003,18 +2051,18 @@ ${link}`;
                   ))}
                 </div>
               ) : (
-                <div className="text-sm text-white/60">No deliverables specified</div>
+                <div className="text-sm text-white/60 py-4">No deliverables specified</div>
               )}
             </div>
 
             {/* Action Log */}
             {actionLogEntries.length > 0 && (
-              <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-4 shadow-lg shadow-black/20">
-                <h3 className="font-semibold text-lg mb-2">Action Log</h3>
-                <p className="text-xs text-white/60 mb-4">
-                  A complete timeline of everything that happens in this deal.
+              <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-4 md:p-6 shadow-lg shadow-black/20">
+                <h3 className="font-semibold text-lg mb-2">Activity Log</h3>
+                <p className="text-sm text-white/70 mb-6">
+                  A complete timeline of everything happening in this deal.
                 </p>
-                <Suspense fallback={<div className="text-white/60 p-4">Loading action log...</div>}>
+                <Suspense fallback={<div className="text-white/60 p-4">Loading activity log...</div>}>
                   <ActionLog entries={actionLogEntries} />
                 </Suspense>
               </div>
@@ -2065,7 +2113,7 @@ ${link}`;
             )}
 
             {/* Brand Info */}
-            <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-4 shadow-lg shadow-black/20">
+            <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-4 md:p-6 shadow-lg shadow-black/20">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="font-semibold text-lg flex items-center gap-2">
                   <Building2 className="w-5 h-5" />
@@ -2107,14 +2155,22 @@ ${link}`;
                   </motion.button>
                 )}
               </div>
-              <div className="space-y-3 text-sm">
+              
+              <p className="text-xs text-white/60 mb-4">
+                This contact information is verified using GST/company records.
+              </p>
+              
+              <div className="space-y-4 text-sm">
                 <div className="flex items-center gap-2 text-white/80">
                   <span className="font-medium">{deal.brand_name}</span>
                 </div>
                 {deal.brand_email && (
                   <div className="flex items-center gap-2 text-white/60 break-words">
                     <Mail className="w-4 h-4 text-white/40 flex-shrink-0" />
-                    <span>{deal.brand_email}</span>
+                    <span className="flex-1">{deal.brand_email}</span>
+                    <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-green-500/20 text-green-400 border border-green-500/30">
+                      Verified Business Email
+                    </span>
                   </div>
                 )}
                 {(() => {
@@ -2149,10 +2205,10 @@ ${link}`;
                 <div className="flex items-center gap-2">
                   {!isEditingBrandPhone ? (
                     <>
-                      {deal.brand_phone ? (
+                      {(deal.brand_phone || brandSubmissionDetails?.companyPhone) ? (
                         <div className="flex items-center gap-2 text-white/60 flex-1">
                           <Phone className="w-4 h-4 text-white/40 flex-shrink-0" />
-                          <span>{deal.brand_phone}</span>
+                          <span>{deal.brand_phone || brandSubmissionDetails?.companyPhone}</span>
                         </div>
                       ) : (
                         <div className="flex items-center gap-2 text-white/40 flex-1">
@@ -2163,7 +2219,7 @@ ${link}`;
                       <motion.button
                         onClick={() => {
                           // Ensure phone starts with +91 when editing
-                          let phoneValue = deal.brand_phone || '';
+                          let phoneValue = deal.brand_phone || brandSubmissionDetails?.companyPhone || '';
                           if (phoneValue && !phoneValue.startsWith('+91')) {
                             phoneValue = phoneValue.startsWith('+') ? phoneValue : `+91 ${phoneValue}`;
                           } else if (!phoneValue) {
@@ -3577,6 +3633,352 @@ ${link}`;
             )}
           </div>
         </div>
+
+        {/* Brand Submission Details - Show at the end */}
+        {brandSubmissionDetails && (
+          <div className="space-y-6">
+            {/* Deal Summary Card */}
+            <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-5 md:p-6 shadow-lg shadow-black/20">
+              <div className="flex items-center gap-2 mb-4">
+                <span className="text-xl">📌</span>
+                <h3 className="font-semibold text-lg">Deal Summary</h3>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <div className="text-sm text-white/60 mb-1">Brand</div>
+                  <div className="text-white font-medium">{brandSubmissionDetails.brandName || 'Not provided'}</div>
+                </div>
+                {brandSubmissionDetails.campaignName && (
+                  <div>
+                    <div className="text-sm text-white/60 mb-1">Campaign</div>
+                    <div className="text-white font-medium">{brandSubmissionDetails.campaignName}</div>
+                  </div>
+                )}
+                <div>
+                  <div className="text-sm text-white/60 mb-1">Deal Type</div>
+                  <div className="text-white font-medium capitalize">{brandSubmissionDetails.dealType || 'paid'}</div>
+                </div>
+                <div>
+                  <div className="text-sm text-white/60 mb-1">Deal Value</div>
+                  <div className="text-white font-semibold text-lg">
+                    {brandSubmissionDetails.dealType === 'paid' && brandSubmissionDetails.paymentAmount
+                      ? `₹${parseFloat(brandSubmissionDetails.paymentAmount.toString()).toLocaleString('en-IN')}`
+                      : brandSubmissionDetails.dealType === 'barter'
+                      ? 'Barter Deal'
+                      : 'Not specified'}
+                  </div>
+                </div>
+                {brandSubmissionDetails.deadline && (
+                  <div className="md:col-span-2">
+                    <div className="text-sm text-white/60 mb-1">Timeline</div>
+                    <div className="text-white font-medium">
+                      {(() => {
+                        try {
+                          const date = new Date(brandSubmissionDetails.deadline);
+                          return date.toLocaleDateString('en-IN', {
+                            day: 'numeric',
+                            month: 'long',
+                            year: 'numeric'
+                          });
+                        } catch {
+                          return brandSubmissionDetails.deadline;
+                        }
+                      })()}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Deliverables Card */}
+            {brandSubmissionDetails.deliverables && brandSubmissionDetails.deliverables.length > 0 && (
+              <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-5 md:p-6 shadow-lg shadow-black/20">
+                <div className="flex items-center gap-2 mb-4">
+                  <span className="text-xl">🎥</span>
+                  <h3 className="font-semibold text-lg">Deliverables</h3>
+                </div>
+                <ul className="space-y-2">
+                  {brandSubmissionDetails.deliverables.map((d: any, idx: number) => {
+                    // Handle both structured and string formats
+                    if (typeof d === 'object' && d.platform) {
+                      const deliverableText = `${d.quantity || 1} ${d.contentType || 'content'} on ${d.platform}${d.duration ? ` (${d.duration}s)` : ''}`;
+                      return (
+                        <li key={idx} className="text-white/90 flex items-start gap-2">
+                          <span className="text-white/60 mt-1">•</span>
+                          <span>{deliverableText}</span>
+                        </li>
+                      );
+                    } else {
+                      return (
+                        <li key={idx} className="text-white/90 flex items-start gap-2">
+                          <span className="text-white/60 mt-1">•</span>
+                          <span>{typeof d === 'string' ? d : JSON.stringify(d)}</span>
+                        </li>
+                      );
+                    }
+                  })}
+                </ul>
+              </div>
+            )}
+
+            {/* Approvals & Revisions Card */}
+            {(brandSubmissionDetails.approvalProcess || brandSubmissionDetails.numberOfRevisions || brandSubmissionDetails.approvalTurnaroundTime || brandSubmissionDetails.revisions || brandSubmissionDetails.postingWindow) && (
+              <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-5 md:p-6 shadow-lg shadow-black/20">
+                <div className="flex items-center gap-2 mb-4">
+                  <span className="text-xl">🛡️</span>
+                  <h3 className="font-semibold text-lg">Approvals & Revisions</h3>
+                </div>
+                <div className="space-y-3">
+                  {brandSubmissionDetails.approvalProcess && (
+                    <div>
+                      <div className="text-sm text-white/60 mb-1">Approval Rule</div>
+                      <div className="text-white font-medium capitalize">
+                        {brandSubmissionDetails.approvalProcess.replace(/_/g, ' ')}
+                      </div>
+                    </div>
+                  )}
+                  {brandSubmissionDetails.approvalTurnaroundTime && (
+                    <div>
+                      <div className="text-sm text-white/60 mb-1">Turnaround Time</div>
+                      <div className="text-white font-medium capitalize">
+                        {brandSubmissionDetails.approvalTurnaroundTime.replace(/_/g, ' ')}
+                      </div>
+                    </div>
+                  )}
+                  {(brandSubmissionDetails.numberOfRevisions || brandSubmissionDetails.revisions) && (
+                    <div>
+                      <div className="text-sm text-white/60 mb-1">Revisions Count</div>
+                      <div className="text-white font-medium">
+                        {brandSubmissionDetails.numberOfRevisions || brandSubmissionDetails.revisions}
+                      </div>
+                    </div>
+                  )}
+                  {brandSubmissionDetails.postingWindow && (
+                    <div>
+                      <div className="text-sm text-white/60 mb-1">Posting Window</div>
+                      <div className="text-white font-medium">{brandSubmissionDetails.postingWindow}</div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Payment Details Card */}
+            {brandSubmissionDetails.dealType === 'paid' && (
+              <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-5 md:p-6 shadow-lg shadow-black/20">
+                <div className="flex items-center gap-2 mb-4">
+                  <span className="text-xl">💰</span>
+                  <h3 className="font-semibold text-lg">Payment Details</h3>
+                </div>
+                <div className="space-y-3">
+                  {brandSubmissionDetails.paymentAmount && (
+                    <div>
+                      <div className="text-sm text-white/60 mb-1">Amount</div>
+                      <div className="text-white font-semibold text-lg">₹{parseFloat(brandSubmissionDetails.paymentAmount).toLocaleString('en-IN')}</div>
+                    </div>
+                  )}
+                  {brandSubmissionDetails.paymentTrigger && (
+                    <div>
+                      <div className="text-sm text-white/60 mb-1">Payment Trigger</div>
+                      <div className="text-white font-medium capitalize">
+                        {brandSubmissionDetails.paymentTrigger.replace(/_/g, ' ')}
+                      </div>
+                    </div>
+                  )}
+                  {brandSubmissionDetails.paymentTimeline && (
+                    <div>
+                      <div className="text-sm text-white/60 mb-1">Payment Timeline</div>
+                      <div className="text-white font-medium capitalize">
+                        {brandSubmissionDetails.paymentTimeline.replace(/_/g, ' ')}
+                      </div>
+                    </div>
+                  )}
+                  {brandSubmissionDetails.paymentMethod && brandSubmissionDetails.paymentMethod.length > 0 && (
+                    <div>
+                      <div className="text-sm text-white/60 mb-1">Method</div>
+                      <div className="text-white font-medium">{brandSubmissionDetails.paymentMethod.join(', ')}</div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Barter Details Card */}
+            {brandSubmissionDetails.dealType === 'barter' && (
+              <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-5 md:p-6 shadow-lg shadow-black/20">
+                <div className="flex items-center gap-2 mb-4">
+                  <span className="text-xl">🎁</span>
+                  <h3 className="font-semibold text-lg">Barter Details</h3>
+                </div>
+                <div className="space-y-3">
+                  {brandSubmissionDetails.productDescription && (
+                    <div>
+                      <div className="text-sm text-white/60 mb-1">Product Description</div>
+                      <div className="text-white font-medium">{brandSubmissionDetails.productDescription}</div>
+                    </div>
+                  )}
+                  {brandSubmissionDetails.barterValue && (
+                    <div>
+                      <div className="text-sm text-white/60 mb-1">Barter Value</div>
+                      <div className="text-white font-medium">{brandSubmissionDetails.barterValue}</div>
+                    </div>
+                  )}
+                  {brandSubmissionDetails.barterApproximateValue && (
+                    <div>
+                      <div className="text-sm text-white/60 mb-1">Approximate Value</div>
+                      <div className="text-white font-medium">{brandSubmissionDetails.barterApproximateValue}</div>
+                    </div>
+                  )}
+                  {brandSubmissionDetails.barterShippingResponsibility && (
+                    <div>
+                      <div className="text-sm text-white/60 mb-1">Shipping Responsibility</div>
+                      <div className="text-white font-medium">{brandSubmissionDetails.barterShippingResponsibility}</div>
+                    </div>
+                  )}
+                  {brandSubmissionDetails.barterReplacementAllowed !== undefined && (
+                    <div>
+                      <div className="text-sm text-white/60 mb-1">Replacement Allowed</div>
+                      <div className="text-white font-medium">{brandSubmissionDetails.barterReplacementAllowed ? 'Yes' : 'No'}</div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Rights & Usage Card */}
+            {(brandSubmissionDetails.usageRightsDuration || brandSubmissionDetails.paidAdsAllowed !== undefined || brandSubmissionDetails.whitelistingAllowed !== undefined || brandSubmissionDetails.exclusivityPeriod || brandSubmissionDetails.exclusivity || brandSubmissionDetails.usageRights || brandSubmissionDetails.cancellationTerms) && (
+              <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-5 md:p-6 shadow-lg shadow-black/20">
+                <div className="flex items-center gap-2 mb-4">
+                  <span className="text-xl">🧾</span>
+                  <h3 className="font-semibold text-lg">Rights & Usage</h3>
+                </div>
+                <div className="space-y-3">
+                  {brandSubmissionDetails.usageRightsDuration && (
+                    <div>
+                      <div className="text-sm text-white/60 mb-1">Usage Duration</div>
+                      <div className="text-white font-medium capitalize">
+                        {brandSubmissionDetails.usageRightsDuration.replace(/_/g, ' ')}
+                      </div>
+                    </div>
+                  )}
+                  {brandSubmissionDetails.usageRights && !brandSubmissionDetails.usageRightsDuration && (
+                    <div>
+                      <div className="text-sm text-white/60 mb-1">Usage Rights</div>
+                      <div className="text-white font-medium">{brandSubmissionDetails.usageRights}</div>
+                    </div>
+                  )}
+                  {brandSubmissionDetails.paidAdsAllowed !== undefined && (
+                    <div>
+                      <div className="text-sm text-white/60 mb-1">Paid Ads Allowed?</div>
+                      <div className="text-white font-medium">{brandSubmissionDetails.paidAdsAllowed ? 'Yes' : 'No'}</div>
+                    </div>
+                  )}
+                  {brandSubmissionDetails.whitelistingAllowed !== undefined && (
+                    <div>
+                      <div className="text-sm text-white/60 mb-1">Whitelisting Allowed?</div>
+                      <div className="text-white font-medium">{brandSubmissionDetails.whitelistingAllowed ? 'Yes' : 'No'}</div>
+                    </div>
+                  )}
+                  {(brandSubmissionDetails.exclusivityPeriod || brandSubmissionDetails.exclusivity) && (
+                    <div>
+                      <div className="text-sm text-white/60 mb-1">Exclusivity Period</div>
+                      <div className="text-white font-medium capitalize">
+                        {brandSubmissionDetails.exclusivityPeriod === 'none' ? 'None' : 
+                         brandSubmissionDetails.exclusivityPeriod ? brandSubmissionDetails.exclusivityPeriod.replace(/_/g, ' ') :
+                         brandSubmissionDetails.exclusivity}
+                      </div>
+                    </div>
+                  )}
+                  {brandSubmissionDetails.cancellationTerms && (
+                    <div>
+                      <div className="text-sm text-white/60 mb-1">Cancellation Terms</div>
+                      <div className="text-white font-medium capitalize">
+                        {brandSubmissionDetails.cancellationTerms.replace(/_/g, ' ')}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Legal Card */}
+            {(brandSubmissionDetails.governingLaw || brandSubmissionDetails.companyState) && (
+              <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-5 md:p-6 shadow-lg shadow-black/20">
+                <div className="flex items-center gap-2 mb-4">
+                  <span className="text-xl">⚖️</span>
+                  <h3 className="font-semibold text-lg">Legal</h3>
+                </div>
+                <div className="space-y-3">
+                  {brandSubmissionDetails.governingLaw && (
+                    <div>
+                      <div className="text-sm text-white/60 mb-1">Jurisdiction Country</div>
+                      <div className="text-white font-medium">{brandSubmissionDetails.governingLaw}</div>
+                    </div>
+                  )}
+                  {brandSubmissionDetails.companyState && (
+                    <div>
+                      <div className="text-sm text-white/60 mb-1">State</div>
+                      <div className="text-white font-medium">{brandSubmissionDetails.companyState}</div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Brand Details Card */}
+            {(brandSubmissionDetails.companyLegalName || brandSubmissionDetails.companyGstin || brandSubmissionDetails.companyAddress || brandSubmissionDetails.authorizedSignatoryName || brandSubmissionDetails.companyEmail || brandSubmissionDetails.companyPhone) && (
+              <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-5 md:p-6 shadow-lg shadow-black/20">
+                <div className="flex items-center gap-2 mb-4">
+                  <span className="text-xl">🏢</span>
+                  <h3 className="font-semibold text-lg">Brand Details</h3>
+                  {brandSubmissionDetails.companyGstin && (
+                    <span className="ml-auto px-2.5 py-1 rounded-full text-xs font-medium bg-green-500/20 text-green-400 border border-green-500/30">
+                      Verified via GST
+                    </span>
+                  )}
+                </div>
+                <div className="space-y-4">
+                  {brandSubmissionDetails.companyGstin && (
+                    <div>
+                      <div className="text-sm text-white/60 mb-1">GSTIN</div>
+                      <div className="text-white font-medium font-mono">{brandSubmissionDetails.companyGstin}</div>
+                    </div>
+                  )}
+                  {brandSubmissionDetails.companyLegalName && (
+                    <div>
+                      <div className="text-sm text-white/60 mb-1">Legal Company Name</div>
+                      <div className="text-white font-medium">{brandSubmissionDetails.companyLegalName}</div>
+                    </div>
+                  )}
+                  {brandSubmissionDetails.companyAddress && (
+                    <div>
+                      <div className="text-sm text-white/60 mb-1">Registered Address</div>
+                      <div className="text-white font-medium whitespace-pre-line">{brandSubmissionDetails.companyAddress}</div>
+                    </div>
+                  )}
+                  {brandSubmissionDetails.authorizedSignatoryName && (
+                    <div>
+                      <div className="text-sm text-white/60 mb-1">Authorized Signatory Name</div>
+                      <div className="text-white font-medium">{brandSubmissionDetails.authorizedSignatoryName}</div>
+                    </div>
+                  )}
+                  {brandSubmissionDetails.companyEmail && (
+                    <div>
+                      <div className="text-sm text-white/60 mb-1">Contact Email</div>
+                      <div className="text-white font-medium">{brandSubmissionDetails.companyEmail}</div>
+                    </div>
+                  )}
+                  {brandSubmissionDetails.companyPhone && (
+                    <div>
+                      <div className="text-sm text-white/60 mb-1">Phone Number</div>
+                      <div className="text-white font-medium">{brandSubmissionDetails.companyPhone}</div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Lazy Modals */}

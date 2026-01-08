@@ -750,38 +750,119 @@ export const useDeleteBrandDeal = () => {
 // DEAL PROGRESS UPDATE HELPER
 // ============================================
 
-export type DealStage = 'negotiation' | 'signed' | 'content_making' | 'content_delivered' | 'completed';
+export type DealStage = 
+  | 'details_submitted' 
+  | 'contract_ready' 
+  | 'signed' 
+  | 'needs_changes' 
+  | 'declined' 
+  | 'completed'
+  | 'negotiation' // Legacy support
+  | 'content_making' // Legacy support
+  | 'content_delivered'; // Legacy support
 
 export const DEAL_PROGRESS_STAGES = {
+  details_submitted: { percent: 20, next: 'contract_ready' },
+  contract_ready: { percent: 55, next: 'signed' },
+  signed: { percent: 100, next: 'completed' },
+  needs_changes: { percent: 55, next: 'contract_ready' },
+  declined: { percent: 0, next: null },
+  completed: { percent: 100, next: null },
+  // Legacy stages for backward compatibility
   negotiation: { percent: 30, next: 'signed' },
-  signed: { percent: 70, next: 'content_making' },
   content_making: { percent: 80, next: 'content_delivered' },
   content_delivered: { percent: 90, next: 'completed' },
-  completed: { percent: 100, next: null },
 } as const;
 
 export const STAGE_TO_PROGRESS: Record<DealStage, number> = {
+  details_submitted: 20,
+  contract_ready: 55,
+  signed: 100,
+  needs_changes: 55,
+  declined: 0,
+  completed: 100,
+  // Legacy stages
   negotiation: 30,
-  signed: 70,
   content_making: 80,
   content_delivered: 90,
-  completed: 100,
 };
 
 export const STAGE_TO_STATUS: Record<DealStage, string> = {
+  details_submitted: 'Brand_Details_Submitted',
+  contract_ready: 'CONTRACT_READY',
+  signed: 'SIGNED_BY_BRAND',
+  needs_changes: 'NEEDS_CHANGES',
+  declined: 'REJECTED',
+  completed: 'COMPLETED',
+  // Legacy stages
   negotiation: 'Negotiation',
-  signed: 'Signed',
   content_making: 'Content Making',
   content_delivered: 'Content Delivered',
-  completed: 'Completed',
 };
 
 export const STAGE_LABELS: Record<DealStage, string> = {
-  negotiation: 'Negotiation',
+  details_submitted: 'Details Submitted',
+  contract_ready: 'Contract Ready – Awaiting Brand Signature',
   signed: 'Signed',
+  needs_changes: 'Requires Changes',
+  declined: 'Declined',
+  completed: 'Completed',
+  // Legacy stages
+  negotiation: 'Negotiation',
   content_making: 'Content Making',
   content_delivered: 'Content Delivered',
-  completed: 'Completed',
+};
+
+/**
+ * Maps database status to DealStage
+ * This is the canonical mapping function used throughout the app
+ */
+export const getDealStageFromStatus = (status: string | null | undefined, progressPercentage?: number | null): DealStage => {
+  if (!status && progressPercentage === undefined) return 'details_submitted';
+  
+  const statusLower = status?.toLowerCase() || '';
+  
+  // New status model - exact matches first
+  if (statusLower === 'brand_details_submitted' || statusLower.includes('brand_details_submitted')) {
+    return 'details_submitted';
+  }
+  if (statusLower === 'contract_ready' || statusLower.includes('contract_ready')) {
+    return 'contract_ready';
+  }
+  if (statusLower === 'signed_by_brand' || statusLower.includes('signed_by_brand')) {
+    return 'signed';
+  }
+  if (statusLower === 'needs_changes' || statusLower.includes('needs_changes') || statusLower.includes('brand_requested_changes')) {
+    return 'needs_changes';
+  }
+  if (statusLower === 'rejected' || statusLower.includes('rejected') || statusLower.includes('declined')) {
+    return 'declined';
+  }
+  if (statusLower === 'completed' || statusLower.includes('completed')) {
+    return 'completed';
+  }
+  
+  // Legacy status mappings for backward compatibility
+  if (statusLower.includes('draft')) return 'details_submitted';
+  if (statusLower.includes('review')) return 'contract_ready';
+  if (statusLower.includes('negotiation')) return 'negotiation';
+  if (statusLower.includes('signed') && !statusLower.includes('pending')) return 'signed';
+  if (statusLower.includes('content_making') || statusLower.includes('content making')) return 'content_making';
+  if (statusLower.includes('content_delivered') || statusLower.includes('content delivered')) return 'content_delivered';
+  
+  // Fallback: use progress_percentage if available
+  if (progressPercentage !== null && progressPercentage !== undefined) {
+    if (progressPercentage >= 100) return 'completed';
+    if (progressPercentage >= 90) return 'content_delivered';
+    if (progressPercentage >= 80) return 'content_making';
+    if (progressPercentage >= 70) return 'signed';
+    if (progressPercentage >= 55) return 'contract_ready';
+    if (progressPercentage >= 20) return 'details_submitted';
+    return 'details_submitted';
+  }
+  
+  // Default fallback
+  return 'details_submitted';
 };
 
 export const useUpdateDealProgress = () => {

@@ -16,17 +16,49 @@ interface DealStatusBadgeProps {
 const DealStatusBadge: React.FC<DealStatusBadgeProps> = ({ stage, className }) => {
   const getStageConfig = (stage: DealStage) => {
     switch (stage) {
-      case 'negotiation':
+      // New status model
+      case 'details_submitted':
         return {
-          label: 'Negotiation',
-          shortLabel: 'Negotiation',
+          label: 'Details Submitted',
+          shortLabel: 'Details',
           className: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
+        };
+      case 'contract_ready':
+        return {
+          label: 'Contract Ready – Awaiting Brand Signature',
+          shortLabel: 'Contract Ready',
+          className: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
         };
       case 'signed':
         return {
           label: 'Signed',
           shortLabel: 'Signed',
-          className: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
+          className: 'bg-green-500/20 text-green-400 border-green-500/30',
+        };
+      case 'needs_changes':
+        return {
+          label: 'Requires Changes',
+          shortLabel: 'Changes',
+          className: 'bg-orange-500/20 text-orange-400 border-orange-500/30',
+        };
+      case 'declined':
+        return {
+          label: 'Declined',
+          shortLabel: 'Declined',
+          className: 'bg-red-500/20 text-red-400 border-red-500/30',
+        };
+      case 'completed':
+        return {
+          label: 'Completed',
+          shortLabel: 'Done',
+          className: 'bg-green-500/20 text-green-400 border-green-500/30',
+        };
+      // Legacy stages for backward compatibility
+      case 'negotiation':
+        return {
+          label: 'Negotiation',
+          shortLabel: 'Negotiation',
+          className: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
         };
       case 'content_making':
         return {
@@ -39,12 +71,6 @@ const DealStatusBadge: React.FC<DealStatusBadgeProps> = ({ stage, className }) =
           label: 'Content Delivered',
           shortLabel: 'Delivered',
           className: 'bg-indigo-500/20 text-indigo-400 border-indigo-500/30',
-        };
-      case 'completed':
-        return {
-          label: 'Completed',
-          shortLabel: 'Done',
-          className: 'bg-green-500/20 text-green-400 border-green-500/30',
         };
       default:
         return {
