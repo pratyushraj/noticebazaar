@@ -5,6 +5,7 @@
 import { Router, Request, Response } from 'express';
 import { supabase, supabaseInitialized } from '../index.js';
 import crypto from 'crypto';
+import { generateContractFromScratch } from '../services/contractGenerator.js';
 
 const router = Router();
 
@@ -31,6 +32,126 @@ function getClientIp(req: Request): string {
                      req.headers['x-real-ip']?.toString() || 
                      req.socket.remoteAddress || 
                      'unknown';
+}
+
+/**
+ * Determines if brand confirmation/clarification page is required
+ * Returns true if any of these conditions are met:
+ * - Creator requested changes earlier
+ * - AI requested safety clarifications (requested_changes exist)
+ * - Legal safeguards auto-applied (missing critical terms)
+ * - Risk score > threshold
+ * - Platform mismatch detected
+ * - Payment risk detected
+ */
+async function shouldRequireBrandConfirmation(dealId: string): Promise<boolean> {
+  try {
+    // Fetch deal with related data
+    const { data: deal, error: dealError } = await supabase
+      .from('brand_deals')
+      .select(`
+        id,
+        status,
+        brand_response_status,
+        analysis_report_id,
+        creator_requested_clarifications,
+        deal_schema
+      `)
+      .eq('id', dealId)
+      .single();
+
+    if (dealError || !deal) {
+      console.error('[shouldRequireBrandConfirmation] Error fetching deal:', dealError);
+      // Default to requiring confirmation if we can't determine
+      return true;
+    }
+
+    // A. Creator explicitly requested clarifications
+    if (deal.creator_requested_clarifications === true) {
+      console.log('[shouldRequireBrandConfirmation] Creator requested clarifications');
+      return true;
+    }
+
+    // B. Check for requested changes from AI analysis
+    if (deal.analysis_report_id) {
+      const { data: issues, error: issuesError } = await supabase
+        .from('protection_issues')
+        .select('id, severity, category')
+        .eq('report_id', deal.analysis_report_id)
+        .in('severity', ['high', 'medium'])
+        .limit(1);
+
+      if (!issuesError && issues && issues.length > 0) {
+        console.log('[shouldRequireBrandConfirmation] AI requested clarifications found');
+        return true;
+      }
+
+      // Check analysis data for missing critical terms
+      const { data: report, error: reportError } = await supabase
+        .from('protection_reports')
+        .select('analysis_json')
+        .eq('id', deal.analysis_report_id)
+        .single();
+
+      if (!reportError && report?.analysis_json) {
+        const analysisData = report.analysis_json;
+        const keyTerms = analysisData?.keyTerms || {};
+        
+        // Check for missing critical terms that require clarification
+        const hasMissingCriticalTerms = 
+          (!keyTerms?.usageRights || keyTerms.usageRights === 'Not specified') ||
+          (!keyTerms?.exclusivity || keyTerms.exclusivity === 'Not specified') ||
+          (!keyTerms?.paymentSchedule || keyTerms.paymentSchedule === 'Not specified') ||
+          (!keyTerms?.termination || keyTerms.termination === 'Not specified');
+
+        if (hasMissingCriticalTerms) {
+          console.log('[shouldRequireBrandConfirmation] Missing critical terms detected');
+          return true;
+        }
+
+        // Check for high/medium severity issues
+        const issues = Array.isArray(analysisData?.issues) ? analysisData.issues : [];
+        const hasImportantIssues = issues.some((issue: any) => 
+          issue.severity === 'high' || issue.severity === 'medium'
+        );
+
+        if (hasImportantIssues) {
+          console.log('[shouldRequireBrandConfirmation] Important issues detected');
+          return true;
+        }
+      }
+    }
+
+    // C. Check deal schema for payment risks
+    if (deal.deal_schema) {
+      const dealSchema = typeof deal.deal_schema === 'string' 
+        ? JSON.parse(deal.deal_schema) 
+        : deal.deal_schema;
+
+      // Payment risk: missing payment method or vague terms
+      const paymentMethod = dealSchema.payment_method || dealSchema.paymentMethod;
+      const paymentTerms = dealSchema.payment_terms || dealSchema.paymentTerms;
+      
+      if (!paymentMethod || !paymentTerms || paymentTerms === 'Not specified' || paymentTerms === 'Unclear') {
+        console.log('[shouldRequireBrandConfirmation] Payment risk detected');
+        return true;
+      }
+    }
+
+    // D. Check if deal is in negotiation mode
+    if (deal.status === 'Negotiating' || deal.brand_response_status === 'negotiating') {
+      console.log('[shouldRequireBrandConfirmation] Deal in negotiation mode');
+      return true;
+    }
+
+    // Happy path - no confirmation needed
+    console.log('[shouldRequireBrandConfirmation] No confirmation required - happy path');
+    return false;
+  } catch (error: any) {
+    console.error('[shouldRequireBrandConfirmation] Error:', error);
+    // Default to requiring confirmation on error
+    return true;
+  }
 }
 
 // Helper function to log audit entry
@@ -324,6 +445,9 @@ router.get('/:token', async (req: Request, res: Response) => {
       }
     }
 
+    // Check if brand confirmation is required
+    const requiresConfirmation = await shouldRequireBrandConfirmation(tokenData.deal_id);
+
     // Return only safe, non-sensitive data
     return res.json({
       success: true,
@@ -338,7 +462,8 @@ router.get('/:token', async (req: Request, res: Response) => {
         deal_execution_status: (deal as any).deal_execution_status || null,
       },
       requested_changes: requestedChanges,
-      analysis_data: analysisData
+      analysis_data: analysisData,
+      requires_confirmation: requiresConfirmation
     });
 
   } catch (error: any) {
@@ -429,10 +554,10 @@ router.post('/:token', async (req: Request, res: Response) => {
     // Get client IP address
     const clientIp = getClientIp(req);
 
-    // Check if deal exists
+    // Check if deal exists - fetch more fields for contract generation
     const { data: deal, error: dealError } = await supabase
       .from('brand_deals')
-      .select('id, brand_name, status, brand_response_status, deal_execution_status')
+      .select('id, brand_name, status, brand_response_status, deal_execution_status, creator_id, deal_amount, deliverables, brand_email, deal_schema, analysis_report_id')
       .eq('id', tokenData.deal_id)
       .single();
 
@@ -444,6 +569,9 @@ router.post('/:token', async (req: Request, res: Response) => {
         error: 'This link is no longer valid. Please contact the creator.'
       });
     }
+
+    // Check if confirmation is required
+    const requiresConfirmation = await shouldRequireBrandConfirmation(tokenData.deal_id);
 
     // Determine action type for audit log
     const isUpdate = deal.brand_response_status && deal.brand_response_status !== 'pending';
@@ -518,6 +646,190 @@ router.post('/:token', async (req: Request, res: Response) => {
       }
     );
 
+    // Auto-generate contract if confirmation not required and brand accepted
+    let contractGenerated = false;
+    if (!requiresConfirmation && (status === 'accepted' || status === 'accepted_verified')) {
+      try {
+        console.log('[BrandResponse] Auto-generating contract (happy path)...');
+        
+        // Fetch creator details for contract generation
+        const { data: creator, error: creatorError } = await supabase
+          .from('profiles')
+          .select('id, first_name, last_name, email, address')
+          .eq('id', deal.creator_id)
+          .single();
+
+        if (!creatorError && creator) {
+          // Fetch analysis data if available
+          let analysisData: any = null;
+          if (deal.analysis_report_id) {
+            const { data: report } = await supabase
+              .from('protection_reports')
+              .select('analysis_json')
+              .eq('id', deal.analysis_report_id)
+              .single();
+            analysisData = report?.analysis_json;
+          }
+
+          // Parse deliverables
+          let deliverablesList: string[] = [];
+          if (deal.deliverables) {
+            if (typeof deal.deliverables === 'string') {
+              try {
+                const parsed = JSON.parse(deal.deliverables);
+                deliverablesList = Array.isArray(parsed) ? parsed : [deal.deliverables];
+              } catch {
+                deliverablesList = [deal.deliverables];
+              }
+            } else if (Array.isArray(deal.deliverables)) {
+              deliverablesList = deal.deliverables;
+            }
+          }
+
+          // Parse deal schema
+          const dealSchema = deal.deal_schema 
+            ? (typeof deal.deal_schema === 'string' ? JSON.parse(deal.deal_schema) : deal.deal_schema)
+            : {};
+
+          // Build contract generation request
+          const creatorName = creator.first_name && creator.last_name
+            ? `${creator.first_name} ${creator.last_name}`
+            : creator.first_name || creator.email?.split('@')[0] || 'Creator';
+
+          const contractRequest = {
+            brandName: deal.brand_name || 'Brand',
+            creatorName: creatorName,
+            dealAmount: deal.deal_amount || 0,
+            deliverables: deliverablesList.length > 0 ? deliverablesList : ['As per agreement'],
+            brandEmail: deal.brand_email || null,
+            brandAddress: dealSchema.brand_address || null,
+            creatorEmail: creator.email || null,
+            creatorAddress: creator.address || null,
+            dealSchema: dealSchema,
+            usageType: dealSchema.usage_type || null,
+            usagePlatforms: dealSchema.usage_platforms || [dealSchema.platform || 'Instagram'],
+            usageDuration: dealSchema.usage_duration || null,
+            paidAdsAllowed: dealSchema.paid_ads_allowed || null,
+            whitelistingAllowed: dealSchema.whitelisting_allowed || null,
+            exclusivityEnabled: dealSchema.exclusivity_enabled || false,
+            exclusivityCategory: dealSchema.exclusivity_category || null,
+            exclusivityDuration: dealSchema.exclusivity_duration || null,
+            terminationNoticeDays: dealSchema.termination_notice_days || null,
+            jurisdictionCity: dealSchema.jurisdiction_city || null,
+            additionalTerms: dealSchema.additional_terms || null,
+          };
+
+          // Generate contract
+          const contractResult = await generateContractFromScratch(contractRequest);
+
+          // Upload contract DOCX to storage
+          const { data: uploadData, error: uploadError } = await supabase.storage
+            .from('creator-assets')
+            .upload(
+              `contracts/${deal.id}/${contractResult.fileName}`,
+              contractResult.contractDocx,
+              {
+                contentType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                upsert: true
+              }
+            );
+
+          if (!uploadError && uploadData) {
+            // Get public URL
+            const { data: urlData } = await supabase.storage
+              .from('creator-assets')
+              .getPublicUrl(uploadData.path);
+
+            // Update deal with contract info
+            await supabase
+              .from('brand_deals')
+              .update({
+                contract_file_url: urlData.publicUrl,
+                contract_status: 'DraftGenerated',
+                contract_version: 'v3',
+                contract_generated_at: new Date().toISOString(),
+                updated_at: new Date().toISOString()
+              })
+              .eq('id', tokenData.deal_id);
+
+            contractGenerated = true;
+            console.log('[BrandResponse] Contract auto-generated successfully');
+
+            // Track analytics
+            try {
+              await supabase
+                .from('analytics_events')
+                .insert({
+                  event_type: 'contract_auto_generated',
+                  deal_id: tokenData.deal_id,
+                  creator_id: deal.creator_id,
+                  metadata: {
+                    status: status,
+                    requires_confirmation: false
+                  },
+                  created_at: new Date().toISOString()
+                });
+            } catch (analyticsError) {
+              console.error('[BrandResponse] Analytics tracking failed (non-fatal):', analyticsError);
+            }
+
+            // Send email to brand (async, don't wait)
+            if (deal.brand_email) {
+              try {
+                const { sendBrandFormSubmissionEmail } = await import('../services/brandFormSubmissionEmailService.js');
+                await sendBrandFormSubmissionEmail(
+                  deal.brand_email,
+                  deal.brand_name || 'Brand',
+                  {
+                    brandName: deal.brand_name || 'Brand',
+                    dealAmount: deal.deal_amount || 0,
+                    deliverables: deliverablesList,
+                  },
+                  tokenData.deal_id
+                );
+              } catch (emailError) {
+                console.error('[BrandResponse] Email sending failed (non-fatal):', emailError);
+              }
+            }
+          } else {
+            console.error('[BrandResponse] Contract upload failed:', uploadError);
+          }
+        } else {
+          console.error('[BrandResponse] Creator not found for contract generation');
+        }
+      } catch (contractError: any) {
+        console.error('[BrandResponse] Contract auto-generation failed (non-fatal):', contractError);
+        // Don't fail the response if contract generation fails
+      }
+    } else if (requiresConfirmation) {
+      // Track analytics for clarification required
+      try {
+        await supabase
+          .from('analytics_events')
+          .insert({
+            event_type: 'contract_alignment_required',
+            deal_id: tokenData.deal_id,
+            creator_id: deal.creator_id,
+            metadata: {
+              status: status,
+              requires_confirmation: true
+            },
+            created_at: new Date().toISOString()
+          });
+      } catch (analyticsError) {
+        console.error('[BrandResponse] Analytics tracking failed (non-fatal):', analyticsError);
+      }
+
+      // Update contract status to AwaitingClarification
+      await supabase
+        .from('brand_deals')
+        .update({
+          contract_status: 'AwaitingClarification',
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', tokenData.deal_id);
+    }
+
     // If OTP verified, trigger invoice generation
     if (status === 'accepted_verified') {
       try {
@@ -534,7 +846,9 @@ router.post('/:token', async (req: Request, res: Response) => {
     return res.json({
       success: true,
       message: 'Brand response saved successfully',
-      status: status
+      status: status,
+      contract_generated: contractGenerated,
+      requires_confirmation: requiresConfirmation
     });
 
   } catch (error: any) {

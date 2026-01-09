@@ -44,7 +44,7 @@ async function logDealAction(
   }
 }
 
-// POST /api/otp/send (PUBLIC - for brand response page)
+// POST /api/otp/send (PUBLIC - for brand response page and contract ready page)
 // Send OTP to brand's email address - no auth required
 publicRouter.post('/send', async (req: express.Request, res: Response) => {
   try {
@@ -57,12 +57,33 @@ publicRouter.post('/send', async (req: express.Request, res: Response) => {
       });
     }
 
-    // Validate token and get deal
-    const { data: tokenData, error: tokenError } = await supabase
+    // Validate token and get deal - check both brand_reply_tokens and contract_ready_tokens
+    let tokenData: any = null;
+    let tokenError: any = null;
+    
+    // Try brand_reply_tokens first
+    const { data: replyTokenData, error: replyTokenError } = await supabase
       .from('brand_reply_tokens')
       .select('id, deal_id, is_active, expires_at, revoked_at')
       .eq('id', token)
       .maybeSingle();
+    
+    if (!replyTokenError && replyTokenData) {
+      tokenData = replyTokenData;
+    } else {
+      // Try contract_ready_tokens
+      const { data: readyTokenData, error: readyTokenError } = await supabase
+        .from('contract_ready_tokens')
+        .select('id, deal_id, is_active, expires_at, revoked_at')
+        .eq('id', token)
+        .maybeSingle();
+      
+      if (!readyTokenError && readyTokenData) {
+        tokenData = readyTokenData;
+      } else {
+        tokenError = readyTokenError || replyTokenError;
+      }
+    }
 
     if (tokenError || !tokenData) {
       return res.status(404).json({
@@ -214,7 +235,7 @@ publicRouter.post('/send', async (req: express.Request, res: Response) => {
   }
 });
 
-// POST /api/otp/verify (PUBLIC - for brand response page)
+// POST /api/otp/verify (PUBLIC - for brand response page and contract ready page)
 // Verify OTP entered by brand - no auth required
 publicRouter.post('/verify', async (req: express.Request, res: Response) => {
   try {
@@ -227,12 +248,33 @@ publicRouter.post('/verify', async (req: express.Request, res: Response) => {
       });
     }
 
-    // Validate token and get deal
-    const { data: tokenData, error: tokenError } = await supabase
+    // Validate token and get deal - check both brand_reply_tokens and contract_ready_tokens
+    let tokenData: any = null;
+    let tokenError: any = null;
+    
+    // Try brand_reply_tokens first
+    const { data: replyTokenData, error: replyTokenError } = await supabase
       .from('brand_reply_tokens')
       .select('id, deal_id, is_active, expires_at, revoked_at')
       .eq('id', token)
       .maybeSingle();
+    
+    if (!replyTokenError && replyTokenData) {
+      tokenData = replyTokenData;
+    } else {
+      // Try contract_ready_tokens
+      const { data: readyTokenData, error: readyTokenError } = await supabase
+        .from('contract_ready_tokens')
+        .select('id, deal_id, is_active, expires_at, revoked_at')
+        .eq('id', token)
+        .maybeSingle();
+      
+      if (!readyTokenError && readyTokenData) {
+        tokenData = readyTokenData;
+      } else {
+        tokenError = readyTokenError || replyTokenError;
+      }
+    }
 
     if (tokenError || !tokenData) {
       return res.status(404).json({

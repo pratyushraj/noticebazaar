@@ -1337,7 +1337,7 @@ const CreatorDashboard = () => {
                 )}>
                   <div className="flex-1 min-w-0">
                     <div className={cn(
-                      "text-3xl sm:text-4xl md:text-5xl font-bold tabular-nums mb-2",
+                      "text-2xl sm:text-3xl md:text-4xl font-bold tabular-nums mb-2",
                       "leading-tight"
                     )}>
                       {moneyProtectionTab === 'recovered' 

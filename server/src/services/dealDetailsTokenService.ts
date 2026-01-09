@@ -1,4 +1,35 @@
 import { supabase } from '../index.js';
+import { sendBrandFormSubmissionEmail } from './brandFormSubmissionEmailService.js';
+
+/**
+ * Determines if brand confirmation/clarification page is required
+ * Returns true if any problematic conditions are detected
+ */
+export function shouldRequireBrandConfirmation(deal: any): boolean {
+  // If creator requested edits earlier
+  if (deal.creatorRequestedChanges) return true;
+
+  // If AI flagged missing clarity
+  if (deal.flags?.requiresClarification === true) return true;
+
+  // If usage rights missing or incomplete
+  if (!deal.usage || !deal.usage.duration) return true;
+
+  // If payment terms vague or missing
+  if (!deal.payment?.timeline || !deal.payment?.method) return true;
+
+  // If exclusivity unclear
+  if (deal.exclusivity?.status === "unknown") return true;
+
+  // If brand skipped critical fields
+  const required = ["deliverables", "deadline", "amount"];
+  for (const field of required) {
+    if (!deal[field]) return true;
+  }
+
+  // If nothing problematic → NO confirmation needed
+  return false;
+}
 
 export interface DealDetailsToken {
   id: string;
@@ -194,6 +225,239 @@ export async function submitDealDetails(
         .from('deal_details_submissions')
         .update({ deal_id: deal.id })
         .eq('id', submission.id);
+
+      // Map formData to deal structure for confirmation check
+      const dealForCheck = {
+        creatorRequestedChanges: (deal as any).creator_requested_clarifications || false,
+        flags: {
+          requiresClarification: (deal as any).flags?.requiresClarification || false
+        },
+        usage: {
+          duration: formData.usageRightsDuration || null
+        },
+        payment: {
+          timeline: formData.paymentTimeline || null,
+          method: formData.paymentMethod && formData.paymentMethod.length > 0 
+            ? formData.paymentMethod[0] 
+            : null
+        },
+        exclusivity: {
+          status: formData.exclusivityPeriod === 'none' || !formData.exclusivityPeriod 
+            ? 'none' 
+            : formData.exclusivityPeriod ? 'specified' : 'unknown'
+        },
+        deliverables: formData.deliverables && formData.deliverables.length > 0 
+          ? formData.deliverables 
+          : null,
+        deadline: formData.deadline || null,
+        amount: formData.dealType === 'paid' && formData.paymentAmount
+          ? parseFloat(formData.paymentAmount) || 0
+          : 0
+      };
+
+      // ALWAYS generate contract immediately (removed confirmation check)
+      try {
+        console.log('[DealDetailsTokenService] Auto-generating contract immediately...');
+        
+        // Import contract generation service
+        const { generateContractFromScratch } = await import('./contractGenerator.js');
+        
+        // Fetch creator details
+        const { data: creator, error: creatorError } = await supabase
+          .from('profiles')
+          .select('id, first_name, last_name, email, address')
+          .eq('id', token.creator_id)
+          .single();
+
+        if (!creatorError && creator) {
+          // Parse deliverables
+          const deliverablesList = Array.isArray(formData.deliverables) 
+            ? formData.deliverables.map((d: any) => 
+                `${d.quantity || 1}x ${d.contentType || 'Content'} on ${d.platform || 'Platform'}`
+              )
+            : ['As per agreement'];
+
+          // Build contract generation request
+          const creatorName = creator.first_name && creator.last_name
+            ? `${creator.first_name} ${creator.last_name}`
+            : creator.first_name || creator.email?.split('@')[0] || 'Creator';
+
+          const contractRequest = {
+            brandName: formData.brandName || 'Brand',
+            creatorName: creatorName,
+            dealAmount: dealForCheck.amount,
+            deliverables: deliverablesList,
+            brandEmail: formData.companyEmail || null,
+            brandAddress: formData.companyAddress || null,
+            creatorEmail: creator.email || null,
+            creatorAddress: creator.address || null,
+            dealSchema: {
+              usage_type: formData.usageRightsDuration || '3_months',
+              usage_platforms: formData.deliverables?.map((d: any) => d.platform) || ['Instagram'],
+              usage_duration: formData.usageRightsDuration || '3_months',
+              paid_ads_allowed: formData.paidAdsAllowed || false,
+              whitelisting_allowed: formData.whitelistingAllowed || false,
+              exclusivity_enabled: formData.exclusivityPeriod && formData.exclusivityPeriod !== 'none',
+              exclusivity_duration: formData.exclusivityPeriod || null,
+              payment_method: formData.paymentMethod?.[0] || null,
+              payment_timeline: formData.paymentTimeline || null,
+            },
+            usageType: formData.usageRightsDuration || '3_months',
+            usagePlatforms: formData.deliverables?.map((d: any) => d.platform) || ['Instagram'],
+            usageDuration: formData.usageRightsDuration || '3_months',
+            paidAdsAllowed: formData.paidAdsAllowed || false,
+            whitelistingAllowed: formData.whitelistingAllowed || false,
+            exclusivityEnabled: formData.exclusivityPeriod && formData.exclusivityPeriod !== 'none',
+            exclusivityCategory: null,
+            exclusivityDuration: formData.exclusivityPeriod || null,
+            terminationNoticeDays: null,
+            jurisdictionCity: formData.companyState || null,
+            additionalTerms: null,
+          };
+
+          // Generate contract
+          const contractResult = await generateContractFromScratch(contractRequest);
+
+          // Upload contract DOCX to storage
+          const { data: uploadData, error: uploadError } = await supabase.storage
+            .from('creator-assets')
+            .upload(
+              `contracts/${deal.id}/${contractResult.fileName}`,
+              contractResult.contractDocx,
+              {
+                contentType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                upsert: true
+              }
+            );
+
+          if (!uploadError && uploadData) {
+            // Get public URL
+            const { data: urlData } = await supabase.storage
+              .from('creator-assets')
+              .getPublicUrl(uploadData.path);
+
+            // Update deal with contract info and set CONTRACT_READY status
+            await supabase
+              .from('brand_deals')
+              .update({
+                contract_file_url: urlData.publicUrl,
+                contract_status: 'DraftGenerated',
+                contract_version: 'v3',
+                contract_generated_at: new Date().toISOString(),
+                status: 'CONTRACT_READY', // Contract is ready for brand to verify and sign
+                updated_at: new Date().toISOString()
+              })
+              .eq('id', deal.id);
+
+            console.log('[DealDetailsTokenService] Contract auto-generated successfully, status: CONTRACT_READY');
+
+            // Log activity: Brand submitted collaboration details
+            try {
+              await supabase
+                .from('analytics_events')
+                .insert({
+                  event_type: 'brand_submitted_details',
+                  deal_id: deal.id,
+                  creator_id: token.creator_id,
+                  metadata: {
+                    source: 'brand_form_submission',
+                    brand_name: formData.brandName || 'Brand'
+                  },
+                  created_at: new Date().toISOString()
+                });
+            } catch (analyticsError) {
+              console.error('[DealDetailsTokenService] Activity logging failed (non-fatal):', analyticsError);
+            }
+
+            // Log activity: Agreement auto-generated
+            try {
+              await supabase
+                .from('analytics_events')
+                .insert({
+                  event_type: 'agreement_auto_generated',
+                  deal_id: deal.id,
+                  creator_id: token.creator_id,
+                  metadata: {
+                    source: 'brand_form_submission',
+                    contract_version: 'v3'
+                  },
+                  created_at: new Date().toISOString()
+                });
+            } catch (analyticsError) {
+              console.error('[DealDetailsTokenService] Activity logging failed (non-fatal):', analyticsError);
+            }
+          } else {
+            console.error('[DealDetailsTokenService] Contract upload failed:', uploadError);
+          }
+        } else {
+          console.error('[DealDetailsTokenService] Creator not found for contract generation');
+        }
+      } catch (contractError: any) {
+        console.error('[DealDetailsTokenService] Contract auto-generation failed (non-fatal):', contractError);
+        // Don't fail the submission if contract generation fails, but still set status
+        if (dealId) {
+          await supabase
+            .from('brand_deals')
+            .update({
+              status: 'AGREEMENT_PREPARED',
+              updated_at: new Date().toISOString()
+            })
+            .eq('id', dealId);
+        }
+      }
+    }
+  } catch (error) {
+    console.error('[DealDetailsTokenService] Deal creation error:', error);
+    // Don't fail the submission if deal creation fails
+  }
+
+  // Send email notification to creator (non-blocking)
+      try {
+        // Fetch creator's email and name
+        const { data: creatorProfile, error: profileError } = await supabase
+          .from('profiles')
+          .select('email, first_name, last_name')
+          .eq('id', token.creator_id)
+          .maybeSingle();
+
+        if (!profileError && creatorProfile?.email) {
+          const creatorName = creatorProfile.first_name || creatorProfile.last_name
+            ? `${creatorProfile.first_name || ''} ${creatorProfile.last_name || ''}`.trim()
+            : 'Creator';
+
+          const brandData = {
+            brandName: formData.brandName || 'Brand',
+            campaignName: formData.campaignName,
+            dealType: formData.dealType || 'paid',
+            paymentAmount: formData.dealType === 'paid' && formData.paymentAmount
+              ? parseFloat(formData.paymentAmount) || 0
+              : undefined,
+            deliverables: formData.deliverables || [],
+            deadline: formData.deadline,
+          };
+
+          // Send email asynchronously (don't await to avoid blocking)
+          sendBrandFormSubmissionEmail(
+            creatorProfile.email,
+            creatorName,
+            brandData,
+            dealId || deal.id
+          ).then((result) => {
+            if (result.success) {
+              console.log('[DealDetailsTokenService] Email notification sent successfully:', result.emailId);
+            } else {
+              console.warn('[DealDetailsTokenService] Failed to send email notification:', result.error);
+            }
+          }).catch((error) => {
+            console.error('[DealDetailsTokenService] Error sending email notification:', error);
+          });
+        } else {
+          console.warn('[DealDetailsTokenService] Could not fetch creator email for notification:', profileError);
+        }
+      } catch (emailError) {
+        // Don't fail the submission if email fails
+        console.error('[DealDetailsTokenService] Error preparing email notification:', emailError);
+      }
     } else if (dealError) {
       console.error('[DealDetailsTokenService] Deal creation error:', dealError);
       // If deal creation failed, try to update existing deal if deal_id exists in submission
@@ -220,9 +484,40 @@ export async function submitDealDetails(
     // Don't fail the submission if deal creation fails
   }
 
+  // Always create contract ready token (no more clarification mode)
+  let contractReadyToken: string | null = null;
+  
+  if (dealId) {
+    try {
+      console.log('[DealDetailsTokenService] Creating contract ready token for deal:', dealId, 'creator:', token.creator_id);
+      // Generate contract ready token for brand to sign
+      const { createContractReadyToken } = await import('./contractReadyTokenService.js');
+      const readyToken = await createContractReadyToken({
+        dealId: dealId,
+        creatorId: token.creator_id,
+        expiresAt: null, // No expiration
+      });
+      contractReadyToken = readyToken.id;
+      console.log('[DealDetailsTokenService] ✅ Contract ready token generated successfully:', contractReadyToken);
+    } catch (tokenError: any) {
+      console.error('[DealDetailsTokenService] ❌ Failed to generate contract ready token');
+      console.error('[DealDetailsTokenService] Error details:', {
+        message: tokenError.message,
+        stack: tokenError.stack,
+        dealId: dealId,
+        creatorId: token.creator_id,
+        error: tokenError
+      });
+      // Don't fail the submission if token generation fails, but log extensively
+    }
+  } else {
+    console.warn('[DealDetailsTokenService] ⚠️ No dealId available, cannot create contract ready token');
+  }
+
   return {
     submissionId: submission.id,
     dealId,
+    contractReadyToken, // Token for contract ready page
   };
 }
 

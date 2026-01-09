@@ -44,6 +44,7 @@ import adminRouter from './routes/admin.js';
 import brandResponseRouter from './routes/brandResponse.js';
 import brandReplyTokensRouter from './routes/brandReplyTokens.js';
 import dealDetailsTokensRouter from './routes/dealDetailsTokens.js';
+import contractReadyTokensRouter from './routes/contractReadyTokens.js';
 import gstRouter from './routes/gst.js';
 import aiRouter from './routes/ai.js';
 import otpRouter, { publicRouter as otpPublicRouter } from './routes/otp.js';
@@ -230,6 +231,7 @@ app.get('/health', (req: express.Request, res: express.Response) => {
 // Public API Routes (no auth required)
 app.use('/api/brand-response', brandResponseRouter);
 app.use('/api/deal-details-tokens', dealDetailsTokensRouter); // Public routes (auth handled internally)
+app.use('/api/contract-ready', contractReadyTokensRouter); // Public routes for contract ready page
 app.use('/api/gst', gstRouter); // Public GST lookup route
 app.use('/api/otp', otpPublicRouter); // Public OTP routes for brand response page
 

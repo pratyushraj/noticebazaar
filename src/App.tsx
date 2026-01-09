@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { HashRouter, Routes, Route, Navigate } from "react-router-dom";
+import { HashRouter, Routes, Route, Navigate, useParams } from "react-router-dom";
 import { SplashScreen } from "@/components/mobile/SplashScreen";
 import NotFound from "./pages/NotFound";
 import Login from "./pages/Login";
@@ -83,6 +83,7 @@ import ContractProtectionDetails from "./pages/ContractProtectionDetails";
 import PaymentDetailPage from "./pages/PaymentDetailPage";
 import BrandResponsePage from "./pages/BrandResponsePage";
 import BrandDealDetailsPage from "./pages/BrandDealDetailsPage";
+import ContractReadyPage from "./pages/ContractReadyPage";
 import FeedbackPage from "./pages/FeedbackPage";
 import AdvisorDashboard from "./pages/AdvisorDashboard";
 import LawyerDashboard from "./pages/LawyerDashboard";
@@ -94,6 +95,11 @@ import UpgradePage from "./pages/UpgradePage";
 import { ErrorBoundary } from "./components/ui/error-boundary";
 import NetworkStatusWrapper from "./components/NetworkStatusWrapper";
 
+// Redirect component for old brand-reply routes
+const ContractReadyRedirect = () => {
+  const { token } = useParams<{ token: string }>();
+  return <Navigate to={`/contract-ready/${token}`} replace />;
+};
 
 // Configure React Query with timeout and retry settings
 const queryClient = new QueryClient({
@@ -287,8 +293,11 @@ const App = () => {
               <Route path="/contract-upload" element={<ProtectedLayout allowedRoles={['creator']}><ContractUploadFlow /></ProtectedLayout>} />
               <Route path="/contract-comparison" element={<ProtectedLayout allowedRoles={['creator']}><ContractComparison /></ProtectedLayout>} />
               <Route path="/contract-protection/:contractId" element={<ProtectedLayout allowedRoles={['creator']}><ContractProtectionDetails /></ProtectedLayout>} />
-              {/* Public Brand Response Page - No auth required */}
-              <Route path="/brand-reply/:token" element={<BrandResponsePage />} />
+              {/* Public Brand Response Page - Redirect old routes to new Contract Ready page */}
+              <Route path="/brand-reply/:token" element={<ContractReadyRedirect />} />
+              <Route path="/brand/response/:token" element={<ContractReadyRedirect />} />
+              <Route path="/deal/brand-response/:token" element={<ContractReadyRedirect />} />
+              <Route path="/contract-ready/:token" element={<ContractReadyPage />} />
               {/* Public Brand Deal Details Page - No auth required */}
               <Route path="/deal-details/:token" element={<BrandDealDetailsPage />} />
               <Route path="/deal/:token" element={<BrandDealDetailsPage />} />

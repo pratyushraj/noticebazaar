@@ -64,7 +64,20 @@ const CreatorContracts = () => {
       let progress = 0;
       let nextStep = 'Review contract';
 
-      if (statusLower === 'draft') {
+      // Handle new flow statuses
+      if (statusLower === 'agreement_prepared') {
+        status = 'sent';
+        progress = 30;
+        nextStep = 'Brand reviewing agreement';
+      } else if (statusLower === 'signed_pending_creator') {
+        status = 'signed';
+        progress = 70;
+        nextStep = 'Review & Sign Contract';
+      } else if (statusLower === 'brand_requested_changes') {
+        status = 'negotiation';
+        progress = 30;
+        nextStep = 'Review Brand Feedback';
+      } else if (statusLower === 'draft') {
         status = 'draft';
         progress = 10;
         nextStep = 'Review and send to brand';

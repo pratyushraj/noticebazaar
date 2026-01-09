@@ -55,6 +55,281 @@ const BrandResponsePage = () => {
   const [otpResendCooldown, setOtpResendCooldown] = useState(0);
   const [brandEmail, setBrandEmail] = useState<string>('');
   const [brandEmailInput, setBrandEmailInput] = useState<string>('');
+  const [showRequestChangesModal, setShowRequestChangesModal] = useState(false);
+  const [requestChangesText, setRequestChangesText] = useState('');
+  const [requiresConfirmation, setRequiresConfirmation] = useState<boolean | null>(null);
+  const [isPreparingContract, setIsPreparingContract] = useState(false);
+
+  // Check if clarifications are required (fallback logic if API doesn't provide flag)
+  const requiresClarifications = () => {
+    // Check if there are requested changes
+    if (requestedChanges && requestedChanges.length > 0) {
+      return true;
+    }
+    
+    // Check if there are safeguards/clarifications in analysis data
+    if (analysisData) {
+      const keyTerms = analysisData.keyTerms || {};
+      const issues = Array.isArray(analysisData.issues) ? analysisData.issues : [];
+      
+      // Check for missing critical terms that would require clarification
+      const hasMissingTerms = 
+        (!keyTerms?.usageRights || keyTerms.usageRights === 'Not specified') ||
+        (!keyTerms?.exclusivity || keyTerms.exclusivity === 'Not specified') ||
+        (!keyTerms?.paymentSchedule || keyTerms.paymentSchedule === 'Not specified') ||
+        (!keyTerms?.termination || keyTerms.termination === 'Not specified');
+      
+      // Check if there are high/medium severity issues
+      const hasImportantIssues = issues.some((issue: any) => 
+        issue.severity === 'high' || issue.severity === 'medium'
+      );
+      
+      return hasMissingTerms || hasImportantIssues;
+    }
+    
+    return false;
+  };
+
+  // Use API flag as primary source, fallback to local logic
+  const hasClarifications = requiresConfirmation !== null 
+    ? requiresConfirmation 
+    : requiresClarifications();
+
+  // Brand Confirmation Page Component (when no clarifications needed)
+  const BrandConfirmationPage = () => {
+    // Parse deliverables
+    let deliverablesList: string[] = [];
+    if (dealInfo?.deliverables) {
+      if (typeof dealInfo.deliverables === 'string') {
+        try {
+          const parsed = JSON.parse(dealInfo.deliverables);
+          deliverablesList = Array.isArray(parsed) ? parsed : [dealInfo.deliverables];
+        } catch {
+          deliverablesList = [dealInfo.deliverables];
+        }
+      } else if (Array.isArray(dealInfo.deliverables)) {
+        deliverablesList = dealInfo.deliverables;
+      }
+    }
+
+    // Extract contract details from analysis data if available
+    const keyTerms = analysisData?.keyTerms || {};
+    const extractedTerms = analysisData?.extractedTerms || {};
+    const dealValue = dealInfo?.deal_amount || keyTerms.dealValue || extractedTerms.paymentTerms || null;
+    const timeline = keyTerms.duration || extractedTerms.timeline || 'Not specified';
+    const paymentTerms = extractedTerms.paymentTerms || keyTerms.paymentSchedule || 'Not specified';
+    const usageRights = extractedTerms.usageRights || keyTerms.usageRights || 'Not specified';
+    const exclusivity = extractedTerms.exclusivity || keyTerms.exclusivity || 'Not specified';
+    const brandName = dealInfo?.brand_name || 'Brand';
+
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="space-y-6"
+      >
+        {/* Header */}
+        <div className="text-center mb-6">
+          <h2 className="text-2xl md:text-3xl font-bold mb-3">
+            Review & Confirm Collaboration
+          </h2>
+          <p className="text-white/80 text-base mb-2">
+            This helps ensure both parties are aligned before we finalize your agreement.
+          </p>
+          <p className="text-white/60 text-sm">
+            This does not legally bind you yet.
+          </p>
+        </div>
+
+        {/* Deal Summary Section */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6 shadow-lg space-y-4"
+        >
+          <h3 className="text-lg font-semibold mb-4">Deal Summary</h3>
+          
+          {/* Deal Value */}
+          {dealValue && (
+            <div className="flex justify-between items-center py-2 border-b border-white/10">
+              <span className="text-white/70 text-sm">Deal Value</span>
+              <span className="font-medium text-green-400/80 text-sm">
+                ₹{Number(dealValue).toLocaleString('en-IN')}
+              </span>
+            </div>
+          )}
+
+          {/* Deliverables */}
+          {deliverablesList.length > 0 && (
+            <div className="py-2 border-b border-white/10">
+              <span className="text-white/70 text-sm block mb-2">Deliverables</span>
+              <ul className="space-y-1.5 list-none">
+                {deliverablesList.map((d, i) => (
+                  <li key={i} className="flex items-start gap-2">
+                    <span className="text-[#d8caff] mt-1">▪</span>
+                    <span className="text-white/90 text-sm">{d}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {/* Timeline */}
+          {timeline !== 'Not specified' && (
+            <div className="flex justify-between items-center py-2 border-b border-white/10">
+              <span className="text-white/70 text-sm">Timeline / Posting Deadline</span>
+              <span className="text-white/90 text-sm">{timeline}</span>
+            </div>
+          )}
+
+          {/* Payment Terms */}
+          {paymentTerms !== 'Not specified' && (
+            <div className="flex justify-between items-center py-2 border-b border-white/10">
+              <span className="text-white/70 text-sm">Payment Terms</span>
+              <span className="text-white/90 text-sm">{paymentTerms}</span>
+            </div>
+          )}
+
+          {/* Usage Rights */}
+          {usageRights !== 'Not specified' && (
+            <div className="flex justify-between items-center py-2 border-b border-white/10">
+              <span className="text-white/70 text-sm">Usage Rights</span>
+              <span className="text-white/90 text-sm">{usageRights}</span>
+            </div>
+          )}
+
+          {/* Exclusivity */}
+          {exclusivity !== 'Not specified' && (
+            <div className="flex justify-between items-center py-2 border-b border-white/10">
+              <span className="text-white/70 text-sm">Exclusivity</span>
+              <span className="text-white/90 text-sm">{exclusivity}</span>
+            </div>
+          )}
+
+          {/* Brand Details */}
+          <div className="flex justify-between items-center py-2">
+            <span className="text-white/70 text-sm">Brand Details</span>
+            <span className="text-white/90 text-sm">{brandName}</span>
+          </div>
+
+          {/* Reassurance line */}
+          <p className="text-xs text-white/60 mt-4 pt-4 border-t border-white/10">
+            If anything looks unclear, you can request an update.
+          </p>
+        </motion.div>
+
+        {/* Decision Options */}
+        <div className="space-y-4">
+          {/* Option 1: Confirm & Continue */}
+          <motion.button
+            onClick={() => handleStatusSelect('accepted')}
+            className={cn(
+              "w-full rounded-xl p-5 md:p-6 text-left transition-all duration-200 relative",
+              "border-2 backdrop-blur-xl",
+              selectedStatus === 'accepted'
+                ? "bg-white/10 border-green-400/70 shadow-[0_0_0_1px_rgba(34,197,94,0.35)]"
+                : "bg-white/5 border-white/20 hover:border-white/40 hover:bg-white/10",
+              selectedStatus && selectedStatus !== 'accepted' && "opacity-60"
+            )}
+            whileHover={selectedStatus !== 'accepted' ? { scale: 1.02 } : {}}
+            whileTap={{ scale: 0.98 }}
+            transition={{ duration: 0.15 }}
+          >
+            <div className="flex items-start gap-4">
+              <div className={cn(
+                "w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 border-2 transition-all duration-200",
+                selectedStatus === 'accepted'
+                  ? "bg-green-500/20 border-green-400"
+                  : "bg-white/10 border-white/30"
+              )}>
+                {selectedStatus === 'accepted' ? (
+                  <CheckCircle className="w-6 h-6 text-green-400" />
+                ) : (
+                  <div className="w-4 h-4 rounded-full border-2 border-white/40" />
+                )}
+              </div>
+              <div className="flex-1">
+                <div className="flex items-start justify-between gap-2">
+                  <h3 className="text-lg md:text-xl font-semibold mb-1.5">
+                    Confirm & Continue
+                  </h3>
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-green-500/10 border border-green-500/25 text-[10px] font-medium text-green-200">
+                    <CheckCircle className="w-3 h-3" />
+                    Recommended
+                  </span>
+                </div>
+                <p className="text-white/70 text-sm leading-relaxed">
+                  Everything looks correct. Proceed with this agreement.
+                </p>
+              </div>
+            </div>
+          </motion.button>
+
+          {/* Option 2: Request Changes */}
+          <motion.button
+            onClick={() => setShowRequestChangesModal(true)}
+            className={cn(
+              "w-full rounded-xl p-5 md:p-6 text-left transition-all duration-200",
+              "border-2 backdrop-blur-xl",
+              selectedStatus === 'negotiating'
+                ? "bg-white/10 border-blue-400/60 shadow-sm"
+                : "bg-white/4 border-white/15 hover:border-white/30 hover:bg-white/8"
+            )}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            transition={{ duration: 0.15 }}
+          >
+            <div className="flex items-start gap-4">
+              <div className={cn(
+                "w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 border-2 transition-all duration-200",
+                selectedStatus === 'negotiating'
+                  ? "bg-blue-500/20 border-blue-400"
+                  : "bg-white/10 border-white/30"
+              )}>
+                {selectedStatus === 'negotiating' ? (
+                  <CheckCircle className="w-6 h-6 text-blue-400" />
+                ) : (
+                  <div className="w-4 h-4 rounded-full border-2 border-white/40" />
+                )}
+              </div>
+              <div className="flex-1">
+                <h3 className="text-lg md:text-xl font-semibold mb-1.5">
+                  Request Changes
+                </h3>
+                <p className="text-white/70 text-sm leading-relaxed">
+                  We need to adjust details before finalizing.
+                </p>
+              </div>
+            </div>
+          </motion.button>
+        </div>
+
+        {/* Friendly Reassurance Footer */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.3 }}
+          className="bg-white/3 backdrop-blur-xl rounded-xl p-4 md:p-5 border border-white/10"
+        >
+          <div className="space-y-2">
+            <div className="flex items-start gap-2">
+              <CheckCircle className="w-4 h-4 text-green-400/70 mt-0.5 flex-shrink-0" />
+              <p className="text-xs text-white/50">Your response will be shared with the creator</p>
+            </div>
+            <div className="flex items-start gap-2">
+              <CheckCircle className="w-4 h-4 text-green-400/70 mt-0.5 flex-shrink-0" />
+              <p className="text-xs text-white/50">You can update your response later</p>
+            </div>
+            <div className="flex items-start gap-2">
+              <CheckCircle className="w-4 h-4 text-green-400/70 mt-0.5 flex-shrink-0" />
+              <p className="text-xs text-white/50">This step does not legally bind you</p>
+            </div>
+          </div>
+        </motion.div>
+      </motion.div>
+    );
+  };
 
   // Brand Summary Card Component
   const BrandSummaryCard = ({ 
@@ -555,6 +830,11 @@ const BrandResponsePage = () => {
           setAnalysisData(data.analysis_data);
         }
         
+        // Set requires_confirmation flag from API (primary source of truth)
+        if (typeof data.requires_confirmation === 'boolean') {
+          setRequiresConfirmation(data.requires_confirmation);
+        }
+        
         // Check status and set submitted state
         if (responseStatus && responseStatus !== 'pending') {
           console.log('[BrandResponsePage] Deal already has response status:', responseStatus, '- showing success page');
@@ -872,15 +1152,27 @@ const BrandResponsePage = () => {
         }
       }
       
+      // For confirmation page (no clarifications), use brand_confirmed status
+      // For clarification page, use the existing status flow
+      const statusToSubmit = hasClarifications 
+        ? (selectedStatus === 'accepted' ? 'accepted_verified' : selectedStatus)
+        : (selectedStatus === 'accepted' ? 'brand_confirmed' : 'brand_requested_changes');
+      
+      // If requesting changes from confirmation page, include the request text
+      if (!hasClarifications && selectedStatus === 'negotiating' && requestChangesText.trim()) {
+        finalMessage = `Requested Changes:\n${requestChangesText.trim()}${finalMessage ? '\n\nAdditional comments:\n' + finalMessage : ''}`;
+      }
+      
       const response = await fetch(`${apiBaseUrl}/api/brand-response/${token}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          status: selectedStatus === 'accepted' ? 'accepted_verified' : selectedStatus,
+          status: statusToSubmit,
           message: finalMessage || undefined,
           brand_team_name: brandTeamName.trim() || undefined,
+          brand_feedback: (!hasClarifications && selectedStatus === 'negotiating' && requestChangesText.trim()) ? requestChangesText.trim() : undefined,
         }),
       });
 
@@ -927,8 +1219,25 @@ const BrandResponsePage = () => {
 
       if (data.success) {
         setIsSubmitted(true);
-        toast.success('Response submitted successfully!');
-        triggerHaptic(HapticPatterns.success);
+        
+        // If contract was auto-generated, show special message
+        if (data.contract_generated) {
+          setIsPreparingContract(true);
+          toast.success('Contract is being prepared!', {
+            description: 'We\'ve generated a protected contract based on your submitted details. Redirecting...',
+            duration: 5000
+          });
+          triggerHaptic(HapticPatterns.success);
+          
+          // Redirect brand to success page (they can't access creator dashboard)
+          setTimeout(() => {
+            // Show success message that contract was generated
+            // Brand will receive email with link
+          }, 2000);
+        } else {
+          toast.success('Response submitted successfully!');
+          triggerHaptic(HapticPatterns.success);
+        }
       }
     } catch (error: any) {
       console.error('[BrandResponsePage] Submit error:', error);
@@ -989,9 +1298,16 @@ const BrandResponsePage = () => {
     triggerHaptic(HapticPatterns.light);
     
     if (status === 'negotiating') {
-      setShowNegotiateModal(true);
+      if (hasClarifications) {
+        // Show negotiation modal for clarification page
+        setShowNegotiateModal(true);
+      } else {
+        // Show request changes modal for confirmation page
+        setShowRequestChangesModal(true);
+      }
     } else {
       setShowNegotiateModal(false);
+      setShowRequestChangesModal(false);
     }
   };
 
@@ -1051,12 +1367,19 @@ const BrandResponsePage = () => {
     return '****';
   };
 
-  if (isLoading) {
+  if (isLoading || isPreparingContract) {
     return (
       <div className="nb-screen-height bg-gradient-to-br from-purple-950 via-purple-900 to-indigo-950 flex items-center justify-center">
         <div className="text-center">
           <Loader2 className="w-8 h-8 animate-spin text-white mx-auto mb-4" />
-          <p className="text-white/70">Loading...</p>
+          <p className="text-white/70">
+            {isPreparingContract ? 'Preparing your agreement...' : 'Loading...'}
+          </p>
+          {isPreparingContract && (
+            <p className="text-white/50 text-sm mt-2">
+              We're generating a protected contract based on your submitted details
+            </p>
+          )}
         </div>
       </div>
     );
@@ -1098,33 +1421,76 @@ const BrandResponsePage = () => {
           <h2 className="text-xl md:text-2xl font-semibold mb-1">
             {dealInfo.brand_name} Collaboration
           </h2>
-          <p className="text-white/60 text-xs md:text-sm">
-            This response helps finalize the collaboration terms
-          </p>
-          <p className="text-white/50 text-[11px] md:text-xs mt-1 max-w-md mx-auto">
-            Accepting these updates does not automatically amend the contract — it simply confirms alignment before the revised contract is shared.
-          </p>
+          {hasClarifications ? (
+            <p className="text-white/60 text-xs md:text-sm">
+              Review and confirm the collaboration details
+            </p>
+          ) : (
+            <p className="text-white/60 text-xs md:text-sm">
+              Review and confirm the collaboration details
+            </p>
+          )}
         </motion.div>
+
+        {/* Clarification Mode Banner */}
+        {!isSubmitted && hasClarifications && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-gradient-to-r from-blue-500/20 to-indigo-500/20 border border-blue-400/30 rounded-2xl p-4 md:p-6 shadow-lg mb-6"
+          >
+            <div className="flex items-start gap-4">
+              <div className="w-12 h-12 rounded-xl bg-blue-500/20 flex items-center justify-center flex-shrink-0">
+                <CheckCircle className="w-6 h-6 text-blue-400" />
+              </div>
+              <div className="flex-1">
+                <h3 className="text-lg font-semibold text-white mb-1">
+                  We just need your confirmation
+                </h3>
+                <p className="text-white/80 text-sm mb-2">
+                  Everything looks good — we just need to align a few safety and clarity details before finalizing.
+                </p>
+                <p className="text-white/60 text-xs">
+                  This doesn't legally bind you yet.
+                </p>
+              </div>
+            </div>
+          </motion.div>
+        )}
 
         {!isSubmitted ? (
           <div className="space-y-5">
-            {/* Brand Summary Card */}
-            <BrandSummaryCard 
-              dealValue={dealInfo?.deal_amount}
-              deliverables={dealInfo?.deliverables}
-            />
+            {hasClarifications ? (
+              <>
+                {/* Brand Summary Card - Only show for clarification page */}
+                <BrandSummaryCard 
+                  dealValue={dealInfo?.deal_amount}
+                  deliverables={dealInfo?.deliverables}
+                />
 
-            {/* Full Contract Summary */}
-            <FullContractSummary />
+                {/* Full Contract Summary */}
+                <FullContractSummary />
+              </>
+            ) : (
+              /* Show Brand Confirmation Page when no clarifications needed */
+              <BrandConfirmationPage />
+            )}
 
-            {/* 2. DECISION CARD COMPONENTS - Radio Style */}
-            <p className="text-xs text-white/60 mt-1">
-              Choose the option that best fits your internal approval process.
-            </p>
-            <p className="text-[11px] text-white/60">
-              These updates do not change pricing or deliverables — they only clarify rights, timelines, and payment protection.
-            </p>
+            {hasClarifications && (
+              <>
+                {/* 2. DECISION CARD COMPONENTS - Radio Style (Only for clarification page) */}
+                <p className="text-xs text-white/60 mt-1">
+                  Choose the option that best fits your internal approval process.
+                </p>
+                <p className="text-[11px] text-white/60">
+                  These updates do not change pricing or deliverables — they only clarify rights, timelines, and payment protection.
+                </p>
+              </>
+            )}
 
+            {/* Accept All Changes / Confirm & Continue - Show based on page type */}
+            {hasClarifications && (
+              <>
             {/* Accept All Changes */}
             <motion.button
               onClick={() => handleStatusSelect('accepted')}
@@ -1250,6 +1616,8 @@ const BrandResponsePage = () => {
                 </div>
               </div>
             </motion.button>
+            </>
+            )}
 
             {/* 3. NAME + COMMENTS SECTION - Show only after decision selected */}
             <AnimatePresence>
@@ -1328,23 +1696,25 @@ const BrandResponsePage = () => {
               )}
             </AnimatePresence>
 
-            {/* 4. TRUST NOTES SECTION */}
-            <div className="bg-white/3 backdrop-blur-xl rounded-xl p-4 md:p-5 border border-white/10">
-              <div className="space-y-2">
-                <div className="flex items-start gap-2">
-                  <CheckCircle className="w-4 h-4 text-green-400/70 mt-0.5 flex-shrink-0" />
-                  <p className="text-xs text-white/50">Your reply will be shared with the creator</p>
-                </div>
-                <div className="flex items-start gap-2">
-                  <CheckCircle className="w-4 h-4 text-green-400/70 mt-0.5 flex-shrink-0" />
-                  <p className="text-xs text-white/50">You can update your response later</p>
-                </div>
-                <div className="flex items-start gap-2">
-                  <CheckCircle className="w-4 h-4 text-green-400/70 mt-0.5 flex-shrink-0" />
-                  <p className="text-xs text-white/50">This decision does not legally bind you</p>
+            {/* 4. TRUST NOTES SECTION - Only show for clarification page */}
+            {hasClarifications && (
+              <div className="bg-white/3 backdrop-blur-xl rounded-xl p-4 md:p-5 border border-white/10">
+                <div className="space-y-2">
+                  <div className="flex items-start gap-2">
+                    <CheckCircle className="w-4 h-4 text-green-400/70 mt-0.5 flex-shrink-0" />
+                    <p className="text-xs text-white/50">Your reply will be shared with the creator</p>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <CheckCircle className="w-4 h-4 text-green-400/70 mt-0.5 flex-shrink-0" />
+                    <p className="text-xs text-white/50">You can update your response later</p>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <CheckCircle className="w-4 h-4 text-green-400/70 mt-0.5 flex-shrink-0" />
+                    <p className="text-xs text-white/50">This decision does not legally bind you</p>
+                  </div>
                 </div>
               </div>
-            </div>
+            )}
 
             {/* 5. BOTTOM CTA BUTTON */}
             <motion.button
@@ -1373,12 +1743,12 @@ const BrandResponsePage = () => {
               ) : selectedStatus === 'accepted' ? (
                 <>
                   <CheckCircle className="w-5 h-5" />
-                  Confirm & Proceed
+                  {hasClarifications ? 'Confirm & Proceed' : 'Confirm & Continue'}
                 </>
               ) : selectedStatus === 'negotiating' ? (
                 <>
                   <AlertCircle className="w-5 h-5" />
-                  Submit for Discussion
+                  {hasClarifications ? 'Submit for Discussion' : 'Submit Request'}
                 </>
               ) : selectedStatus === 'rejected' ? (
                 <>
@@ -1535,6 +1905,90 @@ const BrandResponsePage = () => {
                 >
                   Done
                 </button>
+              </motion.div>
+            </>
+          )}
+        </AnimatePresence>
+
+        {/* 6.5. REQUEST CHANGES MODAL (for confirmation page) */}
+        <AnimatePresence>
+          {showRequestChangesModal && (
+            <>
+              {/* Backdrop */}
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => {
+                  setShowRequestChangesModal(false);
+                  setRequestChangesText('');
+                }}
+                className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40"
+              />
+              
+              {/* Modal */}
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                className="fixed inset-4 md:inset-auto md:left-1/2 md:top-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:max-w-lg md:w-full z-50 bg-white/8 backdrop-blur-xl rounded-2xl p-6 border border-blue-400/30 shadow-lg"
+              >
+                <div className="flex items-center justify-between mb-4">
+                  <h4 className="text-lg font-semibold">Request Changes</h4>
+                  <button
+                    onClick={() => {
+                      setShowRequestChangesModal(false);
+                      setRequestChangesText('');
+                    }}
+                    className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+                
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-2 text-white/90">
+                      What changes would you like to request?
+                    </label>
+                    <textarea
+                      value={requestChangesText}
+                      onChange={(e) => setRequestChangesText(e.target.value)}
+                      placeholder="Please describe the changes you'd like to make..."
+                      className="w-full p-4 bg-white/5 border border-white/20 rounded-xl text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 resize-none min-h-[120px] transition-all duration-200"
+                      maxLength={1000}
+                    />
+                    <div className="text-xs text-white/50 mt-2 text-right">
+                      {requestChangesText.length}/1000
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="flex gap-3 mt-6">
+                  <button
+                    onClick={() => {
+                      setShowRequestChangesModal(false);
+                      setRequestChangesText('');
+                    }}
+                    className="flex-1 py-3 bg-white/10 hover:bg-white/20 rounded-xl text-sm font-medium transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={() => {
+                      if (!requestChangesText.trim()) {
+                        toast.error('Please describe the changes you\'d like to request');
+                        return;
+                      }
+                      setSelectedStatus('negotiating');
+                      setShowRequestChangesModal(false);
+                      toast.success('Changes request prepared');
+                    }}
+                    className="flex-1 py-3 bg-blue-600 hover:bg-blue-700 rounded-xl text-sm font-medium transition-all duration-200 text-white"
+                  >
+                    Continue
+                  </button>
+                </div>
               </motion.div>
             </>
           )}

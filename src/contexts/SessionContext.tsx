@@ -454,8 +454,8 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
           }
           
           // If we have a session but we're truly on a "no-route" root/login page, redirect to dashboard.
-          // IMPORTANT: We MUST NOT do this when there's a hash-based route like "#/brand-reply/:token"
-          // because public, token-based pages (brand reply, feedback, etc.) rely on hash routing.
+          // IMPORTANT: We MUST NOT do this when there's a hash-based route like "#/contract-ready/:token" or "#/brand-reply/:token"
+          // because public, token-based pages (contract ready, feedback, etc.) rely on hash routing.
           //
           // Heuristic:
           // - pathname is "/" or "/login"

@@ -125,6 +125,7 @@ router.post('/:token/submit', async (req: Request, res: Response) => {
       success: true,
       submissionId: result.submissionId,
       dealId: result.dealId,
+      contractReadyToken: result.contractReadyToken || null, // Token for contract ready page
     });
   } catch (error: any) {
     console.error('[DealDetailsTokens] Submit Error:', error);

@@ -580,7 +580,8 @@ ${creatorName}`;
           ? 'https://api.creatorarmour.com'
           : 'https://noticebazaar-api.onrender.com');
 
-      const response = await fetch(`${apiBaseUrl}/api/brand-reply-tokens`, {
+      // Try to create contract-ready token first, fallback to brand-reply-tokens for migration
+      let response = await fetch(`${apiBaseUrl}/api/contract-ready-tokens`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -589,15 +590,30 @@ ${creatorName}`;
         body: JSON.stringify({ dealId, expiresAt: null }),
       });
 
-      const data = await response.json();
+      let data = await response.json();
+      
+      // If contract-ready-tokens endpoint doesn't exist, try legacy brand-reply-tokens
+      if (!response.ok && response.status === 404) {
+        console.log('[ContractUploadFlow] contract-ready-tokens not found, trying brand-reply-tokens for migration');
+        response = await fetch(`${apiBaseUrl}/api/brand-reply-tokens`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${session.access_token}`,
+          },
+          body: JSON.stringify({ dealId, expiresAt: null }),
+        });
+        data = await response.json();
+      }
+
       if (!response.ok || !data.success || !data.token?.id) {
-        console.error('[ContractUploadFlow] Failed to create brand reply token:', data);
+        console.error('[ContractUploadFlow] Failed to create contract ready token:', data);
         return null;
       }
 
       const baseUrl =
         typeof window !== 'undefined' ? window.location.origin : 'https://noticebazaar.com';
-      const link = `${baseUrl}/#/brand-reply/${data.token.id}`;
+      const link = `${baseUrl}/#/contract-ready/${data.token.id}`;
       setBrandReplyLink(link);
       return link;
     } catch (error) {
@@ -962,6 +978,7 @@ ${creatorName}`;
   const [clauseStates, setClauseStates] = useState<Map<number, 'default' | 'loading' | 'success'>>(new Map());
   const [showAllIssues, setShowAllIssues] = useState(false);
   const [showWhatsAppPreview, setShowWhatsAppPreview] = useState(false);
+  const [whatsappPreviewMessage, setWhatsappPreviewMessage] = useState<string>('');
   // Accordion states - all detail sections collapsed by default
   const [isKeyTermsExpanded, setIsKeyTermsExpanded] = useState(false);
   const [isIssuesExpanded, setIsIssuesExpanded] = useState(false);
@@ -1522,7 +1539,7 @@ ${creatorName}`;
   };
 
   // Helper function to create WhatsApp-optimized message (under 600 chars)
-  const createWhatsAppMessage = (fullMessage: string): string => {
+  const createWhatsAppMessage = async (fullMessage: string): Promise<string> => {
     // Apply safety sanitization first
     const sanitizedMessage = sanitizeWhatsAppMessage(fullMessage);
     // Extract key points from the full message
@@ -1562,12 +1579,14 @@ ${creatorName}`;
     
     // Add brand response tracking link if dealId is available
     const dealId = savedDealId;
-    if (dealId) {
-      const baseUrl = typeof window !== 'undefined' 
-        ? window.location.origin 
-        : 'https://noticebazaar.com';
-      const trackingLink = `${baseUrl}/#/brand-reply/${dealId}`;
-      whatsappMessage += `\n\nConfirm your decision: ${trackingLink}`;
+    if (dealId && brandReplyLink) {
+      whatsappMessage += `\n\nConfirm your decision: ${brandReplyLink}`;
+    } else if (dealId) {
+      // Fallback: generate link if not already generated
+      const generatedLink = await generateBrandReplyLink(dealId);
+      if (generatedLink) {
+        whatsappMessage += `\n\nConfirm your decision: ${generatedLink}`;
+      }
     }
     
     // Truncate if still too long (but try to keep the link)
@@ -1616,6 +1635,18 @@ ${creatorName}`;
     }
   };
 
+  // Compute WhatsApp preview message when negotiation message changes or preview opens
+  useEffect(() => {
+    if (showWhatsAppPreview && negotiationMessage) {
+      const fullMessage = formatNegotiationMessage(negotiationMessage);
+      createWhatsAppMessage(fullMessage).then(setWhatsappPreviewMessage).catch(() => {
+        setWhatsappPreviewMessage('Error generating preview message');
+      });
+    } else if (!showWhatsAppPreview) {
+      setWhatsappPreviewMessage('');
+    }
+  }, [showWhatsAppPreview, negotiationMessage, savedDealId, brandReplyLink]);
+
   // Copy WhatsApp handler
   const handleCopyWhatsApp = async () => {
     if (!negotiationMessage) {
@@ -1624,7 +1655,8 @@ ${creatorName}`;
     }
     
     const fullMessage = formatNegotiationMessage(negotiationMessage);
-    const whatsappMessage = createWhatsAppMessage(fullMessage);
+    const whatsappMessage = await createWhatsAppMessage(fullMessage);
+    setWhatsappPreviewMessage(whatsappMessage);
     
     // Show preview modal first
     setShowWhatsAppPreview(true);
@@ -1636,7 +1668,7 @@ ${creatorName}`;
     
     try {
       const fullMessage = formatNegotiationMessage(negotiationMessage);
-      const whatsappMessage = createWhatsAppMessage(fullMessage);
+      const whatsappMessage = await createWhatsAppMessage(fullMessage);
       const isSecureContext = typeof window !== 'undefined' && (window.isSecureContext || window.location.protocol === 'https:' || window.location.hostname === 'localhost');
       
       if (navigator.clipboard && isSecureContext) {
@@ -6696,7 +6728,7 @@ ${creatorName}${session?.user?.email ? `\n${session.user.email}` : ''}`;
                 </DialogHeader>
                 <div className="mt-4 p-4 bg-white/10 rounded-xl border border-white/20 max-h-96 overflow-y-auto">
                   <pre className="text-sm text-white whitespace-pre-wrap font-sans">
-                    {negotiationMessage ? createWhatsAppMessage(formatNegotiationMessage(negotiationMessage)) : 'No message available'}
+                    {whatsappPreviewMessage || (negotiationMessage ? 'Generating preview...' : 'No message available')}
                   </pre>
                 </div>
                 <div className="flex gap-3 mt-6">
@@ -6710,10 +6742,10 @@ ${creatorName}${session?.user?.email ? `\n${session.user.email}` : ''}`;
                     Copy & Close
                   </motion.button>
                   <motion.button
-                    onClick={() => {
+                    onClick={async () => {
                       if (!negotiationMessage) return;
                       const fullMessage = formatNegotiationMessage(negotiationMessage);
-                      const whatsappMessage = createWhatsAppMessage(fullMessage);
+                      const whatsappMessage = await createWhatsAppMessage(fullMessage);
                       const encodedMessage = encodeURIComponent(whatsappMessage);
                       const whatsappUrl = `https://wa.me/?text=${encodedMessage}`;
                       window.open(whatsappUrl, '_blank');

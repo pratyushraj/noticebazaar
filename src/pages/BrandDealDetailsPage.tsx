@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { 
   CheckCircle, 
@@ -76,9 +76,11 @@ interface DealDetailsFormData {
 
 const BrandDealDetailsPage = () => {
   const { token } = useParams<{ token: string }>();
+  const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [contractMode, setContractMode] = useState<'auto' | 'clarification' | null>(null);
   const [creatorName, setCreatorName] = useState<string>('');
   const [error, setError] = useState<string | null>(null);
   const [isFormUsed, setIsFormUsed] = useState(false);
@@ -176,7 +178,7 @@ const BrandDealDetailsPage = () => {
       }
 
       try {
-        const apiBaseUrl =
+        let apiBaseUrl =
           import.meta.env.VITE_API_BASE_URL ||
           (typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com')
             ? 'https://api.creatorarmour.com'
@@ -184,7 +186,25 @@ const BrandDealDetailsPage = () => {
             ? 'http://localhost:3001'
             : 'https://noticebazaar-api.onrender.com');
 
-        const response = await fetch(`${apiBaseUrl}/api/deal-details-tokens/${token}`);
+        let response: Response;
+        try {
+          response = await fetch(`${apiBaseUrl}/api/deal-details-tokens/${token}`);
+        } catch (fetchError: any) {
+          // If localhost fails, try production API as fallback
+          if (
+            (fetchError.message?.includes('Failed to fetch') || 
+             fetchError.message?.includes('ERR_CONNECTION_REFUSED') ||
+             fetchError.name === 'TypeError') &&
+            apiBaseUrl.includes('localhost')
+          ) {
+            console.warn('[BrandDealDetailsPage] Localhost API unavailable, trying production API...');
+            apiBaseUrl = 'https://noticebazaar-api.onrender.com';
+            response = await fetch(`${apiBaseUrl}/api/deal-details-tokens/${token}`);
+          } else {
+            throw fetchError;
+          }
+        }
+
         const data = await response.json();
 
         if (!response.ok || !data.success) {
@@ -252,18 +272,42 @@ const BrandDealDetailsPage = () => {
     setGstLookupSuccess(false);
 
     try {
-      const apiBaseUrl =
+      let apiBaseUrl =
         import.meta.env.VITE_API_BASE_URL ||
         (typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com')
           ? 'https://api.creatorarmour.com'
-          : 'http://localhost:3001');
+          : typeof window !== 'undefined' && window.location.hostname === 'localhost'
+          ? 'http://localhost:3001'
+          : 'https://noticebazaar-api.onrender.com');
 
-      const response = await fetch(`${apiBaseUrl}/api/gst/lookup?gstin=${encodeURIComponent(gstin)}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
+      let response: Response;
+      try {
+        response = await fetch(`${apiBaseUrl}/api/gst/lookup?gstin=${encodeURIComponent(gstin)}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+      } catch (fetchError: any) {
+        // If localhost fails, try production API as fallback
+        if (
+          (fetchError.message?.includes('Failed to fetch') || 
+           fetchError.message?.includes('ERR_CONNECTION_REFUSED') ||
+           fetchError.name === 'TypeError') &&
+          apiBaseUrl.includes('localhost')
+        ) {
+          console.warn('[BrandDealDetailsPage] Localhost API unavailable, trying production API...');
+          apiBaseUrl = 'https://noticebazaar-api.onrender.com';
+          response = await fetch(`${apiBaseUrl}/api/gst/lookup?gstin=${encodeURIComponent(gstin)}`, {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          });
+        } else {
+          throw fetchError;
+        }
+      }
 
       const data = await response.json();
 
@@ -392,27 +436,63 @@ const BrandDealDetailsPage = () => {
 
     setIsSubmitting(true);
 
-    try {
-      const apiBaseUrl =
-        import.meta.env.VITE_API_BASE_URL ||
+    // Determine API base URL (needed for retry logic)
+    const getApiBaseUrl = () => {
+      return import.meta.env.VITE_API_BASE_URL ||
         (typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com')
           ? 'https://api.creatorarmour.com'
-          : 'http://localhost:3001');
+          : typeof window !== 'undefined' && window.location.hostname === 'localhost'
+          ? 'http://localhost:3001'
+          : 'https://noticebazaar-api.onrender.com');
+    };
 
-      const response = await fetch(`${apiBaseUrl}/api/deal-details-tokens/${token}/submit`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          ...formData,
-          deliverables: formData.deliverables.map(d => 
-            `${d.quantity} ${d.platform} ${d.contentType}${d.duration ? ` (${d.duration}s)` : ''}`
-          ),
-          // Auto-set jurisdiction
-          jurisdiction: 'India',
-        }),
-      });
+    try {
+      let apiBaseUrl = getApiBaseUrl();
+
+      let response: Response;
+      try {
+        response = await fetch(`${apiBaseUrl}/api/deal-details-tokens/${token}/submit`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            ...formData,
+            deliverables: formData.deliverables.map(d => 
+              `${d.quantity} ${d.platform} ${d.contentType}${d.duration ? ` (${d.duration}s)` : ''}`
+            ),
+            // Auto-set jurisdiction
+            jurisdiction: 'India',
+          }),
+        });
+      } catch (fetchError: any) {
+        // If localhost fails, try production API as fallback
+        if (
+          (fetchError.message?.includes('Failed to fetch') || 
+           fetchError.message?.includes('ERR_CONNECTION_REFUSED') ||
+           fetchError.name === 'TypeError') &&
+          apiBaseUrl.includes('localhost')
+        ) {
+          console.warn('[BrandDealDetailsPage] Localhost API unavailable, trying production API...');
+          apiBaseUrl = 'https://noticebazaar-api.onrender.com';
+          response = await fetch(`${apiBaseUrl}/api/deal-details-tokens/${token}/submit`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              ...formData,
+              deliverables: formData.deliverables.map(d => 
+                `${d.quantity} ${d.platform} ${d.contentType}${d.duration ? ` (${d.duration}s)` : ''}`
+              ),
+              // Auto-set jurisdiction
+              jurisdiction: 'India',
+            }),
+          });
+        } else {
+          throw fetchError;
+        }
+      }
 
       const data = await response.json();
 
@@ -420,8 +500,121 @@ const BrandDealDetailsPage = () => {
         throw new Error(data.error || 'Failed to submit details');
       }
 
-      setIsSubmitted(true);
-      toast.success('Details received!');
+      console.log('[BrandDealDetailsPage] Submit response:', { 
+        success: data.success, 
+        contractReadyToken: data.contractReadyToken,
+        dealId: data.dealId,
+        fullResponse: data
+      });
+
+      // Always redirect to contract ready page
+      if (data.contractReadyToken) {
+        // Redirect to contract ready page using React Router
+        console.log('[BrandDealDetailsPage] Redirecting to contract-ready with token:', data.contractReadyToken);
+        
+        // Small delay to ensure state is updated
+        setTimeout(() => {
+          navigate(`/contract-ready/${data.contractReadyToken}`, { replace: true });
+        }, 100);
+      } else if (data.dealId) {
+        // Fallback: Token might be created asynchronously, try to wait and retry
+        console.warn('[BrandDealDetailsPage] No contractReadyToken in response, but dealId exists:', data.dealId);
+        console.warn('[BrandDealDetailsPage] This might indicate token creation failed or is delayed');
+        
+        // Show success message
+        setIsSubmitted(true);
+        toast.success('Details received!', {
+          description: 'Your contract is being prepared. Please wait...',
+          duration: 5000
+        });
+        
+        // Try to poll for the token (contract generation might be async)
+        // Note: This is a workaround - ideally backend should always return token
+        let retryCount = 0;
+        const maxRetries = 3;
+        const retryInterval = 2000; // 2 seconds
+        
+        const pollForToken = async () => {
+          if (retryCount >= maxRetries) {
+            console.error('[BrandDealDetailsPage] Max retries reached, showing success screen');
+            toast.info('Contract is being prepared. You will receive an email with the contract link shortly.', {
+              duration: 6000
+            });
+            return;
+          }
+          
+          retryCount++;
+          console.log(`[BrandDealDetailsPage] Retry ${retryCount}/${maxRetries}: Checking for contract ready token...`);
+          
+          try {
+            // Try to get deal details which might include token info
+            // Note: This endpoint might not exist, but worth trying
+            let checkApiBaseUrl = getApiBaseUrl();
+            let checkResponse: Response;
+            
+            try {
+              const checkUrl = `${checkApiBaseUrl}/api/deal-details-tokens/deal/${data.dealId}`;
+              checkResponse = await fetch(checkUrl, {
+                method: 'GET',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+              });
+            } catch (fetchError: any) {
+              // If localhost fails, try production API as fallback
+              if (
+                (fetchError.message?.includes('Failed to fetch') || 
+                 fetchError.message?.includes('ERR_CONNECTION_REFUSED') ||
+                 fetchError.name === 'TypeError') &&
+                checkApiBaseUrl.includes('localhost')
+              ) {
+                console.warn('[BrandDealDetailsPage] Poll: Localhost API unavailable, trying production API...');
+                checkApiBaseUrl = 'https://noticebazaar-api.onrender.com';
+                const checkUrl = `${checkApiBaseUrl}/api/deal-details-tokens/deal/${data.dealId}`;
+                checkResponse = await fetch(checkUrl, {
+                  method: 'GET',
+                  headers: {
+                    'Content-Type': 'application/json',
+                  },
+                });
+              } else {
+                throw fetchError;
+              }
+            }
+            
+            if (checkResponse.ok) {
+              const checkData = await checkResponse.json();
+              if (checkData.contractReadyToken) {
+                console.log('[BrandDealDetailsPage] Found token on retry:', checkData.contractReadyToken);
+                navigate(`/contract-ready/${checkData.contractReadyToken}`, { replace: true });
+                return;
+              }
+            }
+          } catch (pollError) {
+            console.warn('[BrandDealDetailsPage] Poll error:', pollError);
+          }
+          
+          // Schedule next retry
+          if (retryCount < maxRetries) {
+            setTimeout(pollForToken, retryInterval);
+          } else {
+            toast.info('Contract is being prepared. You will receive an email with the contract link shortly.', {
+              duration: 6000
+            });
+          }
+        };
+        
+        // Start polling after initial delay
+        setTimeout(pollForToken, retryInterval);
+      } else {
+        // No dealId either - something went wrong
+        console.error('[BrandDealDetailsPage] No contractReadyToken and no dealId in response');
+        setIsSubmitted(true);
+        toast.success('Details received!', {
+          description: 'We\'re preparing your agreement. You will be notified once it\'s ready.',
+          duration: 5000
+        });
+      }
     } catch (err: any) {
       console.error('[BrandDealDetailsPage] Submit error:', err);
       toast.error(err.message || 'Failed to submit. Please try again.');
@@ -466,13 +659,27 @@ const BrandDealDetailsPage = () => {
           <div className="w-20 h-20 rounded-full bg-green-500/20 flex items-center justify-center mx-auto mb-6">
             <CheckCircle className="w-10 h-10 text-green-400" />
           </div>
-          <h2 className="text-2xl font-semibold mb-3">✅ Details Received</h2>
-          <p className="text-white/80 text-lg mb-2">
-            Thank you for providing the collaboration details!
-          </p>
-          <p className="text-white/60 text-sm">
-            {creatorName} will review and share the final agreement shortly.
-          </p>
+          {contractMode === 'auto' ? (
+            <>
+              <h2 className="text-2xl font-semibold mb-3">🎉 Contract Generated!</h2>
+              <p className="text-white/80 text-lg mb-2">
+                We've generated a protected contract based on your submitted details.
+              </p>
+              <p className="text-white/60 text-sm">
+                {creatorName} has been notified and will review the contract shortly.
+              </p>
+            </>
+          ) : (
+            <>
+              <h2 className="text-2xl font-semibold mb-3">✅ Details Received</h2>
+              <p className="text-white/80 text-lg mb-2">
+                Thank you for providing the collaboration details!
+              </p>
+              <p className="text-white/60 text-sm">
+                {creatorName} will review and share the final agreement shortly.
+              </p>
+            </>
+          )}
         </motion.div>
       </div>
     );
@@ -1420,6 +1627,20 @@ const BrandDealDetailsPage = () => {
             This information will be used to prepare a draft collaboration agreement. Final terms apply only once both parties sign.
           </p>
 
+          {/* Reassurance Block - What happens next */}
+          <div className="bg-purple-500/10 border border-purple-400/20 rounded-xl p-4 mb-4">
+            <h3 className="text-sm font-semibold text-white mb-2">
+              What happens next?
+            </h3>
+            <p className="text-sm text-white/80 mb-2">
+              Once you submit these details, a legally drafted collaboration contract will be generated instantly.
+              You'll be able to review and sign it securely in the next step.
+            </p>
+            <p className="text-xs text-white/50 mt-2">
+              No payment or legal commitment happens at this stage.
+            </p>
+          </div>
+
           {/* Submit Button */}
           <motion.button
             type="submit"
@@ -1443,6 +1664,11 @@ const BrandDealDetailsPage = () => {
               'Submit Details'
             )}
           </motion.button>
+
+          {/* Helper text below button */}
+          <p className="text-xs text-white/50 text-center mt-2">
+            By continuing, you're creating a draft agreement — not signing yet.
+          </p>
         </motion.form>
       </div>
     </div>
