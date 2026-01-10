@@ -114,6 +114,17 @@ const ContractReadyPage = () => {
     }
   }, [otpResendCooldown]);
 
+  // Auto-focus first OTP input when modal opens
+  useEffect(() => {
+    if (showOTPModal) {
+      // Small delay to ensure modal is rendered
+      setTimeout(() => {
+        const firstInput = document.getElementById('otp-input-0');
+        firstInput?.focus();
+      }, 100);
+    }
+  }, [showOTPModal]);
+
   // Send OTP
   const sendOTP = async () => {
     if (!token) {
@@ -157,6 +168,7 @@ const ContractReadyPage = () => {
 
       toast.success('OTP sent successfully to your email!');
       setBrandEmail(emailToUse);
+      setShowOTPModal(true); // Open OTP input modal
       setOtpResendCooldown(30);
       const countdownInterval = setInterval(() => {
         setOtpResendCooldown(prev => {
@@ -280,7 +292,7 @@ const ContractReadyPage = () => {
         ? `Contract URL: ${dealInfo.contract_file_url}\nSigned at: ${new Date().toISOString()}`
         : undefined;
 
-      const response = await fetch(`${apiBaseUrl}/api/contract-ready/${token}/sign`, {
+      const response = await fetch(`${apiBaseUrl}/api/contract-ready-tokens/${token}/sign`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -344,7 +356,7 @@ const ContractReadyPage = () => {
           ? 'https://api.creatorarmour.com'
           : 'http://localhost:3001');
 
-      const response = await fetch(`${apiBaseUrl}/api/contract-ready/${token}/request-edit`, {
+      const response = await fetch(`${apiBaseUrl}/api/contract-ready-tokens/${token}/request-edit`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

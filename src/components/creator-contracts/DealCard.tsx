@@ -97,25 +97,25 @@ const DealCard: React.FC<DealCardProps> = ({
 
       {/* Progress Indicator - Hide for declined deals */}
       {stage !== 'declined' && (
-        <div className="mt-2 mb-1">
-          <div className="flex items-center justify-between text-[10px] text-muted-foreground mb-1">
-            <span>Deal Progress</span>
-            <span>{progressPercentage}%</span>
-          </div>
-          <div className="h-1.5 bg-muted rounded-full overflow-hidden">
-            <div 
-              className={cn(
-                "h-full transition-all duration-300",
-                progressPercentage === 100 ? 'bg-green-500' :
-                progressPercentage >= 90 ? 'bg-blue-500' :
-                progressPercentage >= 60 ? 'bg-yellow-500' :
-                progressPercentage >= 30 ? 'bg-blue-400' :
-                'bg-gray-400'
-              )}
-              style={{ width: `${progressPercentage}%` }}
-            />
-          </div>
+      <div className="mt-2 mb-1">
+        <div className="flex items-center justify-between text-[10px] text-muted-foreground mb-1">
+          <span>Deal Progress</span>
+          <span>{progressPercentage}%</span>
         </div>
+        <div className="h-1.5 bg-muted rounded-full overflow-hidden">
+          <div 
+            className={cn(
+              "h-full transition-all duration-300",
+              progressPercentage === 100 ? 'bg-green-500' :
+              progressPercentage >= 90 ? 'bg-blue-500' :
+              progressPercentage >= 60 ? 'bg-yellow-500' :
+              progressPercentage >= 30 ? 'bg-blue-400' :
+              'bg-gray-400'
+            )}
+            style={{ width: `${progressPercentage}%` }}
+          />
+        </div>
+      </div>
       )}
 
       {/* Amount - Right aligned, bigger & bold */}

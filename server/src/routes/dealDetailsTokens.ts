@@ -62,6 +62,66 @@ router.post('/', authMiddleware, async (req: AuthenticatedRequest, res: Response
   }
 });
 
+// GET /api/deal-details-tokens/:token/contract-ready-token
+// Public endpoint to get contract ready token from deal details token
+// MUST be before /:token route to avoid route matching conflicts
+router.get('/:token/contract-ready-token', async (req: Request, res: Response) => {
+  try {
+    const { token } = req.params;
+
+    if (!token || typeof token !== 'string' || token.trim() === '') {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid token'
+      });
+    }
+
+    // Find the submission for this token
+    const { data: submission, error: submissionError } = await (supabase as any)
+      .from('deal_details_submissions')
+      .select('deal_id')
+      .eq('deal_details_token_id', token.trim())
+      .maybeSingle();
+
+    if (submissionError || !submission || !submission.deal_id) {
+      return res.status(404).json({
+        success: false,
+        error: 'No contract ready yet. Please wait a moment and try again.'
+      });
+    }
+
+    // Find the contract ready token for this deal
+    const { data: contractReadyTokenData, error: tokenError } = await (supabase as any)
+      .from('contract_ready_tokens')
+      .select('id')
+      .eq('deal_id', submission.deal_id)
+      .eq('is_active', true)
+      .is('revoked_at', null)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (tokenError || !contractReadyTokenData || !contractReadyTokenData.id) {
+      return res.status(404).json({
+        success: false,
+        error: 'Contract is being prepared. Please wait a moment and try again.'
+      });
+    }
+
+    return res.json({
+      success: true,
+      contractReadyToken: contractReadyTokenData.id,
+      dealId: submission.deal_id
+    });
+  } catch (error: any) {
+    console.error('[DealDetailsTokens] Get contract ready token error:', error);
+    return res.status(500).json({
+      success: false,
+      error: 'An error occurred. Please try again later.'
+    });
+  }
+});
+
 // GET /api/deal-details-tokens/:token
 // Public endpoint to get token info (for form page)
 router.get('/:token', async (req: Request, res: Response) => {

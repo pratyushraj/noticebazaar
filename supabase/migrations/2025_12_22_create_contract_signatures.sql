@@ -107,3 +107,4 @@ CREATE TRIGGER contract_signatures_update_deal_status
 -- Add comment
 COMMENT ON TABLE public.contract_signatures IS 'Legally valid contract signatures with complete audit trail including IP, device info, timestamps, and contract snapshots';
 
+

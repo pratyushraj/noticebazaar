@@ -332,6 +332,231 @@ export async function signContractAsBrand(
 }
 
 /**
+ * Sign contract as creator
+ */
+export async function signContractAsCreator(
+  request: {
+    dealId: string;
+    creatorId: string;
+    signerName: string;
+    signerEmail: string;
+    signerPhone?: string;
+    contractVersionId?: string;
+    contractSnapshotHtml?: string;
+    ipAddress: string;
+    userAgent: string;
+    deviceInfo?: any;
+    otpVerified: boolean;
+    otpVerifiedAt?: string;
+  }
+): Promise<{ success: boolean; signature?: SignatureRecord; error?: string }> {
+  try {
+    // Validate OTP verification
+    if (!request.otpVerified) {
+      return {
+        success: false,
+        error: 'OTP verification is required before signing'
+      };
+    }
+
+    // Get deal
+    const { data: deal, error: dealError } = await supabase
+      .from('brand_deals' as any)
+      .select('*')
+      .eq('id', request.dealId)
+      .single();
+
+    if (dealError || !deal) {
+      return {
+        success: false,
+        error: 'Deal not found'
+      };
+    }
+
+    const dealData = deal as any;
+
+    // Verify creator owns this deal
+    if (dealData.creator_id !== request.creatorId) {
+      return {
+        success: false,
+        error: 'You can only sign contracts for your own deals'
+      };
+    }
+
+    // Check if brand has signed first
+    const brandSignature = await getSignature(request.dealId, 'brand');
+    if (!brandSignature || !brandSignature.signed) {
+      return {
+        success: false,
+        error: 'Brand must sign the contract first'
+      };
+    }
+
+    // Check if already signed
+    const { data: existingSignature, error: checkError } = await supabase
+      .from('contract_signatures' as any)
+      .select('*')
+      .eq('deal_id', request.dealId)
+      .eq('signer_role', 'creator')
+      .maybeSingle();
+
+    if (checkError && checkError.code !== 'PGRST116') {
+      console.error('[ContractSigningService] Error checking existing signature:', checkError);
+      return {
+        success: false,
+        error: 'Failed to check existing signature'
+      };
+    }
+
+    if (existingSignature && (existingSignature as any).signed) {
+      return {
+        success: false,
+        error: 'Contract has already been signed by creator'
+      };
+    }
+
+    // Get contract HTML snapshot if not provided
+    let contractSnapshotHtml = request.contractSnapshotHtml;
+    if (!contractSnapshotHtml && dealData.contract_file_url) {
+      contractSnapshotHtml = `Contract URL: ${dealData.contract_file_url}\nSigned at: ${new Date().toISOString()}`;
+    }
+
+    // Create or update signature record
+    const signatureData: any = {
+      deal_id: request.dealId,
+      signer_role: 'creator',
+      signer_name: request.signerName,
+      signer_email: request.signerEmail,
+      signer_phone: request.signerPhone || null,
+      ip_address: request.ipAddress,
+      user_agent: request.userAgent,
+      device_info: request.deviceInfo || null,
+      otp_verified: request.otpVerified,
+      otp_verified_at: request.otpVerifiedAt || new Date().toISOString(),
+      signed: true,
+      signed_at: new Date().toISOString(),
+      contract_version_id: request.contractVersionId || dealData.contract_version || 'v3',
+      contract_snapshot_html: contractSnapshotHtml || null,
+    };
+
+    let signature: SignatureRecord;
+
+    if (existingSignature) {
+      // Update existing signature
+      const existingSig = existingSignature as any;
+      const { data: updated, error: updateError } = await supabase
+        .from('contract_signatures' as any)
+        .update(signatureData)
+        .eq('id', existingSig.id)
+        .select()
+        .single();
+
+      if (updateError) {
+        console.error('[ContractSigningService] Error updating signature:', updateError);
+        return {
+          success: false,
+          error: 'Failed to update signature'
+        };
+      }
+
+      signature = updated as unknown as SignatureRecord;
+    } else {
+      // Create new signature
+      const { data: created, error: createError } = await supabase
+        .from('contract_signatures' as any)
+        .insert(signatureData)
+        .select()
+        .single();
+
+      if (createError) {
+        console.error('[ContractSigningService] Error creating signature:', createError);
+        return {
+          success: false,
+          error: 'Failed to create signature'
+        };
+      }
+
+      signature = created as unknown as SignatureRecord;
+    }
+
+    // Update deal status to completed when both parties have signed
+    try {
+      await supabase
+        .from('brand_deals' as any)
+        .update({
+          deal_execution_status: 'completed',
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', request.dealId);
+    } catch (updateError) {
+      console.error('[ContractSigningService] Error updating deal status:', updateError);
+      // Non-fatal, continue
+    }
+
+    // Send email notifications (non-blocking)
+    try {
+      const { sendCreatorSigningConfirmationEmail } = await import('./contractSigningEmailService.js');
+      
+      // Fetch brand details for email
+      const { data: brandDeal, error: brandDealError } = await supabase
+        .from('brand_deals' as any)
+        .select('brand_name, brand_email, amount, deal_type, deliverables, due_date, contract_file_url')
+        .eq('id', request.dealId)
+        .single();
+
+      if (!brandDealError && brandDeal) {
+        const brandDealData = brandDeal as any;
+        const deliverablesList = brandDealData.deliverables
+          ? (typeof brandDealData.deliverables === 'string' 
+              ? (brandDealData.deliverables.includes('[') ? JSON.parse(brandDealData.deliverables) : [brandDealData.deliverables])
+              : Array.isArray(brandDealData.deliverables) ? brandDealData.deliverables : [])
+          : [];
+
+        const emailData = {
+          dealId: request.dealId,
+          brandName: brandDealData.brand_name || 'Brand',
+          creatorName: request.signerName,
+          brandEmail: brandDealData.brand_email || '',
+          creatorEmail: request.signerEmail,
+          dealAmount: brandDealData.amount ? parseFloat(brandDealData.amount.toString()) : undefined,
+          dealType: (brandDealData.deal_type as 'paid' | 'barter') || 'paid',
+          deliverables: deliverablesList.map((d: any) => 
+            typeof d === 'string' ? d : `${d.quantity || 1}x ${d.contentType || 'Content'} on ${d.platform || 'Platform'}`
+          ),
+          deadline: brandDealData.due_date || undefined,
+          contractUrl: brandDealData.contract_file_url || undefined,
+        };
+
+        sendCreatorSigningConfirmationEmail(request.signerEmail, request.signerName, emailData)
+          .then((result) => {
+            if (result.success) {
+              console.log('[ContractSigningService] Creator confirmation email sent');
+            } else {
+              console.error('[ContractSigningService] Failed to send creator confirmation email:', result.error || 'Unknown error');
+            }
+          })
+          .catch((emailError) => {
+            console.error('[ContractSigningService] Email sending error (non-fatal):', emailError);
+          });
+      }
+    } catch (emailServiceError) {
+      console.error('[ContractSigningService] Email service error (non-fatal):', emailServiceError);
+    }
+
+    return {
+      success: true,
+      signature
+    };
+  } catch (error: any) {
+    console.error('[ContractSigningService] Sign contract as creator error:', error);
+    return {
+      success: false,
+      error: error.message || 'Failed to sign contract'
+    };
+  }
+}
+
+/**
  * Get signature for a deal
  */
 export async function getSignature(

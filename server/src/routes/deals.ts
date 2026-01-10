@@ -390,5 +390,200 @@ router.post(
   }
 );
 
+// GET /api/deals/:dealId/signature/:role
+// Get signature for a deal by role (brand or creator)
+router.get(
+  '/:dealId/signature/:role',
+  async (req: AuthenticatedRequest, res: Response) => {
+    try {
+      const userId = req.user!.id;
+      const { dealId, role } = req.params;
+
+      if (!dealId || !role) {
+        return res.status(400).json({
+          success: false,
+          error: 'Deal ID and role are required',
+        });
+      }
+
+      if (role !== 'brand' && role !== 'creator') {
+        return res.status(400).json({
+          success: false,
+          error: 'Role must be "brand" or "creator"',
+        });
+      }
+
+      // Verify deal exists
+      const { data: deal, error: dealError } = await supabase
+        .from('brand_deals')
+        .select('id, creator_id')
+        .eq('id', dealId)
+        .single();
+
+      if (dealError || !deal) {
+        return res.status(404).json({
+          success: false,
+          error: 'Deal not found',
+        });
+      }
+
+      // Verify user has access (creator can only view their own deals)
+      if (role === 'creator' && deal.creator_id !== userId && req.user!.role !== 'admin') {
+        return res.status(403).json({
+          success: false,
+          error: 'You can only view signatures for your own deals',
+        });
+      }
+
+      // Get signature
+      const { getSignature } = await import('../services/contractSigningService.js');
+      const signature = await getSignature(dealId, role as 'brand' | 'creator');
+
+      return res.json({
+        success: true,
+        signature: signature ? {
+          id: signature.id,
+          signed: signature.signed,
+          signedAt: signature.signed_at,
+          signerName: signature.signer_name,
+          signerEmail: signature.signer_email,
+        } : null,
+      });
+    } catch (error: any) {
+      console.error('[Deals] Get signature error:', error);
+      return res.status(500).json({
+        success: false,
+        error: error.message || 'Internal server error',
+      });
+    }
+  }
+);
+
+// POST /api/deals/:dealId/sign-creator (alias for sign-as-creator)
+// POST /api/deals/:dealId/sign-as-creator
+// Allow creators to sign contracts after brand has signed
+const signAsCreatorHandler = async (req: AuthenticatedRequest, res: Response) => {
+    try {
+      const userId = req.user!.id;
+      const { dealId } = req.params;
+      const {
+        signerName,
+        signerEmail,
+        signerPhone,
+        contractVersionId,
+        contractSnapshotHtml,
+        otpVerified,
+        otpVerifiedAt,
+      } = req.body;
+
+      if (!dealId) {
+        return res.status(400).json({
+          success: false,
+          error: 'Deal ID is required',
+        });
+      }
+
+      // Verify deal exists and belongs to current creator
+      const { data: deal, error: dealError } = await supabase
+        .from('brand_deals')
+        .select('id, creator_id, contract_file_url, contract_version, creator_otp_verified, creator_otp_verified_at')
+        .eq('id', dealId)
+        .single();
+
+      if (dealError || !deal) {
+        return res.status(404).json({
+          success: false,
+          error: 'Deal not found',
+        });
+      }
+
+      if (deal.creator_id !== userId && req.user!.role !== 'admin') {
+        return res.status(403).json({
+          success: false,
+          error: 'You can only sign contracts for your own deals',
+        });
+      }
+
+      // Verify creator OTP was verified
+      const dealData = deal as any;
+      if (!dealData.creator_otp_verified) {
+        return res.status(400).json({
+          success: false,
+          error: 'OTP verification is required before signing. Please verify your OTP first.',
+        });
+      }
+
+      // Get creator profile for default values
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('email, first_name, last_name, phone')
+        .eq('id', userId)
+        .single();
+
+      const finalSignerName = signerName || 
+        (profile?.first_name && profile?.last_name 
+          ? `${profile.first_name} ${profile.last_name}`
+          : profile?.first_name || 'Creator');
+      const finalSignerEmail = signerEmail || profile?.email;
+      const finalSignerPhone = signerPhone || profile?.phone;
+
+      if (!finalSignerEmail) {
+        return res.status(400).json({
+          success: false,
+          error: 'Signer email is required',
+        });
+      }
+
+      // Get client info
+      const { getClientIp, getDeviceInfo } = await import('../services/contractSigningService.js');
+      const ipAddress = getClientIp(req);
+      const userAgent = req.headers['user-agent'] || 'Unknown';
+      const deviceInfo = getDeviceInfo(userAgent);
+
+      // Sign contract as creator
+      const { signContractAsCreator } = await import('../services/contractSigningService.js');
+      const result = await signContractAsCreator({
+        dealId,
+        creatorId: userId,
+        signerName: finalSignerName,
+        signerEmail: finalSignerEmail,
+        signerPhone: finalSignerPhone,
+        contractVersionId: contractVersionId || deal.contract_version || 'v3',
+        contractSnapshotHtml: contractSnapshotHtml || 
+          (deal.contract_file_url 
+            ? `Contract URL: ${deal.contract_file_url}\nSigned at: ${new Date().toISOString()}`
+            : undefined),
+        ipAddress,
+        userAgent,
+        deviceInfo,
+        otpVerified: true, // Already verified above
+        otpVerifiedAt: otpVerifiedAt || dealData.creator_otp_verified_at || new Date().toISOString(),
+      });
+
+      if (!result.success) {
+        return res.status(400).json({
+          success: false,
+          error: result.error || 'Failed to sign contract',
+        });
+      }
+
+      return res.json({
+        success: true,
+        message: 'Contract signed successfully',
+        signature: result.signature,
+      });
+    } catch (error: any) {
+      console.error('[Deals] Sign as creator error:', error);
+      return res.status(500).json({
+        success: false,
+        error: error.message || 'Internal server error',
+      });
+    }
+};
+
+// Add both route aliases
+router.post('/:dealId/sign-creator', signAsCreatorHandler);
+router.post('/:dealId/sign-as-creator', signAsCreatorHandler);
+
 export default router;
 

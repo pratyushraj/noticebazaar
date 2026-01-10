@@ -3,8 +3,9 @@
 import { useState, useCallback, lazy, Suspense, useMemo, useEffect, useRef } from 'react';
 import type { ChangeEvent } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Eye, Download, Flag, Loader2, Building2, Calendar, FileText, CheckCircle, Clock, Trash2, AlertCircle, XCircle, Bell, Mail, MessageSquare, Phone, Edit, X, Check, Share2, Copy, Link2, Upload } from 'lucide-react';
+import { ArrowLeft, Eye, Download, Flag, Loader2, Building2, Calendar, FileText, CheckCircle, Clock, Trash2, AlertCircle, XCircle, Bell, Mail, MessageSquare, Phone, Edit, X, Check, Share2, Copy, Link2, Upload, ChevronDown, ChevronUp, Lock } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { Collapsible, CollapsibleTrigger, CollapsibleContent } from '@/components/ui/collapsible';
 import { toast } from 'sonner';
 import { useDeal, DealProvider } from '@/contexts/DealContext';
 import { useQueryClient } from '@tanstack/react-query';
@@ -85,7 +86,7 @@ const copyToClipboard = async (text: string): Promise<boolean> => {
 function DealDetailPageContent() {
   const navigate = useNavigate();
   const { dealId } = useParams<{ dealId: string }>();
-  const { profile, session } = useSession();
+  const { profile, session, user } = useSession();
   
   // Hooks
   const { deal, isLoadingDeal, refreshAll } = useDeal();
@@ -140,6 +141,22 @@ function DealDetailPageContent() {
   const [brandSubmissionDetails, setBrandSubmissionDetails] = useState<any>(null);
   const [isLoadingSubmission, setIsLoadingSubmission] = useState(false);
   const [hasReviewedDetails, setHasReviewedDetails] = useState(false);
+  
+  // Collapsible sections state
+  const [showVerificationDetails, setShowVerificationDetails] = useState(false);
+  const [showDealSummaryFull, setShowDealSummaryFull] = useState(false);
+  const [showAuditTrail, setShowAuditTrail] = useState(false);
+  
+  // Creator signing states
+  const [showCreatorSigningModal, setShowCreatorSigningModal] = useState(false);
+  const [isSendingCreatorOTP, setIsSendingCreatorOTP] = useState(false);
+  const [isVerifyingCreatorOTP, setIsVerifyingCreatorOTP] = useState(false);
+  const [creatorOTP, setCreatorOTP] = useState('');
+  const [creatorSigningStep, setCreatorSigningStep] = useState<'send' | 'verify'>('send');
+  const [isSigningAsCreator, setIsSigningAsCreator] = useState(false);
+  const [isCreatorSigned, setIsCreatorSigned] = useState(false);
+  const [creatorSignature, setCreatorSignature] = useState<any>(null);
+  const [brandSignature, setBrandSignature] = useState<any>(null);
   
   // Get current stage from deal status - uses canonical mapping
   const getCurrentStage = (status: string | null | undefined, progressPercentage?: number | null): DealStage | undefined => {
@@ -202,7 +219,480 @@ function DealDetailPageContent() {
     }
   };
   
-  // ALL HOOKS MUST BE CALLED BEFORE ANY EARLY RETURNS
+  // Fetch signatures
+  useEffect(() => {
+    const fetchSignatures = async () => {
+      if (!deal?.id || !session?.access_token) return;
+
+      try {
+        // Try to get API base URL with fallback logic
+        let apiBaseUrl =
+          import.meta.env.VITE_API_BASE_URL ||
+          (typeof window !== 'undefined' && window.location.origin.includes('noticebazaar.com')
+            ? 'https://api.noticebazaar.com'
+            : typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com')
+              ? 'https://api.creatorarmour.com'
+              : 'http://localhost:3001');
+
+        // If localhost, try it first, then fallback to production
+        if (apiBaseUrl.includes('localhost')) {
+          try {
+            const brandResp = await fetch(`${apiBaseUrl}/api/esign/status/${deal.id}`, {
+              headers: { Authorization: `Bearer ${session.access_token}` }
+            });
+            if (brandResp.ok) {
+              const brandData = await brandResp.json();
+              if (brandData.success && (brandData.status === 'signed' || brandData.meonStatus === 'SIGNED')) {
+                setBrandSignature({ signed: true, signedAt: brandData.signedAt });
+              }
+            }
+          } catch (localhostError) {
+            console.warn('[DealDetailPage] Localhost API unavailable for signatures, using Supabase only');
+            // Continue to Supabase fetch below
+          }
+        } else {
+          // Use production API
+          try {
+            const brandResp = await fetch(`${apiBaseUrl}/api/esign/status/${deal.id}`, {
+              headers: { Authorization: `Bearer ${session.access_token}` }
+            });
+            if (brandResp.ok) {
+              const brandData = await brandResp.json();
+              if (brandData.success && (brandData.status === 'signed' || brandData.meonStatus === 'SIGNED')) {
+                setBrandSignature({ signed: true, signedAt: brandData.signedAt });
+              }
+            }
+          } catch (apiError) {
+            console.warn('[DealDetailPage] API signature fetch failed, using Supabase only');
+          }
+        }
+
+        // Fetch signatures from our own table (always try this)
+        const { data: ourSignatures, error: sigError } = await supabase
+          .from('contract_signatures' as any)
+          .select('*')
+          .eq('deal_id', deal.id);
+
+        if (sigError) {
+          if (import.meta.env.DEV) {
+            console.warn('[DealDetailPage] Error fetching signatures:', sigError);
+          }
+          setIsCreatorSigned(false);
+        } else if (ourSignatures && Array.isArray(ourSignatures) && ourSignatures.length > 0) {
+          const creatorSig = ourSignatures.find((s: any) => s?.signer_role === 'creator' && s?.signed === true);
+          const brandSig = ourSignatures.find((s: any) => s?.signer_role === 'brand' && s?.signed === true);
+
+          if (import.meta.env.DEV) {
+            console.log('[DealDetailPage] Signature check:', {
+              totalSignatures: ourSignatures.length,
+              creatorSig: creatorSig ? 'found' : 'not found',
+              brandSig: brandSig ? 'found' : 'not found',
+              creatorSigned: creatorSig ? (creatorSig as any).signed : false,
+              creatorSigDetails: creatorSig ? {
+                signer_role: (creatorSig as any).signer_role,
+                signed: (creatorSig as any).signed,
+                signed_at: (creatorSig as any).signed_at,
+                id: (creatorSig as any).id,
+              } : null,
+              allSignatures: ourSignatures.map((s: any) => ({
+                signer_role: s?.signer_role,
+                signed: s?.signed,
+                id: s?.id,
+              })),
+            });
+          }
+
+          // Only set creator as signed if we have a valid creator signature
+          // Must have: creator role, signed === true, AND a valid signed_at timestamp
+          const hasCreatorSigRecord = creatorSig && 
+            (creatorSig as any).signer_role === 'creator' && 
+            (creatorSig as any).signed === true;
+          
+          // Additional validation: Check if signed_at exists and is valid
+          let hasValidCreatorSignature = false;
+          if (hasCreatorSigRecord) {
+            const signedAt = (creatorSig as any).signed_at;
+            if (signedAt) {
+              const signedAtDate = new Date(signedAt);
+              const now = new Date();
+              const isValidTimestamp = signedAtDate.getTime() > 0 && 
+                signedAtDate.getTime() <= now.getTime() + 60000 && // Allow 1 minute future tolerance
+                signedAtDate.getTime() > new Date('2020-01-01').getTime(); // Must be after 2020
+              
+              // Also verify the signature email matches the current user's email
+              // IMPORTANT: We require currentUserEmail to exist - if it's undefined, we can't verify ownership
+              // Email is in auth.users (session.user.email), not in profiles table
+              const currentUserEmail = (session?.user?.email || user?.email || profile?.email)?.toLowerCase();
+              const signatureEmail = (creatorSig as any).signer_email?.toLowerCase();
+              // Email matches only if BOTH emails exist AND they match
+              const emailMatches = !!currentUserEmail && !!signatureEmail && currentUserEmail === signatureEmail;
+              
+              // Verify the signature belongs to this deal
+              const dealIdMatches = (creatorSig as any).deal_id === deal?.id;
+              
+              // Verify OTP was verified (required for valid signatures)
+              const otpVerified = (creatorSig as any).otp_verified === true;
+              const otpVerifiedAt = (creatorSig as any).otp_verified_at;
+              const hasOtpVerifiedAt = otpVerifiedAt && new Date(otpVerifiedAt).getTime() > 0;
+              
+              // Verify signature has required audit trail fields (indicates real signature, not placeholder)
+              const hasIpAddress = !!(creatorSig as any).ip_address;
+              const hasUserAgent = !!(creatorSig as any).user_agent;
+              
+              // Only consider valid if all checks pass
+              hasValidCreatorSignature = isValidTimestamp && 
+                                        emailMatches && 
+                                        dealIdMatches && 
+                                        otpVerified && 
+                                        hasOtpVerifiedAt &&
+                                        hasIpAddress &&
+                                        hasUserAgent;
+              
+              if (import.meta.env.DEV) {
+                // Log each check individually for clarity
+                console.group('[DealDetailPage] Creator Signature Validation Details');
+                console.log('✓ Timestamp valid:', isValidTimestamp, '| signed_at:', signedAt);
+                console.log('✓ Email matches:', emailMatches, '| signature:', signatureEmail, '| current:', currentUserEmail);
+                console.log('✓ Deal ID matches:', dealIdMatches, '| signature deal_id:', (creatorSig as any).deal_id, '| current deal_id:', deal?.id);
+                console.log('✓ OTP verified:', otpVerified, '| otp_verified:', (creatorSig as any).otp_verified);
+                console.log('✓ OTP verified_at exists:', hasOtpVerifiedAt, '| otp_verified_at:', (creatorSig as any).otp_verified_at);
+                console.log('✓ IP address present:', hasIpAddress, '| ip_address:', (creatorSig as any).ip_address ? 'present' : 'MISSING');
+                console.log('✓ User agent present:', hasUserAgent, '| user_agent:', (creatorSig as any).user_agent ? 'present' : 'MISSING');
+                console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+                console.log('🎯 FINAL RESULT: hasValidCreatorSignature =', hasValidCreatorSignature);
+                console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+                console.groupEnd();
+                
+                const validationDetails = {
+                  signed_at: signedAt,
+                  signedAtDate: signedAtDate.toISOString(),
+                  signer_email: (creatorSig as any).signer_email,
+                  signer_name: (creatorSig as any).signer_name,
+                  currentUserEmail,
+                  signatureEmail,
+                  emailMatches,
+                  isValidTimestamp,
+                  deal_id: (creatorSig as any).deal_id,
+                  currentDealId: deal?.id,
+                  dealIdMatches: (creatorSig as any).deal_id === deal?.id,
+                  otp_verified: (creatorSig as any).otp_verified,
+                  otpVerified: (creatorSig as any).otp_verified === true,
+                  otp_verified_at: (creatorSig as any).otp_verified_at,
+                  hasOtpVerifiedAt: hasOtpVerifiedAt,
+                  hasIpAddress: hasIpAddress,
+                  hasUserAgent: hasUserAgent,
+                  ip_address: (creatorSig as any).ip_address ? 'present' : 'missing',
+                  user_agent: (creatorSig as any).user_agent ? 'present' : 'missing',
+                  hasValidCreatorSignature,
+                  validationChecks: {
+                    isValidTimestamp,
+                    emailMatches,
+                    dealIdMatches,
+                    otpVerified,
+                    hasOtpVerifiedAt,
+                    hasIpAddress,
+                    hasUserAgent,
+                  },
+                  timestampCheck: {
+                    isPositive: signedAtDate.getTime() > 0,
+                    isNotFuture: signedAtDate.getTime() <= now.getTime() + 60000,
+                    isAfter2020: signedAtDate.getTime() > new Date('2020-01-01').getTime(),
+                  },
+                };
+                console.log('[DealDetailPage] Creator signature validation (full object):', validationDetails);
+                console.log('[DealDetailPage] Full signature object:', JSON.parse(JSON.stringify(creatorSig)));
+                
+                // If validation is passing but shouldn't, log a warning
+                if (hasValidCreatorSignature) {
+                  console.warn('[DealDetailPage] ⚠️ Creator signature VALIDATED as signed. If this is incorrect, check the signature record in the database.');
+                  console.warn('[DealDetailPage] ⚠️ To allow signing, the signature record needs to be deleted or marked as invalid in the database.');
+                }
+              }
+            } else {
+              if (import.meta.env.DEV) {
+                console.warn('[DealDetailPage] Creator signature found but has no signed_at timestamp');
+              }
+            }
+          }
+          
+          if (hasValidCreatorSignature) {
+            setIsCreatorSigned(true);
+            setCreatorSignature(creatorSig);
+          } else {
+            // Explicitly set to false if no valid creator signature found
+            if (import.meta.env.DEV) {
+              if (hasCreatorSigRecord) {
+                console.warn('[DealDetailPage] Creator signature found but invalid - treating as unsigned');
+              } else {
+                console.log('[DealDetailPage] Setting isCreatorSigned to FALSE - no valid creator signature', {
+                  hasCreatorSig: !!creatorSig,
+                  signer_role: creatorSig ? (creatorSig as any).signer_role : 'none',
+                  signed: creatorSig ? (creatorSig as any).signed : false,
+                  signed_at: creatorSig ? (creatorSig as any).signed_at : 'none',
+                });
+              }
+            }
+            setIsCreatorSigned(false);
+          }
+          if (brandSig) {
+            setBrandSignature(brandSig);
+          }
+        } else {
+          // No signatures found, ensure creator is not marked as signed
+          if (import.meta.env.DEV) {
+            console.log('[DealDetailPage] No signatures found in database');
+          }
+          setIsCreatorSigned(false);
+        }
+      } catch (error) {
+        console.error('[DealDetailPage] Error fetching signatures:', error);
+        // Don't show error toast - signatures are optional
+      }
+    };
+
+    fetchSignatures();
+  }, [deal?.id, session?.access_token, session?.user?.email, user?.email]);
+
+  const handleSendCreatorOTP = async () => {
+    if (!deal?.id || !session?.access_token) return;
+
+    setIsSendingCreatorOTP(true);
+    try {
+      // Try to get API base URL with fallback logic
+      let apiBaseUrl =
+        import.meta.env.VITE_API_BASE_URL ||
+        (typeof window !== 'undefined' && window.location.origin.includes('noticebazaar.com')
+          ? 'https://api.noticebazaar.com'
+          : typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com')
+            ? 'https://api.creatorarmour.com'
+            : 'http://localhost:3001');
+
+      // If localhost, try it first, then fallback to production
+      if (apiBaseUrl.includes('localhost')) {
+        try {
+          const resp = await fetch(`${apiBaseUrl}/api/otp/send-creator`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${session.access_token}`,
+            },
+            body: JSON.stringify({ dealId: deal.id }),
+          });
+
+          if (resp.ok) {
+            const data = await resp.json();
+            if (data.success) {
+              toast.success('OTP sent to your email');
+              setCreatorSigningStep('verify');
+              return;
+            }
+          }
+        } catch (localhostError) {
+          console.warn('[DealDetailPage] Localhost API unavailable, trying production API...');
+          // Fallback to production API
+          apiBaseUrl = 'https://noticebazaar-api.onrender.com';
+        }
+      }
+
+      // Use production API (either as primary or fallback)
+      const resp = await fetch(`${apiBaseUrl}/api/otp/send-creator`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({ dealId: deal.id }),
+      });
+
+      if (!resp.ok) {
+        // Check for CORS errors (status 0 typically indicates CORS failure)
+        if (resp.status === 0) {
+          throw new Error('CORS_ERROR');
+        }
+        const errorData = await resp.json().catch(() => ({}));
+        throw new Error(errorData.error || `Server error: ${resp.status}`);
+      }
+
+      const data = await resp.json();
+      if (data.success) {
+        toast.success('OTP sent to your email');
+        setCreatorSigningStep('verify');
+      } else {
+        toast.error(data.error || 'Failed to send OTP');
+      }
+    } catch (error: any) {
+      console.error('[DealDetailPage] OTP send error:', error);
+      
+      // Handle CORS errors specifically
+      if (error.message === 'CORS_ERROR' || error.message?.includes('CORS') || error.message?.includes('Failed to fetch')) {
+        toast.error(
+          'Cannot connect to API server. Please ensure the local API server is running on port 3001, or configure CORS on the production server.',
+          { duration: 5000 }
+        );
+      } else {
+        toast.error(error.message || 'Failed to send OTP. Please try again.');
+      }
+    } finally {
+      setIsSendingCreatorOTP(false);
+    }
+  };
+
+  const handleVerifyCreatorOTP = async () => {
+    if (!deal?.id || !session?.access_token || !creatorOTP) return;
+
+    setIsVerifyingCreatorOTP(true);
+    try {
+      // Try to get API base URL with fallback logic
+      let apiBaseUrl =
+        import.meta.env.VITE_API_BASE_URL ||
+        (typeof window !== 'undefined' && window.location.origin.includes('noticebazaar.com')
+          ? 'https://api.noticebazaar.com'
+          : typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com')
+            ? 'https://api.creatorarmour.com'
+            : 'http://localhost:3001');
+
+      // If localhost, try it first, then fallback to production
+      if (apiBaseUrl.includes('localhost')) {
+        try {
+          const resp = await fetch(`${apiBaseUrl}/api/otp/verify-creator`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${session.access_token}`,
+            },
+            body: JSON.stringify({ dealId: deal.id, otp: creatorOTP }),
+          });
+
+          const data = await resp.json();
+          if (resp.ok && data.success) {
+            toast.success('OTP verified! Now signing contract...');
+            await handleSignAsCreator();
+            return;
+          } else {
+            // If OTP is already verified, proceed to signing anyway
+            if (data.error && data.error.includes('already been verified')) {
+              toast.success('OTP already verified. Signing contract...');
+              await handleSignAsCreator();
+              return;
+            }
+          }
+        } catch (localhostError) {
+          console.warn('[DealDetailPage] Localhost API unavailable, trying production API...');
+          // Fallback to production API
+          apiBaseUrl = 'https://noticebazaar-api.onrender.com';
+        }
+      }
+
+      // Use production API (either as primary or fallback)
+      const resp = await fetch(`${apiBaseUrl}/api/otp/verify-creator`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({ dealId: deal.id, otp: creatorOTP }),
+      });
+
+      const data = await resp.json();
+      if (data.success) {
+        toast.success('OTP verified! Now signing contract...');
+        await handleSignAsCreator();
+      } else {
+        // If OTP is already verified, proceed to signing anyway
+        if (data.error && data.error.includes('already been verified')) {
+          toast.success('OTP already verified. Signing contract...');
+          await handleSignAsCreator();
+        } else {
+          toast.error(data.error || 'Invalid OTP');
+        }
+      }
+    } catch (error: any) {
+      console.error('[DealDetailPage] OTP verify error:', error);
+      toast.error(error.message || 'Failed to verify OTP');
+    } finally {
+      setIsVerifyingCreatorOTP(false);
+    }
+  };
+
+  const handleSignAsCreator = async () => {
+    if (!deal?.id || !session?.access_token) return;
+
+    setIsSigningAsCreator(true);
+    try {
+      // Try to get API base URL with fallback logic
+      let apiBaseUrl =
+        import.meta.env.VITE_API_BASE_URL ||
+        (typeof window !== 'undefined' && window.location.origin.includes('noticebazaar.com')
+          ? 'https://api.noticebazaar.com'
+          : typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com')
+            ? 'https://api.creatorarmour.com'
+            : 'http://localhost:3001');
+
+      // If localhost, try it first, then fallback to production
+      if (apiBaseUrl.includes('localhost')) {
+        try {
+          const resp = await fetch(`${apiBaseUrl}/api/deals/${deal.id}/sign-creator`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${session.access_token}`,
+            },
+            body: JSON.stringify({
+              signerName: profile?.first_name ? `${profile.first_name} ${profile.last_name || ''}`.trim() : 'Creator',
+              signerEmail: profile?.email || '',
+              contractSnapshotHtml: `Contract URL: ${deal.contract_file_url}\nSigned at: ${new Date().toISOString()}`,
+            }),
+          });
+
+          if (resp.ok) {
+            const data = await resp.json();
+            if (data.success) {
+              toast.success('Contract signed successfully!');
+              setIsCreatorSigned(true);
+              setCreatorSignature(data.signature);
+              setShowCreatorSigningModal(false);
+              refreshAll(); // Refresh deal data to show updated status
+              return;
+            }
+          }
+        } catch (localhostError) {
+          console.warn('[DealDetailPage] Localhost API unavailable, trying production API...');
+          // Fallback to production API
+          apiBaseUrl = 'https://noticebazaar-api.onrender.com';
+        }
+      }
+
+      // Use production API (either as primary or fallback)
+      const resp = await fetch(`${apiBaseUrl}/api/deals/${deal.id}/sign-creator`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({
+          signerName: profile?.first_name ? `${profile.first_name} ${profile.last_name || ''}`.trim() : 'Creator',
+          signerEmail: profile?.email || '',
+          contractSnapshotHtml: `Contract URL: ${deal.contract_file_url}\nSigned at: ${new Date().toISOString()}`,
+        }),
+      });
+
+      const data = await resp.json();
+      if (data.success) {
+        toast.success('Contract signed successfully!');
+        setIsCreatorSigned(true);
+        setCreatorSignature(data.signature);
+        setShowCreatorSigningModal(false);
+        refreshAll(); // Refresh deal data to show updated status
+      } else {
+        toast.error(data.error || 'Failed to sign contract');
+      }
+    } catch (error: any) {
+      console.error('[DealDetailPage] Signing error:', error);
+      toast.error(error.message || 'Failed to sign contract');
+    } finally {
+      setIsSigningAsCreator(false);
+    }
+  };
   // Parse deliverables - useMemo must be called unconditionally
   const deliverables = useMemo(() => {
     if (!deal?.deliverables) return [];
@@ -630,10 +1120,9 @@ function DealDetailPageContent() {
       trackEvent('contract_downloaded', { 
         dealId: deal.id,
         dealTitle: deal.brand_name,
-        contractType: 'html',
+        contractType: 'docx',
       });
       
-      window.open(viewUrl, '_blank');
       return;
     }
     
@@ -1212,166 +1701,249 @@ Best regards`;
           </motion.div>
         )}
         
-        {/* Header Section */}
-        <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-4 md:p-6 shadow-lg shadow-black/20">
-          <div className="flex items-start gap-4 mb-4">
-            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-2xl font-bold flex-shrink-0">
-              {deal.brand_name.substring(0, 2).toUpperCase()}
-            </div>
-            <div className="flex-1 min-w-0">
-              <h1 className="text-2xl font-bold mb-2 leading-tight">{dealTitle}</h1>
-              <div className="flex items-center gap-2 flex-wrap">
-                <span className="px-3 py-1 rounded-full text-xs font-medium bg-blue-500/20 text-blue-400 flex items-center gap-1">
-                  <Clock className="w-3 h-3" />
-                  {deal.status || 'Active'}
-                </span>
-              </div>
-            </div>
-          </div>
-
-          {/* Deal Value */}
-          <div className="bg-white/5 rounded-xl p-4 mb-4">
-            <div className="text-sm text-white/60 mb-1">Total Deal Value</div>
-            <div className="text-3xl font-bold text-green-400">₹{Math.round(dealAmount).toLocaleString('en-IN')}</div>
-            <div className="text-xs text-white/50 mt-1">(Protected)</div>
-          </div>
-
-          {/* Action Buttons */}
-          <div className="grid grid-cols-2 md:grid-cols-6 gap-3">
+        {/* Status Card - Replaces Header Section */}
+        {(() => {
+          const statusLower = deal?.status?.toLowerCase() || '';
+          const isContractReady = statusLower === 'contract_ready' || statusLower.includes('contract_ready');
+          const isSigned = statusLower === 'signed_by_brand' || statusLower.includes('signed_by_brand') || 
+                          dealExecutionStatus === 'signed' || dealExecutionStatus === 'completed' ||
+            contractStatus === 'Signed';
+          const hasContract = !!contractDocxUrl;
+          const signedAtDate = signedAt || signedContractUploadedAt || (deal as any)?.brand_response_at;
+          
+          if (isContractReady && !isSigned && hasContract) {
+            // CONTRACT_READY and not signed
+            return (
+              <div className="bg-gradient-to-br from-blue-500/20 to-indigo-500/20 backdrop-blur-xl border-2 border-blue-400/30 rounded-2xl p-6 shadow-lg">
+                <h2 className="text-2xl font-bold text-white mb-2">Contract Ready for Signature</h2>
+                <p className="text-white/70 text-sm mb-6">Brand identity verified. This agreement is ready to be signed.</p>
+                
+                <div className="space-y-3">
             <motion.button
-              onClick={() => {
-                triggerHaptic(HapticPatterns.light);
-                setShowProgressSheet(true);
-              }}
-              whileTap={animations.microTap}
-              className="flex flex-col items-center justify-center gap-2 p-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl transition-all active:scale-[0.98]"
-            >
-              <TrendingUp className={iconSizes.md} />
-              <span className="text-xs font-medium">Update Progress</span>
-            </motion.button>
-            <button
-              onClick={handlePreviewContract}
-              disabled={!deal.contract_file_url}
-              className="flex flex-col items-center justify-center gap-2 p-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <Eye className="w-5 h-5" />
-              <span className="text-xs font-medium">Preview</span>
-            </button>
-            <button
-              onClick={handleDownloadContract}
-              disabled={!deal.contract_file_url || isDownloading}
-              className="flex flex-col items-center justify-center gap-2 p-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isDownloading ? (
-                <Loader2 className="w-5 h-5 animate-spin" />
-              ) : (
-                <Download className="w-5 h-5" />
-              )}
-              <span className="text-xs font-medium">Download</span>
-            </button>
-            <motion.button
-              onClick={async () => {
-                if (!deal || !deal.id) {
-                  toast.error('Deal information not available');
-                  return;
-                }
-                
-                triggerHaptic(HapticPatterns.light);
-                
-                // Prepare share content
-                const shareText = `${dealTitle}\n\nDeal Value: ₹${Math.round(dealAmount).toLocaleString('en-IN')}\nStatus: ${deal.status || 'Active'}\nBrand: ${deal.brand_name}`;
-                const shareUrl = `${window.location.origin}${window.location.pathname}`;
-                
-                // Try Web Share API first
-                if (navigator.share) {
-                  try {
-                    await navigator.share({
-                      title: `${dealTitle} - CreatorArmour`,
-                      text: shareText,
-                      url: shareUrl,
-                    });
-                    toast.success('Shared successfully');
-                    trackEvent('deal_shared', {
-                      dealId: deal.id,
-                      method: 'native',
-                    });
-                  } catch (error: any) {
-                    // User cancelled or share failed, fallback to copy
-                    if (error.name !== 'AbortError') {
-                      // Only show error if not user cancellation
-                      const fullText = `${shareText}\n\nView deal: ${shareUrl}`;
-                      const success = await copyToClipboard(fullText);
-                      if (success) {
-                      toast.success('Deal details copied to clipboard');
-                      trackEvent('deal_shared', {
-                        dealId: deal.id,
-                        method: 'copy',
-                      });
+                    onClick={async () => {
+                      if (!deal?.id) return;
+                      const link = brandReplyLink || (await generateBrandReplyLink(deal.id));
+                      if (link) {
+                        window.open(link, '_blank');
                       }
-                    }
-                  }
-                } else {
-                  // Fallback: Copy to clipboard
-                  const fullText = `${shareText}\n\nView deal: ${shareUrl}`;
-                  const success = await copyToClipboard(fullText);
-                  if (success) {
-                  toast.success('Deal details copied to clipboard');
-                  trackEvent('deal_shared', {
-                    dealId: deal.id,
-                    method: 'copy',
-                  });
-                  }
-                }
-              }}
-              whileTap={animations.microTap}
-              className="flex flex-col items-center justify-center gap-2 p-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl transition-all active:scale-[0.98]"
-            >
-              <Share2 className="w-5 h-5" />
-              <span className="text-xs font-medium">Share</span>
+                    }}
+                    whileTap={{ scale: 0.98 }}
+                    className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 px-6 py-3 rounded-xl font-semibold text-white transition-all flex items-center justify-center gap-2"
+                  >
+                    <FileText className="w-5 h-5" />
+                    Sign Contract
             </motion.button>
+                  
             <button
-              onClick={handleReportIssue}
-              className="flex flex-col items-center justify-center gap-2 p-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl transition-all active:scale-[0.98]"
-            >
-              <Flag className="w-5 h-5" />
-              <span className="text-xs font-medium">Report</span>
+                    onClick={handleDownloadContract}
+                    disabled={!hasContract || isDownloading}
+                    className="w-full text-sm text-white/70 hover:text-white transition-colors underline disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isDownloading ? 'Downloading...' : 'View Contract PDF'}
             </button>
-            <motion.button
-              onClick={async () => {
-                // Allow deletion of draft deals regardless of brand response status
-                // Only prevent deletion if deal is actually signed/completed
-                const contractStatus = getContractStatus();
-                const isSignedOrCompleted = contractStatus === 'Signed' || 
-                                          dealExecutionStatus === 'signed' || 
-                                          dealExecutionStatus === 'completed' ||
-                                          (deal?.status?.toLowerCase()?.includes('signed') || 
-                                           deal?.status?.toLowerCase()?.includes('completed'));
+                </div>
+              </div>
+            );
+          } else if (isSigned) {
+            // SIGNED_BY_BRAND
+            // Debug log to check creator signing status
+            if (import.meta.env.DEV) {
+              console.log('[DealDetailPage] Status Card - isSigned:', isSigned, 'isCreatorSigned:', isCreatorSigned);
+            }
+            
+            return (
+              <div className="bg-gradient-to-br from-green-500/20 to-emerald-500/20 backdrop-blur-xl border-2 border-green-400/30 rounded-2xl p-6 shadow-lg">
+                <h2 className="text-2xl font-bold text-white mb-2">
+                  {isCreatorSigned ? 'Contract Signed' : 'Awaiting Your Signature'}
+                </h2>
+                {signedAtDate && (
+                  <p className="text-white/70 text-sm mb-2">
+                    Signed by brand on {new Date(signedAtDate).toLocaleDateString('en-US', { 
+                      month: 'long', 
+                      day: 'numeric', 
+                      year: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit'
+                    })}
+                  </p>
+                )}
+                {!isCreatorSigned && (
+                  <p className="text-white/80 text-sm mb-6 font-medium">
+                    The brand has signed. Please review and sign to finalize the deal.
+                  </p>
+                )}
                 
-                if (isSignedOrCompleted) {
-                  toast.error('Cannot delete a deal that has been signed or completed');
-                  return;
-                }
-                
-                triggerHaptic(HapticPatterns.medium);
-                setShowDeleteConfirm(true);
-              }}
-              whileTap={animations.microTap}
-              disabled={deleteDeal.isPending}
-              className="flex flex-col items-center justify-center gap-2 p-3 bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 rounded-xl transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
-              title="Delete deal"
-            >
-              {deleteDeal.isPending ? (
-                <Loader2 className="w-5 h-5 animate-spin text-red-400" />
-              ) : (
-                <Trash2 className="w-5 h-5 text-red-400" />
-              )}
-              <span className="text-xs font-medium text-red-400">Delete</span>
-            </motion.button>
+                <div className="space-y-3">
+                  {!isCreatorSigned && (
+                    <motion.button
+                      onClick={() => {
+                        if (import.meta.env.DEV) {
+                          console.log('[DealDetailPage] Sign as Creator button clicked');
+                        }
+                        setShowCreatorSigningModal(true);
+                      }}
+                      whileTap={{ scale: 0.98 }}
+                      className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 px-6 py-3 rounded-xl font-semibold text-white transition-all flex items-center justify-center gap-2"
+                    >
+                      <FileText className="w-5 h-5" />
+                      Sign as Creator
+                    </motion.button>
+                  )}
+                  
+                  <motion.button
+                    onClick={handleDownloadContract}
+                    disabled={!hasContract || isDownloading}
+                    whileTap={{ scale: 0.98 }}
+                    className={cn(
+                      "w-full px-6 py-3 rounded-xl font-semibold text-white transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed",
+                      isCreatorSigned
+                        ? "bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500"
+                        : "bg-white/10 hover:bg-white/20 border border-white/20"
+                    )}
+                  >
+                    {isDownloading ? (
+                      <>
+                        <Loader2 className="w-5 h-5 animate-spin" />
+                        Downloading...
+                      </>
+                    ) : (
+                      <>
+                        <Download className="w-5 h-5" />
+                        {isCreatorSigned ? 'Download Signed Contract' : 'Download Agreement PDF'}
+                      </>
+                    )}
+                  </motion.button>
+                  
+                  {isCreatorSigned && (
+                    <button
+                      onClick={async () => {
+                        if (!deal || !deal.id) return;
+                        const shareText = `${dealTitle}\n\nDeal Value: ₹${Math.round(dealAmount).toLocaleString('en-IN')}\nStatus: Signed\nBrand: ${deal.brand_name}`;
+                        const shareUrl = `${window.location.origin}${window.location.pathname}`;
+                        if (navigator.share) {
+                          try {
+                            await navigator.share({ title: `${dealTitle} - CreatorArmour`, text: shareText, url: shareUrl });
+                            toast.success('Shared successfully');
+                          } catch (e: any) {
+                            if (e.name !== 'AbortError') {
+                              const success = await copyToClipboard(`${shareText}\n\nView deal: ${shareUrl}`);
+                              if (success) toast.success('Deal details copied to clipboard');
+                            }
+                          }
+                        } else {
+                          const success = await copyToClipboard(`${shareText}\n\nView deal: ${shareUrl}`);
+                          if (success) toast.success('Deal details copied to clipboard');
+                        }
+                      }}
+                      className="w-full text-sm text-white/70 hover:text-white transition-colors underline"
+                    >
+                      Share Contract
+                    </button>
+                  )}
+                </div>
+              </div>
+            );
+          } else {
+            // Default status card for other states
+            return (
+              <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-4 md:p-6 shadow-lg shadow-black/20">
+                <div className="flex items-start gap-4 mb-4">
+                  <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-2xl font-bold flex-shrink-0">
+                    {deal.brand_name.substring(0, 2).toUpperCase()}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h1 className="text-2xl font-bold mb-2 leading-tight">{dealTitle}</h1>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="px-3 py-1 rounded-full text-xs font-medium bg-blue-500/20 text-blue-400 flex items-center gap-1">
+                        <Clock className="w-3 h-3" />
+                        {contractStatus || deal.status || 'Active'}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Deal Value */}
+                <div className="bg-white/5 rounded-xl p-4">
+                  <div className="text-sm text-white/60 mb-1">Total Deal Value</div>
+                  <div className="text-3xl font-bold text-green-400">₹{Math.round(dealAmount).toLocaleString('en-IN')}</div>
+                  <div className="text-xs text-white/50 mt-1">(Protected)</div>
+                </div>
+              </div>
+            );
+          }
+        })()}
+
+        {/* Brand Identity Verification Badge - Simplified */}
+        {deal && deal.id && (deal as any)?.brand_response_status && (deal as any)?.brand_response_status === 'accepted_verified' && (
+          <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-4 shadow-lg">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-green-500/20 flex items-center justify-center">
+                  <Lock className="w-5 h-5 text-green-400" />
+                </div>
+                <div>
+                  <div className="font-semibold text-white">Brand Identity Verified 🔒</div>
+                  {(deal as any)?.brand_response_at && (
+                    <div className="text-xs text-white/60 mt-0.5">
+                      Verified on {new Date((deal as any).brand_response_at).toLocaleDateString('en-US', { 
+                        month: 'short', 
+                        day: 'numeric', 
+                        year: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      })}
+                    </div>
+                  )}
           </div>
         </div>
 
-        {/* Brand Response Tracker - Only show if deal exists and has brand_response_status */}
-        {deal && deal.id && (deal as any)?.brand_response_status && (
+              <Collapsible open={showVerificationDetails} onOpenChange={setShowVerificationDetails}>
+                <CollapsibleTrigger asChild>
+                  <button className="text-sm text-white/70 hover:text-white transition-colors underline">
+                    {showVerificationDetails ? 'Hide' : 'View'} verification details
+                  </button>
+                </CollapsibleTrigger>
+                <CollapsibleContent className="mt-4 pt-4 border-t border-white/10 space-y-2 text-sm">
+                  {(deal as any)?.brand_email && (
+                    <div className="flex justify-between">
+                      <span className="text-white/60">Verified email:</span>
+                      <span className="text-white/90">{deal.brand_email}</span>
+                    </div>
+                  )}
+                  {(deal as any)?.otp_verified_at && (
+                    <div className="flex justify-between">
+                      <span className="text-white/60">Date & time:</span>
+                      <span className="text-white/90">
+                        {new Date((deal as any).otp_verified_at).toLocaleString('en-US', { 
+                          month: 'short', 
+                          day: 'numeric', 
+                          year: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        })}
+                      </span>
+                    </div>
+                  )}
+                  {(deal as any)?.brand_response_ip && (
+                    <div className="flex justify-between">
+                      <span className="text-white/60">IP address:</span>
+                      <span className="text-white/90 font-mono text-xs">{(deal as any).brand_response_ip}</span>
+                    </div>
+                  )}
+                  {(deal as any)?.brand_response_at && (
+                    <div className="flex justify-between">
+                      <span className="text-white/60">Device info:</span>
+                      <span className="text-white/90 text-xs">Verified via secure link</span>
+                    </div>
+                  )}
+                </CollapsibleContent>
+              </Collapsible>
+            </div>
+          </div>
+        )}
+
+        {/* Brand Response Tracker - Only show for pending/negotiating/rejected (not verified) */}
+        {deal && deal.id && (deal as any)?.brand_response_status && (deal as any)?.brand_response_status !== 'accepted_verified' && (
           <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-4 md:p-6 shadow-lg shadow-black/20">
             {(() => {
               // Double-check that deal exists and has an ID
@@ -1934,7 +2506,7 @@ ${link}`;
               case 'pending':
                 return '⏳ Awaiting brand response';
               case 'accepted_verified':
-                return '✅ Brand Accepted (OTP Verified)';
+                return '✅ Brand Identity Verified';
               case 'accepted':
                 return '✅ Accepted by brand';
               case 'negotiating':
@@ -2034,8 +2606,7 @@ ${link}`;
                           </div>
                           {item.status && (
                             <div className="mt-2.5">
-                              <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${
-                                item.status === 'completed' ? 'bg-green-500/20 text-green-400 border border-green-500/30' :
+                              <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${item.status === 'completed' ? 'bg-green-500/20 text-green-400 border border-green-500/30' :
                                 item.status === 'in_progress' ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30' :
                                 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30'
                               }`}>
@@ -2055,16 +2626,33 @@ ${link}`;
               )}
             </div>
 
-            {/* Action Log */}
+            {/* Audit Trail (Advanced) - Collapsed by default */}
             {actionLogEntries.length > 0 && (
               <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-4 md:p-6 shadow-lg shadow-black/20">
-                <h3 className="font-semibold text-lg mb-2">Activity Log</h3>
-                <p className="text-sm text-white/70 mb-6">
-                  A complete timeline of everything happening in this deal.
-                </p>
-                <Suspense fallback={<div className="text-white/60 p-4">Loading activity log...</div>}>
-                  <ActionLog entries={actionLogEntries} />
+                <Collapsible open={showAuditTrail} onOpenChange={setShowAuditTrail}>
+                  <CollapsibleTrigger asChild>
+                    <button className="w-full flex items-center justify-between">
+                      <h3 className="font-semibold text-lg">Audit Trail (Advanced)</h3>
+                      {showAuditTrail ? (
+                        <ChevronUp className="w-5 h-5 text-white/60" />
+                      ) : (
+                        <ChevronDown className="w-5 h-5 text-white/60" />
+                      )}
+                    </button>
+                  </CollapsibleTrigger>
+                  <CollapsibleContent>
+                    <p className="text-sm text-white/70 mb-6 mt-2">
+                      Complete timeline of system events and actions.
+                    </p>
+                    <Suspense fallback={<div className="text-white/60 p-4">Loading audit trail...</div>}>
+                      <ActionLog entries={actionLogEntries.filter(entry => 
+                        entry.action?.toLowerCase().includes('signed') || 
+                        entry.action?.toLowerCase().includes('verified') ||
+                        entry.action?.toLowerCase().includes('brand verified')
+                      )} />
                 </Suspense>
+                  </CollapsibleContent>
+                </Collapsible>
               </div>
             )}
           </div>
@@ -2205,21 +2793,53 @@ ${link}`;
                 <div className="flex items-center gap-2">
                   {!isEditingBrandPhone ? (
                     <>
-                      {(deal.brand_phone || brandSubmissionDetails?.companyPhone) ? (
-                        <div className="flex items-center gap-2 text-white/60 flex-1">
-                          <Phone className="w-4 h-4 text-white/40 flex-shrink-0" />
-                          <span>{deal.brand_phone || brandSubmissionDetails?.companyPhone}</span>
-                        </div>
-                      ) : (
-                        <div className="flex items-center gap-2 text-white/40 flex-1">
-                          <Phone className="w-4 h-4 text-white/30 flex-shrink-0" />
-                          <span className="text-xs">No phone added (optional)</span>
-                        </div>
-                      )}
+                      {(() => {
+                        // Check all possible sources for phone number
+                        // 1. Direct field on deal (if it exists in DB)
+                        // 2. From brand submission details
+                        // 3. From form_data nested in deal
+                        const phoneNumber = 
+                          (deal as any)?.brand_phone || 
+                          brandSubmissionDetails?.companyPhone ||
+                          (deal as any)?.form_data?.companyPhone ||
+                          (deal as any)?.form_data?.brandPhone ||
+                          null;
+                        
+                        // Debug log in development
+                        if (import.meta.env.DEV && !phoneNumber) {
+                          console.log('[DealDetailPage] Phone number sources:', {
+                            'deal.brand_phone': (deal as any)?.brand_phone,
+                            'brandSubmissionDetails?.companyPhone': brandSubmissionDetails?.companyPhone,
+                            'deal.form_data?.companyPhone': (deal as any)?.form_data?.companyPhone,
+                            'deal.form_data?.brandPhone': (deal as any)?.form_data?.brandPhone,
+                            'hasBrandSubmissionDetails': !!brandSubmissionDetails,
+                            'hasFormData': !!(deal as any)?.form_data,
+                          });
+                        }
+                        
+                        return phoneNumber ? (
+                          <div className="flex items-center gap-2 text-white/60 flex-1">
+                            <Phone className="w-4 h-4 text-white/40 flex-shrink-0" />
+                            <span>{phoneNumber}</span>
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-2 text-white/40 flex-1">
+                            <Phone className="w-4 h-4 text-white/30 flex-shrink-0" />
+                            <span className="text-xs">No phone added (optional)</span>
+                          </div>
+                        );
+                      })()}
                       <motion.button
                         onClick={() => {
+                          // Check all possible sources for phone number
+                          let phoneValue = 
+                            (deal as any)?.brand_phone || 
+                            brandSubmissionDetails?.companyPhone ||
+                            (deal as any)?.form_data?.companyPhone ||
+                            (deal as any)?.form_data?.brandPhone ||
+                            '';
+                          
                           // Ensure phone starts with +91 when editing
-                          let phoneValue = deal.brand_phone || brandSubmissionDetails?.companyPhone || '';
                           if (phoneValue && !phoneValue.startsWith('+91')) {
                             phoneValue = phoneValue.startsWith('+') ? phoneValue : `+91 ${phoneValue}`;
                           } else if (!phoneValue) {
@@ -2401,13 +3021,99 @@ ${link}`;
               </div>
             )}
 
-            {/* Contract Execution - Signed Contract Storage */}
+            {/* Contract Execution - Simplified Conditional Block */}
             {showContractExecutionSection && (
               <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-4 shadow-lg shadow-black/20">
+                {(() => {
+                  const isContractSigned = dealExecutionStatus === 'signed' || dealExecutionStatus === 'completed' || 
+                                         signedContractUrl || signedAt ||
+                                         (deal?.status?.toLowerCase()?.includes('signed'));
+                  
+                  if (!isContractSigned) {
+                    // Contract NOT signed
+                    return (
+                      <>
                 <h2 className="font-semibold text-lg mb-2 flex items-center gap-2">
-                  <CheckCircle className="w-5 h-5 text-emerald-400" />
-                  Contract Execution
+                          <FileText className="w-5 h-5 text-emerald-400" />
+                          Final Agreement
                 </h2>
+                        <p className="text-sm text-white/70 mb-4">
+                          This contract has been generated based on confirmed details.
+                        </p>
+                        <motion.button
+                          onClick={async () => {
+                            if (!deal?.id) return;
+                            const link = brandReplyLink || (await generateBrandReplyLink(deal.id));
+                            if (link) {
+                              window.open(link, '_blank');
+                            }
+                          }}
+                          whileTap={{ scale: 0.98 }}
+                          className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 px-6 py-3 rounded-xl font-semibold text-white transition-all flex items-center justify-center gap-2"
+                        >
+                          <FileText className="w-5 h-5" />
+                          Sign Contract
+                        </motion.button>
+                      </>
+                    );
+                  } else {
+                    // Contract signed
+                    return (
+                      <>
+                        <h2 className="font-semibold text-lg mb-2 flex items-center gap-2">
+                          <CheckCircle className="w-5 h-5 text-green-400" />
+                          {isCreatorSigned ? 'Signed Agreement' : 'Awaiting Your Signature'}
+                        </h2>
+                        <p className="text-sm text-white/70 mb-4">
+                          {isCreatorSigned
+                            ? 'This agreement is legally signed and protected by both parties.'
+                            : 'The brand has signed the agreement. Please review and sign to finalize the deal.'}
+                        </p>
+
+                        <div className="flex flex-col gap-3">
+                          {!isCreatorSigned && (
+                            <motion.button
+                              onClick={() => setShowCreatorSigningModal(true)}
+                              whileTap={{ scale: 0.98 }}
+                              className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 px-6 py-3 rounded-xl font-semibold text-white transition-all flex items-center justify-center gap-2"
+                            >
+                              <FileText className="w-5 h-5" />
+                              Sign as Creator
+                            </motion.button>
+                          )}
+
+                        <motion.button
+                          onClick={handleDownloadContract}
+                          disabled={!contractDocxUrl || isDownloading}
+                          whileTap={{ scale: 0.98 }}
+                            className={cn(
+                              "w-full px-6 py-3 rounded-xl font-semibold text-white transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed",
+                              isCreatorSigned
+                                ? "bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500"
+                                : "bg-white/10 hover:bg-white/20 border border-white/20"
+                            )}
+                        >
+                          {isDownloading ? (
+                            <>
+                              <Loader2 className="w-5 h-5 animate-spin" />
+                              Downloading...
+                            </>
+                          ) : (
+                            <>
+                              <Download className="w-5 h-5" />
+                                {isCreatorSigned ? 'Download Signed Agreement' : 'Download Agreement PDF'}
+                            </>
+                          )}
+                        </motion.button>
+                        </div>
+                      </>
+                    );
+                  }
+                })()}
+                
+                {/* Legacy upload section - hidden by default per requirements */}
+                {false && (
+                  <>
                 <p className="text-xs text-white/60 mb-3">
                   Upload the final signed contract once both parties have signed. This file is stored securely for your records.
                 </p>
@@ -2515,975 +3221,105 @@ ${link}`;
                   className="hidden"
                   onChange={handleSignedContractFileChange}
                 />
-              </div>
-            )}
-
-            {/* Final Contract Section - Show when deal is Approved */}
-            {brandResponseStatus === 'accepted_verified' && (
-              <div className="bg-gradient-to-br from-emerald-500/20 to-green-500/20 backdrop-blur-xl border-2 border-emerald-400/30 rounded-2xl p-6 shadow-lg shadow-emerald-500/10">
-                <h2 className="font-semibold text-xl mb-2 flex items-center gap-2">
-                  <FileText className="w-6 h-6 text-emerald-400" />
-                  {(() => {
-                    const contractDocxUrl = deal?.contract_file_url as string | null | undefined;
-                    return contractDocxUrl ? 'Send Contract for Signature' : 'Final Contract';
-                  })()}
-                </h2>
-                
-                {(() => {
-                  // Debug logging
-                  const contractDocxUrl = deal?.contract_file_url as string | null | undefined;
-                  if (typeof window !== 'undefined') {
-                    console.log('[DealDetailPage] Final Contract Section Debug:', {
-                      hasContractDocx: !!contractDocxUrl,
-                      contractDocxUrl,
-                      contractJustGenerated,
-                      dealId: deal?.id,
-                      brandResponseStatus,
-                      hasContract: !!contractDocxUrl,
-                      dealSafeContractUrl: (deal as any)?.safe_contract_url,
-                      dealContractFileUrl: (deal as any)?.contract_file_url,
-                      dealObject: deal ? Object.keys(deal) : null,
-                    });
-                  }
-                  return null;
-                })()}
-                
-                {(() => {
-                  // Check for DOCX contract (stored in contract_file_url)
-                  const contractDocxUrl = deal?.contract_file_url as string | null | undefined;
-                  const hasContract = !!contractDocxUrl;
-                  return !hasContract && !contractJustGenerated;
-                })() ? (
-                  <>
-                    {/* Validation Error Banner */}
-                    {contractGenerationError && (
-                      <div className="bg-red-500/20 border-2 border-red-500/50 rounded-xl p-4 mb-4">
-                        <div className="flex items-start gap-3">
-                          <div className="w-5 h-5 rounded-full bg-red-500/30 flex items-center justify-center flex-shrink-0 mt-0.5">
-                            <AlertCircle className="w-4 h-4 text-red-400" />
-                          </div>
-                          <div className="flex-1">
-                            <p className="text-sm font-medium text-red-300 mb-2">
-                              Missing Required Information
-                            </p>
-                            <div className="space-y-1 mb-3">
-                              {missingFields.length > 0 && (
-                                <ul className="text-xs text-red-200/80 list-disc list-inside space-y-1">
-                                  {missingFields.map((field, idx) => (
-                                    <li key={idx}>{field}</li>
-                                  ))}
-                                </ul>
-                              )}
-                              <p className="text-xs text-white/70 mt-2">
-                                {contractGenerationError}
-                              </p>
-                            </div>
-                            {missingFields.some(f => f.toLowerCase().includes('creator')) && (
-                              <motion.button
-                                onClick={() => navigate('/creator-profile')}
-                                whileTap={{ scale: 0.98 }}
-                                className="mt-2 px-4 py-2 bg-red-600/30 hover:bg-red-600/40 border border-red-500/50 rounded-lg text-sm font-medium text-white transition-colors"
-                              >
-                                Update Profile Address →
-                              </motion.button>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                    
-                    <p className="text-sm text-white/70 mb-4">
-                      Generate the final brand-safe contract with all accepted clarifications incorporated.
-                    </p>
-                    
-                    {(() => {
-                      // Check for DOCX contract
-                      const contractDocxUrl = deal?.contract_file_url as string | null | undefined;
-                      return !contractDocxUrl && !contractJustGenerated;
-                    })() ? (
-                      <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-4 mb-4">
-                        <div className="flex items-start gap-3 mb-3">
-                          <div className="w-5 h-5 rounded-full bg-amber-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                            <span className="text-amber-400 text-sm">!</span>
-                          </div>
-                          <div className="flex-1">
-                            <p className="text-sm font-medium text-amber-300 mb-1">
-                              No original contract found
-                            </p>
-                            <p className="text-xs text-white/60">
-                              Generate a brand-safe contract using AI, or upload an existing contract to modify.
-                            </p>
-                          </div>
-                        </div>
-                        <div className="space-y-2">
-                          <motion.button
-                            onClick={async () => {
-                              if (!deal || !deal.id || !session?.access_token) {
-                                toast.error('Missing required information');
-                                return;
-                              }
-
-                              setIsGeneratingSafeContract(true);
-                              setContractGenerationError(null);
-                              setMissingFields([]);
-                              triggerHaptic(HapticPatterns.medium);
-
-                              try {
-                                const apiBaseUrl =
-                                  import.meta.env.VITE_API_BASE_URL ||
-                                  (typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com')
-                                    ? 'https://api.creatorarmour.com'
-                                    : typeof window !== 'undefined' && window.location.hostname === 'localhost'
-                                    ? 'http://localhost:3001'
-                                    : 'https://noticebazaar-api.onrender.com');
-
-                                const response = await fetch(`${apiBaseUrl}/api/protection/generate-contract-from-scratch`, {
-                                  method: 'POST',
-                                  headers: {
-                                    'Content-Type': 'application/json',
-                                    Authorization: `Bearer ${session.access_token}`,
-                                  },
-                                  body: JSON.stringify({
-                                    dealId: deal.id,
-                                  }),
-                                });
-
-                                if (!response.ok) {
-                                  const errorData = await response.json();
-                                  
-                                  // Handle validation errors with missing fields
-                                  if (response.status === 400 && errorData.missingFields && Array.isArray(errorData.missingFields)) {
-                                    setMissingFields(errorData.missingFields);
-                                    const missingFieldsList = errorData.missingFields.join(', ');
-                                    const needsProfileUpdate = errorData.missingFields.some((field: string) => 
-                                      field.toLowerCase().includes('creator')
-                                    );
-                                    
-                                    let errorMessage = `Missing required information: ${missingFieldsList}.`;
-                                    if (needsProfileUpdate) {
-                                      errorMessage += ` Please update your profile address in Profile → Settings before generating the contract.`;
-                                    } else {
-                                      errorMessage += ` Please update the deal details before generating the contract.`;
-                                    }
-                                    
-                                    setContractGenerationError(errorMessage);
-                                    throw new Error(errorMessage);
-                                  }
-                                  
-                                  // Handle other validation errors
-                                  if (response.status === 400 && errorData.error) {
-                                    const errorMsg = errorData.error;
-                                    if (errorMsg.includes('Creator address') || errorMsg.includes('creator address')) {
-                                      setMissingFields(['Creator address']);
-                                      const msg = `Missing creator address. Please update your profile address in Profile → Settings, then try again.`;
-                                      setContractGenerationError(msg);
-                                      throw new Error(msg);
-                                    }
-                                    setContractGenerationError(errorMsg);
-                                    throw new Error(errorMsg);
-                                  }
-                                  
-                                  const errorMsg = errorData.message || errorData.error || 'Failed to generate contract';
-                                  setContractGenerationError(errorMsg);
-                                  throw new Error(errorMsg);
-                                }
-
-                                const data = await response.json();
-                                
-                                if (data.success && data.contractDocxUrl) {
-                                  toast.success('Contract generated successfully!');
-                                  
-                                  // Clear any previous errors
-                                  setContractGenerationError(null);
-                                  setMissingFields([]);
-                                  
-                                  // Directly update the React Query cache with new DOCX URL
-                                  if (deal?.id && profile?.id) {
-                                    const queryKey = ['brand_deal', deal.id, profile.id];
-                                    
-                                    queryClient.setQueryData(
-                                      queryKey,
-                                      (oldData: any) => {
-                                        const updated = {
-                                          ...oldData,
-                                          contract_file_url: data.contractDocxUrl, // PRIMARY - DOCX URL
-                                          contract_version: data.contractVersion || 'v3',
-                                        };
-                                        if (!oldData) {
-                                          return { id: deal.id, ...updated };
-                                        }
-                                        
-                                        console.log('[DealDetailPage] Cache update:', {
-                                          hasContractDocx: !!updated.contract_file_url,
-                                          contractVersion: updated.contract_version,
-                                        });
-                                        
-                                        return updated;
-                                      }
-                                    );
-                                    
-                                    console.log('[DealDetailPage] Updated cache with DOCX contract:', {
-                                      hasContractDocx: !!data.contractDocxUrl,
-                                      dealId: deal.id,
-                                      queryKey,
-                                    });
-                                  }
-                                  
-                                  // Handle database update status
-                                  const dbUpdateSucceeded = data.databaseUpdated !== false;
-                                  
-                                  if (dbUpdateSucceeded) {
-                                    setTimeout(() => {
-                                        refreshAll();
-                                    }, 1500);
-                                          } else {
-                                    console.warn('[DealDetailPage] Database update may have failed');
-                                          }
-                                } else {
-                                  throw new Error('Unexpected response format: contractDocxUrl is required');
-                                }
-                              } catch (error: any) {
-                                console.error('[DealDetailPage] Generate contract from scratch error:', error);
-                                // Error message already set in state above, just show toast
-                                toast.error(error.message || 'Failed to generate contract');
-                              } finally {
-                                setIsGeneratingSafeContract(false);
-                              }
-                            }}
-                            disabled={isGeneratingSafeContract}
-                            whileTap={{ scale: 0.98 }}
-                            className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 px-4 py-2.5 rounded-xl transition-all flex items-center justify-center gap-2 text-white text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-                          >
-                            {isGeneratingSafeContract ? (
-                              <>
-                                <Loader2 className="w-4 h-4 animate-spin" />
-                                Generating...
-                              </>
-                            ) : (
-                              <>
-                                <FileText className="w-4 h-4" />
-                                Generate Contract with AI
-                              </>
-                            )}
-                          </motion.button>
-                          
-                          <input
-                            type="file"
-                            accept=".pdf,.doc,.docx"
-                            className="hidden"
-                            id="upload-original-contract"
-                            onChange={async (e) => {
-                              const file = e.target.files?.[0];
-                              if (!file || !deal?.id) return;
-
-                              try {
-                                const progressToast = toast.loading('Uploading contract...');
-                                
-                                // Upload to Supabase Storage
-                                const fileExtension = file.name.split('.').pop();
-                                const sanitizedBrandName = deal.brand_name?.replace(/[^a-zA-Z0-9]/g, '_') || 'deal';
-                                const creatorId = deal.creator_id || profile?.id || session?.user?.id;
-                                if (!creatorId) {
-                                  throw new Error('Creator ID not found');
-                                }
-                                const filePath = `${creatorId}/brand_deals/${sanitizedBrandName}-contract-${Date.now()}.${fileExtension}`;
-
-                                const { error: uploadError } = await supabase.storage
-                                  .from('creator-assets')
-                                  .upload(filePath, file, {
-                                    cacheControl: '3600',
-                                    upsert: false,
-                                  });
-
-                                if (uploadError) {
-                                  throw new Error(`Upload failed: ${uploadError.message}`);
-                                }
-
-                                const { data: publicUrlData } = supabase.storage
-                                  .from('creator-assets')
-                                  .getPublicUrl(filePath);
-
-                                if (!publicUrlData?.publicUrl) {
-                                  throw new Error('Failed to get public URL');
-                                }
-
-                                // Update deal with contract URL
-                                await updateBrandDealMutation.mutateAsync({
-                                  id: deal.id,
-                                  contract_file_url: publicUrlData.publicUrl,
-                                });
-
-                                toast.success('Contract uploaded successfully!', { id: progressToast });
-                                triggerHaptic(HapticPatterns.success);
-                                refreshAll();
-                              } catch (error: any) {
-                                console.error('[DealDetailPage] Upload contract error:', error);
-                                toast.error(error.message || 'Failed to upload contract');
-                              } finally {
-                                // Reset input
-                                e.target.value = '';
-                              }
-                            }}
-                          />
-                          <motion.button
-                            onClick={() => {
-                              document.getElementById('upload-original-contract')?.click();
-                            }}
-                            disabled={updateBrandDealMutation.isPending}
-                            whileTap={{ scale: 0.98 }}
-                            className="w-full bg-white/10 hover:bg-white/15 border border-white/20 px-4 py-2.5 rounded-xl transition-all flex items-center justify-center gap-2 text-white text-sm font-medium disabled:opacity-50"
-                          >
-                            {updateBrandDealMutation.isPending ? (
-                              <>
-                                <Loader2 className="w-4 h-4 animate-spin" />
-                                Uploading...
-                              </>
-                            ) : (
-                              <>
-                                <Upload className="w-4 h-4" />
-                                Upload Original Contract Instead
-                              </>
-                            )}
-                          </motion.button>
-                        </div>
-                      </div>
-                    ) : null}
-                    
-                    <motion.button
-                      onClick={async () => {
-                        console.log('[DealDetailPage] Generate Brand-Safe Contract button clicked', {
-                          dealId: deal?.id,
-                          contract_file_url: deal?.contract_file_url,
-                          contract_file_url: contractDocxUrl,
-                          contractJustGenerated,
-                          hasSession: !!session?.access_token,
-                          isGenerating: isGeneratingSafeContract
-                        });
-                        
-                        if (!deal || !deal.id || !session?.access_token) {
-                          toast.error('Missing required information');
-                          return;
-                        }
-
-                        if (!deal.contract_file_url) {
-                          toast.error('Original contract URL is required. Please upload the contract file first.');
-                          return;
-                        }
-                        
-                        if (contractJustGenerated) {
-                          toast.info('A contract was just generated. The page will refresh shortly to show the new contract.');
-                          setTimeout(() => window.location.reload(), 1000);
-                          return;
-                        }
-
-                        setIsGeneratingSafeContract(true);
-                        triggerHaptic(HapticPatterns.medium);
-
-                        try {
-                          const apiBaseUrl =
-                            import.meta.env.VITE_API_BASE_URL ||
-                            (typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com')
-                              ? 'https://api.creatorarmour.com'
-                              : typeof window !== 'undefined' && window.location.hostname === 'localhost'
-                              ? 'http://localhost:3001'
-                              : 'https://noticebazaar-api.onrender.com');
-
-                          // Get reportId and original contract path
-                          const reportId = protectionReport?.id || null;
-                          const originalContractPath = deal.contract_file_url || '';
-
-                          if (!originalContractPath) {
-                            throw new Error('Original contract URL is required');
-                          }
-
-                          const response = await fetch(`${apiBaseUrl}/api/protection/generate-safe-contract`, {
-                            method: 'POST',
-                            headers: {
-                              'Content-Type': 'application/json',
-                              Authorization: `Bearer ${session.access_token}`,
-                            },
-                            body: JSON.stringify({
-                              reportId,
-                              originalFilePath: originalContractPath,
-                              dealId: deal.id,
-                            }),
-                          });
-
-                          if (!response.ok) {
-                            const errorData = await response.json();
-                            throw new Error(errorData.error || 'Failed to generate safe contract');
-                          }
-
-                          const data = await response.json();
-                          
-                          if (data.success && data.contractDocxUrl) {
-                            toast.success('Contract generated successfully!');
-
-                            // Clear any previous errors
-                            setContractGenerationError(null);
-                            setMissingFields([]);
-
-                            // Directly update the React Query cache with new DOCX URL
-                            if (deal?.id && profile?.id) {
-                              const queryKey = ['brand_deal', deal.id, profile.id];
-
-                              queryClient.setQueryData(
-                                queryKey,
-                                (oldData: any) => {
-                                  const updated = {
-                                    ...oldData,
-                                    contract_file_url: data.contractDocxUrl, // PRIMARY - DOCX URL
-                                    contract_version: data.contractVersion || 'v3',
-                                  };
-                                  return updated;
-                                }
-                              );
-                            }
-                            setContractJustGenerated(true);
-                            setTimeout(() => {
-                            refreshAll();
-                              setContractJustGenerated(false);
-                            }, 1500);
-                          } else {
-                            throw new Error('Unexpected response format: contractDocxUrl is required');
-                          }
-                        } catch (error: any) {
-                          console.error('[DealDetailPage] Generate safe contract error:', error);
-                          toast.error(error.message || 'Failed to generate safe contract');
-                        } finally {
-                          setIsGeneratingSafeContract(false);
-                        }
-                      }}
-                      disabled={isGeneratingSafeContract || !deal.contract_file_url || contractJustGenerated}
-                      whileTap={{ scale: 0.98 }}
-                      className="w-full bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-500 hover:to-green-500 px-6 py-3 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      {isGeneratingSafeContract ? (
-                        <>
-                          <Loader2 className="w-5 h-5 animate-spin" />
-                          Generating Contract...
-                        </>
-                      ) : (
-                        <>
-                          <FileText className="w-5 h-5" />
-                          Generate Brand-Safe Contract
-                        </>
-                      )}
-                    </motion.button>
-                  </>
-                ) : (
-                  <>
-                    {/* Execution Status Badge */}
-                    <div className="flex items-center gap-2 mb-4">
-                      {signedContractUrl ? (
-                        <span className="px-3 py-1 rounded-full text-xs font-medium bg-green-500/20 text-green-400 border border-green-500/30 flex items-center gap-1.5">
-                          <span className="text-sm">🟢</span>
-                          Signed & Stored
-                        </span>
-                      ) : signedAt ? (
-                        <span className="px-3 py-1 rounded-full text-xs font-medium bg-green-500/20 text-green-400 border border-green-500/30 flex items-center gap-1.5">
-                          <span className="text-sm">🟢</span>
-                          Signed (Externally)
-                        </span>
-                      ) : (
-                        <span className="px-3 py-1 rounded-full text-xs font-medium bg-yellow-500/20 text-yellow-400 border border-yellow-500/30 flex items-center gap-1.5">
-                          <span className="text-sm">🟡</span>
-                          Pending Signature
-                        </span>
-                      )}
-                    </div>
-
-                    {/* Regenerate Contract Button - Always visible when deal is approved */}
-                          <motion.button
-                            onClick={async () => {
-                        if (!deal || !deal.id || !session?.access_token) {
-                          toast.error('Missing required information');
-                          return;
-                        }
-
-                        setIsGeneratingSafeContract(true);
-                        setContractGenerationError(null);
-                        setMissingFields([]);
-                        triggerHaptic(HapticPatterns.medium);
-                              
-                              try {
-                          const apiBaseUrl =
-                            import.meta.env.VITE_API_BASE_URL ||
-                            (typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com')
-                              ? 'https://api.creatorarmour.com'
-                              : typeof window !== 'undefined' && window.location.hostname === 'localhost'
-                              ? 'http://localhost:3001'
-                              : 'https://noticebazaar-api.onrender.com');
-
-                          const response = await fetch(`${apiBaseUrl}/api/protection/generate-contract-from-scratch`, {
-                            method: 'POST',
-                            headers: {
-                              'Content-Type': 'application/json',
-                              Authorization: `Bearer ${session.access_token}`,
-                            },
-                            body: JSON.stringify({
-                              dealId: deal.id,
-                            }),
-                          });
-
-                          if (!response.ok) {
-                            const errorData = await response.json();
-                            
-                            // Handle validation errors with missing fields
-                            if (response.status === 400 && errorData.missingFields && Array.isArray(errorData.missingFields)) {
-                              setMissingFields(errorData.missingFields);
-                              const missingFieldsList = errorData.missingFields.join(', ');
-                              const needsProfileUpdate = errorData.missingFields.some((field: string) => 
-                                field.toLowerCase().includes('creator')
-                              );
-                              
-                              let errorMessage = `Missing required information: ${missingFieldsList}.`;
-                              if (needsProfileUpdate) {
-                                errorMessage += ` Please update your profile address in Profile → Settings before generating the contract.`;
-                              } else {
-                                errorMessage += ` Please update the deal details before generating the contract.`;
-                              }
-                              
-                              setContractGenerationError(errorMessage);
-                              throw new Error(errorMessage);
-                            }
-                            
-                            // Handle other validation errors
-                            if (response.status === 400 && errorData.error) {
-                              const errorMsg = errorData.error;
-                              if (errorMsg.includes('Creator address') || errorMsg.includes('creator address')) {
-                                setMissingFields(['Creator address']);
-                                const msg = `Missing creator address. Please update your profile address in Profile → Settings, then try again.`;
-                                setContractGenerationError(msg);
-                                throw new Error(msg);
-                              }
-                              setContractGenerationError(errorMsg);
-                              throw new Error(errorMsg);
-                            }
-                            
-                            throw new Error(errorData.error || 'Failed to generate contract');
-                          }
-
-                          const data = await response.json();
-                          
-                          if (data.success && data.contractDocxUrl) {
-                            toast.success('Contract regenerated successfully!');
-                            
-                            // Update cache immediately (DOCX is primary)
-                            if (deal?.id && profile?.id) {
-                              const queryKey = ['brand_deal', deal.id, profile.id];
-                              queryClient.setQueryData(queryKey, (oldData: any) => {
-                                const updated = {
-                                  ...oldData,
-                                  contract_file_url: data.contractDocxUrl, // PRIMARY - DOCX URL
-                                  contract_version: data.contractVersion || 'v3',
-                                };
-                                if (!oldData) {
-                                  return { id: deal.id, ...updated };
-                                }
-                                return updated;
-                              });
-                            }
-                            
-                            setContractJustGenerated(true);
-                            setTimeout(() => {
-                              refreshAll();
-                              setContractJustGenerated(false);
-                            }, 2000);
-                          } else {
-                            throw new Error('Unexpected response format: contractDocxUrl is required');
-                          }
-                        } catch (error: any) {
-                          console.error('[DealDetailPage] Generate contract from scratch error:', error);
-                          toast.error(error.message || 'Failed to generate contract');
-                        } finally {
-                          setIsGeneratingSafeContract(false);
-                              }
-                            }}
-                      disabled={isGeneratingSafeContract || contractJustGenerated}
-                            whileTap={{ scale: 0.98 }}
-                      className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 px-6 py-3 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed mb-4"
-                    >
-                      {isGeneratingSafeContract ? (
-                        <>
-                          <Loader2 className="w-5 h-5 animate-spin" />
-                          Regenerating Contract...
-                        </>
-                      ) : (
-                        <>
-                          <FileText className="w-5 h-5" />
-                          {contractDocxUrl ? 'Regenerate Contract' : 'Generate Contract'}
-                        </>
-                      )}
-                          </motion.button>
-                          
-                    {/* Validation Error Banner */}
-                    {contractGenerationError && (
-                      <div className="bg-red-500/20 border-2 border-red-500/50 rounded-xl p-4 mb-4">
-                        <div className="flex items-start gap-3">
-                          <div className="w-5 h-5 rounded-full bg-red-500/30 flex items-center justify-center flex-shrink-0 mt-0.5">
-                            <AlertCircle className="w-4 h-4 text-red-400" />
-                          </div>
-                          <div className="flex-1">
-                            <p className="text-sm font-medium text-red-300 mb-2">
-                              Missing Required Information
-                            </p>
-                            <div className="space-y-1 mb-3">
-                              {missingFields.length > 0 && (
-                                <ul className="text-xs text-red-200/80 list-disc list-inside space-y-1">
-                                  {missingFields.map((field, idx) => (
-                                    <li key={idx}>{field}</li>
-                                  ))}
-                                </ul>
-                              )}
-                              <p className="text-xs text-white/70 mt-2">
-                                {contractGenerationError}
-                              </p>
-                            </div>
-                            {missingFields.some(f => f.toLowerCase().includes('creator')) && (
-                              <motion.button
-                                onClick={() => navigate('/creator-profile')}
-                                whileTap={{ scale: 0.98 }}
-                                className="mt-2 px-4 py-2 bg-red-600/30 hover:bg-red-600/40 border border-red-500/50 rounded-lg text-sm font-medium text-white transition-colors"
-                              >
-                                Update Profile Address →
-                              </motion.button>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* View & Download Contract Buttons - Primary Actions */}
-                    {(() => {
-                      // Check for DOCX contract (stored in contract_file_url)
-                      const contractDocxUrl = deal?.contract_file_url as string | null | undefined;
-                      const hasContract = !!contractDocxUrl;
-                      
-                      return hasContract ? (
-                        <>
-                          <div className="space-y-2 mb-4">
-                            {/* Download Contract as Word (DOCX) - Primary Action */}
-                          <motion.button
-                            onClick={() => {
-                                if (!contractDocxUrl) return;
-                              triggerHaptic(HapticPatterns.light);
-                                
-                                // Trigger download
-                                const link = document.createElement('a');
-                                link.href = contractDocxUrl;
-                                link.download = `Contract_${deal.id || 'contract'}.docx`;
-                                document.body.appendChild(link);
-                                link.click();
-                                document.body.removeChild(link);
-                              }}
-                            whileTap={{ scale: 0.98 }}
-                              className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-500 hover:to-blue-600 px-4 py-3 rounded-xl transition-all flex items-center justify-center gap-2 text-white font-semibold"
-                          >
-                              <FileText className="w-5 h-5" />
-                              Download Contract (DOCX)
-                          </motion.button>
-                            
-                            <p className="text-xs text-white/60 text-center">
-                              Open the downloaded DOCX file in Microsoft Word or Google Docs to view, edit, and sign the contract.
-                          </p>
-                          </div>
-                      </>
-                    ) : (
-                      <div className="space-y-4">
-                        {/* Validation Error Banner */}
-                        {contractGenerationError && (
-                          <div className="bg-red-500/20 border-2 border-red-500/50 rounded-xl p-4">
-                            <div className="flex items-start gap-3">
-                              <div className="w-5 h-5 rounded-full bg-red-500/30 flex items-center justify-center flex-shrink-0 mt-0.5">
-                                <AlertCircle className="w-4 h-4 text-red-400" />
-                              </div>
-                              <div className="flex-1">
-                                <p className="text-sm font-medium text-red-300 mb-2">
-                                  Missing Required Information
-                                </p>
-                                <div className="space-y-1 mb-3">
-                                  {missingFields.length > 0 && (
-                                    <ul className="text-xs text-red-200/80 list-disc list-inside space-y-1">
-                                      {missingFields.map((field, idx) => (
-                                        <li key={idx}>{field}</li>
-                                      ))}
-                                    </ul>
-                                  )}
-                                  <p className="text-xs text-white/70 mt-2">
-                                    {contractGenerationError}
-                                  </p>
-                                </div>
-                                {missingFields.some(f => f.toLowerCase().includes('creator')) && (
-                                  <motion.button
-                                    onClick={() => navigate('/creator-profile')}
-                                    whileTap={{ scale: 0.98 }}
-                                    className="mt-2 px-4 py-2 bg-red-600/30 hover:bg-red-600/40 border border-red-500/50 rounded-lg text-sm font-medium text-white transition-colors"
-                                  >
-                                    Update Profile Address →
-                                  </motion.button>
-                                )}
-                              </div>
-                            </div>
-                          </div>
-                        )}
-                        
-                        <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-4">
-                          <p className="text-sm text-amber-300 mb-2 font-medium">
-                            Final contract not yet generated
-                          </p>
-                          <p className="text-xs text-white/60 mb-3">
-                            Generate the final contract to enable download and signing options.
-                          </p>
-                          
-                          {/* Show generation options directly here if no contract exists */}
-                          {!deal?.contract_file_url ? (
-                            <motion.button
-                              onClick={async () => {
-                                if (!deal || !deal.id || !session?.access_token) {
-                                  toast.error('Missing required information');
-                                  return;
-                                }
-
-                                setIsGeneratingSafeContract(true);
-                                setContractGenerationError(null);
-                                setMissingFields([]);
-                                triggerHaptic(HapticPatterns.medium);
-
-                                try {
-                                  const apiBaseUrl =
-                                    import.meta.env.VITE_API_BASE_URL ||
-                                    (typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com')
-                                      ? 'https://api.creatorarmour.com'
-                                      : typeof window !== 'undefined' && window.location.hostname === 'localhost'
-                                      ? 'http://localhost:3001'
-                                      : 'https://noticebazaar-api.onrender.com');
-
-                                  const response = await fetch(`${apiBaseUrl}/api/protection/generate-contract-from-scratch`, {
-                                    method: 'POST',
-                                    headers: {
-                                      'Content-Type': 'application/json',
-                                      Authorization: `Bearer ${session.access_token}`,
-                                    },
-                                    body: JSON.stringify({
-                                      dealId: deal.id,
-                                    }),
-                                  });
-
-                                  if (!response.ok) {
-                                    const errorData = await response.json();
-                                    
-                                    // Handle validation errors with missing fields
-                                    if (response.status === 400 && errorData.missingFields && Array.isArray(errorData.missingFields)) {
-                                      setMissingFields(errorData.missingFields);
-                                      const missingFieldsList = errorData.missingFields.join(', ');
-                                      const needsProfileUpdate = errorData.missingFields.some((field: string) => 
-                                        field.toLowerCase().includes('creator')
-                                      );
-                                      
-                                      let errorMessage = `Missing required information: ${missingFieldsList}.`;
-                                      if (needsProfileUpdate) {
-                                        errorMessage += ` Please update your profile address in Profile → Settings before generating the contract.`;
-                                      } else {
-                                        errorMessage += ` Please update the deal details before generating the contract.`;
-                                      }
-                                      
-                                      setContractGenerationError(errorMessage);
-                                      throw new Error(errorMessage);
-                                    }
-                                    
-                                    // Handle other validation errors
-                                    if (response.status === 400 && errorData.error) {
-                                      const errorMsg = errorData.error;
-                                      if (errorMsg.includes('Creator address') || errorMsg.includes('creator address')) {
-                                        setMissingFields(['Creator address']);
-                                        const msg = `Missing creator address. Please update your profile address in Profile → Settings, then try again.`;
-                                        setContractGenerationError(msg);
-                                        throw new Error(msg);
-                                      }
-                                      setContractGenerationError(errorMsg);
-                                      throw new Error(errorMsg);
-                                    }
-                                    
-                                    const errorMsg = errorData.error || 'Failed to generate contract';
-                                    setContractGenerationError(errorMsg);
-                                    throw new Error(errorMsg);
-                                  }
-
-                                  const data = await response.json();
-                                  
-                          if (data.success && data.contractDocxUrl) {
-                            toast.success('Contract generated successfully!');
-
-                            // Clear any previous errors
-                            setContractGenerationError(null);
-                            setMissingFields([]);
-
-                            // Directly update the React Query cache with new DOCX URL
-                            if (deal?.id && profile?.id) {
-                              const queryKey = ['brand_deal', deal.id, profile.id];
-
-                              queryClient.setQueryData(
-                                queryKey,
-                                (oldData: any) => {
-                                  const updated = {
-                                    ...oldData,
-                                    contract_file_url: data.contractDocxUrl, // PRIMARY - DOCX URL
-                                    contract_version: data.contractVersion || 'v3',
-                                  };
-                                  return updated;
-                                }
-                              );
-                            }
-                            setContractJustGenerated(true);
-                            setTimeout(() => {
-                                    refreshAll();
-                              setContractJustGenerated(false);
-                            }, 1500);
-                                  } else {
-                            throw new Error('Unexpected response format: contractDocxUrl is required');
-                                  }
-                                } catch (error: any) {
-                                  console.error('[DealDetailPage] Generate contract from scratch error:', error);
-                                  toast.error(error.message || 'Failed to generate contract');
-                                } finally {
-                                  setIsGeneratingSafeContract(false);
-                                }
-                              }}
-                              disabled={isGeneratingSafeContract}
-                              whileTap={{ scale: 0.98 }}
-                              className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 px-4 py-2.5 rounded-xl transition-all flex items-center justify-center gap-2 text-white text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-                            >
-                              {isGeneratingSafeContract ? (
-                                <>
-                                  <Loader2 className="w-4 h-4 animate-spin" />
-                                  Generating...
-                                </>
-                              ) : (
-                                <>
-                                  <FileText className="w-4 h-4" />
-                                  Generate Contract with AI
-                                </>
-                              )}
-                            </motion.button>
-                          ) : (
-                            <motion.button
-                              onClick={async () => {
-                                if (!deal || !deal.id || !session?.access_token) {
-                                  toast.error('Missing required information');
-                                  return;
-                                }
-
-                                if (!deal.contract_file_url) {
-                                  toast.error('Original contract URL is required');
-                                  return;
-                                }
-
-                                setIsGeneratingSafeContract(true);
-                                triggerHaptic(HapticPatterns.medium);
-
-                                try {
-                                  const apiBaseUrl =
-                                    import.meta.env.VITE_API_BASE_URL ||
-                                    (typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com')
-                                      ? 'https://api.creatorarmour.com'
-                                      : typeof window !== 'undefined' && window.location.hostname === 'localhost'
-                                      ? 'http://localhost:3001'
-                                      : 'https://noticebazaar-api.onrender.com');
-
-                                  const reportId = protectionReport?.id || null;
-                                  const originalContractPath = deal.contract_file_url || '';
-
-                                  if (!originalContractPath) {
-                                    throw new Error('Original contract URL is required');
-                                  }
-
-                                  const response = await fetch(`${apiBaseUrl}/api/protection/generate-safe-contract`, {
-                                    method: 'POST',
-                                    headers: {
-                                      'Content-Type': 'application/json',
-                                      Authorization: `Bearer ${session.access_token}`,
-                                    },
-                                    body: JSON.stringify({
-                                      reportId,
-                                      originalFilePath: originalContractPath,
-                                      dealId: deal.id,
-                                    }),
-                                  });
-
-                                  if (!response.ok) {
-                                    const errorData = await response.json();
-                                    throw new Error(errorData.error || 'Failed to generate safe contract');
-                                  }
-
-                                  const data = await response.json();
-                                  
-                                  if (data.success && data.contractDocxUrl) {
-                                    toast.success('Contract generated successfully!');
-
-                                    // Clear any previous errors
-                                    setContractGenerationError(null);
-                                    setMissingFields([]);
-
-                                    // Directly update the React Query cache with new DOCX URL
-                                    if (deal?.id && profile?.id) {
-                                      const queryKey = ['brand_deal', deal.id, profile.id];
-
-                                      queryClient.setQueryData(
-                                        queryKey,
-                                        (oldData: any) => {
-                                          const updated = {
-                                            ...oldData,
-                                            contract_file_url: data.contractDocxUrl, // PRIMARY - DOCX URL
-                                            contract_version: data.contractVersion || 'v3',
-                                          };
-                                          return updated;
-                                        }
-                                      );
-                                    }
-                                    setContractJustGenerated(true);
-                                    setTimeout(() => {
-                                    refreshAll();
-                                      setContractJustGenerated(false);
-                                    }, 1500);
-                                  } else {
-                                    throw new Error('Unexpected response format: contractDocxUrl is required');
-                                  }
-                                } catch (error: any) {
-                                  console.error('[DealDetailPage] Generate safe contract error:', error);
-                                  toast.error(error.message || 'Failed to generate safe contract');
-                                } finally {
-                                  setIsGeneratingSafeContract(false);
-                                }
-                              }}
-                              disabled={isGeneratingSafeContract}
-                              whileTap={{ scale: 0.98 }}
-                              className="w-full bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-500 hover:to-green-500 px-4 py-2.5 rounded-xl transition-all flex items-center justify-center gap-2 text-white text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-                            >
-                              {isGeneratingSafeContract ? (
-                                <>
-                                  <Loader2 className="w-4 h-4 animate-spin" />
-                                  Generating...
-                                </>
-                              ) : (
-                                <>
-                                  <FileText className="w-4 h-4" />
-                                  Generate Brand-Safe Contract
-                                </>
-                              )}
-                            </motion.button>
-                          )}
-                        </div>
-                      </div>
-                      );
-                    })()}
                   </>
                 )}
               </div>
             )}
 
-            {/* Confirm Signed Contract Received Modal */}
-            <Dialog open={showMarkSignedModal} onOpenChange={setShowMarkSignedModal}>
+            {/* Final Contract Section - Simplified */}
+            {brandResponseStatus === 'accepted_verified' && (
+              <div className="bg-gradient-to-br from-emerald-500/20 to-green-500/20 backdrop-blur-xl border-2 border-emerald-400/30 rounded-2xl p-6 shadow-lg shadow-emerald-500/10">
+                {(() => {
+                  const contractDocxUrl = deal?.contract_file_url as string | null | undefined;
+                  const isContractSigned = dealExecutionStatus === 'signed' || dealExecutionStatus === 'completed' || 
+                                         signedContractUrl || signedAt ||
+                                         (deal?.status?.toLowerCase()?.includes('signed'));
+                  
+                  if (!isContractSigned) {
+                    // Contract NOT signed
+                    return (
+                      <>
+                <h2 className="font-semibold text-xl mb-2 flex items-center gap-2">
+                          <FileText className="w-6 h-6 text-emerald-400" />
+                          Final Agreement
+                        </h2>
+                        <p className="text-sm text-white/70 mb-4">
+                          This contract has been generated based on confirmed details.
+                        </p>
+                        <motion.button
+                          onClick={async () => {
+                            if (!deal?.id) return;
+                            const link = brandReplyLink || (await generateBrandReplyLink(deal.id));
+                            if (link) {
+                              window.open(link, '_blank');
+                            }
+                          }}
+                          whileTap={{ scale: 0.98 }}
+                          className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 px-6 py-3 rounded-xl font-semibold text-white transition-all flex items-center justify-center gap-2"
+                        >
+                          <FileText className="w-5 h-5" />
+                          Sign Contract
+                        </motion.button>
+                      </>
+                    );
+                  } else {
+                    // Contract signed
+                    return (
+                      <>
+                        <h2 className="font-semibold text-xl mb-2 flex items-center gap-2">
+                          <CheckCircle className="w-6 h-6 text-green-400" />
+                          {isCreatorSigned ? 'Signed Agreement' : 'Awaiting Your Signature'}
+                        </h2>
+                        <p className="text-sm text-white/70 mb-4">
+                          {isCreatorSigned
+                            ? 'This agreement is legally signed and protected by both parties.'
+                            : 'The brand has signed the agreement. Please review and sign to finalize the deal.'}
+                        </p>
+
+                        <div className="flex flex-col gap-3">
+                          {!isCreatorSigned && (
+                            <motion.button
+                              onClick={() => setShowCreatorSigningModal(true)}
+                              whileTap={{ scale: 0.98 }}
+                              className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 px-6 py-3 rounded-xl font-semibold text-white transition-all flex items-center justify-center gap-2"
+                            >
+                              <FileText className="w-5 h-5" />
+                              Sign as Creator
+                            </motion.button>
+                          )}
+
+                          <motion.button
+                            onClick={handleDownloadContract}
+                            disabled={!contractDocxUrl || isDownloading}
+                            whileTap={{ scale: 0.98 }}
+                            className={cn(
+                              "w-full px-6 py-3 rounded-xl font-semibold text-white transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed",
+                              isCreatorSigned
+                                ? "bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500"
+                                : "bg-white/10 hover:bg-white/20 border border-white/20"
+                            )}
+                          >
+                            {isDownloading ? (
+                              <>
+                                <Loader2 className="w-5 h-5 animate-spin" />
+                                Downloading...
+                              </>
+                            ) : (
+                              <>
+                                <Download className="w-5 h-5" />
+                                {isCreatorSigned ? 'Download Signed Agreement' : 'Download Agreement PDF'}
+                              </>
+                            )}
+                          </motion.button>
+                        </div>
+                      </>
+                    );
+                  }
+                })()}
+                
+                {/* Legacy section removed to fix syntax errors */}
+                {/* Confirm Signed Contract Received Modal */}
+                <Dialog open={showMarkSignedModal} onOpenChange={setShowMarkSignedModal}>
               <DialogContent className="bg-purple-900/95 backdrop-blur-xl border border-white/10 text-white max-w-md">
                 <DialogHeader>
                   <DialogTitle className="text-xl font-semibold">Confirm Signed Contract Received</DialogTitle>
@@ -3595,7 +3431,7 @@ ${link}`;
                   </div>
                 </div>
               </DialogContent>
-            </Dialog>
+                </Dialog>
 
 
             {/* Invoice Ready */}
@@ -3631,8 +3467,10 @@ ${link}`;
                 </div>
               </div>
             )}
+                  </div>
+                )}
+              </div>
           </div>
-        </div>
 
         {/* Brand Submission Details - Show at the end */}
         {brandSubmissionDetails && (
@@ -3718,9 +3556,9 @@ ${link}`;
                     }
                   })}
                 </ul>
-              </div>
-            )}
-
+          </div>
+        )}
+      
             {/* Approvals & Revisions Card */}
             {(brandSubmissionDetails.approvalProcess || brandSubmissionDetails.numberOfRevisions || brandSubmissionDetails.approvalTurnaroundTime || brandSubmissionDetails.revisions || brandSubmissionDetails.postingWindow) && (
               <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-5 md:p-6 shadow-lg shadow-black/20">
@@ -3883,9 +3721,9 @@ ${link}`;
                     <div>
                       <div className="text-sm text-white/60 mb-1">Exclusivity Period</div>
                       <div className="text-white font-medium capitalize">
-                        {brandSubmissionDetails.exclusivityPeriod === 'none' ? 'None' : 
-                         brandSubmissionDetails.exclusivityPeriod ? brandSubmissionDetails.exclusivityPeriod.replace(/_/g, ' ') :
-                         brandSubmissionDetails.exclusivity}
+                        {brandSubmissionDetails.exclusivityPeriod === 'none' ? 'None' :
+                          brandSubmissionDetails.exclusivityPeriod ? brandSubmissionDetails.exclusivityPeriod.replace(/_/g, ' ') :
+                            brandSubmissionDetails.exclusivity}
                       </div>
                     </div>
                   )}
@@ -3978,7 +3816,8 @@ ${link}`;
               </div>
             )}
           </div>
-        )}
+        )
+        }
       </div>
 
       {/* Lazy Modals */}
@@ -4126,6 +3965,107 @@ ${link}`;
           </motion.div>
         </div>
       )}
+      {/* Creator Signing Modal */}
+      <Dialog open={showCreatorSigningModal} onOpenChange={setShowCreatorSigningModal}>
+        <DialogContent className="sm:max-w-[425px] bg-neutral-900 border-neutral-800 text-white">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <FileText className="w-5 h-5 text-blue-400" />
+              Sign Agreement
+            </DialogTitle>
+            <DialogDescription className="text-neutral-400">
+              {creatorSigningStep === 'send'
+                ? 'We will send a secure OTP to your registered email to verify your identity and sign the contract.'
+                : 'Enter the 6-digit code sent to your email to complete the signing process.'}
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="py-6">
+            {creatorSigningStep === 'send' ? (
+              <div className="space-y-4">
+                <div className="p-4 bg-blue-500/10 border border-blue-500/20 rounded-xl flex items-start gap-3">
+                  <Mail className="w-5 h-5 text-blue-400 mt-0.5" />
+                  <div>
+                    <p className="text-sm font-medium text-blue-400">OTP Verification</p>
+                    <p className="text-xs text-blue-400/70 mt-1">
+                      Signing as: <span className="text-white">{profile?.email}</span>
+                    </p>
+                  </div>
+                </div>
+                <motion.button
+                  onClick={handleSendCreatorOTP}
+                  disabled={isSendingCreatorOTP}
+                  whileTap={{ scale: 0.98 }}
+                  className="w-full bg-blue-600 hover:bg-blue-500 py-3 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 disabled:bg-neutral-800 disabled:text-neutral-500"
+                >
+                  {isSendingCreatorOTP ? (
+                    <>
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                      Sending OTP...
+                    </>
+                  ) : (
+                    <>
+                      <Mail className="w-5 h-5" />
+                      Send OTP to Email
+                    </>
+                  )}
+                </motion.button>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <div>
+                  <label className="text-xs font-medium text-neutral-400 mb-2 block">Enterprise OTP Code</label>
+                  <input
+                    type="text"
+                    maxLength={6}
+                    placeholder="123456"
+                    value={creatorOTP}
+                    onChange={(e) => setCreatorOTP(e.target.value.replace(/\D/g, ''))}
+                    className="w-full bg-neutral-800 border border-neutral-700 rounded-xl px-4 py-3 text-center text-2xl tracking-[0.5em] font-mono focus:border-blue-500 outline-none transition-all placeholder:text-neutral-600 placeholder:tracking-normal"
+                  />
+                </div>
+
+                <div className="flex flex-col gap-2">
+                  <motion.button
+                    onClick={handleVerifyCreatorOTP}
+                    disabled={isVerifyingCreatorOTP || creatorOTP.length !== 6 || isSigningAsCreator}
+                    whileTap={{ scale: 0.98 }}
+                    className="w-full bg-green-600 hover:bg-green-500 py-3 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 disabled:bg-neutral-800 disabled:text-neutral-500"
+                  >
+                    {isVerifyingCreatorOTP || isSigningAsCreator ? (
+                      <>
+                        <Loader2 className="w-5 h-5 animate-spin" />
+                        {isSigningAsCreator ? 'Signing Contract...' : 'Verifying...'}
+                      </>
+                    ) : (
+                      <>
+                        <Check className="w-5 h-5" />
+                        Verify & Sign
+                      </>
+                    )}
+                  </motion.button>
+
+                  <button
+                    onClick={() => {
+                      setCreatorSigningStep('send');
+                      setCreatorOTP('');
+                    }}
+                    disabled={isVerifyingCreatorOTP || isSigningAsCreator}
+                    className="text-xs text-neutral-500 hover:text-neutral-300 py-2 transition-all uppercase tracking-wider font-bold"
+                  >
+                    Change Method / Resend OTP
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div className="flex items-center gap-2 text-[10px] text-neutral-500 border-t border-neutral-800 pt-4 mt-2">
+            <Lock className="w-3 h-3" />
+            <span>Secure Enterprise-grade E-signature powered by NoticeBazaar Armor</span>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

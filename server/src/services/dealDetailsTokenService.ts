@@ -149,7 +149,7 @@ export async function getDealDetailsTokenInfo(tokenId: string): Promise<{
 export async function submitDealDetails(
   tokenId: string,
   formData: any
-): Promise<{ submissionId: string; dealId: string | null }> {
+): Promise<{ submissionId: string; dealId: string | null; contractReadyToken: string | null }> {
   // Validate token
   const tokenInfo = await getDealDetailsTokenInfo(tokenId);
   if (!tokenInfo) {
@@ -265,9 +265,16 @@ export async function submitDealDetails(
         // Fetch creator details
         const { data: creator, error: creatorError } = await supabase
           .from('profiles')
-          .select('id, first_name, last_name, email, address')
+          .select('id, first_name, last_name, address')
           .eq('id', token.creator_id)
           .single();
+        
+        // Get email from auth.users
+        let creatorEmail: string | null = null;
+        if (creator) {
+          const { data: authUser } = await supabase.auth.admin.getUserById(token.creator_id);
+          creatorEmail = authUser?.user?.email || null;
+        }
 
         if (!creatorError && creator) {
           // Parse deliverables
@@ -289,7 +296,7 @@ export async function submitDealDetails(
             deliverables: deliverablesList,
             brandEmail: formData.companyEmail || null,
             brandAddress: formData.companyAddress || null,
-            creatorEmail: creator.email || null,
+            creatorEmail: creatorEmail || null,
             creatorAddress: creator.address || null,
             dealSchema: {
               usage_type: formData.usageRightsDuration || '3_months',
@@ -405,59 +412,6 @@ export async function submitDealDetails(
             .eq('id', dealId);
         }
       }
-    }
-  } catch (error) {
-    console.error('[DealDetailsTokenService] Deal creation error:', error);
-    // Don't fail the submission if deal creation fails
-  }
-
-  // Send email notification to creator (non-blocking)
-      try {
-        // Fetch creator's email and name
-        const { data: creatorProfile, error: profileError } = await supabase
-          .from('profiles')
-          .select('email, first_name, last_name')
-          .eq('id', token.creator_id)
-          .maybeSingle();
-
-        if (!profileError && creatorProfile?.email) {
-          const creatorName = creatorProfile.first_name || creatorProfile.last_name
-            ? `${creatorProfile.first_name || ''} ${creatorProfile.last_name || ''}`.trim()
-            : 'Creator';
-
-          const brandData = {
-            brandName: formData.brandName || 'Brand',
-            campaignName: formData.campaignName,
-            dealType: formData.dealType || 'paid',
-            paymentAmount: formData.dealType === 'paid' && formData.paymentAmount
-              ? parseFloat(formData.paymentAmount) || 0
-              : undefined,
-            deliverables: formData.deliverables || [],
-            deadline: formData.deadline,
-          };
-
-          // Send email asynchronously (don't await to avoid blocking)
-          sendBrandFormSubmissionEmail(
-            creatorProfile.email,
-            creatorName,
-            brandData,
-            dealId || deal.id
-          ).then((result) => {
-            if (result.success) {
-              console.log('[DealDetailsTokenService] Email notification sent successfully:', result.emailId);
-            } else {
-              console.warn('[DealDetailsTokenService] Failed to send email notification:', result.error);
-            }
-          }).catch((error) => {
-            console.error('[DealDetailsTokenService] Error sending email notification:', error);
-          });
-        } else {
-          console.warn('[DealDetailsTokenService] Could not fetch creator email for notification:', profileError);
-        }
-      } catch (emailError) {
-        // Don't fail the submission if email fails
-        console.error('[DealDetailsTokenService] Error preparing email notification:', emailError);
-      }
     } else if (dealError) {
       console.error('[DealDetailsTokenService] Deal creation error:', dealError);
       // If deal creation failed, try to update existing deal if deal_id exists in submission
@@ -484,6 +438,63 @@ export async function submitDealDetails(
     // Don't fail the submission if deal creation fails
   }
 
+  // Send email notification to creator (non-blocking)
+  if (dealId) {
+    try {
+      // Fetch creator's profile
+      const { data: creatorProfile, error: profileError } = await supabase
+        .from('profiles')
+        .select('first_name, last_name')
+        .eq('id', token.creator_id)
+        .maybeSingle();
+
+      // Get email from auth.users
+      let creatorEmail: string | null = null;
+      if (!profileError && creatorProfile) {
+        const { data: authUser } = await supabase.auth.admin.getUserById(token.creator_id);
+        creatorEmail = authUser?.user?.email || null;
+      }
+
+      if (!profileError && creatorProfile && creatorEmail) {
+        const creatorName = creatorProfile.first_name || creatorProfile.last_name
+          ? `${creatorProfile.first_name || ''} ${creatorProfile.last_name || ''}`.trim()
+          : 'Creator';
+
+        const brandData = {
+          brandName: formData.brandName || 'Brand',
+          campaignName: formData.campaignName,
+          dealType: formData.dealType || 'paid',
+          paymentAmount: formData.dealType === 'paid' && formData.paymentAmount
+            ? parseFloat(formData.paymentAmount) || 0
+            : undefined,
+          deliverables: formData.deliverables || [],
+          deadline: formData.deadline,
+        };
+
+        // Send email asynchronously (don't await to avoid blocking)
+        sendBrandFormSubmissionEmail(
+          creatorEmail,
+          creatorName,
+          brandData,
+          dealId
+        ).then((result) => {
+          if (result.success) {
+            console.log('[DealDetailsTokenService] Email notification sent successfully:', result.emailId);
+          } else {
+            console.warn('[DealDetailsTokenService] Failed to send email notification:', result.error);
+          }
+        }).catch((error) => {
+          console.error('[DealDetailsTokenService] Error sending email notification:', error);
+        });
+      } else {
+        console.warn('[DealDetailsTokenService] Could not fetch creator email for notification:', profileError);
+      }
+    } catch (emailError) {
+      // Don't fail the submission if email fails
+      console.error('[DealDetailsTokenService] Error preparing email notification:', emailError);
+    }
+  }
+
   // Always create contract ready token (no more clarification mode)
   let contractReadyToken: string | null = null;
   
@@ -499,6 +510,82 @@ export async function submitDealDetails(
       });
       contractReadyToken = readyToken.id;
       console.log('[DealDetailsTokenService] ✅ Contract ready token generated successfully:', contractReadyToken);
+      
+      // Send contract email to brand (non-blocking)
+      try {
+        // Fetch deal to get contract URL and brand email
+        const { data: dealData } = await supabase
+          .from('brand_deals')
+          .select('contract_file_url, brand_email, brand_name')
+          .eq('id', dealId)
+          .maybeSingle();
+
+        if (dealData && dealData.brand_email) {
+          // Fetch creator details
+          const { data: creatorData } = await supabase
+            .from('profiles')
+            .select('first_name, last_name')
+            .eq('id', token.creator_id)
+            .maybeSingle();
+
+          // Get email from auth.users
+          let creatorEmail: string | null = null;
+          if (creatorData) {
+            try {
+              const { data: authUser } = await supabase.auth.admin.getUserById(token.creator_id);
+              creatorEmail = authUser?.user?.email || null;
+            } catch (authError) {
+              console.warn('[DealDetailsTokenService] Could not fetch creator email from auth:', authError);
+            }
+          }
+
+          if (creatorData && creatorEmail) {
+            const { sendBrandContractReadyEmail } = await import('./brandContractReadyEmailService.js');
+            
+            const creatorName = creatorData.first_name && creatorData.last_name
+              ? `${creatorData.first_name} ${creatorData.last_name}`
+              : creatorData.first_name || creatorEmail?.split('@')[0] || 'Creator';
+
+            // Parse deliverables from formData
+            const deliverablesList = Array.isArray(formData.deliverables) 
+              ? formData.deliverables.map((d: any) => 
+                  `${d.quantity || 1}x ${d.contentType || 'Content'} on ${d.platform || 'Platform'}`
+                )
+              : ['As per agreement'];
+
+            const contractData = {
+              brandName: dealData.brand_name || formData.brandName || 'Brand',
+              creatorName: creatorName,
+              dealAmount: formData.dealType === 'paid' && formData.paymentAmount
+                ? parseFloat(formData.paymentAmount) || 0
+                : undefined,
+              dealType: (formData.dealType || 'paid') as 'paid' | 'barter',
+              deliverables: deliverablesList,
+              deadline: formData.deadline,
+              contractUrl: dealData.contract_file_url || undefined,
+              contractReadyToken: contractReadyToken,
+            };
+
+            // Send email asynchronously
+            sendBrandContractReadyEmail(
+              dealData.brand_email,
+              contractData.brandName,
+              contractData
+            ).then((result) => {
+              if (result.success) {
+                console.log('[DealDetailsTokenService] ✅ Contract email sent to brand:', result.emailId);
+              } else {
+                console.warn('[DealDetailsTokenService] Failed to send contract email to brand:', result.error);
+              }
+            }).catch((error) => {
+              console.error('[DealDetailsTokenService] Error sending contract email to brand:', error);
+            });
+          }
+        }
+      } catch (emailError) {
+        // Don't fail the submission if email fails
+        console.error('[DealDetailsTokenService] Error preparing contract email to brand:', emailError);
+      }
     } catch (tokenError: any) {
       console.error('[DealDetailsTokenService] ❌ Failed to generate contract ready token');
       console.error('[DealDetailsTokenService] Error details:', {
@@ -509,9 +596,11 @@ export async function submitDealDetails(
         error: tokenError
       });
       // Don't fail the submission if token generation fails, but log extensively
+      contractReadyToken = null; // Explicitly set to null on error
     }
   } else {
     console.warn('[DealDetailsTokenService] ⚠️ No dealId available, cannot create contract ready token');
+    console.warn('[DealDetailsTokenService] Deal creation may have failed. Check logs above for deal creation errors.');
   }
 
   return {

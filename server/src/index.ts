@@ -146,13 +146,20 @@ app.use(cors({
     const allowedOrigins = [
       process.env.FRONTEND_URL || 'http://localhost:8080',
       'http://localhost:8080',
+      'http://localhost:8084',
       'http://localhost:5173',
       'http://127.0.0.1:8080',
+      'http://127.0.0.1:8084',
       'http://127.0.0.1:5173',
       'https://www.creatorarmour.com',
       'https://creatorarmour.com',
       'https://api.creatorarmour.com'
     ];
+    
+    // Allow any localhost port for development (more flexible)
+    if (origin && (origin.startsWith('http://localhost:') || origin.startsWith('http://127.0.0.1:'))) {
+      return callback(null, true);
+    }
     
     // Allow Render frontend URLs
     if (origin.includes('onrender.com')) {
@@ -231,7 +238,7 @@ app.get('/health', (req: express.Request, res: express.Response) => {
 // Public API Routes (no auth required)
 app.use('/api/brand-response', brandResponseRouter);
 app.use('/api/deal-details-tokens', dealDetailsTokensRouter); // Public routes (auth handled internally)
-app.use('/api/contract-ready', contractReadyTokensRouter); // Public routes for contract ready page
+app.use('/api/contract-ready-tokens', contractReadyTokensRouter); // Public routes for contract ready page
 app.use('/api/gst', gstRouter); // Public GST lookup route
 app.use('/api/otp', otpPublicRouter); // Public OTP routes for brand response page
 

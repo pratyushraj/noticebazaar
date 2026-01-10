@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Briefcase, TrendingUp, Clock, CheckCircle, AlertCircle, IndianRupee, Calendar, ChevronRight, Shield } from 'lucide-react';
+import { Briefcase, TrendingUp, Clock, CheckCircle, AlertCircle, IndianRupee, Calendar, ChevronRight, Shield, ArrowUpDown, Filter, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { useSession } from '@/contexts/SessionContext';
 import { useBrandDeals } from '@/lib/hooks/useBrandDeals';
@@ -15,16 +15,37 @@ import { triggerHaptic, HapticPatterns } from '@/lib/utils/haptics';
 import { ErrorBoundary } from '@/components/ui/error-boundary';
 import { SkeletonCard } from '@/components/ui/SkeletonCard';
 import { cn } from '@/lib/utils';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const CreatorContracts = () => {
   const navigate = useNavigate();
   const { profile } = useSession();
   
   // Fetch real brand deals data (single call for both data and loading state)
-  const { data: brandDeals = [], isLoading: isLoadingDeals } = useBrandDeals({
+  const { data: brandDeals = [], isLoading: isLoadingDeals, refetch: refetchDeals } = useBrandDeals({
     creatorId: profile?.id,
     enabled: !!profile?.id,
   });
+
+  // Refetch deals when component mounts or becomes visible (to catch newly created deals)
+  useEffect(() => {
+    if (profile?.id) {
+      // Refetch on mount to ensure we have the latest deals
+      refetchDeals();
+      
+      // Also refetch when page becomes visible (user switches back to tab)
+      const handleVisibilityChange = () => {
+        if (document.visibilityState === 'visible') {
+          refetchDeals();
+        }
+      };
+      document.addEventListener('visibilitychange', handleVisibilityChange);
+      
+      return () => {
+        document.removeEventListener('visibilitychange', handleVisibilityChange);
+      };
+    }
+  }, [profile?.id, refetchDeals]);
 
   // Transform brand deals to match UI format
   const deals = useMemo(() => {
@@ -255,6 +276,17 @@ const CreatorContracts = () => {
 
   // Initialize activeFilter state - default to "All Deals"
   const [activeFilter, setActiveFilter] = useState<'all' | 'action_needed' | 'closed'>('all');
+  
+  // Sort state
+  const [sortBy, setSortBy] = useState<'newest' | 'oldest' | 'amount_high' | 'amount_low' | 'deadline_soon' | 'deadline_later' | 'status'>('newest');
+
+  // Advanced filter states
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
+  const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [brandFilter, setBrandFilter] = useState<string>('all');
+  const [minAmount, setMinAmount] = useState<string>('');
+  const [maxAmount, setMaxAmount] = useState<string>('');
+  const [dateRangeFilter, setDateRangeFilter] = useState<string>('all');
 
   const filters = useMemo(() => [
     { id: 'all', label: 'All Deals', count: stats.total },
@@ -262,25 +294,17 @@ const CreatorContracts = () => {
     { id: 'closed', label: 'Closed', count: closedCount }
   ], [stats.total, actionNeededCount, closedCount]);
 
+  // Get unique brands for filter
+  const uniqueBrands = useMemo(() => {
+    return Array.from(new Set(brandDeals.map(d => d.brand_name).filter(Boolean))).sort();
+  }, [brandDeals]);
+
   const filteredDeals = useMemo(() => {
     let filtered = deals;
     
+    // Apply main filter tabs
     if (activeFilter === 'all') {
-      // Sort: drafts first, then by created date
-      filtered = [...deals].sort((a, b) => {
-        const aDeal = brandDeals.find(d => d.id === a.id);
-        const bDeal = brandDeals.find(d => d.id === b.id);
-        const aIsDraft = aDeal?.status?.toLowerCase() === 'draft';
-        const bIsDraft = bDeal?.status?.toLowerCase() === 'draft';
-        
-        if (aIsDraft && !bIsDraft) return -1;
-        if (!aIsDraft && bIsDraft) return 1;
-        
-        // Both same type, sort by created date (newest first)
-        const aDate = aDeal?.created_at ? new Date(aDeal.created_at).getTime() : 0;
-        const bDate = bDeal?.created_at ? new Date(bDeal.created_at).getTime() : 0;
-        return bDate - aDate;
-      });
+      filtered = [...deals];
     } else if (activeFilter === 'action_needed') {
       // Action Needed: deals with next_action OR status in [draft, sent_to_brand, accepted_not_paid, under_watch]
       filtered = deals.filter(deal => {
@@ -307,9 +331,171 @@ const CreatorContracts = () => {
                brandResponseStatus === 'rejected';
       });
     }
+
+    // Apply advanced filters
+    // Status filter
+    if (statusFilter !== 'all') {
+      filtered = filtered.filter(deal => {
+        const dealStatus = deal.status?.toLowerCase() || '';
+        return dealStatus === statusFilter.toLowerCase() || 
+               (statusFilter === 'signed' && (dealStatus === 'signed' || deal.brandResponseStatus === 'accepted_verified')) ||
+               (statusFilter === 'in_progress' && (dealStatus === 'content_making' || dealStatus === 'negotiation'));
+      });
+    }
+
+    // Brand filter
+    if (brandFilter !== 'all') {
+      filtered = filtered.filter(deal => deal.brand === brandFilter);
+    }
+
+    // Amount range filter
+    if (minAmount) {
+      const min = parseFloat(minAmount);
+      if (!isNaN(min)) {
+        filtered = filtered.filter(deal => deal.value >= min);
+      }
+    }
+    if (maxAmount) {
+      const max = parseFloat(maxAmount);
+      if (!isNaN(max)) {
+        filtered = filtered.filter(deal => deal.value <= max);
+      }
+    }
+
+    // Date range filter
+    if (dateRangeFilter !== 'all') {
+      const now = new Date();
+      filtered = filtered.filter(deal => {
+        const dealData = brandDeals.find(d => d.id === deal.id);
+        const createdDate = dealData?.created_at ? new Date(dealData.created_at) : null;
+        if (!createdDate) return false;
+
+        switch (dateRangeFilter) {
+          case 'today':
+            return createdDate.toDateString() === now.toDateString();
+          case 'this_week':
+            const weekAgo = new Date(now);
+            weekAgo.setDate(weekAgo.getDate() - 7);
+            return createdDate >= weekAgo;
+          case 'this_month':
+            return createdDate.getMonth() === now.getMonth() && createdDate.getFullYear() === now.getFullYear();
+          case 'this_quarter':
+            const quarterStart = new Date(now.getFullYear(), Math.floor(now.getMonth() / 3) * 3, 1);
+            return createdDate >= quarterStart;
+          case 'overdue':
+            const deadline = dealData?.payment_expected_date || dealData?.due_date;
+            if (!deadline) return false;
+            return new Date(deadline) < now;
+          case 'due_soon':
+            const dueDate = dealData?.payment_expected_date || dealData?.due_date;
+            if (!dueDate) return false;
+            const sevenDaysFromNow = new Date(now);
+            sevenDaysFromNow.setDate(sevenDaysFromNow.getDate() + 7);
+            const due = new Date(dueDate);
+            return due >= now && due <= sevenDaysFromNow;
+          default:
+            return true;
+        }
+      });
+    }
+    
+    // Apply sorting
+    filtered = [...filtered].sort((a, b) => {
+      const aDeal = brandDeals.find(d => d.id === a.id);
+      const bDeal = brandDeals.find(d => d.id === b.id);
+      
+      switch (sortBy) {
+        case 'newest':
+          // Prioritize drafts and newly submitted deals, then by most recent activity (updated_at or created_at)
+          const aStatus = aDeal?.status?.toLowerCase() || '';
+          const bStatus = bDeal?.status?.toLowerCase() || '';
+          const aIsDraft = aStatus === 'draft';
+          const bIsDraft = bStatus === 'draft';
+          const aIsNewlySubmitted = aStatus.includes('brand_details_submitted') || aStatus.includes('details_submitted');
+          const bIsNewlySubmitted = bStatus.includes('brand_details_submitted') || bStatus.includes('details_submitted');
+          
+          // Drafts first
+          if (aIsDraft && !bIsDraft) return -1;
+          if (!aIsDraft && bIsDraft) return 1;
+          
+          // Then newly submitted deals
+          if (aIsNewlySubmitted && !bIsNewlySubmitted) return -1;
+          if (!aIsNewlySubmitted && bIsNewlySubmitted) return 1;
+          
+          // Then by most recent activity: use updated_at if available (for recently signed/updated deals), otherwise created_at
+          const aUpdatedDate = aDeal?.updated_at ? new Date(aDeal.updated_at).getTime() : 0;
+          const bUpdatedDate = bDeal?.updated_at ? new Date(bDeal.updated_at).getTime() : 0;
+          const aCreatedDate = aDeal?.created_at ? new Date(aDeal.created_at).getTime() : 0;
+          const bCreatedDate = bDeal?.created_at ? new Date(bDeal.created_at).getTime() : 0;
+          
+          // Use the most recent date (updated_at or created_at) for comparison
+          const aMostRecent = Math.max(aUpdatedDate, aCreatedDate);
+          const bMostRecent = Math.max(bUpdatedDate, bCreatedDate);
+          
+          return bMostRecent - aMostRecent;
+        
+        case 'oldest':
+          const aDateOld = aDeal?.created_at ? new Date(aDeal.created_at).getTime() : 0;
+          const bDateOld = bDeal?.created_at ? new Date(bDeal.created_at).getTime() : 0;
+          return aDateOld - bDateOld;
+        
+        case 'amount_high':
+          return (b.value || 0) - (a.value || 0);
+        
+        case 'amount_low':
+          return (a.value || 0) - (b.value || 0);
+        
+        case 'deadline_soon':
+          const aDeadline = aDeal?.due_date || aDeal?.payment_expected_date;
+          const bDeadline = bDeal?.due_date || bDeal?.payment_expected_date;
+          if (!aDeadline && !bDeadline) return 0;
+          if (!aDeadline) return 1;
+          if (!bDeadline) return -1;
+          return new Date(aDeadline).getTime() - new Date(bDeadline).getTime();
+        
+        case 'deadline_later':
+          const aDeadlineLate = aDeal?.due_date || aDeal?.payment_expected_date;
+          const bDeadlineLate = bDeal?.due_date || bDeal?.payment_expected_date;
+          if (!aDeadlineLate && !bDeadlineLate) return 0;
+          if (!aDeadlineLate) return 1;
+          if (!bDeadlineLate) return -1;
+          return new Date(bDeadlineLate).getTime() - new Date(aDeadlineLate).getTime();
+        
+        case 'status':
+          // Sort by status priority: draft < negotiation < signed < content_making < content_delivered < completed
+          const statusPriority: Record<string, number> = {
+            'draft': 0,
+            'pending': 1,
+            'negotiation': 2,
+            'sent': 3,
+            'signed': 4,
+            'content_making': 5,
+            'content_delivered': 6,
+            'completed': 7
+          };
+          const aPriority = statusPriority[a.status] ?? 99;
+          const bPriority = statusPriority[b.status] ?? 99;
+          return aPriority - bPriority;
+        
+        default:
+          return 0;
+      }
+    });
     
     return filtered;
-  }, [deals, activeFilter, brandDeals]);
+  }, [deals, activeFilter, brandDeals, sortBy, statusFilter, brandFilter, minAmount, maxAmount, dateRangeFilter]);
+
+  // Check if any advanced filters are active
+  const hasActiveAdvancedFilters = statusFilter !== 'all' || brandFilter !== 'all' || minAmount || maxAmount || dateRangeFilter !== 'all';
+
+  // Clear all advanced filters
+  const clearAdvancedFilters = () => {
+    setStatusFilter('all');
+    setBrandFilter('all');
+    setMinAmount('');
+    setMaxAmount('');
+    setDateRangeFilter('all');
+  };
 
   return (
     <ErrorBoundary>
@@ -387,44 +573,221 @@ const CreatorContracts = () => {
               </p>
             </div>
 
-            {/* Filter Tabs - Centered under stats */}
+            {/* Filter Tabs and Sort - Centered under stats */}
             <div className={cn(
-              "flex items-center justify-start md:justify-center gap-2 md:gap-4 mt-4 md:mt-6 mb-4 md:mb-6",
-              "overflow-x-auto overflow-y-visible py-1 -mx-4 px-4 md:mx-0 md:px-0",
-              "[&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]",
-              "flex-nowrap snap-x snap-mandatory"
+              "flex flex-col gap-3 md:gap-4 mt-4 md:mt-6 mb-4 md:mb-6"
             )}>
-              {filters.map((filter) => {
-                const isActive = activeFilter === filter.id;
-                return (
+              <div className={cn(
+                "flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3"
+              )}>
+                {/* Filter Tabs */}
+                <div className={cn(
+                  "flex items-center justify-start md:justify-center gap-2 md:gap-4",
+                  "overflow-x-auto overflow-y-visible py-1 -mx-4 px-4 md:mx-0 md:px-0",
+                  "[&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]",
+                  "flex-nowrap snap-x snap-mandatory w-full sm:w-auto"
+                )}>
+                  {filters.map((filter) => {
+                    const isActive = activeFilter === filter.id;
+                    return (
+                      <motion.button
+                        key={filter.id}
+                        onClick={() => {
+                          triggerHaptic(HapticPatterns.light);
+                          setActiveFilter(filter.id as 'all' | 'action_needed' | 'closed');
+                        }}
+                        whileTap={animations.microTap}
+                        className={cn(
+                          "whitespace-nowrap rounded-full border transition-all select-none",
+                          "text-sm md:text-base px-3 md:px-5 py-1.5 md:py-2",
+                          "flex-shrink-0 font-semibold snap-start",
+                          isActive
+                            ? "bg-white/15 text-white border-2 border-white/20 scale-[1.02] shadow-sm"
+                            : "bg-white/5 text-white/70 border border-white/10 hover:bg-white/8"
+                        )}
+                      >
+                        {filter.label}
+                        {filter.id === 'action_needed' && filter.count !== undefined && filter.count > 0 && (
+                          <span className={cn(
+                            "ml-1.5 px-1.5 py-0.5 rounded-full text-xs font-semibold",
+                            isActive ? "bg-white/25 text-white" : "bg-white/10 text-white/80"
+                          )}>
+                            {filter.count}
+                          </span>
+                        )}
+                      </motion.button>
+                    );
+                  })}
+                </div>
+                
+                {/* Sort and Advanced Filter Controls */}
+                <div className="flex items-center gap-2 w-full sm:w-auto">
+                  {/* Advanced Filter Toggle */}
                   <motion.button
-                    key={filter.id}
                     onClick={() => {
                       triggerHaptic(HapticPatterns.light);
-                      setActiveFilter(filter.id as 'all' | 'action_needed' | 'closed');
+                      setShowAdvancedFilters(!showAdvancedFilters);
                     }}
                     whileTap={animations.microTap}
                     className={cn(
-                      "whitespace-nowrap rounded-full border transition-all select-none",
-                      "text-sm md:text-base px-3 md:px-5 py-1.5 md:py-2",
-                      "flex-shrink-0 font-semibold snap-start",
-                      isActive
-                        ? "bg-white/15 text-white border-2 border-white/20 scale-[1.02] shadow-sm"
-                        : "bg-white/5 text-white/70 border border-white/10 hover:bg-white/8"
+                      "flex items-center gap-2 px-3 py-1.5 rounded-lg border transition-all",
+                      "bg-white/5 text-white border-white/10 hover:bg-white/8",
+                      hasActiveAdvancedFilters && "bg-purple-500/20 border-purple-400/30 text-purple-300",
+                      "text-sm h-9"
                     )}
                   >
-                    {filter.label}
-                    {filter.id === 'action_needed' && filter.count !== undefined && filter.count > 0 && (
-                      <span className={cn(
-                        "ml-1.5 px-1.5 py-0.5 rounded-full text-xs font-semibold",
-                        isActive ? "bg-white/25 text-white" : "bg-white/10 text-white/80"
-                      )}>
-                        {filter.count}
+                    <Filter className="w-4 h-4" />
+                    <span className="hidden sm:inline">Filters</span>
+                    {hasActiveAdvancedFilters && (
+                      <span className="ml-1 px-1.5 py-0.5 rounded-full bg-purple-500/30 text-xs font-semibold">
+                        {[statusFilter !== 'all', brandFilter !== 'all', minAmount || maxAmount, dateRangeFilter !== 'all'].filter(Boolean).length}
                       </span>
                     )}
                   </motion.button>
-                );
-              })}
+
+                  {/* Sort Dropdown */}
+                  <Select
+                    value={sortBy}
+                    onValueChange={(value) => {
+                      triggerHaptic(HapticPatterns.light);
+                      setSortBy(value as typeof sortBy);
+                    }}
+                  >
+                    <SelectTrigger className={cn(
+                      "w-full sm:w-[180px]",
+                      "bg-white/5 text-white border-white/10",
+                      "hover:bg-white/8 focus:ring-2 focus:ring-purple-500/50",
+                      "h-9 text-sm"
+                    )}>
+                      <div className="flex items-center gap-2">
+                        <ArrowUpDown className="w-4 h-4 text-white/60" />
+                        <SelectValue placeholder="Sort by" />
+                      </div>
+                    </SelectTrigger>
+                    <SelectContent className="bg-[#1C1C1E] border-white/10 text-white">
+                      <SelectItem value="newest">Newest First</SelectItem>
+                      <SelectItem value="oldest">Oldest First</SelectItem>
+                      <SelectItem value="amount_high">Amount: High to Low</SelectItem>
+                      <SelectItem value="amount_low">Amount: Low to High</SelectItem>
+                      <SelectItem value="deadline_soon">Deadline: Soonest</SelectItem>
+                      <SelectItem value="deadline_later">Deadline: Latest</SelectItem>
+                      <SelectItem value="status">Status</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              {/* Advanced Filters Panel */}
+              {showAdvancedFilters && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className={cn(
+                    "bg-white/5 border border-white/10 rounded-2xl p-4 md:p-6",
+                    "space-y-4"
+                  )}
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <h3 className="text-lg font-semibold text-white">Advanced Filters</h3>
+                    <div className="flex items-center gap-2">
+                      {hasActiveAdvancedFilters && (
+                        <button
+                          onClick={clearAdvancedFilters}
+                          className="text-sm text-purple-300 hover:text-purple-200 underline"
+                        >
+                          Clear All
+                        </button>
+                      )}
+                      <button
+                        onClick={() => setShowAdvancedFilters(false)}
+                        className="p-1 hover:bg-white/10 rounded-lg transition-colors"
+                      >
+                        <X className="w-4 h-4 text-white/60" />
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    {/* Status Filter */}
+                    <div>
+                      <label className="block text-sm font-medium text-white/70 mb-2">Status</label>
+                      <Select value={statusFilter} onValueChange={setStatusFilter}>
+                        <SelectTrigger className="bg-white/5 text-white border-white/10 h-9 text-sm">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent className="bg-[#1C1C1E] border-white/10 text-white">
+                          <SelectItem value="all">All Statuses</SelectItem>
+                          <SelectItem value="draft">Draft</SelectItem>
+                          <SelectItem value="sent">Sent</SelectItem>
+                          <SelectItem value="negotiation">Negotiation</SelectItem>
+                          <SelectItem value="signed">Signed</SelectItem>
+                          <SelectItem value="content_making">Content Making</SelectItem>
+                          <SelectItem value="content_delivered">Content Delivered</SelectItem>
+                          <SelectItem value="completed">Completed</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {/* Brand Filter */}
+                    <div>
+                      <label className="block text-sm font-medium text-white/70 mb-2">Brand</label>
+                      <Select value={brandFilter} onValueChange={setBrandFilter}>
+                        <SelectTrigger className="bg-white/5 text-white border-white/10 h-9 text-sm">
+                          <SelectValue placeholder="All Brands" />
+                        </SelectTrigger>
+                        <SelectContent className="bg-[#1C1C1E] border-white/10 text-white max-h-[200px]">
+                          <SelectItem value="all">All Brands</SelectItem>
+                          {uniqueBrands.map(brand => (
+                            <SelectItem key={brand} value={brand}>{brand}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {/* Amount Range */}
+                    <div>
+                      <label className="block text-sm font-medium text-white/70 mb-2">Amount Range (₹)</label>
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="number"
+                          placeholder="Min"
+                          value={minAmount}
+                          onChange={(e) => setMinAmount(e.target.value)}
+                          className="flex-1 bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white text-sm placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-purple-500/50"
+                        />
+                        <span className="text-white/60">-</span>
+                        <input
+                          type="number"
+                          placeholder="Max"
+                          value={maxAmount}
+                          onChange={(e) => setMaxAmount(e.target.value)}
+                          className="flex-1 bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white text-sm placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-purple-500/50"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Date Range Filter */}
+                    <div>
+                      <label className="block text-sm font-medium text-white/70 mb-2">Date Range</label>
+                      <Select value={dateRangeFilter} onValueChange={setDateRangeFilter}>
+                        <SelectTrigger className="bg-white/5 text-white border-white/10 h-9 text-sm">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent className="bg-[#1C1C1E] border-white/10 text-white">
+                          <SelectItem value="all">All Time</SelectItem>
+                          <SelectItem value="today">Today</SelectItem>
+                          <SelectItem value="this_week">This Week</SelectItem>
+                          <SelectItem value="this_month">This Month</SelectItem>
+                          <SelectItem value="this_quarter">This Quarter</SelectItem>
+                          <SelectItem value="overdue">Overdue</SelectItem>
+                          <SelectItem value="due_soon">Due Soon (7 days)</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
             </div>
 
             {/* Content Section */}

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { 
   CheckCircle, 
@@ -38,7 +38,7 @@ interface DealDetailsFormData {
   numberOfRevisions?: number; // Changed from string to number (1-5)
   approvalTurnaroundTime?: '24_hours' | '48_hours' | '3_business_days' | '5_business_days';
   // Posting Window
-  postingWindow?: string; // Optional text input (descriptive, not legally binding)
+  postingWindow?: 'within_7_days' | 'within_14_days' | 'within_30_days' | 'specific_date_range' | 'as_agreed' | 'custom';
   // Platform Handles
   brandHandle?: string; // Optional (validated with regex)
   creatorHandle?: string; // Optional (validated with regex)
@@ -70,6 +70,13 @@ interface DealDetailsFormData {
   companyAddress?: string; // Required (multiline text)
   companyPhone?: string; // Optional
   companyGstin?: string; // Optional
+  companyCity?: string; // Optional
+  companyPincode?: string; // Optional
+  authorizedSignatoryDesignation?: string; // Optional
+  authorizedSignatoryEmail?: string; // Optional
+  authorizedSignatoryPhone?: string; // Optional
+  additionalRequirements?: string; // Optional
+  specialInstructions?: string; // Optional
   // Auto-set (not in UI)
   jurisdiction?: string; // Auto-derived from state
 }
@@ -77,6 +84,8 @@ interface DealDetailsFormData {
 const BrandDealDetailsPage = () => {
   const { token } = useParams<{ token: string }>();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const isTestMode = searchParams.get('test') === 'true' || searchParams.get('autofill') === 'true';
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -99,7 +108,7 @@ const BrandDealDetailsPage = () => {
     approvalProcess: 'limited_revisions',
     numberOfRevisions: 2,
     approvalTurnaroundTime: '3_business_days',
-    postingWindow: '',
+    postingWindow: 'within_7_days',
     brandHandle: '',
     creatorHandle: '',
     paymentTimeline: '7_days',
@@ -232,6 +241,63 @@ const BrandDealDetailsPage = () => {
     fetchTokenInfo();
   }, [token]);
 
+  // Auto-fill form in test mode
+  useEffect(() => {
+    if (isTestMode && !isLoading && !isFormUsed) {
+      const tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      const deadlineStr = tomorrow.toISOString().split('T')[0]; // Format: YYYY-MM-DD
+      
+      setFormData({
+        brandName: 'Test Brand Company',
+        campaignName: 'Summer Campaign 2025',
+        deliverables: [
+          { platform: 'Instagram', contentType: 'Reel', quantity: 2, duration: 30 },
+          { platform: 'Instagram', contentType: 'Post', quantity: 1, duration: 0 }
+        ],
+        deadline: deadlineStr,
+        dealType: 'paid',
+        approvalProcess: 'limited_revisions',
+        numberOfRevisions: 2,
+        approvalTurnaroundTime: '3_business_days',
+        postingWindow: 'within_7_days',
+        brandHandle: '@testbrand',
+        creatorHandle: '@creator',
+        paymentTimeline: '7_days',
+        usageRightsDuration: '3_months',
+        paidAdsAllowed: true,
+        whitelistingAllowed: false,
+        exclusivityPeriod: 'none',
+        revisions: '2',
+        governingLaw: 'India',
+        paymentMethod: ['bank_transfer'],
+        // Company details
+        companyLegalName: 'Test Brand Company Private Limited',
+        companyEmail: 'test@brandcompany.com',
+        companyPhone: '+91 9876543210',
+        companyAddress: '123 Test Street, Test City',
+        companyCity: 'Mumbai',
+        companyState: 'Maharashtra',
+        companyPincode: '400001',
+        companyGstin: '27AABCU9603R1ZX',
+        authorizedSignatoryName: 'John Doe',
+        authorizedSignatoryDesignation: 'Marketing Director',
+        authorizedSignatoryEmail: 'john@brandcompany.com',
+        authorizedSignatoryPhone: '+91 9876543210',
+        // Payment details
+        paymentAmount: '50000',
+        paymentTrigger: 'on_approval',
+        // Cancellation
+        cancellationTerms: 'full_payment_after_approval',
+        // Additional fields
+        additionalRequirements: 'Please ensure high-quality content with brand colors.',
+        specialInstructions: 'Content should be family-friendly and align with brand values.',
+      });
+      
+      console.log('[BrandDealDetailsPage] Test mode: Form auto-filled with sample data');
+    }
+  }, [isTestMode, isLoading, isFormUsed]);
+
   const handleAddDeliverable = () => {
     setFormData(prev => ({
       ...prev,
@@ -283,11 +349,11 @@ const BrandDealDetailsPage = () => {
       let response: Response;
       try {
         response = await fetch(`${apiBaseUrl}/api/gst/lookup?gstin=${encodeURIComponent(gstin)}`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        });
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
       } catch (fetchError: any) {
         // If localhost fails, try production API as fallback
         if (
@@ -547,13 +613,12 @@ const BrandDealDetailsPage = () => {
           console.log(`[BrandDealDetailsPage] Retry ${retryCount}/${maxRetries}: Checking for contract ready token...`);
           
           try {
-            // Try to get deal details which might include token info
-            // Note: This endpoint might not exist, but worth trying
+            // Use the public endpoint to get contract ready token from the original deal details token
             let checkApiBaseUrl = getApiBaseUrl();
             let checkResponse: Response;
             
             try {
-              const checkUrl = `${checkApiBaseUrl}/api/deal-details-tokens/deal/${data.dealId}`;
+              const checkUrl = `${checkApiBaseUrl}/api/deal-details-tokens/${token}/contract-ready-token`;
               checkResponse = await fetch(checkUrl, {
                 method: 'GET',
                 headers: {
@@ -570,25 +635,28 @@ const BrandDealDetailsPage = () => {
               ) {
                 console.warn('[BrandDealDetailsPage] Poll: Localhost API unavailable, trying production API...');
                 checkApiBaseUrl = 'https://noticebazaar-api.onrender.com';
-                const checkUrl = `${checkApiBaseUrl}/api/deal-details-tokens/deal/${data.dealId}`;
+                const checkUrl = `${checkApiBaseUrl}/api/deal-details-tokens/${token}/contract-ready-token`;
                 checkResponse = await fetch(checkUrl, {
                   method: 'GET',
                   headers: {
                     'Content-Type': 'application/json',
                   },
                 });
-              } else {
+      } else {
                 throw fetchError;
               }
             }
             
             if (checkResponse.ok) {
               const checkData = await checkResponse.json();
-              if (checkData.contractReadyToken) {
+              if (checkData.success && checkData.contractReadyToken) {
                 console.log('[BrandDealDetailsPage] Found token on retry:', checkData.contractReadyToken);
                 navigate(`/contract-ready/${checkData.contractReadyToken}`, { replace: true });
                 return;
               }
+            } else if (checkResponse.status === 404) {
+              // Token not ready yet, continue polling
+              console.log('[BrandDealDetailsPage] Contract not ready yet, will retry...');
             }
           } catch (pollError) {
             console.warn('[BrandDealDetailsPage] Poll error:', pollError);
@@ -930,14 +998,19 @@ const BrandDealDetailsPage = () => {
             <label className="block text-sm font-medium mb-2">
               Posting Window
             </label>
-            <input
-              type="text"
-              value={formData.postingWindow || ''}
-              onChange={(e) => setFormData(prev => ({ ...prev, postingWindow: e.target.value }))}
-              className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-purple-400/50 disabled:opacity-50 disabled:cursor-not-allowed"
-              placeholder="e.g., Within 7 days of approval or Between 10–15 June 2025"
+            <select
+              value={formData.postingWindow || 'within_7_days'}
+              onChange={(e) => setFormData(prev => ({ ...prev, postingWindow: e.target.value as any }))}
+              className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-purple-400/50 disabled:opacity-50 disabled:cursor-not-allowed"
               disabled={isFormUsed}
-            />
+            >
+              <option value="within_7_days">Within 7 days of approval</option>
+              <option value="within_14_days">Within 14 days of approval</option>
+              <option value="within_30_days">Within 30 days of approval</option>
+              <option value="specific_date_range">Specific date range</option>
+              <option value="as_agreed">As agreed between parties</option>
+              <option value="custom">Custom (specify in notes)</option>
+            </select>
             <p className="text-xs text-white/50 mt-1">
               Clarifies when the content is expected to go live after approval.
             </p>
