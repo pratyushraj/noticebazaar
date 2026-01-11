@@ -748,19 +748,30 @@ This Agreement constitutes the entire understanding between the Parties and supe
 
 ⸻
 
-IN WITNESS WHEREOF, the Parties have agreed to the above terms.
+DIGITAL ACCEPTANCE & EXECUTION
 
-Brand Signature: ___________
+This Agreement has been executed electronically by both Parties through OTP verification and click-to-accept confirmation. Under the Information Technology Act, 2000 (IT Act, 2000), electronic signatures are legally valid and binding. No physical or handwritten signature is required.
 
-Brand Printed Name: ___________
+The Parties acknowledge that:
+• This Agreement is executed electronically and constitutes a valid legal signature under Section 3A of the IT Act, 2000.
+• OTP verification and click-to-accept confirmation constitute valid electronic authentication.
+• No physical signature is required for this Agreement to be legally binding.
 
-Creator Signature: ___________
+BRAND
+Name: ${variables.brand_name}
+Email: ${variables.brand_email}
+${(variables as any).brand_signature?.otp_verified_at ? `OTP Verified: ${new Date((variables as any).brand_signature.otp_verified_at).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle: 'long', timeStyle: 'medium' })}` : 'Status: Pending signature'}
+${(variables as any).brand_signature?.ip_address ? `IP Address: ${(variables as any).brand_signature.ip_address}` : ''}
+${(variables as any).brand_signature?.user_agent ? `Device: ${(variables as any).brand_signature.user_agent}` : ''}
+${(variables as any).brand_signature?.signed_at ? `Executed At: ${new Date((variables as any).brand_signature.signed_at).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle: 'long', timeStyle: 'medium' })}` : ''}
 
-Creator Printed Name: ___________
-
-Date: ___________
-
-Place of Execution: ___________
+CREATOR
+Name: ${variables.creator_name}
+Email: ${variables.creator_email}
+${(variables as any).creator_signature?.otp_verified_at ? `OTP Verified: ${new Date((variables as any).creator_signature.otp_verified_at).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle: 'long', timeStyle: 'medium' })}` : 'Status: Pending signature'}
+${(variables as any).creator_signature?.ip_address ? `IP Address: ${(variables as any).creator_signature.ip_address}` : ''}
+${(variables as any).creator_signature?.user_agent ? `Device: ${(variables as any).creator_signature.user_agent}` : ''}
+${(variables as any).creator_signature?.signed_at ? `Executed At: ${new Date((variables as any).creator_signature.signed_at).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle: 'long', timeStyle: 'medium' })}` : ''}
 
 ⸻
 

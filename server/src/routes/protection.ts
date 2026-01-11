@@ -1342,6 +1342,15 @@ router.post('/generate-contract-docx', async (req: AuthenticatedRequest, res: Re
       creatorAddress = creatorProfile.location || creatorProfile.address || (deal as any).creator_address;
     }
 
+    // Fetch signatures if available
+    const { data: signatures } = await supabase
+      .from('contract_signatures')
+      .select('signer_role, signer_name, signer_email, signed_at, otp_verified_at, ip_address, user_agent')
+      .eq('deal_id', dealId);
+    
+    const brandSig = signatures?.find((s: any) => s.signer_role === 'brand');
+    const creatorSig = signatures?.find((s: any) => s.signer_role === 'creator');
+
     // Build request for contract generation (uses validated DealSchema)
     const contractRequest = {
       brandName: deal.brand_name || 'Brand',
@@ -1365,6 +1374,23 @@ router.post('/generate-contract-docx', async (req: AuthenticatedRequest, res: Re
       terminationNoticeDays: (deal as any).termination_notice_days,
       jurisdictionCity: (deal as any).jurisdiction_city,
       additionalTerms: (deal as any).additional_terms,
+      // Include signature data if available
+      brandSignature: brandSig ? {
+        signer_name: brandSig.signer_name,
+        signer_email: brandSig.signer_email,
+        signed_at: brandSig.signed_at,
+        otp_verified_at: brandSig.otp_verified_at,
+        ip_address: brandSig.ip_address,
+        user_agent: brandSig.user_agent,
+      } : undefined,
+      creatorSignature: creatorSig ? {
+        signer_name: creatorSig.signer_name,
+        signer_email: creatorSig.signer_email,
+        signed_at: creatorSig.signed_at,
+        otp_verified_at: creatorSig.otp_verified_at,
+        ip_address: creatorSig.ip_address,
+        user_agent: creatorSig.user_agent,
+      } : undefined,
     };
 
     // Generate contract using the same validated logic
@@ -2051,7 +2077,7 @@ export const downloadContractDocxHandler = async (req: Request, res: Response) =
     // Check if both parties have signed (allow download if signed, even if not accepted_verified)
     const { data: signatures } = await supabase
       .from('contract_signatures')
-      .select('signer_role, signed, signer_name, signer_email, signed_at')
+      .select('signer_role, signed, signer_name, signer_email, signed_at, otp_verified_at, ip_address, user_agent')
       .eq('deal_id', dealId);
     
     const brandSigned = signatures?.some((s: any) => s.signer_role === 'brand' && s.signed);
@@ -2441,22 +2467,37 @@ export const downloadContractDocxHandler = async (req: Request, res: Response) =
               </div>
 
               <div class="signature-section">
-                <h2>8. IN WITNESS WHEREOF</h2>
+                <h2>8. DIGITAL ACCEPTANCE & EXECUTION</h2>
+                
+                <p style="margin: 20px 0; line-height: 1.6;">
+                  This Agreement has been executed electronically by both Parties through OTP verification and click-to-accept confirmation. Under the Information Technology Act, 2000 (IT Act, 2000), electronic signatures are legally valid and binding. No physical or handwritten signature is required.
+                </p>
+                
+                <p style="margin: 15px 0; font-weight: bold;">The Parties acknowledge that:</p>
+                <ul style="margin: 15px 0; padding-left: 30px;">
+                  <li>This Agreement is executed electronically and constitutes a valid legal signature under Section 3A of the IT Act, 2000.</li>
+                  <li>OTP verification and click-to-accept confirmation constitute valid electronic authentication.</li>
+                  <li>No physical signature is required for this Agreement to be legally binding.</li>
+                </ul>
                 
                 <div class="signature-block">
                   <div class="signature-block-title">BRAND</div>
-                  <div class="signature-line">Signature: ______________________</div>
-                  <div class="signature-line">Printed Name: ${brandName}</div>
-                  <div class="signature-line">Date: ${brandSigDate || '______________________'}</div>
-                  <div class="signature-line">Place of Execution: ______________________</div>
+                  <div class="signature-line">Name: ${brandSig?.signer_name || brandName}</div>
+                  <div class="signature-line">Email: ${brandSig?.signer_email || brandEmail || 'N/A'}</div>
+                  ${brandSig?.otp_verified_at ? `<div class="signature-line">OTP Verified: ${new Date(brandSig.otp_verified_at).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle: 'long', timeStyle: 'medium' })}</div>` : '<div class="signature-line" style="font-style: italic;">Status: Pending signature</div>'}
+                  ${brandSig?.ip_address ? `<div class="signature-line">IP Address: ${brandSig.ip_address}</div>` : ''}
+                  ${brandSig?.user_agent ? `<div class="signature-line">Device: ${brandSig.user_agent}</div>` : ''}
+                  ${brandSig?.signed_at ? `<div class="signature-line">Executed At: ${new Date(brandSig.signed_at).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle: 'long', timeStyle: 'medium' })}</div>` : ''}
                 </div>
 
                 <div class="signature-block">
                   <div class="signature-block-title">CREATOR</div>
-                  <div class="signature-line">Signature: ______________________</div>
-                  <div class="signature-line">Printed Name: ${creatorName}</div>
-                  <div class="signature-line">Date: ${creatorSigDate || '______________________'}</div>
-                  <div class="signature-line">Place of Execution: ______________________</div>
+                  <div class="signature-line">Name: ${creatorSig?.signer_name || creatorName}</div>
+                  <div class="signature-line">Email: ${creatorSig?.signer_email || creatorEmail || 'N/A'}</div>
+                  ${creatorSig?.otp_verified_at ? `<div class="signature-line">OTP Verified: ${new Date(creatorSig.otp_verified_at).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle: 'long', timeStyle: 'medium' })}</div>` : '<div class="signature-line" style="font-style: italic;">Status: Pending signature</div>'}
+                  ${creatorSig?.ip_address ? `<div class="signature-line">IP Address: ${creatorSig.ip_address}</div>` : ''}
+                  ${creatorSig?.user_agent ? `<div class="signature-line">Device: ${creatorSig.user_agent}</div>` : ''}
+                  ${creatorSig?.signed_at ? `<div class="signature-line">Executed At: ${new Date(creatorSig.signed_at).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle: 'long', timeStyle: 'medium' })}</div>` : ''}
                 </div>
               </div>
 

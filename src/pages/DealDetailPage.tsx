@@ -163,9 +163,64 @@ function DealDetailPageContent() {
     return getDealStageFromStatus(status, progressPercentage);
   };
   
+  // Helper to validate creator address and phone before contract operations
+  const validateCreatorContactInfo = (): { isValid: boolean; message: string; missingFields: string[] } => {
+    const missingFields: string[] = [];
+    
+    // Check address
+    const creatorAddress = profile?.location || profile?.address || '';
+    const trimmedAddress = creatorAddress?.trim() || '';
+    
+    if (!trimmedAddress || 
+        trimmedAddress === '' || 
+        trimmedAddress.toLowerCase() === 'not specified' ||
+        trimmedAddress.toLowerCase() === 'n/a' ||
+        trimmedAddress.length < 5) {
+      missingFields.push('address');
+    }
+    
+    // Check phone
+    const creatorPhone = profile?.phone || '';
+    const trimmedPhone = creatorPhone?.trim() || '';
+    
+    // Phone should be at least 10 digits (excluding country code)
+    const phoneDigits = trimmedPhone.replace(/\D/g, '');
+    if (!trimmedPhone || 
+        trimmedPhone === '' || 
+        trimmedPhone === '+91' ||
+        trimmedPhone === '+91 ' ||
+        phoneDigits.length < 10) {
+      missingFields.push('phone number');
+    }
+    
+    if (missingFields.length > 0) {
+      const fieldsText = missingFields.join(' and ');
+      return {
+        isValid: false,
+        message: `Please add your ${fieldsText} in Profile Settings before generating contracts or sharing links with brands. This information is required for legal contracts.`,
+        missingFields
+      };
+    }
+    
+    return { isValid: true, message: '', missingFields: [] };
+  };
+
   // Helper to create a secure brand reply link token for this deal
   const generateBrandReplyLink = async (targetDealId: string): Promise<string | null> => {
     try {
+      // Validate creator address and phone before generating link
+      const validation = validateCreatorContactInfo();
+      if (!validation.isValid) {
+        toast.error(validation.message, {
+          duration: 6000,
+          action: {
+            label: 'Go to Profile',
+            onClick: () => navigate('/creator-profile')
+          }
+        });
+        return null;
+      }
+
       if (!session?.access_token) {
         console.warn('[DealDetailPage] Cannot generate brand reply link: no session');
         return null;
@@ -2563,99 +2618,79 @@ ${link}`;
                                      signedContractUrl || signedAt ||
                                      (deal?.status?.toLowerCase()?.includes('signed'));
               
-              if (!isContractSigned) {
-                // Contract NOT signed
-                return (
-                  <>
-            <h2 className="font-semibold text-xl mb-2 flex items-center gap-2">
-                      <FileText className="w-6 h-6 text-purple-400" />
-                      Final Agreement
-                    </h2>
-                    <p className="text-sm text-white/70 mb-4">
-                      This contract has been generated based on confirmed details.
-                    </p>
-                    <motion.button
-                      onClick={async () => {
-                        if (!deal?.id) return;
-                        const link = brandReplyLink || (await generateBrandReplyLink(deal.id));
-                        if (link) {
-                          window.open(link, '_blank');
-                        }
-                      }}
-                      whileTap={{ scale: 0.98 }}
-                      className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 px-6 py-3 rounded-xl font-semibold text-white transition-all flex items-center justify-center gap-2"
-                    >
-                      <FileText className="w-5 h-5" />
-                      Sign Contract
-                    </motion.button>
-                  </>
-                );
-              } else {
-                // Contract signed
-                return (
-                  <>
-                    <h2 className="font-semibold text-xl mb-2 flex items-center gap-2">
+              // Determine signing status
+              const isBrandSigned = brandSignature?.signed || isContractSigned;
+              const bothSigned = isBrandSigned && isCreatorSigned;
+              
+              return (
+                <>
+                  <h2 className="font-semibold text-xl mb-2 flex items-center gap-2">
+                    {bothSigned ? (
                       <CheckCircle className="w-6 h-6 text-purple-400" />
-                      Final Contract
-                    </h2>
-                    <p className="text-sm text-white/70 mb-4">
-                      {isCreatorSigned
-                        ? 'This agreement has been legally executed. CreatorArmour provides verification and audit records.'
-                        : 'The brand has signed the agreement. Please review and sign to finalize the deal.'}
-                    </p>
+                    ) : (
+                      <FileText className="w-6 h-6 text-purple-400" />
+                    )}
+                    {bothSigned ? 'Final Contract' : 'Final Agreement'}
+                  </h2>
+                  <p className="text-sm text-white/70 mb-4">
+                    {bothSigned
+                      ? 'This agreement has been legally executed. CreatorArmour provides verification and audit records.'
+                      : !isBrandSigned && !isCreatorSigned
+                      ? 'This contract has been generated based on confirmed details. Both parties need to sign to finalize the deal.'
+                      : !isBrandSigned
+                      ? 'Please share the signing link with the brand to complete the agreement.'
+                      : 'The brand has signed the agreement. Please review and sign to finalize the deal.'}
+                  </p>
 
-                    <div className="flex flex-col gap-3">
-                      {!isCreatorSigned && (
-                          <motion.button
-                          onClick={() => setShowCreatorSigningModal(true)}
-                            whileTap={{ scale: 0.98 }}
-                          className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 px-6 py-3 rounded-xl font-semibold text-white transition-all flex items-center justify-center gap-2"
-                          >
-                          <FileText className="w-5 h-5" />
-                          Sign as Creator
-                          </motion.button>
-                      )}
+                  <div className="flex flex-col gap-3">
+                    {/* Sign as Creator - Always show */}
+                    {isCreatorSigned ? (
+                      <div className="w-full bg-gradient-to-r from-green-500/20 to-emerald-500/20 border border-green-400/30 px-6 py-3 rounded-xl flex items-center justify-center gap-2">
+                        <CheckCircle className="w-5 h-5 text-green-400" />
+                        <span className="font-semibold text-white">Signed as Creator</span>
+                      </div>
+                    ) : (
+                      <motion.button
+                        onClick={() => setShowCreatorSigningModal(true)}
+                        whileTap={{ scale: 0.98 }}
+                        className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 px-6 py-3 rounded-xl font-semibold text-white transition-all flex items-center justify-center gap-2"
+                      >
+                        <FileText className="w-5 h-5" />
+                        Sign as Creator
+                      </motion.button>
+                    )}
 
-                      {isCreatorSigned && (
-                        <>
-                          <motion.button
-                            onClick={handleDownloadContract}
-                            disabled={(!contractDocxUrl && !signedContractUrl && !deal?.id) || isDownloading}
-                            whileTap={{ scale: 0.98 }}
-                            className="w-full px-6 py-3 rounded-xl font-semibold text-white transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500"
-                          >
-                            {isDownloading ? (
-                              <>
-                                <Loader2 className="w-5 h-5 animate-spin" />
-                                Downloading...
-                              </>
-                            ) : (
-                              <>
-                                <Download className="w-5 h-5" />
-                                Download Signed Agreement
-                              </>
-                            )}
-                          </motion.button>
-                          
-                          <button
-                            onClick={() => setShowAuditTrail(true)}
-                            className="w-full text-sm text-white/70 hover:text-white transition-colors underline text-center py-2"
-                          >
-                            View Audit Trail
-                          </button>
-                          
-                          <p className="text-xs text-white/50 mt-2 text-center">
-                            Includes OTP verification, IP address, timestamp, and device record.
-                          </p>
-                        </>
-                      )}
+                    {/* Sign as Brand - Always show */}
+                    {isBrandSigned ? (
+                      <div className="w-full bg-gradient-to-r from-green-500/20 to-emerald-500/20 border border-green-400/30 px-6 py-3 rounded-xl flex items-center justify-center gap-2">
+                        <CheckCircle className="w-5 h-5 text-green-400" />
+                        <span className="font-semibold text-white">Signed as Brand</span>
+                      </div>
+                    ) : (
+                      <motion.button
+                        onClick={async () => {
+                          if (!deal?.id) return;
+                          const link = brandReplyLink || (await generateBrandReplyLink(deal.id));
+                          if (link) {
+                            window.open(link, '_blank');
+                          }
+                        }}
+                        whileTap={{ scale: 0.98 }}
+                        className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 px-6 py-3 rounded-xl font-semibold text-white transition-all flex items-center justify-center gap-2"
+                      >
+                        <FileText className="w-5 h-5" />
+                        Sign as Brand
+                      </motion.button>
+                    )}
 
-                      {!isCreatorSigned && (
+                    {/* Download and Audit Trail - Show if both signed */}
+                    {bothSigned && (
+                      <>
                         <motion.button
                           onClick={handleDownloadContract}
                           disabled={(!contractDocxUrl && !signedContractUrl && !deal?.id) || isDownloading}
                           whileTap={{ scale: 0.98 }}
-                          className="w-full px-6 py-3 rounded-xl font-semibold text-white transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed bg-white/10 hover:bg-white/20 border border-white/20"
+                          className="w-full px-6 py-3 rounded-xl font-semibold text-white transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500"
                         >
                           {isDownloading ? (
                             <>
@@ -2665,15 +2700,48 @@ ${link}`;
                           ) : (
                             <>
                               <Download className="w-5 h-5" />
-                              Download Agreement PDF
+                              Download Signed Agreement
                             </>
                           )}
                         </motion.button>
-                      )}
-                    </div>
-                  </>
-                );
-              }
+                        
+                        <button
+                          onClick={() => setShowAuditTrail(true)}
+                          className="w-full text-sm text-white/70 hover:text-white transition-colors underline text-center py-2"
+                        >
+                          View Audit Trail
+                        </button>
+                        
+                        <p className="text-xs text-white/50 mt-2 text-center">
+                          Includes OTP verification, IP address, timestamp, and device record.
+                        </p>
+                      </>
+                    )}
+
+                    {/* Download button - Show if at least one party has signed but not both */}
+                    {(isBrandSigned || isCreatorSigned) && !bothSigned && (
+                      <motion.button
+                        onClick={handleDownloadContract}
+                        disabled={(!contractDocxUrl && !signedContractUrl && !deal?.id) || isDownloading}
+                        whileTap={{ scale: 0.98 }}
+                        className="w-full px-6 py-3 rounded-xl font-semibold text-white transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed bg-white/10 hover:bg-white/20 border border-white/20"
+                      >
+                        {isDownloading ? (
+                          <>
+                            <Loader2 className="w-5 h-5 animate-spin" />
+                            Downloading...
+                          </>
+                        ) : (
+                          <>
+                            <Download className="w-5 h-5" />
+                            Download Agreement PDF
+                          </>
+                        )}
+                      </motion.button>
+                    )}
+                  </div>
+                </>
+              );
             })()}
           </div>
         )}

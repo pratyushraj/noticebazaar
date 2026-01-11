@@ -88,7 +88,8 @@ export function getClientIp(req: Request): string {
  * Sign contract as brand
  */
 export async function signContractAsBrand(
-  request: SignContractRequest
+  request: SignContractRequest,
+  tokenInfo?: { token: any; deal: any; creatorName: string } | null
 ): Promise<{ success: boolean; signature?: SignatureRecord; error?: string }> {
   try {
     // Validate OTP verification
@@ -99,18 +100,22 @@ export async function signContractAsBrand(
       };
     }
 
-    // Validate token and get deal
-    const { getContractReadyTokenInfo } = await import('./contractReadyTokenService.js');
-    const tokenInfo = await getContractReadyTokenInfo(request.token);
+    // Use provided tokenInfo if available, otherwise validate token
+    let validatedTokenInfo = tokenInfo;
+    if (!validatedTokenInfo) {
+      // Validate token and get deal (fallback for backward compatibility)
+      const { getContractReadyTokenInfo } = await import('./contractReadyTokenService.js');
+      validatedTokenInfo = await getContractReadyTokenInfo(request.token);
 
-    if (!tokenInfo) {
-      return {
-        success: false,
-        error: 'Invalid or expired token'
-      };
+      if (!validatedTokenInfo) {
+        return {
+          success: false,
+          error: 'Invalid or expired token'
+        };
+      }
     }
 
-    const deal = tokenInfo.deal;
+    const deal = validatedTokenInfo.deal;
 
     // Check if deal ID matches
     if (deal.id !== request.dealId) {

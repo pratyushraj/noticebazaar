@@ -406,10 +406,15 @@ const ProfileSettings = () => {
       }
       
       logger.info('User logging out');
+      // Close dialog first
+      setShowLogoutDialog(false);
+      // Then sign out
       await signOutMutation.mutateAsync();
     } catch (error: any) {
       logger.error('Logout failed', error);
       toast.error('Failed to log out');
+      // Reopen dialog if logout failed
+      setShowLogoutDialog(true);
     }
   };
 
@@ -766,17 +771,21 @@ const ProfileSettings = () => {
             <div className="mt-6 mb-4">
               <div className="bg-red-500/5 rounded-lg p-3 border border-red-500/20">
                 <button 
-                  onClick={() => {
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
                     // Haptic feedback on click
                     if (navigator.vibrate) {
                       navigator.vibrate(30);
                     }
+                    console.log('[CreatorProfile] Logout button clicked, opening dialog');
                     setShowLogoutDialog(true);
                   }}
                   disabled={signOutMutation.isPending}
                   className="w-full bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 text-red-400 font-medium py-2.5 rounded-lg transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed text-sm min-h-[44px]"
                   aria-label="Log out of your account"
                   aria-describedby="logout-description"
+                  type="button"
                 >
                   {signOutMutation.isPending ? (
                     <>
@@ -989,17 +998,21 @@ const ProfileSettings = () => {
             <div className="mt-6 mb-4">
               <div className="bg-red-500/5 rounded-lg p-3 border border-red-500/20">
                 <button 
-                  onClick={() => {
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
                     // Haptic feedback on click
                     if (navigator.vibrate) {
                       navigator.vibrate(30);
                     }
+                    console.log('[CreatorProfile] Logout button clicked, opening dialog');
                     setShowLogoutDialog(true);
                   }}
                   disabled={signOutMutation.isPending}
                   className="w-full bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 text-red-400 font-medium py-2.5 rounded-lg transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed text-sm min-h-[44px]"
                   aria-label="Log out of your account"
                   aria-describedby="logout-description"
+                  type="button"
                 >
                   {signOutMutation.isPending ? (
                     <>
@@ -1019,52 +1032,56 @@ const ProfileSettings = () => {
               </div>
             </div>
 
-            {/* Logout Confirmation Dialog */}
-            <AlertDialog open={showLogoutDialog} onOpenChange={setShowLogoutDialog}>
-              <AlertDialogContent className="bg-gradient-to-br from-purple-900/95 via-purple-800/95 to-indigo-900/95 backdrop-blur-xl border border-white/10 text-white">
-                <AlertDialogHeader>
-                  <AlertDialogTitle className="text-white text-xl flex items-center gap-2">
-                    <LogOut className="w-5 h-5 text-red-400" />
-                    Confirm Logout
-                  </AlertDialogTitle>
-                  <AlertDialogDescription className="text-purple-200">
-                    Are you sure you want to log out? You'll need to sign in again to access your account.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter className="gap-2 sm:gap-0">
-                  <AlertDialogCancel 
-                    onClick={() => {
-                      if (navigator.vibrate) {
-                        navigator.vibrate(30);
-                      }
-                    }}
-                    className="bg-white/10 text-white border-white/20 hover:bg-white/20 focus:ring-2 focus:ring-purple-400/50"
-                  >
-                    Cancel
-                  </AlertDialogCancel>
-                  <AlertDialogAction
-                    onClick={handleLogout}
-                    disabled={signOutMutation.isPending}
-                    className="bg-red-500/20 hover:bg-red-500/30 text-red-400 border border-red-500/40 focus:ring-2 focus:ring-red-400/50 disabled:opacity-50"
-                  >
-                    {signOutMutation.isPending ? (
-                      <>
-                        <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                        Logging out...
-                      </>
-                    ) : (
-                      <>
-                        <LogOut className="w-4 h-4 mr-2" />
-                        Log Out
-                      </>
-                    )}
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
           </div>
         )}
       </div>
+
+      {/* Logout Confirmation Dialog - Always rendered outside conditionals */}
+      <AlertDialog open={showLogoutDialog} onOpenChange={(open) => {
+        console.log('[CreatorProfile] Dialog open state changed:', open);
+        setShowLogoutDialog(open);
+      }}>
+        <AlertDialogContent className="bg-gradient-to-br from-purple-900/95 via-purple-800/95 to-indigo-900/95 backdrop-blur-xl border border-white/10 text-white">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-white text-xl flex items-center gap-2">
+              <LogOut className="w-5 h-5 text-red-400" />
+              Confirm Logout
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-purple-200">
+              Are you sure you want to log out? You'll need to sign in again to access your account.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="gap-2 sm:gap-0">
+            <AlertDialogCancel 
+              onClick={() => {
+                if (navigator.vibrate) {
+                  navigator.vibrate(30);
+                }
+              }}
+              className="bg-white/10 text-white border-white/20 hover:bg-white/20 focus:ring-2 focus:ring-purple-400/50"
+            >
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleLogout}
+              disabled={signOutMutation.isPending}
+              className="bg-red-500/20 hover:bg-red-500/30 text-red-400 border border-red-500/40 focus:ring-2 focus:ring-red-400/50 disabled:opacity-50"
+            >
+              {signOutMutation.isPending ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                  Logging out...
+                </>
+              ) : (
+                <>
+                  <LogOut className="w-4 h-4 mr-2" />
+                  Log Out
+                </>
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

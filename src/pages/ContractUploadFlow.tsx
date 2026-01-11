@@ -102,10 +102,65 @@ const ContractUploadFlow = () => {
   const [collaborationLink, setCollaborationLink] = useState<string | null>(null);
   const [isGeneratingLink, setIsGeneratingLink] = useState(false);
   
+  // Helper to validate creator address and phone before contract operations
+  const validateCreatorContactInfo = (): { isValid: boolean; message: string; missingFields: string[] } => {
+    const missingFields: string[] = [];
+    
+    // Check address
+    const creatorAddress = profile?.location || profile?.address || '';
+    const trimmedAddress = creatorAddress?.trim() || '';
+    
+    if (!trimmedAddress || 
+        trimmedAddress === '' || 
+        trimmedAddress.toLowerCase() === 'not specified' ||
+        trimmedAddress.toLowerCase() === 'n/a' ||
+        trimmedAddress.length < 5) {
+      missingFields.push('address');
+    }
+    
+    // Check phone
+    const creatorPhone = profile?.phone || '';
+    const trimmedPhone = creatorPhone?.trim() || '';
+    
+    // Phone should be at least 10 digits (excluding country code)
+    const phoneDigits = trimmedPhone.replace(/\D/g, '');
+    if (!trimmedPhone || 
+        trimmedPhone === '' || 
+        trimmedPhone === '+91' ||
+        trimmedPhone === '+91 ' ||
+        phoneDigits.length < 10) {
+      missingFields.push('phone number');
+    }
+    
+    if (missingFields.length > 0) {
+      const fieldsText = missingFields.join(' and ');
+      return {
+        isValid: false,
+        message: `Please add your ${fieldsText} in Profile Settings before generating contracts or sharing links with brands. This information is required for legal contracts.`,
+        missingFields
+      };
+    }
+    
+    return { isValid: true, message: '', missingFields: [] };
+  };
+  
   // Handle Request Details Click
   const handleRequestDetailsClick = async () => {
     if (!session?.access_token || !profile?.id) {
       toast.error('Please log in to request collaboration details');
+      return;
+    }
+
+    // Validate creator address and phone before generating link
+    const validation = validateCreatorContactInfo();
+    if (!validation.isValid) {
+      toast.error(validation.message, {
+        duration: 6000,
+        action: {
+          label: 'Go to Profile',
+          onClick: () => navigate('/creator-profile')
+        }
+      });
       return;
     }
 
@@ -569,6 +624,19 @@ ${creatorName}`;
   // Helper to create a secure brand reply link token for a deal
   const generateBrandReplyLink = async (dealId: string): Promise<string | null> => {
     try {
+      // Validate creator address and phone before generating link
+      const validation = validateCreatorContactInfo();
+      if (!validation.isValid) {
+        toast.error(validation.message, {
+          duration: 6000,
+          action: {
+            label: 'Go to Profile',
+            onClick: () => navigate('/creator-profile')
+          }
+        });
+        return null;
+      }
+
       if (!session?.access_token) {
         console.warn('[ContractUploadFlow] Cannot generate brand reply link: no session');
         return null;
@@ -6079,17 +6147,30 @@ ${creatorName}${session?.user?.email ? `\n${session.user.email}` : ''}`;
       (typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com') 
         ? 'https://api.creatorarmour.com'
                         : 'https://noticebazaar-api.onrender.com');
-                        const response = await fetch(`${apiBaseUrl}/api/protection/generate-safe-contract`, {
-                          method: 'POST',
-                          headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${session.access_token}`
-                          },
-                          body: JSON.stringify({
-                            reportId,
-                            originalFilePath: filePath
-                          })
-                        });
+                    // Validate creator address and phone before generating contract
+                    const validation = validateCreatorContactInfo();
+                    if (!validation.isValid) {
+                      toast.error(validation.message, {
+                        duration: 6000,
+                        action: {
+                          label: 'Go to Profile',
+                          onClick: () => navigate('/creator-profile')
+                        }
+                      });
+                      return;
+                    }
+
+                    const response = await fetch(`${apiBaseUrl}/api/protection/generate-safe-contract`, {
+                      method: 'POST',
+                      headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${session.access_token}`
+                      },
+                      body: JSON.stringify({
+                        reportId,
+                        originalFilePath: filePath
+                      })
+                    });
 
                         // Check if response is a file download (not JSON)
                         const contentType = response.headers.get('content-type');
@@ -6559,6 +6640,19 @@ ${creatorName}${session?.user?.email ? `\n${session.user.email}` : ''}`;
       (typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com') 
         ? 'https://api.creatorarmour.com'
                           : 'https://noticebazaar-api.onrender.com');
+                          // Validate creator address and phone before generating contract
+                          const validation = validateCreatorContactInfo();
+                          if (!validation.isValid) {
+                            toast.error(validation.message, {
+                              duration: 6000,
+                              action: {
+                                label: 'Go to Profile',
+                                onClick: () => navigate('/creator-profile')
+                              }
+                            });
+                            return;
+                          }
+
                           const response = await fetch(`${apiBaseUrl}/api/protection/generate-safe-contract`, {
                             method: 'POST',
                             headers: {

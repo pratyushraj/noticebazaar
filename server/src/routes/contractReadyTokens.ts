@@ -134,9 +134,83 @@ router.post('/:token/sign', async (req: Request, res: Response) => {
       });
     }
 
-    // Validate token and get deal
-    const tokenInfo = await getContractReadyTokenInfo(token.trim());
-
+    // Validate token and get deal - try contract-ready-tokens first, then brand-reply-tokens
+    let tokenInfo = await getContractReadyTokenInfo(token.trim());
+    
+    // If not found in contract-ready-tokens, try brand-reply-tokens
+    if (!tokenInfo) {
+      // Try to get token info from brand-reply-tokens
+      const { data: replyTokenData, error: replyTokenError } = await supabase
+        .from('brand_reply_tokens')
+        .select('id, deal_id, is_active, expires_at, revoked_at')
+        .eq('id', token.trim())
+        .maybeSingle();
+      
+      if (!replyTokenError && replyTokenData && replyTokenData.is_active && !replyTokenData.revoked_at) {
+        // Check if token is expired
+        if (replyTokenData.expires_at) {
+          const now = new Date();
+          const expiresAt = new Date(replyTokenData.expires_at);
+          if (now > expiresAt) {
+            return res.status(403).json({
+              success: false,
+              error: 'This link is no longer valid. Please contact the creator.'
+            });
+          }
+        }
+        
+        // Get deal info
+        const { data: deal, error: dealError } = await supabase
+          .from('brand_deals')
+          .select('*')
+          .eq('id', replyTokenData.deal_id)
+          .maybeSingle();
+        
+        if (dealError || !deal) {
+          return res.status(404).json({
+            success: false,
+            error: 'This link is no longer valid. Please contact the creator.'
+          });
+        }
+        
+        // Get creator name - use a simple fallback since we don't know the exact profile structure
+        let creatorName = 'Creator';
+        try {
+          const { data: creatorProfile } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', deal.creator_id)
+            .maybeSingle();
+          
+          if (creatorProfile) {
+            // Try common name fields
+            creatorName = (creatorProfile as any).display_name || 
+                         (creatorProfile as any).full_name ||
+                         (creatorProfile as any).name ||
+                         'Creator';
+          }
+        } catch (profileError) {
+          console.warn('[ContractReadyTokens] Could not fetch creator name:', profileError);
+        }
+        
+        // Create tokenInfo-like object for brand-reply-tokens
+        // We need to match the ContractReadyToken interface structure
+        tokenInfo = {
+          token: {
+            id: replyTokenData.id,
+            deal_id: replyTokenData.deal_id,
+            is_active: replyTokenData.is_active,
+            expires_at: replyTokenData.expires_at,
+            revoked_at: replyTokenData.revoked_at,
+            created_at: (replyTokenData as any).created_at || new Date().toISOString(),
+            created_by: deal.creator_id,
+          } as any,
+          deal: deal,
+          creatorName: creatorName
+        };
+      }
+    }
+    
     if (!tokenInfo) {
       return res.status(404).json({
         success: false,
@@ -163,7 +237,7 @@ router.post('/:token/sign', async (req: Request, res: Response) => {
     const userAgent = req.headers['user-agent'] || 'Unknown';
     const deviceInfo = getDeviceInfo(userAgent);
 
-    // Sign contract
+    // Sign contract - pass tokenInfo to avoid re-validation
     const result = await signContractAsBrand({
       dealId: deal.id,
       token: token.trim(),
@@ -177,7 +251,7 @@ router.post('/:token/sign', async (req: Request, res: Response) => {
       deviceInfo,
       otpVerified: otpVerified !== false, // Default to true if not specified
       otpVerifiedAt: otpVerifiedAt || new Date().toISOString(),
-    });
+    }, tokenInfo); // Pass the already-validated tokenInfo
 
     if (!result.success) {
       return res.status(400).json({

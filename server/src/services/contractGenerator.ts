@@ -39,6 +39,23 @@ export interface ContractGenerationRequest {
   exclusivityDuration?: string;
   terminationNoticeDays?: number;
   jurisdictionCity?: string;
+  // Signature data (optional - for contracts downloaded after signing)
+  brandSignature?: {
+    signer_name: string;
+    signer_email: string;
+    signed_at?: string;
+    otp_verified_at?: string;
+    ip_address?: string;
+    user_agent?: string;
+  };
+  creatorSignature?: {
+    signer_name: string;
+    signer_email: string;
+    signed_at?: string;
+    otp_verified_at?: string;
+    ip_address?: string;
+    user_agent?: string;
+  };
 }
 
 export interface ContractGenerationResponse {
@@ -172,6 +189,14 @@ export async function generateContractFromScratch(
         has_additional_terms: !!(request.additionalTerms && request.additionalTerms.trim().length > 0),
       }
     );
+    
+    // Add signature data if provided
+    if (request.brandSignature) {
+      (contractSchema as any).brand_signature = request.brandSignature;
+    }
+    if (request.creatorSignature) {
+      (contractSchema as any).creator_signature = request.creatorSignature;
+    }
       
     // Generate DOCX directly from schema (PRIMARY OUTPUT)
     console.log('[ContractGenerator] Generating DOCX from ContractSchema...');

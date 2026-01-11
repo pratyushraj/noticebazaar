@@ -17,6 +17,7 @@ const Signup = () => {
   const { session, loading, user } = useSession();
   const [isLoading, setIsLoading] = useState(false);
   const [showLogin, setShowLogin] = useState(false);
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [emailError, setEmailError] = useState('');
@@ -101,8 +102,8 @@ const Signup = () => {
   const handleEmailPasswordSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!email.trim() || !password.trim()) {
-      toast.error('Please enter both email and password');
+    if (!name.trim() || !email.trim() || !password.trim()) {
+      toast.error('Please enter your name, email, and password');
       return;
     }
 
@@ -113,11 +114,21 @@ const Signup = () => {
 
     setIsLoading(true);
     try {
+      // Split name into first and last name
+      const nameParts = name.trim().split(' ');
+      const firstName = nameParts[0] || '';
+      const lastName = nameParts.slice(1).join(' ') || '';
+
       const { data, error } = await supabase.auth.signUp({
         email: email.trim(),
         password: password,
         options: {
           emailRedirectTo: `${window.location.origin}/#/creator-onboarding`,
+          data: {
+            first_name: firstName,
+            last_name: lastName,
+            full_name: name.trim(),
+          },
         },
       });
 
@@ -176,6 +187,7 @@ const Signup = () => {
             duration: 5000,
           });
           // Clear form after successful signup
+          setName('');
           setEmail('');
           setPassword('');
           setEmailError('');
@@ -516,6 +528,22 @@ const Signup = () => {
               <div className="mb-6 space-y-3">
                 <form onSubmit={handleEmailPasswordSignup} className="space-y-3">
                   <div>
+                    <Label htmlFor="signup-name" className="text-purple-200 text-sm mb-2 block">
+                      Name
+                    </Label>
+                    <Input
+                      id="signup-name"
+                      type="text"
+                      placeholder="Enter your full name"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      className="bg-white/5 border-white/10 text-white placeholder:text-white/40 text-base h-12"
+                      required
+                      autoComplete="name"
+                      autoFocus
+                    />
+                  </div>
+                  <div>
                     <Label htmlFor="signup-email" className="text-purple-200 text-sm mb-2 block">
                       Email
                     </Label>
@@ -530,7 +558,6 @@ const Signup = () => {
                       }`}
                       required
                       autoComplete="email"
-                      autoFocus
                     />
                     {emailError && (
                       <p className="text-xs text-red-400 mt-1">{emailError}</p>
@@ -590,7 +617,7 @@ const Signup = () => {
                   </div>
                   <Button
                     type="submit"
-                    disabled={isLoading || !email.trim() || !password.trim() || password.length < 6 || !!emailError}
+                    disabled={isLoading || !name.trim() || !email.trim() || !password.trim() || password.length < 6 || !!emailError}
                     className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold h-12 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {isLoading ? (
@@ -755,6 +782,7 @@ const Signup = () => {
               <button
                 onClick={() => {
                   setShowLogin(!showLogin);
+                  setName('');
                   setEmail('');
                   setPassword('');
                   setShowFaceIDLogin(false);

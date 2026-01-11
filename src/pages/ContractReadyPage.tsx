@@ -41,6 +41,7 @@ const ContractReadyPage = () => {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [showSignatureDetails, setShowSignatureDetails] = useState(false);
   const [isAuthorizedToSign, setIsAuthorizedToSign] = useState(false);
+  const [tokenSource, setTokenSource] = useState<'contract-ready-tokens' | 'brand-reply-tokens'>('contract-ready-tokens');
 
   // Load contract ready token info
   useEffect(() => {
@@ -61,10 +62,12 @@ const ContractReadyPage = () => {
         // Try contract-ready-tokens first, fallback to brand-reply-tokens for migration
         let response = await fetch(`${apiBaseUrl}/api/contract-ready-tokens/${token}`);
         let data = await response.json();
+        let currentTokenSource: 'contract-ready-tokens' | 'brand-reply-tokens' = 'contract-ready-tokens';
 
         // If contract-ready-tokens doesn't work, try legacy brand-reply-tokens
         if (!response.ok && response.status === 404) {
           console.log('[ContractReadyPage] Token not found in contract-ready-tokens, trying brand-reply-tokens for migration');
+          currentTokenSource = 'brand-reply-tokens';
           response = await fetch(`${apiBaseUrl}/api/brand-response/${token}`);
           data = await response.json();
           
@@ -79,6 +82,9 @@ const ContractReadyPage = () => {
             };
           }
         }
+        
+        // Store which token source was used
+        setTokenSource(currentTokenSource);
 
         if (!response.ok || !data.success) {
           throw new Error(data.error || 'Failed to load contract information');
@@ -93,6 +99,14 @@ const ContractReadyPage = () => {
         // If signature exists and is signed, mark OTP as verified
         if (data.signature?.signed) {
           setIsOTPVerified(true);
+        }
+        
+        // If OTP is already verified (from deal data), mark as verified
+        if (data.deal?.otp_verified === true) {
+          setIsOTPVerified(true);
+          if (data.deal?.otp_verified_at) {
+            setOtpVerifiedAt(data.deal.otp_verified_at);
+          }
         }
       } catch (error: any) {
         console.error('[ContractReadyPage] Load error:', error);
@@ -130,6 +144,13 @@ const ContractReadyPage = () => {
   const sendOTP = async () => {
     if (!token) {
       toast.error('Invalid token');
+      return;
+    }
+
+    // If OTP is already verified, don't send again
+    if (isOTPVerified) {
+      toast.info('OTP has already been verified. You can proceed to sign the agreement.');
+      setShowOTPModal(false);
       return;
     }
 
@@ -222,6 +243,16 @@ const ContractReadyPage = () => {
 
       if (!response.ok || !data.success) {
         const errorMessage = data.error || 'Failed to verify OTP';
+        
+        // If OTP is already verified, treat it as success
+        if (errorMessage.includes('already been verified') || errorMessage.includes('already verified')) {
+          toast.success('OTP was already verified.');
+          setIsOTPVerified(true);
+          setOtpVerifiedAt(new Date().toISOString());
+          setShowOTPModal(false);
+          triggerHaptic(HapticPatterns.success);
+          return;
+        }
         
         // If OTP not found, automatically request a new one
         if (errorMessage.includes('No OTP found') || errorMessage.includes('OTP has expired')) {
@@ -334,43 +365,41 @@ const ContractReadyPage = () => {
       });
 
       let response: Response;
+      const signPayload = {
+        signerName: dealInfo.brand_name || 'Brand',
+        signerEmail: signerEmail,
+        signerPhone: dealInfo.brand_phone || null,
+        contractVersionId: dealInfo.contract_version || 'v3',
+        contractSnapshotHtml,
+        otpVerified: true,
+        otpVerifiedAt: otpVerifiedAt || new Date().toISOString(),
+      };
 
-      // Try localhost first if applicable, then fallback to production
+      // Always use contract-ready-tokens signing endpoint
+      // The server will handle checking both token tables (contract-ready-tokens and brand-reply-tokens)
+      const signEndpoint = `${apiBaseUrl}/api/contract-ready-tokens/${token}/sign`;
+
+      // Try signing with the endpoint
       try {
-        response = await fetch(`${apiBaseUrl}/api/contract-ready-tokens/${token}/sign`, {
+        response = await fetch(signEndpoint, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({
-            signerName: dealInfo.brand_name || 'Brand',
-            signerEmail: signerEmail,
-            signerPhone: dealInfo.brand_phone || null,
-            contractVersionId: dealInfo.contract_version || 'v3',
-            contractSnapshotHtml,
-            otpVerified: true,
-            otpVerifiedAt: otpVerifiedAt || new Date().toISOString(),
-          }),
+          body: JSON.stringify(signPayload),
         });
       } catch (fetchError: any) {
         // If localhost failed and we're not already on production, try production
         if (apiBaseUrl.includes('localhost') && typeof window !== 'undefined' && !window.location.origin.includes('localhost')) {
           console.log('[ContractReadyPage] Localhost failed, trying production API...');
           apiBaseUrl = 'https://noticebazaar-api.onrender.com';
-          response = await fetch(`${apiBaseUrl}/api/contract-ready-tokens/${token}/sign`, {
+          const productionSignEndpoint = `${apiBaseUrl}/api/contract-ready-tokens/${token}/sign`;
+          response = await fetch(productionSignEndpoint, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
             },
-            body: JSON.stringify({
-              signerName: dealInfo.brand_name || 'Brand',
-              signerEmail: signerEmail,
-              signerPhone: dealInfo.brand_phone || null,
-              contractVersionId: dealInfo.contract_version || 'v3',
-              contractSnapshotHtml,
-              otpVerified: true,
-              otpVerifiedAt: otpVerifiedAt || new Date().toISOString(),
-            }),
+            body: JSON.stringify(signPayload),
           });
         } else {
           throw fetchError;
@@ -385,12 +414,23 @@ const ContractReadyPage = () => {
         
         // Handle specific error cases
         if (errorMessage.includes('no longer valid') || errorMessage.includes('Invalid token')) {
-          toast.error('This link is no longer valid. Please contact the creator for a new link.');
+          // If using brand-reply-tokens, try to refresh from brand-response endpoint
+          if (tokenSource === 'brand-reply-tokens') {
+            console.log('[ContractReadyPage] Token invalid, but this is a brand-reply-token. The signing endpoint may not be available for this token type.');
+            toast.error('This link type does not support direct signing. Please contact the creator for a new contract link.');
+          } else {
+            toast.error('This link is no longer valid. Please contact the creator for a new link.');
+          }
           setLoadError('This link is no longer valid. Please contact the creator.');
         } else if (errorMessage.includes('already been signed')) {
           toast.error('This contract has already been signed.');
-          // Refresh to show signed state
-          const refreshResponse = await fetch(`${apiBaseUrl}/api/contract-ready-tokens/${token}`);
+          // Refresh to show signed state - try both endpoints
+          let refreshResponse: Response;
+          if (tokenSource === 'brand-reply-tokens') {
+            refreshResponse = await fetch(`${apiBaseUrl}/api/brand-response/${token}`);
+          } else {
+            refreshResponse = await fetch(`${apiBaseUrl}/api/contract-ready-tokens/${token}`);
+          }
           const refreshData = await refreshResponse.json();
           if (refreshData.success && refreshData.signature) {
             setSignature(refreshData.signature);
@@ -404,11 +444,22 @@ const ContractReadyPage = () => {
       toast.success('Agreement signed successfully!');
       triggerHaptic(HapticPatterns.success);
       
-      // Reload signature status
-      const refreshResponse = await fetch(`${apiBaseUrl}/api/contract-ready-tokens/${token}`);
-      const refreshData = await refreshResponse.json();
-      if (refreshData.success && refreshData.signature) {
-        setSignature(refreshData.signature);
+      // Reload signature status - use the appropriate endpoint based on token source
+      try {
+        let refreshResponse: Response;
+        if (tokenSource === 'brand-reply-tokens') {
+          refreshResponse = await fetch(`${apiBaseUrl}/api/brand-response/${token}`);
+        } else {
+          refreshResponse = await fetch(`${apiBaseUrl}/api/contract-ready-tokens/${token}`);
+        }
+        
+        const refreshData = await refreshResponse.json();
+        if (refreshData.success && refreshData.signature) {
+          setSignature(refreshData.signature);
+        }
+      } catch (refreshError) {
+        console.warn('[ContractReadyPage] Could not refresh signature status:', refreshError);
+        // Non-fatal - signing was successful
       }
       
       // Show success state
