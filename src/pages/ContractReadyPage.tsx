@@ -285,6 +285,11 @@ const ContractReadyPage = () => {
       return;
     }
 
+    if (!isAuthorizedToSign) {
+      toast.error('Please confirm that you are authorized to sign on behalf of the brand.');
+      return;
+    }
+
     if (!token || !dealInfo) {
       toast.error('Invalid token or deal information');
       return;
@@ -296,40 +301,104 @@ const ContractReadyPage = () => {
       return;
     }
 
+    if (!brandEmail && !brandEmailInput) {
+      toast.error('Email address is required for signing');
+      return;
+    }
+
     setIsSigning(true);
 
     try {
-      const apiBaseUrl =
+      // Determine API base URL with fallback logic
+      let apiBaseUrl =
         import.meta.env.VITE_API_BASE_URL ||
         (typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com')
           ? 'https://api.creatorarmour.com'
-          : 'http://localhost:3001');
+          : typeof window !== 'undefined' && window.location.hostname === 'localhost'
+          ? 'http://localhost:3001'
+          : 'https://noticebazaar-api.onrender.com');
 
       // Get contract HTML snapshot (if available)
       const contractSnapshotHtml = dealInfo.contract_file_url 
         ? `Contract URL: ${dealInfo.contract_file_url}\nSigned at: ${new Date().toISOString()}`
         : undefined;
 
-      const response = await fetch(`${apiBaseUrl}/api/contract-ready-tokens/${token}/sign`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          signerName: dealInfo.brand_name || 'Brand',
-          signerEmail: brandEmail || brandEmailInput,
-          signerPhone: dealInfo.brand_phone || null,
-          contractVersionId: dealInfo.contract_version || 'v3',
-          contractSnapshotHtml,
-          otpVerified: true,
-          otpVerifiedAt: otpVerifiedAt || new Date().toISOString(),
-        }),
+      const signerEmail = brandEmail || brandEmailInput;
+      
+      console.log('[ContractReadyPage] Attempting to sign contract:', {
+        token,
+        signerEmail,
+        signerName: dealInfo.brand_name,
+        otpVerified: true,
+        otpVerifiedAt: otpVerifiedAt || new Date().toISOString(),
       });
+
+      let response: Response;
+
+      // Try localhost first if applicable, then fallback to production
+      try {
+        response = await fetch(`${apiBaseUrl}/api/contract-ready-tokens/${token}/sign`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            signerName: dealInfo.brand_name || 'Brand',
+            signerEmail: signerEmail,
+            signerPhone: dealInfo.brand_phone || null,
+            contractVersionId: dealInfo.contract_version || 'v3',
+            contractSnapshotHtml,
+            otpVerified: true,
+            otpVerifiedAt: otpVerifiedAt || new Date().toISOString(),
+          }),
+        });
+      } catch (fetchError: any) {
+        // If localhost failed and we're not already on production, try production
+        if (apiBaseUrl.includes('localhost') && typeof window !== 'undefined' && !window.location.origin.includes('localhost')) {
+          console.log('[ContractReadyPage] Localhost failed, trying production API...');
+          apiBaseUrl = 'https://noticebazaar-api.onrender.com';
+          response = await fetch(`${apiBaseUrl}/api/contract-ready-tokens/${token}/sign`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              signerName: dealInfo.brand_name || 'Brand',
+              signerEmail: signerEmail,
+              signerPhone: dealInfo.brand_phone || null,
+              contractVersionId: dealInfo.contract_version || 'v3',
+              contractSnapshotHtml,
+              otpVerified: true,
+              otpVerifiedAt: otpVerifiedAt || new Date().toISOString(),
+            }),
+          });
+        } else {
+          throw fetchError;
+        }
+      }
 
       const data = await response.json();
 
       if (!response.ok || !data.success) {
-        throw new Error(data.error || 'Failed to sign contract');
+        const errorMessage = data.error || 'Failed to sign contract';
+        console.error('[ContractReadyPage] Sign error response:', errorMessage);
+        
+        // Handle specific error cases
+        if (errorMessage.includes('no longer valid') || errorMessage.includes('Invalid token')) {
+          toast.error('This link is no longer valid. Please contact the creator for a new link.');
+          setLoadError('This link is no longer valid. Please contact the creator.');
+        } else if (errorMessage.includes('already been signed')) {
+          toast.error('This contract has already been signed.');
+          // Refresh to show signed state
+          const refreshResponse = await fetch(`${apiBaseUrl}/api/contract-ready-tokens/${token}`);
+          const refreshData = await refreshResponse.json();
+          if (refreshData.success && refreshData.signature) {
+            setSignature(refreshData.signature);
+          }
+        } else {
+          toast.error(errorMessage);
+        }
+        throw new Error(errorMessage);
       }
 
       toast.success('Agreement signed successfully!');
