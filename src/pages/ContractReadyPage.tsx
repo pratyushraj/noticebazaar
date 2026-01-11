@@ -40,6 +40,7 @@ const ContractReadyPage = () => {
   const [requestEditText, setRequestEditText] = useState('');
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [showSignatureDetails, setShowSignatureDetails] = useState(false);
+  const [isAuthorizedToSign, setIsAuthorizedToSign] = useState(false);
 
   // Load contract ready token info
   useEffect(() => {
@@ -221,6 +222,23 @@ const ContractReadyPage = () => {
 
       if (!response.ok || !data.success) {
         const errorMessage = data.error || 'Failed to verify OTP';
+        
+        // If OTP not found, automatically request a new one
+        if (errorMessage.includes('No OTP found') || errorMessage.includes('OTP has expired')) {
+          toast.error('OTP not found or expired. Requesting a new OTP...', {
+            duration: 3000,
+          });
+          
+          // Auto-request new OTP
+          if (brandEmail || brandEmailInput) {
+            await sendOTP();
+          } else {
+            toast.error('Please enter your email address first');
+            setShowOTPModal(false);
+          }
+          return;
+        }
+        
         toast.error(errorMessage);
         return;
       }
@@ -466,10 +484,10 @@ const ContractReadyPage = () => {
           </h1>
           <div className="h-0.5 w-32 bg-gradient-to-r from-blue-500 via-purple-500 to-indigo-500 mx-auto rounded-full mb-3" />
           <h2 className="text-xl md:text-2xl font-semibold mb-1">
-            Your Collaboration Agreement is Ready
+            Review & Sign Collaboration Agreement
           </h2>
           <p className="text-white/60 text-xs md:text-sm">
-            Review the agreement details below and proceed to sign when ready.
+            This agreement will become legally binding once signed by both parties.
           </p>
         </motion.div>
 
@@ -480,10 +498,13 @@ const ContractReadyPage = () => {
           transition={{ delay: 0.1 }}
           className="bg-gradient-to-br from-purple-500/20 to-indigo-500/20 backdrop-blur-xl border border-purple-400/30 rounded-2xl p-6 shadow-lg space-y-4"
         >
-          <div className="flex items-center gap-2 mb-4">
+          <div className="flex items-center gap-2 mb-2">
             <FileText className="w-5 h-5 text-purple-300" />
             <h3 className="text-lg font-semibold text-white">Contract Summary</h3>
           </div>
+          <p className="text-white/50 text-xs mb-4">
+            This is a summary. The full legal agreement will be generated after verification.
+          </p>
           
           {/* Amount */}
           {dealInfo.deal_amount && (
@@ -579,7 +600,7 @@ const ContractReadyPage = () => {
             transition={{ delay: 0.2 }}
             className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6 shadow-lg"
           >
-            <h3 className="text-lg font-semibold mb-4">Brand Legal Details</h3>
+            <h3 className="text-lg font-semibold mb-4">Brand Legal Details (Signing Party)</h3>
             <div className="space-y-2 text-sm">
               <p className="text-white/90">{dealInfo.brand_name}</p>
               <p className="text-white/70">{dealInfo.brand_address}</p>
@@ -597,7 +618,7 @@ const ContractReadyPage = () => {
           transition={{ delay: 0.3 }}
           className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6 shadow-lg"
         >
-          <h3 className="text-lg font-semibold mb-4">Creator Details</h3>
+          <h3 className="text-lg font-semibold mb-4">Creator Details (Content Creator)</h3>
           <p className="text-white/90 text-sm">{creatorName}</p>
         </motion.div>
 
@@ -609,7 +630,7 @@ const ContractReadyPage = () => {
           className="bg-blue-500/10 border border-blue-400/30 rounded-xl p-4"
         >
           <p className="text-white/80 text-sm text-center">
-            <strong>Safety Note:</strong> This does not legally bind anyone until signed.
+            <strong>No legal obligation yet.</strong> The agreement becomes legally binding only after OTP verification and signature.
           </p>
         </motion.div>
 
@@ -626,31 +647,28 @@ const ContractReadyPage = () => {
                 <FileText className="w-6 h-6 text-green-400" />
               </div>
               <div className="flex-1">
-                <h3 className="text-lg font-semibold text-white mb-1">
-                  Sign & Confirm Agreement
+                <h3 className="text-lg font-semibold text-white mb-4">
+                  Sign Agreement
                 </h3>
-                <p className="text-white/80 text-sm mb-4">
-                  By continuing, you confirm that the provided collaboration details are correct and you accept this agreement.
-                </p>
                 
-                {/* Legal Acceptance Text */}
+                {/* Authorization Checkbox */}
                 <div className="bg-white/5 rounded-xl p-4 mb-4">
-                  <p className="text-white/90 text-sm mb-2">
-                    <strong>By clicking 'Confirm & Sign Agreement', you acknowledge that:</strong>
-                  </p>
-                  <ul className="text-white/80 text-sm space-y-1.5 list-disc list-inside">
-                    <li>The information provided is correct</li>
-                    <li>You officially accept this collaboration agreement</li>
-                    <li>This acceptance is legally binding</li>
-                  </ul>
-                  <p className="text-white/70 text-xs mt-3">
-                    Your IP, device details, and timestamp will be securely recorded for verification.
-                  </p>
+                  <label className="flex items-start gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={isAuthorizedToSign}
+                      onChange={(e) => setIsAuthorizedToSign(e.target.checked)}
+                      className="mt-1 w-5 h-5 rounded border-white/30 bg-white/10 text-green-600 focus:ring-2 focus:ring-green-500 focus:ring-offset-0 focus:ring-offset-transparent"
+                    />
+                    <span className="text-white/90 text-sm">
+                      I confirm that I am authorized to sign on behalf of the brand and agree to the terms above.
+                    </span>
+                  </label>
                 </div>
 
                 <button
                   onClick={handleSign}
-                  disabled={isSigning || !isOTPVerified}
+                  disabled={isSigning || !isOTPVerified || !isAuthorizedToSign}
                   className="w-full px-6 py-3 bg-green-600 hover:bg-green-700 disabled:bg-green-600/50 disabled:cursor-not-allowed rounded-xl text-white font-semibold transition-all flex items-center justify-center gap-2"
                 >
                   {isSigning ? (
@@ -667,7 +685,7 @@ const ContractReadyPage = () => {
                 </button>
                 
                 <p className="text-white/60 text-xs text-center mt-3">
-                  This action is legally binding. Your identity will be recorded with timestamp, IP address, and device details.
+                  This action is legally binding and will be recorded with timestamp, IP address, and device details.
                 </p>
               </div>
             </div>
@@ -723,10 +741,13 @@ const ContractReadyPage = () => {
             transition={{ delay: 0.5 }}
             className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6 shadow-lg"
           >
-            <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+            <h3 className="text-lg font-semibold mb-2 flex items-center gap-2">
               <Mail className="w-5 h-5" />
-              Email Verification Required
+              Verify & Sign Agreement
             </h3>
+            <p className="text-white/60 text-sm mb-4">
+              We'll verify your identity before allowing you to sign this agreement.
+            </p>
             
             <div className="space-y-4">
               <div>
@@ -738,6 +759,9 @@ const ContractReadyPage = () => {
                   placeholder="Enter your email"
                   className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-purple-500"
                 />
+                <p className="text-white/50 text-xs mt-2">
+                  Use your official business email. This will be recorded in the contract audit trail.
+                </p>
               </div>
               
               <button
@@ -753,7 +777,7 @@ const ContractReadyPage = () => {
                 ) : otpResendCooldown > 0 ? (
                   `Resend OTP in ${otpResendCooldown}s`
                 ) : (
-                  'Send OTP'
+                  'Send OTP to Verify & Sign'
                 )}
               </button>
             </div>

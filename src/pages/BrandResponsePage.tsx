@@ -1064,10 +1064,45 @@ const BrandResponsePage = () => {
           }
           return;
         }
-        throw new Error(data.error || 'Invalid OTP');
+        const errorMessage = data.error || 'Invalid OTP';
+        
+        // If OTP not found or expired, automatically request a new one
+        if (errorMessage.includes('No OTP found') || errorMessage.includes('OTP has expired')) {
+          toast.error('OTP not found or expired. Requesting a new OTP...', {
+            duration: 3000,
+          });
+          
+          // Auto-request new OTP if email is available
+          if (brandEmail || brandEmailInput) {
+            await sendOTP();
+          } else {
+            toast.error('Please enter your email address first');
+            setShowOTPModal(false);
+          }
+          return;
+        }
+        
+        throw new Error(errorMessage);
       }
     } catch (error: any) {
       console.error('[BrandResponsePage] OTP verify error:', error);
+      
+      // Check if error is about OTP not found or expired
+      if (error.message && (error.message.includes('No OTP found') || error.message.includes('OTP has expired'))) {
+        toast.error('OTP not found or expired. Requesting a new OTP...', {
+          duration: 3000,
+        });
+        
+        // Auto-request new OTP if email is available
+        if (brandEmail || brandEmailInput) {
+          await sendOTP();
+        } else {
+          toast.error('Please enter your email address first');
+          setShowOTPModal(false);
+        }
+        return;
+      }
+      
       // Check if error is about OTP already being verified
       if (error.message && error.message.includes('already been verified')) {
         toast.success('OTP was already verified.');
@@ -1284,7 +1319,7 @@ const BrandResponsePage = () => {
       
       setShowOTPModal(true);
       // Auto-send OTP when modal opens
-      const otpResult = await sendOTP();
+      await sendOTP();
       // If OTP sending failed, keep modal open but user can try resending
       return;
     }

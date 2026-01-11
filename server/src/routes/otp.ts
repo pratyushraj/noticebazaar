@@ -325,8 +325,8 @@ publicRouter.post('/verify', async (req: express.Request, res: Response) => {
       });
     }
 
-    // Check if OTP exists (use creator-specific fields)
-    const storedHash = (deal as any).creator_otp_hash;
+    // Check if OTP exists (use brand OTP fields for public endpoint)
+    const storedHash = (deal as any).otp_hash;
     if (!storedHash) {
       return res.status(400).json({
         success: false,
@@ -335,7 +335,7 @@ publicRouter.post('/verify', async (req: express.Request, res: Response) => {
     }
 
     // Check if OTP is already verified
-    if ((deal as any).creator_otp_verified === true) {
+    if ((deal as any).otp_verified === true) {
       return res.status(400).json({
         success: false,
         error: 'OTP has already been verified',
