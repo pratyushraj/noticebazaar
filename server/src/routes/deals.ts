@@ -463,6 +463,7 @@ router.get(
 // POST /api/deals/:dealId/sign-as-creator
 // Allow creators to sign contracts after brand has signed
 const signAsCreatorHandler = async (req: AuthenticatedRequest, res: Response) => {
+    console.log('[Deals] sign-creator route hit:', req.method, req.path, req.params);
     try {
       const userId = req.user!.id;
       const { dealId } = req.params;
@@ -476,6 +477,8 @@ const signAsCreatorHandler = async (req: AuthenticatedRequest, res: Response) =>
         otpVerifiedAt,
       } = req.body;
 
+      console.log('[Deals] sign-creator - userId:', userId, 'dealId:', dealId);
+
       if (!dealId) {
         return res.status(400).json({
           success: false,
@@ -484,20 +487,39 @@ const signAsCreatorHandler = async (req: AuthenticatedRequest, res: Response) =>
       }
 
       // Verify deal exists and belongs to current creator
+      // Note: contract_version column may not exist in all databases, so we don't select it
       const { data: deal, error: dealError } = await supabase
         .from('brand_deals')
-        .select('id, creator_id, contract_file_url, contract_version, creator_otp_verified, creator_otp_verified_at')
+        .select('id, creator_id, contract_file_url, creator_otp_verified, creator_otp_verified_at')
         .eq('id', dealId)
         .single();
 
+      console.log('[Deals] sign-creator - deal lookup result:', { 
+        dealExists: !!deal, 
+        dealError: dealError?.message,
+        dealId: deal?.id,
+        creatorId: deal?.creator_id,
+        userId 
+      });
+
       if (dealError || !deal) {
+        console.error('[Deals] sign-creator - Deal not found:', {
+          dealError: dealError?.message,
+          dealErrorCode: dealError?.code,
+          dealErrorDetails: dealError?.details,
+          dealId: dealId,
+          hasDeal: !!deal,
+          supabaseInitialized: !!supabase
+        });
         return res.status(404).json({
           success: false,
           error: 'Deal not found',
+          details: dealError?.message || 'No deal returned from database',
         });
       }
 
       if (deal.creator_id !== userId && req.user!.role !== 'admin') {
+        console.log('[Deals] sign-creator - Access denied: creator_id mismatch');
         return res.status(403).json({
           success: false,
           error: 'You can only sign contracts for your own deals',
@@ -506,28 +528,61 @@ const signAsCreatorHandler = async (req: AuthenticatedRequest, res: Response) =>
 
       // Verify creator OTP was verified
       const dealData = deal as any;
+      console.log('[Deals] sign-creator - OTP check:', {
+        creator_otp_verified: dealData.creator_otp_verified,
+        creator_otp_verified_at: dealData.creator_otp_verified_at
+      });
+      
       if (!dealData.creator_otp_verified) {
+        console.log('[Deals] sign-creator - OTP not verified, rejecting');
         return res.status(400).json({
           success: false,
           error: 'OTP verification is required before signing. Please verify your OTP first.',
         });
       }
+      
+      console.log('[Deals] sign-creator - OTP verified, proceeding with signing');
 
       // Get creator profile for default values
+      console.log('[Deals] sign-creator - Fetching creator profile...');
       const { data: profile, error: profileError } = await supabase
         .from('profiles')
-        .select('email, first_name, last_name, phone')
+        .select('first_name, last_name, phone')
         .eq('id', userId)
         .single();
+
+      if (profileError) {
+        console.error('[Deals] sign-creator - Profile fetch error:', profileError);
+      }
+
+      // Get email from auth.users (email is in auth, not profiles)
+      let creatorEmail: string | null = null;
+      if (!signerEmail) {
+        console.log('[Deals] sign-creator - Fetching email from auth.users...');
+        const { data: authUser, error: authError } = await supabase.auth.admin.getUserById(userId);
+        if (authError) {
+          console.error('[Deals] sign-creator - Auth user fetch error:', authError);
+        } else {
+          creatorEmail = authUser?.user?.email || null;
+          console.log('[Deals] sign-creator - Email from auth:', creatorEmail ? `${creatorEmail.substring(0, 3)}***` : 'not found');
+        }
+      }
 
       const finalSignerName = signerName || 
         (profile?.first_name && profile?.last_name 
           ? `${profile.first_name} ${profile.last_name}`
           : profile?.first_name || 'Creator');
-      const finalSignerEmail = signerEmail || profile?.email;
+      const finalSignerEmail = signerEmail || creatorEmail;
       const finalSignerPhone = signerPhone || profile?.phone;
 
+      console.log('[Deals] sign-creator - Signer info:', {
+        name: finalSignerName,
+        email: finalSignerEmail ? `${finalSignerEmail.substring(0, 3)}***` : 'missing',
+        phone: finalSignerPhone ? 'provided' : 'missing'
+      });
+
       if (!finalSignerEmail) {
+        console.log('[Deals] sign-creator - Missing signer email, rejecting');
         return res.status(400).json({
           success: false,
           error: 'Signer email is required',
@@ -541,6 +596,7 @@ const signAsCreatorHandler = async (req: AuthenticatedRequest, res: Response) =>
       const deviceInfo = getDeviceInfo(userAgent);
 
       // Sign contract as creator
+      console.log('[Deals] sign-creator - Calling signContractAsCreator service...');
       const { signContractAsCreator } = await import('../services/contractSigningService.js');
       const result = await signContractAsCreator({
         dealId,
@@ -548,7 +604,7 @@ const signAsCreatorHandler = async (req: AuthenticatedRequest, res: Response) =>
         signerName: finalSignerName,
         signerEmail: finalSignerEmail,
         signerPhone: finalSignerPhone,
-        contractVersionId: contractVersionId || deal.contract_version || 'v3',
+        contractVersionId: contractVersionId || 'v3', // Default to v3 if not provided
         contractSnapshotHtml: contractSnapshotHtml || 
           (deal.contract_file_url 
             ? `Contract URL: ${deal.contract_file_url}\nSigned at: ${new Date().toISOString()}`
@@ -561,12 +617,14 @@ const signAsCreatorHandler = async (req: AuthenticatedRequest, res: Response) =>
       });
 
       if (!result.success) {
+        console.error('[Deals] sign-creator - Signing failed:', result.error);
         return res.status(400).json({
           success: false,
           error: result.error || 'Failed to sign contract',
         });
       }
 
+      console.log('[Deals] sign-creator - Contract signed successfully!');
       return res.json({
         success: true,
         message: 'Contract signed successfully',
@@ -581,9 +639,15 @@ const signAsCreatorHandler = async (req: AuthenticatedRequest, res: Response) =>
     }
 };
 
-// Add both route aliases
+// Add both route aliases - IMPORTANT: These must be registered before any catch-all routes
 router.post('/:dealId/sign-creator', signAsCreatorHandler);
 router.post('/:dealId/sign-as-creator', signAsCreatorHandler);
+
+// Debug route to test routing
+router.get('/test-routing', (req, res) => {
+  console.log('[Deals] Test routing endpoint hit');
+  res.json({ success: true, message: 'Deals router is working', timestamp: new Date().toISOString() });
+});
 
 export default router;
 

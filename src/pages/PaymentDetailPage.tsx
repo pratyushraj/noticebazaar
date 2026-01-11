@@ -2,7 +2,7 @@
 
 import { useMemo, useState, useRef, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, CheckCircle, AlertCircle, Calendar, FileText, Building2, CreditCard, Tag, Edit, Trash2, Eye, Loader2, Download, IndianRupee, Upload, X, MessageSquare } from 'lucide-react';
+import { ArrowLeft, CheckCircle, AlertCircle, FileText, Edit, Trash2, Eye, Loader2, Download, Upload, X, MessageSquare } from 'lucide-react';
 import { useSession } from '@/contexts/SessionContext';
 import { useBrandDealById, useUpdateBrandDeal } from '@/lib/hooks/useBrandDeals';
 import { toast } from 'sonner';
@@ -11,10 +11,7 @@ import { motion } from 'framer-motion';
 import { extractTaxInfo, getTaxDisplayMessage, calculateFinalAmount } from '@/lib/utils/taxExtraction';
 import { supabase } from '@/integrations/supabase/client';
 import { CREATOR_ASSETS_BUCKET } from '@/lib/constants/storage';
-import { PaymentStatusChip, type PaymentStatus } from '@/components/payments/PaymentStatusChip';
-import { PaymentTimeline } from '@/components/payments/PaymentTimeline';
 import { FilePreview } from '@/components/payments/FilePreview';
-import { GlassButton } from '@/components/payments/GlassButton';
 import { NativeLoadingSheet } from '@/components/mobile/NativeLoadingSheet';
 
 const PaymentDetailPage = () => {
@@ -33,6 +30,7 @@ const PaymentDetailPage = () => {
   const [isUploadingProof, setIsUploadingProof] = useState(false);
   const [isSavingNotes, setIsSavingNotes] = useState(false);
   const [showPreviewModal, setShowPreviewModal] = useState(false);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Undo payment state
@@ -205,10 +203,16 @@ const PaymentDetailPage = () => {
     return () => clearInterval(checkExpiration);
   }, [undoDeadline, undoToastId]);
 
-  // Handle mark as received
-  const handleMarkAsReceived = async () => {
+  // Handle mark as received (opens confirmation modal)
+  const handleMarkAsReceived = () => {
+    setShowConfirmModal(true);
+  };
+
+  // Confirm and mark as received
+  const handleConfirmMarkAsReceived = async () => {
     if (!brandDeal || !profile?.id || !paymentData) {
       toast.error('Cannot mark payment as received: Missing data');
+      setShowConfirmModal(false);
       return;
     }
 
@@ -220,6 +224,8 @@ const PaymentDetailPage = () => {
       payment_proof_url: (brandDeal as any).proof_of_payment_url || null,
       utr_number: brandDeal.utr_number || null,
     });
+
+    setShowConfirmModal(false);
 
     try {
       const now = new Date().toISOString();
@@ -240,7 +246,7 @@ const PaymentDetailPage = () => {
       deadline.setMinutes(deadline.getMinutes() + 5);
       setUndoDeadline(deadline);
 
-      // Show improved snackbar with countdown
+      // Show success toast
       const toastId = toast.success('Payment marked as received', {
         description: 'Undo within 5 minutes.',
         duration: 5000, // Show for 5 seconds, but allow undo for 5 minutes
@@ -331,22 +337,6 @@ const PaymentDetailPage = () => {
       </div>
     );
   }
-
-  // Risk config for display
-  const riskConfig = {
-    low: { 
-      label: 'Low Risk', 
-      chipColor: 'bg-green-500/20 text-green-400',
-    },
-    medium: { 
-      label: 'Medium Risk', 
-      chipColor: 'bg-[#FFCD4D]/20 text-[#FFCD4D]',
-    },
-    high: { 
-      label: 'High Risk', 
-      chipColor: 'bg-[#FF4D4D]/20 text-[#FF4D4D]',
-    },
-  };
 
   // Handle proof of payment file selection
   const handleProofFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -476,193 +466,301 @@ const PaymentDetailPage = () => {
         </div>
       </div>
 
-      <div className="max-w-4xl mx-auto px-4 md:px-6 py-6 space-y-6">
-        {/* SECTION 1: Payment Summary (Hero Card) - Glass UI */}
+      <div className="max-w-4xl mx-auto px-4 md:px-6 py-6 space-y-8">
+        {/* SECTION 1: Payment Status Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3 }}
-          className="relative bg-white/10 backdrop-blur-xl rounded-2xl p-5 md:p-6 border border-white/20 shadow-xl transition-all duration-200 hover:bg-white/15 hover:border-white/30"
+          className="relative bg-white/10 backdrop-blur-xl rounded-2xl p-5 md:p-6 border border-white/20"
         >
-          <div className="relative z-10">
-            <div className="flex items-start justify-between mb-6">
-              <div className="flex-1">
-                {/* Large Amount */}
-                <div className="flex items-baseline gap-3 mb-4">
-                  <IndianRupee className={cn(
-                    "w-8 h-8",
-                    paymentData.status === 'received' ? 'text-green-400' : 'text-white'
-                  )} />
-                  <div className={cn(
-                    "text-4xl font-bold",
-                    paymentData.status === 'received' ? 'text-green-400' : 'text-white'
-                  )}>
-                    ₹{paymentData.amount.toLocaleString('en-IN', { maximumFractionDigits: 0 })}
-                  </div>
-                </div>
+          <div className="flex items-start justify-between mb-4">
+            <div className="flex-1">
+              {/* Large Amount */}
+              <div className="text-4xl md:text-5xl font-bold text-white mb-4">
+                ₹{paymentData.amount.toLocaleString('en-IN', { maximumFractionDigits: 0 })}
+              </div>
 
-                {/* Status Badges - Glass Style Neon */}
-                <div className="flex items-center gap-3 flex-wrap mb-4">
-                  <PaymentStatusChip status={paymentData.status as PaymentStatus} />
-                  <div className="px-3 py-1.5 rounded-full bg-white/10 text-white text-xs border border-white/20 backdrop-blur-xl">
-                    {paymentData.category}
-                  </div>
-                  {/* Hide risk chip if payment received and risk was only payment-related */}
-                  {!(paymentData.status === 'received' && paymentData.riskLevel === 'low') && (
-                    <div className={cn(
-                      "px-3 py-1.5 rounded-full text-xs font-semibold border backdrop-blur-xl",
-                      paymentData.riskLevel === 'high' 
-                        ? 'bg-red-500/20 text-red-400 border-red-500/30'
-                        : paymentData.riskLevel === 'medium'
-                        ? 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30'
-                        : 'bg-green-500/20 text-green-400 border-green-500/30'
-                    )}>
-                      {paymentData.riskLevel === 'high' ? 'High Risk' : paymentData.riskLevel === 'medium' ? 'Medium Risk' : 'Low Risk'}
-                    </div>
-                  )}
-                </div>
+              {/* Single Status Badge */}
+              <div className="mb-3">
+                {paymentData.status === 'received' ? (
+                  <span className="inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium bg-green-500/20 text-green-400 border border-green-500/30">
+                    Received
+                  </span>
+                ) : paymentData.status === 'overdue' ? (
+                  <span className="inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium bg-red-500/20 text-red-400 border border-red-500/30">
+                    Overdue
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium bg-yellow-500/20 text-yellow-400 border border-yellow-500/30">
+                    Pending
+                  </span>
+                )}
+              </div>
 
-                {/* Metadata Grid */}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
-                  <div>
-                    <div className="text-xs text-white/60 mb-1">Brand Name</div>
-                    <div className="text-sm font-medium text-white">{paymentData.brandName}</div>
-                  </div>
-                  <div>
-                    <div className="text-xs text-white/60 mb-1">Payment Method</div>
-                    <div className="text-sm font-medium text-white">{paymentData.paymentMethod}</div>
-                  </div>
-                  {paymentData.status === 'received' && paymentData.receivedAt ? (
-                    <div>
-                      <div className="text-xs text-white/60 mb-1">Received on</div>
-                      <div className="text-sm font-medium text-green-400">
-                        {paymentData.receivedAt.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-                      </div>
-                    </div>
-                  ) : paymentData.expectedDate ? (
-                    <div>
-                      <div className="text-xs text-white/60 mb-1">Expected Date</div>
-                      <div className="text-sm font-medium text-white">
-                        {paymentData.expectedDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                      </div>
-                    </div>
-                  ) : null}
-                  <div>
-                    <div className="text-xs text-white/60 mb-1">Risk Level</div>
-                    <div className={cn("text-sm font-medium inline-block px-2 py-0.5 rounded-full", riskConfig[paymentData.riskLevel].chipColor)}>
-                      {riskConfig[paymentData.riskLevel].label}
-                    </div>
-                  </div>
-                </div>
+              {/* Helper Line */}
+              <div className="text-sm text-white/70 mb-3">
+                {paymentData.status === 'received' && paymentData.receivedAt ? (
+                  `Payment received on ${paymentData.receivedAt.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`
+                ) : paymentData.status === 'overdue' && paymentData.expectedDate ? (
+                  `Payment overdue by ${Math.abs(Math.ceil((new Date().getTime() - paymentData.expectedDate.getTime()) / (1000 * 60 * 60 * 24)))} days`
+                ) : paymentData.expectedDate ? (
+                  `Payment expected by ${paymentData.expectedDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`
+                ) : (
+                  'Payment date pending'
+                )}
               </div>
             </div>
+
+            {/* Subtle Risk Level (Right-aligned) */}
+            {paymentData.status !== 'received' && (
+              <div className="flex-shrink-0 ml-4">
+                <div className="text-xs text-white/50 mb-1 text-right">Risk Level</div>
+                <div className={cn(
+                  "text-xs font-medium px-2 py-1 rounded-full text-right",
+                  paymentData.status === 'overdue'
+                    ? 'bg-red-500/10 text-red-400/70'
+                    : paymentData.riskLevel === 'medium'
+                    ? 'bg-yellow-500/10 text-yellow-400/70'
+                    : 'bg-green-500/10 text-green-400/70'
+                )}>
+                  {paymentData.status === 'overdue' 
+                    ? 'High delay risk' 
+                    : paymentData.riskLevel === 'medium' 
+                    ? 'Moderate delay risk' 
+                    : 'Low'}
+                </div>
+              </div>
+            )}
           </div>
         </motion.div>
 
-        {/* Section Title: Overview */}
-        <div className="text-sm font-medium text-white/50 tracking-wider uppercase mb-3">Overview</div>
+        {/* SECTION 2: Primary Action Bar (Sticky) */}
+        <div className="sticky top-[73px] z-40 bg-purple-900/95 backdrop-blur-xl border-b border-white/10 -mx-4 px-4 py-3 mb-6 safe-area-top">
+          <div className="max-w-4xl mx-auto flex flex-col sm:flex-row gap-3">
+            {paymentData.status === 'pending' ? (
+              <>
+                <motion.button
+                  onClick={handleMarkAsReceived}
+                  disabled={updateDealMutation.isPending}
+                  whileTap={{ scale: 0.98 }}
+                  className="w-full sm:flex-1 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white font-semibold px-4 py-3 rounded-xl transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                >
+                  {updateDealMutation.isPending ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin flex-shrink-0" />
+                      <span className="text-xs sm:text-sm">Processing...</span>
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle className="w-4 h-4 flex-shrink-0" />
+                      <span className="text-xs sm:text-sm">Confirm Payment Received</span>
+                    </>
+                  )}
+                </motion.button>
+                <motion.button
+                  onClick={() => toast.info('Send Payment Reminder feature coming soon')}
+                  whileTap={{ scale: 0.98 }}
+                  className="w-full sm:w-auto px-4 py-3 bg-white/10 hover:bg-white/15 border border-white/20 text-white rounded-xl transition-all flex items-center justify-center gap-2 text-sm font-medium"
+                >
+                  <MessageSquare className="w-4 h-4 flex-shrink-0" />
+                  <span className="text-xs sm:text-sm">Send Payment Reminder</span>
+                </motion.button>
+              </>
+            ) : paymentData.status === 'overdue' ? (
+              <>
+                <motion.button
+                  onClick={() => toast.info('Send Payment Reminder feature coming soon')}
+                  whileTap={{ scale: 0.98 }}
+                  className="w-full sm:flex-1 bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-500 hover:to-red-500 text-white font-semibold px-4 py-3 rounded-xl transition-all flex items-center justify-center gap-2"
+                >
+                  <MessageSquare className="w-4 h-4 flex-shrink-0" />
+                  <span className="text-xs sm:text-sm">Send Payment Reminder</span>
+                </motion.button>
+                <motion.button
+                  onClick={handleMarkAsReceived}
+                  disabled={updateDealMutation.isPending}
+                  whileTap={{ scale: 0.98 }}
+                  className="w-full sm:w-auto px-4 py-3 bg-white/10 hover:bg-white/15 border border-white/20 text-white rounded-xl transition-all disabled:opacity-50 flex items-center justify-center gap-2 text-sm font-medium"
+                >
+                  {updateDealMutation.isPending ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin flex-shrink-0" />
+                      <span className="text-xs sm:text-sm">Processing...</span>
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle className="w-4 h-4 flex-shrink-0" />
+                      <span className="text-xs sm:text-sm">Confirm Payment Received</span>
+                    </>
+                  )}
+                </motion.button>
+              </>
+            ) : (
+              <>
+                <motion.button
+                  onClick={() => {
+                    if (paymentData.proofOfPaymentUrl) {
+                      setShowPreviewModal(true);
+                    } else {
+                      toast.info('No receipt uploaded yet');
+                    }
+                  }}
+                  whileTap={{ scale: 0.98 }}
+                  className="w-full sm:flex-1 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-semibold px-4 py-3 rounded-xl transition-all flex items-center justify-center gap-2"
+                >
+                  <Eye className="w-4 h-4 flex-shrink-0" />
+                  <span className="text-xs sm:text-sm">View Receipt</span>
+                </motion.button>
+                {paymentData.invoiceFileUrl && (
+                  <motion.button
+                    onClick={() => {
+                      if (paymentData.invoiceFileUrl) {
+                        const link = document.createElement('a');
+                        link.href = paymentData.invoiceFileUrl;
+                        link.download = `invoice-${paymentData.invoiceNumber}.pdf`;
+                        link.click();
+                      }
+                    }}
+                    whileTap={{ scale: 0.98 }}
+                    className="w-full sm:w-auto px-4 py-3 bg-white/10 hover:bg-white/15 border border-white/20 text-white rounded-xl transition-all flex items-center justify-center gap-2 text-sm font-medium"
+                  >
+                    <Download className="w-4 h-4 flex-shrink-0" />
+                    <span className="text-xs sm:text-sm">Download Invoice</span>
+                  </motion.button>
+                )}
+              </>
+            )}
+          </div>
+        </div>
 
-        {/* SECTION 2: Overview (Glass Card) */}
+        {/* SECTION 3: Overview (Compact Grid) */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1, duration: 0.3 }}
-          className="relative bg-white/10 backdrop-blur-xl rounded-2xl p-5 md:p-6 border border-white/20 shadow-xl"
+          className="relative bg-white/10 backdrop-blur-xl rounded-2xl p-5 md:p-6 border border-white/20"
         >
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-y-4 gap-x-8">
-            {/* Left Column */}
-            <div className="space-y-4">
-              <div className="flex items-start gap-3">
-                <div className="bg-white/10 w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 border border-white/20">
-                  <FileText className="w-5 h-5 text-white/80" />
-                </div>
-                <div className="flex-1">
-                  <div className="text-sm text-white/60 mb-1">Contract Name</div>
-                  <div className="text-base font-medium text-white">{paymentData.contractName}</div>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-3">
-                <div className="bg-white/10 w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 border border-white/20">
-                  <Building2 className="w-5 h-5 text-white/80" />
-                </div>
-                <div className="flex-1">
-                  <div className="text-sm text-white/60 mb-1">Brand / Agency</div>
-                  <div className="text-base font-medium text-white">{paymentData.brandName}</div>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-3">
-                <div className="bg-white/10 w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 border border-white/20">
-                  <Tag className="w-5 h-5 text-white/80" />
-                </div>
-                <div className="flex-1">
-                  <div className="text-sm text-white/60 mb-1">Category</div>
-                  <div className="text-base font-medium text-white">{paymentData.category}</div>
-                </div>
+          <div className="grid grid-cols-2 gap-4 md:gap-6">
+            <div>
+              <div className="text-xs text-white/60 mb-1">Contract Name</div>
+              <div className="text-sm font-semibold text-white">{paymentData.contractName}</div>
+            </div>
+            <div>
+              <div className="text-xs text-white/60 mb-1">Brand Name</div>
+              <div className="text-sm font-semibold text-white">{paymentData.brandName}</div>
+            </div>
+            <div>
+              <div className="text-xs text-white/60 mb-1">Payment Method</div>
+              <div className="text-sm font-semibold text-white">{paymentData.paymentMethod}</div>
+            </div>
+            <div>
+              <div className="text-xs text-white/60 mb-1">Created Date</div>
+              <div className="text-sm font-semibold text-white">
+                {paymentData.createdDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
               </div>
             </div>
-
-            {/* Right Column */}
-            <div className="space-y-4">
-              <div className="flex items-start gap-3">
-                <div className="bg-white/10 w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 border border-white/20">
-                  <CreditCard className="w-5 h-5 text-white/80" />
-                </div>
-                <div className="flex-1">
-                  <div className="text-sm text-white/60 mb-1">Payment Method</div>
-                  <div className="text-base font-medium text-white">{paymentData.paymentMethod}</div>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-3">
-                <div className="bg-white/10 w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 border border-white/20">
-                  <Calendar className="w-5 h-5 text-white/80" />
-                </div>
-                <div className="flex-1">
-                  <div className="text-sm text-white/60 mb-1">Created Date</div>
-                  <div className="text-base font-medium text-white">
-                    {paymentData.createdDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
-                  </div>
-                </div>
-              </div>
+            <div>
+              <div className="text-xs text-white/60 mb-1">Payment Trigger</div>
+              <div className="text-sm font-semibold text-white">On Approval</div>
+            </div>
+            <div>
+              <div className="text-xs text-white/60 mb-1">Payment Timeline</div>
+              <div className="text-sm font-semibold text-white">Within 7 days</div>
             </div>
           </div>
         </motion.div>
 
-        {/* Purple Neon Divider */}
-        <div className="h-px w-full bg-white/10 my-4" />
+        {/* SECTION 4: Payment Timeline (Only if not received) */}
+        {paymentData.status !== 'received' && paymentData.expectedDate && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2, duration: 0.3 }}
+            className="relative bg-white/10 backdrop-blur-xl rounded-2xl p-5 md:p-6 border border-white/20"
+          >
+            <div className="mb-4">
+              <h3 className="text-lg font-semibold text-white mb-4">Payment Timeline</h3>
+              
+              <div className="space-y-4">
+                <div>
+                  <div className="text-xs text-white/60 mb-1">Expected Date</div>
+                  <div className="text-base font-semibold text-white">
+                    {paymentData.expectedDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+                  </div>
+                </div>
 
-        {/* Section Title: Payment History */}
-        <div className="text-sm font-medium text-white/50 tracking-wider uppercase mb-3">Payment History</div>
+                <div>
+                  <div className="text-xs text-white/60 mb-1">Countdown</div>
+                  <div className={cn(
+                    "text-lg font-bold",
+                    paymentData.status === 'overdue' ? 'text-red-400' : 'text-yellow-400'
+                  )}>
+                    {paymentData.daysInfo}
+                  </div>
+                </div>
 
-        {/* SECTION 3: Payment Timeline (Glass Card) */}
+                {/* Thin accent divider */}
+                <div className={cn(
+                  "h-0.5 rounded-full",
+                  paymentData.status === 'overdue' ? 'bg-red-500/30' : 'bg-yellow-500/30'
+                )} />
+              </div>
+            </div>
+          </motion.div>
+        )}
+
+        {/* SECTION 5: Payment History (Minimal Timeline) */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2, duration: 0.3 }}
-          className="relative bg-white/10 backdrop-blur-xl rounded-2xl p-5 md:p-6 border border-white/20 shadow-xl"
+          transition={{ delay: 0.25, duration: 0.3 }}
+          className="relative bg-white/10 backdrop-blur-xl rounded-2xl p-5 md:p-6 border border-white/20"
         >
-          <PaymentTimeline
-            createdAt={paymentData.createdDate}
-            invoiceDate={paymentData.invoiceFileUrl ? paymentData.createdDate : null}
-            receivedAt={paymentData.receivedAt}
-          />
+          <h3 className="text-lg font-semibold text-white mb-4">Payment History</h3>
+          <div className="space-y-3">
+            <div className="flex items-start gap-3">
+              <div className="w-2 h-2 rounded-full bg-white/40 mt-1.5 flex-shrink-0" />
+              <div className="flex-1">
+                <div className="text-sm font-medium text-white">Payment created</div>
+                <div className="text-xs text-white/50 group-hover:text-white/70">
+                  {paymentData.createdDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                </div>
+              </div>
+            </div>
+            {paymentData.invoiceFileUrl && (
+              <div className="flex items-start gap-3">
+                <div className="w-2 h-2 rounded-full bg-white/40 mt-1.5 flex-shrink-0" />
+                <div className="flex-1">
+                  <div className="text-sm font-medium text-white">Invoice generated</div>
+                  <div className="text-xs text-white/50 group-hover:text-white/70">
+                    {paymentData.createdDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                  </div>
+                </div>
+              </div>
+            )}
+            {paymentData.status === 'received' && paymentData.receivedAt && (
+              <div className="flex items-start gap-3">
+                <div className="w-2 h-2 rounded-full bg-green-400 mt-1.5 flex-shrink-0" />
+                <div className="flex-1">
+                  <div className="text-sm font-medium text-green-400">Payment confirmed by creator</div>
+                  <div className="text-xs text-white/50 group-hover:text-white/70">
+                    {paymentData.receivedAt.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
         </motion.div>
 
-        {/* Purple Neon Divider */}
-        <div className="h-px w-full bg-white/10 my-4" />
-
-        {/* Section Title: Invoice Details */}
-        <div className="text-sm font-medium text-white/50 tracking-wider uppercase mb-3">Invoice Details</div>
-
-        {/* SECTION 4: Invoice Details (Glass Card) */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3, duration: 0.3 }}
-          className="relative bg-white/10 backdrop-blur-xl rounded-2xl p-5 md:p-6 border border-white/20 shadow-xl"
-        >
+        {/* SECTION: Invoice Details (Simplified) */}
+        {paymentData.invoiceFileUrl && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.25, duration: 0.3 }}
+            className="relative bg-white/10 backdrop-blur-xl rounded-2xl p-5 md:p-6 border border-white/20"
+          >
           <div className="space-y-4">
             {/* Invoice Number */}
             <div>
@@ -694,104 +792,23 @@ const PaymentDetailPage = () => {
               )}
             </div>
 
-            {/* Invoice Actions */}
-            {paymentData.invoiceFileUrl && (
-              <div className="flex gap-3 pt-2">
-                <button
-                  onClick={() => {
-                    if (paymentData.invoiceFileUrl) {
-                      window.open(paymentData.invoiceFileUrl, '_blank', 'noopener,noreferrer');
-                    }
-                  }}
-                  className="flex-1 bg-white/10 hover:bg-white/15 border border-white/20 rounded-xl px-4 py-3 transition-colors active:scale-[0.98] flex items-center justify-center gap-2 text-sm font-medium"
-                >
-                  <Eye className="w-4 h-4" />
-                  View Invoice
-                </button>
-                <button
-                  onClick={() => {
-                    if (paymentData.invoiceFileUrl) {
-                      const link = document.createElement('a');
-                      link.href = paymentData.invoiceFileUrl;
-                      link.download = `invoice-${paymentData.invoiceNumber}.pdf`;
-                      link.click();
-                    }
-                  }}
-                  className="flex-1 bg-white/10 hover:bg-white/15 border border-white/20 rounded-xl px-4 py-3 transition-colors active:scale-[0.98] flex items-center justify-center gap-2 text-sm font-medium"
-                >
-                  <Download className="w-4 h-4" />
-                  Download PDF
-                </button>
-              </div>
-            )}
           </div>
         </motion.div>
-
-        {/* Section Title: Expected Payment */}
-        {paymentData.status !== 'received' && paymentData.expectedDate && (
-          <>
-            <div className="text-sm font-medium text-white/50 tracking-wider uppercase mb-3">Expected Payment</div>
-
-            {/* SECTION 5: Expected Payment (Glass Card) */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4, duration: 0.3 }}
-              className="relative bg-white/10 backdrop-blur-xl rounded-2xl p-5 md:p-6 border border-white/20 shadow-xl"
-            >
-              <div className="space-y-4">
-                {/* Large Date */}
-                <div>
-                  <div className="text-sm text-white/60 mb-2">Expected Date</div>
-                  <div className="text-2xl font-bold text-white">
-                    {paymentData.expectedDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
-                  </div>
-                </div>
-
-                {/* Countdown & Risk */}
-                <div className="flex items-center justify-between">
-                  <div>
-                    <div className="text-sm text-white/60 mb-2">Time Remaining</div>
-                    <div className="text-xl font-bold text-[#FFE770]">
-                      {paymentData.daysInfo}
-                    </div>
-                  </div>
-                  <div>
-                    <div className="text-sm text-white/60 mb-2">Risk Level</div>
-                    <div className={cn(
-                      "px-3 py-1.5 rounded-full text-sm font-semibold",
-                      riskConfig[paymentData.riskLevel].chipColor,
-                      "border border-white/20"
-                    )}>
-                      {riskConfig[paymentData.riskLevel].label}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Neon Yellow Progress Bar */}
-                <div className="pt-2">
-                  <div className="h-1 bg-[#FFE770]/60 rounded-full mt-3"></div>
-                </div>
-              </div>
-            </motion.div>
-          </>
         )}
 
-        {/* Section Title: Additional Information */}
-        <div className="text-sm font-medium text-white/50 tracking-wider uppercase mb-3">Additional Information</div>
 
-        {/* SECTION 6: Proof of Payment Upload (Optional) */}
+        {/* SECTION 6: Proof of Payment (Optional) */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.45, duration: 0.3 }}
-          className="relative bg-white/10 backdrop-blur-xl rounded-2xl p-5 md:p-6 border border-white/20 shadow-xl"
+          transition={{ delay: 0.3, duration: 0.3 }}
+          className="relative bg-white/10 backdrop-blur-xl rounded-2xl p-5 md:p-6 border border-white/20"
         >
           <div className="relative z-10 space-y-4">
             <div>
-              <div className="text-sm font-medium text-white mb-1">Proof of Payment (Optional)</div>
+              <div className="text-sm font-medium text-white mb-1">Payment Proof (Optional)</div>
               <div className="text-xs text-white/60 mb-3">
-                Upload payment screenshot or UTR for record-keeping
+                Upload UTR or payment screenshot for your records.
               </div>
             </div>
 
@@ -835,13 +852,18 @@ const PaymentDetailPage = () => {
                 />
                 <label
                   htmlFor="proof-of-payment-upload"
-                  className="flex items-center justify-center gap-2 p-4 border-2 border-dashed border-white/20 rounded-xl cursor-pointer hover:border-white/30 hover:bg-white/5 transition-colors"
+                  className="flex items-center justify-center gap-2 p-3 border border-dashed border-white/20 rounded-lg cursor-pointer hover:border-white/30 hover:bg-white/5 transition-colors"
                 >
-                  <Upload className="w-5 h-5 text-white/60" />
-                  <span className="text-sm text-white/70">
-                    {proofOfPaymentFile ? proofOfPaymentFile.name : 'Click to upload screenshot or UTR'}
+                  <Upload className="w-4 h-4 text-white/50" />
+                  <span className="text-xs text-white/60">
+                    {proofOfPaymentFile ? proofOfPaymentFile.name : 'Click to upload'}
                   </span>
                 </label>
+                {paymentData.status === 'received' && !proofOfPaymentUrl && (
+                  <div className="text-xs text-white/40 text-center mt-2">
+                    No payment proof uploaded (optional)
+                  </div>
+                )}
                 {proofOfPaymentFile && (
                   <button
                     onClick={handleUploadProof}
@@ -870,21 +892,18 @@ const PaymentDetailPage = () => {
           </div>
         </motion.div>
 
-        {/* SECTION 7: Notes / Comments (Glass Card) */}
+        {/* SECTION 7: Internal Notes */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5, duration: 0.3 }}
-          className="relative bg-white/10 backdrop-blur-xl rounded-2xl p-5 md:p-6 border border-white/20 shadow-xl"
+          transition={{ delay: 0.35, duration: 0.3 }}
+          className="relative bg-white/10 backdrop-blur-xl rounded-2xl p-5 md:p-6 border border-white/20"
         >
           <div className="relative z-10 space-y-4">
             <div>
-              <div className="flex items-center gap-2 mb-1">
-                <MessageSquare className="w-4 h-4 text-white/60" />
-                <div className="text-sm font-medium text-white">Notes / Comments</div>
-              </div>
+              <div className="text-sm font-medium text-white mb-1">Internal Notes (Only visible to you)</div>
               <div className="text-xs text-white/60 mb-3">
-                Add notes like "Brand said they'll pay next week"
+                Brand said they'll pay next week
               </div>
             </div>
 
@@ -900,8 +919,8 @@ const PaymentDetailPage = () => {
               onClick={handleSaveNotes}
               disabled={isSavingNotes}
               className={cn(
-                "w-full bg-white/10 hover:bg-white/15 border border-white/20 rounded-xl px-4 py-3",
-                "transition-colors active:scale-[0.98] flex items-center justify-center gap-2 text-sm font-medium",
+                "w-full bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg px-4 py-2.5",
+                "transition-colors active:scale-[0.98] flex items-center justify-center gap-2 text-sm font-medium text-white/70",
                 isSavingNotes && "opacity-50 cursor-not-allowed"
               )}
             >
@@ -911,60 +930,28 @@ const PaymentDetailPage = () => {
                   Saving...
                 </>
               ) : (
-                <>
-                  <CheckCircle className="w-4 h-4" />
-                  Save Notes
-                </>
+                'Save Notes'
               )}
             </button>
           </div>
         </motion.div>
 
-        {/* SECTION 8: Action Buttons */}
+        {/* SECTION 8: Destructive Actions (Danger Zone) */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.55, duration: 0.3 }}
-          className="space-y-3"
+          transition={{ delay: 0.4, duration: 0.3 }}
+          className="space-y-3 pt-6 border-t border-white/10"
         >
-          {/* Primary CTA - After Received State */}
-          {paymentData.status === 'received' ? (
-            <GlassButton
-              variant="green"
-              disabled
-              className="w-full py-4 flex items-center justify-center gap-2"
-            >
-              <CheckCircle className="w-5 h-5" />
-              Payment Received ✓
-            </GlassButton>
-          ) : (
-            <GlassButton
-              variant="purple"
-              onClick={handleMarkAsReceived}
-              disabled={updateDealMutation.isPending}
-              className="w-full py-4 flex items-center justify-center gap-2"
-            >
-              {updateDealMutation.isPending ? (
-                <>
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                  <span>Marking as received...</span>
-                </>
-              ) : (
-                'Mark as Received'
-              )}
-            </GlassButton>
-          )}
-
-          {/* Secondary Buttons */}
+          <div className="text-xs text-white/50 mb-3">Danger Zone</div>
           <div className="grid grid-cols-2 gap-3">
             <button
               onClick={() => {
                 toast.info('Edit Payment feature coming soon');
-                // TODO: Navigate to edit payment page
               }}
               className={cn(
-                "bg-white/10 border border-white/20 rounded-xl px-4 py-3",
-                "text-white/70 hover:text-white hover:bg-white/15",
+                "bg-white/5 border border-white/10 rounded-lg px-4 py-3",
+                "text-white/60 hover:text-white hover:bg-white/10",
                 "transition-colors active:scale-[0.98]",
                 "flex items-center justify-center gap-2 text-sm font-medium"
               )}
@@ -974,14 +961,13 @@ const PaymentDetailPage = () => {
             </button>
             <button
               onClick={() => {
-                if (confirm('Are you sure you want to delete this payment record?')) {
+                if (window.confirm('Are you sure you want to delete this payment record? This action cannot be undone.')) {
                   toast.info('Delete Payment feature coming soon');
-                  // TODO: Implement delete functionality
                 }
               }}
               className={cn(
-                "bg-[#FF4D4D]/20 border border-[#FF4D4D]/30 rounded-xl px-4 py-3",
-                "text-[#FF4D4D] hover:text-[#FF6B6B] hover:bg-[#FF4D4D]/30",
+                "bg-red-500/10 border border-red-500/30 rounded-lg px-4 py-3",
+                "text-red-400 hover:text-red-300 hover:bg-red-500/20",
                 "transition-colors active:scale-[0.98]",
                 "flex items-center justify-center gap-2 text-sm font-medium"
               )}
@@ -1029,6 +1015,59 @@ const PaymentDetailPage = () => {
               )}
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Confirmation Modal */}
+      {showConfirmModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl p-6 max-w-md w-full border border-white/10 shadow-2xl"
+          >
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-12 h-12 rounded-full bg-green-500/20 flex items-center justify-center">
+                <CheckCircle className="w-6 h-6 text-green-400" />
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-white">Confirm Payment Received?</h3>
+              </div>
+            </div>
+            
+            <p className="text-white/80 mb-6">
+              This will mark the payment as received and close this payment cycle.
+              You can still add notes or upload proof later.
+            </p>
+            
+            <div className="flex gap-3">
+              <button
+                onClick={() => {
+                  setShowConfirmModal(false);
+                }}
+                disabled={updateDealMutation.isPending}
+                className="flex-1 px-4 py-2.5 bg-white/10 hover:bg-white/15 border border-white/20 text-white rounded-xl font-medium transition-all disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <motion.button
+                onClick={handleConfirmMarkAsReceived}
+                disabled={updateDealMutation.isPending}
+                whileTap={{ scale: 0.98 }}
+                className="flex-1 px-4 py-2.5 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white rounded-xl font-medium transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+              >
+                {updateDealMutation.isPending ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Processing...
+                  </>
+                ) : (
+                  'Yes, Mark as Received'
+                )}
+              </motion.button>
+            </div>
+          </motion.div>
         </div>
       )}
     </div>

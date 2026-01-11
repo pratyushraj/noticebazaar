@@ -2048,18 +2048,452 @@ export const downloadContractDocxHandler = async (req: Request, res: Response) =
       return res.status(404).json({ error: 'Deal not found' });
     }
 
-    // Allow access if deal is approved (brand has accepted)
-    if (deal.brand_response_status !== 'accepted_verified') {
+    // Check if both parties have signed (allow download if signed, even if not accepted_verified)
+    const { data: signatures } = await supabase
+      .from('contract_signatures')
+      .select('signer_role, signed, signer_name, signer_email, signed_at')
+      .eq('deal_id', dealId);
+    
+    const brandSigned = signatures?.some((s: any) => s.signer_role === 'brand' && s.signed);
+    const creatorSigned = signatures?.some((s: any) => s.signer_role === 'creator' && s.signed);
+    const bothSigned = brandSigned && creatorSigned;
+
+    // Allow access if deal is approved OR both parties have signed
+    if (deal.brand_response_status !== 'accepted_verified' && !bothSigned) {
       return res.status(403).json({ error: 'Contract is not yet available for download' });
     }
 
-    // Get HTML contract
+    // Get HTML contract or contract file URL
     const contractHtml = (deal as any).contract_html;
+    const contractFileUrl = (deal as any).contract_file_url || (deal as any).safe_contract_url;
+
+    // If no HTML but we have a file URL, redirect to it
+    if (!contractHtml && contractFileUrl) {
+      console.log('[Protection] No contract HTML, redirecting to contract file URL:', contractFileUrl);
+      return res.redirect(contractFileUrl);
+    }
 
     if (!contractHtml) {
+      // If no HTML but we have signatures, try to generate a professional contract summary
+      if (bothSigned && signatures && signatures.length > 0) {
+        console.log('[Protection] No contract HTML, but both parties signed. Generating professional contract...');
+        
+        try {
+          // Fetch full deal data for contract generation
+          const { data: fullDeal } = await supabase
+            .from('brand_deals')
+            .select('*')
+            .eq('id', dealId)
+            .single();
+          
+          if (!fullDeal) {
+            throw new Error('Deal not found');
+          }
+
+          // Fetch deal submission details to get form_data with all contract details
+          const { getDealSubmissionDetails } = await import('../services/dealDetailsTokenService.js');
+          const submissionDetails = await getDealSubmissionDetails(dealId);
+          const formData = submissionDetails?.formData || {};
+
+          // Fetch creator profile for address
+          const { data: creatorProfile } = await supabase
+            .from('profiles')
+            .select('first_name, last_name, address')
+            .eq('id', fullDeal.creator_id)
+            .single();
+
+          // Get creator email from auth
+          const { data: creatorAuth } = await supabase.auth.admin.getUserById(fullDeal.creator_id);
+          const creatorEmail = creatorAuth?.user?.email || '';
+
+          // Build deal schema from deal data
+          const { buildDealSchemaFromDealData, mapDealSchemaToContractVariables } = await import('../services/contractTemplate.js');
+          const dealSchema = buildDealSchemaFromDealData(fullDeal);
+
+          // Get signatures first (needed for creator name fallback)
+          const brandSig = signatures.find((s: any) => s.signer_role === 'brand');
+          const creatorSig = signatures.find((s: any) => s.signer_role === 'creator');
+
+          // Get brand info
+          const brandName = fullDeal.brand_name || formData.brandName || 'Brand';
+          const brandAddress = fullDeal.brand_address || formData.companyAddress || 'N/A';
+          const brandEmail = fullDeal.brand_email || formData.companyEmail || '';
+
+          // Get creator info
+          const creatorName = creatorProfile?.first_name && creatorProfile?.last_name
+            ? `${creatorProfile.first_name} ${creatorProfile.last_name}`
+            : creatorProfile?.first_name || creatorSig?.signer_name || 'Creator';
+          const creatorAddress = creatorProfile?.address || 'N/A';
+
+          // Map to contract variables
+          const contractVars = mapDealSchemaToContractVariables(
+            dealSchema,
+            {
+              name: brandName,
+              address: brandAddress,
+              email: brandEmail,
+            },
+            {
+              name: creatorName,
+              address: creatorAddress,
+              email: creatorEmail,
+            }
+          );
+
+          // Format deliverables for scope of work
+          const deliverablesText = contractVars.deliverables_list || 'As per agreement';
+          
+          // Format delivery deadline
+          const deliveryDeadline = contractVars.delivery_deadline || 
+            (fullDeal.due_date ? new Date(fullDeal.due_date).toLocaleDateString('en-IN', {
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric'
+            }) : 'As mutually agreed');
+
+          // Format payment timeline
+          const paymentTimeline = contractVars.payment_timeline || 'Within 7 days of content delivery';
+          const paymentExpectedDate = fullDeal.payment_expected_date 
+            ? new Date(fullDeal.payment_expected_date).toLocaleDateString('en-IN', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric'
+              })
+            : deliveryDeadline.split(' ').slice(-3).join('/');
+
+          // Format usage platforms
+          const usagePlatforms = contractVars.usage_platforms || 'Instagram';
+          const usageDuration = contractVars.usage_duration || '6 months';
+          const paidAds = contractVars.paid_ads_allowed === 'Yes' ? 'Yes' : 'No';
+          const whitelisting = contractVars.whitelisting_allowed === 'Yes' ? 'Yes' : 'No';
+
+          // Format exclusivity
+          const exclusivityText = contractVars.exclusivity_clause || 'No exclusivity period applies.';
+
+          // Format termination
+          const terminationDays = contractVars.termination_notice_days || 7;
+
+          // Format jurisdiction
+          const jurisdictionCity = contractVars.jurisdiction_city || 'Delhi';
+
+          // Format signature dates
+          const brandSigDate = brandSig?.signed_at 
+            ? new Date(brandSig.signed_at).toLocaleDateString('en-IN', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+              })
+            : '';
+          const creatorSigDate = creatorSig?.signed_at
+            ? new Date(creatorSig.signed_at).toLocaleDateString('en-IN', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+              })
+            : '';
+
+          // Generate professional contract HTML with improved layout
+          const contractSummary = `
+            <!DOCTYPE html>
+            <html>
+            <head>
+              <meta charset="UTF-8">
+              <style>
+                body { 
+                  font-family: 'Times New Roman', serif; 
+                  padding: 50px 70px; 
+                  line-height: 1.5; 
+                  color: #000;
+                  max-width: 800px;
+                  margin: 0 auto;
+                  font-size: 11pt;
+                }
+                h1 { 
+                  text-align: center; 
+                  font-size: 20pt; 
+                  font-weight: bold; 
+                  margin-bottom: 25px;
+                  margin-top: 0;
+                  text-transform: uppercase;
+                  letter-spacing: 1.5px;
+                  line-height: 1.2;
+                }
+                h2 {
+                  font-size: 13pt;
+                  font-weight: bold;
+                  margin-top: 35px;
+                  margin-bottom: 18px;
+                  line-height: 1.3;
+                }
+                .date {
+                  text-align: center;
+                  margin-bottom: 45px;
+                  font-weight: bold;
+                  font-size: 11pt;
+                }
+                .section {
+                  margin-bottom: 35px;
+                }
+                .parties {
+                  margin: 25px 0;
+                }
+                .party {
+                  margin: 25px 0;
+                  padding-left: 20px;
+                }
+                .party-label {
+                  font-weight: bold;
+                  font-size: 12pt;
+                  margin-bottom: 12px;
+                  color: #000;
+                }
+                .party-detail {
+                  margin: 6px 0;
+                  padding-left: 15px;
+                }
+                .party-detail-label {
+                  font-weight: 600;
+                  display: inline-block;
+                  min-width: 70px;
+                }
+                .signature-section {
+                  margin-top: 50px;
+                  page-break-inside: avoid;
+                }
+                .signature-block {
+                  margin: 35px 0;
+                  padding: 20px 0;
+                }
+                .signature-block-title {
+                  font-weight: bold;
+                  font-size: 12pt;
+                  margin-bottom: 15px;
+                }
+                .signature-line {
+                  margin: 8px 0;
+                  padding-left: 15px;
+                }
+                .footer {
+                  margin-top: 60px;
+                  padding-top: 25px;
+                  border-top: 1px solid #ccc;
+                  font-size: 9pt;
+                  font-style: italic;
+                  text-align: center;
+                  color: #666;
+                  line-height: 1.4;
+                }
+                ul {
+                  margin: 18px 0;
+                  padding-left: 30px;
+                }
+                li {
+                  margin: 10px 0;
+                  line-height: 1.5;
+                }
+                p {
+                  margin: 14px 0;
+                  line-height: 1.5;
+                }
+                .compensation-amount {
+                  font-size: 12pt;
+                  font-weight: bold;
+                  color: #000;
+                }
+                .subsection {
+                  margin-top: 20px;
+                  padding-left: 15px;
+                }
+                .subsection-title {
+                  font-weight: bold;
+                  margin-bottom: 8px;
+                }
+                .info-line {
+                  margin: 8px 0;
+                  padding-left: 15px;
+                }
+                .info-label {
+                  font-weight: 600;
+                  display: inline-block;
+                  min-width: 140px;
+                }
+                .deliverables-list {
+                  margin: 18px 0;
+                  padding-left: 30px;
+                }
+                .deliverables-list li {
+                  margin: 12px 0;
+                }
+              </style>
+            </head>
+            <body>
+              <h1>CREATOR–BRAND COLLABORATION AGREEMENT</h1>
+              
+              <div class="date">
+                Date: ${contractVars.contract_date}
+              </div>
+
+              <div class="section">
+                <h2>1. PARTIES</h2>
+                <p>This Agreement is entered into between:</p>
+                
+                <div class="parties">
+                  <div class="party">
+                    <div class="party-label">Brand:</div>
+                    <div class="party-detail">
+                      <span class="party-detail-label">Name:</span> ${brandName}
+                    </div>
+                    <div class="party-detail">
+                      <span class="party-detail-label">Address:</span> ${brandAddress}
+                    </div>
+                    <div class="party-detail">
+                      <span class="party-detail-label">Email:</span> ${brandEmail || 'N/A'}
+                    </div>
+                  </div>
+                  
+                  <div style="margin: 30px 0; font-weight: bold; text-align: center; font-size: 11pt;">AND</div>
+                  
+                  <div class="party">
+                    <div class="party-label">Creator:</div>
+                    <div class="party-detail">
+                      <span class="party-detail-label">Name:</span> ${creatorName}
+                    </div>
+                    <div class="party-detail">
+                      <span class="party-detail-label">Address:</span> ${creatorAddress}
+                    </div>
+                    <div class="party-detail">
+                      <span class="party-detail-label">Email:</span> ${creatorEmail || 'N/A'}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="section">
+                <h2>2. SCOPE OF WORK</h2>
+                <p>The Creator agrees to deliver the following content ("Deliverables"):</p>
+                <ul class="deliverables-list">
+                  ${deliverablesText.split(/\n\n|\n/).filter(line => line.trim() && line.trim() !== 'As per agreement').map(line => {
+                    // Convert bullet points to list items, handle both • and - bullets
+                    const cleanLine = line.replace(/^[•\-\*]\s*/, '').trim();
+                    return cleanLine ? `<li>${cleanLine}</li>` : '';
+                  }).filter(item => item).join('') || '<li>As per agreement</li>'}
+                </ul>
+                <p style="margin-top: 20px;">Content shall be delivered on or before <strong>${deliveryDeadline}</strong>, unless otherwise mutually agreed in writing.</p>
+              </div>
+
+              <div class="section">
+                <h2>3. COMPENSATION & PAYMENT TERMS</h2>
+                <div class="info-line">
+                  <span class="info-label">Total Compensation:</span>
+                  <span class="compensation-amount">${contractVars.deal_amount_formatted || `₹${fullDeal.deal_amount || 0}`}</span>
+                </div>
+                <div class="info-line">
+                  <span class="info-label">Payment Method:</span>
+                  ${contractVars.payment_method || 'Bank Transfer'}
+                </div>
+                <div class="info-line">
+                  <span class="info-label">Payment Timeline:</span>
+                  ${paymentTimeline}
+                </div>
+                <div class="subsection">
+                  <div class="subsection-title">Late Payment Protection:</div>
+                  <p>If payment is delayed beyond 7 days from the due date, the Brand shall be liable to pay interest at 18% per annum, calculated daily until settlement. The Creator reserves the right to initiate legal recovery proceedings for unpaid dues.</p>
+                </div>
+              </div>
+
+              <div class="section">
+                <h2>4. USAGE RIGHTS</h2>
+                <p>The Creator grants the Brand a <strong>${contractVars.usage_type || 'Non-exclusive'}</strong> license to use the content under the following conditions:</p>
+                <div class="info-line">
+                  <span class="info-label">Platforms:</span>
+                  ${usagePlatforms}
+                </div>
+                <div class="info-line">
+                  <span class="info-label">Usage Duration:</span>
+                  ${usageDuration}
+                </div>
+                <div class="info-line">
+                  <span class="info-label">Paid Advertising:</span>
+                  ${paidAds}
+                </div>
+                <div class="info-line">
+                  <span class="info-label">Whitelisting:</span>
+                  ${whitelisting}
+                </div>
+              </div>
+
+              <div class="section">
+                <h2>5. EXCLUSIVITY</h2>
+                <div class="info-line">
+                  <span class="info-label">Exclusivity Period:</span>
+                  ${exclusivityText}
+                </div>
+              </div>
+
+              <div class="section">
+                <h2>6. TERMINATION</h2>
+                <p>Either party may terminate this Agreement with <strong>${terminationDays} days</strong> written notice.</p>
+              </div>
+
+              <div class="section">
+                <h2>7. GOVERNING LAW & JURISDICTION</h2>
+                <p>This Agreement shall be governed by the laws of India. Any disputes shall be subject to the exclusive jurisdiction of the courts of <strong>${jurisdictionCity}</strong>, India.</p>
+              </div>
+
+              <div class="signature-section">
+                <h2>8. IN WITNESS WHEREOF</h2>
+                
+                <div class="signature-block">
+                  <div class="signature-block-title">BRAND</div>
+                  <div class="signature-line">Signature: ______________________</div>
+                  <div class="signature-line">Printed Name: ${brandName}</div>
+                  <div class="signature-line">Date: ${brandSigDate || '______________________'}</div>
+                  <div class="signature-line">Place of Execution: ______________________</div>
+                </div>
+
+                <div class="signature-block">
+                  <div class="signature-block-title">CREATOR</div>
+                  <div class="signature-line">Signature: ______________________</div>
+                  <div class="signature-line">Printed Name: ${creatorName}</div>
+                  <div class="signature-line">Date: ${creatorSigDate || '______________________'}</div>
+                  <div class="signature-line">Place of Execution: ______________________</div>
+                </div>
+              </div>
+
+              <div class="footer">
+                <p>This agreement was generated using the CreatorArmour Contract Scanner based on information provided by the Parties. CreatorArmour is not a party to this agreement and does not provide legal representation. The Parties are advised to independently review this agreement before execution.</p>
+              </div>
+            </body>
+            </html>
+          `;
+          
+          // Generate DOCX from the contract HTML
+          // Extract only body content to avoid title duplication
+          const bodyMatch = contractSummary.match(/<body[^>]*>([\s\S]*?)<\/body>/i);
+          const bodyContent = bodyMatch ? bodyMatch[1] : contractSummary;
+          
+          const { generateContractDocx, prepareHtmlForDocx } = await import('../services/docxGenerator.js');
+          const docxCompatibleHtml = prepareHtmlForDocx(bodyContent);
+          const docxBuffer = await generateContractDocx(docxCompatibleHtml);
+          
+          const fileName = `CREATOR_BRAND_COLLABORATION_AGREEMENT_${dealId}_${Date.now()}.docx`;
+          res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
+          res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
+          res.setHeader('Content-Length', docxBuffer.length.toString());
+          
+          return res.send(docxBuffer);
+        } catch (genError: any) {
+          console.error('[Protection] Failed to generate professional contract DOCX:', genError);
+          console.error('[Protection] Error stack:', genError.stack);
+          // Fall through to return error
+        }
+      }
+      
       return res.status(404).json({ 
         error: 'Contract HTML not found. Please regenerate the contract.',
-        hint: 'The contract_html column may not exist in the database. Please regenerate the contract to create it.'
+        hint: 'The contract_html column may not exist in the database. Please regenerate the contract to create it.',
+        contractFileUrl: contractFileUrl || null,
+        bothSigned: bothSigned || false
       });
     }
 

@@ -136,9 +136,8 @@ const CreatorPaymentsAndRecovery = () => {
 
   const filters = [
     { id: 'all', label: 'All' },
-    { id: 'received', label: 'Received' },
-    { id: 'pending', label: 'Pending' },
-    { id: 'expense', label: 'Expenses' }
+    { id: 'received', label: 'Paid' },
+    { id: 'pending', label: 'Pending' }
   ];
 
   // Helper function to extract or generate invoice number
@@ -406,9 +405,7 @@ const CreatorPaymentsAndRecovery = () => {
     const allItems = [...allTransactions, ...expenseTransactions];
     
     let filtered = activeFilter === 'all' 
-      ? allItems
-      : activeFilter === 'expense'
-      ? expenseTransactions
+      ? allItems.filter(t => t.type !== 'expense') // Exclude expenses from main view
       : allItems.filter(t => t.type === activeFilter);
     
     if (searchQuery) {
@@ -444,7 +441,7 @@ const CreatorPaymentsAndRecovery = () => {
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className={typography.h1 + " mb-1"}>Payments</h1>
-          <p className={typography.body + " font-medium"}>Track your income & expenses</p>
+          <p className={typography.body + " font-medium"}>Track earnings, pending payouts, and transaction history.</p>
         </div>
         <motion.button 
           onClick={() => {
@@ -470,10 +467,8 @@ const CreatorPaymentsAndRecovery = () => {
         <div className="mb-6">
         <SummaryCard
           thisMonth={stats.thisMonth}
-          growthPercentage={stats.growthPercentage}
           pending={totalPending}
-          nextPayout={stats.nextPayout}
-          payoutDate={stats.payoutDate}
+          paid={stats.totalReceived}
         />
         </div>
 
@@ -624,7 +619,7 @@ const CreatorPaymentsAndRecovery = () => {
         <div className={spacing.card} data-section="transactions">
           <div className={sectionHeader.base}>
             <h2 className={sectionHeader.title}>
-              {activeFilter === 'expense' ? 'Expenses' : 'Recent Transactions'}
+              Transactions
             </h2>
             <motion.button 
               onClick={() => {

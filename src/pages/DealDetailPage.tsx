@@ -619,6 +619,19 @@ function DealDetailPageContent() {
 
     setIsSigningAsCreator(true);
     try {
+      // Validate deal exists before attempting to sign
+      if (!deal?.id) {
+        toast.error('Deal information is missing. Please refresh the page and try again.');
+        setIsSigningAsCreator(false);
+        return;
+      }
+
+      console.log('[DealDetailPage] Attempting to sign contract:', {
+        dealId: deal.id,
+        dealStatus: deal.status,
+        contractFileUrl: deal.contract_file_url
+      });
+
       // Try to get API base URL with fallback logic
       let apiBaseUrl =
         import.meta.env.VITE_API_BASE_URL ||
@@ -653,7 +666,15 @@ function DealDetailPageContent() {
               setShowCreatorSigningModal(false);
               refreshAll(); // Refresh deal data to show updated status
               return;
+            } else {
+              // If localhost returns an error, try production API
+              console.warn('[DealDetailPage] Localhost API returned error, trying production API...');
+              apiBaseUrl = 'https://noticebazaar-api.onrender.com';
             }
+          } else {
+            // If localhost returns non-ok status, try production API
+            console.warn('[DealDetailPage] Localhost API unavailable (status:', resp.status, '), trying production API...');
+            apiBaseUrl = 'https://noticebazaar-api.onrender.com';
           }
         } catch (localhostError) {
           console.warn('[DealDetailPage] Localhost API unavailable, trying production API...');
@@ -675,6 +696,24 @@ function DealDetailPageContent() {
           contractSnapshotHtml: `Contract URL: ${deal.contract_file_url}\nSigned at: ${new Date().toISOString()}`,
         }),
       });
+
+      if (!resp.ok) {
+        const errorData = await resp.json().catch(() => ({ error: `Server error: ${resp.status}` }));
+        const errorMessage = errorData.error || `Failed to sign contract: ${resp.status}`;
+        const errorDetails = errorData.details || errorData.message || '';
+        console.error('[DealDetailPage] Signing failed:', {
+          status: resp.status,
+          statusText: resp.statusText,
+          error: errorMessage,
+          details: errorDetails,
+          dealId: deal.id,
+          apiBaseUrl,
+          fullError: errorData
+        });
+        // Show more detailed error message if available
+        const fullErrorMessage = errorDetails ? `${errorMessage}: ${errorDetails}` : errorMessage;
+        throw new Error(fullErrorMessage);
+      }
 
       const data = await resp.json();
       if (data.success) {
@@ -925,7 +964,7 @@ function DealDetailPageContent() {
     
     if (!deal) return entries;
     
-    if (deal.created_at) {
+    if (deal.created_at && deal.id) {
       entries.push({
         id: `action-${deal.id}-created`,
         action: 'Deal created',
@@ -935,7 +974,7 @@ function DealDetailPageContent() {
       });
     }
 
-    if (deal.contract_file_url) {
+    if (deal.contract_file_url && deal.id) {
       entries.push({
         id: `action-${deal.id}-contract`,
         action: 'Contract uploaded',
@@ -1000,11 +1039,19 @@ function DealDetailPageContent() {
   // DOCX contract URL (primary source)
   const contractDocxUrl = deal?.contract_file_url as string | null | undefined;
   
-  console.log('[DealDetailPage] Contract URL resolution:', {
-    contractDocxUrl,
-    contractVersion: (deal as any)?.contract_version,
-    hasContract: !!contractDocxUrl
-  });
+  const contractUrlInfo = {
+    contractDocxUrl: contractDocxUrl || 'null',
+    signedContractUrl: signedContractUrl || 'null',
+    contractVersion: (deal as any)?.contract_version || 'null',
+    hasContract: !!contractDocxUrl,
+    hasSignedContract: !!signedContractUrl,
+    dealExecutionStatus: dealExecutionStatus || 'null',
+    isCreatorSigned,
+    dealId: deal?.id,
+    canDownload: !!(contractDocxUrl || signedContractUrl)
+  };
+  console.log('[DealDetailPage] Contract URL resolution:', contractUrlInfo);
+  console.log('[DealDetailPage] Can download?', contractUrlInfo.canDownload, 'contractDocxUrl:', contractUrlInfo.contractDocxUrl, 'signedContractUrl:', contractUrlInfo.signedContractUrl);
   const contractVersion = (deal as any)?.contract_version as string | null | undefined;
   const signedAt = (deal as any)?.signed_at as string | null | undefined;
   const signedVia = (deal as any)?.signed_via as string | null | undefined;
@@ -1226,10 +1273,57 @@ function DealDetailPageContent() {
   }, [deal, deliverables, protectionReport, protectionIssues, issues]);
 
   const handleDownloadContract = useCallback(async () => {
-    // Use active contract URL (prioritizes v2 contract with all fixes)
-    const contractUrl = contractDocxUrl;
+    // Prioritize signed contract URL if available (after both parties have signed)
+    // Otherwise use the regular contract URL
+    let contractUrl = signedContractUrl || contractDocxUrl;
+    
+    console.log('[DealDetailPage] Download clicked:', {
+      contractUrl,
+      signedContractUrl,
+      contractDocxUrl,
+      hasContract: !!contractUrl,
+      dealId: deal?.id
+    });
+    
+    // If no direct URL, try to use the download-docx API endpoint
+    if (!contractUrl && deal?.id) {
+      console.log('[DealDetailPage] No direct contract URL, trying download-docx API endpoint...');
+      try {
+        // Try to get API base URL
+        let apiBaseUrl =
+          import.meta.env.VITE_API_BASE_URL ||
+          (typeof window !== 'undefined' && window.location.origin.includes('noticebazaar.com')
+            ? 'https://api.noticebazaar.com'
+            : typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com')
+              ? 'https://api.creatorarmour.com'
+              : 'http://localhost:3001');
+
+        // Use the download-docx endpoint
+        const downloadUrl = `${apiBaseUrl}/api/protection/contracts/${deal.id}/download-docx`;
+        console.log('[DealDetailPage] Using download endpoint:', downloadUrl);
+        
+        // Trigger download via the API endpoint
+        const link = document.createElement('a');
+        link.href = downloadUrl;
+        link.download = `contract-${deal.id}.docx`;
+        link.target = '_blank';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        toast.success('Downloading contract...');
+        return;
+      } catch (error: any) {
+        console.error('[DealDetailPage] Failed to use download endpoint:', error);
+        // Fall through to show error message
+      }
+    }
+    
     if (!contractUrl) {
-      toast.error('No contract file available');
+      console.error('[DealDetailPage] No contract URL available for download');
+      toast.error('No contract file available', {
+        description: 'The contract file is not available. The contract may need to be regenerated. Please contact support.',
+      });
       return;
     }
 
@@ -1237,7 +1331,8 @@ function DealDetailPageContent() {
     const progressToast = toast.loading('Downloading contract...');
 
     try {
-      const filename = getFilenameFromUrl(contractUrl);
+      const filename = getFilenameFromUrl(contractUrl) || 
+        (signedContractUrl ? 'signed-contract.pdf' : 'contract.docx');
       await downloadFile(contractUrl, filename);
       
       toast.dismiss(progressToast);
@@ -1250,20 +1345,40 @@ function DealDetailPageContent() {
         await createActionLog.mutateAsync({
           deal_id: deal.id,
           event: 'contract_downloaded',
-          metadata: { filename },
+          metadata: { filename, isSigned: !!signedContractUrl },
         });
       }
       
       trackEvent('zip_bundle_downloaded', { dealId: deal.id });
     } catch (error: any) {
       toast.dismiss(progressToast);
-      toast.error('Failed to download contract', {
-        description: error.message || 'Please try again.',
+      console.error('[DealDetailPage] Download error:', error);
+      console.error('[DealDetailPage] Download context:', {
+        contractUrl,
+        signedContractUrl,
+        contractDocxUrl,
+        hasContract: !!contractUrl,
+        dealId: deal?.id
       });
-    } finally {
+      
+      // Provide more helpful error messages
+      if (!contractUrl) {
+        toast.error('No contract available', {
+          description: 'The contract file is not available. Please contact support.',
+        });
+      } else if (error.message?.includes('CORS') || error.message?.includes('network')) {
+        toast.error('Download failed', {
+          description: 'Network error. Please check your connection and try again.',
+        });
+      } else {
+        toast.error('Failed to download contract', {
+          description: error.message || 'Please try again or contact support.',
+        });
+      }
+          } finally {
       setIsDownloading(false);
     }
-  }, [deal?.id, deal?.contract_file_url, profile?.id, createActionLog]);
+  }, [deal?.id, deal?.contract_file_url, signedContractUrl, contractDocxUrl, profile?.id, createActionLog]);
 
   // Upload final signed contract PDF (Phase 2 - storage only, no e-sign)
   const handleSignedContractUpload = useCallback(
@@ -1658,7 +1773,16 @@ Best regards`;
           
           <div className="text-lg font-semibold">Deal Details</div>
           
-          <div className="w-10" /> {/* Spacer for centering */}
+          <button
+            onClick={() => {
+              triggerHaptic(HapticPatterns.light);
+              setShowDeleteConfirm(true);
+            }}
+            className="p-2 hover:bg-red-500/20 rounded-lg transition-colors active:scale-95"
+            aria-label="Delete Deal"
+          >
+            <Trash2 className="w-6 h-6 text-red-400" />
+          </button>
         </div>
       </div>
 
@@ -1736,7 +1860,7 @@ Best regards`;
                   
             <button
                     onClick={handleDownloadContract}
-                    disabled={!hasContract || isDownloading}
+                    disabled={(!contractDocxUrl && !signedContractUrl && !deal?.id) || isDownloading}
                     className="w-full text-sm text-white/70 hover:text-white transition-colors underline disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {isDownloading ? 'Downloading...' : 'View Contract PDF'}
@@ -1744,103 +1868,53 @@ Best regards`;
                 </div>
               </div>
             );
-          } else if (isSigned) {
-            // SIGNED_BY_BRAND
-            // Debug log to check creator signing status
-            if (import.meta.env.DEV) {
-              console.log('[DealDetailPage] Status Card - isSigned:', isSigned, 'isCreatorSigned:', isCreatorSigned);
-            }
-            
+          } else if (isSigned && isCreatorSigned) {
+            // SIGNED / AGREEMENT EXECUTED - Final state
             return (
-              <div className="bg-gradient-to-br from-green-500/20 to-emerald-500/20 backdrop-blur-xl border-2 border-green-400/30 rounded-2xl p-6 shadow-lg">
-                <h2 className="text-2xl font-bold text-white mb-2">
-                  {isCreatorSigned ? 'Contract Signed' : 'Awaiting Your Signature'}
-                </h2>
+              <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-4 md:p-6 shadow-lg shadow-black/20">
+                <div className="flex items-start justify-between mb-4">
+                  <div className="flex-1">
+                    <h1 className="text-2xl font-bold mb-2 leading-tight">Collaboration Agreement — Signed</h1>
+                    <div className="flex items-center gap-2 flex-wrap mb-3">
+                      <span className="px-3 py-1 rounded-full text-xs font-medium bg-green-500/20 text-green-400 border border-green-500/30 flex items-center gap-1">
+                        <CheckCircle className="w-3 h-3" />
+                        Legally Executed
+                      </span>
+                    </div>
+                    <p className="text-sm text-white/60">
+                      This agreement has been legally executed. CreatorArmour provides verification and audit records.
+                    </p>
+                  </div>
+                </div>
+
+                {/* Deal Value - Prominent */}
+                <div className="bg-white/5 rounded-xl p-4 mb-4">
+                  <div className="text-sm text-white/60 mb-1">Total Deal Value</div>
+                  <div className="text-3xl font-bold text-green-400">₹{Math.round(dealAmount).toLocaleString('en-IN')}</div>
+                </div>
+
+                {/* Brand Identity Verified Badge */}
+                {(deal as any)?.brand_response_status === 'accepted_verified' && (
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="w-8 h-8 rounded-lg bg-green-500/20 flex items-center justify-center">
+                      <Lock className="w-4 h-4 text-green-400" />
+                    </div>
+                    <div className="flex-1">
+                      <div className="text-xs font-medium text-white/80">Brand Identity Verified</div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Signed Timestamp - Small, Muted */}
                 {signedAtDate && (
-                  <p className="text-white/70 text-sm mb-2">
-                    Signed by brand on {new Date(signedAtDate).toLocaleDateString('en-US', { 
+                  <div className="text-xs text-white/50 mt-2">
+                    Signed on {new Date(signedAtDate).toLocaleDateString('en-US', { 
                       month: 'long', 
                       day: 'numeric', 
-                      year: 'numeric',
-                      hour: '2-digit',
-                      minute: '2-digit'
+                      year: 'numeric'
                     })}
-                  </p>
+                  </div>
                 )}
-                {!isCreatorSigned && (
-                  <p className="text-white/80 text-sm mb-6 font-medium">
-                    The brand has signed. Please review and sign to finalize the deal.
-                  </p>
-                )}
-                
-                <div className="space-y-3">
-                  {!isCreatorSigned && (
-                    <motion.button
-                      onClick={() => {
-                        if (import.meta.env.DEV) {
-                          console.log('[DealDetailPage] Sign as Creator button clicked');
-                        }
-                        setShowCreatorSigningModal(true);
-                      }}
-                      whileTap={{ scale: 0.98 }}
-                      className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 px-6 py-3 rounded-xl font-semibold text-white transition-all flex items-center justify-center gap-2"
-                    >
-                      <FileText className="w-5 h-5" />
-                      Sign as Creator
-                    </motion.button>
-                  )}
-                  
-                  <motion.button
-                    onClick={handleDownloadContract}
-                    disabled={!hasContract || isDownloading}
-                    whileTap={{ scale: 0.98 }}
-                    className={cn(
-                      "w-full px-6 py-3 rounded-xl font-semibold text-white transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed",
-                      isCreatorSigned
-                        ? "bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500"
-                        : "bg-white/10 hover:bg-white/20 border border-white/20"
-                    )}
-                  >
-                    {isDownloading ? (
-                      <>
-                        <Loader2 className="w-5 h-5 animate-spin" />
-                        Downloading...
-                      </>
-                    ) : (
-                      <>
-                        <Download className="w-5 h-5" />
-                        {isCreatorSigned ? 'Download Signed Contract' : 'Download Agreement PDF'}
-                      </>
-                    )}
-                  </motion.button>
-                  
-                  {isCreatorSigned && (
-                    <button
-                      onClick={async () => {
-                        if (!deal || !deal.id) return;
-                        const shareText = `${dealTitle}\n\nDeal Value: ₹${Math.round(dealAmount).toLocaleString('en-IN')}\nStatus: Signed\nBrand: ${deal.brand_name}`;
-                        const shareUrl = `${window.location.origin}${window.location.pathname}`;
-                        if (navigator.share) {
-                          try {
-                            await navigator.share({ title: `${dealTitle} - CreatorArmour`, text: shareText, url: shareUrl });
-                            toast.success('Shared successfully');
-                          } catch (e: any) {
-                            if (e.name !== 'AbortError') {
-                              const success = await copyToClipboard(`${shareText}\n\nView deal: ${shareUrl}`);
-                              if (success) toast.success('Deal details copied to clipboard');
-                            }
-                          }
-                        } else {
-                          const success = await copyToClipboard(`${shareText}\n\nView deal: ${shareUrl}`);
-                          if (success) toast.success('Deal details copied to clipboard');
-                        }
-                      }}
-                      className="w-full text-sm text-white/70 hover:text-white transition-colors underline"
-                    >
-                      Share Contract
-                    </button>
-                  )}
-                </div>
               </div>
             );
           } else {
@@ -1852,7 +1926,7 @@ Best regards`;
                     {deal.brand_name.substring(0, 2).toUpperCase()}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h1 className="text-2xl font-bold mb-2 leading-tight">{dealTitle}</h1>
+                    <h1 className="text-xl font-bold mb-2 leading-tight">{dealTitle}</h1>
                     <div className="flex items-center gap-2 flex-wrap">
                       <span className="px-3 py-1 rounded-full text-xs font-medium bg-blue-500/20 text-blue-400 flex items-center gap-1">
                         <Clock className="w-3 h-3" />
@@ -1872,75 +1946,6 @@ Best regards`;
             );
           }
         })()}
-
-        {/* Brand Identity Verification Badge - Simplified */}
-        {deal && deal.id && (deal as any)?.brand_response_status && (deal as any)?.brand_response_status === 'accepted_verified' && (
-          <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-4 shadow-lg">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-green-500/20 flex items-center justify-center">
-                  <Lock className="w-5 h-5 text-green-400" />
-                </div>
-                <div>
-                  <div className="font-semibold text-white">Brand Identity Verified 🔒</div>
-                  {(deal as any)?.brand_response_at && (
-                    <div className="text-xs text-white/60 mt-0.5">
-                      Verified on {new Date((deal as any).brand_response_at).toLocaleDateString('en-US', { 
-                        month: 'short', 
-                        day: 'numeric', 
-                        year: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit'
-                      })}
-                    </div>
-                  )}
-          </div>
-        </div>
-
-              <Collapsible open={showVerificationDetails} onOpenChange={setShowVerificationDetails}>
-                <CollapsibleTrigger asChild>
-                  <button className="text-sm text-white/70 hover:text-white transition-colors underline">
-                    {showVerificationDetails ? 'Hide' : 'View'} verification details
-                  </button>
-                </CollapsibleTrigger>
-                <CollapsibleContent className="mt-4 pt-4 border-t border-white/10 space-y-2 text-sm">
-                  {(deal as any)?.brand_email && (
-                    <div className="flex justify-between">
-                      <span className="text-white/60">Verified email:</span>
-                      <span className="text-white/90">{deal.brand_email}</span>
-                    </div>
-                  )}
-                  {(deal as any)?.otp_verified_at && (
-                    <div className="flex justify-between">
-                      <span className="text-white/60">Date & time:</span>
-                      <span className="text-white/90">
-                        {new Date((deal as any).otp_verified_at).toLocaleString('en-US', { 
-                          month: 'short', 
-                          day: 'numeric', 
-                          year: 'numeric',
-                          hour: '2-digit',
-                          minute: '2-digit'
-                        })}
-                      </span>
-                    </div>
-                  )}
-                  {(deal as any)?.brand_response_ip && (
-                    <div className="flex justify-between">
-                      <span className="text-white/60">IP address:</span>
-                      <span className="text-white/90 font-mono text-xs">{(deal as any).brand_response_ip}</span>
-                    </div>
-                  )}
-                  {(deal as any)?.brand_response_at && (
-                    <div className="flex justify-between">
-                      <span className="text-white/60">Device info:</span>
-                      <span className="text-white/90 text-xs">Verified via secure link</span>
-                    </div>
-                  )}
-                </CollapsibleContent>
-              </Collapsible>
-            </div>
-          </div>
-        )}
 
         {/* Brand Response Tracker - Only show for pending/negotiating/rejected (not verified) */}
         {deal && deal.id && (deal as any)?.brand_response_status && (deal as any)?.brand_response_status !== 'accepted_verified' && (
@@ -2549,6 +2554,130 @@ ${link}`;
           );
         })()}
 
+        {/* Final Contract Section - Moved above Deliverables */}
+        {brandResponseStatus === 'accepted_verified' && (
+          <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6 shadow-lg shadow-black/20 mb-6">
+            {(() => {
+              const contractDocxUrl = deal?.contract_file_url as string | null | undefined;
+              const isContractSigned = dealExecutionStatus === 'signed' || dealExecutionStatus === 'completed' || 
+                                     signedContractUrl || signedAt ||
+                                     (deal?.status?.toLowerCase()?.includes('signed'));
+              
+              if (!isContractSigned) {
+                // Contract NOT signed
+                return (
+                  <>
+            <h2 className="font-semibold text-xl mb-2 flex items-center gap-2">
+                      <FileText className="w-6 h-6 text-purple-400" />
+                      Final Agreement
+                    </h2>
+                    <p className="text-sm text-white/70 mb-4">
+                      This contract has been generated based on confirmed details.
+                    </p>
+                    <motion.button
+                      onClick={async () => {
+                        if (!deal?.id) return;
+                        const link = brandReplyLink || (await generateBrandReplyLink(deal.id));
+                        if (link) {
+                          window.open(link, '_blank');
+                        }
+                      }}
+                      whileTap={{ scale: 0.98 }}
+                      className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 px-6 py-3 rounded-xl font-semibold text-white transition-all flex items-center justify-center gap-2"
+                    >
+                      <FileText className="w-5 h-5" />
+                      Sign Contract
+                    </motion.button>
+                  </>
+                );
+              } else {
+                // Contract signed
+                return (
+                  <>
+                    <h2 className="font-semibold text-xl mb-2 flex items-center gap-2">
+                      <CheckCircle className="w-6 h-6 text-purple-400" />
+                      Final Contract
+                    </h2>
+                    <p className="text-sm text-white/70 mb-4">
+                      {isCreatorSigned
+                        ? 'This agreement has been legally executed. CreatorArmour provides verification and audit records.'
+                        : 'The brand has signed the agreement. Please review and sign to finalize the deal.'}
+                    </p>
+
+                    <div className="flex flex-col gap-3">
+                      {!isCreatorSigned && (
+                          <motion.button
+                          onClick={() => setShowCreatorSigningModal(true)}
+                            whileTap={{ scale: 0.98 }}
+                          className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 px-6 py-3 rounded-xl font-semibold text-white transition-all flex items-center justify-center gap-2"
+                          >
+                          <FileText className="w-5 h-5" />
+                          Sign as Creator
+                          </motion.button>
+                      )}
+
+                      {isCreatorSigned && (
+                        <>
+                          <motion.button
+                            onClick={handleDownloadContract}
+                            disabled={(!contractDocxUrl && !signedContractUrl && !deal?.id) || isDownloading}
+                            whileTap={{ scale: 0.98 }}
+                            className="w-full px-6 py-3 rounded-xl font-semibold text-white transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500"
+                          >
+                            {isDownloading ? (
+                              <>
+                                <Loader2 className="w-5 h-5 animate-spin" />
+                                Downloading...
+                              </>
+                            ) : (
+                              <>
+                                <Download className="w-5 h-5" />
+                                Download Signed Agreement
+                              </>
+                            )}
+                          </motion.button>
+                          
+                          <button
+                            onClick={() => setShowAuditTrail(true)}
+                            className="w-full text-sm text-white/70 hover:text-white transition-colors underline text-center py-2"
+                          >
+                            View Audit Trail
+                          </button>
+                          
+                          <p className="text-xs text-white/50 mt-2 text-center">
+                            Includes OTP verification, IP address, timestamp, and device record.
+                          </p>
+                        </>
+                      )}
+
+                      {!isCreatorSigned && (
+                        <motion.button
+                          onClick={handleDownloadContract}
+                          disabled={(!contractDocxUrl && !signedContractUrl && !deal?.id) || isDownloading}
+                          whileTap={{ scale: 0.98 }}
+                          className="w-full px-6 py-3 rounded-xl font-semibold text-white transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed bg-white/10 hover:bg-white/20 border border-white/20"
+                        >
+                          {isDownloading ? (
+                            <>
+                              <Loader2 className="w-5 h-5 animate-spin" />
+                              Downloading...
+                            </>
+                          ) : (
+                            <>
+                              <Download className="w-5 h-5" />
+                              Download Agreement PDF
+                            </>
+                          )}
+                        </motion.button>
+                      )}
+                    </div>
+                  </>
+                );
+              }
+            })()}
+          </div>
+        )}
+
         {/* Grid Layout */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Left Column */}
@@ -2556,11 +2685,11 @@ ${link}`;
             {/* Deliverables */}
             <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-4 md:p-6 shadow-lg shadow-black/20">
               <h2 className="font-semibold text-lg mb-2 flex items-center gap-2">
-                <FileText className="w-5 h-5" />
+                <FileText className="w-5 h-5 text-white/70" />
                 Deliverables
               </h2>
-              <p className="text-sm text-white/70 mb-6">
-                These will be automatically tracked and marked as completed once due.
+              <p className="text-xs text-white/50 mb-4">
+                Deliverables are auto-tracked and marked completed on their due dates.
               </p>
               
               {/* Auto-completion info banner */}
@@ -2584,43 +2713,39 @@ ${link}`;
               )}
 
               {deliverables.length > 0 ? (
-                <div className="space-y-3">
-                  {deliverables.map((item: any, index: number) => (
-                    <div key={index} className="bg-white/5 rounded-xl p-4 border border-white/10 hover:border-white/20 transition-colors">
-                      <div className="flex items-start gap-3">
-                        <div className="w-10 h-10 rounded-full bg-purple-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                          <CheckCircle className="w-5 h-5 text-purple-400" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="font-medium text-white/90 break-words mb-1">
-                            {item.title || item.name || `Deliverable ${index + 1}`}
-                          </div>
-                          {item.dueDate && (
-                            <div className="text-xs text-white/60 mt-1.5 flex items-center gap-1.5">
-                              <Calendar className="w-3.5 h-3.5 flex-shrink-0" />
-                              <span>Due: {item.dueDate}</span>
+                <>
+                  <div className="space-y-2">
+                    {deliverables.map((item: any, index: number) => (
+                      <div key={index} className="bg-white/5 rounded-xl p-3 border border-white/10">
+                        <div className="flex items-start gap-3">
+                          <div className="flex-1 min-w-0">
+                            <div className="font-medium text-white/90 break-words mb-1">
+                              {item.title || item.name || `Deliverable ${index + 1}`}
                             </div>
-                          )}
-                          <div className="text-xs text-white/50 mt-2">
-                            Auto-completion enabled on due date
+                            {item.dueDate && (
+                              <div className="text-xs text-white/60 mt-1.5 flex items-center gap-1.5">
+                                <Calendar className="w-3.5 h-3.5 flex-shrink-0" />
+                                <span>Due: {item.dueDate}</span>
+                              </div>
+                            )}
+                            {item.status && (
+                              <div className="mt-2">
+                                <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${item.status === 'completed' ? 'bg-green-500/20 text-green-400 border border-green-500/30' :
+                                  item.status === 'in_progress' ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30' :
+                                  'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30'
+                                }`}>
+                                  {item.status === 'completed' ? 'Completed' :
+                                   item.status === 'in_progress' ? 'In Progress' :
+                                   'Pending'}
+                                </span>
+                              </div>
+                            )}
                           </div>
-                          {item.status && (
-                            <div className="mt-2.5">
-                              <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${item.status === 'completed' ? 'bg-green-500/20 text-green-400 border border-green-500/30' :
-                                item.status === 'in_progress' ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30' :
-                                'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30'
-                              }`}>
-                                {item.status === 'completed' ? 'Completed' :
-                                 item.status === 'in_progress' ? 'In Progress' :
-                                 'Pending'}
-                              </span>
-                            </div>
-                          )}
                         </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                </>
               ) : (
                 <div className="text-sm text-white/60 py-4">No deliverables specified</div>
               )}
@@ -2632,7 +2757,10 @@ ${link}`;
                 <Collapsible open={showAuditTrail} onOpenChange={setShowAuditTrail}>
                   <CollapsibleTrigger asChild>
                     <button className="w-full flex items-center justify-between">
-                      <h3 className="font-semibold text-lg">Audit Trail (Advanced)</h3>
+                      <div className="text-left">
+                        <h3 className="font-semibold text-lg">Audit Trail & Verification</h3>
+                        <p className="text-xs text-white/50 mt-1">For legal review, disputes, or compliance.</p>
+                      </div>
                       {showAuditTrail ? (
                         <ChevronUp className="w-5 h-5 text-white/60" />
                       ) : (
@@ -2745,7 +2873,7 @@ ${link}`;
               </div>
               
               <p className="text-xs text-white/60 mb-4">
-                This contact information is verified using GST/company records.
+                Verified brand contact details used for this agreement.
               </p>
               
               <div className="space-y-4 text-sm">
@@ -2756,8 +2884,8 @@ ${link}`;
                   <div className="flex items-center gap-2 text-white/60 break-words">
                     <Mail className="w-4 h-4 text-white/40 flex-shrink-0" />
                     <span className="flex-1">{deal.brand_email}</span>
-                    <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-green-500/20 text-green-400 border border-green-500/30">
-                      Verified Business Email
+                    <span className="px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-green-500/20 text-green-400 border border-green-500/30">
+                      Verified
                     </span>
                   </div>
                 )}
@@ -2818,15 +2946,15 @@ ${link}`;
                         }
                         
                         return phoneNumber ? (
-                          <div className="flex items-center gap-2 text-white/60 flex-1">
-                            <Phone className="w-4 h-4 text-white/40 flex-shrink-0" />
+                        <div className="flex items-center gap-2 text-white/60 flex-1">
+                          <Phone className="w-4 h-4 text-white/40 flex-shrink-0" />
                             <span>{phoneNumber}</span>
-                          </div>
-                        ) : (
-                          <div className="flex items-center gap-2 text-white/40 flex-1">
-                            <Phone className="w-4 h-4 text-white/30 flex-shrink-0" />
-                            <span className="text-xs">No phone added (optional)</span>
-                          </div>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-2 text-white/40 flex-1">
+                          <Phone className="w-4 h-4 text-white/30 flex-shrink-0" />
+                          <span className="text-xs">No phone added (optional)</span>
+                        </div>
                         );
                       })()}
                       <motion.button
@@ -3021,305 +3149,11 @@ ${link}`;
               </div>
             )}
 
-            {/* Contract Execution - Simplified Conditional Block */}
-            {showContractExecutionSection && (
-              <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-4 shadow-lg shadow-black/20">
-                {(() => {
-                  const isContractSigned = dealExecutionStatus === 'signed' || dealExecutionStatus === 'completed' || 
-                                         signedContractUrl || signedAt ||
-                                         (deal?.status?.toLowerCase()?.includes('signed'));
-                  
-                  if (!isContractSigned) {
-                    // Contract NOT signed
-                    return (
-                      <>
-                <h2 className="font-semibold text-lg mb-2 flex items-center gap-2">
-                          <FileText className="w-5 h-5 text-emerald-400" />
-                          Final Agreement
-                </h2>
-                        <p className="text-sm text-white/70 mb-4">
-                          This contract has been generated based on confirmed details.
-                        </p>
-                        <motion.button
-                          onClick={async () => {
-                            if (!deal?.id) return;
-                            const link = brandReplyLink || (await generateBrandReplyLink(deal.id));
-                            if (link) {
-                              window.open(link, '_blank');
-                            }
-                          }}
-                          whileTap={{ scale: 0.98 }}
-                          className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 px-6 py-3 rounded-xl font-semibold text-white transition-all flex items-center justify-center gap-2"
-                        >
-                          <FileText className="w-5 h-5" />
-                          Sign Contract
-                        </motion.button>
-                      </>
-                    );
-                  } else {
-                    // Contract signed
-                    return (
-                      <>
-                        <h2 className="font-semibold text-lg mb-2 flex items-center gap-2">
-                          <CheckCircle className="w-5 h-5 text-green-400" />
-                          {isCreatorSigned ? 'Signed Agreement' : 'Awaiting Your Signature'}
-                        </h2>
-                        <p className="text-sm text-white/70 mb-4">
-                          {isCreatorSigned
-                            ? 'This agreement is legally signed and protected by both parties.'
-                            : 'The brand has signed the agreement. Please review and sign to finalize the deal.'}
-                        </p>
+          </div>
+        </div>
 
-                        <div className="flex flex-col gap-3">
-                          {!isCreatorSigned && (
-                            <motion.button
-                              onClick={() => setShowCreatorSigningModal(true)}
-                              whileTap={{ scale: 0.98 }}
-                              className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 px-6 py-3 rounded-xl font-semibold text-white transition-all flex items-center justify-center gap-2"
-                            >
-                              <FileText className="w-5 h-5" />
-                              Sign as Creator
-                            </motion.button>
-                          )}
-
-                        <motion.button
-                          onClick={handleDownloadContract}
-                          disabled={!contractDocxUrl || isDownloading}
-                          whileTap={{ scale: 0.98 }}
-                            className={cn(
-                              "w-full px-6 py-3 rounded-xl font-semibold text-white transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed",
-                              isCreatorSigned
-                                ? "bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500"
-                                : "bg-white/10 hover:bg-white/20 border border-white/20"
-                            )}
-                        >
-                          {isDownloading ? (
-                            <>
-                              <Loader2 className="w-5 h-5 animate-spin" />
-                              Downloading...
-                            </>
-                          ) : (
-                            <>
-                              <Download className="w-5 h-5" />
-                                {isCreatorSigned ? 'Download Signed Agreement' : 'Download Agreement PDF'}
-                            </>
-                          )}
-                        </motion.button>
-                        </div>
-                      </>
-                    );
-                  }
-                })()}
-                
-                {/* Legacy upload section - hidden by default per requirements */}
-                {false && (
-                  <>
-                <p className="text-xs text-white/60 mb-3">
-                  Upload the final signed contract once both parties have signed. This file is stored securely for your records.
-                </p>
-
-                {(!signedContractUrl || dealExecutionStatus === 'pending_signature') && (
-                  <div className="space-y-3">
-                    <motion.button
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                      disabled={isUploadingSignedContract}
-                      onClick={() => signedContractInputRef.current?.click()}
-                      className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white text-sm font-medium shadow-lg shadow-emerald-500/30 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      {isUploadingSignedContract ? (
-                        <>
-                          <Loader2 className="w-4 h-4 animate-spin" />
-                          Uploading…
-                        </>
-                      ) : (
-                        <>
-                          <Upload className="w-4 h-4" />
-                          Upload Signed Contract (PDF)
-                        </>
-                      )}
-                    </motion.button>
-                    <p className="text-[11px] text-white/60">
-                      PDF only, up to 10 MB. This does not change deal status automatically.
-                    </p>
-                  </div>
-                )}
-
-                {signedContractUrl && dealExecutionStatus === 'signed' && (
-                  <div className="space-y-3">
-                    <div className="flex items-start gap-2">
-                      <CheckCircle className="w-4 h-4 text-green-400 mt-0.5 flex-shrink-0" />
-                      <div className="flex-1">
-                        <p className="text-sm font-medium text-white">
-                          Signed contract uploaded
-                        </p>
-                        {signedContractUploadedAt && (
-                          <p className="text-xs text-white/60">
-                            Uploaded on {new Date(signedContractUploadedAt).toLocaleDateString()}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                    <div className="flex flex-col sm:flex-row gap-2">
-                      <motion.button
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
-                        onClick={() => {
-                          if (signedContractUrl) {
-                            window.open(signedContractUrl, '_blank');
-                          }
-                        }}
-                        className="w-full sm:w-auto flex-1 px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/15 border border-white/25 text-sm font-medium text-white flex items-center justify-center gap-2"
-                      >
-                        <Eye className="w-4 h-4" />
-                        View Signed PDF
-                      </motion.button>
-                      <motion.button
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
-                        disabled={isUploadingSignedContract}
-                        onClick={() => signedContractInputRef.current?.click()}
-                        className="w-full sm:w-auto flex-1 px-4 py-2.5 rounded-xl bg-purple-500/20 hover:bg-purple-500/30 border border-purple-400/40 text-sm font-medium text-purple-100 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        <Edit className="w-4 h-4" />
-                        Replace Contract
-                      </motion.button>
-                    </div>
-                    <p className="text-[11px] text-white/60">
-                      Updated files replace the previous version for your records.
-                    </p>
-                  </div>
-                )}
-
-                {signedContractUrl && dealExecutionStatus === 'completed' && (
-                  <div className="space-y-2">
-                    <div className="flex items-start gap-2">
-                      <CheckCircle className="w-4 h-4 text-green-400 mt-0.5 flex-shrink-0" />
-                      <div className="flex-1">
-                        <p className="text-sm font-medium text-white">
-                          Execution complete
-                        </p>
-                        {signedContractUploadedAt && (
-                          <p className="text-xs text-white/60">
-                            Signed contract stored on{' '}
-                            {new Date(signedContractUploadedAt).toLocaleDateString()}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                    <p className="text-[11px] text-white/60">
-                      You can view the signed PDF from here whenever needed.
-                    </p>
-                  </div>
-                )}
-
-                {/* Hidden input used by both Upload and Replace buttons */}
-                <input
-                  ref={signedContractInputRef}
-                  type="file"
-                  accept="application/pdf"
-                  className="hidden"
-                  onChange={handleSignedContractFileChange}
-                />
-                  </>
-                )}
-              </div>
-            )}
-
-            {/* Final Contract Section - Simplified */}
-            {brandResponseStatus === 'accepted_verified' && (
-              <div className="bg-gradient-to-br from-emerald-500/20 to-green-500/20 backdrop-blur-xl border-2 border-emerald-400/30 rounded-2xl p-6 shadow-lg shadow-emerald-500/10">
-                {(() => {
-                  const contractDocxUrl = deal?.contract_file_url as string | null | undefined;
-                  const isContractSigned = dealExecutionStatus === 'signed' || dealExecutionStatus === 'completed' || 
-                                         signedContractUrl || signedAt ||
-                                         (deal?.status?.toLowerCase()?.includes('signed'));
-                  
-                  if (!isContractSigned) {
-                    // Contract NOT signed
-                    return (
-                      <>
-                <h2 className="font-semibold text-xl mb-2 flex items-center gap-2">
-                          <FileText className="w-6 h-6 text-emerald-400" />
-                          Final Agreement
-                        </h2>
-                        <p className="text-sm text-white/70 mb-4">
-                          This contract has been generated based on confirmed details.
-                        </p>
-                        <motion.button
-                          onClick={async () => {
-                            if (!deal?.id) return;
-                            const link = brandReplyLink || (await generateBrandReplyLink(deal.id));
-                            if (link) {
-                              window.open(link, '_blank');
-                            }
-                          }}
-                          whileTap={{ scale: 0.98 }}
-                          className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 px-6 py-3 rounded-xl font-semibold text-white transition-all flex items-center justify-center gap-2"
-                        >
-                          <FileText className="w-5 h-5" />
-                          Sign Contract
-                        </motion.button>
-                      </>
-                    );
-                  } else {
-                    // Contract signed
-                    return (
-                      <>
-                        <h2 className="font-semibold text-xl mb-2 flex items-center gap-2">
-                          <CheckCircle className="w-6 h-6 text-green-400" />
-                          {isCreatorSigned ? 'Signed Agreement' : 'Awaiting Your Signature'}
-                        </h2>
-                        <p className="text-sm text-white/70 mb-4">
-                          {isCreatorSigned
-                            ? 'This agreement is legally signed and protected by both parties.'
-                            : 'The brand has signed the agreement. Please review and sign to finalize the deal.'}
-                        </p>
-
-                        <div className="flex flex-col gap-3">
-                          {!isCreatorSigned && (
-                            <motion.button
-                              onClick={() => setShowCreatorSigningModal(true)}
-                              whileTap={{ scale: 0.98 }}
-                              className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 px-6 py-3 rounded-xl font-semibold text-white transition-all flex items-center justify-center gap-2"
-                            >
-                              <FileText className="w-5 h-5" />
-                              Sign as Creator
-                            </motion.button>
-                          )}
-
-                          <motion.button
-                            onClick={handleDownloadContract}
-                            disabled={!contractDocxUrl || isDownloading}
-                            whileTap={{ scale: 0.98 }}
-                            className={cn(
-                              "w-full px-6 py-3 rounded-xl font-semibold text-white transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed",
-                              isCreatorSigned
-                                ? "bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500"
-                                : "bg-white/10 hover:bg-white/20 border border-white/20"
-                            )}
-                          >
-                            {isDownloading ? (
-                              <>
-                                <Loader2 className="w-5 h-5 animate-spin" />
-                                Downloading...
-                              </>
-                            ) : (
-                              <>
-                                <Download className="w-5 h-5" />
-                                {isCreatorSigned ? 'Download Signed Agreement' : 'Download Agreement PDF'}
-                              </>
-                            )}
-                          </motion.button>
-                        </div>
-                      </>
-                    );
-                  }
-                })()}
-                
-                {/* Legacy section removed to fix syntax errors */}
-                {/* Confirm Signed Contract Received Modal */}
-                <Dialog open={showMarkSignedModal} onOpenChange={setShowMarkSignedModal}>
+        {/* Confirm Signed Contract Received Modal */}
+        <Dialog open={showMarkSignedModal} onOpenChange={setShowMarkSignedModal}>
               <DialogContent className="bg-purple-900/95 backdrop-blur-xl border border-white/10 text-white max-w-md">
                 <DialogHeader>
                   <DialogTitle className="text-xl font-semibold">Confirm Signed Contract Received</DialogTitle>
@@ -3467,20 +3301,27 @@ ${link}`;
                 </div>
               </div>
             )}
-                  </div>
-                )}
-              </div>
-          </div>
 
         {/* Brand Submission Details - Show at the end */}
         {brandSubmissionDetails && (
           <div className="space-y-6">
-            {/* Deal Summary Card */}
+            {/* Deal Summary Card - Collapsible by default */}
             <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-5 md:p-6 shadow-lg shadow-black/20">
-              <div className="flex items-center gap-2 mb-4">
-                <span className="text-xl">📌</span>
-                <h3 className="font-semibold text-lg">Deal Summary</h3>
-              </div>
+              <Collapsible open={showDealSummaryFull} onOpenChange={setShowDealSummaryFull}>
+                <CollapsibleTrigger asChild>
+                  <button className="w-full flex items-center justify-between items-center mb-4">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xl">📌</span>
+                      <h3 className="font-semibold text-lg">Deal Summary</h3>
+                    </div>
+                    {showDealSummaryFull ? (
+                      <ChevronUp className="w-5 h-5 text-white/60" />
+                    ) : (
+                      <ChevronDown className="w-5 h-5 text-white/60" />
+                    )}
+                  </button>
+                </CollapsibleTrigger>
+                <CollapsibleContent>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <div className="text-sm text-white/60 mb-1">Brand</div>
@@ -3526,82 +3367,11 @@ ${link}`;
                   </div>
                 )}
               </div>
+                </CollapsibleContent>
+              </Collapsible>
             </div>
 
-            {/* Deliverables Card */}
-            {brandSubmissionDetails.deliverables && brandSubmissionDetails.deliverables.length > 0 && (
-              <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-5 md:p-6 shadow-lg shadow-black/20">
-                <div className="flex items-center gap-2 mb-4">
-                  <span className="text-xl">🎥</span>
-                  <h3 className="font-semibold text-lg">Deliverables</h3>
-                </div>
-                <ul className="space-y-2">
-                  {brandSubmissionDetails.deliverables.map((d: any, idx: number) => {
-                    // Handle both structured and string formats
-                    if (typeof d === 'object' && d.platform) {
-                      const deliverableText = `${d.quantity || 1} ${d.contentType || 'content'} on ${d.platform}${d.duration ? ` (${d.duration}s)` : ''}`;
-                      return (
-                        <li key={idx} className="text-white/90 flex items-start gap-2">
-                          <span className="text-white/60 mt-1">•</span>
-                          <span>{deliverableText}</span>
-                        </li>
-                      );
-                    } else {
-                      return (
-                        <li key={idx} className="text-white/90 flex items-start gap-2">
-                          <span className="text-white/60 mt-1">•</span>
-                          <span>{typeof d === 'string' ? d : JSON.stringify(d)}</span>
-                        </li>
-                      );
-                    }
-                  })}
-                </ul>
-          </div>
-        )}
-      
-            {/* Approvals & Revisions Card */}
-            {(brandSubmissionDetails.approvalProcess || brandSubmissionDetails.numberOfRevisions || brandSubmissionDetails.approvalTurnaroundTime || brandSubmissionDetails.revisions || brandSubmissionDetails.postingWindow) && (
-              <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-5 md:p-6 shadow-lg shadow-black/20">
-                <div className="flex items-center gap-2 mb-4">
-                  <span className="text-xl">🛡️</span>
-                  <h3 className="font-semibold text-lg">Approvals & Revisions</h3>
-                </div>
-                <div className="space-y-3">
-                  {brandSubmissionDetails.approvalProcess && (
-                    <div>
-                      <div className="text-sm text-white/60 mb-1">Approval Rule</div>
-                      <div className="text-white font-medium capitalize">
-                        {brandSubmissionDetails.approvalProcess.replace(/_/g, ' ')}
-                      </div>
-                    </div>
-                  )}
-                  {brandSubmissionDetails.approvalTurnaroundTime && (
-                    <div>
-                      <div className="text-sm text-white/60 mb-1">Turnaround Time</div>
-                      <div className="text-white font-medium capitalize">
-                        {brandSubmissionDetails.approvalTurnaroundTime.replace(/_/g, ' ')}
-                      </div>
-                    </div>
-                  )}
-                  {(brandSubmissionDetails.numberOfRevisions || brandSubmissionDetails.revisions) && (
-                    <div>
-                      <div className="text-sm text-white/60 mb-1">Revisions Count</div>
-                      <div className="text-white font-medium">
-                        {brandSubmissionDetails.numberOfRevisions || brandSubmissionDetails.revisions}
-                      </div>
-                    </div>
-                  )}
-                  {brandSubmissionDetails.postingWindow && (
-                    <div>
-                      <div className="text-sm text-white/60 mb-1">Posting Window</div>
-                      <div className="text-white font-medium">{brandSubmissionDetails.postingWindow}</div>
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-
-            {/* Payment Details Card */}
+            {/* Payment Details Card - Moved to position 4 */}
             {brandSubmissionDetails.dealType === 'paid' && (
               <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-5 md:p-6 shadow-lg shadow-black/20">
                 <div className="flex items-center gap-2 mb-4">
@@ -3641,49 +3411,7 @@ ${link}`;
               </div>
             )}
 
-            {/* Barter Details Card */}
-            {brandSubmissionDetails.dealType === 'barter' && (
-              <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-5 md:p-6 shadow-lg shadow-black/20">
-                <div className="flex items-center gap-2 mb-4">
-                  <span className="text-xl">🎁</span>
-                  <h3 className="font-semibold text-lg">Barter Details</h3>
-                </div>
-                <div className="space-y-3">
-                  {brandSubmissionDetails.productDescription && (
-                    <div>
-                      <div className="text-sm text-white/60 mb-1">Product Description</div>
-                      <div className="text-white font-medium">{brandSubmissionDetails.productDescription}</div>
-                    </div>
-                  )}
-                  {brandSubmissionDetails.barterValue && (
-                    <div>
-                      <div className="text-sm text-white/60 mb-1">Barter Value</div>
-                      <div className="text-white font-medium">{brandSubmissionDetails.barterValue}</div>
-                    </div>
-                  )}
-                  {brandSubmissionDetails.barterApproximateValue && (
-                    <div>
-                      <div className="text-sm text-white/60 mb-1">Approximate Value</div>
-                      <div className="text-white font-medium">{brandSubmissionDetails.barterApproximateValue}</div>
-                    </div>
-                  )}
-                  {brandSubmissionDetails.barterShippingResponsibility && (
-                    <div>
-                      <div className="text-sm text-white/60 mb-1">Shipping Responsibility</div>
-                      <div className="text-white font-medium">{brandSubmissionDetails.barterShippingResponsibility}</div>
-                    </div>
-                  )}
-                  {brandSubmissionDetails.barterReplacementAllowed !== undefined && (
-                    <div>
-                      <div className="text-sm text-white/60 mb-1">Replacement Allowed</div>
-                      <div className="text-white font-medium">{brandSubmissionDetails.barterReplacementAllowed ? 'Yes' : 'No'}</div>
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-
-            {/* Rights & Usage Card */}
+            {/* Rights & Usage Card - Moved to position 5 */}
             {(brandSubmissionDetails.usageRightsDuration || brandSubmissionDetails.paidAdsAllowed !== undefined || brandSubmissionDetails.whitelistingAllowed !== undefined || brandSubmissionDetails.exclusivityPeriod || brandSubmissionDetails.exclusivity || brandSubmissionDetails.usageRights || brandSubmissionDetails.cancellationTerms) && (
               <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-5 md:p-6 shadow-lg shadow-black/20">
                 <div className="flex items-center gap-2 mb-4">
@@ -3733,6 +3461,90 @@ ${link}`;
                       <div className="text-white font-medium capitalize">
                         {brandSubmissionDetails.cancellationTerms.replace(/_/g, ' ')}
                       </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Approvals & Revisions Card - Moved to position 6 */}
+            {(brandSubmissionDetails.approvalProcess || brandSubmissionDetails.numberOfRevisions || brandSubmissionDetails.approvalTurnaroundTime || brandSubmissionDetails.revisions || brandSubmissionDetails.postingWindow) && (
+              <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-5 md:p-6 shadow-lg shadow-black/20">
+                <div className="flex items-center gap-2 mb-4">
+                  <span className="text-xl">🛡️</span>
+                  <h3 className="font-semibold text-lg">Approvals & Revisions</h3>
+                </div>
+                <div className="space-y-3">
+                  {brandSubmissionDetails.approvalProcess && (
+                    <div>
+                      <div className="text-sm text-white/60 mb-1">Approval Rule</div>
+                      <div className="text-white font-medium capitalize">
+                        {brandSubmissionDetails.approvalProcess.replace(/_/g, ' ')}
+                      </div>
+                    </div>
+                  )}
+                  {brandSubmissionDetails.approvalTurnaroundTime && (
+                    <div>
+                      <div className="text-sm text-white/60 mb-1">Turnaround Time</div>
+                      <div className="text-white font-medium capitalize">
+                        {brandSubmissionDetails.approvalTurnaroundTime.replace(/_/g, ' ')}
+                      </div>
+                    </div>
+                  )}
+                  {(brandSubmissionDetails.numberOfRevisions || brandSubmissionDetails.revisions) && (
+                    <div>
+                      <div className="text-sm text-white/60 mb-1">Revisions Count</div>
+                      <div className="text-white font-medium">
+                        {brandSubmissionDetails.numberOfRevisions || brandSubmissionDetails.revisions}
+                      </div>
+                    </div>
+                  )}
+                  {brandSubmissionDetails.postingWindow && (
+                    <div>
+                      <div className="text-sm text-white/60 mb-1">Posting Window</div>
+                      <div className="text-white font-medium">{brandSubmissionDetails.postingWindow}</div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Barter Details Card */}
+            {brandSubmissionDetails.dealType === 'barter' && (
+              <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-5 md:p-6 shadow-lg shadow-black/20">
+                <div className="flex items-center gap-2 mb-4">
+                  <span className="text-xl">🎁</span>
+                  <h3 className="font-semibold text-lg">Barter Details</h3>
+                </div>
+                <div className="space-y-3">
+                  {brandSubmissionDetails.productDescription && (
+                    <div>
+                      <div className="text-sm text-white/60 mb-1">Product Description</div>
+                      <div className="text-white font-medium">{brandSubmissionDetails.productDescription}</div>
+                    </div>
+                  )}
+                  {brandSubmissionDetails.barterValue && (
+                    <div>
+                      <div className="text-sm text-white/60 mb-1">Barter Value</div>
+                      <div className="text-white font-medium">{brandSubmissionDetails.barterValue}</div>
+                    </div>
+                  )}
+                  {brandSubmissionDetails.barterApproximateValue && (
+                    <div>
+                      <div className="text-sm text-white/60 mb-1">Approximate Value</div>
+                      <div className="text-white font-medium">{brandSubmissionDetails.barterApproximateValue}</div>
+                    </div>
+                  )}
+                  {brandSubmissionDetails.barterShippingResponsibility && (
+                    <div>
+                      <div className="text-sm text-white/60 mb-1">Shipping Responsibility</div>
+                      <div className="text-white font-medium">{brandSubmissionDetails.barterShippingResponsibility}</div>
+                    </div>
+                  )}
+                  {brandSubmissionDetails.barterReplacementAllowed !== undefined && (
+                    <div>
+                      <div className="text-sm text-white/60 mb-1">Replacement Allowed</div>
+                      <div className="text-white font-medium">{brandSubmissionDetails.barterReplacementAllowed ? 'Yes' : 'No'}</div>
                     </div>
                   )}
                 </div>
@@ -3815,11 +3627,32 @@ ${link}`;
                 </div>
               </div>
             )}
+
+            {/* Next Steps - For Signed Agreements */}
+            {isCreatorSigned && (dealExecutionStatus === 'signed' || dealExecutionStatus === 'completed' || signedContractUrl || signedAt || (deal?.status?.toLowerCase()?.includes('signed'))) && (
+              <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-5 md:p-6 shadow-lg shadow-black/20 mt-6">
+                <h3 className="font-semibold text-lg mb-4 text-white/90">Next steps:</h3>
+                <ul className="space-y-2 text-sm text-white/70">
+                  <li className="flex items-start gap-2">
+                    <span className="text-white/50 mt-0.5">•</span>
+                    <span>Creator delivers content as per agreed timeline</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-white/50 mt-0.5">•</span>
+                    <span>Brand completes payment as agreed</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-white/50 mt-0.5">•</span>
+                    <span>Audit trail remains available for disputes or compliance</span>
+                  </li>
+                </ul>
+              </div>
+            )}
           </div>
         )
         }
       </div>
-
+      
       {/* Lazy Modals */}
       <Suspense fallback={null}>
         {showContractPreview && deal.contract_file_url && (
@@ -4080,3 +3913,4 @@ export default function DealDetailPage() {
     </DealProvider>
   );
 }
+

@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Briefcase, TrendingUp, Clock, CheckCircle, AlertCircle, IndianRupee, Calendar, ChevronRight, Shield, ArrowUpDown, Filter, X } from 'lucide-react';
+import { Briefcase, AlertCircle, IndianRupee, Shield, ArrowUpDown, Filter, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { useSession } from '@/contexts/SessionContext';
 import { useBrandDeals } from '@/lib/hooks/useBrandDeals';
@@ -215,6 +215,23 @@ const CreatorContracts = () => {
       return created.getMonth() === now.getMonth() && created.getFullYear() === now.getFullYear();
     }).length;
 
+    // Calculate Payments at Risk (overdue or due within 7 days)
+    const nowForRisk = new Date();
+    const paymentsAtRisk = brandDeals
+      .filter(d => {
+        const status = d.status?.toLowerCase() || '';
+        if (!status.includes('payment') && status !== 'payment pending') return false;
+        if (d.payment_received_date) return false; // Already paid
+        
+        const dueDate = d.payment_expected_date || d.due_date;
+        if (!dueDate) return false;
+        
+        const due = new Date(dueDate);
+        const daysUntil = Math.ceil((due.getTime() - nowForRisk.getTime()) / (1000 * 60 * 60 * 24));
+        return daysUntil <= 7; // Due within 7 days or overdue
+      })
+      .reduce((sum, d) => sum + (d.deal_amount || 0), 0);
+
     return {
       total,
       active,
@@ -225,28 +242,63 @@ const CreatorContracts = () => {
       accepted,
       rejected,
       totalValue,
-      thisMonth
+      thisMonth,
+      paymentsAtRisk
     };
   }, [brandDeals]);
 
-  type DealStatus = 'pending' | 'negotiation' | 'active' | 'completed' | 'signed' | 'content_making' | 'content_delivered';
-  
-  const statusConfig: Record<DealStatus, { color: string; label: string; icon: typeof Clock }> = {
-    pending: { color: 'bg-yellow-500', label: 'Pending', icon: Clock },
-    negotiation: { color: 'bg-blue-500', label: 'Negotiation', icon: TrendingUp },
-    active: { color: 'bg-green-500', label: 'Active', icon: CheckCircle },
-    completed: { color: 'bg-purple-500', label: 'Completed', icon: CheckCircle },
-    signed: { color: 'bg-indigo-500', label: 'Signed', icon: CheckCircle },
-    content_making: { color: 'bg-orange-500', label: 'Content Making', icon: TrendingUp },
-    content_delivered: { color: 'bg-yellow-500', label: 'Content Delivered', icon: CheckCircle }
+  // Map status to simplified status pill
+  const getStatusPill = (status: string, dealData: any) => {
+    const statusLower = status?.toLowerCase() || '';
+    const brandResponseStatus = dealData?.brand_response_status?.toLowerCase() || '';
+    
+    // Payment Pending → orange
+    if (statusLower.includes('payment') || statusLower === 'payment pending') {
+      return { label: 'Payment Pending', color: 'bg-orange-500/20 text-orange-400 border-orange-500/30' };
+    }
+    
+    // Completed → grey
+    if (statusLower.includes('completed') || statusLower.includes('paid')) {
+      return { label: 'Completed', color: 'bg-gray-500/20 text-gray-400 border-gray-500/30' };
+    }
+    
+    // Signed → green
+    if (statusLower.includes('signed') || brandResponseStatus === 'accepted_verified' || brandResponseStatus === 'accepted') {
+      return { label: 'Signed', color: 'bg-green-500/20 text-green-400 border-green-500/30' };
+    }
+    
+    // Contract Ready (sent, draft ready) → blue
+    if (statusLower === 'sent' || statusLower === 'draft' || statusLower.includes('contract_ready') || statusLower.includes('agreement_prepared')) {
+      return { label: 'Contract Ready', color: 'bg-blue-500/20 text-blue-400 border-blue-500/30' };
+    }
+    
+    // Negotiation → yellow
+    if (statusLower.includes('negotiation') || statusLower.includes('negotiating') || brandResponseStatus === 'negotiating') {
+      return { label: 'Negotiation', color: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30' };
+    }
+    
+    // Default fallback
+    return { label: status || 'Pending', color: 'bg-gray-500/20 text-gray-400 border-gray-500/30' };
   };
   
-  // Helper to get status config with fallback
-  const getStatusConfig = (status: string) => {
-    const config = statusConfig[status as DealStatus];
-    if (config) return config;
-    // Fallback for unknown statuses
-    return { color: 'bg-gray-500', label: status, icon: Clock };
+  // Get primary CTA button text and action
+  const getPrimaryAction = (status: string, dealData: any) => {
+    const statusLower = status?.toLowerCase() || '';
+    const brandResponseStatus = dealData?.brand_response_status?.toLowerCase() || '';
+    
+    if (statusLower.includes('negotiation') || brandResponseStatus === 'negotiating') {
+      return { label: 'Complete Negotiation', action: 'negotiate' };
+    }
+    if (statusLower === 'sent' || statusLower === 'draft' || statusLower.includes('contract_ready')) {
+      return { label: 'View Contract', action: 'view' };
+    }
+    if (statusLower.includes('payment') || statusLower === 'payment pending') {
+      return { label: 'Track Payment', action: 'track' };
+    }
+    if (statusLower.includes('signed') || brandResponseStatus === 'accepted_verified') {
+      return { label: 'View Details', action: 'view' };
+    }
+    return { label: 'View Deal', action: 'view' };
   };
 
   // Calculate closed count (paid + rejected)
@@ -509,7 +561,7 @@ const CreatorContracts = () => {
           <div className="flex items-center justify-between mb-4 md:mb-6">
             <div className="space-y-1 md:space-y-2">
               <h1 className={cn(typography.h1, "mb-0")}>Deals Under Protection</h1>
-              <p className={cn(typography.body, "font-medium")}>We monitor payments, risks, and next actions for every deal.</p>
+              <p className={cn(typography.body, "font-medium")}>Track active collaborations, risks, and next actions.</p>
             </div>
           </div>
 
@@ -522,23 +574,30 @@ const CreatorContracts = () => {
                   <SkeletonCard variant="secondary" />
                 </div>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
                   <StatCard
-                    label="Deals Monitored"
-                    value={stats.total}
-                    icon={<Briefcase className={cn(iconSizes.md, "text-white")} />}
+                    label="Active Deals"
+                    value={stats.active}
+                    icon={<Briefcase className={cn(iconSizes.md, "text-white/70")} />}
                     variant="secondary"
-                    subtitle={stats.total === 0 ? "No deals yet" : (stats.thisMonth > 0 ? `${stats.thisMonth} added this month` : undefined)}
-                    trend={stats.thisMonth > 0 ? { value: stats.thisMonth, isPositive: true } : undefined}
-                    isEmpty={stats.total === 0}
+                    subtitle={stats.active === 0 ? "No active deals" : undefined}
+                    isEmpty={stats.active === 0}
                   />
                   <StatCard
-                    label="Total Value Under Watch"
-                    value={stats.totalValue}
-                    icon={<IndianRupee className={cn(iconSizes.md, "text-white")} />}
+                    label="Total Value Protected"
+                    value={`₹${Math.round(stats.totalValue).toLocaleString('en-IN')}`}
+                    icon={<IndianRupee className={cn(iconSizes.md, "text-white/70")} />}
                     variant="secondary"
-                    subtitle={stats.totalValue === 0 ? "Start your first deal to see total earnings" : "Across monitored deals"}
+                    subtitle={stats.totalValue === 0 ? "No value protected" : undefined}
                     isEmpty={stats.totalValue === 0}
+                  />
+                  <StatCard
+                    label="Payments at Risk"
+                    value={`₹${Math.round(stats.paymentsAtRisk).toLocaleString('en-IN')}`}
+                    icon={<AlertCircle className={cn(iconSizes.md, "text-white/70")} />}
+                    variant="secondary"
+                    subtitle={stats.paymentsAtRisk === 0 ? "All payments secure" : undefined}
+                    isEmpty={stats.paymentsAtRisk === 0}
                   />
                 </div>
               )}
@@ -801,8 +860,9 @@ const CreatorContracts = () => {
                 /* Deals List - Matching Payments Page Card Style */
                 <div className={cn("space-y-5 sm:space-y-6")}>
           {filteredDeals.map((deal, index) => {
-            const statusInfo = getStatusConfig(deal.status);
-            const StatusIcon = statusInfo.icon;
+            const dealData = brandDeals.find(d => d.id === deal.id);
+            const statusPill = getStatusPill(deal.status, dealData);
+            const primaryAction = getPrimaryAction(deal.status, dealData);
             
             return (
               <motion.div
@@ -817,126 +877,51 @@ const CreatorContracts = () => {
                   variant="secondary" 
                   className={cn(
                     animations.cardHover,
-                    "cursor-pointer relative overflow-hidden"
+                    "cursor-pointer relative overflow-hidden",
+                    "p-4 md:p-5" // Reduced padding for smaller height
                   )}
                   onClick={() => {
                     triggerHaptic(HapticPatterns.light);
                     navigate(`/creator-contracts/${deal.id}`);
                   }}
                 >
-                  {/* Deal Header */}
+                  {/* Brand Name and Amount - Primary Layout */}
                   <div className={cn("flex items-start justify-between mb-3")}>
-                    <div className="flex-1">
-                      <h3 className={cn(typography.h4, "mb-1")}>{deal.title}</h3>
-                      <div className={cn("flex items-center gap-2", typography.bodySmall)}>
-                        <span>{deal.brand}</span>
-                        <span>•</span>
-                        <span>{deal.platform}</span>
+                    <div className="flex-1 min-w-0">
+                      <h3 className={cn(typography.h4, "mb-0 font-semibold")}>{deal.brand}</h3>
+                    </div>
+                    <div className={cn("text-right ml-4 flex-shrink-0")}>
+                      <div className={cn("text-lg md:text-xl font-bold text-green-400")}>
+                        ₹{Math.round(deal.value).toLocaleString('en-IN')}
                       </div>
                     </div>
-                    <ChevronRight className={cn(iconSizes.lg, "text-purple-300 flex-shrink-0 ml-2 transition-transform group-hover:translate-x-1")} />
                   </div>
 
-                  {/* Deal Value */}
-                  <div className={cn("flex items-center gap-2 mb-4 flex-wrap")}>
-                    <div className={cn("bg-green-500/20 text-green-400", spacing.cardPadding.tertiary, radius.md, typography.bodySmall, "font-semibold")}>
-                      ₹{Math.round(deal.value).toLocaleString('en-IN')}
-                    </div>
-                    <div className={cn(typography.caption, "text-purple-300")}>{deal.type}</div>
-                    {/* Brand Response Status Chip - Smaller and muted */}
-                    {deal.brandResponseStatus && (() => {
-                      const statusConfig = {
-                        pending: {
-                          label: 'Payment Not Secured',
-                          color: 'text-yellow-400/70',
-                          bgColor: 'bg-yellow-500/10',
-                          borderColor: 'border-yellow-500/20',
-                        },
-                        accepted: {
-                          label: '✅ Brand Accepted',
-                          color: 'text-green-400/70',
-                          bgColor: 'bg-green-500/10',
-                          borderColor: 'border-green-500/20',
-                        },
-                        negotiating: {
-                          label: '🟡 Negotiating',
-                          color: 'text-orange-400/70',
-                          bgColor: 'bg-orange-500/10',
-                          borderColor: 'border-orange-500/20',
-                        },
-                        rejected: {
-                          label: '❌ Rejected',
-                          color: 'text-red-400/70',
-                          bgColor: 'bg-red-500/10',
-                          borderColor: 'border-red-500/20',
-                        },
-                      };
-                      const config = statusConfig[deal.brandResponseStatus as keyof typeof statusConfig];
-                      if (!config) return null;
-                      return (
-                        <div className={cn(
-                          "rounded-full px-1.5 py-0.5 text-[9px] font-medium border",
-                          config.color,
-                          config.bgColor,
-                          config.borderColor
-                        )}>
-                          {config.label}
-                        </div>
-                      );
-                    })()}
+                  {/* Status Pill */}
+                  <div className={cn("mb-3")}>
+                    <span className={cn(
+                      "inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border",
+                      statusPill.color
+                    )}>
+                      {statusPill.label}
+                    </span>
                   </div>
 
-                  {/* Protection Status - Matching Payments Style */}
-                  <div className="mb-4">
-                    <div className={cn("flex items-center justify-between", typography.caption, "text-purple-200 mb-1")}>
-                      <span>Protection Status — {deal.progress < 30 ? 'Low' : deal.progress < 70 ? 'Medium' : 'High'}</span>
-                    </div>
-                    <div className={cn("w-full bg-white/10", radius.full, "h-2")}>
-                      <motion.div
-                        initial={{ width: 0 }}
-                        animate={{ width: `${deal.progress}%` }}
-                        transition={{ duration: 0.6, ease: "easeOut" }}
-                        className={cn(
-                          "h-2 rounded-full transition-all",
-                          deal.status === 'completed' ? 'bg-green-500' :
-                          deal.status === 'active' ? 'bg-blue-500' :
-                          deal.status === 'negotiation' ? 'bg-purple-500' :
-                          'bg-yellow-500'
-                        )}
-                      />
-                    </div>
-                    <p className={cn(typography.caption, "text-purple-300/70 mt-1")}>
-                      {deal.status === 'draft' ? 'Contract in draft stage' :
-                       deal.status === 'sent' ? 'Contract sent to brand' :
-                       deal.status === 'negotiation' ? 'Negotiation in progress' :
-                       deal.status === 'signed' ? 'Contract signed' :
-                       deal.status === 'content_making' ? 'Content creation in progress' :
-                       deal.status === 'content_delivered' ? 'Content delivered, awaiting payment' :
-                       deal.status === 'completed' ? 'Payment received' :
-                       'Status pending'}
-                    </p>
-                  </div>
-
-                  {/* Status and Payment Due */}
-                  <div className={cn("flex items-center justify-between mb-3")}>
-                    <div className={cn("flex items-center gap-2")}>
-                      <StatusIcon className={iconSizes.sm} />
-                      <span className={cn(typography.bodySmall, "font-medium")}>{statusInfo.label}</span>
-                    </div>
-                    <div className={cn("flex items-center gap-1", typography.caption)}>
-                      <Calendar className={iconSizes.xs} />
-                      <span>Payment Due: {deal.deadline}</span>
-                    </div>
-                  </div>
-
-                  {/* Next Action */}
-                  <div className={cn("pt-3 border-t border-white/10")}>
-                    <div className={cn("flex items-center gap-2", typography.bodySmall)}>
-                      <AlertCircle className={cn(iconSizes.sm, "text-purple-300")} />
-                      <span className="text-purple-200">Next Action: </span>
-                      <span className="text-white">{deal.nextStep}</span>
-                    </div>
-                  </div>
+                  {/* Primary Action Button */}
+                  <motion.button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      triggerHaptic(HapticPatterns.light);
+                      navigate(`/creator-contracts/${deal.id}`);
+                    }}
+                    whileTap={animations.microTap}
+                    className={cn(
+                      "w-full mt-3 px-4 py-2 rounded-lg text-sm font-medium transition-all",
+                      "bg-white/5 hover:bg-white/10 border border-white/10 text-white/90"
+                    )}
+                  >
+                    {primaryAction.label}
+                  </motion.button>
                 </BaseCard>
               </motion.div>
             );
