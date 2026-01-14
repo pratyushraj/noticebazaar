@@ -1159,7 +1159,7 @@ const ContractReadyPage = () => {
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="bg-purple-900 border border-purple-700 rounded-2xl p-6 max-w-md w-full"
+              className="bg-purple-900 border border-purple-700 rounded-2xl p-6 max-w-md w-full overflow-hidden"
             >
               <div className="flex justify-between items-center mb-4">
                 <h3 className="text-xl font-semibold text-white">Enter OTP</h3>
@@ -1175,7 +1175,7 @@ const ContractReadyPage = () => {
                 We've sent a 6-digit code to {brandEmail || brandEmailInput}
               </p>
               
-              <div className="flex gap-2 mb-4">
+              <div className="flex gap-2 mb-4 justify-center flex-wrap">
                 {otp.map((digit, index) => (
                   <input
                     key={index}
@@ -1186,7 +1186,7 @@ const ContractReadyPage = () => {
                     value={digit}
                     onChange={(e) => handleOTPChange(index, e.target.value)}
                     onKeyDown={(e) => handleOTPKeyDown(index, e)}
-                    className="w-12 h-12 text-center text-xl font-semibold bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    className="w-12 h-12 text-center text-xl font-semibold bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500 flex-shrink-0"
                   />
                 ))}
               </div>
