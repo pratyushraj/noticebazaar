@@ -176,7 +176,7 @@ publicRouter.post('/send', async (req: express.Request, res: Response) => {
     const otpHash = hashOTP(otp);
     const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes from now
 
-    console.log('[OTP] Generated OTP for deal:', tokenData.deal_id);
+    console.log('[OTP] Generated OTP for deal:', deal?.id || 'pending (from submission)');
     console.log('[OTP] OTP hash:', otpHash.substring(0, 16) + '...');
     console.log('[OTP] Expires at:', expiresAt.toISOString());
 
