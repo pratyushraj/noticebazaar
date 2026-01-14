@@ -521,31 +521,33 @@ publicRouter.post('/verify', async (req: express.Request, res: Response) => {
       });
     }
 
-    // OTP is valid - mark as verified
-    const updateData: any = {
-      otp_verified: true,
-      otp_verified_at: new Date().toISOString(),
-      brand_response_status: 'accepted_verified',
-      updated_at: new Date().toISOString(),
-    };
+    // OTP is valid - mark as verified (only if deal exists)
+    if (deal?.id) {
+      const updateData: any = {
+        otp_verified: true,
+        otp_verified_at: new Date().toISOString(),
+        brand_response_status: 'accepted_verified',
+        updated_at: new Date().toISOString(),
+      };
 
-    const { error: updateError } = await supabase
-      .from('brand_deals')
-      .update(updateData)
-      .eq('id', tokenData.deal_id);
+      const { error: updateError } = await supabase
+        .from('brand_deals')
+        .update(updateData)
+        .eq('id', deal.id);
 
-    if (updateError) {
-      console.error('[OTP] Failed to update deal:', updateError);
-      return res.status(500).json({
-        success: false,
-        error: `Failed to verify OTP: ${updateError.message}`,
+      if (updateError) {
+        console.error('[OTP] Failed to update deal:', updateError);
+        return res.status(500).json({
+          success: false,
+          error: `Failed to verify OTP: ${updateError.message}`,
+        });
+      }
+
+      // Log successful verification
+      await logDealAction(deal.id, 'OTP_VERIFIED', {
+        verifiedAt: updateData.otp_verified_at,
       });
     }
-
-    // Log successful verification
-    await logDealAction(tokenData.deal_id, 'OTP_VERIFIED', {
-      verifiedAt: updateData.otp_verified_at,
-    });
 
     // Generate invoice after OTP verification
     try {
