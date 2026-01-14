@@ -194,7 +194,7 @@ export async function getContractReadyTokenInfo(tokenId: string): Promise<{
         // Fetch creator profile to get name, email, and address
         const { data: creatorProfile, error: creatorProfileError } = await supabase
           .from('profiles')
-          .select('first_name, last_name, location, address')
+          .select('first_name, last_name, location, address, business_name')
           .eq('id', submission.creator_id)
           .maybeSingle();
 
@@ -204,10 +204,16 @@ export async function getContractReadyTokenInfo(tokenId: string): Promise<{
           console.warn('[ContractReadyTokenService] Creator profile not found for creator_id:', submission.creator_id);
         } else {
           console.log('[ContractReadyTokenService] Found creator profile:', {
+            creatorId: submission.creator_id,
+            firstName: creatorProfile.first_name,
+            lastName: creatorProfile.last_name,
+            businessName: creatorProfile.business_name,
             hasFirstName: !!creatorProfile.first_name,
             hasLastName: !!creatorProfile.last_name,
+            hasBusinessName: !!creatorProfile.business_name,
             hasLocation: !!creatorProfile.location,
-            hasAddress: !!creatorProfile.address
+            hasAddress: !!creatorProfile.address,
+            fullProfile: creatorProfile
           });
         }
 
@@ -382,7 +388,7 @@ export async function getContractReadyTokenInfo(tokenId: string): Promise<{
     // Fetch creator profile with address
     const { data: creatorData, error: creatorError } = await supabase
       .from('profiles')
-      .select('first_name, last_name, location, address')
+      .select('first_name, last_name, location, address, business_name')
       .eq('id', creatorId)
       .maybeSingle();
 
@@ -404,28 +410,35 @@ export async function getContractReadyTokenInfo(tokenId: string): Promise<{
   }
 
   // Construct creator name with better fallbacks
-  let creatorName = 'Creator';
+  // Don't use email username - only use actual profile data
+  let creatorName: string | null = null;
   if (creator) {
-    if (creator.first_name && creator.last_name) {
+    // Try business_name first (for business accounts)
+    if (creator.business_name && creator.business_name.trim()) {
+      creatorName = creator.business_name.trim();
+    } else if (creator.first_name && creator.last_name) {
       creatorName = `${creator.first_name} ${creator.last_name}`.trim();
     } else if (creator.first_name) {
-      creatorName = creator.first_name;
+      creatorName = creator.first_name.trim();
     } else if (creator.last_name) {
-      creatorName = creator.last_name;
-    } else if (creatorEmail) {
-      // Fallback to email username
-      const emailUsername = creatorEmail.split('@')[0];
-      if (emailUsername && emailUsername.length >= 2) {
-        creatorName = emailUsername.charAt(0).toUpperCase() + emailUsername.slice(1);
-      }
-    }
-  } else if (creatorEmail) {
-    // If no creator profile but we have email, use email username
-    const emailUsername = creatorEmail.split('@')[0];
-    if (emailUsername && emailUsername.length >= 2) {
-      creatorName = emailUsername.charAt(0).toUpperCase() + emailUsername.slice(1);
+      creatorName = creator.last_name.trim();
     }
   }
+  
+  // If no name found, use default
+  if (!creatorName || creatorName === '') {
+    creatorName = 'Creator';
+  }
+  
+  console.log('[ContractReadyTokenService] Constructed creator name:', {
+    finalName: creatorName,
+    hadFirstName: !!creator?.first_name,
+    hadLastName: !!creator?.last_name,
+    hadBusinessName: !!creator?.business_name,
+    firstName: creator?.first_name,
+    lastName: creator?.last_name,
+    businessName: creator?.business_name
+  });
 
   // Get creator address (prefer location field, fallback to address field)
   let creatorAddress = creator ? (creator.location || creator.address || null) : null;

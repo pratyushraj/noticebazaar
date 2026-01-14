@@ -959,6 +959,9 @@ const ContractReadyPage = () => {
               {(!creatorName || creatorName === 'Creator') && !creatorAddress && !creatorEmail && (
                 <p className="text-white/60 italic">Creator information not available</p>
               )}
+              {creatorName === 'Creator' && (creatorAddress || creatorEmail) && (
+                <p className="text-white/60 italic text-xs mt-2">Name not available</p>
+              )}
             </div>
         </motion.div>
 
