@@ -319,7 +319,8 @@ router.post('/:token/sign', async (req: Request, res: Response) => {
             }
             
             // Get address (prefer location field, fallback to address field)
-            creatorAddress = creatorProfile.location || creatorProfile.address || null;
+            const creatorAny = creatorProfile as any;
+            creatorAddress = creatorAny.location || creatorAny.address || null;
           }
           
           // Get email from auth.users

@@ -522,6 +522,8 @@ publicRouter.post('/verify', async (req: express.Request, res: Response) => {
     }
 
     // OTP is valid - mark as verified (only if deal exists)
+    let verifiedAt: string | null = null;
+    
     if (deal?.id) {
       const updateData: any = {
         otp_verified: true,
@@ -529,6 +531,8 @@ publicRouter.post('/verify', async (req: express.Request, res: Response) => {
         brand_response_status: 'accepted_verified',
         updated_at: new Date().toISOString(),
       };
+
+      verifiedAt = updateData.otp_verified_at;
 
       const { error: updateError } = await supabase
         .from('brand_deals')
@@ -553,19 +557,19 @@ publicRouter.post('/verify', async (req: express.Request, res: Response) => {
     try {
       const { generateInvoice } = await import('../services/invoiceService.js');
       console.log('[OTP] Generating invoice for OTP-verified deal...');
-      await generateInvoice(tokenData.deal_id);
+      await generateInvoice(deal?.id || tokenData.deal_id);
       console.log('[OTP] Invoice generated successfully');
     } catch (invoiceError: any) {
       console.error('[OTP] Invoice generation failed (non-fatal):', invoiceError.message);
       // Don't fail the OTP verification if invoice generation fails
     }
 
-    console.log('[OTP] OTP verified successfully for deal:', tokenData.deal_id);
+    console.log('[OTP] OTP verified successfully for deal:', deal?.id || tokenData.deal_id);
 
     return res.json({
       success: true,
       message: 'OTP verified successfully',
-      verifiedAt: updateData.otp_verified_at,
+      verifiedAt: verifiedAt || new Date().toISOString(),
     });
   } catch (error: any) {
     console.error('[OTP] Unhandled error:', error);
