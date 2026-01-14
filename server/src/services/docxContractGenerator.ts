@@ -85,6 +85,9 @@ export async function generateContractDocx(schema: ContractSchema): Promise<Buff
       additional_terms: schema.additional_terms?.trim() || '',
       has_additional_terms: !!(schema.additional_terms && schema.additional_terms.trim().length > 0),
       disclaimer: schema.disclaimer || 'This agreement was generated using the CreatorArmour Contract Scanner based on information provided by the Parties. CreatorArmour is not a party to this agreement and does not provide legal representation. The Parties are advised to independently review this agreement before execution.',
+      // Include signature data if available
+      brand_signature: (schema as any).brand_signature,
+      creator_signature: (schema as any).creator_signature,
     };
     
     // Build document with law-firm grade formatting
@@ -589,13 +592,13 @@ export async function generateContractDocx(schema: ContractSchema): Promise<Buff
             }),
           ] : []),
           
-          // Signature Block - IN WITNESS WHEREOF
+          // DIGITAL ACCEPTANCE & EXECUTION Section
           new Paragraph({
             children: [
               new TextRun({
-                text: 'IN WITNESS WHEREOF',
+                text: 'DIGITAL ACCEPTANCE & EXECUTION',
                 font: 'Times New Roman',
-                size: ptToHalfPt(12),
+                size: ptToHalfPt(12.5),
                 bold: true,
               }),
             ],
@@ -603,36 +606,82 @@ export async function generateContractDocx(schema: ContractSchema): Promise<Buff
             spacing: { before: paragraphSpacing * 3, after: paragraphSpacing * 2 },
           }),
           
-          // BRAND Signature Block
+          // Legal notice about electronic execution
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: 'This Agreement has been executed electronically by both Parties through OTP verification and click-to-accept confirmation. Under the Information Technology Act, 2000 (IT Act, 2000), electronic signatures are legally valid and binding. No physical or handwritten signature is required.',
+                font: 'Times New Roman',
+                size: ptToHalfPt(11),
+              }),
+            ],
+            spacing: { after: paragraphSpacing * 2, line: lineSpacing },
+          }),
+          
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: 'The Parties acknowledge that:',
+                font: 'Times New Roman',
+                size: ptToHalfPt(11),
+                bold: true,
+              }),
+            ],
+            spacing: { before: paragraphSpacing * 2, after: paragraphSpacing, line: lineSpacing },
+          }),
+          
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: '• This Agreement is executed electronically and constitutes a valid legal signature under Section 3A of the IT Act, 2000.',
+                font: 'Times New Roman',
+                size: ptToHalfPt(11),
+              }),
+            ],
+            spacing: { after: paragraphSpacing, line: lineSpacing },
+          }),
+          
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: '• OTP verification and click-to-accept confirmation constitute valid electronic authentication.',
+                font: 'Times New Roman',
+                size: ptToHalfPt(11),
+              }),
+            ],
+            spacing: { after: paragraphSpacing, line: lineSpacing },
+          }),
+          
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: '• No physical signature is required for this Agreement to be legally binding.',
+                font: 'Times New Roman',
+                size: ptToHalfPt(11),
+              }),
+            ],
+            spacing: { after: paragraphSpacing * 3, line: lineSpacing },
+          }),
+          
+          // BRAND Digital Acceptance Details
           new Paragraph({
             children: [
               new TextRun({
                 text: 'BRAND',
                 font: 'Times New Roman',
-                size: ptToHalfPt(12),
+                size: ptToHalfPt(11),
                 bold: true,
               }),
             ],
-            spacing: { before: paragraphSpacing * 2, after: paragraphSpacing * 2 },
+            spacing: { before: paragraphSpacing * 3, after: paragraphSpacing * 2 },
           }),
           
           new Paragraph({
             children: [
               new TextRun({
-                text: 'Signature: ______________________',
+                text: `Name: ${(cleanData as any).brand_signature?.signer_name || cleanData.brand_name || 'Not yet signed'}`,
                 font: 'Times New Roman',
-                size: ptToHalfPt(12),
-              }),
-            ],
-            spacing: { after: paragraphSpacing * 2, line: lineSpacing },
-          }),
-          
-          new Paragraph({
-            children: [
-              new TextRun({
-                text: `Printed Name: ${cleanData.brand_name}`,
-                font: 'Times New Roman',
-                size: ptToHalfPt(12),
+                size: ptToHalfPt(11),
               }),
             ],
             spacing: { after: paragraphSpacing, line: lineSpacing },
@@ -641,55 +690,97 @@ export async function generateContractDocx(schema: ContractSchema): Promise<Buff
           new Paragraph({
             children: [
               new TextRun({
-                text: 'Date:',
+                text: `Email: ${(cleanData as any).brand_signature?.signer_email || cleanData.brand_email || 'Not yet signed'}`,
                 font: 'Times New Roman',
-                size: ptToHalfPt(12),
+                size: ptToHalfPt(11),
               }),
             ],
             spacing: { after: paragraphSpacing, line: lineSpacing },
           }),
           
-          new Paragraph({
-            children: [
-              new TextRun({
-                text: 'Place of Execution:',
-                font: 'Times New Roman',
-                size: ptToHalfPt(12),
-              }),
-            ],
-            spacing: { after: paragraphSpacing * 3, line: lineSpacing },
-          }),
+          ...((cleanData as any).brand_signature?.otp_verified_at ? [
+            new Paragraph({
+              children: [
+                new TextRun({
+                  text: `OTP Verified At: ${new Date((cleanData as any).brand_signature.otp_verified_at).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle: 'long', timeStyle: 'medium' })}`,
+                  font: 'Times New Roman',
+                  size: ptToHalfPt(11),
+                }),
+              ],
+              spacing: { after: paragraphSpacing, line: lineSpacing },
+            }),
+          ] : []),
           
-          // CREATOR Signature Block
+          ...((cleanData as any).brand_signature?.ip_address ? [
+            new Paragraph({
+              children: [
+                new TextRun({
+                  text: `IP Address: ${(cleanData as any).brand_signature.ip_address}`,
+                  font: 'Times New Roman',
+                  size: ptToHalfPt(11),
+                }),
+              ],
+              spacing: { after: paragraphSpacing, line: lineSpacing },
+            }),
+          ] : []),
+          
+          ...((cleanData as any).brand_signature?.user_agent ? [
+            new Paragraph({
+              children: [
+                new TextRun({
+                  text: `Device / Browser: ${(cleanData as any).brand_signature.user_agent}`,
+                  font: 'Times New Roman',
+                  size: ptToHalfPt(11),
+                }),
+              ],
+              spacing: { after: paragraphSpacing, line: lineSpacing },
+            }),
+          ] : []),
+          
+          ...((cleanData as any).brand_signature?.signed_at ? [
+            new Paragraph({
+              children: [
+                new TextRun({
+                  text: `Executed At: ${new Date((cleanData as any).brand_signature.signed_at).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle: 'long', timeStyle: 'medium' })}`,
+                  font: 'Times New Roman',
+                  size: ptToHalfPt(11),
+                }),
+              ],
+              spacing: { after: paragraphSpacing * 3, line: lineSpacing },
+            }),
+          ] : [
+            new Paragraph({
+              children: [
+                new TextRun({
+                  text: 'Status: Pending signature',
+                  font: 'Times New Roman',
+                  size: ptToHalfPt(11),
+                  italics: true,
+                }),
+              ],
+              spacing: { after: paragraphSpacing * 3, line: lineSpacing },
+            }),
+          ]),
+          
+          // CREATOR Digital Acceptance Details
           new Paragraph({
             children: [
               new TextRun({
                 text: 'CREATOR',
                 font: 'Times New Roman',
-                size: ptToHalfPt(12),
+                size: ptToHalfPt(11),
                 bold: true,
               }),
             ],
-            spacing: { before: paragraphSpacing * 2, after: paragraphSpacing * 2 },
+            spacing: { before: paragraphSpacing * 3, after: paragraphSpacing * 2 },
           }),
           
           new Paragraph({
             children: [
               new TextRun({
-                text: 'Signature: ______________________',
+                text: `Name: ${(cleanData as any).creator_signature?.signer_name || cleanData.creator_name || 'Not yet signed'}`,
                 font: 'Times New Roman',
-                size: ptToHalfPt(12),
-              }),
-            ],
-            spacing: { after: paragraphSpacing * 2, line: lineSpacing },
-          }),
-          
-          new Paragraph({
-            children: [
-              new TextRun({
-                text: `Printed Name: ${cleanData.creator_name}`,
-                font: 'Times New Roman',
-                size: ptToHalfPt(12),
+                size: ptToHalfPt(11),
               }),
             ],
             spacing: { after: paragraphSpacing, line: lineSpacing },
@@ -698,24 +789,77 @@ export async function generateContractDocx(schema: ContractSchema): Promise<Buff
           new Paragraph({
             children: [
               new TextRun({
-                text: 'Date:',
+                text: `Email: ${(cleanData as any).creator_signature?.signer_email || cleanData.creator_email || 'Not yet signed'}`,
                 font: 'Times New Roman',
-                size: ptToHalfPt(12),
+                size: ptToHalfPt(11),
               }),
             ],
             spacing: { after: paragraphSpacing, line: lineSpacing },
           }),
           
-          new Paragraph({
-            children: [
-              new TextRun({
-                text: 'Place of Execution:',
-                font: 'Times New Roman',
-                size: ptToHalfPt(12),
-              }),
-            ],
-            spacing: { after: paragraphSpacing * 3, line: lineSpacing },
-          }),
+          ...((cleanData as any).creator_signature?.otp_verified_at ? [
+            new Paragraph({
+              children: [
+                new TextRun({
+                  text: `OTP Verified At: ${new Date((cleanData as any).creator_signature.otp_verified_at).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle: 'long', timeStyle: 'medium' })}`,
+                  font: 'Times New Roman',
+                  size: ptToHalfPt(11),
+                }),
+              ],
+              spacing: { after: paragraphSpacing, line: lineSpacing },
+            }),
+          ] : []),
+          
+          ...((cleanData as any).creator_signature?.ip_address ? [
+            new Paragraph({
+              children: [
+                new TextRun({
+                  text: `IP Address: ${(cleanData as any).creator_signature.ip_address}`,
+                  font: 'Times New Roman',
+                  size: ptToHalfPt(11),
+                }),
+              ],
+              spacing: { after: paragraphSpacing, line: lineSpacing },
+            }),
+          ] : []),
+          
+          ...((cleanData as any).creator_signature?.user_agent ? [
+            new Paragraph({
+              children: [
+                new TextRun({
+                  text: `Device / Browser: ${(cleanData as any).creator_signature.user_agent}`,
+                  font: 'Times New Roman',
+                  size: ptToHalfPt(11),
+                }),
+              ],
+              spacing: { after: paragraphSpacing, line: lineSpacing },
+            }),
+          ] : []),
+          
+          ...((cleanData as any).creator_signature?.signed_at ? [
+            new Paragraph({
+              children: [
+                new TextRun({
+                  text: `Executed At: ${new Date((cleanData as any).creator_signature.signed_at).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle: 'long', timeStyle: 'medium' })}`,
+                  font: 'Times New Roman',
+                  size: ptToHalfPt(11),
+                }),
+              ],
+              spacing: { after: paragraphSpacing * 3, line: lineSpacing },
+            }),
+          ] : [
+            new Paragraph({
+              children: [
+                new TextRun({
+                  text: 'Status: Pending signature',
+                  font: 'Times New Roman',
+                  size: ptToHalfPt(11),
+                  italics: true,
+                }),
+              ],
+              spacing: { after: paragraphSpacing * 3, line: lineSpacing },
+            }),
+          ]),
           
           // Footer Disclaimer - 9 pt, centered, only once
           new Paragraph({

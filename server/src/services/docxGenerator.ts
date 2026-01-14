@@ -51,11 +51,9 @@ function extractContractContent(htmlContent: string): string {
     // Remove no-print class elements
     .replace(/<[^>]*class="[^"]*no-print[^"]*"[^>]*>[\s\S]*?<\/[^>]+>/gi, '')
     // Remove script tags
-    .replace(/<script[\s\S]*?<\/script>/gi, '')
-    // Remove style tags (we'll use docx styling instead)
-    .replace(/<style[\s\S]*?<\/style>/gi, '')
-    // Remove inline styles
-    .replace(/style="[^"]*"/gi, '');
+    .replace(/<script[\s\S]*?<\/script>/gi, '');
+    // NOTE: We preserve style tags and inline styles for better DOCX formatting
+    // The docx library can handle some CSS, and we'll convert classes to inline styles where needed
 
   // Extract content from contract-container if it exists
   const containerMatch = cleanHtml.match(/<div class="contract-container">([\s\S]*?)<\/div>/);
@@ -98,7 +96,7 @@ function parseHtmlToDocx(html: string): (Paragraph | any)[] {
         text: stripHtml(h1Match[1]),
         heading: HeadingLevel.HEADING_1,
         alignment: AlignmentType.CENTER,
-        spacing: { after: 400 },
+        spacing: { before: 800, after: 240 }, // Top margin 40px (30pt), after 12px (9pt)
       }));
       i++;
       continue;
@@ -109,7 +107,7 @@ function parseHtmlToDocx(html: string): (Paragraph | any)[] {
       elements.push(new Paragraph({
         text: stripHtml(h2Match[1]),
         heading: HeadingLevel.HEADING_2,
-        spacing: { before: 400, after: 200 },
+        spacing: { before: 720, after: 360 }, // 36px before (27pt), 18px after (13.5pt) - matches refactored template
       }));
       i++;
       continue;
@@ -161,6 +159,25 @@ function parseHtmlToDocx(html: string): (Paragraph | any)[] {
       continue;
     }
     
+    // Handle section separator paragraphs
+    const separatorMatch = block.match(/<p[^>]*class="[^"]*section-separator-line[^"]*"[^>]*>/i);
+    if (separatorMatch) {
+      // Add a paragraph with border and extra spacing for section separation (matches 36px spacing)
+      elements.push(new Paragraph({
+        text: '',
+        spacing: { before: 720, after: 720 }, // 36px = 27pt = 540 twentieths, using 720 for better visibility
+        border: {
+          top: {
+            color: 'CCCCCC',
+            size: 240, // 2px border (120 twentieths per point, so 2px ≈ 240)
+            style: 'single',
+          },
+        },
+      }));
+      i++;
+      continue;
+    }
+    
     // Handle paragraphs
     const pMatch = block.match(/<p[^>]*>(.*?)<\/p>/is);
     if (pMatch) {
@@ -168,7 +185,7 @@ function parseHtmlToDocx(html: string): (Paragraph | any)[] {
       if (text.trim()) {
         elements.push(new Paragraph({
           text: text,
-          spacing: { after: 200 },
+          spacing: { after: 280 }, // 14px = 10.5pt = 210 twentieths, using 280 for better readability
         }));
       }
       i++;

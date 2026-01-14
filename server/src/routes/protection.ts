@@ -664,7 +664,7 @@ router.post('/generate-contract-from-scratch', async (req: AuthenticatedRequest,
       // Now try with specific columns
       const { data: currentUserProfile, error: profileError } = await supabase
         .from('profiles')
-        .select('first_name, last_name, address, location')
+        .select('first_name, last_name, location')
         .eq('id', userId)
         .maybeSingle();
       
@@ -752,7 +752,7 @@ router.post('/generate-contract-from-scratch', async (req: AuthenticatedRequest,
     if (deal.creator_id && deal.creator_id !== userId) {
       const { data: profileData, error: otherUserError } = await supabase
         .from('profiles')
-        .select('first_name, last_name, address, location')
+        .select('first_name, last_name, location')
         .eq('id', deal.creator_id)
         .maybeSingle();
       
@@ -788,7 +788,7 @@ router.post('/generate-contract-from-scratch', async (req: AuthenticatedRequest,
       
       const { data: fallbackProfile, error: fallbackError } = await supabase
         .from('profiles')
-        .select('first_name, last_name, address, location')
+        .select('first_name, last_name, location')
         .eq('id', userId)
         .maybeSingle(); // Use maybeSingle() instead of single() to avoid error if not found
       
@@ -879,7 +879,7 @@ router.post('/generate-contract-from-scratch', async (req: AuthenticatedRequest,
         console.log('[Protection] Attempting fresh database query for location...');
         const { data: freshProfile, error: freshError } = await supabase
           .from('profiles')
-          .select('location, address')
+          .select('location')
           .eq('id', userId)
           .maybeSingle();
         
@@ -1332,7 +1332,7 @@ router.post('/generate-contract-docx', async (req: AuthenticatedRequest, res: Re
     
     const { data: creatorProfile } = await supabase
       .from('profiles')
-      .select('full_name, email, location, address')
+      .select('full_name, email, location')
       .eq('id', deal.creator_id)
       .single();
     
@@ -2089,20 +2089,21 @@ export const downloadContractDocxHandler = async (req: Request, res: Response) =
       return res.status(403).json({ error: 'Contract is not yet available for download' });
     }
 
-    // Get HTML contract or contract file URL
-    const contractHtml = (deal as any).contract_html;
+    // Get contract file URL (for legacy redirects)
     const contractFileUrl = (deal as any).contract_file_url || (deal as any).safe_contract_url;
 
-    // If no HTML but we have a file URL, redirect to it
-    if (!contractHtml && contractFileUrl) {
-      console.log('[Protection] No contract HTML, redirecting to contract file URL:', contractFileUrl);
+    // If we have a file URL, redirect to it (legacy contracts)
+    if (contractFileUrl) {
+      console.log('[Protection] Contract file URL found, redirecting to:', contractFileUrl);
       return res.redirect(contractFileUrl);
     }
 
-    if (!contractHtml) {
-      // If no HTML but we have signatures, try to generate a professional contract summary
-      if (bothSigned && signatures && signatures.length > 0) {
-        console.log('[Protection] No contract HTML, but both parties signed. Generating professional contract...');
+    // Always generate fresh contract with latest template format
+    // This ensures users always get the latest improvements (spacing, formatting, digital execution section)
+    // Generate contract if both parties have signed
+    if (bothSigned && signatures && signatures.length > 0) {
+        console.log('[Protection] ✅ Using NEW REFACTORED contract template (v2.0 - improved layout, spacing, readability)');
+        console.log('[Protection] Both parties signed. Generating professional contract with latest template format...');
         
         try {
           // Fetch full deal data for contract generation
@@ -2122,18 +2123,31 @@ export const downloadContractDocxHandler = async (req: Request, res: Response) =
           const formData = submissionDetails?.formData || {};
 
           // Fetch creator profile for address
-          const { data: creatorProfile } = await supabase
+          const { data: creatorProfile, error: creatorProfileError } = await supabase
             .from('profiles')
-            .select('first_name, last_name, address')
+            .select('first_name, last_name, location')
             .eq('id', fullDeal.creator_id)
             .single();
+          
+          console.log('[Protection] Creator profile fetch result:', {
+            hasCreatorProfile: !!creatorProfile,
+            creatorProfileError,
+            creatorId: fullDeal.creator_id,
+            profileLocation: creatorProfile?.location,
+            profileLocationType: typeof creatorProfile?.location,
+            profileLocationLength: creatorProfile?.location?.length,
+            profileAddress: creatorProfile?.address,
+            profileFirstName: creatorProfile?.first_name,
+            profileLastName: creatorProfile?.last_name,
+            fullProfile: creatorProfile,
+          });
 
           // Get creator email from auth
           const { data: creatorAuth } = await supabase.auth.admin.getUserById(fullDeal.creator_id);
           const creatorEmail = creatorAuth?.user?.email || '';
 
           // Build deal schema from deal data
-          const { buildDealSchemaFromDealData, mapDealSchemaToContractVariables } = await import('../services/contractTemplate.js');
+          const { buildDealSchemaFromDealData, mapDealSchemaToContractVariables, validateRequiredContractFields } = await import('../services/contractTemplate.js');
           const dealSchema = buildDealSchemaFromDealData(fullDeal);
 
           // Get signatures first (needed for creator name fallback)
@@ -2145,11 +2159,135 @@ export const downloadContractDocxHandler = async (req: Request, res: Response) =
           const brandAddress = fullDeal.brand_address || formData.companyAddress || 'N/A';
           const brandEmail = fullDeal.brand_email || formData.companyEmail || '';
 
-          // Get creator info
-          const creatorName = creatorProfile?.first_name && creatorProfile?.last_name
-            ? `${creatorProfile.first_name} ${creatorProfile.last_name}`
-            : creatorProfile?.first_name || creatorSig?.signer_name || 'Creator';
-          const creatorAddress = creatorProfile?.address || 'N/A';
+          // Get creator info - check both location and address fields, prefer location
+          // Construct creator name with better fallbacks (try all available sources)
+          let creatorName = 'Creator';
+          if (creatorProfile) {
+            const firstName = (creatorProfile.first_name || '').trim();
+            const lastName = (creatorProfile.last_name || '').trim();
+            if (firstName && lastName) {
+              creatorName = `${firstName} ${lastName}`.trim();
+            } else if (firstName) {
+              creatorName = firstName;
+            } else if (lastName) {
+              creatorName = lastName;
+            }
+          }
+          
+          // Fallback to signature name if profile name is still "Creator"
+          if (creatorName === 'Creator' && creatorSig?.signer_name) {
+            creatorName = creatorSig.signer_name;
+          }
+          
+          // Last resort: use email username if available
+          if (creatorName === 'Creator' && creatorEmail) {
+            const emailUsername = creatorEmail.split('@')[0];
+            if (emailUsername && emailUsername.length >= 2) {
+              creatorName = emailUsername.charAt(0).toUpperCase() + emailUsername.slice(1);
+            }
+          }
+          
+          // Get creator address - use location field (address column doesn't exist in profiles table)
+          const locationValue = creatorProfile?.location;
+          
+          console.log('[Protection] Extracting creator address:', {
+            hasCreatorProfile: !!creatorProfile,
+            locationValue,
+            locationValueType: typeof locationValue,
+            locationValueLength: locationValue?.length,
+            profileKeys: creatorProfile ? Object.keys(creatorProfile) : [],
+          });
+          
+          const rawCreatorAddress = (locationValue && typeof locationValue === 'string' && locationValue.trim() !== '' && locationValue.toLowerCase() !== 'n/a')
+            ? locationValue.trim()
+            : null;
+          
+          console.log('[Protection] Raw creator address extracted:', {
+            rawCreatorAddress,
+            rawCreatorAddressType: typeof rawCreatorAddress,
+            rawCreatorAddressLength: rawCreatorAddress?.length,
+            rawCreatorAddressPreview: rawCreatorAddress?.substring(0, 100),
+          });
+          
+          const creatorAddress = rawCreatorAddress || undefined; // Use undefined instead of 'N/A' to trigger validation error
+          
+          console.log('[Protection] Final creator address for validation:', {
+            creatorAddress,
+            creatorAddressType: typeof creatorAddress,
+            creatorAddressLength: creatorAddress?.length,
+            creatorAddressPreview: creatorAddress?.substring(0, 100),
+          });
+
+          // Validate required fields before generating contract
+          const brandInfo = {
+            name: brandName,
+            address: brandAddress,
+            email: brandEmail,
+          };
+          const creatorInfo = {
+            name: creatorName,
+            address: creatorAddress,
+            email: creatorEmail,
+          };
+
+          const validation = validateRequiredContractFields(brandInfo, creatorInfo);
+          if (!validation.isValid) {
+            console.error('[Protection] Validation failed for download-docx:', {
+              missingFields: validation.missingFields,
+              creatorName,
+              creatorNameLength: creatorName?.length,
+              creatorAddress,
+              creatorAddressLength: creatorAddress?.length,
+              creatorAddressType: typeof creatorAddress,
+              creatorAddressPreview: creatorAddress?.substring(0, 100),
+              hasCreatorProfile: !!creatorProfile,
+              profileFirstName: creatorProfile?.first_name,
+              profileLastName: creatorProfile?.last_name,
+              profileLocation: creatorProfile?.location,
+              profileLocationType: typeof creatorProfile?.location,
+              profileLocationLength: creatorProfile?.location?.length,
+              profileLocationPreview: creatorProfile?.location?.substring(0, 100),
+              locationValue,
+              rawCreatorAddress,
+              dealId: fullDeal.id,
+              creatorId: fullDeal.creator_id,
+            });
+            
+            // Build helpful error message
+            const missingName = validation.missingFields.some(f => f.includes('name'));
+            const missingAddress = validation.missingFields.some(f => f.includes('address'));
+            
+            let helpMessage = 'Cannot generate contract. ';
+            if (missingName && missingAddress) {
+              helpMessage += 'Please update your profile with your full name (first name and last name) and address. ';
+            } else if (missingName) {
+              helpMessage += 'Please update your profile with your full name (first name and last name). ';
+            } else if (missingAddress) {
+              helpMessage += 'Please update your profile with your address (city and state minimum). ';
+              helpMessage += 'Go to Profile Settings → Click the Edit button (top right) → Scroll down to "Address" field → Enter your address → Click Save. ';
+            }
+            if (!missingAddress) {
+              helpMessage += 'You can update your profile from the Profile Settings page.';
+            }
+            
+            return res.status(400).json({
+              success: false,
+              error: 'Missing required contract fields',
+              missingFields: validation.missingFields,
+              message: helpMessage,
+              debug: process.env.NODE_ENV === 'development' ? {
+                creatorName,
+                creatorAddress,
+                hasCreatorProfile: !!creatorProfile,
+                profileData: creatorProfile ? {
+                  hasFirstName: !!creatorProfile.first_name,
+                  hasLastName: !!creatorProfile.last_name,
+                  hasLocation: !!creatorProfile.location,
+                  hasAddress: !!creatorProfile.address,
+                } : null,
+              } : undefined,
+            });
+          }
 
           // Map to contract variables
           const contractVars = mapDealSchemaToContractVariables(
@@ -2218,7 +2356,9 @@ export const downloadContractDocxHandler = async (req: Request, res: Response) =
               })
             : '';
 
-          // Generate professional contract HTML with improved layout
+          // Generate professional contract HTML with improved layout (v2.0 - refactored)
+          // This template includes: system fonts, consistent spacing, improved readability, better section separation
+          console.log('[Protection] ✅ Generating contract HTML with REFACTORED template (v2.0)...');
           const contractSummary = `
             <!DOCTYPE html>
             <html>
@@ -2226,8 +2366,8 @@ export const downloadContractDocxHandler = async (req: Request, res: Response) =
               <meta charset="UTF-8">
               <style>
                 body { 
-                  font-family: 'Times New Roman', serif; 
-                  padding: 50px 70px; 
+                  font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Helvetica, Arial, sans-serif; 
+                  padding: 60px 70px; 
                   line-height: 1.5; 
                   color: #000;
                   max-width: 800px;
@@ -2238,44 +2378,54 @@ export const downloadContractDocxHandler = async (req: Request, res: Response) =
                   text-align: center; 
                   font-size: 20pt; 
                   font-weight: bold; 
-                  margin-bottom: 25px;
-                  margin-top: 0;
+                  margin-bottom: 12px;
+                  margin-top: 40px;
                   text-transform: uppercase;
                   letter-spacing: 1.5px;
                   line-height: 1.2;
                 }
+                .header-divider {
+                  border-top: 2px solid #333;
+                  margin: 20px auto 50px;
+                  width: 80%;
+                }
                 h2 {
                   font-size: 13pt;
                   font-weight: bold;
-                  margin-top: 35px;
-                  margin-bottom: 18px;
-                  line-height: 1.3;
+                  margin-top: 36px;
+                  margin-bottom: 20px;
+                  line-height: 1.4;
+                  color: #000;
+                  page-break-after: avoid;
                 }
                 .date {
                   text-align: center;
-                  margin-bottom: 45px;
-                  font-weight: bold;
-                  font-size: 11pt;
+                  margin-bottom: 20px;
+                  font-size: 10pt;
+                  color: #666;
                 }
                 .section {
-                  margin-bottom: 35px;
+                  margin-bottom: 36px;
+                  line-height: 1.5;
+                  page-break-inside: avoid;
                 }
                 .parties {
-                  margin: 25px 0;
+                  margin: 24px 0;
                 }
                 .party {
-                  margin: 25px 0;
+                  margin: 20px 0;
                   padding-left: 20px;
                 }
                 .party-label {
                   font-weight: bold;
                   font-size: 12pt;
-                  margin-bottom: 12px;
+                  margin-bottom: 10px;
                   color: #000;
                 }
                 .party-detail {
-                  margin: 6px 0;
+                  margin: 8px 0;
                   padding-left: 15px;
+                  line-height: 1.5;
                 }
                 .party-detail-label {
                   font-weight: 600;
@@ -2283,38 +2433,82 @@ export const downloadContractDocxHandler = async (req: Request, res: Response) =
                   min-width: 70px;
                 }
                 .signature-section {
-                  margin-top: 50px;
+                  margin-top: 36px;
                   page-break-inside: avoid;
                 }
+                .execution-notice {
+                  margin: 24px 0;
+                  padding: 20px;
+                  background-color: #f5f5f5;
+                  border: 1px solid #ddd;
+                  border-left: 4px solid #333;
+                  line-height: 1.6;
+                }
+                .execution-details {
+                  margin-top: 32px;
+                }
+                .execution-details-title {
+                  font-size: 11pt;
+                  font-weight: bold;
+                  margin: 28px 0 16px 0;
+                  text-transform: uppercase;
+                  color: #000;
+                  letter-spacing: 0.5px;
+                }
                 .signature-block {
-                  margin: 35px 0;
-                  padding: 20px 0;
+                  margin: 20px 0;
+                  padding: 20px;
+                  border: 1px solid #e0e0e0;
+                  background-color: #fafafa;
+                }
+                .signature-block-divider {
+                  margin: 24px 0;
+                  border-top: 1px solid #ddd;
+                  height: 0;
                 }
                 .signature-block-title {
                   font-weight: bold;
-                  font-size: 12pt;
-                  margin-bottom: 15px;
+                  font-size: 11pt;
+                  margin-bottom: 14px;
+                  text-transform: uppercase;
+                  color: #333;
                 }
                 .signature-line {
-                  margin: 8px 0;
-                  padding-left: 15px;
+                  margin: 10px 0;
+                  padding: 4px 0;
+                  line-height: 1.5;
+                }
+                .signature-label {
+                  font-weight: 600;
+                  display: inline-block;
+                  min-width: 160px;
+                  color: #333;
                 }
                 .footer {
                   margin-top: 60px;
-                  padding-top: 25px;
-                  border-top: 1px solid #ccc;
-                  font-size: 9pt;
+                  padding-top: 24px;
+                  border-top: 1px solid #ddd;
+                  font-size: 8pt;
                   font-style: italic;
                   text-align: center;
                   color: #666;
                   line-height: 1.4;
+                }
+                .section-separator-line {
+                  margin: 36px 0;
+                  padding: 0;
+                  border-top: 2px solid #ccc;
+                  border-bottom: none;
+                  height: 0;
+                  width: 100%;
+                  display: block;
                 }
                 ul {
                   margin: 18px 0;
                   padding-left: 30px;
                 }
                 li {
-                  margin: 10px 0;
+                  margin: 12px 0;
                   line-height: 1.5;
                 }
                 p {
@@ -2326,17 +2520,10 @@ export const downloadContractDocxHandler = async (req: Request, res: Response) =
                   font-weight: bold;
                   color: #000;
                 }
-                .subsection {
-                  margin-top: 20px;
-                  padding-left: 15px;
-                }
-                .subsection-title {
-                  font-weight: bold;
-                  margin-bottom: 8px;
-                }
                 .info-line {
-                  margin: 8px 0;
+                  margin: 10px 0;
                   padding-left: 15px;
+                  line-height: 1.5;
                 }
                 .info-label {
                   font-weight: 600;
@@ -2349,6 +2536,14 @@ export const downloadContractDocxHandler = async (req: Request, res: Response) =
                 }
                 .deliverables-list li {
                   margin: 12px 0;
+                  line-height: 1.5;
+                }
+                .late-payment-block {
+                  margin: 20px 0;
+                  padding: 16px;
+                  background-color: #f9f9f9;
+                  border-left: 3px solid #666;
+                  line-height: 1.5;
                 }
               </style>
             </head>
@@ -2358,6 +2553,8 @@ export const downloadContractDocxHandler = async (req: Request, res: Response) =
               <div class="date">
                 Date: ${contractVars.contract_date}
               </div>
+              
+              <div class="header-divider"></div>
 
               <div class="section">
                 <h2>1. PARTIES</h2>
@@ -2377,7 +2574,7 @@ export const downloadContractDocxHandler = async (req: Request, res: Response) =
                     </div>
                   </div>
                   
-                  <div style="margin: 30px 0; font-weight: bold; text-align: center; font-size: 11pt;">AND</div>
+                  <div style="margin: 24px 0; font-weight: bold; text-align: center; font-size: 11pt;">AND</div>
                   
                   <div class="party">
                     <div class="party-label">Creator:</div>
@@ -2385,7 +2582,7 @@ export const downloadContractDocxHandler = async (req: Request, res: Response) =
                       <span class="party-detail-label">Name:</span> ${creatorName}
                     </div>
                     <div class="party-detail">
-                      <span class="party-detail-label">Address:</span> ${creatorAddress}
+                      <span class="party-detail-label">Address:</span> ${contractVars.creator_address || creatorAddress || ''}
                     </div>
                     <div class="party-detail">
                       <span class="party-detail-label">Email:</span> ${creatorEmail || 'N/A'}
@@ -2393,7 +2590,9 @@ export const downloadContractDocxHandler = async (req: Request, res: Response) =
                   </div>
                 </div>
               </div>
-
+              
+              <p class="section-separator-line"></p>
+              
               <div class="section">
                 <h2>2. SCOPE OF WORK</h2>
                 <p>The Creator agrees to deliver the following content ("Deliverables"):</p>
@@ -2404,29 +2603,33 @@ export const downloadContractDocxHandler = async (req: Request, res: Response) =
                     return cleanLine ? `<li>${cleanLine}</li>` : '';
                   }).filter(item => item).join('') || '<li>As per agreement</li>'}
                 </ul>
-                <p style="margin-top: 20px;">Content shall be delivered on or before <strong>${deliveryDeadline}</strong>, unless otherwise mutually agreed in writing.</p>
+                <p>Content shall be delivered on or before <strong>${deliveryDeadline}</strong>, unless otherwise mutually agreed in writing.</p>
               </div>
-
+              
+              <p class="section-separator-line"></p>
+              
               <div class="section">
                 <h2>3. COMPENSATION & PAYMENT TERMS</h2>
                 <div class="info-line">
-                  <span class="info-label">Total Compensation:</span>
+                  <span class="info-label"><strong>Total Compensation:</strong></span>
                   <span class="compensation-amount">${contractVars.deal_amount_formatted || `₹${fullDeal.deal_amount || 0}`}</span>
                 </div>
                 <div class="info-line">
-                  <span class="info-label">Payment Method:</span>
+                  <span class="info-label"><strong>Payment Method:</strong></span>
                   ${contractVars.payment_method || 'Bank Transfer'}
                 </div>
                 <div class="info-line">
-                  <span class="info-label">Payment Timeline:</span>
+                  <span class="info-label"><strong>Payment Timeline:</strong></span>
                   ${paymentTimeline}
                 </div>
-                <div class="subsection">
-                  <div class="subsection-title">Late Payment Protection:</div>
-                  <p>If payment is delayed beyond 7 days from the due date, the Brand shall be liable to pay interest at 18% per annum, calculated daily until settlement. The Creator reserves the right to initiate legal recovery proceedings for unpaid dues.</p>
+                <div class="late-payment-block">
+                  <p style="margin: 0 0 8px 0; font-weight: 600;">Late Payment Protection:</p>
+                  <p style="margin: 0; line-height: 1.5;">If payment is delayed beyond 7 days from the due date, the Brand shall be liable to pay interest at 18% per annum, calculated daily until settlement. The Creator reserves the right to initiate legal recovery proceedings for unpaid dues.</p>
                 </div>
               </div>
 
+              <p class="section-separator-line"></p>
+              
               <div class="section">
                 <h2>4. USAGE RIGHTS</h2>
                 <p>The Creator grants the Brand a <strong>${contractVars.usage_type || 'Non-exclusive'}</strong> license to use the content under the following conditions:</p>
@@ -2447,62 +2650,118 @@ export const downloadContractDocxHandler = async (req: Request, res: Response) =
                   ${whitelisting}
                 </div>
               </div>
-
+              
+              <p class="section-separator-line"></p>
+              
               <div class="section">
                 <h2>5. EXCLUSIVITY</h2>
-                <div class="info-line">
-                  <span class="info-label">Exclusivity Period:</span>
-                  ${exclusivityText}
-                </div>
+                <p>Exclusivity Period: ${exclusivityText}</p>
               </div>
-
+              
+              <p class="section-separator-line"></p>
+              
               <div class="section">
                 <h2>6. TERMINATION</h2>
                 <p>Either party may terminate this Agreement with <strong>${terminationDays} days</strong> written notice.</p>
               </div>
+              
+              <p class="section-separator-line"></p>
 
               <div class="section">
                 <h2>7. GOVERNING LAW & JURISDICTION</h2>
-                <p>This Agreement shall be governed by the laws of India. Any disputes shall be subject to the exclusive jurisdiction of the courts of <strong>${jurisdictionCity}</strong>, India.</p>
+                <p>This Agreement shall be governed by the laws of India.</p>
+                <p>Any disputes shall be subject to the exclusive jurisdiction of the courts of <strong>${jurisdictionCity}</strong>, India.</p>
               </div>
-
+              
+              <p class="section-separator-line"></p>
+              
               <div class="signature-section">
                 <h2>8. DIGITAL ACCEPTANCE & EXECUTION</h2>
                 
-                <p style="margin: 20px 0; line-height: 1.6;">
-                  This Agreement has been executed electronically by both Parties through OTP verification and click-to-accept confirmation. Under the Information Technology Act, 2000 (IT Act, 2000), electronic signatures are legally valid and binding. No physical or handwritten signature is required.
-                </p>
-                
-                <p style="margin: 15px 0; font-weight: bold;">The Parties acknowledge that:</p>
-                <ul style="margin: 15px 0; padding-left: 30px;">
-                  <li>This Agreement is executed electronically and constitutes a valid legal signature under Section 3A of the IT Act, 2000.</li>
-                  <li>OTP verification and click-to-accept confirmation constitute valid electronic authentication.</li>
-                  <li>No physical signature is required for this Agreement to be legally binding.</li>
-                </ul>
-                
-                <div class="signature-block">
-                  <div class="signature-block-title">BRAND</div>
-                  <div class="signature-line">Name: ${brandSig?.signer_name || brandName}</div>
-                  <div class="signature-line">Email: ${brandSig?.signer_email || brandEmail || 'N/A'}</div>
-                  ${brandSig?.otp_verified_at ? `<div class="signature-line">OTP Verified: ${new Date(brandSig.otp_verified_at).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle: 'long', timeStyle: 'medium' })}</div>` : '<div class="signature-line" style="font-style: italic;">Status: Pending signature</div>'}
-                  ${brandSig?.ip_address ? `<div class="signature-line">IP Address: ${brandSig.ip_address}</div>` : ''}
-                  ${brandSig?.user_agent ? `<div class="signature-line">Device: ${brandSig.user_agent}</div>` : ''}
-                  ${brandSig?.signed_at ? `<div class="signature-line">Executed At: ${new Date(brandSig.signed_at).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle: 'long', timeStyle: 'medium' })}</div>` : ''}
+                <div class="execution-notice">
+                  <p style="margin: 0 0 10px 0; line-height: 1.6;">
+                    This Agreement has been executed electronically by both Parties through OTP verification and click-to-accept confirmation in accordance with the Information Technology Act, 2000 (India).
+                  </p>
+                  <p style="margin: 10px 0 0 0; font-weight: bold; line-height: 1.6;">
+                    No physical or handwritten signature is required for legal validity.
+                  </p>
                 </div>
+                
+                <div class="execution-details">
+                  <div class="execution-details-title">EXECUTION DETAILS</div>
+                  
+                  <div class="signature-block">
+                    <div class="signature-block-title">BRAND</div>
+                    <div class="signature-line">
+                      <span class="signature-label">Name:</span>
+                      ${brandSig?.signer_name || brandName}
+                    </div>
+                    <div class="signature-line">
+                      <span class="signature-label">Email:</span>
+                      ${brandSig?.signer_email || brandEmail || 'N/A'}
+                    </div>
+                    ${brandSig?.otp_verified_at ? `
+                    <div class="signature-line">
+                      <span class="signature-label">OTP Verified At:</span>
+                      ${new Date(brandSig.otp_verified_at).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle: 'long', timeStyle: 'medium' })}
+                    </div>` : '<div class="signature-line" style="font-style: italic; color: #888;">Status: Pending signature</div>'}
+                    ${brandSig?.ip_address ? `
+                    <div class="signature-line">
+                      <span class="signature-label">IP Address:</span>
+                      ${brandSig.ip_address}
+                    </div>` : ''}
+                    ${brandSig?.user_agent ? `
+                    <div class="signature-line">
+                      <span class="signature-label">Device / User Agent:</span>
+                      ${brandSig.user_agent}
+                    </div>` : ''}
+                    ${brandSig?.signed_at ? `
+                    <div class="signature-line">
+                      <span class="signature-label">Execution Timestamp:</span>
+                      ${new Date(brandSig.signed_at).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle: 'long', timeStyle: 'medium' })}
+                    </div>` : ''}
+                  </div>
 
-                <div class="signature-block">
-                  <div class="signature-block-title">CREATOR</div>
-                  <div class="signature-line">Name: ${creatorSig?.signer_name || creatorName}</div>
-                  <div class="signature-line">Email: ${creatorSig?.signer_email || creatorEmail || 'N/A'}</div>
-                  ${creatorSig?.otp_verified_at ? `<div class="signature-line">OTP Verified: ${new Date(creatorSig.otp_verified_at).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle: 'long', timeStyle: 'medium' })}</div>` : '<div class="signature-line" style="font-style: italic;">Status: Pending signature</div>'}
-                  ${creatorSig?.ip_address ? `<div class="signature-line">IP Address: ${creatorSig.ip_address}</div>` : ''}
-                  ${creatorSig?.user_agent ? `<div class="signature-line">Device: ${creatorSig.user_agent}</div>` : ''}
-                  ${creatorSig?.signed_at ? `<div class="signature-line">Executed At: ${new Date(creatorSig.signed_at).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle: 'long', timeStyle: 'medium' })}</div>` : ''}
+                  <div class="signature-block-divider"></div>
+
+                  <div class="signature-block">
+                    <div class="signature-block-title">CREATOR</div>
+                    <div class="signature-line">
+                      <span class="signature-label">Name:</span>
+                      ${creatorSig?.signer_name || creatorName}
+                    </div>
+                    <div class="signature-line">
+                      <span class="signature-label">Email:</span>
+                      ${creatorSig?.signer_email || creatorEmail || 'N/A'}
+                    </div>
+                    ${creatorSig?.otp_verified_at ? `
+                    <div class="signature-line">
+                      <span class="signature-label">OTP Verified At:</span>
+                      ${new Date(creatorSig.otp_verified_at).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle: 'long', timeStyle: 'medium' })}
+                    </div>` : '<div class="signature-line" style="font-style: italic; color: #888;">Status: Pending signature</div>'}
+                    ${creatorSig?.ip_address ? `
+                    <div class="signature-line">
+                      <span class="signature-label">IP Address:</span>
+                      ${creatorSig.ip_address}
+                    </div>` : ''}
+                    ${creatorSig?.user_agent ? `
+                    <div class="signature-line">
+                      <span class="signature-label">Device / User Agent:</span>
+                      ${creatorSig.user_agent}
+                    </div>` : ''}
+                    ${creatorSig?.signed_at ? `
+                    <div class="signature-line">
+                      <span class="signature-label">Execution Timestamp:</span>
+                      ${new Date(creatorSig.signed_at).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle: 'long', timeStyle: 'medium' })}
+                    </div>` : ''}
+                  </div>
                 </div>
               </div>
 
               <div class="footer">
-                <p>This agreement was generated using the CreatorArmour Contract Scanner based on information provided by the Parties. CreatorArmour is not a party to this agreement and does not provide legal representation. The Parties are advised to independently review this agreement before execution.</p>
+                <p>This agreement was generated using the CreatorArmour Contract Scanner.</p>
+                <p>CreatorArmour is not a party to this agreement and does not provide legal representation.</p>
+                <p>Parties are advised to independently review this agreement.</p>
               </div>
             </body>
             </html>
@@ -2527,29 +2786,21 @@ export const downloadContractDocxHandler = async (req: Request, res: Response) =
           console.error('[Protection] Failed to generate professional contract DOCX:', genError);
           console.error('[Protection] Error stack:', genError.stack);
           // Fall through to return error
+          return res.status(500).json({ 
+            error: 'Failed to generate contract',
+            hint: 'Please try again or contact support.',
+            details: genError.message
+          });
         }
+      } else {
+        // Both parties haven't signed yet
+        return res.status(404).json({ 
+          error: 'Contract not available. Both parties must sign before downloading.',
+          hint: 'Please ensure both brand and creator have signed the agreement.',
+          contractFileUrl: contractFileUrl || null,
+          bothSigned: bothSigned || false
+        });
       }
-      
-      return res.status(404).json({ 
-        error: 'Contract HTML not found. Please regenerate the contract.',
-        hint: 'The contract_html column may not exist in the database. Please regenerate the contract to create it.',
-        contractFileUrl: contractFileUrl || null,
-        bothSigned: bothSigned || false
-      });
-    }
-
-    // Generate DOCX from HTML
-    const { generateContractDocx, prepareHtmlForDocx } = await import('../services/docxGenerator.js');
-    const docxCompatibleHtml = prepareHtmlForDocx(contractHtml);
-    const docxBuffer = await generateContractDocx(docxCompatibleHtml);
-
-    // Set response headers for DOCX download
-    const fileName = `Contract_${dealId}_${Date.now()}.docx`;
-    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
-    res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
-    res.setHeader('Content-Length', docxBuffer.length.toString());
-
-    return res.send(docxBuffer);
   } catch (error: any) {
     console.error('[Protection] Error generating DOCX:', error);
     res.status(500).json({ error: 'Failed to generate DOCX', details: error.message });

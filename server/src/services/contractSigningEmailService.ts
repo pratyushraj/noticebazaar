@@ -50,9 +50,9 @@ export async function sendBrandSigningConfirmationEmail(
 
     const url = 'https://api.resend.com/emails';
     
-    const dealAmount = dealData.dealType === 'paid' && dealData.dealAmount
+    const dealTypeDisplay = dealData.dealType === 'paid' && dealData.dealAmount
       ? `₹${parseFloat(dealData.dealAmount.toString()).toLocaleString('en-IN')}`
-      : 'Barter Deal';
+      : 'Barter';
 
     const deliverablesList = dealData.deliverables
       .map((d, idx) => `${idx + 1}. ${d}`)
@@ -65,6 +65,11 @@ export async function sendBrandSigningConfirmationEmail(
           year: 'numeric'
         })
       : 'Not specified';
+
+    // Construct signed agreement URL
+    const signedAgreementUrl = dealData.contractUrl 
+      ? dealData.contractUrl 
+      : `${process.env.FRONTEND_URL || 'https://creatorarmour.com'}/#/creator-contracts/${dealData.dealId}`;
 
     const emailSubject = `✅ Agreement Signed Successfully - ${dealData.creatorName}`;
     const emailHtml = `
@@ -84,11 +89,17 @@ export async function sendBrandSigningConfirmationEmail(
               You have successfully signed the collaboration agreement with <strong>${dealData.creatorName}</strong>.
             </p>
             
+            <div style="background: #ecfdf5; border-left: 4px solid #10b981; padding: 15px; margin: 20px 0; border-radius: 4px;">
+              <p style="color: #065f46; margin: 0; font-size: 14px; font-weight: 600;">
+                Executed electronically via OTP verification under IT Act, 2000
+              </p>
+            </div>
+            
             <div style="background: white; border-radius: 8px; padding: 20px; margin: 20px 0; border: 1px solid #e5e7eb;">
               <h3 style="color: #1f2937; margin-top: 0; font-size: 18px;">Agreement Summary</h3>
               <div style="margin: 15px 0;">
-                <strong style="color: #374151;">Deal Value:</strong>
-                <span style="color: #059669; font-size: 18px; font-weight: 600; margin-left: 10px;">${dealAmount}</span>
+                <strong style="color: #374151;">Deal Type:</strong>
+                <span style="color: #059669; font-size: 18px; font-weight: 600; margin-left: 10px;">${dealTypeDisplay}</span>
               </div>
               <div style="margin: 15px 0;">
                 <strong style="color: #374151;">Deliverables:</strong>
@@ -98,6 +109,20 @@ export async function sendBrandSigningConfirmationEmail(
                 <strong style="color: #374151;">Deadline:</strong>
                 <span style="color: #4b5563; margin-left: 10px;">${deadlineText}</span>
               </div>
+            </div>
+
+            <div style="background: #f0f9ff; border-left: 4px solid #0ea5e9; padding: 15px; margin: 20px 0; border-radius: 4px;">
+              <p style="color: #0c4a6e; margin: 0; font-size: 14px;">
+                <strong>🔒 Audit Trail Recorded:</strong><br>
+                • Timestamp, IP address, and device information securely stored<br>
+                • ${dealData.creatorName} has been notified of the signed agreement
+              </p>
+            </div>
+
+            <div style="text-align: center; margin: 30px 0;">
+              <a href="${signedAgreementUrl}" style="display: inline-block; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+                View Signed Agreement
+              </a>
             </div>
 
             <p style="color: #4b5563; font-size: 16px;">

@@ -13,6 +13,7 @@ import { toast } from 'sonner';
 import { getInitials } from '@/lib/utils/avatar';
 import { logger } from '@/lib/utils/logger';
 import { cn } from '@/lib/utils';
+import { fetchPincodeData, parseLocationString, formatLocationString } from '@/lib/utils/pincodeLookup';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -50,12 +51,22 @@ const ProfileSettings = () => {
     email: "",
     phone: "+91 ",
     location: "",
+    addressLine: "",
+    city: "",
+    state: "",
+    pincode: "",
     bio: ""
   });
 
-  // Load user data from session
+  // Pincode lookup state
+  const [isLookingUpPincode, setIsLookingUpPincode] = useState(false);
+  const [pincodeError, setPincodeError] = useState<string | null>(null);
+
+  // Load user data from session (only on initial load)
+  const [hasInitialized, setHasInitialized] = useState(false);
+  
   useEffect(() => {
-    if (profile && user) {
+    if (profile && user && !hasInitialized) {
       // Ensure phone starts with +91
       let phoneValue = profile.phone || '';
       if (phoneValue && !phoneValue.startsWith('+91')) {
@@ -65,16 +76,108 @@ const ProfileSettings = () => {
         phoneValue = '+91 ';
       }
       
+      // Parse existing location to extract address components
+      const location = profile.location || '';
+      const parsedLocation = parseLocationString(location);
+      
+      console.log('[CreatorProfile] Initializing formData from profile:', {
+        location,
+        parsedLocation,
+        profileLocation: profile.location
+      });
+      
       setFormData({
         name: `${profile.first_name || ''} ${profile.last_name || ''}`.trim() || 'Creator',
         displayName: profile.instagram_handle?.replace('@', '') || user.email?.split('@')[0] || 'creator',
         email: user.email || '',
         phone: phoneValue,
-        location: profile.location || '',
+        location: location,
+        addressLine: parsedLocation.addressLine,
+        city: parsedLocation.city,
+        state: parsedLocation.state,
+        pincode: parsedLocation.pincode,
         bio: profile.bio || ''
       });
+      
+      setHasInitialized(true);
     }
-  }, [profile, user]);
+  }, [profile, user, hasInitialized]);
+
+  // Handle pincode lookup
+  const handlePincodeChange = async (pincode: string) => {
+    // Update pincode in form
+    setFormData(prev => ({ ...prev, pincode }));
+    setPincodeError(null);
+
+    // Only lookup if pincode is 6 digits
+    const cleanPincode = pincode.replace(/\D/g, '');
+    if (cleanPincode.length === 6) {
+      setIsLookingUpPincode(true);
+      try {
+        const pincodeData = await fetchPincodeData(cleanPincode);
+        if (pincodeData) {
+          console.log('[CreatorProfile] Pincode lookup result:', {
+            pincode: cleanPincode,
+            city: pincodeData.city,
+            state: pincodeData.state,
+            district: pincodeData.district
+          });
+          
+          setFormData(prev => {
+            // Ensure we use the city from API if available, otherwise keep existing
+            const newCity = pincodeData.city && pincodeData.city.trim() 
+              ? pincodeData.city.trim() 
+              : (prev.city || '');
+            const newState = pincodeData.state && pincodeData.state.trim()
+              ? pincodeData.state.trim()
+              : (prev.state || '');
+            
+            const updated = {
+              ...prev,
+              city: newCity,
+              state: newState,
+            };
+            
+            console.log('[CreatorProfile] Updated formData:', {
+              oldCity: prev.city,
+              newCity: updated.city,
+              cityFromAPI: pincodeData.city,
+              cityTrimmed: pincodeData.city?.trim(),
+              oldState: prev.state,
+              newState: updated.state,
+              stateFromAPI: pincodeData.state,
+              stateTrimmed: pincodeData.state?.trim(),
+              fullFormData: updated
+            });
+            
+            // If city is still empty after update, log a warning
+            if (!updated.city || !updated.city.trim()) {
+              if (pincodeData.city && pincodeData.city.trim()) {
+                console.error('[CreatorProfile] ERROR: City not set despite API returning:', pincodeData.city);
+              } else {
+                console.warn('[CreatorProfile] WARNING: City is empty. API returned:', pincodeData.city);
+              }
+            } else {
+              console.log('[CreatorProfile] SUCCESS: City set to:', updated.city);
+            }
+            
+            return updated;
+          });
+          setPincodeError(null);
+        } else {
+          setPincodeError('Pincode not found. Please enter manually.');
+        }
+      } catch (error) {
+        console.error('[CreatorProfile] Pincode lookup error:', error);
+        setPincodeError('Failed to fetch pincode data. Please enter manually.');
+      } finally {
+        setIsLookingUpPincode(false);
+      }
+    } else if (cleanPincode.length > 0 && cleanPincode.length < 6) {
+      // Clear city/state if pincode is incomplete
+      setFormData(prev => ({ ...prev, city: '', state: '' }));
+    }
+  };
 
   // Calculate real stats from brand deals
   const calculatedStats = useMemo(() => {
@@ -296,8 +399,30 @@ const ProfileSettings = () => {
       return false;
     }
     // Validate address is required (marked with * in UI)
-    if (!formData.location.trim()) {
+    // Check if we have address components or the combined location
+    const hasAddressComponents = formData.addressLine.trim() || formData.city.trim() || formData.state.trim() || formData.pincode.trim();
+    const hasLocation = formData.location.trim();
+    
+    if (!hasAddressComponents && !hasLocation) {
       toast.error('Please enter your address (required for generating legal contracts)');
+      return false;
+    }
+    
+    // Validate that we have at least city and state (minimum requirement)
+    if (!formData.city.trim() && !formData.state.trim() && !hasLocation) {
+      toast.error('Please enter at least city and state, or use pincode to auto-fill');
+      return false;
+    }
+    
+    // Validate city specifically (required for contracts)
+    if (!formData.city.trim() && !hasLocation) {
+      toast.error('City is required. Enter pincode to auto-fill or enter manually.');
+      return false;
+    }
+    
+    // Validate state specifically (required for contracts)
+    if (!formData.state.trim() && !hasLocation) {
+      toast.error('State is required. Enter pincode to auto-fill or enter manually.');
       return false;
     }
     return true;
@@ -330,14 +455,130 @@ const ProfileSettings = () => {
         phoneValue = '+91 ' + phoneValue.replace(/^\+91\s*/, '');
       }
       
+      // Build location string from address components (always use components if available)
+      let locationValue = '';
+      
+      // Clean addressLine to remove any city/state/pincode that might have been added previously
+      let cleanAddressLine = formData.addressLine.trim();
+      if (cleanAddressLine && (formData.city || formData.state || formData.pincode)) {
+        // Remove city, state, and pincode from addressLine if they're already there
+        // Use word boundaries to avoid partial matches
+        if (formData.city && formData.city.trim()) {
+          const cityRegex = new RegExp(`\\b${formData.city.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'gi');
+          cleanAddressLine = cleanAddressLine.replace(cityRegex, '').trim();
+        }
+        if (formData.state && formData.state.trim()) {
+          const stateRegex = new RegExp(`\\b${formData.state.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'gi');
+          cleanAddressLine = cleanAddressLine.replace(stateRegex, '').trim();
+        }
+        if (formData.pincode && formData.pincode.trim()) {
+          const pincodeRegex = new RegExp(`\\b${formData.pincode.trim()}\\b`, 'g');
+          cleanAddressLine = cleanAddressLine.replace(pincodeRegex, '').trim();
+        }
+        // Clean up extra commas and spaces - more aggressive cleaning
+        cleanAddressLine = cleanAddressLine
+          .replace(/,\s*,+/g, '') // Remove multiple commas (including single comma if followed by another)
+          .replace(/,\s*$/g, '') // Remove trailing comma
+          .replace(/^\s*,/g, '') // Remove leading comma
+          .replace(/,\s*$/g, '') // Remove trailing comma again (in case first pass missed it)
+          .replace(/\s+/g, ' ') // Multiple spaces become one
+          .replace(/,\s*$/g, '') // Final trailing comma removal
+          .trim();
+      }
+      
+      console.log('[CreatorProfile] Building location from formData:', {
+        originalAddressLine: formData.addressLine,
+        cleanAddressLine,
+        city: formData.city,
+        state: formData.state,
+        pincode: formData.pincode,
+        hasComponents: !!(cleanAddressLine || formData.city || formData.state || formData.pincode)
+      });
+      
+      if (cleanAddressLine || formData.city || formData.state || formData.pincode) {
+        locationValue = formatLocationString(
+          cleanAddressLine,
+          formData.city,
+          formData.state,
+          formData.pincode
+        );
+        console.log('[CreatorProfile] Built locationValue:', locationValue);
+      } else {
+        // Fallback to existing location if no components are filled
+        locationValue = formData.location.trim();
+        console.log('[CreatorProfile] Using existing location:', locationValue);
+      }
+      
+      // Validate that we have city and state before saving (both are required)
+      if (!formData.city || !formData.city.trim()) {
+        toast.error('City is required. Please enter pincode to auto-fill or enter manually.');
+        setIsSaving(false);
+        return;
+      }
+      if (!formData.state || !formData.state.trim()) {
+        toast.error('State is required. Please enter pincode to auto-fill or enter manually.');
+        setIsSaving(false);
+        return;
+      }
+      
+      // CRITICAL: Always rebuild locationValue to ensure city and state are included
+      // This ensures the saved location always has city and state, even if addressLine is empty
+      const finalCity = formData.city.trim();
+      const finalState = formData.state.trim();
+      const finalPincode = formData.pincode.trim();
+      
+      // Rebuild locationValue with guaranteed city and state
+      locationValue = formatLocationString(
+        cleanAddressLine,
+        finalCity,
+        finalState,
+        finalPincode
+      );
+      
+      console.log('[CreatorProfile] Final locationValue (guaranteed city/state):', {
+        locationValue,
+        city: finalCity,
+        state: finalState,
+        pincode: finalPincode,
+        addressLine: cleanAddressLine,
+        includesCity: locationValue.includes(finalCity),
+        includesState: locationValue.includes(finalState)
+      });
+      
+      // Double-check that city and state are in the location string
+      if (!locationValue.includes(finalCity) || !locationValue.includes(finalState)) {
+        console.error('[CreatorProfile] ERROR: City or state missing from locationValue!', {
+          locationValue,
+          city: finalCity,
+          state: finalState
+        });
+        toast.error('Error: City and state must be included in address. Please try again.');
+        setIsSaving(false);
+        return;
+      }
+      
+      // Ensure locationValue is not empty before saving
+      if (!locationValue || !locationValue.trim()) {
+        toast.error('Address is required. Please enter your address with city and state.');
+        setIsSaving(false);
+        return;
+      }
+      
       const updatePayload: any = {
         id: profile.id,
         first_name: firstName,
         last_name: lastName,
         // Always include location (address) - required for contracts
-        // Save trimmed value, even if empty string
-        location: formData.location.trim(),
+        // Save trimmed value
+        location: locationValue.trim(),
       };
+      
+      console.log('[CreatorProfile] Saving profile with location:', {
+        locationValue: updatePayload.location,
+        locationLength: updatePayload.location.length,
+        includesCity: updatePayload.location.includes(finalCity),
+        includesState: updatePayload.location.includes(finalState),
+      });
       
       // Only include phone if it has a value (null is valid to clear)
       if (phoneValue !== null) {
@@ -367,9 +608,25 @@ const ProfileSettings = () => {
       
       await updateProfileMutation.mutateAsync(updatePayload);
 
-      // Update formData immediately with saved location to ensure UI reflects the change
-      const savedLocation = formData.location.trim();
-      setFormData(prev => ({ ...prev, location: savedLocation }));
+      // Update formData immediately with saved values to ensure UI reflects the change
+      // Parse the saved location back to individual components to keep formData in sync
+      const savedParsedLocation = parseLocationString(locationValue);
+      setFormData(prev => ({
+        ...prev,
+        location: locationValue,
+        addressLine: savedParsedLocation.addressLine || prev.addressLine,
+        city: savedParsedLocation.city || finalCity || prev.city, // Ensure city is preserved
+        state: savedParsedLocation.state || finalState || prev.state, // Ensure state is preserved
+        pincode: savedParsedLocation.pincode || finalPincode || prev.pincode
+      }));
+      
+      console.log('[CreatorProfile] Updated formData after save:', {
+        locationValue,
+        parsedLocation: savedParsedLocation,
+        finalCity,
+        finalState,
+        finalPincode
+      });
       
       await refetchProfile();
       
@@ -378,7 +635,7 @@ const ProfileSettings = () => {
       logger.success('Profile updated', { 
         profileId: profile.id, 
         location: updatePayload.location,
-        savedLocation: savedLocation
+        locationValue: locationValue
       });
     } catch (error: any) {
       logger.error('Failed to update profile', error);
@@ -714,20 +971,89 @@ const ProfileSettings = () => {
                     />
                   </div>
                 </div>
+                {/* Address Line */}
                 <div>
-                  <label className="text-xs text-white/60 mb-1.5 block">Address *</label>
+                  <label className="text-xs text-white/60 mb-1.5 block">Address Line *</label>
                   <div className="flex items-center gap-2">
                     <MapPin className="w-4 h-4 text-white/50 flex-shrink-0" />
                     <input
                       type="text"
-                      value={formData.location}
-                      onChange={(e) => setFormData(prev => ({ ...prev, location: e.target.value }))}
+                      value={formData.addressLine}
+                      onChange={(e) => setFormData(prev => ({ ...prev, addressLine: e.target.value }))}
                       disabled={!editMode}
-                      placeholder="Enter your address (required for contracts)"
+                      placeholder="House/Flat No., Building, Street"
                       className={`flex-1 bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder-white/40 outline-none transition-colors ${editMode ? 'focus:border-purple-500 focus:bg-white/10' : 'cursor-not-allowed'}`}
                     />
                   </div>
-                  <p className="text-xs text-white/50 mt-1">Required for generating legal contracts</p>
+                </div>
+
+                {/* Pincode with auto-fetch */}
+                <div>
+                  <label className="text-xs text-white/60 mb-1.5 block">Pincode *</label>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="text"
+                      value={formData.pincode}
+                      onChange={(e) => {
+                        const value = e.target.value.replace(/\D/g, '').slice(0, 6);
+                        handlePincodeChange(value);
+                      }}
+                      disabled={!editMode}
+                      placeholder="6-digit pincode"
+                      maxLength={6}
+                      className={`flex-1 bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder-white/40 outline-none transition-colors ${editMode ? 'focus:border-purple-500 focus:bg-white/10' : 'cursor-not-allowed'}`}
+                    />
+                    {isLookingUpPincode && (
+                      <Loader2 className="w-4 h-4 animate-spin text-purple-400 flex-shrink-0" />
+                    )}
+                  </div>
+                  {pincodeError && (
+                    <p className="text-xs text-yellow-400 mt-1">{pincodeError}</p>
+                  )}
+                  {formData.pincode.length === 6 && !isLookingUpPincode && !pincodeError && (
+                    <p className="text-xs text-green-400 mt-1">✓ City and State auto-filled</p>
+                  )}
+                  <p className="text-xs text-white/50 mt-1">Enter 6-digit pincode to auto-fill city and state</p>
+                </div>
+
+                {/* City */}
+                <div>
+                  <label className="text-xs text-white/60 mb-1.5 block">City *</label>
+                  <input
+                    type="text"
+                    value={formData.city || ''}
+                    onChange={(e) => {
+                      const newCity = e.target.value;
+                      console.log('[CreatorProfile] City input changed:', newCity);
+                      setFormData(prev => {
+                        const updated = { ...prev, city: newCity };
+                        console.log('[CreatorProfile] City updated in formData:', updated.city);
+                        return updated;
+                      });
+                    }}
+                    disabled={!editMode || isLookingUpPincode}
+                    placeholder="City"
+                    className={`w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder-white/40 outline-none transition-colors ${editMode ? 'focus:border-purple-500 focus:bg-white/10' : 'cursor-not-allowed'} ${isLookingUpPincode ? 'opacity-50' : ''}`}
+                  />
+                  {/* Debug: Show current city value */}
+                  {process.env.NODE_ENV === 'development' && (
+                    <div className="text-xs text-white/40 mt-1">
+                      Debug: city = "{formData.city || '(empty)'}"
+                    </div>
+                  )}
+                </div>
+
+                {/* State */}
+                <div>
+                  <label className="text-xs text-white/60 mb-1.5 block">State *</label>
+                  <input
+                    type="text"
+                    value={formData.state}
+                    onChange={(e) => setFormData(prev => ({ ...prev, state: e.target.value }))}
+                    disabled={!editMode || isLookingUpPincode}
+                    placeholder="State"
+                    className={`w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder-white/40 outline-none transition-colors ${editMode ? 'focus:border-purple-500 focus:bg-white/10' : 'cursor-not-allowed'} ${isLookingUpPincode ? 'opacity-50' : ''}`}
+                  />
                 </div>
               </div>
             </div>

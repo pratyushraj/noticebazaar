@@ -74,7 +74,9 @@ export async function generateContractDocx(schema: ContractSchema): Promise<Buff
       brand_address: schema.brand_address.trim(),
       brand_email: schema.brand_email?.trim() || '',
       creator_name: schema.creator_name.trim(),
-      creator_address: schema.creator_address.trim(),
+      creator_address: (schema.creator_address && typeof schema.creator_address === 'string') 
+        ? schema.creator_address.trim() 
+        : '',
       creator_email: schema.creator_email?.trim() || '',
       deliverables: formatDeliverables(deliverablesArray),
       delivery_deadline: formatDate(schema.delivery_deadline) || 'As mutually agreed',

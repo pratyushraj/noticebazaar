@@ -232,15 +232,35 @@ export async function createDocxTemplate(): Promise<Buffer> {
           spacing: { after: 400 },
         }),
         
-        // Signatures (Heading 2)
+        // DIGITAL ACCEPTANCE & EXECUTION
         new Paragraph({
-          text: 'IN WITNESS WHEREOF',
+          text: 'DIGITAL ACCEPTANCE & EXECUTION',
           heading: HeadingLevel.HEADING_2,
           spacing: { before: 400, after: 200 },
         }),
         
         new Paragraph({
-          text: 'The Parties hereto have executed this Agreement on the date and place first written above.',
+          text: 'This Agreement has been executed electronically by both Parties through OTP verification and click-to-accept confirmation. Under the Information Technology Act, 2000 (IT Act, 2000), electronic signatures are legally valid and binding. No physical or handwritten signature is required.',
+          spacing: { after: 200 },
+        }),
+        
+        new Paragraph({
+          text: 'The Parties acknowledge that:',
+          spacing: { before: 200, after: 100 },
+        }),
+        
+        new Paragraph({
+          text: '• This Agreement is executed electronically and constitutes a valid legal signature under Section 3A of the IT Act, 2000.',
+          spacing: { after: 100 },
+        }),
+        
+        new Paragraph({
+          text: '• OTP verification and click-to-accept confirmation constitute valid electronic authentication.',
+          spacing: { after: 100 },
+        }),
+        
+        new Paragraph({
+          text: '• No physical signature is required for this Agreement to be legally binding.',
           spacing: { after: 400 },
         }),
         
@@ -250,22 +270,32 @@ export async function createDocxTemplate(): Promise<Buffer> {
         }),
         
         new Paragraph({
-          text: 'Signature: _________________',
+          text: 'Name: {brand_name}',
           spacing: { after: 100 },
         }),
         
         new Paragraph({
-          text: 'Printed Name: {brand_name}',
+          text: 'Email: {brand_email}',
           spacing: { after: 100 },
         }),
         
         new Paragraph({
-          text: 'Date: _________________',
+          text: 'OTP Verified At: {brand_otp_verified_at}',
           spacing: { after: 100 },
         }),
         
         new Paragraph({
-          text: 'Place of Execution: _________________',
+          text: 'IP Address: {brand_ip_address}',
+          spacing: { after: 100 },
+        }),
+        
+        new Paragraph({
+          text: 'Device / Browser: {brand_user_agent}',
+          spacing: { after: 100 },
+        }),
+        
+        new Paragraph({
+          text: 'Executed At: {brand_signed_at}',
           spacing: { after: 400 },
         }),
         
@@ -275,22 +305,32 @@ export async function createDocxTemplate(): Promise<Buffer> {
         }),
         
         new Paragraph({
-          text: 'Signature: _________________',
+          text: 'Name: {creator_name}',
           spacing: { after: 100 },
         }),
         
         new Paragraph({
-          text: 'Printed Name: {creator_name}',
+          text: 'Email: {creator_email}',
           spacing: { after: 100 },
         }),
         
         new Paragraph({
-          text: 'Date: _________________',
+          text: 'OTP Verified At: {creator_otp_verified_at}',
           spacing: { after: 100 },
         }),
         
         new Paragraph({
-          text: 'Place of Execution: _________________',
+          text: 'IP Address: {creator_ip_address}',
+          spacing: { after: 100 },
+        }),
+        
+        new Paragraph({
+          text: 'Device / Browser: {creator_user_agent}',
+          spacing: { after: 100 },
+        }),
+        
+        new Paragraph({
+          text: 'Executed At: {creator_signed_at}',
           spacing: { after: 400 },
         }),
         

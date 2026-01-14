@@ -265,7 +265,7 @@ export async function submitDealDetails(
         // Fetch creator details
         const { data: creator, error: creatorError } = await supabase
           .from('profiles')
-          .select('id, first_name, last_name, address')
+          .select('id, first_name, last_name, address, location')
           .eq('id', token.creator_id)
           .single();
         
@@ -289,6 +289,20 @@ export async function submitDealDetails(
             ? `${creator.first_name} ${creator.last_name}`
             : creator.first_name || creator.email?.split('@')[0] || 'Creator';
 
+          // Get creator address - check both location and address fields, and validate it's not N/A
+          let creatorAddress: string | null = null;
+          const locationValue = creator.location;
+          const addressValue = creator.address;
+          
+          // Prefer location field, fallback to address field
+          const rawAddress = (locationValue && typeof locationValue === 'string' && locationValue.trim() !== '' && locationValue.toLowerCase() !== 'n/a')
+            ? locationValue.trim()
+            : (addressValue && typeof addressValue === 'string' && addressValue.trim() !== '' && addressValue.toLowerCase() !== 'n/a')
+              ? addressValue.trim()
+              : null;
+          
+          creatorAddress = rawAddress;
+
           const contractRequest = {
             brandName: formData.brandName || 'Brand',
             creatorName: creatorName,
@@ -297,7 +311,7 @@ export async function submitDealDetails(
             brandEmail: formData.companyEmail || null,
             brandAddress: formData.companyAddress || null,
             creatorEmail: creatorEmail || null,
-            creatorAddress: creator.address || null,
+            creatorAddress: creatorAddress,
             dealSchema: {
               usage_type: formData.usageRightsDuration || '3_months',
               usage_platforms: formData.deliverables?.map((d: any) => d.platform) || ['Instagram'],

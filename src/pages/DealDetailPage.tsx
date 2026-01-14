@@ -204,7 +204,7 @@ function DealDetailPageContent() {
     
     return { isValid: true, message: '', missingFields: [] };
   };
-
+  
   // Helper to create a secure brand reply link token for this deal
   const generateBrandReplyLink = async (targetDealId: string): Promise<string | null> => {
     try {
@@ -1964,12 +1964,12 @@ Best regards`;
                 {signedAtDate && (
                   <div className="text-xs text-white/50 mt-2">
                     Signed on {new Date(signedAtDate).toLocaleDateString('en-US', { 
-                      month: 'long', 
-                      day: 'numeric', 
+                            month: 'long', 
+                            day: 'numeric', 
                       year: 'numeric'
                     })}
-                  </div>
-                )}
+                    </div>
+                  )}
               </div>
             );
           } else {
@@ -2783,36 +2783,36 @@ ${link}`;
               {deliverables.length > 0 ? (
                 <>
                   <div className="space-y-2">
-                    {deliverables.map((item: any, index: number) => (
+                  {deliverables.map((item: any, index: number) => (
                       <div key={index} className="bg-white/5 rounded-xl p-3 border border-white/10">
-                        <div className="flex items-start gap-3">
-                          <div className="flex-1 min-w-0">
-                            <div className="font-medium text-white/90 break-words mb-1">
-                              {item.title || item.name || `Deliverable ${index + 1}`}
+                      <div className="flex items-start gap-3">
+                        <div className="flex-1 min-w-0">
+                          <div className="font-medium text-white/90 break-words mb-1">
+                            {item.title || item.name || `Deliverable ${index + 1}`}
+                          </div>
+                          {item.dueDate && (
+                            <div className="text-xs text-white/60 mt-1.5 flex items-center gap-1.5">
+                              <Calendar className="w-3.5 h-3.5 flex-shrink-0" />
+                              <span>Due: {item.dueDate}</span>
                             </div>
-                            {item.dueDate && (
-                              <div className="text-xs text-white/60 mt-1.5 flex items-center gap-1.5">
-                                <Calendar className="w-3.5 h-3.5 flex-shrink-0" />
-                                <span>Due: {item.dueDate}</span>
-                              </div>
-                            )}
-                            {item.status && (
+                          )}
+                          {item.status && (
                               <div className="mt-2">
                                 <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${item.status === 'completed' ? 'bg-green-500/20 text-green-400 border border-green-500/30' :
-                                  item.status === 'in_progress' ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30' :
-                                  'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30'
-                                }`}>
-                                  {item.status === 'completed' ? 'Completed' :
-                                   item.status === 'in_progress' ? 'In Progress' :
-                                   'Pending'}
-                                </span>
-                              </div>
-                            )}
-                          </div>
+                                item.status === 'in_progress' ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30' :
+                                'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30'
+                              }`}>
+                                {item.status === 'completed' ? 'Completed' :
+                                 item.status === 'in_progress' ? 'In Progress' :
+                                 'Pending'}
+                              </span>
+                            </div>
+                          )}
                         </div>
                       </div>
-                    ))}
-                  </div>
+                    </div>
+                  ))}
+                </div>
                 </>
               ) : (
                 <div className="text-sm text-white/60 py-4">No deliverables specified</div>
@@ -3217,11 +3217,11 @@ ${link}`;
               </div>
             )}
 
-          </div>
-        </div>
+                  </div>
+                      </div>
 
-        {/* Confirm Signed Contract Received Modal */}
-        <Dialog open={showMarkSignedModal} onOpenChange={setShowMarkSignedModal}>
+                {/* Confirm Signed Contract Received Modal */}
+                <Dialog open={showMarkSignedModal} onOpenChange={setShowMarkSignedModal}>
               <DialogContent className="bg-purple-900/95 backdrop-blur-xl border border-white/10 text-white max-w-md">
                 <DialogHeader>
                   <DialogTitle className="text-xl font-semibold">Confirm Signed Contract Received</DialogTitle>
@@ -3379,9 +3379,9 @@ ${link}`;
                 <CollapsibleTrigger asChild>
                   <button className="w-full flex items-center justify-between items-center mb-4">
                     <div className="flex items-center gap-2">
-                      <span className="text-xl">📌</span>
-                      <h3 className="font-semibold text-lg">Deal Summary</h3>
-                    </div>
+                <span className="text-xl">📌</span>
+                <h3 className="font-semibold text-lg">Deal Summary</h3>
+              </div>
                     {showDealSummaryFull ? (
                       <ChevronUp className="w-5 h-5 text-white/60" />
                     ) : (
@@ -3475,9 +3475,9 @@ ${link}`;
                       <div className="text-white font-medium">{brandSubmissionDetails.paymentMethod.join(', ')}</div>
                     </div>
                   )}
-                </div>
-              </div>
-            )}
+            </div>
+          </div>
+        )}
 
             {/* Rights & Usage Card - Moved to position 5 */}
             {(brandSubmissionDetails.usageRightsDuration || brandSubmissionDetails.paidAdsAllowed !== undefined || brandSubmissionDetails.whitelistingAllowed !== undefined || brandSubmissionDetails.exclusivityPeriod || brandSubmissionDetails.exclusivity || brandSubmissionDetails.usageRights || brandSubmissionDetails.cancellationTerms) && (

@@ -210,7 +210,9 @@ export function mapDealSchemaToContractVariables(
     brand_address: brandInfo.address || '',
     brand_email: brandInfo.email || '',
     creator_name: creatorInfo.name,
-    creator_address: creatorInfo.address || '',
+    creator_address: (creatorInfo.address && typeof creatorInfo.address === 'string' && creatorInfo.address.trim() !== '') 
+      ? creatorInfo.address.trim() 
+      : '',
     creator_email: creatorInfo.email || '',
     deliverables_list: deliverablesList,
     delivery_deadline: deliveryDeadline,
@@ -562,7 +564,7 @@ export function validateRequiredContractFields(
     // - Contains common location keywords (city, state, area names, Indian cities)
     const hasComma = creatorAddress.includes(',');
     const hasLength = creatorAddress.length >= 5; // Very lenient threshold
-    const hasLocationKeywords = /\b(city|state|nagar|colony|sector|road|street|area|district|pincode|pin|noida|delhi|mumbai|bangalore|pune|hyderabad|chennai|kolkata|patna|bihar|up|uttar|rajasthan|gujarat|maharashtra|karnataka|tamil|west|bengal|odisha|assam|punjab|haryana|himachal|uttarakhand|jammu|kashmir|goa|kerala|telangana|andhra|madhya|pradesh|gaur|sector|block|phase|extension|layout|village|town|taluk|tehsil)\b/i.test(creatorAddress);
+    const hasLocationKeywords = /\b(city|state|nagar|buddha|gautam|colony|sector|road|street|area|district|pincode|pin|noida|delhi|mumbai|bangalore|pune|hyderabad|chennai|kolkata|patna|bihar|up|uttar|rajasthan|gujarat|maharashtra|karnataka|tamil|west|bengal|odisha|assam|punjab|haryana|himachal|uttarakhand|jammu|kashmir|goa|kerala|telangana|andhra|madhya|pradesh|gaur|sector|block|phase|extension|layout|village|town|taluk|tehsil)\b/i.test(creatorAddress);
     
     // Also check for common Indian address patterns (numbers, common words)
     const hasAddressPattern = /\d+/.test(creatorAddress) || // Has numbers (house/flat numbers)
@@ -629,7 +631,7 @@ AND
 Creator:
 
 Name: ${variables.creator_name}
-Address: ${variables.creator_address}
+Address: ${variables.creator_address || ''}
 Email: ${variables.creator_email}
 
 Collectively referred to as the "Parties".

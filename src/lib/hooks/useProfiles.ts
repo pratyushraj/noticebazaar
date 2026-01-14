@@ -416,7 +416,15 @@ export const useUpdateProfile = () => {
       }
       // Always include location if provided (even if empty string) - required for contracts
       if (location !== undefined) {
-        updateData.location = location;
+        // Ensure location is a string and trim it
+        updateData.location = typeof location === 'string' ? location.trim() : location;
+        console.log('[useUpdateProfile] Including location in update:', {
+          location: updateData.location,
+          locationType: typeof updateData.location,
+          locationLength: updateData.location?.length,
+        });
+      } else {
+        console.warn('[useUpdateProfile] Location is undefined, not including in update');
       }
       if (bio !== undefined) {
         updateData.bio = bio;

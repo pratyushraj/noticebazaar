@@ -318,12 +318,48 @@ async function checkPuppeteerAvailability() {
 }
 
 // For local development, start the server
+let server: any = null;
+
 if (process.env.VERCEL !== '1') {
-  app.listen(PORT, async () => {
+  server = app.listen(PORT, async () => {
     console.log(`🚀 CreatorArmour API server running on port ${PORT}`);
     
     // Check Puppeteer after server starts
     await checkPuppeteerAvailability();
+  });
+
+  // Graceful shutdown handlers for tsx watch
+  const gracefulShutdown = (signal: string) => {
+    console.log(`\n${signal} received. Closing server gracefully...`);
+    if (server) {
+      server.close(() => {
+        console.log('Server closed.');
+        process.exit(0);
+      });
+      
+      // Force close after 5 seconds
+      setTimeout(() => {
+        console.log('Forcing server shutdown...');
+        process.exit(1);
+      }, 5000);
+    } else {
+      process.exit(0);
+    }
+  };
+
+  // Handle termination signals
+  process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+  process.on('SIGINT', () => gracefulShutdown('SIGINT'));
+  
+  // Handle uncaught errors
+  process.on('uncaughtException', (error) => {
+    console.error('Uncaught Exception:', error);
+    gracefulShutdown('uncaughtException');
+  });
+  
+  process.on('unhandledRejection', (reason, promise) => {
+    console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+    gracefulShutdown('unhandledRejection');
   });
 }
 
