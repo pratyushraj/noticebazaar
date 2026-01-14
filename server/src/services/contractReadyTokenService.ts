@@ -417,12 +417,17 @@ export async function getContractReadyTokenInfo(tokenId: string): Promise<{
     // Try business_name first (for business accounts)
     if (creatorAny.business_name && creatorAny.business_name.trim()) {
       creatorName = creatorAny.business_name.trim();
-    } else if (creator.first_name && creator.last_name) {
-      creatorName = `${creator.first_name} ${creator.last_name}`.trim();
-    } else if (creator.first_name) {
-      creatorName = creator.first_name.trim();
-    } else if (creator.last_name) {
-      creatorName = creator.last_name.trim();
+    } else {
+      // Combine first_name and last_name, handling cases where one might be empty
+      const firstName = (creator.first_name || '').trim();
+      const lastName = (creator.last_name || '').trim();
+      if (firstName && lastName) {
+        creatorName = `${firstName} ${lastName}`.trim();
+      } else if (firstName) {
+        creatorName = firstName;
+      } else if (lastName) {
+        creatorName = lastName;
+      }
     }
   }
   
@@ -449,10 +454,22 @@ export async function getContractReadyTokenInfo(tokenId: string): Promise<{
   // Clean up address - remove empty strings and trim whitespace
   if (creatorAddress && typeof creatorAddress === 'string') {
     creatorAddress = creatorAddress.trim();
-    if (creatorAddress === '') {
+    // Remove trailing commas and clean up
+    creatorAddress = creatorAddress.replace(/,\s*$/, '').trim();
+    if (creatorAddress === '' || creatorAddress === 'null' || creatorAddress === 'undefined') {
       creatorAddress = null;
     }
   }
+  
+  // Log address details for debugging
+  console.log('[ContractReadyTokenService] Address extraction:', {
+    hasCreator: !!creator,
+    locationValue: creatorAny?.location,
+    addressValue: creatorAny?.address,
+    finalAddress: creatorAddress,
+    locationType: typeof creatorAny?.location,
+    addressType: typeof creatorAny?.address
+  });
 
   // Log final creator data being returned
   console.log('[ContractReadyTokenService] Returning creator data:', {
