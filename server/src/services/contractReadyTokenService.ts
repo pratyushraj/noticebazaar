@@ -171,7 +171,7 @@ export async function getContractReadyTokenInfo(tokenId: string): Promise<{
     return null;
   }
 
-  const token = tokenData as any;
+  const token = tokenData as any as ContractReadyToken;
 
   // Fetch deal or submission - prioritize submission_id if present
   let deal: any = null;
