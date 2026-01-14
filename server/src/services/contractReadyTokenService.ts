@@ -194,7 +194,7 @@ export async function getContractReadyTokenInfo(tokenId: string): Promise<{
         // Fetch creator profile to get name, email, and address
         const { data: creatorProfile, error: creatorProfileError } = await supabase
           .from('profiles')
-          .select('first_name, last_name, location, address, business_name')
+          .select('first_name, last_name, location, business_name')
           .eq('id', submission.creator_id)
           .maybeSingle();
 
@@ -389,7 +389,7 @@ export async function getContractReadyTokenInfo(tokenId: string): Promise<{
     console.log('[ContractReadyTokenService] Fetching creator profile for creatorId:', creatorId);
     const { data: creatorData, error: creatorError } = await supabase
       .from('profiles')
-      .select('first_name, last_name, location, address, business_name')
+      .select('first_name, last_name, location, business_name')
       .eq('id', creatorId)
       .maybeSingle();
 
@@ -413,10 +413,8 @@ export async function getContractReadyTokenInfo(tokenId: string): Promise<{
         hasLastName: !!creatorData.last_name,
         firstName: creatorData.first_name,
         lastName: creatorData.last_name,
-        hasLocation: !!(creatorData as any).location,
-        hasAddress: !!(creatorData as any).address,
-        location: (creatorData as any).location,
-        address: (creatorData as any).address,
+            hasLocation: !!(creatorData as any).location,
+            location: (creatorData as any).location,
         businessName: (creatorData as any).business_name
       });
     }
@@ -476,8 +474,8 @@ export async function getContractReadyTokenInfo(tokenId: string): Promise<{
     fullCreatorObject: JSON.stringify(creator)
   });
 
-  // Get creator address (prefer location field, fallback to address field)
-  let creatorAddress = creator ? (creatorAny.location || creatorAny.address || null) : null;
+  // Get creator address from location field (address field doesn't exist in profiles table)
+  let creatorAddress = creator ? (creatorAny.location || null) : null;
   
   // Clean up address - remove empty strings and trim whitespace
   if (creatorAddress && typeof creatorAddress === 'string') {
@@ -493,10 +491,9 @@ export async function getContractReadyTokenInfo(tokenId: string): Promise<{
   console.log('[ContractReadyTokenService] Address extraction:', {
     hasCreator: !!creator,
     locationValue: creatorAny?.location,
-    addressValue: creatorAny?.address,
     finalAddress: creatorAddress,
     locationType: typeof creatorAny?.location,
-    addressType: typeof creatorAny?.address
+    locationLength: creatorAny?.location?.length
   });
 
   // Log final creator data being returned
