@@ -159,11 +159,28 @@ publicRouter.post('/send', async (req: express.Request, res: Response) => {
         dealError = submissionError;
       }
     } else {
-      // No deal_id or submission_id - this shouldn't happen but handle gracefully
-      return res.status(400).json({
-        success: false,
-        error: 'Invalid token: missing deal or submission reference',
-      });
+      // No deal_id or submission_id - try to get deal info from getContractReadyTokenInfo
+      // This handles cases where the token exists but deal/submission references are missing
+      try {
+        const { getContractReadyTokenInfo } = await import('../services/contractReadyTokenService.js');
+        const tokenInfo = await getContractReadyTokenInfo(token);
+        
+        if (tokenInfo && tokenInfo.deal) {
+          // Use deal info from tokenInfo (may have id: null but has brand_email, etc.)
+          deal = tokenInfo.deal;
+        } else {
+          return res.status(400).json({
+            success: false,
+            error: 'Invalid token: missing deal or submission reference',
+          });
+        }
+      } catch (importError) {
+        console.error('[OTP] Error importing contractReadyTokenService:', importError);
+        return res.status(400).json({
+          success: false,
+          error: 'Invalid token: missing deal or submission reference',
+        });
+      }
     }
 
     if (dealError) {
