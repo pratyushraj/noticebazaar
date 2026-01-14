@@ -97,7 +97,7 @@ export async function createContractReadyToken(
 export async function getContractReadyTokenInfo(tokenId: string): Promise<{
   token: ContractReadyToken;
   deal: any;
-  creatorName: string;
+  creatorName: string | null;
   creatorEmail: string | null;
   creatorAddress: string | null;
 } | null> {

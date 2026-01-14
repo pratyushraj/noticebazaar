@@ -206,10 +206,10 @@ export const NoDealsEmptyState: React.FC<NoDealsEmptyStateProps> = ({
     <EmptyState
       type="no-data"
       icon={Briefcase}
-      title="No Brand Deals Yet"
-      description="Add your first brand deal to start tracking payments, contracts, and deliverables."
+      title="No Active Deals Yet"
+      description="Deals appear here only after a contract is signed."
       primaryAction={{
-        label: "Add Your First Deal",
+        label: "Protect a New Deal",
         onClick: onAddDeal,
         icon: Briefcase,
       }}

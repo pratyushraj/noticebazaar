@@ -428,29 +428,165 @@ const CreatorDashboard = () => {
         return dateA - dateB; // Sort ascending (earliest due date first)
       })
       .slice(0, 2)
-      .map(deal => ({
-        id: deal.id,
-        brand: deal.brand_name,
-        amount: deal.deal_amount,
-        status: deal.status,
-        dueDate: deal.due_date,
-        progress: deal.progress_percentage ?? (() => {
-          // Use canonical status mapping for progress
-          const stage = getDealStageFromStatus(deal.status, deal.progress_percentage);
-          return STAGE_TO_PROGRESS[stage] ?? 20;
-        })()
-      }));
+      .map(deal => {
+        // Check if deal is signed by checking deal_execution_status
+        const dealExecutionStatus = (deal as any)?.deal_execution_status;
+        const isSigned = dealExecutionStatus === 'signed' || dealExecutionStatus === 'completed' || 
+                         deal.status?.toLowerCase()?.includes('signed');
+        
+        // Extract campaign name from deal (could be in campaign_name field or form_data)
+        const campaignName = (deal as any).campaign_name || 
+                            ((deal as any).form_data?.campaignName) || 
+                            null;
+        
+        // Calculate payment status
+        const now = new Date();
+        now.setHours(0, 0, 0, 0);
+        let paymentStatus: 'received' | 'pending' | 'overdue' = 'pending';
+        if (deal.payment_received_date) {
+          paymentStatus = 'received';
+        } else if (deal.payment_expected_date) {
+          const paymentDue = new Date(deal.payment_expected_date);
+          paymentDue.setHours(0, 0, 0, 0);
+          if (paymentDue < now) {
+            paymentStatus = 'overdue';
+          }
+        }
+        
+        // Calculate next action
+        let nextAction = '';
+        const statusLower = deal.status?.toLowerCase() || '';
+        
+        // Priority 1: If signed, check deliverable status
+        if (isSigned) {
+          // Check if content delivery is due
+          if (deal.due_date) {
+            const dueDate = new Date(deal.due_date);
+            dueDate.setHours(0, 0, 0, 0);
+            const daysUntil = Math.ceil((dueDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+            
+            if (daysUntil < 0) {
+              nextAction = 'Deliverable overdue';
+            } else if (daysUntil === 0) {
+              nextAction = 'Deliver today';
+            } else if (daysUntil <= 7) {
+              // Try to extract deliverable type from deliverables field
+              let deliverableType = 'content';
+              try {
+                const deliverablesStr = deal.deliverables;
+                if (deliverablesStr) {
+                  const deliverables = typeof deliverablesStr === 'string' ? JSON.parse(deliverablesStr) : deliverablesStr;
+                  if (Array.isArray(deliverables) && deliverables.length > 0) {
+                    const firstDeliverable = deliverables[0];
+                    if (firstDeliverable.contentType) {
+                      deliverableType = firstDeliverable.contentType;
+                    } else if (typeof firstDeliverable === 'string' && firstDeliverable.toLowerCase().includes('reel')) {
+                      deliverableType = 'Reel';
+                    } else if (typeof firstDeliverable === 'string' && firstDeliverable.toLowerCase().includes('post')) {
+                      deliverableType = 'Post';
+                    }
+                  }
+                }
+              } catch (e) {
+                // Ignore parse errors
+              }
+              nextAction = `Deliver ${deliverableType} in ${daysUntil} day${daysUntil === 1 ? '' : 's'}`;
+            } else {
+              nextAction = `Deliver in ${daysUntil} day${daysUntil === 1 ? '' : 's'}`;
+            }
+          } 
+          // Priority 2: If payment is due/overdue and content is delivered
+          else if (paymentStatus === 'overdue') {
+            nextAction = 'Await payment';
+          } else if (paymentStatus === 'pending' && (statusLower.includes('delivered') || statusLower.includes('completed'))) {
+            nextAction = 'Await payment';
+          } 
+          // Priority 3: Default for signed deals
+          else {
+            nextAction = 'Upload deliverable';
+          }
+        } 
+        // If not signed, show contract/negotiation actions
+        else if (statusLower.includes('contract') || statusLower.includes('agreement') || statusLower.includes('ready')) {
+          nextAction = 'Review contract';
+        } else {
+          nextAction = 'Complete negotiation';
+        }
+        
+        // Calculate deliverables progress
+        let deliverablesProgress = null;
+        try {
+          const deliverablesStr = deal.deliverables;
+          if (deliverablesStr) {
+            const deliverables = typeof deliverablesStr === 'string' ? JSON.parse(deliverablesStr) : deliverablesStr;
+            if (Array.isArray(deliverables)) {
+              const total = deliverables.length;
+              // For now, assume delivered if deal is completed or payment received
+              const delivered = (deal.status === 'Completed' || deal.payment_received_date) ? total : 0;
+              if (total > 0) {
+                deliverablesProgress = { delivered, total };
+              }
+            }
+          }
+        } catch (e) {
+          // Ignore parse errors
+        }
+        
+        // Check brand trust indicators
+        let trustBadge: 'verified' | 'gst' | 'repeat' | null = null;
+        // Check if brand has GST (from brand_email or form_data)
+        const brandGst = (deal as any).brand_gstin || ((deal as any).form_data?.gstin);
+        if (brandGst) {
+          trustBadge = 'gst';
+        }
+        // Check if repeat brand (same brand_name appears multiple times)
+        const brandDealCount = brandDeals.filter(d => d.brand_name === deal.brand_name).length;
+        if (brandDealCount > 1 && !trustBadge) {
+          trustBadge = 'repeat';
+        }
+        // Check if verified (brand_response_status accepted_verified)
+        if ((deal as any).brand_response_status === 'accepted_verified' && !trustBadge) {
+          trustBadge = 'verified';
+        }
+        
+        return {
+          id: deal.id,
+          brand: deal.brand_name,
+          campaignName: campaignName,
+          amount: deal.deal_amount,
+          status: deal.status,
+          dealExecutionStatus: dealExecutionStatus,
+          isSigned: isSigned,
+          dueDate: deal.due_date,
+          paymentStatus: paymentStatus,
+          paymentExpectedDate: deal.payment_expected_date,
+          paymentReceivedDate: deal.payment_received_date,
+          nextAction: nextAction,
+          deliverablesProgress: deliverablesProgress,
+          trustBadge: trustBadge,
+          progress: deal.progress_percentage ?? (() => {
+            // Use canonical status mapping for progress
+            const stage = getDealStageFromStatus(deal.status, deal.progress_percentage);
+            return STAGE_TO_PROGRESS[stage] ?? 20;
+          })()
+        };
+      });
   }, [brandDeals, hasNoData]);
 
   // Active deals formatted for display
   const activeDeals = activeDealsPreview.map(deal => ({
     id: deal.id,
-    title: `${deal.brand} Deal`,
+    title: deal.campaignName || `${deal.brand} Deal`,
     brand: deal.brand,
+    campaignName: deal.campaignName,
     value: deal.amount,
     progress: deal.progress,
-    status: (deal.status === 'Content Delivered' || deal.status === 'Content Making' || deal.status === 'Signed') ? 'active' : 'negotiation',
-    deadline: deal.dueDate ? new Date(deal.dueDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'TBD'
+    status: deal.isSigned ? 'signed' : ((deal.status === 'Content Delivered' || deal.status === 'Content Making') ? 'active' : 'negotiation'),
+    deadline: deal.dueDate ? new Date(deal.dueDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'TBD',
+    paymentStatus: deal.paymentStatus,
+    nextAction: deal.nextAction,
+    deliverablesProgress: deal.deliverablesProgress,
+    trustBadge: deal.trustBadge
   }));
 
   // Upcoming payments - Real data from brand deals
@@ -1119,16 +1255,17 @@ const CreatorDashboard = () => {
                       {/* Spotlight */}
                       <div className={cn(vision.spotlight.base, "opacity-20")} />
                       <Briefcase className={cn(iconSizes.xl, "text-purple-400/50 mx-auto mb-3")} />
-                      <p className={typography.bodySmall}>No active deals yet</p>
+                      <p className={typography.bodySmall}>No Active Deals Yet</p>
+                      <p className={cn(typography.caption, "mt-1 text-purple-300/60")}>Deals appear here only after a contract is signed.</p>
                       <motion.button
                         onClick={() => {
                           triggerHaptic(HapticPatterns.light);
-                          navigate('/creator-contracts');
+                          navigate('/contract-upload');
                         }}
                         whileTap={animations.microTap}
                         className={cn("mt-4", sectionHeader.action)}
                       >
-                        View all deals →
+                        Protect a New Deal →
                       </motion.button>
                     </BaseCard>
                   ) : (
@@ -1156,26 +1293,82 @@ const CreatorDashboard = () => {
                           {/* Spotlight on hover */}
                           <div className={cn(vision.spotlight.hover, "opacity-0 group-hover:opacity-100")} />
                           
-                          <div className={cn("flex items-start justify-between", spacing.compact)}>
-                            <div>
-                              <h3 className={cn(typography.h4, "mb-1")}>{deal.title}</h3>
-                              <div className={typography.bodySmall}>{deal.brand}</div>
-                            </div>
-                            <div className={cn(typography.amountSmall, "text-orange-400")}>
-                              ₹{Math.round(deal.value).toLocaleString('en-IN')} at risk
-                            </div>
-                          </div>
-                          
-                          <div className={cn("mt-3")}>
-                            <div className={cn(typography.bodySmall, "text-purple-200")}>
-                              Payment not secured
-                            </div>
+                          {/* 1. Brand name + trust badge */}
+                          <div className="flex items-start justify-between gap-2 mb-3">
+                            <h3 className={cn(
+                              typography.h4, 
+                              "text-base sm:text-lg font-bold truncate flex-1"
+                            )}>
+                              {deal.title}
+                            </h3>
+                            {deal.trustBadge && (
+                              <span className={cn(
+                                "px-1.5 py-0.5 rounded-full text-[9px] font-medium flex-shrink-0 whitespace-nowrap opacity-80",
+                                deal.trustBadge === 'verified' && "bg-green-500/15 text-green-400/80 border border-green-500/20",
+                                deal.trustBadge === 'gst' && "bg-green-500/15 text-green-400/80 border border-green-500/20",
+                                deal.trustBadge === 'repeat' && "bg-purple-500/20 text-purple-300 border border-purple-500/30"
+                              )}>
+                                {deal.trustBadge === 'verified' && 'Verified'}
+                                {deal.trustBadge === 'gst' && 'GST Verified'}
+                                {deal.trustBadge === 'repeat' && 'Repeat'}
+                              </span>
+                            )}
                           </div>
 
-                          <div className={cn("flex items-center justify-between", typography.caption, "mt-2")}>
-                            <span>{deal.status === 'active' ? '✅ Active' : '🔵 Negotiation'}</span>
-                            <span>Due: {deal.deadline}</span>
+                          {/* 2. Amount at risk */}
+                          <div className={cn(
+                            typography.amountSmall, 
+                            "text-orange-400 text-sm sm:text-base font-semibold mb-1.5"
+                          )}>
+                            ₹{Math.round(deal.value).toLocaleString('en-IN')} at risk
                           </div>
+
+                          {/* 3. Payment status chip */}
+                          {deal.paymentStatus && (
+                            <div className="mb-2">
+                              <span className={cn(
+                                "px-2 py-0.5 rounded-full text-[10px] font-medium inline-block",
+                                deal.paymentStatus === 'received' && "bg-green-500/20 text-green-400 border border-green-500/30",
+                                deal.paymentStatus === 'pending' && "bg-amber-500/20 text-amber-400 border border-amber-500/30",
+                                deal.paymentStatus === 'overdue' && "bg-red-500/20 text-red-400 border border-red-500/30"
+                              )}>
+                                {deal.paymentStatus === 'received' && 'Payment Received'}
+                                {deal.paymentStatus === 'pending' && 'Payment Pending'}
+                                {deal.paymentStatus === 'overdue' && 'Payment Overdue'}
+                              </span>
+                            </div>
+                          )}
+
+                          {/* 4. Signed + Due date */}
+                          <div className={cn(
+                            "flex items-center justify-between flex-wrap gap-2", 
+                            typography.caption, 
+                            "mt-2 text-xs sm:text-sm"
+                          )}>
+                            <span className={cn(
+                              "flex items-center gap-1.5",
+                              deal.status === 'signed' && "text-green-400/70 text-[10px] sm:text-xs"
+                            )}>
+                              {deal.status === 'signed' ? '✅ Contract Signed' : (deal.status === 'active' ? '✅ Active' : '🔵 Negotiation')}
+                            </span>
+                            <span className="text-white/60 whitespace-nowrap">
+                              Due: {deal.deadline}
+                            </span>
+                          </div>
+
+                          {/* 5. Next action helper */}
+                          {deal.nextAction && (
+                            <div className="mt-2 text-xs text-white/50 opacity-70">
+                              Action needed: {deal.nextAction}
+                            </div>
+                          )}
+
+                          {/* 6. Deliverables progress (optional) */}
+                          {deal.deliverablesProgress && deal.deliverablesProgress.total > 0 && (
+                            <div className="mt-1.5 text-xs text-white/50 opacity-70">
+                              {deal.deliverablesProgress.delivered} of {deal.deliverablesProgress.total} delivered
+                            </div>
+                          )}
                         </BaseCard>
                       </motion.div>
                       ))}

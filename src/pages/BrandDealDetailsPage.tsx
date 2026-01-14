@@ -93,6 +93,10 @@ const BrandDealDetailsPage = () => {
   const [creatorName, setCreatorName] = useState<string>('');
   const [error, setError] = useState<string | null>(null);
   const [isFormUsed, setIsFormUsed] = useState(false);
+  const [contractReadyToken, setContractReadyToken] = useState<string | null>(null);
+  const [dealId, setDealId] = useState<string | null>(null);
+  const [isSigned, setIsSigned] = useState(false);
+  const [isFetchingContractToken, setIsFetchingContractToken] = useState(false);
   const [isGstLookupLoading, setIsGstLookupLoading] = useState(false);
   const [gstLookupError, setGstLookupError] = useState<string | null>(null);
   const [gstLookupSuccess, setGstLookupSuccess] = useState(false);
@@ -223,10 +227,36 @@ const BrandDealDetailsPage = () => {
         }
 
         setCreatorName(data.creatorName || 'the creator');
-        // If form is already used, show read-only view
+        // If form is already used, check if we should show sign option
         if (data.isUsed) {
           setIsFormUsed(true);
-          setError('This form has already been submitted and cannot be edited. Please contact the creator for any changes.');
+          setDealId(data.dealId || null);
+          setIsSigned(data.isSigned || false);
+          
+          // Always fetch contract ready token dynamically to ensure we have the latest one
+          if (!data.isSigned && token) {
+            setIsFetchingContractToken(true);
+            try {
+              const contractTokenResponse = await fetch(`${apiBaseUrl}/api/deal-details-tokens/${token}/contract-ready-token`);
+              const contractTokenData = await contractTokenResponse.json();
+              
+              if (contractTokenData.success && contractTokenData.contractReadyToken) {
+                setContractReadyToken(contractTokenData.contractReadyToken);
+              } else {
+                // No contract ready token yet - will show "Contract Being Prepared" message
+                setContractReadyToken(null);
+              }
+            } catch (fetchErr) {
+              console.error('[BrandDealDetailsPage] Error fetching contract ready token:', fetchErr);
+              setContractReadyToken(null);
+            } finally {
+              setIsFetchingContractToken(false);
+            }
+          } else {
+            // Deal is signed, no need to fetch token
+            setContractReadyToken(null);
+          }
+          
           setIsLoading(false);
           return;
         }
@@ -698,6 +728,131 @@ const BrandDealDetailsPage = () => {
           <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4" />
           <p>Loading...</p>
         </div>
+      </div>
+    );
+  }
+
+  // Show sign option if form is used but deal is not signed
+  if (isFormUsed && !isSigned) {
+    // If we're still fetching the contract token, show loading
+    if (isFetchingContractToken) {
+      return (
+        <div className="min-h-[100dvh] bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 text-white flex items-center justify-center p-4">
+          <div className="text-center">
+            <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4" />
+            <p>Loading contract...</p>
+          </div>
+        </div>
+      );
+    }
+    
+    // If we have a contract ready token, show sign option
+    if (contractReadyToken) {
+      const contractReadyUrl = `/#/contract-ready/${contractReadyToken}`;
+      return (
+        <div className="min-h-[100dvh] bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 text-white flex items-center justify-center p-4">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="text-center max-w-md"
+          >
+            <div className="w-20 h-20 rounded-full bg-blue-500/20 flex items-center justify-center mx-auto mb-6">
+              <FileText className="w-10 h-10 text-blue-400" />
+            </div>
+            <h2 className="text-2xl font-semibold mb-3">Contract Ready for Signature</h2>
+            <p className="text-white/80 text-lg mb-6">
+              Your details have been received. The contract is ready for you to review and sign.
+            </p>
+            <button
+              onClick={async (e) => {
+                e.preventDefault();
+                // Verify the token exists before redirecting
+                try {
+                  let apiBaseUrl =
+                    import.meta.env.VITE_API_BASE_URL ||
+                    (typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com')
+                      ? 'https://api.creatorarmour.com'
+                      : typeof window !== 'undefined' && window.location.hostname === 'localhost'
+                      ? 'http://localhost:3001'
+                      : 'https://noticebazaar-api.onrender.com');
+                  
+                  const verifyResponse = await fetch(`${apiBaseUrl}/api/contract-ready-tokens/${contractReadyToken}`);
+                  const verifyData = await verifyResponse.json();
+                  
+                  if (verifyResponse.ok && verifyData.success) {
+                    window.location.href = contractReadyUrl;
+                  } else {
+                    // Token doesn't exist, try to fetch it again or redirect to deal details
+                    if (token) {
+                      const tokenResponse = await fetch(`${apiBaseUrl}/api/deal-details-tokens/${token}/contract-ready-token`);
+                      const tokenData = await tokenResponse.json();
+                      
+                      if (tokenResponse.ok && tokenData.success && tokenData.contractReadyToken) {
+                        window.location.href = `/#/contract-ready/${tokenData.contractReadyToken}`;
+                      } else {
+                        // No contract ready token exists, stay on this page (will show "Contract Being Prepared")
+                        toast.info('Contract is being prepared. Please wait a moment and try again.');
+                        // Refresh to check again
+                        window.location.reload();
+                      }
+                    } else {
+                      toast.error('Contract link is invalid. Please contact the creator.');
+                    }
+                  }
+                } catch (err) {
+                  console.error('[BrandDealDetailsPage] Error verifying contract token:', err);
+                  toast.error('Unable to verify contract link. Please try again.');
+                }
+              }}
+              className="inline-block px-8 py-4 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold rounded-xl hover:from-purple-600 hover:to-pink-600 transition-all shadow-lg hover:shadow-xl"
+            >
+              Review & Sign Contract
+            </button>
+          </motion.div>
+        </div>
+      );
+    } else {
+      // Form is used but contract not ready yet
+      return (
+        <div className="min-h-[100dvh] bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 text-white flex items-center justify-center p-4">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="text-center max-w-md"
+          >
+            <div className="w-20 h-20 rounded-full bg-yellow-500/20 flex items-center justify-center mx-auto mb-6">
+              <Clock className="w-10 h-10 text-yellow-400" />
+            </div>
+            <h2 className="text-2xl font-semibold mb-3">Contract Being Prepared</h2>
+            <p className="text-white/80 text-lg mb-2">
+              Your details have been received successfully.
+            </p>
+            <p className="text-white/60 text-sm">
+              {creatorName} is preparing the contract. You'll be notified once it's ready for signature.
+            </p>
+          </motion.div>
+        </div>
+      );
+    }
+  }
+
+  // Show success message if deal is signed
+  if (isFormUsed && isSigned) {
+    return (
+      <div className="min-h-[100dvh] bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 text-white flex items-center justify-center p-4">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="text-center max-w-md"
+        >
+          <div className="w-20 h-20 rounded-full bg-green-500/20 flex items-center justify-center mx-auto mb-6">
+            <CheckCircle className="w-10 h-10 text-green-400" />
+          </div>
+          <h2 className="text-2xl font-semibold mb-3">Contract Signed</h2>
+          <p className="text-white/80 text-lg">
+            Thank you! The contract has been successfully signed. {creatorName} has been notified.
+          </p>
+        </motion.div>
       </div>
     );
   }

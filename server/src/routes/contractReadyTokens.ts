@@ -109,7 +109,7 @@ router.get('/:token', async (req: Request, res: Response) => {
     const response = {
       success: true,
       deal: tokenInfo.deal,
-      creatorName: tokenInfo.creatorName || 'Creator',
+      creatorName: tokenInfo.creatorName ?? null,
       creatorEmail: tokenInfo.creatorEmail ?? null,
       creatorAddress: tokenInfo.creatorAddress ?? null,
       signature: signature ? {

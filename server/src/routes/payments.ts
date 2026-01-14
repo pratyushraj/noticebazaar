@@ -38,7 +38,7 @@ router.post('/request', async (req: AuthenticatedRequest, res: Response) => {
       return res.status(400).json({ error: 'deal_id and amount required' });
     }
 
-    // Verify deal belongs to user
+    // Verify deal belongs to user and is signed
     const { data: deal } = await supabase
       .from('brand_deals')
       .select('*')
@@ -48,6 +48,15 @@ router.post('/request', async (req: AuthenticatedRequest, res: Response) => {
 
     if (!deal) {
       return res.status(404).json({ error: 'Deal not found' });
+    }
+
+    // Safeguard: Only allow payment operations on signed deals
+    const signedStatuses = ['signed', 'SIGNED_BY_BRAND', 'content_making', 'Content Making', 'content_delivered', 'Content Delivered', 'completed', 'COMPLETED'];
+    const dealStatus = deal.status?.toLowerCase() || '';
+    const isSigned = signedStatuses.some(s => s.toLowerCase() === dealStatus);
+
+    if (!isSigned) {
+      return res.status(400).json({ error: 'Payments can only be created for signed deals' });
     }
 
     // Update deal with payment request
@@ -80,7 +89,7 @@ router.post('/mark-received', async (req: AuthenticatedRequest, res: Response) =
       return res.status(400).json({ error: 'deal_id required' });
     }
 
-    // Verify deal belongs to user
+    // Verify deal belongs to user and is signed
     const { data: deal } = await supabase
       .from('brand_deals')
       .select('*')
@@ -90,6 +99,15 @@ router.post('/mark-received', async (req: AuthenticatedRequest, res: Response) =
 
     if (!deal) {
       return res.status(404).json({ error: 'Deal not found' });
+    }
+
+    // Safeguard: Only allow payment operations on signed deals
+    const signedStatuses = ['signed', 'SIGNED_BY_BRAND', 'content_making', 'Content Making', 'content_delivered', 'Content Delivered', 'completed', 'COMPLETED'];
+    const dealStatus = deal.status?.toLowerCase() || '';
+    const isSigned = signedStatuses.some(s => s.toLowerCase() === dealStatus);
+
+    if (!isSigned) {
+      return res.status(400).json({ error: 'Payments can only be marked as received for signed deals' });
     }
 
     // Update deal

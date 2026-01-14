@@ -115,7 +115,80 @@ export async function signContractAsBrand(
       }
     }
 
-    const deal = validatedTokenInfo.deal;
+    // Get deal or create from submission if it doesn't exist
+    let deal = validatedTokenInfo.deal;
+    
+    // If deal doesn't exist, create it from submission
+    if (!deal || !deal.id) {
+      // Get submission from contract ready token
+      const { data: tokenData } = await supabase
+        .from('contract_ready_tokens')
+        .select('submission_id, deal_id')
+        .eq('id', request.token)
+        .maybeSingle();
+      
+      if (tokenData?.submission_id) {
+        // Get submission data
+        const { data: submission } = await supabase
+          .from('deal_details_submissions')
+          .select('*, deal_details_tokens!inner(*)')
+          .eq('id', tokenData.submission_id)
+          .maybeSingle();
+        
+        if (submission && submission.form_data) {
+          const formData = submission.form_data as any;
+          
+          // Create deal from submission data
+          const dealData: any = {
+            creator_id: submission.creator_id,
+            brand_name: formData.brandName || 'Brand',
+            deal_amount: formData.dealType === 'paid' && formData.paymentAmount
+              ? parseFloat(formData.paymentAmount) || 0
+              : 0,
+            deliverables: JSON.stringify(formData.deliverables || []),
+            due_date: formData.deadline || new Date().toISOString().split('T')[0],
+            payment_expected_date: formData.deadline || new Date().toISOString().split('T')[0],
+            status: 'SIGNED_BY_BRAND', // Will be signed immediately
+            platform: 'Other',
+            deal_type: formData.dealType || 'paid',
+            created_via: 'deal_details_form',
+            brand_address: formData.companyAddress || null,
+            brand_email: formData.companyEmail || null,
+          };
+
+          const { data: newDeal, error: dealError } = await supabase
+            .from('brand_deals')
+            .insert(dealData)
+            .select()
+            .single();
+
+          if (dealError || !newDeal) {
+            console.error('[ContractSigningService] Failed to create deal from submission:', dealError);
+            return {
+              success: false,
+              error: 'Failed to create deal'
+            };
+          }
+
+          deal = newDeal;
+          request.dealId = newDeal.id;
+          
+          // Update submission with deal_id
+          await supabase
+            .from('deal_details_submissions')
+            .update({ deal_id: newDeal.id })
+            .eq('id', tokenData.submission_id);
+          
+          // Update contract ready token with deal_id (if it has submission_id)
+          if (tokenData.submission_id) {
+            await supabase
+              .from('contract_ready_tokens')
+              .update({ deal_id: newDeal.id })
+              .eq('id', request.token);
+          }
+        }
+      }
+    }
 
     // Check if deal ID matches
     if (deal.id !== request.dealId) {

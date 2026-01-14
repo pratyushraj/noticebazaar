@@ -2772,16 +2772,16 @@ export const downloadContractDocxHandler = async (req: Request, res: Response) =
           const bodyMatch = contractSummary.match(/<body[^>]*>([\s\S]*?)<\/body>/i);
           const bodyContent = bodyMatch ? bodyMatch[1] : contractSummary;
           
-          const { generateContractDocx, prepareHtmlForDocx } = await import('../services/docxGenerator.js');
+    const { generateContractDocx, prepareHtmlForDocx } = await import('../services/docxGenerator.js');
           const docxCompatibleHtml = prepareHtmlForDocx(bodyContent);
-          const docxBuffer = await generateContractDocx(docxCompatibleHtml);
-          
+    const docxBuffer = await generateContractDocx(docxCompatibleHtml);
+
           const fileName = `CREATOR_BRAND_COLLABORATION_AGREEMENT_${dealId}_${Date.now()}.docx`;
-          res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
-          res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
-          res.setHeader('Content-Length', docxBuffer.length.toString());
-          
-          return res.send(docxBuffer);
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
+    res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
+    res.setHeader('Content-Length', docxBuffer.length.toString());
+
+    return res.send(docxBuffer);
         } catch (genError: any) {
           console.error('[Protection] Failed to generate professional contract DOCX:', genError);
           console.error('[Protection] Error stack:', genError.stack);

@@ -22,6 +22,25 @@ export async function updatePaymentReceived(
   utrNumber?: string
 ): Promise<{ success: boolean; error?: string; dealId?: string }> {
   try {
+    // Safeguard: Verify deal is signed before allowing payment update
+    const { data: deal, error: dealError } = await supabase
+      .from('brand_deals')
+      .select('status')
+      .eq('id', dealId)
+      .maybeSingle();
+
+    if (dealError || !deal) {
+      return { success: false, error: 'Deal not found' };
+    }
+
+    const signedStatuses = ['signed', 'SIGNED_BY_BRAND', 'content_making', 'Content Making', 'content_delivered', 'Content Delivered', 'completed', 'COMPLETED'];
+    const dealStatus = deal.status?.toLowerCase() || '';
+    const isSigned = signedStatuses.some(s => s.toLowerCase() === dealStatus);
+
+    if (!isSigned) {
+      return { success: false, error: 'Payments can only be recorded for signed deals' };
+    }
+
     const { data, error } = await supabase.rpc('update_payment_received', {
       deal_id_param: dealId,
       payment_received_date_param: paymentReceivedDate,

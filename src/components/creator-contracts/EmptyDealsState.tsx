@@ -30,11 +30,11 @@ const EmptyDealsState: React.FC<EmptyDealsStateProps> = ({
       </motion.div>
       
       <h2 className="text-2xl font-bold text-foreground mb-2">
-        No Brand Deals Yet
+        No Active Deals Yet
       </h2>
       
       <p className="text-muted-foreground mb-6 max-w-md">
-        Add your first brand deal to start tracking payments, contracts, and deliverables
+        Deals appear here only after a contract is signed.
       </p>
       
       <div className="flex flex-col sm:flex-row gap-3">
@@ -44,7 +44,7 @@ const EmptyDealsState: React.FC<EmptyDealsStateProps> = ({
           className="bg-primary hover:bg-primary/90"
         >
           <PlusCircle className="w-5 h-5 mr-2" />
-          Add Your First Deal
+          Protect a New Deal
         </Button>
         
         {onExploreBrands && (

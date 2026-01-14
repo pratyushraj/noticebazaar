@@ -190,270 +190,128 @@ export async function submitDealDetails(
     throw new Error('Failed to submit deal details');
   }
 
-  // Create draft deal from form data
+  // DO NOT create deal here - deals are only created when signed
+  // Just save the submission and generate contract
   let dealId: string | null = null;
+
+  // Generate contract and store with submission (deals are only created when signed)
   try {
-    const dealData: any = {
-      creator_id: token.creator_id,
-      brand_name: formData.brandName || 'Brand',
-      deal_amount: formData.dealType === 'paid' && formData.paymentAmount
-        ? parseFloat(formData.paymentAmount) || 0
-        : 0,
-      deliverables: JSON.stringify(formData.deliverables || []),
-      due_date: formData.deadline || new Date().toISOString().split('T')[0],
-      payment_expected_date: formData.deadline || new Date().toISOString().split('T')[0],
-      status: 'Brand_Details_Submitted', // Special status for creator review
-      platform: 'Other',
-      deal_type: formData.dealType || 'paid',
-      created_via: 'deal_details_form',
-      // Save brand address from company address (fetched via GST lookup)
-      brand_address: formData.companyAddress || null,
-      brand_email: formData.companyEmail || null,
-    };
-
-    const { data: deal, error: dealError } = await supabase
-      .from('brand_deals')
-      .insert(dealData)
-      .select()
+    console.log('[DealDetailsTokenService] Generating contract for submission...');
+    
+    // Import contract generation service
+    const { generateContractFromScratch } = await import('./contractGenerator.js');
+    
+    // Fetch creator details
+    const { data: creator, error: creatorError } = await supabase
+      .from('profiles')
+      .select('id, first_name, last_name, address, location')
+      .eq('id', token.creator_id)
       .single();
+    
+    // Get email from auth.users
+    let creatorEmail: string | null = null;
+    if (creator) {
+      const { data: authUser } = await supabase.auth.admin.getUserById(token.creator_id);
+      creatorEmail = authUser?.user?.email || null;
+    }
 
-    if (!dealError && deal) {
-      dealId = deal.id;
+    if (!creatorError && creator) {
+      // Parse deliverables
+      const deliverablesList = Array.isArray(formData.deliverables) 
+        ? formData.deliverables.map((d: any) => 
+            `${d.quantity || 1}x ${d.contentType || 'Content'} on ${d.platform || 'Platform'}`
+          )
+        : ['As per agreement'];
 
-      // Update submission with deal_id
-      await supabase
-        .from('deal_details_submissions')
-        .update({ deal_id: deal.id })
-        .eq('id', submission.id);
+      // Build contract generation request
+      const creatorName = creator.first_name && creator.last_name
+        ? `${creator.first_name} ${creator.last_name}`
+        : creator.first_name || creator.email?.split('@')[0] || 'Creator';
 
-      // Map formData to deal structure for confirmation check
-      const dealForCheck = {
-        creatorRequestedChanges: (deal as any).creator_requested_clarifications || false,
-        flags: {
-          requiresClarification: (deal as any).flags?.requiresClarification || false
+      // Get creator address
+      let creatorAddress: string | null = null;
+      const locationValue = creator.location;
+      const addressValue = creator.address;
+      
+      const rawAddress = (locationValue && typeof locationValue === 'string' && locationValue.trim() !== '' && locationValue.toLowerCase() !== 'n/a')
+        ? locationValue.trim()
+        : (addressValue && typeof addressValue === 'string' && addressValue.trim() !== '' && addressValue.toLowerCase() !== 'n/a')
+          ? addressValue.trim()
+          : null;
+      
+      creatorAddress = rawAddress;
+
+      const dealAmount = formData.dealType === 'paid' && formData.paymentAmount
+        ? parseFloat(formData.paymentAmount) || 0
+        : 0;
+
+      const contractRequest = {
+        brandName: formData.brandName || 'Brand',
+        creatorName: creatorName,
+        dealAmount: dealAmount,
+        deliverables: deliverablesList,
+        brandEmail: formData.companyEmail || null,
+        brandAddress: formData.companyAddress || null,
+        creatorEmail: creatorEmail || null,
+        creatorAddress: creatorAddress,
+        dealSchema: {
+          usage_type: formData.usageRightsDuration || '3_months',
+          usage_platforms: formData.deliverables?.map((d: any) => d.platform) || ['Instagram'],
+          usage_duration: formData.usageRightsDuration || '3_months',
+          paid_ads_allowed: formData.paidAdsAllowed || false,
+          whitelisting_allowed: formData.whitelistingAllowed || false,
+          exclusivity_enabled: formData.exclusivityPeriod && formData.exclusivityPeriod !== 'none',
+          exclusivity_duration: formData.exclusivityPeriod || null,
+          payment_method: formData.paymentMethod?.[0] || null,
+          payment_timeline: formData.paymentTimeline || null,
         },
-        usage: {
-          duration: formData.usageRightsDuration || null
-        },
-        payment: {
-          timeline: formData.paymentTimeline || null,
-          method: formData.paymentMethod && formData.paymentMethod.length > 0 
-            ? formData.paymentMethod[0] 
-            : null
-        },
-        exclusivity: {
-          status: formData.exclusivityPeriod === 'none' || !formData.exclusivityPeriod 
-            ? 'none' 
-            : formData.exclusivityPeriod ? 'specified' : 'unknown'
-        },
-        deliverables: formData.deliverables && formData.deliverables.length > 0 
-          ? formData.deliverables 
-          : null,
-        deadline: formData.deadline || null,
-        amount: formData.dealType === 'paid' && formData.paymentAmount
-          ? parseFloat(formData.paymentAmount) || 0
-          : 0
+        usageType: formData.usageRightsDuration || '3_months',
+        usagePlatforms: formData.deliverables?.map((d: any) => d.platform) || ['Instagram'],
+        usageDuration: formData.usageRightsDuration || '3_months',
+        paidAdsAllowed: formData.paidAdsAllowed || false,
+        whitelistingAllowed: formData.whitelistingAllowed || false,
+        exclusivityEnabled: formData.exclusivityPeriod && formData.exclusivityPeriod !== 'none',
+        exclusivityCategory: null,
+        exclusivityDuration: formData.exclusivityPeriod || null,
+        terminationNoticeDays: null,
+        jurisdictionCity: formData.companyState || null,
+        additionalTerms: null,
       };
 
-      // ALWAYS generate contract immediately (removed confirmation check)
-      try {
-        console.log('[DealDetailsTokenService] Auto-generating contract immediately...');
-        
-        // Import contract generation service
-        const { generateContractFromScratch } = await import('./contractGenerator.js');
-        
-        // Fetch creator details
-        const { data: creator, error: creatorError } = await supabase
-          .from('profiles')
-          .select('id, first_name, last_name, address, location')
-          .eq('id', token.creator_id)
-          .single();
-        
-        // Get email from auth.users
-        let creatorEmail: string | null = null;
-        if (creator) {
-          const { data: authUser } = await supabase.auth.admin.getUserById(token.creator_id);
-          creatorEmail = authUser?.user?.email || null;
-        }
+      // Generate contract
+      const contractResult = await generateContractFromScratch(contractRequest);
 
-        if (!creatorError && creator) {
-          // Parse deliverables
-          const deliverablesList = Array.isArray(formData.deliverables) 
-            ? formData.deliverables.map((d: any) => 
-                `${d.quantity || 1}x ${d.contentType || 'Content'} on ${d.platform || 'Platform'}`
-              )
-            : ['As per agreement'];
-
-          // Build contract generation request
-          const creatorName = creator.first_name && creator.last_name
-            ? `${creator.first_name} ${creator.last_name}`
-            : creator.first_name || creator.email?.split('@')[0] || 'Creator';
-
-          // Get creator address - check both location and address fields, and validate it's not N/A
-          let creatorAddress: string | null = null;
-          const locationValue = creator.location;
-          const addressValue = creator.address;
-          
-          // Prefer location field, fallback to address field
-          const rawAddress = (locationValue && typeof locationValue === 'string' && locationValue.trim() !== '' && locationValue.toLowerCase() !== 'n/a')
-            ? locationValue.trim()
-            : (addressValue && typeof addressValue === 'string' && addressValue.trim() !== '' && addressValue.toLowerCase() !== 'n/a')
-              ? addressValue.trim()
-              : null;
-          
-          creatorAddress = rawAddress;
-
-          const contractRequest = {
-            brandName: formData.brandName || 'Brand',
-            creatorName: creatorName,
-            dealAmount: dealForCheck.amount,
-            deliverables: deliverablesList,
-            brandEmail: formData.companyEmail || null,
-            brandAddress: formData.companyAddress || null,
-            creatorEmail: creatorEmail || null,
-            creatorAddress: creatorAddress,
-            dealSchema: {
-              usage_type: formData.usageRightsDuration || '3_months',
-              usage_platforms: formData.deliverables?.map((d: any) => d.platform) || ['Instagram'],
-              usage_duration: formData.usageRightsDuration || '3_months',
-              paid_ads_allowed: formData.paidAdsAllowed || false,
-              whitelisting_allowed: formData.whitelistingAllowed || false,
-              exclusivity_enabled: formData.exclusivityPeriod && formData.exclusivityPeriod !== 'none',
-              exclusivity_duration: formData.exclusivityPeriod || null,
-              payment_method: formData.paymentMethod?.[0] || null,
-              payment_timeline: formData.paymentTimeline || null,
-            },
-            usageType: formData.usageRightsDuration || '3_months',
-            usagePlatforms: formData.deliverables?.map((d: any) => d.platform) || ['Instagram'],
-            usageDuration: formData.usageRightsDuration || '3_months',
-            paidAdsAllowed: formData.paidAdsAllowed || false,
-            whitelistingAllowed: formData.whitelistingAllowed || false,
-            exclusivityEnabled: formData.exclusivityPeriod && formData.exclusivityPeriod !== 'none',
-            exclusivityCategory: null,
-            exclusivityDuration: formData.exclusivityPeriod || null,
-            terminationNoticeDays: null,
-            jurisdictionCity: formData.companyState || null,
-            additionalTerms: null,
-          };
-
-          // Generate contract
-          const contractResult = await generateContractFromScratch(contractRequest);
-
-          // Upload contract DOCX to storage
-          const { data: uploadData, error: uploadError } = await supabase.storage
-            .from('creator-assets')
-            .upload(
-              `contracts/${deal.id}/${contractResult.fileName}`,
-              contractResult.contractDocx,
-              {
-                contentType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-                upsert: true
-              }
-            );
-
-          if (!uploadError && uploadData) {
-            // Get public URL
-            const { data: urlData } = await supabase.storage
-              .from('creator-assets')
-              .getPublicUrl(uploadData.path);
-
-            // Update deal with contract info and set CONTRACT_READY status
-            await supabase
-              .from('brand_deals')
-              .update({
-                contract_file_url: urlData.publicUrl,
-                contract_status: 'DraftGenerated',
-                contract_version: 'v3',
-                contract_generated_at: new Date().toISOString(),
-                status: 'CONTRACT_READY', // Contract is ready for brand to verify and sign
-                updated_at: new Date().toISOString()
-              })
-              .eq('id', deal.id);
-
-            console.log('[DealDetailsTokenService] Contract auto-generated successfully, status: CONTRACT_READY');
-
-            // Log activity: Brand submitted collaboration details
-            try {
-              await supabase
-                .from('analytics_events')
-                .insert({
-                  event_type: 'brand_submitted_details',
-                  deal_id: deal.id,
-                  creator_id: token.creator_id,
-                  metadata: {
-                    source: 'brand_form_submission',
-                    brand_name: formData.brandName || 'Brand'
-                  },
-                  created_at: new Date().toISOString()
-                });
-            } catch (analyticsError) {
-              console.error('[DealDetailsTokenService] Activity logging failed (non-fatal):', analyticsError);
-            }
-
-            // Log activity: Agreement auto-generated
-            try {
-              await supabase
-                .from('analytics_events')
-                .insert({
-                  event_type: 'agreement_auto_generated',
-                  deal_id: deal.id,
-                  creator_id: token.creator_id,
-                  metadata: {
-                    source: 'brand_form_submission',
-                    contract_version: 'v3'
-                  },
-                  created_at: new Date().toISOString()
-                });
-            } catch (analyticsError) {
-              console.error('[DealDetailsTokenService] Activity logging failed (non-fatal):', analyticsError);
-            }
-          } else {
-            console.error('[DealDetailsTokenService] Contract upload failed:', uploadError);
+      // Upload contract DOCX to storage using submission_id instead of deal_id
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('creator-assets')
+        .upload(
+          `contracts/submissions/${submission.id}/${contractResult.fileName}`,
+          contractResult.contractDocx,
+          {
+            contentType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            upsert: true
           }
-        } else {
-          console.error('[DealDetailsTokenService] Creator not found for contract generation');
-        }
-      } catch (contractError: any) {
-        console.error('[DealDetailsTokenService] Contract auto-generation failed (non-fatal):', contractError);
-        // Don't fail the submission if contract generation fails, but still set status
-        if (dealId) {
-          await supabase
-            .from('brand_deals')
-            .update({
-              status: 'AGREEMENT_PREPARED',
-              updated_at: new Date().toISOString()
-            })
-            .eq('id', dealId);
-        }
+        );
+
+      if (!uploadError && uploadData) {
+        // Get public URL
+        const { data: urlData } = await supabase.storage
+          .from('creator-assets')
+          .getPublicUrl(uploadData.path);
+
+        console.log('[DealDetailsTokenService] Contract generated and stored for submission:', submission.id);
+      } else {
+        console.error('[DealDetailsTokenService] Contract upload failed:', uploadError);
       }
-    } else if (dealError) {
-      console.error('[DealDetailsTokenService] Deal creation error:', dealError);
-      // If deal creation failed, try to update existing deal if deal_id exists in submission
-      if (submission.deal_id) {
-        console.log('[DealDetailsTokenService] Attempting to update existing deal with brand address');
-        const { error: updateError } = await supabase
-          .from('brand_deals')
-          .update({
-            brand_address: formData.companyAddress || null,
-            brand_email: formData.companyEmail || null,
-          })
-          .eq('id', submission.deal_id);
-        
-        if (updateError) {
-          console.error('[DealDetailsTokenService] Deal update error:', updateError);
-        } else {
-          console.log('[DealDetailsTokenService] Successfully updated existing deal with brand address');
-          dealId = submission.deal_id;
-        }
-      }
+    } else {
+      console.error('[DealDetailsTokenService] Creator not found for contract generation');
     }
-  } catch (error) {
-    console.error('[DealDetailsTokenService] Deal creation error:', error);
-    // Don't fail the submission if deal creation fails
+  } catch (contractError: any) {
+    console.error('[DealDetailsTokenService] Contract generation failed (non-fatal):', contractError);
   }
 
-  // Send email notification to creator (non-blocking)
-  if (dealId) {
+  // Send email notification to creator (non-blocking) - use submission instead of deal
+  {
     try {
       // Fetch creator's profile
       const { data: creatorProfile, error: profileError } = await supabase
@@ -490,7 +348,7 @@ export async function submitDealDetails(
           creatorEmail,
           creatorName,
           brandData,
-          dealId
+          submission.id // Use submission ID instead of deal ID
         ).then((result) => {
           if (result.success) {
             console.log('[DealDetailsTokenService] Email notification sent successfully:', result.emailId);
@@ -509,112 +367,25 @@ export async function submitDealDetails(
     }
   }
 
-  // Always create contract ready token (no more clarification mode)
+  // Create contract ready token using submission_id (deal will be created when signed)
   let contractReadyToken: string | null = null;
   
-  if (dealId) {
-    try {
-      console.log('[DealDetailsTokenService] Creating contract ready token for deal:', dealId, 'creator:', token.creator_id);
-      // Generate contract ready token for brand to sign
-      const { createContractReadyToken } = await import('./contractReadyTokenService.js');
-      const readyToken = await createContractReadyToken({
-        dealId: dealId,
-        creatorId: token.creator_id,
-        expiresAt: null, // No expiration
-      });
-      contractReadyToken = readyToken.id;
-      console.log('[DealDetailsTokenService] ✅ Contract ready token generated successfully:', contractReadyToken);
-      
-      // Send contract email to brand (non-blocking)
-      try {
-        // Fetch deal to get contract URL and brand email
-        const { data: dealData } = await supabase
-          .from('brand_deals')
-          .select('contract_file_url, brand_email, brand_name')
-          .eq('id', dealId)
-          .maybeSingle();
-
-        if (dealData && dealData.brand_email) {
-          // Fetch creator details
-          const { data: creatorData } = await supabase
-            .from('profiles')
-            .select('first_name, last_name')
-            .eq('id', token.creator_id)
-            .maybeSingle();
-
-          // Get email from auth.users
-          let creatorEmail: string | null = null;
-          if (creatorData) {
-            try {
-              const { data: authUser } = await supabase.auth.admin.getUserById(token.creator_id);
-              creatorEmail = authUser?.user?.email || null;
-            } catch (authError) {
-              console.warn('[DealDetailsTokenService] Could not fetch creator email from auth:', authError);
-            }
-          }
-
-          if (creatorData && creatorEmail) {
-            const { sendBrandContractReadyEmail } = await import('./brandContractReadyEmailService.js');
-            
-            const creatorName = creatorData.first_name && creatorData.last_name
-              ? `${creatorData.first_name} ${creatorData.last_name}`
-              : creatorData.first_name || creatorEmail?.split('@')[0] || 'Creator';
-
-            // Parse deliverables from formData
-            const deliverablesList = Array.isArray(formData.deliverables) 
-              ? formData.deliverables.map((d: any) => 
-                  `${d.quantity || 1}x ${d.contentType || 'Content'} on ${d.platform || 'Platform'}`
-                )
-              : ['As per agreement'];
-
-            const contractData = {
-              brandName: dealData.brand_name || formData.brandName || 'Brand',
-              creatorName: creatorName,
-              dealAmount: formData.dealType === 'paid' && formData.paymentAmount
-                ? parseFloat(formData.paymentAmount) || 0
-                : undefined,
-              dealType: (formData.dealType || 'paid') as 'paid' | 'barter',
-              deliverables: deliverablesList,
-              deadline: formData.deadline,
-              contractUrl: dealData.contract_file_url || undefined,
-              contractReadyToken: contractReadyToken,
-            };
-
-            // Send email asynchronously
-            sendBrandContractReadyEmail(
-              dealData.brand_email,
-              contractData.brandName,
-              contractData
-            ).then((result) => {
-              if (result.success) {
-                console.log('[DealDetailsTokenService] ✅ Contract email sent to brand:', result.emailId);
-              } else {
-                console.warn('[DealDetailsTokenService] Failed to send contract email to brand:', result.error);
-              }
-            }).catch((error) => {
-              console.error('[DealDetailsTokenService] Error sending contract email to brand:', error);
-            });
-          }
-        }
-      } catch (emailError) {
-        // Don't fail the submission if email fails
-        console.error('[DealDetailsTokenService] Error preparing contract email to brand:', emailError);
-      }
-    } catch (tokenError: any) {
-      console.error('[DealDetailsTokenService] ❌ Failed to generate contract ready token');
-      console.error('[DealDetailsTokenService] Error details:', {
-        message: tokenError.message,
-        stack: tokenError.stack,
-        dealId: dealId,
-        creatorId: token.creator_id,
-        error: tokenError
-      });
-      // Don't fail the submission if token generation fails, but log extensively
-      contractReadyToken = null; // Explicitly set to null on error
-    }
-  } else {
-    console.warn('[DealDetailsTokenService] ⚠️ No dealId available, cannot create contract ready token');
-    console.warn('[DealDetailsTokenService] Deal creation may have failed. Check logs above for deal creation errors.');
+  try {
+    console.log('[DealDetailsTokenService] Creating contract ready token for submission:', submission.id, 'creator:', token.creator_id);
+    const { createContractReadyToken } = await import('./contractReadyTokenService.js');
+    
+    // Create token with submission_id (deal will be created when signed)
+    const readyToken = await createContractReadyToken({
+      submissionId: submission.id,
+      creatorId: token.creator_id,
+      expiresAt: null, // No expiration
+    });
+    
+    contractReadyToken = readyToken.id;
+    console.log('[DealDetailsTokenService] ✅ Contract ready token generated successfully:', contractReadyToken);
+  } catch (tokenError: any) {
+    console.error('[DealDetailsTokenService] ❌ Failed to generate contract ready token:', tokenError);
+    contractReadyToken = null;
   }
 
   return {

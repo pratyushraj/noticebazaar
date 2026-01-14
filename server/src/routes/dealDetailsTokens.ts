@@ -80,7 +80,7 @@ router.get('/:token/contract-ready-token', async (req: Request, res: Response) =
     const { data: submission, error: submissionError } = await (supabase as any)
       .from('deal_details_submissions')
       .select('deal_id')
-      .eq('deal_details_token_id', token.trim())
+      .eq('token_id', token.trim())
       .maybeSingle();
 
     if (submissionError || !submission || !submission.deal_id) {
@@ -144,10 +144,59 @@ router.get('/:token', async (req: Request, res: Response) => {
       });
     }
 
+    const isUsed = !!tokenInfo.token.used_at;
+    let contractReadyToken: string | null = null;
+    let dealId: string | null = null;
+    let isSigned = false;
+
+    // If form is used, check if there's a contract ready token and if deal is signed
+    if (isUsed) {
+      // Find the submission for this token
+      const { data: submission } = await (supabase as any)
+        .from('deal_details_submissions')
+        .select('deal_id')
+        .eq('token_id', token.trim())
+        .maybeSingle();
+
+      if (submission?.deal_id) {
+        dealId = submission.deal_id;
+
+        // Check if deal is signed
+        const { data: signatures } = await (supabase as any)
+          .from('contract_signatures')
+          .select('signed')
+          .eq('deal_id', dealId)
+          .eq('signer_role', 'brand')
+          .maybeSingle();
+
+        isSigned = signatures?.signed === true;
+
+        // Find the contract ready token for this deal if not signed
+        if (!isSigned) {
+          const { data: contractReadyTokenData } = await (supabase as any)
+            .from('contract_ready_tokens')
+            .select('id')
+            .eq('deal_id', dealId)
+            .eq('is_active', true)
+            .is('revoked_at', null)
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .maybeSingle();
+
+          if (contractReadyTokenData?.id) {
+            contractReadyToken = contractReadyTokenData.id;
+          }
+        }
+      }
+    }
+
     return res.json({
       success: true,
       creatorName: tokenInfo.creatorName,
-      isUsed: !!tokenInfo.token.used_at, // Indicates if form is locked (read-only)
+      isUsed, // Indicates if form is locked (read-only)
+      contractReadyToken, // Contract ready token if form is used and deal not signed
+      dealId, // Deal ID if form is used
+      isSigned, // Whether the deal is signed
     });
   } catch (error: any) {
     console.error('[DealDetailsTokens] GET Error:', error);

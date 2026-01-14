@@ -191,14 +191,32 @@ export const useBrandDeals = (options: UseBrandDealsOptions) => {
         }
       }
 
+      // Define signed statuses that should be visible
+      const signedStatuses = [
+        'signed',
+        'SIGNED_BY_BRAND',
+        'content_making',
+        'Content Making',
+        'content_delivered',
+        'Content Delivered',
+        'completed',
+        'COMPLETED'
+      ];
+
       let query = supabase
         .from('brand_deals')
         .select('*')
         .eq('creator_id', creatorId)
+        // Filter to only show signed deals
+        .in('status', signedStatuses)
         .order(sortBy, { ascending: sortOrder === 'asc' });
 
+      // If a specific status filter is provided, apply it (but only if it's a signed status)
       if (statusFilter && statusFilter !== 'All') {
-        query = query.eq('status', statusFilter);
+        // Only apply filter if it's a signed status
+        if (signedStatuses.some(s => s.toLowerCase() === statusFilter.toLowerCase())) {
+          query = query.eq('status', statusFilter);
+        }
       }
       
       if (platformFilter && platformFilter !== 'All') { // NEW FILTER
