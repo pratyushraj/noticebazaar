@@ -261,25 +261,33 @@ publicRouter.post('/send', async (req: express.Request, res: Response) => {
       });
     }
 
-    // Update deal with OTP hash and expiration
-    const updateData: any = {
-      otp_hash: otpHash,
-      otp_expires_at: expiresAt.toISOString(),
-      otp_last_sent_at: new Date().toISOString(),
-      otp_attempts: 0, // Reset attempts on new OTP
-      updated_at: new Date().toISOString(),
-    };
+    // Update deal with OTP hash and expiration (only if deal exists in database)
+    if (deal?.id) {
+      const updateData: any = {
+        otp_hash: otpHash,
+        otp_expires_at: expiresAt.toISOString(),
+        otp_last_sent_at: new Date().toISOString(),
+        otp_attempts: 0, // Reset attempts on new OTP
+        updated_at: new Date().toISOString(),
+      };
 
-    const { error: updateError } = await supabase
-      .from('brand_deals')
-      .update(updateData)
-      .eq('id', tokenData.deal_id);
-
-    if (updateError) {
-      console.error('[OTP] Failed to update deal:', updateError);
-      return res.status(500).json({
-        success: false,
-        error: `Failed to save OTP: ${updateError.message}`,
+      const { error: updateError } = await supabase
+        .from('brand_deals')
+        .update(updateData)
+        .eq('id', deal.id);
+      
+      if (updateError) {
+        console.error('[OTP] Failed to update deal:', updateError);
+        // Don't fail the OTP send if update fails - OTP was already sent
+        console.warn('[OTP] OTP sent but failed to save to deal table (non-fatal)');
+      }
+    } else {
+      // Deal doesn't exist yet (from submission) - OTP sent but can't store in deal table
+      console.log('[OTP] Deal not created yet (id is null), OTP sent but not stored in deal table');
+      console.log('[OTP] Deal info available:', {
+        brandEmail: deal?.brand_email,
+        brandName: deal?.brand_name,
+        hasDealId: !!deal?.id
       });
     }
 
