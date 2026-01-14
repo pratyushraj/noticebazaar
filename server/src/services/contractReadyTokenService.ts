@@ -386,6 +386,7 @@ export async function getContractReadyTokenInfo(tokenId: string): Promise<{
     delete deal._creator_email;
   } else {
     // Fetch creator profile with address
+    console.log('[ContractReadyTokenService] Fetching creator profile for creatorId:', creatorId);
     const { data: creatorData, error: creatorError } = await supabase
       .from('profiles')
       .select('first_name, last_name, location, address, business_name')
@@ -393,17 +394,38 @@ export async function getContractReadyTokenInfo(tokenId: string): Promise<{
       .maybeSingle();
 
     if (creatorError) {
-      console.error('[ContractReadyTokenService] Error fetching creator profile:', creatorError);
+      console.error('[ContractReadyTokenService] Error fetching creator profile:', {
+        error: creatorError,
+        creatorId,
+        errorMessage: creatorError.message,
+        errorCode: creatorError.code
+      });
       // Don't return null - continue with default values
+      creator = null;
+    } else if (!creatorData) {
+      console.warn('[ContractReadyTokenService] Creator profile not found for creatorId:', creatorId);
       creator = null;
     } else {
       creator = creatorData;
+      console.log('[ContractReadyTokenService] Successfully fetched creator profile:', {
+        creatorId,
+        hasFirstName: !!creatorData.first_name,
+        hasLastName: !!creatorData.last_name,
+        firstName: creatorData.first_name,
+        lastName: creatorData.last_name,
+        hasLocation: !!(creatorData as any).location,
+        hasAddress: !!(creatorData as any).address,
+        location: (creatorData as any).location,
+        address: (creatorData as any).address,
+        businessName: (creatorData as any).business_name
+      });
     }
 
     // Get email from auth.users
     try {
       const { data: authUser } = await supabase.auth.admin.getUserById(creatorId);
       creatorEmail = authUser?.user?.email || null;
+      console.log('[ContractReadyTokenService] Fetched creator email from auth:', creatorEmail);
     } catch (authError) {
       console.warn('[ContractReadyTokenService] Could not fetch creator email from auth:', authError);
     }
