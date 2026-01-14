@@ -452,8 +452,105 @@ publicRouter.post('/verify', async (req: express.Request, res: Response) => {
         
         deal = dealData;
         dealError = dealErr;
+      } else if (!submissionError && submission) {
+        // Deal not created yet - check OTP hash in submission's form_data
+        const formData = submission.form_data as any || {};
+        const storedHash = formData._otp_hash;
+        
+        if (!storedHash) {
+          return res.status(400).json({
+            success: false,
+            error: 'No OTP found. Please request a new OTP',
+          });
+        }
+        
+        // Check if OTP is already verified
+        if (formData._otp_verified === true) {
+          return res.status(400).json({
+            success: false,
+            error: 'OTP has already been verified',
+          });
+        }
+        
+        // Check expiration
+        const expiresAt = formData._otp_expires_at;
+        if (expiresAt) {
+          const expirationTime = new Date(expiresAt);
+          const now = new Date();
+          
+          if (now > expirationTime) {
+            return res.status(400).json({
+              success: false,
+              error: 'OTP has expired. Please request a new OTP',
+            });
+          }
+        }
+        
+        // Check max attempts
+        const attempts = formData._otp_attempts || 0;
+        if (attempts >= 5) {
+          return res.status(429).json({
+            success: false,
+            error: 'Maximum OTP verification attempts exceeded. Please request a new OTP',
+          });
+        }
+        
+        // Verify OTP
+        const inputHash = hashOTP(otp);
+        const isValid = crypto.timingSafeEqual(
+          Buffer.from(storedHash),
+          Buffer.from(inputHash)
+        );
+        
+        if (!isValid) {
+          // Increment attempts in submission
+          const updatedFormData = {
+            ...formData,
+            _otp_attempts: attempts + 1,
+          };
+          
+          await supabase
+            .from('deal_details_submissions')
+            .update({ form_data: updatedFormData })
+            .eq('id', (tokenData as any).submission_id);
+          
+          return res.status(400).json({
+            success: false,
+            error: `Invalid OTP. ${5 - (attempts + 1)} attempts remaining`,
+            attemptsRemaining: 5 - (attempts + 1),
+          });
+        }
+        
+        // OTP is valid - mark as verified in submission
+        const verifiedAt = new Date().toISOString();
+        const updatedFormData = {
+          ...formData,
+          _otp_verified: true,
+          _otp_verified_at: verifiedAt,
+        };
+        
+        const { error: updateError } = await supabase
+          .from('deal_details_submissions')
+          .update({ form_data: updatedFormData })
+          .eq('id', (tokenData as any).submission_id);
+        
+        if (updateError) {
+          console.error('[OTP] Failed to update submission verification status:', updateError);
+          return res.status(500).json({
+            success: false,
+            error: `Failed to verify OTP: ${updateError.message}`,
+          });
+        }
+        
+        console.log('[OTP] OTP verified successfully for submission (deal not created yet)');
+        
+        return res.json({
+          success: true,
+          message: 'OTP verified successfully',
+          verifiedAt: verifiedAt,
+        });
       } else {
-        // Deal not created yet - OTP verification requires deal to exist
+        // Deal not created yet and no submission found
         return res.status(400).json({
           success: false,
           error: 'OTP verification requires deal to be created. Please contact support or try again later.',
