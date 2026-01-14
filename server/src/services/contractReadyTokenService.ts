@@ -411,9 +411,9 @@ export async function getContractReadyTokenInfo(tokenId: string): Promise<{
 
   // Construct creator name with better fallbacks
   // Don't use email username - only use actual profile data
+  const creatorAny = creator as any;
   let creatorName: string | null = null;
   if (creator) {
-    const creatorAny = creator as any;
     // Try business_name first (for business accounts)
     if (creatorAny.business_name && creatorAny.business_name.trim()) {
       creatorName = creatorAny.business_name.trim();
@@ -436,7 +436,6 @@ export async function getContractReadyTokenInfo(tokenId: string): Promise<{
     creatorName = null;
   }
   
-  const creatorAny = creator as any;
   console.log('[ContractReadyTokenService] Constructed creator name:', {
     finalName: creatorName,
     hadFirstName: !!creator?.first_name,
@@ -448,7 +447,6 @@ export async function getContractReadyTokenInfo(tokenId: string): Promise<{
   });
 
   // Get creator address (prefer location field, fallback to address field)
-  const creatorAny = creator as any;
   let creatorAddress = creator ? (creatorAny.location || creatorAny.address || null) : null;
   
   // Clean up address - remove empty strings and trim whitespace
