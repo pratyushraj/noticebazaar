@@ -112,12 +112,59 @@ publicRouter.post('/send', async (req: express.Request, res: Response) => {
       }
     }
 
-    // Verify deal exists
-    const { data: deal, error: dealError } = await supabase
-      .from('brand_deals')
-      .select('*')
-      .eq('id', tokenData.deal_id)
-      .maybeSingle();
+    // Verify deal exists - handle case where deal_id might be null for contract_ready_tokens
+    let deal: any = null;
+    let dealError: any = null;
+    
+    if (tokenData.deal_id) {
+      const { data: dealData, error: dealErr } = await supabase
+        .from('brand_deals')
+        .select('*')
+        .eq('id', tokenData.deal_id)
+        .maybeSingle();
+      
+      deal = dealData;
+      dealError = dealErr;
+    } else if ((tokenData as any).submission_id) {
+      // For contract_ready_tokens with submission_id, fetch deal from submission
+      const { data: submission, error: submissionError } = await supabase
+        .from('deal_details_submissions')
+        .select('deal_id, form_data')
+        .eq('id', (tokenData as any).submission_id)
+        .maybeSingle();
+      
+      if (!submissionError && submission?.deal_id) {
+        const { data: dealData, error: dealErr } = await supabase
+          .from('brand_deals')
+          .select('*')
+          .eq('id', submission.deal_id)
+          .maybeSingle();
+        
+        deal = dealData;
+        dealError = dealErr;
+      } else if (!submissionError && submission) {
+        // Deal not created yet, use form_data for brand info
+        const formData = submission.form_data as any;
+        deal = {
+          id: null,
+          brand_email: formData?.brandEmail || formData?.brand_email,
+          brand_name: formData?.brandName || formData?.brand_name,
+          otp_last_sent_at: null,
+          otp_hash: null,
+          otp_expires_at: null,
+          otp_attempts: 0,
+          otp_verified: false
+        };
+      } else {
+        dealError = submissionError;
+      }
+    } else {
+      // No deal_id or submission_id - this shouldn't happen but handle gracefully
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid token: missing deal or submission reference',
+      });
+    }
 
     if (dealError) {
       console.error('[OTP] Error fetching deal:', dealError);
