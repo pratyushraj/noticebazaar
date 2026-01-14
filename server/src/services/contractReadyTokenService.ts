@@ -425,9 +425,9 @@ export async function getContractReadyTokenInfo(tokenId: string): Promise<{
     }
   }
   
-  // If no name found, use default
+  // If no name found, return null (frontend will handle display)
   if (!creatorName || creatorName === '') {
-    creatorName = 'Creator';
+    creatorName = null;
   }
   
   console.log('[ContractReadyTokenService] Constructed creator name:', {

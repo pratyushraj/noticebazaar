@@ -164,9 +164,9 @@ router.get('/:token/creator-info', async (req: Request, res: Response) => {
     // Return creator info
     return res.json({
       success: true,
-      creatorName: tokenInfo.creatorName || 'Creator',
-      creatorEmail: tokenInfo.creatorEmail || null,
-      creatorAddress: tokenInfo.creatorAddress || null,
+      creatorName: tokenInfo.creatorName ?? null,
+      creatorEmail: tokenInfo.creatorEmail ?? null,
+      creatorAddress: tokenInfo.creatorAddress ?? null,
     });
   } catch (error: any) {
     console.error('[ContractReadyTokens] Creator Info Error:', error);
