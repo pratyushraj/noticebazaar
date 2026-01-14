@@ -460,12 +460,20 @@ export async function getContractReadyTokenInfo(tokenId: string): Promise<{
   
   console.log('[ContractReadyTokenService] Constructed creator name:', {
     finalName: creatorName,
+    hadCreator: !!creator,
+    creatorType: typeof creator,
+    creatorKeys: creator ? Object.keys(creator) : [],
     hadFirstName: !!creator?.first_name,
     hadLastName: !!creator?.last_name,
     hadBusinessName: !!creatorAny?.business_name,
     firstName: creator?.first_name,
     lastName: creator?.last_name,
-    businessName: creatorAny?.business_name
+    firstNameType: typeof creator?.first_name,
+    lastNameType: typeof creator?.last_name,
+    firstNameValue: creator?.first_name,
+    lastNameValue: creator?.last_name,
+    businessName: creatorAny?.business_name,
+    fullCreatorObject: JSON.stringify(creator)
   });
 
   // Get creator address (prefer location field, fallback to address field)
