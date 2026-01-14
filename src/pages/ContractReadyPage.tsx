@@ -1175,7 +1175,7 @@ const ContractReadyPage = () => {
                 We've sent a 6-digit code to {brandEmail || brandEmailInput}
               </p>
               
-              <div className="flex gap-2 mb-4 justify-center flex-wrap">
+              <div className="flex gap-2 mb-4 justify-center">
                 {otp.map((digit, index) => (
                   <input
                     key={index}
@@ -1186,7 +1186,7 @@ const ContractReadyPage = () => {
                     value={digit}
                     onChange={(e) => handleOTPChange(index, e.target.value)}
                     onKeyDown={(e) => handleOTPKeyDown(index, e)}
-                    className="w-12 h-12 text-center text-xl font-semibold bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500 flex-shrink-0"
+                    className="w-11 h-12 text-center text-xl font-semibold bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500 flex-shrink-0"
                   />
                 ))}
               </div>
