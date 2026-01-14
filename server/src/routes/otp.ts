@@ -389,14 +389,60 @@ publicRouter.post('/verify', async (req: express.Request, res: Response) => {
       });
     }
 
-    // Fetch deal with OTP info
-    const { data: deal, error: dealError } = await supabase
-      .from('brand_deals')
-      .select('*')
-      .eq('id', tokenData.deal_id)
-      .maybeSingle();
+    // Fetch deal with OTP info - handle case where deal_id might be null for contract_ready_tokens
+    let deal: any = null;
+    let dealError: any = null;
+    
+    if (tokenData.deal_id) {
+      const { data: dealData, error: dealErr } = await supabase
+        .from('brand_deals')
+        .select('*')
+        .eq('id', tokenData.deal_id)
+        .maybeSingle();
+      
+      deal = dealData;
+      dealError = dealErr;
+    } else if ((tokenData as any).submission_id) {
+      // For contract_ready_tokens with submission_id, fetch deal from submission
+      const { data: submission, error: submissionError } = await supabase
+        .from('deal_details_submissions')
+        .select('deal_id, form_data')
+        .eq('id', (tokenData as any).submission_id)
+        .maybeSingle();
+      
+      if (!submissionError && submission?.deal_id) {
+        const { data: dealData, error: dealErr } = await supabase
+          .from('brand_deals')
+          .select('*')
+          .eq('id', submission.deal_id)
+          .maybeSingle();
+        
+        deal = dealData;
+        dealError = dealErr;
+      } else {
+        // Deal not created yet - OTP verification requires deal to exist
+        return res.status(400).json({
+          success: false,
+          error: 'OTP verification requires deal to be created. Please contact support or try again later.',
+        });
+      }
+    } else {
+      // No deal_id or submission_id
+      return res.status(404).json({
+        success: false,
+        error: 'Deal not found',
+      });
+    }
 
-    if (dealError || !deal) {
+    if (dealError) {
+      console.error('[OTP] Error fetching deal:', dealError);
+      return res.status(500).json({
+        success: false,
+        error: `Database error: ${dealError.message}`,
+      });
+    }
+
+    if (!deal || !deal.id) {
       return res.status(404).json({
         success: false,
         error: 'Deal not found',
