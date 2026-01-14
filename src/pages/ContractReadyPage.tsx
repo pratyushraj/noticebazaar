@@ -20,6 +20,8 @@ const ContractReadyPage = () => {
   const [loadError, setLoadError] = useState<string | null>(null);
   const [dealInfo, setDealInfo] = useState<any>(null);
   const [creatorName, setCreatorName] = useState<string>('');
+  const [creatorEmail, setCreatorEmail] = useState<string | null>(null);
+  const [creatorAddress, setCreatorAddress] = useState<string | null>(null);
   const [signature, setSignature] = useState<any>(null);
   
   // OTP State
@@ -53,22 +55,140 @@ const ContractReadyPage = () => {
       }
 
       try {
-        const apiBaseUrl =
+        let apiBaseUrl =
           import.meta.env.VITE_API_BASE_URL ||
           (typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com')
             ? 'https://api.creatorarmour.com'
-            : 'http://localhost:3001');
+            : typeof window !== 'undefined' && window.location.hostname === 'localhost'
+            ? 'http://localhost:3001'
+            : 'https://noticebazaar-api.onrender.com');
 
         // Try contract-ready-tokens first, fallback to brand-reply-tokens for migration
-        let response = await fetch(`${apiBaseUrl}/api/contract-ready-tokens/${token}`);
-        let data = await response.json();
+        let response: Response;
+        let data: any;
         let currentTokenSource: 'contract-ready-tokens' | 'brand-reply-tokens' = 'contract-ready-tokens';
 
-        // If contract-ready-tokens doesn't work, try legacy brand-reply-tokens
+        try {
+          response = await fetch(`${apiBaseUrl}/api/contract-ready-tokens/${token}`);
+          if (!response.ok && response.status !== 404) {
+            // If response is not ok and not 404, try production API
+            throw new Error(`API returned ${response.status}`);
+          }
+          data = await response.json();
+        } catch (fetchError: any) {
+          // If localhost fails, try production API as fallback
+          if (
+            (fetchError.message?.includes('Failed to fetch') || 
+             fetchError.message?.includes('ERR_CONNECTION_REFUSED') ||
+             fetchError.name === 'TypeError' ||
+             fetchError.message?.includes('API returned')) &&
+            apiBaseUrl.includes('localhost')
+          ) {
+            console.warn('[ContractReadyPage] Localhost API unavailable, trying production API...');
+            apiBaseUrl = 'https://noticebazaar-api.onrender.com';
+            try {
+              response = await fetch(`${apiBaseUrl}/api/contract-ready-tokens/${token}`);
+              if (!response.ok && response.status !== 404) {
+                throw new Error(`Production API returned ${response.status}`);
+              }
+              data = await response.json();
+            } catch (prodError: any) {
+              console.error('[ContractReadyPage] Production API also failed:', prodError);
+              throw new Error('Unable to connect to the server. Please check your internet connection and try again.');
+            }
+          } else {
+            throw fetchError;
+          }
+        }
+
+        // If we got a redirect to a newer token, verify it exists before redirecting
+        if (response.ok && data.success && data.redirectToToken) {
+          console.log('[ContractReadyPage] Old token invalid, verifying newer token before redirect:', data.redirectToToken);
+          
+          // Verify the newer token exists and is valid
+          const verifyResponse = await fetch(`${apiBaseUrl}/api/contract-ready-tokens/${data.redirectToToken}`);
+          const verifyData = await verifyResponse.json();
+          
+          if (verifyResponse.ok && verifyData.success && verifyData.deal) {
+            console.log('[ContractReadyPage] Newer token is valid, redirecting...');
+            window.location.href = `/#/contract-ready/${data.redirectToToken}`;
+            return;
+          } else {
+            console.warn('[ContractReadyPage] Newer token is also invalid, showing error');
+            throw new Error('This link is no longer valid. Please contact the creator for a new link.');
+          }
+        }
+
+        // Check if API suggests redirecting to deal details page
+        if (response.ok && data.redirectTo) {
+          console.log('[ContractReadyPage] Redirecting to deal details page:', data.redirectTo);
+          window.location.href = data.redirectTo;
+          return;
+        }
+
+        // If contract-ready-tokens doesn't work, try other token types
         if (!response.ok && response.status === 404) {
-          console.log('[ContractReadyPage] Token not found in contract-ready-tokens, trying brand-reply-tokens for migration');
+          console.log('[ContractReadyPage] Token not found in contract-ready-tokens, trying alternatives...');
+          
+          // First, try to see if this is a deal details token and get the contract ready token from it
+          try {
+            let dealDetailsResponse: Response;
+            try {
+              dealDetailsResponse = await fetch(`${apiBaseUrl}/api/deal-details-tokens/${token}/contract-ready-token`);
+            } catch (fetchErr: any) {
+              if (fetchErr.message?.includes('Failed to fetch') && apiBaseUrl.includes('localhost')) {
+                apiBaseUrl = 'https://noticebazaar-api.onrender.com';
+                dealDetailsResponse = await fetch(`${apiBaseUrl}/api/deal-details-tokens/${token}/contract-ready-token`);
+              } else {
+                throw fetchErr;
+              }
+            }
+            const dealDetailsData = await dealDetailsResponse.json();
+            
+            if (dealDetailsResponse.ok && dealDetailsData.success && dealDetailsData.contractReadyToken) {
+              console.log('[ContractReadyPage] Found contract ready token via deal details token, redirecting...');
+              // Redirect to the correct contract ready token
+              window.location.href = `/#/contract-ready/${dealDetailsData.contractReadyToken}`;
+              return;
+            }
+            
+            // If it's a deal details token but no contract ready token exists, redirect to deal details page
+            let dealDetailsInfoResponse: Response;
+            try {
+              dealDetailsInfoResponse = await fetch(`${apiBaseUrl}/api/deal-details-tokens/${token}`);
+            } catch (fetchErr: any) {
+              if (fetchErr.message?.includes('Failed to fetch') && apiBaseUrl.includes('localhost')) {
+                apiBaseUrl = 'https://noticebazaar-api.onrender.com';
+                dealDetailsInfoResponse = await fetch(`${apiBaseUrl}/api/deal-details-tokens/${token}`);
+              } else {
+                throw fetchErr;
+              }
+            }
+            const dealDetailsInfo = await dealDetailsInfoResponse.json();
+            
+            if (dealDetailsInfoResponse.ok && dealDetailsInfo.success) {
+              console.log('[ContractReadyPage] This is a deal details token, but contract not ready yet. Redirecting to deal details page...');
+              // Redirect to deal details page - it will show "Contract Being Prepared" message
+              window.location.href = `/#/deal/${token}`;
+              return;
+            }
+          } catch (dealDetailsErr) {
+            console.log('[ContractReadyPage] Not a deal details token, trying brand-reply-tokens...');
+          }
+          
+          // Try legacy brand-reply-tokens for migration
+          console.log('[ContractReadyPage] Trying brand-reply-tokens for migration');
           currentTokenSource = 'brand-reply-tokens';
-          response = await fetch(`${apiBaseUrl}/api/brand-response/${token}`);
+          try {
+            response = await fetch(`${apiBaseUrl}/api/brand-response/${token}`);
+          } catch (fetchErr: any) {
+            if (fetchErr.message?.includes('Failed to fetch') && apiBaseUrl.includes('localhost')) {
+              apiBaseUrl = 'https://noticebazaar-api.onrender.com';
+              response = await fetch(`${apiBaseUrl}/api/brand-response/${token}`);
+            } else {
+              throw fetchErr;
+            }
+          }
           data = await response.json();
           
           // If we got data from brand-response, we need to transform it
@@ -78,6 +198,8 @@ const ContractReadyPage = () => {
               success: true,
               deal: data.deal,
               creatorName: data.creatorName || 'Creator',
+              creatorEmail: data.creatorEmail || null,
+              creatorAddress: data.creatorAddress || null,
               signature: data.signature || null
             };
           }
@@ -90,11 +212,78 @@ const ContractReadyPage = () => {
           throw new Error(data.error || 'Failed to load contract information');
         }
 
+        // Log API response for debugging
+        console.log('[ContractReadyPage] API Response - Full Data:', JSON.stringify(data, null, 2));
+        console.log('[ContractReadyPage] API Response - Creator Info:', {
+          creatorName: data.creatorName,
+          creatorEmail: data.creatorEmail,
+          creatorAddress: data.creatorAddress,
+          creatorNameType: typeof data.creatorName,
+          creatorEmailType: typeof data.creatorEmail,
+          creatorAddressType: typeof data.creatorAddress,
+          dealCreatorId: data.deal?.creator_id
+        });
+
         setDealInfo(data.deal);
-        setCreatorName(data.creatorName);
+        let finalCreatorName = data.creatorName || 'Creator';
+        let finalCreatorEmail = data.creatorEmail ?? null;
+        let finalCreatorAddress = data.creatorAddress ?? null;
+        
+        // Check if creator info is missing
+        const isCreatorInfoMissing = (
+          (!finalCreatorEmail && !finalCreatorAddress && finalCreatorName === 'Creator') ||
+          (data.creatorEmail === undefined && data.creatorAddress === undefined)
+        );
+        
+        console.log('[ContractReadyPage] Checking if creator info is missing:', {
+          isCreatorInfoMissing,
+          finalCreatorName,
+          finalCreatorEmail,
+          finalCreatorAddress,
+          originalCreatorEmail: data.creatorEmail,
+          originalCreatorAddress: data.creatorAddress,
+          hasCreatorId: !!data.deal?.creator_id,
+          creatorId: data.deal?.creator_id
+        });
+        
+        // If creator info is missing but we have creator_id, try to fetch it
+        if (isCreatorInfoMissing && data.deal?.creator_id) {
+          console.log('[ContractReadyPage] Creator info missing, attempting to fetch from fallback endpoint...');
+          try {
+            const creatorInfoResponse = await fetch(`${apiBaseUrl}/api/contract-ready-tokens/${token}/creator-info`);
+            console.log('[ContractReadyPage] Fallback endpoint response status:', creatorInfoResponse.status);
+            if (creatorInfoResponse.ok) {
+              const creatorInfoData = await creatorInfoResponse.json();
+              console.log('[ContractReadyPage] Fallback endpoint response data:', creatorInfoData);
+              if (creatorInfoData.success) {
+                console.log('[ContractReadyPage] Fetched creator info from fallback endpoint:', creatorInfoData);
+                finalCreatorName = creatorInfoData.creatorName || finalCreatorName;
+                finalCreatorEmail = creatorInfoData.creatorEmail ?? finalCreatorEmail;
+                finalCreatorAddress = creatorInfoData.creatorAddress ?? finalCreatorAddress;
+              }
+            } else {
+              const errorData = await creatorInfoResponse.json().catch(() => ({}));
+              console.warn('[ContractReadyPage] Fallback endpoint returned error:', creatorInfoResponse.status, errorData);
+            }
+          } catch (fallbackError) {
+            console.warn('[ContractReadyPage] Failed to fetch creator info from fallback endpoint:', fallbackError);
+          }
+        }
+        
+        setCreatorName(finalCreatorName);
+        setCreatorEmail(finalCreatorEmail);
+        setCreatorAddress(finalCreatorAddress);
         setBrandEmail(data.deal?.brand_email || '');
         setBrandEmailInput(data.deal?.brand_email || '');
         setSignature(data.signature || null);
+        
+        // Log what we're setting for debugging
+        console.log('[ContractReadyPage] Setting creator data:', {
+          creatorName: finalCreatorName,
+          creatorEmail: finalCreatorEmail,
+          creatorAddress: finalCreatorAddress,
+          willShowCard: !!(finalCreatorName !== 'Creator' || finalCreatorEmail || finalCreatorAddress)
+        });
         
         // If signature exists and is signed, mark OTP as verified
         if (data.signature?.signed) {
@@ -110,7 +299,15 @@ const ContractReadyPage = () => {
         }
       } catch (error: any) {
         console.error('[ContractReadyPage] Load error:', error);
-        setLoadError(error.message || 'Failed to load contract information');
+        
+        // Check if it's a network/connection error
+        if (error.message?.includes('Failed to fetch') || 
+            error.message?.includes('ERR_CONNECTION_REFUSED') ||
+            error.name === 'TypeError') {
+          setLoadError('Unable to connect to the server. Please check your internet connection and try again.');
+        } else {
+          setLoadError(error.message || 'Failed to load contract information');
+        }
       } finally {
         setIsLoading(false);
       }
@@ -118,6 +315,16 @@ const ContractReadyPage = () => {
 
     loadTokenInfo();
   }, [token]);
+
+  // Debug: Log creator state changes
+  useEffect(() => {
+    console.log('[ContractReadyPage] Creator state updated:', {
+      creatorName,
+      creatorEmail,
+      creatorAddress,
+      dealInfo: dealInfo ? { creator_id: dealInfo.creator_id } : null
+    });
+  }, [creatorName, creatorEmail, creatorAddress, dealInfo]);
 
   // OTP countdown timer
   useEffect(() => {
@@ -739,7 +946,20 @@ const ContractReadyPage = () => {
           className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6 shadow-lg"
         >
           <h3 className="text-lg font-semibold mb-4">Creator Details (Content Creator)</h3>
-          <p className="text-white/90 text-sm">{creatorName}</p>
+            <div className="space-y-2 text-sm">
+              {creatorName && creatorName !== 'Creator' && (
+                <p className="text-white/90">{creatorName}</p>
+              )}
+              {creatorAddress && (
+                <p className="text-white/70">{creatorAddress}</p>
+              )}
+              {creatorEmail && (
+                <p className="text-white/70">{creatorEmail}</p>
+              )}
+              {(!creatorName || creatorName === 'Creator') && !creatorAddress && !creatorEmail && (
+                <p className="text-white/60 italic">Creator information not available</p>
+              )}
+            </div>
         </motion.div>
 
         {/* Safety Note */}

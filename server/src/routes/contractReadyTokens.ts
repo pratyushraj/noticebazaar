@@ -24,19 +24,94 @@ router.get('/:token', async (req: Request, res: Response) => {
     const tokenInfo = await getContractReadyTokenInfo(token.trim());
 
     if (!tokenInfo) {
+      // Token not found or invalid - check if token exists in database first
+      const { data: invalidToken, error: tokenLookupError } = await (supabase as any)
+        .from('contract_ready_tokens')
+        .select('id, deal_id, created_by, created_at, expires_at, is_active, revoked_at')
+        .eq('id', token.trim())
+        .maybeSingle();
+
+      // If token doesn't exist at all, check if it's a deal details token
+      if (tokenLookupError || !invalidToken) {
+        console.log('[ContractReadyTokens] Token does not exist in contract_ready_tokens, checking if it's a deal details token:', token.trim());
+        
+        // Check if this is a deal details token
+        const { getDealDetailsTokenInfo } = await import('../services/dealDetailsTokenService.js');
+        const dealDetailsTokenInfo = await getDealDetailsTokenInfo(token.trim());
+        
+        if (dealDetailsTokenInfo) {
+          // It's a deal details token - redirect to deal details page
+          return res.json({
+            success: false,
+            redirectTo: `/deal/${token.trim()}`,
+            message: 'This is a deal details link. Please use the deal details page to submit information.'
+          });
+        }
+        
+        return res.status(404).json({
+          success: false,
+          error: 'This link is no longer valid. Please contact the creator for a new link.'
+        });
+      }
+
+      console.log('[ContractReadyTokens] Token exists but getContractReadyTokenInfo returned null:', {
+        tokenId: invalidToken.id,
+        dealId: invalidToken.deal_id,
+        createdBy: invalidToken.created_by,
+        isActive: invalidToken.is_active,
+        revokedAt: invalidToken.revoked_at,
+        expiresAt: invalidToken.expires_at
+      });
+      
+      if (invalidToken?.deal_id) {
+        // Find a newer active token for the same deal
+        // Make sure it's not expired
+        const now = new Date();
+        const { data: newerTokens, error: newerTokenError } = await (supabase as any)
+          .from('contract_ready_tokens')
+          .select('id, is_active, revoked_at, expires_at, created_at')
+          .eq('deal_id', invalidToken.deal_id)
+          .eq('is_active', true)
+          .is('revoked_at', null)
+          .order('created_at', { ascending: false })
+          .limit(5); // Get multiple to find a valid one
+        
+        if (!newerTokenError && newerTokens && newerTokens.length > 0) {
+          // Find the first valid token (not expired)
+          const validToken = newerTokens.find((t: any) => {
+            const isNotExpired = !t.expires_at || new Date(t.expires_at) > now;
+            return t.is_active && !t.revoked_at && isNotExpired;
+          });
+          
+          if (validToken?.id) {
+            console.log('[ContractReadyTokens] Found valid newer token, redirecting:', validToken.id);
+            return res.json({
+              success: true,
+              redirectToToken: validToken.id,
+              message: 'This link has been replaced with a newer one. Please use the updated link.'
+            });
+          } else {
+            console.warn('[ContractReadyTokens] No valid newer tokens found for deal:', invalidToken.deal_id);
+          }
+        }
+      }
+      
       return res.status(404).json({
         success: false,
-        error: 'This link is no longer valid. Please contact the creator.'
+        error: 'This link is no longer valid. Please contact the creator for a new link.'
       });
     }
 
     // Get signature status if exists
     const signature = await getSignature(tokenInfo.deal.id, 'brand');
 
-    return res.json({
+    // Ensure creator fields are always returned (even if null/undefined)
+    const response = {
       success: true,
       deal: tokenInfo.deal,
-      creatorName: tokenInfo.creatorName,
+      creatorName: tokenInfo.creatorName || 'Creator',
+      creatorEmail: tokenInfo.creatorEmail ?? null,
+      creatorAddress: tokenInfo.creatorAddress ?? null,
       signature: signature ? {
         id: signature.id,
         signed: signature.signed,
@@ -44,9 +119,57 @@ router.get('/:token', async (req: Request, res: Response) => {
         signerName: signature.signer_name,
         signerEmail: signature.signer_email,
       } : null,
+    };
+
+    console.log('[ContractReadyTokens] Returning response with creator info:', {
+      creatorName: response.creatorName,
+      creatorEmail: response.creatorEmail,
+      creatorAddress: response.creatorAddress,
+      dealCreatorId: tokenInfo.deal.creator_id
     });
+
+    return res.json(response);
   } catch (error: any) {
     console.error('[ContractReadyTokens] GET Error:', error);
+    return res.status(500).json({
+      success: false,
+      error: 'An error occurred. Please try again later.'
+    });
+  }
+});
+
+// GET /api/contract-ready-tokens/:token/creator-info
+// Get creator info for a contract-ready token (fallback endpoint)
+router.get('/:token/creator-info', async (req: Request, res: Response) => {
+  try {
+    const { token } = req.params;
+
+    if (!token || typeof token !== 'string' || token.trim() === '') {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid token'
+      });
+    }
+
+    // Validate token exists
+    const tokenInfo = await getContractReadyTokenInfo(token.trim());
+
+    if (!tokenInfo || !tokenInfo.deal?.creator_id) {
+      return res.status(404).json({
+        success: false,
+        error: 'Token not found or invalid'
+      });
+    }
+
+    // Return creator info
+    return res.json({
+      success: true,
+      creatorName: tokenInfo.creatorName || 'Creator',
+      creatorEmail: tokenInfo.creatorEmail || null,
+      creatorAddress: tokenInfo.creatorAddress || null,
+    });
+  } catch (error: any) {
+    console.error('[ContractReadyTokens] Creator Info Error:', error);
     return res.status(500).json({
       success: false,
       error: 'An error occurred. Please try again later.'
@@ -173,24 +296,49 @@ router.post('/:token/sign', async (req: Request, res: Response) => {
           });
         }
         
-        // Get creator name - use a simple fallback since we don't know the exact profile structure
+        // Fetch creator profile with address
         let creatorName = 'Creator';
+        let creatorEmail: string | null = null;
+        let creatorAddress: string | null = null;
+        
         try {
           const { data: creatorProfile } = await supabase
             .from('profiles')
-            .select('*')
+            .select('first_name, last_name, location, address')
             .eq('id', deal.creator_id)
             .maybeSingle();
           
           if (creatorProfile) {
-            // Try common name fields
-            creatorName = (creatorProfile as any).display_name || 
-                         (creatorProfile as any).full_name ||
-                         (creatorProfile as any).name ||
-                         'Creator';
+            // Construct creator name
+            if (creatorProfile.first_name && creatorProfile.last_name) {
+              creatorName = `${creatorProfile.first_name} ${creatorProfile.last_name}`.trim();
+            } else if (creatorProfile.first_name) {
+              creatorName = creatorProfile.first_name;
+            } else if (creatorProfile.last_name) {
+              creatorName = creatorProfile.last_name;
+            }
+            
+            // Get address (prefer location field, fallback to address field)
+            creatorAddress = creatorProfile.location || creatorProfile.address || null;
+          }
+          
+          // Get email from auth.users
+          try {
+            const { data: authUser } = await supabase.auth.admin.getUserById(deal.creator_id);
+            creatorEmail = authUser?.user?.email || null;
+            
+            // Fallback to email username if name is still "Creator"
+            if (creatorName === 'Creator' && creatorEmail) {
+              const emailUsername = creatorEmail.split('@')[0];
+              if (emailUsername && emailUsername.length >= 2) {
+                creatorName = emailUsername.charAt(0).toUpperCase() + emailUsername.slice(1);
+              }
+            }
+          } catch (authError) {
+            console.warn('[ContractReadyTokens] Could not fetch creator email from auth:', authError);
           }
         } catch (profileError) {
-          console.warn('[ContractReadyTokens] Could not fetch creator name:', profileError);
+          console.warn('[ContractReadyTokens] Could not fetch creator profile:', profileError);
         }
         
         // Create tokenInfo-like object for brand-reply-tokens
@@ -206,7 +354,9 @@ router.post('/:token/sign', async (req: Request, res: Response) => {
             created_by: deal.creator_id,
           } as any,
           deal: deal,
-          creatorName: creatorName
+          creatorName: creatorName,
+          creatorEmail: creatorEmail,
+          creatorAddress: creatorAddress,
         };
       }
     }
