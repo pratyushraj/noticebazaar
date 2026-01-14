@@ -33,7 +33,7 @@ router.get('/:token', async (req: Request, res: Response) => {
 
       // If token doesn't exist at all, check if it's a deal details token
       if (tokenLookupError || !invalidToken) {
-        console.log('[ContractReadyTokens] Token does not exist in contract_ready_tokens, checking if it's a deal details token:', token.trim());
+        console.log('[ContractReadyTokens] Token does not exist in contract_ready_tokens, checking if it is a deal details token:', token.trim());
         
         // Check if this is a deal details token
         const { getDealDetailsTokenInfo } = await import('../services/dealDetailsTokenService.js');

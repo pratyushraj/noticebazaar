@@ -272,41 +272,10 @@ export async function getContractReadyTokenInfo(tokenId: string): Promise<{
       createdBy: token.created_by,
       createdAt: token.created_at
     });
-      console.log('[ContractReadyTokenService] Token has submission_id, fetching submission:', token.submission_id);
-      const { data: submission } = await supabase
-        .from('deal_details_submissions')
-        .select('*, deal_details_tokens!inner(*)')
-        .eq('id', token.submission_id)
-        .maybeSingle();
 
-      if (submission && submission.form_data) {
-        console.log('[ContractReadyTokenService] Found submission with submission_id');
-        const formData = submission.form_data as any;
-        creatorId = submission.creator_id;
-        
-        // Create a deal-like object from submission data
-        deal = {
-          id: null, // No deal ID yet
-          creator_id: submission.creator_id,
-          brand_name: formData.brandName || 'Brand',
-          deal_amount: formData.dealType === 'paid' && formData.paymentAmount
-            ? parseFloat(formData.paymentAmount) || 0
-            : 0,
-          deliverables: JSON.stringify(formData.deliverables || []),
-          due_date: formData.deadline || new Date().toISOString().split('T')[0],
-          payment_expected_date: formData.deadline || new Date().toISOString().split('T')[0],
-          status: 'CONTRACT_READY', // Contract is ready for signing
-          platform: 'Other',
-          deal_type: formData.dealType || 'paid',
-          created_via: 'deal_details_form',
-          brand_address: formData.companyAddress || null,
-          brand_email: formData.companyEmail || null,
-          contract_file_url: null, // Will be set when contract is generated
-          contract_status: 'DraftGenerated',
-          contract_version: 'v3',
-        };
-      }
-    } else {
+    // Try to find submission by matching creator and finding most recent submission without deal_id
+    // Match by creator_id from token and find submissions created around the same time as token
+    if (token.created_by) {
       // Try to find submission by matching creator and finding most recent submission without deal_id
       // Match by creator_id from token and find submissions created around the same time as token
       if (token.created_by) {
