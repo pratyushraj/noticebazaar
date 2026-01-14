@@ -74,7 +74,7 @@ publicRouter.post('/send', async (req: express.Request, res: Response) => {
       // Try contract_ready_tokens
       const { data: readyTokenData, error: readyTokenError } = await supabase
         .from('contract_ready_tokens')
-        .select('id, deal_id, is_active, expires_at, revoked_at')
+        .select('id, deal_id, submission_id, is_active, expires_at, revoked_at')
         .eq('id', token)
         .maybeSingle();
       
@@ -329,7 +329,7 @@ publicRouter.post('/verify', async (req: express.Request, res: Response) => {
       // Try contract_ready_tokens
       const { data: readyTokenData, error: readyTokenError } = await supabase
         .from('contract_ready_tokens')
-        .select('id, deal_id, is_active, expires_at, revoked_at')
+        .select('id, deal_id, submission_id, is_active, expires_at, revoked_at')
         .eq('id', token)
         .maybeSingle();
       
