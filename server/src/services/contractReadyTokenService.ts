@@ -428,7 +428,15 @@ export async function getContractReadyTokenInfo(tokenId: string): Promise<{
   }
 
   // Get creator address (prefer location field, fallback to address field)
-  const creatorAddress = creator ? (creator.location || creator.address || null) : null;
+  let creatorAddress = creator ? (creator.location || creator.address || null) : null;
+  
+  // Clean up address - remove empty strings and trim whitespace
+  if (creatorAddress && typeof creatorAddress === 'string') {
+    creatorAddress = creatorAddress.trim();
+    if (creatorAddress === '') {
+      creatorAddress = null;
+    }
+  }
 
   // Log final creator data being returned
   console.log('[ContractReadyTokenService] Returning creator data:', {
@@ -441,7 +449,11 @@ export async function getContractReadyTokenInfo(tokenId: string): Promise<{
       first_name: creator.first_name,
       last_name: creator.last_name,
       location: creator.location,
-      address: creator.address
+      address: creator.address,
+      locationType: typeof creator.location,
+      addressType: typeof creator.address,
+      locationValue: creator.location,
+      addressValue: creator.address
     } : null
   });
 
