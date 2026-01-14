@@ -168,17 +168,23 @@ publicRouter.post('/send', async (req: express.Request, res: Response) => {
         if (tokenInfo && tokenInfo.deal) {
           // Use deal info from tokenInfo (may have id: null but has brand_email, etc.)
           deal = tokenInfo.deal;
+          console.log('[OTP] Got deal info from tokenInfo service:', {
+            dealId: deal?.id,
+            brandEmail: deal?.brand_email,
+            brandName: deal?.brand_name
+          });
         } else {
+          console.warn('[OTP] TokenInfo service returned no deal info for token:', token);
           return res.status(400).json({
             success: false,
             error: 'Invalid token: missing deal or submission reference',
           });
         }
-      } catch (importError) {
-        console.error('[OTP] Error importing contractReadyTokenService:', importError);
-        return res.status(400).json({
+      } catch (importError: any) {
+        console.error('[OTP] Error getting token info:', importError);
+        return res.status(500).json({
           success: false,
-          error: 'Invalid token: missing deal or submission reference',
+          error: `Failed to validate token: ${importError?.message || 'Unknown error'}`,
         });
       }
     }
