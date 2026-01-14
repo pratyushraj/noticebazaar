@@ -497,25 +497,27 @@ publicRouter.post('/verify', async (req: express.Request, res: Response) => {
     );
 
     if (!isValid) {
-      // Increment attempts
-      const newAttempts = attempts + 1;
-      await supabase
-        .from('brand_deals')
-        .update({
-          otp_attempts: newAttempts,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', tokenData.deal_id);
+      // Increment attempts (only if deal exists)
+      if (deal?.id) {
+        const newAttempts = attempts + 1;
+        await supabase
+          .from('brand_deals')
+          .update({
+            otp_attempts: newAttempts,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', deal.id);
 
-      // Log failed attempt
-      await logDealAction(tokenData.deal_id, 'OTP_FAILED_ATTEMPT', {
-        attempts: newAttempts,
-      });
+        // Log failed attempt
+        await logDealAction(deal.id, 'OTP_FAILED_ATTEMPT', {
+          attempts: newAttempts,
+        });
+      }
 
       return res.status(400).json({
         success: false,
-        error: `Invalid OTP. ${5 - newAttempts} attempts remaining`,
-        attemptsRemaining: 5 - newAttempts,
+        error: `Invalid OTP. ${5 - (attempts + 1)} attempts remaining`,
+        attemptsRemaining: 5 - (attempts + 1),
       });
     }
 
