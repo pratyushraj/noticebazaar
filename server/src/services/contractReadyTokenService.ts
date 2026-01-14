@@ -207,12 +207,12 @@ export async function getContractReadyTokenInfo(tokenId: string): Promise<{
             creatorId: submission.creator_id,
             firstName: creatorProfile.first_name,
             lastName: creatorProfile.last_name,
-            businessName: creatorProfile.business_name,
+            businessName: (creatorProfile as any).business_name,
             hasFirstName: !!creatorProfile.first_name,
             hasLastName: !!creatorProfile.last_name,
-            hasBusinessName: !!creatorProfile.business_name,
-            hasLocation: !!creatorProfile.location,
-            hasAddress: !!creatorProfile.address,
+            hasBusinessName: !!(creatorProfile as any).business_name,
+            hasLocation: !!(creatorProfile as any).location,
+            hasAddress: !!(creatorProfile as any).address,
             fullProfile: creatorProfile
           });
         }
@@ -413,9 +413,10 @@ export async function getContractReadyTokenInfo(tokenId: string): Promise<{
   // Don't use email username - only use actual profile data
   let creatorName: string | null = null;
   if (creator) {
+    const creatorAny = creator as any;
     // Try business_name first (for business accounts)
-    if (creator.business_name && creator.business_name.trim()) {
-      creatorName = creator.business_name.trim();
+    if (creatorAny.business_name && creatorAny.business_name.trim()) {
+      creatorName = creatorAny.business_name.trim();
     } else if (creator.first_name && creator.last_name) {
       creatorName = `${creator.first_name} ${creator.last_name}`.trim();
     } else if (creator.first_name) {
@@ -430,18 +431,20 @@ export async function getContractReadyTokenInfo(tokenId: string): Promise<{
     creatorName = null;
   }
   
+  const creatorAny = creator as any;
   console.log('[ContractReadyTokenService] Constructed creator name:', {
     finalName: creatorName,
     hadFirstName: !!creator?.first_name,
     hadLastName: !!creator?.last_name,
-    hadBusinessName: !!creator?.business_name,
+    hadBusinessName: !!creatorAny?.business_name,
     firstName: creator?.first_name,
     lastName: creator?.last_name,
-    businessName: creator?.business_name
+    businessName: creatorAny?.business_name
   });
 
   // Get creator address (prefer location field, fallback to address field)
-  let creatorAddress = creator ? (creator.location || creator.address || null) : null;
+  const creatorAny = creator as any;
+  let creatorAddress = creator ? (creatorAny.location || creatorAny.address || null) : null;
   
   // Clean up address - remove empty strings and trim whitespace
   if (creatorAddress && typeof creatorAddress === 'string') {
@@ -461,12 +464,12 @@ export async function getContractReadyTokenInfo(tokenId: string): Promise<{
     creatorProfileData: creator ? {
       first_name: creator.first_name,
       last_name: creator.last_name,
-      location: creator.location,
-      address: creator.address,
-      locationType: typeof creator.location,
-      addressType: typeof creator.address,
-      locationValue: creator.location,
-      addressValue: creator.address
+      location: creatorAny.location,
+      address: creatorAny.address,
+      locationType: typeof creatorAny.location,
+      addressType: typeof creatorAny.address,
+      locationValue: creatorAny.location,
+      addressValue: creatorAny.address
     } : null
   });
 
