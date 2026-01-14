@@ -281,9 +281,42 @@ publicRouter.post('/send', async (req: express.Request, res: Response) => {
         // Don't fail the OTP send if update fails - OTP was already sent
         console.warn('[OTP] OTP sent but failed to save to deal table (non-fatal)');
       }
+    } else if ((tokenData as any).submission_id) {
+      // Deal doesn't exist yet - store OTP hash in submission's form_data
+      const { data: submission, error: submissionError } = await supabase
+        .from('deal_details_submissions')
+        .select('form_data')
+        .eq('id', (tokenData as any).submission_id)
+        .maybeSingle();
+      
+      if (!submissionError && submission) {
+        const formData = submission.form_data as any || {};
+        const updatedFormData = {
+          ...formData,
+          _otp_hash: otpHash,
+          _otp_expires_at: expiresAt.toISOString(),
+          _otp_last_sent_at: new Date().toISOString(),
+          _otp_attempts: 0,
+        };
+        
+        const { error: updateError } = await supabase
+          .from('deal_details_submissions')
+          .update({ form_data: updatedFormData })
+          .eq('id', (tokenData as any).submission_id);
+        
+        if (updateError) {
+          console.error('[OTP] Failed to store OTP in submission:', updateError);
+          // Don't fail OTP send - OTP was already sent via email
+          console.warn('[OTP] OTP sent but failed to save to submission (non-fatal)');
+        } else {
+          console.log('[OTP] OTP hash stored in submission form_data');
+        }
+      } else {
+        console.warn('[OTP] Could not find submission to store OTP hash');
+      }
     } else {
-      // Deal doesn't exist yet (from submission) - OTP sent but can't store in deal table
-      console.log('[OTP] Deal not created yet (id is null), OTP sent but not stored in deal table');
+      // Deal doesn't exist yet and no submission_id - OTP sent but can't store
+      console.log('[OTP] Deal not created yet (id is null), OTP sent but not stored');
       console.log('[OTP] Deal info available:', {
         brandEmail: deal?.brand_email,
         brandName: deal?.brand_name,
