@@ -48,7 +48,7 @@ type Step = 'form' | 'pre_filing' | 'success';
 
 const ComplaintFormPage: React.FC = () => {
   const navigate = useNavigate();
-  const searchParams = useSearchParams();
+  const [searchParams] = useSearchParams();
   const category = searchParams.get('category') || null;
   const categoryName = searchParams.get('categoryName') || '';
   
