@@ -77,6 +77,34 @@ export const PaymentCard: React.FC<PaymentCardProps> = memo(({
     return 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30';
   };
 
+  // Get badge text and color based on payment status
+  const getBadgeInfo = () => {
+    if (type === 'received') {
+      return { text: 'Paid', color: 'bg-green-500/20 text-green-400 border-green-500/30' };
+    }
+    if (paymentStatus === 'overdue') {
+      return { text: 'Overdue', color: 'bg-red-500/20 text-red-400 border-red-500/30' };
+    }
+    if (paymentStatus === 'due_today') {
+      return { text: 'Due today', color: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30' };
+    }
+    // Pending with days info
+    if (daysInfo && daysInfo.includes('Due in')) {
+      const daysMatch = daysInfo.match(/(\d+)/);
+      if (daysMatch) {
+        return { text: `Due in ${daysMatch[1]} days`, color: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30' };
+      }
+    }
+    return { text: 'Pending', color: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30' };
+  };
+
+  const badgeInfo = getBadgeInfo();
+  
+  // Extract campaign name from title if different from brand name
+  const campaignName = title !== dealName && title !== `${dealName} Campaign` 
+    ? title.replace(`${dealName} `, '').replace(' Campaign', '')
+    : null;
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
@@ -85,7 +113,7 @@ export const PaymentCard: React.FC<PaymentCardProps> = memo(({
       whileHover={{ y: -2 }}
       whileTap={{ scale: 0.98 }}
       onClick={onClick}
-      className="relative bg-white/5 backdrop-blur-xl rounded-2xl p-4 md:p-5 border border-white/10 cursor-pointer transition-all duration-200 hover:bg-white/7 hover:border-white/15"
+      className="relative bg-white/5 backdrop-blur-xl rounded-xl p-3.5 border border-white/10 cursor-pointer transition-all duration-200 hover:bg-white/7 hover:border-white/15"
       role="button"
       tabIndex={onClick ? 0 : undefined}
       aria-label={`Payment: ${dealName} - ${type === 'received' ? 'Paid' : 'Pending'}`}
@@ -96,30 +124,28 @@ export const PaymentCard: React.FC<PaymentCardProps> = memo(({
         }
       } : undefined}
     >
-      {/* Simplified Layout: Brand Name | Status Pill | Amount */}
-      <div className="flex items-center justify-between gap-4">
-        {/* Left: Brand / Campaign Name */}
+      <div className="flex items-center justify-between gap-3">
+        {/* Left: Brand Name (bold) and Campaign Name (muted) */}
         <div className="flex-1 min-w-0">
-          <h3 className="text-base md:text-lg font-semibold text-white truncate">{dealName}</h3>
-          {title !== dealName && (
-            <div className="text-sm text-white/60 truncate mt-0.5">{title}</div>
+          <h3 className="text-base font-bold text-white truncate">{dealName}</h3>
+          {campaignName && (
+            <div className="text-sm text-white/60 truncate mt-0.5">{campaignName}</div>
           )}
         </div>
 
-        {/* Middle: Status Pill */}
-        <div className="flex-shrink-0">
-          <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border ${getStatusPillColor()}`}>
-            {formatDateInfo()}
-          </span>
-        </div>
-
-        {/* Right: Amount (₹), bold */}
-        <div className="flex-shrink-0 text-right">
-          <div className={`text-lg md:text-xl font-bold ${
-            type === 'expense' ? 'text-red-400' : 'text-green-400'
+        {/* Right: Amount and Badge */}
+        <div className="flex-shrink-0 flex flex-col items-end gap-1.5">
+          {/* Amount */}
+          <div className={`text-lg font-bold ${
+            type === 'expense' ? 'text-red-400' : 'text-white'
           }`}>
             {type === 'expense' ? '-' : ''}₹{Math.round(amount).toLocaleString('en-IN')}
           </div>
+          
+          {/* Due Badge */}
+          <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border ${badgeInfo.color}`}>
+            {badgeInfo.text}
+          </span>
         </div>
       </div>
     </motion.div>

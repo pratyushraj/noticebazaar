@@ -18,6 +18,7 @@ import { PaymentCard } from '@/components/payments/PaymentCard';
 import { SummaryCard } from '@/components/payments/SummaryCard';
 import { ActionTile } from '@/components/payments/ActionTile';
 import { extractTaxInfo, getTaxDisplayMessage, calculateFinalAmount } from '@/lib/utils/taxExtraction';
+import { formatIndianCurrency } from '@/lib/utils/currency';
 import { spacing, typography, separators, iconSizes, scroll, sectionHeader, gradients, buttons, glass, shadows, radius, vision, motion as motionTokens, animations } from '@/lib/design-system';
 import { triggerHaptic, HapticPatterns } from '@/lib/utils/haptics';
 import { cn } from '@/lib/utils';
@@ -26,7 +27,7 @@ import { motion } from 'framer-motion';
 const CreatorPaymentsAndRecovery = () => {
   const navigate = useNavigate();
   const { profile } = useSession();
-  const [activeFilter, setActiveFilter] = useState('all');
+  const [activeFilter, setActiveFilter] = useState('pending');
   const [searchQuery, setSearchQuery] = useState('');
   const [showPaymentRequest, setShowPaymentRequest] = useState(false);
   const [showAddExpense, setShowAddExpense] = useState(false);
@@ -136,8 +137,8 @@ const CreatorPaymentsAndRecovery = () => {
 
   const filters = [
     { id: 'all', label: 'All' },
-    { id: 'received', label: 'Paid' },
-    { id: 'pending', label: 'Pending' }
+    { id: 'pending', label: 'Pending' },
+    { id: 'received', label: 'Paid' }
   ];
 
   // Helper function to extract or generate invoice number
@@ -438,10 +439,10 @@ const CreatorPaymentsAndRecovery = () => {
     <ContextualTipsProvider currentView="payments">
     <div className={`min-h-full ${gradients.page} text-white ${spacing.page} pb-24 safe-area-fix`}>
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-4">
         <div>
           <h1 className={typography.h1 + " mb-1"}>Payments</h1>
-          <p className={typography.body + " font-medium"}>Track earnings, pending payouts, and transaction history.</p>
+          <p className={typography.bodySmall + " text-white/70"}>Track pending payments and completed payouts</p>
         </div>
         <motion.button 
           onClick={() => {
@@ -463,45 +464,55 @@ const CreatorPaymentsAndRecovery = () => {
         </motion.button>
       </div>
 
-      {/* Stats Overview - Premium Summary Card */}
-        <div className="mb-6">
-        <SummaryCard
-          thisMonth={stats.thisMonth}
-          pending={totalPending}
-          paid={stats.totalReceived}
-        />
+      {/* Stats Overview - Refactored for Mobile */}
+      <div className="mb-4 space-y-4">
+        {/* Primary Card 1: Pending Amount (Highlighted) */}
+        <div className="bg-white/10 backdrop-blur-xl border-2 border-yellow-500/30 rounded-2xl p-4 shadow-lg shadow-yellow-500/10">
+          <div className="text-sm text-white/70 mb-1">Pending Amount</div>
+          <div className="text-3xl font-bold text-yellow-400 mb-1">{formatIndianCurrency(totalPending)}</div>
+          <div className="text-xs text-white/60">Across active signed deals</div>
         </div>
+
+        {/* Primary Card 2: Paid This Month */}
+        <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-4">
+          <div className="text-sm text-white/70 mb-1">Paid This Month</div>
+          <div className="text-2xl font-bold text-green-400">{formatIndianCurrency(stats.thisMonth)}</div>
+        </div>
+
+        {/* Secondary Card: Total Earnings (Smaller, Muted) */}
+        <div className="bg-white/3 backdrop-blur-xl border border-white/5 rounded-xl p-3">
+          <div className="text-xs text-white/50 mb-0.5">Total Earnings</div>
+          <div className="text-lg font-semibold text-white/70">{formatIndianCurrency(stats.totalReceived)}</div>
+        </div>
+      </div>
 
       {/* Section Separator */}
       <div className={separators.section} />
 
-      {/* Quick Actions - Glass Tiles */}
-      <div className="grid grid-cols-3 gap-3 mb-6">
-        <ActionTile
-          icon={ArrowDownRight}
-          label="Request Payment"
+      {/* Quick Actions - Mobile Optimized (2 Primary Actions) */}
+      <div className="grid grid-cols-2 gap-3 mb-4">
+        {/* Primary: Request Payment */}
+        <motion.button
           onClick={() => {
             triggerHaptic(HapticPatterns.light);
             setShowPaymentRequest(true);
           }}
-          iconBgColor="bg-green-500/20"
-          iconColor="text-green-400"
-        />
-        
-        <ActionTile
-          icon={CreditCard}
-          label="Add Expense"
-          onClick={() => {
-            triggerHaptic(HapticPatterns.light);
-            setShowAddExpense(true);
-          }}
-          iconBgColor="bg-blue-500/20"
-          iconColor="text-blue-400"
-        />
-        
-        <ActionTile
-          icon={Download}
-          label="Export Report"
+          whileTap={animations.microTap}
+          className="relative bg-gradient-to-br from-green-500/20 to-green-600/10 backdrop-blur-xl rounded-2xl p-4 border border-green-500/30 shadow-lg shadow-green-500/10 hover:bg-green-500/25 transition-all"
+        >
+          <div className="flex items-center gap-3">
+            <div className="bg-green-500/20 w-10 h-10 rounded-full flex items-center justify-center">
+              <ArrowDownRight className="w-5 h-5 text-green-400" />
+            </div>
+            <div className="text-left">
+              <div className="text-sm font-semibold text-white">Request Payment</div>
+              <div className="text-xs text-white/60">Send reminder</div>
+            </div>
+          </div>
+        </motion.button>
+
+        {/* Secondary: Export Report */}
+        <motion.button
           onClick={async () => {
             triggerHaptic(HapticPatterns.medium);
             try {
@@ -528,9 +539,36 @@ const CreatorPaymentsAndRecovery = () => {
               // Error is handled by the export function
             }
           }}
-          iconBgColor="bg-purple-500/20"
-          iconColor="text-purple-400"
-        />
+          whileTap={animations.microTap}
+          className="relative bg-white/5 backdrop-blur-xl rounded-2xl p-4 border border-white/10 hover:bg-white/8 transition-all"
+        >
+          <div className="flex items-center gap-3">
+            <div className="bg-purple-500/20 w-10 h-10 rounded-full flex items-center justify-center">
+              <Download className="w-5 h-5 text-purple-400" />
+            </div>
+            <div className="text-left">
+              <div className="text-sm font-semibold text-white">Export Report</div>
+              <div className="text-xs text-white/60">Download PDF</div>
+            </div>
+          </div>
+        </motion.button>
+      </div>
+
+      {/* Add Expense - Hidden on mobile, accessible via menu or secondary action */}
+      <div className="mb-4 md:hidden">
+        <motion.button
+          onClick={() => {
+            triggerHaptic(HapticPatterns.light);
+            setShowAddExpense(true);
+          }}
+          whileTap={animations.microTap}
+          className="w-full bg-white/3 backdrop-blur-xl rounded-xl p-3 border border-white/5 hover:bg-white/5 transition-all text-sm text-white/70"
+        >
+          <div className="flex items-center justify-center gap-2">
+            <CreditCard className="w-4 h-4" />
+            <span>Add Expense</span>
+          </div>
+        </motion.button>
       </div>
 
       {/* Section Separator */}
