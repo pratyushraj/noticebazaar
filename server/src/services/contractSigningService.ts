@@ -364,7 +364,7 @@ export async function signContractAsBrand(
         creatorName: creatorName,
         brandEmail: request.signerEmail,
         creatorEmail: creatorEmail,
-        dealAmount: deal.amount ? parseFloat(deal.amount.toString()) : undefined,
+        dealAmount: (deal.deal_amount || deal.amount) ? parseFloat((deal.deal_amount || deal.amount).toString()) : undefined,
         dealType: (deal.deal_type as 'paid' | 'barter') || 'paid',
         deliverables: deliverablesList.map((d: any) => 
           typeof d === 'string' ? d : `${d.quantity || 1}x ${d.contentType || 'Content'} on ${d.platform || 'Platform'}`
