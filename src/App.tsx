@@ -89,6 +89,7 @@ import AdvisorDashboard from "./pages/AdvisorDashboard";
 import LawyerDashboard from "./pages/LawyerDashboard";
 import ConsumerComplaints from "./pages/lawyer/ConsumerComplaints";
 import ConsumerComplaintsPage from "./pages/ConsumerComplaintsPage";
+import ComplaintFormPage from "./pages/ComplaintFormPage";
 import MyConsumerComplaintsPage from "./pages/MyConsumerComplaintsPage";
 import ConsumerComplaintsHowItWorks from "./pages/ConsumerComplaintsHowItWorks";
 import UpgradePage from "./pages/UpgradePage";
@@ -311,6 +312,7 @@ const App = () => {
               
               {/* Lifestyle Shield - Pro-only features */}
               <Route path="/lifestyle/consumer-complaints" element={<ProtectedLayout allowedRoles={['creator']}><ConsumerComplaintsPage /></ProtectedLayout>} />
+              <Route path="/lifestyle/consumer-complaints/form" element={<ProtectedLayout allowedRoles={['creator']}><ComplaintFormPage /></ProtectedLayout>} />
               <Route path="/dashboard/consumer-complaints" element={<ProtectedLayout allowedRoles={['creator']}><MyConsumerComplaintsPage /></ProtectedLayout>} />
               
               {/* Upgrade page */}
