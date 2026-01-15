@@ -94,6 +94,7 @@ import ConsumerComplaintsHowItWorks from "./pages/ConsumerComplaintsHowItWorks";
 import UpgradePage from "./pages/UpgradePage";
 import { ErrorBoundary } from "./components/ui/error-boundary";
 import NetworkStatusWrapper from "./components/NetworkStatusWrapper";
+import ScrollToTop from "./components/ScrollToTop";
 
 // Redirect component for old brand-reply routes
 const ContractReadyRedirect = () => {
@@ -198,6 +199,7 @@ const App = () => {
               Skip to main content
             </a>
             <HashRouter>
+              <ScrollToTop />
               <NetworkStatusWrapper>
                 <FacebookPixelTracker />
                 <GoogleAnalyticsTracker /> {/* Add GA4 tracker here */}
