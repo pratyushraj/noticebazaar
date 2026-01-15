@@ -574,23 +574,20 @@ const CreatorPaymentsAndRecovery = () => {
       {/* Section Separator */}
       <div className={separators.section} />
 
-      {/* Search Bar - Frosted Capsule */}
+      {/* Search Bar - Full Width */}
       <div className="mb-4">
         <motion.div 
           initial={motionTokens.slide.up.initial}
           animate={motionTokens.slide.up.animate}
           transition={motionTokens.slide.up.transition}
           className={cn(
-            "relative flex items-center",
+            "relative flex items-center w-full",
             glass.apple,
             radius.full,
-            spacing.cardPadding.secondary,
+            "px-4 py-3",
             shadows.lg
           )}
         >
-          {/* Spotlight */}
-          <div className={cn(vision.spotlight.base, "opacity-20")} />
-          
           <Search className={cn(iconSizes.sm, "text-purple-300 mr-3 flex-shrink-0")} />
           <input 
             type="text" 
@@ -603,25 +600,14 @@ const CreatorPaymentsAndRecovery = () => {
               "flex-1"
             )}
           />
-          <motion.button 
-            onClick={() => {
-              triggerHaptic(HapticPatterns.light);
-              toast.info('Filter options coming soon');
-            }}
-            whileTap={animations.microTap}
-            className={cn("ml-2", buttons.icon, "flex-shrink-0")}
-            aria-label="Filter transactions"
-          >
-            <Filter className={cn(iconSizes.sm, "text-purple-300")} />
-          </motion.button>
         </motion.div>
       </div>
 
-      {/* Filter Tabs - Pill Buttons */}
-        <div className="mb-6">
+      {/* Filter Tabs - Simplified: All | Pending | Paid */}
+      <div className="mb-4">
         <div className={cn(
           "flex gap-2 overflow-x-auto pb-2",
-          "px-1 -mx-1", // Add padding to prevent clipping of ring/shadow
+          "px-1 -mx-1",
           "[&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
         )}>
           {filters.map((filter) => (
@@ -634,10 +620,7 @@ const CreatorPaymentsAndRecovery = () => {
               whileTap={animations.microTap}
               whileHover={window.innerWidth > 768 ? animations.microHover : undefined}
               className={cn(
-                spacing.cardPadding.secondary,
-                radius.full,
-                typography.bodySmall,
-                "font-semibold transition-all duration-150 whitespace-nowrap flex-shrink-0",
+                "px-4 py-2 rounded-full text-sm font-semibold transition-all duration-150 whitespace-nowrap flex-shrink-0",
                 activeFilter === filter.id
                   ? 'bg-white/15 text-white border-2 border-white/20 shadow-lg shadow-white/10'
                   : 'bg-white/5 text-white/70 border border-white/10 hover:bg-white/8'
@@ -647,7 +630,7 @@ const CreatorPaymentsAndRecovery = () => {
             </motion.button>
           ))}
         </div>
-          </div>
+      </div>
 
       {/* Section Separator */}
       <div className={separators.section} />
