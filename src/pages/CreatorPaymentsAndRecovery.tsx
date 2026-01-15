@@ -18,6 +18,7 @@ import { PaymentCard } from '@/components/payments/PaymentCard';
 import { SummaryCard } from '@/components/payments/SummaryCard';
 import { ActionTile } from '@/components/payments/ActionTile';
 import { extractTaxInfo, getTaxDisplayMessage, calculateFinalAmount } from '@/lib/utils/taxExtraction';
+import { calculatePaymentRiskLevel } from '@/lib/utils/paymentRisk';
 import { formatIndianCurrency } from '@/lib/utils/currency';
 import { spacing, typography, separators, iconSizes, scroll, sectionHeader, gradients, buttons, glass, shadows, radius, vision, motion as motionTokens, animations } from '@/lib/design-system';
 import { triggerHaptic, HapticPatterns } from '@/lib/utils/haptics';
@@ -277,7 +278,7 @@ const CreatorPaymentsAndRecovery = () => {
         // Determine status
         let paymentStatus: 'received' | 'pending' | 'due_today' | 'overdue' = 'pending';
         let daysInfo = '';
-        let riskLevel: 'low' | 'medium' | 'high' = 'low';
+        let riskLevel: 'low' | 'moderate' | 'overdue' = 'low';
         
         if (paymentReceivedDate) {
           paymentStatus = 'received';
@@ -289,45 +290,24 @@ const CreatorPaymentsAndRecovery = () => {
           if (diffDays < 0) {
             paymentStatus = 'overdue';
             daysInfo = `Overdue by ${Math.abs(diffDays)} day${Math.abs(diffDays) !== 1 ? 's' : ''}`;
-            riskLevel = diffDays < -7 ? 'high' : 'medium';
+            riskLevel = 'overdue';
           } else if (diffDays === 0) {
             paymentStatus = 'due_today';
             daysInfo = 'Due today';
-            riskLevel = 'medium';
+            riskLevel = 'moderate';
           } else {
             paymentStatus = 'pending';
             daysInfo = `Due in ${diffDays} day${diffDays !== 1 ? 's' : ''}`;
             
-            // Improved risk calculation based on payment terms and contract issues
-            // High risk factors (based on contract analysis):
-            // - Payment delay > 45 days (very long payment terms)
-            // - Payment only after brand review/approval (no guaranteed payment)
-            // - No penalty for delayed payment
-            // - No TDS/GST clarity
-            // - Brand can terminate without payment
-            // - Long exclusivity periods (60+ days total)
-            // - Unlimited paid ads usage
-            const paymentDelayDays = paymentExpectedDate && deal.due_date 
-              ? Math.ceil((paymentExpectedDate.getTime() - new Date(deal.due_date).getTime()) / (1000 * 60 * 60 * 24))
-              : 0;
-            
-            // High risk if:
-            // - Payment delay > 45 days (very long terms)
-            // - Less than 7 days remaining (urgent)
-            // - Payment delay > 30 days AND less than 14 days remaining (risky combination)
-            if (paymentDelayDays > 45) {
-              // Very long payment terms = High Risk (e.g., 45 days after posting)
-              riskLevel = 'high';
-            } else if (diffDays <= 7) {
-              // Less than a week remaining = High Risk
-              riskLevel = 'high';
-            } else if (paymentDelayDays > 30 || diffDays <= 14) {
-              // Medium-long payment terms OR less than 2 weeks = Medium Risk
-              riskLevel = 'medium';
-            } else {
-              // Standard payment terms with good buffer = Low Risk
-              riskLevel = 'low';
-            }
+            // Use new priority-based risk calculation
+            // Contract risk score would need to be extracted from deal if available
+            // For now, we'll use timing-based calculation
+            const contractRiskScore = 0; // Could be extracted from deal.contract_analysis if available
+            riskLevel = calculatePaymentRiskLevel(
+              paymentExpectedDate,
+              contractRiskScore,
+              now
+            );
           }
         }
 
@@ -357,17 +337,18 @@ const CreatorPaymentsAndRecovery = () => {
             : expectedDateStr,
           expectedDate: expectedDateStr,
           daysInfo,
-          riskLevel: ((): 'low' | 'medium' | 'high' => {
-            // Combine payment risk with tax risk
-            const taxRiskScore = taxInfo.riskScore;
-            if (taxRiskScore >= 25) {
-              return 'high'; // Tax risk is very high
-            } else if (taxRiskScore >= 15 || (riskLevel === 'high' && taxRiskScore > 0)) {
-              return 'high'; // High tax risk or high payment risk with any tax risk
-            } else if (taxRiskScore > 0 || riskLevel === 'medium') {
-              return 'medium'; // Medium risk from either source
+          riskLevel: ((): 'low' | 'moderate' | 'overdue' => {
+            // Payment timing risk takes priority over contract risk
+            // If already overdue, keep it overdue
+            if (riskLevel === 'overdue') {
+              return 'overdue';
             }
-            return riskLevel; // Use original payment risk
+            // Contract risk can only elevate to moderate, never to overdue
+            const taxRiskScore = taxInfo.riskScore;
+            if (taxRiskScore >= 15 && riskLevel === 'low') {
+              return 'moderate'; // Contract risk elevates low to moderate
+            }
+            return riskLevel; // Use payment timing risk level
           })(),
           method: extractPaymentMethod(deal), // Extract from contract or null if not found
           invoice: invoiceNumber,

@@ -2,17 +2,24 @@
 
 import { useMemo, useState, useRef, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, CheckCircle, AlertCircle, FileText, Edit, Trash2, Eye, Loader2, Download, Upload, X, MessageSquare } from 'lucide-react';
+import { ArrowLeft, CheckCircle, AlertCircle, FileText, Edit, Trash2, Eye, Loader2, Download, Upload, X, MessageSquare, Info } from 'lucide-react';
 import { useSession } from '@/contexts/SessionContext';
 import { useBrandDealById, useUpdateBrandDeal } from '@/lib/hooks/useBrandDeals';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
 import { extractTaxInfo, getTaxDisplayMessage, calculateFinalAmount } from '@/lib/utils/taxExtraction';
+import { calculatePaymentRiskLevel, getPaymentRiskConfig, getPaymentRiskTooltip } from '@/lib/utils/paymentRisk';
 import { supabase } from '@/integrations/supabase/client';
 import { CREATOR_ASSETS_BUCKET } from '@/lib/constants/storage';
 import { FilePreview } from '@/components/payments/FilePreview';
 import { NativeLoadingSheet } from '@/components/mobile/NativeLoadingSheet';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 
 const PaymentDetailPage = () => {
   const navigate = useNavigate();
@@ -64,7 +71,6 @@ const PaymentDetailPage = () => {
 
     // Calculate days
     let daysInfo = '';
-    let riskLevel: 'low' | 'medium' | 'high' = 'low';
     if (status === 'received') {
       daysInfo = 'Paid';
     } else if (paymentExpectedDate) {
@@ -73,16 +79,10 @@ const PaymentDetailPage = () => {
       
       if (diffDays < 0) {
         daysInfo = `${Math.abs(diffDays)} days overdue`;
-        riskLevel = diffDays < -7 ? 'high' : 'medium';
       } else if (diffDays === 0) {
         daysInfo = 'Due today';
-        riskLevel = 'medium';
-      } else if (diffDays <= 7) {
-        daysInfo = `${diffDays} days left`;
-        riskLevel = 'medium';
       } else {
         daysInfo = `${diffDays} days left`;
-        riskLevel = 'low';
       }
     }
 
@@ -131,21 +131,15 @@ const PaymentDetailPage = () => {
       }
     }
 
-    // Calculate risk level - if payment received and risk was only due to payment delay, reduce to low
-    let finalRiskLevel: 'low' | 'medium' | 'high' = riskLevel;
-    if (status === 'received' && riskLevel === 'high' && paymentExpectedDate && paymentReceivedDate) {
-      // If payment was overdue but now received, reduce risk
-      const wasOverdue = paymentExpectedDate < paymentReceivedDate;
-      if (wasOverdue && taxInfo.riskScore < 15) {
-        finalRiskLevel = 'low'; // Payment delay was the only issue
-      }
-    } else if (status === 'received') {
-      // Payment received, reduce risk if it was only payment-related
-      if (taxInfo.riskScore < 15) {
-        finalRiskLevel = 'low';
-      }
-    } else {
-      finalRiskLevel = taxInfo.riskScore >= 25 ? 'high' : taxInfo.riskScore >= 15 ? 'high' : taxInfo.riskScore > 0 ? 'medium' : riskLevel;
+    // Calculate risk level using new priority-based logic
+    // Only calculate for pending payments (not received)
+    let finalRiskLevel: 'low' | 'moderate' | 'overdue' = 'low';
+    if (status !== 'received') {
+      finalRiskLevel = calculatePaymentRiskLevel(
+        paymentExpectedDate,
+        taxInfo.riskScore,
+        now
+      );
     }
 
     return {
@@ -474,62 +468,74 @@ const PaymentDetailPage = () => {
           transition={{ duration: 0.3 }}
           className="relative bg-white/10 backdrop-blur-xl rounded-2xl p-5 md:p-6 border border-white/20"
         >
-          <div className="flex items-start justify-between mb-4">
-            <div className="flex-1">
-              {/* Large Amount */}
-              <div className="text-4xl md:text-5xl font-bold text-white mb-4">
-                ₹{paymentData.amount.toLocaleString('en-IN', { maximumFractionDigits: 0 })}
-              </div>
+          <div className="mb-4">
+            <div className="flex items-start justify-between gap-4 mb-3">
+              <div className="flex-1 min-w-0">
+                {/* Large Amount */}
+                <div className="text-4xl md:text-5xl font-bold text-white mb-4">
+                  ₹{paymentData.amount.toLocaleString('en-IN', { maximumFractionDigits: 0 })}
+                </div>
 
-              {/* Single Status Badge */}
-              <div className="mb-3">
-                {paymentData.status === 'received' ? (
-                  <span className="inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium bg-green-500/20 text-green-400 border border-green-500/30">
-                    Received
-                  </span>
-                ) : paymentData.status === 'overdue' ? (
-                  <span className="inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium bg-red-500/20 text-red-400 border border-red-500/30">
-                    Overdue
-                  </span>
-                ) : (
-                  <span className="inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium bg-yellow-500/20 text-yellow-400 border border-yellow-500/30">
-                    Pending
-                  </span>
-                )}
-              </div>
+                {/* Single Status Badge */}
+                <div className="mb-3">
+                  {paymentData.status === 'received' ? (
+                    <span className="inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium bg-green-500/20 text-green-400 border border-green-500/30">
+                      Received
+                    </span>
+                  ) : paymentData.status === 'overdue' ? (
+                    <span className="inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium bg-red-500/20 text-red-400 border border-red-500/30">
+                      Overdue
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium bg-yellow-500/20 text-yellow-400 border border-yellow-500/30">
+                      Pending
+                    </span>
+                  )}
+                </div>
 
-              {/* Helper Line */}
-              <div className="text-sm text-white/70 mb-3">
-                {paymentData.status === 'received' && paymentData.receivedAt ? (
-                  `Payment received on ${paymentData.receivedAt.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`
-                ) : paymentData.status === 'overdue' && paymentData.expectedDate ? (
-                  `Payment overdue by ${Math.abs(Math.ceil((new Date().getTime() - paymentData.expectedDate.getTime()) / (1000 * 60 * 60 * 24)))} days`
-                ) : paymentData.expectedDate ? (
-                  `Payment expected by ${paymentData.expectedDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`
-                ) : (
-                  'Payment date pending'
-                )}
+                {/* Helper Line */}
+                <div className="text-sm text-white/70">
+                  {paymentData.status === 'received' && paymentData.receivedAt ? (
+                    `Payment received on ${paymentData.receivedAt.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`
+                  ) : paymentData.status === 'overdue' && paymentData.expectedDate ? (
+                    `Payment overdue by ${Math.abs(Math.ceil((new Date().getTime() - paymentData.expectedDate.getTime()) / (1000 * 60 * 60 * 24)))} days`
+                  ) : paymentData.expectedDate ? (
+                    `Payment expected by ${paymentData.expectedDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`
+                  ) : (
+                    'Payment date pending'
+                  )}
+                </div>
               </div>
             </div>
 
-            {/* Subtle Risk Level (Right-aligned) */}
+            {/* Subtle Risk Level (Left-aligned, positioned below) */}
             {paymentData.status !== 'received' && (
-              <div className="flex-shrink-0 ml-4">
-                <div className="text-xs text-white/50 mb-1 text-right">Risk Level</div>
-                <div className={cn(
-                  "text-xs font-medium px-2 py-1 rounded-full text-right",
-                  paymentData.status === 'overdue'
-                    ? 'bg-red-500/10 text-red-400/70'
-                    : paymentData.riskLevel === 'medium'
-                    ? 'bg-yellow-500/10 text-yellow-400/70'
-                    : 'bg-green-500/10 text-green-400/70'
-                )}>
-                  {paymentData.status === 'overdue' 
-                    ? 'High delay risk' 
-                    : paymentData.riskLevel === 'medium' 
-                    ? 'Moderate delay risk' 
-                    : 'Low'}
+              <div className="flex flex-col">
+                <div className="flex items-center gap-1.5 mb-1">
+                  <span className="text-xs text-white/50 whitespace-nowrap">Risk Level</span>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Info className="w-3 h-3 text-white/40 hover:text-white/60 cursor-help" />
+                      </TooltipTrigger>
+                      <TooltipContent className="max-w-xs bg-gray-900 border-gray-700 text-white text-xs">
+                        <p>{getPaymentRiskTooltip()}</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                 </div>
+                {(() => {
+                  const riskConfig = getPaymentRiskConfig(paymentData.riskLevel);
+                  return (
+                    <div className={cn(
+                      "text-xs font-medium px-2 py-1 rounded-full whitespace-nowrap inline-block",
+                      riskConfig.bgColor,
+                      riskConfig.color
+                    )}>
+                      {riskConfig.label}
+                    </div>
+                  );
+                })()}
               </div>
             )}
           </div>

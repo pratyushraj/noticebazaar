@@ -5,7 +5,7 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { 
   FileText, Scale, CheckCircle, ArrowRight, Shield, 
-  FileCheck, UserCheck, Lock, MessageSquare, X
+  FileCheck, UserCheck, Lock, MessageSquare, X, ArrowLeft
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -94,13 +94,25 @@ export default function ConsumerComplaintsHowItWorks() {
     <div className="min-h-[100dvh] bg-gradient-to-br from-purple-900 via-indigo-900 to-purple-900">
       {/* Hero Section */}
       <div className="relative overflow-hidden">
-        <div className="max-w-4xl mx-auto px-4 py-16 md:py-24 text-center">
-          <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
-            Resolve Consumer Issues, the Right Way
-          </h1>
-          <p className="text-xl text-white/80 max-w-2xl mx-auto">
-            CreatorArmour helps you draft and review consumer complaints before you take any formal legal step.
-          </p>
+        <div className="max-w-4xl mx-auto px-4 py-16 md:py-24">
+          {/* Back Button */}
+          <Button
+            variant="ghost"
+            onClick={() => navigate('/lifestyle/consumer-complaints')}
+            className="mb-6 text-white/70 hover:text-white hover:bg-white/10 -ml-2"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back
+          </Button>
+          
+          <div className="text-center">
+            <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
+              Resolve Consumer Issues, the Right Way
+            </h1>
+            <p className="text-xl text-white/80 max-w-2xl mx-auto">
+              CreatorArmour helps you draft and review consumer complaints before you take any formal legal step.
+            </p>
+          </div>
         </div>
       </div>
 
