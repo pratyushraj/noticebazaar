@@ -78,8 +78,8 @@ export async function sendBrandFormSubmissionEmail(
       : 'Not specified';
 
     const dealLink = dealId
-      ? `${process.env.FRONTEND_URL || 'https://creatorarmour.com'}/creator-contracts/${dealId}`
-      : `${process.env.FRONTEND_URL || 'https://creatorarmour.com'}/creator-contracts`;
+      ? `${process.env.FRONTEND_URL || 'https://creatorarmour.com'}/#/creator-contracts/${dealId}`
+      : `${process.env.FRONTEND_URL || 'https://creatorarmour.com'}/#/creator-contracts`;
 
     const emailSubject = `New Collaboration Request from ${brandData.brandName}`;
     const emailHtml = `
