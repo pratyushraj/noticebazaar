@@ -156,7 +156,7 @@ const ConsumerComplaintsPage: React.FC = () => {
         <div className="mb-8">
           <Button
             variant="ghost"
-            onClick={() => navigate(-1)}
+            onClick={() => navigate('/creator-dashboard')}
             className="mb-4 text-white/70 hover:text-white hover:bg-white/10 -ml-2"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
