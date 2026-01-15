@@ -257,6 +257,13 @@ const Sidebar: React.FC<SidebarProps> = ({ className, profileRole }) => {
           roles: ['creator']
           // Removed isPro: true for testing phase - available to all users
         },
+        { 
+          name: "My Complaints", 
+          icon: FileText, 
+          path: "/dashboard/consumer-complaints", 
+          iconColor: "#8B5CF6", // Purple
+          roles: ['creator']
+        },
       ]
     },
     {

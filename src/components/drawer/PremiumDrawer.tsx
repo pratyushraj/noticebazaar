@@ -18,7 +18,8 @@ import {
   ChevronRight,
   RefreshCw,
   Search,
-  CalendarCheck
+  CalendarCheck,
+  FileText
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useSession } from "@/contexts/SessionContext";
@@ -344,6 +345,7 @@ export default function PremiumDrawer({
     ],
     lifestyleShield: [
       { id: 'consumer-complaints', label: 'Consumer Complaints', icon: Shield, path: '/lifestyle/consumer-complaints', variant: 'accent' },
+      { id: 'my-complaints', label: 'My Complaints', icon: FileText, path: '/dashboard/consumer-complaints', variant: 'default' },
     ],
     settings: [
       { id: 'profile', label: 'Profile Settings', icon: Settings, path: '/creator-profile' },
@@ -556,6 +558,7 @@ export const DEFAULT_MENU_DATA: DrawerMenuData = {
   ],
   lifestyleShield: [
     { id: 'consumer-complaints', label: 'Consumer Complaints', icon: Shield, path: '/lifestyle/consumer-complaints', variant: 'accent' },
+    { id: 'my-complaints', label: 'My Complaints', icon: FileText, path: '/dashboard/consumer-complaints', variant: 'default' },
   ],
   settings: [
     { id: 'profile', label: 'Profile Settings', icon: Settings, path: '/creator-profile' },
