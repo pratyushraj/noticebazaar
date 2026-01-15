@@ -578,7 +578,7 @@ export async function signContractAsCreator(
       // Fetch brand details for email
       const { data: brandDeal, error: brandDealError } = await supabase
         .from('brand_deals' as any)
-        .select('brand_name, brand_email, amount, deal_type, deliverables, due_date, contract_file_url')
+        .select('brand_name, brand_email, deal_amount, amount, deal_type, deliverables, due_date, contract_file_url')
         .eq('id', request.dealId)
         .single();
 
@@ -596,7 +596,7 @@ export async function signContractAsCreator(
           creatorName: request.signerName,
           brandEmail: brandDealData.brand_email || '',
           creatorEmail: request.signerEmail,
-          dealAmount: brandDealData.amount ? parseFloat(brandDealData.amount.toString()) : undefined,
+          dealAmount: (brandDealData.deal_amount || brandDealData.amount) ? parseFloat((brandDealData.deal_amount || brandDealData.amount).toString()) : undefined,
           dealType: (brandDealData.deal_type as 'paid' | 'barter') || 'paid',
           deliverables: deliverablesList.map((d: any) => 
             typeof d === 'string' ? d : `${d.quantity || 1}x ${d.contentType || 'Content'} on ${d.platform || 'Platform'}`
