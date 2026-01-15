@@ -637,23 +637,7 @@ const CreatorPaymentsAndRecovery = () => {
 
       {/* Transactions List */}
       {filteredTransactions.length > 0 && (
-        <div className={spacing.card} data-section="transactions">
-          <div className={sectionHeader.base}>
-            <h2 className={sectionHeader.title}>
-              Transactions
-            </h2>
-            <motion.button 
-              onClick={() => {
-                triggerHaptic(HapticPatterns.light);
-                // Navigate to full transactions view
-              }}
-              whileTap={animations.microTap}
-              className={cn(sectionHeader.action, "font-medium")}
-            >
-              View All
-            </motion.button>
-          </div>
-
+        <div className="space-y-3" data-section="transactions">
           {filteredTransactions.map(transaction => {
             // If it's an expense, use ExpenseCard
             if (transaction.type === 'expense' && (transaction as any).expense) {
