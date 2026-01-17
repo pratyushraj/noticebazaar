@@ -60,21 +60,112 @@ const HomePage = () => {
       meta.setAttribute('content', content);
     };
 
+    // Helper function to update or create link tag
+    const updateLinkTag = (rel: string, href: string) => {
+      let link = document.querySelector(`link[rel="${rel}"]`);
+      if (!link) {
+        link = document.createElement('link');
+        link.setAttribute('rel', rel);
+        document.head.appendChild(link);
+      }
+      link.setAttribute('href', href);
+    };
+
     // Update page title
-    document.title = 'CreatorArmour — Protect Your Brand Deals';
+    document.title = 'CreatorArmour — Protect Your Brand Deals | Contracts, Payments & Legal Protection';
+
+    // Update meta description
+    updateMetaTag('description', 'Generate professional contracts, track payment risks, and protect your brand deals. Free legal consultations, consumer complaints, and payment recovery for creators. Start free.');
+
+    // Add canonical URL
+    updateLinkTag('canonical', 'https://creatorarmour.com/');
+    
+    // Add robots meta tag
+    updateMetaTag('robots', 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1');
 
     // Update Open Graph tags
     updateMetaTag('og:type', 'website');
-    updateMetaTag('og:title', 'CreatorArmour — Protect Your Brand Deals');
-    updateMetaTag('og:description', 'Generate contracts, track payments & stay protected — built for creators.');
+    updateMetaTag('og:title', 'CreatorArmour — Protect Your Brand Deals | Contracts, Payments & Legal Protection');
+    updateMetaTag('og:description', 'Generate professional contracts, track payment risks, and protect your brand deals. Free legal consultations, consumer complaints, and payment recovery for creators.');
     updateMetaTag('og:image', 'https://creatorarmour.com/og-preview.png');
     updateMetaTag('og:url', currentUrl);
+    updateMetaTag('og:site_name', 'CreatorArmour');
+    updateMetaTag('og:locale', 'en_IN');
 
     // Update Twitter Card tags
     updateMetaTag('twitter:card', 'summary_large_image');
     updateMetaTag('twitter:title', 'CreatorArmour — Protect Your Brand Deals');
-    updateMetaTag('twitter:description', 'Generate contracts, track payments & stay protected — built for creators.');
+    updateMetaTag('twitter:description', 'Generate professional contracts, track payment risks, and protect your brand deals. Free legal consultations for creators.');
     updateMetaTag('twitter:image', 'https://creatorarmour.com/og-preview.png');
+    updateMetaTag('twitter:site', '@creatorarmour');
+  }, []);
+
+  // Add FAQ Schema for SEO
+  useEffect(() => {
+    const faqSchema = {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "What is CreatorArmour?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "CreatorArmour is a legal protection platform for content creators and influencers. We help you generate professional contracts, track payment risks, file consumer complaints, and get free legal consultations."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How much does CreatorArmour cost?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "We offer a free plan with basic features, Creator Lite at ₹399/month, Creator Pro at ₹1,499/month, and Agency plans starting at ₹5,000/month. All plans include free legal consultations."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Do you provide legal advice?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "CreatorArmour is a software platform that helps you prepare, track, and act on legal matters. We provide contract templates, payment tracking, and connect you with verified lawyers for consultations. We are not a law firm and do not provide legal representation."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Can I file consumer complaints?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes! Creator Pro includes Lifestyle Shield, which allows unlimited consumer complaints against brands, e-commerce platforms, and service providers. We draft and send legal notices on your behalf."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How do free legal consultations work?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Creator Lite includes 1 free 15-minute legal consultation per month, while Creator Pro includes unlimited consultations. You can book sessions with verified lawyers through our Calendly integration to discuss contracts, payments, disputes, and other legal matters."
+          }
+        }
+      ]
+    };
+
+    // Remove existing FAQ schema if present
+    const existingSchema = document.querySelector('script[type="application/ld+json"][data-faq]');
+    if (existingSchema) {
+      existingSchema.remove();
+    }
+
+    // Add FAQ schema
+    const script = document.createElement('script');
+    script.type = 'application/ld+json';
+    script.setAttribute('data-faq', 'true');
+    script.textContent = JSON.stringify(faqSchema);
+    document.head.appendChild(script);
+
+    return () => {
+      const schema = document.querySelector('script[type="application/ld+json"][data-faq]');
+      if (schema) schema.remove();
+    };
   }, []);
 
   useEffect(() => {
@@ -247,6 +338,7 @@ const HomePage = () => {
         "Deals dashboard (brands, deadlines, deliverables)",
         "Invoice generator (GST / Non-GST)",
         "Payment tracking & reminders",
+        "1 free legal consultation per month",
         "Email / in-app support"
       ],
       cta: "Get Creator Lite",
@@ -261,9 +353,10 @@ const HomePage = () => {
         "Everything in Creator Lite",
         "1 FREE legal notice every month (₹999 value)",
         "1 human lawyer contract review / month",
+        "Unlimited free legal consultations",
         "Payment recovery & escalation support",
         "Tax compliance guidance (GST / TDS)",
-        "Lifestyle Shield (consumer complaints)",
+        "Lifestyle Shield (unlimited consumer complaints)",
         "Panic Button (priority WhatsApp support)",
         "Verified Creator badge"
       ],
@@ -279,6 +372,7 @@ const HomePage = () => {
       features: [
         "Manage up to 10 creators",
         "5 legal notices per month",
+        "Unlimited legal consultations",
         "Bulk deal & payment monitoring",
         "White-label contract risk reports",
         "Client view-only dashboards",
@@ -290,7 +384,7 @@ const HomePage = () => {
   ];
 
   return (
-    <div className="nb-screen-height bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 text-white overflow-hidden">
+    <div className="nb-screen-height bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 text-white overflow-hidden pb-20 md:pb-0">
       {/* Navigation */}
       <nav 
         className="sticky top-0 z-50 bg-purple-900/80 backdrop-blur-xl border-b border-white/5"
@@ -371,29 +465,50 @@ const HomePage = () => {
           scale,
           paddingLeft: 'max(1rem, env(safe-area-inset-left, 0px))',
           paddingRight: 'max(1rem, env(safe-area-inset-right, 0px))',
-          paddingTop: 'max(2rem, calc(env(safe-area-inset-top, 0px) + 2rem))',
-          paddingBottom: 'max(5rem, calc(env(safe-area-inset-bottom, 0px) + 3rem))'
+          paddingTop: 'max(3rem, calc(env(safe-area-inset-top, 0px) + 3rem))',
+          paddingBottom: 'max(4rem, calc(env(safe-area-inset-bottom, 0px) + 4rem))',
+          minHeight: 'calc(100dvh - 64px)'
         }}
-        className="relative pt-8 md:pt-32 pb-20 px-4 sm:px-6 lg:px-8 overflow-hidden"
+        className="relative pt-12 md:pt-32 pb-16 md:pb-20 px-4 sm:px-6 lg:px-8 overflow-hidden flex items-center"
       >
         {/* Animated background elements */}
         <div className="absolute top-20 left-1/4 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl animate-pulse" />
         <div className="absolute bottom-20 right-1/4 w-96 h-96 bg-pink-500/20 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
 
-        <div className="max-w-7xl mx-auto relative z-10">
+        <div className="max-w-7xl mx-auto relative z-10 w-full">
           <div className="text-center">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8 }}
             >
-              <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-tight">
-                Protect Your Brand Deals.
-                <br />
-                <span className="bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 text-transparent bg-clip-text">
-                  Generate Contracts. Spot Payment & Usage Risks Early.
+              {/* Social Proof Badge */}
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.2 }}
+                className="flex items-center justify-center gap-4 mb-6 text-sm"
+              >
+                <div className="flex items-center gap-2 bg-white/5 px-3 py-1.5 rounded-full border border-white/10">
+                  <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                  <span className="text-purple-200 font-medium">4.9/5 from 500+ creators</span>
+                </div>
+                <div className="h-4 w-px bg-purple-400/30"></div>
+                <span className="text-purple-200 font-medium">₹50Cr+ protected</span>
+              </motion.div>
+
+              {/* Improved Headline with Better Hierarchy */}
+              <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight">
+                <span className="block mb-2">Protect Your</span>
+                <span className="block mb-2">Brand Deals.</span>
+                <span className="block bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 text-transparent bg-clip-text mb-2">
+                  Generate Contracts.
+                </span>
+                <span className="block bg-gradient-to-r from-pink-400 via-purple-400 to-blue-400 text-transparent bg-clip-text">
+                  Spot Payment & Usage Risks Early.
                 </span>
               </h1>
+              
               <p className="text-lg md:text-2xl text-white/90 font-medium mb-4 max-w-3xl mx-auto">
                 Creator Armour helps creators generate professional contracts, track payment risks, and protect against content misuse — all in one platform.
               </p>
@@ -408,46 +523,56 @@ const HomePage = () => {
               transition={{ duration: 0.8, delay: 0.2 }}
               className="flex flex-col sm:flex-row items-center justify-center gap-4"
             >
-              {/* Primary CTA copy variants for future A/B tests (default active):
-                  - "Protect My Deals →" (current text + ArrowRight icon)
-                  - "Start Free →"
-                  - "Secure My Deal →"
-                  - "Get Protected →"
-              */}
+              {/* Enhanced Primary CTA */}
               <Link
                 to="/signup"
-                className="group nb-hero-cta bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 px-8 py-4 rounded-full font-bold text-lg transition-all duration-150 ease-out transform hover:scale-105 active:scale-95 active:opacity-95 flex items-center gap-2 border border-white/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-300/70 focus-visible:ring-offset-2 focus-visible:ring-offset-purple-900"
+                className="group relative bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 px-8 py-4 rounded-full font-bold text-lg transition-all duration-300 transform hover:scale-105 active:scale-95 shadow-2xl shadow-purple-500/50 flex items-center gap-2 border-2 border-white/20 overflow-hidden min-h-[56px]"
               >
-                Generate My First Contract
-                <ArrowRight className="w-5 h-5 transition-transform duration-150 ease-out group-hover:translate-x-1 group-active:translate-x-0.5" />
+                <span className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></span>
+                <span className="relative z-10">Generate My First Contract</span>
+                <ArrowRight className="w-5 h-5 relative z-10 transition-transform duration-300 group-hover:translate-x-1" />
               </Link>
+              
+              {/* Secondary CTA */}
               <Link
                 to="/signup"
-                className="flex items-center gap-2 px-6 py-3 rounded-full text-base md:text-lg text-purple-100/80 hover:text-white/90 transition-colors font-medium bg-white/10 hover:bg-white/20 border border-white/20"
+                className="flex items-center gap-2 px-6 py-3 rounded-full text-base md:text-lg text-purple-100/80 hover:text-white/90 transition-all font-medium bg-white/10 hover:bg-white/20 border border-white/20 hover:scale-105 min-h-[48px]"
               >
                 Scan an Existing Deal
               </Link>
             </motion.div>
 
-            {/* Trust badges */}
+            {/* Enhanced Trust badges */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.8, delay: 0.4 }}
-              className="mt-12 flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-8 text-sm text-purple-300"
+              className="mt-12 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4"
             >
-              <div className="flex items-center gap-2">
-                <CheckCircle className="w-5 h-5 text-green-400" />
-                <span>Free for 14 days</span>
+              <div className="flex items-center gap-2 bg-white/5 px-4 py-2 rounded-full border border-white/10 hover:bg-white/10 transition-colors">
+                <CheckCircle className="w-5 h-5 text-green-400 flex-shrink-0" />
+                <span className="text-purple-200 font-medium text-sm">Free for 14 days</span>
               </div>
-              <div className="flex items-center gap-2">
-                <CheckCircle className="w-5 h-5 text-green-400" />
-                <span>No credit card required</span>
+              <div className="flex items-center gap-2 bg-white/5 px-4 py-2 rounded-full border border-white/10 hover:bg-white/10 transition-colors">
+                <Lock className="w-5 h-5 text-purple-400 flex-shrink-0" />
+                <span className="text-purple-200 font-medium text-sm">No credit card</span>
               </div>
-              <div className="flex items-center gap-2">
-                <CheckCircle className="w-5 h-5 text-green-400" />
-                <span>Cancel anytime</span>
+              <div className="flex items-center gap-2 bg-white/5 px-4 py-2 rounded-full border border-white/10 hover:bg-white/10 transition-colors">
+                <Zap className="w-5 h-5 text-pink-400 flex-shrink-0" />
+                <span className="text-purple-200 font-medium text-sm">Cancel anytime</span>
               </div>
+            </motion.div>
+
+            {/* Social Proof Counter */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.8, delay: 0.6 }}
+              className="mt-6 text-center"
+            >
+              <p className="text-sm text-purple-300">
+                <span className="font-semibold text-pink-400">127 creators</span> joined this week
+              </p>
             </motion.div>
           </div>
         </div>
@@ -467,18 +592,91 @@ const HomePage = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: index * 0.1 }}
                 viewport={{ once: true }}
-                className="text-center"
+                className="text-center group cursor-default"
               >
-                <div className="text-4xl md:text-5xl font-bold mb-2 bg-gradient-to-r from-purple-400 to-pink-400 text-transparent bg-clip-text">
+                <div className="text-4xl md:text-5xl font-bold mb-2 bg-gradient-to-r from-purple-400 to-pink-400 text-transparent bg-clip-text group-hover:scale-110 transition-transform duration-300">
                   {stat.value}
                 </div>
-                <div className="text-purple-200">{stat.label}</div>
+                <div className="text-purple-200 text-sm md:text-base">{stat.label}</div>
+                <div className="mt-2 h-1 w-12 bg-gradient-to-r from-purple-500 to-pink-500 mx-auto rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
               </motion.div>
             ))}
           </div>
           <div className="text-center mt-6">
             <p className="text-xs text-purple-400/70">Based on platform activity and user submissions.</p>
           </div>
+        </div>
+      </section>
+
+      {/* Value Proposition Section */}
+      <section className="py-16 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">Why CreatorArmour?</h2>
+            <p className="text-lg text-purple-200 max-w-2xl mx-auto">
+              Built specifically for creators who want protection without the legal complexity
+            </p>
+          </div>
+          <div className="grid md:grid-cols-3 gap-6">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              viewport={{ once: true }}
+              className="text-center group"
+            >
+              <div className="w-16 h-16 bg-gradient-to-r from-purple-600 to-pink-600 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300 shadow-lg shadow-purple-500/30">
+                <Shield className="w-8 h-8 text-white" />
+              </div>
+              <h3 className="text-xl font-bold mb-2">Legal-Backed Protection</h3>
+              <p className="text-purple-200">Real legal notices, not just templates</p>
+            </motion.div>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.1 }}
+              viewport={{ once: true }}
+              className="text-center group"
+            >
+              <div className="w-16 h-16 bg-gradient-to-r from-green-500 to-emerald-500 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300 shadow-lg shadow-green-500/30">
+                <Clock className="w-8 h-8 text-white" />
+              </div>
+              <h3 className="text-xl font-bold mb-2">Early Risk Detection</h3>
+              <p className="text-purple-200">Spot payment issues before they become problems</p>
+            </motion.div>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+              viewport={{ once: true }}
+              className="text-center group"
+            >
+              <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300 shadow-lg shadow-blue-500/30">
+                <FileText className="w-8 h-8 text-white" />
+              </div>
+              <h3 className="text-xl font-bold mb-2">Creator-First Contracts</h3>
+              <p className="text-purple-200">Templates designed to protect you, not brands</p>
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
+      {/* Problem Statement Section */}
+      <section className="py-16 px-4 sm:px-6 lg:px-8 bg-red-500/10 border-y border-red-500/20">
+        <div className="max-w-4xl mx-auto text-center">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            viewport={{ once: true }}
+          >
+            <h2 className="text-2xl md:text-3xl font-bold mb-4 text-red-200">
+              Tired of Unpaid Brand Deals?
+            </h2>
+            <p className="text-lg text-purple-200">
+              Over 60% of creators face payment delays. Don't let brands take advantage of you.
+            </p>
+          </motion.div>
         </div>
       </section>
 
@@ -502,9 +700,10 @@ const HomePage = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: index * 0.1 }}
                 viewport={{ once: true }}
-                className="group bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/10 hover:bg-white/15 transition-all hover:transform hover:scale-105"
+                whileHover={{ y: -5 }}
+                className="group bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/10 hover:bg-white/15 transition-all hover:transform hover:scale-105 hover:shadow-2xl hover:shadow-purple-500/20 cursor-pointer"
               >
-                <div className={`w-14 h-14 rounded-xl bg-gradient-to-r ${feature.color} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}>
+                <div className={`w-14 h-14 rounded-xl bg-gradient-to-r ${feature.color} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform shadow-lg`}>
                   <feature.icon className="w-7 h-7 text-white" />
                 </div>
                 <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
@@ -659,6 +858,112 @@ const HomePage = () => {
         </div>
       </section>
 
+      {/* Key Features Highlight */}
+      <section className="py-16 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">Powerful Protection Features</h2>
+            <p className="text-lg text-purple-200 max-w-2xl mx-auto">
+              Everything you need to protect your deals and get expert legal guidance
+            </p>
+          </div>
+          <div className="grid md:grid-cols-2 gap-8">
+            {/* Consumer Complaints Feature */}
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.6 }}
+              viewport={{ once: true }}
+              className="bg-gradient-to-br from-emerald-500/20 to-green-500/20 backdrop-blur-md rounded-2xl p-8 border border-emerald-500/30 hover:border-emerald-500/50 transition-all"
+            >
+              <div className="flex items-center gap-4 mb-4">
+                <div className="w-14 h-14 bg-gradient-to-r from-emerald-500 to-green-500 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-500/30">
+                  <Shield className="w-7 h-7 text-white" />
+                </div>
+                <div>
+                  <h3 className="text-2xl font-bold mb-1">Lifestyle Shield</h3>
+                  <p className="text-emerald-200 text-sm">Consumer Complaints</p>
+                </div>
+              </div>
+              <p className="text-purple-100 mb-4">
+                File unlimited consumer complaints against brands, e-commerce platforms, and service providers. Get legal notices drafted and sent on your behalf.
+              </p>
+              <ul className="space-y-2 text-purple-200 text-sm mb-6">
+                <li className="flex items-center gap-2">
+                  <CheckCircle className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+                  <span>Unlimited complaints (Creator Pro)</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+                  <span>Legal notice drafting & filing</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+                  <span>Track resolution status</span>
+                </li>
+              </ul>
+              <Link
+                to="/lifestyle/consumer-complaints"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-500/20 hover:bg-emerald-500/30 rounded-lg text-emerald-200 font-medium transition-colors text-sm"
+              >
+                File a Complaint
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+            </motion.div>
+
+            {/* Free Legal Consultation Feature */}
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.6 }}
+              viewport={{ once: true }}
+              className="bg-gradient-to-br from-blue-500/20 to-cyan-500/20 backdrop-blur-md rounded-2xl p-8 border border-blue-500/30 hover:border-blue-500/50 transition-all"
+            >
+              <div className="flex items-center gap-4 mb-4">
+                <div className="w-14 h-14 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/30">
+                  <MessageCircle className="w-7 h-7 text-white" />
+                </div>
+                <div>
+                  <h3 className="text-2xl font-bold mb-1">Free Legal Consultation</h3>
+                  <p className="text-blue-200 text-sm">Expert Advice When You Need It</p>
+                </div>
+              </div>
+              <p className="text-purple-100 mb-4">
+                Book unlimited 15-minute consultations with verified lawyers. Get expert advice on contracts, payments, disputes, and legal matters.
+              </p>
+              <ul className="space-y-2 text-purple-200 text-sm mb-6">
+                <li className="flex items-center gap-2">
+                  <CheckCircle className="w-4 h-4 text-blue-400 flex-shrink-0" />
+                  <span>Unlimited consultations (Creator Pro)</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle className="w-4 h-4 text-blue-400 flex-shrink-0" />
+                  <span>1 free consultation/month (Creator Lite)</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle className="w-4 h-4 text-blue-400 flex-shrink-0" />
+                  <span>15-minute sessions with verified lawyers</span>
+                </li>
+              </ul>
+              <button
+                onClick={() => {
+                  const calendlyUrl = 'https://calendly.com/creatorarmour/15-minute-legal-consultation';
+                  if (typeof (window as any).Calendly !== 'undefined') {
+                    (window as any).Calendly.initPopupWidget({ url: calendlyUrl });
+                  } else {
+                    window.open(calendlyUrl, '_blank');
+                  }
+                }}
+                className="inline-flex items-center gap-2 px-4 py-2 bg-blue-500/20 hover:bg-blue-500/30 rounded-lg text-blue-200 font-medium transition-colors text-sm"
+              >
+                Book Consultation
+                <ArrowRight className="w-4 h-4" />
+              </button>
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
       {/* Pricing */}
       <section id="pricing" className="py-20 px-4 sm:px-6 lg:px-8 bg-white/5 backdrop-blur-sm">
         <div className="max-w-7xl mx-auto">
@@ -773,8 +1078,22 @@ const HomePage = () => {
         </div>
       </section>
 
+      {/* Floating CTA for Mobile */}
+      <div 
+        className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-gradient-to-t from-purple-900 via-purple-900 to-transparent pt-8 pb-4 px-4 border-t border-white/10 backdrop-blur-xl"
+        style={{ paddingBottom: 'max(1rem, calc(env(safe-area-inset-bottom, 0px) + 1rem))' }}
+      >
+        <Link
+          to="/signup"
+          className="block w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 px-6 py-4 rounded-full font-bold text-center transition-all shadow-2xl shadow-purple-500/50 min-h-[56px] flex items-center justify-center gap-2"
+        >
+          Get Started Free
+          <ArrowRight className="w-5 h-5" />
+        </Link>
+      </div>
+
       {/* Footer */}
-      <footer className="py-12 px-4 sm:px-6 lg:px-8 border-t border-white/10">
+      <footer className="py-12 px-4 sm:px-6 lg:px-8 border-t border-white/10 pb-20 md:pb-12">
         <div className="max-w-7xl mx-auto">
           <div className="grid md:grid-cols-4 gap-8 mb-8">
             <div>

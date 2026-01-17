@@ -106,12 +106,12 @@ export default function ConsumerComplaintsHowItWorks() {
           </Button>
           
           <div className="text-center">
-            <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
-              Resolve Consumer Issues, the Right Way
-            </h1>
-            <p className="text-xl text-white/80 max-w-2xl mx-auto">
-              CreatorArmour helps you draft and review consumer complaints before you take any formal legal step.
-            </p>
+          <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
+            Resolve Consumer Issues, the Right Way
+          </h1>
+          <p className="text-xl text-white/80 max-w-2xl mx-auto">
+            CreatorArmour helps you draft and review consumer complaints before you take any formal legal step.
+          </p>
           </div>
         </div>
       </div>

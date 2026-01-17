@@ -465,7 +465,7 @@ const CreatorPaymentsAndRecovery = () => {
           <div className="text-xs text-white/50 mb-0.5">Total Earnings</div>
           <div className="text-lg font-semibold text-white/70">{formatIndianCurrency(stats.totalReceived)}</div>
         </div>
-      </div>
+        </div>
 
       {/* Section Separator */}
       <div className={separators.section} />
@@ -611,7 +611,7 @@ const CreatorPaymentsAndRecovery = () => {
             </motion.button>
           ))}
         </div>
-      </div>
+          </div>
 
       {/* Section Separator */}
       <div className={separators.section} />

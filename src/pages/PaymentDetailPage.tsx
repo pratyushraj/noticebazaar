@@ -471,39 +471,39 @@ const PaymentDetailPage = () => {
           <div className="mb-4">
             <div className="flex items-start justify-between gap-4 mb-3">
               <div className="flex-1 min-w-0">
-                {/* Large Amount */}
-                <div className="text-4xl md:text-5xl font-bold text-white mb-4">
-                  ₹{paymentData.amount.toLocaleString('en-IN', { maximumFractionDigits: 0 })}
-                </div>
+              {/* Large Amount */}
+              <div className="text-4xl md:text-5xl font-bold text-white mb-4">
+                ₹{paymentData.amount.toLocaleString('en-IN', { maximumFractionDigits: 0 })}
+              </div>
 
-                {/* Single Status Badge */}
-                <div className="mb-3">
-                  {paymentData.status === 'received' ? (
-                    <span className="inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium bg-green-500/20 text-green-400 border border-green-500/30">
-                      Received
-                    </span>
-                  ) : paymentData.status === 'overdue' ? (
-                    <span className="inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium bg-red-500/20 text-red-400 border border-red-500/30">
-                      Overdue
-                    </span>
-                  ) : (
-                    <span className="inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium bg-yellow-500/20 text-yellow-400 border border-yellow-500/30">
-                      Pending
-                    </span>
-                  )}
-                </div>
+              {/* Single Status Badge */}
+              <div className="mb-3">
+                {paymentData.status === 'received' ? (
+                  <span className="inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium bg-green-500/20 text-green-400 border border-green-500/30">
+                    Received
+                  </span>
+                ) : paymentData.status === 'overdue' ? (
+                  <span className="inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium bg-red-500/20 text-red-400 border border-red-500/30">
+                    Overdue
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium bg-yellow-500/20 text-yellow-400 border border-yellow-500/30">
+                    Pending
+                  </span>
+                )}
+              </div>
 
-                {/* Helper Line */}
+              {/* Helper Line */}
                 <div className="text-sm text-white/70">
-                  {paymentData.status === 'received' && paymentData.receivedAt ? (
-                    `Payment received on ${paymentData.receivedAt.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`
-                  ) : paymentData.status === 'overdue' && paymentData.expectedDate ? (
-                    `Payment overdue by ${Math.abs(Math.ceil((new Date().getTime() - paymentData.expectedDate.getTime()) / (1000 * 60 * 60 * 24)))} days`
-                  ) : paymentData.expectedDate ? (
-                    `Payment expected by ${paymentData.expectedDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`
-                  ) : (
-                    'Payment date pending'
-                  )}
+                {paymentData.status === 'received' && paymentData.receivedAt ? (
+                  `Payment received on ${paymentData.receivedAt.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`
+                ) : paymentData.status === 'overdue' && paymentData.expectedDate ? (
+                  `Payment overdue by ${Math.abs(Math.ceil((new Date().getTime() - paymentData.expectedDate.getTime()) / (1000 * 60 * 60 * 24)))} days`
+                ) : paymentData.expectedDate ? (
+                  `Payment expected by ${paymentData.expectedDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`
+                ) : (
+                  'Payment date pending'
+                )}
                 </div>
               </div>
             </div>
@@ -527,13 +527,13 @@ const PaymentDetailPage = () => {
                 {(() => {
                   const riskConfig = getPaymentRiskConfig(paymentData.riskLevel);
                   return (
-                    <div className={cn(
+                <div className={cn(
                       "text-xs font-medium px-2 py-1 rounded-full whitespace-nowrap inline-block",
                       riskConfig.bgColor,
                       riskConfig.color
-                    )}>
+                )}>
                       {riskConfig.label}
-                    </div>
+                </div>
                   );
                 })()}
               </div>

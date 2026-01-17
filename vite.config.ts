@@ -2,6 +2,36 @@ import { defineConfig } from "vite";
 import dyadComponentTagger from "@dyad-sh/react-vite-component-tagger";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
+import { existsSync } from "fs";
+
+// Dynamically resolve React paths to ensure single instance
+function resolveReactPath() {
+  // Try pnpm structure first (most common)
+  const pnpmReactPath = path.resolve(__dirname, "./node_modules/.pnpm/react@18.3.1/node_modules/react");
+  const pnpmReactDomPath = path.resolve(__dirname, "./node_modules/.pnpm/react-dom@18.3.1_react@18.3.1/node_modules/react-dom");
+  
+  if (existsSync(pnpmReactPath) && existsSync(pnpmReactDomPath)) {
+    return {
+      react: pnpmReactPath,
+      reactDom: pnpmReactDomPath,
+      jsxRuntime: path.join(pnpmReactPath, "jsx-runtime"),
+      jsxDevRuntime: path.join(pnpmReactPath, "jsx-dev-runtime"),
+    };
+  }
+  
+  // Fallback to standard node_modules structure
+  const standardReactPath = path.resolve(__dirname, "./node_modules/react");
+  const standardReactDomPath = path.resolve(__dirname, "./node_modules/react-dom");
+  
+  return {
+    react: standardReactPath,
+    reactDom: standardReactDomPath,
+    jsxRuntime: path.join(standardReactPath, "jsx-runtime"),
+    jsxDevRuntime: path.join(standardReactPath, "jsx-dev-runtime"),
+  };
+}
+
+const reactPaths = resolveReactPath();
 
 // Plugin to fix use-sync-external-store/shim CommonJS export issue
 const useSyncExternalStoreShimPlugin = () => {
@@ -95,10 +125,10 @@ export default defineConfig(() => ({
       "@": path.resolve(__dirname, "./src"),
       // CRITICAL: Force all React imports to use the same instance
       // This prevents "Invalid hook call" errors from multiple React instances
-      "react": path.resolve(__dirname, "./node_modules/.pnpm/react@18.3.1/node_modules/react"),
-      "react-dom": path.resolve(__dirname, "./node_modules/.pnpm/react-dom@18.3.1_react@18.3.1/node_modules/react-dom"),
-      "react/jsx-runtime": path.resolve(__dirname, "./node_modules/.pnpm/react@18.3.1/node_modules/react/jsx-runtime"),
-      "react/jsx-dev-runtime": path.resolve(__dirname, "./node_modules/.pnpm/react@18.3.1/node_modules/react/jsx-dev-runtime"),
+      "react": reactPaths.react,
+      "react-dom": reactPaths.reactDom,
+      "react/jsx-runtime": reactPaths.jsxRuntime,
+      "react/jsx-dev-runtime": reactPaths.jsxDevRuntime,
       // Force use-sync-external-store/shim to use our ESM shim
       "use-sync-external-store/shim": path.resolve(__dirname, "./src/lib/use-sync-external-store-shim.ts"),
     },
@@ -125,7 +155,8 @@ export default defineConfig(() => ({
       "use-sync-external-store",
       "use-sync-external-store/shim",
     ],
-    force: true, // Force re-optimization
+    // Don't force on every start - only when needed
+    // force: true, 
     // Ensure all dependencies are discovered before pre-bundling
     holdUntilCrawlEnd: true,
     esbuildOptions: {

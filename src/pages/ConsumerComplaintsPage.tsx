@@ -152,8 +152,8 @@ const ConsumerComplaintsPage: React.FC = () => {
   return (
       <div className="nb-screen-height bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 p-6 pb-24">
       <div className="max-w-2xl mx-auto">
-        {/* Header */}
-        <div className="mb-8">
+          {/* Header */}
+          <div className="mb-8">
           <Button
             variant="ghost"
             onClick={() => navigate('/creator-dashboard')}
@@ -163,45 +163,45 @@ const ConsumerComplaintsPage: React.FC = () => {
             Back
           </Button>
           <div className="flex items-center gap-3 mb-3">
-            <Shield className="w-8 h-8 text-purple-400" />
+              <Shield className="w-8 h-8 text-purple-400" />
             <h1 className="text-3xl font-bold text-white">
-              Consumer Complaints
-            </h1>
-          </div>
+                Consumer Complaints
+              </h1>
+            </div>
           <p className="text-white/70 text-base">
-            Resolve everyday refund and service issues without stress.
-          </p>
-        </div>
+              Resolve everyday refund and service issues without stress.
+            </p>
+          </div>
 
         {/* Category List */}
         <div className="space-y-4 mb-6">
-          {categories.map((category) => {
-            const Icon = category.icon;
-            return (
+            {categories.map((category) => {
+              const Icon = category.icon;
+              return (
               <button
-                key={category.id}
+                  key={category.id}
                 onClick={() => handleRaiseComplaint(category.id, category.name)}
                 className="w-full p-5 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 transition-all text-left group"
-              >
+                >
                 <div className="flex items-start gap-4">
-                  {/* Icon */}
-                  <div
+                      {/* Icon */}
+                      <div
                     className="w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0 transition-transform group-hover:scale-105"
-                    style={{
-                      backgroundColor: category.bgColor,
-                    }}
-                  >
-                    <Icon
+                        style={{
+                          backgroundColor: category.bgColor,
+                        }}
+                      >
+                        <Icon
                       className="w-7 h-7"
-                      style={{ color: category.color }}
-                    />
-                  </div>
+                          style={{ color: category.color }}
+                        />
+                      </div>
 
                   {/* Content */}
                   <div className="flex-1 min-w-0">
                     <h3 className="text-lg font-semibold text-white mb-1">
-                      {category.name}
-                    </h3>
+                        {category.name}
+                      </h3>
                     {category.helperText && (
                       <p className="text-sm text-white/60">
                         {category.helperText}
@@ -211,10 +211,10 @@ const ConsumerComplaintsPage: React.FC = () => {
 
                   {/* Arrow */}
                   <ArrowRight className="w-5 h-5 text-white/40 group-hover:text-white/70 group-hover:translate-x-1 transition-all flex-shrink-0 mt-1" />
-                </div>
+                    </div>
               </button>
-            );
-          })}
+              );
+            })}
         </div>
 
         {/* Sticky Bottom CTA */}
