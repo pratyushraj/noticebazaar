@@ -385,13 +385,13 @@ export async function getContractReadyTokenInfo(tokenId: string): Promise<{
     delete deal._creator_profile;
     delete deal._creator_email;
   } else {
-    // Fetch creator profile with address
+  // Fetch creator profile with address
     console.log('[ContractReadyTokenService] Fetching creator profile for creatorId:', creatorId);
     const { data: creatorData, error: creatorError } = await supabase
-      .from('profiles')
+    .from('profiles')
       .select('first_name, last_name, location, business_name')
-      .eq('id', creatorId)
-      .maybeSingle();
+    .eq('id', creatorId)
+    .maybeSingle();
 
     if (creatorError) {
       console.error('[ContractReadyTokenService] Error fetching creator profile:', {
@@ -417,15 +417,15 @@ export async function getContractReadyTokenInfo(tokenId: string): Promise<{
             location: (creatorData as any).location,
         businessName: (creatorData as any).business_name
       });
-    }
+  }
 
-    // Get email from auth.users
-    try {
-      const { data: authUser } = await supabase.auth.admin.getUserById(creatorId);
-      creatorEmail = authUser?.user?.email || null;
+  // Get email from auth.users
+  try {
+    const { data: authUser } = await supabase.auth.admin.getUserById(creatorId);
+    creatorEmail = authUser?.user?.email || null;
       console.log('[ContractReadyTokenService] Fetched creator email from auth:', creatorEmail);
-    } catch (authError) {
-      console.warn('[ContractReadyTokenService] Could not fetch creator email from auth:', authError);
+  } catch (authError) {
+    console.warn('[ContractReadyTokenService] Could not fetch creator email from auth:', authError);
     }
   }
 
@@ -486,7 +486,7 @@ export async function getContractReadyTokenInfo(tokenId: string): Promise<{
       creatorAddress = null;
     }
   }
-  
+
   // Log address details for debugging
   console.log('[ContractReadyTokenService] Address extraction:', {
     hasCreator: !!creator,

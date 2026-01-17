@@ -118,10 +118,10 @@ publicRouter.post('/send', async (req: express.Request, res: Response) => {
     
     if (tokenData.deal_id) {
       const { data: dealData, error: dealErr } = await supabase
-        .from('brand_deals')
-        .select('*')
-        .eq('id', tokenData.deal_id)
-        .maybeSingle();
+      .from('brand_deals')
+      .select('*')
+      .eq('id', tokenData.deal_id)
+      .maybeSingle();
       
       deal = dealData;
       dealError = dealErr;
@@ -263,21 +263,21 @@ publicRouter.post('/send', async (req: express.Request, res: Response) => {
 
     // Update deal with OTP hash and expiration (only if deal exists in database)
     if (deal?.id) {
-      const updateData: any = {
-        otp_hash: otpHash,
-        otp_expires_at: expiresAt.toISOString(),
-        otp_last_sent_at: new Date().toISOString(),
-        otp_attempts: 0, // Reset attempts on new OTP
-        updated_at: new Date().toISOString(),
-      };
+    const updateData: any = {
+      otp_hash: otpHash,
+      otp_expires_at: expiresAt.toISOString(),
+      otp_last_sent_at: new Date().toISOString(),
+      otp_attempts: 0, // Reset attempts on new OTP
+      updated_at: new Date().toISOString(),
+    };
 
-      const { error: updateError } = await supabase
-        .from('brand_deals')
-        .update(updateData)
+    const { error: updateError } = await supabase
+      .from('brand_deals')
+      .update(updateData)
         .eq('id', deal.id);
-      
-      if (updateError) {
-        console.error('[OTP] Failed to update deal:', updateError);
+
+    if (updateError) {
+      console.error('[OTP] Failed to update deal:', updateError);
         // Don't fail the OTP send if update fails - OTP was already sent
         console.warn('[OTP] OTP sent but failed to save to deal table (non-fatal)');
       }
@@ -428,11 +428,11 @@ publicRouter.post('/verify', async (req: express.Request, res: Response) => {
     
     if (tokenData.deal_id) {
       const { data: dealData, error: dealErr } = await supabase
-        .from('brand_deals')
-        .select('*')
-        .eq('id', tokenData.deal_id)
-        .maybeSingle();
-      
+      .from('brand_deals')
+      .select('*')
+      .eq('id', tokenData.deal_id)
+      .maybeSingle();
+
       deal = dealData;
       dealError = dealErr;
     } else if ((tokenData as any).submission_id) {
@@ -629,19 +629,19 @@ publicRouter.post('/verify', async (req: express.Request, res: Response) => {
     if (!isValid) {
       // Increment attempts (only if deal exists)
       if (deal?.id) {
-        const newAttempts = attempts + 1;
-        await supabase
-          .from('brand_deals')
-          .update({
-            otp_attempts: newAttempts,
-            updated_at: new Date().toISOString(),
-          })
+      const newAttempts = attempts + 1;
+      await supabase
+        .from('brand_deals')
+        .update({
+          otp_attempts: newAttempts,
+          updated_at: new Date().toISOString(),
+        })
           .eq('id', deal.id);
 
-        // Log failed attempt
+      // Log failed attempt
         await logDealAction(deal.id, 'OTP_FAILED_ATTEMPT', {
-          attempts: newAttempts,
-        });
+        attempts: newAttempts,
+      });
       }
 
       return res.status(400).json({
@@ -655,32 +655,32 @@ publicRouter.post('/verify', async (req: express.Request, res: Response) => {
     let verifiedAt: string | null = null;
     
     if (deal?.id) {
-      const updateData: any = {
-        otp_verified: true,
-        otp_verified_at: new Date().toISOString(),
-        brand_response_status: 'accepted_verified',
-        updated_at: new Date().toISOString(),
-      };
+    const updateData: any = {
+      otp_verified: true,
+      otp_verified_at: new Date().toISOString(),
+      brand_response_status: 'accepted_verified',
+      updated_at: new Date().toISOString(),
+    };
 
       verifiedAt = updateData.otp_verified_at;
 
-      const { error: updateError } = await supabase
-        .from('brand_deals')
-        .update(updateData)
+    const { error: updateError } = await supabase
+      .from('brand_deals')
+      .update(updateData)
         .eq('id', deal.id);
 
-      if (updateError) {
-        console.error('[OTP] Failed to update deal:', updateError);
-        return res.status(500).json({
-          success: false,
-          error: `Failed to verify OTP: ${updateError.message}`,
-        });
-      }
-
-      // Log successful verification
-      await logDealAction(deal.id, 'OTP_VERIFIED', {
-        verifiedAt: updateData.otp_verified_at,
+    if (updateError) {
+      console.error('[OTP] Failed to update deal:', updateError);
+      return res.status(500).json({
+        success: false,
+        error: `Failed to verify OTP: ${updateError.message}`,
       });
+    }
+
+    // Log successful verification
+      await logDealAction(deal.id, 'OTP_VERIFIED', {
+      verifiedAt: updateData.otp_verified_at,
+    });
     }
 
     // Generate invoice after OTP verification
