@@ -30,6 +30,38 @@ const FALLBACK_IMAGE_URL = '/placeholder.svg';
 
 const MOCK_BLOG_POSTS: BlogPost[] = [
   {
+    slug: 'protect-yourself-from-unpaid-brand-deals',
+    title: 'How to Protect Yourself from Unpaid Brand Deals: A Creator\'s Guide',
+    summary: 'Learn how to spot payment risks early, draft protective contracts, and recover unpaid fees when brands delay or refuse payment.',
+    date: 'Jan 17, 2026',
+    category: 'Legal',
+    image: IMAGE_POOL[0],
+  },
+  {
+    slug: 'consumer-complaints-guide-for-creators',
+    title: 'Consumer Complaints Guide: How Creators Can File Complaints Against Brands',
+    summary: 'Step-by-step guide on filing consumer complaints against brands, e-commerce platforms, and service providers. Get legal notices drafted and sent.',
+    date: 'Jan 15, 2026',
+    category: 'Legal',
+    image: IMAGE_POOL[0],
+  },
+  {
+    slug: 'red-flags-in-influencer-contracts',
+    title: 'Red Flags in Influencer Contracts: What to Watch Out For',
+    summary: 'Identify risky clauses, unfair payment terms, and content ownership issues before signing. Protect your rights as a creator.',
+    date: 'Jan 12, 2026',
+    category: 'Legal',
+    image: IMAGE_POOL[0],
+  },
+  {
+    slug: 'when-to-use-free-legal-consultations',
+    title: 'When to Use Free Legal Consultations: A Creator\'s Guide',
+    summary: 'Learn when to book a free legal consultation, what questions to ask, and how to make the most of your 15-minute sessions with verified lawyers.',
+    date: 'Jan 10, 2026',
+    category: 'Legal',
+    image: IMAGE_POOL[0],
+  },
+  {
     slug: 'gst-compliance-checklist',
     title: 'Complete GST Compliance Checklist for Startups in 2025',
     summary: 'A comprehensive, month-by-month checklist to ensure your business remains 100% compliant with GST regulations and avoids penalties.',

@@ -13,6 +13,424 @@ interface BlogPostContent {
 }
 
 const MOCK_CONTENT: { [key: string]: BlogPostContent } = {
+  'protect-yourself-from-unpaid-brand-deals': {
+    title: 'How to Protect Yourself from Unpaid Brand Deals: A Creator\'s Guide',
+    date: 'Jan 17, 2026',
+    category: 'Legal',
+    content: (
+      <div className="prose dark:prose-invert max-w-none space-y-6">
+        <p className="lead text-lg text-muted-foreground">
+          Over 60% of creators face payment delays or non-payment from brands. Learn how to protect yourself with proper contracts, early risk detection, and effective recovery strategies.
+        </p>
+        
+        <h2 className="text-2xl font-bold text-foreground">1. Spot Payment Risks Early</h2>
+        <p>
+          The best protection is prevention. Before signing any brand deal, check for these warning signs:
+        </p>
+        <ul className="list-disc list-inside ml-4 space-y-2">
+          <li><strong>Vague payment terms:</strong> If the contract doesn't specify exact payment dates, amounts, or milestones, it's a red flag.</li>
+          <li><strong>Long payment cycles:</strong> Payment terms longer than 30 days after deliverables are risky.</li>
+          <li><strong>No late payment penalties:</strong> Contracts without interest or penalties for delayed payments give brands no incentive to pay on time.</li>
+          <li><strong>Brand reputation:</strong> Check if other creators have complained about payment delays with this brand.</li>
+        </ul>
+
+        <h2 className="text-2xl font-bold text-foreground">2. Draft Protective Contracts</h2>
+        <p>
+          A well-drafted contract is your first line of defense. Ensure your contract includes:
+        </p>
+        <ul className="list-disc list-inside ml-4 space-y-2">
+          <li><strong>Clear payment schedule:</strong> Specify exact dates and amounts for each milestone.</li>
+          <li><strong>Late payment penalties:</strong> Include interest (typically 18% per annum) for delayed payments.</li>
+          <li><strong>Content ownership:</strong> Clearly state who owns the content and usage rights.</li>
+          <li><strong>Dispute resolution:</strong> Specify jurisdiction and method for resolving disputes.</li>
+          <li><strong>Termination clauses:</strong> Define what happens if either party wants to end the agreement early.</li>
+        </ul>
+        <p>
+          CreatorArmour's contract generator helps you create creator-friendly contracts with all these protections built-in.
+        </p>
+
+        <h2 className="text-2xl font-bold text-foreground">3. Track Payments and Deadlines</h2>
+        <p>
+          Once you've signed a deal, don't just wait for payment. Actively track:
+        </p>
+        <ul className="list-disc list-inside ml-4 space-y-2">
+          <li><strong>Payment due dates:</strong> Set reminders 7 days before each payment is due.</li>
+          <li><strong>Deliverable deadlines:</strong> Ensure you meet your commitments to avoid giving brands an excuse to delay payment.</li>
+          <li><strong>Payment status:</strong> Follow up immediately if payment is even 1 day late.</li>
+        </ul>
+        <p>
+          CreatorArmour's payment tracking dashboard automatically monitors all your deals and alerts you when payments are due or overdue.
+        </p>
+
+        <h2 className="text-2xl font-bold text-foreground">4. Take Action When Payment is Delayed</h2>
+        <p>
+          If a brand delays payment, don't wait. Follow this escalation process:
+        </p>
+        <ol className="list-decimal list-inside ml-4 space-y-2">
+          <li><strong>Day 1-3:</strong> Send a polite reminder email with invoice attached.</li>
+          <li><strong>Day 4-7:</strong> Send a formal follow-up mentioning the contract terms and late payment penalties.</li>
+          <li><strong>Day 8-15:</strong> Send a legal notice drafted by a lawyer. This often prompts immediate payment.</li>
+          <li><strong>Day 16+:</strong> Consider filing a consumer complaint or taking legal action.</li>
+        </ol>
+
+        <h2 className="text-2xl font-bold text-foreground">5. Use Legal Notices Effectively</h2>
+        <p>
+          A legal notice sent by a registered advocate carries significant weight. It:
+        </p>
+        <ul className="list-disc list-inside ml-4 space-y-2">
+          <li>Shows you're serious about recovering payment</li>
+          <li>Often prompts immediate payment (85% recovery rate)</li>
+          <li>Creates a legal paper trail if you need to take further action</li>
+          <li>Can be used as evidence in court if needed</li>
+        </ul>
+        <p>
+          Creator Pro includes 1 free legal notice per month, drafted and sent by verified lawyers.
+        </p>
+        
+        <Card className="bg-secondary p-4 border-l-4 border-primary">
+          <CardContent className="p-0 flex flex-col space-y-3">
+            <div className="flex items-center">
+              <FileText className="h-5 w-5 text-primary mr-3 flex-shrink-0" />
+              <p className="text-sm text-foreground font-semibold">
+                Protect Your Brand Deals Today
+              </p>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              Creator Pro includes contract generation, payment tracking, risk alerts, and free legal notices. Start protecting your deals now.
+            </p>
+            <Button asChild className="w-full sm:w-auto bg-accent-gold text-accent-gold-foreground hover:bg-accent-gold/90">
+              <Link to="/signup">
+                Get Started Free <ArrowRight className="h-4 w-4 ml-2" />
+              </Link>
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    ),
+  },
+  'consumer-complaints-guide-for-creators': {
+    title: 'Consumer Complaints Guide: How Creators Can File Complaints Against Brands',
+    date: 'Jan 15, 2026',
+    category: 'Legal',
+    content: (
+      <div className="prose dark:prose-invert max-w-none space-y-6">
+        <p className="lead text-lg text-muted-foreground">
+          As a creator, you're also a consumer. When brands, e-commerce platforms, or service providers wrong you, you have the right to file a consumer complaint. Here's how to do it effectively.
+        </p>
+        
+        <h2 className="text-2xl font-bold text-foreground">What Can You File a Complaint About?</h2>
+        <p>
+          You can file consumer complaints for various issues:
+        </p>
+        <ul className="list-disc list-inside ml-4 space-y-2">
+          <li><strong>Unpaid brand deals:</strong> When brands don't pay as agreed</li>
+          <li><strong>Defective products:</strong> Products that don't work as advertised</li>
+          <li><strong>Service issues:</strong> Poor service from platforms, agencies, or service providers</li>
+          <li><strong>Refund disputes:</strong> When companies refuse legitimate refunds</li>
+          <li><strong>False advertising:</strong> When brands misrepresent their products or services</li>
+          <li><strong>Data privacy violations:</strong> When companies misuse your personal data</li>
+        </ul>
+
+        <h2 className="text-2xl font-bold text-foreground">Step 1: Gather Evidence</h2>
+        <p>
+          Before filing a complaint, collect all relevant documents:
+        </p>
+        <ul className="list-disc list-inside ml-4 space-y-2">
+          <li>Contracts or agreements</li>
+          <li>Email correspondence</li>
+          <li>Payment receipts or invoices</li>
+          <li>Screenshots of conversations</li>
+          <li>Photos or videos of defective products</li>
+          <li>Any other proof of the issue</li>
+        </ul>
+
+        <h2 className="text-2xl font-bold text-foreground">Step 2: Send a Legal Notice</h2>
+        <p>
+          Before filing a formal complaint, send a legal notice to the company. This:
+        </p>
+        <ul className="list-disc list-inside ml-4 space-y-2">
+          <li>Gives them a chance to resolve the issue amicably</li>
+          <li>Shows you're serious about your rights</li>
+          <li>Often leads to quick resolution (many companies respond within 7-14 days)</li>
+          <li>Creates a legal paper trail</li>
+        </ul>
+        <p>
+          Creator Pro includes unlimited consumer complaints with legal notice drafting and filing support.
+        </p>
+
+        <h2 className="text-2xl font-bold text-foreground">Step 3: File the Complaint</h2>
+        <p>
+          If the legal notice doesn't resolve the issue, file a formal complaint with:
+        </p>
+        <ul className="list-disc list-inside ml-4 space-y-2">
+          <li><strong>Consumer Disputes Redressal Commission:</strong> For disputes up to ₹1 crore</li>
+          <li><strong>National Consumer Disputes Redressal Commission:</strong> For disputes above ₹1 crore</li>
+          <li><strong>Online portals:</strong> Many states have online complaint filing systems</li>
+        </ul>
+
+        <h2 className="text-2xl font-bold text-foreground">Step 4: Track Your Complaint</h2>
+        <p>
+          After filing, regularly check the status of your complaint. CreatorArmour's Lifestyle Shield helps you track all your complaints in one place.
+        </p>
+        
+        <Card className="bg-secondary p-4 border-l-4 border-primary">
+          <CardContent className="p-0 flex flex-col space-y-3">
+            <div className="flex items-center">
+              <Gavel className="h-5 w-5 text-primary mr-3 flex-shrink-0" />
+              <p className="text-sm text-foreground font-semibold">
+                File Unlimited Consumer Complaints
+              </p>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              Creator Pro includes Lifestyle Shield - file unlimited consumer complaints, get legal notices drafted, and track resolution status.
+            </p>
+            <Button asChild className="w-full sm:w-auto bg-accent-gold text-accent-gold-foreground hover:bg-accent-gold/90">
+              <Link to="/signup">
+                Get Creator Pro <ArrowRight className="h-4 w-4 ml-2" />
+              </Link>
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    ),
+  },
+  'red-flags-in-influencer-contracts': {
+    title: 'Red Flags in Influencer Contracts: What to Watch Out For',
+    date: 'Jan 12, 2026',
+    category: 'Legal',
+    content: (
+      <div className="prose dark:prose-invert max-w-none space-y-6">
+        <p className="lead text-lg text-muted-foreground">
+          Not all brand deals are created equal. Some contracts contain clauses that can harm your career, limit your earnings, or expose you to legal risks. Here are the red flags to watch out for.
+        </p>
+        
+        <h2 className="text-2xl font-bold text-foreground">1. Vague Payment Terms</h2>
+        <p>
+          <strong>Red Flag:</strong> Contracts that don't specify exact payment amounts, dates, or milestones.
+        </p>
+        <p>
+          <strong>Why it's risky:</strong> Brands can delay or reduce payments, claiming deliverables weren't met or weren't satisfactory.
+        </p>
+        <p>
+          <strong>What to look for:</strong> Clear payment schedule with specific dates, amounts, and conditions for each milestone.
+        </p>
+
+        <h2 className="text-2xl font-bold text-foreground">2. Excessive Exclusivity Clauses</h2>
+        <p>
+          <strong>Red Flag:</strong> Contracts that prevent you from working with competitors for extended periods (6+ months).
+        </p>
+        <p>
+          <strong>Why it's risky:</strong> Limits your ability to earn from other brand deals, especially in the same category.
+        </p>
+        <p>
+          <strong>What to negotiate:</strong> Limit exclusivity to 30-60 days, or only for direct competitors, not entire categories.
+        </p>
+
+        <h2 className="text-2xl font-bold text-foreground">3. Content Ownership Transfers</h2>
+        <p>
+          <strong>Red Flag:</strong> Clauses that transfer all rights to your content to the brand, including your right to use it.
+        </p>
+        <p>
+          <strong>Why it's risky:</strong> You lose control over your own content and can't use it for your portfolio or future work.
+        </p>
+        <p>
+          <strong>What to negotiate:</strong> Grant usage rights for the campaign period, but retain ownership and right to use in your portfolio.
+        </p>
+
+        <h2 className="text-2xl font-bold text-foreground">4. Unreasonable Approval Processes</h2>
+        <p>
+          <strong>Red Flag:</strong> Contracts requiring brand approval for every post, with no clear timeline or revision limits.
+        </p>
+        <p>
+          <strong>Why it's risky:</strong> Brands can delay or reject content indefinitely, preventing you from completing deliverables.
+        </p>
+        <p>
+          <strong>What to negotiate:</strong> Limit revisions to 2-3 rounds, with clear timelines (e.g., 48 hours for feedback).
+        </p>
+
+        <h2 className="text-2xl font-bold text-foreground">5. Indemnification Clauses</h2>
+        <p>
+          <strong>Red Flag:</strong> Clauses making you responsible for all legal issues, even those caused by the brand's products or services.
+        </p>
+        <p>
+          <strong>Why it's risky:</strong> You could be held liable for product defects, false claims, or other issues beyond your control.
+        </p>
+        <p>
+          <strong>What to negotiate:</strong> Limit indemnification to issues you directly cause, not product defects or brand claims.
+        </p>
+
+        <h2 className="text-2xl font-bold text-foreground">6. No Late Payment Penalties</h2>
+        <p>
+          <strong>Red Flag:</strong> Contracts without interest or penalties for delayed payments.
+        </p>
+        <p>
+          <strong>Why it's risky:</strong> Brands have no incentive to pay on time, and you bear the cost of delayed payments.
+        </p>
+        <p>
+          <strong>What to add:</strong> Include 18% per annum interest on delayed payments, plus late fees.
+        </p>
+
+        <h2 className="text-2xl font-bold text-foreground">7. Unclear Termination Clauses</h2>
+        <p>
+          <strong>Red Flag:</strong> Contracts that allow brands to terminate without cause or payment.
+        </p>
+        <p>
+          <strong>Why it's risky:</strong> Brands can end deals without paying for work already completed.
+        </p>
+        <p>
+          <strong>What to negotiate:</strong> Ensure payment for completed work, even if contract is terminated early.
+        </p>
+
+        <h2 className="text-2xl font-bold text-foreground">How CreatorArmour Helps</h2>
+        <p>
+          Our contract analyzer scans your contracts and flags these red flags automatically. Plus, Creator Pro includes human lawyer contract reviews to help you negotiate better terms.
+        </p>
+        
+        <Card className="bg-secondary p-4 border-l-4 border-primary">
+          <CardContent className="p-0 flex flex-col space-y-3">
+            <div className="flex items-center">
+              <FileText className="h-5 w-5 text-primary mr-3 flex-shrink-0" />
+              <p className="text-sm text-foreground font-semibold">
+                Scan Your Contracts for Free
+              </p>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              Use CreatorArmour's AI contract scanner to identify risky clauses before you sign. Creator Pro includes human lawyer reviews for complex contracts.
+            </p>
+            <Button asChild className="w-full sm:w-auto bg-accent-gold text-accent-gold-foreground hover:bg-accent-gold/90">
+              <Link to="/signup">
+                Scan a Contract Now <ArrowRight className="h-4 w-4 ml-2" />
+              </Link>
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    ),
+  },
+  'when-to-use-free-legal-consultations': {
+    title: 'When to Use Free Legal Consultations: A Creator\'s Guide',
+    date: 'Jan 10, 2026',
+    category: 'Legal',
+    content: (
+      <div className="prose dark:prose-invert max-w-none space-y-6">
+        <p className="lead text-lg text-muted-foreground">
+          Free legal consultations are a powerful tool for creators, but knowing when to use them can maximize their value. Here's when to book a consultation and how to make the most of your 15-minute sessions.
+        </p>
+        
+        <h2 className="text-2xl font-bold text-foreground">When to Book a Consultation</h2>
+        
+        <h3 className="text-xl font-semibold text-foreground">1. Before Signing a Contract</h3>
+        <p>
+          <strong>Best time:</strong> After you've reviewed the contract but before signing.
+        </p>
+        <p>
+          <strong>What to ask:</strong>
+        </p>
+        <ul className="list-disc list-inside ml-4 space-y-2">
+          <li>Are there any red flags or risky clauses?</li>
+          <li>What terms should I negotiate?</li>
+          <li>Is the payment structure fair?</li>
+          <li>What are my rights regarding content ownership?</li>
+        </ul>
+
+        <h3 className="text-xl font-semibold text-foreground">2. When Payment is Delayed</h3>
+        <p>
+          <strong>Best time:</strong> Within 7 days of the payment due date.
+        </p>
+        <p>
+          <strong>What to ask:</strong>
+        </p>
+        <ul className="list-disc list-inside ml-4 space-y-2">
+          <li>What steps should I take to recover payment?</li>
+          <li>Should I send a legal notice?</li>
+          <li>What are my legal options if they don't pay?</li>
+          <li>How do I document everything for potential legal action?</li>
+        </ul>
+
+        <h3 className="text-xl font-semibold text-foreground">3. When Filing a Consumer Complaint</h3>
+        <p>
+          <strong>Best time:</strong> Before filing, to ensure you have the right evidence and approach.
+        </p>
+        <p>
+          <strong>What to ask:</strong>
+        </p>
+        <ul className="list-disc list-inside ml-4 space-y-2">
+          <li>Do I have a valid consumer complaint?</li>
+          <li>What evidence do I need to gather?</li>
+          <li>Should I send a legal notice first?</li>
+          <li>Where should I file the complaint?</li>
+        </ul>
+
+        <h3 className="text-xl font-semibold text-foreground">4. When Negotiating Terms</h3>
+        <p>
+          <strong>Best time:</strong> When a brand proposes terms you're unsure about.
+        </p>
+        <p>
+          <strong>What to ask:</strong>
+        </p>
+        <ul className="list-disc list-inside ml-4 space-y-2">
+          <li>Are these terms standard or unusual?</li>
+          <li>What should I counter-propose?</li>
+          <li>What's negotiable and what's not?</li>
+        </ul>
+
+        <h2 className="text-2xl font-bold text-foreground">How to Prepare for Your Consultation</h2>
+        <p>
+          To make the most of your 15 minutes:
+        </p>
+        <ol className="list-decimal list-inside ml-4 space-y-2">
+          <li><strong>Gather all documents:</strong> Contracts, emails, invoices, screenshots</li>
+          <li><strong>Write down your questions:</strong> Prioritize the most important ones</li>
+          <li><strong>Be specific:</strong> Provide context and background information</li>
+          <li><strong>Take notes:</strong> Write down the lawyer's advice and next steps</li>
+        </ol>
+
+        <h2 className="text-2xl font-bold text-foreground">What to Expect</h2>
+        <p>
+          During your consultation, the lawyer will:
+        </p>
+        <ul className="list-disc list-inside ml-4 space-y-2">
+          <li>Review your documents and situation</li>
+          <li>Answer your specific questions</li>
+          <li>Provide legal advice and recommendations</li>
+          <li>Suggest next steps if needed</li>
+        </ul>
+        <p>
+          <strong>Note:</strong> Consultations provide legal advice, not legal representation. For ongoing representation, you may need to engage a lawyer separately.
+        </p>
+
+        <h2 className="text-2xl font-bold text-foreground">Creator Pro Benefits</h2>
+        <p>
+          Creator Pro includes unlimited free legal consultations, so you can:
+        </p>
+        <ul className="list-disc list-inside ml-4 space-y-2">
+          <li>Get advice before every major contract</li>
+          <li>Consult on payment recovery strategies</li>
+          <li>Get guidance on consumer complaints</li>
+          <li>Ask questions as they arise, without worrying about costs</li>
+        </ul>
+        
+        <Card className="bg-secondary p-4 border-l-4 border-primary">
+          <CardContent className="p-0 flex flex-col space-y-3">
+            <div className="flex items-center">
+              <FileText className="h-5 w-5 text-primary mr-3 flex-shrink-0" />
+              <p className="text-sm text-foreground font-semibold">
+                Get Unlimited Free Legal Consultations
+              </p>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              Creator Pro includes unlimited 15-minute consultations with verified lawyers. Get expert advice whenever you need it.
+            </p>
+            <Button asChild className="w-full sm:w-auto bg-accent-gold text-accent-gold-foreground hover:bg-accent-gold/90">
+              <Link to="/signup">
+                Book a Consultation <ArrowRight className="h-4 w-4 ml-2" />
+              </Link>
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    ),
+  },
   'gst-compliance-checklist': { // New entry
     title: 'Complete GST Compliance Checklist for Startups in 2025',
     date: 'Nov 1, 2025',
