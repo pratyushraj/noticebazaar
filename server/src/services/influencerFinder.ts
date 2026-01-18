@@ -328,110 +328,117 @@ async function searchViaApify(hashtags: string[], keywords: string[], limit: num
           log.warn(`Apify returned 0 items for #${hashtag} - check if hashtag search is working`);
         }
 
-        // Process each item
+        // Step 1: Collect unique usernames from posts
+        const uniqueUsernames = new Set<string>();
         for (const item of items) {
-          try {
-            // Type assertion for Apify item (can be post or profile data)
-            const apifyItem = item as any;
-            
-            // Apify Instagram scraper returns posts, we need to extract unique profiles
-            // Try multiple possible field names for username
-            const username = apifyItem.ownerUsername || 
-                           apifyItem.username || 
-                           apifyItem.owner?.username ||
-                           apifyItem.user?.username ||
-                           apifyItem.author?.username ||
-                           apifyItem.profile?.username ||
-                           (apifyItem.url && typeof apifyItem.url === 'string' && apifyItem.url.match(/instagram\.com\/([^\/\?]+)/)?.[1]);
-            
-            if (!username || typeof username !== 'string') {
-              log.warn(`Skipping item - no username found`, { 
-                itemKeys: Object.keys(apifyItem),
-                itemUrl: apifyItem.url,
-                hasOwner: !!apifyItem.owner,
-                ownerKeys: apifyItem.owner ? Object.keys(apifyItem.owner) : [],
-                sampleData: JSON.stringify(apifyItem).substring(0, 200)
-              });
-              continue;
-            }
-            
-            log.info(`Processing profile: @${username}`);
+          const apifyItem = item as any;
+          const username = apifyItem.ownerUsername || 
+                         apifyItem.username || 
+                         apifyItem.owner?.username;
+          
+          if (username && typeof username === 'string') {
+            uniqueUsernames.add(username);
+          }
+        }
 
+        log.info(`Found ${uniqueUsernames.size} unique usernames from posts for #${hashtag}`);
+
+        // Step 2: Fetch full profile data for each username
+        for (const username of Array.from(uniqueUsernames).slice(0, limit)) {
+          try {
             if (profilesMap.has(username)) {
               continue; // Skip duplicates
             }
 
-            // Extract profile data from post data - try multiple field variations
-            const followers = apifyItem.ownerFollowersCount || 
-                            apifyItem.followersCount || 
-                            apifyItem.owner?.followersCount ||
-                            apifyItem.user?.followersCount ||
-                            apifyItem.author?.followersCount ||
-                            apifyItem.profile?.followersCount ||
-                            0;
+            log.info(`Fetching full profile for @${username}`);
 
-            const profile: InfluencerProfile = {
-              creator_name: apifyItem.ownerFullName || 
-                           apifyItem.fullName || 
-                           apifyItem.owner?.fullName ||
-                           apifyItem.user?.fullName ||
-                           apifyItem.author?.fullName ||
-                           username || 
-                           'Unknown',
-              instagram_handle: username,
-              followers: typeof followers === 'number' ? followers : 0,
-              bio: apifyItem.ownerBiography || 
-                   apifyItem.biography || 
-                   apifyItem.owner?.biography ||
-                   apifyItem.user?.biography ||
-                   apifyItem.author?.biography ||
-                   '',
-              link_in_bio: apifyItem.ownerExternalUrl || 
-                          apifyItem.externalUrl || 
-                          apifyItem.owner?.externalUrl ||
-                          apifyItem.user?.externalUrl ||
-                          undefined,
-              profile_link: `https://instagram.com/${username}`,
-              posts_count: apifyItem.ownerPostsCount || 
-                          apifyItem.postsCount || 
-                          apifyItem.owner?.postsCount ||
-                          apifyItem.user?.postsCount ||
-                          0,
-              is_verified: apifyItem.ownerIsVerified || 
-                          apifyItem.isVerified || 
-                          apifyItem.owner?.isVerified ||
-                          apifyItem.user?.isVerified ||
-                          false,
-              avatar_url: apifyItem.ownerProfilePicUrl || 
-                         apifyItem.profilePicUrl || 
-                         apifyItem.owner?.profilePicUrl ||
-                         apifyItem.user?.profilePicUrl ||
-                         undefined,
-              location: apifyItem.locationName || 
-                       apifyItem.location?.name ||
-                       undefined
-            };
-
-            // Log extraction attempt
-            log.info(`Extracted profile from Apify item: @${username}`, {
-              followers: profile.followers,
-              hasBio: !!profile.bio,
-              hasLink: !!profile.link_in_bio
+            // Fetch full profile using profile URL
+            const profileUrl = `https://www.instagram.com/${username}/`;
+            const profileRun = await client.actor('apify/instagram-scraper').call({
+              directUrls: [profileUrl],
+              resultsLimit: 1,
+              resultsType: 'details' // Get profile details, not posts
             });
 
-            // Only add if has minimum followers (even 0 is okay, we'll filter later)
-            profilesMap.set(username, profile);
-            log.info(`Added profile from Apify: @${username} (${profile.followers} followers)`);
+            if (profileRun.status === 'SUCCEEDED') {
+              const { items: profileItems } = await client.dataset(profileRun.defaultDatasetId).listItems({
+                limit: 1,
+                offset: 0
+              });
+
+              if (profileItems && profileItems.length > 0) {
+                const profileData = profileItems[0] as any;
+                
+                const profile: InfluencerProfile = {
+                  creator_name: profileData.fullName || 
+                               profileData.username || 
+                               username || 
+                               'Unknown',
+                  instagram_handle: username,
+                  followers: profileData.followersCount || 
+                           profileData.followers || 
+                           0,
+                  bio: profileData.biography || 
+                       profileData.bio || 
+                       '',
+                  link_in_bio: profileData.externalUrl || 
+                              profileData.external_url ||
+                              undefined,
+                  profile_link: `https://instagram.com/${username}`,
+                  posts_count: profileData.postsCount || 
+                              profileData.posts_count ||
+                              0,
+                  is_verified: profileData.isVerified || 
+                              profileData.is_verified ||
+                              false,
+                  avatar_url: profileData.profilePicUrl || 
+                             profileData.profile_pic_url ||
+                             undefined,
+                  location: profileData.locationName || 
+                           profileData.location?.name ||
+                           undefined
+                };
+
+                log.info(`Fetched full profile for @${username}`, {
+                  followers: profile.followers,
+                  hasBio: !!profile.bio,
+                  hasLink: !!profile.link_in_bio
+                });
+
+                profilesMap.set(username, profile);
+                log.info(`Added profile from Apify: @${username} (${profile.followers} followers)`);
+              } else {
+                // Fallback: create profile with minimal data from post
+                log.warn(`No profile data found for @${username}, using post data`);
+                const postItem = items.find((item: any) => item.ownerUsername === username);
+                if (postItem) {
+                  const apifyItem = postItem as any;
+                  profilesMap.set(username, {
+                    creator_name: apifyItem.ownerFullName || username,
+                    instagram_handle: username,
+                    followers: 0, // Will be filtered out if minFollowers > 0
+                    bio: '',
+                    profile_link: `https://instagram.com/${username}`,
+                    posts_count: 0,
+                    is_verified: false
+                  });
+                }
+              }
+            } else {
+              log.warn(`Profile fetch failed for @${username}, status: ${profileRun.status}`);
+            }
 
             // Stop if we have enough profiles
             if (profilesMap.size >= limit) {
               break;
             }
-          } catch (itemError: any) {
-            log.error(`Error processing Apify item`, {
-              message: itemError.message,
-              stack: itemError.stack,
-              itemKeys: item ? Object.keys(item) : 'null'
+
+            // Small delay to avoid rate limits
+            await new Promise(resolve => setTimeout(resolve, 500));
+          } catch (profileError: any) {
+            log.error(`Error fetching profile for @${username}`, {
+              message: profileError.message,
+              stack: profileError.stack
             });
             continue;
           }
