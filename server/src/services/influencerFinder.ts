@@ -277,52 +277,72 @@ async function searchViaApify(hashtags: string[], keywords: string[], limit: num
       try {
         log.info(`Searching Apify for hashtag: #${hashtag}`);
         
-        // Run the Instagram scraper actor
+        // Run the Instagram scraper actor - use hashtag search mode
+        // Note: apify/instagram-scraper supports hashtag search via directUrls or hashtags parameter
         const run = await client.actor('apify/instagram-scraper').call({
           hashtags: [hashtag],
           resultsLimit: Math.min(Math.ceil(limit / hashtags.length), 50), // Max 50 per hashtag
-          addParentData: false,
-          searchType: 'hashtag'
+          addParentData: false
         });
 
-        log.info(`Apify run completed for #${hashtag}`, { runId: run.id });
+        log.info(`Apify run completed for #${hashtag}`, { runId: run.id, status: run.status });
+
+        // Wait for the run to finish (it should be synchronous, but check status)
+        if (run.status === 'FAILED' || run.status === 'ABORTED') {
+          log.error(`Apify run failed for #${hashtag}`, { status: run.status });
+          continue;
+        }
 
         // Get results from the dataset
-        const { items } = await client.dataset(run.defaultDatasetId).listItems({
+        const datasetResponse = await client.dataset(run.defaultDatasetId).listItems({
           limit: limit,
           offset: 0
         });
 
+        const items = datasetResponse.items || [];
         log.info(`Found ${items.length} items from Apify for #${hashtag}`);
+
+        if (items.length === 0) {
+          log.warn(`No items returned from Apify for #${hashtag}`);
+          continue;
+        }
 
         // Process each item
         for (const item of items) {
-          if (!item.username || profilesMap.has(item.username)) {
-            continue; // Skip duplicates
-          }
+          try {
+            // Apify Instagram scraper returns posts, we need to extract unique profiles
+            const username = item.ownerUsername || item.username;
+            if (!username || profilesMap.has(username)) {
+              continue; // Skip duplicates or invalid entries
+            }
 
-          // Extract profile data
-          const profile: InfluencerProfile = {
-            creator_name: item.fullName || item.username || 'Unknown',
-            instagram_handle: item.username,
-            followers: item.followersCount || 0,
-            bio: item.biography || '',
-            link_in_bio: item.externalUrl || undefined,
-            profile_link: `https://instagram.com/${item.username}`,
-            posts_count: item.postsCount || 0,
-            is_verified: item.isVerified || false,
-            avatar_url: item.profilePicUrl || undefined,
-            location: item.locationName || undefined
-          };
+            // Extract profile data from post data
+            const profile: InfluencerProfile = {
+              creator_name: item.ownerFullName || item.fullName || username || 'Unknown',
+              instagram_handle: username,
+              followers: item.ownerFollowersCount || item.followersCount || 0,
+              bio: item.ownerBiography || item.biography || '',
+              link_in_bio: item.ownerExternalUrl || item.externalUrl || undefined,
+              profile_link: `https://instagram.com/${username}`,
+              posts_count: item.ownerPostsCount || item.postsCount || 0,
+              is_verified: item.ownerIsVerified || item.isVerified || false,
+              avatar_url: item.ownerProfilePicUrl || item.profilePicUrl || undefined,
+              location: item.locationName || undefined
+            };
 
-          // Only add if has minimum followers
-          if (profile.followers > 0) {
-            profilesMap.set(item.username, profile);
-          }
+            // Only add if has minimum followers
+            if (profile.followers > 0) {
+              profilesMap.set(username, profile);
+              log.info(`Added profile from Apify: @${username} (${profile.followers} followers)`);
+            }
 
-          // Stop if we have enough profiles
-          if (profilesMap.size >= limit) {
-            break;
+            // Stop if we have enough profiles
+            if (profilesMap.size >= limit) {
+              break;
+            }
+          } catch (itemError: any) {
+            log.error(`Error processing Apify item`, itemError.message);
+            continue;
           }
         }
 
@@ -331,7 +351,11 @@ async function searchViaApify(hashtags: string[], keywords: string[], limit: num
           break;
         }
       } catch (error: any) {
-        log.error(`Error searching Apify for hashtag #${hashtag}`, error.message);
+        log.error(`Error searching Apify for hashtag #${hashtag}`, {
+          message: error.message,
+          stack: error.stack,
+          details: error
+        });
         // Continue with next hashtag
         continue;
       }
@@ -342,7 +366,11 @@ async function searchViaApify(hashtags: string[], keywords: string[], limit: num
     
     return finalProfiles;
   } catch (error: any) {
-    log.error('Apify integration error', error.message);
+    log.error('Apify integration error', {
+      message: error.message,
+      stack: error.stack,
+      details: error
+    });
     return [];
   }
 }
