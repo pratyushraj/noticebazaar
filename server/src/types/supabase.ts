@@ -3251,6 +3251,108 @@ export type Database = {
           },
         ]
       }
+      influencers: {
+        Row: {
+          id: string
+          creator_name: string
+          instagram_handle: string
+          followers: number
+          niche: string | null
+          email: string | null
+          website: string | null
+          manager_email: string | null
+          fit_score: number | null
+          profile_link: string
+          bio: string | null
+          link_in_bio: string | null
+          location: string | null
+          last_post_date: string | null
+          is_active: boolean | null
+          is_india_based: boolean | null
+          is_relevant_niche: boolean | null
+          status: string
+          source: string
+          contacted_at: string | null
+          last_dm_sent_at: string | null
+          follow_up_due_at: string | null
+          response_status: string | null
+          last_checked_at: string
+          created_at: string
+          updated_at: string
+          search_keywords: string[] | null
+          classification_metadata: Json | null
+          notes: string | null
+          data_source_log: Json | null
+          last_classification_at: string | null
+        }
+        Insert: {
+          id?: string
+          creator_name: string
+          instagram_handle: string
+          followers: number
+          niche?: string | null
+          email?: string | null
+          website?: string | null
+          manager_email?: string | null
+          fit_score?: number | null
+          profile_link: string
+          bio?: string | null
+          link_in_bio?: string | null
+          location?: string | null
+          last_post_date?: string | null
+          is_active?: boolean | null
+          is_india_based?: boolean | null
+          is_relevant_niche?: boolean | null
+          status?: string
+          source?: string
+          contacted_at?: string | null
+          last_dm_sent_at?: string | null
+          follow_up_due_at?: string | null
+          response_status?: string | null
+          last_checked_at?: string
+          created_at?: string
+          updated_at?: string
+          search_keywords?: string[] | null
+          classification_metadata?: Json | null
+          notes?: string | null
+          data_source_log?: Json | null
+          last_classification_at?: string | null
+        }
+        Update: {
+          id?: string
+          creator_name?: string
+          instagram_handle?: string
+          followers?: number
+          niche?: string | null
+          email?: string | null
+          website?: string | null
+          manager_email?: string | null
+          fit_score?: number | null
+          profile_link?: string
+          bio?: string | null
+          link_in_bio?: string | null
+          location?: string | null
+          last_post_date?: string | null
+          is_active?: boolean | null
+          is_india_based?: boolean | null
+          is_relevant_niche?: boolean | null
+          status?: string
+          source?: string
+          contacted_at?: string | null
+          last_dm_sent_at?: string | null
+          follow_up_due_at?: string | null
+          response_status?: string | null
+          last_checked_at?: string
+          created_at?: string
+          updated_at?: string
+          search_keywords?: string[] | null
+          classification_metadata?: Json | null
+          notes?: string | null
+          data_source_log?: Json | null
+          last_classification_at?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       performance_metrics: {
