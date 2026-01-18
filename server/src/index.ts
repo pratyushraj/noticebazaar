@@ -144,7 +144,12 @@ app.use(helmet({
 app.use(cors({
   origin: function (origin, callback) {
     // Allow requests with no origin (like mobile apps, Postman, or cloudflared tunnel)
-    if (!origin) return callback(null, true);
+    if (!origin) {
+      console.log('[CORS] Allowing request with no origin');
+      return callback(null, true);
+    }
+    
+    console.log('[CORS] Checking origin:', origin);
     
     const allowedOrigins = [
       process.env.FRONTEND_URL || 'http://localhost:8080',
@@ -161,27 +166,33 @@ app.use(cors({
     
     // Allow any localhost port for development (more flexible)
     if (origin && (origin.startsWith('http://localhost:') || origin.startsWith('http://127.0.0.1:'))) {
+      console.log('[CORS] Allowing localhost origin:', origin);
       return callback(null, true);
     }
     
     // Allow Render frontend URLs
     if (origin.includes('onrender.com')) {
+      console.log('[CORS] Allowing Render origin:', origin);
       return callback(null, true);
     }
     
     // Allow Netlify frontend URLs
     if (origin.includes('netlify.app')) {
+      console.log('[CORS] Allowing Netlify origin:', origin);
       return callback(null, true);
     }
     
     // Allow cloudflared tunnel URLs (trycloudflare.com)
     if (origin.includes('trycloudflare.com') || origin.includes('creatorarmour.com')) {
+      console.log('[CORS] Allowing cloudflared/creatorarmour origin:', origin);
       return callback(null, true);
     }
     
     if (allowedOrigins.includes(origin)) {
+      console.log('[CORS] Allowing origin from allowed list:', origin);
       callback(null, true);
     } else {
+      console.warn('[CORS] Blocking origin:', origin);
       callback(new Error('Not allowed by CORS'));
     }
   },
