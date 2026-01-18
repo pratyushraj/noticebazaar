@@ -252,12 +252,99 @@ async function searchInstagramProfiles(
 
 /**
  * Search via Apify Instagram Scraper
+ * Uses Apify's Instagram scraper to find profiles by hashtags
  */
 async function searchViaApify(hashtags: string[], keywords: string[], limit: number): Promise<InfluencerProfile[]> {
-  // TODO: Implement Apify integration
-  // See: https://apify.com/apify/instagram-scraper
-  log.info('Apify integration not yet implemented');
-  return [];
+  const apiToken = process.env.APIFY_API_TOKEN;
+  
+  if (!apiToken) {
+    log.warn('APIFY_API_TOKEN not configured');
+    return [];
+  }
+
+  try {
+    // Dynamic import to avoid requiring apify-client if not configured
+    const { ApifyClient } = await import('apify-client');
+    const client = new ApifyClient({ token: apiToken });
+
+    const profiles: InfluencerProfile[] = [];
+    const profilesMap = new Map<string, InfluencerProfile>(); // Deduplicate by handle
+    
+    log.info('Starting Apify search', { hashtags, keywords, limit });
+
+    // Search by hashtags (more reliable than keywords for Instagram)
+    for (const hashtag of hashtags.slice(0, 5)) { // Limit to 5 hashtags to avoid rate limits
+      try {
+        log.info(`Searching Apify for hashtag: #${hashtag}`);
+        
+        // Run the Instagram scraper actor
+        const run = await client.actor('apify/instagram-scraper').call({
+          hashtags: [hashtag],
+          resultsLimit: Math.min(Math.ceil(limit / hashtags.length), 50), // Max 50 per hashtag
+          addParentData: false,
+          searchType: 'hashtag'
+        });
+
+        log.info(`Apify run completed for #${hashtag}`, { runId: run.id });
+
+        // Get results from the dataset
+        const { items } = await client.dataset(run.defaultDatasetId).listItems({
+          limit: limit,
+          offset: 0
+        });
+
+        log.info(`Found ${items.length} items from Apify for #${hashtag}`);
+
+        // Process each item
+        for (const item of items) {
+          if (!item.username || profilesMap.has(item.username)) {
+            continue; // Skip duplicates
+          }
+
+          // Extract profile data
+          const profile: InfluencerProfile = {
+            creator_name: item.fullName || item.username || 'Unknown',
+            instagram_handle: item.username,
+            followers: item.followersCount || 0,
+            bio: item.biography || '',
+            link_in_bio: item.externalUrl || undefined,
+            profile_link: `https://instagram.com/${item.username}`,
+            posts_count: item.postsCount || 0,
+            is_verified: item.isVerified || false,
+            avatar_url: item.profilePicUrl || undefined,
+            location: item.locationName || undefined
+          };
+
+          // Only add if has minimum followers
+          if (profile.followers > 0) {
+            profilesMap.set(item.username, profile);
+          }
+
+          // Stop if we have enough profiles
+          if (profilesMap.size >= limit) {
+            break;
+          }
+        }
+
+        // Stop if we have enough profiles
+        if (profilesMap.size >= limit) {
+          break;
+        }
+      } catch (error: any) {
+        log.error(`Error searching Apify for hashtag #${hashtag}`, error.message);
+        // Continue with next hashtag
+        continue;
+      }
+    }
+
+    const finalProfiles = Array.from(profilesMap.values()).slice(0, limit);
+    log.info(`Apify search completed: found ${finalProfiles.length} unique profiles`);
+    
+    return finalProfiles;
+  } catch (error: any) {
+    log.error('Apify integration error', error.message);
+    return [];
+  }
 }
 
 /**
@@ -613,7 +700,11 @@ export async function saveOrUpdateInfluencer(influencer: InfluencerResult): Prom
         bio: influencer.bio,
         link_in_bio: influencer.link_in_bio,
         location: influencer.location,
-        last_post_date: influencer.last_post_date,
+        last_post_date: influencer.last_post_date 
+          ? (influencer.last_post_date instanceof Date 
+              ? influencer.last_post_date.toISOString().split('T')[0] 
+              : influencer.last_post_date)
+          : null,
         is_active: influencer.is_active,
         is_india_based: influencer.is_india_based,
         is_relevant_niche: influencer.is_relevant_niche,

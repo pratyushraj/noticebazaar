@@ -15,6 +15,7 @@
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.39.0",
+    "apify-client": "^2.21.0",
     "axios": "^1.13.2",
     "cors": "^2.8.5",
     "docx": "^8.6.0",
