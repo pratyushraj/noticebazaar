@@ -42,7 +42,7 @@ const DEFAULT_KEYWORDS = [
 const DEFAULT_OPTIONS = {
   minFollowers: 10000,
   maxFollowers: 500000,
-  limit: 50
+  limit: 30 // Reduced from 50 to prevent timeouts (30 profiles ≈ 2-3 minutes)
 };
 
 // ============================================================================

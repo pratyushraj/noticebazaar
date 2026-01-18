@@ -30,18 +30,40 @@ export const authMiddleware = async (
     }
 
     const token = authHeader.substring(7);
-    const { data: { user }, error } = await supabase.auth.getUser(token);
-
-    if (error || !user) {
-      return res.status(401).json({ error: 'Invalid or expired token' });
+    
+    // Get user with timeout protection
+    let user, authError;
+    try {
+      const result = await Promise.race([
+        supabase.auth.getUser(token),
+        new Promise((_, reject) => setTimeout(() => reject(new Error('Auth timeout')), 5000))
+      ]) as Awaited<ReturnType<typeof supabase.auth.getUser>>;
+      user = result.data?.user;
+      authError = result.error;
+    } catch (err: any) {
+      if (err.message === 'Auth timeout') {
+        return res.status(504).json({ error: 'Authentication timeout - Supabase connection issue' });
+      }
+      throw err;
     }
 
-    // Get user profile for role
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single();
+    if (authError || !user) {
+      return res.status(401).json({ error: 'Invalid or expired token', details: authError?.message });
+    }
+
+    // Get user profile for role (with timeout)
+    let profile;
+    try {
+      const profileResult = await Promise.race([
+        supabase.from('profiles').select('role').eq('id', user.id).single(),
+        new Promise((_, reject) => setTimeout(() => reject(new Error('Profile timeout')), 3000))
+      ]) as Awaited<ReturnType<typeof supabase.from>>;
+      profile = profileResult.data;
+    } catch (err: any) {
+      // If profile query times out or fails, continue with default role
+      console.warn('Profile query failed, using default role:', err.message);
+      profile = null;
+    }
 
     req.user = {
       id: user.id,
@@ -50,9 +72,12 @@ export const authMiddleware = async (
     };
 
     next();
-  } catch (error) {
+  } catch (error: any) {
     console.error('Auth middleware error:', error);
-    res.status(500).json({ error: 'Authentication failed' });
+    if (error.message?.includes('timeout')) {
+      return res.status(504).json({ error: 'Authentication timeout - Supabase connection issue' });
+    }
+    res.status(500).json({ error: 'Authentication failed', details: error.message });
   }
 };
 

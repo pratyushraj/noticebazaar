@@ -433,8 +433,8 @@ async function searchViaApify(hashtags: string[], keywords: string[], limit: num
               break;
             }
 
-            // Small delay to avoid rate limits
-            await new Promise(resolve => setTimeout(resolve, 500));
+            // Small delay to avoid rate limits (reduced from 500ms to 200ms for faster scanning)
+            await new Promise(resolve => setTimeout(resolve, 200));
           } catch (profileError: any) {
             log.error(`Error fetching profile for @${username}`, {
               message: profileError.message,

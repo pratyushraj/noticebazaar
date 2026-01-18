@@ -5,7 +5,7 @@ import { useSession } from '@/contexts/SessionContext';
 import { useNavigate, Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Loader2, Users, Briefcase, FileText, CalendarDays, MessageSquare, Activity, CreditCard } from 'lucide-react'; // Added CreditCard icon
+import { Loader2, Users, Briefcase, FileText, CalendarDays, MessageSquare, Activity, CreditCard, Search, UserPlus } from 'lucide-react'; // Added CreditCard icon
 import { toast } from 'sonner';
 import { Profile } from '@/types';
 import { useAdminDashboardData } from '@/lib/hooks/useAdminDashboardData'; // Import the new hook
@@ -150,6 +150,16 @@ const AdminDashboard = () => {
               <Button asChild className="flex items-center justify-center p-6 h-auto bg-primary hover:bg-primary/90 text-primary-foreground text-lg">
                 <Link to="/admin-activity-log">
                   <Activity className="mr-2 h-5 w-5" /> View Activity Log
+                </Link>
+              </Button>
+              <Button asChild className="flex items-center justify-center p-6 h-auto bg-primary hover:bg-primary/90 text-primary-foreground text-lg">
+                <Link to="/admin-discovery">
+                  <Search className="mr-2 h-5 w-5" /> Influencer Discovery
+                </Link>
+              </Button>
+              <Button asChild className="flex items-center justify-center p-6 h-auto bg-primary hover:bg-primary/90 text-primary-foreground text-lg">
+                <Link to="/admin-influencers">
+                  <UserPlus className="mr-2 h-5 w-5" /> Manage Influencers
                 </Link>
               </Button>
             </div>

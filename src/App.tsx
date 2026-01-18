@@ -28,6 +28,8 @@ import ClientConsultations from "./pages/ClientConsultations";
 import AdminActivityLog from "./pages/AdminActivityLog";
 import ClientActivityLog from "./pages/ClientActivityLog";
 import AdminProfile from "./pages/AdminProfile";
+import AdminInfluencers from "./pages/AdminInfluencers";
+import AdminDiscovery from "./pages/AdminDiscovery";
 import CreatorProfile from "./pages/CreatorProfile";
 import Blog from "./pages/Blog";
 import BlogPostDetail from "./pages/BlogPostDetail"; // Corrected path
@@ -263,6 +265,8 @@ const App = () => {
               <Route path="/admin-subscriptions" element={<ProtectedLayout allowedRoles={['admin']}><AdminSubscriptions /></ProtectedLayout>} />
               <Route path="/admin-activity-log" element={<ProtectedLayout allowedRoles={['admin']}><AdminActivityLog /></ProtectedLayout>} />
               <Route path="/admin-profile" element={<ProtectedLayout allowedRoles={['admin']}><AdminProfile /></ProtectedLayout>} />
+              <Route path="/admin-influencers" element={<ProtectedLayout allowedRoles={['admin']}><AdminInfluencers /></ProtectedLayout>} />
+              <Route path="/admin-discovery" element={<ProtectedLayout allowedRoles={['admin']}><AdminDiscovery /></ProtectedLayout>} />
 
               {/* CA-specific routes */}
               <Route path="/ca-dashboard" element={<ProtectedLayout allowedRoles={['chartered_accountant']}><CADashboard /></ProtectedLayout>} />

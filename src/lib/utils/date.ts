@@ -62,3 +62,24 @@ export function format(date: Date | string, formatStr: string): string {
     .replace('mm', minutes)
     .replace('ss', seconds);
 }
+
+/**
+ * Format a date to a simple date string (YYYY-MM-DD)
+ */
+export function formatDate(date: Date | string): string {
+  return format(date, 'yyyy-MM-dd');
+}
+
+/**
+ * Format a date to a date-time string (YYYY-MM-DD HH:mm:ss)
+ */
+export function formatDateTime(date: Date | string): string {
+  return format(date, 'yyyy-MM-dd HH:mm:ss');
+}
+
+/**
+ * Format a date as relative time (e.g., "2 hours ago")
+ */
+export function formatRelativeTime(date: Date | string): string {
+  return formatDistanceToNow(date, { addSuffix: true });
+}

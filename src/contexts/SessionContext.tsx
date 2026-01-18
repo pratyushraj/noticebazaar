@@ -410,10 +410,40 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
                 console.error('[SessionContext] Error setting session:', setSessionError);
               } else if (sessionData.session) {
                 console.log('[SessionContext] Session set successfully via manual token parsing');
+                // Fetch profile to determine proper redirect route
+                let cleanRoute = '#/creator-dashboard';
+                
+                if (intendedRoute && intendedRoute !== 'login' && intendedRoute !== 'signup') {
+                  cleanRoute = `#/${intendedRoute}`;
+                } else if (sessionData.session.user?.id) {
+                  try {
+                    const { data: profileData } = await supabase
+                      .from('profiles')
+                      .select('role')
+                      .eq('id', sessionData.session.user.id)
+                      .single();
+                    
+                    if (profileData) {
+                      const userEmail = sessionData.session.user.email?.toLowerCase();
+                      const isPratyush = userEmail === 'pratyushraj@outlook.com';
+                      
+                      if (isPratyush) {
+                        cleanRoute = '#/creator-dashboard';
+                      } else if (profileData.role === 'admin') {
+                        cleanRoute = '#/admin-dashboard';
+                        console.log('[SessionContext] Admin user detected in initializeSession');
+                      } else if (profileData.role === 'chartered_accountant') {
+                        cleanRoute = '#/ca-dashboard';
+                      } else if (profileData.role === 'lawyer') {
+                        cleanRoute = '#/lawyer-dashboard';
+                      }
+                    }
+                  } catch (error) {
+                    console.error('[SessionContext] Error fetching profile in initializeSession:', error);
+                  }
+                }
+                
                 // Clean hash immediately after setting session
-                const cleanRoute = intendedRoute && intendedRoute !== 'login' && intendedRoute !== 'signup' 
-                  ? `#/${intendedRoute}` 
-                  : '#/creator-dashboard';
                 window.history.replaceState(null, '', window.location.pathname + window.location.search + cleanRoute);
                 console.log('[SessionContext] Cleaned hash to:', cleanRoute);
             }
@@ -592,11 +622,54 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
             userEmail: session?.user?.email
           });
           
-          // Determine target route
+          // Fetch profile to determine user role for proper redirect
           let targetRoute = '#/creator-dashboard';
+          
           if (intendedRoute && intendedRoute !== 'login' && intendedRoute !== 'signup') {
             targetRoute = `#/${intendedRoute}`;
+            console.log('[SessionContext] Using intended route:', targetRoute);
+          } else if (session?.user?.id) {
+            // Fetch profile to determine role-based redirect
+            try {
+              console.log('[SessionContext] Fetching profile for user:', session.user.id);
+              const { data: profileData, error: profileError } = await supabase
+                .from('profiles')
+                .select('role')
+                .eq('id', session.user.id)
+                .single();
+              
+              if (profileError) {
+                console.error('[SessionContext] Error fetching profile:', profileError);
+              }
+              
+              if (profileData) {
+                console.log('[SessionContext] Profile fetched, role:', profileData.role);
+                const userEmail = session.user.email?.toLowerCase();
+                const isPratyush = userEmail === 'pratyushraj@outlook.com';
+                
+                // Determine target route based on role
+                if (isPratyush) {
+                  targetRoute = '#/creator-dashboard';
+                } else if (profileData.role === 'admin') {
+                  targetRoute = '#/admin-dashboard';
+                  console.log('[SessionContext] Admin user detected, redirecting to admin dashboard');
+                } else if (profileData.role === 'chartered_accountant') {
+                  targetRoute = '#/ca-dashboard';
+                } else if (profileData.role === 'lawyer') {
+                  targetRoute = '#/lawyer-dashboard';
+                } else {
+                  targetRoute = '#/creator-dashboard';
+                }
+              } else {
+                console.log('[SessionContext] No profile data found, defaulting to creator dashboard');
+              }
+            } catch (error) {
+              console.error('[SessionContext] Error fetching profile for redirect:', error);
+              // Default to creator-dashboard on error
+            }
           }
+          
+          console.log('[SessionContext] Final target route:', targetRoute);
           
           // Defer redirect using requestAnimationFrame to ensure React context is fully set up
           // This prevents "useSession must be used within a SessionContextProvider" errors
