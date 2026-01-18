@@ -277,12 +277,16 @@ async function searchViaApify(hashtags: string[], keywords: string[], limit: num
       try {
         log.info(`Searching Apify for hashtag: #${hashtag}`);
         
-        // Run the Instagram scraper actor - use hashtag search mode
-        // Note: apify/instagram-scraper supports hashtag search via directUrls or hashtags parameter
+        // Run the Instagram scraper actor
+        // Apify Instagram scraper supports hashtag search via directUrls with hashtag URLs
+        // Format: https://www.instagram.com/explore/tags/{hashtag}/
+        const hashtagUrl = `https://www.instagram.com/explore/tags/${hashtag}/`;
+        
         const run = await client.actor('apify/instagram-scraper').call({
-          hashtags: [hashtag],
+          directUrls: [hashtagUrl],
           resultsLimit: Math.min(Math.ceil(limit / hashtags.length), 50), // Max 50 per hashtag
-          addParentData: false
+          addParentData: true, // Include owner/profile data
+          resultsType: 'posts' // Get posts from hashtag page
         });
 
         log.info(`Apify run completed for #${hashtag}`, { runId: run.id, status: run.status });
