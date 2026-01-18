@@ -141,9 +141,10 @@ if (supabaseInitialized && supabaseServiceKey && supabaseServiceKey.length > 50)
 app.use(helmet({
   contentSecurityPolicy: false, // APIs don't need CSP - they don't serve HTML
 }));
+// CORS configuration - allow all localhost and common development/production origins
 app.use(cors({
   origin: function (origin, callback) {
-    // Allow requests with no origin (like mobile apps, Postman, or cloudflared tunnel)
+    // Allow requests with no origin (like mobile apps, Postman, or server-to-server)
     if (!origin) {
       console.log('[CORS] Allowing request with no origin');
       return callback(null, true);
@@ -151,8 +152,38 @@ app.use(cors({
     
     console.log('[CORS] Checking origin:', origin);
     
+    // Normalize origin for comparison
+    const normalizedOrigin = origin.toLowerCase().trim();
+    
+    // Allow any localhost port for development
+    if (normalizedOrigin.startsWith('http://localhost:') || 
+        normalizedOrigin.startsWith('http://127.0.0.1:') ||
+        normalizedOrigin.startsWith('https://localhost:') ||
+        normalizedOrigin.startsWith('https://127.0.0.1:')) {
+      console.log('[CORS] ✓ Allowing localhost origin:', origin);
+      return callback(null, true);
+    }
+    
+    // Allow Render frontend URLs
+    if (normalizedOrigin.includes('onrender.com')) {
+      console.log('[CORS] ✓ Allowing Render origin:', origin);
+      return callback(null, true);
+    }
+    
+    // Allow Netlify frontend URLs
+    if (normalizedOrigin.includes('netlify.app')) {
+      console.log('[CORS] ✓ Allowing Netlify origin:', origin);
+      return callback(null, true);
+    }
+    
+    // Allow cloudflared tunnel URLs
+    if (normalizedOrigin.includes('trycloudflare.com') || normalizedOrigin.includes('creatorarmour.com')) {
+      console.log('[CORS] ✓ Allowing cloudflared/creatorarmour origin:', origin);
+      return callback(null, true);
+    }
+    
+    // Explicit allowed origins list
     const allowedOrigins = [
-      process.env.FRONTEND_URL || 'http://localhost:8080',
       'http://localhost:8080',
       'http://localhost:8084',
       'http://localhost:5173',
@@ -162,50 +193,20 @@ app.use(cors({
       'https://www.creatorarmour.com',
       'https://creatorarmour.com',
       'https://api.creatorarmour.com'
-    ];
+    ].map(o => o.toLowerCase());
     
-    // Allow any localhost port for development (more flexible)
-    // Check both lowercase and any case variations
-    const originLower = origin.toLowerCase();
-    if (origin && (
-      origin.startsWith('http://localhost:') || 
-      origin.startsWith('http://127.0.0.1:') ||
-      originLower.startsWith('http://localhost:') ||
-      originLower.startsWith('http://127.0.0.1:')
-    )) {
-      console.log('[CORS] Allowing localhost origin:', origin);
+    if (allowedOrigins.includes(normalizedOrigin)) {
+      console.log('[CORS] ✓ Allowing origin from allowed list:', origin);
       return callback(null, true);
     }
     
-    // Allow Render frontend URLs
-    if (origin.includes('onrender.com')) {
-      console.log('[CORS] Allowing Render origin:', origin);
-      return callback(null, true);
-    }
-    
-    // Allow Netlify frontend URLs
-    if (origin.includes('netlify.app')) {
-      console.log('[CORS] Allowing Netlify origin:', origin);
-      return callback(null, true);
-    }
-    
-    // Allow cloudflared tunnel URLs (trycloudflare.com)
-    if (origin.includes('trycloudflare.com') || origin.includes('creatorarmour.com')) {
-      console.log('[CORS] Allowing cloudflared/creatorarmour origin:', origin);
-      return callback(null, true);
-    }
-    
-    if (allowedOrigins.includes(origin)) {
-      console.log('[CORS] Allowing origin from allowed list:', origin);
-      callback(null, true);
-    } else {
-      console.warn('[CORS] Blocking origin:', origin);
-      callback(new Error('Not allowed by CORS'));
-    }
+    console.warn('[CORS] ✗ Blocking origin:', origin);
+    callback(new Error(`CORS: Origin ${origin} not allowed`));
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
+  exposedHeaders: ['Content-Length', 'Content-Type'],
   preflightContinue: false,
   optionsSuccessStatus: 204
 }));
