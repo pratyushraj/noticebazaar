@@ -313,7 +313,18 @@ async function searchViaApify(hashtags: string[], keywords: string[], limit: num
 
         // Log first item structure for debugging
         if (items.length > 0) {
-          log.info(`Sample Apify item structure for #${hashtag}:`, JSON.stringify(items[0], null, 2).substring(0, 500));
+          const sampleItem = items[0];
+          log.info(`Sample Apify item structure for #${hashtag}:`, {
+            keys: Object.keys(sampleItem),
+            sample: JSON.stringify(sampleItem, null, 2).substring(0, 1000),
+            hasOwner: !!sampleItem.owner,
+            hasOwnerUsername: !!sampleItem.ownerUsername,
+            hasUsername: !!sampleItem.username,
+            hasUrl: !!sampleItem.url,
+            url: sampleItem.url
+          });
+        } else {
+          log.warn(`Apify returned 0 items for #${hashtag} - check if hashtag search is working`);
         }
 
         // Process each item
@@ -335,10 +346,15 @@ async function searchViaApify(hashtags: string[], keywords: string[], limit: num
             if (!username || typeof username !== 'string') {
               log.warn(`Skipping item - no username found`, { 
                 itemKeys: Object.keys(apifyItem),
-                itemUrl: apifyItem.url 
+                itemUrl: apifyItem.url,
+                hasOwner: !!apifyItem.owner,
+                ownerKeys: apifyItem.owner ? Object.keys(apifyItem.owner) : [],
+                sampleData: JSON.stringify(apifyItem).substring(0, 200)
               });
               continue;
             }
+            
+            log.info(`Processing profile: @${username}`);
 
             if (profilesMap.has(username)) {
               continue; // Skip duplicates
