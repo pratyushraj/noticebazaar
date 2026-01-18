@@ -52,7 +52,7 @@ import dealsRouter from './routes/deals.js';
 import complaintsRouter from './routes/complaints.js';
 import influencersRouter from './routes/influencers.js';
 // Log router import for debugging
-console.log('[Server] Influencers router imported:', typeof influencersRouter);
+console.log('[Server] Influencers router imported:', typeof influencersRouter, influencersRouter ? '✓' : '✗');
 import { authMiddleware } from './middleware/auth.js';
 import { rateLimitMiddleware } from './middleware/rateLimit.js';
 import { errorHandler } from './middleware/errorHandler.js';
