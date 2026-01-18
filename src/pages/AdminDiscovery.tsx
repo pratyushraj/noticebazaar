@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useSession } from '@/contexts/SessionContext';
 import { toast } from 'sonner';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -17,7 +18,9 @@ import {
   XCircle,
   Clock,
   TrendingUp,
-  Users
+  Users,
+  ArrowLeft,
+  Home
 } from 'lucide-react';
 import { useRunDiscoveryScan, DiscoveryScanParams } from '@/lib/hooks/useInfluencers';
 import { formatDateTime } from '@/lib/utils/date';
@@ -114,12 +117,36 @@ const AdminDiscovery = () => {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Influencer Discovery</h1>
-          <p className="text-muted-foreground mt-2">
-            Run automated scans to discover new influencers using Apify, Phantombuster, or Google search
-          </p>
+        <div className="flex items-center gap-4">
+          <Button
+            asChild
+            variant="ghost"
+            size="sm"
+            className="gap-2"
+          >
+            <Link to="/admin-dashboard">
+              <ArrowLeft className="h-4 w-4" />
+              Back to Dashboard
+            </Link>
+          </Button>
+          <div>
+            <h1 className="text-3xl font-bold">Influencer Discovery</h1>
+            <p className="text-muted-foreground mt-2">
+              Run automated scans to discover new influencers using Apify, Phantombuster, or Google search
+            </p>
+          </div>
         </div>
+        <Button
+          asChild
+          variant="outline"
+          size="sm"
+          className="gap-2"
+        >
+          <Link to="/admin-dashboard">
+            <Home className="h-4 w-4" />
+            Home
+          </Link>
+        </Button>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
