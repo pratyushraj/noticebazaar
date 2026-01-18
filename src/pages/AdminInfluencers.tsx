@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useSession } from '@/contexts/SessionContext';
 import { toast } from 'sonner';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -22,7 +23,9 @@ import {
   UserX,
   CheckCircle2,
   XCircle,
-  Clock
+  Clock,
+  ArrowLeft,
+  Home
 } from 'lucide-react';
 import { useInfluencers, useUpdateInfluencerStatus, useInfluencerStats, Influencer } from '@/lib/hooks/useInfluencers';
 import { formatDate } from '@/lib/utils/date';
