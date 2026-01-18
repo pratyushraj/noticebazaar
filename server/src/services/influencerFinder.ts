@@ -307,41 +307,109 @@ async function searchViaApify(hashtags: string[], keywords: string[], limit: num
           continue;
         }
 
+        // Log first item structure for debugging
+        if (items.length > 0) {
+          log.info(`Sample Apify item structure for #${hashtag}:`, JSON.stringify(items[0], null, 2).substring(0, 500));
+        }
+
         // Process each item
         for (const item of items) {
           try {
             // Apify Instagram scraper returns posts, we need to extract unique profiles
-            const username = item.ownerUsername || item.username;
-            if (!username || profilesMap.has(username)) {
-              continue; // Skip duplicates or invalid entries
+            // Try multiple possible field names for username
+            const username = item.ownerUsername || 
+                           item.username || 
+                           item.owner?.username ||
+                           item.user?.username ||
+                           item.author?.username ||
+                           item.profile?.username ||
+                           (item.url && item.url.match(/instagram\.com\/([^\/\?]+)/)?.[1]);
+            
+            if (!username) {
+              log.warn(`Skipping item - no username found`, { 
+                itemKeys: Object.keys(item),
+                itemUrl: item.url 
+              });
+              continue;
             }
 
-            // Extract profile data from post data
+            if (profilesMap.has(username)) {
+              log.debug(`Skipping duplicate profile: @${username}`);
+              continue;
+            }
+
+            // Extract profile data from post data - try multiple field variations
+            const followers = item.ownerFollowersCount || 
+                            item.followersCount || 
+                            item.owner?.followersCount ||
+                            item.user?.followersCount ||
+                            item.author?.followersCount ||
+                            item.profile?.followersCount ||
+                            0;
+
             const profile: InfluencerProfile = {
-              creator_name: item.ownerFullName || item.fullName || username || 'Unknown',
+              creator_name: item.ownerFullName || 
+                           item.fullName || 
+                           item.owner?.fullName ||
+                           item.user?.fullName ||
+                           item.author?.fullName ||
+                           username || 
+                           'Unknown',
               instagram_handle: username,
-              followers: item.ownerFollowersCount || item.followersCount || 0,
-              bio: item.ownerBiography || item.biography || '',
-              link_in_bio: item.ownerExternalUrl || item.externalUrl || undefined,
+              followers: followers,
+              bio: item.ownerBiography || 
+                   item.biography || 
+                   item.owner?.biography ||
+                   item.user?.biography ||
+                   item.author?.biography ||
+                   '',
+              link_in_bio: item.ownerExternalUrl || 
+                          item.externalUrl || 
+                          item.owner?.externalUrl ||
+                          item.user?.externalUrl ||
+                          undefined,
               profile_link: `https://instagram.com/${username}`,
-              posts_count: item.ownerPostsCount || item.postsCount || 0,
-              is_verified: item.ownerIsVerified || item.isVerified || false,
-              avatar_url: item.ownerProfilePicUrl || item.profilePicUrl || undefined,
-              location: item.locationName || undefined
+              posts_count: item.ownerPostsCount || 
+                          item.postsCount || 
+                          item.owner?.postsCount ||
+                          item.user?.postsCount ||
+                          0,
+              is_verified: item.ownerIsVerified || 
+                          item.isVerified || 
+                          item.owner?.isVerified ||
+                          item.user?.isVerified ||
+                          false,
+              avatar_url: item.ownerProfilePicUrl || 
+                         item.profilePicUrl || 
+                         item.owner?.profilePicUrl ||
+                         item.user?.profilePicUrl ||
+                         undefined,
+              location: item.locationName || 
+                       item.location?.name ||
+                       undefined
             };
 
-            // Only add if has minimum followers
-            if (profile.followers > 0) {
-              profilesMap.set(username, profile);
-              log.info(`Added profile from Apify: @${username} (${profile.followers} followers)`);
-            }
+            // Log extraction attempt
+            log.info(`Extracted profile from Apify item: @${username}`, {
+              followers: profile.followers,
+              hasBio: !!profile.bio,
+              hasLink: !!profile.link_in_bio
+            });
+
+            // Only add if has minimum followers (even 0 is okay, we'll filter later)
+            profilesMap.set(username, profile);
+            log.info(`Added profile from Apify: @${username} (${profile.followers} followers)`);
 
             // Stop if we have enough profiles
             if (profilesMap.size >= limit) {
               break;
             }
           } catch (itemError: any) {
-            log.error(`Error processing Apify item`, itemError.message);
+            log.error(`Error processing Apify item`, {
+              message: itemError.message,
+              stack: itemError.stack,
+              itemKeys: item ? Object.keys(item) : 'null'
+            });
             continue;
           }
         }
