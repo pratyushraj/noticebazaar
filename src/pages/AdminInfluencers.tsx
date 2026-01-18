@@ -132,8 +132,32 @@ const AdminInfluencers = () => {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold">Influencer Management</h1>
+        <div className="flex items-center gap-4">
+          <Button
+            asChild
+            variant="ghost"
+            size="sm"
+            className="gap-2"
+          >
+            <Link to="/admin-dashboard">
+              <ArrowLeft className="h-4 w-4" />
+              Back to Dashboard
+            </Link>
+          </Button>
+          <h1 className="text-3xl font-bold">Influencer Management</h1>
+        </div>
         <div className="flex gap-2">
+          <Button
+            asChild
+            variant="outline"
+            size="sm"
+            className="gap-2"
+          >
+            <Link to="/admin-dashboard">
+              <Home className="h-4 w-4" />
+              Home
+            </Link>
+          </Button>
           <Button onClick={() => refetch()} variant="outline" size="sm">
             <RefreshCw className="h-4 w-4 mr-2" />
             Refresh
