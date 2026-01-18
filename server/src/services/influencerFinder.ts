@@ -286,7 +286,8 @@ async function searchViaApify(hashtags: string[], keywords: string[], limit: num
           directUrls: [hashtagUrl],
           resultsLimit: Math.min(Math.ceil(limit / hashtags.length), 50), // Max 50 per hashtag
           addParentData: true, // Include owner/profile data
-          resultsType: 'posts' // Get posts from hashtag page
+          resultsType: 'posts', // Get posts from hashtag page
+          searchType: 'hashtag' // Explicitly set search type
         });
 
         log.info(`Apify run completed for #${hashtag}`, { runId: run.id, status: run.status });
