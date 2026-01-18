@@ -50,6 +50,7 @@ import aiRouter from './routes/ai.js';
 import otpRouter, { publicRouter as otpPublicRouter } from './routes/otp.js';
 import dealsRouter from './routes/deals.js';
 import complaintsRouter from './routes/complaints.js';
+import influencersRouter from './routes/influencers.js';
 import { authMiddleware } from './middleware/auth.js';
 import { rateLimitMiddleware } from './middleware/rateLimit.js';
 import { errorHandler } from './middleware/errorHandler.js';
@@ -259,6 +260,7 @@ app.use('/api/admin', authMiddleware, adminRouter);
 app.use('/api/ai', authMiddleware, rateLimitMiddleware, aiRouter);
 app.use('/api/deals', authMiddleware, rateLimitMiddleware, dealsRouter);
 app.use('/api/complaints', authMiddleware, rateLimitMiddleware, complaintsRouter);
+app.use('/api/influencers', authMiddleware, rateLimitMiddleware, influencersRouter);
 // OTP routes - protected routes require auth
 app.use('/api/otp', authMiddleware, rateLimitMiddleware, otpRouter);
 
@@ -266,7 +268,10 @@ app.use('/api/otp', authMiddleware, rateLimitMiddleware, otpRouter);
 app.use('/api/*', (req: express.Request, res: express.Response) => {
   res.status(404).json({
     success: false,
-    error: `API endpoint not found: ${req.method} ${req.path}`
+    error: `API endpoint not found: ${req.method} ${req.originalUrl || req.path}`,
+    path: req.path,
+    originalUrl: req.originalUrl,
+    baseUrl: req.baseUrl
   });
 });
 
@@ -326,6 +331,14 @@ if (process.env.VERCEL !== '1') {
     
     // Check Puppeteer after server starts
     await checkPuppeteerAvailability();
+    
+    // Setup influencer finder daily scheduler (if not serverless)
+    try {
+      const { setupDailyScheduler } = await import('./services/influencerScheduler.js');
+      setupDailyScheduler();
+    } catch (error: any) {
+      console.warn('⚠️ Could not setup influencer scheduler:', error.message);
+    }
   });
 
   // Graceful shutdown handlers for tsx watch
