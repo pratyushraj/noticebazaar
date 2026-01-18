@@ -142,8 +142,8 @@ app.use(helmet({
   contentSecurityPolicy: false, // APIs don't need CSP - they don't serve HTML
 }));
 // CORS configuration - allow all localhost and common development/production origins
-app.use(cors({
-  origin: function (origin, callback) {
+const corsOptions = {
+  origin: function (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) {
     // Allow requests with no origin (like mobile apps, Postman, or server-to-server)
     if (!origin) {
       console.log('[CORS] Allowing request with no origin');
@@ -209,7 +209,21 @@ app.use(cors({
   exposedHeaders: ['Content-Length', 'Content-Type'],
   preflightContinue: false,
   optionsSuccessStatus: 204
-}));
+};
+
+app.use(cors(corsOptions));
+
+// Explicit OPTIONS handler for all routes (backup in case cors middleware doesn't catch it)
+app.options('*', cors(corsOptions));
+// Request logging middleware (for debugging CORS issues)
+app.use((req: express.Request, res: express.Response, next: express.NextFunction) => {
+  console.log(`[Request] ${req.method} ${req.path}`, {
+    origin: req.headers.origin,
+    'user-agent': req.headers['user-agent']?.substring(0, 50)
+  });
+  next();
+});
+
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
