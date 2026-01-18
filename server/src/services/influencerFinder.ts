@@ -319,77 +319,79 @@ async function searchViaApify(hashtags: string[], keywords: string[], limit: num
         // Process each item
         for (const item of items) {
           try {
+            // Type assertion for Apify item (can be post or profile data)
+            const apifyItem = item as any;
+            
             // Apify Instagram scraper returns posts, we need to extract unique profiles
             // Try multiple possible field names for username
-            const username = item.ownerUsername || 
-                           item.username || 
-                           item.owner?.username ||
-                           item.user?.username ||
-                           item.author?.username ||
-                           item.profile?.username ||
-                           (item.url && item.url.match(/instagram\.com\/([^\/\?]+)/)?.[1]);
+            const username = apifyItem.ownerUsername || 
+                           apifyItem.username || 
+                           apifyItem.owner?.username ||
+                           apifyItem.user?.username ||
+                           apifyItem.author?.username ||
+                           apifyItem.profile?.username ||
+                           (apifyItem.url && typeof apifyItem.url === 'string' && apifyItem.url.match(/instagram\.com\/([^\/\?]+)/)?.[1]);
             
-            if (!username) {
+            if (!username || typeof username !== 'string') {
               log.warn(`Skipping item - no username found`, { 
-                itemKeys: Object.keys(item),
-                itemUrl: item.url 
+                itemKeys: Object.keys(apifyItem),
+                itemUrl: apifyItem.url 
               });
               continue;
             }
 
             if (profilesMap.has(username)) {
-              log.debug(`Skipping duplicate profile: @${username}`);
-              continue;
+              continue; // Skip duplicates
             }
 
             // Extract profile data from post data - try multiple field variations
-            const followers = item.ownerFollowersCount || 
-                            item.followersCount || 
-                            item.owner?.followersCount ||
-                            item.user?.followersCount ||
-                            item.author?.followersCount ||
-                            item.profile?.followersCount ||
+            const followers = apifyItem.ownerFollowersCount || 
+                            apifyItem.followersCount || 
+                            apifyItem.owner?.followersCount ||
+                            apifyItem.user?.followersCount ||
+                            apifyItem.author?.followersCount ||
+                            apifyItem.profile?.followersCount ||
                             0;
 
             const profile: InfluencerProfile = {
-              creator_name: item.ownerFullName || 
-                           item.fullName || 
-                           item.owner?.fullName ||
-                           item.user?.fullName ||
-                           item.author?.fullName ||
+              creator_name: apifyItem.ownerFullName || 
+                           apifyItem.fullName || 
+                           apifyItem.owner?.fullName ||
+                           apifyItem.user?.fullName ||
+                           apifyItem.author?.fullName ||
                            username || 
                            'Unknown',
               instagram_handle: username,
-              followers: followers,
-              bio: item.ownerBiography || 
-                   item.biography || 
-                   item.owner?.biography ||
-                   item.user?.biography ||
-                   item.author?.biography ||
+              followers: typeof followers === 'number' ? followers : 0,
+              bio: apifyItem.ownerBiography || 
+                   apifyItem.biography || 
+                   apifyItem.owner?.biography ||
+                   apifyItem.user?.biography ||
+                   apifyItem.author?.biography ||
                    '',
-              link_in_bio: item.ownerExternalUrl || 
-                          item.externalUrl || 
-                          item.owner?.externalUrl ||
-                          item.user?.externalUrl ||
+              link_in_bio: apifyItem.ownerExternalUrl || 
+                          apifyItem.externalUrl || 
+                          apifyItem.owner?.externalUrl ||
+                          apifyItem.user?.externalUrl ||
                           undefined,
               profile_link: `https://instagram.com/${username}`,
-              posts_count: item.ownerPostsCount || 
-                          item.postsCount || 
-                          item.owner?.postsCount ||
-                          item.user?.postsCount ||
+              posts_count: apifyItem.ownerPostsCount || 
+                          apifyItem.postsCount || 
+                          apifyItem.owner?.postsCount ||
+                          apifyItem.user?.postsCount ||
                           0,
-              is_verified: item.ownerIsVerified || 
-                          item.isVerified || 
-                          item.owner?.isVerified ||
-                          item.user?.isVerified ||
+              is_verified: apifyItem.ownerIsVerified || 
+                          apifyItem.isVerified || 
+                          apifyItem.owner?.isVerified ||
+                          apifyItem.user?.isVerified ||
                           false,
-              avatar_url: item.ownerProfilePicUrl || 
-                         item.profilePicUrl || 
-                         item.owner?.profilePicUrl ||
-                         item.user?.profilePicUrl ||
+              avatar_url: apifyItem.ownerProfilePicUrl || 
+                         apifyItem.profilePicUrl || 
+                         apifyItem.owner?.profilePicUrl ||
+                         apifyItem.user?.profilePicUrl ||
                          undefined,
-              location: item.locationName || 
-                       item.location?.name ||
+              location: apifyItem.locationName || 
+                       apifyItem.location?.name ||
                        undefined
             };
 
