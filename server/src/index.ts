@@ -165,7 +165,14 @@ app.use(cors({
     ];
     
     // Allow any localhost port for development (more flexible)
-    if (origin && (origin.startsWith('http://localhost:') || origin.startsWith('http://127.0.0.1:'))) {
+    // Check both lowercase and any case variations
+    const originLower = origin.toLowerCase();
+    if (origin && (
+      origin.startsWith('http://localhost:') || 
+      origin.startsWith('http://127.0.0.1:') ||
+      originLower.startsWith('http://localhost:') ||
+      originLower.startsWith('http://127.0.0.1:')
+    )) {
       console.log('[CORS] Allowing localhost origin:', origin);
       return callback(null, true);
     }
