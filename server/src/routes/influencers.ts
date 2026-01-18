@@ -326,18 +326,35 @@ router.get('/follow-ups', async (req: express.Request, res: express.Response) =>
  */
 router.post('/run-daily-scan', async (req: express.Request, res: express.Response) => {
   try {
-    const result = await runDailyScan();
+    // Extract parameters from request body
+    const hashtags = req.body.hashtags || undefined;
+    const keywords = req.body.keywords || undefined;
+    const options = {
+      minFollowers: req.body.minFollowers,
+      maxFollowers: req.body.maxFollowers,
+      limit: req.body.limit,
+      source: req.body.source
+    };
 
+    // Start scan in background (don't await - this prevents timeout)
+    // The scan will run asynchronously and save results to database
+    runDailyScan(hashtags, keywords, options).catch((error: any) => {
+      console.error('[InfluencersAPI] Background scan error:', error);
+      // Log error but don't fail the request since it's already returned
+    });
+
+    // Return immediately with success status
     res.json({
       success: true,
-      message: 'Daily scan completed',
-      result
+      message: 'Discovery scan started in background',
+      status: 'running',
+      note: 'Check the influencers list in a few minutes to see results'
     });
   } catch (error: any) {
-    console.error('[InfluencersAPI] Error running daily scan:', error);
+    console.error('[InfluencersAPI] Error starting daily scan:', error);
     res.status(500).json({
       success: false,
-      error: error.message || 'Failed to run daily scan'
+      error: error.message || 'Failed to start daily scan'
     });
   }
 });
