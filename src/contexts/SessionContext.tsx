@@ -757,11 +757,23 @@ export const useSession = () => {
   if (context === undefined) {
     // This should never happen if component is within SessionContextProvider
     // But during React's initial render or strict mode double-render, it might be temporarily undefined
-    // Throw error only in development to catch actual bugs, but provide fallback in production
-    if (process.env.NODE_ENV === 'development') {
-      console.error('[useSession] Context is undefined. This may indicate a component is outside SessionContextProvider or a timing issue.');
-    }
-    throw new Error('useSession must be used within a SessionContextProvider');
+    // Provide a fallback value instead of throwing to prevent crashes
+    console.error('[useSession] Context is undefined. This may indicate a component is outside SessionContextProvider or a timing issue.');
+    
+    // Return a safe fallback value to prevent crashes
+    return {
+      session: null,
+      user: null,
+      profile: null,
+      loading: true,
+      authStatus: 'loading' as const,
+      isAuthInitializing: true,
+      isAdmin: false,
+      isCreator: false,
+      organizationId: null,
+      refetchProfile: () => {},
+      trialStatus: { isTrial: false, isExpired: false, daysRemaining: 0, isLocked: false },
+    };
   }
   return context;
 };
