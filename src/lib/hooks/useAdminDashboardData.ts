@@ -15,66 +15,60 @@ export const useAdminDashboardData = (enabled: boolean = true) => {
   return useSupabaseQuery<AdminDashboardData, Error>(
     ['adminDashboardData'],
     async () => {
+      // Helper function to safely fetch count, returning 0 on error
+      const safeCount = async (table: string, query?: (q: any) => any): Promise<number> => {
+        try {
+          let queryBuilder = supabase.from(table).select('id', { count: 'exact', head: true });
+          if (query) {
+            queryBuilder = query(queryBuilder);
+          }
+          const { count, error } = await queryBuilder;
+          if (error) {
+            console.warn(`[AdminDashboard] Error fetching ${table}:`, error.message);
+            return 0;
+          }
+          return count || 0;
+        } catch (error: any) {
+          console.warn(`[AdminDashboard] Exception fetching ${table}:`, error.message);
+          return 0;
+        }
+      };
+
       // Fetch New Accounts Count (accounts created in last 30 days)
       const thirtyDaysAgo = new Date();
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-      
-      const { count: newAccounts, error: newAccountsError } = await supabase
-        .from('profiles')
-        .select('id', { count: 'exact', head: true })
-        .gte('created_at', thirtyDaysAgo.toISOString());
-      if (newAccountsError) throw newAccountsError;
+      const newAccounts = await safeCount('profiles', (q) => 
+        q.gte('created_at', thirtyDaysAgo.toISOString())
+      );
 
       // Fetch Total Contracts Made (brand_deals with contract_file_url)
-      const { count: contractsMade, error: contractsError } = await supabase
-        .from('brand_deals')
-        .select('id', { count: 'exact', head: true })
-        .not('contract_file_url', 'is', null);
-      if (contractsError) throw contractsError;
+      const contractsMade = await safeCount('brand_deals', (q) => 
+        q.not('contract_file_url', 'is', null)
+      );
 
       // Fetch Links Generated (deal_details_tokens + contract_ready_tokens)
-      const [dealTokensResult, contractTokensResult] = await Promise.all([
-        supabase
-          .from('deal_details_tokens')
-          .select('id', { count: 'exact', head: true }),
-        supabase
-          .from('contract_ready_tokens')
-          .select('id', { count: 'exact', head: true })
-      ]);
-      
-      const dealTokensCount = dealTokensResult.count || 0;
-      const contractTokensCount = contractTokensResult.count || 0;
+      const dealTokensCount = await safeCount('deal_details_tokens');
+      const contractTokensCount = await safeCount('contract_ready_tokens');
       const linksGenerated = dealTokensCount + contractTokensCount;
-      
-      if (dealTokensResult.error) throw dealTokensResult.error;
-      if (contractTokensResult.error) throw contractTokensResult.error;
 
       // Fetch Referral Links Count
-      const { count: referralLinks, error: referralLinksError } = await supabase
-        .from('referral_links')
-        .select('id', { count: 'exact', head: true });
-      if (referralLinksError) throw referralLinksError;
+      const referralLinks = await safeCount('referral_links');
 
       // Fetch Total Deals Count
-      const { count: totalDeals, error: totalDealsError } = await supabase
-        .from('brand_deals')
-        .select('id', { count: 'exact', head: true });
-      if (totalDealsError) throw totalDealsError;
+      const totalDeals = await safeCount('brand_deals');
 
       // Fetch Active Deals Count (status = 'active' or 'pending')
-      const { count: activeDeals, error: activeDealsError } = await supabase
-        .from('brand_deals')
-        .select('id', { count: 'exact', head: true })
-        .in('status', ['active', 'pending']);
-      if (activeDealsError) throw activeDealsError;
+      const activeDeals = await safeCount('brand_deals', (q) => 
+        q.in('status', ['active', 'pending'])
+      );
 
       return {
-        newAccountsCount: newAccounts || 0,
-        contractsMadeCount: contractsMade || 0,
+        newAccountsCount: newAccounts,
+        contractsMadeCount: contractsMade,
         linksGeneratedCount: linksGenerated,
-        referralLinksCount: referralLinks || 0,
-        totalDealsCount: totalDeals || 0,
-        activeDealsCount: activeDeals || 0,
+        referralLinksCount: referralLinks,
+        totalDealsCount: totalDeals,
+        activeDealsCount: activeDeals,
       };
     },
     {

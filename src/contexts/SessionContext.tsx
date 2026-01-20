@@ -625,10 +625,23 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
           // Fetch profile to determine user role for proper redirect
           let targetRoute = '#/creator-dashboard';
           
+          // Routes that should redirect admin users to admin dashboard instead
+          const adminOnlyRoutes = ['admin-influencers', 'admin-discovery'];
+          
           if (intendedRoute && intendedRoute !== 'login' && intendedRoute !== 'signup') {
-            targetRoute = `#/${intendedRoute}`;
-            console.log('[SessionContext] Using intended route:', targetRoute);
-          } else if (session?.user?.id) {
+            // Check if this is an influencer route - we'll redirect admin users away from these
+            const isInfluencerRoute = intendedRoute.includes('influencer') || intendedRoute.includes('discovery');
+            
+            if (isInfluencerRoute) {
+              console.log('[SessionContext] Influencer route detected, will redirect based on role');
+              // Don't use intended route if it's an influencer route - let role-based redirect handle it
+            } else {
+              targetRoute = `#/${intendedRoute}`;
+              console.log('[SessionContext] Using intended route:', targetRoute);
+            }
+          }
+          
+          if (targetRoute === '#/creator-dashboard' && session?.user?.id) {
             // Fetch profile to determine role-based redirect
             try {
               console.log('[SessionContext] Fetching profile for user:', session.user.id);
