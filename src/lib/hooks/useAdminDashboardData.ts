@@ -1,56 +1,80 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useSupabaseQuery } from './useSupabaseQuery'; // Import new hook
+import { useSupabaseQuery } from './useSupabaseQuery';
 
 interface AdminDashboardData {
-  clientCount: number;
-  caseCount: number;
-  documentCount: number;
-  consultationCount: number;
-  subscriptionCount: number; // New: subscription count
+  newAccountsCount: number; // New accounts created (last 30 days)
+  contractsMadeCount: number; // Total contracts created
+  linksGeneratedCount: number; // Deal detail tokens + contract ready tokens
+  referralLinksCount: number; // Referral links created
+  totalDealsCount: number; // Total brand deals
+  activeDealsCount: number; // Active brand deals
 }
 
 export const useAdminDashboardData = (enabled: boolean = true) => {
   return useSupabaseQuery<AdminDashboardData, Error>(
     ['adminDashboardData'],
     async () => {
-      // Fetch Client Count
-      const { count: clients, error: clientsError } = await supabase
+      // Fetch New Accounts Count (accounts created in last 30 days)
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+      
+      const { count: newAccounts, error: newAccountsError } = await supabase
         .from('profiles')
         .select('id', { count: 'exact', head: true })
-        .eq('role', 'client');
-      if (clientsError) throw clientsError;
+        .gte('created_at', thirtyDaysAgo.toISOString());
+      if (newAccountsError) throw newAccountsError;
 
-      // Fetch Case Count
-      const { count: cases, error: casesError } = await supabase
-        .from('cases')
-        .select('id', { count: 'exact', head: true });
-      if (casesError) throw casesError;
+      // Fetch Total Contracts Made (brand_deals with contract_file_url)
+      const { count: contractsMade, error: contractsError } = await supabase
+        .from('brand_deals')
+        .select('id', { count: 'exact', head: true })
+        .not('contract_file_url', 'is', null);
+      if (contractsError) throw contractsError;
 
-      // Fetch Document Count
-      const { count: documents, error: documentsError } = await supabase
-        .from('documents')
-        .select('id', { count: 'exact', head: true });
-      if (documentsError) throw documentsError;
+      // Fetch Links Generated (deal_details_tokens + contract_ready_tokens)
+      const [dealTokensResult, contractTokensResult] = await Promise.all([
+        supabase
+          .from('deal_details_tokens')
+          .select('id', { count: 'exact', head: true }),
+        supabase
+          .from('contract_ready_tokens')
+          .select('id', { count: 'exact', head: true })
+      ]);
+      
+      const dealTokensCount = dealTokensResult.count || 0;
+      const contractTokensCount = contractTokensResult.count || 0;
+      const linksGenerated = dealTokensCount + contractTokensCount;
+      
+      if (dealTokensResult.error) throw dealTokensResult.error;
+      if (contractTokensResult.error) throw contractTokensResult.error;
 
-      // Fetch Consultation Count
-      const { count: consultations, error: consultationsError } = await supabase
-        .from('consultations')
+      // Fetch Referral Links Count
+      const { count: referralLinks, error: referralLinksError } = await supabase
+        .from('referral_links')
         .select('id', { count: 'exact', head: true });
-      if (consultationsError) throw consultationsError;
+      if (referralLinksError) throw referralLinksError;
 
-      // Fetch Subscription Count (New)
-      const { count: subscriptions, error: subscriptionsError } = await supabase
-        .from('subscriptions')
+      // Fetch Total Deals Count
+      const { count: totalDeals, error: totalDealsError } = await supabase
+        .from('brand_deals')
         .select('id', { count: 'exact', head: true });
-      if (subscriptionsError) throw subscriptionsError;
+      if (totalDealsError) throw totalDealsError;
+
+      // Fetch Active Deals Count (status = 'active' or 'pending')
+      const { count: activeDeals, error: activeDealsError } = await supabase
+        .from('brand_deals')
+        .select('id', { count: 'exact', head: true })
+        .in('status', ['active', 'pending']);
+      if (activeDealsError) throw activeDealsError;
 
       return {
-        clientCount: clients || 0,
-        caseCount: cases || 0,
-        documentCount: documents || 0,
-        consultationCount: consultations || 0,
-        subscriptionCount: subscriptions || 0, // Include in return
+        newAccountsCount: newAccounts || 0,
+        contractsMadeCount: contractsMade || 0,
+        linksGeneratedCount: linksGenerated,
+        referralLinksCount: referralLinks || 0,
+        totalDealsCount: totalDeals || 0,
+        activeDealsCount: activeDeals || 0,
       };
     },
     {
