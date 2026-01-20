@@ -3,7 +3,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { useSupabaseQuery } from './useSupabaseQuery';
 
 interface AdminDashboardData {
-  newAccountsCount: number; // New accounts created (last 30 days)
+  totalUsersCount: number; // Total users/accounts
+  newAccountsCount: number; // New accounts created in date range
   contractsMadeCount: number; // Total contracts created
   linksGeneratedCount: number; // Deal detail tokens + contract ready tokens
   referralLinksCount: number; // Referral links created
@@ -11,9 +12,14 @@ interface AdminDashboardData {
   activeDealsCount: number; // Active brand deals
 }
 
-export const useAdminDashboardData = (enabled: boolean = true) => {
+interface DateRange {
+  startDate?: Date;
+  endDate?: Date;
+}
+
+export const useAdminDashboardData = (enabled: boolean = true, dateRange?: DateRange) => {
   return useSupabaseQuery<AdminDashboardData, Error>(
-    ['adminDashboardData'],
+    ['adminDashboardData', dateRange?.startDate?.toISOString(), dateRange?.endDate?.toISOString()],
     async () => {
       // Helper function to safely fetch count, returning 0 on error
       const safeCount = async (table: string, query?: (q: any) => any): Promise<number> => {
@@ -34,12 +40,32 @@ export const useAdminDashboardData = (enabled: boolean = true) => {
         }
       };
 
-      // Fetch New Accounts Count (accounts created in last 30 days)
-      const thirtyDaysAgo = new Date();
-      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-      const newAccounts = await safeCount('profiles', (q) => 
-        q.gte('created_at', thirtyDaysAgo.toISOString())
-      );
+      // Fetch Total Users Count
+      const totalUsers = await safeCount('profiles');
+
+      // Fetch New Accounts Count (accounts created in date range, or last 30 days if no range specified)
+      let newAccountsQuery = (q: any) => {
+        if (dateRange?.startDate) {
+          // Set to start of day
+          const start = new Date(dateRange.startDate);
+          start.setHours(0, 0, 0, 0);
+          q = q.gte('created_at', start.toISOString());
+        } else {
+          // Default to last 30 days if no date range specified
+          const thirtyDaysAgo = new Date();
+          thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+          thirtyDaysAgo.setHours(0, 0, 0, 0);
+          q = q.gte('created_at', thirtyDaysAgo.toISOString());
+        }
+        if (dateRange?.endDate) {
+          // Set to end of day (23:59:59.999)
+          const end = new Date(dateRange.endDate);
+          end.setHours(23, 59, 59, 999);
+          q = q.lte('created_at', end.toISOString());
+        }
+        return q;
+      };
+      const newAccounts = await safeCount('profiles', newAccountsQuery);
 
       // Fetch Total Contracts Made (brand_deals with contract_file_url)
       const contractsMade = await safeCount('brand_deals', (q) => 
@@ -63,6 +89,7 @@ export const useAdminDashboardData = (enabled: boolean = true) => {
       );
 
       return {
+        totalUsersCount: totalUsers,
         newAccountsCount: newAccounts,
         contractsMadeCount: contractsMade,
         linksGeneratedCount: linksGenerated,

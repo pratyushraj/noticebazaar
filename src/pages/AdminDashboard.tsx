@@ -1,20 +1,31 @@
 "use client";
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useSession } from '@/contexts/SessionContext';
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Loader2, UserPlus, FileText, Link2, Users, TrendingUp, Briefcase, ArrowUpRight } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Loader2, UserPlus, FileText, Link2, Users, TrendingUp, Briefcase, ArrowUpRight, Calendar } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAdminDashboardData } from '@/lib/hooks/useAdminDashboardData';
 
 const AdminDashboard = () => {
   const { session, loading, profile, isAdmin } = useSession();
+  const [startDate, setStartDate] = useState<string>('');
+  const [endDate, setEndDate] = useState<string>('');
+
+  // Convert date strings to Date objects for the hook
+  const dateRange = startDate || endDate ? {
+    startDate: startDate ? new Date(startDate) : undefined,
+    endDate: endDate ? new Date(endDate) : undefined,
+  } : undefined;
 
   // Fetch dashboard analytics
   const { data: dashboardData, isLoading: isLoadingData, error: dashboardError } = useAdminDashboardData(
-    !loading && isAdmin
+    !loading && isAdmin,
+    dateRange
   );
 
   useEffect(() => {
@@ -23,11 +34,73 @@ const AdminDashboard = () => {
     }
   }, [dashboardError]);
 
+  // Set default to last 30 days
+  useEffect(() => {
+    if (!startDate && !endDate) {
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+      const today = new Date();
+      setStartDate(thirtyDaysAgo.toISOString().split('T')[0]);
+      setEndDate(today.toISOString().split('T')[0]);
+    }
+  }, []);
+
+  const handleResetDates = () => {
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    const today = new Date();
+    setStartDate(thirtyDaysAgo.toISOString().split('T')[0]);
+    setEndDate(today.toISOString().split('T')[0]);
+  };
+
   return (
     <>
-      <h1 className="text-3xl font-bold text-foreground mb-6">
-        Admin Dashboard, {profile?.first_name || 'Admin'}!
-      </h1>
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-3xl font-bold text-foreground">
+          Admin Dashboard, {profile?.first_name || 'Admin'}!
+        </h1>
+      </div>
+
+      {/* Date Range Filter */}
+      <Card className="mb-6">
+        <CardHeader>
+          <CardTitle className="text-lg flex items-center gap-2">
+            <Calendar className="h-5 w-5" />
+            Date Range Filter
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-col sm:flex-row gap-4 items-end">
+            <div className="flex-1">
+              <Label htmlFor="start-date">Start Date</Label>
+              <Input
+                id="start-date"
+                type="date"
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+                className="mt-1"
+              />
+            </div>
+            <div className="flex-1">
+              <Label htmlFor="end-date">End Date</Label>
+              <Input
+                id="end-date"
+                type="date"
+                value={endDate}
+                onChange={(e) => setEndDate(e.target.value)}
+                className="mt-1"
+              />
+            </div>
+            <Button
+              variant="outline"
+              onClick={handleResetDates}
+              className="whitespace-nowrap"
+            >
+              Reset to 30 Days
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
 
       {isLoadingData ? (
         <div className="flex justify-center items-center py-8">
@@ -40,12 +113,27 @@ const AdminDashboard = () => {
           <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <Card className="bg-card shadow-sm border border-border">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">Total Users</CardTitle>
+                <Users className="h-4 w-4 text-blue-500" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-foreground">{dashboardData?.totalUsersCount || 0}</div>
+                <p className="text-xs text-muted-foreground">All registered users</p>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-card shadow-sm border border-border">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground">New Accounts</CardTitle>
-                <UserPlus className="h-4 w-4 text-blue-500" />
+                <UserPlus className="h-4 w-4 text-green-500" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold text-foreground">{dashboardData?.newAccountsCount || 0}</div>
-                <p className="text-xs text-muted-foreground">Created in last 30 days</p>
+                <p className="text-xs text-muted-foreground">
+                  {startDate && endDate 
+                    ? `Created ${new Date(startDate).toLocaleDateString()} - ${new Date(endDate).toLocaleDateString()}`
+                    : 'Created in selected date range'}
+                </p>
               </CardContent>
             </Card>
 
