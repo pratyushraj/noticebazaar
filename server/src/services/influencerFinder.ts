@@ -259,7 +259,7 @@ async function searchViaApify(hashtags: string[], keywords: string[], limit: num
   
   if (!apiToken) {
     log.warn('APIFY_API_TOKEN not configured');
-    return [];
+  return [];
   }
 
   try {
