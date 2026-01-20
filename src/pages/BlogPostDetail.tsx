@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, FileText, IndianRupee, Clock, Briefcase, ArrowRight, Gavel } from 'lucide-react';
+import { ArrowLeft, FileText, Calendar, User, Tag, Share2, Facebook, Twitter, Linkedin } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
-import GstComplianceChecklist from './blog/GstComplianceChecklist'; // Import the new component
+import ImageWithPlaceholder from '@/components/ui/ImageWithPlaceholder';
+import GstComplianceChecklist from './blog/GstComplianceChecklist';
 
 interface BlogPostContent {
   title: string;
@@ -18,87 +19,87 @@ const MOCK_CONTENT: { [key: string]: BlogPostContent } = {
     date: 'Jan 17, 2026',
     category: 'Legal',
     content: (
-      <div className="prose dark:prose-invert max-w-none space-y-6">
-        <p className="lead text-lg text-muted-foreground">
+      <div>
+        <p className="text-xl text-gray-600 mb-6 leading-relaxed">
           Over 60% of creators face payment delays or non-payment from brands. Learn how to protect yourself with proper contracts, early risk detection, and effective recovery strategies.
         </p>
         
-        <h2 className="text-2xl font-bold text-foreground">1. Spot Payment Risks Early</h2>
-        <p>
+        <h2 className="text-3xl font-bold text-gray-900 mt-8 mb-4">1. Spot Payment Risks Early</h2>
+        <p className="mb-4">
           The best protection is prevention. Before signing any brand deal, check for these warning signs:
         </p>
-        <ul className="list-disc list-inside ml-4 space-y-2">
+        <ul className="list-disc pl-6 mb-6 space-y-2">
           <li><strong>Vague payment terms:</strong> If the contract doesn't specify exact payment dates, amounts, or milestones, it's a red flag.</li>
           <li><strong>Long payment cycles:</strong> Payment terms longer than 30 days after deliverables are risky.</li>
           <li><strong>No late payment penalties:</strong> Contracts without interest or penalties for delayed payments give brands no incentive to pay on time.</li>
           <li><strong>Brand reputation:</strong> Check if other creators have complained about payment delays with this brand.</li>
         </ul>
 
-        <h2 className="text-2xl font-bold text-foreground">2. Draft Protective Contracts</h2>
-        <p>
+        <h2 className="text-3xl font-bold text-gray-900 mt-8 mb-4">2. Draft Protective Contracts</h2>
+        <p className="mb-4">
           A well-drafted contract is your first line of defense. Ensure your contract includes:
         </p>
-        <ul className="list-disc list-inside ml-4 space-y-2">
+        <ul className="list-disc pl-6 mb-6 space-y-2">
           <li><strong>Clear payment schedule:</strong> Specify exact dates and amounts for each milestone.</li>
           <li><strong>Late payment penalties:</strong> Include interest (typically 18% per annum) for delayed payments.</li>
           <li><strong>Content ownership:</strong> Clearly state who owns the content and usage rights.</li>
           <li><strong>Dispute resolution:</strong> Specify jurisdiction and method for resolving disputes.</li>
           <li><strong>Termination clauses:</strong> Define what happens if either party wants to end the agreement early.</li>
         </ul>
-        <p>
+        <p className="mb-6">
           CreatorArmour's contract generator helps you create creator-friendly contracts with all these protections built-in.
         </p>
 
-        <h2 className="text-2xl font-bold text-foreground">3. Track Payments and Deadlines</h2>
-        <p>
+        <h2 className="text-3xl font-bold text-gray-900 mt-8 mb-4">3. Track Payments and Deadlines</h2>
+        <p className="mb-4">
           Once you've signed a deal, don't just wait for payment. Actively track:
         </p>
-        <ul className="list-disc list-inside ml-4 space-y-2">
+        <ul className="list-disc pl-6 mb-6 space-y-2">
           <li><strong>Payment due dates:</strong> Set reminders 7 days before each payment is due.</li>
           <li><strong>Deliverable deadlines:</strong> Ensure you meet your commitments to avoid giving brands an excuse to delay payment.</li>
           <li><strong>Payment status:</strong> Follow up immediately if payment is even 1 day late.</li>
         </ul>
-        <p>
+        <p className="mb-6">
           CreatorArmour's payment tracking dashboard automatically monitors all your deals and alerts you when payments are due or overdue.
         </p>
 
-        <h2 className="text-2xl font-bold text-foreground">4. Take Action When Payment is Delayed</h2>
-        <p>
+        <h2 className="text-3xl font-bold text-gray-900 mt-8 mb-4">4. Take Action When Payment is Delayed</h2>
+        <p className="mb-4">
           If a brand delays payment, don't wait. Follow this escalation process:
         </p>
-        <ol className="list-decimal list-inside ml-4 space-y-2">
+        <ol className="list-decimal pl-6 mb-6 space-y-2">
           <li><strong>Day 1-3:</strong> Send a polite reminder email with invoice attached.</li>
           <li><strong>Day 4-7:</strong> Send a formal follow-up mentioning the contract terms and late payment penalties.</li>
           <li><strong>Day 8-15:</strong> Send a legal notice drafted by a lawyer. This often prompts immediate payment.</li>
           <li><strong>Day 16+:</strong> Consider filing a consumer complaint or taking legal action.</li>
         </ol>
 
-        <h2 className="text-2xl font-bold text-foreground">5. Use Legal Notices Effectively</h2>
-        <p>
+        <h2 className="text-3xl font-bold text-gray-900 mt-8 mb-4">5. Use Legal Notices Effectively</h2>
+        <p className="mb-4">
           A legal notice sent by a registered advocate carries significant weight. It:
         </p>
-        <ul className="list-disc list-inside ml-4 space-y-2">
+        <ul className="list-disc pl-6 mb-6 space-y-2">
           <li>Shows you're serious about recovering payment</li>
           <li>Often prompts immediate payment (85% recovery rate)</li>
           <li>Creates a legal paper trail if you need to take further action</li>
           <li>Can be used as evidence in court if needed</li>
         </ul>
-        <p>
+        <p className="mb-6">
           Creator Pro includes 1 free legal notice per month, drafted and sent by verified lawyers.
         </p>
         
-        <Card className="bg-secondary p-4 border-l-4 border-primary">
+        <Card className="bg-blue-50 border-l-4 border-blue-500 p-6 my-8">
           <CardContent className="p-0 flex flex-col space-y-3">
             <div className="flex items-center">
-              <FileText className="h-5 w-5 text-primary mr-3 flex-shrink-0" />
-              <p className="text-sm text-foreground font-semibold">
+              <FileText className="h-5 w-5 text-blue-600 mr-3 flex-shrink-0" />
+              <p className="text-base text-gray-900 font-semibold">
                 Protect Your Brand Deals Today
               </p>
             </div>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-gray-700">
               Creator Pro includes contract generation, payment tracking, risk alerts, and free legal notices. Start protecting your deals now.
             </p>
-            <Button asChild className="w-full sm:w-auto bg-accent-gold text-accent-gold-foreground hover:bg-accent-gold/90">
+            <Button asChild className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white">
               <Link to="/signup">
                 Get Started Free <ArrowRight className="h-4 w-4 ml-2" />
               </Link>
@@ -674,52 +675,367 @@ const MOCK_CONTENT: { [key: string]: BlogPostContent } = {
   },
 };
 
+// Get post image from Blog.tsx posts list
+const MOCK_POSTS_WITH_IMAGES: { [key: string]: string } = {
+  'protect-yourself-from-unpaid-brand-deals': '/NOTICERBAZAAR.jpg',
+  'consumer-complaints-guide-for-creators': '/NOTICERBAZAAR.jpg',
+  'red-flags-in-influencer-contracts': '/NOTICERBAZAAR.jpg',
+  'when-to-use-free-legal-consultations': '/NOTICERBAZAAR.jpg',
+  'gst-compliance-checklist': '/blog-images/gst-checklist.jpg',
+  'annual-corporate-filings-importance': '/blog-images/annual-filings-dashboard.png',
+  'gst-filing-deadlines-2025': '/blog-images/gst-checklist.jpg',
+  '5-tips-for-faster-payment-recovery': '/NOTICERBAZAAR.jpg',
+  'choosing-the-right-business-entity': '/NOTICERBAZAAR.jpg',
+  'ai-in-legal-tech': '/pasted-image-2025-10-29T16-12-40-981Z.png',
+};
+
+const getCategoryColor = (category: string) => {
+  switch (category) {
+    case 'Legal': return 'bg-blue-100 text-blue-800';
+    case 'Compliance': return 'bg-green-100 text-green-800';
+    case 'Finance': return 'bg-purple-100 text-purple-800';
+    case 'Tech': return 'bg-orange-100 text-orange-800';
+    default: return 'bg-gray-100 text-gray-800';
+  }
+};
+
 const BlogPostDetail = () => {
   const { slug } = useParams<{ slug: string }>();
   const post = MOCK_CONTENT[slug || ''];
+  const postImage = slug ? MOCK_POSTS_WITH_IMAGES[slug] || '/NOTICERBAZAAR.jpg' : '/NOTICERBAZAAR.jpg';
+
+  // Get related posts (same category, excluding current)
+  const relatedPosts = useMemo(() => {
+    if (!post) return [];
+    return Object.entries(MOCK_CONTENT)
+      .filter(([key, p]) => key !== slug && p.category === post.category)
+      .slice(0, 3)
+      .map(([key, p]) => ({ slug: key, ...p }));
+  }, [post, slug]);
 
   if (!post) {
     return (
-      <div className="container mx-auto px-6 py-12 nb-screen-height bg-background">
-        <Button variant="outline" asChild className="mb-8 text-primary border-border hover:bg-accent hover:text-foreground">
-          <Link to="/blog">
-            <ArrowLeft className="h-4 w-4 mr-2" /> Back to Blog
-          </Link>
-        </Button>
-        <Card className="max-w-3xl mx-auto bg-card p-8 rounded-xl shadow-lg border border-destructive">
-          <h1 className="text-4xl font-bold text-destructive mb-4">404 - Post Not Found</h1>
-          <p className="text-lg text-muted-foreground">
-            The blog post you are looking for does not exist.
-          </p>
-        </Card>
+      <div className="min-h-screen bg-white">
+        <header className="bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex items-center justify-between h-16">
+              <Link to="/" className="text-2xl font-bold text-gray-900 hover:text-blue-600 transition-colors">
+                CreatorArmour
+              </Link>
+              <nav className="hidden md:flex space-x-6">
+                <Link to="/" className="text-gray-700 hover:text-blue-600 transition-colors">Home</Link>
+                <Link to="/blog" className="text-blue-600 font-medium">Blog</Link>
+              </nav>
+            </div>
+          </div>
+        </header>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          <div className="text-center">
+            <h1 className="text-4xl font-bold text-gray-900 mb-4">404 - Post Not Found</h1>
+            <p className="text-lg text-gray-600 mb-8">The blog post you are looking for does not exist.</p>
+            <Button asChild>
+              <Link to="/blog">Back to Blog</Link>
+            </Button>
+          </div>
+        </div>
       </div>
     );
   }
 
-  // If the content is a React element (like GstComplianceChecklist), render it directly.
+  // If the content is a React element (like GstComplianceChecklist), render it with WordPress wrapper
   if (React.isValidElement(post.content)) {
-    return post.content;
+    return (
+      <div className="min-h-screen bg-white">
+        <header className="bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex items-center justify-between h-16">
+              <Link to="/" className="text-2xl font-bold text-gray-900 hover:text-blue-600 transition-colors">
+                CreatorArmour
+              </Link>
+              <nav className="hidden md:flex space-x-6">
+                <Link to="/" className="text-gray-700 hover:text-blue-600 transition-colors">Home</Link>
+                <Link to="/blog" className="text-blue-600 font-medium">Blog</Link>
+              </nav>
+            </div>
+          </div>
+        </header>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="flex flex-col lg:flex-row gap-8">
+            <main className="lg:w-2/3">
+              <article className="bg-white">
+                <div className="mb-6">
+                  <Link to="/blog" className="text-blue-600 hover:text-blue-800 text-sm font-medium flex items-center mb-6">
+                    <ArrowLeft className="h-4 w-4 mr-1" /> Back to Blog
+                  </Link>
+                  <span className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${getCategoryColor(post.category)} mb-4`}>
+                    {post.category}
+                  </span>
+                  <h1 className="text-4xl font-bold text-gray-900 mt-4 mb-4">{post.title}</h1>
+                  <div className="flex items-center text-sm text-gray-500 space-x-4">
+                    <span className="flex items-center">
+                      <Calendar className="h-4 w-4 mr-1" />
+                      {post.date}
+                    </span>
+                    <span className="flex items-center">
+                      <User className="h-4 w-4 mr-1" />
+                      CreatorArmour Team
+                    </span>
+                  </div>
+                </div>
+                <div className="prose prose-lg max-w-none text-gray-700">
+                  {post.content}
+                </div>
+              </article>
+            </main>
+            <aside className="lg:w-1/3">
+              {/* Sidebar widgets would go here */}
+            </aside>
+          </div>
+        </div>
+      </div>
+    );
   }
 
-  // Otherwise, render the standard article layout.
+  // WordPress-style single post layout
   return (
-    <div className="container mx-auto px-6 py-12 nb-screen-height bg-background">
-      <Button variant="outline" asChild className="mb-8 text-primary border-border hover:bg-accent hover:text-foreground">
-        <Link to="/blog">
-          <ArrowLeft className="h-4 w-4 mr-2" /> Back to Blog
-        </Link>
-      </Button>
-      <article className="max-w-3xl mx-auto bg-card p-8 rounded-xl shadow-lg border border-border">
-        <header className="mb-6 border-b border-border/50 pb-4">
-          <p className="text-sm font-medium text-primary mb-2">{post.category}</p>
-          <h1 className="text-4xl font-bold text-foreground mb-3">{post.title}</h1>
-          <p className="text-sm text-muted-foreground">Published on: {post.date}</p>
-        </header>
-        
-        <div className="blog-content">
-          {post.content}
+    <div className="min-h-screen bg-white">
+      {/* WordPress-style Header */}
+      <header className="bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-16">
+            <Link to="/" className="text-2xl font-bold text-gray-900 hover:text-blue-600 transition-colors">
+              CreatorArmour
+            </Link>
+            <nav className="hidden md:flex space-x-6">
+              <Link to="/" className="text-gray-700 hover:text-blue-600 transition-colors">Home</Link>
+              <Link to="/blog" className="text-blue-600 font-medium">Blog</Link>
+              <Link to="/about" className="text-gray-700 hover:text-blue-600 transition-colors">About</Link>
+            </nav>
+          </div>
         </div>
-      </article>
+      </header>
+
+      {/* Main Content */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="flex flex-col lg:flex-row gap-8">
+          {/* Main Content Area */}
+          <main className="lg:w-2/3">
+            <article className="bg-white">
+              {/* Breadcrumb */}
+              <div className="mb-6">
+                <Link to="/blog" className="text-blue-600 hover:text-blue-800 text-sm font-medium flex items-center">
+                  <ArrowLeft className="h-4 w-4 mr-1" /> Back to Blog
+                </Link>
+              </div>
+
+              {/* Featured Image */}
+              <div className="mb-6 rounded-lg overflow-hidden">
+                <ImageWithPlaceholder
+                  src={postImage}
+                  alt={post.title}
+                  fallback="/placeholder.svg"
+                  aspectRatio="video"
+                  className="w-full h-auto"
+                />
+              </div>
+
+              {/* Post Header */}
+              <header className="mb-6 pb-6 border-b border-gray-200">
+                <span className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${getCategoryColor(post.category)} mb-4`}>
+                  {post.category}
+                </span>
+                <h1 className="text-4xl font-bold text-gray-900 mb-4 leading-tight">{post.title}</h1>
+                <div className="flex items-center text-sm text-gray-500 space-x-4">
+                  <span className="flex items-center">
+                    <Calendar className="h-4 w-4 mr-1" />
+                    {post.date}
+                  </span>
+                  <span className="flex items-center">
+                    <User className="h-4 w-4 mr-1" />
+                    CreatorArmour Team
+                  </span>
+                </div>
+              </header>
+
+              {/* Post Content */}
+              <div className="prose prose-lg max-w-none text-gray-700 leading-relaxed blog-content-wordpress">
+                <style>{`
+                  .blog-content-wordpress {
+                    font-size: 18px;
+                    line-height: 1.8;
+                    color: #333;
+                  }
+                  .blog-content-wordpress h2 {
+                    font-size: 28px;
+                    font-weight: 700;
+                    color: #1a1a1a;
+                    margin-top: 2em;
+                    margin-bottom: 1em;
+                    line-height: 1.3;
+                  }
+                  .blog-content-wordpress h3 {
+                    font-size: 24px;
+                    font-weight: 600;
+                    color: #1a1a1a;
+                    margin-top: 1.5em;
+                    margin-bottom: 0.75em;
+                    line-height: 1.4;
+                  }
+                  .blog-content-wordpress p {
+                    margin-bottom: 1.5em;
+                    font-size: 18px;
+                    line-height: 1.8;
+                  }
+                  .blog-content-wordpress ul,
+                  .blog-content-wordpress ol {
+                    margin-bottom: 1.5em;
+                    padding-left: 2em;
+                  }
+                  .blog-content-wordpress li {
+                    margin-bottom: 0.75em;
+                    line-height: 1.8;
+                  }
+                  .blog-content-wordpress strong {
+                    font-weight: 600;
+                    color: #1a1a1a;
+                  }
+                  .blog-content-wordpress a {
+                    color: #2563eb;
+                    text-decoration: underline;
+                  }
+                  .blog-content-wordpress a:hover {
+                    color: #1d4ed8;
+                  }
+                `}</style>
+                {post.content}
+              </div>
+
+              {/* Share Buttons */}
+              <div className="mt-8 pt-8 border-t border-gray-200">
+                <h3 className="text-sm font-semibold text-gray-900 mb-4">Share this article:</h3>
+                <div className="flex space-x-3">
+                  <Button variant="outline" size="sm" className="border-gray-300 text-gray-700 hover:bg-blue-50 hover:border-blue-300 hover:text-blue-700">
+                    <Facebook className="h-4 w-4 mr-2" />
+                    Facebook
+                  </Button>
+                  <Button variant="outline" size="sm" className="border-gray-300 text-gray-700 hover:bg-blue-50 hover:border-blue-300 hover:text-blue-700">
+                    <Twitter className="h-4 w-4 mr-2" />
+                    Twitter
+                  </Button>
+                  <Button variant="outline" size="sm" className="border-gray-300 text-gray-700 hover:bg-blue-50 hover:border-blue-300 hover:text-blue-700">
+                    <Linkedin className="h-4 w-4 mr-2" />
+                    LinkedIn
+                  </Button>
+                </div>
+              </div>
+
+              {/* Related Posts */}
+              {relatedPosts.length > 0 && (
+                <div className="mt-12 pt-8 border-t border-gray-200">
+                  <h3 className="text-2xl font-bold text-gray-900 mb-6">Related Articles</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    {relatedPosts.map((relatedPost) => (
+                      <Link key={relatedPost.slug} to={`/blog/${relatedPost.slug}`} className="group">
+                        <Card className="bg-white border border-gray-200 hover:shadow-lg transition-shadow">
+                          <div className="h-40 overflow-hidden bg-gray-100">
+                            <ImageWithPlaceholder
+                              src={MOCK_POSTS_WITH_IMAGES[relatedPost.slug] || '/NOTICERBAZAAR.jpg'}
+                              alt={relatedPost.title}
+                              fallback="/placeholder.svg"
+                              aspectRatio="video"
+                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                            />
+                          </div>
+                          <CardContent className="p-4">
+                            <h4 className="font-semibold text-gray-900 group-hover:text-blue-600 transition-colors line-clamp-2">
+                              {relatedPost.title}
+                            </h4>
+                            <p className="text-xs text-gray-500 mt-2">{relatedPost.date}</p>
+                          </CardContent>
+                        </Card>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </article>
+          </main>
+
+          {/* Sidebar */}
+          <aside className="lg:w-1/3">
+            <div className="space-y-6">
+              {/* Recent Posts Widget */}
+              <Card className="bg-white border border-gray-200 shadow-sm">
+                <CardContent className="p-6">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4 pb-3 border-b border-gray-200">
+                    Recent Posts
+                  </h3>
+                  <ul className="space-y-4">
+                    {Object.entries(MOCK_CONTENT).slice(0, 5).map(([key, p]) => (
+                      <li key={key} className="flex gap-3">
+                        <Link to={`/blog/${key}`} className="flex-shrink-0 w-16 h-16 overflow-hidden rounded bg-gray-100">
+                          <ImageWithPlaceholder
+                            src={MOCK_POSTS_WITH_IMAGES[key] || '/NOTICERBAZAAR.jpg'}
+                            alt={p.title}
+                            fallback="/placeholder.svg"
+                            aspectRatio="square"
+                            className="w-full h-full object-cover"
+                          />
+                        </Link>
+                        <div className="flex-1 min-w-0">
+                          <Link 
+                            to={`/blog/${key}`}
+                            className="text-sm font-semibold text-gray-900 hover:text-blue-600 line-clamp-2 transition-colors"
+                          >
+                            {p.title}
+                          </Link>
+                          <p className="text-xs text-gray-500 mt-1">{p.date}</p>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                </CardContent>
+              </Card>
+
+              {/* Categories Widget */}
+              <Card className="bg-white border border-gray-200 shadow-sm">
+                <CardContent className="p-6">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4 pb-3 border-b border-gray-200">
+                    Categories
+                  </h3>
+                  <ul className="space-y-2">
+                    {['Legal', 'Compliance', 'Finance', 'Tech'].map((category) => (
+                      <li key={category}>
+                        <Link 
+                          to={`/blog?category=${category}`}
+                          className="flex items-center justify-between text-gray-700 hover:text-blue-600 transition-colors py-1"
+                        >
+                          <span className="flex items-center">
+                            <Tag className="h-4 w-4 mr-2 text-gray-400" />
+                            {category}
+                          </span>
+                          <span className="text-gray-500 text-sm">
+                            ({Object.values(MOCK_CONTENT).filter(p => p.category === category).length})
+                          </span>
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                </CardContent>
+              </Card>
+            </div>
+          </aside>
+        </div>
+      </div>
+
+      {/* Footer */}
+      <footer className="bg-gray-50 border-t border-gray-200 mt-16 py-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center text-gray-600 text-sm">
+            <p>&copy; {new Date().getFullYear()} CreatorArmour. All rights reserved.</p>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 };
