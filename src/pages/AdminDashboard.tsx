@@ -7,12 +7,14 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Loader2, UserPlus, FileText, Link2, Users, TrendingUp, Briefcase, ArrowUpRight, Calendar } from 'lucide-react';
+import { Loader2, UserPlus, FileText, Link2, Users, TrendingUp, Briefcase, ArrowUpRight, Calendar, LogOut, Download } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAdminDashboardData } from '@/lib/hooks/useAdminDashboardData';
+import { useSignOut } from '@/lib/hooks/useAuth';
 
 const AdminDashboard = () => {
   const { session, loading, profile, isAdmin } = useSession();
+  const signOutMutation = useSignOut();
   const [startDate, setStartDate] = useState<string>('');
   const [endDate, setEndDate] = useState<string>('');
 
@@ -53,21 +55,90 @@ const AdminDashboard = () => {
     setEndDate(today.toISOString().split('T')[0]);
   };
 
+  const exportToCSV = () => {
+    if (!dashboardData) {
+      toast.error('No data to export');
+      return;
+    }
+
+    const csvRows = [
+      ['Metric', 'Value'],
+      ['Total Users', dashboardData.totalUsersCount.toString()],
+      ['New Accounts', dashboardData.newAccountsCount.toString()],
+      ['Contracts Made', dashboardData.contractsMadeCount.toString()],
+      ['Links Generated', dashboardData.linksGeneratedCount.toString()],
+      ['Referral Links', dashboardData.referralLinksCount.toString()],
+      ['Total Deals', dashboardData.totalDealsCount.toString()],
+      ['Active Deals', dashboardData.activeDealsCount.toString()],
+      [''],
+      ['Date Range', `${startDate || 'N/A'} to ${endDate || 'N/A'}`],
+      ['Exported At', new Date().toISOString()],
+    ];
+
+    const csvContent = csvRows.map(row => row.join(',')).join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `admin-dashboard-${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    toast.success('Dashboard data exported to CSV');
+  };
+
   return (
     <>
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-3xl font-bold text-foreground">
           Admin Dashboard, {profile?.first_name || 'Admin'}!
         </h1>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={async () => {
+            try {
+              await signOutMutation.mutateAsync();
+            } catch (error: any) {
+              console.error('Logout failed', error);
+            }
+          }}
+          disabled={signOutMutation.isPending}
+          className="flex items-center gap-2"
+        >
+          {signOutMutation.isPending ? (
+            <>
+              <Loader2 className="h-4 w-4 animate-spin" />
+              <span>Logging out...</span>
+            </>
+          ) : (
+            <>
+              <LogOut className="h-4 w-4" />
+              <span>Logout</span>
+            </>
+          )}
+        </Button>
       </div>
 
       {/* Date Range Filter */}
       <Card className="mb-6">
         <CardHeader>
-          <CardTitle className="text-lg flex items-center gap-2">
-            <Calendar className="h-5 w-5" />
-            Date Range Filter
-          </CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-lg flex items-center gap-2">
+              <Calendar className="h-5 w-5" />
+              Date Range Filter
+            </CardTitle>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={exportToCSV}
+              className="flex items-center gap-2"
+            >
+              <Download className="h-4 w-4" />
+              Export CSV
+            </Button>
+          </div>
         </CardHeader>
         <CardContent>
           <div className="flex flex-col sm:flex-row gap-4 items-end">

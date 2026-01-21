@@ -430,10 +430,10 @@ const CreatorOnboarding = () => {
 
   return (
     <OnboardingContainer>
-      <div className="max-w-2xl mx-auto p-4 pb-16">
+      <div className="flex-1 flex flex-col min-h-0 max-w-2xl mx-auto w-full p-4 pb-16 overflow-y-auto overscroll-contain">
         {/* Progress Bar - Add top padding on mobile to account for safe area */}
         {setupStep !== 'success' && (
-          <div className="pt-[max(60px,calc(env(safe-area-inset-top,0px)+36px))] md:pt-10">
+          <div className="pt-[max(60px,calc(env(safe-area-inset-top,0px)+36px))] md:pt-10 flex-shrink-0">
             <OnboardingProgressBar
               currentStep={getStepNumber()}
               totalSteps={4}
