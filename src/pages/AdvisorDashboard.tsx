@@ -14,6 +14,7 @@ import { cn } from '@/lib/utils';
 import { triggerHaptic, HapticPatterns } from '@/lib/utils/haptics';
 import { toast } from 'sonner';
 import { useSignOut } from '@/lib/hooks/useAuth';
+import { LinkPreview, extractUrls, renderMessageText } from '@/components/messages/LinkPreview';
 
 interface Conversation {
   id: string;
@@ -619,7 +620,14 @@ function ConversationView({
                       showTail ? "rounded-2xl rounded-bl-sm" : "rounded-2xl"
                     )
               )}>
-                <p className="text-sm leading-relaxed break-words">{msg.content}</p>
+                <div className="space-y-2">
+                  <p className="text-sm leading-relaxed break-words">
+                    {renderMessageText(msg.content)}
+                  </p>
+                  {extractUrls(msg.content).map((url, i) => (
+                    <LinkPreview key={i} url={url} />
+                  ))}
+                </div>
                 {msg.attachments && msg.attachments.length > 0 && (
                   <div className="mt-2 space-y-2">
                     {msg.attachments.map((att) => (

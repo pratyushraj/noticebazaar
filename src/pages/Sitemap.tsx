@@ -11,7 +11,6 @@ const routes = [
     { path: '/', label: 'Homepage' },
     { path: '/login', label: 'Client Login' },
     { path: '/pricing-comparison', label: 'Pricing Comparison' },
-    { path: '/blog', label: 'Blog' },
     { path: '/privacy-policy', label: 'Privacy Policy' },
     { path: '/terms-of-service', label: 'Terms of Service' },
     { path: '/refund-policy', label: 'Refund Policy' },

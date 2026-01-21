@@ -116,7 +116,6 @@ const MarketingHome = () => {
           <Link to="/pricing-comparison" onClick={() => setIsMenuOpen(false)} className="hover:text-white py-2 border-b border-white/5">Pricing</Link>
           <a href="#testimonials" onClick={() => setIsMenuOpen(false)} className="hover:text-white py-2 border-b border-white/5">Clients</a>
           <a href="#contact" onClick={() => setIsMenuOpen(false)} className="hover:text-white py-2 border-b border-white/5">Contact</a>
-          <Link to="/blog" onClick={() => setIsMenuOpen(false)} className="hover:text-white py-2 border-b border-white/5">Blog</Link>
           
           <div className="pt-6 space-y-4 border-t border-white/10">
             <Link to="/login" className="w-full inline-flex justify-center text-lg border border-white/10 px-4 py-2 rounded-lg hover:bg-white/10">Client Login</Link>
@@ -243,7 +242,6 @@ const MarketingHome = () => {
             <Link to="/pricing-comparison" className="hover:text-white">Pricing</Link>
             <a href="#testimonials" className="hover:text-white">Clients</a>
             <a href="#contact" className="hover:text-white">Contact</a>
-            <Link to="/blog" className="hover:text-white">Blog</Link>
           </nav>
 
           <div className="flex items-center gap-3">
@@ -630,7 +628,7 @@ const MarketingHome = () => {
             <div>
               <div className="font-semibold text-white">Company</div>
               <div className="mt-2"><a href="#testimonials" className="hover:text-white">Clients & Trust</a></div>
-              <div className="mt-1"><Link to="/blog" className="hover:text-white">Blog & Insights</Link></div>
+              <div className="mt-1"><Link to="/blog" className="hover:text-white">Blog</Link></div>
               <div className="mt-1"><Link to="/sitemap" className="hover:text-white">Sitemap</Link></div>
               <div className="mt-1"><Link to="/login" className="hover:text-white">Client Login</Link></div>
             </div>

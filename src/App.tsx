@@ -31,9 +31,9 @@ import AdminProfile from "./pages/AdminProfile";
 import AdminInfluencers from "./pages/AdminInfluencers";
 import AdminDiscovery from "./pages/AdminDiscovery";
 import CreatorProfile from "./pages/CreatorProfile";
-import Blog from "./pages/Blog";
-import BlogPostDetail from "./pages/BlogPostDetail"; // Corrected path
 import About from "./pages/About";
+import Blog from "./pages/Blog";
+import BlogPostDetail from "./pages/BlogPostDetail";
 import Careers from "./pages/Careers";
 import PricingComparison from "./pages/PricingComparison";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
@@ -46,7 +46,6 @@ import GrowthPlan from "./pages/GrowthPlan";
 import StrategicPlan from "./pages/StrategicPlan";
 import FreeLegalCheck from "./pages/FreeLegalCheck";
 import ThankYou from "./pages/ThankYou";
-import GstComplianceChecklist from "./pages/blog/GstComplianceChecklist"; // Import new article component
 import { SessionContextProvider } from "./contexts/SessionContext";
 import { SidebarProvider } from "./contexts/SidebarContext";
 import ProtectedLayout from "./components/ProtectedLayout";
@@ -237,9 +236,9 @@ const App = () => {
               <Route path="/reset-password" element={<ResetPassword />} />
 
               {/* Public routes */}
+              <Route path="/about" element={<About />} />
               <Route path="/blog" element={<Blog />} />
               <Route path="/blog/:slug" element={<BlogPostDetail />} />
-              <Route path="/about" element={<About />} />
               <Route path="/careers" element={<Careers />} />
               <Route path="/pricing-comparison" element={<PricingComparison />} />
               <Route path="/privacy-policy" element={<PrivacyPolicy />} />
