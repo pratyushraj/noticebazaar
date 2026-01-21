@@ -152,12 +152,30 @@ const App = () => {
     }
   }, []);
 
-  // Handle OAuth errors from query parameters (before routing)
+  // Handle OAuth errors and malformed OAuth URLs (before routing)
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const error = urlParams.get('error');
     const errorCode = urlParams.get('error_code');
     const errorDescription = urlParams.get('error_description');
+    
+    // Check for malformed OAuth callback (tokens in pathname instead of hash)
+    const pathname = window.location.pathname;
+    const hasOAuthInPathname = pathname.includes('access_token=') || pathname.includes('refresh_token=');
+    
+    if (hasOAuthInPathname) {
+      console.log('[App] Detected OAuth tokens in pathname, moving to hash...');
+      
+      // Extract tokens from pathname
+      const tokenPart = pathname.substring(pathname.indexOf('access_token='));
+      const newHash = '#' + tokenPart;
+      
+      // Clean the URL and set hash
+      window.history.replaceState({}, '', '/');
+      window.location.hash = newHash;
+      
+      return; // Exit early, let SessionContext handle the OAuth flow
+    }
     
     if (error || errorCode || errorDescription) {
       // Clean the URL immediately to prevent routing to error string

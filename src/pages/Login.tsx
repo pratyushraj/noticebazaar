@@ -156,8 +156,6 @@ const Login = () => {
         console.error('[Login] Email/password error:', error);
         if (error.message.includes('Invalid login credentials')) {
           toast.error('Invalid email or password. Please try again.');
-        } else if (error.message.includes('Email not confirmed')) {
-          toast.error('Please check your email and confirm your account before signing in.');
         } else {
           toast.error('Failed to sign in: ' + error.message);
         }

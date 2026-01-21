@@ -58,7 +58,7 @@ export const SuccessStep: React.FC<SuccessStepProps> = ({
 
         {/* Subtitle */}
         <p className="text-xl font-semibold text-white/80 mb-8">
-          Welcome to NoticeBazaar, {userName}!
+          Welcome to CreatorArmour, {userName}!
         </p>
 
         {/* Profile Summary */}

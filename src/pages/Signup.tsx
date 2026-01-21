@@ -85,25 +85,39 @@ const Signup = () => {
     }
     
     // If session loading is finished and a session exists, redirect.
-    if (!loading && session) {
-      // Wait a moment for profile to be created by database trigger
-      const timer = setTimeout(() => {
-        // Check if we have a profile now
-        if (user) {
-          // Profile should be created by trigger, navigate based on role
-          // The ProtectedRoute will handle the actual routing
-          navigate('/', { replace: true });
-        }
-      }, 500);
-      return () => clearTimeout(timer);
+    // But don't redirect if we're in the middle of signup (let signup handler manage it)
+    if (!loading && session && !isLoading) {
+      // Check if we just signed up - if so, let the signup handler manage redirect
+      const justSignedUp = sessionStorage.getItem('just_signed_up') === 'true';
+      
+      if (!justSignedUp) {
+        // Wait a moment for profile to be created by database trigger
+        const timer = setTimeout(() => {
+          // Check if we have a profile now
+          if (user) {
+            // Profile should be created by trigger, navigate based on role
+            // The ProtectedRoute will handle the actual routing
+            navigate('/', { replace: true });
+          }
+        }, 500);
+        return () => clearTimeout(timer);
+      }
     }
-  }, [session, loading, navigate, user]);
+  }, [session, loading, navigate, user, isLoading]);
 
   const handleEmailPasswordSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!name.trim() || !email.trim() || !password.trim()) {
       toast.error('Please enter your name, email, and password');
+      return;
+    }
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email.trim())) {
+      toast.error('Please enter a valid email address');
+      setEmailError('Invalid email format');
       return;
     }
 
@@ -134,10 +148,21 @@ const Signup = () => {
 
       if (error) {
         console.error('[Signup] Email/password signup error:', error);
-        // Check for various "user already exists" error messages
+        // Check for various error types
         const errorMsg = error.message.toLowerCase();
         const errorCode = error.status?.toString() || '';
         
+        // Invalid email format
+        if (errorMsg.includes('email address') && errorMsg.includes('invalid')) {
+          toast.error('Invalid email address', {
+            description: 'Please check your email address and try again.',
+            duration: 5000,
+          });
+          setEmailError('Invalid email format');
+          return;
+        }
+        
+        // User already exists
         if (
           errorMsg.includes('user already registered') ||
           errorMsg.includes('already registered') ||
@@ -162,7 +187,11 @@ const Signup = () => {
           });
           setShowLogin(true);
         } else {
-          toast.error('Failed to sign up: ' + error.message);
+          // Generic error - show user-friendly message
+          toast.error('Failed to sign up', {
+            description: error.message || 'Please check your information and try again.',
+            duration: 5000,
+          });
         }
       } else if (data.user) {
         // Supabase signUp returns user even if already exists in some cases
@@ -182,15 +211,72 @@ const Signup = () => {
           setShowLogin(true);
         } else {
           // New user was created
-          toast.success('Account created!', {
-            description: 'Please check your email to verify your account. You can sign in after verification.',
-            duration: 5000,
+          // Email confirmation is disabled - proceed immediately
+          // Mark that we just signed up to prevent useEffect from redirecting
+          sessionStorage.setItem('just_signed_up', 'true');
+          
+          toast.success('Account created successfully!', {
+            description: 'Setting up your account...',
+            duration: 2000,
           });
-          // Clear form after successful signup
+          
+          // Clear form immediately
           setName('');
           setEmail('');
           setPassword('');
           setEmailError('');
+          
+          // Wait a moment for Supabase to establish session (even if email confirmation is disabled)
+          // Sometimes there's a brief delay before session is available
+          setTimeout(async () => {
+            // Check if session is now available
+            const { data: { session: currentSession } } = await supabase.auth.getSession();
+            
+            if (currentSession) {
+              // Session exists - wait for profile and navigate
+              let attempts = 0;
+              const maxAttempts = 10;
+              const checkProfile = setInterval(async () => {
+                attempts++;
+                const { data: profileData } = await supabase
+                  .from('profiles')
+                  .select('id')
+                  .eq('id', currentSession.user.id)
+                  .single();
+                
+                if (profileData || attempts >= maxAttempts) {
+                  clearInterval(checkProfile);
+                  sessionStorage.removeItem('just_signed_up');
+                  navigate('/creator-onboarding', { replace: true });
+                }
+              }, 500);
+            } else {
+              // No session yet - try signin once
+              const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+                email: email.trim(),
+                password: password,
+              });
+              
+              if (signInData.session) {
+                sessionStorage.removeItem('just_signed_up');
+                // Wait a moment for profile creation
+                setTimeout(() => {
+                  navigate('/creator-onboarding', { replace: true });
+                }, 1000);
+              } else {
+                // Signin failed - redirect to login
+                sessionStorage.removeItem('just_signed_up');
+                console.warn('[Signup] Auto-signin failed:', signInError?.message);
+                
+                toast.info('Account created! Please sign in to continue', {
+                  description: 'Your account has been created successfully.',
+                  duration: 5000,
+                });
+                setShowLogin(true);
+                setEmail(email.trim());
+              }
+            }
+          }, 1000); // Wait 1 second for session to be established
         }
       }
     } catch (err: any) {
@@ -240,8 +326,6 @@ const Signup = () => {
         console.error('[Signup] Email/password error:', error);
         if (error.message.includes('Invalid login credentials')) {
           toast.error('Invalid email or password. Please try again.');
-        } else if (error.message.includes('Email not confirmed')) {
-          toast.error('Please check your email and confirm your account before signing in.');
         } else {
           toast.error('Failed to sign in: ' + error.message);
         }

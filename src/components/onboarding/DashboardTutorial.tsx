@@ -133,7 +133,7 @@ const DashboardTutorial: React.FC<DashboardTutorialProps> = ({ onComplete, onSki
       title: 'You\'re Ready to Go! 🎉',
       description: 'That\'s the tour! Start by uploading your first contract or exploring your dashboard. We\'re here if you need help!',
       position: 'center',
-      action: 'Start Using NoticeBazaar',
+      action: 'Start Using CreatorArmour',
       celebration: true,
     },
   ];

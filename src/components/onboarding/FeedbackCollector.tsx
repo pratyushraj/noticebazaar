@@ -48,7 +48,7 @@ const FeedbackCollector = ({ triggerAfter = 30000, onDismiss }: FeedbackCollecto
       // await submitFeedback({ rating, feedback });
 
       toast.success('Thank you for your feedback!', {
-        description: 'Your input helps us improve NoticeBazaar.'
+        description: 'Your input helps us improve CreatorArmour.'
       });
 
       setIsVisible(false);

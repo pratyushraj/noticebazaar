@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from 'react';
-import { Home, Briefcase, CreditCard, Shield, MessageCircle, TrendingUp, DollarSign, Calendar, FileText, AlertCircle, Clock, ChevronRight, Plus, Search, Target, BarChart3, RefreshCw, LogOut, Loader2, Sparkles, XCircle, Menu } from 'lucide-react';
+import { Home, Briefcase, CreditCard, Shield, MessageCircle, TrendingUp, DollarSign, Calendar, FileText, AlertCircle, Clock, ChevronRight, Plus, Search, Target, BarChart3, RefreshCw, LogOut, Loader2, XCircle, Menu } from 'lucide-react';
 import { BottomSheet } from '@/components/ui/bottom-sheet';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -52,7 +52,6 @@ const CreatorDashboard = () => {
   const [activeTab, setActiveTab] = useState('home');
   const [showMenu, setShowMenu] = useState(false);
   const [showLogoutDialog, setShowLogoutDialog] = useState(false);
-  const [showWelcomeBanner, setShowWelcomeBanner] = useState(false);
   const [timeframe, setTimeframe] = useState<'month' | 'lastMonth' | 'allTime'>('month');
   const [moneyProtectionTab, setMoneyProtectionTab] = useState<'recovered' | 'atRisk' | 'allTime'>('recovered');
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -118,22 +117,6 @@ const CreatorDashboard = () => {
 
   const { data: partnerStats } = usePartnerStats(profile?.id);
 
-  // Check if user just completed onboarding (show welcome banner)
-  useEffect(() => {
-    if (profile?.onboarding_complete) {
-      // Check if onboarding was completed recently (within last 24 hours)
-      const onboardingDate = profile.updated_at ? new Date(profile.updated_at) : null;
-      if (onboardingDate) {
-        const hoursSinceOnboarding = (Date.now() - onboardingDate.getTime()) / (1000 * 60 * 60);
-        if (hoursSinceOnboarding < 24) {
-          setShowWelcomeBanner(true);
-          // Auto-hide after 10 seconds
-          const timer = setTimeout(() => setShowWelcomeBanner(false), 10000);
-          return () => clearTimeout(timer);
-        }
-      }
-    }
-  }, [profile]);
 
   // Show tutorial after onboarding completion
   useEffect(() => {
@@ -892,78 +875,6 @@ const CreatorDashboard = () => {
 
 
       {/* Welcome Banner for New Users */}
-      <AnimatePresence>
-        {showWelcomeBanner && !currentTip && (
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            className={`sticky top-16 z-40 ${spacing.page} mt-4 mb-4 max-h-[calc(100dvh-120px)] ${scroll.container}`}
-          >
-            <BaseCard variant="primary" className={cn("relative overflow-hidden", glass.apple, shadows.depth)}>
-              {/* Spotlight gradient */}
-              <div className={cn(spotlight.top, "opacity-30")} />
-              
-              <div className={cn("flex items-start justify-between", spacing.compact)}>
-                <div className={cn("flex items-start gap-3 flex-1")}>
-                  <div className={cn(
-                    "w-10 h-10",
-                    radius.full,
-                    "bg-white/20 flex items-center justify-center flex-shrink-0",
-                    shadows.sm
-                  )}>
-                    <Sparkles className={cn(iconSizes.md, "text-white")} />
-                  </div>
-                  <div className="flex-1">
-                    <h3 className={cn(typography.h4, "mb-1")}>Welcome to CreatorArmour! 🎉</h3>
-                    <p className={cn(typography.bodySmall, "break-words")}>
-                      Your dashboard is ready. Start by adding your first brand deal to track payments and contracts.
-                    </p>
-                  </div>
-                </div>
-                <motion.button
-                  onClick={() => setShowWelcomeBanner(false)}
-                  whileTap={animations.microTap}
-                  className={cn(
-                    spacing.cardPadding.tertiary,
-                    "hover:bg-white/20",
-                    radius.md,
-                    "transition-colors flex-shrink-0"
-                  )}
-                  aria-label="Dismiss welcome banner"
-                >
-                  <XCircle className={cn(iconSizes.md, "text-white/80")} />
-                </motion.button>
-              </div>
-              <div className={cn("mt-3 flex gap-2")}>
-                <PremiumButton
-                  variant="primary"
-                  size="sm"
-                  onClick={() => {
-                    navigate('/creator-contracts');
-                    setShowWelcomeBanner(false);
-                  }}
-                >
-                  Add Your First Deal
-                </PremiumButton>
-                <motion.button
-                  onClick={() => setShowWelcomeBanner(false)}
-                  whileTap={animations.microTap}
-                  className={cn(
-                    spacing.cardPadding.tertiary,
-                    "bg-white/10 hover:bg-white/20 text-white/90",
-                    typography.bodySmall,
-                    "font-medium",
-                    radius.md
-                  )}
-                >
-                  Explore Dashboard
-                </motion.button>
-              </div>
-            </BaseCard>
-          </motion.div>
-        )}
-      </AnimatePresence>
 
       {/* Skip to main content link for accessibility */}
       <a 
@@ -1087,7 +998,7 @@ const CreatorDashboard = () => {
                       aria-label="Explore Brands - Coming Soon"
                     >
                       <Briefcase className={iconSizes.md} />
-                      Explore Brands
+                      Explore Brands - Coming Soon
                     </motion.button>
                   </div>
                 </BaseCard>

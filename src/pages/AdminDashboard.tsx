@@ -142,26 +142,26 @@ const AdminDashboard = () => {
         </CardHeader>
         <CardContent>
           <div className="flex flex-col sm:flex-row gap-4 items-end">
-            <div className="flex-1">
-              <Label htmlFor="start-date">Start Date</Label>
-              <Input
-                id="start-date"
-                type="date"
-                value={startDate}
+              <div className="flex-1">
+                <Label htmlFor="start-date">Start Date</Label>
+                <Input
+                  id="start-date"
+                  type="date"
+                  value={startDate}
                 onChange={(e) => setStartDate(e.target.value)}
-                className="mt-1"
-              />
-            </div>
-            <div className="flex-1">
-              <Label htmlFor="end-date">End Date</Label>
-              <Input
-                id="end-date"
-                type="date"
-                value={endDate}
+                  className="mt-1"
+                />
+              </div>
+              <div className="flex-1">
+                <Label htmlFor="end-date">End Date</Label>
+                <Input
+                  id="end-date"
+                  type="date"
+                  value={endDate}
                 onChange={(e) => setEndDate(e.target.value)}
-                className="mt-1"
-              />
-            </div>
+                  className="mt-1"
+                />
+              </div>
             <Button
               variant="outline"
               onClick={handleResetDates}
@@ -169,7 +169,7 @@ const AdminDashboard = () => {
             >
               Reset to 30 Days
             </Button>
-          </div>
+            </div>
         </CardContent>
       </Card>
 

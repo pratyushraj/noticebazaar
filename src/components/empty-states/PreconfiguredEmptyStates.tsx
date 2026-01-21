@@ -214,7 +214,7 @@ export const NoDealsEmptyState: React.FC<NoDealsEmptyStateProps> = ({
         icon: Briefcase,
       }}
       secondaryAction={onExploreBrands ? {
-        label: "Explore Brands",
+        label: "Explore Brands - Coming Soon",
         onClick: onExploreBrands,
       } : undefined}
       variant={variant}
