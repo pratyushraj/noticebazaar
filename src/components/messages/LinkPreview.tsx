@@ -105,4 +105,52 @@ export const extractUrls = (text: string): string[] => {
   return matches || [];
 };
 
+// Utility function to render message text with clickable URLs
+export const renderMessageText = (content: string): React.ReactNode => {
+  const urls = extractUrls(content);
+  
+  if (urls.length === 0) {
+    return content;
+  }
+
+  // Split content by URLs
+  const parts: (string | { type: 'url'; url: string })[] = [];
+  let lastIndex = 0;
+
+  urls.forEach((url) => {
+    const index = content.indexOf(url, lastIndex);
+    if (index > lastIndex) {
+      parts.push(content.substring(lastIndex, index));
+    }
+    parts.push({ type: 'url', url });
+    lastIndex = index + url.length;
+  });
+
+  if (lastIndex < content.length) {
+    parts.push(content.substring(lastIndex));
+  }
+
+  return (
+    <>
+      {parts.map((part, i) => {
+        if (typeof part === 'string') {
+          return <span key={i}>{part}</span>;
+        }
+        return (
+          <a
+            key={i}
+            href={part.url.startsWith('http') ? part.url : `https://${part.url}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-blue-400 hover:text-blue-300 underline break-all"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {part.url}
+          </a>
+        );
+      })}
+    </>
+  );
+};
+
 
