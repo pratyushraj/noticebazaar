@@ -30,28 +30,30 @@ const CreatorCollab = () => {
         </div>
 
         {/* Collaboration Tools Cards */}
-        <div className="grid md:grid-cols-3 gap-4 mb-8">
-          {/* Card 1: Collab Link */}
-          <BaseCard variant="tertiary" className="p-6 relative overflow-hidden">
+        <div className="flex flex-col md:grid md:grid-cols-3 gap-4 mb-8">
+          {/* Card 1: Collab Link - Full width on mobile */}
+          <BaseCard variant="tertiary" className="p-4 md:p-6 relative overflow-hidden w-full md:col-span-1">
             <div className="absolute top-0 right-0 w-32 h-32 bg-purple-500/10 rounded-full blur-3xl" />
             <div className="relative z-10">
-              <div className="flex items-start justify-between gap-3 mb-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-lg bg-purple-500/20 flex items-center justify-center flex-shrink-0">
-                    <Link2 className="w-6 h-6 text-purple-400" />
+              <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-3 mb-4">
+                <div className="flex items-start gap-3 flex-1 min-w-0">
+                  <div className="w-10 h-10 md:w-12 md:h-12 rounded-lg bg-purple-500/20 flex items-center justify-center flex-shrink-0">
+                    <Link2 className="w-5 h-5 md:w-6 md:h-6 text-purple-400" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h3 className={cn(typography.h4, "font-semibold mb-1")}>Collab Link</h3>
-                    <p className={cn(typography.caption, "text-purple-300/70")}>
+                    <div className="flex items-start justify-between gap-2 mb-1">
+                      <h3 className={cn(typography.h4, "font-semibold")}>Collab Link</h3>
+                      <span className="px-2 py-0.5 md:py-1 bg-purple-500/20 text-purple-300 text-[10px] md:text-xs font-medium rounded-full whitespace-nowrap flex-shrink-0">
+                        Recommended
+                      </span>
+                    </div>
+                    <p className={cn(typography.caption, "text-purple-300/70 leading-relaxed")}>
                       Let brands send you structured collaboration requests instead of DMs.
                     </p>
                   </div>
                 </div>
-                <span className="px-2 py-1 bg-purple-500/20 text-purple-300 text-xs font-medium rounded-full whitespace-nowrap">
-                  Recommended
-                </span>
               </div>
-              <div className="flex gap-2 mt-4">
+              <div className="flex flex-col sm:flex-row gap-2 mt-4">
                 <motion.button
                   onClick={() => {
                     const usernameForLink = profile?.instagram_handle || profile?.username;
@@ -71,7 +73,8 @@ const CreatorCollab = () => {
                     "rounded-lg transition-all duration-200",
                     "flex items-center justify-center gap-2",
                     typography.bodySmall,
-                    "font-medium text-purple-200"
+                    "font-medium text-purple-200",
+                    "w-full sm:w-auto"
                   )}
                 >
                   <Copy className="w-4 h-4" />
@@ -92,7 +95,8 @@ const CreatorCollab = () => {
                     "rounded-lg transition-all duration-200",
                     "flex items-center justify-center gap-2",
                     typography.bodySmall,
-                    "text-purple-300/80 hover:text-purple-200"
+                    "text-purple-300/80 hover:text-purple-200",
+                    "w-full sm:w-auto"
                   )}
                 >
                   <BarChart3 className="w-4 h-4" />
