@@ -129,7 +129,7 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
           {subtitle && (
             <p className={cn(
               premium ? "text-xs md:text-sm text-white/70 mt-0.5" : "text-xs md:text-sm text-white/70",
-              "mt-0.5 truncate"
+              "mt-0.5"
             )}>
               {subtitle}
             </p>
