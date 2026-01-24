@@ -51,6 +51,9 @@ import otpRouter, { publicRouter as otpPublicRouter } from './routes/otp.js';
 import dealsRouter from './routes/deals.js';
 import complaintsRouter from './routes/complaints.js';
 import influencersRouter from './routes/influencers.js';
+import collabRequestsRouter from './routes/collabRequests.js';
+import collabAnalyticsRouter from './routes/collabAnalytics.js';
+import creatorsRouter from './routes/creators.js';
 // Log router import for debugging
 console.log('[Server] Influencers router imported:', typeof influencersRouter, influencersRouter ? '✓' : '✗');
 import { authMiddleware } from './middleware/auth.js';
@@ -277,6 +280,9 @@ app.use('/api/deal-details-tokens', dealDetailsTokensRouter); // Public routes (
 app.use('/api/contract-ready-tokens', contractReadyTokensRouter); // Public routes for contract ready page
 app.use('/api/gst', gstRouter); // Public GST lookup route
 app.use('/api/otp', otpPublicRouter); // Public OTP routes for brand response page
+app.use('/api/collab', collabRequestsRouter); // Public collab link routes (/:username and /:username/submit)
+app.use('/api/collab-analytics', collabAnalyticsRouter); // Public analytics tracking + authenticated analytics endpoints
+app.use('/api/creators', creatorsRouter); // Public creator directory routes
 
 // API Routes (protected)
 app.use('/api/brand-reply-tokens', authMiddleware, rateLimitMiddleware, brandReplyTokensRouter);
@@ -296,6 +302,8 @@ app.use('/api/ai', authMiddleware, rateLimitMiddleware, aiRouter);
 app.use('/api/deals', authMiddleware, rateLimitMiddleware, dealsRouter);
 app.use('/api/complaints', authMiddleware, rateLimitMiddleware, complaintsRouter);
 app.use('/api/influencers', authMiddleware, rateLimitMiddleware, influencersRouter);
+app.use('/api/collab-requests', authMiddleware, rateLimitMiddleware, collabRequestsRouter); // Protected collab request management routes
+// Note: /api/collab-analytics is already mounted as public route above (line 284)
 // OTP routes - protected routes require auth
 app.use('/api/otp', authMiddleware, rateLimitMiddleware, otpRouter);
 

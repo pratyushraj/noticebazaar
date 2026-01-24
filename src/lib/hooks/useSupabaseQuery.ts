@@ -59,11 +59,15 @@ export const useSupabaseQuery = <
       
       const isMissingResourceError = 
         errorStatus === 404 || 
+        errorStatus === 406 || // Not Acceptable - table/column doesn't exist or RLS blocking
         errorCode === 'PGRST116' ||
         errorCode === 'PGRST202' || // Function not found
+        errorCode === 'PGRST301' || // RLS policy violation
         errorCode === '42P01' ||
         errorCode === 404 ||
+        errorCode === 406 ||
         errorMessageStr.includes('404') || 
+        errorMessageStr.includes('406') ||
         errorMessageStr.includes('not found') ||
         errorMessageStr.includes('could not find') ||
         errorMessageStr.includes('could not find the table') ||
@@ -71,6 +75,7 @@ export const useSupabaseQuery = <
         errorMessageStr.includes('relation') ||
         errorMessageStr.includes('does not exist') ||
         errorMessageStr.includes('schema cache') ||
+        errorMessageStr.includes('permission denied') ||
         errorMessageStr.includes('searched for the function') ||
         errorMessageStr.includes('no matches were found');
       

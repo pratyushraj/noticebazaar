@@ -91,17 +91,17 @@ const Signup = () => {
       const justSignedUp = sessionStorage.getItem('just_signed_up') === 'true';
       
       if (!justSignedUp) {
-        // Wait a moment for profile to be created by database trigger
-        const timer = setTimeout(() => {
-          // Check if we have a profile now
-          if (user) {
-            // Profile should be created by trigger, navigate based on role
-            // The ProtectedRoute will handle the actual routing
-            navigate('/', { replace: true });
-          }
-        }, 500);
-        return () => clearTimeout(timer);
-      }
+      // Wait a moment for profile to be created by database trigger
+      const timer = setTimeout(() => {
+        // Check if we have a profile now
+        if (user) {
+          // Profile should be created by trigger, navigate based on role
+          // The ProtectedRoute will handle the actual routing
+          navigate('/', { replace: true });
+        }
+      }, 500);
+      return () => clearTimeout(timer);
+    }
     }
   }, [session, loading, navigate, user, isLoading]);
 

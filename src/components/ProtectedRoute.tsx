@@ -279,7 +279,6 @@ const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
             Refresh Page
           </button>
         </div>
-        <MadeWithDyad />
       </div>
     );
   }

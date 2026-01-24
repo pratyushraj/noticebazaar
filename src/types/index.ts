@@ -42,6 +42,7 @@ export type Profile = Tables<'profiles'> & {
   bio?: string | null;
   platforms?: string[] | null; // Array of platform IDs (youtube, instagram, etc.)
   goals?: string[] | null; // Array of goal IDs (protect, earnings, etc.)
+  username?: string | null; // Unique username for creator collab links
 };
 
 export type Message = Tables<'messages'> & {

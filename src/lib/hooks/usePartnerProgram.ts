@@ -199,7 +199,7 @@ export const usePartnerStats = (userId: string | undefined) => {
         .from('partner_stats') as any)
         .select('*')
         .eq('user_id', userId)
-        .single();
+        .maybeSingle(); // Use maybeSingle() instead of single() to handle missing rows gracefully
 
       // Check if table doesn't exist (404, 406) or RLS blocking
       if (error && (

@@ -57,7 +57,7 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
       // Include location and bio for profile settings
       const { data, error } = await (supabase
         .from('profiles')
-        .select('id, first_name, last_name, avatar_url, role, updated_at, business_name, gstin, business_entity_type, onboarding_complete, organization_id, is_trial, trial_started_at, trial_expires_at, trial_locked, phone, location, bio') as any)
+        .select('id, first_name, last_name, avatar_url, role, updated_at, business_name, gstin, business_entity_type, onboarding_complete, organization_id, is_trial, trial_started_at, trial_expires_at, trial_locked, phone, location, bio, username, instagram_handle') as any)
         .eq('id', user.id)
         .single();
 
@@ -81,9 +81,10 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
       // Silently handle missing columns - expected if migrations haven't run yet
       
       // Retry with basic + trial fields only (excluding bank fields and social media fields that may not exist)
+      // Include username and instagram_handle as they're essential for collab links
       const { data: trialData, error: trialError } = await (supabase
         .from('profiles')
-          .select('id, first_name, last_name, avatar_url, role, updated_at, business_name, gstin, business_entity_type, onboarding_complete, organization_id, is_trial, trial_started_at, trial_expires_at, trial_locked, phone, location, bio') as any)
+          .select('id, first_name, last_name, avatar_url, role, updated_at, business_name, gstin, business_entity_type, onboarding_complete, organization_id, is_trial, trial_started_at, trial_expires_at, trial_locked, phone, location, bio, username, instagram_handle') as any)
         .eq('id', user.id)
         .single();
 
@@ -99,9 +100,10 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
       
       if (isTrialColumnError) {
         // If trial fields also don't exist, try with just core basic fields (no social media)
+        // Include username and instagram_handle as they're essential for collab links
         const { data: basicData, error: basicError } = await (supabase
           .from('profiles')
-          .select('id, first_name, last_name, avatar_url, role, updated_at, business_name, gstin, business_entity_type, onboarding_complete, organization_id, phone, location, bio') as any)
+          .select('id, first_name, last_name, avatar_url, role, updated_at, business_name, gstin, business_entity_type, onboarding_complete, organization_id, phone, location, bio, username, instagram_handle') as any)
           .eq('id', user.id)
           .single();
 
@@ -117,6 +119,7 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
         
         if (isBasicColumnError) {
           // If even basic fields are missing, try absolute minimum
+          // Try without username first in case column doesn't exist
           const { data: minimalData, error: minimalError } = await (supabase
             .from('profiles')
             .select('id, first_name, last_name, avatar_url, role') as any)
@@ -133,6 +136,22 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
               logger.error('SessionContext: Error fetching profile', minimalError);
             }
             return null;
+          }
+
+          // Try to fetch username separately if column exists
+          let usernameValue = null;
+          if (minimalData && !minimalError) {
+            try {
+              const { data: usernameData } = await supabase
+                .from('profiles')
+                .select('username')
+                .eq('id', user.id)
+                .single();
+              usernameValue = usernameData?.username || null;
+            } catch (e) {
+              // Username column might not exist, that's okay - will be null
+              usernameValue = null;
+            }
           }
 
           // Return with all defaults
@@ -152,6 +171,7 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
             location: null,
             bio: null,
             email: null,
+            username: usernameValue, // Fetch username separately if column exists
             bank_account_name: null,
             bank_account_number: null,
             bank_ifsc: null,
@@ -186,6 +206,7 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
           trial_locked: false,
           location: (basicData as any)?.location || null,
           bio: (basicData as any)?.bio || null,
+          username: (basicData as any)?.username || null, // Preserve username if it exists
           creator_category: null,
           pricing_min: null,
           pricing_avg: null,
@@ -237,6 +258,8 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
         // Ensure location and bio are included if not in trialData
         location: (trialData as any)?.location || null,
         bio: (trialData as any)?.bio || null,
+        // Ensure username is preserved - essential for collab links
+        username: (trialData as any)?.username || null,
         // Ensure social handles are included if not in trialData
         instagram_handle: (trialData as any)?.instagram_handle || null,
         youtube_channel_id: (trialData as any)?.youtube_channel_id || null,

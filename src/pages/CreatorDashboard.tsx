@@ -43,6 +43,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import CollabRequestsSection from '@/components/collab/CollabRequestsSection';
 
 const CreatorDashboard = () => {
   const navigate = useNavigate();
@@ -1285,6 +1286,11 @@ const CreatorDashboard = () => {
                       ))}
                     </div>
                   )}
+                </div>
+
+                {/* Collaboration Requests Section */}
+                <div className={spacing.loose}>
+                  <CollabRequestsSection />
                 </div>
 
                 {/* Section Separator */}

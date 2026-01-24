@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { ArrowLeft, User, Mail, Phone, MapPin, Instagram, Youtube, Twitter, Globe, Edit, Lock, CreditCard, Shield, HelpCircle, FileText, LogOut, ChevronRight, Check, X, Download, Trash2, Star, TrendingUp, Award, MessageCircle, Loader2, Sparkles, Camera } from 'lucide-react';
+import { ArrowLeft, User, Mail, Phone, MapPin, Instagram, Edit, Lock, CreditCard, Shield, HelpCircle, FileText, LogOut, ChevronRight, ChevronDown, Check, Download, Trash2, Star, TrendingUp, Award, MessageCircle, Loader2, Sparkles, Camera, Link2, Copy, ExternalLink, AlertCircle, Eye } from 'lucide-react';
 import NotificationPreferences from '@/components/notifications/NotificationPreferences';
 import AvatarUploader from '@/components/profile/AvatarUploader';
 import { useNavigate } from 'react-router-dom';
@@ -24,6 +24,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { Button } from '@/components/ui/button';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 
 const ProfileSettings = () => {
   const navigate = useNavigate();
@@ -35,6 +37,14 @@ const ProfileSettings = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [showLogoutDialog, setShowLogoutDialog] = useState(false);
   const [showStats, setShowStats] = useState(false);
+  const [showHowItWorks, setShowHowItWorks] = useState(false);
+  const [copiedLink, setCopiedLink] = useState(false);
+  const [analyticsSummary, setAnalyticsSummary] = useState<{
+    weeklyViews: number;
+    totalViews: number;
+    submissions: number;
+  } | null>(null);
+  const [analyticsLoading, setAnalyticsLoading] = useState(true);
 
   // Fetch real data for stats
   const { data: brandDeals = [] } = useBrandDeals({
@@ -43,6 +53,63 @@ const ProfileSettings = () => {
   });
 
   const { data: partnerStats } = usePartnerStats(profile?.id);
+
+  // Fetch collab link analytics summary
+  useEffect(() => {
+    const fetchAnalytics = async () => {
+      // Use Instagram handle as username, fallback to username field
+      const usernameForAnalytics = profile?.instagram_handle || profile?.username;
+      if (!usernameForAnalytics || !user) {
+        setAnalyticsLoading(false);
+        return;
+      }
+
+      try {
+        // Get current session (don't refresh unless needed - Supabase auto-refreshes)
+        const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+        
+        if (sessionError || !sessionData.session) {
+          console.error('[CreatorProfile] No session:', sessionError);
+          setAnalyticsLoading(false);
+          return;
+        }
+
+        const response = await fetch(
+          `${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/collab-analytics/summary`,
+          {
+            headers: {
+              'Authorization': `Bearer ${sessionData.session.access_token}`,
+              'Content-Type': 'application/json',
+            },
+          }
+        );
+
+        if (response.status === 401) {
+          console.error('[CreatorProfile] Unauthorized - token may be invalid');
+          setAnalyticsLoading(false);
+          return;
+        }
+
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success) {
+            setAnalyticsSummary({
+              weeklyViews: data.weeklyViews || 0,
+              totalViews: data.totalViews || 0,
+              submissions: data.submissions || 0,
+            });
+          }
+        }
+      } catch (error) {
+        console.error('[CreatorProfile] Error fetching analytics:', error);
+        // Don't show error to user, just use fallback
+      } finally {
+        setAnalyticsLoading(false);
+      }
+    };
+
+    fetchAnalytics();
+  }, [profile?.instagram_handle, profile?.username, user]);
 
   // Form state
   const [formData, setFormData] = useState({
@@ -55,7 +122,9 @@ const ProfileSettings = () => {
     city: "",
     state: "",
     pincode: "",
-    bio: ""
+    bio: "",
+    instagramHandle: "",
+    username: ""
   });
 
   // Pincode lookup state
@@ -96,7 +165,9 @@ const ProfileSettings = () => {
         city: parsedLocation.city,
         state: parsedLocation.state,
         pincode: parsedLocation.pincode,
-        bio: profile.bio || ''
+        bio: profile.bio || '',
+        instagramHandle: profile.instagram_handle || '',
+        username: profile.instagram_handle || profile.username || '' // Use Instagram handle as username
       });
       
       setHasInitialized(true);
@@ -390,6 +461,16 @@ const ProfileSettings = () => {
       toast.error('Please enter your name');
       return false;
     }
+    // Username validation - use Instagram handle if available
+    const usernameToValidate = formData.instagramHandle || formData.username;
+    if (!usernameToValidate || !usernameToValidate.trim()) {
+      toast.error('Please enter an Instagram username (used for collaboration link)');
+      return false;
+    }
+    if (usernameToValidate.trim().length < 3) {
+      toast.error('Instagram username must be at least 3 characters');
+      return false;
+    }
     if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
       toast.error('Please enter a valid email address');
       return false;
@@ -596,15 +677,49 @@ const ProfileSettings = () => {
         updatePayload.bio = formData.bio;
       }
       
+      // Handle Instagram handle - normalize and save
+      // NOTE: Instagram handle is NEVER used for username generation
+      // Username is only auto-generated from first_name + last_name (or email) via database trigger
+      if (formData.instagramHandle) {
+        // Strip @, spaces, and convert to lowercase
+        const normalizedHandle = formData.instagramHandle
+          .replace(/@/g, '')
+          .replace(/\s/g, '')
+          .toLowerCase()
+          .trim();
+        updatePayload.instagram_handle = normalizedHandle || null;
+      } else {
+        updatePayload.instagram_handle = null;
+      }
+      
+      // Handle username - sync with Instagram handle
+      // Username is used in collaboration link URL: /{username} (Instagram-style)
+      // Use Instagram handle as username (normalized)
+      if (formData.instagramHandle && formData.instagramHandle.trim()) {
+        // Normalize Instagram handle to use as username: lowercase, alphanumeric and hyphens/underscores only
+        const normalizedUsername = formData.instagramHandle
+          .replace(/@/g, '')
+          .replace(/\s/g, '')
+          .toLowerCase()
+          .replace(/[^a-z0-9_-]/g, '')
+          .trim();
+        
+        if (normalizedUsername.length >= 3) {
+          updatePayload.username = normalizedUsername;
+        } else {
+          toast.error('Instagram username must be at least 3 characters');
+          setIsSaving(false);
+          return;
+        }
+      }
+      
       logger.info('Update payload', { 
         updatePayload, 
         locationValue: updatePayload.location,
         locationLength: updatePayload.location?.length || 0,
-        formDataLocation: formData.location
+        formDataLocation: formData.location,
+        instagramHandle: updatePayload.instagram_handle
       });
-      
-      // Note: instagram_handle is skipped to avoid schema errors
-      // If needed, add a migration to create the column first
       
       await updateProfileMutation.mutateAsync(updatePayload);
 
@@ -628,7 +743,11 @@ const ProfileSettings = () => {
         finalPincode
       });
       
+      // Refetch profile to get updated username (if it was auto-generated by database trigger)
       await refetchProfile();
+      
+      // Small delay to ensure profile state updates before showing success
+      await new Promise(resolve => setTimeout(resolve, 100));
       
       toast.success('Profile updated successfully!');
       setEditMode(false);
@@ -1058,6 +1177,50 @@ const ProfileSettings = () => {
               </div>
             </div>
 
+            {/* Social Profiles Section */}
+            <div className="bg-white/5 rounded-xl p-4 border border-white/10">
+              <h2 className="font-semibold text-base mb-3 flex items-center gap-2">
+                <Instagram className="w-4 h-4" />
+                Social Profiles
+              </h2>
+              <div className="space-y-3">
+                <div>
+                  <label className="text-xs text-white/60 mb-1.5 block">Instagram Username</label>
+                  <div className="flex items-center gap-2">
+                    <Instagram className="w-4 h-4 text-white/50 flex-shrink-0" />
+                    <input
+                      type="text"
+                      value={formData.instagramHandle}
+                      onChange={(e) => {
+                        // Strip @ symbol and convert to lowercase, remove spaces
+                        let value = e.target.value
+                          .replace(/@/g, '')
+                          .replace(/\s/g, '')
+                          .toLowerCase();
+                        // Sync username with Instagram handle
+                        setFormData(prev => ({ 
+                          ...prev, 
+                          instagramHandle: value,
+                          username: value // Use same value for collab link username
+                        }));
+                      }}
+                      disabled={!editMode}
+                      placeholder="rahul_creates"
+                      className={`flex-1 bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder-white/40 outline-none transition-colors ${editMode ? 'focus:border-purple-500 focus:bg-white/10' : 'cursor-not-allowed'}`}
+                    />
+                  </div>
+                  <p className="text-xs text-white/50 mt-1">
+                    This will be shown to brands on your collaboration page and used in your collaboration link: /{formData.instagramHandle || 'username'}
+                  </p>
+                  {formData.instagramHandle && (
+                    <p className="text-xs text-purple-300 mt-1">
+                      Link: {window.location.origin}/{formData.instagramHandle}
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
+
             {/* Account Milestones */}
             <div className="bg-white/5 rounded-xl p-4 border border-white/10">
               <h2 className="font-semibold text-base mb-3 flex items-center gap-2">
@@ -1090,6 +1253,265 @@ const ProfileSettings = () => {
                     </div>
                   );
                 })}
+              </div>
+            </div>
+
+            {/* Collaboration Link */}
+            <div className="bg-white/5 rounded-xl p-4 border border-white/10">
+              <h2 className="font-semibold text-base mb-1 flex items-center gap-2">
+                <Link2 className="w-4 h-4" />
+                Your Official Collaboration Link
+              </h2>
+              <p className="text-xs text-white/60 mb-4">
+                Use this link instead of DMs for paid collaborations & contracts
+              </p>
+              <div className="space-y-4">
+                {(() => {
+                  // Use Instagram handle from formData (current input) or profile, fallback to username field
+                  const usernameForLink = formData.instagramHandle || profile?.instagram_handle || profile?.username;
+                  const hasUsername = usernameForLink && usernameForLink.trim() !== '';
+                  // New Instagram-style link format: creatorarmour.com/username
+                  const collabLink = hasUsername ? `${window.location.origin}/${usernameForLink}` : '';
+                  // Display shortened link format: creatorarmour.com/username
+                  const shortLink = hasUsername ? `creatorarmour.com/${usernameForLink}` : '';
+                  
+                  // Debug: Log the values being used (dev only)
+                  if (import.meta.env.DEV && hasUsername) {
+                    console.log('[CreatorProfile] Collab link values:', {
+                      formDataInstagramHandle: formData.instagramHandle,
+                      profileInstagramHandle: profile?.instagram_handle,
+                      profileUsername: profile?.username,
+                      finalUsername: usernameForLink,
+                      collabLink
+                    });
+                  }
+                  
+                  return hasUsername ? (
+                  <>
+                      {/* Link Display */}
+                    <div className="bg-purple-500/10 border border-purple-500/20 rounded-lg p-3">
+                        <div className="mb-3">
+                      <div className="flex items-center justify-between gap-2 mb-2">
+                            <code className="text-sm text-purple-200 break-all flex-1 font-medium">
+                              {shortLink}
+                        </code>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                              onClick={async () => {
+                                try {
+                                  await navigator.clipboard.writeText(collabLink);
+                                  setCopiedLink(true);
+                                  toast.success('Collab link copied');
+                                  setTimeout(() => setCopiedLink(false), 2000);
+                                } catch (error) {
+                                  toast.error('Failed to copy link');
+                                }
+                          }}
+                              className="h-8 w-8 p-0 text-purple-300 hover:text-white flex-shrink-0 transition-all"
+                              aria-label="Copy collaboration link"
+                        >
+                              {copiedLink ? (
+                                <Check className="h-4 w-4 text-green-400 animate-in fade-in duration-200" />
+                              ) : (
+                          <Copy className="h-4 w-4" />
+                              )}
+                        </Button>
+                      </div>
+                          {/* Trust Layer */}
+                          <p className="text-xs text-purple-300/70 ml-1 flex items-center gap-1">
+                            <Lock className="h-3 w-3" />
+                            <span>Powered by Creator Armour • Legal & payment protection enabled</span>
+                          </p>
+                        </div>
+
+                        {/* Benefit Line */}
+                        <p className="text-xs text-purple-200 text-center mb-3 font-medium">
+                          No DMs. No confusion. Everything in one place.
+                        </p>
+
+                        {/* Instagram Bio Helper Text */}
+                        <p className="text-xs text-white/50 mb-3 text-center">
+                          💡 Looks like an Instagram handle — perfect for your bio
+                        </p>
+                        <p className="text-xs text-white/50 mb-3 text-center">
+                          Add this link to your Instagram bio and reply to brand DMs with it.
+                        </p>
+
+                        {/* Share Buttons */}
+                        <div className="grid grid-cols-3 gap-2 mb-3">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                            onClick={() => {
+                              const message = encodeURIComponent(`Hey! For collaborations, please submit details here so everything is clear and protected:\n\n${collabLink}`);
+                              window.open(`https://wa.me/?text=${message}`, '_blank');
+                              toast.success('Opening WhatsApp...');
+                            }}
+                            className="bg-purple-500/20 border-purple-400/50 text-purple-200 hover:bg-purple-500/30 hover:border-purple-400/70 text-xs backdrop-blur-sm"
+                          >
+                            <MessageCircle className="h-3.5 w-3.5 mr-1.5" />
+                            WhatsApp
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              const subject = encodeURIComponent('Collaboration request');
+                              const body = encodeURIComponent(`Hi,\n\nFor collaborations, please submit details here so everything is clear and protected:\n\n${collabLink}\n\nThanks!`);
+                              window.location.href = `mailto:?subject=${subject}&body=${body}`;
+                              toast.success('Opening email client...');
+                            }}
+                            className="bg-purple-500/20 border-purple-400/50 text-purple-200 hover:bg-purple-500/30 hover:border-purple-400/70 text-xs backdrop-blur-sm"
+                          >
+                            <Mail className="h-3.5 w-3.5 mr-1.5" />
+                            Email
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={async () => {
+                              try {
+                                await navigator.clipboard.writeText(collabLink);
+                                toast.success('Link copied. Paste in bio or DM.');
+                              } catch (error) {
+                                toast.error('Failed to copy link');
+                              }
+                            }}
+                            className="bg-purple-500/20 border-purple-400/50 text-purple-200 hover:bg-purple-500/30 hover:border-purple-400/70 text-xs backdrop-blur-sm"
+                          >
+                            <Instagram className="h-3.5 w-3.5 mr-1.5" />
+                            Instagram
+                          </Button>
+                        </div>
+
+                        {/* Preview Button */}
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            const usernameForLink = formData.instagramHandle || profile?.instagram_handle || profile?.username;
+                            if (usernameForLink) {
+                              window.open(`/${usernameForLink}`, '_blank');
+                            } else {
+                              toast.error('Please set your Instagram username first');
+                            }
+                          }}
+                          className="w-full bg-purple-500/20 border-purple-400/50 text-purple-200 hover:bg-purple-500/30 hover:border-purple-400/70 backdrop-blur-sm"
+                      >
+                        <ExternalLink className="h-4 w-4 mr-2" />
+                          View Public Collab Page
+                      </Button>
+                    </div>
+
+                      {/* How it works - Collapsible */}
+                      <Collapsible open={showHowItWorks} onOpenChange={setShowHowItWorks}>
+                        <CollapsibleTrigger className="w-full">
+                          <div className="bg-white/5 border border-white/10 rounded-lg p-3 flex items-center justify-between hover:bg-white/10 transition-colors">
+                            <div className="flex items-center gap-2">
+                              <HelpCircle className="h-4 w-4 text-purple-300" />
+                              <span className="text-sm text-white/90 font-medium">How it works</span>
+                            </div>
+                            <ChevronDown className={cn("h-4 w-4 text-white/50 transition-transform duration-200", showHowItWorks && "rotate-180")} />
+                          </div>
+                        </CollapsibleTrigger>
+                        <CollapsibleContent>
+                          <div className="bg-white/5 border border-white/10 rounded-lg p-3 mt-2 border-t-0 rounded-t-none">
+                            <ol className="space-y-2 text-xs text-white/70">
+                              <li className="flex items-start gap-2">
+                                <span className="text-purple-300 font-semibold flex-shrink-0">1.</span>
+                                <span>Brand submits details via this link</span>
+                              </li>
+                              <li className="flex items-start gap-2">
+                                <span className="text-purple-300 font-semibold flex-shrink-0">2.</span>
+                                <span>You review the request inside Creator Armour</span>
+                              </li>
+                              <li className="flex items-start gap-2">
+                                <span className="text-purple-300 font-semibold flex-shrink-0">3.</span>
+                                <span>Accept, counter, or decline</span>
+                              </li>
+                              <li className="flex items-start gap-2">
+                                <span className="text-purple-300 font-semibold flex-shrink-0">4.</span>
+                                <span>Contract is generated automatically</span>
+                              </li>
+                              <li className="flex items-start gap-2">
+                                <span className="text-purple-300 font-semibold flex-shrink-0">5.</span>
+                                <span>Payments & deadlines are tracked</span>
+                              </li>
+                            </ol>
+                          </div>
+                        </CollapsibleContent>
+                      </Collapsible>
+
+                      {/* Trust Badge */}
+                      <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-3 flex items-start gap-2">
+                        <Lock className="h-4 w-4 text-blue-400 mt-0.5 flex-shrink-0" />
+                        <p className="text-xs text-blue-200">
+                          Requests through this link are logged & protected by Creator Armour
+                        </p>
+                      </div>
+
+                      {/* Analytics Teaser */}
+                      <div className="bg-purple-500/5 border border-purple-500/10 rounded-lg p-3">
+                        <div className="flex items-center gap-2 mb-1">
+                          <Eye className="h-4 w-4 text-purple-300 flex-shrink-0" />
+                          {analyticsLoading ? (
+                            <div className="flex items-center gap-2 flex-1">
+                              <Loader2 className="h-3 w-3 animate-spin text-purple-300" />
+                              <p className="text-xs text-purple-200">Loading analytics...</p>
+                            </div>
+                          ) : analyticsSummary ? (
+                            <p className="text-xs text-purple-200">
+                              {analyticsSummary.weeklyViews === 0 ? (
+                                <>👀 No brand views yet — share your link to get started</>
+                              ) : (
+                                <>👀 {analyticsSummary.weeklyViews} {analyticsSummary.weeklyViews === 1 ? 'brand' : 'brands'} viewed your collab link this week</>
+                              )}
+                            </p>
+                          ) : (
+                            <p className="text-xs text-purple-200">
+                              👀 No brand views yet — share your link to get started
+                            </p>
+                          )}
+                        </div>
+                        {analyticsSummary && analyticsSummary.weeklyViews === 0 && !analyticsLoading && (
+                          <p className="text-xs text-purple-300/70 mt-2 ml-6">
+                            Tip: Add this link to your Instagram bio or pin it in DMs
+                          </p>
+                        )}
+                      </div>
+
+                      {/* Mental Model Copy - DM Replacement */}
+                      <div className="bg-gradient-to-r from-purple-500/20 to-pink-500/20 border border-purple-500/30 rounded-lg p-4">
+                        <p className="text-sm text-white font-semibold text-center mb-2">
+                          This link replaces DMs and protects you legally.
+                        </p>
+                        <p className="text-xs text-white/60 text-center">
+                          Deals done outside Creator Armour are not protected.
+                        </p>
+                    </div>
+                  </>
+                ) : (
+                    <div className="bg-purple-500/10 border border-purple-500/20 rounded-lg p-3">
+                      <div className="flex items-start gap-2">
+                        <AlertCircle className="h-4 w-4 text-purple-300 mt-0.5 flex-shrink-0" />
+                        <div className="flex-1">
+                          <p className="text-sm text-purple-200 mb-1">
+                            Complete your profile to activate your collab link
+                          </p>
+                          <p className="text-xs text-purple-300/70">
+                            Your collab link will be generated automatically after you save your profile.
+                    </p>
+                  </div>
+                      </div>
+                      {process.env.NODE_ENV === 'development' && (
+                        <p className="text-xs text-purple-300/50 mt-2 ml-6">
+                          Debug: profile exists: {profile ? 'yes' : 'no'}, username: {profile?.username || 'null/undefined'}
+                        </p>
+                )}
+                    </div>
+                  );
+                })()}
               </div>
             </div>
 

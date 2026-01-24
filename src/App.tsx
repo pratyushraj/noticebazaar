@@ -35,6 +35,8 @@ import About from "./pages/About";
 import Blog from "./pages/Blog";
 import BlogPostDetail from "./pages/BlogPostDetail";
 import Careers from "./pages/Careers";
+import FreeInfluencerContract from "./pages/FreeInfluencerContract";
+import CollaborationAgreementGenerator from "./pages/CollaborationAgreementGenerator";
 import PricingComparison from "./pages/PricingComparison";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
@@ -94,6 +96,12 @@ import ComplaintFormPage from "./pages/ComplaintFormPage";
 import MyConsumerComplaintsPage from "./pages/MyConsumerComplaintsPage";
 import ConsumerComplaintsHowItWorks from "./pages/ConsumerComplaintsHowItWorks";
 import UpgradePage from "./pages/UpgradePage";
+import CollabLinkLanding from "./pages/CollabLinkLanding";
+import CollabLinkSuccess from "./pages/CollabLinkSuccess";
+import LegacyCollabRedirect from "./components/collab/LegacyCollabRedirect";
+import LegacyCollabSuccessRedirect from "./components/collab/LegacyCollabSuccessRedirect";
+import CreatorsDirectory from "./pages/CreatorsDirectory";
+import CreatorProfilePage from "./pages/CreatorProfilePage";
 import { ErrorBoundary } from "./components/ui/error-boundary";
 import NetworkStatusWrapper from "./components/NetworkStatusWrapper";
 import ScrollToTop from "./components/ScrollToTop";
@@ -218,7 +226,7 @@ const App = () => {
             >
               Skip to main content
             </a>
-            <HashRouter>
+            <HashRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
               <ScrollToTop />
               <NetworkStatusWrapper>
                 <FacebookPixelTracker />
@@ -240,6 +248,10 @@ const App = () => {
               <Route path="/blog" element={<Blog />} />
               <Route path="/blog/:slug" element={<BlogPostDetail />} />
               <Route path="/careers" element={<Careers />} />
+              
+              {/* Free Tool Landing Pages */}
+              <Route path="/free-influencer-contract" element={<FreeInfluencerContract />} />
+              <Route path="/collaboration-agreement-generator" element={<CollaborationAgreementGenerator />} />
               <Route path="/pricing-comparison" element={<PricingComparison />} />
               <Route path="/privacy-policy" element={<PrivacyPolicy />} />
               <Route path="/terms-of-service" element={<TermsOfService />} />
@@ -263,6 +275,20 @@ const App = () => {
               
               {/* Referral Landing */}
               <Route path="/p/:code" element={<ReferralLanding />} />
+              
+              {/* Creator Directory Routes (Public) - Must come before /:username */}
+              <Route path="/creators" element={<CreatorsDirectory />} />
+              <Route path="/creators/:category" element={<CreatorsDirectory />} />
+              <Route path="/creator/:username" element={<CreatorProfilePage />} />
+              
+              {/* Legacy redirect: /collab/:username → /:username (must come before /:username route) */}
+              <Route path="/collab/:username" element={<LegacyCollabRedirect />} />
+              <Route path="/collab/:username/success" element={<LegacyCollabSuccessRedirect />} />
+              
+              {/* Collaboration Request Link Routes (Public) - Instagram-style /:username */}
+              {/* Primary route: /:username (placed after all specific routes to avoid conflicts) */}
+              <Route path="/:username" element={<CollabLinkLanding />} />
+              <Route path="/:username/success" element={<CollabLinkSuccess />} />
 
               {/* Client-specific routes - Redirected to Creator Dashboard */}
               <Route path="/client-dashboard" element={<Navigate to="/creator-dashboard" replace />} />
