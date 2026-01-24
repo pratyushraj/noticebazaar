@@ -136,6 +136,27 @@ const CollabLinkLanding = () => {
     }
   }, []);
 
+  // Helper to get API base URL (same logic as other pages)
+  const getApiBaseUrl = (): string => {
+    if (typeof window === 'undefined') return 'http://localhost:3001';
+    
+    // Check for explicit API URL
+    const envUrl = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL;
+    if (envUrl) return envUrl.replace(/\/$/, '');
+    
+    // Auto-detect from current origin
+    const origin = window.location.origin;
+    if (origin.includes('creatorarmour.com')) {
+      return 'https://api.creatorarmour.com';
+    }
+    if (origin.includes('noticebazaar.com')) {
+      return 'https://api.noticebazaar.com';
+    }
+    
+    // Default to localhost for development
+    return 'http://localhost:3001';
+  };
+
   // Fetch creator profile
   useEffect(() => {
     const fetchCreator = async () => {
@@ -143,7 +164,8 @@ const CollabLinkLanding = () => {
 
       // Normalize username (handle URL encoding and case)
       const normalizedUsername = decodeURIComponent(username).trim();
-      const apiUrl = `${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/collab/${encodeURIComponent(normalizedUsername)}`;
+      const apiBaseUrl = getApiBaseUrl();
+      const apiUrl = `${apiBaseUrl}/api/collab/${encodeURIComponent(normalizedUsername)}`;
       
       console.log('[CollabLinkLanding] Fetching creator:', {
         originalUsername: username,
@@ -197,7 +219,8 @@ const CollabLinkLanding = () => {
             const utmMedium = urlParams.get('utm_medium');
             const utmCampaign = urlParams.get('utm_campaign');
 
-            const trackResponse = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/collab-analytics/track`, {
+            const apiBaseUrl = getApiBaseUrl();
+            const trackResponse = await fetch(`${apiBaseUrl}/api/collab-analytics/track`, {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
@@ -341,7 +364,8 @@ const CollabLinkLanding = () => {
     setSubmitting(true);
 
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/collab/${username}/submit`, {
+      const apiBaseUrl = getApiBaseUrl();
+      const response = await fetch(`${apiBaseUrl}/api/collab/${username}/submit`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
