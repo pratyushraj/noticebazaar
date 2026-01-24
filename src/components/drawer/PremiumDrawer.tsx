@@ -6,7 +6,7 @@ import {
   Briefcase, 
   Wallet, 
   Shield, 
-  MessageCircle, 
+  Link2, 
   Calendar, 
   Plus, 
   Upload, 
@@ -335,7 +335,7 @@ export default function PremiumDrawer({
     main: [
       { id: 'deals', label: 'Brand Deals', icon: Briefcase, tab: 'deals' },
       { id: 'payments', label: 'Payments', icon: Wallet, tab: 'payments' },
-      { id: 'messages', label: 'Messages', icon: MessageCircle, path: '/messages', badge: counts.messages },
+      { id: 'collab', label: 'Collab', icon: Link2, path: '/creator-collab' },
       { id: 'calendar', label: 'Calendar', icon: Calendar, path: '/calendar' },
     ],
     quickActions: [
@@ -548,7 +548,7 @@ export const DEFAULT_MENU_DATA: DrawerMenuData = {
   main: [
     { id: 'deals', label: 'Brand Deals', icon: Briefcase, tab: 'deals' },
     { id: 'payments', label: 'Payments', icon: Wallet, tab: 'payments' },
-    { id: 'messages', label: 'Messages', icon: MessageCircle, path: '/messages' },
+    { id: 'collab', label: 'Collab', icon: Link2, path: '/creator-dashboard' },
     { id: 'calendar', label: 'Calendar', icon: Calendar, path: '/calendar' },
   ],
   quickActions: [

@@ -120,15 +120,16 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
         {/* Center: Title */}
         <div className="flex-1 min-w-0 text-center px-2">
           <h1 className={cn(
-            premium ? "text-xl font-bold leading-tight" : typography.h3,
-            "truncate"
+            premium ? "text-lg md:text-xl font-semibold leading-tight" : "text-lg md:text-xl font-semibold",
+            "text-white",
+            subtitle ? "" : "truncate"
           )}>
             {title}
           </h1>
           {subtitle && (
             <p className={cn(
-              premium ? "text-sm text-white/85 mt-0.5" : typography.bodySmall,
-              "mt-0.5"
+              premium ? "text-xs md:text-sm text-white/70 mt-0.5" : "text-xs md:text-sm text-white/70",
+              "mt-0.5 line-clamp-2"
             )}>
               {subtitle}
             </p>

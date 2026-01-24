@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Briefcase, Wallet, MessageSquare, User } from 'lucide-react';
+import { LayoutDashboard, Briefcase, Wallet, Link2, User } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { iconSizes, animations, spotlight, shadows, radius } from '@/lib/design-system';
 import { triggerHaptic, HapticPatterns } from '@/lib/utils/haptics';
@@ -17,7 +17,13 @@ const CreatorBottomNav = () => {
   // Use centralized haptic utility
 
   // iOS-style: 4-5 main tabs max
-  const navItems = [
+  const navItems: Array<{
+    to: string;
+    icon: React.ComponentType<{ className?: string }>;
+    label: string;
+    matchPaths: string[];
+    onClick?: (e: React.MouseEvent) => void;
+  }> = [
     { 
       to: "/creator-dashboard", 
       icon: LayoutDashboard, 
@@ -37,10 +43,10 @@ const CreatorBottomNav = () => {
       matchPaths: ["/creator-payments", "/insights"]
     },
     { 
-      to: "/messages", 
-      icon: MessageSquare, 
-      label: "Messages",
-      matchPaths: ["/messages"]
+      to: "/creator-collab", 
+      icon: Link2, 
+      label: "Collab",
+      matchPaths: ["/creator-collab"]
     },
     { 
       to: "/creator-profile", 
@@ -197,7 +203,13 @@ const CreatorBottomNav = () => {
           const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
             // Trigger haptic feedback
             triggerHaptic(HapticPatterns.light);
-            // Let Link component handle navigation naturally
+            // Handle custom onClick if provided (e.g., for Collab scroll)
+            if (item.onClick) {
+              e.preventDefault();
+              item.onClick(e);
+              return;
+            }
+            // Otherwise let Link component handle navigation naturally
           };
 
           return (

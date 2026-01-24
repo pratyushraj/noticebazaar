@@ -1,8 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from 'react';
-import { Home, Briefcase, CreditCard, Shield, MessageCircle, TrendingUp, DollarSign, Calendar, FileText, AlertCircle, Clock, ChevronRight, Plus, Search, Target, BarChart3, RefreshCw, LogOut, Loader2, XCircle, Menu } from 'lucide-react';
-import { BottomSheet } from '@/components/ui/bottom-sheet';
+import { Home, Briefcase, CreditCard, Shield, TrendingUp, DollarSign, Calendar, FileText, AlertCircle, Clock, ChevronRight, Plus, Search, Target, BarChart3, RefreshCw, LogOut, Loader2, XCircle, Menu, Link2, Copy, ExternalLink } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { toast } from 'sonner';
 import { useSignOut } from '@/lib/hooks/useAuth';
@@ -43,7 +42,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import CollabRequestsSection from '@/components/collab/CollabRequestsSection';
 
 const CreatorDashboard = () => {
   const navigate = useNavigate();
@@ -58,7 +56,6 @@ const CreatorDashboard = () => {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [showTutorial, setShowTutorial] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
-  const [showQuickActionsSheet, setShowQuickActionsSheet] = useState(false);
   const [isPro, setIsPro] = useState(false);
 
   // Check for contextual tips to avoid overlap
@@ -647,15 +644,6 @@ const CreatorDashboard = () => {
         navigate('/contract-upload');
         triggerHaptic(HapticPatterns.light);
       }
-    },
-    {
-      id: 3,
-      icon: MessageCircle,
-      label: "Talk to Lawyer",
-      subtitle: "Get human legal advice when AI isn't enough",
-      color: "bg-green-500/20",
-      iconColor: "text-green-400",
-      onClick: () => navigate('/messages')
     },
     {
       id: 4,
@@ -1288,11 +1276,6 @@ const CreatorDashboard = () => {
                   )}
                 </div>
 
-                {/* Collaboration Requests Section */}
-                <div className={spacing.loose}>
-                  <CollabRequestsSection />
-                </div>
-
                 {/* Section Separator */}
                 <div className={separators.section} />
 
@@ -1599,126 +1582,7 @@ const CreatorDashboard = () => {
 
               {/* RIGHT COLUMN - Secondary Actions and Status */}
               <div className="space-y-6 lg:space-y-4">
-                {/* Quick Actions - Desktop: Vertical Command Panel */}
-                <div data-tutorial="quick-actions" className="hidden lg:block">
-                  <div className={sectionHeader.base}>
-                    <h2 className={sectionHeader.title}>Quick Actions</h2>
-                  </div>
-                  <BaseCard variant="tertiary" className="p-3 space-y-2">
-                    {quickActions.map((action, index) => {
-                      const Icon = action.icon;
-                      return (
-                        <motion.button
-                          key={action.id}
-                          initial={motionTokens.slide.up.initial}
-                          animate={motionTokens.slide.up.animate}
-                          transition={{ ...motionTokens.slide.up.transition, delay: index * 0.05 }}
-                          whileTap={animations.microTap}
-                          whileHover={animations.microHover}
-                          onClick={(e) => {
-                            if (e) {
-                              e.preventDefault();
-                              e.stopPropagation();
-                            }
-                            triggerHaptic(HapticPatterns.light);
-                            if (import.meta.env.DEV) {
-                              console.log('[CreatorDashboard] Action clicked:', action.label);
-                            }
-                            try {
-                              action.onClick();
-                            } catch (error) {
-                              console.error('[CreatorDashboard] Error in action onClick:', error);
-                            }
-                          }}
-                          className={cn(
-                            "w-full flex items-center gap-3 px-3 py-2.5",
-                            "bg-white/5 hover:bg-white/10",
-                            "border border-white/10 hover:border-white/20",
-                            "rounded-lg transition-all duration-200",
-                            "text-left"
-                          )}
-                        >
-                          <div className={cn(
-                            "w-8 h-8 rounded-lg",
-                            action.color,
-                            "flex items-center justify-center flex-shrink-0"
-                          )}>
-                            <Icon className={cn(iconSizes.sm, action.iconColor)} />
-                          </div>
-                          <span className={cn(typography.bodySmall, "font-medium text-white/90")}>
-                            {action.label}
-                          </span>
-                        </motion.button>
-                      );
-                    })}
-                  </BaseCard>
-                </div>
-
-                {/* Quick Actions - Mobile: Keep existing 2x2 grid */}
-                <div data-tutorial="quick-actions" className={cn(spacing.loose, "mb-6 md:mb-8 lg:hidden")}>
-                  <div className={sectionHeader.base}>
-                    <h2 className={sectionHeader.title}>Quick Actions</h2>
-                    <button
-                      onClick={() => {
-                        triggerHaptic(HapticPatterns.light);
-                        setShowQuickActionsSheet(true);
-                      }}
-                      className={sectionHeader.action}
-                    >
-                      View All
-                    </button>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4 md:gap-5">
-                    {quickActions.map((action, index) => {
-                      const Icon = action.icon;
-                      return (
-                        <motion.div
-                          key={action.id}
-                          initial={motionTokens.slide.up.initial}
-                          animate={motionTokens.slide.up.animate}
-                          transition={{ ...motionTokens.slide.up.transition, delay: index * 0.1 }}
-                          whileTap={animations.microTap}
-                          whileHover={window.innerWidth > 768 ? animations.microHover : undefined}
-                          style={{ pointerEvents: 'auto' }}
-                          className="aspect-square"
-                        >
-                          <BaseCard
-                            variant="tertiary"
-                            className={cn(
-                              action.color,
-                              "flex flex-col items-center justify-center gap-2 text-center cursor-pointer p-4 md:p-5",
-                              "pointer-events-auto h-full"
-                            )}
-                            onClick={(e) => {
-                              if (e) {
-                                e.preventDefault();
-                                e.stopPropagation();
-                              }
-                              triggerHaptic(HapticPatterns.light);
-                              if (import.meta.env.DEV) {
-                                console.log('[CreatorDashboard] Action clicked:', action.label);
-                              }
-                              try {
-                                action.onClick();
-                              } catch (error) {
-                                console.error('[CreatorDashboard] Error in action onClick:', error);
-                              }
-                            }}
-                            interactive
-                          >
-                            <div className="p-3 rounded-xl bg-white/5 pointer-events-none">
-                              <Icon className={cn(iconSizes.lg, action.iconColor)} />
-                            </div>
-                            <span className={cn(typography.bodySmall, "pointer-events-none font-medium")}>{action.label}</span>
-                            {action.subtitle && (
-                              <span className={cn(typography.caption, "pointer-events-none text-purple-300/70 mt-0.5")}>{action.subtitle}</span>
-                            )}
-                          </BaseCard>
-                        </motion.div>
-                      );
-                    })}
-                  </div>
-                </div>
+                {/* Collaboration Tools moved to /creator-collab */}
 
                 {/* Status Summary Cards - Desktop Only */}
                 <div className="hidden lg:block space-y-3">
@@ -1980,46 +1844,6 @@ const CreatorDashboard = () => {
         }}
       />
 
-      {/* Quick Actions Bottom Sheet (Mobile) */}
-      <BottomSheet
-        open={showQuickActionsSheet}
-        onClose={() => setShowQuickActionsSheet(false)}
-        title="Quick Actions"
-      >
-        <div className="grid grid-cols-2 gap-4 py-2">
-          {quickActions.map((action, index) => {
-            const Icon = action.icon;
-            return (
-              <motion.div
-                key={action.id}
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: index * 0.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <ActionCard
-                  icon={<Icon className={`w-6 h-6 ${action.iconColor}`} />}
-                  label={action.label}
-                  onClick={(e) => {
-                    if (e) {
-                      e.preventDefault();
-                      e.stopPropagation();
-                    }
-                    triggerHaptic(HapticPatterns.medium);
-                    if (import.meta.env.DEV) {
-                      console.log('[CreatorDashboard] Action clicked:', action.label);
-                    }
-                    action.onClick();
-                    setShowQuickActionsSheet(false);
-                  }}
-                  variant="tertiary"
-                  className={`${action.color}`}
-                />
-              </motion.div>
-            );
-          })}
-        </div>
-      </BottomSheet>
     </div>
     </ContextualTipsProvider>
   );

@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom'; // Import useLocation
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { Home, Briefcase, FileText, MessageSquare, PlusCircle, FileUp, CalendarDays, Bot, Zap, Paperclip, LayoutDashboard, DollarSign, ShieldCheck } from 'lucide-react'; // Added Paperclip, kept FileUp for upload form
+import { Home, Briefcase, FileText, Link2, PlusCircle, FileUp, CalendarDays, Bot, Zap, Paperclip, LayoutDashboard, DollarSign, ShieldCheck } from 'lucide-react'; // Added Paperclip, kept FileUp for upload form
 import {
   Dialog,
   DialogContent,
@@ -96,7 +96,7 @@ const BottomNavigationBar = ({ onDocumentUploadSuccess, onConsultationBookingSuc
     { to: "/creator-contracts", icon: FileText, label: "Brand Deals" },
     { to: "/creator-payments", icon: DollarSign, label: "Payments & Recovery" },
     { to: "/creator-content-protection", icon: ShieldCheck, label: "Content Protection" },
-    { to: "/messages", icon: MessageSquare, label: "Messages" },
+    { to: "/creator-collab", icon: Link2, label: "Collab" },
   ];
 
   return (
