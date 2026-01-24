@@ -239,7 +239,7 @@ const CollabRequestsSection = () => {
   const copyCollabLink = () => {
     // Use Instagram handle first, then fallback to username (same logic as CreatorProfile)
     const usernameForLink = profile?.instagram_handle || profile?.username || 'your-username';
-    const link = `${window.location.origin}/${usernameForLink}`;
+    const link = `${window.location.origin}/collab/${usernameForLink}`;
     navigator.clipboard.writeText(link);
     toast.success('Collab link copied to clipboard!');
   };
@@ -295,7 +295,7 @@ const CollabRequestsSection = () => {
       {/* Header with Collab Link */}
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-white mb-2">Collaboration Requests</h2>
+          <h2 className="text-2xl font-bold text-white mb-2" data-section="collab-requests">Collaboration Requests</h2>
           <p className="text-purple-200 text-sm">
             Brands submit collaboration requests via your public link
           </p>
@@ -311,7 +311,7 @@ const CollabRequestsSection = () => {
             return (
             <div className="flex items-center gap-2 bg-white/5 px-4 py-2 rounded-lg border border-white/10">
               <code className="text-sm text-purple-200">
-                  creatorarmour.com/{usernameForLink}
+                  creatorarmour.com/collab/{usernameForLink}
               </code>
               <Button
                 variant="ghost"
@@ -329,7 +329,7 @@ const CollabRequestsSection = () => {
             onClick={() => {
               const usernameForLink = profile?.instagram_handle || profile?.username;
               if (usernameForLink) {
-                window.open(`/${usernameForLink}`, '_blank');
+                window.open(`/collab/${usernameForLink}`, '_blank');
               } else {
                 toast.error('Username not set. Please update your profile.');
               }
@@ -404,7 +404,7 @@ const CollabRequestsSection = () => {
                 Copy Collab Link
               </Button>
                   <Button
-                    onClick={() => window.open(`/${usernameForLink}`, '_blank')}
+                    onClick={() => window.open(`/collab/${usernameForLink}`, '_blank')}
                     variant="outline"
                     className="border-purple-400/30 text-purple-300/80 hover:bg-purple-500/10 hover:text-purple-200 w-full sm:w-auto"
                   >

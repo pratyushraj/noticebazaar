@@ -378,18 +378,39 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
             intendedRoute = routeMatch[1];
           }
           
+          // List of public routes that should not trigger redirects
+          const publicRoutes = ['login', 'signup', 'reset-password', 'about', 'blog', 'careers', 
+            'free-influencer-contract', 'collaboration-agreement-generator', 'pricing-comparison',
+            'privacy-policy', 'terms-of-service', 'refund-policy', 'delete-data', 'sitemap',
+            'free-legal-check', 'thank-you', 'dashboard-white-preview', 'dashboard-preview',
+            'creators', 'consumer-complaints', 'plan', 'p'];
+          
+          // Check if current route is a public route (like /:username for collab links)
+          // Username routes don't match any of the reserved/public routes above
+          const isPublicRoute = publicRoutes.includes(intendedRoute || '');
+          const isUsernameRoute = intendedRoute && !publicRoutes.includes(intendedRoute) && 
+            !intendedRoute.startsWith('creator-') && !intendedRoute.startsWith('admin-') && 
+            !intendedRoute.startsWith('client-') && !intendedRoute.startsWith('ca-') && 
+            !intendedRoute.startsWith('lawyer-') && !intendedRoute.includes('/');
+          
           // If we're on /login but have tokens, the intended route should be dashboard/onboarding
           // Check sessionStorage for stored intended route from OAuth call
-          if (!intendedRoute || intendedRoute === 'login') {
+          // Skip redirect logic for public routes and username routes
+          if (!isPublicRoute && !isUsernameRoute && (!intendedRoute || intendedRoute === 'login')) {
             const storedRoute = sessionStorage.getItem('oauth_intended_route');
             if (storedRoute && storedRoute !== 'login') {
               intendedRoute = storedRoute;
               console.log('[SessionContext] Using stored intended route from sessionStorage:', intendedRoute);
             } else if (!intendedRoute || intendedRoute === 'login') {
-              // Default to dashboard if no route specified
+              // Default to dashboard if no route specified (only for authenticated users)
+              // Don't set default if we're on a public route
               intendedRoute = 'creator-dashboard';
               console.log('[SessionContext] No intended route found, defaulting to creator-dashboard');
             }
+          } else if (isUsernameRoute) {
+            // For username routes (collab links), don't set a default intended route
+            console.log('[SessionContext] Username route detected, skipping redirect logic:', intendedRoute);
+            intendedRoute = null; // Clear intended route to prevent redirect
           }
         }
         
@@ -634,6 +655,26 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
               sessionStorage.removeItem('oauth_intended_route');
               console.log('[SessionContext] Retrieved intended route from sessionStorage:', intendedRoute);
             }
+          }
+          
+          // List of public routes that should not trigger redirects
+          const publicRoutes = ['login', 'signup', 'reset-password', 'about', 'blog', 'careers', 
+            'free-influencer-contract', 'collaboration-agreement-generator', 'pricing-comparison',
+            'privacy-policy', 'terms-of-service', 'refund-policy', 'delete-data', 'sitemap',
+            'free-legal-check', 'thank-you', 'dashboard-white-preview', 'dashboard-preview',
+            'creators', 'consumer-complaints', 'plan', 'p'];
+          
+          // Check if current route is a username route (collab link)
+          const isUsernameRoute = intendedRoute && !publicRoutes.includes(intendedRoute) && 
+            !intendedRoute.startsWith('creator-') && !intendedRoute.startsWith('admin-') && 
+            !intendedRoute.startsWith('client-') && !intendedRoute.startsWith('ca-') && 
+            !intendedRoute.startsWith('lawyer-') && !intendedRoute.includes('/');
+          
+          // Skip redirect for public routes and username routes (collab links)
+          if (isUsernameRoute) {
+            console.log('[SessionContext] Username route detected, skipping redirect:', intendedRoute);
+            setIsAuthInitializing(false);
+            return;
           }
           
           console.log('[SessionContext] Session established after OAuth, redirecting...', {

@@ -81,6 +81,7 @@ const CollabLinkLanding = () => {
   const [creator, setCreator] = useState<Creator | null>(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   
   // Check if username is reserved (redirect to 404 if so)
   useEffect(() => {
@@ -140,46 +141,52 @@ const CollabLinkLanding = () => {
     const fetchCreator = async () => {
       if (!username) return;
 
+      // Normalize username (handle URL encoding and case)
+      const normalizedUsername = decodeURIComponent(username).trim();
+      const apiUrl = `${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/collab/${encodeURIComponent(normalizedUsername)}`;
+      
+      console.log('[CollabLinkLanding] Fetching creator:', {
+        originalUsername: username,
+        normalizedUsername,
+        apiUrl,
+        currentUrl: window.location.href,
+        hash: window.location.hash,
+      });
+
       try {
-        const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/collab/${username}`);
+        const response = await fetch(apiUrl);
         
         if (!response.ok) {
           const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
-          console.error('[CollabLinkLanding] API error:', response.status, errorData);
-          console.error('[CollabLinkLanding] Error details:', errorData.details);
-          console.error('[CollabLinkLanding] Full error response:', JSON.stringify(errorData, null, 2));
+          console.error('[CollabLinkLanding] API error:', {
+            status: response.status,
+            statusText: response.statusText,
+            errorData,
+            username: normalizedUsername,
+            apiUrl,
+          });
           
           if (response.status === 404) {
-            toast.error(`Creator "${username}" not found`);
-            navigate('/');
+            // Don't redirect immediately - show error state instead
+            setLoading(false);
+            setError(`Creator "${normalizedUsername}" not found. Please check the username and try again.`);
+            toast.error(`Creator "${normalizedUsername}" not found. Please check the username and try again.`);
             return;
           }
           
-          // Show more detailed error in development
-          const errorMessage = import.meta.env.DEV && errorData.details
-            ? `${errorData.error}: ${JSON.stringify(errorData.details, null, 2)}`
-            : errorData.error || 'Failed to load creator profile';
-          
-          console.error('[CollabLinkLanding] Full error:', errorMessage);
-          
-          // In development, show full error details
-          if (import.meta.env.DEV) {
-            console.error('[CollabLinkLanding] Debug info:', {
-              username,
-              apiUrl: `${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/collab/${username}`,
-              status: response.status,
-              errorData
-            });
-          }
-          
+          // For other errors, show error but don't redirect
+          const errorMessage = errorData.error || 'Failed to load creator profile';
+          console.error('[CollabLinkLanding] Error:', errorMessage);
+          setLoading(false);
+          setError(errorMessage);
           toast.error(errorMessage);
-          navigate('/');
           return;
         }
         
         const data = await response.json();
 
         if (data.success && data.creator) {
+          console.log('[CollabLinkLanding] Creator loaded successfully:', data.creator);
           setCreator(data.creator);
           
           // Track page view event (anonymous, no auth required)
@@ -196,7 +203,7 @@ const CollabLinkLanding = () => {
                 'Content-Type': 'application/json',
               },
               body: JSON.stringify({
-                creator_username: username,
+                creator_username: normalizedUsername,
                 event_type: 'view',
                 utm_source: utmSource || null,
                 utm_medium: utmMedium || null,
@@ -219,13 +226,28 @@ const CollabLinkLanding = () => {
           }
         } else {
           console.error('[CollabLinkLanding] Invalid response:', data);
-          toast.error(data.error || 'Creator not found');
-          navigate('/');
+          setLoading(false);
+          const errorMsg = data.error || 'Creator not found';
+          setError(errorMsg);
+          toast.error(errorMsg);
         }
       } catch (error: any) {
-        console.error('[CollabLinkLanding] Fetch error:', error);
-        toast.error('Failed to load creator profile. Please check your connection.');
-        navigate('/');
+        console.error('[CollabLinkLanding] Fetch error:', {
+          error,
+          message: error?.message,
+          stack: error?.stack,
+          username: normalizedUsername,
+          apiUrl,
+        });
+        setLoading(false);
+        
+        // Check if it's a network error
+        let errorMsg = 'Failed to load creator profile. Please try again later.';
+        if (error?.message?.includes('Failed to fetch') || error?.message?.includes('NetworkError')) {
+          errorMsg = 'Network error: Unable to connect to the server. Please check your internet connection.';
+        }
+        setError(errorMsg);
+        toast.error(errorMsg);
       } finally {
         setLoading(false);
       }
@@ -346,7 +368,7 @@ const CollabLinkLanding = () => {
 
       if (data.success) {
         // Submit event is tracked by the backend automatically
-        navigate(`/${username}/success`, { state: { creatorName: creator?.name || 'the creator' } });
+        navigate(`/collab/${username}/success`, { state: { creatorName: creator?.name || 'the creator' } });
       } else {
         toast.error(data.error || 'Failed to submit request');
       }
@@ -380,6 +402,38 @@ const CollabLinkLanding = () => {
     );
   }
 
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 text-white flex items-center justify-center">
+        <div className="text-center max-w-md mx-auto px-4">
+          <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-lg p-8">
+            <h1 className="text-2xl font-bold mb-4">Creator Not Found</h1>
+            <p className="text-purple-200 mb-6">{error}</p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Button
+                onClick={() => navigate('/')}
+                variant="outline"
+                className="bg-white/10 border-white/20 text-white hover:bg-white/20"
+              >
+                Go to Homepage
+              </Button>
+              <Button
+                onClick={() => {
+                  setError(null);
+                  setLoading(true);
+                  window.location.reload();
+                }}
+                className="bg-purple-600 hover:bg-purple-700"
+              >
+                Try Again
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (!creator) {
     return null;
   }
@@ -394,7 +448,8 @@ const CollabLinkLanding = () => {
     : '';
   const metaDescription = `Collaborate with ${creatorName}${creator.category ? `, ${creator.category} creator` : ''} ${followerText ? followerText : ''} on ${platformNames || 'social media'}. Submit secure collaboration requests via CreatorArmour. ${creator.bio ? creator.bio.substring(0, 80) : ''}`.substring(0, 160);
   
-  const canonicalUrl = `https://creatorarmour.com/${creator.username}`;
+  // Use clean URL for SEO (no hash)
+  const canonicalUrl = `https://creatorarmour.com/collab/${creator.username}`;
   const pageImage = creator.platforms.length > 0 
     ? `https://creatorarmour.com/og-creator-${creator.username}.png`
     : 'https://creatorarmour.com/og-preview.png';

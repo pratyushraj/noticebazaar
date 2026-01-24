@@ -1270,10 +1270,10 @@ const ProfileSettings = () => {
                   // Use Instagram handle from formData (current input) or profile, fallback to username field
                   const usernameForLink = formData.instagramHandle || profile?.instagram_handle || profile?.username;
                   const hasUsername = usernameForLink && usernameForLink.trim() !== '';
-                  // New Instagram-style link format: creatorarmour.com/username
-                  const collabLink = hasUsername ? `${window.location.origin}/${usernameForLink}` : '';
-                  // Display shortened link format: creatorarmour.com/username
-                  const shortLink = hasUsername ? `creatorarmour.com/${usernameForLink}` : '';
+                  // SEO-friendly clean URL format: creatorarmour.com/collab/username
+                  const collabLink = hasUsername ? `${window.location.origin}/collab/${usernameForLink}` : '';
+                  // Display shortened link format: creatorarmour.com/collab/username
+                  const shortLink = hasUsername ? `creatorarmour.com/collab/${usernameForLink}` : '';
                   
                   // Debug: Log the values being used (dev only)
                   if (import.meta.env.DEV && hasUsername) {

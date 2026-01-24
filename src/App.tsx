@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { HashRouter, Routes, Route, Navigate, useParams } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useParams } from "react-router-dom";
 import { SplashScreen } from "@/components/mobile/SplashScreen";
 import NotFound from "./pages/NotFound";
 import Login from "./pages/Login";
@@ -226,7 +226,7 @@ const App = () => {
             >
               Skip to main content
             </a>
-            <HashRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+            <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
               <ScrollToTop />
               <NetworkStatusWrapper>
                 <FacebookPixelTracker />
@@ -281,14 +281,15 @@ const App = () => {
               <Route path="/creators/:category" element={<CreatorsDirectory />} />
               <Route path="/creator/:username" element={<CreatorProfilePage />} />
               
-              {/* Legacy redirect: /collab/:username → /:username (must come before /:username route) */}
-              <Route path="/collab/:username" element={<LegacyCollabRedirect />} />
-              <Route path="/collab/:username/success" element={<LegacyCollabSuccessRedirect />} />
+              {/* Collaboration Request Link Routes (Public) - SEO-friendly clean URLs */}
+              {/* Primary route: /collab/:username (clean URL for SEO) */}
+              <Route path="/collab/:username" element={<CollabLinkLanding />} />
+              <Route path="/collab/:username/success" element={<CollabLinkSuccess />} />
               
-              {/* Collaboration Request Link Routes (Public) - Instagram-style /:username */}
-              {/* Primary route: /:username (placed after all specific routes to avoid conflicts) */}
-              <Route path="/:username" element={<CollabLinkLanding />} />
-              <Route path="/:username/success" element={<CollabLinkSuccess />} />
+              {/* Legacy redirect: /:username → /collab/:username (for backward compatibility) */}
+              {/* Keep this for existing links shared in bios, emails, etc. */}
+              <Route path="/:username" element={<LegacyCollabRedirect />} />
+              <Route path="/:username/success" element={<LegacyCollabSuccessRedirect />} />
 
               {/* Client-specific routes - Redirected to Creator Dashboard */}
               <Route path="/client-dashboard" element={<Navigate to="/creator-dashboard" replace />} />
@@ -382,7 +383,7 @@ const App = () => {
             </SidebarProvider>
           </SessionContextProvider>
         </NetworkStatusWrapper>
-        </HashRouter>
+        </BrowserRouter>
             </div>
           )}
         </TooltipProvider>

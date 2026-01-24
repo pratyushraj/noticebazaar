@@ -72,6 +72,20 @@ const Notifications: React.FC = () => {
       )
     );
 
+    // Handle collaboration request notifications specially
+    if (notification.category === 'collab_request' && notification.data?.collab_request_id) {
+      // Navigate to creator dashboard and scroll to collab requests section
+      navigate('/creator-dashboard');
+      // Scroll to collab requests section after a brief delay to allow page to render
+      setTimeout(() => {
+        const collabSection = document.querySelector('[data-section="collab-requests"]');
+        if (collabSection) {
+          collabSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }, 300);
+      return;
+    }
+
     if (notification.link) {
       navigate(notification.link);
     }
