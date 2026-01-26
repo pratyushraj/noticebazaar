@@ -30,7 +30,6 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { formatRelativeTime } from '@/lib/utils/time';
-import CollabLinkAnalytics from '@/components/collab/CollabLinkAnalytics';
 
 type CollabRequestStatus = 'pending' | 'accepted' | 'countered' | 'declined';
 type CollabType = 'paid' | 'barter' | 'both';
@@ -289,9 +288,6 @@ const CollabRequestsSection = () => {
 
   return (
     <div className="space-y-6">
-      {/* Collab Link Analytics Card */}
-      <CollabLinkAnalytics />
-
       {/* Header with Collab Link */}
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
