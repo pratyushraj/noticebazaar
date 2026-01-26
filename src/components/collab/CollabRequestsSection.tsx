@@ -648,8 +648,6 @@ const CollabRequestsSection = React.memo(() => {
       </AlertDialog>
     </div>
   );
-};
-
 });
 
 CollabRequestsSection.displayName = 'CollabRequestsSection';
