@@ -1,23 +1,110 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { TrendingUp, TrendingDown, Eye, Send, BarChart3, Loader2 } from 'lucide-react';
 import { useSession } from '@/contexts/SessionContext';
-import { useCollabAnalytics } from '@/lib/hooks/useCollabAnalytics';
-import { getCollabLinkUsername } from '@/lib/utils/collabLink';
-import { cn } from '@/lib/utils';
+import { supabase } from '@/integrations/supabase/client';
+
+interface AnalyticsData {
+  period: number;
+  views: {
+    total: number;
+    unique: number;
+    trend: number;
+    trendDirection: 'up' | 'down';
+  };
+  submissions: {
+    total: number;
+    trend: number;
+    trendDirection: 'up' | 'down';
+  };
+  conversionRate: {
+    value: number;
+    trend: number;
+    trendDirection: 'up' | 'down' | 'neutral';
+  };
+  deviceBreakdown: {
+    mobile: number;
+    desktop: number;
+    tablet: number;
+    unknown: number;
+  };
+}
 
 const CollabLinkAnalytics: React.FC = () => {
   const { profile } = useSession();
+  const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);
+  const [loading, setLoading] = useState(true);
   const [period, setPeriod] = useState<'7' | '30'>('30');
-  const { data: analytics, isLoading, error } = useCollabAnalytics(period);
-  const username = getCollabLinkUsername(profile);
+
+  useEffect(() => {
+    if (profile?.username) {
+      fetchAnalytics();
+    } else {
+      setLoading(false);
+    }
+  }, [period, profile?.username]);
+
+  const fetchAnalytics = async () => {
+    try {
+      // Get current session (Supabase auto-refreshes tokens)
+      const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+      
+      if (sessionError || !sessionData.session) {
+        console.error('[CollabLinkAnalytics] No session:', sessionError);
+        setLoading(false);
+        return;
+      }
+
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+      const response = await fetch(
+        `${apiUrl}/api/collab-analytics?days=${period}`,
+        {
+          headers: {
+            'Authorization': `Bearer ${sessionData.session.access_token}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          console.error('[CollabLinkAnalytics] Unauthorized - token may be invalid');
+        } else if (response.status === 404) {
+          console.warn('[CollabLinkAnalytics] Analytics endpoint not found - may not be available yet');
+        } else {
+          console.error('[CollabLinkAnalytics] Failed to fetch analytics:', response.status, response.statusText);
+        }
+        setLoading(false);
+        return;
+      }
+
+      const data = await response.json();
+      if (data.success && data.analytics) {
+        setAnalytics(data.analytics);
+      } else {
+        console.warn('[CollabLinkAnalytics] Analytics data not available:', data);
+      }
+    } catch (error: any) {
+      // Only log network errors, not expected errors like connection refused when server is down
+      if (error.message && !error.message.includes('Failed to fetch')) {
+        console.error('[CollabLinkAnalytics] Error fetching analytics:', error);
+      } else {
+        // Silently handle connection errors - server may not be running
+        if (import.meta.env.DEV) {
+          console.warn('[CollabLinkAnalytics] Server not available - analytics will load when server is running');
+        }
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Don't show analytics if user doesn't have a username
-  if (!username) {
+  if (!profile?.username) {
     return null;
   }
 
-  if (isLoading) {
+  if (loading) {
     return (
       <Card className="bg-white/5 backdrop-blur-md border-white/10">
         <CardContent className="p-6">
@@ -29,8 +116,7 @@ const CollabLinkAnalytics: React.FC = () => {
     );
   }
 
-  // Don't show error state - analytics might not be available yet
-  if (error || !analytics) {
+  if (!analytics) {
     return null;
   }
 
@@ -221,5 +307,5 @@ const CollabLinkAnalytics: React.FC = () => {
   );
 };
 
-export default React.memo(CollabLinkAnalytics);
+export default CollabLinkAnalytics;
 

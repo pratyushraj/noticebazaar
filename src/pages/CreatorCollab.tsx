@@ -8,7 +8,6 @@ import { toast } from 'sonner';
 import { useSession } from '@/contexts/SessionContext';
 import { triggerHaptic, HapticPatterns } from '@/lib/utils/haptics';
 import { cn } from '@/lib/utils';
-import { getCollabLink, getCollabLinkUsername } from '@/lib/utils/collabLink';
 import { sectionLayout, animations, spacing, typography, separators, iconSizes, sectionHeader, radius, vision, motion as motionTokens } from '@/lib/design-system';
 import { BaseCard } from '@/components/ui/card-variants';
 import CollabRequestsSection from '@/components/collab/CollabRequestsSection';
@@ -57,8 +56,9 @@ const CreatorCollab = () => {
               <div className="flex flex-col sm:flex-row gap-2 mt-4">
                 <motion.button
                   onClick={() => {
-                    const link = getCollabLink(profile);
-                    if (link) {
+                    const usernameForLink = profile?.instagram_handle || profile?.username;
+                    if (usernameForLink) {
+                      const link = `${window.location.origin}/collab/${usernameForLink}`;
                       navigator.clipboard.writeText(link);
                       toast.success('Collab link copied to clipboard!');
                       triggerHaptic(HapticPatterns.light);
@@ -66,7 +66,6 @@ const CreatorCollab = () => {
                       toast.error('Username not set. Please update your profile.');
                     }
                   }}
-                  aria-label="Copy collaboration link to clipboard"
                   whileTap={animations.microTap}
                   className={cn(
                     "flex-1 px-4 py-2.5 bg-purple-600/20 hover:bg-purple-600/30",
