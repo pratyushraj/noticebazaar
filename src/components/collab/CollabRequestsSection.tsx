@@ -339,6 +339,14 @@ const CollabRequestsSection = () => {
         </div>
       </div>
 
+      {/* Educational Tip */}
+      <div className="flex items-start gap-2 p-3 bg-purple-500/10 border border-purple-500/20 rounded-lg">
+        <Lightbulb className="w-4 h-4 text-purple-400 mt-0.5 flex-shrink-0" />
+        <p className="text-xs text-purple-200/80 leading-relaxed">
+          <span className="font-medium text-purple-200">Tip:</span> Add your collab link to Instagram bio to stop brand DMs.
+        </p>
+      </div>
+
       {/* Requests List */}
       {pendingRequests.length === 0 ? (
         <Card className="bg-white/5 backdrop-blur-md border-white/10">
