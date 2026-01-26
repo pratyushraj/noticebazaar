@@ -21,16 +21,18 @@ const CreatorCollab = () => {
   return (
     <CreatorNavigationWrapper title="Collaboration" subtitle="Manage your collaboration requests and tools">
       <div className={cn(sectionLayout.container, spacing.loose, "pb-24")}>
-        {/* Hero Section */}
+        {/* Section A: Above the fold - Collab Tools + Analytics */}
         <div className="mb-8">
-          <h1 className={cn(typography.h1, "mb-2")}>Collaboration Tools</h1>
-          <p className={cn(typography.body, "text-purple-200/80")}>
-            Let brands send you structured collaboration requests instead of DMs.
-          </p>
-        </div>
+          {/* Hero Section */}
+          <div className="mb-6">
+            <h1 className={cn(typography.h1, "mb-2")}>Collaboration Tools</h1>
+            <p className={cn(typography.body, "text-purple-200/80")}>
+              Let brands send you structured collaboration requests instead of DMs.
+            </p>
+          </div>
 
-        {/* Collaboration Tools Cards */}
-        <div className="flex flex-col md:grid md:grid-cols-3 gap-4 mb-8">
+          {/* Collaboration Tools Cards */}
+          <div className="flex flex-col md:grid md:grid-cols-3 gap-4 mb-6">
           {/* Card 1: Collab Link - Full width on mobile */}
           <BaseCard variant="tertiary" className="p-4 md:p-6 relative overflow-hidden w-full md:col-span-1">
             <div className="absolute top-0 right-0 w-32 h-32 bg-purple-500/10 rounded-full blur-3xl" />
@@ -180,15 +182,28 @@ const CreatorCollab = () => {
               </motion.button>
             </div>
           </BaseCard>
+          </div>
+
+          {/* Collab Link Analytics - Compact */}
+          <div className="mb-8" data-section="collab-analytics">
+            <CollabLinkAnalytics compact />
+          </div>
         </div>
 
-        {/* Collab Link Analytics */}
-        <div className="mb-8" data-section="collab-analytics">
-          <CollabLinkAnalytics />
-        </div>
-
-        {/* Collaboration Requests Section */}
+        {/* Section B: Scrollable - Collaboration Requests */}
         <div className="mb-8">
+          {/* Divider */}
+          <div className="mb-6">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="flex-1 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
+              <h2 className={cn(typography.h3, "text-white/90 px-4")}>
+                Incoming Collaboration Requests
+              </h2>
+              <div className="flex-1 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
+            </div>
+          </div>
+
+          {/* Collaboration Requests List */}
           <CollabRequestsSection />
         </div>
       </div>

@@ -30,7 +30,11 @@ interface AnalyticsData {
   };
 }
 
-const CollabLinkAnalytics: React.FC = () => {
+interface CollabLinkAnalyticsProps {
+  compact?: boolean;
+}
+
+const CollabLinkAnalytics: React.FC<CollabLinkAnalyticsProps> = ({ compact = false }) => {
   const { profile } = useSession();
   const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -107,7 +111,7 @@ const CollabLinkAnalytics: React.FC = () => {
   if (loading) {
     return (
       <Card className="bg-white/5 backdrop-blur-md border-white/10">
-        <CardContent className="p-6">
+        <CardContent className={compact ? "p-4" : "p-6"}>
           <div className="flex items-center justify-center py-8">
             <Loader2 className="h-6 w-6 animate-spin text-purple-400" />
           </div>
@@ -147,6 +151,95 @@ const CollabLinkAnalytics: React.FC = () => {
       </div>
     );
   };
+
+  if (compact) {
+    return (
+      <Card className="bg-white/5 backdrop-blur-md border-white/10">
+        <CardContent className="p-4">
+          {/* Compact Header */}
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <BarChart3 className="h-4 w-4 text-purple-400" />
+              <h3 className="text-sm font-semibold text-white">Collab Link Analytics</h3>
+            </div>
+            <div className="flex gap-1">
+              <button
+                onClick={() => setPeriod('7')}
+                className={`px-2 py-0.5 text-[10px] rounded transition-colors ${
+                  period === '7'
+                    ? 'bg-purple-600 text-white'
+                    : 'bg-white/5 text-purple-300 hover:bg-white/10'
+                }`}
+              >
+                7d
+              </button>
+              <button
+                onClick={() => setPeriod('30')}
+                className={`px-2 py-0.5 text-[10px] rounded transition-colors ${
+                  period === '30'
+                    ? 'bg-purple-600 text-white'
+                    : 'bg-white/5 text-purple-300 hover:bg-white/10'
+                }`}
+              >
+                30d
+              </button>
+            </div>
+          </div>
+
+          {/* Compact Stats Grid */}
+          <div className="grid grid-cols-3 gap-3">
+            {/* Total Views - Compact */}
+            <div className="bg-white/5 rounded-lg p-3 border border-white/10">
+              <div className="flex items-center gap-1 mb-1">
+                <Eye className="h-3 w-3 text-purple-400" />
+                <span className="text-[10px] text-purple-300">Views</span>
+              </div>
+              <div className="flex items-baseline gap-1">
+                <span className="text-lg font-bold text-white">
+                  {analytics.views.total.toLocaleString()}
+                </span>
+                <TrendIndicator 
+                  trend={analytics.views.trend} 
+                  direction={analytics.views.trendDirection} 
+                />
+              </div>
+            </div>
+
+            {/* Requests Received - Compact */}
+            <div className="bg-white/5 rounded-lg p-3 border border-white/10">
+              <div className="flex items-center gap-1 mb-1">
+                <Send className="h-3 w-3 text-green-400" />
+                <span className="text-[10px] text-purple-300">Requests</span>
+              </div>
+              <div className="flex items-baseline gap-1">
+                <span className="text-lg font-bold text-white">
+                  {analytics.submissions.total.toLocaleString()}
+                </span>
+                <TrendIndicator 
+                  trend={analytics.submissions.trend} 
+                  direction={analytics.submissions.trendDirection} 
+                />
+              </div>
+            </div>
+
+            {/* Conversion Rate - Compact */}
+            <div className="bg-gradient-to-r from-purple-500/10 to-pink-500/10 rounded-lg p-3 border border-purple-500/20">
+              <div className="text-[10px] text-purple-200 mb-1">Conversion</div>
+              <div className="flex items-baseline gap-1">
+                <span className="text-lg font-bold text-white">
+                  {analytics.conversionRate.value.toFixed(1)}%
+                </span>
+                <TrendIndicator 
+                  trend={analytics.conversionRate.trend} 
+                  direction={analytics.conversionRate.trendDirection} 
+                />
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card className="bg-white/5 backdrop-blur-md border-white/10">

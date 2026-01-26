@@ -288,15 +288,8 @@ const CollabRequestsSection = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header with Collab Link */}
-      <div className="flex items-center justify-between flex-wrap gap-4">
-        <div>
-          <h2 className="text-2xl font-bold text-white mb-2" data-section="collab-requests">Collaboration Requests</h2>
-          <p className="text-purple-200 text-sm">
-            Brands submit collaboration requests via your public link
-          </p>
-        </div>
-        <div className="flex items-center gap-3">
+      {/* Collab Link Actions */}
+      <div className="flex items-center justify-end flex-wrap gap-4">
           {(() => {
             // Use Instagram handle first, then fallback to username (same logic as CreatorProfile)
             const usernameForLink = profile?.instagram_handle || profile?.username;
