@@ -8,6 +8,7 @@ import { toast } from 'sonner';
 import { useSession } from '@/contexts/SessionContext';
 import { triggerHaptic, HapticPatterns } from '@/lib/utils/haptics';
 import { cn } from '@/lib/utils';
+import { getCollabLink, getCollabLinkUsername } from '@/lib/utils/collabLink';
 import { sectionLayout, animations, spacing, typography, separators, iconSizes, sectionHeader, radius, vision, motion as motionTokens } from '@/lib/design-system';
 import { BaseCard } from '@/components/ui/card-variants';
 import CollabRequestsSection from '@/components/collab/CollabRequestsSection';
@@ -21,18 +22,16 @@ const CreatorCollab = () => {
   return (
     <CreatorNavigationWrapper title="Collaboration" subtitle="Manage your collaboration requests and tools">
       <div className={cn(sectionLayout.container, spacing.loose, "pb-24")}>
-        {/* Section A: Above the fold - Collab Tools + Analytics */}
+        {/* Hero Section */}
         <div className="mb-8">
-          {/* Hero Section */}
-          <div className="mb-6">
-            <h1 className={cn(typography.h1, "mb-2")}>Collaboration Tools</h1>
-            <p className={cn(typography.body, "text-purple-200/80")}>
-              Let brands send you structured collaboration requests instead of DMs.
-            </p>
-          </div>
+          <h1 className={cn(typography.h1, "mb-2")}>Collaboration Tools</h1>
+          <p className={cn(typography.body, "text-purple-200/80")}>
+            Let brands send you structured collaboration requests instead of DMs.
+          </p>
+        </div>
 
-          {/* Collaboration Tools Cards */}
-          <div className="flex flex-col md:grid md:grid-cols-3 gap-4 mb-6">
+        {/* Collaboration Tools Cards */}
+        <div className="flex flex-col md:grid md:grid-cols-3 gap-4 mb-8">
           {/* Card 1: Collab Link - Full width on mobile */}
           <BaseCard variant="tertiary" className="p-4 md:p-6 relative overflow-hidden w-full md:col-span-1">
             <div className="absolute top-0 right-0 w-32 h-32 bg-purple-500/10 rounded-full blur-3xl" />
@@ -58,9 +57,8 @@ const CreatorCollab = () => {
               <div className="flex flex-col sm:flex-row gap-2 mt-4">
                 <motion.button
                   onClick={() => {
-                    const usernameForLink = profile?.instagram_handle || profile?.username;
-                    if (usernameForLink) {
-                      const link = `${window.location.origin}/collab/${usernameForLink}`;
+                    const link = getCollabLink(profile);
+                    if (link) {
                       navigator.clipboard.writeText(link);
                       toast.success('Collab link copied to clipboard!');
                       triggerHaptic(HapticPatterns.light);
@@ -68,6 +66,7 @@ const CreatorCollab = () => {
                       toast.error('Username not set. Please update your profile.');
                     }
                   }}
+                  aria-label="Copy collaboration link to clipboard"
                   whileTap={animations.microTap}
                   className={cn(
                     "flex-1 px-4 py-2.5 bg-purple-600/20 hover:bg-purple-600/30",
@@ -182,28 +181,15 @@ const CreatorCollab = () => {
               </motion.button>
             </div>
           </BaseCard>
-          </div>
-
-          {/* Collab Link Analytics - Compact */}
-          <div className="mb-8" data-section="collab-analytics">
-            <CollabLinkAnalytics compact />
-          </div>
         </div>
 
-        {/* Section B: Scrollable - Collaboration Requests */}
-        <div className="mb-8">
-          {/* Divider */}
-          <div className="mb-6">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="flex-1 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
-              <h2 className={cn(typography.h3, "text-white/90 px-4")}>
-                Incoming Collaboration Requests
-              </h2>
-              <div className="flex-1 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
-            </div>
-          </div>
+        {/* Collab Link Analytics */}
+        <div className="mb-8" data-section="collab-analytics">
+          <CollabLinkAnalytics />
+        </div>
 
-          {/* Collaboration Requests List */}
+        {/* Collaboration Requests Section */}
+        <div className="mb-8">
           <CollabRequestsSection />
         </div>
       </div>

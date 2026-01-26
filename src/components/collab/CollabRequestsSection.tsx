@@ -30,6 +30,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { formatRelativeTime } from '@/lib/utils/time';
+import { getCollabLink, getCollabLinkDisplay, getCollabLinkUsername, hasCollabLink } from '@/lib/utils/collabLink';
 
 type CollabRequestStatus = 'pending' | 'accepted' | 'countered' | 'declined';
 type CollabType = 'paid' | 'barter' | 'both';
@@ -60,7 +61,7 @@ interface CollabRequest {
 
 type CollabAction = 'accept' | 'counter' | 'decline' | null;
 
-const CollabRequestsSection = () => {
+const CollabRequestsSection = React.memo(() => {
   const navigate = useNavigate();
   const { profile, user } = useSession();
   const [requests, setRequests] = useState<CollabRequest[]>([]);
@@ -236,11 +237,13 @@ const CollabRequestsSection = () => {
   };
 
   const copyCollabLink = () => {
-    // Use Instagram handle first, then fallback to username (same logic as CreatorProfile)
-    const usernameForLink = profile?.instagram_handle || profile?.username || 'your-username';
-    const link = `${window.location.origin}/collab/${usernameForLink}`;
-    navigator.clipboard.writeText(link);
-    toast.success('Collab link copied to clipboard!');
+    const link = getCollabLink(profile);
+    if (link) {
+      navigator.clipboard.writeText(link);
+      toast.success('Collab link copied to clipboard!');
+    } else {
+      toast.error('Username not set. Please update your profile.');
+    }
   };
 
   const parseDeliverables = (deliverables: string | string[]): string[] => {
@@ -288,46 +291,49 @@ const CollabRequestsSection = () => {
 
   return (
     <div className="space-y-6">
-      {/* Collab Link Actions */}
-      <div className="flex items-center justify-end flex-wrap gap-4">
-          {(() => {
-            // Use Instagram handle first, then fallback to username (same logic as CreatorProfile)
-            const usernameForLink = profile?.instagram_handle || profile?.username;
-            const hasUsername = usernameForLink && usernameForLink.trim() !== '';
-            
-            if (!hasUsername) return null;
-            
-            return (
+      {/* Header with Collab Link */}
+      <div className="flex items-center justify-between flex-wrap gap-4">
+        <div>
+          <h2 className="text-2xl font-bold text-white mb-2" data-section="collab-requests">Collaboration Requests</h2>
+          <p className="text-purple-200 text-sm">
+            Brands submit collaboration requests via your public link
+          </p>
+        </div>
+        <div className="flex items-center gap-3">
+          {hasCollabLink(profile) && (
             <div className="flex items-center gap-2 bg-white/5 px-4 py-2 rounded-lg border border-white/10">
               <code className="text-sm text-purple-200">
-                  creatorarmour.com/collab/{usernameForLink}
+                {getCollabLinkDisplay(profile)}
               </code>
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={copyCollabLink}
                 className="h-8 w-8 p-0 text-purple-300 hover:text-white"
+                aria-label="Copy collaboration link to clipboard"
               >
                 <Copy className="h-4 w-4" />
               </Button>
             </div>
-            );
-          })()}
-          <Button
-            variant="outline"
-            onClick={() => {
-              const usernameForLink = profile?.instagram_handle || profile?.username;
-              if (usernameForLink) {
-                window.open(`/collab/${usernameForLink}`, '_blank');
-              } else {
-                toast.error('Username not set. Please update your profile.');
-              }
-            }}
-            className="border-white/20 text-white hover:bg-white/10"
-          >
-            <ExternalLink className="h-4 w-4 mr-2" />
-            View Link
-          </Button>
+          )}
+          {hasCollabLink(profile) && (
+            <Button
+              variant="outline"
+              onClick={() => {
+                const link = getCollabLink(profile);
+                if (link) {
+                  window.open(link, '_blank');
+                } else {
+                  toast.error('Username not set. Please update your profile.');
+                }
+              }}
+              className="border-white/20 text-white hover:bg-white/10"
+              aria-label="Preview collaboration link"
+            >
+              <ExternalLink className="h-4 w-4 mr-2" />
+              View Link
+            </Button>
+          )}
         </div>
       </div>
 
@@ -367,42 +373,39 @@ const CollabRequestsSection = () => {
             </div>
 
             {/* Action Buttons */}
-            {(() => {
-              // Use Instagram handle first, then fallback to username (same logic as CreatorProfile)
-              const usernameForLink = profile?.instagram_handle || profile?.username;
-              const hasUsername = usernameForLink && usernameForLink.trim() !== '';
-              
-              if (!hasUsername) {
-                return (
-                  <div className="text-center">
-                    <p className="text-sm text-purple-300/70 mb-3">
-                      Complete your profile to activate your collab link
-                    </p>
-                  </div>
-                );
-              }
-              
-              return (
-                <div className="flex flex-col sm:flex-row gap-3 justify-center items-center mb-4">
-              <Button
-                onClick={copyCollabLink}
-                variant="outline"
-                    className="bg-purple-500/20 border-purple-400/50 text-purple-200 hover:bg-purple-500/30 hover:border-purple-400/70 w-full sm:w-auto"
-              >
-                <Copy className="h-4 w-4 mr-2" />
-                Copy Collab Link
-              </Button>
-                  <Button
-                    onClick={() => window.open(`/collab/${usernameForLink}`, '_blank')}
-                    variant="outline"
-                    className="border-purple-400/30 text-purple-300/80 hover:bg-purple-500/10 hover:text-purple-200 w-full sm:w-auto"
-                  >
-                    <ExternalLink className="h-4 w-4 mr-2" />
-                    👀 Preview how brands see this link
-                  </Button>
-                </div>
-              );
-            })()}
+            {!hasCollabLink(profile) ? (
+              <div className="text-center">
+                <p className="text-sm text-purple-300/70 mb-3">
+                  Complete your profile to activate your collab link
+                </p>
+              </div>
+            ) : (
+              <div className="flex flex-col sm:flex-row gap-3 justify-center items-center mb-4">
+                <Button
+                  onClick={copyCollabLink}
+                  variant="outline"
+                  className="bg-purple-500/20 border-purple-400/50 text-purple-200 hover:bg-purple-500/30 hover:border-purple-400/70 w-full sm:w-auto"
+                  aria-label="Copy collaboration link to clipboard"
+                >
+                  <Copy className="h-4 w-4 mr-2" />
+                  Copy Collab Link
+                </Button>
+                <Button
+                  onClick={() => {
+                    const link = getCollabLink(profile);
+                    if (link) {
+                      window.open(link, '_blank');
+                    }
+                  }}
+                  variant="outline"
+                  className="border-purple-400/30 text-purple-300/80 hover:bg-purple-500/10 hover:text-purple-200 w-full sm:w-auto"
+                  aria-label="Preview collaboration link as brand"
+                >
+                  <ExternalLink className="h-4 w-4 mr-2" />
+                  👀 Preview how brands see this link
+                </Button>
+              </div>
+            )}
 
             {/* Future Features Hint */}
             <div className="mt-6 pt-4 border-t border-white/10">
@@ -646,6 +649,10 @@ const CollabRequestsSection = () => {
     </div>
   );
 };
+
+});
+
+CollabRequestsSection.displayName = 'CollabRequestsSection';
 
 export default CollabRequestsSection;
 
