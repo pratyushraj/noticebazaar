@@ -429,113 +429,81 @@ const CollabRequestsSection = () => {
           </CardContent>
         </Card>
       ) : (
-        <div className="space-y-4">
-          {pendingRequests.map((request) => (
-            <Card
-              key={request.id}
-              className="bg-white/5 backdrop-blur-md border-white/10 hover:border-white/20 transition-colors"
-            >
-              <CardContent className="p-6">
-                <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
-                  <div className="flex-1 space-y-3">
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <h3 className="text-lg font-semibold text-white mb-1">
-                          {request.brand_name}
-                        </h3>
-                        <p className="text-sm text-purple-300">{request.brand_email}</p>
-                      </div>
-                      <Badge
-                        className={
-                          request.collab_type === 'paid'
-                            ? 'bg-green-500/20 text-green-300 border-green-500/30'
-                            : request.collab_type === 'barter'
-                            ? 'bg-blue-500/20 text-blue-300 border-blue-500/30'
-                            : 'bg-purple-500/20 text-purple-300 border-purple-500/30'
-                        }
-                      >
-                        {request.collab_type === 'paid'
-                          ? 'Paid'
-                          : request.collab_type === 'barter'
-                          ? 'Barter'
-                          : 'Both'}
-                      </Badge>
-                    </div>
+        <Card className="bg-white/5 backdrop-blur-md border-white/10">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h3 className="text-lg font-semibold text-white mb-1">
+                  {pendingRequests.length} Pending Request{pendingRequests.length !== 1 ? 's' : ''}
+                </h3>
+                <p className="text-sm text-purple-300/70">
+                  {pendingRequests.length === 1 
+                    ? 'You have a new collaboration request waiting'
+                    : 'You have new collaboration requests waiting'}
+                </p>
+              </div>
+              <Badge className="bg-yellow-500/20 text-yellow-300 border-yellow-500/30">
+                {pendingRequests.length}
+              </Badge>
+            </div>
 
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-4 text-sm">
-                        <span className="text-purple-200 font-medium">
-                          {request.collab_type === 'paid' ? 'Budget:' : request.collab_type === 'barter' ? 'Product Value:' : 'Offer:'}
-                        </span>
-                        <span className="text-white font-semibold">{formatBudget(request)}</span>
-                      </div>
-                      <div className="flex items-center gap-4 text-sm">
-                        <span className="text-purple-200 font-medium">Deliverables:</span>
-                        <span className="text-white">
-                          {parseDeliverables(request.deliverables).join(', ')}
-                        </span>
-                      </div>
-                      {request.deadline && (
-                        <div className="flex items-center gap-4 text-sm">
-                          <Clock className="h-4 w-4 text-purple-300" />
-                          <span className="text-purple-200">Deadline:</span>
-                          <span className="text-white">
-                            {new Date(request.deadline).toLocaleDateString()}
-                          </span>
-                        </div>
-                      )}
-                      <p className="text-sm text-purple-200 mt-2 line-clamp-2">
-                        {request.campaign_description}
-                      </p>
-                    </div>
-
-                    <div className="text-xs text-purple-400 flex items-center gap-1">
-                      <Clock className="h-3 w-3" />
-                      Submitted {formatRelativeTime(request.created_at)}
-                    </div>
+            {/* Preview of first request */}
+            {pendingRequests[0] && (
+              <div className="mb-4 p-4 bg-white/5 rounded-lg border border-white/10">
+                <div className="flex items-start justify-between mb-2">
+                  <div>
+                    <h4 className="text-base font-semibold text-white">{pendingRequests[0].brand_name}</h4>
+                    <p className="text-xs text-purple-300/70">{pendingRequests[0].brand_email}</p>
                   </div>
-
-                  <div className="flex flex-col gap-2 md:w-auto w-full">
-                    <Button
-                      onClick={() => {
-                        setSelectedRequest(request);
-                        setAction('accept');
-                      }}
-                      className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white border-0"
-                      size="sm"
-                    >
-                      <CheckCircle2 className="h-4 w-4 mr-2" />
-                      Accept
-                    </Button>
-                    <Button
-                      onClick={() => {
-                        setSelectedRequest(request);
-                        setAction('counter');
-                      }}
-                      variant="outline"
-                      className="border-purple-400/50 text-purple-300 hover:bg-purple-500/10"
-                      size="sm"
-                    >
-                      Counter Offer
-                    </Button>
-                    <Button
-                      onClick={() => {
-                        setSelectedRequest(request);
-                        setAction('decline');
-                      }}
-                      variant="outline"
-                      className="border-red-400/50 text-red-300 hover:bg-red-500/10"
-                      size="sm"
-                    >
-                      <XCircle className="h-4 w-4 mr-2" />
-                      Decline
-                    </Button>
-                  </div>
+                  <Badge
+                    className={
+                      pendingRequests[0].collab_type === 'paid'
+                        ? 'bg-green-500/20 text-green-300 border-green-500/30'
+                        : pendingRequests[0].collab_type === 'barter'
+                        ? 'bg-blue-500/20 text-blue-300 border-blue-500/30'
+                        : 'bg-purple-500/20 text-purple-300 border-purple-500/30'
+                    }
+                  >
+                    {pendingRequests[0].collab_type === 'paid' ? 'Paid' : pendingRequests[0].collab_type === 'barter' ? 'Barter' : 'Both'}
+                  </Badge>
                 </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+                <div className="space-y-1.5 text-sm mb-3">
+                  <div className="flex items-center gap-2">
+                    <span className="text-purple-300/70">Budget:</span>
+                    <span className="text-white font-medium">{formatBudget(pendingRequests[0])}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-purple-300/70">Deliverables:</span>
+                    <span className="text-white">{parseDeliverables(pendingRequests[0].deliverables).slice(0, 2).join(', ')}{parseDeliverables(pendingRequests[0].deliverables).length > 2 ? '...' : ''}</span>
+                  </div>
+                  {pendingRequests[0].deadline && (
+                    <div className="flex items-center gap-2">
+                      <Clock className="h-3 w-3 text-purple-300/70" />
+                      <span className="text-purple-300/70">Deadline:</span>
+                      <span className="text-white">{new Date(pendingRequests[0].deadline).toLocaleDateString()}</span>
+                    </div>
+                  )}
+                </div>
+                <p className="text-xs text-purple-200/70 line-clamp-2 mb-3">
+                  {pendingRequests[0].campaign_description}
+                </p>
+                <div className="text-xs text-purple-400 flex items-center gap-1">
+                  <Clock className="h-3 w-3" />
+                  {formatRelativeTime(pendingRequests[0].created_at)}
+                </div>
+              </div>
+            )}
+
+            {/* View All Button */}
+            <Button
+              onClick={() => navigate('/collab-requests')}
+              className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white"
+            >
+              <MessageSquare className="h-4 w-4 mr-2" />
+              View All Requests
+            </Button>
+          </CardContent>
+        </Card>
       )}
 
       {/* Accept Dialog */}
