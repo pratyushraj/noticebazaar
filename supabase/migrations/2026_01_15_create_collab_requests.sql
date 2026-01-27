@@ -137,3 +137,4 @@ COMMENT ON COLUMN public.collab_requests.deliverables IS 'JSON array of requeste
 COMMENT ON COLUMN public.collab_requests.counter_offer IS 'JSON object with counter offer details if creator counters';
 COMMENT ON COLUMN public.profiles.username IS 'Unique username for public collab links (e.g., creatorarmour.com/collab/username)';
 
+

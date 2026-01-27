@@ -8,7 +8,7 @@ import {
   CheckCircle, Star, Users, Zap, ArrowRight, 
   Menu, X, Loader2, ChevronRight, Play,
   Instagram, Youtube, Twitter, DollarSign,
-  Lock, Award, BarChart3, Clock
+  Lock, Award, BarChart3, Clock, Link2, Copy, ExternalLink, Eye, Send
 } from 'lucide-react';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { lockBodyScroll, unlockBodyScroll } from '@/lib/scrollLock';
@@ -263,21 +263,27 @@ const HomePage = () => {
   const howItWorks = [
     {
       step: 1,
-      title: "Add Your Deal",
-      description: "Upload a contract or enter deal details. Takes 2–3 minutes, no legal knowledge needed.",
-      icon: FileText
+      title: "Brand submits request",
+      description: "Brand submits request via your link",
+      icon: Link2
     },
     {
       step: 2,
-      title: "Risk Indicators & Alerts",
-      description: "Track payments, deadlines, and potential issues with automated alerts.",
-      icon: Clock
+      title: "You review & respond",
+      description: "You review, accept, or counter",
+      icon: FileText
     },
     {
       step: 3,
-      title: "Enable Legal Action",
-      description: "Access tools and documentation to escalate with expert guidance when needed.",
+      title: "Contract auto-generated",
+      description: "Contract auto-generated",
       icon: Shield
+    },
+    {
+      step: 4,
+      title: "Payments tracked",
+      description: "Payments & deadlines tracked",
+      icon: DollarSign
     }
   ];
 
@@ -497,24 +503,64 @@ const HomePage = () => {
                 <span className="text-purple-200 font-medium">₹50Cr+ protected</span>
               </motion.div>
 
-              {/* Improved Headline with Better Hierarchy */}
-              <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight">
-                <span className="block mb-2">Protect Your</span>
-                <span className="block mb-2">Brand Deals.</span>
-                <span className="block bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 text-transparent bg-clip-text mb-2">
-                  Generate Contracts.
-                </span>
-                <span className="block bg-gradient-to-r from-pink-400 via-purple-400 to-blue-400 text-transparent bg-clip-text">
-                  Spot Payment & Usage Risks Early.
+              {/* 1️⃣ HERO SECTION - Collab Link First */}
+              <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-4 leading-tight">
+                <span className="block mb-2">Your Official</span>
+                <span className="block mb-2 bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 text-transparent bg-clip-text">
+                  Brand Collaboration Link
                 </span>
               </h1>
               
-              <p className="text-lg md:text-2xl text-white/90 font-medium mb-4 max-w-3xl mx-auto">
-                Creator Armour helps creators generate professional contracts, track payment risks, and protect against content misuse — all in one platform.
+              <p className="text-xl md:text-2xl text-white/90 font-medium mb-6 max-w-3xl mx-auto">
+                Replace DMs. Receive structured, protected brand deals.
               </p>
-              <p className="text-sm text-purple-400/70 mb-8 max-w-3xl mx-auto">
-                For creators and influencers. Not legal advice.
-              </p>
+
+              {/* Primary Card - Collab Link Demo */}
+              <div className="max-w-2xl mx-auto mb-6">
+                <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 md:p-8 border border-white/20 shadow-2xl">
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4">
+                    <div className="flex-1">
+                      <h2 className="text-2xl md:text-3xl font-bold mb-2">
+                        creatorarmour.com/collab/yourname
+                      </h2>
+                      <p className="text-purple-200 text-sm">
+                        Your personalized collaboration link
+                      </p>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      <button className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 px-6 py-3 rounded-lg font-semibold text-white transition-all flex items-center gap-2">
+                        <Copy className="w-4 h-4" />
+                        Copy Link
+                      </button>
+                      <button className="bg-white/10 hover:bg-white/20 border border-white/20 px-6 py-3 rounded-lg font-medium text-white transition-all flex items-center gap-2">
+                        <ExternalLink className="w-4 h-4" />
+                        Preview as Brand
+                      </button>
+                    </div>
+                  </div>
+                  
+                  {/* Share Options */}
+                  <div className="flex flex-wrap gap-2 pt-4 border-t border-white/10">
+                    <button className="px-4 py-2 rounded-lg bg-green-500/20 hover:bg-green-500/30 border border-green-500/30 text-green-300 text-sm font-medium flex items-center gap-2">
+                      WhatsApp
+                    </button>
+                    <button className="px-4 py-2 rounded-lg bg-blue-500/20 hover:bg-blue-500/30 border border-blue-500/30 text-blue-300 text-sm font-medium flex items-center gap-2">
+                      Email
+                    </button>
+                    <button className="px-4 py-2 rounded-lg bg-pink-500/20 hover:bg-pink-500/30 border border-pink-500/30 text-pink-300 text-sm font-medium flex items-center gap-2">
+                      Instagram
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Trust Line - Impossible to miss */}
+              <div className="max-w-2xl mx-auto mb-8">
+                <div className="bg-red-500/20 border-2 border-red-500/40 rounded-lg p-4 flex items-center gap-3 text-red-200 font-bold text-base md:text-lg">
+                  <Shield className="w-6 h-6 text-red-400 flex-shrink-0" />
+                  <span>Deals outside this link are not legally protected</span>
+                </div>
+              </div>
             </motion.div>
 
             <motion.div
@@ -578,7 +624,160 @@ const HomePage = () => {
         </div>
       </motion.section>
 
-      {/* Stats Section */}
+      {/* 2️⃣ "How Brands Work With You" Visual Steps */}
+      <section id="how-it-works" className="py-20 px-4 sm:px-6 lg:px-8 bg-white/5 backdrop-blur-sm">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-bold mb-4">
+              How Brands Work With You
+            </h2>
+            <p className="text-xl text-purple-200 max-w-2xl mx-auto">
+              Use your Collab Link to receive structured, protected brand deals
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-4 gap-8">
+            {howItWorks.map((step, index) => (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, x: -20 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.5, delay: index * 0.2 }}
+                viewport={{ once: true }}
+                className="relative"
+              >
+                <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/10 h-full">
+                  <div className="absolute -top-4 -left-4 w-12 h-12 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full flex items-center justify-center font-bold text-xl shadow-lg">
+                    {step.step}
+                  </div>
+                  <step.icon className="w-12 h-12 text-purple-400 mb-4 mt-4" />
+                  <h3 className="text-2xl font-semibold mb-3">{step.title}</h3>
+                  <p className="text-purple-200">{step.description}</p>
+                </div>
+                {index < howItWorks.length - 1 && (
+                  <div className="hidden md:block absolute top-1/2 -right-4 transform -translate-y-1/2 z-10">
+                    <ChevronRight className="w-8 h-8 text-purple-400" />
+                  </div>
+                )}
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* 3️⃣ Collab Link Performance (Proof) */}
+      <section className="py-16 px-4 sm:px-6 lg:px-8 bg-white/5 backdrop-blur-sm">
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-8">
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">Collab Link Performance</h2>
+            <p className="text-lg text-purple-200 max-w-2xl mx-auto">
+              See how your link performs with real-time analytics
+            </p>
+          </div>
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
+            <div className="grid grid-cols-3 gap-6 mb-6">
+              <div className="text-center">
+                <div className="flex items-center justify-center gap-2 mb-2">
+                  <Eye className="w-5 h-5 text-purple-400" />
+                  <span className="text-sm text-purple-300">Views this week</span>
+                </div>
+                <div className="text-3xl font-bold text-white">1,247</div>
+              </div>
+              <div className="text-center">
+                <div className="flex items-center justify-center gap-2 mb-2">
+                  <Send className="w-5 h-5 text-green-400" />
+                  <span className="text-sm text-purple-300">Requests received</span>
+                </div>
+                <div className="text-3xl font-bold text-white">23</div>
+              </div>
+              <div className="text-center">
+                <div className="flex items-center justify-center gap-2 mb-2">
+                  <BarChart3 className="w-5 h-5 text-purple-400" />
+                  <span className="text-sm text-purple-300">Conversion rate</span>
+                </div>
+                <div className="text-3xl font-bold text-white">1.8%</div>
+              </div>
+            </div>
+            <p className="text-center text-sm text-purple-300/70">
+              This link actually works. Track performance in real-time when you sign up.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* 4️⃣ Collaboration Requests (Primary Feed) - Demo */}
+      <section className="py-20 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-bold mb-4">
+              Incoming Brand Requests
+            </h2>
+            <p className="text-xl text-purple-200 max-w-2xl mx-auto">
+              Brands submit structured requests via your link. Review, accept, or counter — all in one place.
+            </p>
+          </div>
+          
+          <div className="max-w-3xl mx-auto space-y-4">
+            {/* Demo Request Cards */}
+            {[
+              {
+                brand: "TechBrand Co.",
+                budget: "₹50,000",
+                deliverables: "3 Instagram Reels + 2 Stories",
+                status: "pending"
+              },
+              {
+                brand: "Fashion Label",
+                budget: "Barter",
+                deliverables: "Product shoot + 5 posts",
+                status: "pending"
+              }
+            ].map((request, index) => (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: index * 0.1 }}
+                viewport={{ once: true }}
+                className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/10"
+              >
+                <div className="flex items-start justify-between gap-4 mb-4">
+                  <div className="flex-1">
+                    <h3 className="text-xl font-bold mb-2">{request.brand}</h3>
+                    <div className="space-y-1 text-purple-200">
+                      <p className="text-sm"><span className="font-semibold">Budget:</span> {request.budget}</p>
+                      <p className="text-sm"><span className="font-semibold">Deliverables:</span> {request.deliverables}</p>
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <button className="px-4 py-2 bg-green-500/20 hover:bg-green-500/30 border border-green-500/30 text-green-300 rounded-lg text-sm font-medium">
+                      Accept
+                    </button>
+                    <button className="px-4 py-2 bg-white/10 hover:bg-white/20 border border-white/20 text-white rounded-lg text-sm font-medium">
+                      Counter
+                    </button>
+                    <button className="px-4 py-2 bg-red-500/20 hover:bg-red-500/30 border border-red-500/30 text-red-300 rounded-lg text-sm font-medium">
+                      Decline
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+            
+            <div className="text-center pt-4">
+              <Link
+                to="/signup"
+                className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 rounded-lg font-semibold text-white transition-all"
+              >
+                Get Your Collab Link
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
+            {/* Stats Section */}
       <section className="py-16 px-4 sm:px-6 lg:px-8 bg-white/5 backdrop-blur-sm">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-8">
@@ -708,47 +907,6 @@ const HomePage = () => {
                 </div>
                 <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
                 <p className="text-purple-200">{feature.description}</p>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* How It Works */}
-      <section id="how-it-works" className="py-20 px-4 sm:px-6 lg:px-8 bg-white/5 backdrop-blur-sm">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold mb-4">
-              How CreatorArmour Protects You
-            </h2>
-            <p className="text-xl text-purple-200 max-w-2xl mx-auto">
-              Join thousands of creators protecting their work and growing their income
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-8">
-            {howItWorks.map((step, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, x: -20 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.5, delay: index * 0.2 }}
-                viewport={{ once: true }}
-                className="relative"
-              >
-                <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/10 h-full">
-                  <div className="absolute -top-4 -left-4 w-12 h-12 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full flex items-center justify-center font-bold text-xl shadow-lg">
-                    {step.step}
-                  </div>
-                  <step.icon className="w-12 h-12 text-purple-400 mb-4 mt-4" />
-                  <h3 className="text-2xl font-semibold mb-3">{step.title}</h3>
-                  <p className="text-purple-200">{step.description}</p>
-                </div>
-                {index < howItWorks.length - 1 && (
-                  <div className="hidden md:block absolute top-1/2 -right-4 transform -translate-y-1/2 z-10">
-                    <ChevronRight className="w-8 h-8 text-purple-400" />
-                  </div>
-                )}
               </motion.div>
             ))}
           </div>

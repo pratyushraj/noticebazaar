@@ -9,6 +9,7 @@ import Signup from "./pages/Signup";
 import ResetPassword from "./pages/ResetPassword";
 import MarketingHome from "./pages/MarketingHome";
 import HomePage from "./pages/HomePage";
+import LandingPage from "./pages/LandingPage";
 import AdminDashboard from "./pages/AdminDashboard";
 import CADashboard from "./pages/CADashboard";
 import CreatorDashboard from "./pages/CreatorDashboard";
@@ -236,8 +237,8 @@ const App = () => {
                 <SessionContextProvider>
                   <SidebarProvider>
                   <Routes>
-              {/* Root route: Renders HomePage. ProtectedRoute handles redirection if authenticated. */}
-              <Route path="/" element={<ProtectedRoute><HomePage /></ProtectedRoute>} />
+              {/* Root route: Public marketing landing page. LandingPage handles redirecting logged-in users. */}
+              <Route path="/" element={<LandingPage />} />
               <Route path="/old-home" element={<ProtectedRoute><MarketingHome /></ProtectedRoute>} />
               
               {/* Auth routes: Accessible directly, not protected */}

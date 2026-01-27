@@ -63,3 +63,4 @@ curl -X GET "http://localhost:3001/api/influencers/find?hashtags=fitness&keyword
 
 **Run the migration first**, then test again. The timeout is likely because the database query is waiting for a table that doesn't exist yet.
 
+
