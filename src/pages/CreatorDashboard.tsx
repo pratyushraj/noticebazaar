@@ -8,6 +8,7 @@ import { useSignOut } from '@/lib/hooks/useAuth';
 import { useSession } from '@/contexts/SessionContext';
 import { useBrandDeals, getDealStageFromStatus, STAGE_TO_PROGRESS } from '@/lib/hooks/useBrandDeals';
 import { usePartnerStats } from '@/lib/hooks/usePartnerProgram';
+import { supabase } from '@/integrations/supabase/client';
 import { logger } from '@/lib/utils/logger';
 import { isCreatorPro } from '@/lib/subscription';
 import { getInitials } from '@/lib/utils/avatar';
@@ -57,6 +58,37 @@ const CreatorDashboard = () => {
   const [showTutorial, setShowTutorial] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
   const [isPro, setIsPro] = useState(false);
+  const [pendingCollabRequestsCount, setPendingCollabRequestsCount] = useState(0);
+  const [collabRequestsPreview, setCollabRequestsPreview] = useState<Array<{ id: string; brand_name: string; collab_type?: string; budget_range?: string; exact_budget?: number; created_at: string }>>([]);
+
+  // Pending collaboration requests (count + preview for Brand Requests inbox)
+  useEffect(() => {
+    let cancelled = false;
+    supabase.auth.getSession().then(({ data: { session: sess } }) => {
+      if (cancelled || !sess?.access_token) return;
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+      fetch(`${apiUrl}/api/collab-requests`, {
+        headers: { 'Authorization': `Bearer ${sess.access_token}`, 'Content-Type': 'application/json' },
+      })
+        .then((res) => (res.ok ? res.json() : { success: false, requests: [] }))
+        .then((data) => {
+          if (cancelled) return;
+          const list = Array.isArray(data?.requests) ? data.requests : [];
+          const pending = list.filter((r: { status?: string }) => r.status === 'pending');
+          setPendingCollabRequestsCount(pending.length);
+          setCollabRequestsPreview(pending.slice(0, 3).map((r: any) => ({
+            id: r.id,
+            brand_name: r.brand_name || 'Brand',
+            collab_type: r.collab_type,
+            budget_range: r.budget_range,
+            exact_budget: r.exact_budget,
+            created_at: r.created_at || '',
+          })));
+        })
+        .catch(() => { if (!cancelled) { setPendingCollabRequestsCount(0); setCollabRequestsPreview([]); } });
+    });
+    return () => { cancelled = true; };
+  }, [session?.user?.id]);
 
   // Check for contextual tips to avoid overlap
   const { currentTip } = useContextualTips('dashboard');
@@ -284,6 +316,56 @@ const CreatorDashboard = () => {
     payoutDate: calculatedStats.payoutDate,
     protectionScore: calculatedStats.protectionScore,
   };
+
+  const hasPaymentOrDeliverableOverdue = useMemo(() => {
+    if (!Array.isArray(brandDeals) || brandDeals.length === 0) return false;
+    const now = new Date();
+    now.setHours(0, 0, 0, 0);
+    return brandDeals.some((deal) => {
+      if (deal.payment_received_date) return false;
+      if (deal.payment_expected_date) {
+        const d = new Date(deal.payment_expected_date);
+        d.setHours(0, 0, 0, 0);
+        if (d < now) return true;
+      }
+      if (deal.due_date) {
+        const d = new Date(deal.due_date);
+        d.setHours(0, 0, 0, 0);
+        if (d < now) return true;
+      }
+      return false;
+    });
+  }, [brandDeals]);
+
+  const attentionItems = useMemo(() => {
+    if (!Array.isArray(brandDeals) || brandDeals.length === 0) return [];
+    const now = new Date();
+    now.setHours(0, 0, 0, 0);
+    return brandDeals
+      .filter((deal) => {
+        if (deal.payment_received_date) return false;
+        const paymentOverdue = deal.payment_expected_date && new Date(deal.payment_expected_date) < now;
+        const deliverableOverdue = deal.due_date && new Date(deal.due_date) < now;
+        return paymentOverdue || deliverableOverdue;
+      })
+      .sort((a, b) => (b.deal_amount || 0) - (a.deal_amount || 0))
+      .slice(0, 2)
+      .map((deal) => {
+        const payDue = deal.payment_expected_date ? new Date(deal.payment_expected_date) : null;
+        const delDue = deal.due_date ? new Date(deal.due_date) : null;
+        const payOverdue = payDue && payDue < now && !deal.payment_received_date;
+        const delOverdue = delDue && delDue < now;
+        const label = payOverdue ? 'payment overdue' : delOverdue ? 'deliverable overdue' : 'action needed';
+        const dueDate = (payOverdue ? payDue : delDue)!;
+        return {
+          id: deal.id,
+          brand_name: deal.brand_name || 'Brand',
+          amount: deal.deal_amount || 0,
+          label,
+          dueDate: dueDate.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }),
+        };
+      });
+  }, [brandDeals]);
 
   const earningsProgress = stats.goal > 0 ? (stats.earnings / stats.goal) * 100 : 0;
   
@@ -1072,63 +1154,162 @@ const CreatorDashboard = () => {
                     {userData.name}!
                   </span> 👋
                 </h1>
-                {stats.activeDeals === 0 && (
-                  <p className={cn(typography.bodySmall, "mt-2 mb-2 text-purple-300/70")}>
-                    Your next step: protect a deal by uploading a contract or requesting details from a brand.
-                  </p>
-                )}
-                {stats.activeDeals > 0 && (
-                  <p className={cn(typography.body, "mt-2 mb-3 leading-relaxed text-purple-200")}>
-                    We're protecting your deals today.
-                  </p>
-                )}
-                {/* Compact Summary Strip - Improved color hierarchy */}
-                <div className={`mt-3 flex items-center gap-1.5 overflow-x-auto ${typography.bodySmall} [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]`}>
-                  <span className="px-2 py-0.5 bg-green-500/25 text-green-300 rounded-full flex items-center gap-1 font-semibold whitespace-nowrap text-[10px] sm:text-xs">
-                    All clear
+                {/* Status Strip — single line, inbox-like. "What do I need to do right now?" */}
+                <div className={cn("mt-3 flex items-center gap-1.5 overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]", typography.bodySmall)}>
+                  {hasPaymentOrDeliverableOverdue || pendingCollabRequestsCount > 0 ? (
+                    <span className="px-2 py-0.5 bg-red-500/25 text-red-300 rounded-full flex items-center gap-1 font-semibold whitespace-nowrap text-[10px] sm:text-xs">
+                      Action needed
+                    </span>
+                  ) : (
+                    <span className="px-2 py-0.5 bg-green-500/25 text-green-300 rounded-full flex items-center gap-1 font-semibold whitespace-nowrap text-[10px] sm:text-xs">
+                      All clear
+                    </span>
+                  )}
+                  <span className="text-purple-300/40 flex-shrink-0">•</span>
+                  <span className="px-2 py-0.5 bg-white/5 text-white/60 rounded-full flex items-center gap-1 font-medium whitespace-nowrap text-[10px] sm:text-xs">
+                    {stats.activeDeals} active deal{stats.activeDeals === 1 ? '' : 's'}
                   </span>
                   <span className="text-purple-300/40 flex-shrink-0">•</span>
                   <span className="px-2 py-0.5 bg-white/5 text-white/60 rounded-full flex items-center gap-1 font-medium whitespace-nowrap text-[10px] sm:text-xs">
-                    {stats.activeDeals} deal{stats.activeDeals === 1 ? '' : 's'} being monitored
-                  </span>
-                  <span className="text-purple-300/40 flex-shrink-0">•</span>
-                  <span className="px-2 py-0.5 bg-white/5 text-white/60 rounded-full flex items-center gap-1 font-medium whitespace-nowrap text-[10px] sm:text-xs">
-                    {stats.pendingPayments === 0 ? "No money at risk yet" : `₹${Math.round(stats.pendingPayments).toLocaleString('en-IN')} at risk`}
+                    {stats.pendingPayments === 0 ? "₹0 at risk" : `₹${Math.round(stats.pendingPayments).toLocaleString('en-IN')} at risk`}
                   </span>
                 </div>
               </div>
 
-              {/* Primary CTA - Attached to hero section - Always visible */}
-              <div className="mt-4">
-                <button
-                  onClick={() => {
-                    triggerHaptic(HapticPatterns.medium);
-                    navigate('/contract-upload');
-                  }}
-                  className={cn(
-                    "w-full",
-                    "bg-gradient-to-r from-purple-600 to-pink-600",
-                    "hover:from-purple-700 hover:to-pink-700",
-                    "active:scale-95",
-                    "text-white font-semibold",
-                    "px-6 py-3.5",
-                    radius.lg,
-                    "flex items-center justify-center gap-2",
-                    "transition-all duration-200",
-                    "shadow-lg shadow-purple-500/20",
-                    "min-h-[48px]",
-                    "relative z-10",
-                    "opacity-100"
-                  )}
-                  style={{ opacity: 1 }}
-                >
-                  <Shield className={iconSizes.md} />
-                  Protect a New Deal
-                </button>
-                <p className="text-[10px] sm:text-[11px] text-purple-300/50 text-center mt-1.5 hidden sm:block">
-                  Upload a contract or let the brand share details
-                </p>
+              {/* Primary CTA - Dynamic by user state, immediately below hero/summary */}
+              {(() => {
+                const ctaConfig =
+                  pendingCollabRequestsCount > 0
+                    ? { label: 'Review Brand Requests', to: '/collab-requests', urgency: 'green' as const }
+                    : hasPaymentOrDeliverableOverdue
+                    ? { label: 'Resolve Payment Issue', to: '/creator-payments', urgency: 'red' as const }
+                    : stats.activeDeals > 0
+                    ? { label: 'View Active Collaborations', to: '/creator-contracts', urgency: 'amber' as const }
+                    : { label: 'Share Your Collab Link', to: '/creator-collab', urgency: 'green' as const };
+                const urgencyStyles = {
+                  green: 'bg-green-600 hover:bg-green-700 shadow-lg shadow-green-500/25',
+                  amber: 'bg-amber-600 hover:bg-amber-700 shadow-lg shadow-amber-500/25',
+                  red: 'bg-red-600 hover:bg-red-700 shadow-lg shadow-red-500/25',
+                };
+                return (
+                  <div className="mt-4" data-section="home-primary-cta">
+                    <button
+                      onClick={() => {
+                        triggerHaptic(HapticPatterns.medium);
+                        navigate(ctaConfig.to);
+                      }}
+                      className={cn(
+                        'w-full text-white font-semibold px-6 py-3.5 rounded-xl',
+                        'flex items-center justify-center gap-2 transition-all duration-200',
+                        'min-h-[48px] relative z-10 active:scale-[0.98]',
+                        urgencyStyles[ctaConfig.urgency]
+                      )}
+                    >
+                      {ctaConfig.urgency === 'green' && ctaConfig.label.includes('Review') && <Briefcase className={iconSizes.md} />}
+                      {ctaConfig.urgency === 'red' && <AlertCircle className={iconSizes.md} />}
+                      {ctaConfig.urgency === 'amber' && <Briefcase className={iconSizes.md} />}
+                      {ctaConfig.urgency === 'green' && ctaConfig.label.includes('Share') && <Link2 className={iconSizes.md} />}
+                      {ctaConfig.label}
+                    </button>
+                  </div>
+                );
+              })()}
+            </div>
+
+            {/* What Needs Attention — max 2 cards, only when overdue/urgent */}
+            {attentionItems.length > 0 && (
+              <div className={cn("px-4 md:px-0 space-y-3", spacing.loose)}>
+                <h2 className={cn(sectionHeader.title, "text-base font-semibold")}>Action Required</h2>
+                <div className="space-y-2">
+                  {attentionItems.map((item) => (
+                    <BaseCard
+                      key={item.id}
+                      variant="tertiary"
+                      className={cn(
+                        "p-4 border-red-500/30 bg-red-500/5 cursor-pointer",
+                        "flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"
+                      )}
+                      onClick={() => { triggerHaptic(HapticPatterns.light); navigate(`/creator-contracts/${item.id}`); }}
+                    >
+                      <div>
+                        <p className="font-semibold text-white">{item.brand_name}</p>
+                        <p className="text-sm text-red-300/90">₹{item.amount.toLocaleString('en-IN')} {item.label}</p>
+                        <p className="text-xs text-purple-300/70 mt-0.5">Due: {item.dueDate}</p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={(e) => { e.stopPropagation(); triggerHaptic(HapticPatterns.light); navigate(`/creator-contracts/${item.id}`); }}
+                        className={cn("self-start sm:self-center", sectionHeader.action)}
+                      >
+                        View Deal
+                      </button>
+                    </BaseCard>
+                  ))}
+                </div>
               </div>
+            )}
+
+            {/* Brand Requests — Collaboration Inbox (core section) */}
+            <div className={cn("px-4 md:px-0", spacing.loose)}>
+              <div className={sectionHeader.base}>
+                <h2 className={sectionHeader.title}>Brand Requests</h2>
+                {pendingCollabRequestsCount > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => { triggerHaptic(HapticPatterns.light); navigate('/collab-requests'); }}
+                    className={sectionHeader.action}
+                  >
+                    Review all →
+                  </button>
+                )}
+              </div>
+              {pendingCollabRequestsCount === 0 ? (
+                <BaseCard variant="tertiary" className={cn(spacing.cardPadding.secondary, "text-center")}>
+                  <p className={typography.bodySmall}>No brand requests yet</p>
+                  <p className={cn(typography.caption, "mt-1 text-purple-300/60")}>Share your collab link to receive requests.</p>
+                  <motion.button
+                    type="button"
+                    onClick={() => { triggerHaptic(HapticPatterns.light); navigate('/creator-collab'); }}
+                    whileTap={animations.microTap}
+                    className={cn("mt-3", sectionHeader.action)}
+                  >
+                    Share your collab link →
+                  </motion.button>
+                </BaseCard>
+              ) : (
+                <div className="space-y-2">
+                  {collabRequestsPreview.map((r) => {
+                    const budget = r.exact_budget ? `₹${r.exact_budget.toLocaleString('en-IN')}` : r.budget_range || '—';
+                    const typeLabel = r.collab_type === 'paid' ? 'Paid' : r.collab_type === 'barter' ? 'Barter' : 'Both';
+                    const received = r.created_at ? (() => {
+                      const d = new Date(r.created_at);
+                      const diff = Math.floor((Date.now() - d.getTime()) / (1000 * 60 * 60 * 24));
+                      return diff === 0 ? 'Today' : diff === 1 ? 'Yesterday' : `${diff} days ago`;
+                    })() : '';
+                    return (
+                      <BaseCard
+                        key={r.id}
+                        variant="tertiary"
+                        className={cn("p-4 cursor-pointer flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3", animations.cardHover)}
+                        onClick={() => { triggerHaptic(HapticPatterns.light); navigate('/collab-requests'); }}
+                      >
+                        <div className="min-w-0">
+                          <p className="font-semibold text-white truncate">{r.brand_name}</p>
+                          <p className="text-sm text-purple-200/80">{budget} · {typeLabel}</p>
+                          <p className="text-xs text-purple-300/70 mt-0.5">Received {received}</p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={(e) => { e.stopPropagation(); triggerHaptic(HapticPatterns.light); navigate('/collab-requests'); }}
+                          className={cn("self-start sm:self-center", sectionHeader.action)}
+                        >
+                          Review
+                        </button>
+                      </BaseCard>
+                    );
+                  })}
+                </div>
+              )}
             </div>
 
             {/* Desktop 2-Column Layout (≥1024px) */}
@@ -1136,10 +1317,10 @@ const CreatorDashboard = () => {
               {/* LEFT COLUMN - Primary Information */}
               <div className="space-y-6 lg:space-y-4">
 
-                {/* Active Deals Preview - Enhanced spacing (Moved to top of left column) */}
+                {/* Active Collaborations (accepted deals only) */}
                 <div className={spacing.loose}>
                   <div className={sectionHeader.base}>
-                    <h2 className={sectionHeader.title}>Active Deals Under Protection</h2>
+                    <h2 className={sectionHeader.title}>Active Collaborations</h2>
                     <button 
                       onClick={() => {
                         triggerHaptic(HapticPatterns.light);
@@ -1155,17 +1336,17 @@ const CreatorDashboard = () => {
                       {/* Spotlight */}
                       <div className={cn(vision.spotlight.base, "opacity-20")} />
                       <Briefcase className={cn(iconSizes.xl, "text-purple-400/50 mx-auto mb-3")} />
-                      <p className={typography.bodySmall}>No Active Deals Yet</p>
-                      <p className={cn(typography.caption, "mt-1 text-purple-300/60")}>Deals appear here only after a contract is signed.</p>
+                      <p className={typography.bodySmall}>No active collaborations yet</p>
+                      <p className={cn(typography.caption, "mt-1 text-purple-300/60")}>Once accepted via Brand Requests, Creator Armour protects you here.</p>
                       <motion.button
                         onClick={() => {
                           triggerHaptic(HapticPatterns.light);
-                          navigate('/contract-upload');
+                          navigate('/creator-collab');
                         }}
                         whileTap={animations.microTap}
                         className={cn("mt-4", sectionHeader.action)}
                       >
-                        Protect a New Deal →
+                        Share your collab link →
                       </motion.button>
                     </BaseCard>
                   ) : (
@@ -1266,14 +1447,82 @@ const CreatorDashboard = () => {
                           {/* 6. Deliverables progress (optional) */}
                           {deal.deliverablesProgress && deal.deliverablesProgress.total > 0 && (
                             <div className="mt-1.5 text-xs text-white/50 opacity-70">
-                              {deal.deliverablesProgress.delivered} of {deal.deliverablesProgress.total} delivered
+                              Deliverables: {deal.deliverablesProgress.delivered}/{deal.deliverablesProgress.total}
                             </div>
                           )}
+                          {/* 7. Open Deal CTA */}
+                          <div className="mt-3 pt-2 border-t border-white/10">
+                            <span className={cn(sectionHeader.action, "text-xs font-medium")}>Open Deal</span>
+                          </div>
                         </BaseCard>
                       </motion.div>
                       ))}
                     </div>
                   )}
+                </div>
+
+                {/* Your Collab Link — below inbox, quiet but powerful */}
+                <div className={spacing.loose}>
+                  <h2 className={cn(sectionHeader.title, "text-base font-semibold mb-2")}>Your Collab Link</h2>
+                  <p className={cn(typography.caption, "text-purple-300/80 mb-3")}>
+                    All brand deals start here. Contracts & payments auto-protected.
+                  </p>
+                  {(profile?.instagram_handle || profile?.username) ? (
+                    <div className="flex flex-wrap items-center gap-2">
+                      <code className="flex-1 min-w-0 truncate text-sm text-purple-200 bg-white/5 px-3 py-2 rounded-lg border border-white/10">
+                        creatorarmour.com/collab/{profile?.instagram_handle || profile?.username}
+                      </code>
+                      <div className="flex gap-2">
+                        <motion.button
+                          type="button"
+                          whileTap={animations.microTap}
+                          onClick={() => {
+                            const link = `${typeof window !== 'undefined' ? window.location.origin : ''}/collab/${profile?.instagram_handle || profile?.username}`;
+                            navigator.clipboard?.writeText(link);
+                            toast.success('Link copied');
+                            triggerHaptic(HapticPatterns.light);
+                          }}
+                          className={cn("px-3 py-2 rounded-lg text-sm font-medium", buttons.primary)}
+                        >
+                          Copy
+                        </motion.button>
+                        <motion.button
+                          type="button"
+                          whileTap={animations.microTap}
+                          onClick={() => { triggerHaptic(HapticPatterns.light); window.open(`/collab/${profile?.instagram_handle || profile?.username}`, '_blank'); }}
+                          className={cn("px-3 py-2 rounded-lg text-sm font-medium bg-white/10 hover:bg-white/15 border border-white/20")}
+                        >
+                          Preview
+                        </motion.button>
+                      </div>
+                    </div>
+                  ) : (
+                    <p className={cn(typography.caption, "text-purple-300/60")}>Complete your profile to get your link.</p>
+                  )}
+                </div>
+
+                {/* Collab Link Performance — collapsed by default, secondary */}
+                <div className={spacing.loose}>
+                  <details className="group">
+                    <summary className={cn("list-none flex items-center justify-between cursor-pointer py-2 text-sm font-medium text-purple-200 hover:text-white transition-colors", sectionHeader.action)}>
+                      <span className="flex items-center gap-2">
+                        <BarChart3 className="w-4 h-4 text-purple-400" />
+                        Collab Link Performance
+                      </span>
+                      <ChevronRight className="w-4 h-4 transition-transform group-open:rotate-90" />
+                    </summary>
+                    <div className="mt-2 p-4 bg-white/5 rounded-lg border border-white/10 text-sm">
+                      <p className="text-purple-300/80 mb-2">Requests: {pendingCollabRequestsCount} pending</p>
+                      <p className="text-purple-300/60 text-xs">Acceptance rate & avg response time on Collab tab.</p>
+                      <button
+                        type="button"
+                        onClick={() => { triggerHaptic(HapticPatterns.light); navigate('/creator-collab'); }}
+                        className={cn("mt-2 text-xs", sectionHeader.action)}
+                      >
+                        View full analytics →
+                      </button>
+                    </div>
+                  </details>
                 </div>
 
                 {/* Section Separator */}

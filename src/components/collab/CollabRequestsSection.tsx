@@ -12,7 +12,8 @@ import {
   Loader2,
   Copy,
   ExternalLink,
-  Lightbulb
+  Lightbulb,
+  DollarSign
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useSession } from '@/contexts/SessionContext';
@@ -290,38 +291,41 @@ const CollabRequestsSection = () => {
   return (
     <div className="space-y-6">
       {/* Header with Collab Link */}
-      <div className="flex items-center justify-between flex-wrap gap-4">
+      <div className="flex flex-col gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-white mb-2" data-section="collab-requests">Collaboration Requests</h2>
-          <p className="text-purple-200 text-sm">
+          <h2 className="text-2xl font-bold text-white mb-2" data-section="collab-requests">Incoming Brand Requests</h2>
+          <p className="text-purple-200 text-sm mb-1">
             Brands submit collaboration requests via your public link
           </p>
+          <p className="text-purple-300/80 text-xs font-medium">
+            Respond within 48 hours to improve acceptance rate
+          </p>
         </div>
-        <div className="flex items-center gap-3">
+        {/* Public collab link — clear, scannable */}
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3 flex-wrap">
           {(() => {
-            // Use Instagram handle first, then fallback to username (same logic as CreatorProfile)
             const usernameForLink = profile?.instagram_handle || profile?.username;
             const hasUsername = usernameForLink && usernameForLink.trim() !== '';
-            
             if (!hasUsername) return null;
-            
             return (
-            <div className="flex items-center gap-2 bg-white/5 px-4 py-2 rounded-lg border border-white/10">
-              <code className="text-sm text-purple-200">
-                  creatorarmour.com/collab/{usernameForLink}
-              </code>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={copyCollabLink}
-                className="h-8 w-8 p-0 text-purple-300 hover:text-white"
-              >
-                <Copy className="h-4 w-4" />
-              </Button>
-            </div>
-            );
-          })()}
-          <Button
+              <>
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs text-purple-300/70 mb-1.5 font-medium">Your public collab link — one link, share everywhere</p>
+                  <div className="flex items-center gap-2 bg-white/5 px-4 py-2.5 rounded-lg border border-white/10">
+                    <code className="text-sm text-purple-100 truncate">
+                      creatorarmour.com/collab/{usernameForLink}
+                    </code>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={copyCollabLink}
+                      className="h-8 w-8 p-0 text-purple-300 hover:text-white flex-shrink-0"
+                    >
+                      <Copy className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+                <Button
             variant="outline"
             onClick={() => {
               const usernameForLink = profile?.instagram_handle || profile?.username;
@@ -331,11 +335,14 @@ const CollabRequestsSection = () => {
                 toast.error('Username not set. Please update your profile.');
               }
             }}
-            className="border-white/20 text-white hover:bg-white/10"
+            className="border-white/20 text-white hover:bg-white/10 flex-shrink-0"
           >
             <ExternalLink className="h-4 w-4 mr-2" />
             View Link
           </Button>
+              </>
+            );
+          })()}
         </div>
       </div>
 
@@ -354,11 +361,17 @@ const CollabRequestsSection = () => {
             <div className="text-center mb-6">
             <Briefcase className="h-12 w-12 text-purple-400 mx-auto mb-4 opacity-50" />
             <h3 className="text-lg font-semibold text-white mb-2">
-                No brand requests yet — share this link in your bio to start receiving paid collaborations.
+                No brand requests yet — add your collab link to your bio to get started
             </h3>
-              <p className="text-sm text-purple-200 mb-6 max-w-md mx-auto leading-relaxed">
-                Brands submit collaboration requests via your public collab link. Requests through this link are logged, timestamped, and legally protected by Creator Armour.
+              <p className="text-sm text-purple-200/80 mb-4 max-w-md mx-auto leading-relaxed">
+                One secure link replaces back-and-forth DMs. Share it; brands submit requests there.
               </p>
+              <div className="inline-block rounded-lg bg-purple-500/15 border border-purple-400/25 px-4 py-3 max-w-md">
+                <p className="text-sm text-purple-100 font-medium mb-1">Legally protected from day one</p>
+                <p className="text-xs text-purple-200/80 leading-relaxed">
+                  Every request through this link is logged, timestamped, and legally protected by Creator Armour. No loose DMs — one clear record.
+                </p>
+              </div>
             </div>
 
             {/* Action Checklist */}
@@ -413,8 +426,8 @@ const CollabRequestsSection = () => {
                     variant="outline"
                     className="border-purple-400/30 text-purple-300/80 hover:bg-purple-500/10 hover:text-purple-200 w-full sm:w-auto"
                   >
-                    <ExternalLink className="h-4 w-4 mr-2" />
-                    👀 Preview how brands see this link
+                    <ExternalLink className="h-4 w-4 mr-2 flex-shrink-0" />
+                    Open as a brand would — see the form and fields
                   </Button>
                 </div>
               );
@@ -450,43 +463,59 @@ const CollabRequestsSection = () => {
             {/* Preview of first request */}
             {pendingRequests[0] && (
               <div className="mb-4 p-4 bg-white/5 rounded-lg border border-white/10">
-                <div className="flex items-start justify-between mb-2">
-                  <div>
-                    <h4 className="text-base font-semibold text-white">{pendingRequests[0].brand_name}</h4>
+                <div className="flex items-start justify-between mb-3">
+                  <div className="flex-1 min-w-0">
+                    <h4 className="text-base font-semibold text-white mb-1">{pendingRequests[0].brand_name}</h4>
                     <p className="text-xs text-purple-300/70">{pendingRequests[0].brand_email}</p>
                   </div>
+                </div>
+                
+                {/* Quick Scan: Budget, Type, Deadline - Visually Grouped */}
+                <div className="flex flex-wrap items-center gap-2 mb-3 p-2.5 bg-white/5 rounded-lg border border-white/10">
+                  <div className="flex items-center gap-1.5">
+                    <DollarSign className="h-3.5 w-3.5 text-green-400" />
+                    <span className="text-xs font-semibold text-white">{formatBudget(pendingRequests[0])}</span>
+                  </div>
+                  <span className="text-purple-400/50">•</span>
                   <Badge
                     className={
                       pendingRequests[0].collab_type === 'paid'
-                        ? 'bg-green-500/20 text-green-300 border-green-500/30'
+                        ? 'bg-green-500/20 text-green-300 border-green-500/30 text-xs px-2 py-0.5'
                         : pendingRequests[0].collab_type === 'barter'
-                        ? 'bg-blue-500/20 text-blue-300 border-blue-500/30'
-                        : 'bg-purple-500/20 text-purple-300 border-purple-500/30'
+                        ? 'bg-blue-500/20 text-blue-300 border-blue-500/30 text-xs px-2 py-0.5'
+                        : 'bg-purple-500/20 text-purple-300 border-purple-500/30 text-xs px-2 py-0.5'
                     }
                   >
                     {pendingRequests[0].collab_type === 'paid' ? 'Paid' : pendingRequests[0].collab_type === 'barter' ? 'Barter' : 'Both'}
                   </Badge>
+                  {pendingRequests[0].deadline && (
+                    <>
+                      <span className="text-purple-400/50">•</span>
+                      <div className="flex items-center gap-1.5">
+                        <Clock className="h-3.5 w-3.5 text-purple-400" />
+                        <span className="text-xs text-purple-200">{new Date(pendingRequests[0].deadline).toLocaleDateString()}</span>
+                      </div>
+                    </>
+                  )}
                 </div>
+                
                 <div className="space-y-1.5 text-sm mb-3">
-                  <div className="flex items-center gap-2">
-                    <span className="text-purple-300/70">Budget:</span>
-                    <span className="text-white font-medium">{formatBudget(pendingRequests[0])}</span>
-                  </div>
                   <div className="flex items-center gap-2">
                     <span className="text-purple-300/70">Deliverables:</span>
                     <span className="text-white">{parseDeliverables(pendingRequests[0].deliverables).slice(0, 2).join(', ')}{parseDeliverables(pendingRequests[0].deliverables).length > 2 ? '...' : ''}</span>
                   </div>
-                  {pendingRequests[0].deadline && (
-                    <div className="flex items-center gap-2">
-                      <Clock className="h-3 w-3 text-purple-300/70" />
-                      <span className="text-purple-300/70">Deadline:</span>
-                      <span className="text-white">{new Date(pendingRequests[0].deadline).toLocaleDateString()}</span>
-                    </div>
-                  )}
                 </div>
                 <p className="text-xs text-purple-200/70 line-clamp-2 mb-3">
                   {pendingRequests[0].campaign_description}
                 </p>
+                
+                {/* Trust Line */}
+                <div className="mb-3 pt-3 border-t border-white/10">
+                  <p className="text-xs text-purple-300/70 text-center leading-relaxed">
+                    This collaboration will be legally protected if accepted via Creator Armour
+                  </p>
+                </div>
+                
                 <div className="text-xs text-purple-400 flex items-center gap-1">
                   <Clock className="h-3 w-3" />
                   {formatRelativeTime(pendingRequests[0].created_at)}
@@ -500,7 +529,7 @@ const CollabRequestsSection = () => {
               className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white"
             >
               <MessageSquare className="h-4 w-4 mr-2" />
-              View All Requests
+              Review Requests ({pendingRequests.length})
             </Button>
           </CardContent>
         </Card>

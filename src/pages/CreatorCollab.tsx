@@ -25,30 +25,34 @@ const CreatorCollab = () => {
         <div className="mb-8">
           <h1 className={cn(typography.h1, "mb-2")}>Collaboration Tools</h1>
           <p className={cn(typography.body, "text-purple-200/80")}>
-            Let brands send you structured collaboration requests instead of DMs.
+            Replace brand DMs with structured collaboration requests.
           </p>
         </div>
 
         {/* Collaboration Tools Cards */}
         <div className="flex flex-col md:grid md:grid-cols-3 gap-4 mb-8">
-          {/* Card 1: Collab Link - Full width on mobile */}
-          <BaseCard variant="tertiary" className="p-4 md:p-6 relative overflow-hidden w-full md:col-span-1">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-purple-500/10 rounded-full blur-3xl" />
+          {/* Card 1: Collab Link - Hero Card (Visually Dominant for first-time creators) */}
+          <BaseCard variant="tertiary" className="p-5 md:p-7 relative overflow-hidden w-full md:col-span-1 min-h-[200px] md:min-h-[220px] border-2 border-purple-400/50 ring-2 ring-purple-400/25 shadow-xl shadow-purple-500/25">
+            <div className="absolute top-0 right-0 w-40 h-40 bg-purple-500/20 rounded-full blur-3xl" />
             <div className="relative z-10">
               <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-3 mb-4">
                 <div className="flex items-start gap-3 flex-1 min-w-0">
-                  <div className="w-10 h-10 md:w-12 md:h-12 rounded-lg bg-purple-500/20 flex items-center justify-center flex-shrink-0">
-                    <Link2 className="w-5 h-5 md:w-6 md:h-6 text-purple-400" />
+                  <div className="w-12 h-12 md:w-14 md:h-14 rounded-lg bg-purple-500/30 flex items-center justify-center flex-shrink-0 ring-2 ring-purple-400/30">
+                    <Link2 className="w-6 h-6 md:w-7 md:h-7 text-purple-300" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-start justify-between gap-2 mb-1">
-                      <h3 className={cn(typography.h4, "font-semibold")}>Collab Link</h3>
-                      <span className="px-2 py-0.5 md:py-1 bg-purple-500/20 text-purple-300 text-[10px] md:text-xs font-medium rounded-full whitespace-nowrap flex-shrink-0">
+                    <div className="flex items-start justify-between gap-2 mb-2">
+                      <h3 className={cn(typography.h4, "font-bold text-white")}>Collab Link</h3>
+                      <span className="px-2.5 py-1 bg-gradient-to-r from-purple-500/30 to-pink-500/30 text-purple-200 text-[10px] md:text-xs font-semibold rounded-full whitespace-nowrap flex-shrink-0 border border-purple-400/40">
                         Recommended
                       </span>
                     </div>
-                    <p className={cn(typography.caption, "text-purple-300/70 leading-relaxed")}>
+                    <p className={cn(typography.caption, "text-purple-200/90 leading-relaxed mb-3")}>
                       Let brands send you structured collaboration requests instead of DMs.
+                    </p>
+                    {/* Helper microcopy */}
+                    <p className={cn(typography.caption, "text-purple-300/70 text-xs leading-relaxed")}>
+                      This replaces Instagram & WhatsApp DMs and protects you legally.
                     </p>
                   </div>
                 </div>
@@ -68,13 +72,13 @@ const CreatorCollab = () => {
                   }}
                   whileTap={animations.microTap}
                   className={cn(
-                    "flex-1 px-4 py-2.5 bg-purple-600/20 hover:bg-purple-600/30",
-                    "border border-purple-500/30 hover:border-purple-500/50",
+                    "flex-1 px-4 py-2.5 bg-purple-600/30 hover:bg-purple-600/40",
+                    "border border-purple-400/50 hover:border-purple-400/70",
                     "rounded-lg transition-all duration-200",
                     "flex items-center justify-center gap-2",
                     typography.bodySmall,
-                    "font-medium text-purple-200",
-                    "w-full sm:w-auto"
+                    "font-medium text-purple-100",
+                    "w-full sm:w-auto shadow-md shadow-purple-500/20"
                   )}
                 >
                   <Copy className="w-4 h-4" />
@@ -90,12 +94,12 @@ const CreatorCollab = () => {
                   }}
                   whileTap={animations.microTap}
                   className={cn(
-                    "px-4 py-2.5 bg-white/5 hover:bg-white/10",
-                    "border border-white/10 hover:border-white/20",
+                    "px-4 py-2.5 bg-white/10 hover:bg-white/15",
+                    "border border-white/20 hover:border-white/30",
                     "rounded-lg transition-all duration-200",
                     "flex items-center justify-center gap-2",
                     typography.bodySmall,
-                    "text-purple-300/80 hover:text-purple-200",
+                    "text-purple-200/90 hover:text-white",
                     "w-full sm:w-auto"
                   )}
                 >
@@ -106,17 +110,17 @@ const CreatorCollab = () => {
             </div>
           </BaseCard>
 
-          {/* Card 2: Contracts & Protection */}
-          <BaseCard variant="tertiary" className="p-6 relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/10 rounded-full blur-3xl" />
+          {/* Card 2: Contracts & Protection - De-emphasized for first-time creators */}
+          <BaseCard variant="tertiary" className="p-5 relative overflow-hidden opacity-75">
+            <div className="absolute top-0 right-0 w-24 h-24 bg-blue-500/5 rounded-full blur-2xl" />
             <div className="relative z-10">
-              <div className="flex items-start gap-3 mb-4">
-                <div className="w-12 h-12 rounded-lg bg-blue-500/20 flex items-center justify-center flex-shrink-0">
-                  <Shield className="w-6 h-6 text-blue-400" />
+              <div className="flex items-start gap-3 mb-3">
+                <div className="w-10 h-10 rounded-lg bg-blue-500/15 flex items-center justify-center flex-shrink-0">
+                  <Shield className="w-5 h-5 text-blue-400/70" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h3 className={cn(typography.h4, "font-semibold mb-1")}>Contracts & Protection</h3>
-                  <p className={cn(typography.caption, "text-purple-300/70")}>
+                  <h3 className={cn(typography.h4, "font-medium mb-1 text-purple-200/80")}>Contracts & Protection</h3>
+                  <p className={cn(typography.caption, "text-purple-300/60 text-xs")}>
                     Auto-generate contracts, track payments, and stay protected.
                   </p>
                 </div>
@@ -128,34 +132,34 @@ const CreatorCollab = () => {
                 }}
                 whileTap={animations.microTap}
                 className={cn(
-                  "w-full px-4 py-2.5 bg-blue-600/20 hover:bg-blue-600/30",
-                  "border border-blue-500/30 hover:border-blue-500/50",
+                  "w-full px-4 py-2 bg-blue-600/15 hover:bg-blue-600/25",
+                  "border border-blue-500/20 hover:border-blue-500/40",
                   "rounded-lg transition-all duration-200",
                   "flex items-center justify-center gap-2",
                   typography.bodySmall,
-                  "font-medium text-blue-200"
+                  "font-medium text-blue-200/80 text-sm"
                 )}
               >
                 View Contracts
-                <ChevronRight className="w-4 h-4" />
+                <ChevronRight className="w-3.5 h-3.5" />
               </motion.button>
-              <p className={cn(typography.caption, "text-purple-300/50 text-center mt-2")}>
-                Used after collab acceptance
+              <p className={cn(typography.caption, "text-purple-300/50 text-center mt-2 text-xs")}>
+                Available after you accept a collaboration
               </p>
             </div>
           </BaseCard>
 
-          {/* Card 3: Deals Tracker */}
-          <BaseCard variant="tertiary" className="p-6 relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-green-500/10 rounded-full blur-3xl" />
+          {/* Card 3: Deals Tracker - De-emphasized for first-time creators */}
+          <BaseCard variant="tertiary" className="p-5 relative overflow-hidden opacity-75">
+            <div className="absolute top-0 right-0 w-24 h-24 bg-green-500/5 rounded-full blur-2xl" />
             <div className="relative z-10">
-              <div className="flex items-start gap-3 mb-4">
-                <div className="w-12 h-12 rounded-lg bg-green-500/20 flex items-center justify-center flex-shrink-0">
-                  <Briefcase className="w-6 h-6 text-green-400" />
+              <div className="flex items-start gap-3 mb-3">
+                <div className="w-10 h-10 rounded-lg bg-green-500/15 flex items-center justify-center flex-shrink-0">
+                  <Briefcase className="w-5 h-5 text-green-400/70" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h3 className={cn(typography.h4, "font-semibold mb-1")}>Deals</h3>
-                  <p className={cn(typography.caption, "text-purple-300/70")}>
+                  <h3 className={cn(typography.h4, "font-medium mb-1 text-purple-200/80")}>Deals</h3>
+                  <p className={cn(typography.caption, "text-purple-300/60 text-xs")}>
                     Track accepted collaborations, deadlines, and payments.
                   </p>
                 </div>
@@ -167,17 +171,20 @@ const CreatorCollab = () => {
                 }}
                 whileTap={animations.microTap}
                 className={cn(
-                  "w-full px-4 py-2.5 bg-green-600/20 hover:bg-green-600/30",
-                  "border border-green-500/30 hover:border-green-500/50",
+                  "w-full px-4 py-2 bg-green-600/15 hover:bg-green-600/25",
+                  "border border-green-500/20 hover:border-green-500/40",
                   "rounded-lg transition-all duration-200",
                   "flex items-center justify-center gap-2",
                   typography.bodySmall,
-                  "font-medium text-green-200"
+                  "font-medium text-green-200/80 text-sm"
                 )}
               >
                 View Deals
-                <ChevronRight className="w-4 h-4" />
+                <ChevronRight className="w-3.5 h-3.5" />
               </motion.button>
+              <p className={cn(typography.caption, "text-purple-300/50 text-center mt-2 text-xs")}>
+                Available after you accept a collaboration
+              </p>
             </div>
           </BaseCard>
         </div>

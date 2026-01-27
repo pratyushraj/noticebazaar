@@ -262,6 +262,23 @@ const CollabLinkAnalytics: React.FC = () => {
             )}
           </div>
         )}
+
+        {/* Conditional Helper Text */}
+        <div className="mt-3 pt-3 border-t border-white/10">
+          {analytics.views.total === 0 ? (
+            <p className="text-xs text-purple-300/80 text-center leading-relaxed">
+              Share your collab link in bio to start receiving requests
+            </p>
+          ) : analytics.submissions.total > 0 ? (
+            <p className="text-xs text-purple-300/80 text-center leading-relaxed">
+              Brands are interested — faster replies improve deal closure
+            </p>
+          ) : (
+            <p className="text-xs text-purple-300/80 text-center leading-relaxed">
+              Brands are viewing your profile — faster replies increase conversions
+            </p>
+          )}
+        </div>
       </CardContent>
     </Card>
   );
