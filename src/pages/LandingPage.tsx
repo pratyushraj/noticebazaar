@@ -72,25 +72,25 @@ const LandingPage = () => {
     {
       icon: DollarSign,
       title: "No Payment Protection",
-      description: "Brands ghost you after delivery. No way to recover unpaid amounts.",
+      description: "You deliver the content, then they ghost. 'Payment next week' becomes never. No written proof, no way to recover.",
       color: "from-red-500 to-orange-500"
     },
     {
       icon: FileText,
       title: "No Written Agreement",
-      description: "Everything happens in DMs. No contract means no legal protection.",
+      description: "Everything's in DMs. When things go wrong, you have screenshots, not contracts. Brands know this.",
       color: "from-orange-500 to-yellow-500"
     },
     {
       icon: MessageCircle,
       title: "Ghosting After Delivery",
-      description: "Brands disappear once you deliver. No accountability, no payment.",
+      description: "You post the reel, tag them, send the invoice. Then silence. They got what they wanted. You got nothing.",
       color: "from-yellow-500 to-red-500"
     },
     {
       icon: Clock,
       title: "Endless Back-and-Forth",
-      description: "Negotiations drag on for days. No structure, no clarity.",
+      description: "Three days of DMs just to agree on deliverables. Then they change their mind. Then you renegotiate. Again.",
       color: "from-purple-500 to-pink-500"
     }
   ];
@@ -99,25 +99,25 @@ const LandingPage = () => {
     {
       step: 1,
       title: "Brands submit requirements",
-      description: "Brands fill out a structured form via your link",
+      description: "You get structured requests with budget, deliverables, and deadlines. No more guessing.",
       icon: Link2
     },
     {
       step: 2,
-      title: "Creator reviews inside dashboard",
-      description: "You see all requests in one place, organized and clear",
+      title: "You review & decide",
+      description: "See everything in one dashboard. Accept, counter, or decline. You're in control.",
       icon: FileText
     },
     {
       step: 3,
       title: "Contract auto-generated",
-      description: "Accept a deal and get a professional contract instantly",
+      description: "Accept a deal and get a professional contract instantly. No legal fees, no delays.",
       icon: Shield
     },
     {
       step: 4,
-      title: "Payments & deadlines tracked",
-      description: "Never miss a payment. Get alerts before deadlines.",
+      title: "Payments tracked automatically",
+      description: "Never chase payments again. Get alerts before deadlines. Know exactly what's due.",
       icon: DollarSign
     }
   ];
@@ -126,30 +126,35 @@ const LandingPage = () => {
     {
       step: 1,
       title: "Brand opens your link",
+      description: "They see a professional form, not a DM",
       icon: Link2,
       color: "from-purple-500 to-pink-500"
     },
     {
       step: 2,
       title: "Submits deal details",
+      description: "Budget, deliverables, deadline — all structured",
       icon: FileText,
       color: "from-pink-500 to-blue-500"
     },
     {
       step: 3,
       title: "You accept / counter / decline",
+      description: "You decide. No pressure, no back-and-forth",
       icon: CheckCircle,
       color: "from-blue-500 to-green-500"
     },
     {
       step: 4,
       title: "Contract generated",
+      description: "Professional contract ready instantly. You're protected.",
       icon: Shield,
       color: "from-green-500 to-purple-500"
     },
     {
       step: 5,
       title: "Deal tracked until payment",
+      description: "Payment reminders, deadline alerts. Never lose money again.",
       icon: DollarSign,
       color: "from-purple-500 to-indigo-500"
     }
@@ -362,6 +367,10 @@ const LandingPage = () => {
               <p className="text-lg md:text-2xl text-white/90 font-medium mb-4 max-w-3xl mx-auto">
                 Creator Armour gives you a single link where brands submit deals, contracts are auto-generated, and payments are tracked.
               </p>
+              {/* Emotional sub-line */}
+              <p className="text-base md:text-lg text-purple-200/90 mb-2 max-w-3xl mx-auto font-medium">
+                Stop losing money to brands who ghost you. Stop worrying about payment delays. Get every deal protected.
+              </p>
               <p className="text-sm text-purple-400/70 mb-8 max-w-3xl mx-auto">
                 Stop chasing brands. Start protecting yourself.
               </p>
@@ -372,7 +381,7 @@ const LandingPage = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.2 }}
-              className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12"
+              className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-4"
             >
               <Link
                 to="/signup"
@@ -394,6 +403,21 @@ const LandingPage = () => {
               >
                 View Demo
               </button>
+            </motion.div>
+
+            {/* Micro-trust line */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.8, delay: 0.4 }}
+              className="flex items-center justify-center gap-3 mb-12 text-sm text-purple-300/80"
+            >
+              <CheckCircle className="w-4 h-4 text-green-400" />
+              <span>No card required</span>
+              <span className="text-purple-400/50">•</span>
+              <span>Takes under 60 seconds</span>
+              <span className="text-purple-400/50">•</span>
+              <span>Free forever plan</span>
             </motion.div>
 
             {/* Visual: Collab Link UI Mock */}
@@ -470,6 +494,84 @@ const LandingPage = () => {
         </div>
       </section>
 
+      {/* Comparison Section: DMs vs Creator Armour */}
+      <section className="py-20 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">
+              DMs vs Creator Armour
+            </h2>
+            <p className="text-lg text-purple-200 max-w-2xl mx-auto">
+              See the difference
+            </p>
+          </div>
+
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 md:p-8 border border-white/10">
+            <div className="grid md:grid-cols-2 gap-6">
+              {/* Left: Instagram / WhatsApp DMs */}
+              <div>
+                <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
+                  <MessageCircle className="w-5 h-5 text-red-400" />
+                  Instagram / WhatsApp DMs
+                </h3>
+                <ul className="space-y-3">
+                  <li className="flex items-start gap-2">
+                    <X className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
+                    <span className="text-purple-200">No written contract</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <X className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
+                    <span className="text-purple-200">Payment promises, not guarantees</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <X className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
+                    <span className="text-purple-200">Endless back-and-forth</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <X className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
+                    <span className="text-purple-200">No payment tracking</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <X className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
+                    <span className="text-purple-200">Easy to ghost after delivery</span>
+                  </li>
+                </ul>
+              </div>
+
+              {/* Right: Creator Armour */}
+              <div>
+                <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
+                  <Shield className="w-5 h-5 text-green-400" />
+                  Creator Armour
+                </h3>
+                <ul className="space-y-3">
+                  <li className="flex items-start gap-2">
+                    <CheckCircle className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
+                    <span className="text-purple-200">Auto-generated contracts</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <CheckCircle className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
+                    <span className="text-purple-200">Structured deal submissions</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <CheckCircle className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
+                    <span className="text-purple-200">One-click accept/counter/decline</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <CheckCircle className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
+                    <span className="text-purple-200">Payment tracking & reminders</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <CheckCircle className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
+                    <span className="text-purple-200">Legal protection built-in</span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* 3️⃣ THE SOLUTION (COLLAB LINK) */}
       <section id="solution" className="py-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
@@ -540,6 +642,9 @@ const LandingPage = () => {
                   {step.step}
                 </div>
                 <h3 className="text-lg font-semibold mb-2">{step.title}</h3>
+                {step.description && (
+                  <p className="text-sm text-purple-200 mt-1">{step.description}</p>
+                )}
                 {index < brandFlowSteps.length - 1 && (
                   <div className="hidden md:block absolute top-8 left-full w-full h-0.5 bg-gradient-to-r from-purple-500 to-transparent transform translate-x-2">
                     <ChevronRight className="absolute right-0 top-1/2 transform -translate-y-1/2 w-4 h-4 text-purple-400" />
@@ -702,7 +807,8 @@ const LandingPage = () => {
               className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/10"
             >
               <h3 className="text-2xl font-bold mb-2">Free</h3>
-              <p className="text-purple-300 text-sm mb-4">Collab link only</p>
+              <p className="text-purple-300 text-sm mb-1">Collab link only</p>
+              <p className="text-purple-200/70 text-xs mb-4">Perfect to replace DMs instantly</p>
               <div className="text-4xl font-bold mb-6">₹0<span className="text-lg text-purple-300">/month</span></div>
               <ul className="space-y-3 mb-8">
                 <li className="flex items-start gap-2">
@@ -738,7 +844,8 @@ const LandingPage = () => {
                 Most Popular
               </div>
               <h3 className="text-2xl font-bold mb-2">Creator Pro</h3>
-              <p className="text-purple-300 text-sm mb-4">Contracts + protection</p>
+              <p className="text-purple-300 text-sm mb-1">Contracts + protection</p>
+              <p className="text-purple-200/70 text-xs mb-4">For creators doing regular paid collaborations</p>
               <div className="text-4xl font-bold mb-6">₹1,499<span className="text-lg text-purple-300">/month</span></div>
               <ul className="space-y-3 mb-8">
                 <li className="flex items-start gap-2">
@@ -784,8 +891,8 @@ const LandingPage = () => {
             className="bg-gradient-to-r from-purple-600/20 to-pink-600/20 backdrop-blur-md rounded-3xl p-12 border border-white/10"
           >
             <h2 className="text-4xl md:text-5xl font-bold mb-6">
-              Stop Chasing Brands.<br />
-              Start Protecting Yourself.
+              Your Next Brand Deal<br />
+              Deserves Protection
             </h2>
             <p className="text-xl text-purple-200 mb-8 max-w-2xl mx-auto">
               Get your collab link in 2 minutes. No credit card required.
@@ -797,7 +904,8 @@ const LandingPage = () => {
               Create My Collab Link
               <ArrowRight className="w-5 h-5" />
             </Link>
-            <p className="text-sm text-purple-300 mt-4">Free forever. Upgrade only if you need protection.</p>
+            <p className="text-sm text-purple-300 mt-4">Used by creators across India • No brand approval needed</p>
+            <p className="text-xs text-purple-400/70 mt-2">Free forever. Upgrade only if you need protection.</p>
           </motion.div>
         </div>
       </section>
