@@ -34,6 +34,7 @@ import { NotificationDropdown } from '@/components/notifications/NotificationDro
 import { QuickSearch } from '@/components/dashboard/QuickSearch';
 import PremiumDrawer from '@/components/drawer/PremiumDrawer';
 import AuthLoadingScreen from '@/components/AuthLoadingScreen';
+import CollabLinkAnalytics from '@/components/collab/CollabLinkAnalytics';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -1522,7 +1523,10 @@ const CreatorDashboard = () => {
                   )}
                 </div>
 
-                {/* Collab link analytics hidden on dashboard (reduce noise) */}
+                {/* Collab Link Analytics — below Collab Link on home */}
+                <div className={spacing.loose}>
+                  <CollabLinkAnalytics />
+                </div>
 
                 {/* Section Separator */}
             <div className={separators.section} />
