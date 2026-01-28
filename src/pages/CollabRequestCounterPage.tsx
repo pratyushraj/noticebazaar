@@ -13,6 +13,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { CreatorNavigationWrapper } from '@/components/navigation/CreatorNavigationWrapper';
 import { cn } from '@/lib/utils';
 import { spacing } from '@/lib/design-system';
+import { getApiBaseUrl } from '@/lib/utils/api';
 
 type CollabRequestStatus = 'pending' | 'accepted' | 'countered' | 'declined';
 type CollabType = 'paid' | 'barter' | 'both';
@@ -142,7 +143,7 @@ const CollabRequestCounterPage = () => {
         return;
       }
       const response = await fetch(
-        `${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/collab-requests/${request.id}/counter`,
+        `${getApiBaseUrl()}/api/collab-requests/${request.id}/counter`,
         {
           method: 'PATCH',
           headers: {

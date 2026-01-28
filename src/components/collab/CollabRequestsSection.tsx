@@ -31,6 +31,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { formatRelativeTime } from '@/lib/utils/time';
+import { getApiBaseUrl } from '@/lib/utils/api';
 
 type CollabRequestStatus = 'pending' | 'accepted' | 'countered' | 'declined';
 type CollabType = 'paid' | 'barter' | 'both';
@@ -95,7 +96,7 @@ const CollabRequestsSection = ({ copyCollabLink, usernameForLink: usernameFromPa
       }
 
       const response = await fetch(
-        `${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/collab-requests`,
+        `${getApiBaseUrl()}/api/collab-requests`,
         {
           headers: {
             'Authorization': `Bearer ${sessionData.session.access_token}`,
@@ -135,7 +136,7 @@ const CollabRequestsSection = ({ copyCollabLink, usernameForLink: usernameFromPa
       }
 
       const response = await fetch(
-        `${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/collab-requests/${request.id}/accept`,
+        `${getApiBaseUrl()}/api/collab-requests/${request.id}/accept`,
         {
           method: 'PATCH',
           headers: {
@@ -178,7 +179,7 @@ const CollabRequestsSection = ({ copyCollabLink, usernameForLink: usernameFromPa
       }
 
       const response = await fetch(
-        `${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/collab-requests/${selectedRequest.id}/counter`,
+        `${getApiBaseUrl()}/api/collab-requests/${selectedRequest.id}/counter`,
         {
           method: 'PATCH',
           headers: {
@@ -219,7 +220,7 @@ const CollabRequestsSection = ({ copyCollabLink, usernameForLink: usernameFromPa
       }
 
       const response = await fetch(
-        `${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/collab-requests/${request.id}/decline`,
+        `${getApiBaseUrl()}/api/collab-requests/${request.id}/decline`,
         {
           method: 'PATCH',
           headers: {

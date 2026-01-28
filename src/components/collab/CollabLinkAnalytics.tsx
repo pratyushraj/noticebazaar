@@ -3,6 +3,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { TrendingUp, TrendingDown, Eye, Send, BarChart3, Loader2 } from 'lucide-react';
 import { useSession } from '@/contexts/SessionContext';
 import { supabase } from '@/integrations/supabase/client';
+import { getApiBaseUrl } from '@/lib/utils/api';
 
 interface AnalyticsData {
   period: number;
@@ -55,7 +56,7 @@ const CollabLinkAnalytics: React.FC = () => {
         return;
       }
 
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+      const apiUrl = getApiBaseUrl();
       const response = await fetch(
         `${apiUrl}/api/collab-analytics?days=${period}`,
         {

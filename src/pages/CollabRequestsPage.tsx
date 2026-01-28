@@ -36,6 +36,7 @@ import {
   DialogDescription,
 } from '@/components/ui/dialog';
 import { formatRelativeTime } from '@/lib/utils/time';
+import { getApiBaseUrl } from '@/lib/utils/api';
 import { CreatorNavigationWrapper } from '@/components/navigation/CreatorNavigationWrapper';
 import { cn } from '@/lib/utils';
 import { spacing } from '@/lib/design-system';
@@ -93,7 +94,7 @@ const CollabRequestsPage = () => {
       }
 
       const response = await fetch(
-        `${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/collab-requests`,
+        `${getApiBaseUrl()}/api/collab-requests`,
         {
           headers: {
             'Authorization': `Bearer ${sessionData.session.access_token}`,
@@ -170,7 +171,7 @@ const CollabRequestsPage = () => {
       }
 
       const response = await fetch(
-        `${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/collab-requests/${request.id}/accept`,
+        `${getApiBaseUrl()}/api/collab-requests/${request.id}/accept`,
         {
           method: 'PATCH',
           headers: {
@@ -214,7 +215,7 @@ const CollabRequestsPage = () => {
       }
 
       const response = await fetch(
-        `${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/collab-requests/${selectedRequest.id}/decline`,
+        `${getApiBaseUrl()}/api/collab-requests/${selectedRequest.id}/decline`,
         {
           method: 'PATCH',
           headers: {

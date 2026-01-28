@@ -15,6 +15,7 @@ import { getInitials } from '@/lib/utils/avatar';
 import { motion, AnimatePresence } from 'framer-motion';
 import { triggerHaptic, HapticPatterns } from '@/lib/utils/haptics';
 import { cn } from '@/lib/utils';
+import { getApiBaseUrl } from '@/lib/utils/api';
 import { sectionLayout, animations, spacing, typography, separators, iconSizes, scroll, sectionHeader, gradients, buttons, glass, shadows, spotlight, radius, zIndex, vision, motion as motionTokens, colors } from '@/lib/design-system';
 import { PremiumButton } from '@/components/ui/PremiumButton';
 import { BaseCard, SectionCard, StatCard, ActionCard } from '@/components/ui/card-variants';
@@ -65,7 +66,7 @@ const CreatorDashboard = () => {
     let cancelled = false;
     supabase.auth.getSession().then(({ data: { session: sess } }) => {
       if (cancelled || !sess?.access_token) return;
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+      const apiUrl = getApiBaseUrl();
       fetch(`${apiUrl}/api/collab-requests`, {
         headers: { 'Authorization': `Bearer ${sess.access_token}`, 'Content-Type': 'application/json' },
       })

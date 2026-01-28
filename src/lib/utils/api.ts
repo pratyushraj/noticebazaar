@@ -2,6 +2,21 @@
  * API utility functions for timeout handling and error management
  */
 
+/**
+ * Resolve API base URL: use VITE_API_URL when set, otherwise infer from host (production) or fallback to localhost.
+ * Call this when making requests so production (creatorarmour.com) uses the correct API host.
+ */
+export function getApiBaseUrl(): string {
+  const envUrl = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL;
+  if (envUrl) return String(envUrl).replace(/\/$/, '');
+  if (typeof window !== 'undefined' && window.location?.origin) {
+    const origin = window.location.origin;
+    if (origin.includes('creatorarmour.com')) return 'https://api.creatorarmour.com';
+    if (origin.includes('noticebazaar.com')) return 'https://api.noticebazaar.com';
+  }
+  return 'http://localhost:3001';
+}
+
 export const API_TIMEOUT = 30000; // 30 seconds default timeout
 export const UPLOAD_TIMEOUT = 120000; // 2 minutes for file uploads
 export const CONTRACT_REVIEW_TIMEOUT = 60000; // 1 minute for contract reviews
