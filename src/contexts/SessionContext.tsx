@@ -590,7 +590,10 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
         } else if (event === 'SIGNED_OUT') {
           analytics.clearUserId();
         }
-        
+
+        // Token refresh only updates session/user; skip OAuth redirect and profile fetch
+        if (event === 'TOKEN_REFRESHED') return;
+
         // Handle OAuth callback - check for hash tokens or successful sign-in
         let hash = window.location.hash;
         const urlParams = new URLSearchParams(window.location.search);

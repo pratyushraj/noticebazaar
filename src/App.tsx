@@ -15,6 +15,7 @@ import CADashboard from "./pages/CADashboard";
 import CreatorDashboard from "./pages/CreatorDashboard";
 import CreatorCollab from "./pages/CreatorCollab";
 import CollabRequestsPage from "./pages/CollabRequestsPage";
+import CollabRequestCounterPage from "./pages/CollabRequestCounterPage";
 import CreatorAnalytics from "./pages/CreatorAnalytics"; // New: Import CreatorDashboard
 import NotificationCenter from "./pages/NotificationCenter";
 import AdminDocuments from "./pages/AdminDocuments";
@@ -323,6 +324,7 @@ const App = () => {
               <Route path="/creator-dashboard" element={<ProtectedLayout allowedRoles={['creator']}><CreatorDashboard /></ProtectedLayout>} /> {/* New: Creator Dashboard Route */}
               <Route path="/creator-collab" element={<ProtectedLayout allowedRoles={['creator']}><CreatorCollab /></ProtectedLayout>} />
               <Route path="/collab-requests" element={<ProtectedLayout allowedRoles={['creator']}><CollabRequestsPage /></ProtectedLayout>} />
+              <Route path="/collab-requests/:requestId/counter" element={<ProtectedLayout allowedRoles={['creator']}><CollabRequestCounterPage /></ProtectedLayout>} />
               <Route path="/creator-profile" element={<ProtectedLayout allowedRoles={['creator']}><CreatorProfile /></ProtectedLayout>} />
                   <Route path="/creator-analytics" element={<ProtectedLayout allowedRoles={['creator']}><CreatorAnalytics /></ProtectedLayout>} />
                   <Route path="/notifications" element={<ProtectedLayout allowedRoles={['client', 'admin', 'chartered_accountant', 'creator']}><NotificationCenter /></ProtectedLayout>} />

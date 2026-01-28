@@ -116,8 +116,19 @@ const CollabLinkAnalytics: React.FC = () => {
     );
   }
 
+  // No data yet — compact placeholder, reinforce collab-link-first
   if (!analytics) {
-    return null;
+    return (
+      <Card className="bg-white/5 backdrop-blur-md border-white/10">
+        <CardContent className="p-3">
+          <div className="flex items-center gap-2 mb-2">
+            <BarChart3 className="h-4 w-4 text-purple-400" />
+            <h3 className="text-sm font-semibold text-white break-words">Collab Link Analytics</h3>
+          </div>
+          <p className="text-xs text-purple-300/70 break-words">Share your collab link to start seeing analytics</p>
+        </CardContent>
+      </Card>
+    );
   }
 
   const formatTrend = (trend: number, direction: 'up' | 'down' | 'neutral') => {
@@ -150,9 +161,9 @@ const CollabLinkAnalytics: React.FC = () => {
 
   return (
     <Card className="bg-white/5 backdrop-blur-md border-white/10">
-      <CardContent className="p-4">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-3">
+      <CardContent className="p-3">
+        {/* Header — default 30 days */}
+        <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
             <BarChart3 className="h-4 w-4 text-purple-400" />
             <h3 className="text-sm font-semibold text-white">
@@ -184,7 +195,7 @@ const CollabLinkAnalytics: React.FC = () => {
         </div>
 
         {/* Stats Grid - Compact */}
-        <div className="grid grid-cols-3 gap-2 mb-3">
+        <div className="grid grid-cols-3 gap-2 mb-2">
           {/* Total Views */}
           <div className="bg-white/5 rounded-lg p-2 border border-white/10">
             <div className="flex items-center gap-1 mb-1">
@@ -219,11 +230,11 @@ const CollabLinkAnalytics: React.FC = () => {
             </div>
           </div>
 
-          {/* Conversion Rate */}
+          {/* Acceptance Rate */}
           <div className="bg-white/5 rounded-lg p-2 border border-white/10">
             <div className="flex items-center gap-1 mb-1">
               <BarChart3 className="h-3 w-3 text-purple-400" />
-              <span className="text-[10px] text-purple-300">Rate</span>
+              <span className="text-[10px] text-purple-300">Acceptance Rate</span>
             </div>
             <div className="flex items-baseline gap-1">
               <span className="text-lg font-bold text-white">
@@ -263,15 +274,14 @@ const CollabLinkAnalytics: React.FC = () => {
           </div>
         )}
 
-        {/* Conditional Helper Text */}
-        <div className="mt-3 pt-3 border-t border-white/10">
-          {analytics.views.total === 0 ? (
-            <p className="text-xs text-purple-300/80 text-center leading-relaxed">
-              Share your collab link in bio to start receiving requests
-            </p>
-          ) : analytics.submissions.total > 0 ? (
-            <p className="text-xs text-purple-300/80 text-center leading-relaxed">
-              Brands are interested — faster replies improve deal closure
+        {/* Helper text below */}
+        <div className="mt-2 pt-2 border-t border-white/10">
+          <p className="text-xs text-purple-300/70 text-center">
+            Share your collab link to start seeing analytics
+          </p>
+          {analytics.views.total === 0 ? null : analytics.submissions.total > 0 ? (
+            <p className="text-xs text-purple-300/70 text-center mt-0.5">
+              Faster replies improve deal closure
             </p>
           ) : (
             <p className="text-xs text-purple-300/80 text-center leading-relaxed">

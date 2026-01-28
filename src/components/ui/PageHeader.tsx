@@ -22,6 +22,7 @@ interface PageHeaderProps {
   className?: string;
   subtitle?: string;
   premium?: boolean; // Premium iOS 17 styling
+  compact?: boolean; // ~30% less height on mobile
 }
 
 export const PageHeader: React.FC<PageHeaderProps> = ({
@@ -34,6 +35,7 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
   className,
   subtitle,
   premium = false,
+  compact = false,
 }) => {
   const navigate = useNavigate();
 
@@ -65,7 +67,7 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
       )}
       style={{
         paddingTop: 'max(16px, env(safe-area-inset-top, 16px))',
-        paddingBottom: '16px',
+        paddingBottom: compact ? '10px' : '16px',
         paddingLeft: 'calc(16px + env(safe-area-inset-left, 0px))',
         paddingRight: 'calc(16px + env(safe-area-inset-right, 0px))',
         ...(premium && {
@@ -83,9 +85,15 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
         />
       )}
       
-      <div className={cn("flex items-center justify-between gap-3 relative z-10", spacing.cardPadding.tertiary, "py-3")}>
-        {/* Left: Back Button or Menu */}
-        <div className="flex items-center min-w-[80px]">
+      <div
+        className={cn(
+          "flex items-center justify-between gap-3 relative z-10",
+          "px-4 sm:px-6 min-h-0 w-full max-w-full",
+          compact ? "py-2.5 sm:py-5" : "py-4 sm:py-5"
+        )}
+      >
+        {/* Left: Back Button or Menu — safe padding, left-aligned */}
+        <div className="flex items-center flex-shrink-0 min-w-0">
           {showBackButton && (
             <button
               onClick={handleBack}
@@ -117,27 +125,20 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
           )}
         </div>
 
-        {/* Center: Title */}
-        <div className="flex-1 min-w-0 text-center px-2">
-          <h1 className={cn(
-            premium ? "text-lg md:text-xl font-semibold leading-tight" : "text-lg md:text-xl font-semibold",
-            "text-white",
-            subtitle ? "" : "truncate"
-          )}>
+        {/* Center: Title + Subtitle — content-based height, wrap naturally, no crop or ellipsis */}
+        <div className="flex-1 min-w-0 text-center px-2 overflow-visible max-w-full">
+          <h1 className="text-white font-semibold leading-snug break-words whitespace-normal text-lg sm:text-xl">
             {title}
           </h1>
           {subtitle && (
-            <p className={cn(
-              premium ? "text-xs md:text-sm text-white/70 mt-0.5" : "text-xs md:text-sm text-white/70",
-              "mt-0.5 whitespace-nowrap overflow-hidden text-ellipsis"
-            )}>
+            <p className="text-white/70 mt-1 break-words whitespace-normal text-xs sm:text-sm leading-snug">
               {subtitle}
             </p>
           )}
         </div>
 
         {/* Right: Actions */}
-        <div className="flex items-center justify-end gap-2 min-w-[80px]">
+        <div className="flex items-center justify-end gap-2 flex-shrink-0 min-w-0">
           {rightActions}
         </div>
       </div>

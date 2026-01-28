@@ -248,6 +248,76 @@ export const blogPosts: BlogPost[] = [
       type: 'Organization',
     },
   },
+  {
+    slug: 'how-to-negotiate-brand-deals-accept-counter-decline',
+    title: 'How to Negotiate Brand Deals: Accept, Counter, Decline',
+    metaDescription: 'When to accept, counter, or decline a brand collab. Practical guide for creators on negotiating offers, valuing barter, and protecting your worth.',
+    category: 'Business',
+    date: '2026-01-27',
+    readTime: '6 min read',
+    image: '/blog-images/brand-negotiation.jpg',
+    summary: 'Not every brand offer is worth a yes—or a straight no. Learn when to accept, when to counter, and when to decline, so you don’t leave money or opportunities on the table.',
+    keywords: ['brand negotiation', 'counter offer', 'barter collab', 'creator deals', 'accept decline', 'India'],
+    content: {
+      introduction: 'A new brand offer lands in your inbox. The budget’s okay but not great. The deliverables feel heavy for the pay. Do you say yes, ask for more, or pass? Here’s a simple way to decide—and how to negotiate so you rarely regret the answer.',
+      sections: [
+        {
+          heading: 'When to Accept (and When Not To)',
+          content: 'Accept when the offer clearly fits your rate, timeline, and creative comfort. That means: the fee or barter value matches what you usually charge, the deliverables and usage rights are clear and limited, and the deadline is doable. Don’t accept just to “not miss out.” If the money is low, the scope is fuzzy, or the brand is pushy, you’re better off countering or declining.',
+        },
+        {
+          heading: 'When and How to Counter',
+          content: 'Counter when the opportunity is right but the terms aren’t. You might counter on: compensation (higher fee or better barter value), deliverables (fewer posts, shorter usage, or clearer scope), timeline (a deadline that fits your calendar), or payment terms (e.g. 50% upfront, 50% on delivery). Keep it simple: state what you’re changing and why, in one short note. Structured counter-offers—where the brand sees exactly what you’re proposing—get better responses than long back‑and‑forth chats.',
+          subsections: [
+            {
+              heading: 'Paid Deals: What to Ask For',
+              content: 'If the offer is under your rate, suggest your usual number and, if you can, offer a small concession (e.g. one extra story, or a faster turnaround). If the timing is tight, ask for a later deadline or split payment into milestones so you’re not carrying all the risk.',
+            },
+            {
+              heading: 'Barter Deals: How to Value Them',
+              content: 'For product-only collabs, put a number on the product. If they say “we’ll send you ₹X worth of product,” treat that as your comp and match the deliverables to it. If the product value is unclear, name an “expected product value” in your counter so both sides are aligned. You can also ask for a small cash top-up if the product alone doesn’t justify the work.',
+            },
+          ],
+        },
+        {
+          heading: 'When to Decline (Politely)',
+          content: 'Decline when the fit is off: the budget is far below your minimum, the brand’s vibe or category doesn’t align with your audience, the deliverables or usage are too broad, or you’re overloaded. A short, polite “thanks, not a fit right now” is enough. You don’t owe a long explanation. Keeping the door open matters more than defending your no.',
+        },
+        {
+          heading: 'One-Tap Decisions and Structured Counters',
+          content: 'The best setup is: see the full offer (brand, budget, deliverables, deadline), then in one move choose Accept, Counter, or Decline. Accept should mean “yes, let’s do it” and kick off the contract—no extra “review” step. Counter should open a clear form: your amount or product value, deliverables, timeline, and a short note. Everything in one place keeps negotiations fast and clear, and makes it easier for brands to say yes. Tools like Creator Armour’s collab link and counter-offer flow are built for this: one page, one decision, no endless DMs.',
+        },
+      ],
+      conclusion: 'Every offer is a small negotiation. Accept when it’s right, counter when it’s close, decline when it’s not—and do it all in a structured way so you and the brand are on the same page. Use your collab link so brands send real offers, not vague DMs, and counter with clear numbers and terms so you rarely leave money or good opportunities on the table.',
+    },
+    faqs: [
+      {
+        question: 'When should I counter instead of accepting?',
+        answer: 'Counter when you like the brand and the project but the pay, scope, or timeline is off. If a small change would make it a yes, send a clear counter—don’t just accept and resent it later.',
+      },
+      {
+        question: 'How do I value a barter collaboration?',
+        answer: 'Assign a rough “product value” (in ₹) based on what you’d pay for it or what the brand suggests. Use that to decide if the deliverables are fair. If the product value is low for the work, ask for a higher product value or a small cash top-up.',
+      },
+      {
+        question: 'Is it okay to decline a brand offer?',
+        answer: 'Yes. Saying no to bad fits protects your time and rates. A brief, polite decline keeps the relationship fine and leaves room for better offers later.',
+      },
+      {
+        question: 'What should I include in a counter offer?',
+        answer: 'Include your proposed fee or product value, the deliverables you’re willing to do, the deadline that works for you, and a short note (e.g. “higher effort,” “extra revisions,” “faster delivery”). Keep it in one place so the brand can respond quickly.',
+      },
+    ],
+    internalLinks: {
+      contractTool: true,
+      homepage: true,
+      collabLink: true,
+    },
+    author: {
+      name: 'CreatorArmour',
+      type: 'Organization',
+    },
+  },
 ];
 
 // Helper function to get blog post by slug

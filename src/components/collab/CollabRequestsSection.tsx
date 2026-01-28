@@ -12,7 +12,6 @@ import {
   Loader2,
   Copy,
   ExternalLink,
-  Lightbulb,
   DollarSign
 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -45,6 +44,7 @@ interface CollabRequest {
   exact_budget: number | null;
   barter_description: string | null;
   barter_value: number | null;
+  barter_product_image_url?: string | null;
   campaign_description: string;
   deliverables: string | string[];
   usage_rights: boolean;
@@ -62,7 +62,13 @@ interface CollabRequest {
 
 type CollabAction = 'accept' | 'counter' | 'decline' | null;
 
-const CollabRequestsSection = () => {
+interface CollabRequestsSectionProps {
+  /** When provided, the section does not show its own collab link bar (hero owns it). */
+  copyCollabLink?: () => void;
+  usernameForLink?: string;
+}
+
+const CollabRequestsSection = ({ copyCollabLink, usernameForLink: usernameFromParent }: CollabRequestsSectionProps) => {
   const navigate = useNavigate();
   const { profile, user } = useSession();
   const [requests, setRequests] = useState<CollabRequest[]>([]);
@@ -237,13 +243,13 @@ const CollabRequestsSection = () => {
     }
   };
 
-  const copyCollabLink = () => {
-    // Use Instagram handle first, then fallback to username (same logic as CreatorProfile)
-    const usernameForLink = profile?.instagram_handle || profile?.username || 'your-username';
-    const link = `${window.location.origin}/collab/${usernameForLink}`;
-    navigator.clipboard.writeText(link);
+  const usernameResolved = usernameFromParent ?? profile?.instagram_handle ?? profile?.username;
+  const hasUsername = Boolean(usernameResolved && usernameResolved.trim() !== '');
+  const doCopyCollabLink = copyCollabLink ?? (() => {
+    if (!usernameResolved) return;
+    navigator.clipboard.writeText(`${window.location.origin}/collab/${usernameResolved}`);
     toast.success('Collab link copied to clipboard!');
-  };
+  });
 
   const parseDeliverables = (deliverables: string | string[]): string[] => {
     if (Array.isArray(deliverables)) return deliverables;
@@ -289,155 +295,40 @@ const CollabRequestsSection = () => {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header with Collab Link */}
-      <div className="flex flex-col gap-4">
-        <div>
-          <h2 className="text-2xl font-bold text-white mb-2" data-section="collab-requests">Incoming Brand Requests</h2>
-          <p className="text-purple-200 text-sm mb-1">
-            Brands submit collaboration requests via your public link
-          </p>
-          <p className="text-purple-300/80 text-xs font-medium">
-            Respond within 48 hours to improve acceptance rate
-          </p>
-        </div>
-        {/* Public collab link — clear, scannable */}
-        <div className="flex flex-col sm:flex-row sm:items-center gap-3 flex-wrap">
-          {(() => {
-            const usernameForLink = profile?.instagram_handle || profile?.username;
-            const hasUsername = usernameForLink && usernameForLink.trim() !== '';
-            if (!hasUsername) return null;
-            return (
-              <>
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs text-purple-300/70 mb-1.5 font-medium">Your public collab link — one link, share everywhere</p>
-                  <div className="flex items-center gap-2 bg-white/5 px-4 py-2.5 rounded-lg border border-white/10">
-                    <code className="text-sm text-purple-100 truncate">
-                      creatorarmour.com/collab/{usernameForLink}
-                    </code>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={copyCollabLink}
-                      className="h-8 w-8 p-0 text-purple-300 hover:text-white flex-shrink-0"
-                    >
-                      <Copy className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-                <Button
-            variant="outline"
-            onClick={() => {
-              const usernameForLink = profile?.instagram_handle || profile?.username;
-              if (usernameForLink) {
-                window.open(`/collab/${usernameForLink}`, '_blank');
-              } else {
-                toast.error('Username not set. Please update your profile.');
-              }
-            }}
-            className="border-white/20 text-white hover:bg-white/10 flex-shrink-0"
-          >
-            <ExternalLink className="h-4 w-4 mr-2" />
-            View Link
-          </Button>
-              </>
-            );
-          })()}
-        </div>
-      </div>
+    <div className="space-y-4">
+      <h2 className="text-lg font-semibold text-white break-words" data-section="collab-requests">Brand Requests</h2>
 
-      {/* Educational Tip */}
-      <div className="flex items-start gap-2 p-3 bg-purple-500/10 border border-purple-500/20 rounded-lg">
-        <Lightbulb className="w-4 h-4 text-purple-400 mt-0.5 flex-shrink-0" />
-        <p className="text-xs text-purple-200/80 leading-relaxed">
-          <span className="font-medium text-purple-200">Tip:</span> Add your collab link to Instagram bio to stop brand DMs.
-        </p>
-      </div>
-
-      {/* Requests List */}
+      {/* Requests List or Empty State — no duplicate link bar; hero owns Collab Link */}
       {pendingRequests.length === 0 ? (
         <Card className="bg-white/5 backdrop-blur-md border-white/10">
-          <CardContent className="p-6 md:p-8">
-            <div className="text-center mb-6">
-            <Briefcase className="h-12 w-12 text-purple-400 mx-auto mb-4 opacity-50" />
-            <h3 className="text-lg font-semibold text-white mb-2">
-                No brand requests yet — add your collab link to your bio to get started
-            </h3>
-              <p className="text-sm text-purple-200/80 mb-4 max-w-md mx-auto leading-relaxed">
-                One secure link replaces back-and-forth DMs. Share it; brands submit requests there.
-              </p>
-              <div className="inline-block rounded-lg bg-purple-500/15 border border-purple-400/25 px-4 py-3 max-w-md">
-                <p className="text-sm text-purple-100 font-medium mb-1">Legally protected from day one</p>
-                <p className="text-xs text-purple-200/80 leading-relaxed">
-                  Every request through this link is logged, timestamped, and legally protected by Creator Armour. No loose DMs — one clear record.
-                </p>
-              </div>
-            </div>
-
-            {/* Action Checklist */}
-            <div className="mb-6 text-left max-w-md mx-auto">
-              <p className="text-xs text-purple-300/70 mb-3 font-medium">
-                Get your first collaboration request:
-              </p>
-              <ul className="space-y-2.5">
-                <li className="flex items-start gap-2.5 text-sm text-purple-200">
-                  <span className="text-purple-300 font-semibold flex-shrink-0 mt-0.5">1️⃣</span>
-                  <span>Add this link to your Instagram bio</span>
-                </li>
-                <li className="flex items-start gap-2.5 text-sm text-purple-200">
-                  <span className="text-purple-300 font-semibold flex-shrink-0 mt-0.5">2️⃣</span>
-                  <span>Reply to brand DMs with this link</span>
-                </li>
-                <li className="flex items-start gap-2.5 text-sm text-purple-200">
-                  <span className="text-purple-300 font-semibold flex-shrink-0 mt-0.5">3️⃣</span>
-                  <span>Pin it in your WhatsApp or Email signature</span>
-                </li>
-              </ul>
-            </div>
-
-            {/* Action Buttons */}
-            {(() => {
-              // Use Instagram handle first, then fallback to username (same logic as CreatorProfile)
-              const usernameForLink = profile?.instagram_handle || profile?.username;
-              const hasUsername = usernameForLink && usernameForLink.trim() !== '';
-              
-              if (!hasUsername) {
-                return (
-                  <div className="text-center">
-                    <p className="text-sm text-purple-300/70 mb-3">
-                      Complete your profile to activate your collab link
-                    </p>
-                  </div>
-                );
-              }
-              
-              return (
-                <div className="flex flex-col sm:flex-row gap-3 justify-center items-center mb-4">
-              <Button
-                onClick={copyCollabLink}
-                variant="outline"
-                    className="bg-purple-500/20 border-purple-400/50 text-purple-200 hover:bg-purple-500/30 hover:border-purple-400/70 w-full sm:w-auto"
-              >
-                <Copy className="h-4 w-4 mr-2" />
-                Copy Collab Link
-              </Button>
+          <CardContent className="p-5">
+            <div className="text-center">
+              <Briefcase className="h-10 w-10 text-purple-400 mx-auto mb-3 opacity-50" />
+              <h3 className="text-base font-semibold text-white mb-1 break-words">No brand requests yet</h3>
+              <p className="text-sm text-purple-200/80 mb-2 break-words">Brands apply through your collab link — not DMs.</p>
+              <p className="text-xs text-purple-300/70 mb-4 break-words">Every request is timestamped & legally protected.</p>
+              {hasUsername && (
+                <div className="flex flex-col gap-2">
                   <Button
-                    onClick={() => window.open(`/collab/${usernameForLink}`, '_blank')}
-                    variant="outline"
-                    className="border-purple-400/30 text-purple-300/80 hover:bg-purple-500/10 hover:text-purple-200 w-full sm:w-auto"
+                    onClick={doCopyCollabLink}
+                    className="w-full min-h-[44px] bg-purple-600/40 hover:bg-purple-600/50 border border-purple-400/50 text-purple-100 font-medium"
                   >
-                    <ExternalLink className="h-4 w-4 mr-2 flex-shrink-0" />
-                    Open as a brand would — see the form and fields
+                    <Copy className="h-4 w-4 mr-2 flex-shrink-0" />
+                    Copy Collab Link
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    onClick={() => usernameResolved && window.open(`/collab/${usernameResolved}`, '_blank')}
+                    className="w-full min-h-[44px] text-purple-300/90 hover:text-purple-200 text-sm"
+                  >
+                    <ExternalLink className="h-3.5 w-3.5 mr-1.5 flex-shrink-0" />
+                    Preview as brand
                   </Button>
                 </div>
-              );
-            })()}
-
-            {/* Future Features Hint */}
-            <div className="mt-6 pt-4 border-t border-white/10">
-              <p className="text-xs text-purple-300/60 text-center">
-                Coming soon: Auto-generated contracts • Payment tracking • Brand ratings
-              </p>
+              )}
+              {!hasUsername && (
+                <p className="text-xs text-purple-300/70 break-words">Complete your profile to get your collab link.</p>
+              )}
             </div>
           </CardContent>
         </Card>
@@ -498,6 +389,18 @@ const CollabRequestsSection = () => {
                     </>
                   )}
                 </div>
+
+                {/* Barter product image thumbnail (optional) */}
+                {(pendingRequests[0].collab_type === 'barter' || pendingRequests[0].collab_type === 'both') && pendingRequests[0].barter_product_image_url && (
+                  <div className="mb-3 flex items-center gap-2">
+                    <img
+                      src={pendingRequests[0].barter_product_image_url}
+                      alt="Barter product"
+                      loading="lazy"
+                      className="rounded-lg object-cover max-h-14 w-14 border border-white/10 flex-shrink-0"
+                    />
+                  </div>
+                )}
                 
                 <div className="space-y-1.5 text-sm mb-3">
                   <div className="flex items-center gap-2">

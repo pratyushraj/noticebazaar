@@ -2,6 +2,8 @@
 // Handles public collab link submissions and creator management
 
 import express, { Request, Response } from 'express';
+import multer from 'multer';
+import crypto from 'crypto';
 import { supabase, supabaseInitialized } from '../index.js';
 import { AuthenticatedRequest } from '../middleware/auth.js';
 import { generateContractFromScratch } from '../services/contractGenerator.js';
@@ -13,9 +15,14 @@ import {
   sendCollabRequestDeclinedEmail,
   sendCollabRequestCreatorNotificationEmail,
 } from '../services/collabRequestEmailService.js';
-import crypto from 'crypto';
 
 const router = express.Router();
+
+// Multer for optional barter product image (in-memory, max 5MB; mimetype validated in handler)
+const barterImageUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 5 * 1024 * 1024 },
+});
 
 /**
  * Helper: Hash IP address for privacy (first 3 octets only)
@@ -248,6 +255,41 @@ router.get('/:username', async (req: Request, res: Response) => {
 });
 
 /**
+ * POST /api/collab/:username/upload-barter-image
+ * Upload optional barter product image (public, no auth). Returns public URL.
+ */
+router.post(
+  '/:username/upload-barter-image',
+  barterImageUpload.single('file'),
+  async (req: Request & { file?: Express.Multer.File }, res: Response) => {
+    try {
+      const file = req.file;
+      if (!file || !file.buffer) {
+        return res.status(400).json({ success: false, error: 'No image file provided' });
+      }
+      const allowed = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+      if (!allowed.includes(file.mimetype)) {
+        return res.status(400).json({ success: false, error: 'Only JPEG, PNG, WebP, and GIF images are allowed' });
+      }
+      const ext = file.mimetype === 'image/jpeg' ? 'jpg' : file.mimetype === 'image/png' ? 'png' : file.mimetype === 'image/webp' ? 'webp' : 'gif';
+      const path = `collab-requests/barter/${crypto.randomUUID()}.${ext}`;
+      const { error: uploadError } = await supabase.storage
+        .from('creator-assets')
+        .upload(path, file.buffer, { contentType: file.mimetype, upsert: false });
+      if (uploadError) {
+        console.error('[CollabRequests] Barter image upload error:', uploadError);
+        return res.status(500).json({ success: false, error: 'Failed to upload image' });
+      }
+      const { data: urlData } = supabase.storage.from('creator-assets').getPublicUrl(path);
+      return res.status(200).json({ success: true, url: urlData.publicUrl });
+    } catch (e) {
+      console.error('[CollabRequests] Barter image upload exception:', e);
+      return res.status(500).json({ success: false, error: 'Failed to upload image' });
+    }
+  }
+);
+
+/**
  * POST /api/collab/:username/submit
  * Submit a collaboration request (public, no auth)
  */
@@ -265,6 +307,7 @@ router.post('/:username/submit', async (req: Request, res: Response) => {
       exact_budget,
       barter_description,
       barter_value,
+      barter_product_image_url,
       campaign_description,
       deliverables,
       usage_rights,
@@ -387,6 +430,13 @@ router.post('/:username/submit', async (req: Request, res: Response) => {
     if (collab_type === 'barter' || collab_type === 'both') {
       insertData.barter_description = barter_description?.trim() || null;
       insertData.barter_value = barter_value ? parseFloat(barter_value) : null;
+      // Optional barter product image URL (basic validation)
+      if (barter_product_image_url != null && typeof barter_product_image_url === 'string') {
+        const trimmed = barter_product_image_url.trim();
+        if (trimmed && (trimmed.startsWith('http://') || trimmed.startsWith('https://'))) {
+          insertData.barter_product_image_url = trimmed;
+        }
+      }
     }
 
     const { data: collabRequest, error: insertError } = await supabase

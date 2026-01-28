@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from 'react';
-import { Home, Briefcase, CreditCard, Shield, TrendingUp, DollarSign, Calendar, FileText, AlertCircle, Clock, ChevronRight, Plus, Search, Target, BarChart3, RefreshCw, LogOut, Loader2, XCircle, Menu, Link2, Copy, ExternalLink } from 'lucide-react';
+import { Home, Briefcase, CreditCard, Shield, TrendingUp, Calendar, FileText, AlertCircle, Clock, ChevronRight, Plus, Search, Target, BarChart3, RefreshCw, LogOut, Loader2, XCircle, Menu, Link2, Copy, ExternalLink } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { toast } from 'sonner';
 import { useSignOut } from '@/lib/hooks/useAuth';
@@ -53,7 +53,6 @@ const CreatorDashboard = () => {
   const [showMenu, setShowMenu] = useState(false);
   const [showLogoutDialog, setShowLogoutDialog] = useState(false);
   const [timeframe, setTimeframe] = useState<'month' | 'lastMonth' | 'allTime'>('month');
-  const [moneyProtectionTab, setMoneyProtectionTab] = useState<'recovered' | 'atRisk' | 'allTime'>('recovered');
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [showTutorial, setShowTutorial] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
@@ -400,76 +399,6 @@ const CreatorDashboard = () => {
     });
   }, [hasDeals, hasNoData, isLoadingDeals, brandDealsError, brandDeals]);
 
-  // Recent activity from real deals
-  const recentActivity = useMemo(() => {
-    if (hasNoData) return [];
-    
-    const activities: Array<{
-      id: string;
-      type: string;
-      title: string;
-      description: string;
-      time: string;
-      icon: typeof DollarSign;
-      color: string;
-      bgColor: string;
-    }> = [];
-
-    // Get recent payments
-    const recentPayments = brandDeals
-      .filter(deal => deal.payment_received_date)
-      .sort((a, b) => {
-        const dateA = new Date(a.payment_received_date!).getTime();
-        const dateB = new Date(b.payment_received_date!).getTime();
-        return dateB - dateA;
-      })
-      .slice(0, 2);
-
-    recentPayments.forEach(deal => {
-      const date = new Date(deal.payment_received_date!);
-      const hoursAgo = Math.floor((Date.now() - date.getTime()) / (1000 * 60 * 60));
-      activities.push({
-        id: `payment-${deal.id}`,
-        type: "payment_received",
-        title: "Payment Received",
-        description: `${deal.brand_name} - ₹${deal.deal_amount.toLocaleString('en-IN')}`,
-        time: hoursAgo < 24 ? `${hoursAgo} hours ago` : `${Math.floor(hoursAgo / 24)} days ago`,
-        icon: DollarSign,
-        color: "text-green-400",
-        bgColor: "bg-green-500/20"
-      });
-    });
-
-    // Get upcoming due dates
-    const upcomingDue = brandDeals
-      .filter(deal => deal.due_date && !deal.payment_received_date)
-      .sort((a, b) => {
-        const dateA = new Date(a.due_date!).getTime();
-        const dateB = new Date(b.due_date!).getTime();
-        return dateA - dateB;
-      })
-      .slice(0, 1);
-
-    upcomingDue.forEach(deal => {
-      const date = new Date(deal.due_date!);
-      const daysUntil = Math.ceil((date.getTime() - Date.now()) / (1000 * 60 * 60 * 24));
-      if (daysUntil <= 7) {
-        activities.push({
-          id: `due-${deal.id}`,
-          type: "contract_alert",
-          title: daysUntil < 0 ? "Overdue" : "Due Soon",
-          description: `${deal.brand_name} ${daysUntil < 0 ? 'overdue' : `due in ${daysUntil} days`}`,
-          time: daysUntil < 0 ? "Overdue" : `${daysUntil} days left`,
-          icon: AlertCircle,
-          color: daysUntil < 0 ? "text-red-400" : "text-yellow-400",
-          bgColor: daysUntil < 0 ? "bg-red-500/20" : "bg-yellow-500/20"
-        });
-      }
-    });
-
-    return activities.slice(0, 3);
-  }, [brandDeals, hasNoData]);
-
   // Active deals preview from real data
   // Active = not completed and not fully paid (payment_received_date is null or status is not 'Completed')
   const activeDealsPreview = useMemo(() => {
@@ -651,58 +580,6 @@ const CreatorDashboard = () => {
     deliverablesProgress: deal.deliverablesProgress,
     trustBadge: deal.trustBadge
   }));
-
-  // Upcoming payments - Real data from brand deals
-  const upcomingPayments = useMemo(() => {
-    if (!brandDeals || brandDeals.length === 0) return [];
-    
-    const now = new Date();
-    now.setHours(0, 0, 0, 0);
-    
-    return brandDeals
-      .filter(deal => {
-        // Only show deals with Payment Pending status that haven't been received yet
-        if (deal.status !== 'Payment Pending' || deal.payment_received_date) return false;
-        
-        // Must have a payment expected date
-        if (!deal.payment_expected_date) return false;
-        
-        const dueDate = new Date(deal.payment_expected_date);
-        dueDate.setHours(0, 0, 0, 0);
-        const daysUntil = Math.ceil((dueDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-        
-        // Only show future payments (or today)
-        return daysUntil >= 0;
-      })
-      .map(deal => {
-        const dueDate = new Date(deal.payment_expected_date!);
-        const daysUntil = Math.ceil((dueDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-        
-        // Determine status based on days until payment
-        let status: 'pending' | 'processing' | 'overdue' = 'pending';
-        if (daysUntil === 0) {
-          status = 'processing'; // Due today
-        } else if (daysUntil < 0) {
-          status = 'overdue';
-        }
-        
-        return {
-          id: deal.id,
-          title: deal.brand_name || 'Unknown Brand',
-          amount: deal.deal_amount || 0,
-          date: dueDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
-          status: status,
-          dealId: deal.id
-        };
-      })
-      .sort((a, b) => {
-        // Sort by date (earliest first)
-        const dateA = new Date(a.date).getTime();
-        const dateB = new Date(b.date).getTime();
-        return dateA - dateB;
-      })
-      .slice(0, 5); // Limit to top 5 upcoming payments
-  }, [brandDeals]);
 
   // Quick actions
   const quickActions = [
@@ -965,177 +842,165 @@ const CreatorDashboard = () => {
                 <EnhancedDashboardSkeleton />
               </div>
             ) : hasNoData ? (
-              // Empty State for New Users
-              <div className="max-w-5xl mx-auto space-y-6 pb-4 md:pb-8">
-                {/* Greeting */}
+              // New-user empty state — Collab-Link–first (no manual “Add Deal”)
+              <div className="max-w-5xl mx-auto space-y-8 pb-28 md:pb-32">
+                {/* Greeting — intent: brands reach you the right way */}
                 <div className={cn(sectionLayout.header, "md:pt-4 md:text-left")}>
-                  <h1 className={cn(typography.h1, "mb-2 leading-tight md:text-xl")}>
+                  <h1 className={cn(typography.h1, "mb-2 leading-tight md:text-xl break-words")}>
                     {getGreeting()}, {userData.name}! 👋
                   </h1>
-                  <p className={cn(typography.body, "leading-relaxed")}>Let's get you started with your first brand deal.</p>
+                  <p className={cn(typography.body, "leading-relaxed break-words")}>Let&apos;s help brands reach you the right way.</p>
+                  <p className={cn(typography.bodySmall, "text-white/70 mt-1 break-words")}>Creator Armour replaces brand DMs with protected collaboration requests.</p>
                 </div>
 
-                {/* Empty State Card */}
-                <BaseCard variant="secondary" className="text-center p-6 md:p-6 relative" onClick={(e) => e?.stopPropagation()}>
+                {/* Hero: Your Official Brand Collaboration Link */}
+                <BaseCard variant="secondary" className="text-center p-6 md:p-6 relative border border-purple-400/30" onClick={(e) => e?.stopPropagation()}>
                   <motion.div
                     initial={{ scale: 0.8, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
-                    className="w-20 h-20 md:w-16 md:h-16 rounded-full bg-gradient-to-br from-purple-500/20 to-indigo-500/20 flex items-center justify-center mx-auto mb-4 md:mb-3"
+                    className="w-16 h-16 md:w-14 md:h-14 rounded-xl bg-purple-500/20 flex items-center justify-center mx-auto mb-4"
                   >
-                    <Briefcase className={cn(iconSizes.xl, "md:w-8 md:h-8 text-purple-400")} />
+                    <Link2 className={cn(iconSizes.xl, "md:w-7 md:h-7 text-purple-400")} />
                   </motion.div>
-                  <h2 className={cn(typography.h2, "mb-3 md:text-2xl")}>Welcome to Your Dashboard!</h2>
-                  <p className={cn(typography.body, "mb-6 max-w-md md:max-w-lg mx-auto")}>
-                    Start tracking your brand deals, payments, and contracts. Add your first deal to see your earnings and activity here.
+                  <h2 className={cn(typography.h2, "mb-2 md:text-2xl break-words")}>Your Official Brand Collaboration Link</h2>
+                  <p className={cn(typography.body, "mb-5 max-w-md mx-auto break-words")}>
+                    This is the only link brands need to collaborate with you.<br className="hidden sm:inline" /> No DMs. No confusion. Fully protected.
                   </p>
-                  <div className="flex flex-col sm:flex-row gap-3 justify-center relative md:max-w-md md:mx-auto" style={{ zIndex: 50, pointerEvents: 'auto' }}>
+                  <div className="flex flex-col gap-3 max-w-sm mx-auto" style={{ zIndex: 50, pointerEvents: 'auto' }}>
                     <motion.button
                       onClick={(e) => {
                         e.preventDefault();
                         e.stopPropagation();
-                        triggerHaptic(HapticPatterns.medium);
-                        navigate('/contract-upload');
+                        const username = profile?.instagram_handle || profile?.username;
+                        if (username) {
+                          const link = `${typeof window !== 'undefined' ? window.location.origin : ''}/collab/${username}`;
+                          navigator.clipboard.writeText(link);
+                          toast.success('Collab link copied!');
+                          triggerHaptic(HapticPatterns.medium);
+                        } else {
+                          toast.error('Username not set. Please complete your profile.');
+                        }
                       }}
-                      onMouseDown={(e) => {
-                        e.stopPropagation();
-                      }}
-                      onTouchStart={(e) => {
-                        e.stopPropagation();
-                      }}
-                      whileHover={{ scale: 1.02 }}
+                      onMouseDown={(e) => e.stopPropagation()}
+                      onTouchStart={(e) => e.stopPropagation()}
+                      whileTap={animations.microTap}
                       className={cn(
                         buttons.primary,
-                        "flex items-center justify-center gap-2",
-                        "cursor-pointer",
-                        "pointer-events-auto",
-                        "touch-manipulation",
-                        "select-none",
-                        "min-h-[44px] md:min-h-[40px]",
-                        "will-change-transform",
-                        "md:text-sm"
+                        "flex items-center justify-center gap-2 min-h-[44px] w-full"
                       )}
                       type="button"
-                      style={{ 
-                        pointerEvents: 'auto',
-                        WebkitTapHighlightColor: 'transparent',
-                        touchAction: 'manipulation',
-                        position: 'relative',
-                        zIndex: 50,
-                        isolation: 'isolate'
-                      }}
-                      aria-label="Add Your First Deal"
+                      aria-label="Copy Collab Link"
                     >
-                      <Plus className={iconSizes.md} />
-                      Add Your First Deal
+                      <Copy className={iconSizes.md} />
+                      Copy Collab Link
                     </motion.button>
-                    <motion.button
+                    <motion.a
+                      href={(profile?.instagram_handle || profile?.username) ? `/collab/${profile?.instagram_handle || profile?.username}` : undefined}
+                      target="_blank"
+                      rel="noopener noreferrer"
                       onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        triggerHaptic(HapticPatterns.light);
-                        toast.info('Explore Brands coming soon!', {
-                          description: 'We\'re working on bringing you an amazing brand directory experience.',
-                          duration: 3000,
-                        });
+                        if (!(profile?.instagram_handle || profile?.username)) {
+                          e.preventDefault();
+                          toast.error('Username not set. Please complete your profile.');
+                        } else {
+                          triggerHaptic(HapticPatterns.light);
+                        }
                       }}
-                      onMouseDown={(e) => {
-                        e.stopPropagation();
-                      }}
-                      onTouchStart={(e) => {
-                        e.stopPropagation();
-                      }}
-                      whileHover={{ scale: 1.02 }}
                       className={cn(
-                        buttons.secondary,
-                        "flex items-center justify-center gap-2",
-                        "cursor-pointer",
-                        "pointer-events-auto",
-                        "touch-manipulation",
-                        "select-none",
-                        "min-h-[44px] md:min-h-[40px]",
-                        "will-change-transform",
-                        "md:text-sm",
-                        "opacity-90"
+                        "inline-flex items-center justify-center gap-2 min-h-[44px] text-sm font-medium text-white/80 hover:text-white transition-colors",
+                        !(profile?.instagram_handle || profile?.username) && "pointer-events-none opacity-60"
                       )}
-                      type="button"
-                      style={{ 
-                        pointerEvents: 'auto',
-                        WebkitTapHighlightColor: 'transparent',
-                        touchAction: 'manipulation',
-                        position: 'relative',
-                        zIndex: 50,
-                        isolation: 'isolate'
-                      }}
-                      aria-label="Explore Brands - Coming Soon"
                     >
-                      <Briefcase className={iconSizes.md} />
-                      Explore Brands - Coming Soon
-                    </motion.button>
+                      <ExternalLink className="w-4 h-4" />
+                      Preview as a Brand
+                    </motion.a>
                   </div>
+                  <p className={cn(typography.caption, "text-white/50 mt-4 break-words")}>Every request is timestamped and legally protected.</p>
                 </BaseCard>
 
-                {/* Quick Start Guide */}
-                <SectionCard 
+                {/* First-time activation: guided steps */}
+                <BaseCard variant="tertiary" className="p-5 md:p-5 text-left border border-white/10">
+                  <h3 className={cn(typography.h4, "mb-4 break-words")}>You&apos;re ready to receive brand deals</h3>
+                  <ul className="space-y-3 mb-5">
+                    <li className="flex items-start gap-3 text-sm">
+                      <span className="flex-shrink-0 w-5 h-5 rounded-full bg-green-500/30 border border-green-400/50 flex items-center justify-center text-green-300 text-xs font-semibold">1</span>
+                      <span className="break-words">Add your collab link to Instagram bio</span>
+                    </li>
+                    <li className="flex items-start gap-3 text-sm">
+                      <span className="flex-shrink-0 w-5 h-5 rounded-full bg-green-500/30 border border-green-400/50 flex items-center justify-center text-green-300 text-xs font-semibold">2</span>
+                      <span className="break-words">Reply to brand DMs with this link</span>
+                    </li>
+                    <li className="flex items-start gap-3 text-sm">
+                      <span className="flex-shrink-0 w-5 h-5 rounded-full bg-green-500/30 border border-green-400/50 flex items-center justify-center text-green-300 text-xs font-semibold">3</span>
+                      <span className="break-words">Review, accept, or counter offers inside Creator Armour</span>
+                    </li>
+                  </ul>
+                  <motion.button
+                    onClick={() => { triggerHaptic(HapticPatterns.light); navigate('/creator-collab'); }}
+                    whileTap={animations.microTap}
+                    className={cn(
+                      buttons.secondary,
+                      "w-full min-h-[44px] flex items-center justify-center gap-2 border-purple-400/40 text-purple-100"
+                    )}
+                  >
+                    Go to Collaboration Requests
+                    <ChevronRight className="w-4 h-4" />
+                  </motion.button>
+                </BaseCard>
+
+                {/* How Creator Armour Works — refactored from Quick Start */}
+                <SectionCard
                   variant="secondary"
-                  title="Quick Start Guide"
+                  title="How Creator Armour Works"
                   icon={<Target className="w-5 h-5 text-purple-400" />}
                   className="mb-6 md:mb-24 border-t border-white/10 pt-6 mt-6"
                 >
                   <div className="grid md:grid-cols-3 gap-4 md:gap-3">
                     <motion.div
-                      onClick={() => {
-                        triggerHaptic(HapticPatterns.light);
-                        navigate('/creator-contracts');
-                      }}
+                      onClick={() => { triggerHaptic(HapticPatterns.light); navigate('/creator-collab'); }}
                       whileTap={animations.microTap}
                       whileHover={{ y: -2, transition: { duration: 0.2 } }}
                       className="cursor-pointer h-full"
                     >
                       <BaseCard variant="tertiary" interactive className="h-full md:p-4 hover:shadow-lg hover:shadow-purple-500/20 transition-all duration-200">
                         <div className="w-10 h-10 md:w-9 md:h-9 rounded-lg bg-purple-500/20 flex items-center justify-center mb-2 md:mb-1.5">
-                          <Briefcase className={cn(iconSizes.md, "md:w-4 md:h-4 text-purple-400")} />
+                          <Link2 className={cn(iconSizes.md, "md:w-4 md:h-4 text-purple-400")} />
                         </div>
-                        <h4 className={cn(typography.h4, "mb-0.5 md:mb-0 md:text-sm")}>Add Brand Deals</h4>
-                        <p className={cn(typography.bodySmall, "md:text-xs")}>Track your partnerships and contracts</p>
+                        <h4 className={cn(typography.h4, "mb-0.5 md:mb-0 md:text-sm break-words")}>Share your Collab Link</h4>
+                        <p className={cn(typography.bodySmall, "md:text-xs break-words")}>Brands submit structured requests</p>
                       </BaseCard>
                     </motion.div>
                     <motion.div
-                      onClick={() => {
-                        triggerHaptic(HapticPatterns.light);
-                        navigate('/creator-payments');
-                      }}
+                      onClick={() => { triggerHaptic(HapticPatterns.light); navigate('/creator-collab'); }}
                       whileTap={animations.microTap}
                       whileHover={{ y: -2, transition: { duration: 0.2 } }}
                       className="cursor-pointer h-full"
                     >
                       <BaseCard variant="tertiary" interactive className="h-full md:p-4 hover:shadow-lg hover:shadow-green-500/20 transition-all duration-200">
                         <div className="w-10 h-10 md:w-9 md:h-9 rounded-lg bg-green-500/20 flex items-center justify-center mb-2 md:mb-1.5">
-                          <CreditCard className={cn(iconSizes.md, "md:w-4 md:h-4 text-green-400")} />
+                          <Briefcase className={cn(iconSizes.md, "md:w-4 md:h-4 text-green-400")} />
                         </div>
-                        <h4 className={cn(typography.h4, "mb-0.5 md:mb-0 md:text-sm")}>Track Payments</h4>
-                        <p className={cn(typography.bodySmall, "md:text-xs")}>Monitor incoming and pending payments</p>
+                        <h4 className={cn(typography.h4, "mb-0.5 md:mb-0 md:text-sm break-words")}>Review Brand Requests</h4>
+                        <p className={cn(typography.bodySmall, "md:text-xs break-words")}>Accept, counter, or decline safely</p>
                       </BaseCard>
                     </motion.div>
                     <motion.div
-                      onClick={() => {
-                        triggerHaptic(HapticPatterns.light);
-                        navigate('/creator-contracts');
-                      }}
+                      onClick={() => { triggerHaptic(HapticPatterns.light); navigate('/creator-payments'); }}
                       whileTap={animations.microTap}
                       whileHover={{ y: -2, transition: { duration: 0.2 } }}
                       className="cursor-pointer h-full"
                     >
-                      <BaseCard variant="tertiary" interactive className="h-full md:p-4 hover:shadow-lg hover:shadow-blue-500/20 transition-all duration-200">
+                      <BaseCard variant="tertiary" interactive className="h-full md:p-4 hover:shadow-lg hover:shadow-blue-500/20 transition-all duration-200 opacity-90">
                         <div className="w-10 h-10 md:w-9 md:h-9 rounded-lg bg-blue-500/20 flex items-center justify-center mb-2 md:mb-1.5">
-                          <Shield className={cn(iconSizes.md, "md:w-4 md:h-4 text-blue-400")} />
+                          <CreditCard className={cn(iconSizes.md, "md:w-4 md:h-4 text-blue-400")} />
                         </div>
-                        <h4 className={cn(typography.h4, "mb-0.5 md:mb-0 md:text-sm")}>Protect Content</h4>
-                        <p className={cn(typography.bodySmall, "md:text-xs")}>Register and monitor your content</p>
+                        <h4 className={cn(typography.h4, "mb-0.5 md:mb-0 md:text-sm break-words")}>Payments & Contracts Auto-Handled</h4>
+                        <p className={cn(typography.bodySmall, "md:text-xs break-words")}>Activated only after acceptance</p>
                       </BaseCard>
                     </motion.div>
                   </div>
                 </SectionCard>
-                    </div>
+              </div>
             ) : (
               <>
             {/* Hero Section - Edge-to-edge with gradient background */}
@@ -1277,34 +1142,70 @@ const CreatorDashboard = () => {
                   </motion.button>
                 </BaseCard>
               ) : (
-                <div className="space-y-2">
+                <div className="space-y-4">
                   {collabRequestsPreview.map((r) => {
                     const budget = r.exact_budget ? `₹${r.exact_budget.toLocaleString('en-IN')}` : r.budget_range || '—';
-                    const typeLabel = r.collab_type === 'paid' ? 'Paid' : r.collab_type === 'barter' ? 'Barter' : 'Both';
+                    const isPaid = r.collab_type === 'paid' || r.collab_type === 'both';
+                    const isBarter = r.collab_type === 'barter' || r.collab_type === 'both';
                     const received = r.created_at ? (() => {
                       const d = new Date(r.created_at);
-                      const diff = Math.floor((Date.now() - d.getTime()) / (1000 * 60 * 60 * 24));
-                      return diff === 0 ? 'Today' : diff === 1 ? 'Yesterday' : `${diff} days ago`;
+                      const diffDays = Math.floor((Date.now() - d.getTime()) / (1000 * 60 * 60 * 24));
+                      return diffDays === 0 ? 'Today' : diffDays === 1 ? 'Yesterday' : `${diffDays} days ago`;
                     })() : '';
+                    const receivedHours = r.created_at ? Math.floor((Date.now() - new Date(r.created_at).getTime()) / (1000 * 60 * 60)) : 0;
+                    const showRespondSoon = receivedHours > 24;
                     return (
                       <BaseCard
                         key={r.id}
                         variant="tertiary"
-                        className={cn("p-4 cursor-pointer flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3", animations.cardHover)}
+                        className={cn(
+                          "p-4 cursor-pointer flex flex-col gap-3 rounded-2xl",
+                          "shadow-lg shadow-black/10 border border-white/10",
+                          "hover:border-purple-400/20 hover:shadow-purple-500/5 active:scale-[0.99] transition-all duration-200"
+                        )}
                         onClick={() => { triggerHaptic(HapticPatterns.light); navigate('/collab-requests'); }}
                       >
-                        <div className="min-w-0">
-                          <p className="font-semibold text-white truncate">{r.brand_name}</p>
-                          <p className="text-sm text-purple-200/80">{budget} · {typeLabel}</p>
-                          <p className="text-xs text-purple-300/70 mt-0.5">Received {received}</p>
+                        {/* Top row: Brand name (left) | Status badge (right) */}
+                        <div className="flex items-start justify-between gap-2 min-w-0">
+                          <p className="font-bold text-white text-base break-words flex-1 min-w-0">{r.brand_name}</p>
+                          <span className={cn(
+                            "flex-shrink-0 px-2.5 py-1 rounded-full text-xs font-medium",
+                            isPaid && !isBarter && "bg-green-500/20 text-green-200 border border-green-500/30",
+                            isBarter && !isPaid && "bg-blue-500/20 text-blue-200 border border-blue-500/30",
+                            isPaid && isBarter && "bg-purple-500/20 text-purple-200 border border-purple-500/30"
+                          )}>
+                            {r.collab_type === 'paid' ? 'Paid' : r.collab_type === 'barter' ? 'Barter' : 'Both'}
+                          </span>
                         </div>
-                        <button
+                        {/* Second row: Budget or "Barter Collaboration" */}
+                        <div>
+                          {isPaid && (r.exact_budget || r.budget_range) ? (
+                            <p className="text-sm font-semibold text-white tabular-nums">{budget}</p>
+                          ) : (
+                            <p className="text-sm text-purple-200/90">Barter Collaboration</p>
+                          )}
+                        </div>
+                        {/* Third row: Received time (muted) + optional Respond Soon */}
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <p className="text-xs text-purple-300/60">Received {received}</p>
+                          {showRespondSoon && (
+                            <span className="text-xs text-amber-300/90 bg-amber-500/10 px-2 py-0.5 rounded">Respond Soon</span>
+                          )}
+                        </div>
+                        {/* Full-width primary CTA — min 44px touch target */}
+                        <motion.button
                           type="button"
                           onClick={(e) => { e.stopPropagation(); triggerHaptic(HapticPatterns.light); navigate('/collab-requests'); }}
-                          className={cn("self-start sm:self-center", sectionHeader.action)}
+                          whileTap={animations.microTap}
+                          className={cn(
+                            "w-full min-h-[44px] inline-flex items-center justify-center gap-2 rounded-lg font-semibold text-sm",
+                            "bg-purple-500/40 hover:bg-purple-500/50 border border-purple-400/50 text-purple-100",
+                            "transition-colors duration-200"
+                          )}
                         >
-                          Review
-                        </button>
+                          Review Request
+                          <ChevronRight className="w-4 h-4 flex-shrink-0" />
+                        </motion.button>
                       </BaseCard>
                     );
                   })}
@@ -1526,195 +1427,6 @@ const CreatorDashboard = () => {
                 </div>
 
                 {/* Section Separator */}
-                <div className={separators.section} />
-
-                {/* Money Protection Card */}
-                <motion.div 
-                  data-tutorial="money-protection-card"
-                  onClick={() => {
-                    triggerHaptic(HapticPatterns.medium);
-                    navigate('/creator-payments');
-                  }}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                      e.preventDefault();
-                      triggerHaptic(HapticPatterns.medium);
-                      navigate('/creator-payments');
-                    }
-                  }}
-                  whileTap={animations.microTap}
-                  whileHover={window.innerWidth > 768 ? animations.microHover : undefined}
-                  className={cn(
-                    "w-full relative overflow-hidden text-left",
-                    glass.apple,
-                    shadows.vision,
-                    radius.lg,
-                    "p-3 sm:p-6",
-                    animations.cardHover,
-                    "transition-all duration-200",
-                    "cursor-pointer"
-                  )}
-                  role="button"
-                  tabIndex={0}
-                  aria-label="View money protection details"
-                >
-              {/* Vision Pro depth elevation */}
-              <div className={vision.depth.elevation} />
-              
-              {/* Spotlight gradient */}
-              <div className={cn(vision.spotlight.base, "opacity-40")} />
-              
-              {/* Glare effect */}
-              <div className={vision.glare.soft} />
-              
-              {/* Background glow */}
-              <div className={cn("absolute top-0 right-0 w-32 h-32", radius.full, "bg-purple-500/10 blur-3xl")} />
-              
-              <div className="relative z-10">
-                {/* Header */}
-                <div className={cn(
-                  "flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-2",
-                  spacing.compact
-                )}>
-                  <div className={cn("flex items-center gap-2")}>
-                    <div className={cn(
-                      "w-10 h-10",
-                      radius.full,
-                      "bg-purple-500/20 flex items-center justify-center",
-                      shadows.sm
-                    )}>
-                      <Shield className={cn(iconSizes.md, "text-purple-300")} />
-                    </div>
-                    <span className={cn(typography.body, "font-medium")}>Money Protection</span>
-                  </div>
-                  <div className={cn(
-                    "flex gap-1.5 sm:gap-1 w-full sm:w-auto",
-                    glass.appleSubtle,
-                    radius.md,
-                    "p-1.5 sm:p-2",
-                    "overflow-x-auto sm:overflow-visible",
-                    "[&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
-                  )}>
-                    <motion.button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setMoneyProtectionTab('recovered');
-                        triggerHaptic(HapticPatterns.light);
-                      }}
-                      whileTap={animations.microTap}
-                      className={cn(
-                        "px-3 py-2 sm:px-2 sm:py-1.5",
-                        "text-xs sm:text-sm",
-                        radius.sm,
-                        "transition-all whitespace-nowrap",
-                        "min-h-[36px] sm:min-h-0",
-                        moneyProtectionTab === 'recovered'
-                          ? 'bg-purple-600 text-white'
-                          : 'text-purple-300 hover:text-white'
-                      )}
-                      aria-label="View recovered amount"
-                    >
-                      Recovered
-                    </motion.button>
-                    <motion.button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        if (stats.pendingPayments === 0 && stats.earnings === 0) {
-                          return; // Disable if no data
-                        }
-                        setMoneyProtectionTab('atRisk');
-                        triggerHaptic(HapticPatterns.light);
-                      }}
-                      whileTap={animations.microTap}
-                      disabled={stats.pendingPayments === 0 && stats.earnings === 0}
-                      className={cn(
-                        "px-3 py-2 sm:px-2 sm:py-1.5",
-                        "text-xs sm:text-sm",
-                        radius.sm,
-                        "transition-all whitespace-nowrap",
-                        "min-h-[36px] sm:min-h-0",
-                        moneyProtectionTab === 'atRisk'
-                          ? 'bg-purple-600 text-white'
-                          : 'text-purple-300 hover:text-white',
-                        (stats.pendingPayments === 0 && stats.earnings === 0) && 'opacity-50 cursor-not-allowed'
-                      )}
-                      aria-label="View amount at risk"
-                      title={(stats.pendingPayments === 0 && stats.earnings === 0) ? "Amounts will appear here if a payment becomes overdue" : undefined}
-                    >
-                      At Risk
-                    </motion.button>
-                    <motion.button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        if (stats.pendingPayments === 0 && stats.earnings === 0) {
-                          return; // Disable if no data
-                        }
-                        setMoneyProtectionTab('allTime');
-                        triggerHaptic(HapticPatterns.light);
-                      }}
-                      whileTap={animations.microTap}
-                      disabled={stats.pendingPayments === 0 && stats.earnings === 0}
-                      className={cn(
-                        "px-3 py-2 sm:px-2 sm:py-1.5",
-                        "text-xs sm:text-sm",
-                        radius.sm,
-                        "transition-all whitespace-nowrap",
-                        "min-h-[36px] sm:min-h-0",
-                        moneyProtectionTab === 'allTime'
-                          ? 'bg-purple-600 text-white'
-                          : 'text-purple-300 hover:text-white',
-                        (stats.pendingPayments === 0 && stats.earnings === 0) && 'opacity-50 cursor-not-allowed'
-                      )}
-                      aria-label="View all time protection"
-                    >
-                      All Time
-                    </motion.button>
-                  </div>
-                </div>
-
-                {/* Primary Value and Secondary Line */}
-                <div className={cn(
-                  "flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 sm:gap-2",
-                  "mt-4 sm:mt-2"
-                )}>
-                  <div className="flex-1 min-w-0">
-                    <div className={cn(
-                      "text-2xl sm:text-3xl md:text-4xl font-bold tabular-nums mb-2",
-                      "leading-tight"
-                    )}>
-                      {moneyProtectionTab === 'recovered' 
-                        ? (stats.pendingPayments === 0 && stats.earnings === 0 ? "No money at risk 🎉" : `₹0 recovered`)
-                        : moneyProtectionTab === 'atRisk'
-                        ? (stats.pendingPayments === 0 ? "No money at risk 🎉" : `₹${Math.round(stats.pendingPayments).toLocaleString('en-IN')} at risk`)
-                        : `₹${stats.earnings.toLocaleString('en-IN', { maximumFractionDigits: 0 })} protected`
-                      }
-                    </div>
-                    <div className={cn(typography.bodySmall, "text-purple-300")}>
-                      {moneyProtectionTab === 'recovered' 
-                        ? (stats.pendingPayments === 0 && stats.earnings === 0 ? "We'll alert you instantly if anything changes." : `₹${Math.round(stats.pendingPayments).toLocaleString('en-IN')} currently at risk`)
-                        : moneyProtectionTab === 'atRisk'
-                        ? (stats.pendingPayments === 0 ? "We'll alert you instantly if anything changes." : `From ${stats.activeDeals} active deal${stats.activeDeals === 1 ? '' : 's'}`)
-                        : `Total amount protected across all deals`
-                      }
-                    </div>
-                  </div>
-                  <div className={cn(
-                    "flex items-center gap-1 text-purple-300",
-                    typography.bodySmall,
-                    "self-start sm:self-end",
-                    "pt-1 sm:pt-0"
-                  )}>
-                    <span>View Recovery Details</span>
-                    <ChevronRight className={iconSizes.sm} />
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-
-                {/* Section Separator */}
-                <div className={separators.section} />
-
-            {/* Section Separator */}
             <div className={separators.section} />
 
                 {/* Legal Power Ready Card */}
@@ -1764,69 +1476,6 @@ const CreatorDashboard = () => {
                   </BaseCard>
                 </div>
 
-                {/* Section Separator */}
-                <div className={separators.section} />
-
-                {/* Recent Activity - iOS 17 + visionOS */}
-                <div className={cn(spacing.loose, "pb-6 md:pb-8 lg:pb-0")}>
-                  <div className={sectionHeader.base}>
-                    <h2 className={sectionHeader.title}>Recent Activity</h2>
-                  </div>
-                  {recentActivity.length === 0 ? (
-                    <BaseCard variant="tertiary" className={cn(spacing.cardPadding.secondary, "text-center relative overflow-hidden")}>
-                      {/* Spotlight */}
-                      <div className={cn(vision.spotlight.base, "opacity-20")} />
-                      <Clock className={cn(iconSizes.xl, "text-purple-400/50 mx-auto mb-3")} />
-                      <p className={typography.bodySmall}>No legal actions yet</p>
-                      <p className={cn(typography.caption, "mt-1")}>Your activity will appear here once contracts are scanned or notices are sent.</p>
-                    </BaseCard>
-                  ) : (
-                    <div className={spacing.card}>
-                      {recentActivity.map((activity, index) => {
-                        const Icon = activity.icon;
-                        return (
-                          <motion.div
-                            key={activity.id}
-                            initial={motionTokens.slide.up.initial}
-                            animate={motionTokens.slide.up.animate}
-                            transition={{ ...motionTokens.slide.up.transition, delay: index * 0.1 }}
-                            whileHover={window.innerWidth > 768 ? animations.microHover : undefined}
-                            whileTap={animations.microTap}
-                          >
-                            <BaseCard 
-                              variant="tertiary" 
-                              className={cn(
-                                animations.cardHover,
-                                "cursor-pointer relative overflow-hidden"
-                              )}
-                              onClick={() => triggerHaptic(HapticPatterns.light)}
-                            >
-                              {/* Spotlight on hover */}
-                              <div className={cn(vision.spotlight.hover, "opacity-0 group-hover:opacity-100")} />
-                              
-                              <div className={cn("flex items-start gap-3")}>
-                                <div className={cn(
-                                  "w-10 h-10",
-                                  radius.md,
-                                  activity.bgColor,
-                                  "flex items-center justify-center flex-shrink-0",
-                                  shadows.sm
-                                )}>
-                                  <Icon className={cn(iconSizes.md, activity.color)} />
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                  <h3 className={cn(typography.h4, "mb-1")}>{activity.title}</h3>
-                                  <p className={cn("text-sm md:text-base", "text-purple-200 mb-1")}>{activity.description}</p>
-                                  <p className={cn(typography.caption, "text-purple-300")}>{activity.time}</p>
-                                </div>
-                              </div>
-                            </BaseCard>
-                          </motion.div>
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
               </div>
 
               {/* RIGHT COLUMN - Secondary Actions and Status */}
@@ -1891,59 +1540,6 @@ const CreatorDashboard = () => {
                   )}
                 </div>
 
-                {/* Quick Stats Row - Mobile/Tablet Only */}
-                {Math.round(stats.pendingPayments) > 0 ? (
-                  <div data-tutorial="stats-grid" className="space-y-3 mb-4 lg:hidden">
-                    <StatCard
-                      label="Action Required"
-                      value={Math.round(stats.pendingPayments)}
-                      icon={<CreditCard className={`${iconSizes.sm} text-amber-400`} />}
-                      variant="tertiary"
-                      className="border-amber-500/30 bg-amber-500/5"
-                    />
-                    <div className="grid grid-cols-2 gap-2 sm:gap-4">
-                      <StatCard
-                        label="Deals Monitored"
-                        value={stats.totalDeals}
-                        icon={<Briefcase className={`${iconSizes.sm} text-blue-400`} />}
-                        variant="tertiary"
-                        showAffordance={true}
-                      />
-                      <StatCard
-                        label="Under Protection"
-                        value={stats.activeDeals}
-                        icon={<BarChart3 className={`${iconSizes.sm} text-green-400`} />}
-                        variant="tertiary"
-                        showAffordance={true}
-                      />
-                    </div>
-                  </div>
-                ) : (
-                  <div data-tutorial="stats-grid" className="grid grid-cols-3 gap-2 sm:gap-4 w-full max-w-full mb-4 lg:hidden">
-                    <StatCard
-                      label="Deals Monitored"
-                      value={stats.totalDeals}
-                      icon={<Briefcase className={`${iconSizes.sm} text-blue-400`} />}
-                      variant="tertiary"
-                      showAffordance={true}
-                    />
-                    <StatCard
-                      label="Under Protection"
-                      value={stats.activeDeals}
-                      icon={<BarChart3 className={`${iconSizes.sm} text-green-400`} />}
-                      variant="tertiary"
-                      showAffordance={true}
-                    />
-                    <StatCard
-                      label="Action Required"
-                      value={Math.round(stats.pendingPayments)}
-                      icon={<CreditCard className={`${iconSizes.sm} text-orange-400`} />}
-                      variant="tertiary"
-                      subtitle="No action needed 🎉"
-                    />
-                  </div>
-                )}
-
                 {/* Optional Calm-State Nudge - Show when Action Required = 0 and Money at risk = 0 */}
                 {Math.round(stats.pendingPayments) === 0 && stats.earnings === 0 && (() => {
                   const hintDismissed = localStorage.getItem(`dashboard-hint-dismissed-${user?.id || 'anonymous'}`);
@@ -1980,88 +1576,6 @@ const CreatorDashboard = () => {
                   );
                 })()}
               </div>
-            </div>
-
-            {/* Payments Under Watch - Full width below columns */}
-            <div className="mt-6">
-              {/* Section Separator */}
-              <div className={separators.section} />
-
-              {/* Payments Under Watch - iOS 17 + visionOS */}
-              <div>
-              <div className={sectionHeader.base}>
-                <h2 className={sectionHeader.title}>Payments Under Watch</h2>
-                <motion.button 
-                  onClick={() => {
-                    triggerHaptic(HapticPatterns.light);
-                    navigate('/creator-payments');
-                  }}
-                  whileTap={animations.microTap}
-                  className={sectionHeader.action}
-                >
-                  View All →
-                </motion.button>
-              </div>
-              <div className={spacing.card}>
-                {upcomingPayments.map((payment, index) => (
-                  <motion.div
-                    key={payment.id}
-                    initial={motionTokens.slide.up.initial}
-                    animate={motionTokens.slide.up.animate}
-                    transition={{ ...motionTokens.slide.up.transition, delay: index * 0.1 }}
-                    whileHover={window.innerWidth > 768 ? animations.microHover : undefined}
-                    whileTap={animations.microTap}
-                  >
-                    <BaseCard 
-                      variant="tertiary" 
-                      className={cn(
-                        animations.cardHover,
-                        "cursor-pointer relative overflow-hidden"
-                      )}
-                      onClick={() => {
-                        triggerHaptic(HapticPatterns.light);
-                        navigate('/creator-payments');
-                      }}
-                    >
-                      {/* Spotlight on hover */}
-                      <div className={cn(vision.spotlight.hover, "opacity-0 group-hover:opacity-100")} />
-                      
-                      <div className={cn("flex items-center justify-between")}>
-                        <div className="flex-1">
-                          <h3 className={cn(typography.h4, "mb-1")}>{payment.title}</h3>
-                          <div className={cn("flex items-center gap-2", typography.bodySmall)}>
-                            <Clock className={iconSizes.xs} />
-                            <span>Expected: {payment.date}</span>
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          <div className={cn(typography.amountSmall, "text-green-400")}>
-                            ₹{Math.round(payment.amount).toLocaleString('en-IN')}
-                          </div>
-                          <div className={cn(
-                            typography.caption,
-                            "flex items-center gap-1",
-                            payment.status === 'pending' ? 'text-yellow-400' : 'text-blue-400'
-                          )}>
-                            {payment.status === 'pending' ? (
-                              <>
-                                <Clock className={iconSizes.xs} />
-                              <span>Pending</span>
-                </>
-              ) : (
-                <>
-                              <RefreshCw className={`${iconSizes.xs} animate-spin`} />
-                              <span>Processing</span>
-                            </>
-            )}
-          </div>
-                      </div>
-                    </div>
-                    </BaseCard>
-                  </motion.div>
-                ))}
-              </div>
-            </div>
             </div>
               </>
             )}

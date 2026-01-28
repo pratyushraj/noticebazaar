@@ -35,6 +35,7 @@ interface CreatorNavigationWrapperProps {
   rightActions?: React.ReactNode;
   hideBottomNav?: boolean;
   className?: string;
+  compactHeader?: boolean; // ~30% less header height on mobile
 }
 
 export const CreatorNavigationWrapper: React.FC<CreatorNavigationWrapperProps> = ({
@@ -45,6 +46,7 @@ export const CreatorNavigationWrapper: React.FC<CreatorNavigationWrapperProps> =
   rightActions,
   hideBottomNav = false,
   className,
+  compactHeader = false,
 }) => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -91,6 +93,7 @@ export const CreatorNavigationWrapper: React.FC<CreatorNavigationWrapperProps> =
           onMenuClick={() => setShowMenu(true)}
           rightActions={rightActions}
           premium={location.pathname.startsWith('/creator-contracts')}
+          compact={compactHeader}
         />
       )}
 

@@ -55,7 +55,6 @@ interface FormErrors {
   campaignDescription?: string;
   deliverables?: string;
   budget?: string;
-  barterDescription?: string;
 }
 
 // Reserved usernames that should not be used for collab links
@@ -99,8 +98,9 @@ const CollabLinkLanding = () => {
   const [brandInstagram, setBrandInstagram] = useState('');
   const [budgetRange, setBudgetRange] = useState('');
   const [exactBudget, setExactBudget] = useState('');
-  const [barterDescription, setBarterDescription] = useState('');
   const [barterValue, setBarterValue] = useState('');
+  const [barterProductImageUrl, setBarterProductImageUrl] = useState<string | null>(null);
+  const [barterImageUploading, setBarterImageUploading] = useState(false);
   const [campaignDescription, setCampaignDescription] = useState('');
   const [deliverables, setDeliverables] = useState<string[]>([]);
   const [usageRights, setUsageRights] = useState(false);
@@ -139,22 +139,49 @@ const CollabLinkLanding = () => {
   // Helper to get API base URL (same logic as other pages)
   const getApiBaseUrl = (): string => {
     if (typeof window === 'undefined') return 'http://localhost:3001';
-    
-    // Check for explicit API URL
     const envUrl = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL;
     if (envUrl) return envUrl.replace(/\/$/, '');
-    
-    // Auto-detect from current origin
     const origin = window.location.origin;
-    if (origin.includes('creatorarmour.com')) {
-      return 'https://api.creatorarmour.com';
-    }
-    if (origin.includes('noticebazaar.com')) {
-      return 'https://api.noticebazaar.com';
-    }
-    
-    // Default to localhost for development
+    if (origin.includes('creatorarmour.com')) return 'https://api.creatorarmour.com';
+    if (origin.includes('noticebazaar.com')) return 'https://api.noticebazaar.com';
     return 'http://localhost:3001';
+  };
+
+  // Upload barter product image and store public URL
+  const handleBarterImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !username) return;
+    const allowed = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+    if (!allowed.includes(file.type)) {
+      toast.error('Please upload a JPEG, PNG, WebP, or GIF image.');
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('Image must be under 5MB.');
+      return;
+    }
+    setBarterImageUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      const apiBaseUrl = getApiBaseUrl();
+      const res = await fetch(`${apiBaseUrl}/api/collab/${encodeURIComponent(username)}/upload-barter-image`, {
+        method: 'POST',
+        body: formData,
+      });
+      const data = await res.json().catch(() => ({}));
+      if (data.success && data.url) {
+        setBarterProductImageUrl(data.url);
+        toast.success('Product image uploaded.');
+      } else {
+        toast.error(data.error || 'Failed to upload image.');
+      }
+    } catch {
+      toast.error('Failed to upload image.');
+    } finally {
+      setBarterImageUploading(false);
+      e.target.value = '';
+    }
   };
 
   // Fetch creator profile
@@ -314,16 +341,9 @@ const CollabLinkLanding = () => {
       newErrors.budget = 'Please specify a budget range or exact amount';
     }
 
-    if (collabType === 'barter' && !barterDescription.trim()) {
-      newErrors.barterDescription = 'Please describe the product or service';
-    }
-
     if (collabType === 'both') {
       if (!budgetRange && !exactBudget) {
         newErrors.budget = 'Please specify paid budget details';
-      }
-      if (!barterDescription.trim()) {
-        newErrors.barterDescription = 'Please describe the barter product or service';
       }
     }
 
@@ -379,8 +399,8 @@ const CollabLinkLanding = () => {
           collab_type: collabType,
           budget_range: budgetRange || undefined,
           exact_budget: exactBudget ? parseFloat(exactBudget) : undefined,
-          barter_description: barterDescription || undefined,
           barter_value: barterValue ? parseFloat(barterValue) : undefined,
+          barter_product_image_url: barterProductImageUrl || undefined,
           campaign_description: campaignDescription,
           deliverables,
           usage_rights: usageRights,
@@ -728,7 +748,6 @@ const CollabLinkLanding = () => {
                   setCollabType(value);
                   // Reset form fields when type changes
                   if (value === 'paid') {
-                    setBarterDescription('');
                     setBarterValue('');
                   } else if (value === 'barter') {
                     setBudgetRange('');
@@ -794,17 +813,6 @@ const CollabLinkLanding = () => {
                 <div className="space-y-4">
                   <div>
                     <label className="block text-sm font-semibold text-white mb-2">
-                      Product / Service Description
-                    </label>
-                    <Textarea
-                      value={barterDescription}
-                      onChange={(e) => setBarterDescription(e.target.value)}
-                      placeholder="Describe the product or service you're offering..."
-                      className="bg-white/5 border-white/20 text-white min-h-[100px]"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-semibold text-white mb-2">
                       Estimated Product Value (Optional)
                     </label>
                     <Input
@@ -815,6 +823,24 @@ const CollabLinkLanding = () => {
                       min="0"
                       className="bg-white/5 border-white/20 text-white"
                     />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-white mb-2">
+                      Product Image (optional)
+                    </label>
+                    <p className="text-xs text-purple-200/80 mb-2">
+                      Upload a clear image of the product or service you&apos;re offering
+                    </p>
+                    <input
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp,image/gif"
+                      onChange={handleBarterImageChange}
+                      disabled={barterImageUploading}
+                      className="block w-full text-sm text-white/80 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-purple-500/30 file:text-purple-100 file:text-sm file:font-medium"
+                    />
+                    {barterProductImageUrl && (
+                      <p className="text-xs text-green-400/90 mt-1.5">Image uploaded</p>
+                    )}
                   </div>
                 </div>
               )}
@@ -866,17 +892,6 @@ const CollabLinkLanding = () => {
                       </div>
                       <div>
                         <label className="block text-sm font-semibold text-white mb-2">
-                          Product / Service Description (Barter)
-                        </label>
-                        <Textarea
-                          value={barterDescription}
-                          onChange={(e) => setBarterDescription(e.target.value)}
-                          placeholder="Describe the product or service you're offering..."
-                          className="bg-white/5 border-white/20 text-white min-h-[100px]"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-semibold text-white mb-2">
                           Estimated Product Value (Optional)
                         </label>
                         <Input
@@ -887,6 +902,24 @@ const CollabLinkLanding = () => {
                           min="0"
                           className="bg-white/5 border-white/20 text-white"
                         />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-semibold text-white mb-2">
+                          Product Image (optional)
+                        </label>
+                        <p className="text-xs text-purple-200/80 mb-2">
+                          Upload a clear image of the product or service you&apos;re offering
+                        </p>
+                        <input
+                          type="file"
+                          accept="image/jpeg,image/png,image/webp,image/gif"
+                          onChange={handleBarterImageChange}
+                          disabled={barterImageUploading}
+                          className="block w-full text-sm text-white/80 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-purple-500/30 file:text-purple-100 file:text-sm file:font-medium"
+                        />
+                        {barterProductImageUrl && (
+                          <p className="text-xs text-green-400/90 mt-1.5">Image uploaded</p>
+                        )}
                       </div>
                     </div>
                   </div>
