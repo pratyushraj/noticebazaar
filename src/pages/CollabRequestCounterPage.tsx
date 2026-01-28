@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Lock, Loader2, Plus, X, ArrowLeft } from 'lucide-react';
+import { Lock, Loader2, Plus, Minus, X, Calendar } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { CreatorNavigationWrapper } from '@/components/navigation/CreatorNavigationWrapper';
@@ -171,21 +171,19 @@ const CollabRequestCounterPage = () => {
     return null;
   }
 
-  return (
-    <CreatorNavigationWrapper title="Counter Offer" subtitle={(request.collab_type === 'barter' || request.collab_type === 'both') ? 'Barter Collaboration' : request.brand_name}>
-      <div className={cn(spacing.loose, "pb-24")}>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => navigate('/collab-requests')}
-          className="mb-4 -ml-2 text-purple-200 hover:text-white hover:bg-white/10"
-        >
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          Back to requests
-        </Button>
+  const subtitle = (request.collab_type === 'barter' || request.collab_type === 'both') ? 'Barter collaboration' : (request.brand_name ?? 'Brand');
 
+  return (
+    <CreatorNavigationWrapper
+      title="Counter Offer"
+      subtitle={subtitle}
+      compactHeader
+      showBackButton
+      backTo="/collab-requests"
+      backIconOnly
+    >
+      <div className={cn(spacing.loose, "pb-40")}>
         <div className="rounded-[20px] bg-white/5 backdrop-blur-md border border-white/10 p-4 sm:p-5 space-y-4">
-          <p className="text-sm font-medium text-white">Counter Offer</p>
           {(request.collab_type === 'paid' || request.collab_type === 'both') && (
             <>
               <div>
@@ -207,43 +205,55 @@ const CollabRequestCounterPage = () => {
           )}
           {request.collab_type === 'barter' && (
             <div>
-              <Label className="text-purple-200">Expected Product Value (₹)</Label>
-              <p className="text-[10px] text-purple-300/60 mb-1">This helps ensure fair compensation</p>
-              <Input type="number" value={counterProductValue} onChange={(e) => setCounterProductValue(e.target.value)} placeholder="e.g. 5000" className="bg-white/10 border-white/20 text-white mt-1" />
+              <Label className="text-purple-200">Your Expected Product Value (₹)</Label>
+              <Input type="number" value={counterProductValue} onChange={(e) => setCounterProductValue(e.target.value)} placeholder="e.g. 5000" className="bg-white/10 border-white/20 text-white mt-1 min-h-[44px] h-11" />
+              <p className="text-[10px] text-purple-300/60 mt-1.5">This is the value you expect in return for the deliverables</p>
             </div>
           )}
           <div>
-            <Label className="text-purple-200">Deliverables</Label>
-            <p className="text-[10px] text-purple-300/60 mb-1">Add, remove, or edit. Each can have Platform and Quantity.</p>
-            <div className="space-y-2 mt-1">
-              {counterDeliverablesList.map((d) => (
-                <div key={d.id} className="flex flex-wrap items-center gap-2 p-2 rounded-lg bg-white/[0.06] border border-white/10">
-                  <Input value={d.name} onChange={(e) => setCounterDeliverablesList((prev) => prev.map((x) => (x.id === d.id ? { ...x, name: e.target.value } : x)))} placeholder="Deliverable" className="flex-1 min-w-[100px] bg-white/10 border-white/20 text-white text-sm h-8" />
-                  <Input value={d.platform} onChange={(e) => setCounterDeliverablesList((prev) => prev.map((x) => (x.id === d.id ? { ...x, platform: e.target.value } : x)))} placeholder="Platform" className="w-24 bg-white/10 border-white/20 text-white text-sm h-8" />
-                  <Input value={d.quantity} onChange={(e) => setCounterDeliverablesList((prev) => prev.map((x) => (x.id === d.id ? { ...x, quantity: e.target.value } : x)))} placeholder="Qty" className="w-14 bg-white/10 border-white/20 text-white text-sm h-8" />
-                  <button type="button" onClick={() => setCounterDeliverablesList((prev) => prev.filter((x) => x.id !== d.id))} className="p-1.5 rounded text-red-300 hover:bg-red-500/20" aria-label="Remove"><X className="h-4 w-4" /></button>
-                </div>
-              ))}
-              <Button type="button" variant="outline" size="sm" onClick={() => setCounterDeliverablesList((prev) => [...prev, { id: `d-${Date.now()}`, name: '', platform: '', quantity: '' }])} className="border-white/20 text-purple-200 hover:bg-white/10"><Plus className="h-4 w-4 mr-2" />Add deliverable</Button>
+            <Label className="text-purple-200">What will you deliver?</Label>
+            <div className="space-y-1.5 mt-1">
+              {counterDeliverablesList.map((d) => {
+                const qty = Math.max(0, parseInt(d.quantity || '0', 10) || 0);
+                return (
+                  <div key={d.id} className="p-2.5 rounded-lg bg-white/[0.06] border border-white/10 flex items-center gap-2 flex-wrap">
+                    <Input value={d.name} onChange={(e) => setCounterDeliverablesList((prev) => prev.map((x) => (x.id === d.id ? { ...x, name: e.target.value } : x)))} placeholder="Deliverable type" className="flex-1 min-w-0 bg-white/10 border-white/20 text-white text-sm min-h-[40px]" />
+                    <div className="flex items-center rounded-lg border border-white/20 bg-white/10 overflow-hidden">
+                      <button type="button" onClick={() => setCounterDeliverablesList((prev) => prev.map((x) => (x.id === d.id ? { ...x, quantity: String(Math.max(0, qty - 1)) } : x)))} className="p-2 text-white/80 hover:text-white min-h-[40px] min-w-[40px] flex items-center justify-center" aria-label="Decrease"><Minus className="h-4 w-4" /></button>
+                      <span className="min-w-[2rem] text-center text-sm text-white tabular-nums">{qty}</span>
+                      <button type="button" onClick={() => setCounterDeliverablesList((prev) => prev.map((x) => (x.id === d.id ? { ...x, quantity: String(qty + 1) } : x)))} className="p-2 text-white/80 hover:text-white min-h-[40px] min-w-[40px] flex items-center justify-center" aria-label="Increase"><Plus className="h-4 w-4" /></button>
+                    </div>
+                    <button type="button" onClick={() => setCounterDeliverablesList((prev) => prev.filter((x) => x.id !== d.id))} className="p-1 rounded text-red-300/80 hover:text-red-300 hover:bg-red-500/15" aria-label="Remove"><X className="h-3.5 w-3.5" /></button>
+                  </div>
+                );
+              })}
+              <Button type="button" variant="outline" size="sm" onClick={() => setCounterDeliverablesList((prev) => [...prev, { id: `d-${Date.now()}`, name: '', platform: '', quantity: '' }])} className="w-full border-white/20 text-purple-200 hover:bg-white/10 min-h-[44px]"><Plus className="h-4 w-4 mr-2" />Add another deliverable</Button>
             </div>
           </div>
           <div>
-            <Label className="text-purple-200">Timeline (delivery deadline)</Label>
-            <p className="text-[10px] text-purple-300/60 mb-1">Suggested based on your content schedule</p>
-            <Input type="date" value={counterDeadline} onChange={(e) => setCounterDeadline(e.target.value)} className="bg-white/10 border-white/20 text-white mt-1" />
+            <Label className="text-purple-200">Proposed Delivery Date</Label>
+            <p className="text-[10px] text-purple-300/60 mb-1">You can adjust this if you need more time</p>
+            <div className="relative mt-1">
+              <Input type="date" value={counterDeadline} onChange={(e) => setCounterDeadline(e.target.value)} className="bg-white/10 border-white/20 text-white min-h-[44px] pl-3 pr-10" />
+              <Calendar className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/50 pointer-events-none" aria-hidden />
+            </div>
           </div>
           <div>
-            <Label className="text-purple-200">Notes for Brand (optional)</Label>
-            <Textarea value={counterNotes} onChange={(e) => setCounterNotes(e.target.value)} placeholder="Explain the change briefly (e.g. extra revisions, higher effort, faster delivery)" className="bg-white/10 border-white/20 text-white mt-1" rows={2} />
+            <Label className="text-purple-200">Message to Brand (optional)</Label>
+            <Textarea value={counterNotes} onChange={(e) => setCounterNotes(e.target.value)} placeholder="Explain briefly why you're proposing this change" className="bg-white/10 border-white/20 text-white mt-1 min-h-[4.5rem] resize-y" rows={3} />
           </div>
-          <p className="text-[10px] text-purple-300/25 flex items-center gap-1.5">
+          <p className="text-[10px] text-purple-300/50 flex items-center gap-1.5">
             <Lock className="h-3 w-3 flex-shrink-0" aria-hidden />
-            All counters are logged, timestamped, and protected by Creator Armour
+            Counters are logged and legally timestamped by Creator Armour
           </p>
-          <div className="flex gap-3 pt-2">
-            <Button variant="outline" onClick={() => navigate('/collab-requests')} className="flex-1 border-white/20 text-purple-200 hover:bg-white/10">Cancel</Button>
-            <Button onClick={handleCounter} disabled={counterSubmitting} className="flex-1 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white">
-              {counterSubmitting ? <><Loader2 className="h-4 w-4 animate-spin mr-2" />Sending…</> : 'Send Counter Offer'}
+        </div>
+
+        {/* Sticky action bar — above bottom nav */}
+        <div className="fixed left-0 right-0 z-40 p-4 pt-3 pb-2 bg-gradient-to-t from-purple-900 via-purple-900/98 to-transparent pointer-events-none" style={{ bottom: 'calc(56px + env(safe-area-inset-bottom, 0px))' }}>
+          <div className="pointer-events-auto flex gap-3 max-w-lg mx-auto">
+            <Button variant="outline" onClick={() => navigate('/collab-requests')} className="flex-1 border-white/20 text-purple-200 hover:bg-white/10 min-h-[42px]">Cancel</Button>
+            <Button onClick={handleCounter} disabled={counterSubmitting} className="flex-1 min-h-[42px] bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white">
+              {counterSubmitting ? <><Loader2 className="h-4 w-4 animate-spin mr-2" />Sending…</> : 'Send Counter'}
             </Button>
           </div>
         </div>

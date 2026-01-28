@@ -14,6 +14,7 @@ import {
   Lock,
   ChevronRight,
   Pencil,
+  Image as ImageIcon,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useSession } from '@/contexts/SessionContext';
@@ -74,6 +75,7 @@ const CollabRequestsPage = () => {
   const [showDeclineDialog, setShowDeclineDialog] = useState(false);
   const [campaignDescriptionExpanded, setCampaignDescriptionExpanded] = useState(false);
   const [acceptingRequestId, setAcceptingRequestId] = useState<string | null>(null);
+  const [failedBarterImages, setFailedBarterImages] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     if (profile?.id) {
@@ -266,7 +268,6 @@ const CollabRequestsPage = () => {
 
   const usernameForLink = profile?.instagram_handle || profile?.username;
   const hasUsername = usernameForLink && usernameForLink.trim() !== '';
-  const collabLink = hasUsername ? `${window.location.origin}/collab/${usernameForLink}` : '';
 
   const openDetail = (request: CollabRequest) => {
     setSelectedRequest(request);
@@ -281,39 +282,6 @@ const CollabRequestsPage = () => {
   return (
     <CreatorNavigationWrapper title="Collaboration Requests" subtitle="Manage incoming brand requests">
       <div className={cn(spacing.loose, "pb-24")}>
-        {/* Collab link always at top — Copy Link + Preview as Brand */}
-        {hasUsername && (
-          <div className="mb-6">
-            <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 flex-wrap">
-              <div className="flex-1 min-w-0 rounded-lg border border-white/10 bg-white/5 px-3 py-2.5 flex items-center gap-2">
-                <code className={cn("text-sm text-purple-200 truncate flex-1")}>
-                  {collabLink.replace(/^https?:\/\//, '')}
-                </code>
-              </div>
-              <div className="flex gap-2 flex-shrink-0">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={copyCollabLink}
-                  className="border-purple-400/40 text-purple-200 hover:bg-purple-500/20 hover:border-purple-400/60 hover:text-purple-100"
-                >
-                  <Copy className="h-4 w-4 mr-2" />
-                  Copy Link
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => window.open(`/collab/${usernameForLink}`, '_blank')}
-                  className="border-purple-400/40 text-purple-200 hover:bg-purple-500/20 hover:border-purple-400/60 hover:text-purple-100"
-                >
-                  <ExternalLink className="h-4 w-4 mr-2" />
-                  Preview as Brand
-                </Button>
-              </div>
-            </div>
-          </div>
-        )}
-
         {pendingRequests.length > 0 && (
           <p className="text-purple-200/80 text-sm mb-4">Requests from brands using your public link</p>
         )}
@@ -368,11 +336,11 @@ const CollabRequestsPage = () => {
                   )}
                 >
                   <CardContent className="p-4 sm:p-5 flex flex-col flex-1 space-y-5">
-                    {/* 1. Card header: "Barter Collaboration" for barter/both, brand for paid; pills right; stronger title/timestamp hierarchy */}
+                    {/* 1. Card header: brand name; pills right; timestamp */}
                     <div className="space-y-0.5">
                       <div className="flex items-start justify-between gap-2 min-w-0">
-                        <h3 className="text-lg font-bold text-white break-words flex-1 min-w-0 leading-tight">
-                          {(request.collab_type === 'barter' || request.collab_type === 'both') ? 'Barter Collaboration' : request.brand_name}
+                        <h3 className="text-lg font-bold text-white break-words flex-1 min-w-0 leading-tight uppercase">
+                          {request.brand_name ?? 'Brand'}
                         </h3>
                         <div className="flex items-center gap-1.5 flex-shrink-0">
                           <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-medium border border-white/20 text-purple-200/90 bg-white/5">
@@ -400,51 +368,57 @@ const CollabRequestsPage = () => {
                       </p>
                     </div>
 
-                    {/* 2. Value + meta row: [Product image left] Barter (₹996) • 3 deliverables • 10 Feb 2026 — reduced icon noise, one line where possible */}
-                    <div className="flex flex-wrap items-center gap-2 py-2.5 px-3 rounded-xl bg-white/[0.06] border border-white/[0.06]">
-                      {(request.collab_type === 'barter' || request.collab_type === 'both') && request.barter_product_image_url && (
-                        <img
-                          src={request.barter_product_image_url}
-                          alt="Barter product"
-                          loading="lazy"
-                          className="h-10 w-10 sm:h-11 sm:w-11 rounded-lg object-cover border border-white/15 ring-1 ring-white/10 flex-shrink-0"
-                        />
-                      )}
-                      <span className="text-sm font-semibold text-white">
-                        {formatBudget(request)}
-                      </span>
-                      <span className="text-purple-400/60 text-sm">•</span>
-                      <span className="text-sm text-purple-200/90">
-                        {deliverablesList.length} {deliverablesList.length === 1 ? 'deliverable' : 'deliverables'}
-                      </span>
-                      {request.deadline && (
-                        <>
-                          <span className="text-purple-400/60 text-sm">•</span>
-                          <span className="text-sm text-purple-200/90">
-                            {new Date(request.deadline).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
-                          </span>
-                        </>
-                      )}
-                    </div>
-
-                    {/* 3. Description — 2 lines max, ellipsis; "View full brief →" secondary link */}
-                    {request.campaign_description && (
-                      <div className="space-y-1">
-                        <p className="text-sm text-purple-200/90 line-clamp-2 break-words leading-snug">
-                          {request.campaign_description}
-                        </p>
-                        <button
-                          type="button"
-                          onClick={(e) => { e.stopPropagation(); openDetail(request); }}
-                          className="text-xs font-medium text-purple-300/90 hover:text-purple-200 inline-flex items-center gap-1 transition-colors"
-                        >
-                          View full brief
-                          <ChevronRight className="h-3 w-3" />
-                        </button>
+                    {/* 2. Barter product image — top of content, full-width, prominent (barter/both only) */}
+                    {(request.collab_type === 'barter' || request.collab_type === 'both') && (request.barter_product_image_url || failedBarterImages[request.id]) && (
+                      <div className="w-full max-w-[280px] sm:max-w-[320px] mx-auto rounded-[20px] overflow-hidden bg-white/[0.06] border border-white/10 aspect-square relative flex-shrink-0">
+                        {request.barter_product_image_url && !failedBarterImages[request.id] ? (
+                          <>
+                            <span className="absolute top-2 left-2 z-10 px-2 py-1 rounded-md text-[10px] font-medium text-white/90 bg-black/30 backdrop-blur-sm">
+                              Product Preview
+                            </span>
+                            <img
+                              src={request.barter_product_image_url}
+                              alt="Barter product"
+                              loading="lazy"
+                              className="w-full h-full object-cover"
+                              onError={() => setFailedBarterImages((prev) => ({ ...prev, [request.id]: true }))}
+                            />
+                            <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/50 to-transparent pointer-events-none" aria-hidden />
+                          </>
+                        ) : (
+                          <div className="absolute inset-0 flex items-center justify-center text-white/40 bg-white/[0.06]">
+                            <ImageIcon className="h-12 w-12" aria-hidden />
+                          </div>
+                        )}
                       </div>
                     )}
 
-                    {/* 4. Deliverable tags — smaller pills, lower opacity, cap 3 + "+N more" */}
+                    {/* 3. Value row — Barter (₹999) · 3 deliverables (below image) */}
+                    <div className="flex flex-wrap items-center gap-2 py-2.5 px-3 rounded-xl bg-white/[0.06] border border-white/[0.06]">
+                      <span className="text-sm font-semibold text-white">
+                        {formatBudget(request)}
+                      </span>
+                      <span className="text-purple-400/60 text-sm">·</span>
+                      <span className="text-sm text-purple-200/90">
+                        {deliverablesList.length} {deliverablesList.length === 1 ? 'deliverable' : 'deliverables'}
+                      </span>
+                    </div>
+
+                    {/* 4. Deadline meta row */}
+                    {request.deadline && (
+                      <p className="text-xs text-purple-300/50 -mt-3">
+                        Due {new Date(request.deadline).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
+                      </p>
+                    )}
+
+                    {/* 5. Description — full text */}
+                    {request.campaign_description && (
+                      <p className="text-sm text-purple-200/90 break-words leading-snug whitespace-pre-wrap">
+                        {request.campaign_description}
+                      </p>
+                    )}
+
+                    {/* 6. Deliverable tags — smaller pills, lower opacity, cap 3 + "+N more" */}
                     {deliverablesList.length > 0 && (
                       <div className="space-y-1.5">
                         <p className="text-[10px] font-medium text-purple-300/40 uppercase tracking-wider">
@@ -468,7 +442,7 @@ const CollabRequestsPage = () => {
                       </div>
                     )}
 
-                    {/* 5. Primary CTA — Accept Deal (full-width, high emphasis); helper; secondary Counter | Decline; trust line */}
+                    {/* 7. Primary CTA — Accept Deal (full-width, high emphasis); helper; secondary Counter | Decline; trust line */}
                     <div className="mt-auto pt-4 space-y-3">
                       <Button
                         type="button"

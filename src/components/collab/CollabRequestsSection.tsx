@@ -289,8 +289,16 @@ const CollabRequestsSection = ({ copyCollabLink, usernameForLink: usernameFromPa
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center p-8">
-        <Loader2 className="h-6 w-6 animate-spin text-purple-400" />
+      <div className="space-y-4" data-section="collab-requests">
+        <h2 className="text-lg font-semibold text-white break-words">Brand Requests</h2>
+        <div className="rounded-[20px] bg-white/5 backdrop-blur-md border border-white/10 overflow-hidden p-4 sm:p-5 space-y-4 animate-pulse">
+          <div className="h-5 bg-white/10 rounded w-3/4" />
+          <div className="h-4 bg-white/10 rounded w-1/2" />
+          <div className="flex items-center justify-center py-6 gap-2 text-purple-300/80 text-sm">
+            <Loader2 className="h-4 w-4 animate-spin flex-shrink-0" />
+            <span>Loading requests…</span>
+          </div>
+        </div>
       </div>
     );
   }

@@ -109,8 +109,9 @@ const CollabLinkAnalytics: React.FC = () => {
     return (
       <Card className="bg-white/5 backdrop-blur-md border-white/10">
         <CardContent className="p-4">
-          <div className="flex items-center justify-center py-4">
-            <Loader2 className="h-5 w-5 animate-spin text-purple-400" />
+          <div className="flex items-center justify-center gap-2 py-3 text-purple-300/80 text-sm">
+            <Loader2 className="h-4 w-4 animate-spin flex-shrink-0" />
+            <span>Loading analytics…</span>
           </div>
         </CardContent>
       </Card>

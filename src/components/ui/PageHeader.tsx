@@ -23,6 +23,7 @@ interface PageHeaderProps {
   subtitle?: string;
   premium?: boolean; // Premium iOS 17 styling
   compact?: boolean; // ~30% less height on mobile
+  backIconOnly?: boolean; // Show only arrow, no "Back" text
 }
 
 export const PageHeader: React.FC<PageHeaderProps> = ({
@@ -36,6 +37,7 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
   subtitle,
   premium = false,
   compact = false,
+  backIconOnly = false,
 }) => {
   const navigate = useNavigate();
 
@@ -101,12 +103,12 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
                 "flex items-center gap-1 text-white",
                 animations.cardPress,
                 "focus:outline-none focus-visible:ring-2 focus-visible:ring-white/30 focus-visible:ring-offset-2",
-                premium && "w-9 h-9"
+                (premium || backIconOnly) && "w-9 h-9 justify-center"
               )}
               aria-label="Go back"
             >
-              <ArrowLeft className={premium ? iconSizes.sm : iconSizes.md} />
-              {!premium && <span className={cn(typography.body, "font-medium")}>Back</span>}
+              <ArrowLeft className={premium || backIconOnly ? iconSizes.sm : iconSizes.md} />
+              {!premium && !backIconOnly && <span className={cn(typography.body, "font-medium")}>Back</span>}
             </button>
           )}
           {showMenuButton && !showBackButton && (

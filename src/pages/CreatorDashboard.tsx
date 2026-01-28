@@ -59,34 +59,64 @@ const CreatorDashboard = () => {
   const [showSearch, setShowSearch] = useState(false);
   const [isPro, setIsPro] = useState(false);
   const [pendingCollabRequestsCount, setPendingCollabRequestsCount] = useState(0);
-  const [collabRequestsPreview, setCollabRequestsPreview] = useState<Array<{ id: string; brand_name: string; collab_type?: string; budget_range?: string; exact_budget?: number; created_at: string }>>([]);
+  const [collabRequestsPreview, setCollabRequestsPreview] = useState<Array<{
+    id: string;
+    brand_name: string;
+    brand_email?: string;
+    collab_type?: string;
+    budget_range?: string | null;
+    exact_budget?: number | null;
+    barter_value?: number | null;
+    deadline?: string | null;
+    created_at: string;
+    // Keep full request for Counter page navigation
+    raw: any;
+  }>>([]);
+  const [acceptingRequestId, setAcceptingRequestId] = useState<string | null>(null);
+  const [declineRequestId, setDeclineRequestId] = useState<string | null>(null);
+  const [showDeclineRequestDialog, setShowDeclineRequestDialog] = useState(false);
 
-  // Pending collaboration requests (count + preview for Brand Requests inbox)
+  const fetchPendingCollabRequestsPreview = async () => {
+    try {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const sess = sessionData.session;
+      if (!sess?.access_token) return;
+      const apiUrl = getApiBaseUrl();
+      const res = await fetch(`${apiUrl}/api/collab-requests`, {
+        headers: { 'Authorization': `Bearer ${sess.access_token}`, 'Content-Type': 'application/json' },
+      });
+      const data = res.ok ? await res.json() : { success: false, requests: [] };
+      const list = Array.isArray(data?.requests) ? data.requests : [];
+      const pending = list.filter((r: { status?: string }) => r.status === 'pending');
+      setPendingCollabRequestsCount(pending.length);
+      // Keep the list small on dashboard, but unified (paid + barter in one list)
+      setCollabRequestsPreview(
+        pending.slice(0, 1).map((r: any) => ({
+          id: r.id,
+          brand_name: r.brand_name || 'Brand',
+          brand_email: r.brand_email || undefined,
+          collab_type: r.collab_type,
+          budget_range: r.budget_range ?? null,
+          exact_budget: r.exact_budget ?? null,
+          barter_value: r.barter_value ?? null,
+          deadline: r.deadline ?? null,
+          created_at: r.created_at || '',
+          raw: r,
+        }))
+      );
+    } catch {
+      setPendingCollabRequestsCount(0);
+      setCollabRequestsPreview([]);
+    }
+  };
+
+  // Pending collaboration requests (count + preview for decision-first inbox)
   useEffect(() => {
     let cancelled = false;
-    supabase.auth.getSession().then(({ data: { session: sess } }) => {
-      if (cancelled || !sess?.access_token) return;
-      const apiUrl = getApiBaseUrl();
-      fetch(`${apiUrl}/api/collab-requests`, {
-        headers: { 'Authorization': `Bearer ${sess.access_token}`, 'Content-Type': 'application/json' },
-      })
-        .then((res) => (res.ok ? res.json() : { success: false, requests: [] }))
-        .then((data) => {
-          if (cancelled) return;
-          const list = Array.isArray(data?.requests) ? data.requests : [];
-          const pending = list.filter((r: { status?: string }) => r.status === 'pending');
-          setPendingCollabRequestsCount(pending.length);
-          setCollabRequestsPreview(pending.slice(0, 3).map((r: any) => ({
-            id: r.id,
-            brand_name: r.brand_name || 'Brand',
-            collab_type: r.collab_type,
-            budget_range: r.budget_range,
-            exact_budget: r.exact_budget,
-            created_at: r.created_at || '',
-          })));
-        })
-        .catch(() => { if (!cancelled) { setPendingCollabRequestsCount(0); setCollabRequestsPreview([]); } });
-    });
+    (async () => {
+      if (cancelled) return;
+      await fetchPendingCollabRequestsPreview();
+    })();
     return () => { cancelled = true; };
   }, [session?.user?.id]);
 
@@ -188,6 +218,69 @@ const CreatorDashboard = () => {
     await new Promise(resolve => setTimeout(resolve, 1500));
     setIsRefreshing(false);
     triggerHaptic(HapticPatterns.light);
+  };
+
+  const acceptCollabRequest = async (req: any) => {
+    if (!req?.id) return;
+    try {
+      setAcceptingRequestId(req.id);
+      const { data: sessionData } = await supabase.auth.getSession();
+      const sess = sessionData.session;
+      if (!sess?.access_token) {
+        toast.error('Please log in to accept requests');
+        return;
+      }
+      const res = await fetch(`${getApiBaseUrl()}/api/collab-requests/${req.id}/accept`, {
+        method: 'PATCH',
+        headers: {
+          Authorization: `Bearer ${sess.access_token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+      const data = await res.json();
+      if (data.success) {
+        toast.success(data.contract ? 'Contract generated. Waiting for brand signature.' : 'Deal accepted!');
+        await fetchPendingCollabRequestsPreview();
+        if (data.deal?.id) navigate(`/creator-contracts/${data.deal.id}`);
+      } else {
+        toast.error(data.error || 'Failed to accept request');
+      }
+    } catch {
+      toast.error('Failed to accept request');
+    } finally {
+      setAcceptingRequestId(null);
+    }
+  };
+
+  const declineCollabRequest = async () => {
+    if (!declineRequestId) return;
+    try {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const sess = sessionData.session;
+      if (!sess?.access_token) {
+        toast.error('Please log in to decline requests');
+        return;
+      }
+      const res = await fetch(`${getApiBaseUrl()}/api/collab-requests/${declineRequestId}/decline`, {
+        method: 'PATCH',
+        headers: {
+          Authorization: `Bearer ${sess.access_token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+      const data = await res.json();
+      if (data.success) {
+        toast.success('Request declined');
+        await fetchPendingCollabRequestsPreview();
+      } else {
+        toast.error(data.error || 'Failed to decline request');
+      }
+    } catch {
+      toast.error('Failed to decline request');
+    } finally {
+      setShowDeclineRequestDialog(false);
+      setDeclineRequestId(null);
+    }
   };
 
   // User data from session
@@ -337,6 +430,19 @@ const CreatorDashboard = () => {
     });
   }, [brandDeals]);
 
+  const hasPaymentOverdue = useMemo(() => {
+    if (!Array.isArray(brandDeals) || brandDeals.length === 0) return false;
+    const now = new Date();
+    now.setHours(0, 0, 0, 0);
+    return brandDeals.some((deal) => {
+      if (deal.payment_received_date) return false;
+      if (!deal.payment_expected_date) return false;
+      const d = new Date(deal.payment_expected_date);
+      d.setHours(0, 0, 0, 0);
+      return d < now;
+    });
+  }, [brandDeals]);
+
   const attentionItems = useMemo(() => {
     if (!Array.isArray(brandDeals) || brandDeals.length === 0) return [];
     const now = new Date();
@@ -381,7 +487,7 @@ const CreatorDashboard = () => {
   const queryHasCompleted = !isLoadingDeals || !creatorId; // If no creatorId, query is disabled, so consider it "completed"
   const isRLSError = brandDealsError?.message?.includes('permission') || 
                      brandDealsError?.message?.includes('row-level security') ||
-                     brandDealsError?.code === '42501';
+                     (brandDealsError as any)?.code === '42501';
   // Show empty state if: query completed AND (no error OR RLS error) AND empty array
   const hasNoData = queryHasCompleted && 
                     (!brandDealsError || isRLSError) && 
@@ -409,18 +515,38 @@ const CreatorDashboard = () => {
       .filter(deal => {
         // Exclude only completed deals
         if (deal.status === 'Completed') return false;
-        
-        // Include all other deals (Drafting, Payment Pending, Approved, etc.)
-        // This ensures we show deals that are in progress
-        return true;
+
+        // Only show accepted deals on dashboard (decision-focused)
+        const statusLower = String(deal.status || '').toLowerCase();
+        const exec = String((deal as any)?.deal_execution_status || '').toLowerCase();
+        const isSignedOrAccepted =
+          exec === 'signed' ||
+          exec === 'completed' ||
+          statusLower.includes('signed') ||
+          statusLower.includes('active') ||
+          statusLower.includes('content') ||
+          statusLower.includes('approved') ||
+          statusLower.includes('payment') ||
+          statusLower.includes('delivered');
+
+        return isSignedOrAccepted;
       })
       .sort((a, b) => {
-        // Sort by due date (most urgent first), then by created date (newest first)
+        // Risk-first: overdue payments/deliverables first, then earliest due date
+        const now = new Date();
+        now.setHours(0, 0, 0, 0);
+        const aPayOverdue = !!(a.payment_expected_date && !a.payment_received_date && new Date(a.payment_expected_date) < now);
+        const bPayOverdue = !!(b.payment_expected_date && !b.payment_received_date && new Date(b.payment_expected_date) < now);
+        const aDelOverdue = !!(a.due_date && new Date(a.due_date) < now);
+        const bDelOverdue = !!(b.due_date && new Date(b.due_date) < now);
+        const aRisk = (aPayOverdue || aDelOverdue) ? 1 : 0;
+        const bRisk = (bPayOverdue || bDelOverdue) ? 1 : 0;
+        if (aRisk !== bRisk) return bRisk - aRisk; // risky first
         const dateA = new Date(a.due_date || a.created_at).getTime();
         const dateB = new Date(b.due_date || b.created_at).getTime();
-        return dateA - dateB; // Sort ascending (earliest due date first)
+        return dateA - dateB;
       })
-      .slice(0, 2)
+      .slice(0, 6)
       .map(deal => {
         // Check if deal is signed by checking deal_execution_status
         const dealExecutionStatus = (deal as any)?.deal_execution_status;
@@ -822,6 +948,26 @@ const CreatorDashboard = () => {
         </AlertDialogContent>
       </AlertDialog>
 
+      {/* Decline Request Confirmation (dashboard inbox) */}
+      <AlertDialog open={showDeclineRequestDialog} onOpenChange={setShowDeclineRequestDialog}>
+        <AlertDialogContent className="bg-gradient-to-br from-purple-900/95 via-purple-800/95 to-indigo-900/95 backdrop-blur-xl border border-white/10 text-white">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-white text-xl">Decline brand request?</AlertDialogTitle>
+            <AlertDialogDescription className="text-purple-200">
+              This will send a polite decline to the brand. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="gap-2 sm:gap-0">
+            <AlertDialogCancel className="bg-white/10 text-white border-white/20 hover:bg-white/20 focus:ring-2 focus:ring-purple-400/50">
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={declineCollabRequest} className="bg-red-500/20 hover:bg-red-500/30 text-red-200 border border-red-500/40">
+              Decline
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
 
       {/* Welcome Banner for New Users */}
 
@@ -933,7 +1079,7 @@ const CreatorDashboard = () => {
                     </li>
                     <li className="flex items-start gap-3 text-sm">
                       <span className="flex-shrink-0 w-5 h-5 rounded-full bg-green-500/30 border border-green-400/50 flex items-center justify-center text-green-300 text-xs font-semibold">3</span>
-                      <span className="break-words">Review, accept, or counter offers inside Creator Armour</span>
+                          <span className="break-words">Accept Deal, Counter, or Decline inside Creator Armour</span>
                     </li>
                   </ul>
                   <motion.button
@@ -981,8 +1127,8 @@ const CreatorDashboard = () => {
                         <div className="w-10 h-10 md:w-9 md:h-9 rounded-lg bg-green-500/20 flex items-center justify-center mb-2 md:mb-1.5">
                           <Briefcase className={cn(iconSizes.md, "md:w-4 md:h-4 text-green-400")} />
                         </div>
-                        <h4 className={cn(typography.h4, "mb-0.5 md:mb-0 md:text-sm break-words")}>Review Brand Requests</h4>
-                        <p className={cn(typography.bodySmall, "md:text-xs break-words")}>Accept, counter, or decline safely</p>
+                        <h4 className={cn(typography.h4, "mb-0.5 md:mb-0 md:text-sm break-words")}>Brand Requests</h4>
+                        <p className={cn(typography.bodySmall, "md:text-xs break-words")}>Accept Deal, Counter, or Decline</p>
                       </BaseCard>
                     </motion.div>
                     <motion.div
@@ -1020,112 +1166,41 @@ const CreatorDashboard = () => {
                     {userData.name}!
                   </span> 👋
                 </h1>
-                {/* Status Strip — single line, inbox-like. "What do I need to do right now?" */}
-                <div className={cn("mt-3 flex items-center gap-1.5 overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]", typography.bodySmall)}>
-                  {hasPaymentOrDeliverableOverdue || pendingCollabRequestsCount > 0 ? (
-                    <span className="px-2 py-0.5 bg-red-500/25 text-red-300 rounded-full flex items-center gap-1 font-semibold whitespace-nowrap text-[10px] sm:text-xs">
-                      Action needed
-                    </span>
-                  ) : (
-                    <span className="px-2 py-0.5 bg-green-500/25 text-green-300 rounded-full flex items-center gap-1 font-semibold whitespace-nowrap text-[10px] sm:text-xs">
-                      All clear
-                    </span>
-                  )}
-                  <span className="text-purple-300/40 flex-shrink-0">•</span>
-                  <span className="px-2 py-0.5 bg-white/5 text-white/60 rounded-full flex items-center gap-1 font-medium whitespace-nowrap text-[10px] sm:text-xs">
-                    {stats.activeDeals} active deal{stats.activeDeals === 1 ? '' : 's'}
-                  </span>
-                  <span className="text-purple-300/40 flex-shrink-0">•</span>
-                  <span className="px-2 py-0.5 bg-white/5 text-white/60 rounded-full flex items-center gap-1 font-medium whitespace-nowrap text-[10px] sm:text-xs">
-                    {stats.pendingPayments === 0 ? "₹0 at risk" : `₹${Math.round(stats.pendingPayments).toLocaleString('en-IN')} at risk`}
-                  </span>
-                </div>
               </div>
 
-              {/* Primary CTA - Dynamic by user state, immediately below hero/summary */}
-              {(() => {
-                const ctaConfig =
-                  pendingCollabRequestsCount > 0
-                    ? { label: 'Review Brand Requests', to: '/collab-requests', urgency: 'green' as const }
-                    : hasPaymentOrDeliverableOverdue
-                    ? { label: 'Resolve Payment Issue', to: '/creator-payments', urgency: 'red' as const }
-                    : stats.activeDeals > 0
-                    ? { label: 'View Active Collaborations', to: '/creator-contracts', urgency: 'amber' as const }
-                    : { label: 'Share Your Collab Link', to: '/creator-collab', urgency: 'green' as const };
-                const urgencyStyles = {
-                  green: 'bg-green-600 hover:bg-green-700 shadow-lg shadow-green-500/25',
-                  amber: 'bg-amber-600 hover:bg-amber-700 shadow-lg shadow-amber-500/25',
-                  red: 'bg-red-600 hover:bg-red-700 shadow-lg shadow-red-500/25',
-                };
-                return (
-                  <div className="mt-4" data-section="home-primary-cta">
-                    <button
-                      onClick={() => {
-                        triggerHaptic(HapticPatterns.medium);
-                        navigate(ctaConfig.to);
-                      }}
-                      className={cn(
-                        'w-full text-white font-semibold px-6 py-3.5 rounded-xl',
-                        'flex items-center justify-center gap-2 transition-all duration-200',
-                        'min-h-[48px] relative z-10 active:scale-[0.98]',
-                        urgencyStyles[ctaConfig.urgency]
-                      )}
-                    >
-                      {ctaConfig.urgency === 'green' && ctaConfig.label.includes('Review') && <Briefcase className={iconSizes.md} />}
-                      {ctaConfig.urgency === 'red' && <AlertCircle className={iconSizes.md} />}
-                      {ctaConfig.urgency === 'amber' && <Briefcase className={iconSizes.md} />}
-                      {ctaConfig.urgency === 'green' && ctaConfig.label.includes('Share') && <Link2 className={iconSizes.md} />}
-                      {ctaConfig.label}
-                    </button>
-                  </div>
-                );
-              })()}
+              {/* Above-the-fold: ONE dominant action only */}
+              <div className="mt-4" data-section="home-primary-cta">
+                <button
+                  onClick={() => {
+                    triggerHaptic(HapticPatterns.medium);
+                    navigate('/collab-requests');
+                  }}
+                  className={cn(
+                    'w-full text-white font-semibold px-6 py-3.5 rounded-xl',
+                    'flex items-center justify-center gap-2 transition-all duration-200',
+                    'min-h-[48px] relative z-10 active:scale-[0.98]',
+                    'bg-green-600 hover:bg-green-700 shadow-lg shadow-green-500/25'
+                  )}
+                >
+                  <Briefcase className={iconSizes.md} />
+                  Brand Requests ({pendingCollabRequestsCount})
+                </button>
+              </div>
             </div>
 
-            {/* What Needs Attention — max 2 cards, only when overdue/urgent */}
-            {attentionItems.length > 0 && (
-              <div className={cn("px-4 md:px-0 space-y-3", spacing.loose)}>
-                <h2 className={cn(sectionHeader.title, "text-base font-semibold")}>Action Required</h2>
-                <div className="space-y-2">
-                  {attentionItems.map((item) => (
-                    <BaseCard
-                      key={item.id}
-                      variant="tertiary"
-                      className={cn(
-                        "p-4 border-red-500/30 bg-red-500/5 cursor-pointer",
-                        "flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"
-                      )}
-                      onClick={() => { triggerHaptic(HapticPatterns.light); navigate(`/creator-contracts/${item.id}`); }}
-                    >
-                      <div>
-                        <p className="font-semibold text-white">{item.brand_name}</p>
-                        <p className="text-sm text-red-300/90">₹{item.amount.toLocaleString('en-IN')} {item.label}</p>
-                        <p className="text-xs text-purple-300/70 mt-0.5">Due: {item.dueDate}</p>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={(e) => { e.stopPropagation(); triggerHaptic(HapticPatterns.light); navigate(`/creator-contracts/${item.id}`); }}
-                        className={cn("self-start sm:self-center", sectionHeader.action)}
-                      >
-                        View Deal
-                      </button>
-                    </BaseCard>
-                  ))}
-                </div>
-              </div>
-            )}
+            {/* Decision-first dashboard: no extra above-fold cards */}
 
-            {/* Brand Requests — Collaboration Inbox (core section) */}
+            {/* Incoming Brand Requests (highest priority) */}
             <div className={cn("px-4 md:px-0", spacing.loose)}>
               <div className={sectionHeader.base}>
-                <h2 className={sectionHeader.title}>Brand Requests</h2>
+                <h2 className={sectionHeader.title}>Incoming Brand Requests</h2>
                 {pendingCollabRequestsCount > 0 && (
                   <button
                     type="button"
                     onClick={() => { triggerHaptic(HapticPatterns.light); navigate('/collab-requests'); }}
                     className={sectionHeader.action}
                   >
-                    Review all →
+                    View all →
                   </button>
                 )}
               </div>
@@ -1143,70 +1218,97 @@ const CreatorDashboard = () => {
                   </motion.button>
                 </BaseCard>
               ) : (
-                <div className="space-y-4">
+                <div className="space-y-3">
                   {collabRequestsPreview.map((r) => {
-                    const budget = r.exact_budget ? `₹${r.exact_budget.toLocaleString('en-IN')}` : r.budget_range || '—';
-                    const isPaid = r.collab_type === 'paid' || r.collab_type === 'both';
-                    const isBarter = r.collab_type === 'barter' || r.collab_type === 'both';
-                    const received = r.created_at ? (() => {
-                      const d = new Date(r.created_at);
-                      const diffDays = Math.floor((Date.now() - d.getTime()) / (1000 * 60 * 60 * 24));
-                      return diffDays === 0 ? 'Today' : diffDays === 1 ? 'Yesterday' : `${diffDays} days ago`;
-                    })() : '';
-                    const receivedHours = r.created_at ? Math.floor((Date.now() - new Date(r.created_at).getTime()) / (1000 * 60 * 60)) : 0;
-                    const showRespondSoon = receivedHours > 24;
+                    const isBarter = r.collab_type === 'barter';
+                    const typeLabel = isBarter ? 'Barter' : 'Paid';
+                    const offerDisplay =
+                      !isBarter
+                        ? (r.exact_budget ? `₹${Number(r.exact_budget).toLocaleString('en-IN')}` : (r.budget_range || '—'))
+                        : (r.barter_value ? `Product worth ₹${Number(r.barter_value).toLocaleString('en-IN')}` : 'Product');
+                    const deadline = r.deadline
+                      ? new Date(r.deadline).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
+                      : '—';
+
                     return (
                       <BaseCard
                         key={r.id}
                         variant="tertiary"
                         className={cn(
-                          "p-4 cursor-pointer flex flex-col gap-3 rounded-2xl",
-                          "shadow-lg shadow-black/10 border border-white/10",
-                          "hover:border-purple-400/20 hover:shadow-purple-500/5 active:scale-[0.99] transition-all duration-200"
+                          "p-3 rounded-xl border border-white/10",
+                          "shadow-lg shadow-black/10"
                         )}
-                        onClick={() => { triggerHaptic(HapticPatterns.light); navigate('/collab-requests'); }}
                       >
-                        {/* Top row: Brand name (left) | Status badge (right) */}
                         <div className="flex items-start justify-between gap-2 min-w-0">
-                          <p className="font-bold text-white text-base break-words flex-1 min-w-0">{r.brand_name}</p>
+                          <p className="font-bold text-white text-sm break-words flex-1 min-w-0">{r.brand_name}</p>
                           <span className={cn(
-                            "flex-shrink-0 px-2.5 py-1 rounded-full text-xs font-medium",
-                            isPaid && !isBarter && "bg-green-500/20 text-green-200 border border-green-500/30",
-                            isBarter && !isPaid && "bg-blue-500/20 text-blue-200 border border-blue-500/30",
-                            isPaid && isBarter && "bg-purple-500/20 text-purple-200 border border-purple-500/30"
+                            "flex-shrink-0 px-2 py-0.5 rounded-full text-[10px] font-medium border",
+                            isBarter ? "bg-blue-500/20 text-blue-200 border-blue-500/30" : "bg-green-500/20 text-green-200 border-green-500/30"
                           )}>
-                            {r.collab_type === 'paid' ? 'Paid' : r.collab_type === 'barter' ? 'Barter' : 'Both'}
+                            {typeLabel}
                           </span>
                         </div>
-                        {/* Second row: Budget or "Barter Collaboration" */}
-                        <div>
-                          {isPaid && (r.exact_budget || r.budget_range) ? (
-                            <p className="text-sm font-semibold text-white tabular-nums">{budget}</p>
-                          ) : (
-                            <p className="text-sm text-purple-200/90">Barter Collaboration</p>
-                          )}
+
+                        <div className="mt-1.5 grid grid-cols-2 gap-1.5">
+                          <div>
+                            <p className="text-[10px] text-purple-300/60 uppercase tracking-wider">Offer</p>
+                            <p className="text-xs font-semibold text-white tabular-nums">{offerDisplay}</p>
+                          </div>
+                          <div>
+                            <p className="text-[10px] text-purple-300/60 uppercase tracking-wider">Deadline</p>
+                            <p className="text-xs text-purple-200/90">{deadline}</p>
+                          </div>
                         </div>
-                        {/* Third row: Received time (muted) + optional Respond Soon */}
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <p className="text-xs text-purple-300/60">Received {received}</p>
-                          {showRespondSoon && (
-                            <span className="text-xs text-amber-300/90 bg-amber-500/10 px-2 py-0.5 rounded">Respond Soon</span>
-                          )}
+
+                        <div className="mt-2.5 space-y-1.5">
+                          <button
+                            type="button"
+                            disabled={acceptingRequestId === r.id}
+                            onClick={() => {
+                              triggerHaptic(HapticPatterns.light);
+                              acceptCollabRequest(r.raw);
+                            }}
+                            className={cn(
+                              "w-full min-h-[42px] inline-flex items-center justify-center gap-2 rounded-xl font-semibold text-sm",
+                              "bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white",
+                              "transition-colors duration-200",
+                              acceptingRequestId === r.id && "opacity-70 pointer-events-none"
+                            )}
+                          >
+                            {acceptingRequestId === r.id ? (
+                              <>
+                                <Loader2 className="w-4 h-4 animate-spin" />
+                                Accepting…
+                              </>
+                            ) : (
+                              'Accept Deal'
+                            )}
+                          </button>
+
+                          <div className="flex items-center justify-center gap-4">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                triggerHaptic(HapticPatterns.light);
+                                navigate(`/collab-requests/${r.id}/counter`, { state: { request: r.raw } });
+                              }}
+                              className="text-[11px] font-medium text-white/55 hover:text-white/80 transition-colors"
+                            >
+                              Counter
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                triggerHaptic(HapticPatterns.light);
+                                setDeclineRequestId(r.id);
+                                setShowDeclineRequestDialog(true);
+                              }}
+                              className="text-[11px] font-medium text-white/55 hover:text-white/80 transition-colors"
+                            >
+                              Decline
+                            </button>
+                          </div>
                         </div>
-                        {/* Full-width primary CTA — min 44px touch target */}
-                        <motion.button
-                          type="button"
-                          onClick={(e) => { e.stopPropagation(); triggerHaptic(HapticPatterns.light); navigate('/collab-requests'); }}
-                          whileTap={animations.microTap}
-                          className={cn(
-                            "w-full min-h-[44px] inline-flex items-center justify-center gap-2 rounded-lg font-semibold text-sm",
-                            "bg-purple-500/40 hover:bg-purple-500/50 border border-purple-400/50 text-purple-100",
-                            "transition-colors duration-200"
-                          )}
-                        >
-                          Review Request
-                          <ChevronRight className="w-4 h-4 flex-shrink-0" />
-                        </motion.button>
                       </BaseCard>
                     );
                   })}
@@ -1253,7 +1355,24 @@ const CreatorDashboard = () => {
                     </BaseCard>
                   ) : (
                     <div className={spacing.card}>
-                      {activeDeals.map((deal, index) => (
+                      {(() => {
+                        const risky = activeDeals.filter((d) => d.paymentStatus === 'overdue' || String(d.nextAction || '').toLowerCase().includes('overdue'));
+                        const toShow = risky.slice(0, 2);
+                        if (toShow.length === 0) {
+                          return (
+                            <BaseCard variant="tertiary" className={cn(spacing.cardPadding.secondary, "text-center border border-white/10")}>
+                              <p className={typography.bodySmall}>All active collaborations look on track</p>
+                              <button
+                                type="button"
+                                onClick={() => { triggerHaptic(HapticPatterns.light); navigate('/creator-contracts'); }}
+                                className={cn("mt-3", sectionHeader.action)}
+                              >
+                                View all →
+                              </button>
+                            </BaseCard>
+                          );
+                        }
+                        return toShow.map((deal, index) => (
                       <motion.div
                         key={deal.id}
                         initial={motionTokens.slide.up.initial}
@@ -1352,29 +1471,27 @@ const CreatorDashboard = () => {
                               Deliverables: {deal.deliverablesProgress.delivered}/{deal.deliverablesProgress.total}
                             </div>
                           )}
-                          {/* 7. Open Deal CTA */}
+                          {/* 7. Resolve Now CTA (attention-needed deals only) */}
                           <div className="mt-3 pt-2 border-t border-white/10">
-                            <span className={cn(sectionHeader.action, "text-xs font-medium")}>Open Deal</span>
+                            <span className={cn(sectionHeader.action, "text-xs font-medium")}>Resolve Now</span>
                           </div>
                         </BaseCard>
                       </motion.div>
-                      ))}
+                        ));
+                      })()}
                     </div>
                   )}
                 </div>
 
-                {/* Your Collab Link — below inbox, quiet but powerful */}
+                {/* Collab Link — utility card (Copy | Preview only) */}
                 <div className={spacing.loose}>
-                  <h2 className={cn(sectionHeader.title, "text-base font-semibold mb-2")}>Your Collab Link</h2>
-                  <p className={cn(typography.caption, "text-purple-300/80 mb-3")}>
-                    All brand deals start here. Contracts & payments auto-protected.
-                  </p>
+                  <p className={cn(typography.bodySmall, "text-white/70 mb-2")}>All brand deals start here</p>
                   {(profile?.instagram_handle || profile?.username) ? (
-                    <div className="flex flex-wrap items-center gap-2">
-                      <code className="flex-1 min-w-0 truncate text-sm text-purple-200 bg-white/5 px-3 py-2 rounded-lg border border-white/10">
+                    <BaseCard variant="tertiary" className="p-4 border border-white/10">
+                      <code className="block w-full truncate text-sm text-purple-200 bg-white/5 px-3 py-2 rounded-lg border border-white/10">
                         creatorarmour.com/collab/{profile?.instagram_handle || profile?.username}
                       </code>
-                      <div className="flex gap-2">
+                      <div className="mt-3 flex gap-2">
                         <motion.button
                           type="button"
                           whileTap={animations.microTap}
@@ -1384,53 +1501,34 @@ const CreatorDashboard = () => {
                             toast.success('Link copied');
                             triggerHaptic(HapticPatterns.light);
                           }}
-                          className={cn("px-3 py-2 rounded-lg text-sm font-medium", buttons.primary)}
+                          className={cn(buttons.secondary, "flex-1 min-h-[44px] flex items-center justify-center gap-2 text-purple-100 border-purple-400/40")}
                         >
+                          <Copy className="w-4 h-4" />
                           Copy
                         </motion.button>
                         <motion.button
                           type="button"
                           whileTap={animations.microTap}
                           onClick={() => { triggerHaptic(HapticPatterns.light); window.open(`/collab/${profile?.instagram_handle || profile?.username}`, '_blank'); }}
-                          className={cn("px-3 py-2 rounded-lg text-sm font-medium bg-white/10 hover:bg-white/15 border border-white/20")}
+                          className={cn(buttons.secondary, "flex-1 min-h-[44px] flex items-center justify-center gap-2 text-purple-100 border-purple-400/40")}
                         >
+                          <ExternalLink className="w-4 h-4" />
                           Preview
                         </motion.button>
                       </div>
-                    </div>
+                    </BaseCard>
                   ) : (
                     <p className={cn(typography.caption, "text-purple-300/60")}>Complete your profile to get your link.</p>
                   )}
                 </div>
 
-                {/* Collab Link Performance — collapsed by default, secondary */}
-                <div className={spacing.loose}>
-                  <details className="group">
-                    <summary className={cn("list-none flex items-center justify-between cursor-pointer py-2 text-sm font-medium text-purple-200 hover:text-white transition-colors", sectionHeader.action)}>
-                      <span className="flex items-center gap-2">
-                        <BarChart3 className="w-4 h-4 text-purple-400" />
-                        Collab Link Performance
-                      </span>
-                      <ChevronRight className="w-4 h-4 transition-transform group-open:rotate-90" />
-                    </summary>
-                    <div className="mt-2 p-4 bg-white/5 rounded-lg border border-white/10 text-sm">
-                      <p className="text-purple-300/80 mb-2">Requests: {pendingCollabRequestsCount} pending</p>
-                      <p className="text-purple-300/60 text-xs">Acceptance rate & avg response time on Collab tab.</p>
-                      <button
-                        type="button"
-                        onClick={() => { triggerHaptic(HapticPatterns.light); navigate('/creator-collab'); }}
-                        className={cn("mt-2 text-xs", sectionHeader.action)}
-                      >
-                        View full analytics →
-                      </button>
-                    </div>
-                  </details>
-                </div>
+                {/* Collab link analytics hidden on dashboard (reduce noise) */}
 
                 {/* Section Separator */}
             <div className={separators.section} />
 
-                {/* Legal Power Ready Card */}
+                {/* Legal Power: only show when a payment is overdue */}
+                {hasPaymentOverdue && (
                 <div className={spacing.loose}>
                   <BaseCard variant="secondary" className={cn("relative overflow-hidden")}>
                     {/* Background glow */}
@@ -1476,6 +1574,7 @@ const CreatorDashboard = () => {
                     </div>
                   </BaseCard>
                 </div>
+                )}
 
               </div>
 

@@ -32,6 +32,8 @@ interface CreatorNavigationWrapperProps {
   title?: string;
   subtitle?: string;
   showBackButton?: boolean;
+  backTo?: string; // When set, back button navigates here instead of history back
+  backIconOnly?: boolean; // Show only arrow in header
   rightActions?: React.ReactNode;
   hideBottomNav?: boolean;
   className?: string;
@@ -43,6 +45,8 @@ export const CreatorNavigationWrapper: React.FC<CreatorNavigationWrapperProps> =
   title,
   subtitle,
   showBackButton = false,
+  backTo,
+  backIconOnly = false,
   rightActions,
   hideBottomNav = false,
   className,
@@ -89,11 +93,13 @@ export const CreatorNavigationWrapper: React.FC<CreatorNavigationWrapperProps> =
           title={pageTitle}
           subtitle={subtitle}
           showBackButton={showBackButton}
+          onBack={backTo ? () => navigate(backTo) : undefined}
           showMenuButton={!showBackButton}
           onMenuClick={() => setShowMenu(true)}
           rightActions={rightActions}
           premium={location.pathname.startsWith('/creator-contracts')}
           compact={compactHeader}
+          backIconOnly={backIconOnly}
         />
       )}
 
