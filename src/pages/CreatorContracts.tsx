@@ -102,6 +102,15 @@ const CreatorContracts = () => {
         status = 'draft';
         progress = 10;
         nextStep = 'Review and send to brand';
+      } else if (statusLower === 'drafting') {
+        // Barter deal accepted, delivery details pending
+        status = 'negotiation';
+        progress = 40;
+        nextStep = 'Add delivery details';
+      } else if (statusLower.includes('awaiting product shipment')) {
+        status = 'awaiting_product_shipment';
+        progress = 50;
+        nextStep = 'Brand will ship product';
       } else if (statusLower === 'sent') {
         // Only show "waiting" if brand_response_status is not accepted/accepted_verified
         if (brandResponseStatus === 'accepted' || brandResponseStatus === 'accepted_verified') {
@@ -267,14 +276,24 @@ const CreatorContracts = () => {
       return { label: 'Signed', color: 'bg-green-500/20 text-green-400 border-green-500/30' };
     }
     
+    // Awaiting Product Shipment (barter) → amber
+    if (statusLower.includes('awaiting product shipment') || statusLower === 'awaiting_product_shipment') {
+      return { label: 'Awaiting Product Shipment', color: 'bg-amber-500/20 text-amber-400 border-amber-500/30' };
+    }
+    
     // Contract Ready (sent, draft ready) → blue
     if (statusLower === 'sent' || statusLower === 'draft' || statusLower.includes('contract_ready') || statusLower.includes('agreement_prepared')) {
       return { label: 'Contract Ready', color: 'bg-blue-500/20 text-blue-400 border-blue-500/30' };
     }
     
-    // Negotiation → yellow
+    // Negotiation → yellow (includes barter "Drafting" = Delivery Details Pending)
     if (statusLower.includes('negotiation') || statusLower.includes('negotiating') || brandResponseStatus === 'negotiating') {
-      return { label: 'Negotiation', color: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30' };
+      const dealStatus = dealData?.status?.toLowerCase() || '';
+      const isBarterDrafting = (dealData as any)?.deal_type === 'barter' && dealStatus === 'drafting';
+      return {
+        label: isBarterDrafting ? 'Delivery Details Pending' : 'Negotiation',
+        color: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
+      };
     }
     
     // Default fallback
@@ -285,7 +304,15 @@ const CreatorContracts = () => {
   const getPrimaryAction = (status: string, dealData: any) => {
     const statusLower = status?.toLowerCase() || '';
     const brandResponseStatus = dealData?.brand_response_status?.toLowerCase() || '';
+    const dealStatus = dealData?.status?.toLowerCase() || '';
+    const isBarterDrafting = (dealData as any)?.deal_type === 'barter' && dealStatus === 'drafting';
     
+    if (isBarterDrafting) {
+      return { label: 'Add delivery details', action: 'delivery_details' };
+    }
+    if (statusLower.includes('awaiting product shipment') || statusLower === 'awaiting_product_shipment') {
+      return { label: 'View Details', action: 'view' };
+    }
     if (statusLower.includes('negotiation') || brandResponseStatus === 'negotiating') {
       return { label: 'Complete Negotiation', action: 'negotiate' };
     }
@@ -514,16 +541,17 @@ const CreatorContracts = () => {
           return new Date(bDeadlineLate).getTime() - new Date(aDeadlineLate).getTime();
         
         case 'status':
-          // Sort by status priority: draft < negotiation < signed < content_making < content_delivered < completed
+          // Sort by status priority: draft < negotiation < awaiting_product_shipment < signed < ... < completed
           const statusPriority: Record<string, number> = {
             'draft': 0,
             'pending': 1,
             'negotiation': 2,
-            'sent': 3,
-            'signed': 4,
-            'content_making': 5,
-            'content_delivered': 6,
-            'completed': 7
+            'awaiting_product_shipment': 3,
+            'sent': 4,
+            'signed': 5,
+            'content_making': 6,
+            'content_delivered': 7,
+            'completed': 8
           };
           const aPriority = statusPriority[a.status] ?? 99;
           const bPriority = statusPriority[b.status] ?? 99;
@@ -912,7 +940,11 @@ const CreatorContracts = () => {
                     onClick={(e) => {
                       e.stopPropagation();
                       triggerHaptic(HapticPatterns.light);
-                      navigate(`/creator-contracts/${deal.id}`);
+                      if (primaryAction.action === 'delivery_details') {
+                        navigate(`/creator-contracts/${deal.id}/delivery-details`);
+                      } else {
+                        navigate(`/creator-contracts/${deal.id}`);
+                      }
                     }}
                     whileTap={animations.microTap}
                     className={cn(

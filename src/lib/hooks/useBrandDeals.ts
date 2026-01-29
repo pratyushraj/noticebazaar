@@ -191,7 +191,7 @@ export const useBrandDeals = (options: UseBrandDealsOptions) => {
         }
       }
 
-      // Define signed statuses that should be visible
+      // Define signed statuses that should be visible (includes barter: Drafting, Awaiting Product Shipment)
       const signedStatuses = [
         'signed',
         'SIGNED_BY_BRAND',
@@ -200,7 +200,9 @@ export const useBrandDeals = (options: UseBrandDealsOptions) => {
         'content_delivered',
         'Content Delivered',
         'completed',
-        'COMPLETED'
+        'COMPLETED',
+        'Drafting', // Barter deal created, delivery details pending
+        'Awaiting Product Shipment', // Barter: delivery details saved, waiting for brand to ship
       ];
 
       let query = supabase
@@ -775,6 +777,7 @@ export type DealStage =
   | 'needs_changes' 
   | 'declined' 
   | 'completed'
+  | 'awaiting_product_shipment' // Barter: delivery details saved
   | 'negotiation' // Legacy support
   | 'content_making' // Legacy support
   | 'content_delivered'; // Legacy support
@@ -786,6 +789,7 @@ export const DEAL_PROGRESS_STAGES = {
   needs_changes: { percent: 55, next: 'contract_ready' },
   declined: { percent: 0, next: null },
   completed: { percent: 100, next: null },
+  awaiting_product_shipment: { percent: 50, next: 'signed' },
   // Legacy stages for backward compatibility
   negotiation: { percent: 30, next: 'signed' },
   content_making: { percent: 80, next: 'content_delivered' },
@@ -799,7 +803,7 @@ export const STAGE_TO_PROGRESS: Record<DealStage, number> = {
   needs_changes: 55,
   declined: 0,
   completed: 100,
-  // Legacy stages
+  awaiting_product_shipment: 50,
   negotiation: 30,
   content_making: 80,
   content_delivered: 90,
@@ -812,7 +816,7 @@ export const STAGE_TO_STATUS: Record<DealStage, string> = {
   needs_changes: 'NEEDS_CHANGES',
   declined: 'REJECTED',
   completed: 'COMPLETED',
-  // Legacy stages
+  awaiting_product_shipment: 'Awaiting Product Shipment',
   negotiation: 'Negotiation',
   content_making: 'Content Making',
   content_delivered: 'Content Delivered',
@@ -825,7 +829,7 @@ export const STAGE_LABELS: Record<DealStage, string> = {
   needs_changes: 'Requires Changes',
   declined: 'Declined',
   completed: 'Completed',
-  // Legacy stages
+  awaiting_product_shipment: 'Awaiting Product Shipment',
   negotiation: 'Negotiation',
   content_making: 'Content Making',
   content_delivered: 'Content Delivered',
@@ -859,7 +863,10 @@ export const getDealStageFromStatus = (status: string | null | undefined, progre
   if (statusLower === 'completed' || statusLower.includes('completed')) {
     return 'completed';
   }
-  
+  if (statusLower.includes('awaiting product shipment') || statusLower.includes('awaiting_product_shipment')) {
+    return 'awaiting_product_shipment';
+  }
+
   // Legacy status mappings for backward compatibility
   if (statusLower.includes('draft')) return 'details_submitted';
   if (statusLower.includes('review')) return 'contract_ready';

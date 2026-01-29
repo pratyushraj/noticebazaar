@@ -7,13 +7,11 @@ import { Button } from '@/components/ui/button';
 import {
   Briefcase,
   CheckCircle2,
+  Clock,
   XCircle,
   Loader2,
   Copy,
-  ExternalLink,
   Lock,
-  ChevronRight,
-  Pencil,
   Image as ImageIcon,
 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -36,8 +34,8 @@ import {
   DialogTitle,
   DialogDescription,
 } from '@/components/ui/dialog';
-import { formatRelativeTime } from '@/lib/utils/time';
 import { getApiBaseUrl } from '@/lib/utils/api';
+import { trackEvent } from '@/lib/utils/analytics';
 import { CreatorNavigationWrapper } from '@/components/navigation/CreatorNavigationWrapper';
 import { cn } from '@/lib/utils';
 import { spacing } from '@/lib/design-system';
@@ -74,6 +72,7 @@ const CollabRequestsPage = () => {
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [showDeclineDialog, setShowDeclineDialog] = useState(false);
   const [campaignDescriptionExpanded, setCampaignDescriptionExpanded] = useState(false);
+  const [expandedCardId, setExpandedCardId] = useState<string | null>(null);
   const [acceptingRequestId, setAcceptingRequestId] = useState<string | null>(null);
   const [failedBarterImages, setFailedBarterImages] = useState<Record<string, boolean>>({});
 
@@ -185,16 +184,27 @@ const CollabRequestsPage = () => {
 
       const data = await response.json();
       if (data.success) {
-        if (data.contract) {
-          toast.success('Contract generated. Waiting for brand signature.');
+        trackEvent('creator_accepted_request', {
+          deal_id: data.deal?.id,
+          creator_id: profile?.id,
+          collab_type: selectedRequest?.collab_type || 'paid',
+        });
+        if (data.needs_delivery_details) {
+          toast.success('Share delivery details to proceed');
+          fetchRequests();
+          setShowDetailModal(false);
+          setSelectedRequest(null);
+          if (data.deal?.id) navigate(`/creator-contracts/${data.deal.id}/delivery-details`);
         } else {
-          toast.success('Collaboration request accepted! Deal created successfully.');
-        }
-        fetchRequests();
-        setShowDetailModal(false);
-        setSelectedRequest(null);
-        if (data.deal?.id) {
-          navigate(`/creator-contracts/${data.deal.id}`);
+          if (data.contract) {
+            toast.success('Contract generated and ready for signing');
+          } else {
+            toast.success('Collaboration request accepted! Deal created successfully.');
+          }
+          fetchRequests();
+          setShowDetailModal(false);
+          setSelectedRequest(null);
+          if (data.deal?.id) navigate(`/creator-contracts/${data.deal.id}`);
         }
       } else {
         toast.error(data.error || 'Please review details before accepting');
@@ -229,6 +239,7 @@ const CollabRequestsPage = () => {
 
       const data = await response.json();
       if (data.success) {
+        trackEvent('creator_declined_request', { request_id: selectedRequest?.id, creator_id: profile?.id });
         toast.success('Request declined');
         fetchRequests();
         setShowDeclineDialog(false);
@@ -288,93 +299,85 @@ const CollabRequestsPage = () => {
 
         {/* Empty state or request cards */}
         {pendingRequests.length === 0 ? (
-          <Card className="bg-white/5 backdrop-blur-md border-white/10">
-            <CardContent className="p-6 md:p-8">
-              <div className="text-center mb-6">
-                <Briefcase className="h-12 w-12 text-purple-400 mx-auto mb-4 opacity-50" />
-                <h3 className="text-lg font-semibold text-white mb-2">No brand requests yet</h3>
-                <p className="text-purple-200/80 text-sm mb-6 max-w-md mx-auto">
-                  Share your collab link so brands can send structured requests instead of DMs.
-                </p>
-                <div className="text-left max-w-sm mx-auto space-y-3 mb-6">
-                  <p className="text-xs font-medium text-purple-300/80 uppercase tracking-wider">Get your first request</p>
-                  <ol className="space-y-2.5 text-sm text-purple-200 list-decimal list-inside">
-                    <li>Share your collab link in your Instagram bio</li>
-                    <li>Reply to brand emails with this link</li>
-                    <li>Pin the link in WhatsApp or your email signature</li>
-                  </ol>
-                </div>
-                {hasUsername && (
-                  <Button
-                    onClick={copyCollabLink}
-                    className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white"
-                  >
-                    <Copy className="h-4 w-4 mr-2" />
-                    Copy Collab Link
-                  </Button>
-                )}
+          <Card className="rounded-2xl bg-white/5 border border-white/10 overflow-hidden">
+            <CardContent className="p-8 text-center">
+              <div className="w-20 h-20 rounded-full bg-white/10 flex items-center justify-center mx-auto mb-5">
+                <Briefcase className="h-10 w-10 text-purple-300/80" />
               </div>
+              <h3 className="text-lg font-semibold text-white mb-2">No brand requests yet</h3>
+              <p className="text-sm text-purple-200/80 mb-6 max-w-xs mx-auto">
+                Share your collab link to receive protected deals
+              </p>
+              {hasUsername && (
+                <Button
+                  onClick={copyCollabLink}
+                  className="w-full min-h-[44px] font-medium bg-white/15 hover:bg-white/25 border border-white/20 text-white"
+                >
+                  <Copy className="h-4 w-4 mr-2" />
+                  Copy Collab Link
+                </Button>
+              )}
             </CardContent>
           </Card>
         ) : (
-          /* Request cards — polished for clarity, trust, fast decision-making */
-          <div className="space-y-4">
+          /* Request cards — compact default, tap to expand; Accept Deal primary, Counter/Decline secondary */
+          <div className="space-y-6">
             {pendingRequests.map((request) => {
               const deliverablesList = parseDeliverables(request.deliverables);
+              const isExpanded = expandedCardId === request.id;
               return (
                 <Card
                   key={request.id}
                   role="button"
                   tabIndex={0}
-                  onClick={() => openDetail(request)}
-                  onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openDetail(request); } }}
+                  onClick={(e) => { if (!(e.target as HTMLElement).closest('button')) setExpandedCardId((id) => (id === request.id ? null : request.id)); }}
+                  onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setExpandedCardId((id) => (id === request.id ? null : request.id)); } }}
                   className={cn(
-                    "rounded-[20px] bg-white/5 backdrop-blur-md border border-white/10 overflow-hidden flex flex-col",
-                    "cursor-pointer select-none",
-                    "hover:border-purple-500/30 hover:shadow-[0_8px_32px_rgba(0,0,0,0.25)]",
-                    "active:scale-[0.99] transition-all duration-200"
+                    "rounded-2xl bg-white/5 border border-white/10 overflow-hidden flex flex-col",
+                    "cursor-pointer select-none transition-all duration-200",
+                    "hover:border-white/20 active:scale-[0.99]"
                   )}
                 >
-                  <CardContent className="p-4 sm:p-5 flex flex-col flex-1 space-y-5">
-                    {/* 1. Card header: brand name; pills right; timestamp */}
-                    <div className="space-y-0.5">
-                      <div className="flex items-start justify-between gap-2 min-w-0">
-                        <h3 className="text-lg font-bold text-white break-words flex-1 min-w-0 leading-tight uppercase">
-                          {request.brand_name ?? 'Brand'}
-                        </h3>
-                        <div className="flex items-center gap-1.5 flex-shrink-0">
-                          <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-medium border border-white/20 text-purple-200/90 bg-white/5">
-                            {request.collab_type === 'paid' ? 'Paid' : request.collab_type === 'barter' ? 'Barter' : 'Both'}
+                  <CardContent className="p-4 flex flex-col flex-1 space-y-4">
+                    {/* 1. Brand name — primary hierarchy */}
+                    <h3 className="text-base font-bold text-white leading-tight">
+                      {request.brand_name ?? 'Brand'}
+                    </h3>
+
+                    {/* 2. Compact summary strip: [Paid/Barter] ₹Value • X deliverables • Deadline */}
+                    <div className="flex flex-wrap items-center gap-2 text-sm">
+                      <span className={cn(
+                        "inline-flex items-center px-2 py-0.5 rounded-lg text-xs font-medium",
+                        request.collab_type === 'paid' && "bg-green-500/20 text-green-300 border border-green-500/30",
+                        request.collab_type === 'barter' && "bg-blue-500/20 text-blue-300 border border-blue-500/30",
+                        request.collab_type === 'both' && "bg-purple-500/20 text-purple-300 border border-purple-500/30"
+                      )}>
+                        {request.collab_type === 'paid' ? 'Paid' : request.collab_type === 'barter' ? 'Barter' : 'Both'}
+                      </span>
+                      <span className="text-white font-semibold">{formatBudget(request)}</span>
+                      <span className="text-purple-400/60">·</span>
+                      <span className="inline-flex items-center gap-1 text-purple-200/90">
+                        <CheckCircle2 className="h-3.5 w-3.5 text-purple-200/70" aria-hidden />
+                        {deliverablesList.length}
+                      </span>
+                      {request.deadline && (
+                        <>
+                          <span className="text-purple-400/60">·</span>
+                          <span className="inline-flex items-center gap-1 text-purple-200/80">
+                            <Clock className="h-3.5 w-3.5 text-purple-200/60" aria-hidden />
+                            {new Date(request.deadline).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })}
                           </span>
-                          {request.status === 'pending' && (
-                            <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-medium bg-amber-500/20 text-amber-200 border border-amber-500/30">
-                              Pending
-                            </span>
-                          )}
-                          {request.status === 'accepted' && (
-                            <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-medium bg-green-500/20 text-green-200 border border-green-500/30">
-                              Accepted
-                            </span>
-                          )}
-                          {request.status === 'countered' && (
-                            <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-medium bg-blue-500/20 text-blue-200 border border-blue-500/30">
-                              Counter Sent
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                      <p className="text-xs text-purple-300/40">
-                        {formatRelativeTime(new Date(request.created_at))}
-                      </p>
+                        </>
+                      )}
                     </div>
 
-                    {/* 2. Barter product image — top of content, full-width, prominent (barter/both only) */}
+                    {/* 3. Barter product image — larger, 16:9 or square, rounded, "Product preview" */}
                     {(request.collab_type === 'barter' || request.collab_type === 'both') && (request.barter_product_image_url || failedBarterImages[request.id]) && (
-                      <div className="w-full max-w-[280px] sm:max-w-[320px] mx-auto rounded-[20px] overflow-hidden bg-white/[0.06] border border-white/10 aspect-square relative flex-shrink-0">
+                      <div className="w-full rounded-xl overflow-hidden bg-white/[0.06] border border-white/10 aspect-video relative">
                         {request.barter_product_image_url && !failedBarterImages[request.id] ? (
                           <>
-                            <span className="absolute top-2 left-2 z-10 px-2 py-1 rounded-md text-[10px] font-medium text-white/90 bg-black/30 backdrop-blur-sm">
-                              Product Preview
+                            <span className="absolute top-2 left-2 z-10 px-2 py-1 rounded-lg text-[10px] font-medium text-white/90 bg-black/40 backdrop-blur-sm">
+                              Product preview
                             </span>
                             <img
                               src={request.barter_product_image_url}
@@ -383,117 +386,96 @@ const CollabRequestsPage = () => {
                               className="w-full h-full object-cover"
                               onError={() => setFailedBarterImages((prev) => ({ ...prev, [request.id]: true }))}
                             />
-                            <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/50 to-transparent pointer-events-none" aria-hidden />
                           </>
                         ) : (
-                          <div className="absolute inset-0 flex items-center justify-center text-white/40 bg-white/[0.06]">
-                            <ImageIcon className="h-12 w-12" aria-hidden />
+                          <div className="absolute inset-0 flex items-center justify-center text-white/40">
+                            <ImageIcon className="h-10 w-10" aria-hidden />
                           </div>
                         )}
                       </div>
                     )}
 
-                    {/* 3. Value row — Barter (₹999) · 3 deliverables (below image) */}
-                    <div className="flex flex-wrap items-center gap-2 py-2.5 px-3 rounded-xl bg-white/[0.06] border border-white/[0.06]">
-                      <span className="text-sm font-semibold text-white">
-                        {formatBudget(request)}
-                      </span>
-                      <span className="text-purple-400/60 text-sm">·</span>
-                      <span className="text-sm text-purple-200/90">
-                        {deliverablesList.length} {deliverablesList.length === 1 ? 'deliverable' : 'deliverables'}
-                      </span>
-                    </div>
-
-                    {/* 4. Deadline meta row */}
-                    {request.deadline && (
-                      <p className="text-xs text-purple-300/50 -mt-3">
-                        Due {new Date(request.deadline).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
-                      </p>
-                    )}
-
-                    {/* 5. Description — full text */}
-                    {request.campaign_description && (
-                      <p className="text-sm text-purple-200/90 break-words leading-snug whitespace-pre-wrap">
-                        {request.campaign_description}
-                      </p>
-                    )}
-
-                    {/* 6. Deliverable tags — smaller pills, lower opacity, cap 3 + "+N more" */}
-                    {deliverablesList.length > 0 && (
-                      <div className="space-y-1.5">
-                        <p className="text-[10px] font-medium text-purple-300/40 uppercase tracking-wider">
-                          Requested Deliverables
-                        </p>
-                        <div className="flex flex-wrap gap-1">
-                          {deliverablesList.slice(0, 3).map((d, idx) => (
-                            <span
-                              key={idx}
-                              className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] border border-white/10 text-purple-200/80 bg-white/[0.04]"
-                            >
-                              {d}
-                            </span>
-                          ))}
-                          {deliverablesList.length > 3 && (
-                            <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] text-purple-300/60 bg-white/[0.04] border border-white/10">
-                              +{deliverablesList.length - 3} more
-                            </span>
-                          )}
-                        </div>
+                    {/* 4. Expanded: description, deliverables, brand email */}
+                    {isExpanded && (
+                      <div className="space-y-3 pt-2 border-t border-white/10" onClick={(e) => e.stopPropagation()}>
+                        {request.campaign_description && (
+                          <p className="text-sm text-purple-200/90 line-clamp-4 leading-snug">
+                            {request.campaign_description}
+                          </p>
+                        )}
+                        {deliverablesList.length > 0 && (
+                          <div>
+                            <p className="text-[10px] font-medium text-purple-300/60 uppercase tracking-wider mb-1.5">Deliverables</p>
+                            <div className="flex flex-wrap gap-1.5">
+                              {deliverablesList.slice(0, 4).map((d, idx) => (
+                                <span key={idx} className="inline-flex px-2 py-0.5 rounded-md text-xs border border-white/10 text-purple-200/90 bg-white/[0.04]">{d}</span>
+                              ))}
+                              {deliverablesList.length > 4 && <span className="text-xs text-purple-300/60">+{deliverablesList.length - 4} more</span>}
+                            </div>
+                          </div>
+                        )}
+                        <p className="text-xs text-purple-300/60">{request.brand_email}</p>
                       </div>
                     )}
 
-                    {/* 7. Primary CTA — Accept Deal (full-width, high emphasis); helper; secondary Counter | Decline; trust line */}
-                    <div className="mt-auto pt-4 space-y-3">
+                    {/* 5. Collapsed vs expanded hint */}
+                    {!isExpanded ? (
+                      <div className="text-xs text-purple-300/60">
+                        Tap to expand
+                      </div>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={(e) => { e.stopPropagation(); openDetail(request); }}
+                        className="text-xs text-purple-300/70 hover:text-purple-200 text-left w-fit"
+                      >
+                        Open full brief →
+                      </button>
+                    )}
+
+                    {/* 6. Primary CTA — Accept Deal (full-width, dominant); secondary Counter | Decline; trust */}
+                    <div className="mt-auto pt-2 space-y-2">
                       <Button
                         type="button"
                         disabled={acceptingRequestId === request.id}
                         onClick={(e) => { e.stopPropagation(); acceptRequest(request); }}
                         className={cn(
-                          "w-full min-h-[44px] font-semibold text-white",
-                          "bg-gradient-to-r from-purple-600 to-indigo-600",
-                          "hover:from-purple-500 hover:to-indigo-500",
-                          "shadow-[0_4px_20px_rgba(139,92,246,0.35)] hover:shadow-[0_6px_24px_rgba(139,92,246,0.4)]",
-                          "border-0 rounded-xl transition-all duration-200",
-                          "flex items-center justify-center gap-2"
+                          "w-full min-h-[48px] font-semibold text-white rounded-xl",
+                          "bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500",
+                          "shadow-[0_4px_18px_rgba(99,102,241,0.35)]",
+                          "border-0",
+                          "transition-all duration-200"
                         )}
                       >
                         {acceptingRequestId === request.id ? (
                           <>
-                            <Loader2 className="h-4 w-4 animate-spin flex-shrink-0" />
+                            <Loader2 className="h-4 w-4 animate-spin flex-shrink-0 mr-2" />
                             Generating contract…
                           </>
                         ) : (
                           'Accept Deal'
                         )}
                       </Button>
-                      <p className="text-[11px] text-purple-300/60 text-center leading-snug px-1">
-                        You can still counter before signing the contract
-                      </p>
-                      <div className="w-full flex items-stretch gap-3 py-1 min-h-[44px]">
-                        <Button
+                      <div className="flex items-center justify-center gap-4 py-1">
+                        <button
                           type="button"
-                          size="sm"
                           onClick={(e) => { e.stopPropagation(); navigate(`/collab-requests/${request.id}/counter`, { state: { request } }); }}
-                          className="flex-1 min-h-[44px] inline-flex items-center justify-center gap-1.5 rounded-xl text-white bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 border-0 shadow-[0_2px_12px_rgba(139,92,246,0.3)] touch-manipulation"
-                          aria-label="Open counter-offer flow"
+                          className="text-sm text-purple-200/80 hover:text-white font-medium"
                         >
-                          <Pencil className="h-3.5 w-3.5" aria-hidden />
                           Counter
-                        </Button>
-                        <Button
+                        </button>
+                        <button
                           type="button"
-                          size="sm"
                           onClick={(e) => { e.stopPropagation(); openDeclineConfirm(request); }}
-                          className="flex-1 min-h-[44px] inline-flex items-center justify-center gap-1.5 rounded-xl text-white bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 border-0 shadow-[0_2px_12px_rgba(139,92,246,0.3)] touch-manipulation"
-                          aria-label="Decline request"
+                          className="text-sm text-red-300/80 hover:text-red-200 font-medium"
+                          aria-label="Decline"
                         >
-                          <XCircle className="h-3.5 w-3.5" aria-hidden />
                           Decline
-                        </Button>
+                        </button>
                       </div>
-                      <p className="text-[10px] text-purple-300/25 flex items-center justify-center gap-1.5" role="status">
+                      <p className="text-[10px] text-purple-300/50 flex items-center justify-center gap-1.5" role="status">
                         <Lock className="h-3 w-3 flex-shrink-0" aria-hidden />
-                        Legally timestamped & protected by Creator Armour
+                        Auto-contracted & legally protected
                       </p>
                     </div>
                   </CardContent>
@@ -516,11 +498,11 @@ const CollabRequestsPage = () => {
                   </div>
                   <p className="text-xs text-purple-300/60 flex items-center gap-1.5">
                     <Lock className="h-3 w-3 flex-shrink-0" aria-hidden />
-                    Counter sent on {request.updated_at ? new Date(request.updated_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : '—'} — legally recorded
+                    Counter sent {request.updated_at ? new Date(request.updated_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' }) : '—'} — legally recorded
                   </p>
-                  <p className="text-[10px] text-purple-300/25 flex items-center gap-1.5">
+                  <p className="text-[10px] text-purple-300/50 flex items-center gap-1.5">
                     <Lock className="h-3 w-3 flex-shrink-0" aria-hidden />
-                    All counters are logged, timestamped, and protected by Creator Armour
+                    Auto-contracted & legally protected
                   </p>
                 </CardContent>
               </Card>
@@ -629,9 +611,9 @@ const CollabRequestsPage = () => {
                         Decline
                       </Button>
                     </div>
-                    <p className="text-[10px] text-purple-300/25 flex items-center justify-center gap-1.5 pt-1">
+                    <p className="text-[10px] text-purple-300/50 flex items-center justify-center gap-1.5 pt-1">
                       <Lock className="h-3 w-3 flex-shrink-0" aria-hidden />
-                      This request is timestamped and legally protected by Creator Armour
+                      Auto-contracted & legally protected
                     </p>
               </div>
             )}

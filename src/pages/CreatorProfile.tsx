@@ -1256,116 +1256,71 @@ const ProfileSettings = () => {
               </div>
             </div>
 
-            {/* Collaboration Link */}
+            {/* Collaboration Link — mobile-first, conversion-focused */}
             <div className="bg-white/5 rounded-xl p-4 border border-white/10">
               <h2 className="font-semibold text-base mb-1 flex items-center gap-2">
                 <Link2 className="w-4 h-4" />
                 Your Official Collaboration Link
               </h2>
               <p className="text-xs text-white/60 mb-4">
-                Use this link instead of DMs for paid collaborations & contracts
+                This is your single, protected collaboration inbox.
               </p>
-              <div className="space-y-4">
+              <div className="space-y-5">
                 {(() => {
-                  // Use Instagram handle from formData (current input) or profile, fallback to username field
                   const usernameForLink = formData.instagramHandle || profile?.instagram_handle || profile?.username;
                   const hasUsername = usernameForLink && usernameForLink.trim() !== '';
-                  // SEO-friendly clean URL format: creatorarmour.com/collab/username
                   const collabLink = hasUsername ? `${window.location.origin}/collab/${usernameForLink}` : '';
-                  // Display shortened link format: creatorarmour.com/collab/username
                   const shortLink = hasUsername ? `creatorarmour.com/collab/${usernameForLink}` : '';
-                  
-                  // Debug: Log the values being used (dev only)
-                  if (import.meta.env.DEV && hasUsername) {
-                    console.log('[CreatorProfile] Collab link values:', {
-                      formDataInstagramHandle: formData.instagramHandle,
-                      profileInstagramHandle: profile?.instagram_handle,
-                      profileUsername: profile?.username,
-                      finalUsername: usernameForLink,
-                      collabLink
-                    });
-                  }
-                  
+
                   return hasUsername ? (
-                  <>
-                      {/* Link Display */}
-                    <div className="bg-purple-500/10 border border-purple-500/20 rounded-lg p-3">
-                        <div className="mb-3">
-                      <div className="flex items-center justify-between gap-2 mb-2">
-                            <code className="text-sm text-purple-200 break-all flex-1 font-medium">
-                              {shortLink}
-                        </code>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                              onClick={async () => {
-                                try {
-                                  await navigator.clipboard.writeText(collabLink);
-                                  setCopiedLink(true);
-                                  toast.success('Collab link copied');
-                                  setTimeout(() => setCopiedLink(false), 2000);
-                                } catch (error) {
-                                  toast.error('Failed to copy link');
-                                }
-                          }}
-                              className="h-8 w-8 p-0 text-purple-300 hover:text-white flex-shrink-0 transition-all"
-                              aria-label="Copy collaboration link"
-                        >
-                              {copiedLink ? (
-                                <Check className="h-4 w-4 text-green-400 animate-in fade-in duration-200" />
-                              ) : (
-                          <Copy className="h-4 w-4" />
-                              )}
-                        </Button>
-                      </div>
-                          {/* Trust Layer */}
-                          <p className="text-xs text-purple-300/70 ml-1 flex items-center gap-1">
-                            <Lock className="h-3 w-3" />
-                            <span>Powered by Creator Armour • Legal & payment protection enabled</span>
-                          </p>
-                        </div>
-
-                        {/* Benefit Line */}
-                        <p className="text-xs text-purple-200 text-center mb-3 font-medium">
-                          No DMs. No confusion. Everything in one place.
-                        </p>
-
-                        {/* Instagram Bio Helper Text */}
-                        <p className="text-xs text-white/50 mb-3 text-center">
-                          💡 Looks like an Instagram handle — perfect for your bio
-                        </p>
-                        <p className="text-xs text-white/50 mb-3 text-center">
-                          Add this link to your Instagram bio and reply to brand DMs with it.
-                        </p>
-
-                        {/* Share Buttons */}
-                        <div className="grid grid-cols-3 gap-2 mb-3">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                            onClick={() => {
-                              const message = encodeURIComponent(`Hey! For collaborations, please submit details here so everything is clear and protected:\n\n${collabLink}`);
-                              window.open(`https://wa.me/?text=${message}`, '_blank');
-                              toast.success('Opening WhatsApp...');
+                    <>
+                      {/* 1. Collab link card — one line + Copy primary CTA */}
+                      <div className="rounded-xl overflow-hidden border border-white/10">
+                        <div className="bg-white/10 px-3 py-2.5 flex items-center gap-2">
+                          <code className="text-sm text-white/90 truncate flex-1 min-w-0" title={shortLink}>
+                            {shortLink}
+                          </code>
+                          <Button
+                            size="sm"
+                            onClick={async () => {
+                              try {
+                                await navigator.clipboard.writeText(collabLink);
+                                setCopiedLink(true);
+                                toast.success('Link copied');
+                                setTimeout(() => setCopiedLink(false), 2000);
+                              } catch {
+                                toast.error('Failed to copy');
+                              }
                             }}
-                            className="bg-purple-500/20 border-purple-400/50 text-purple-200 hover:bg-purple-500/30 hover:border-purple-400/70 text-xs backdrop-blur-sm"
+                            className="flex-shrink-0 h-9 px-3 bg-white/20 hover:bg-white/30 border border-white/20 text-white font-medium"
+                            aria-label="Copy link"
                           >
-                            <MessageCircle className="h-3.5 w-3.5 mr-1.5" />
-                            WhatsApp
+                            {copiedLink ? <Check className="h-4 w-4 text-green-400" /> : <Copy className="h-4 w-4" />}
+                            <span className="ml-1.5">{copiedLink ? 'Copied' : 'Copy'}</span>
                           </Button>
+                        </div>
+                        <p className="text-[11px] text-white/50 px-3 py-1.5 flex items-center gap-1 bg-white/5">
+                          <Lock className="h-3 w-3" />
+                          Legally protected · Contracts & payments enabled
+                        </p>
+                      </div>
+
+                      {/* 2. Share via — compact icon row */}
+                      <div>
+                        <p className="text-xs text-white/50 mb-2">Share via</p>
+                        <div className="grid grid-cols-3 gap-2">
                           <Button
                             variant="outline"
                             size="sm"
                             onClick={() => {
-                              const subject = encodeURIComponent('Collaboration request');
-                              const body = encodeURIComponent(`Hi,\n\nFor collaborations, please submit details here so everything is clear and protected:\n\n${collabLink}\n\nThanks!`);
-                              window.location.href = `mailto:?subject=${subject}&body=${body}`;
-                              toast.success('Opening email client...');
+                              const message = encodeURIComponent(`For collaborations, submit here:\n\n${collabLink}`);
+                              window.open(`https://wa.me/?text=${message}`, '_blank');
+                              toast.success('Opening WhatsApp…');
                             }}
-                            className="bg-purple-500/20 border-purple-400/50 text-purple-200 hover:bg-purple-500/30 hover:border-purple-400/70 text-xs backdrop-blur-sm"
+                            className="h-9 text-xs bg-white/5 border-white/20 text-white/80 hover:bg-white/10"
                           >
-                            <Mail className="h-3.5 w-3.5 mr-1.5" />
-                            Email
+                            <MessageCircle className="h-3.5 w-3.5 mr-1" />
+                            WhatsApp
                           </Button>
                           <Button
                             variant="outline"
@@ -1373,142 +1328,108 @@ const ProfileSettings = () => {
                             onClick={async () => {
                               try {
                                 await navigator.clipboard.writeText(collabLink);
-                                toast.success('Link copied. Paste in bio or DM.');
-                              } catch (error) {
-                                toast.error('Failed to copy link');
+                                toast.success('Link copied. Paste in bio or DMs.');
+                              } catch {
+                                toast.error('Failed to copy');
                               }
                             }}
-                            className="bg-purple-500/20 border-purple-400/50 text-purple-200 hover:bg-purple-500/30 hover:border-purple-400/70 text-xs backdrop-blur-sm"
+                            className="h-9 text-xs bg-white/5 border-white/20 text-white/80 hover:bg-white/10"
                           >
-                            <Instagram className="h-3.5 w-3.5 mr-1.5" />
+                            <Instagram className="h-3.5 w-3.5 mr-1" />
                             Instagram
                           </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              const subject = encodeURIComponent('Collaboration request');
+                              const body = encodeURIComponent(`For collaborations, submit here:\n\n${collabLink}`);
+                              window.location.href = `mailto:?subject=${subject}&body=${body}`;
+                              toast.success('Opening email…');
+                            }}
+                            className="h-9 text-xs bg-white/5 border-white/20 text-white/80 hover:bg-white/10"
+                          >
+                            <Mail className="h-3.5 w-3.5 mr-1" />
+                            Email
+                          </Button>
                         </div>
+                        <p className="text-[11px] text-white/45 mt-1.5">Perfect for Instagram bio.</p>
+                      </div>
 
-                        {/* Preview Button */}
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => {
-                            const usernameForLink = formData.instagramHandle || profile?.instagram_handle || profile?.username;
-                            if (usernameForLink) {
-                              window.open(`/${usernameForLink}`, '_blank');
-                            } else {
-                              toast.error('Please set your Instagram username first');
-                            }
-                          }}
-                          className="w-full bg-purple-500/20 border-purple-400/50 text-purple-200 hover:bg-purple-500/30 hover:border-purple-400/70 backdrop-blur-sm"
+                      {/* 3. Primary CTA — view public page */}
+                      <Button
+                        variant="outline"
+                        className="w-full h-11 bg-white/10 border-white/20 text-white font-medium hover:bg-white/15"
+                        onClick={() => {
+                          if (usernameForLink) {
+                            window.open(`/collab/${usernameForLink}`, '_blank');
+                          } else {
+                            toast.error('Please set your Instagram username first');
+                          }
+                        }}
                       >
                         <ExternalLink className="h-4 w-4 mr-2" />
-                          View Public Collab Page
+                        View how brands see your link
                       </Button>
-                    </div>
 
-                      {/* How it works - Collapsible */}
+                      {/* 4. How it works — accordion, collapsed by default, 3 steps */}
                       <Collapsible open={showHowItWorks} onOpenChange={setShowHowItWorks}>
-                        <CollapsibleTrigger className="w-full">
-                          <div className="bg-white/5 border border-white/10 rounded-lg p-3 flex items-center justify-between hover:bg-white/10 transition-colors">
+                        <CollapsibleTrigger className="w-full rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 transition-colors">
+                          <div className="p-3 flex items-center justify-between">
                             <div className="flex items-center gap-2">
-                              <HelpCircle className="h-4 w-4 text-purple-300" />
-                              <span className="text-sm text-white/90 font-medium">How it works</span>
+                              <HelpCircle className="h-4 w-4 text-white/60" />
+                              <span className="text-sm font-medium text-white/90">How it works</span>
                             </div>
-                            <ChevronDown className={cn("h-4 w-4 text-white/50 transition-transform duration-200", showHowItWorks && "rotate-180")} />
+                            <ChevronDown className={cn("h-4 w-4 text-white/50 transition-transform", showHowItWorks && "rotate-180")} />
                           </div>
                         </CollapsibleTrigger>
                         <CollapsibleContent>
-                          <div className="bg-white/5 border border-white/10 rounded-lg p-3 mt-2 border-t-0 rounded-t-none">
+                          <div className="rounded-b-xl border border-t-0 border-white/10 bg-white/5 p-3">
                             <ol className="space-y-2 text-xs text-white/70">
-                              <li className="flex items-start gap-2">
-                                <span className="text-purple-300 font-semibold flex-shrink-0">1.</span>
-                                <span>Brand submits details via this link</span>
-                              </li>
-                              <li className="flex items-start gap-2">
-                                <span className="text-purple-300 font-semibold flex-shrink-0">2.</span>
-                                <span>You review the request inside Creator Armour</span>
-                              </li>
-                              <li className="flex items-start gap-2">
-                                <span className="text-purple-300 font-semibold flex-shrink-0">3.</span>
-                                <span>Accept, counter, or decline</span>
-                              </li>
-                              <li className="flex items-start gap-2">
-                                <span className="text-purple-300 font-semibold flex-shrink-0">4.</span>
-                                <span>Contract is generated automatically</span>
-                              </li>
-                              <li className="flex items-start gap-2">
-                                <span className="text-purple-300 font-semibold flex-shrink-0">5.</span>
-                                <span>Payments & deadlines are tracked</span>
-                              </li>
+                              <li className="flex gap-2"><span className="text-white/50 font-medium flex-shrink-0">1.</span> Brand opens your link</li>
+                              <li className="flex gap-2"><span className="text-white/50 font-medium flex-shrink-0">2.</span> Submits deal details</li>
+                              <li className="flex gap-2"><span className="text-white/50 font-medium flex-shrink-0">3.</span> You accept → contract generated</li>
                             </ol>
                           </div>
                         </CollapsibleContent>
                       </Collapsible>
 
-                      {/* Trust Badge */}
-                      <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-3 flex items-start gap-2">
-                        <Lock className="h-4 w-4 text-blue-400 mt-0.5 flex-shrink-0" />
-                        <p className="text-xs text-blue-200">
-                          Requests through this link are logged & protected by Creator Armour
-                        </p>
+                      {/* 5. One compact trust card */}
+                      <div className="rounded-xl border border-white/10 bg-white/5 p-3 flex items-start gap-2">
+                        <Shield className="h-4 w-4 text-white/60 mt-0.5 flex-shrink-0" />
+                        <div>
+                          <p className="text-xs font-medium text-white/90">This link replaces DMs</p>
+                          <p className="text-[11px] text-white/55 mt-0.5">All brand requests are logged, timestamped, and legally protected.</p>
+                        </div>
                       </div>
 
-                      {/* Analytics Teaser */}
-                      <div className="bg-purple-500/5 border border-purple-500/10 rounded-lg p-3">
-                        <div className="flex items-center gap-2 mb-1">
-                          <Eye className="h-4 w-4 text-purple-300 flex-shrink-0" />
+                      {/* 6. Analytics — soft empty state */}
+                      <div className="rounded-xl border border-white/10 bg-white/5 p-3">
+                        <div className="flex items-center gap-2">
+                          <Eye className="h-4 w-4 text-white/50 flex-shrink-0" />
                           {analyticsLoading ? (
-                            <div className="flex items-center gap-2 flex-1">
-                              <Loader2 className="h-3 w-3 animate-spin text-purple-300" />
-                              <p className="text-xs text-purple-200">Loading analytics...</p>
-                            </div>
-                          ) : analyticsSummary ? (
-                            <p className="text-xs text-purple-200">
-                              {analyticsSummary.weeklyViews === 0 ? (
-                                <>👀 No brand views yet — share your link to get started</>
-                              ) : (
-                                <>👀 {analyticsSummary.weeklyViews} {analyticsSummary.weeklyViews === 1 ? 'brand' : 'brands'} viewed your collab link this week</>
-                              )}
+                            <span className="text-xs text-white/50 flex items-center gap-2">
+                              <Loader2 className="h-3 w-3 animate-spin" /> Loading…
+                            </span>
+                          ) : analyticsSummary && analyticsSummary.weeklyViews > 0 ? (
+                            <p className="text-xs text-white/70">
+                              {analyticsSummary.weeklyViews} {analyticsSummary.weeklyViews === 1 ? 'brand' : 'brands'} viewed your link this week
                             </p>
                           ) : (
-                            <p className="text-xs text-purple-200">
-                              👀 No brand views yet — share your link to get started
+                            <p className="text-xs text-white/60">
+                              No brand visits yet. Share your link in bio to start receiving requests.
                             </p>
                           )}
                         </div>
-                        {analyticsSummary && analyticsSummary.weeklyViews === 0 && !analyticsLoading && (
-                          <p className="text-xs text-purple-300/70 mt-2 ml-6">
-                            Tip: Add this link to your Instagram bio or pin it in DMs
-                          </p>
-                        )}
                       </div>
-
-                      {/* Mental Model Copy - DM Replacement */}
-                      <div className="bg-gradient-to-r from-purple-500/20 to-pink-500/20 border border-purple-500/30 rounded-lg p-4">
-                        <p className="text-sm text-white font-semibold text-center mb-2">
-                          This link replaces DMs and protects you legally.
-                        </p>
-                        <p className="text-xs text-white/60 text-center">
-                          Deals done outside Creator Armour are not protected.
-                        </p>
-                    </div>
-                  </>
-                ) : (
-                    <div className="bg-purple-500/10 border border-purple-500/20 rounded-lg p-3">
-                      <div className="flex items-start gap-2">
-                        <AlertCircle className="h-4 w-4 text-purple-300 mt-0.5 flex-shrink-0" />
-                        <div className="flex-1">
-                          <p className="text-sm text-purple-200 mb-1">
-                            Complete your profile to activate your collab link
-                          </p>
-                          <p className="text-xs text-purple-300/70">
-                            Your collab link will be generated automatically after you save your profile.
-                    </p>
-                  </div>
+                    </>
+                  ) : (
+                    <div className="rounded-xl border border-white/10 bg-white/5 p-3 flex items-start gap-2">
+                      <AlertCircle className="h-4 w-4 text-white/50 mt-0.5 flex-shrink-0" />
+                      <div>
+                        <p className="text-sm font-medium text-white/80">Complete your profile to activate your collab link</p>
+                        <p className="text-xs text-white/55 mt-0.5">Save your profile and your link will be generated automatically.</p>
                       </div>
-                      {process.env.NODE_ENV === 'development' && (
-                        <p className="text-xs text-purple-300/50 mt-2 ml-6">
-                          Debug: profile exists: {profile ? 'yes' : 'no'}, username: {profile?.username || 'null/undefined'}
-                        </p>
-                )}
                     </div>
                   );
                 })()}

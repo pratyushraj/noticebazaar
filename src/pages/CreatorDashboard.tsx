@@ -14,6 +14,7 @@ import { isCreatorPro } from '@/lib/subscription';
 import { getInitials } from '@/lib/utils/avatar';
 import { motion, AnimatePresence } from 'framer-motion';
 import { triggerHaptic, HapticPatterns } from '@/lib/utils/haptics';
+import { trackEvent } from '@/lib/utils/analytics';
 import { cn } from '@/lib/utils';
 import { getApiBaseUrl } from '@/lib/utils/api';
 import { sectionLayout, animations, spacing, typography, separators, iconSizes, scroll, sectionHeader, gradients, buttons, glass, shadows, spotlight, radius, zIndex, vision, motion as motionTokens, colors } from '@/lib/design-system';
@@ -240,9 +241,20 @@ const CreatorDashboard = () => {
       });
       const data = await res.json();
       if (data.success) {
-        toast.success(data.contract ? 'Contract generated. Waiting for brand signature.' : 'Deal accepted!');
-        await fetchPendingCollabRequestsPreview();
-        if (data.deal?.id) navigate(`/creator-contracts/${data.deal.id}`);
+        trackEvent('creator_accepted_request', {
+          deal_id: data.deal?.id,
+          creator_id: profile?.id,
+          collab_type: req.collab_type || 'paid',
+        });
+        if (data.needs_delivery_details) {
+          toast.success('Share delivery details to proceed');
+          await fetchPendingCollabRequestsPreview();
+          if (data.deal?.id) navigate(`/creator-contracts/${data.deal.id}/delivery-details`);
+        } else {
+          toast.success(data.contract ? 'Contract generated and ready for signing' : 'Deal accepted!');
+          await fetchPendingCollabRequestsPreview();
+          if (data.deal?.id) navigate(`/creator-contracts/${data.deal.id}`);
+        }
       } else {
         toast.error(data.error || 'Failed to accept request');
       }
@@ -271,6 +283,7 @@ const CreatorDashboard = () => {
       });
       const data = await res.json();
       if (data.success) {
+        trackEvent('creator_declined_request', { request_id: declineRequestId, creator_id: profile?.id });
         toast.success('Request declined');
         await fetchPendingCollabRequestsPreview();
       } else {
@@ -1191,8 +1204,8 @@ const CreatorDashboard = () => {
 
             {/* Decision-first dashboard: no extra above-fold cards */}
 
-            {/* Incoming Brand Requests (highest priority) */}
-            <div className={cn("px-4 md:px-0", spacing.loose)}>
+            {/* Incoming Brand Requests (highest priority) — same width as Active Collaborations */}
+            <div className={spacing.loose}>
               <div className={sectionHeader.base}>
                 <h2 className={sectionHeader.title}>Incoming Brand Requests</h2>
                 {pendingCollabRequestsCount > 0 && (

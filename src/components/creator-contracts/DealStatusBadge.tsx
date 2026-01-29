@@ -3,7 +3,8 @@
 import React from 'react';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
-import { DealStage, STAGE_LABELS } from '@/lib/hooks/useBrandDeals';
+import { DealStage } from '@/lib/hooks/useBrandDeals';
+import { getStageDisplay } from '@/lib/constants/dealStatusFlow';
 
 // Re-export DealStage for backward compatibility
 export type { DealStage };
@@ -11,84 +12,19 @@ export type { DealStage };
 interface DealStatusBadgeProps {
   stage: DealStage;
   className?: string;
+  /** Optional: show helper text below badge (e.g. on deal cards) */
+  showHelperText?: boolean;
+  dealType?: 'paid' | 'barter' | null;
 }
 
-const DealStatusBadge: React.FC<DealStatusBadgeProps> = ({ stage, className }) => {
-  const getStageConfig = (stage: DealStage) => {
-    switch (stage) {
-      // New status model
-      case 'details_submitted':
-        return {
-          label: 'Details Submitted',
-          shortLabel: 'Details',
-          className: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
-        };
-      case 'contract_ready':
-        return {
-          label: 'Contract Ready – Awaiting Brand Signature',
-          shortLabel: 'Contract Ready',
-          className: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
-        };
-      case 'signed':
-        return {
-          label: 'Signed',
-          shortLabel: 'Signed',
-          className: 'bg-green-500/20 text-green-400 border-green-500/30',
-        };
-      case 'needs_changes':
-        return {
-          label: 'Requires Changes',
-          shortLabel: 'Changes',
-          className: 'bg-orange-500/20 text-orange-400 border-orange-500/30',
-        };
-      case 'declined':
-        return {
-          label: 'Declined',
-          shortLabel: 'Declined',
-          className: 'bg-red-500/20 text-red-400 border-red-500/30',
-        };
-      case 'completed':
-        return {
-          label: 'Completed',
-          shortLabel: 'Done',
-          className: 'bg-green-500/20 text-green-400 border-green-500/30',
-        };
-      // Legacy stages for backward compatibility
-      case 'negotiation':
-        return {
-          label: 'Negotiation',
-          shortLabel: 'Negotiation',
-          className: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
-        };
-      case 'content_making':
-        return {
-          label: 'Content Making',
-          shortLabel: 'Making',
-          className: 'bg-purple-500/20 text-purple-400 border-purple-500/30',
-        };
-      case 'content_delivered':
-        return {
-          label: 'Content Delivered',
-          shortLabel: 'Delivered',
-          className: 'bg-indigo-500/20 text-indigo-400 border-indigo-500/30',
-        };
-      default:
-        return {
-          label: STAGE_LABELS[stage] || stage,
-          shortLabel: STAGE_LABELS[stage] || stage,
-          className: 'bg-gray-500/20 text-gray-400 border-gray-500/30',
-        };
-    }
-  };
-
-  const config = getStageConfig(stage);
-
-  return (
+const DealStatusBadge: React.FC<DealStatusBadgeProps> = ({ stage, className, showHelperText, dealType }) => {
+  const config = getStageDisplay(stage);
+  const badge = (
     <Badge
       variant="outline"
       className={cn(
-        "rounded-full px-2.5 py-0.5 text-xs font-semibold whitespace-nowrap inline-flex",
-        config.className,
+        "rounded-full px-2.5 py-0.5 text-xs font-semibold whitespace-nowrap inline-flex w-fit",
+        config.colorClass,
         className
       )}
       title={config.label}
@@ -97,6 +33,17 @@ const DealStatusBadge: React.FC<DealStatusBadgeProps> = ({ stage, className }) =
       <span className="md:hidden">{config.shortLabel}</span>
     </Badge>
   );
+
+  if (showHelperText && config.helperText) {
+    const helper = dealType === 'barter' && config.helperTextBarter ? config.helperTextBarter : dealType === 'paid' && config.helperTextPaid ? config.helperTextPaid : config.helperText;
+    return (
+      <span className="inline-flex flex-col gap-0.5">
+        {badge}
+        <span className="text-[11px] text-white/55 leading-tight">{helper}</span>
+      </span>
+    );
+  }
+  return badge;
 };
 
 export default DealStatusBadge;

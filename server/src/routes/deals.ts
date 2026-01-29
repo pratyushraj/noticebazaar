@@ -1,12 +1,22 @@
 // Deals API Routes
-// Handles deal-related operations like logging reminders
+// Handles deal-related operations like logging reminders and delivery details (barter)
 
 import { Router, Response } from 'express';
 import { supabase } from '../index.js';
 import { AuthenticatedRequest } from '../middleware/auth.js';
 import multer from 'multer';
+import { generateContractFromScratch } from '../services/contractGenerator.js';
+import { createContractReadyToken } from '../services/contractReadyTokenService.js';
+import { sendCollabRequestAcceptedEmail } from '../services/collabRequestEmailService.js';
 
 const router = Router();
+
+/** Mask phone for contract PDF: 98XXXXXX21 (first 2 + last 2 visible) */
+function maskPhone(phone: string): string {
+  const digits = phone.replace(/\D/g, '');
+  if (digits.length < 10) return 'XXXXXXXXXX';
+  return digits.slice(0, 2) + 'XXXXXX' + digits.slice(-2);
+}
 
 // Multer configuration for signed contract uploads (in-memory, PDF only, max 10MB)
 const upload = multer({
@@ -642,6 +652,211 @@ const signAsCreatorHandler = async (req: AuthenticatedRequest, res: Response) =>
 // Add both route aliases - IMPORTANT: These must be registered before any catch-all routes
 router.post('/:dealId/sign-creator', signAsCreatorHandler);
 router.post('/:dealId/sign-as-creator', signAsCreatorHandler);
+
+/**
+ * PATCH /api/deals/:dealId/delivery-details
+ * Save delivery details for a barter deal (post-acceptance). Generates contract and sets status to Awaiting Product Shipment.
+ */
+router.patch('/:dealId/delivery-details', async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const userId = req.user!.id;
+    const { dealId } = req.params;
+    const { delivery_name, delivery_phone, delivery_address, delivery_notes } = req.body;
+
+    if (!dealId) {
+      return res.status(400).json({ success: false, error: 'Deal ID is required' });
+    }
+
+    const { data: deal, error: dealError } = await supabase
+      .from('brand_deals')
+      .select('id, creator_id, deal_type, brand_name, brand_email, deliverables, due_date, payment_expected_date')
+      .eq('id', dealId)
+      .single();
+
+    if (dealError || !deal) {
+      return res.status(404).json({ success: false, error: 'Deal not found' });
+    }
+    if (deal.creator_id !== userId) {
+      return res.status(403).json({ success: false, error: 'Access denied' });
+    }
+    if ((deal as any).deal_type !== 'barter') {
+      return res.status(400).json({ success: false, error: 'Delivery details are only for barter deals' });
+    }
+    // Barter: delivery_address (and name/phone) required before contract generation — validated below
+
+    if (!delivery_name || typeof delivery_name !== 'string' || !delivery_name.trim()) {
+      return res.status(400).json({ success: false, error: 'Full name is required' });
+    }
+    const phoneDigits = (delivery_phone || '').replace(/\D/g, '');
+    if (phoneDigits.length < 10) {
+      return res.status(400).json({ success: false, error: 'Phone number must be at least 10 digits' });
+    }
+    if (!delivery_address || typeof delivery_address !== 'string' || !delivery_address.trim()) {
+      return res.status(400).json({ success: false, error: 'Delivery address is required' });
+    }
+
+    const { error: updateError } = await supabase
+      .from('brand_deals')
+      .update({
+        delivery_name: delivery_name.trim(),
+        delivery_phone: delivery_phone.trim(),
+        delivery_address: delivery_address.trim(),
+        delivery_notes: delivery_notes ? String(delivery_notes).trim() : null,
+        status: 'Awaiting Product Shipment',
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', dealId);
+
+    if (updateError) {
+      console.error('[Deals] delivery-details update error:', updateError);
+      return res.status(500).json({ success: false, error: 'Failed to save delivery details' });
+    }
+
+    let contractUrl: string | null = null;
+    let contractReadyToken: string | null = null;
+
+    try {
+      const { data: existingDeal } = await supabase
+        .from('brand_deals')
+        .select('contract_file_url')
+        .eq('id', dealId)
+        .single();
+
+      if (existingDeal?.contract_file_url) {
+        contractUrl = existingDeal.contract_file_url;
+      } else {
+        const { data: creatorProfile } = await supabase
+          .from('profiles')
+          .select('first_name, last_name, email')
+          .eq('id', userId)
+          .maybeSingle();
+
+        const creatorName = creatorProfile
+          ? `${(creatorProfile.first_name || '').trim()} ${(creatorProfile.last_name || '').trim()}`.trim() || delivery_name.trim()
+          : delivery_name.trim();
+        const creatorEmail = creatorProfile?.email || req.user?.email || undefined;
+
+        let deliverablesArray: string[] = [];
+        try {
+          const d = deal.deliverables;
+          deliverablesArray = typeof d === 'string' ? (d.includes('[') ? JSON.parse(d) : d.split(',').map((s: string) => s.trim())) : d || [];
+        } catch {
+          deliverablesArray = [String(deal.deliverables)];
+        }
+        const dueDate = deal.due_date || deal.payment_expected_date;
+        const dueDateStr = dueDate ? new Date(dueDate).toLocaleDateString() : undefined;
+
+        const maskedPhone = maskPhone(delivery_phone);
+        // Barter-specific contract clauses (creator-first, plain English)
+        const BARTER_DISPATCH_DAYS = 7;
+        const productDeliveryTerms = [
+          `1. Product Delivery: The brand must dispatch the barter product to the creator within ${BARTER_DISPATCH_DAYS} days of contract signing. A tracking ID must be shared with the creator when applicable.`,
+          `2. Product Condition: The product must match the description and agreed value. The creator may reject damaged or incorrect items.`,
+          `3. Delivery Confirmation: The creator confirms receipt inside the Creator Armour dashboard. The content timeline starts only after this confirmation.`,
+          `4. Non-Delivery: If the product is not delivered within the agreed timeline, the creator may cancel the collaboration and the brand loses collaboration rights under this agreement.`,
+          `5. No Product, No Content: The creator is not obligated to deliver content until the product has been received and confirmed.`,
+          `Delivery address: ${delivery_address.trim()}. Contact (masked): ${maskedPhone}.`,
+        ].join('\n\n');
+
+        const dealSchema = {
+          deal_amount: 0,
+          deliverables: deliverablesArray.length > 0 ? deliverablesArray : ['As per agreement'],
+          delivery_deadline: dueDate || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+          payment: { method: 'Barter', timeline: 'Product shipment within 7 days' },
+          usage: { type: 'Non-exclusive', platforms: ['All platforms'], duration: '6 months', paid_ads: false, whitelisting: false },
+          exclusivity: { enabled: false, category: null, duration: null },
+          termination: { notice_days: 7 },
+          jurisdiction_city: 'Mumbai',
+        };
+
+        const contractResult = await generateContractFromScratch({
+          brandName: deal.brand_name,
+          creatorName,
+          creatorEmail,
+          dealAmount: 0,
+          deliverables: deliverablesArray.length > 0 ? deliverablesArray : ['As per agreement'],
+          paymentTerms: 'Barter – product shipment within 7 days of acceptance.',
+          dueDate: dueDateStr,
+          paymentExpectedDate: dueDateStr,
+          platform: 'Multiple Platforms',
+          brandEmail: deal.brand_email || undefined,
+          creatorAddress: delivery_address.trim(),
+          dealSchema,
+          usageType: 'Non-exclusive',
+          usagePlatforms: ['All platforms'],
+          usageDuration: '6 months',
+          paidAdsAllowed: false,
+          whitelistingAllowed: false,
+          exclusivityEnabled: false,
+          exclusivityCategory: null,
+          exclusivityDuration: null,
+          terminationNoticeDays: 7,
+          jurisdictionCity: 'Mumbai',
+          additionalTerms: productDeliveryTerms,
+        });
+
+        const storagePath = `contracts/${dealId}/${Date.now()}_${contractResult.fileName}`;
+        const { error: uploadError } = await supabase.storage
+          .from('creator-assets')
+          .upload(storagePath, contractResult.contractDocx, {
+            contentType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            upsert: false,
+          });
+
+        if (uploadError) {
+          console.error('[Deals] delivery-details contract upload error:', uploadError);
+          return res.status(500).json({ success: false, error: 'Failed to generate contract' });
+        }
+
+        const { data: publicUrlData } = supabase.storage.from('creator-assets').getPublicUrl(storagePath);
+        contractUrl = publicUrlData?.publicUrl || null;
+
+        await supabase
+          .from('brand_deals')
+          .update({
+            contract_file_url: contractUrl,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', dealId);
+
+        const token = await createContractReadyToken({
+          dealId,
+          creatorId: userId,
+          expiresAt: null,
+        });
+        contractReadyToken = token.id;
+
+        if (deal.brand_email && contractReadyToken && contractUrl) {
+          sendCollabRequestAcceptedEmail(deal.brand_email, {
+            creatorName,
+            brandName: deal.brand_name,
+            dealAmount: 0,
+            dealType: 'barter',
+            deliverables: deliverablesArray.length > 0 ? deliverablesArray : ['As per agreement'],
+            contractReadyToken,
+            contractUrl,
+          }).catch((e) => console.error('[Deals] delivery-details acceptance email failed:', e));
+        }
+      }
+    } catch (contractErr: any) {
+      console.error('[Deals] delivery-details contract generation error:', contractErr);
+      return res.status(500).json({ success: false, error: 'Delivery details saved but contract generation failed. Please try again from the deal page.' });
+    }
+
+    return res.json({
+      success: true,
+      deal: { id: dealId },
+      contract: contractUrl ? { url: contractUrl, token: contractReadyToken } : null,
+      message: 'Delivery details saved. Contract generated.',
+    });
+  } catch (error: any) {
+    console.error('[Deals] delivery-details error:', error);
+    return res.status(500).json({
+      success: false,
+      error: error.message || 'Internal server error',
+    });
+  }
+});
 
 // Debug route to test routing
 router.get('/test-routing', (req, res) => {

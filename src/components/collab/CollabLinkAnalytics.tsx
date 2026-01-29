@@ -37,12 +37,19 @@ const CollabLinkAnalytics: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [period, setPeriod] = useState<'7' | '30'>('30');
 
+  // Intentionally delay analytics fetch slightly so Brand Requests load first
   useEffect(() => {
-    if (profile?.username) {
-      fetchAnalytics();
-    } else {
+    if (!profile?.username) {
       setLoading(false);
+      return;
     }
+
+    // Small delay to avoid competing with primary brand-requests fetch
+    const timer = setTimeout(() => {
+      fetchAnalytics();
+    }, 1200);
+
+    return () => clearTimeout(timer);
   }, [period, profile?.username]);
 
   const fetchAnalytics = async () => {

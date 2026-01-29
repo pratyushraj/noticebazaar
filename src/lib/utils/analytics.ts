@@ -1,9 +1,10 @@
 /**
  * Analytics utility for tracking user events
  * Supports Mixpanel and Supabase logs as fallback
+ * Fire events once per deal; attach deal_id, creator_id, collab_type where applicable.
  */
 
-type AnalyticsEvent = 
+type AnalyticsEvent =
   | 'deal_preview_opened'
   | 'contract_preview_opened'
   | 'issue_reported'
@@ -15,7 +16,34 @@ type AnalyticsEvent =
   | 'overdue_payment_reminder_sent'
   | 'deliverable_marked_completed'
   | 'deal_duplicated'
-  | 'deal_progress_updated';
+  | 'deal_progress_updated'
+  // Collab Link Funnel
+  | 'collab_link_viewed'
+  | 'collab_link_form_started'
+  | 'collab_link_form_submitted'
+  | 'collab_link_abandoned'
+  // Creator Decision Funnel
+  | 'creator_viewed_request'
+  | 'creator_accepted_request'
+  | 'creator_countered_request'
+  | 'creator_declined_request'
+  // Contract Funnel
+  | 'contract_generated'
+  | 'contract_viewed_by_brand'
+  | 'contract_signed_by_brand'
+  | 'contract_not_signed_48h'
+  // Barter-Specific
+  | 'delivery_details_requested'
+  | 'delivery_details_submitted'
+  | 'product_marked_shipped'
+  | 'product_marked_received'
+  | 'barter_delivery_delay'
+  // Payment Funnel (Paid)
+  | 'payment_initiated'
+  | 'payment_delayed'
+  | 'payment_released';
+
+/** Fire events once per deal. Attach deal_id, creator_id, collab_type where applicable. Contract/brand events (contract_generated, contract_viewed_by_brand, contract_signed_by_brand, contract_not_signed_48h, payment_*) are typically fired from the backend. */
 
 interface AnalyticsProperties {
   [key: string]: string | number | boolean | null | undefined;

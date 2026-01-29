@@ -273,7 +273,18 @@ function DealDetailPageContent() {
       return null;
     }
   };
-  
+
+  // Barter: redirect to delivery-details when deal is in Drafting and delivery details are missing
+  useEffect(() => {
+    if (isLoadingDeal || !deal || !dealId) return;
+    const dealType = (deal as any)?.deal_type;
+    const status = (deal.status || '').toLowerCase();
+    const hasDelivery = !!(deal as any)?.delivery_address?.trim();
+    if (dealType === 'barter' && status === 'drafting' && !hasDelivery) {
+      navigate(`/creator-contracts/${dealId}/delivery-details`, { replace: true });
+    }
+  }, [deal, dealId, isLoadingDeal, navigate]);
+
   // Fetch signatures
   useEffect(() => {
     const fetchSignatures = async () => {

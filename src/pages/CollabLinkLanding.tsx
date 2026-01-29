@@ -9,6 +9,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Instagram, Youtube, Twitter, Facebook, CheckCircle2, Loader2, ExternalLink } from 'lucide-react';
 import { toast } from 'sonner';
+import { trackEvent } from '@/lib/utils/analytics';
 import { SEOHead } from '@/components/seo/SEOHead';
 import { ArticleSchema } from '@/components/seo/SchemaMarkup';
 
@@ -237,7 +238,7 @@ const CollabLinkLanding = () => {
         if (data.success && data.creator) {
           console.log('[CollabLinkLanding] Creator loaded successfully:', data.creator);
           setCreator(data.creator);
-          
+          trackEvent('collab_link_viewed', { username: normalizedUsername });
           // Track page view event (anonymous, no auth required)
           try {
             // Extract UTM parameters from URL
@@ -411,7 +412,7 @@ const CollabLinkLanding = () => {
       const data = await response.json();
 
       if (data.success) {
-        // Submit event is tracked by the backend automatically
+        trackEvent('collab_link_form_submitted', { username: username || '', collab_type: collabType });
         navigate(`/collab/${username}/success`, { state: { creatorName: creator?.name || 'the creator' } });
       } else {
         toast.error(data.error || 'Failed to submit request');

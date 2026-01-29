@@ -10,8 +10,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useSession } from '@/contexts/SessionContext';
 import PremiumDrawer from '@/components/drawer/PremiumDrawer';
 import CreatorBottomNav from '@/components/creator-dashboard/CreatorBottomNav';
-import { PageHeader } from '@/components/ui/PageHeader';
-import { gradients, spacing, zIndex } from '@/lib/design-system';
+import { gradients, spacing } from '@/lib/design-system';
 import { cn } from '@/lib/utils';
 import { useSignOut } from '@/lib/hooks/useAuth';
 import { triggerHaptic, HapticPatterns } from '@/lib/utils/haptics';
@@ -38,6 +37,8 @@ interface CreatorNavigationWrapperProps {
   hideBottomNav?: boolean;
   className?: string;
   compactHeader?: boolean; // ~30% less header height on mobile
+  /** Payments/Deals style: minimal header (menu only), title in page content */
+  hidePageTitle?: boolean;
 }
 
 export const CreatorNavigationWrapper: React.FC<CreatorNavigationWrapperProps> = ({
@@ -51,6 +52,7 @@ export const CreatorNavigationWrapper: React.FC<CreatorNavigationWrapperProps> =
   hideBottomNav = false,
   className,
   compactHeader = false,
+  hidePageTitle = false,
 }) => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -87,22 +89,6 @@ export const CreatorNavigationWrapper: React.FC<CreatorNavigationWrapperProps> =
 
   return (
     <div className={cn("nb-screen-height", gradients.page, "text-white overflow-x-hidden", className)}>
-      {/* Page Header */}
-      {title !== undefined && (
-        <PageHeader
-          title={pageTitle}
-          subtitle={subtitle}
-          showBackButton={showBackButton}
-          onBack={backTo ? () => navigate(backTo) : undefined}
-          showMenuButton={!showBackButton}
-          onMenuClick={() => setShowMenu(true)}
-          rightActions={rightActions}
-          premium={location.pathname.startsWith('/creator-contracts')}
-          compact={compactHeader}
-          backIconOnly={backIconOnly}
-        />
-      )}
-
       {/* Premium Drawer */}
       <PremiumDrawer
         open={showMenu}

@@ -763,6 +763,8 @@ router.patch('/:id/accept', async (req: AuthenticatedRequest, res: Response) => 
       dealAmount = request.exact_budget || 0;
     }
 
+    const isBarter = request.collab_type === 'barter';
+
     // Create brand deal
     const dealData: any = {
       creator_id: userId,
@@ -774,7 +776,7 @@ router.patch('/:id/accept', async (req: AuthenticatedRequest, res: Response) => 
       payment_expected_date: request.deadline || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
       platform: 'Other',
       status: 'Drafting',
-      deal_type: request.collab_type === 'barter' ? 'barter' : 'paid',
+      deal_type: isBarter ? 'barter' : 'paid',
       created_via: 'collab_request',
     };
 
@@ -807,7 +809,29 @@ router.patch('/:id/accept', async (req: AuthenticatedRequest, res: Response) => 
       // Deal was created, so continue anyway
     }
 
-    // Auto-generate contract (idempotent - check if contract already exists)
+    // Barter: require delivery details before contract generation. Redirect creator to delivery-details screen.
+    if (isBarter) {
+      return res.json({
+        success: true,
+        deal: { id: deal.id },
+        needs_delivery_details: true,
+        message: 'Deal accepted. Please add delivery details so we can generate the contract.',
+      });
+    }
+
+    // Auto-generate contract (paid deals only; barter requires delivery details first)
+    const { data: dealCheck } = await supabase
+      .from('brand_deals')
+      .select('deal_type')
+      .eq('id', deal.id)
+      .single();
+    if ((dealCheck as any)?.deal_type === 'barter') {
+      return res.status(400).json({
+        success: false,
+        error: 'Delivery details required for barter deals',
+      });
+    }
+
     let contractUrl: string | null = null;
     let contractReadyToken: string | null = null;
 

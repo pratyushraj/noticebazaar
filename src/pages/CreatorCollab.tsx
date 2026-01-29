@@ -28,8 +28,16 @@ const CreatorCollab = () => {
   };
 
   return (
-    <CreatorNavigationWrapper title="Collaboration" subtitle="Replace brand DMs with structured collaboration requests" compactHeader>
+    <CreatorNavigationWrapper title="Collaboration" hidePageTitle compactHeader>
       <div className={cn(sectionLayout.container, "space-y-8 pb-28 md:space-y-10")}>
+        {/* Header — Payments/Deals style: title + subtitle in content */}
+        <div className="flex items-center justify-between mb-4 md:mb-6">
+          <div className="space-y-1 md:space-y-2">
+            <h1 className={cn(typography.h1, "mb-0 text-white")}>Collaboration</h1>
+            <p className={cn(typography.body, "font-medium text-white/70")}>Replace brand DMs with structured collaboration requests.</p>
+          </div>
+        </div>
+
         {/* Hero: Collab Link — one primary CTA, one secondary text link */}
         <BaseCard
           variant="tertiary"

@@ -13,7 +13,7 @@ import { spacing, typography, iconSizes, animations } from '@/lib/design-system'
 import { triggerHaptic, HapticPatterns } from '@/lib/utils/haptics';
 
 interface PageHeaderProps {
-  title: string;
+  title?: string;
   showBackButton?: boolean;
   showMenuButton?: boolean;
   onBack?: () => void;
@@ -24,6 +24,8 @@ interface PageHeaderProps {
   premium?: boolean; // Premium iOS 17 styling
   compact?: boolean; // ~30% less height on mobile
   backIconOnly?: boolean; // Show only arrow, no "Back" text
+  /** When true, show only menu/back + right actions (no title/subtitle). Payments/Deals style. */
+  hideTitle?: boolean;
 }
 
 export const PageHeader: React.FC<PageHeaderProps> = ({
@@ -38,6 +40,7 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
   premium = false,
   compact = false,
   backIconOnly = false,
+  hideTitle = false,
 }) => {
   const navigate = useNavigate();
 
@@ -127,17 +130,20 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
           )}
         </div>
 
-        {/* Center: Title + Subtitle — content-based height, wrap naturally, no crop or ellipsis */}
-        <div className="flex-1 min-w-0 text-center px-2 overflow-visible max-w-full">
-          <h1 className="text-white font-semibold leading-snug break-words whitespace-normal text-lg sm:text-xl">
-            {title}
-          </h1>
-          {subtitle && (
-            <p className="text-white/70 mt-1 break-words whitespace-normal text-xs sm:text-sm leading-snug">
-              {subtitle}
-            </p>
-          )}
-        </div>
+        {/* Center: Title + Subtitle — or empty when hideTitle (Payments/Deals style) */}
+        {!hideTitle && (
+          <div className="flex-1 min-w-0 text-center px-2 overflow-visible max-w-full">
+            <h1 className="text-white font-semibold leading-snug break-words whitespace-normal text-lg sm:text-xl">
+              {title}
+            </h1>
+            {subtitle && (
+              <p className="text-white/70 mt-1 break-words whitespace-normal text-xs sm:text-sm leading-snug">
+                {subtitle}
+              </p>
+            )}
+          </div>
+        )}
+        {hideTitle && <div className="flex-1 min-w-0" />}
 
         {/* Right: Actions */}
         <div className="flex items-center justify-end gap-2 flex-shrink-0 min-w-0">
