@@ -93,6 +93,7 @@ import PaymentDetailPage from "./pages/PaymentDetailPage";
 import BrandResponsePage from "./pages/BrandResponsePage";
 import BrandDealDetailsPage from "./pages/BrandDealDetailsPage";
 import ContractReadyPage from "./pages/ContractReadyPage";
+import ShipPage from "./pages/ShipPage";
 import FeedbackPage from "./pages/FeedbackPage";
 import AdvisorDashboard from "./pages/AdvisorDashboard";
 import LawyerDashboard from "./pages/LawyerDashboard";
@@ -360,6 +361,8 @@ const App = () => {
               <Route path="/brand/response/:token" element={<ContractReadyRedirect />} />
               <Route path="/deal/brand-response/:token" element={<ContractReadyRedirect />} />
               <Route path="/contract-ready/:token" element={<ContractReadyPage />} />
+              {/* Public Brand Shipping Update Page - No auth required */}
+              <Route path="/ship/:token" element={<ShipPage />} />
               {/* Public Brand Deal Details Page - No auth required */}
               <Route path="/deal-details/:token" element={<BrandDealDetailsPage />} />
               <Route path="/deal/:token" element={<BrandDealDetailsPage />} />

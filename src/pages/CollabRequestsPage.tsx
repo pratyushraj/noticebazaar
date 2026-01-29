@@ -7,12 +7,14 @@ import { Button } from '@/components/ui/button';
 import {
   Briefcase,
   CheckCircle2,
-  Clock,
   XCircle,
   Loader2,
   Copy,
   Lock,
   Image as ImageIcon,
+  Gift,
+  ShoppingBag,
+  FileEdit,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useSession } from '@/contexts/SessionContext';
@@ -39,35 +41,12 @@ import { trackEvent } from '@/lib/utils/analytics';
 import { CreatorNavigationWrapper } from '@/components/navigation/CreatorNavigationWrapper';
 import { cn } from '@/lib/utils';
 import { spacing } from '@/lib/design-system';
-
-type CollabRequestStatus = 'pending' | 'accepted' | 'countered' | 'declined';
-type CollabType = 'paid' | 'barter' | 'both';
-
-interface CollabRequest {
-  id: string;
-  brand_name: string;
-  brand_email: string;
-  collab_type: CollabType;
-  budget_range: string | null;
-  exact_budget: number | null;
-  barter_description: string | null;
-  barter_value: number | null;
-  barter_product_image_url?: string | null;
-  campaign_description: string;
-  deliverables: string | string[];
-  usage_rights: boolean;
-  deadline: string | null;
-  status: CollabRequestStatus;
-  created_at: string;
-  updated_at?: string;
-  creator_id: string;
-}
+import { useCollabRequests, type CollabRequest } from '@/lib/hooks/useCollabRequests';
 
 const CollabRequestsPage = () => {
   const navigate = useNavigate();
   const { profile } = useSession();
-  const [requests, setRequests] = useState<CollabRequest[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { requests, isLoading: loading, error, invalidate } = useCollabRequests(profile?.id);
   const [selectedRequest, setSelectedRequest] = useState<CollabRequest | null>(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [showDeclineDialog, setShowDeclineDialog] = useState(false);
@@ -77,54 +56,15 @@ const CollabRequestsPage = () => {
   const [failedBarterImages, setFailedBarterImages] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
-    if (profile?.id) {
-      fetchRequests();
-    }
-  }, [profile?.id]);
-
-  const fetchRequests = async () => {
-    try {
-      setLoading(true);
-      // Get current session (Supabase auto-refreshes tokens)
-      const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
-      
-      if (sessionError || !sessionData.session) {
-        console.error('[CollabRequestsPage] No session:', sessionError);
-        setLoading(false);
-        return;
-      }
-
-      const response = await fetch(
-        `${getApiBaseUrl()}/api/collab-requests`,
-        {
-          headers: {
-            'Authorization': `Bearer ${sessionData.session.access_token}`,
-            'Content-Type': 'application/json',
-          },
-        }
-      );
-
-      if (response.status === 401) {
-        console.error('[CollabRequestsPage] Unauthorized - token may be invalid');
+    if (error) {
+      const msg = error instanceof Error ? error.message : 'Failed to load collaboration requests';
+      if (msg === 'Session expired' || msg === 'Not authenticated') {
         toast.error('Session expired. Please refresh the page.');
-        setLoading(false);
-        return;
-      }
-
-      const data = await response.json();
-      if (data.success) {
-        setRequests(data.requests || []);
       } else {
-        console.error('[CollabRequestsPage] API error:', data);
-        toast.error(data.error || 'Failed to load collaboration requests');
+        toast.error(msg);
       }
-    } catch (error: any) {
-      console.error('[CollabRequestsPage] Fetch error:', error);
-      toast.error('Failed to load collaboration requests');
-    } finally {
-      setLoading(false);
     }
-  };
+  }, [error]);
 
   const parseDeliverables = (deliverables: string | string[]): string[] => {
     if (Array.isArray(deliverables)) return deliverables;
@@ -191,7 +131,7 @@ const CollabRequestsPage = () => {
         });
         if (data.needs_delivery_details) {
           toast.success('Share delivery details to proceed');
-          fetchRequests();
+          invalidate();
           setShowDetailModal(false);
           setSelectedRequest(null);
           if (data.deal?.id) navigate(`/creator-contracts/${data.deal.id}/delivery-details`);
@@ -201,7 +141,7 @@ const CollabRequestsPage = () => {
           } else {
             toast.success('Collaboration request accepted! Deal created successfully.');
           }
-          fetchRequests();
+          invalidate();
           setShowDetailModal(false);
           setSelectedRequest(null);
           if (data.deal?.id) navigate(`/creator-contracts/${data.deal.id}`);
@@ -241,7 +181,7 @@ const CollabRequestsPage = () => {
       if (data.success) {
         trackEvent('creator_declined_request', { request_id: selectedRequest?.id, creator_id: profile?.id });
         toast.success('Request declined');
-        fetchRequests();
+        invalidate();
         setShowDeclineDialog(false);
         setSelectedRequest(null);
         setShowDetailModal(false);
@@ -330,55 +270,70 @@ const CollabRequestsPage = () => {
                   key={request.id}
                   role="button"
                   tabIndex={0}
-                  onClick={(e) => { if (!(e.target as HTMLElement).closest('button')) setExpandedCardId((id) => (id === request.id ? null : request.id)); }}
+                  onClick={(e) => { if (!(e.target as HTMLElement).closest('button') && !(e.target as HTMLElement).closest('a')) setExpandedCardId((id) => (id === request.id ? null : request.id)); }}
                   onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setExpandedCardId((id) => (id === request.id ? null : request.id)); } }}
                   className={cn(
                     "rounded-2xl bg-white/5 border border-white/10 overflow-hidden flex flex-col",
                     "cursor-pointer select-none transition-all duration-200",
-                    "hover:border-white/20 active:scale-[0.99]"
+                    "hover:border-white/20 active:scale-[0.99]",
+                    "backdrop-blur-[40px] saturate-[180%] shadow-[0_8px_32px_rgba(0,0,0,0.3)]"
                   )}
                 >
+                  {/* Header: Incoming Brand Request — darker purple band */}
+                  <div className="bg-gradient-to-r from-purple-800/90 to-indigo-800/90 px-4 py-3 text-center border-b border-white/10">
+                    <h2 className="text-base font-bold text-white tracking-tight">
+                      Incoming Brand Request
+                    </h2>
+                  </div>
                   <CardContent className="p-4 flex flex-col flex-1 space-y-4">
-                    {/* 1. Brand name — primary hierarchy */}
-                    <h3 className="text-base font-bold text-white leading-tight">
-                      {request.brand_name ?? 'Brand'}
-                    </h3>
-
-                    {/* 2. Compact summary strip: [Paid/Barter] ₹Value • X deliverables • Deadline */}
-                    <div className="flex flex-wrap items-center gap-2 text-sm">
-                      <span className={cn(
-                        "inline-flex items-center px-2 py-0.5 rounded-lg text-xs font-medium",
-                        request.collab_type === 'paid' && "bg-green-500/20 text-green-300 border border-green-500/30",
-                        request.collab_type === 'barter' && "bg-blue-500/20 text-blue-300 border border-blue-500/30",
-                        request.collab_type === 'both' && "bg-purple-500/20 text-purple-300 border border-purple-500/30"
-                      )}>
-                        {request.collab_type === 'paid' ? 'Paid' : request.collab_type === 'barter' ? 'Barter' : 'Both'}
-                      </span>
-                      <span className="text-white font-semibold">{formatBudget(request)}</span>
-                      <span className="text-purple-400/60">·</span>
-                      <span className="inline-flex items-center gap-1 text-purple-200/90">
-                        <CheckCircle2 className="h-3.5 w-3.5 text-purple-200/70" aria-hidden />
-                        {deliverablesList.length}
-                      </span>
-                      {request.deadline && (
-                        <>
-                          <span className="text-purple-400/60">·</span>
-                          <span className="inline-flex items-center gap-1 text-purple-200/80">
-                            <Clock className="h-3.5 w-3.5 text-purple-200/60" aria-hidden />
-                            {new Date(request.deadline).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })}
-                          </span>
-                        </>
-                      )}
+                    {/* Brand name + Barter tag on same row; contact below */}
+                    <div>
+                      <div className="flex items-start justify-between gap-2">
+                        <h3 className="text-lg font-bold text-white leading-tight">
+                          {request.brand_name ?? 'Brand'}
+                        </h3>
+                        <span className={cn(
+                          "inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold text-white shrink-0",
+                          request.collab_type === 'paid' && "bg-green-500/30 border border-green-400/40",
+                          request.collab_type === 'barter' && "bg-purple-500/40 border border-purple-400/50",
+                          request.collab_type === 'both' && "bg-purple-500/40 border border-purple-400/50"
+                        )}>
+                          {request.collab_type === 'paid' ? 'Paid' : request.collab_type === 'barter' ? 'Barter' : 'Both'}
+                        </span>
+                      </div>
+                      <p className="text-sm text-white/70 mt-0.5">{request.brand_email}</p>
                     </div>
 
-                    {/* 3. Barter product image — larger, 16:9 or square, rounded, "Product preview" */}
+                    {/* Estimated value — gift icon + label + bold ₹ */}
+                    <div className="flex items-center gap-2">
+                      <Gift className="h-5 w-5 text-purple-300/90 shrink-0" aria-hidden />
+                      <span className="text-sm text-white/80">Estimated value</span>
+                      <span className="text-base font-bold text-white ml-auto">
+                        {formatBudget(request)}
+                      </span>
+                    </div>
+                    {/* Deadline for paid-only (no product preview block) */}
+                    {request.collab_type === 'paid' && request.deadline && (
+                      <div className="flex items-center gap-1.5 text-sm text-white/70">
+                        <ShoppingBag className="h-4 w-4 text-white/50 shrink-0" aria-hidden />
+                        <span>{new Date(request.deadline).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })}</span>
+                      </div>
+                    )}
+
+                    {/* Product preview — large image, label bottom-left, date top-right */}
                     {(request.collab_type === 'barter' || request.collab_type === 'both') && (request.barter_product_image_url || failedBarterImages[request.id]) && (
-                      <div className="w-full rounded-xl overflow-hidden bg-white/[0.06] border border-white/10 aspect-video relative">
+                      <div className="w-full rounded-xl overflow-hidden bg-white/[0.08] border border-white/10 aspect-[4/3] min-h-[140px] relative">
                         {request.barter_product_image_url && !failedBarterImages[request.id] ? (
                           <>
-                            <span className="absolute top-2 left-2 z-10 px-2 py-1 rounded-lg text-[10px] font-medium text-white/90 bg-black/40 backdrop-blur-sm">
+                            <span className="absolute bottom-2 left-2 z-10 px-2 py-1 rounded-lg text-[10px] font-medium text-white/95 bg-black/50 backdrop-blur-sm">
                               Product preview
                             </span>
+                            {request.deadline && (
+                              <span className="absolute top-2 right-2 z-10 flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-medium text-white/95 bg-black/50 backdrop-blur-sm">
+                                <ShoppingBag className="h-3.5 w-3.5" aria-hidden />
+                                {new Date(request.deadline).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })}
+                              </span>
+                            )}
                             <img
                               src={request.barter_product_image_url}
                               alt="Barter product"
@@ -388,63 +343,69 @@ const CollabRequestsPage = () => {
                             />
                           </>
                         ) : (
-                          <div className="absolute inset-0 flex items-center justify-center text-white/40">
+                          <div className="absolute inset-0 flex flex-col items-center justify-center text-white/40 gap-2">
                             <ImageIcon className="h-10 w-10" aria-hidden />
+                            <span className="text-xs">Product preview</span>
+                            {request.deadline && (
+                              <span className="absolute top-2 right-2 flex items-center gap-1 text-[10px] text-white/60">
+                                <ShoppingBag className="h-3.5 w-3.5" aria-hidden />
+                                {new Date(request.deadline).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })}
+                              </span>
+                            )}
                           </div>
                         )}
                       </div>
                     )}
 
-                    {/* 4. Expanded: description, deliverables, brand email */}
+                    {/* Deliverables — pill tags (always visible) */}
+                    {deliverablesList.length > 0 && (
+                      <div className="flex flex-wrap gap-2">
+                        {deliverablesList.slice(0, 5).map((d, idx) => (
+                          <span
+                            key={idx}
+                            className="inline-flex px-3 py-1 rounded-full text-xs font-medium text-white/95 bg-white/10 border border-white/20"
+                          >
+                            {d}
+                          </span>
+                        ))}
+                        {deliverablesList.length > 5 && (
+                          <span className="inline-flex px-2 py-1 text-xs text-white/60">+{deliverablesList.length - 5}</span>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Expanded: campaign description + open full brief */}
                     {isExpanded && (
-                      <div className="space-y-3 pt-2 border-t border-white/10" onClick={(e) => e.stopPropagation()}>
+                      <div className="space-y-2 pt-2 border-t border-white/10" onClick={(e) => e.stopPropagation()}>
                         {request.campaign_description && (
-                          <p className="text-sm text-purple-200/90 line-clamp-4 leading-snug">
+                          <p className="text-sm text-purple-200/90 line-clamp-3 leading-snug">
                             {request.campaign_description}
                           </p>
                         )}
-                        {deliverablesList.length > 0 && (
-                          <div>
-                            <p className="text-[10px] font-medium text-purple-300/60 uppercase tracking-wider mb-1.5">Deliverables</p>
-                            <div className="flex flex-wrap gap-1.5">
-                              {deliverablesList.slice(0, 4).map((d, idx) => (
-                                <span key={idx} className="inline-flex px-2 py-0.5 rounded-md text-xs border border-white/10 text-purple-200/90 bg-white/[0.04]">{d}</span>
-                              ))}
-                              {deliverablesList.length > 4 && <span className="text-xs text-purple-300/60">+{deliverablesList.length - 4} more</span>}
-                            </div>
-                          </div>
-                        )}
-                        <p className="text-xs text-purple-300/60">{request.brand_email}</p>
+                        <button
+                          type="button"
+                          onClick={(e) => { e.stopPropagation(); openDetail(request); }}
+                          className="text-xs text-purple-300/80 hover:text-purple-200 font-medium"
+                        >
+                          Open full brief →
+                        </button>
                       </div>
                     )}
-
-                    {/* 5. Collapsed vs expanded hint */}
-                    {!isExpanded ? (
-                      <div className="text-xs text-purple-300/60">
-                        Tap to expand
-                      </div>
-                    ) : (
-                      <button
-                        type="button"
-                        onClick={(e) => { e.stopPropagation(); openDetail(request); }}
-                        className="text-xs text-purple-300/70 hover:text-purple-200 text-left w-fit"
-                      >
-                        Open full brief →
-                      </button>
+                    {!isExpanded && (
+                      <p className="text-xs text-purple-300/60">Tap to expand</p>
                     )}
 
-                    {/* 6. Primary CTA — Accept Deal (full-width, dominant); secondary Counter | Decline; trust */}
-                    <div className="mt-auto pt-2 space-y-2">
+                    {/* Primary CTA — Accept Deal (full-width gradient); Counter | Decline with icons */}
+                    <div className="mt-auto pt-2 space-y-3">
                       <Button
                         type="button"
                         disabled={acceptingRequestId === request.id}
                         onClick={(e) => { e.stopPropagation(); acceptRequest(request); }}
                         className={cn(
-                          "w-full min-h-[48px] font-semibold text-white rounded-xl",
-                          "bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500",
-                          "shadow-[0_4px_18px_rgba(99,102,241,0.35)]",
-                          "border-0",
-                          "transition-all duration-200"
+                          "w-full min-h-[48px] font-bold text-white rounded-xl",
+                          "bg-gradient-to-r from-purple-500 via-purple-600 to-pink-500 hover:from-purple-400 hover:via-purple-500 hover:to-pink-400",
+                          "shadow-[0_4px_20px_rgba(168,85,247,0.4)]",
+                          "border-0 transition-all duration-200"
                         )}
                       >
                         {acceptingRequestId === request.id ? (
@@ -456,26 +417,29 @@ const CollabRequestsPage = () => {
                           'Accept Deal'
                         )}
                       </Button>
-                      <div className="flex items-center justify-center gap-4 py-1">
+                      <div className="flex items-center justify-center gap-3 py-1">
                         <button
                           type="button"
                           onClick={(e) => { e.stopPropagation(); navigate(`/collab-requests/${request.id}/counter`, { state: { request } }); }}
-                          className="text-sm text-purple-200/80 hover:text-white font-medium"
+                          className="inline-flex items-center gap-1.5 text-sm text-purple-200/90 hover:text-white font-medium"
                         >
+                          <FileEdit className="h-4 w-4 shrink-0" aria-hidden />
                           Counter
                         </button>
+                        <span className="w-px h-4 bg-white/30" aria-hidden />
                         <button
                           type="button"
                           onClick={(e) => { e.stopPropagation(); openDeclineConfirm(request); }}
-                          className="text-sm text-red-300/80 hover:text-red-200 font-medium"
+                          className="inline-flex items-center gap-1.5 text-sm text-red-300/90 hover:text-red-200 font-medium"
                           aria-label="Decline"
                         >
+                          <XCircle className="h-4 w-4 shrink-0" aria-hidden />
                           Decline
                         </button>
                       </div>
-                      <p className="text-[10px] text-purple-300/50 flex items-center justify-center gap-1.5" role="status">
+                      <p className="text-[10px] text-purple-300/60 flex items-center justify-center gap-1.5" role="status">
                         <Lock className="h-3 w-3 flex-shrink-0" aria-hidden />
-                        Auto-contracted & legally protected
+                        Legally protected by Creator Armour
                       </p>
                     </div>
                   </CardContent>

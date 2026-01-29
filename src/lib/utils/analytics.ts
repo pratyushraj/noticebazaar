@@ -38,6 +38,11 @@ type AnalyticsEvent =
   | 'product_marked_shipped'
   | 'product_marked_received'
   | 'barter_delivery_delay'
+  // Barter shipping (token-based brand flow)
+  | 'shipping_link_opened'
+  | 'shipping_marked_shipped'
+  | 'shipping_confirmed_delivered'
+  | 'shipping_issue_reported'
   // Payment Funnel (Paid)
   | 'payment_initiated'
   | 'payment_delayed'

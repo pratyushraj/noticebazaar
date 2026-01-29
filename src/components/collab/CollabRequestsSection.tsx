@@ -321,14 +321,14 @@ const CollabRequestsSection = ({ copyCollabLink, usernameForLink: usernameFromPa
           </CardContent>
         </Card>
       ) : (
-        <Card className="rounded-[20px] saturate-[180%] border border-amber-400/30 bg-gradient-to-br from-amber-500/15 via-white/8 to-orange-500/10 backdrop-blur-md shadow-[0_8px_32px_rgba(0,0,0,0.3)] transition-all duration-200">
+        <Card className="rounded-[20px] saturate-[180%] border border-purple-400/30 bg-gradient-to-br from-purple-500/15 via-white/8 to-indigo-500/10 backdrop-blur-md shadow-[0_8px_32px_rgba(0,0,0,0.3)] transition-all duration-200">
           <CardContent className="py-4 px-5 space-y-3">
             {/* Title row: heading + badge inline */}
             <div className="flex items-center gap-2 flex-wrap">
               <h3 className="text-lg font-semibold text-white break-words">
                 New Brand Requests ({pendingRequests.length})
               </h3>
-              <Badge className="shrink-0 bg-amber-500/30 text-amber-200 border-amber-400/40 text-sm font-medium">
+              <Badge className="shrink-0 bg-purple-500/30 text-purple-200 border-purple-400/40 text-sm font-medium">
                 {pendingRequests.length}
               </Badge>
             </div>
@@ -340,7 +340,7 @@ const CollabRequestsSection = ({ copyCollabLink, usernameForLink: usernameFromPa
             <div className="space-y-1.5 pt-0.5">
               <Button
                 onClick={() => navigate('/collab-requests')}
-                className="w-full min-h-[48px] bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-white font-semibold shadow-lg border-0"
+                className="w-full min-h-[48px] bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-semibold shadow-lg border-0"
               >
                 <MessageSquare className="h-4 w-4 mr-2 flex-shrink-0" />
                 Review & Accept Deals

@@ -16,6 +16,7 @@ import { ErrorBoundary } from '@/components/ui/error-boundary';
 import { SkeletonCard } from '@/components/ui/SkeletonCard';
 import { cn } from '@/lib/utils';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { formatIndianCurrency } from '@/lib/utils/currency';
 
 const CreatorContracts = () => {
   const navigate = useNavigate();
@@ -583,7 +584,7 @@ const CreatorContracts = () => {
         <div className={cn(
           `min-h-full ${gradients.page} text-white`,
           "px-4 pt-4 sm:px-5 md:px-6 md:pt-6 lg:px-8",
-          "safe-area-fix"
+          "pb-24 safe-area-fix"
         )}>
           {/* Header - Matching Payments Page */}
           <div className="flex items-center justify-between mb-4 md:mb-6">
@@ -602,62 +603,70 @@ const CreatorContracts = () => {
                   <SkeletonCard variant="secondary" />
                 </div>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
-                  <StatCard
-                    label="Active Deals"
-                    value={stats.active}
-                    icon={<Briefcase className={cn(iconSizes.md, "text-white/70")} />}
-                    variant="secondary"
-                    subtitle={stats.active === 0 ? "No active deals" : undefined}
-                    isEmpty={stats.active === 0}
-                  />
-                  <StatCard
-                    label="Total Value Protected"
-                    value={`₹${Math.round(stats.totalValue).toLocaleString('en-IN')}`}
-                    icon={<IndianRupee className={cn(iconSizes.md, "text-white/70")} />}
-                    variant="secondary"
-                    subtitle={stats.totalValue === 0 ? "No value protected" : undefined}
-                    isEmpty={stats.totalValue === 0}
-                  />
-                  <StatCard
-                    label="Payments at Risk"
-                    value={`₹${Math.round(stats.paymentsAtRisk).toLocaleString('en-IN')}`}
-                    icon={<AlertCircle className={cn(iconSizes.md, "text-white/70")} />}
-                    variant="secondary"
-                    subtitle={stats.paymentsAtRisk === 0 ? "All payments secure" : undefined}
-                    isEmpty={stats.paymentsAtRisk === 0}
-                  />
+                <div className="mb-4 space-y-4">
+                  {/* Primary Card: Total Value Protected (Payments-style highlight) */}
+                  <div className="bg-white/10 backdrop-blur-xl border-2 border-yellow-500/30 rounded-2xl p-4 shadow-lg shadow-yellow-500/10">
+                    <div className="text-sm text-white/70 mb-1">Total Value Protected</div>
+                    <div className="text-3xl font-bold text-yellow-400 mb-1">{formatIndianCurrency(stats.totalValue)}</div>
+                    <div className="text-xs text-white/60">Across active protected deals</div>
+                  </div>
+
+                  {/* Secondary Card: Active Deals */}
+                  <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-4">
+                    <div className="text-sm text-white/70 mb-1">Active Deals</div>
+                    <div className="text-2xl font-bold text-white">{stats.active.toLocaleString('en-IN')}</div>
+                  </div>
+
+                  {/* Secondary Card: Payments at Risk (smaller, muted unless non-zero) */}
+                  <div
+                    className={cn(
+                      "bg-white/3 backdrop-blur-xl border border-white/5 rounded-xl p-3",
+                      stats.paymentsAtRisk > 0 && "bg-orange-500/10 border-orange-500/20"
+                    )}
+                  >
+                    <div className="text-xs text-white/50 mb-0.5">Payments at Risk</div>
+                    <div
+                      className={cn(
+                        "text-lg font-semibold",
+                        stats.paymentsAtRisk > 0 ? "text-orange-300" : "text-white/70"
+                      )}
+                    >
+                      {formatIndianCurrency(stats.paymentsAtRisk)}
+                    </div>
+                    {stats.paymentsAtRisk === 0 && (
+                      <div className="text-[11px] text-white/50 mt-0.5">All payments secure</div>
+                    )}
+                  </div>
                 </div>
               )}
             </section>
 
             {/* Protect a New Deal CTA */}
             <div className="mb-4 md:mb-6">
-              <button
+              <motion.button
                 onClick={() => {
                   triggerHaptic(HapticPatterns.medium);
                   navigate('/contract-upload');
                 }}
+                whileTap={animations.microTap}
                 className={cn(
                   "w-full",
-                  "bg-gradient-to-r from-purple-600 to-pink-600",
-                  "hover:from-purple-700 hover:to-pink-700",
-                  "active:scale-95",
-                  "text-white font-semibold",
-                  "px-6 py-3.5",
-                  "rounded-2xl",
-                  "flex items-center justify-center gap-2",
-                  "transition-all duration-200",
-                  "shadow-lg shadow-purple-500/20",
-                  "min-h-[48px]"
+                  "relative bg-gradient-to-br from-purple-500/20 to-pink-600/10",
+                  "backdrop-blur-xl rounded-2xl p-4",
+                  "border border-purple-500/30 shadow-lg shadow-purple-500/10",
+                  "hover:bg-white/10 transition-all"
                 )}
               >
-                <Shield className={cn(iconSizes.md)} />
-                Protect a New Deal
-              </button>
-              <p className="text-[10px] sm:text-[11px] text-purple-300/50 text-center mt-1.5 hidden sm:block">
-                Upload a contract or let the brand share details
-              </p>
+                <div className="flex items-center gap-3">
+                  <div className="bg-purple-500/20 w-10 h-10 rounded-full flex items-center justify-center">
+                    <Shield className="w-5 h-5 text-purple-200" />
+                  </div>
+                  <div className="text-left">
+                    <div className="text-sm font-semibold text-white">Protect a New Deal</div>
+                    <div className="text-xs text-white/60">Upload a contract or let the brand share details</div>
+                  </div>
+                </div>
+              </motion.button>
             </div>
 
             {/* Filter Tabs and Sort - Centered under stats */}

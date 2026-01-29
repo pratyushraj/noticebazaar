@@ -54,6 +54,7 @@ import influencersRouter from './routes/influencers.js';
 import collabRequestsRouter from './routes/collabRequests.js';
 import collabAnalyticsRouter from './routes/collabAnalytics.js';
 import creatorsRouter from './routes/creators.js';
+import shippingRouter from './routes/shipping.js';
 // Log router import for debugging
 console.log('[Server] Influencers router imported:', typeof influencersRouter, influencersRouter ? '✓' : '✗');
 import { authMiddleware } from './middleware/auth.js';
@@ -283,6 +284,7 @@ app.use('/api/otp', otpPublicRouter); // Public OTP routes for brand response pa
 app.use('/api/collab', collabRequestsRouter); // Public collab link routes (/:username and /:username/submit)
 app.use('/api/collab-analytics', collabAnalyticsRouter); // Public analytics tracking + authenticated analytics endpoints
 app.use('/api/creators', creatorsRouter); // Public creator directory routes
+app.use('/api/shipping', shippingRouter); // Public shipping update (brand, no auth)
 
 // API Routes (protected)
 app.use('/api/brand-reply-tokens', authMiddleware, rateLimitMiddleware, brandReplyTokensRouter);

@@ -8,6 +8,8 @@ import multer from 'multer';
 import { generateContractFromScratch } from '../services/contractGenerator.js';
 import { createContractReadyToken } from '../services/contractReadyTokenService.js';
 import { sendCollabRequestAcceptedEmail } from '../services/collabRequestEmailService.js';
+import { createShippingToken } from '../services/shippingTokenService.js';
+import { sendBrandShippingUpdateEmail, sendBrandShippingIssueEmail } from '../services/shippingEmailService.js';
 
 const router = Router();
 
@@ -703,6 +705,8 @@ router.patch('/:dealId/delivery-details', async (req: AuthenticatedRequest, res:
         delivery_address: delivery_address.trim(),
         delivery_notes: delivery_notes ? String(delivery_notes).trim() : null,
         status: 'Awaiting Product Shipment',
+        shipping_required: true,
+        shipping_status: 'pending',
         updated_at: new Date().toISOString(),
       })
       .eq('id', dealId);
@@ -837,6 +841,24 @@ router.patch('/:dealId/delivery-details', async (req: AuthenticatedRequest, res:
             contractUrl,
           }).catch((e) => console.error('[Deals] delivery-details acceptance email failed:', e));
         }
+
+        // Barter shipping: create token and send brand "Update Shipping Details" email (link valid 14 days)
+        try {
+          const { token: shippingToken } = await createShippingToken({ dealId });
+          const frontendUrl = process.env.FRONTEND_URL || 'https://creatorarmour.com';
+          const shippingLink = `${frontendUrl}/#/ship/${shippingToken}`;
+          const productDescription = deliverablesArray.length > 0 ? deliverablesArray.join(', ') : 'Product';
+          if (deal.brand_email) {
+            sendBrandShippingUpdateEmail(deal.brand_email, {
+              brandName: deal.brand_name,
+              creatorName,
+              productDescription,
+              shippingLink,
+            }).catch((e) => console.error('[Deals] delivery-details shipping email failed:', e));
+          }
+        } catch (shippingTokenErr: any) {
+          console.error('[Deals] delivery-details shipping token/email error:', shippingTokenErr);
+        }
       }
     } catch (contractErr: any) {
       console.error('[Deals] delivery-details contract generation error:', contractErr);
@@ -851,6 +873,161 @@ router.patch('/:dealId/delivery-details', async (req: AuthenticatedRequest, res:
     });
   } catch (error: any) {
     console.error('[Deals] delivery-details error:', error);
+    return res.status(500).json({
+      success: false,
+      error: error.message || 'Internal server error',
+    });
+  }
+});
+
+/**
+ * PATCH /api/deals/:dealId/shipping/confirm-received
+ * Creator confirms barter product received (shipping_status = delivered, delivered_at = now).
+ */
+router.patch('/:dealId/shipping/confirm-received', async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const userId = req.user!.id;
+    const { dealId } = req.params;
+
+    if (!dealId) {
+      return res.status(400).json({ success: false, error: 'Deal ID is required' });
+    }
+
+    const { data: deal, error: dealError } = await supabase
+      .from('brand_deals')
+      .select('id, creator_id, deal_type, shipping_required, shipping_status')
+      .eq('id', dealId)
+      .single();
+
+    if (dealError || !deal) {
+      return res.status(404).json({ success: false, error: 'Deal not found' });
+    }
+    if (deal.creator_id !== userId) {
+      return res.status(403).json({ success: false, error: 'Access denied' });
+    }
+    if ((deal as any).deal_type !== 'barter' || !(deal as any).shipping_required) {
+      return res.status(400).json({ success: false, error: 'Shipping confirmation is only for barter deals with shipping' });
+    }
+    if ((deal as any).shipping_status !== 'shipped') {
+      return res.status(400).json({ success: false, error: 'Product must be marked as shipped before confirming receipt' });
+    }
+
+    const now = new Date().toISOString();
+    const { error: updateError } = await supabase
+      .from('brand_deals')
+      .update({
+        shipping_status: 'delivered',
+        delivered_at: now,
+        updated_at: now,
+      })
+      .eq('id', dealId);
+
+    if (updateError) {
+      console.error('[Deals] shipping confirm-received update error:', updateError);
+      return res.status(500).json({ success: false, error: 'Failed to update' });
+    }
+
+    await supabase.from('deal_action_logs').insert({
+      deal_id: dealId,
+      event: 'shipping_confirmed_delivered',
+      metadata: {},
+    }).then(() => {}).catch((e: any) => console.warn('[Deals] shipping audit log failed:', e));
+
+    return res.json({
+      success: true,
+      message: 'Product received confirmed. Deliverables timeline can now proceed.',
+    });
+  } catch (error: any) {
+    console.error('[Deals] shipping confirm-received error:', error);
+    return res.status(500).json({
+      success: false,
+      error: error.message || 'Internal server error',
+    });
+  }
+});
+
+/**
+ * PATCH /api/deals/:dealId/shipping/report-issue
+ * Creator reports shipping issue (shipping_status = issue_reported, notify brand).
+ */
+router.patch('/:dealId/shipping/report-issue', async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const userId = req.user!.id;
+    const { dealId } = req.params;
+    const { reason } = req.body;
+
+    if (!dealId) {
+      return res.status(400).json({ success: false, error: 'Deal ID is required' });
+    }
+
+    const { data: deal, error: dealError } = await supabase
+      .from('brand_deals')
+      .select('id, creator_id, deal_type, shipping_required, brand_name, brand_email')
+      .eq('id', dealId)
+      .single();
+
+    if (dealError || !deal) {
+      return res.status(404).json({ success: false, error: 'Deal not found' });
+    }
+    if (deal.creator_id !== userId) {
+      return res.status(403).json({ success: false, error: 'Access denied' });
+    }
+    if ((deal as any).deal_type !== 'barter' || !(deal as any).shipping_required) {
+      return res.status(400).json({ success: false, error: 'Shipping issue reporting is only for barter deals with shipping' });
+    }
+    const currentStatus = (deal as any).shipping_status;
+    if (currentStatus === 'delivered') {
+      return res.status(400).json({ success: false, error: 'Product already marked as delivered' });
+    }
+
+    const reasonStr = reason != null && typeof reason === 'string' ? reason.trim() : '';
+    if (!reasonStr) {
+      return res.status(400).json({ success: false, error: 'Please provide a reason for the issue' });
+    }
+
+    const now = new Date().toISOString();
+    const { error: updateError } = await supabase
+      .from('brand_deals')
+      .update({
+        shipping_status: 'issue_reported',
+        shipping_issue_reason: reasonStr,
+        updated_at: now,
+      })
+      .eq('id', dealId);
+
+    if (updateError) {
+      console.error('[Deals] shipping report-issue update error:', updateError);
+      return res.status(500).json({ success: false, error: 'Failed to update' });
+    }
+
+    await supabase.from('deal_action_logs').insert({
+      deal_id: dealId,
+      event: 'shipping_issue_reported',
+      metadata: { reason: reasonStr },
+    }).then(() => {}).catch((e: any) => console.warn('[Deals] shipping audit log failed:', e));
+
+    if (deal.brand_email) {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('first_name, last_name')
+        .eq('id', userId)
+        .maybeSingle();
+      const creatorName = profile
+        ? `${(profile.first_name || '').trim()} ${(profile.last_name || '').trim()}`.trim() || 'Creator'
+        : 'Creator';
+      sendBrandShippingIssueEmail(deal.brand_email, {
+        brandName: deal.brand_name || 'Brand',
+        creatorName,
+        reason: reasonStr,
+      }).catch((e) => console.error('[Deals] shipping issue email failed:', e));
+    }
+
+    return res.json({
+      success: true,
+      message: 'Issue reported. The brand has been notified.',
+    });
+  } catch (error: any) {
+    console.error('[Deals] shipping report-issue error:', error);
     return res.status(500).json({
       success: false,
       error: error.message || 'Internal server error',

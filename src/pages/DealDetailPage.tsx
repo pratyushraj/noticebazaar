@@ -3,7 +3,7 @@
 import { useState, useCallback, lazy, Suspense, useMemo, useEffect, useRef } from 'react';
 import type { ChangeEvent } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Eye, Download, Flag, Loader2, Building2, Calendar, FileText, CheckCircle, Clock, Trash2, AlertCircle, XCircle, Bell, Mail, MessageSquare, Phone, Edit, X, Check, Share2, Copy, Link2, Upload, ChevronDown, ChevronUp, Lock } from 'lucide-react';
+import { ArrowLeft, Eye, Download, Flag, Loader2, Building2, Calendar, FileText, CheckCircle, Clock, Trash2, AlertCircle, XCircle, Bell, Mail, MessageSquare, Phone, Edit, X, Check, Share2, Copy, Link2, Upload, ChevronDown, ChevronUp, Lock, Package, ExternalLink } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from '@/components/ui/collapsible';
 import { toast } from 'sonner';
@@ -29,6 +29,7 @@ import { TrendingUp } from 'lucide-react';
 import { NativeLoadingSheet } from '@/components/mobile/NativeLoadingSheet';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
+import { getApiBaseUrl } from '@/lib/utils/api';
 import { generateContractSummaryPDF, extractBrandContactInfo, ContractSummaryData } from '@/lib/utils/contractSummaryPDF';
 
 // Lazy load heavy components
@@ -146,6 +147,12 @@ function DealDetailPageContent() {
   const [showVerificationDetails, setShowVerificationDetails] = useState(false);
   const [showDealSummaryFull, setShowDealSummaryFull] = useState(false);
   const [showAuditTrail, setShowAuditTrail] = useState(false);
+
+  // Barter shipping: report issue modal
+  const [showReportIssueModal, setShowReportIssueModal] = useState(false);
+  const [reportIssueReason, setReportIssueReason] = useState('');
+  const [isConfirmingReceived, setIsConfirmingReceived] = useState(false);
+  const [isReportingIssue, setIsReportingIssue] = useState(false);
   
   // Creator signing states
   const [showCreatorSigningModal, setShowCreatorSigningModal] = useState(false);
@@ -3630,6 +3637,152 @@ ${link}`;
               </div>
             )}
 
+            {/* Barter Product Shipping – Deal Timeline (barter only) */}
+            {(deal as any)?.deal_type === 'barter' && (deal as any)?.shipping_required && (
+              <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-5 md:p-6 shadow-lg shadow-black/20">
+                <div className="flex items-center gap-2 mb-4">
+                  <Package className="w-5 h-5 text-amber-400" />
+                  <h3 className="font-semibold text-lg">Product Shipping</h3>
+                </div>
+                {(() => {
+                  const shippingStatus = (deal as any)?.shipping_status || 'pending';
+                  if (shippingStatus === 'pending') {
+                    const updatedAt = (deal as any)?.updated_at;
+                    const daysPending = updatedAt ? Math.floor((Date.now() - new Date(updatedAt).getTime()) / (1000 * 60 * 60 * 24)) : 0;
+                    const isDelayed = daysPending >= 7;
+                    return (
+                      <div className="space-y-3">
+                        <div className={`flex items-center gap-3 p-3 rounded-xl border ${isDelayed ? 'bg-red-500/10 border-red-500/20' : 'bg-amber-500/10 border-amber-500/20'}`}>
+                          <span className="text-2xl">⏳</span>
+                          <div>
+                            <p className="font-medium text-white">
+                              {isDelayed ? 'Shipping delayed' : 'Waiting for brand to ship product'}
+                            </p>
+                            <p className="text-sm text-white/60">
+                              {isDelayed
+                                ? 'The brand has not updated shipping after 7 days. You can report an issue or seek legal support.'
+                                : 'The brand will receive a link to add courier and tracking details.'}
+                            </p>
+                          </div>
+                        </div>
+                        {isDelayed && (
+                          <div className="flex flex-wrap gap-2">
+                            <button
+                              onClick={() => setShowReportIssueModal(true)}
+                              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white/10 hover:bg-white/15 border border-white/20 text-white font-medium text-sm"
+                            >
+                              <AlertCircle className="w-4 h-4" />
+                              Report issue (e.g. brand has not shipped)
+                            </button>
+                            <a
+                              href="/#/creator-contracts"
+                              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white/10 hover:bg-white/15 border border-white/20 text-white font-medium text-sm"
+                            >
+                              <Flag className="w-4 h-4" />
+                              Legal support
+                            </a>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  }
+                  if (shippingStatus === 'shipped') {
+                    const courier = (deal as any)?.courier_name;
+                    const tracking = (deal as any)?.tracking_number;
+                    const trackingUrl = (deal as any)?.tracking_url;
+                    return (
+                      <div className="space-y-4">
+                        <div className="flex items-center gap-3 p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
+                          <span className="text-2xl">📦</span>
+                          <div>
+                            <p className="font-medium text-white">Product shipped</p>
+                            {courier && <p className="text-sm text-white/70">Courier: {courier}</p>}
+                            {tracking && <p className="text-sm text-white/70">Tracking: {tracking}</p>}
+                          </div>
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                          {trackingUrl && (
+                            <a
+                              href={trackingUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white/10 hover:bg-white/15 border border-white/20 text-white font-medium"
+                            >
+                              <ExternalLink className="w-4 h-4" />
+                              Track package
+                            </a>
+                          )}
+                          <button
+                            onClick={async () => {
+                              if (!deal?.id) return;
+                              setIsConfirmingReceived(true);
+                              try {
+                                const apiBaseUrl = getApiBaseUrl();
+                                const res = await fetch(`${apiBaseUrl}/api/deals/${deal.id}/shipping/confirm-received`, {
+                                  method: 'PATCH',
+                                  headers: { 'Content-Type': 'application/json', ...(session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {}) },
+                                });
+                                const data = await res.json();
+                                if (data.success) {
+                                  trackEvent('shipping_confirmed_delivered', { deal_id: deal.id });
+                                  toast.success('Product received confirmed.');
+                                  refreshAll?.();
+                                } else {
+                                  toast.error(data.error || 'Failed to confirm');
+                                }
+                              } catch (e) {
+                                toast.error('Something went wrong.');
+                              } finally {
+                                setIsConfirmingReceived(false);
+                              }
+                            }}
+                            disabled={isConfirmingReceived}
+                            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-medium disabled:opacity-50"
+                          >
+                            {isConfirmingReceived ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle className="w-4 h-4" />}
+                            Confirm Product Received
+                          </button>
+                          <button
+                            onClick={() => setShowReportIssueModal(true)}
+                            disabled={isReportingIssue}
+                            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white/10 hover:bg-white/15 border border-white/20 text-white font-medium"
+                          >
+                            <AlertCircle className="w-4 h-4" />
+                            Report Issue
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  }
+                  if (shippingStatus === 'delivered') {
+                    return (
+                      <div className="flex items-center gap-3 p-3 rounded-xl bg-green-500/10 border border-green-500/20">
+                        <CheckCircle className="w-6 h-6 text-green-400" />
+                        <div>
+                          <p className="font-medium text-white">Product delivered</p>
+                          <p className="text-sm text-white/60">You confirmed receipt. Deliverables timeline can proceed.</p>
+                        </div>
+                      </div>
+                    );
+                  }
+                  if (shippingStatus === 'issue_reported') {
+                    const reason = (deal as any)?.shipping_issue_reason;
+                    return (
+                      <div className="flex items-start gap-3 p-3 rounded-xl bg-red-500/10 border border-red-500/20">
+                        <AlertCircle className="w-6 h-6 text-red-400 flex-shrink-0 mt-0.5" />
+                        <div>
+                          <p className="font-medium text-white">Issue reported</p>
+                          {reason && <p className="text-sm text-white/70 mt-1">{reason}</p>}
+                          <p className="text-sm text-white/50 mt-2">The brand has been notified. You can use legal support if needed.</p>
+                        </div>
+                      </div>
+                    );
+                  }
+                  return null;
+                })()}
+              </div>
+            )}
+
             {/* Legal Card */}
             {(brandSubmissionDetails.governingLaw || brandSubmissionDetails.companyState) && (
               <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-5 md:p-6 shadow-lg shadow-black/20">
@@ -3771,6 +3924,72 @@ ${link}`;
           initialMessage={reportIssueMessage}
         />
       )}
+
+      {/* Barter Shipping: Report Issue Modal */}
+      <Dialog open={showReportIssueModal} onOpenChange={setShowReportIssueModal}>
+        <DialogContent className="bg-gray-900 border-white/10 text-white max-w-md">
+          <DialogHeader>
+            <DialogTitle>Report shipping issue</DialogTitle>
+            <DialogDescription className="text-white/70">
+              Describe the issue (e.g. damaged product, wrong item, not received). The brand will be notified.
+            </DialogDescription>
+          </DialogHeader>
+          <textarea
+            value={reportIssueReason}
+            onChange={(e) => setReportIssueReason(e.target.value)}
+            placeholder="Describe the issue..."
+            rows={4}
+            className="w-full px-4 py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 resize-none"
+          />
+          <div className="flex gap-2 justify-end mt-4">
+            <button
+              onClick={() => {
+                setShowReportIssueModal(false);
+                setReportIssueReason('');
+              }}
+              className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/15 border border-white/20 text-white font-medium"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={async () => {
+                if (!deal?.id || !reportIssueReason.trim()) {
+                  toast.error('Please describe the issue.');
+                  return;
+                }
+                setIsReportingIssue(true);
+                try {
+                  const apiBaseUrl = getApiBaseUrl();
+                  const res = await fetch(`${apiBaseUrl}/api/deals/${deal.id}/shipping/report-issue`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json', ...(session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {}) },
+                    body: JSON.stringify({ reason: reportIssueReason.trim() }),
+                  });
+                  const data = await res.json();
+                  if (data.success) {
+                    trackEvent('shipping_issue_reported', { deal_id: deal.id });
+                    toast.success('Issue reported. The brand has been notified.');
+                    setShowReportIssueModal(false);
+                    setReportIssueReason('');
+                    refreshAll?.();
+                  } else {
+                    toast.error(data.error || 'Failed to report issue');
+                  }
+                } catch (e) {
+                  toast.error('Something went wrong.');
+                } finally {
+                  setIsReportingIssue(false);
+                }
+              }}
+              disabled={isReportingIssue || !reportIssueReason.trim()}
+              className="px-4 py-2 rounded-xl bg-red-600 hover:bg-red-500 text-white font-medium disabled:opacity-50 flex items-center gap-2"
+            >
+              {isReportingIssue ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
+              Report Issue
+            </button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Progress Update Sheet */}
       <ProgressUpdateSheet

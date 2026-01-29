@@ -795,8 +795,8 @@ const CreatorDashboard = () => {
           "before:absolute before:inset-0 before:bg-gradient-to-b before:from-purple-500/10 before:to-transparent before:pointer-events-none"
         )}
         style={{
-          paddingTop: 'max(20px, env(safe-area-inset-top, 20px))',
-          paddingBottom: '16px',
+          paddingTop: 'max(12px, env(safe-area-inset-top, 12px))',
+          paddingBottom: '10px',
           paddingLeft: 'calc(16px + env(safe-area-inset-left, 0px))',
           paddingRight: 'calc(16px + env(safe-area-inset-right, 0px))',
         }}
@@ -817,7 +817,7 @@ const CreatorDashboard = () => {
         <div className={cn(
           "flex items-center justify-between gap-3",
           spacing.cardPadding.tertiary,
-          "py-3 relative z-10",
+          "py-2 relative z-10",
           // Better spacing on mobile
           "px-4 sm:px-5"
         )}>
@@ -1174,11 +1174,8 @@ const CreatorDashboard = () => {
             )}>
               {/* Greeting */}
               <div className={cn(sectionLayout.header, "md:pt-0 md:text-left")}>
-                <h1 className={cn(typography.h1, "mb-2 leading-tight md:text-xl")}>
-                  {getGreeting()}, <br />
-                  <span className="bg-gradient-to-r from-purple-400 to-pink-400 text-transparent bg-clip-text">
-                    {userData.name}!
-                  </span> 👋
+                <h1 className={cn(typography.h1, "mb-2 leading-tight md:text-xl whitespace-nowrap overflow-hidden text-ellipsis")}>
+                  {getGreeting()}, <span className="bg-gradient-to-r from-purple-400 to-pink-400 text-transparent bg-clip-text">{userData.name ? userData.name.charAt(0).toUpperCase() + userData.name.slice(1) : ''}!</span> 👋
                 </h1>
               </div>
 
@@ -1232,8 +1229,11 @@ const CreatorDashboard = () => {
                   </motion.button>
                 </BaseCard>
               ) : (
-                <div className="space-y-3">
-                  {collabRequestsPreview.map((r) => {
+                <div className="space-y-6">
+                  {/* Demo: same request in 3 UI variants (use first request) */}
+                  {(() => {
+                    const r = collabRequestsPreview[0];
+                    if (!r) return null;
                     const isBarter = r.collab_type === 'barter';
                     const typeLabel = isBarter ? 'Barter' : 'Paid';
                     const offerDisplay =
@@ -1243,89 +1243,57 @@ const CreatorDashboard = () => {
                     const deadline = r.deadline
                       ? new Date(r.deadline).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
                       : '—';
+                    const brandNameDisplay = r.brand_name ? r.brand_name.charAt(0).toUpperCase() + r.brand_name.slice(1) : 'Brand';
 
-                    return (
-                      <BaseCard
-                        key={r.id}
-                        variant="tertiary"
+                    const acceptBtn = (
+                      <button
+                        type="button"
+                        disabled={acceptingRequestId === r.id}
+                        onClick={() => { triggerHaptic(HapticPatterns.light); acceptCollabRequest(r.raw); }}
                         className={cn(
-                          "p-3 rounded-xl border border-white/10",
-                          "shadow-lg shadow-black/10"
+                          "w-full min-h-[38px] inline-flex items-center justify-center gap-2 rounded-lg font-semibold text-sm",
+                          "bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white",
+                          "transition-colors duration-200",
+                          acceptingRequestId === r.id && "opacity-70 pointer-events-none"
                         )}
                       >
-                        <div className="flex items-start justify-between gap-2 min-w-0">
-                          <p className="font-bold text-white text-sm break-words flex-1 min-w-0">{r.brand_name}</p>
-                          <span className={cn(
-                            "flex-shrink-0 px-2 py-0.5 rounded-full text-[10px] font-medium border",
-                            isBarter ? "bg-blue-500/20 text-blue-200 border-blue-500/30" : "bg-green-500/20 text-green-200 border-green-500/30"
-                          )}>
-                            {typeLabel}
-                          </span>
-                        </div>
-
-                        <div className="mt-1.5 grid grid-cols-2 gap-1.5">
-                          <div>
-                            <p className="text-[10px] text-purple-300/60 uppercase tracking-wider">Offer</p>
-                            <p className="text-xs font-semibold text-white tabular-nums">{offerDisplay}</p>
-                          </div>
-                          <div>
-                            <p className="text-[10px] text-purple-300/60 uppercase tracking-wider">Deadline</p>
-                            <p className="text-xs text-purple-200/90">{deadline}</p>
-                          </div>
-                        </div>
-
-                        <div className="mt-2.5 space-y-1.5">
-                          <button
-                            type="button"
-                            disabled={acceptingRequestId === r.id}
-                            onClick={() => {
-                              triggerHaptic(HapticPatterns.light);
-                              acceptCollabRequest(r.raw);
-                            }}
-                            className={cn(
-                              "w-full min-h-[42px] inline-flex items-center justify-center gap-2 rounded-xl font-semibold text-sm",
-                              "bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white",
-                              "transition-colors duration-200",
-                              acceptingRequestId === r.id && "opacity-70 pointer-events-none"
-                            )}
-                          >
-                            {acceptingRequestId === r.id ? (
-                              <>
-                                <Loader2 className="w-4 h-4 animate-spin" />
-                                Accepting…
-                              </>
-                            ) : (
-                              'Accept Deal'
-                            )}
-                          </button>
-
-                          <div className="flex items-center justify-center gap-4">
-                            <button
-                              type="button"
-                              onClick={() => {
-                                triggerHaptic(HapticPatterns.light);
-                                navigate(`/collab-requests/${r.id}/counter`, { state: { request: r.raw } });
-                              }}
-                              className="text-[11px] font-medium text-white/55 hover:text-white/80 transition-colors"
-                            >
-                              Counter
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => {
-                                triggerHaptic(HapticPatterns.light);
-                                setDeclineRequestId(r.id);
-                                setShowDeclineRequestDialog(true);
-                              }}
-                              className="text-[11px] font-medium text-white/55 hover:text-white/80 transition-colors"
-                            >
-                              Decline
-                            </button>
-                          </div>
-                        </div>
-                      </BaseCard>
+                        {acceptingRequestId === r.id ? <><Loader2 className="w-4 h-4 animate-spin" /> Accepting…</> : 'Accept Deal'}
+                      </button>
                     );
-                  })}
+                    const pill = (
+                      <span className={cn("flex-shrink-0 px-2 py-0.5 rounded-full text-[10px] font-medium border", isBarter ? "bg-blue-500/20 text-blue-200 border-blue-500/30" : "bg-green-500/20 text-green-200 border-green-500/30")}>{typeLabel}</span>
+                    );
+
+                    return (
+                      <BaseCard variant="tertiary" className="!p-2.5 rounded-xl border border-white/10 shadow-lg shadow-black/10">
+                            <div className="flex items-center justify-between gap-2 min-w-0">
+                              <p className="font-bold text-white text-sm break-words flex-1 min-w-0">{brandNameDisplay}</p>
+                              {pill}
+                            </div>
+                            <div className="flex flex-wrap gap-1.5 mt-1.5">
+                              <span className="inline-flex px-2 py-0.5 rounded-full text-[10px] font-medium bg-white/10 text-white border border-white/20">{offerDisplay}</span>
+                              <span className="inline-flex px-2 py-0.5 rounded-full text-[10px] font-medium bg-white/10 text-purple-200/90 border border-white/20">{deadline}</span>
+                            </div>
+                            <div className="mt-1.5">{acceptBtn}</div>
+                            <div className="mt-1.5 flex items-center gap-2">
+                              <button
+                                type="button"
+                                onClick={() => { triggerHaptic(HapticPatterns.light); navigate(`/collab-requests/${r.id}/counter`, { state: { request: r.raw } }); }}
+                                className="flex-1 min-h-[36px] rounded-lg border border-white/20 bg-white/5 text-white text-xs font-medium hover:bg-white/10 transition-colors"
+                              >
+                                Counter
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => { triggerHaptic(HapticPatterns.light); setDeclineRequestId(r.id); setShowDeclineRequestDialog(true); }}
+                                className="flex-1 min-h-[36px] rounded-lg border border-white/20 bg-white/5 text-red-300/90 text-xs font-medium hover:bg-red-500/20 hover:border-red-500/30 transition-colors"
+                              >
+                                Decline
+                              </button>
+                            </div>
+                          </BaseCard>
+                    );
+                  })()}
                 </div>
               )}
             </div>
@@ -1399,7 +1367,9 @@ const CreatorDashboard = () => {
                           variant="tertiary" 
                           className={cn(
                             animations.cardHover,
-                            "cursor-pointer relative overflow-hidden"
+                            "cursor-pointer relative overflow-hidden w-full",
+                            "p-4 md:p-5 rounded-2xl backdrop-blur-xl",
+                            "border border-purple-400/40 ring-1 ring-purple-400/15 shadow-md shadow-purple-500/10"
                           )}
                           onClick={() => {
                             triggerHaptic(HapticPatterns.light);
