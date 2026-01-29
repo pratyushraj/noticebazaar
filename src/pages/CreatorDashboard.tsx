@@ -1179,24 +1179,6 @@ const CreatorDashboard = () => {
                 </h1>
               </div>
 
-              {/* Above-the-fold: ONE dominant action only */}
-              <div className="mt-4" data-section="home-primary-cta">
-                <button
-                  onClick={() => {
-                    triggerHaptic(HapticPatterns.medium);
-                    navigate('/collab-requests');
-                  }}
-                  className={cn(
-                    'w-full text-white font-semibold px-6 py-3.5 rounded-xl',
-                    'flex items-center justify-center gap-2 transition-all duration-200',
-                    'min-h-[48px] relative z-10 active:scale-[0.98]',
-                    'bg-green-600 hover:bg-green-700 shadow-lg shadow-green-500/25'
-                  )}
-                >
-                  <Briefcase className={iconSizes.md} />
-                  Brand Requests ({pendingCollabRequestsCount})
-                </button>
-              </div>
             </div>
 
             {/* Decision-first dashboard: no extra above-fold cards */}
@@ -1265,17 +1247,17 @@ const CreatorDashboard = () => {
                     );
 
                     return (
-                      <BaseCard variant="tertiary" className="!p-2.5 rounded-xl border border-white/10 shadow-lg shadow-black/10">
+                      <BaseCard variant="tertiary" className="!p-3 rounded-xl border border-white/10 shadow-lg shadow-black/10">
                             <div className="flex items-center justify-between gap-2 min-w-0">
                               <p className="font-bold text-white text-sm break-words flex-1 min-w-0">{brandNameDisplay}</p>
                               {pill}
                             </div>
-                            <div className="flex flex-wrap gap-1.5 mt-1.5">
+                            <div className="flex flex-wrap gap-1.5 mt-2">
                               <span className="inline-flex px-2 py-0.5 rounded-full text-[10px] font-medium bg-white/10 text-white border border-white/20">{offerDisplay}</span>
                               <span className="inline-flex px-2 py-0.5 rounded-full text-[10px] font-medium bg-white/10 text-purple-200/90 border border-white/20">{deadline}</span>
                             </div>
-                            <div className="mt-1.5">{acceptBtn}</div>
-                            <div className="mt-1.5 flex items-center gap-2">
+                            <div className="mt-2">{acceptBtn}</div>
+                            <div className="mt-2 flex items-center gap-2">
                               <button
                                 type="button"
                                 onClick={() => { triggerHaptic(HapticPatterns.light); navigate(`/collab-requests/${r.id}/counter`, { state: { request: r.raw } }); }}
@@ -1379,8 +1361,30 @@ const CreatorDashboard = () => {
                           {/* Spotlight on hover */}
                           <div className={cn(vision.spotlight.hover, "opacity-0 group-hover:opacity-100")} />
                           
-                          {/* 1. Brand name + trust badge */}
-                          <div className="flex items-start justify-between gap-2 mb-3">
+                          {/* Top row: Amount at risk (left) + Payment status (right) */}
+                          <div className="flex items-center justify-between gap-2 mb-2 flex-wrap">
+                            <span className={cn(
+                              typography.amountSmall,
+                              "text-orange-400 text-sm sm:text-base font-bold"
+                            )}>
+                              ₹{Math.round(deal.value).toLocaleString('en-IN')} at risk
+                            </span>
+                            {deal.paymentStatus && (
+                              <span className={cn(
+                                "px-2 py-0.5 rounded-full text-[10px] font-medium flex-shrink-0",
+                                deal.paymentStatus === 'received' && "bg-green-500/20 text-green-400 border border-green-500/30",
+                                deal.paymentStatus === 'pending' && "bg-amber-500/20 text-amber-400 border border-amber-500/30",
+                                deal.paymentStatus === 'overdue' && "bg-red-500/20 text-red-400 border border-red-500/30"
+                              )}>
+                                {deal.paymentStatus === 'received' && 'Payment Received'}
+                                {deal.paymentStatus === 'pending' && 'Payment Pending'}
+                                {deal.paymentStatus === 'overdue' && 'Payment Overdue'}
+                              </span>
+                            )}
+                          </div>
+
+                          {/* Brand name + trust badge */}
+                          <div className="flex items-start justify-between gap-2 mb-2">
                             <h3 className={cn(
                               typography.h4, 
                               "text-base sm:text-lg font-bold truncate flex-1"
@@ -1401,63 +1405,28 @@ const CreatorDashboard = () => {
                             )}
                           </div>
 
-                          {/* 2. Amount at risk */}
+                          {/* Middle: Contract + action + deliverables + due */}
                           <div className={cn(
-                            typography.amountSmall, 
-                            "text-orange-400 text-sm sm:text-base font-semibold mb-1.5"
+                            "flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-white/70",
+                            typography.caption
                           )}>
-                            ₹{Math.round(deal.value).toLocaleString('en-IN')} at risk
+                            <span className={deal.status === 'signed' ? "text-green-400/80" : ""}>
+                              {deal.status === 'signed' ? 'Contract signed ✓' : (deal.status === 'active' ? 'Active ✓' : 'Negotiation')}
+                            </span>
+                            {deal.nextAction && (
+                              <span>• {deal.nextAction}</span>
+                            )}
+                            {deal.deliverablesProgress && deal.deliverablesProgress.total > 0 && (
+                              <span>• {deal.deliverablesProgress.delivered}/{deal.deliverablesProgress.total} submitted</span>
+                            )}
+                            <span className="whitespace-nowrap ml-auto">Due: {deal.deadline}</span>
                           </div>
 
-                          {/* 3. Payment status chip */}
-                          {deal.paymentStatus && (
-                            <div className="mb-2">
-                              <span className={cn(
-                                "px-2 py-0.5 rounded-full text-[10px] font-medium inline-block",
-                                deal.paymentStatus === 'received' && "bg-green-500/20 text-green-400 border border-green-500/30",
-                                deal.paymentStatus === 'pending' && "bg-amber-500/20 text-amber-400 border border-amber-500/30",
-                                deal.paymentStatus === 'overdue' && "bg-red-500/20 text-red-400 border border-red-500/30"
-                              )}>
-                                {deal.paymentStatus === 'received' && 'Payment Received'}
-                                {deal.paymentStatus === 'pending' && 'Payment Pending'}
-                                {deal.paymentStatus === 'overdue' && 'Payment Overdue'}
-                              </span>
-                            </div>
-                          )}
-
-                          {/* 4. Signed + Due date */}
-                          <div className={cn(
-                            "flex items-center justify-between flex-wrap gap-2", 
-                            typography.caption, 
-                            "mt-2 text-xs sm:text-sm"
-                          )}>
-                            <span className={cn(
-                              "flex items-center gap-1.5",
-                              deal.status === 'signed' && "text-green-400/70 text-[10px] sm:text-xs"
-                            )}>
-                              {deal.status === 'signed' ? '✅ Contract Signed' : (deal.status === 'active' ? '✅ Active' : '🔵 Negotiation')}
-                            </span>
-                            <span className="text-white/60 whitespace-nowrap">
-                              Due: {deal.deadline}
-                            </span>
-                          </div>
-
-                          {/* 5. Next action helper */}
-                          {deal.nextAction && (
-                            <div className="mt-2 text-xs text-white/50 opacity-70">
-                              Action needed: {deal.nextAction}
-                            </div>
-                          )}
-
-                          {/* 6. Deliverables progress (optional) */}
-                          {deal.deliverablesProgress && deal.deliverablesProgress.total > 0 && (
-                            <div className="mt-1.5 text-xs text-white/50 opacity-70">
-                              Deliverables: {deal.deliverablesProgress.delivered}/{deal.deliverablesProgress.total}
-                            </div>
-                          )}
-                          {/* 7. Resolve Now CTA (attention-needed deals only) */}
+                          {/* Bottom: Primary CTA */}
                           <div className="mt-3 pt-2 border-t border-white/10">
-                            <span className={cn(sectionHeader.action, "text-xs font-medium")}>Resolve Now</span>
+                            <span className={cn(sectionHeader.action, "text-xs font-semibold")}>
+                              {deal.paymentStatus === 'overdue' ? 'Resolve Payment' : 'Take Action'}
+                            </span>
                           </div>
                         </BaseCard>
                       </motion.div>
