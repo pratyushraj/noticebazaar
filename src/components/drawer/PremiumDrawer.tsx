@@ -78,6 +78,7 @@ interface DrawerHeaderProps {
 }
 
 function DrawerHeader({ userName, userHandle, userAvatar, userInitials, onProfileClick, onCalendarClick }: DrawerHeaderProps) {
+  const displayName = userName ? userName.charAt(0).toUpperCase() + userName.slice(1).toLowerCase() : '';
   const handleProfileClick = () => {
     triggerHaptic(HapticPatterns.light);
     onProfileClick();
@@ -119,7 +120,7 @@ function DrawerHeader({ userName, userHandle, userAvatar, userInitials, onProfil
           "focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-white/30 focus-visible:outline-offset-2",
           animations.cardPress
         )}
-        aria-label={`View profile for ${userName}`}
+        aria-label={`View profile for ${displayName}`}
         whileTap={animations.microTap}
       >
         <motion.div
@@ -128,7 +129,7 @@ function DrawerHeader({ userName, userHandle, userAvatar, userInitials, onProfil
           <Avatar className="h-10 w-10 md:h-12 md:w-12 ring-2 ring-white/10 shadow-[0_0_20px_rgba(160,107,255,0.45)]">
             <AvatarImage 
               src={userAvatar || DEFAULT_AVATAR_URL} 
-              alt={`${userName}'s avatar`} 
+              alt={`${displayName}'s avatar`} 
             />
             <AvatarFallback className="bg-gradient-to-br from-[#A06BFF] to-[#7E36FF] text-white text-xs md:text-sm font-semibold">
               {userInitials}
@@ -137,7 +138,7 @@ function DrawerHeader({ userName, userHandle, userAvatar, userInitials, onProfil
         </motion.div>
         <div className="flex-1 text-left min-w-0">
           <p className="text-white text-[15px] md:text-[17px] font-semibold truncate">
-            {userName}
+            {displayName}
           </p>
           <p className="text-white/40 text-xs md:text-sm truncate">
             @{userHandle}

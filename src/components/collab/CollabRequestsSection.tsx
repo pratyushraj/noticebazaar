@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { 
   Briefcase, 
   MessageSquare, 
@@ -321,35 +320,35 @@ const CollabRequestsSection = ({ copyCollabLink, usernameForLink: usernameFromPa
           </CardContent>
         </Card>
       ) : (
-        <Card className="rounded-[20px] saturate-[180%] border border-purple-400/30 bg-gradient-to-br from-purple-500/15 via-white/8 to-indigo-500/10 backdrop-blur-md shadow-[0_8px_32px_rgba(0,0,0,0.3)] transition-all duration-200">
-          <CardContent className="py-4 px-5 space-y-3">
-            {/* Title row: heading + badge inline */}
-            <div className="flex items-center gap-2 flex-wrap">
-              <h3 className="text-lg font-semibold text-white break-words">
-                New Brand Requests ({pendingRequests.length})
+        <Card className="bg-white/5 rounded-2xl backdrop-blur-xl p-4 md:p-5 relative overflow-hidden w-full border border-purple-400/40 ring-1 ring-purple-400/15 shadow-md shadow-purple-500/10 transition-all duration-200">
+          <CardContent className="p-0 space-y-3">
+            {/* Title + count pill (single line) */}
+            <div className="flex items-center justify-between gap-2 min-w-0">
+              <h3 className="text-base font-semibold text-white truncate">
+                New Brand Requests
               </h3>
-              <Badge className="shrink-0 bg-purple-500/30 text-purple-200 border-purple-400/40 text-sm font-medium">
+              <span className="shrink-0 inline-flex items-center justify-center min-w-[28px] h-7 px-2 rounded-full text-sm font-semibold bg-purple-500/30 text-purple-200 border border-purple-400/40">
                 {pendingRequests.length}
-              </Badge>
+              </span>
             </div>
-            <p className="text-sm text-purple-200/90 break-words">
+            <p className="text-sm text-white/70">
               Brands are waiting for your response
             </p>
 
-            {/* CTA — dominant, thumb-friendly */}
-            <div className="space-y-1.5 pt-0.5">
+            {/* CTA — matches Copy Collab Link button style */}
+            <div className="space-y-1.5">
               <Button
                 onClick={() => navigate('/collab-requests')}
-                className="w-full min-h-[48px] bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-semibold shadow-lg border-0"
+                className="w-full min-h-[44px] px-4 rounded-lg flex items-center justify-center gap-2 bg-purple-600/40 hover:bg-purple-600/50 border border-purple-400/50 font-medium text-purple-100 text-sm transition-colors"
               >
-                <MessageSquare className="h-4 w-4 mr-2 flex-shrink-0" />
-                Review & Accept Deals
-                <Badge variant="secondary" className="ml-2 bg-white/25 text-white text-xs font-medium border-0">
+                <MessageSquare className="h-4 w-4 flex-shrink-0" aria-hidden />
+                Review Collabs
+                <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-md bg-white/20 text-xs font-medium">
                   {pendingRequests.length}
-                </Badge>
-                <ChevronRight className="h-4 w-4 ml-1 flex-shrink-0" aria-hidden />
+                </span>
+                <ChevronRight className="h-4 w-4 flex-shrink-0" aria-hidden />
               </Button>
-              <p className="text-xs text-purple-300/60 break-words text-center">
+              <p className="text-[10px] text-white/50 text-center">
                 Faster replies increase acceptance rate
               </p>
             </div>

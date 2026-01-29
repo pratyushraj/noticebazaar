@@ -663,7 +663,7 @@ const CreatorContracts = () => {
                   </div>
                   <div className="text-left">
                     <div className="text-sm font-semibold text-white">Protect a New Deal</div>
-                    <div className="text-xs text-white/60">Upload a contract or let the brand share details</div>
+                    <div className="text-xs text-white/60">Contract is reviewed and you&apos;re covered</div>
                   </div>
                 </div>
               </motion.button>
@@ -677,7 +677,10 @@ const CreatorContracts = () => {
                 "flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3"
               )}>
                 {/* Filter Tabs */}
-                <div className={cn(
+                <div
+                  role="tablist"
+                  aria-label="Deal filters"
+                  className={cn(
                   "flex items-center justify-start md:justify-center gap-2 md:gap-4",
                   "overflow-x-auto overflow-y-visible py-1 -mx-4 px-4 md:mx-0 md:px-0",
                   "[&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]",
@@ -688,6 +691,9 @@ const CreatorContracts = () => {
                     return (
                       <motion.button
                         key={filter.id}
+                        role="tab"
+                        aria-selected={isActive}
+                        aria-label={filter.label}
                         onClick={() => {
                           triggerHaptic(HapticPatterns.light);
                           setActiveFilter(filter.id as 'all' | 'action_needed' | 'closed');
@@ -888,82 +894,85 @@ const CreatorContracts = () => {
 
             {/* Content Section */}
             <section className="flex flex-col gap-6 md:gap-8">
-              {/* Loading State */}
+              {/* Loading State - Skeleton list */}
               {isLoadingDeals ? (
-                <div className={cn("py-12 text-center")}>
-                  <div className="text-white/60">Loading deals...</div>
+                <div className={cn("space-y-3")}>
+                  {[1, 2, 3, 4].map((i) => (
+                    <SkeletonCard key={i} variant="tertiary" showSubtitle={false} showValue={false} showProgress={false} />
+                  ))}
                 </div>
               ) : filteredDeals.length > 0 ? (
-                /* Deals List - Matching Payments Page Card Style */
-                <div className={cn("space-y-5 sm:space-y-6")}>
+                /* Deals List - Compact card style (match Payments page) */
+                <div className={cn("space-y-3")}>
           {filteredDeals.map((deal, index) => {
             const dealData = brandDeals.find(d => d.id === deal.id);
             const statusPill = getStatusPill(deal.status, dealData);
             const primaryAction = getPrimaryAction(deal.status, dealData);
-            
+            const dueDate = dealData?.payment_expected_date || dealData?.due_date;
+            const now = new Date();
+            const daysUntil = dueDate
+              ? Math.ceil((new Date(dueDate).getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
+              : null;
+            const dueLabel =
+              daysUntil === null
+                ? statusPill.label
+                : daysUntil < 0
+                  ? `Overdue by ${Math.abs(daysUntil)} day${Math.abs(daysUntil) !== 1 ? 's' : ''}`
+                  : daysUntil === 0
+                    ? 'Due today'
+                    : `Due in ${daysUntil} day${daysUntil !== 1 ? 's' : ''}`;
+
             return (
               <motion.div
                 key={deal.id}
                 initial={motionTokens.slide.up.initial}
                 animate={motionTokens.slide.up.animate}
                 transition={{ ...motionTokens.slide.up.transition, delay: index * 0.05 }}
-                whileHover={window.innerWidth > 768 ? animations.microHover : undefined}
+                whileHover={{ y: -2 }}
                 whileTap={animations.microTap}
-              >
-                <BaseCard 
-                  variant="secondary" 
-                  className={cn(
-                    animations.cardHover,
-                    "cursor-pointer relative overflow-hidden",
-                    "p-4 md:p-5" // Reduced padding for smaller height
-                  )}
-                  onClick={() => {
-                    triggerHaptic(HapticPatterns.light);
+                className="relative bg-white/5 backdrop-blur-xl rounded-xl p-3.5 border border-white/10 cursor-pointer transition-all duration-200 hover:bg-white/7 hover:border-white/15"
+                role="button"
+                tabIndex={0}
+                aria-label={`Deal: ${deal.brand} - ${statusPill.label}`}
+                onClick={() => {
+                  triggerHaptic(HapticPatterns.light);
+                  if (primaryAction.action === 'delivery_details') {
+                    navigate(`/creator-contracts/${deal.id}/delivery-details`);
+                  } else {
                     navigate(`/creator-contracts/${deal.id}`);
-                  }}
-                >
-                  {/* Brand Name and Amount - Primary Layout */}
-                  <div className={cn("flex items-start justify-between mb-3")}>
-                    <div className="flex-1 min-w-0">
-                      <h3 className={cn(typography.h4, "mb-0 font-semibold")}>{deal.brand}</h3>
-                    </div>
-                    <div className={cn("text-right ml-4 flex-shrink-0")}>
-                      <div className={cn("text-lg md:text-xl font-bold text-green-400")}>
-                        ₹{Math.round(deal.value).toLocaleString('en-IN')}
-                      </div>
-                    </div>
+                  }
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    if (primaryAction.action === 'delivery_details') {
+                      navigate(`/creator-contracts/${deal.id}/delivery-details`);
+                    } else {
+                      navigate(`/creator-contracts/${deal.id}`);
+                    }
+                  }
+                }}
+              >
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex-1 min-w-0">
+                    <h3 className="text-base font-bold text-white truncate">{deal.brand}</h3>
                   </div>
-
-                  {/* Status Pill */}
-                  <div className={cn("mb-3")}>
+                  <div className="flex-shrink-0 flex flex-col items-end gap-1.5">
+                    <div className="text-lg font-bold text-white">
+                      ₹{Math.round(deal.value).toLocaleString('en-IN')}
+                    </div>
                     <span className={cn(
-                      "inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border",
-                      statusPill.color
+                      "inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border",
+                      daysUntil !== null && daysUntil < 0
+                        ? "bg-red-500/20 text-red-400 border-red-500/30"
+                        : daysUntil === 0
+                          ? "bg-amber-500/20 text-amber-400 border-amber-500/30"
+                          : statusPill.color
                     )}>
-                      {statusPill.label}
+                      {dueLabel}
                     </span>
                   </div>
-
-                  {/* Primary Action Button */}
-                  <motion.button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      triggerHaptic(HapticPatterns.light);
-                      if (primaryAction.action === 'delivery_details') {
-                        navigate(`/creator-contracts/${deal.id}/delivery-details`);
-                      } else {
-                        navigate(`/creator-contracts/${deal.id}`);
-                      }
-                    }}
-                    whileTap={animations.microTap}
-                    className={cn(
-                      "w-full mt-3 px-4 py-2 rounded-lg text-sm font-medium transition-all",
-                      "bg-white/5 hover:bg-white/10 border border-white/10 text-white/90"
-                    )}
-                  >
-                    {primaryAction.label}
-                  </motion.button>
-                </BaseCard>
+                </div>
               </motion.div>
             );
           })}
@@ -983,6 +992,21 @@ const CreatorContracts = () => {
                         }}
                         variant="compact"
                       />
+                    ) : activeFilter === 'action_needed' ? (
+                      <div className="space-y-3">
+                        <p className="text-base font-semibold text-white">No deals need action right now</p>
+                        <p className="text-sm text-white/60">When a deal needs your attention, it will show up here.</p>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            triggerHaptic(HapticPatterns.light);
+                            setActiveFilter('all');
+                          }}
+                          className="text-sm font-medium text-purple-300 hover:text-purple-200 underline"
+                        >
+                          View all deals
+                        </button>
+                      </div>
                     ) : (
                       <FilteredNoMatchesEmptyState
                         onClearFilters={() => setActiveFilter('all' as 'all' | 'action_needed' | 'closed')}

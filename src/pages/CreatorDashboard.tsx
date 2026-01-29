@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from 'react';
-import { Home, Briefcase, CreditCard, Shield, TrendingUp, Calendar, FileText, AlertCircle, Clock, ChevronRight, Plus, Search, Target, BarChart3, RefreshCw, LogOut, Loader2, XCircle, Menu, Link2, Copy, ExternalLink } from 'lucide-react';
+import { Home, Briefcase, CreditCard, Shield, TrendingUp, Calendar, FileText, AlertCircle, Clock, ChevronRight, Plus, Search, Target, BarChart3, RefreshCw, LogOut, Loader2, XCircle, Menu, Link2, Copy, ExternalLink, Check, AlertTriangle } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { toast } from 'sonner';
 import { useSignOut } from '@/lib/hooks/useAuth';
@@ -77,6 +77,9 @@ const CreatorDashboard = () => {
   const [acceptingRequestId, setAcceptingRequestId] = useState<string | null>(null);
   const [declineRequestId, setDeclineRequestId] = useState<string | null>(null);
   const [showDeclineRequestDialog, setShowDeclineRequestDialog] = useState(false);
+  const [collabLinkCopied, setCollabLinkCopied] = useState(false);
+  const [collabRequestsLoading, setCollabRequestsLoading] = useState(true);
+  const [hintDismissed, setHintDismissed] = useState(false);
 
   const fetchPendingCollabRequestsPreview = async () => {
     try {
@@ -115,9 +118,11 @@ const CreatorDashboard = () => {
   // Pending collaboration requests (count + preview for decision-first inbox)
   useEffect(() => {
     let cancelled = false;
+    setCollabRequestsLoading(true);
     (async () => {
       if (cancelled) return;
       await fetchPendingCollabRequestsPreview();
+      if (!cancelled) setCollabRequestsLoading(false);
     })();
     return () => { cancelled = true; };
   }, [session?.user?.id]);
@@ -795,8 +800,8 @@ const CreatorDashboard = () => {
           "before:absolute before:inset-0 before:bg-gradient-to-b before:from-purple-500/10 before:to-transparent before:pointer-events-none"
         )}
         style={{
-          paddingTop: 'max(12px, env(safe-area-inset-top, 12px))',
-          paddingBottom: '10px',
+          paddingTop: 'max(8px, env(safe-area-inset-top, 8px))',
+          paddingBottom: '6px',
           paddingLeft: 'calc(16px + env(safe-area-inset-left, 0px))',
           paddingRight: 'calc(16px + env(safe-area-inset-right, 0px))',
         }}
@@ -817,7 +822,7 @@ const CreatorDashboard = () => {
         <div className={cn(
           "flex items-center justify-between gap-3",
           spacing.cardPadding.tertiary,
-          "py-2 relative z-10",
+          "py-1.5 relative z-10",
           // Better spacing on mobile
           "px-4 sm:px-5"
         )}>
@@ -1168,15 +1173,39 @@ const CreatorDashboard = () => {
             <div className={cn(
               "-mx-4 md:mx-0",
               "bg-gradient-to-br from-purple-500/10 via-purple-500/5 to-transparent",
-              "pt-6 pb-4 md:pt-8 md:pb-6",
+              "pt-4 pb-1 md:pt-5 md:pb-2",
               "px-4 md:px-0",
-              "lg:mb-6"
+              "lg:mb-1"
             )}>
               {/* Greeting */}
-              <div className={cn(sectionLayout.header, "md:pt-0 md:text-left")}>
-                <h1 className={cn(typography.h1, "mb-2 leading-tight md:text-xl whitespace-nowrap overflow-hidden text-ellipsis")}>
+              <div className={cn("mb-2 md:pt-0 md:text-left")}>
+                <h1 className={cn(typography.h1, "mb-0.5 leading-tight md:text-xl whitespace-nowrap overflow-hidden text-ellipsis")}>
                   {getGreeting()}, <span className="bg-gradient-to-r from-purple-400 to-pink-400 text-transparent bg-clip-text">{userData.name ? userData.name.charAt(0).toUpperCase() + userData.name.slice(1) : ''}!</span> 👋
                 </h1>
+                <p className={cn(typography.bodySmall, "text-white/70 mt-0.5")}>
+                  Here&apos;s what&apos;s happening with your collabs.
+                </p>
+                {/* Live region: announce count changes to screen readers */}
+                <div aria-live="polite" aria-atomic="true" className="sr-only">
+                  {pendingCollabRequestsCount === 0
+                    ? 'No brand requests pending'
+                    : `${pendingCollabRequestsCount} brand request${pendingCollabRequestsCount !== 1 ? 's' : ''} pending`}
+                </div>
+                {pendingCollabRequestsCount > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => { triggerHaptic(HapticPatterns.light); navigate('/collab-requests'); }}
+                    className={cn(
+                      "mt-1.5 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium",
+                      "bg-purple-500/25 text-purple-200 border border-purple-400/30",
+                      "hover:bg-purple-500/35 hover:border-purple-400/50 transition-colors"
+                    )}
+                    aria-label={`View ${pendingCollabRequestsCount} pending brand request${pendingCollabRequestsCount !== 1 ? 's' : ''}`}
+                  >
+                    <span>{pendingCollabRequestsCount} pending</span>
+                    <ChevronRight className="w-3 h-3" aria-hidden />
+                  </button>
+                )}
               </div>
 
             </div>
@@ -1184,20 +1213,35 @@ const CreatorDashboard = () => {
             {/* Decision-first dashboard: no extra above-fold cards */}
 
             {/* Incoming Brand Requests (highest priority) — same width as Active Collaborations */}
-            <div className={spacing.loose}>
-              <div className={sectionHeader.base}>
+            <div className={cn("space-y-6 md:space-y-8", "-mt-2")}>
+              <div className={cn(sectionHeader.base, "mb-3 md:mb-4")}>
                 <h2 className={sectionHeader.title}>Incoming Brand Requests</h2>
                 {pendingCollabRequestsCount > 0 && (
                   <button
                     type="button"
                     onClick={() => { triggerHaptic(HapticPatterns.light); navigate('/collab-requests'); }}
                     className={sectionHeader.action}
+                    aria-label={`View all ${pendingCollabRequestsCount} brand requests`}
                   >
                     View all →
                   </button>
                 )}
               </div>
-              {pendingCollabRequestsCount === 0 ? (
+              {collabRequestsLoading ? (
+                <BaseCard variant="tertiary" className="rounded-xl md:rounded-2xl p-4">
+                  <div className="flex items-center justify-between gap-2 mb-2">
+                    <div className="h-4 w-32 rounded bg-white/10 animate-pulse" />
+                    <div className="h-5 w-14 rounded-full bg-white/10 animate-pulse" />
+                  </div>
+                  <div className="h-3 w-full max-w-[200px] rounded bg-white/10 animate-pulse mb-1" />
+                  <div className="h-3 w-24 rounded bg-white/10 animate-pulse mb-3" />
+                  <div className="h-10 w-full rounded-lg bg-white/10 animate-pulse mb-2" />
+                  <div className="flex gap-2">
+                    <div className="h-9 flex-1 rounded-lg bg-white/10 animate-pulse" />
+                    <div className="h-9 flex-1 rounded-lg bg-white/10 animate-pulse" />
+                  </div>
+                </BaseCard>
+              ) : pendingCollabRequestsCount === 0 ? (
                 <BaseCard variant="tertiary" className={cn(spacing.cardPadding.secondary, "text-center")}>
                   <p className={typography.bodySmall}>No brand requests yet</p>
                   <p className={cn(typography.caption, "mt-1 text-purple-300/60")}>Share your collab link to receive requests.</p>
@@ -1228,51 +1272,56 @@ const CreatorDashboard = () => {
                     const brandNameDisplay = r.brand_name ? r.brand_name.charAt(0).toUpperCase() + r.brand_name.slice(1) : 'Brand';
 
                     const acceptBtn = (
-                      <button
-                        type="button"
-                        disabled={acceptingRequestId === r.id}
-                        onClick={() => { triggerHaptic(HapticPatterns.light); acceptCollabRequest(r.raw); }}
-                        className={cn(
-                          "w-full min-h-[38px] inline-flex items-center justify-center gap-2 rounded-lg font-semibold text-sm",
-                          "bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white",
-                          "transition-colors duration-200",
-                          acceptingRequestId === r.id && "opacity-70 pointer-events-none"
-                        )}
-                      >
-                        {acceptingRequestId === r.id ? <><Loader2 className="w-4 h-4 animate-spin" /> Accepting…</> : 'Accept Deal'}
-                      </button>
+                      <div>
+                        <button
+                          type="button"
+                          disabled={acceptingRequestId === r.id}
+                          onClick={() => { triggerHaptic(HapticPatterns.light); acceptCollabRequest(r.raw); }}
+                          className={cn(
+                            "w-full min-h-[38px] inline-flex items-center justify-center gap-2 rounded-lg font-semibold text-sm text-white",
+                            "transition-colors duration-200 shadow-[0_2px_12px_rgba(139,92,246,0.25)]",
+                            acceptingRequestId === r.id
+                              ? "bg-[#4C1D95] text-[#A78BFA] opacity-70 pointer-events-none cursor-not-allowed"
+                              : "bg-gradient-to-r from-[#8B5CF6] to-[#6366F1] hover:from-[#7C3AED] hover:to-[#4F46E5]"
+                          )}
+                        >
+                          {acceptingRequestId === r.id ? <><Loader2 className="w-4 h-4 animate-spin" /> Accepting…</> : <><Check className="w-4 h-4" /> Accept Deal</>}
+                        </button>
+                        <p className="text-[10px] text-white/50 mt-1.5 text-center">Contract auto-generated • No payment risk</p>
+                      </div>
                     );
                     const pill = (
                       <span className={cn("flex-shrink-0 px-2 py-0.5 rounded-full text-[10px] font-medium border", isBarter ? "bg-blue-500/20 text-blue-200 border-blue-500/30" : "bg-green-500/20 text-green-200 border-green-500/30")}>{typeLabel}</span>
                     );
 
                     return (
-                      <BaseCard variant="tertiary" className="!p-3 rounded-xl border border-white/10 shadow-lg shadow-black/10">
-                            <div className="flex items-center justify-between gap-2 min-w-0">
-                              <p className="font-bold text-white text-sm break-words flex-1 min-w-0">{brandNameDisplay}</p>
+                      <BaseCard variant="tertiary" className="rounded-xl md:rounded-2xl">
+                            <div className="flex items-center justify-between gap-2 min-w-0 mb-2">
+                              <p className="font-bold text-white text-sm truncate flex-1 min-w-0">{brandNameDisplay}</p>
                               {pill}
                             </div>
-                            <div className="flex flex-wrap gap-1.5 mt-2">
-                              <span className="inline-flex px-2 py-0.5 rounded-full text-[10px] font-medium bg-white/10 text-white border border-white/20">{offerDisplay}</span>
-                              <span className="inline-flex px-2 py-0.5 rounded-full text-[10px] font-medium bg-white/10 text-purple-200/90 border border-white/20">{deadline}</span>
-                            </div>
+                            <p className={cn(typography.caption, "text-white/70")}>{offerDisplay}</p>
+                            <p className={cn(typography.caption, "mt-1 text-white/50")}>Due: {deadline}</p>
                             <div className="mt-2">{acceptBtn}</div>
                             <div className="mt-2 flex items-center gap-2">
                               <button
                                 type="button"
                                 onClick={() => { triggerHaptic(HapticPatterns.light); navigate(`/collab-requests/${r.id}/counter`, { state: { request: r.raw } }); }}
-                                className="flex-1 min-h-[36px] rounded-lg border border-white/20 bg-white/5 text-white text-xs font-medium hover:bg-white/10 transition-colors"
+                                className="flex-1 min-h-[36px] rounded-lg border border-[#A78BFA] bg-transparent text-[#DDD6FE] text-xs font-medium hover:bg-purple-500/10 transition-colors"
                               >
                                 Counter
                               </button>
                               <button
                                 type="button"
                                 onClick={() => { triggerHaptic(HapticPatterns.light); setDeclineRequestId(r.id); setShowDeclineRequestDialog(true); }}
-                                className="flex-1 min-h-[36px] rounded-lg border border-white/20 bg-white/5 text-red-300/90 text-xs font-medium hover:bg-red-500/20 hover:border-red-500/30 transition-colors"
+                                className="flex-1 min-h-[36px] rounded-lg border border-red-700/50 bg-transparent text-[#FCA5A5] text-xs font-medium hover:bg-red-500/10 transition-colors"
                               >
                                 Decline
                               </button>
                             </div>
+                            <p className={cn(typography.caption, "mt-1.5 text-white/40 text-center")}>
+                              You can counter or decline anytime.
+                            </p>
                           </BaseCard>
                     );
                   })()}
@@ -1286,7 +1335,7 @@ const CreatorDashboard = () => {
               <div className="space-y-6 lg:space-y-4">
 
                 {/* Active Collaborations (accepted deals only) */}
-                <div className={spacing.loose}>
+                <div className="space-y-6 md:space-y-8">
                   <div className={sectionHeader.base}>
                     <h2 className={sectionHeader.title}>Active Collaborations</h2>
                     <button 
@@ -1324,8 +1373,9 @@ const CreatorDashboard = () => {
                         const toShow = risky.slice(0, 2);
                         if (toShow.length === 0) {
                           return (
-                            <BaseCard variant="tertiary" className={cn(spacing.cardPadding.secondary, "text-center border border-white/10")}>
+                            <BaseCard variant="tertiary" className={cn(spacing.cardPadding.secondary, "text-center border border-white/10 rounded-xl md:rounded-2xl")}>
                               <p className={typography.bodySmall}>All active collaborations look on track</p>
+                              <p className={cn(typography.caption, "mt-1 text-white/50")}>No payments or deliverables need attention right now.</p>
                               <button
                                 type="button"
                                 onClick={() => { triggerHaptic(HapticPatterns.light); navigate('/creator-contracts'); }}
@@ -1347,28 +1397,20 @@ const CreatorDashboard = () => {
                       >
                         <BaseCard 
                           variant="tertiary" 
-                          className={cn(
-                            animations.cardHover,
-                            "cursor-pointer relative overflow-hidden w-full",
-                            "p-4 md:p-5 rounded-2xl backdrop-blur-xl",
-                            "border border-purple-400/40 ring-1 ring-purple-400/15 shadow-md shadow-purple-500/10"
-                          )}
+                          className="rounded-xl md:rounded-2xl cursor-pointer hover:shadow-xl transition-shadow relative overflow-hidden w-full"
                           onClick={() => {
                             triggerHaptic(HapticPatterns.light);
                             navigate(`/creator-contracts/${deal.id}`);
                           }}
                         >
-                          {/* Spotlight on hover */}
-                          <div className={cn(vision.spotlight.hover, "opacity-0 group-hover:opacity-100")} />
-                          
-                          {/* Top row: Amount at risk (left) + Payment status (right) */}
-                          <div className="flex items-center justify-between gap-2 mb-2 flex-wrap">
-                            <span className={cn(
-                              typography.amountSmall,
-                              "text-orange-400 text-sm sm:text-base font-bold"
+                          {/* Top row: Deal name (left) + Payment status (right) — same position as Incoming card brand name */}
+                          <div className="flex items-center justify-between gap-2 min-w-0 mb-2">
+                            <h3 className={cn(
+                              typography.h4,
+                              "text-base sm:text-lg font-bold truncate flex-1 min-w-0"
                             )}>
-                              ₹{Math.round(deal.value).toLocaleString('en-IN')} at risk
-                            </span>
+                              {deal.title}
+                            </h3>
                             {deal.paymentStatus && (
                               <span className={cn(
                                 "px-2 py-0.5 rounded-full text-[10px] font-medium flex-shrink-0",
@@ -1383,50 +1425,74 @@ const CreatorDashboard = () => {
                             )}
                           </div>
 
-                          {/* Brand name + trust badge */}
-                          <div className="flex items-start justify-between gap-2 mb-2">
-                            <h3 className={cn(
-                              typography.h4, 
-                              "text-base sm:text-lg font-bold truncate flex-1"
-                            )}>
-                              {deal.title}
-                            </h3>
-                            {deal.trustBadge && (
-                              <span className={cn(
-                                "px-1.5 py-0.5 rounded-full text-[9px] font-medium flex-shrink-0 whitespace-nowrap opacity-80",
-                                deal.trustBadge === 'verified' && "bg-green-500/15 text-green-400/80 border border-green-500/20",
-                                deal.trustBadge === 'gst' && "bg-green-500/15 text-green-400/80 border border-green-500/20",
-                                deal.trustBadge === 'repeat' && "bg-purple-500/20 text-purple-300 border border-purple-500/30"
-                              )}>
-                                {deal.trustBadge === 'verified' && 'Verified'}
-                                {deal.trustBadge === 'gst' && 'GST Verified'}
-                                {deal.trustBadge === 'repeat' && 'Repeat'}
-                              </span>
-                            )}
-                          </div>
-
-                          {/* Middle: Contract + action + deliverables + due */}
+                          {/* Second row: Amount at risk + Due / days overdue */}
                           <div className={cn(
-                            "flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-white/70",
+                            "flex items-center justify-between gap-2 text-xs text-white/70",
                             typography.caption
                           )}>
-                            <span className={deal.status === 'signed' ? "text-green-400/80" : ""}>
-                              {deal.status === 'signed' ? 'Contract signed ✓' : (deal.status === 'active' ? 'Active ✓' : 'Negotiation')}
+                            <span className={cn(
+                              typography.amountSmall,
+                              "text-orange-400 text-sm font-bold"
+                            )}>
+                              ₹{Math.round(deal.value).toLocaleString('en-IN')} at risk
                             </span>
-                            {deal.nextAction && (
-                              <span>• {deal.nextAction}</span>
+                            {deal.deadline ? (() => {
+                              const due = new Date(deal.deadline);
+                              const now = new Date();
+                              const daysOverdue = due < now ? Math.ceil((now.getTime() - due.getTime()) / (24 * 60 * 60 * 1000)) : 0;
+                              return (
+                                <span className="whitespace-nowrap">
+                                  {daysOverdue > 0 ? (
+                                    <span className="text-red-300/90 font-medium">{daysOverdue} day{daysOverdue !== 1 ? 's' : ''} overdue</span>
+                                  ) : (
+                                    <>Due: {deal.deadline}</>
+                                  )}
+                                </span>
+                              );
+                            })() : (
+                              <span className="whitespace-nowrap">Due: —</span>
                             )}
-                            {deal.deliverablesProgress && deal.deliverablesProgress.total > 0 && (
-                              <span>• {deal.deliverablesProgress.delivered}/{deal.deliverablesProgress.total} submitted</span>
+                          </div>
+                          {/* Third row: deliverable / next action (below amount at risk) */}
+                          <div className={cn(
+                            "flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-white/70 mt-1",
+                            typography.caption
+                          )}>
+                            {deal.nextAction && deal.deliverablesProgress && deal.deliverablesProgress.total > 0 ? (
+                              <span>• {deal.nextAction} ({deal.deliverablesProgress.delivered}/{deal.deliverablesProgress.total})</span>
+                            ) : (
+                              <>
+                                {deal.nextAction && <span>• {deal.nextAction}</span>}
+                                {deal.deliverablesProgress && deal.deliverablesProgress.total > 0 && (
+                                  <span>• {deal.deliverablesProgress.delivered}/{deal.deliverablesProgress.total} submitted</span>
+                                )}
+                              </>
                             )}
-                            <span className="whitespace-nowrap ml-auto">Due: {deal.deadline}</span>
                           </div>
 
-                          {/* Bottom: Primary CTA */}
+                          {/* Bottom: Primary CTA — button style for clarity */}
                           <div className="mt-3 pt-2 border-t border-white/10">
-                            <span className={cn(sectionHeader.action, "text-xs font-semibold")}>
-                              {deal.paymentStatus === 'overdue' ? 'Resolve Payment' : 'Take Action'}
-                            </span>
+                            {deal.paymentStatus === 'overdue' ? (
+                              <>
+                                <span className={cn(
+                                  "inline-flex items-center justify-center gap-1.5 w-full min-h-[36px] rounded-lg text-xs font-semibold text-white",
+                                  "bg-gradient-to-r from-[#EF4444] to-[#F97316] hover:from-[#DC2626] hover:to-[#EA580C] transition-colors shadow-[0_2px_12px_rgba(239,68,68,0.3)]",
+                                  deal.deadline && (Date.now() - new Date(deal.deadline).getTime() > 3 * 24 * 60 * 60 * 1000) && "animate-pulse"
+                                )}>
+                                  <AlertTriangle className="w-3.5 h-3.5" />
+                                  Resolve Payment
+                                  <ChevronRight className="w-3.5 h-3.5" />
+                                </span>
+                                <p className={cn(typography.caption, "mt-1 text-center text-white/40")}>
+                                  Opens contract to resolve payment
+                                </p>
+                              </>
+                            ) : (
+                              <span className={cn("inline-flex items-center justify-center gap-1.5 text-xs font-semibold text-purple-200", sectionHeader.action)}>
+                                View deal
+                                <ChevronRight className="w-3.5 h-3.5" />
+                              </span>
+                            )}
                           </div>
                         </BaseCard>
                       </motion.div>
@@ -1437,13 +1503,37 @@ const CreatorDashboard = () => {
                 </div>
 
                 {/* Collab Link — utility card (Copy | Preview only) */}
-                <div className={spacing.loose}>
-                  <p className={cn(typography.bodySmall, "text-white/70 mb-2")}>All brand deals start here</p>
+                <div className="space-y-6 md:space-y-8">
+                  <div className="flex items-center gap-2">
+                    <Link2 className="w-4 h-4 text-purple-300 flex-shrink-0" />
+                    <p className={cn("text-sm font-medium text-white/90")}>All brand deals start here</p>
+                  </div>
                   {(profile?.instagram_handle || profile?.username) ? (
                     <BaseCard variant="tertiary" className="p-4 border border-white/10">
-                      <code className="block w-full truncate text-sm text-purple-200 bg-white/5 px-3 py-2 rounded-lg border border-white/10">
-                        creatorarmour.com/collab/{profile?.instagram_handle || profile?.username}
-                      </code>
+                      <div className="flex items-center gap-2">
+                        <code className="flex-1 min-w-0 truncate text-sm text-purple-200 bg-white/5 px-3 py-2 rounded-lg border border-white/10">
+                          creatorarmour.com/collab/{profile?.instagram_handle || profile?.username}
+                        </code>
+                        <motion.button
+                          type="button"
+                          aria-label="Copy link"
+                          whileTap={animations.microTap}
+                          onClick={() => {
+                            const link = `${typeof window !== 'undefined' ? window.location.origin : ''}/collab/${profile?.instagram_handle || profile?.username}`;
+                            navigator.clipboard?.writeText(link);
+                            setCollabLinkCopied(true);
+                            toast.success('Link copied');
+                            triggerHaptic(HapticPatterns.light);
+                            setTimeout(() => setCollabLinkCopied(false), 2000);
+                          }}
+                          className={cn(
+                            "flex-shrink-0 p-2 rounded-lg border transition-colors",
+                            collabLinkCopied ? "bg-green-500/20 border-green-500/40 text-green-300" : "border-white/20 bg-white/5 text-purple-200 hover:bg-white/10"
+                          )}
+                        >
+                          {collabLinkCopied ? <span className="text-xs font-medium">Copied!</span> : <Copy className="w-4 h-4" />}
+                        </motion.button>
+                      </div>
                       <div className="mt-3 flex gap-2">
                         <motion.button
                           type="button"
@@ -1451,8 +1541,10 @@ const CreatorDashboard = () => {
                           onClick={() => {
                             const link = `${typeof window !== 'undefined' ? window.location.origin : ''}/collab/${profile?.instagram_handle || profile?.username}`;
                             navigator.clipboard?.writeText(link);
+                            setCollabLinkCopied(true);
                             toast.success('Link copied');
                             triggerHaptic(HapticPatterns.light);
+                            setTimeout(() => setCollabLinkCopied(false), 2000);
                           }}
                           className={cn(buttons.secondary, "flex-1 min-h-[44px] flex items-center justify-center gap-2 text-purple-100 border-purple-400/40")}
                         >
@@ -1476,7 +1568,7 @@ const CreatorDashboard = () => {
                 </div>
 
                 {/* Collab Link Analytics — below Collab Link on home */}
-                <div className={spacing.loose}>
+                <div className="space-y-6 md:space-y-8">
                   <CollabLinkAnalytics />
                 </div>
 
@@ -1485,7 +1577,7 @@ const CreatorDashboard = () => {
 
                 {/* Legal Power: only show when a payment is overdue */}
                 {hasPaymentOverdue && (
-                <div className={spacing.loose}>
+                <div className="space-y-6 md:space-y-8">
                   <BaseCard variant="secondary" className={cn("relative overflow-hidden")}>
                     {/* Background glow */}
                     <div className={cn("absolute top-0 right-0 w-32 h-32", radius.full, "bg-orange-500/10 blur-3xl")} />
@@ -1496,6 +1588,9 @@ const CreatorDashboard = () => {
                           <h3 className={cn(typography.h3, "mb-2")}>Legal Power Ready</h3>
                           <p className={cn(typography.bodySmall, "text-purple-200")}>
                             Send a legal notice instantly if a brand delays or refuses payment.
+                          </p>
+                          <p className={cn(typography.caption, "mt-1 text-purple-300/80")}>
+                            A formal notice is sent to the brand to resolve the payment.
                           </p>
                         </div>
                         <div className={cn(
@@ -1523,6 +1618,9 @@ const CreatorDashboard = () => {
                           <Shield className={iconSizes.md} />
                           Send Legal Notice
                         </motion.button>
+                        <p className={cn(typography.caption, "text-center text-purple-300/70")}>
+                          We&apos;ll send a formal notice to the brand
+                        </p>
                         <p className={cn(typography.caption, "text-center text-purple-300/60")}>
                           Includes free legal notices & lawyer reviews
                         </p>
@@ -1598,8 +1696,8 @@ const CreatorDashboard = () => {
 
                 {/* Optional Calm-State Nudge - Show when Action Required = 0 and Money at risk = 0 */}
                 {Math.round(stats.pendingPayments) === 0 && stats.earnings === 0 && (() => {
-                  const hintDismissed = localStorage.getItem(`dashboard-hint-dismissed-${user?.id || 'anonymous'}`);
-                  if (hintDismissed === 'true') return null;
+                  const stored = typeof window !== 'undefined' && localStorage.getItem(`dashboard-hint-dismissed-${user?.id || 'anonymous'}`) === 'true';
+                  if (hintDismissed || stored) return null;
                   
                   return (
                     <motion.div
@@ -1607,6 +1705,7 @@ const CreatorDashboard = () => {
                       animate={{ opacity: 1, y: 0 }}
                       className="mb-4 px-2"
                     >
+                      <div aria-live="polite" aria-atomic="true" className="sr-only" id="dashboard-hint-live" />
                       <BaseCard variant="secondary" className={cn(
                         "relative p-4",
                         "bg-gradient-to-r from-purple-500/10 to-indigo-500/10",
@@ -1619,7 +1718,10 @@ const CreatorDashboard = () => {
                           <button
                             onClick={() => {
                               localStorage.setItem(`dashboard-hint-dismissed-${user?.id || 'anonymous'}`, 'true');
+                              setHintDismissed(true);
                               triggerHaptic(HapticPatterns.light);
+                              const live = document.getElementById('dashboard-hint-live');
+                              if (live) live.textContent = 'Tip dismissed';
                             }}
                             className="flex-shrink-0 text-purple-300/60 hover:text-purple-300 transition-colors"
                             aria-label="Dismiss hint"

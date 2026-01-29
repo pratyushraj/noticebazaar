@@ -6,6 +6,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import {
   Briefcase,
+  Check,
   CheckCircle2,
   XCircle,
   Loader2,
@@ -280,12 +281,12 @@ const CollabRequestsPage = () => {
                   )}
                 >
                   {/* Header: Incoming Brand Request — darker purple band */}
-                  <div className="bg-gradient-to-r from-purple-800/90 to-indigo-800/90 px-4 py-3 text-center border-b border-white/10">
-                    <h2 className="text-base font-bold text-white tracking-tight">
+                  <div className="bg-gradient-to-r from-purple-800/90 to-indigo-800/90 px-4 py-2 text-center border-b border-white/10">
+                    <h2 className="text-sm font-bold text-white tracking-tight">
                       Incoming Brand Request
                     </h2>
                   </div>
-                  <CardContent className="p-4 flex flex-col flex-1 space-y-4">
+                  <CardContent className="p-3 flex flex-col flex-1 space-y-3">
                     {/* Brand name + Barter tag on same row; contact below */}
                     <div>
                       <div className="flex items-start justify-between gap-2">
@@ -306,7 +307,7 @@ const CollabRequestsPage = () => {
 
                     {/* Estimated value — gift icon + label + bold ₹ */}
                     <div className="flex items-center gap-2">
-                      <Gift className="h-5 w-5 text-purple-300/90 shrink-0" aria-hidden />
+                      <Gift className="h-4 w-4 text-purple-300/90 shrink-0" aria-hidden />
                       <span className="text-sm text-white/80">Estimated value</span>
                       <span className="text-base font-bold text-white ml-auto">
                         {formatBudget(request)}
@@ -322,7 +323,7 @@ const CollabRequestsPage = () => {
 
                     {/* Product preview — large image, label bottom-left, date top-right */}
                     {(request.collab_type === 'barter' || request.collab_type === 'both') && (request.barter_product_image_url || failedBarterImages[request.id]) && (
-                      <div className="w-full rounded-xl overflow-hidden bg-white/[0.08] border border-white/10 aspect-[4/3] min-h-[140px] relative">
+                      <div className="w-full rounded-lg overflow-hidden bg-white/[0.08] border border-white/10 aspect-[4/3] min-h-[120px] relative">
                         {request.barter_product_image_url && !failedBarterImages[request.id] ? (
                           <>
                             <span className="absolute bottom-2 left-2 z-10 px-2 py-1 rounded-lg text-[10px] font-medium text-white/95 bg-black/50 backdrop-blur-sm">
@@ -359,7 +360,7 @@ const CollabRequestsPage = () => {
 
                     {/* Deliverables — pill tags (always visible) */}
                     {deliverablesList.length > 0 && (
-                      <div className="flex flex-wrap gap-2">
+                      <div className="flex flex-wrap gap-1.5">
                         {deliverablesList.slice(0, 5).map((d, idx) => (
                           <span
                             key={idx}
@@ -376,7 +377,7 @@ const CollabRequestsPage = () => {
 
                     {/* Expanded: campaign description + open full brief */}
                     {isExpanded && (
-                      <div className="space-y-2 pt-2 border-t border-white/10" onClick={(e) => e.stopPropagation()}>
+                      <div className="space-y-1.5 pt-1.5 border-t border-white/10" onClick={(e) => e.stopPropagation()}>
                         {request.campaign_description && (
                           <p className="text-sm text-purple-200/90 line-clamp-3 leading-snug">
                             {request.campaign_description}
@@ -395,33 +396,40 @@ const CollabRequestsPage = () => {
                       <p className="text-xs text-purple-300/60">Tap to expand</p>
                     )}
 
-                    {/* Primary CTA — Accept Deal (full-width gradient); Counter | Decline with icons */}
-                    <div className="mt-auto pt-2 space-y-3">
-                      <Button
-                        type="button"
-                        disabled={acceptingRequestId === request.id}
-                        onClick={(e) => { e.stopPropagation(); acceptRequest(request); }}
-                        className={cn(
-                          "w-full min-h-[48px] font-bold text-white rounded-xl",
-                          "bg-gradient-to-r from-purple-500 via-purple-600 to-pink-500 hover:from-purple-400 hover:via-purple-500 hover:to-pink-400",
-                          "shadow-[0_4px_20px_rgba(168,85,247,0.4)]",
-                          "border-0 transition-all duration-200"
-                        )}
-                      >
-                        {acceptingRequestId === request.id ? (
-                          <>
-                            <Loader2 className="h-4 w-4 animate-spin flex-shrink-0 mr-2" />
-                            Generating contract…
-                          </>
-                        ) : (
-                          'Accept Deal'
-                        )}
-                      </Button>
-                      <div className="flex items-center justify-center gap-3 py-1">
+                    {/* Primary CTA — Accept Deal (Purple→Blue); Counter (outline); Decline (soft red) */}
+                    <div className="mt-auto pt-1.5 space-y-2.5">
+                      <div>
+                        <Button
+                          type="button"
+                          disabled={acceptingRequestId === request.id}
+                          onClick={(e) => { e.stopPropagation(); acceptRequest(request); }}
+                          className={cn(
+                            "w-full min-h-[44px] font-bold text-white rounded-xl text-sm transition-colors duration-200",
+                            "shadow-[0_2px_12px_rgba(139,92,246,0.25)] border-0",
+                            acceptingRequestId === request.id
+                              ? "bg-[#4C1D95] text-[#A78BFA] opacity-70 cursor-not-allowed"
+                              : "bg-gradient-to-r from-[#8B5CF6] to-[#6366F1] hover:from-[#7C3AED] hover:to-[#4F46E5]"
+                          )}
+                        >
+                          {acceptingRequestId === request.id ? (
+                            <>
+                              <Loader2 className="h-4 w-4 animate-spin flex-shrink-0 mr-2" />
+                              Generating contract…
+                            </>
+                          ) : (
+                            <>
+                              <Check className="h-4 w-4 shrink-0 mr-2" aria-hidden />
+                              Accept Deal
+                            </>
+                          )}
+                        </Button>
+                        <p className="text-[10px] text-white/50 mt-1.5 text-center">Contract auto-generated • No payment risk</p>
+                      </div>
+                      <div className="flex items-center justify-center gap-3 py-0.5">
                         <button
                           type="button"
                           onClick={(e) => { e.stopPropagation(); navigate(`/collab-requests/${request.id}/counter`, { state: { request } }); }}
-                          className="inline-flex items-center gap-1.5 text-sm text-purple-200/90 hover:text-white font-medium"
+                          className="inline-flex items-center gap-1.5 text-sm font-medium border border-[#A78BFA] bg-transparent text-[#DDD6FE] hover:bg-purple-500/10 rounded-lg px-3 py-2 transition-colors"
                         >
                           <FileEdit className="h-4 w-4 shrink-0" aria-hidden />
                           Counter
@@ -430,7 +438,7 @@ const CollabRequestsPage = () => {
                         <button
                           type="button"
                           onClick={(e) => { e.stopPropagation(); openDeclineConfirm(request); }}
-                          className="inline-flex items-center gap-1.5 text-sm text-red-300/90 hover:text-red-200 font-medium"
+                          className="inline-flex items-center gap-1.5 text-sm font-medium border border-red-700/50 bg-transparent text-[#FCA5A5] hover:bg-red-500/10 rounded-lg px-3 py-2 transition-colors"
                           aria-label="Decline"
                         >
                           <XCircle className="h-4 w-4 shrink-0" aria-hidden />

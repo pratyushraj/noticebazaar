@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { TrendingUp, TrendingDown, Eye, Send, BarChart3, Loader2 } from 'lucide-react';
+import { TrendingUp, TrendingDown, Eye, Send, BarChart3, Loader2, Smartphone, Monitor, Tablet } from 'lucide-react';
 import { useSession } from '@/contexts/SessionContext';
 import { supabase } from '@/integrations/supabase/client';
 import { getApiBaseUrl } from '@/lib/utils/api';
@@ -125,7 +125,7 @@ const CollabLinkAnalytics: React.FC = () => {
     );
   }
 
-  // No data yet — compact placeholder, reinforce collab-link-first
+  // No data yet — compact placeholder
   if (!analytics) {
     return (
       <Card className="bg-white/5 backdrop-blur-md border-white/10">
@@ -134,7 +134,7 @@ const CollabLinkAnalytics: React.FC = () => {
             <BarChart3 className="h-4 w-4 text-purple-400" />
             <h3 className="text-sm font-semibold text-white break-words">Collab Link Analytics</h3>
           </div>
-          <p className="text-xs text-purple-300/70 break-words">Share your collab link to start seeing analytics</p>
+          <p className="text-xs text-purple-300/70 break-words">Share your link to get your first view</p>
         </CardContent>
       </Card>
     );
@@ -182,6 +182,7 @@ const CollabLinkAnalytics: React.FC = () => {
           <div className="flex gap-1">
             <button
               onClick={() => setPeriod('7')}
+              aria-label="Last 7 days"
               className={`px-2 py-0.5 text-[10px] rounded transition-colors ${
                 period === '7'
                   ? 'bg-purple-600 text-white'
@@ -192,6 +193,7 @@ const CollabLinkAnalytics: React.FC = () => {
             </button>
             <button
               onClick={() => setPeriod('30')}
+              aria-label="Last 30 days"
               className={`px-2 py-0.5 text-[10px] rounded transition-colors ${
                 period === '30'
                   ? 'bg-purple-600 text-white'
@@ -253,50 +255,39 @@ const CollabLinkAnalytics: React.FC = () => {
           </div>
         </div>
 
-        {/* Device Breakdown - Compact */}
+        {/* Device Breakdown - Compact with icons */}
         {analytics.deviceBreakdown && (analytics.deviceBreakdown.mobile > 0 || analytics.deviceBreakdown.desktop > 0 || analytics.deviceBreakdown.tablet > 0) && (
           <div className="flex gap-1.5">
             {analytics.deviceBreakdown.mobile > 0 && (
-              <div className="flex-1 bg-white/5 rounded px-2 py-1 text-center border border-white/10">
-                <p className="text-[10px] text-purple-300">Mobile</p>
-                <p className="text-xs font-semibold text-white">
-                  {analytics.deviceBreakdown.mobile}
-                </p>
+              <div className="flex-1 bg-white/5 rounded px-2 py-1 flex items-center justify-center gap-1 border border-white/10">
+                <Smartphone className="h-3 w-3 text-purple-400 flex-shrink-0" aria-hidden />
+                <span className="text-xs font-semibold text-white">{analytics.deviceBreakdown.mobile}</span>
               </div>
             )}
             {analytics.deviceBreakdown.desktop > 0 && (
-              <div className="flex-1 bg-white/5 rounded px-2 py-1 text-center border border-white/10">
-                <p className="text-[10px] text-purple-300">Desktop</p>
-                <p className="text-xs font-semibold text-white">
-                  {analytics.deviceBreakdown.desktop}
-                </p>
+              <div className="flex-1 bg-white/5 rounded px-2 py-1 flex items-center justify-center gap-1 border border-white/10">
+                <Monitor className="h-3 w-3 text-purple-400 flex-shrink-0" aria-hidden />
+                <span className="text-xs font-semibold text-white">{analytics.deviceBreakdown.desktop}</span>
               </div>
             )}
             {analytics.deviceBreakdown.tablet > 0 && (
-              <div className="flex-1 bg-white/5 rounded px-2 py-1 text-center border border-white/10">
-                <p className="text-[10px] text-purple-300">Tablet</p>
-                <p className="text-xs font-semibold text-white">
-                  {analytics.deviceBreakdown.tablet}
-                </p>
+              <div className="flex-1 bg-white/5 rounded px-2 py-1 flex items-center justify-center gap-1 border border-white/10">
+                <Tablet className="h-3 w-3 text-purple-400 flex-shrink-0" aria-hidden />
+                <span className="text-xs font-semibold text-white">{analytics.deviceBreakdown.tablet}</span>
               </div>
             )}
           </div>
         )}
 
-        {/* Helper text below */}
+        {/* Helper text — one primary line */}
         <div className="mt-2 pt-2 border-t border-white/10">
           <p className="text-xs text-purple-300/70 text-center">
-            Share your collab link to start seeing analytics
+            {analytics.views.total === 0
+              ? 'Share your link to get your first view'
+              : analytics.submissions.total > 0
+                ? 'Faster replies improve deal closure'
+                : 'Share your link to see these stats'}
           </p>
-          {analytics.views.total === 0 ? null : analytics.submissions.total > 0 ? (
-            <p className="text-xs text-purple-300/70 text-center mt-0.5">
-              Faster replies improve deal closure
-            </p>
-          ) : (
-            <p className="text-xs text-purple-300/80 text-center leading-relaxed">
-              Brands are viewing your profile — faster replies increase conversions
-            </p>
-          )}
         </div>
       </CardContent>
     </Card>
