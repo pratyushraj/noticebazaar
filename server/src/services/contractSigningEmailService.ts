@@ -69,7 +69,7 @@ export async function sendBrandSigningConfirmationEmail(
     // Construct signed agreement URL
     const signedAgreementUrl = dealData.contractUrl 
       ? dealData.contractUrl 
-      : `${process.env.FRONTEND_URL || 'https://creatorarmour.com'}/#/creator-contracts/${dealData.dealId}`;
+      : `${process.env.FRONTEND_URL || 'https://creatorarmour.com'}/creator-contracts/${dealData.dealId}`;
 
     const emailSubject = `Agreement Signed Successfully — Creator Armour`;
     
@@ -247,7 +247,7 @@ export async function sendCreatorSigningNotificationEmail(
         })
       : 'Not specified';
 
-    const dealLink = `${process.env.FRONTEND_URL || 'https://creatorarmour.com'}/#/creator-contracts/${dealData.dealId}`;
+    const dealLink = `${process.env.FRONTEND_URL || 'https://creatorarmour.com'}/creator-contracts/${dealData.dealId}`;
 
     const emailSubject = `🎉 ${dealData.brandName} Has Signed Your Collaboration Agreement!`;
     const emailHtml = `
@@ -397,7 +397,7 @@ export async function sendCreatorSigningConfirmationEmail(
         })
       : 'Not specified';
 
-    const dealLink = `${process.env.FRONTEND_URL || 'https://creatorarmour.com'}/#/creator-contracts/${dealData.dealId}`;
+    const dealLink = `${process.env.FRONTEND_URL || 'https://creatorarmour.com'}/creator-contracts/${dealData.dealId}`;
 
     const emailSubject = `✅ You've Successfully Signed the Agreement with ${dealData.brandName}`;
     const emailHtml = `

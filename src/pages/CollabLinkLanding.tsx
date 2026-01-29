@@ -1124,10 +1124,12 @@ const CollabLinkLanding = () => {
                 type="submit"
                 disabled={submitting || Object.keys(errors).length > 0}
                 className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white border-0 shadow-lg shadow-purple-500/30 h-14 text-lg font-bold disabled:opacity-50 disabled:cursor-not-allowed"
+                aria-label={submitting ? 'Submitting collaboration request' : 'Submit secure collaboration request'}
+                aria-busy={submitting}
               >
                 {submitting ? (
                   <>
-                    <Loader2 className="h-5 w-5 mr-2 animate-spin" />
+                    <Loader2 className="h-5 w-5 mr-2 animate-spin" aria-hidden />
                     Submitting...
                   </>
                 ) : (

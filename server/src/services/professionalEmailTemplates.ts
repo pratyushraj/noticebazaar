@@ -22,6 +22,8 @@ interface CollaborationRequestCardProps {
   budget: string;
   timeline?: string;
   notes?: string;
+  /** Barter: optional product image URL to show in the request card */
+  barterProductImageUrl?: string | null;
 }
 
 /**
@@ -149,7 +151,19 @@ function getCollaborationRequestCard(props: CollaborationRequestCardProps): stri
               </td>
             </tr>
           </table>
-          
+          ${props.barterProductImageUrl ? `
+          <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin-bottom: 20px;">
+            <tr>
+              <td style="padding: 0 0 16px 0; border-bottom: 1px solid #e2e8f0;">
+                <p style="margin: 0 0 8px 0; font-size: 13px; font-weight: 600; color: #4a5568;">Barter product</p>
+                <div style="background-color: #f1f5f9; border-radius: 10px; border: 1px solid #e2e8f0; width: 120px; height: 120px; overflow: hidden; display: inline-block;">
+                  <img src="${props.barterProductImageUrl}" alt="Barter product" width="120" height="120" style="display: block; width: 120px; height: 120px; object-fit: cover; border-radius: 10px; background-color: #f1f5f9;" />
+                </div>
+                <p style="margin: 6px 0 0 0; font-size: 11px; color: #94a3b8;">Tap &quot;Show pictures&quot; if the image doesn&apos;t load.</p>
+              </td>
+            </tr>
+          </table>
+          ` : ''}
           <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="border-collapse: collapse;">
             <tr>
               <td style="padding: 12px 0; color: #2d3748; font-size: 14px; width: 35%; vertical-align: top; font-weight: 600; border-bottom: 1px solid #e2e8f0;"><strong>Brand:</strong></td>
@@ -281,9 +295,15 @@ function getTrustLine(): string {
   return `
     <tr>
       <td style="padding: 0 32px 24px 32px; text-align: center;">
+        <p style="margin: 0 0 4px 0; font-size: 14px; font-weight: 600; color: #2d3748;">Protected by Creator Armour</p>
         <p style="margin: 0; color: #718096; font-size: 13px; line-height: 1.5;">
-          All collaborations include contracts, payment tracking, and dispute support.
+          Building authentic brand-creator partnerships with contracts, delivery tracking, and professional dispute handling.
         </p>
+        <table role="presentation" cellspacing="0" cellpadding="0" border="0" align="center" style="margin-top: 12px;">
+          <tr><td style="color: #10b981; font-size: 13px; padding: 2px 8px 2px 0;">✓</td><td style="color: #4a5568; font-size: 13px;">All collaborations include contracts</td></tr>
+          <tr><td style="color: #10b981; font-size: 13px; padding: 2px 8px 2px 0;">✓</td><td style="color: #4a5568; font-size: 13px;">Barter deliveries tracked transparently</td></tr>
+          <tr><td style="color: #10b981; font-size: 13px; padding: 2px 8px 2px 0;">✓</td><td style="color: #4a5568; font-size: 13px;">Platform handles any disputes professionally</td></tr>
+        </table>
       </td>
     </tr>
   `;
@@ -299,7 +319,7 @@ function getUrgencyLine(): string {
         <table role="presentation" cellspacing="0" cellpadding="0" border="0" align="center">
           <tr>
             <td style="color: #718096; font-size: 13px; line-height: 1.5;">
-              ⏱ Respond within 48 hours to keep the brand engaged
+              ⏱ Reply within 48 hours to increase your chances of a successful collab.
             </td>
           </tr>
         </table>
@@ -395,6 +415,7 @@ export function getCreatorNotificationEmailTemplate(data: {
   acceptUrl?: string;
   counterUrl?: string;
   declineUrl?: string;
+  barterProductImageUrl?: string | null;
 }): string {
   const mainContent = `
     ${getEmailHeader(data.brandName)}
@@ -414,6 +435,7 @@ export function getCreatorNotificationEmailTemplate(data: {
       budget: data.budget,
       timeline: data.timeline,
       notes: data.notes,
+      barterProductImageUrl: data.barterProductImageUrl,
     })}
     ${getPrimaryCTA('View Full Request', data.viewRequestUrl)}
     ${getUrgencyLine()}

@@ -846,7 +846,7 @@ router.patch('/:dealId/delivery-details', async (req: AuthenticatedRequest, res:
         try {
           const { token: shippingToken } = await createShippingToken({ dealId });
           const frontendUrl = process.env.FRONTEND_URL || 'https://creatorarmour.com';
-          const shippingLink = `${frontendUrl}/#/ship/${shippingToken}`;
+          const shippingLink = `${frontendUrl}/ship/${shippingToken}`;
           const productDescription = deliverablesArray.length > 0 ? deliverablesArray.join(', ') : 'Product';
           if (deal.brand_email) {
             sendBrandShippingUpdateEmail(deal.brand_email, {

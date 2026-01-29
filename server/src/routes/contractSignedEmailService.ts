@@ -199,7 +199,7 @@ async function sendCreatorSignedEmail(
   }
 
   const baseUrl = process.env.FRONTEND_URL || 'https://creatorarmour.com';
-  const dealUrl = `${baseUrl}/#/creator-contracts/${dealId}`;
+  const dealUrl = `${baseUrl}/creator-contracts/${dealId}`;
 
   const emailHtml = `
     <!DOCTYPE html>

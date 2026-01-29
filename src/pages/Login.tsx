@@ -1,25 +1,34 @@
 "use client";
 
 import { supabase } from '@/integrations/supabase/client';
-import { Scale, ArrowLeft } from 'lucide-react';
+import { Scale, ArrowLeft, Loader2 } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useSession } from '@/contexts/SessionContext';
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import BiometricLogin from '@/components/auth/BiometricLogin';
 import { toast } from 'sonner';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
+const LOGIN_LOADING_TIMEOUT_MS = 4000;
+
 const Login = () => {
   const navigate = useNavigate();
-  const { session, loading, user } = useSession();
-  const [passkeyEmail, setPasskeyEmail] = useState('');
-  const [showPasskeyAuth, setShowPasskeyAuth] = useState(false);
+  const { session, loading } = useSession();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [showFaceIDLogin, setShowFaceIDLogin] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [loadingTimedOut, setLoadingTimedOut] = useState(false);
+
+  // If session check takes too long (e.g. network/Supabase slow), show form so user isn't stuck
+  useEffect(() => {
+    if (!loading) {
+      setLoadingTimedOut(false);
+      return;
+    }
+    const timer = setTimeout(() => setLoadingTimedOut(true), LOGIN_LOADING_TIMEOUT_MS);
+    return () => clearTimeout(timer);
+  }, [loading]);
 
   useEffect(() => {
     // Check for OAuth errors in query parameters first
@@ -116,27 +125,6 @@ const Login = () => {
     }
   }, [session, loading, navigate]);
 
-  const handlePasskeyAuthSuccess = async () => {
-    // Wait a moment for session to update
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    // Check if we have a session now
-    const { data: { session: newSession } } = await supabase.auth.getSession();
-    
-    if (newSession) {
-      toast.success('Biometric authentication successful!');
-      navigate('/', { replace: true });
-    } else {
-      // Session might be created via email OTP, show message
-      toast.info('Please check your email to complete sign-in');
-    }
-  };
-
-  const handlePasskeyRegisterSuccess = () => {
-    toast.success('Passkey registered! You can now use it to sign in.');
-    setShowPasskeyAuth(false);
-  };
-
   const handleEmailPasswordLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -223,131 +211,97 @@ const Login = () => {
           <h2 className="text-3xl font-bold text-white mb-2">Sign In</h2>
           <p className="text-white/80 text-sm">Access your account to manage your deals and earnings.</p>
         </div>
+
+        {/* Loading: wait for session (with timeout so user isn't stuck) */}
+        {loading && !loadingTimedOut && !session && (
+          <div className="mb-6 flex flex-col items-center justify-center py-8 gap-3">
+            <Loader2 className="h-8 w-8 animate-spin text-white/70" aria-hidden />
+            <p className="text-white/70 text-sm">Loading...</p>
+          </div>
+        )}
+
+        {/* Already signed in: always show Go to Dashboard so user is never stuck */}
+        {session && (
+          <div className="mb-6 space-y-4">
+            <p className="text-white/80 text-sm text-center">
+              {loading ? 'Checking your account…' : "You're signed in. Taking you to the dashboard…"}
+            </p>
+            <Button
+              onClick={() => window.location.replace('/creator-dashboard')}
+              className="w-full bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white font-semibold h-12 rounded-xl shadow-lg"
+            >
+              Go to Dashboard
+            </Button>
+          </div>
+        )}
+
+        {/* Timed out: show form so user can sign in */}
+        {loading && loadingTimedOut && !session && (
+          <p className="text-white/60 text-xs text-center mb-4">Taking longer than usual? Sign in below.</p>
+        )}
         
-        {/* Primary: Email/Password Login */}
-        {!session && (
+        {/* Primary: Email/Password Login — show when not loading, or when loading timed out */}
+        {(!loading || loadingTimedOut) && !session && (
           <div className="mb-6">
-            <div className="space-y-3">
-              {!showFaceIDLogin ? (
-                <>
-                  <form onSubmit={handleEmailPasswordLogin} className="space-y-3">
-                    <div>
-                      <Label htmlFor="email" className="text-white text-sm mb-2 block">
-                        Email
-                      </Label>
-                      <Input
-                        id="email"
-                        type="email"
-                        placeholder="Enter your email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        className="bg-white/10 border-white/20 text-white placeholder:text-purple-200/60 text-base h-12 rounded-xl"
-                        required
-                        autoComplete="email"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="password" className="text-white text-sm mb-2 block">
-                        Password
-                      </Label>
-                      <Input
-                        id="password"
-                        type="password"
-                        placeholder="Enter your password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        className="bg-white/10 border-white/20 text-white placeholder:text-purple-200/60 text-base h-12 rounded-xl"
-                        required
-                        autoComplete="current-password"
-                      />
-                    </div>
-                    <Button
-                      type="submit"
-                      disabled={isLoading || !email.trim() || !password.trim()}
-                      className="w-full bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white font-semibold h-12 rounded-xl shadow-lg"
-                      style={{ 
-                        WebkitTapHighlightColor: 'transparent',
-                        touchAction: 'manipulation',
-                        transform: 'translateZ(0)',
-                        minHeight: '44px'
-                      }}
-                    >
-                      {isLoading ? 'Signing in...' : 'Sign In'}
-                    </Button>
-                  </form>
-                  <div className="flex items-center justify-between text-sm mt-4">
-                    <button
-                      type="button"
-                      onClick={handleForgotPassword}
-                      className="text-white hover:text-purple-200 transition-colors"
-                    >
-                      Forgot password?
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setShowFaceIDLogin(true)}
-                      className="text-white hover:text-purple-200 transition-colors"
-                    >
-                      Use Face ID instead
-                    </button>
-                  </div>
-                </>
-              ) : (
-                <>
-                  <div>
-                    <Label htmlFor="passkey-email" className="text-blue-200 text-sm mb-2 block">
-                      Sign in with Face ID
-                    </Label>
-                    <Input
-                      id="passkey-email"
-                      type="email"
-                      placeholder="Enter your email"
-                      value={passkeyEmail}
-                      onChange={(e) => setPasskeyEmail(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter' && passkeyEmail.trim()) {
-                          e.preventDefault();
-                          const button = e.currentTarget.nextElementSibling?.querySelector('button');
-                          button?.click();
-                        }
-                      }}
-                      className="bg-white/5 border-white/10 text-white placeholder:text-white/40 text-base h-12"
-                      aria-label="Email address for passkey authentication"
-                      required
-                    />
-                    {passkeyEmail && !passkeyEmail.includes('@') && (
-                      <p className="text-xs text-red-400 mt-1">Please enter a valid email address</p>
-                    )}
-                  </div>
-                  <BiometricLogin 
-                    mode="authenticate"
-                    email={passkeyEmail.trim()}
-                    onSuccess={handlePasskeyAuthSuccess}
-                  />
-                  <div className="flex items-center justify-between text-sm">
-                    <Button
-                      variant="ghost"
-                      onClick={() => setShowPasskeyAuth(true)}
-                      className="text-blue-200 hover:text-white text-sm"
-                    >
-                      Don't have a passkey? Register one
-                    </Button>
-                    <button
-                      type="button"
-                      onClick={() => setShowFaceIDLogin(false)}
-                      className="text-blue-200 hover:text-white transition-colors"
-                    >
-                      Use password instead
-                    </button>
-                  </div>
-                </>
-              )}
+            <form onSubmit={handleEmailPasswordLogin} className="space-y-3">
+              <div>
+                <Label htmlFor="email" className="text-white text-sm mb-2 block">
+                  Email
+                </Label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="Enter your email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="bg-white/10 border-white/20 text-white placeholder:text-purple-200/60 text-base h-12 rounded-xl"
+                  required
+                  autoComplete="email"
+                />
+              </div>
+              <div>
+                <Label htmlFor="password" className="text-white text-sm mb-2 block">
+                  Password
+                </Label>
+                <Input
+                  id="password"
+                  type="password"
+                  placeholder="Enter your password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="bg-white/10 border-white/20 text-white placeholder:text-purple-200/60 text-base h-12 rounded-xl"
+                  required
+                  autoComplete="current-password"
+                />
+              </div>
+              <Button
+                type="submit"
+                disabled={isLoading || !email.trim() || !password.trim()}
+                className="w-full bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white font-semibold h-12 rounded-xl shadow-lg"
+                style={{ 
+                  WebkitTapHighlightColor: 'transparent',
+                  touchAction: 'manipulation',
+                  transform: 'translateZ(0)',
+                  minHeight: '44px'
+                }}
+              >
+                {isLoading ? 'Signing in...' : 'Sign In'}
+              </Button>
+            </form>
+            <div className="text-sm mt-4">
+              <button
+                type="button"
+                onClick={handleForgotPassword}
+                className="text-white hover:text-purple-200 transition-colors"
+              >
+                Forgot password?
+              </button>
             </div>
           </div>
         )}
 
         {/* Secondary: Other Sign-in Methods */}
-        {!session && (
+        {(!loading || loadingTimedOut) && !session && (
           <div className="mb-6">
             <div className="relative mb-4">
               <div className="absolute inset-0 flex items-center">
@@ -416,59 +370,8 @@ const Login = () => {
           </div>
         )}
 
-        {/* Passkey Registration Mode */}
-        {!session && showPasskeyAuth && (
-          <div className="mb-6">
-            <div className="space-y-3">
-              <p className="text-sm text-blue-200 text-center">
-                Register a passkey for faster, more secure sign-ins
-              </p>
-              {session && user ? (
-                <BiometricLogin 
-                  mode="register"
-                  onSuccess={handlePasskeyRegisterSuccess}
-                />
-              ) : (
-                <div className="space-y-2">
-                  <Label htmlFor="register-email" className="text-blue-200 text-sm">
-                    Sign in first to register a passkey
-                  </Label>
-                  <p className="text-xs text-blue-300 text-center">
-                    Please sign in with Google or email above, then you can register a passkey for future logins.
-                  </p>
-                </div>
-              )}
-              <Button
-                variant="ghost"
-                onClick={() => setShowPasskeyAuth(false)}
-                className="w-full text-blue-200 hover:text-white text-sm"
-              >
-                Back to sign in
-              </Button>
-            </div>
-          </div>
-        )}
-
-        {/* Register Passkey (only shown when logged in) */}
-        {session && user && (
-          <div className="mt-6">
-            <div className="relative mb-4">
-              <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t border-white/20" />
-              </div>
-              <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-transparent px-2 text-blue-200">Secure your account</span>
-              </div>
-            </div>
-            <BiometricLogin 
-              mode="register"
-              onSuccess={handlePasskeyRegisterSuccess}
-            />
-          </div>
-        )}
-        
         {/* Sign Up Link */}
-        {!session && (
+        {(!loading || loadingTimedOut) && !session && (
           <div className="mt-6 text-center">
             <p className="text-white text-sm mb-2">Don't have an account?</p>
             <Link to="/signup" className="text-white hover:text-purple-200 transition-colors text-sm flex items-center justify-center gap-1">

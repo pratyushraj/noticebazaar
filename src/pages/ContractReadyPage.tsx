@@ -111,7 +111,7 @@ const ContractReadyPage = () => {
           
           if (verifyResponse.ok && verifyData.success && verifyData.deal) {
             console.log('[ContractReadyPage] Newer token is valid, redirecting...');
-            window.location.href = `/#/contract-ready/${data.redirectToToken}`;
+            window.location.href = `${window.location.origin}/contract-ready/${data.redirectToToken}`;
             return;
           } else {
             console.warn('[ContractReadyPage] Newer token is also invalid, showing error');
@@ -148,7 +148,7 @@ const ContractReadyPage = () => {
             if (dealDetailsResponse.ok && dealDetailsData.success && dealDetailsData.contractReadyToken) {
               console.log('[ContractReadyPage] Found contract ready token via deal details token, redirecting...');
               // Redirect to the correct contract ready token
-              window.location.href = `/#/contract-ready/${dealDetailsData.contractReadyToken}`;
+              window.location.href = `${window.location.origin}/contract-ready/${dealDetailsData.contractReadyToken}`;
               return;
             }
             
@@ -169,7 +169,7 @@ const ContractReadyPage = () => {
             if (dealDetailsInfoResponse.ok && dealDetailsInfo.success) {
               console.log('[ContractReadyPage] This is a deal details token, but contract not ready yet. Redirecting to deal details page...');
               // Redirect to deal details page - it will show "Contract Being Prepared" message
-              window.location.href = `/#/deal/${token}`;
+              window.location.href = `${window.location.origin}/deal/${token}`;
               return;
             }
           } catch (dealDetailsErr) {

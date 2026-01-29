@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from 'react';
-import { Home, Briefcase, CreditCard, Shield, TrendingUp, Calendar, FileText, AlertCircle, Clock, ChevronRight, Plus, Search, Target, BarChart3, RefreshCw, LogOut, Loader2, XCircle, Menu, Link2, Copy, ExternalLink, Check, AlertTriangle } from 'lucide-react';
+import { Home, Briefcase, CreditCard, Shield, TrendingUp, Calendar, FileText, FileEdit, AlertCircle, Clock, ChevronRight, Plus, Search, Target, BarChart3, RefreshCw, LogOut, Loader2, XCircle, Menu, Link2, Copy, ExternalLink, Check, AlertTriangle } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { toast } from 'sonner';
 import { useSignOut } from '@/lib/hooks/useAuth';
@@ -1307,15 +1307,19 @@ const CreatorDashboard = () => {
                               <button
                                 type="button"
                                 onClick={() => { triggerHaptic(HapticPatterns.light); navigate(`/collab-requests/${r.id}/counter`, { state: { request: r.raw } }); }}
-                                className="flex-1 min-h-[36px] rounded-lg border border-[#A78BFA] bg-transparent text-[#DDD6FE] text-xs font-medium hover:bg-purple-500/10 transition-colors"
+                                className="flex-1 min-h-[36px] rounded-lg border border-[#A78BFA] bg-transparent text-[#DDD6FE] text-xs font-medium hover:bg-purple-500/10 transition-colors inline-flex items-center justify-center gap-1.5"
+                                aria-label="Counter offer"
                               >
+                                <FileEdit className="h-3.5 w-3.5 shrink-0" aria-hidden />
                                 Counter
                               </button>
                               <button
                                 type="button"
                                 onClick={() => { triggerHaptic(HapticPatterns.light); setDeclineRequestId(r.id); setShowDeclineRequestDialog(true); }}
-                                className="flex-1 min-h-[36px] rounded-lg border border-red-700/50 bg-transparent text-[#FCA5A5] text-xs font-medium hover:bg-red-500/10 transition-colors"
+                                className="flex-1 min-h-[36px] rounded-lg border border-red-700/50 bg-transparent text-[#FCA5A5] text-xs font-medium hover:bg-red-500/10 transition-colors inline-flex items-center justify-center gap-1.5"
+                                aria-label="Decline"
                               >
+                                <XCircle className="h-3.5 w-3.5 shrink-0" aria-hidden />
                                 Decline
                               </button>
                             </div>

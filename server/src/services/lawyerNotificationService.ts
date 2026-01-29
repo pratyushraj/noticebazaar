@@ -45,7 +45,7 @@ export async function sendLawyerComplaintNotification(
 
     const url = 'https://api.resend.com/emails';
     const dashboardUrl = process.env.FRONTEND_URL || 'https://creatorarmour.com';
-    const complaintLink = `${dashboardUrl}/#/lawyer/consumer-complaints`;
+    const complaintLink = `${dashboardUrl}/lawyer/consumer-complaints`;
     
     const emailSubject = 'New Consumer Complaint Needs Review';
     const emailHtml = `

@@ -150,6 +150,18 @@ const App = () => {
   const [appLoaded, setAppLoaded] = useState(false);
   const [splashComplete, setSplashComplete] = useState(false);
 
+  // Redirect hash-based public token URLs to path-based URLs (BrowserRouter uses pathname, not hash)
+  useEffect(() => {
+    const pathname = window.location.pathname;
+    const hash = window.location.hash;
+    if (pathname !== "/" || !hash || !hash.startsWith("#/")) return;
+    const pathFromHash = hash.slice(1);
+    const hashRouteMatch = pathFromHash.match(/^\/(contract-ready|ship|deal-details|deal\/brand-response|deal|feedback|brand-reply|brand\/response)\/[^/]+/);
+    if (hashRouteMatch) {
+      window.location.replace(window.location.origin + pathFromHash);
+    }
+  }, []);
+
   // Mark app as loaded (prefetch removed - not needed for SPA routing)
   useEffect(() => {
     if (!appLoaded) {

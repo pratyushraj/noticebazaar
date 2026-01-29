@@ -248,16 +248,13 @@ const CreatorBottomNav = () => {
                   <>
                     <div className={cn(
                       "absolute top-0 left-1/2 -translate-x-1/2 w-14 h-1",
-                      "bg-gradient-to-r from-blue-400 to-purple-500",
+                      "bg-gradient-to-r from-[#6C4BFF] to-[#9A3DFF]",
                       radius.full,
-                      // replaced-by-ultra-polish
                       shadows.md
                     )} />
-                    {/* Glowing dot indicator */}
                     <div className={cn(
                       "absolute bottom-2 left-1/2 -translate-x-1/2 w-2 h-2",
-                      "bg-purple-500 rounded-full",
-                      // replaced-by-ultra-polish
+                      "bg-[#9A3DFF] rounded-full",
                       shadows.sm, "animate-pulse"
                     )} />
                   </>

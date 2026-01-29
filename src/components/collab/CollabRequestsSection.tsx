@@ -283,7 +283,7 @@ const CollabRequestsSection = ({ copyCollabLink, usernameForLink: usernameFromPa
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       <h2 className="text-lg font-semibold text-white break-words" data-section="collab-requests">Brand Requests</h2>
 
       {/* Requests List or Empty State — no duplicate link bar; hero owns Collab Link */}
@@ -320,8 +320,8 @@ const CollabRequestsSection = ({ copyCollabLink, usernameForLink: usernameFromPa
           </CardContent>
         </Card>
       ) : (
-        <Card className="bg-white/5 rounded-2xl backdrop-blur-xl p-4 md:p-5 relative overflow-hidden w-full border border-purple-400/40 ring-1 ring-purple-400/15 shadow-md shadow-purple-500/10 transition-all duration-200">
-          <CardContent className="p-0 space-y-3">
+        <Card className="bg-white/5 rounded-2xl backdrop-blur-xl p-3.5 md:p-5 relative overflow-hidden w-full border border-purple-400/40 ring-1 ring-purple-400/15 shadow-md shadow-purple-500/10 transition-all duration-200">
+          <CardContent className="p-0 space-y-2">
             {/* Title + count pill (single line) */}
             <div className="flex items-center justify-between gap-2 min-w-0">
               <h3 className="text-base font-semibold text-white truncate">
@@ -331,15 +331,16 @@ const CollabRequestsSection = ({ copyCollabLink, usernameForLink: usernameFromPa
                 {pendingRequests.length}
               </span>
             </div>
-            <p className="text-sm text-white/70">
+            <p className="text-sm text-white/70 leading-snug">
               Brands are waiting for your response
             </p>
 
-            {/* CTA — matches Copy Collab Link button style */}
-            <div className="space-y-1.5">
+            {/* CTA — matches Copy Collab Link button style; compact so visible above fold on mobile */}
+            <div className="space-y-1">
               <Button
                 onClick={() => navigate('/collab-requests')}
                 className="w-full min-h-[44px] px-4 rounded-lg flex items-center justify-center gap-2 bg-purple-600/40 hover:bg-purple-600/50 border border-purple-400/50 font-medium text-purple-100 text-sm transition-colors"
+                aria-label={`Review collab requests, ${pendingRequests.length} pending`}
               >
                 <MessageSquare className="h-4 w-4 flex-shrink-0" aria-hidden />
                 Review Collabs

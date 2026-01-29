@@ -10,11 +10,10 @@ import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import BiometricLogin from '@/components/auth/BiometricLogin';
 
 const Signup = () => {
   const navigate = useNavigate();
-  const { session, loading, user } = useSession();
+  const { session, loading } = useSession();
   const [isLoading, setIsLoading] = useState(false);
   const [showLogin, setShowLogin] = useState(false);
   const [name, setName] = useState('');
@@ -22,9 +21,6 @@ const Signup = () => {
   const [password, setPassword] = useState('');
   const [emailError, setEmailError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [showFaceIDLogin, setShowFaceIDLogin] = useState(false);
-  const [passkeyEmail, setPasskeyEmail] = useState('');
-  const [showPasskeyAuth, setShowPasskeyAuth] = useState(false);
 
   // Password strength calculator
   const getPasswordStrength = (pwd: string) => {
@@ -363,22 +359,6 @@ const Signup = () => {
     }
   };
 
-  const handlePasskeyAuthSuccess = async () => {
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    const { data: { session: newSession } } = await supabase.auth.getSession();
-    if (newSession) {
-      toast.success('Biometric authentication successful!');
-      navigate('/creator-dashboard', { replace: true });
-    } else {
-      toast.info('Please check your email to complete sign-in');
-    }
-  };
-
-  const handlePasskeyRegisterSuccess = () => {
-    toast.success('Passkey registered! You can now use it to sign in.');
-    setShowPasskeyAuth(false);
-  };
-
   const features = [
     {
       icon: Shield,
@@ -501,108 +481,53 @@ const Signup = () => {
             {/* Login Form */}
             {showLogin && (
               <div className="mb-6">
-                <div className="space-y-3">
-                  {!showFaceIDLogin ? (
-                    <>
-                      <form onSubmit={handleEmailPasswordLogin} className="space-y-3">
-                        <div>
-                          <Label htmlFor="email" className="text-purple-200 text-sm mb-2 block">
-                            Email
-                          </Label>
-                          <Input
-                            id="email"
-                            type="email"
-                            placeholder="Enter your email"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            className="bg-white/5 border-white/10 text-white placeholder:text-white/40 text-base h-12"
-                            required
-                            autoComplete="email"
-                          />
-                        </div>
-                        <div>
-                          <Label htmlFor="password" className="text-purple-200 text-sm mb-2 block">
-                            Password
-                          </Label>
-                          <Input
-                            id="password"
-                            type="password"
-                            placeholder="Enter your password"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            className="bg-white/5 border-white/10 text-white placeholder:text-white/40 text-base h-12"
-                            required
-                            autoComplete="current-password"
-                          />
-                        </div>
-                        <Button
-                          type="submit"
-                          disabled={isLoading || !email.trim() || !password.trim()}
-                          className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold h-12"
-                        >
-                          {isLoading ? 'Signing in...' : 'Sign In'}
-                        </Button>
-                      </form>
-                      <div className="flex items-center justify-between text-sm">
-                        <button
-                          type="button"
-                          onClick={handleForgotPassword}
-                          className="text-purple-300 hover:text-purple-200 transition-colors"
-                        >
-                          Forgot password?
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setShowFaceIDLogin(true)}
-                          className="text-purple-300 hover:text-purple-200 transition-colors"
-                        >
-                          Use Face ID instead
-                        </button>
-                      </div>
-                    </>
-                  ) : (
-                    <>
-                      <div>
-                        <Label htmlFor="passkey-email" className="text-purple-200 text-sm mb-2 block">
-                          Sign in with Face ID
-                        </Label>
-                        <Input
-                          id="passkey-email"
-                          type="email"
-                          placeholder="Enter your email"
-                          value={passkeyEmail}
-                          onChange={(e) => setPasskeyEmail(e.target.value)}
-                          className="bg-white/5 border-white/10 text-white placeholder:text-white/40 text-base h-12"
-                          aria-label="Email address for passkey authentication"
-                          required
-                        />
-                        {passkeyEmail && !passkeyEmail.includes('@') && (
-                          <p className="text-xs text-red-400 mt-1">Please enter a valid email address</p>
-                        )}
-                      </div>
-                      <BiometricLogin 
-                        mode="authenticate"
-                        email={passkeyEmail.trim()}
-                        onSuccess={handlePasskeyAuthSuccess}
-                      />
-                      <div className="flex items-center justify-between text-sm">
-                        <Button
-                          variant="ghost"
-                          onClick={() => setShowPasskeyAuth(true)}
-                          className="text-purple-300 hover:text-purple-200 text-sm"
-                        >
-                          Don't have a passkey? Register one
-                        </Button>
-                        <button
-                          type="button"
-                          onClick={() => setShowFaceIDLogin(false)}
-                          className="text-purple-300 hover:text-purple-200 transition-colors"
-                        >
-                          Use password instead
-                        </button>
-                      </div>
-                    </>
-                  )}
+                <form onSubmit={handleEmailPasswordLogin} className="space-y-3">
+                  <div>
+                    <Label htmlFor="email" className="text-purple-200 text-sm mb-2 block">
+                      Email
+                    </Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      placeholder="Enter your email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className="bg-white/5 border-white/10 text-white placeholder:text-white/40 text-base h-12"
+                      required
+                      autoComplete="email"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="password" className="text-purple-200 text-sm mb-2 block">
+                      Password
+                    </Label>
+                    <Input
+                      id="password"
+                      type="password"
+                      placeholder="Enter your password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      className="bg-white/5 border-white/10 text-white placeholder:text-white/40 text-base h-12"
+                      required
+                      autoComplete="current-password"
+                    />
+                  </div>
+                  <Button
+                    type="submit"
+                    disabled={isLoading || !email.trim() || !password.trim()}
+                    className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold h-12"
+                  >
+                    {isLoading ? 'Signing in...' : 'Sign In'}
+                  </Button>
+                </form>
+                <div className="text-sm mt-4">
+                  <button
+                    type="button"
+                    onClick={handleForgotPassword}
+                    className="text-purple-300 hover:text-purple-200 transition-colors"
+                  >
+                    Forgot password?
+                  </button>
                 </div>
               </div>
             )}
@@ -869,8 +794,6 @@ const Signup = () => {
                   setName('');
                   setEmail('');
                   setPassword('');
-                  setShowFaceIDLogin(false);
-                  setPasskeyEmail('');
                 }}
                 className="text-purple-300 hover:text-purple-200 font-medium transition-colors inline-flex items-center gap-2"
               >

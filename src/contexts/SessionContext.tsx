@@ -306,8 +306,9 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
   const isCreator = profile?.role === 'creator'; // New: Define isCreator
   const organizationId = profile?.organization_id || null; // Derive from profile
   const trialStatus = useMemo(() => getTrialStatus(profile), [profile]); // Calculate trial status
-  // Overall loading state: true if initial session load is not complete OR profile is still loading
-  const loading = !initialLoadComplete || isLoadingProfile;
+  // Overall loading state: initial session not complete, OR profile loading when we have no profile yet.
+  // Once we have profile data, don't gate on refetches — avoids loop where dashboard mounts, refetches profile, loading flips true, loader shows again.
+  const loading = !initialLoadComplete || (isLoadingProfile && !profile);
   const authStatus: AuthStatus = loading
     ? 'loading'
     : session
@@ -454,11 +455,11 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
                 console.error('[SessionContext] Error setting session:', setSessionError);
               } else if (sessionData.session) {
                 console.log('[SessionContext] Session set successfully via manual token parsing');
-                // Fetch profile to determine proper redirect route
-                let cleanRoute = '#/creator-dashboard';
+                // Use path-based route (BrowserRouter), e.g. /creator-dashboard
+                let redirectPath = '/creator-dashboard';
                 
                 if (intendedRoute && intendedRoute !== 'login' && intendedRoute !== 'signup') {
-                  cleanRoute = `#/${intendedRoute}`;
+                  redirectPath = `/${intendedRoute}`;
                 } else if (sessionData.session.user?.id) {
                   try {
                     const { data: profileData } = await supabase
@@ -472,14 +473,14 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
                       const isPratyush = userEmail === 'pratyushraj@outlook.com';
                       
                       if (isPratyush) {
-                        cleanRoute = '#/creator-dashboard';
+                        redirectPath = '/creator-dashboard';
                       } else if (profileData.role === 'admin') {
-                        cleanRoute = '#/admin-dashboard';
+                        redirectPath = '/admin-dashboard';
                         console.log('[SessionContext] Admin user detected in initializeSession');
                       } else if (profileData.role === 'chartered_accountant') {
-                        cleanRoute = '#/ca-dashboard';
+                        redirectPath = '/ca-dashboard';
                       } else if (profileData.role === 'lawyer') {
-                        cleanRoute = '#/lawyer-dashboard';
+                        redirectPath = '/lawyer-dashboard';
                       }
                     }
                   } catch (error) {
@@ -487,9 +488,9 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
                   }
                 }
                 
-                // Clean hash immediately after setting session
-                window.history.replaceState(null, '', window.location.pathname + window.location.search + cleanRoute);
-                console.log('[SessionContext] Cleaned hash to:', cleanRoute);
+                // Navigate to path so BrowserRouter shows the correct route
+                window.location.replace(redirectPath);
+                console.log('[SessionContext] Redirecting to:', redirectPath);
             }
             } catch (err) {
               console.error('[SessionContext] Exception setting session:', err);
@@ -549,7 +550,7 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
           ) {
             console.log('[SessionContext] Session exists on bare root/login, redirecting to dashboard...');
             setTimeout(() => {
-              window.location.href = '/#/creator-dashboard';
+              window.location.replace('/creator-dashboard');
             }, 100);
           }
         }
@@ -689,8 +690,8 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
             userEmail: session?.user?.email
           });
           
-          // Fetch profile to determine user role for proper redirect
-          let targetRoute = '#/creator-dashboard';
+          // Use path-based routes (BrowserRouter), not hash — so /creator-dashboard not #/creator-dashboard
+          let targetPath = '/creator-dashboard';
           
           // Routes that should redirect admin users to admin dashboard instead
           const adminOnlyRoutes = ['admin-influencers', 'admin-discovery'];
@@ -703,23 +704,33 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
               console.log('[SessionContext] Influencer route detected, will redirect based on role');
               // Don't use intended route if it's an influencer route - let role-based redirect handle it
             } else {
-              targetRoute = `#/${intendedRoute}`;
-              console.log('[SessionContext] Using intended route:', targetRoute);
+              targetPath = `/${intendedRoute}`;
+              console.log('[SessionContext] Using intended route:', targetPath);
             }
           }
           
-          if (targetRoute === '#/creator-dashboard' && session?.user?.id) {
-            // Fetch profile to determine role-based redirect
+          if (targetPath === '/creator-dashboard' && session?.user?.id) {
+            // Fetch profile to determine role-based redirect, with 2.5s timeout so we never block redirect
+            const profileFetchTimeoutMs = 2500;
             try {
               console.log('[SessionContext] Fetching profile for user:', session.user.id);
-              const { data: profileData, error: profileError } = await supabase
+              const profilePromise = supabase
                 .from('profiles')
                 .select('role')
                 .eq('id', session.user.id)
                 .single();
+              const timeoutFallback = { data: null as { role: string } | null, error: { message: 'timeout' } };
+              const result = await Promise.race([
+                profilePromise,
+                new Promise<typeof timeoutFallback>((resolve) =>
+                  setTimeout(() => resolve(timeoutFallback), profileFetchTimeoutMs)
+                ),
+              ]);
+              const profileData = result?.data ?? null;
+              const profileError = result?.error;
               
               if (profileError) {
-                console.error('[SessionContext] Error fetching profile:', profileError);
+                console.warn('[SessionContext] Profile fetch for redirect:', profileError.message);
               }
               
               if (profileData) {
@@ -727,42 +738,38 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
                 const userEmail = session.user.email?.toLowerCase();
                 const isPratyush = userEmail === 'pratyushraj@outlook.com';
                 
-                // Determine target route based on role
                 if (isPratyush) {
-                  targetRoute = '#/creator-dashboard';
+                  targetPath = '/creator-dashboard';
                 } else if (profileData.role === 'admin') {
-                  targetRoute = '#/admin-dashboard';
+                  targetPath = '/admin-dashboard';
                   console.log('[SessionContext] Admin user detected, redirecting to admin dashboard');
                 } else if (profileData.role === 'chartered_accountant') {
-                  targetRoute = '#/ca-dashboard';
+                  targetPath = '/ca-dashboard';
                 } else if (profileData.role === 'lawyer') {
-                  targetRoute = '#/lawyer-dashboard';
+                  targetPath = '/lawyer-dashboard';
                 } else {
-                  targetRoute = '#/creator-dashboard';
+                  targetPath = '/creator-dashboard';
                 }
               } else {
-                console.log('[SessionContext] No profile data found, defaulting to creator dashboard');
+                console.log('[SessionContext] No profile data / timeout, defaulting to creator dashboard');
               }
             } catch (error) {
-              console.error('[SessionContext] Error fetching profile for redirect:', error);
-              // Default to creator-dashboard on error
+              console.warn('[SessionContext] Profile fetch for redirect failed, redirecting to creator-dashboard:', error);
+              targetPath = '/creator-dashboard';
             }
           }
           
-          console.log('[SessionContext] Final target route:', targetRoute);
+          // Skip redirect if we're already on the target route (avoids full-page reload when SIGNED_IN fires again, e.g. token refresh)
+          if (window.location.pathname === targetPath) {
+            console.log('[SessionContext] Already on target route, skipping redirect to avoid reload');
+            setIsAuthInitializing(false);
+            return;
+          }
           
-          // Defer redirect using requestAnimationFrame to ensure React context is fully set up
-          // This prevents "useSession must be used within a SessionContextProvider" errors
-          // by allowing React to complete the current render cycle before navigation
-          requestAnimationFrame(() => {
-            requestAnimationFrame(() => {
-              // Use replaceState to avoid full page reload while ensuring context is ready
-              window.history.replaceState(null, '', window.location.pathname + window.location.search + targetRoute);
-              // Trigger a hashchange event to notify React Router
-              window.dispatchEvent(new HashChangeEvent('hashchange'));
-              console.log('[SessionContext] Redirecting to:', targetRoute);
-            });
-          });
+          console.log('[SessionContext] Redirecting to:', targetPath);
+          
+          // Navigate immediately; don't defer or user can stay stuck on login
+          window.location.replace(targetPath);
         }
       }
     );

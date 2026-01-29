@@ -817,16 +817,19 @@ const ProfileSettings = () => {
       {/* Header */}
       <div className="sticky top-0 z-50 bg-purple-900/90 backdrop-blur-lg border-b border-white/10">
         <div className="flex items-center justify-between p-4">
-          <button 
+          <button
+            type="button"
             onClick={() => navigate('/creator-dashboard')}
             className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+            aria-label="Back to dashboard"
           >
             <ArrowLeft className="w-6 h-6" />
           </button>
           
           <div className="text-lg font-semibold">Profile & Settings</div>
           
-          <button 
+          <button
+            type="button"
             onClick={() => {
               if (editMode) {
                 handleSave();
@@ -836,6 +839,7 @@ const ProfileSettings = () => {
             }}
             disabled={isSaving}
             className="p-2 hover:bg-white/10 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+            aria-label={editMode ? 'Save profile' : 'Edit profile'}
           >
             {isSaving ? (
               <Loader2 className="w-6 h-6 animate-spin text-purple-400" />
@@ -850,8 +854,15 @@ const ProfileSettings = () => {
 
       {/* Sticky Segmented Control */}
       <div className="sticky top-[57px] z-40 bg-purple-900/95 backdrop-blur-lg border-b border-white/10 px-4 py-3">
-        <div className="flex gap-1 bg-white/5 rounded-lg p-1 border border-white/10 max-w-2xl mx-auto">
+        <div
+          role="tablist"
+          aria-label="Profile sections"
+          className="flex gap-1 bg-white/5 rounded-lg p-1 border border-white/10 max-w-2xl mx-auto"
+        >
           <button
+            role="tab"
+            aria-selected={activeSection === 'profile'}
+            aria-label="Profile"
             onClick={() => setActiveSection('profile')}
             className={cn(
               "flex-1 min-h-[44px] px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 text-center flex items-center justify-center gap-1.5",
@@ -864,6 +875,9 @@ const ProfileSettings = () => {
             <span>Profile</span>
           </button>
           <button
+            role="tab"
+            aria-selected={activeSection === 'account'}
+            aria-label="Account"
             onClick={() => setActiveSection('account')}
             className={cn(
               "flex-1 min-h-[44px] px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 text-center flex items-center justify-center gap-1.5",
@@ -876,6 +890,9 @@ const ProfileSettings = () => {
             <span>Account</span>
           </button>
           <button
+            role="tab"
+            aria-selected={activeSection === 'support'}
+            aria-label="Support"
             onClick={() => setActiveSection('support')}
             className={cn(
               "flex-1 min-h-[44px] px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 text-center flex items-center justify-center gap-1.5",
@@ -983,9 +1000,11 @@ const ProfileSettings = () => {
               )}
             </div>
             
-            {/* Name and Role - Centered on mobile */}
+            {/* Name and Role - Centered on mobile; capitalize for display (e.g. rahul -> Rahul) */}
             <div className="flex-1 min-w-0 text-center sm:text-left w-full sm:w-auto">
-              <h1 className="text-xl sm:text-lg font-semibold">{userData.name}</h1>
+              <h1 className="text-xl sm:text-lg font-semibold">
+                {(userData.name || '').trim() ? (userData.name || '').trim().replace(/^\w/, c => c.toUpperCase()) : (userData.name || '')}
+              </h1>
               <div className="mt-1">
                 <p className="text-xs text-white/60">
                   Verified Creator Profile • Protection Active
@@ -1154,12 +1173,6 @@ const ProfileSettings = () => {
                     placeholder="City"
                     className={`w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder-white/40 outline-none transition-colors ${editMode ? 'focus:border-purple-500 focus:bg-white/10' : 'cursor-not-allowed'} ${isLookingUpPincode ? 'opacity-50' : ''}`}
                   />
-                  {/* Debug: Show current city value */}
-                  {process.env.NODE_ENV === 'development' && (
-                    <div className="text-xs text-white/40 mt-1">
-                      Debug: city = "{formData.city || '(empty)'}"
-                    </div>
-                  )}
                 </div>
 
                 {/* State */}
@@ -1293,7 +1306,7 @@ const ProfileSettings = () => {
                               }
                             }}
                             className="flex-shrink-0 h-9 px-3 bg-white/20 hover:bg-white/30 border border-white/20 text-white font-medium"
-                            aria-label="Copy link"
+                            aria-label="Copy creator link"
                           >
                             {copiedLink ? <Check className="h-4 w-4 text-green-400" /> : <Copy className="h-4 w-4" />}
                             <span className="ml-1.5">{copiedLink ? 'Copied' : 'Copy'}</span>
@@ -1318,6 +1331,7 @@ const ProfileSettings = () => {
                               toast.success('Opening WhatsApp…');
                             }}
                             className="h-9 text-xs bg-white/5 border-white/20 text-white/80 hover:bg-white/10"
+                            aria-label="Share via WhatsApp"
                           >
                             <MessageCircle className="h-3.5 w-3.5 mr-1" />
                             WhatsApp
@@ -1334,6 +1348,7 @@ const ProfileSettings = () => {
                               }
                             }}
                             className="h-9 text-xs bg-white/5 border-white/20 text-white/80 hover:bg-white/10"
+                            aria-label="Share via Instagram"
                           >
                             <Instagram className="h-3.5 w-3.5 mr-1" />
                             Instagram
@@ -1348,6 +1363,7 @@ const ProfileSettings = () => {
                               toast.success('Opening email…');
                             }}
                             className="h-9 text-xs bg-white/5 border-white/20 text-white/80 hover:bg-white/10"
+                            aria-label="Share via Email"
                           >
                             <Mail className="h-3.5 w-3.5 mr-1" />
                             Email
@@ -1357,24 +1373,32 @@ const ProfileSettings = () => {
                       </div>
 
                       {/* 3. Primary CTA — view public page */}
-                      <Button
-                        variant="outline"
-                        className="w-full h-11 bg-white/10 border-white/20 text-white font-medium hover:bg-white/15"
-                        onClick={() => {
-                          if (usernameForLink) {
-                            window.open(`/collab/${usernameForLink}`, '_blank');
-                          } else {
-                            toast.error('Please set your Instagram username first');
-                          }
-                        }}
-                      >
-                        <ExternalLink className="h-4 w-4 mr-2" />
-                        View how brands see your link
-                      </Button>
+                      <div className="space-y-1">
+                        <Button
+                          variant="outline"
+                          className="w-full h-11 bg-white/10 border-white/20 text-white font-medium hover:bg-white/15"
+                          onClick={() => {
+                            if (usernameForLink) {
+                              window.open(`/collab/${usernameForLink}`, '_blank');
+                            } else {
+                              toast.error('Please set your Instagram username first');
+                            }
+                          }}
+                          aria-label="View how brands see your creator link profile"
+                        >
+                          <ExternalLink className="h-4 w-4 mr-2" />
+                          View how brands see your link
+                        </Button>
+                        <p className="text-[11px] text-white/50 text-center">Preview your creator profile</p>
+                      </div>
 
                       {/* 4. How it works — accordion, collapsed by default, 3 steps */}
                       <Collapsible open={showHowItWorks} onOpenChange={setShowHowItWorks}>
-                        <CollapsibleTrigger className="w-full rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 transition-colors">
+                        <CollapsibleTrigger
+                          className="w-full rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 transition-colors"
+                          aria-expanded={showHowItWorks}
+                          aria-label={showHowItWorks ? 'How it works, collapse' : 'How it works, expand for steps'}
+                        >
                           <div className="p-3 flex items-center justify-between">
                             <div className="flex items-center gap-2">
                               <HelpCircle className="h-4 w-4 text-white/60" />

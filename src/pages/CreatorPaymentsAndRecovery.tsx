@@ -24,6 +24,7 @@ import { spacing, typography, separators, iconSizes, scroll, sectionHeader, grad
 import { triggerHaptic, HapticPatterns } from '@/lib/utils/haptics';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
+import { SkeletonCard } from '@/components/ui/SkeletonCard';
 
 const CreatorPaymentsAndRecovery = () => {
   const navigate = useNavigate();
@@ -543,11 +544,14 @@ const CreatorPaymentsAndRecovery = () => {
             setShowAddExpense(true);
           }}
           whileTap={animations.microTap}
-          className="w-full bg-white/3 backdrop-blur-xl rounded-xl p-3 border border-white/5 hover:bg-white/5 transition-all text-sm text-white/70"
+          className="w-full bg-white/3 backdrop-blur-xl rounded-xl p-3 border border-white/5 hover:bg-white/5 transition-all text-left"
         >
-          <div className="flex items-center justify-center gap-2">
-            <CreditCard className="w-4 h-4" />
-            <span>Add Expense</span>
+          <div className="flex items-center gap-3">
+            <CreditCard className="w-4 h-4 flex-shrink-0 text-white/70" />
+            <div>
+              <div className="text-sm font-medium text-white/80">Add Expense</div>
+              <div className="text-xs text-white/50">Track all your business expenses</div>
+            </div>
           </div>
         </motion.button>
       </div>
@@ -586,38 +590,56 @@ const CreatorPaymentsAndRecovery = () => {
 
       {/* Filter Tabs - Simplified: All | Pending | Paid */}
       <div className="mb-4">
-        <div className={cn(
+        <div
+          role="tablist"
+          aria-label="Transaction filters"
+          className={cn(
           "flex gap-2 overflow-x-auto pb-2",
           "px-1 -mx-1",
           "[&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
         )}>
-          {filters.map((filter) => (
-            <motion.button
-              key={filter.id}
-              onClick={() => {
-                triggerHaptic(HapticPatterns.light);
-                setActiveFilter(filter.id);
-              }}
-              whileTap={animations.microTap}
-              whileHover={window.innerWidth > 768 ? animations.microHover : undefined}
-              className={cn(
-                "px-4 py-2 rounded-full text-sm font-semibold transition-all duration-150 whitespace-nowrap flex-shrink-0",
-                activeFilter === filter.id
-                  ? 'bg-white/15 text-white border-2 border-white/20 shadow-lg shadow-white/10'
-                  : 'bg-white/5 text-white/70 border border-white/10 hover:bg-white/8'
-              )}
-            >
-              {filter.label}
-            </motion.button>
-          ))}
+          {filters.map((filter) => {
+            const isActive = activeFilter === filter.id;
+            return (
+              <motion.button
+                key={filter.id}
+                role="tab"
+                aria-selected={isActive}
+                aria-label={filter.label}
+                onClick={() => {
+                  triggerHaptic(HapticPatterns.light);
+                  setActiveFilter(filter.id);
+                }}
+                whileTap={animations.microTap}
+                whileHover={window.innerWidth > 768 ? animations.microHover : undefined}
+                className={cn(
+                  "px-4 py-2 rounded-full text-sm font-semibold transition-all duration-150 whitespace-nowrap flex-shrink-0",
+                  isActive
+                    ? 'bg-white/15 text-white border-2 border-white/20 shadow-lg shadow-white/10'
+                    : 'bg-white/5 text-white/70 border border-white/10 hover:bg-white/8'
+                )}
+              >
+                {filter.label}
+              </motion.button>
+            );
+          })}
         </div>
           </div>
 
       {/* Section Separator */}
       <div className={separators.section} />
 
+      {/* Loading State - Skeleton list */}
+      {isLoadingDeals && (
+        <div className="space-y-3" data-section="transactions">
+          {[1, 2, 3, 4].map((i) => (
+            <SkeletonCard key={i} variant="tertiary" showSubtitle={false} showValue={false} showProgress={false} />
+          ))}
+        </div>
+      )}
+
       {/* Transactions List */}
-      {filteredTransactions.length > 0 && (
+      {!isLoadingDeals && filteredTransactions.length > 0 && (
         <div className="space-y-3" data-section="transactions">
           {filteredTransactions.map(transaction => {
             // If it's an expense, use ExpenseCard
@@ -667,6 +689,36 @@ const CreatorPaymentsAndRecovery = () => {
               searchTerm={searchQuery}
               onClearFilters={() => setSearchQuery('')}
             />
+          ) : activeFilter === 'pending' ? (
+            <div className="space-y-3 text-center max-w-sm mx-auto">
+              <p className="text-base font-semibold text-white">No pending transactions</p>
+              <p className="text-sm text-white/60">You&apos;re all caught up on payments!</p>
+              <button
+                type="button"
+                onClick={() => {
+                  triggerHaptic(HapticPatterns.light);
+                  setActiveFilter('all');
+                }}
+                className="text-sm font-medium text-purple-300 hover:text-purple-200 underline"
+              >
+                View all transactions
+              </button>
+            </div>
+          ) : activeFilter === 'received' ? (
+            <div className="space-y-3 text-center max-w-sm mx-auto">
+              <p className="text-base font-semibold text-white">No paid transactions yet</p>
+              <p className="text-sm text-white/60">Completed payments will show here.</p>
+              <button
+                type="button"
+                onClick={() => {
+                  triggerHaptic(HapticPatterns.light);
+                  setActiveFilter('all');
+                }}
+                className="text-sm font-medium text-purple-300 hover:text-purple-200 underline"
+              >
+                View all transactions
+              </button>
+            </div>
           ) : (
             <FilteredNoMatchesEmptyState
               onClearFilters={() => {
@@ -675,14 +727,7 @@ const CreatorPaymentsAndRecovery = () => {
               }}
               filterCount={activeFilter !== 'all' ? 1 : 0}
             />
-            )}
-          </div>
-        )}
-      
-      {/* Loading State */}
-      {isLoadingDeals && (
-        <div className="py-12 text-center">
-          <div className="text-white/60">Loading payments...</div>
+          )}
         </div>
       )}
 

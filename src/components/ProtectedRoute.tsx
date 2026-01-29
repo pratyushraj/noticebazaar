@@ -12,12 +12,26 @@ interface ProtectedRouteProps {
   allowedRoles?: ('client' | 'admin' | 'chartered_accountant' | 'creator' | 'lawyer')[]; // Updated allowedRoles type to include lawyer
 }
 
+const PROTECTED_LOADER_TIMEOUT_MS = 8000;
+
 const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { session, loading, authStatus, profile, isAdmin, isCreator, refetchProfile, user, isAuthInitializing } = useSession();
   const [isCreatingProfile, setIsCreatingProfile] = useState(false);
   const [profileCreationAttempts, setProfileCreationAttempts] = useState(0);
+  const [loaderTimedOut, setLoaderTimedOut] = useState(false);
+
+  // If we're stuck on "Preparing your protected workspace...", show a way out after 8s
+  const showingLoader = authStatus === 'loading' || isCreatingProfile;
+  useEffect(() => {
+    if (!showingLoader) {
+      setLoaderTimedOut(false);
+      return;
+    }
+    const timer = setTimeout(() => setLoaderTimedOut(true), PROTECTED_LOADER_TIMEOUT_MS);
+    return () => clearTimeout(timer);
+  }, [showingLoader]);
 
   // Function to manually create profile if trigger fails
   const createProfileManually = async (userId: string) => {
@@ -235,20 +249,32 @@ const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
     }
   }, [session, authStatus, loading, profile, isAdmin, isCreator, allowedRoles, navigate, location.pathname, user, refetchProfile, profileCreationAttempts]);
 
-  // Show AuthLoadingScreen during auth initialization (after login, before dashboard is ready)
-  // Keep showing it until profile is loaded and we're ready to render the dashboard
-  if (isAuthInitializing && session) {
-    // If profile is not loaded yet, show loading screen
-    if (!profile) {
-      return <AuthLoadingScreen />;
-    }
-    // If profile is loaded, show loading screen briefly to ensure smooth transition
-    // The dashboard will handle its own loading states after this
+  // Show AuthLoadingScreen only while we have no profile during auth init.
+  // Once profile is loaded, render the dashboard immediately to avoid a loader loop
+  // (previously we always returned AuthLoadingScreen when isAuthInitializing, which kept users stuck)
+  if (isAuthInitializing && session && !profile) {
     return <AuthLoadingScreen />;
   }
 
   // Global auth/profile loading gate for all protected routes
   if (authStatus === 'loading' || isCreatingProfile) {
+    if (loaderTimedOut && session) {
+      return (
+        <div className="min-h-[100dvh] flex flex-col items-center justify-center bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 px-4">
+          <p className="text-lg text-white/90 text-center font-medium mb-2">Taking longer than usual?</p>
+          <p className="text-sm text-white/70 text-center max-w-md mb-6">
+            You can continue to your dashboard. Your profile will finish loading there.
+          </p>
+          <button
+            type="button"
+            onClick={() => window.location.replace('/creator-dashboard')}
+            className="px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-semibold transition-colors shadow-lg"
+          >
+            Continue to dashboard
+          </button>
+        </div>
+      );
+    }
     return (
       <FullScreenLoader
         message={isCreatingProfile ? 'Setting up your account...' : 'Preparing your protected workspace...'}

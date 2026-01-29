@@ -30,7 +30,7 @@ export const ErrorFallback: React.FC<ErrorFallbackProps> = ({
     resetError();
     // Use window.location with hash for HashRouter compatibility
     // This works even when ErrorBoundary is rendered outside Router context
-    window.location.href = '/#/creator-dashboard';
+    window.location.href = '/creator-dashboard';
   };
 
   const content = (

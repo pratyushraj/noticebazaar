@@ -29,9 +29,9 @@ const CreatorCollab = () => {
 
   return (
     <CreatorNavigationWrapper title="Collaboration" hidePageTitle compactHeader>
-      <div className={cn(sectionLayout.container, "space-y-8 pb-28 md:space-y-10")}>
-        {/* Header — Payments/Deals style: title + subtitle in content */}
-        <div className="flex items-center justify-between mb-4 md:mb-6">
+      <div className={cn(sectionLayout.container, "space-y-5 md:space-y-8 pb-28 md:pb-28")}>
+        {/* Header — compact on mobile so Collab Link + Brand Requests CTA fit above fold */}
+        <div className="flex items-center justify-between mb-3 md:mb-6">
           <div className="space-y-1 md:space-y-2">
             <h1 className={cn(typography.h1, "mb-0 text-white")}>Collaboration</h1>
             <p className={cn(typography.body, "font-medium text-white/70")}>Replace brand DMs with structured collaboration requests.</p>
@@ -42,13 +42,13 @@ const CreatorCollab = () => {
         <BaseCard
           variant="tertiary"
           className={cn(
-            "p-4 md:p-5 relative overflow-hidden w-full",
+            "p-3.5 md:p-5 relative overflow-hidden w-full",
             "border border-purple-400/40 ring-1 ring-purple-400/15 shadow-md shadow-purple-500/10"
           )}
         >
           <div className="absolute top-0 right-0 w-20 h-20 md:w-24 md:h-24 bg-purple-500/10 rounded-full blur-2xl" />
           <div className="relative z-10">
-            <div className="flex items-start justify-between gap-2 mb-2">
+            <div className="flex items-start justify-between gap-2 mb-1.5">
               <div className="flex items-center gap-2 min-w-0">
                 <div className="w-10 h-10 md:w-11 md:h-11 rounded-lg bg-purple-500/25 flex items-center justify-center flex-shrink-0 ring-1 ring-purple-400/25">
                   <Link2 className="w-5 h-5 md:w-6 md:h-6 text-purple-300" />
@@ -59,10 +59,10 @@ const CreatorCollab = () => {
                 Recommended
               </span>
             </div>
-            <p className="text-sm text-purple-200/90 mb-4 break-words">
+            <p className="text-sm text-purple-200/90 mb-3 break-words">
               One link for brands to send protected collaboration requests.
             </p>
-            <div className="flex flex-col gap-3">
+            <div className="flex flex-col gap-2.5">
               <motion.button
                 onClick={copyCollabLink}
                 whileTap={animations.microTap}

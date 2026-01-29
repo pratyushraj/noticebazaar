@@ -591,6 +591,7 @@ router.post('/:username/submit', async (req: Request, res: Response) => {
             exactBudget: exact_budget ? parseFloat(exact_budget.toString()) : undefined,
             barterDescription: barter_description || undefined,
             barterValue: barter_value ? parseFloat(barter_value.toString()) : undefined,
+            barterProductImageUrl: (insertData as any).barter_product_image_url ?? undefined,
             deliverables: deliverablesArray,
             deadline: deadline || undefined,
             timeline: deadline || undefined, // Use deadline as timeline
@@ -609,7 +610,7 @@ router.post('/:username/submit', async (req: Request, res: Response) => {
           // Optionally: Add notification entry to notifications table (non-blocking)
           try {
             const frontendUrl = process.env.FRONTEND_URL || 'https://creatorarmour.com';
-            const dashboardLink = `${frontendUrl}/#/creator-dashboard`;
+            const dashboardLink = `${frontendUrl}/creator-dashboard`;
             
             const { error: notificationError } = await supabase
               .from('notifications')

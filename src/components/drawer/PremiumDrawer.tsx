@@ -26,7 +26,7 @@ import { useSession } from "@/contexts/SessionContext";
 import { getInitials } from "@/lib/utils/avatar";
 import { cn } from "@/lib/utils";
 import { triggerHaptic, HapticPatterns } from "@/lib/utils/haptics";
-import { spacing, iconSizes, separators, animations, spotlight, radius } from "@/lib/design-system";
+import { spacing, iconSizes, separators, animations, spotlight, radius, gradients, getCardClasses, typography, shadows } from "@/lib/design-system";
 import { useMotionValue, useTransform, useSpring } from "framer-motion";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { DEFAULT_AVATAR_URL, generateAvatarUrl } from "@/lib/utils/avatar";
@@ -105,17 +105,13 @@ function DrawerHeader({ userName, userHandle, userAvatar, userInitials, onProfil
         "pointer-events-none"
       )} />
       
-      {/* Profile Section - More compact on mobile */}
+      {/* Profile Section - tertiary card for brand consistency */}
       <motion.button
         onClick={handleProfileClick}
         className={cn(
-          "rounded-2xl",
-          "bg-white/5",
-          "backdrop-blur-xl",
-          "p-4",
+          getCardClasses("tertiary"),
+          "rounded-xl md:rounded-2xl",
           "flex items-center gap-4",
-          "border border-white/10",
-          "shadow-[0_4px_20px_-2px_rgba(0,0,0,0.35)]",
           "w-full mb-2 md:mb-4 relative",
           "focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-white/30 focus-visible:outline-offset-2",
           animations.cardPress
@@ -160,7 +156,7 @@ function DrawerSection({ title, children, showSeparator = true }: DrawerSectionP
   return (
     <div className="mt-3 md:mt-5 first:mt-0">
       {showSeparator && <div className={cn(separators.section, "my-3 md:my-6")} />}
-      <p className="text-[10px] md:text-[11px] tracking-wide uppercase text-white/40 mb-1.5 md:mb-2 ml-1.5 md:ml-2">
+      <p className={cn(typography.label, "mb-1.5 md:mb-2 ml-1.5 md:ml-2")}>
         {title}
       </p>
       <div className="space-y-1.5 md:space-y-2">
@@ -198,16 +194,14 @@ function DrawerItem({ item, isActive, onClick }: DrawerItemProps) {
         "focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-white/30 focus-visible:outline-offset-2",
         isActive
           ? cn(
-              "bg-gradient-to-r from-[#A06BFF]/80 to-[#7E36FF]/80",
+              "bg-gradient-to-r from-[#6C4BFF] to-[#9A3DFF]",
               "text-white",
-              "shadow-[0_0_25px_rgba(160,107,255,0.35)]"
+              "shadow-lg shadow-purple-500/20"
             )
           : cn(
-              "bg-gradient-to-r from-[#5516CC]/40 to-[#7E36FF]/30",
-              "hover:from-[#7E36FF]/40 hover:to-[#A06BFF]/40",
-              "border border-white/10",
-              "text-white/90",
-              "before:absolute before:inset-0 before:bg-gradient-to-br before:from-white/15 before:to-transparent before:opacity-0 group-hover:before:opacity-100 before:transition-all before:duration-300"
+              "bg-white/5 border border-white/10",
+              "hover:bg-white/10",
+              "text-white/90"
             )
       )}
     >
@@ -252,15 +246,9 @@ function QuickActionButton({ item, onClick }: QuickActionButtonProps) {
       whileTap={animations.microTap}
       whileHover={window.innerWidth > 768 ? animations.microHover : undefined}
       className={cn(
-        "w-full",
-        "rounded-2xl",
-        "bg-white/5",
-        "backdrop-blur-xl",
-        "px-4 py-4",
-        "flex items-center justify-between",
-        "text-white/90",
-        "border border-white/10",
-        "shadow-[0_3px_16px_-3px_rgba(0,0,0,0.35)]",
+        getCardClasses("tertiary"),
+        "rounded-xl md:rounded-2xl",
+        "w-full px-4 py-4 flex items-center justify-between text-white/90",
         "active:scale-[0.97] transition-all",
         "focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-white/30 focus-visible:outline-offset-2"
       )}
@@ -292,11 +280,9 @@ function LogoutButton({ onClick }: LogoutButtonProps) {
         "flex items-center gap-2 md:gap-3",
         radius.lg,
         "p-2.5 md:p-3",
-        "bg-gradient-to-br from-[#5516CC]/40 to-[#2E0B66]/40",
-        "hover:from-[#5516CC]/60 hover:to-[#2E0B66]/60",
+        "bg-red-500/10 border border-red-400/20",
+        "hover:bg-red-500/20 hover:border-red-400/30",
         "text-red-300",
-        "border border-red-400/20",
-        "hover:shadow-[0_0_20px_rgba(160,107,255,0.35)]",
         "focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-red-500/30 focus-visible:outline-offset-2"
       )}
     >
@@ -455,14 +441,15 @@ export default function PremiumDrawer({
             className={cn(
               "fixed top-0 left-0 h-full",
               "w-[75vw] max-w-[320px]",
-              "bg-[radial-gradient(ellipse_at_top,_rgba(130,60,255,0.25),_rgba(60,0,130,0.35))]",
+              gradients.page,
               "backdrop-blur-2xl",
-              "rounded-r-3xl shadow-2xl shadow-black/40",
+              radius.xl,
+              "rounded-l-none",
+              shadows.drawer,
               "border-r border-white/10",
               "overflow-y-auto",
               "px-6 py-6",
               "premium-drawer drawer-container",
-              // Hide scrollbar but keep scrolling
               "[&::-webkit-scrollbar]:w-0 [&::-webkit-scrollbar]:h-0",
               "overscroll-contain"
             )}

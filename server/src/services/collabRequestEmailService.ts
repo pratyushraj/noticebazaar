@@ -34,6 +34,8 @@ interface CollabRequestAcceptedData {
   deliverables: string[];
   contractReadyToken: string;
   contractUrl?: string;
+  /** For barter: product value in INR (optional) */
+  barterValue?: number | null;
 }
 
 interface CollabRequestCounterData {
@@ -65,6 +67,8 @@ interface CollabRequestCreatorNotificationData {
   exactBudget?: number | null;
   barterDescription?: string | null;
   barterValue?: number | null;
+  /** Barter: optional product image URL to show in the creator notification email */
+  barterProductImageUrl?: string | null;
   deliverables: string[];
   deadline?: string | null;
   timeline?: string;
@@ -312,6 +316,249 @@ export async function sendCollabRequestSubmissionEmail(
 }
 
 /**
+ * Barter acceptance email: full HTML (premium, clear, action-oriented)
+ */
+function getBarterAcceptedEmailHtml(
+  data: CollabRequestAcceptedData,
+  contractReadyLink: string
+): string {
+  const productValueText = data.barterValue != null && data.barterValue > 0
+    ? `₹${Number(data.barterValue).toLocaleString('en-IN')}`
+    : 'Not specified';
+  const deliverablesItems = (data.deliverables.length > 0 ? data.deliverables : ['As per agreement'])
+    .map((d) => `<li style="color: #4b5563; font-size: 14px; margin-bottom: 6px;">${d}</li>`)
+    .join('');
+  const frontendUrl = process.env.FRONTEND_URL || 'https://creatorarmour.com';
+  const barterProtectionUrl = `${frontendUrl}/about`; // or a dedicated /barter-protection page
+
+  return `
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  </head>
+  <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 0;">
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="max-width: 600px; margin: 0 auto;">
+      <tr>
+        <td style="background-color: #667eea; padding: 28px 24px; border-radius: 12px 12px 0 0; text-align: center;">
+          <h1 style="color: #ffffff; margin: 0 0 8px 0; font-size: 22px; font-weight: 600;">Your collaboration is confirmed 🎉</h1>
+          <p style="color: #ffffff; margin: 0; font-size: 15px; opacity: 0.95;">The creator has accepted your barter collaboration. One final step remains.</p>
+        </td>
+      </tr>
+      <tr>
+        <td style="background: #f9fafb; padding: 28px 24px; border-radius: 0 0 12px 12px; border: 1px solid #e5e7eb; border-top: none;">
+      <p style="color: #1f2937; font-size: 16px; margin-top: 0;">Hello ${data.brandName},</p>
+
+      <div style="background: #ecfdf5; border: 1px solid #10b981; border-radius: 10px; padding: 18px 20px; margin: 24px 0;">
+        <h3 style="color: #065f46; margin: 0 0 6px 0; font-size: 16px; font-weight: 600;">✓ Contract Ready for Review</h3>
+        <p style="color: #047857; font-size: 14px; margin: 0; line-height: 1.5;">The collaboration is accepted. Please review and sign the contract to make it legally binding and unlock delivery details.</p>
+      </div>
+
+      <div style="background: white; border: 1px solid #e5e7eb; border-radius: 10px; padding: 20px; margin: 24px 0;">
+        <h3 style="color: #1f2937; margin-top: 0; margin-bottom: 16px; font-size: 16px; font-weight: 600;">Deal Summary</h3>
+        <table style="width: 100%; border-collapse: collapse;">
+          <tr>
+            <td style="padding: 8px 0; color: #6b7280; font-size: 14px; width: 38%; vertical-align: top;">Creator</td>
+            <td style="padding: 8px 0; color: #1f2937; font-size: 14px;">${data.creatorName}</td>
+          </tr>
+          <tr>
+            <td style="padding: 8px 0; color: #6b7280; font-size: 14px;">Deal Type</td>
+            <td style="padding: 8px 0; color: #1f2937; font-size: 14px; font-weight: 500;">Barter Collaboration</td>
+          </tr>
+          <tr>
+            <td style="padding: 8px 0; color: #6b7280; font-size: 14px;">Product Value</td>
+            <td style="padding: 8px 0; color: #1f2937; font-size: 14px;">${productValueText}</td>
+          </tr>
+        </table>
+        <p style="color: #6b7280; font-size: 13px; margin: 12px 0 6px 0;">Deliverables</p>
+        <ul style="margin: 0; padding-left: 20px; color: #4b5563; font-size: 14px;">
+          ${deliverablesItems}
+        </ul>
+      </div>
+
+      <div style="margin: 24px 0;">
+        <h3 style="color: #1f2937; margin: 0 0 12px 0; font-size: 16px; font-weight: 600;">What happens next:</h3>
+        <ol style="margin: 0; padding-left: 20px; color: #4b5563; font-size: 14px; line-height: 1.8;">
+          <li>Review and sign the contract</li>
+          <li>After signing, you'll receive the creator's delivery address</li>
+          <li>Ship the product as agreed</li>
+          <li>Creator delivers content as per timeline</li>
+        </ol>
+      </div>
+
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin: 28px 0;">
+        <tr>
+          <td align="center" style="border-radius: 10px; background-color: #10b981;">
+            <a href="${contractReadyLink}" style="display: block; width: 100%; color: #ffffff; padding: 16px 24px; text-decoration: none; font-weight: 600; font-size: 16px; text-align: center;" target="_blank" rel="noopener noreferrer">Review & Sign Contract &gt;</a>
+          </td>
+        </tr>
+      </table>
+
+      <p style="color: #6b7280; font-size: 13px; line-height: 1.5; margin: 24px 0 20px 0; padding: 16px; background: #f3f4f6; border-radius: 8px; border: 1px solid #e5e7eb;">
+        This collaboration is legally protected by Creator Armour. All actions are timestamped and recorded for transparency.
+      </p>
+
+      <div style="margin-top: 28px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
+        <p style="color: #9ca3af; font-size: 12px; margin: 0;">This is an automated email from Creator Armour. Please do not reply to this email.</p>
+        <p style="color: #9ca3af; font-size: 12px; margin: 8px 0 0 0;">
+          <a href="${barterProtectionUrl}" style="color: #667eea; text-decoration: none;">Learn how barter protection works</a>
+        </p>
+      </div>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>
+  `.trim();
+}
+
+/**
+ * Plain-text fallback for barter acceptance (for clients that strip HTML)
+ */
+function getBarterAcceptedEmailPlainText(
+  data: CollabRequestAcceptedData,
+  contractReadyLink: string
+): string {
+  const productValueText = data.barterValue != null && data.barterValue > 0
+    ? `₹${Number(data.barterValue).toLocaleString('en-IN')}`
+    : 'Not specified';
+  const deliverablesList = (data.deliverables.length > 0 ? data.deliverables : ['As per agreement'])
+    .map((d, i) => `${i + 1}. ${d}`)
+    .join('\n');
+
+  return `
+Your collaboration is confirmed
+
+The creator has accepted your barter collaboration. One final step remains.
+
+Hello ${data.brandName},
+
+CONTRACT READY FOR REVIEW
+The collaboration is accepted. Please review and sign the contract to make it legally binding and unlock delivery details.
+
+DEAL SUMMARY
+Creator: ${data.creatorName}
+Deal Type: Barter Collaboration
+Product Value: ${productValueText}
+
+Deliverables:
+${deliverablesList}
+
+WHAT HAPPENS NEXT
+1. Review and sign the contract
+2. After signing, you'll receive the creator's delivery address
+3. Ship the product as agreed
+4. Creator delivers content as per timeline
+
+Review & Sign Contract: ${contractReadyLink}
+
+This collaboration is legally protected by Creator Armour. All actions are timestamped and recorded for transparency.
+
+---
+This is an automated email from Creator Armour. Please do not reply to this email.
+  `.trim();
+}
+
+/**
+ * Paid acceptance email: same structure as barter (hero, callout, deal summary, what happens next, green CTA)
+ */
+function getPaidAcceptedEmailHtml(
+  data: CollabRequestAcceptedData,
+  contractReadyLink: string
+): string {
+  const dealAmountText = data.dealAmount != null && data.dealAmount > 0
+    ? `₹${Number(data.dealAmount).toLocaleString('en-IN')}`
+    : 'Not specified';
+  const deliverablesItems = (data.deliverables.length > 0 ? data.deliverables : ['As per agreement'])
+    .map((d) => `<li style="color: #4b5563; font-size: 14px; margin-bottom: 6px;">${d}</li>`)
+    .join('');
+  const frontendUrl = process.env.FRONTEND_URL || 'https://creatorarmour.com';
+  const barterProtectionUrl = `${frontendUrl}/about`;
+
+  return `
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  </head>
+  <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 0;">
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="max-width: 600px; margin: 0 auto;">
+      <tr>
+        <td style="background-color: #667eea; padding: 28px 24px; border-radius: 12px 12px 0 0; text-align: center;">
+          <h1 style="color: #ffffff; margin: 0 0 8px 0; font-size: 22px; font-weight: 600;">Your collaboration is confirmed</h1>
+          <p style="color: #ffffff; margin: 0; font-size: 15px; opacity: 0.95;">The creator has accepted your paid collaboration. One final step remains.</p>
+        </td>
+      </tr>
+      <tr>
+        <td style="background: #f9fafb; padding: 28px 24px; border-radius: 0 0 12px 12px; border: 1px solid #e5e7eb; border-top: none;">
+      <p style="color: #1f2937; font-size: 16px; margin-top: 0;">Hello ${data.brandName},</p>
+
+      <div style="background: #ecfdf5; border: 1px solid #10b981; border-radius: 10px; padding: 18px 20px; margin: 24px 0;">
+        <h3 style="color: #065f46; margin: 0 0 6px 0; font-size: 16px; font-weight: 600;">✓ Contract Ready for Review</h3>
+        <p style="color: #047857; font-size: 14px; margin: 0; line-height: 1.5;">The collaboration is accepted. Please review and sign the contract to make it legally binding and unlock the work timeline.</p>
+      </div>
+
+      <div style="background: white; border: 1px solid #e5e7eb; border-radius: 10px; padding: 20px; margin: 24px 0;">
+        <h3 style="color: #1f2937; margin-top: 0; margin-bottom: 16px; font-size: 16px; font-weight: 600;">Deal Summary</h3>
+        <table style="width: 100%; border-collapse: collapse;">
+          <tr>
+            <td style="padding: 8px 0; color: #6b7280; font-size: 14px; width: 38%; vertical-align: top;">Creator</td>
+            <td style="padding: 8px 0; color: #1f2937; font-size: 14px;">${data.creatorName}</td>
+          </tr>
+          <tr>
+            <td style="padding: 8px 0; color: #6b7280; font-size: 14px;">Deal Type</td>
+            <td style="padding: 8px 0; color: #1f2937; font-size: 14px; font-weight: 500;">Paid Collaboration</td>
+          </tr>
+          <tr>
+            <td style="padding: 8px 0; color: #6b7280; font-size: 14px;">Deal Value</td>
+            <td style="padding: 8px 0; color: #1f2937; font-size: 14px;">${dealAmountText}</td>
+          </tr>
+        </table>
+        <p style="color: #6b7280; font-size: 13px; margin: 12px 0 6px 0;">Deliverables</p>
+        <ul style="margin: 0; padding-left: 20px; color: #4b5563; font-size: 14px;">
+          ${deliverablesItems}
+        </ul>
+      </div>
+
+      <div style="margin: 24px 0;">
+        <h3 style="color: #1f2937; margin: 0 0 12px 0; font-size: 16px; font-weight: 600;">What happens next:</h3>
+        <ol style="margin: 0; padding-left: 20px; color: #4b5563; font-size: 14px; line-height: 1.8;">
+          <li>Review and sign the contract</li>
+          <li>After signing, you'll receive a copy of the agreement</li>
+          <li>Creator delivers content as per timeline</li>
+          <li>Payment tracked through Creator Armour.</li>
+        </ol>
+      </div>
+
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin: 28px 0;">
+        <tr>
+          <td align="center" style="border-radius: 10px; background-color: #10b981;">
+            <a href="${contractReadyLink}" style="display: block; width: 100%; color: #ffffff; padding: 16px 24px; text-decoration: none; font-weight: 600; font-size: 16px; text-align: center;" target="_blank" rel="noopener noreferrer">Review & Sign Contract &gt;</a>
+          </td>
+        </tr>
+      </table>
+
+      <p style="color: #6b7280; font-size: 13px; line-height: 1.5; margin: 24px 0 20px 0; padding: 16px; background: #f3f4f6; border-radius: 8px; border: 1px solid #e5e7eb;">
+        This collaboration is legally protected by Creator Armour. All actions are timestamped and recorded for transparency.
+      </p>
+
+      <div style="margin-top: 28px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
+        <p style="color: #9ca3af; font-size: 12px; margin: 0;">This is an automated email from Creator Armour. Please do not reply to this email.</p>
+        <p style="color: #9ca3af; font-size: 12px; margin: 8px 0 0 0;">
+          <a href="${barterProtectionUrl}" style="color: #667eea; text-decoration: none;">Learn how barter protection works</a>
+        </p>
+      </div>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>
+  `.trim();
+}
+
+/**
  * 2. Send email when request is accepted
  */
 export async function sendCollabRequestAcceptedEmail(
@@ -319,68 +566,18 @@ export async function sendCollabRequestAcceptedEmail(
   data: CollabRequestAcceptedData
 ): Promise<{ success: boolean; emailId?: string; error?: string }> {
   const frontendUrl = process.env.FRONTEND_URL || 'https://creatorarmour.com';
-  const contractReadyLink = `${frontendUrl}/#/contract-ready/${data.contractReadyToken}`;
+  const contractReadyLink = `${frontendUrl}/contract-ready/${data.contractReadyToken}`;
 
-  const dealAmount = data.dealType === 'paid' && data.dealAmount
-    ? `₹${parseFloat(data.dealAmount.toString()).toLocaleString('en-IN')}`
-    : 'Barter Deal';
+  if (data.dealType === 'barter') {
+    const subject = 'Your Barter Collaboration Has Been Accepted — Review & Sign Contract';
+    const html = getBarterAcceptedEmailHtml(data, contractReadyLink);
+    return sendEmail(brandEmail, subject, html);
+  }
 
-  const deliverablesList = data.deliverables
-    .map((d, idx) => `${idx + 1}. ${d}`)
-    .join('<br>');
-
-  const content = `
-    <p style="color: #4b5563; font-size: 16px;">
-      Great news! <strong>${data.creatorName}</strong> has accepted your collaboration request.
-    </p>
-    
-    <div style="background: #d1fae5; border: 1px solid #10b981; border-radius: 8px; padding: 15px; margin: 20px 0;">
-      <p style="color: #065f46; font-size: 14px; margin: 0;">
-        <strong>✓ Request Accepted</strong> - A contract has been generated and is ready for your review and signature.
-      </p>
-    </div>
-
-    <div style="background: white; border: 1px solid #e5e7eb; border-radius: 8px; padding: 20px; margin: 20px 0;">
-      <h3 style="color: #1f2937; margin-top: 0; font-size: 18px;">Deal Summary:</h3>
-      <table style="width: 100%; border-collapse: collapse;">
-        <tr>
-          <td style="padding: 8px 0; color: #6b7280; font-size: 14px; width: 40%;"><strong>Creator:</strong></td>
-          <td style="padding: 8px 0; color: #1f2937; font-size: 14px;">${data.creatorName}</td>
-        </tr>
-        <tr>
-          <td style="padding: 8px 0; color: #6b7280; font-size: 14px;"><strong>Deal Value:</strong></td>
-          <td style="padding: 8px 0; color: #1f2937; font-size: 14px; font-weight: 600;">${dealAmount}</td>
-        </tr>
-      </table>
-    </div>
-
-    <div style="background: white; border: 1px solid #e5e7eb; border-radius: 8px; padding: 20px; margin: 20px 0;">
-      <h3 style="color: #1f2937; margin-top: 0; font-size: 18px;">Deliverables:</h3>
-      <div style="color: #4b5563; font-size: 14px;">
-        ${deliverablesList || 'As per agreement'}
-      </div>
-    </div>
-
-    <p style="color: #6b7280; font-size: 14px; margin-top: 20px;">
-      <strong>Next Steps:</strong> Review the contract terms and sign to make it legally binding. Once signed, you'll receive a copy for your records.
-    </p>
-  `;
-
-  const html = getEmailTemplate(
-    '✅ Request Accepted',
-    `Hello ${data.brandName},`,
-    content,
-    'Review & Sign Contract',
-    contractReadyLink,
-    data.contractUrl ? 'Download Contract PDF' : undefined,
-    data.contractUrl
-  );
-
-  return sendEmail(
-    brandEmail,
-    `${data.creatorName} accepted your collaboration request`,
-    html
-  );
+  // Paid deal: same layout as barter (hero, callout, deal summary, what happens next, green CTA)
+  const subject = 'Your Paid Collaboration Has Been Accepted — Review & Sign Contract';
+  const html = getPaidAcceptedEmailHtml(data, contractReadyLink);
+  return sendEmail(brandEmail, subject, html);
 }
 
 /**
@@ -459,7 +656,7 @@ export async function sendCollabRequestDeclinedEmail(
   data: CollabRequestDeclinedData
 ): Promise<{ success: boolean; emailId?: string; error?: string }> {
   const frontendUrl = process.env.FRONTEND_URL || 'https://creatorarmour.com';
-  const collabLink = `${frontendUrl}/#/collab/${data.creatorUsername}`;
+  const collabLink = `${frontendUrl}/collab/${data.creatorUsername}`;
 
   const content = `
     <p style="color: #4b5563; font-size: 16px;">
@@ -509,7 +706,7 @@ export async function sendCollabRequestCreatorNotificationEmail(
   data: CollabRequestCreatorNotificationData
 ): Promise<{ success: boolean; emailId?: string; error?: string }> {
   const frontendUrl = process.env.FRONTEND_URL || 'https://creatorarmour.com';
-  const dashboardLink = `${frontendUrl}/#/creator-dashboard`;
+  const dashboardLink = `${frontendUrl}/creator-dashboard`;
 
   // Format collaboration type
   const collabTypeText = data.collabType === 'paid' 
@@ -586,7 +783,7 @@ export async function sendCollabRequestCreatorNotificationEmail(
     timeline: timelineText,
     notes: data.notes,
     viewRequestUrl: dashboardLink,
-    // Secondary action URLs can be added later when we have specific routes
+    barterProductImageUrl: data.barterProductImageUrl ?? undefined,
   });
 
   // Subject line with budget

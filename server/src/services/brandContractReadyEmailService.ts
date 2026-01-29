@@ -49,7 +49,7 @@ export async function sendBrandContractReadyEmail(
     const url = 'https://api.resend.com/emails';
     
     const frontendUrl = process.env.FRONTEND_URL || 'https://creatorarmour.com';
-    const contractReadyLink = `${frontendUrl}/#/contract-ready/${contractData.contractReadyToken}`;
+    const contractReadyLink = `${frontendUrl}/contract-ready/${contractData.contractReadyToken}`;
     
     const dealAmount = contractData.dealType === 'paid' && contractData.dealAmount
       ? `₹${parseFloat(contractData.dealAmount.toString()).toLocaleString('en-IN')}`

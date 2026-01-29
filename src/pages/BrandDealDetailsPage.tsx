@@ -748,7 +748,7 @@ const BrandDealDetailsPage = () => {
     
     // If we have a contract ready token, show sign option
     if (contractReadyToken) {
-      const contractReadyUrl = `/#/contract-ready/${contractReadyToken}`;
+      const contractReadyUrl = `/contract-ready/${contractReadyToken}`;
       return (
         <div className="min-h-[100dvh] bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 text-white flex items-center justify-center p-4">
           <motion.div
@@ -788,7 +788,7 @@ const BrandDealDetailsPage = () => {
                       const tokenData = await tokenResponse.json();
                       
                       if (tokenResponse.ok && tokenData.success && tokenData.contractReadyToken) {
-                        window.location.href = `/#/contract-ready/${tokenData.contractReadyToken}`;
+                        window.location.href = `${window.location.origin}/contract-ready/${tokenData.contractReadyToken}`;
                       } else {
                         // No contract ready token exists, stay on this page (will show "Contract Being Prepared")
                         toast.info('Contract is being prepared. Please wait a moment and try again.');

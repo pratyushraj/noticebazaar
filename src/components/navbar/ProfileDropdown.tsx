@@ -12,31 +12,21 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
-import { User, Settings, LogOut, Sparkles, Fingerprint, Loader2 } from 'lucide-react';
+import { User, Settings, LogOut, Sparkles, Loader2 } from 'lucide-react';
 import { useSignOut } from '@/lib/hooks/useAuth';
 import { getInitials, DEFAULT_AVATAR_URL } from '@/lib/utils/avatar';
 import { useSession } from '@/contexts/SessionContext';
-import { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import BiometricLogin from '@/components/auth/BiometricLogin';
-import { toast } from 'sonner';
 
 interface ProfileDropdownProps {
   profilePath: string;
 }
 
 const ProfileDropdown: React.FC<ProfileDropdownProps> = ({ profilePath }) => {
-  const { profile, user } = useSession();
+  const { profile } = useSession();
   const signOutMutation = useSignOut();
-  const [showPasskeyDialog, setShowPasskeyDialog] = useState(false);
 
   const handleLogout = async () => {
     await signOutMutation.mutateAsync();
-  };
-
-  const handlePasskeyRegisterSuccess = () => {
-    toast.success('Passkey registered! You can now use Face ID to sign in.');
-    setShowPasskeyDialog(false);
   };
 
   const isCreator = profile?.role === 'creator';
@@ -101,14 +91,6 @@ const ProfileDropdown: React.FC<ProfileDropdownProps> = ({ profilePath }) => {
           </Link>
         </DropdownMenuItem>
 
-        <DropdownMenuItem 
-          onClick={() => setShowPasskeyDialog(true)}
-          className="cursor-pointer px-3 py-2.5 hover:bg-white/5 active:bg-white/10 transition-colors"
-        >
-          <Fingerprint className="mr-3 h-4 w-4 text-white/60" />
-          <span className="text-[15px] text-white/90">Register Passkey</span>
-        </DropdownMenuItem>
-
         <DropdownMenuSeparator className="bg-white/5 my-1" />
         
         <DropdownMenuItem
@@ -146,24 +128,6 @@ const ProfileDropdown: React.FC<ProfileDropdownProps> = ({ profilePath }) => {
           )}
         </DropdownMenuItem>
       </DropdownMenuContent>
-
-      {/* Passkey Registration Dialog */}
-      <Dialog open={showPasskeyDialog} onOpenChange={setShowPasskeyDialog}>
-        <DialogContent className="sm:max-w-[425px] bg-[#0F121A]/95 backdrop-blur-xl border border-white/10 text-white">
-          <DialogHeader>
-            <DialogTitle className="text-white">Register Passkey</DialogTitle>
-            <DialogDescription className="text-gray-400">
-              Register a passkey for faster, more secure sign-ins using Face ID or Touch ID.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="mt-4">
-            <BiometricLogin 
-              mode="register"
-              onSuccess={handlePasskeyRegisterSuccess}
-            />
-          </div>
-        </DialogContent>
-      </Dialog>
     </DropdownMenu>
   );
 };

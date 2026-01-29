@@ -12,6 +12,7 @@ import {
   Loader2,
   Copy,
   Lock,
+  FileCheck,
   Image as ImageIcon,
   Gift,
   ShoppingBag,
@@ -461,24 +462,35 @@ const CollabRequestsPage = () => {
         {counteredRequests.length > 0 && (
           <div className="mt-8 space-y-4">
             <p className="text-purple-200/80 text-sm">Counter sent — awaiting brand response</p>
-            {counteredRequests.map((request) => (
-              <Card key={request.id} className="rounded-[20px] bg-white/5 backdrop-blur-md border border-white/10 border-blue-500/20 overflow-hidden">
-                <CardContent className="p-4 sm:p-5 space-y-3">
-                  <div className="flex items-center justify-between gap-2">
-                    <h3 className="text-lg font-bold text-white">{(request.collab_type === 'barter' || request.collab_type === 'both') ? 'Barter Collaboration' : request.brand_name}</h3>
-                    <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-medium bg-blue-500/20 text-blue-200 border border-blue-500/30">Counter Sent</span>
-                  </div>
-                  <p className="text-xs text-purple-300/60 flex items-center gap-1.5">
-                    <Lock className="h-3 w-3 flex-shrink-0" aria-hidden />
-                    Counter sent {request.updated_at ? new Date(request.updated_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' }) : '—'} — legally recorded
-                  </p>
-                  <p className="text-[10px] text-purple-300/50 flex items-center gap-1.5">
-                    <Lock className="h-3 w-3 flex-shrink-0" aria-hidden />
-                    Auto-contracted & legally protected
-                  </p>
-                </CardContent>
-              </Card>
-            ))}
+            {counteredRequests.map((request) => {
+              const counterDate = request.updated_at ? new Date(request.updated_at) : null;
+              return (
+                <Card key={request.id} className="rounded-[20px] bg-white/5 backdrop-blur-md border border-white/10 border-blue-500/20 overflow-hidden">
+                  <CardContent className="p-4 sm:p-5 space-y-2.5">
+                    <div className="flex items-center justify-between gap-2">
+                      <h3 className="text-lg font-bold text-white truncate">{(request.collab_type === 'barter' || request.collab_type === 'both') ? 'Barter Collaboration' : request.brand_name}</h3>
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-medium bg-blue-500/20 text-blue-200 border border-blue-500/30 shrink-0">Counter Sent</span>
+                    </div>
+                    <div className="pt-2 border-t border-white/5 space-y-1.5" role="status" aria-label="Counter status and legal protection">
+                      <p className="text-xs text-purple-300/70 flex items-center gap-1.5">
+                        <FileCheck className="h-3.5 w-3.5 flex-shrink-0 text-blue-400/80" aria-hidden />
+                        Counter sent{' '}
+                        {counterDate ? (
+                          <time dateTime={counterDate.toISOString()}>{counterDate.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })}</time>
+                        ) : (
+                          '—'
+                        )}{' '}
+                        — legally recorded
+                      </p>
+                      <p className="text-[11px] text-purple-300/60 flex items-center gap-1.5">
+                        <Lock className="h-3 w-3 flex-shrink-0 text-white/40" aria-hidden />
+                        Auto-contracted & legally protected
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
           </div>
         )}
 

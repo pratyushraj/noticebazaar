@@ -55,6 +55,8 @@ import collabRequestsRouter from './routes/collabRequests.js';
 import collabAnalyticsRouter from './routes/collabAnalytics.js';
 import creatorsRouter from './routes/creators.js';
 import shippingRouter from './routes/shipping.js';
+import { sendCollabRequestAcceptedEmail, sendCollabRequestCreatorNotificationEmail } from './services/collabRequestEmailService.js';
+import { createContractReadyToken } from './services/contractReadyTokenService.js';
 // Log router import for debugging
 console.log('[Server] Influencers router imported:', typeof influencersRouter, influencersRouter ? '✓' : '✗');
 import { authMiddleware } from './middleware/auth.js';
@@ -292,6 +294,174 @@ app.use('/api/conversations', authMiddleware, rateLimitMiddleware, conversations
 app.use('/api/conversations', authMiddleware, rateLimitMiddleware, messagesRouter);
 app.use('/api/conversations', authMiddleware, rateLimitMiddleware, attachmentsRouter);
 app.use('/api/payments', authMiddleware, rateLimitMiddleware, paymentsRouter);
+
+// Demo email (only when ALLOW_DEMO_EMAIL=true; restricted to *@yopmail.com)
+app.post('/api/demo-email/barter-accepted', async (req: express.Request, res: express.Response) => {
+  if (process.env.ALLOW_DEMO_EMAIL !== 'true') {
+    return res.status(404).json({ success: false, error: 'Not found' });
+  }
+  const to = (req.body?.to || 'notice@yopmail.com').trim().toLowerCase();
+  if (!to.endsWith('@yopmail.com')) {
+    return res.status(400).json({ success: false, error: 'Demo emails only allowed to *@yopmail.com' });
+  }
+  try {
+    const result = await sendCollabRequestAcceptedEmail(to, {
+      creatorName: 'Demo Creator',
+      brandName: 'Demo Brand',
+      dealType: 'barter',
+      deliverables: ['1 Instagram Reel', '1 Story', 'Usage Rights: 90 days'],
+      contractReadyToken: 'demo-token-for-preview',
+      contractUrl: undefined,
+      barterValue: 999,
+    });
+    if (result.success) {
+      return res.json({ success: true, emailId: result.emailId, to });
+    }
+    return res.status(500).json({ success: false, error: result.error });
+  } catch (e: any) {
+    return res.status(500).json({ success: false, error: e?.message || 'Failed to send' });
+  }
+});
+
+// Demo: creator notification (barter collab request) — sent TO creator
+app.post('/api/demo-email/creator-barter', async (req: express.Request, res: express.Response) => {
+  if (process.env.ALLOW_DEMO_EMAIL !== 'true') {
+    return res.status(404).json({ success: false, error: 'Not found' });
+  }
+  const to = (req.body?.to || 'notice@yopmail.com').trim().toLowerCase();
+  if (!to.endsWith('@yopmail.com')) {
+    return res.status(400).json({ success: false, error: 'Demo emails only allowed to *@yopmail.com' });
+  }
+  try {
+    // Inline SVG so the image shows even when email clients block remote images (no "Show pictures" needed)
+    const barterProductSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120"><rect fill="#e2e8f0" width="120" height="120" rx="10"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#64748b" font-family="Arial,sans-serif" font-size="14">Product</text></svg>';
+    const barterProductImageUrl = 'data:image/svg+xml,' + encodeURIComponent(barterProductSvg);
+
+    const result = await sendCollabRequestCreatorNotificationEmail(to, {
+      creatorName: 'Demo Creator',
+      brandName: 'Demo Brand',
+      collabType: 'barter',
+      deliverables: ['1 Instagram Reel', '1 Story', 'Usage Rights: 90 days'],
+      requestId: 'demo-request-barter',
+      barterValue: 999,
+      barterDescription: 'Skincare product bundle',
+      barterProductImageUrl,
+      deadline: new Date(Date.now() + 21 * 24 * 60 * 60 * 1000).toISOString(),
+    });
+    if (result.success) {
+      return res.json({ success: true, emailId: result.emailId, to });
+    }
+    return res.status(500).json({ success: false, error: result.error });
+  } catch (e: any) {
+    return res.status(500).json({ success: false, error: e?.message || 'Failed to send' });
+  }
+});
+
+// Demo: brand acceptance (paid collab) — sent TO brand when creator accepts paid deal
+app.post('/api/demo-email/paid-accepted', async (req: express.Request, res: express.Response) => {
+  if (process.env.ALLOW_DEMO_EMAIL !== 'true') {
+    return res.status(404).json({ success: false, error: 'Not found' });
+  }
+  const to = (req.body?.to || 'notice@yopmail.com').trim().toLowerCase();
+  if (!to.endsWith('@yopmail.com')) {
+    return res.status(400).json({ success: false, error: 'Demo emails only allowed to *@yopmail.com' });
+  }
+  try {
+    const result = await sendCollabRequestAcceptedEmail(to, {
+      creatorName: 'Demo Creator',
+      brandName: 'Demo Brand',
+      dealType: 'paid',
+      dealAmount: 15000,
+      deliverables: ['1 Instagram Reel', '2 Stories', 'Usage Rights: 90 days'],
+      contractReadyToken: 'demo-token-paid-preview',
+      contractUrl: undefined,
+    });
+    if (result.success) {
+      return res.json({ success: true, emailId: result.emailId, to });
+    }
+    return res.status(500).json({ success: false, error: result.error });
+  } catch (e: any) {
+    return res.status(500).json({ success: false, error: e?.message || 'Failed to send' });
+  }
+});
+
+// Demo: send brand contract-signing email for an existing deal (so you can test brand signing)
+app.post('/api/demo-email/send-brand-contract-for-deal', async (req: express.Request, res: express.Response) => {
+  if (process.env.ALLOW_DEMO_EMAIL !== 'true') {
+    return res.status(404).json({ success: false, error: 'Not found' });
+  }
+  const dealId = (req.body?.dealId || '').trim();
+  const to = (req.body?.to || 'notice@yopmail.com').trim().toLowerCase();
+  if (!dealId) {
+    return res.status(400).json({ success: false, error: 'dealId is required' });
+  }
+  if (!to.endsWith('@yopmail.com')) {
+    return res.status(400).json({ success: false, error: 'Demo emails only allowed to *@yopmail.com' });
+  }
+  try {
+    const { data: deal, error: dealError } = await supabase
+      .from('brand_deals')
+      .select('id, creator_id, brand_name, brand_email, deal_type, deal_amount, deliverables')
+      .eq('id', dealId)
+      .maybeSingle();
+
+    if (dealError || !deal) {
+      return res.status(404).json({ success: false, error: 'Deal not found' });
+    }
+
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('first_name, last_name')
+      .eq('id', deal.creator_id)
+      .maybeSingle();
+
+    const creatorName = profile
+      ? `${(profile.first_name || '').trim()} ${(profile.last_name || '').trim()}`.trim() || 'Creator'
+      : 'Creator';
+
+    let deliverablesArray: string[] = [];
+    try {
+      const d = (deal as any).deliverables;
+      deliverablesArray = typeof d === 'string'
+        ? (d.includes('[') ? JSON.parse(d) : d.split(',').map((s: string) => s.trim()))
+        : (Array.isArray(d) ? d : []);
+    } catch {
+      deliverablesArray = [(deal as any).deliverables].filter(Boolean);
+    }
+    if (deliverablesArray.length === 0) deliverablesArray = ['As per agreement'];
+
+    const token = await createContractReadyToken({
+      dealId: deal.id,
+      creatorId: deal.creator_id,
+      expiresAt: null,
+    });
+
+    const dealType = (deal as any).deal_type === 'barter' ? 'barter' : 'paid';
+    const result = await sendCollabRequestAcceptedEmail(to, {
+      creatorName,
+      brandName: (deal as any).brand_name || 'Brand',
+      dealType,
+      dealAmount: dealType === 'paid' ? (deal as any).deal_amount : undefined,
+      barterValue: dealType === 'barter' ? (deal as any).deal_amount : undefined,
+      deliverables: deliverablesArray,
+      contractReadyToken: token.id,
+      contractUrl: undefined,
+    });
+
+    if (result.success) {
+      return res.json({
+        success: true,
+        emailId: result.emailId,
+        to,
+        contractReadyToken: token.id,
+        contractReadyUrl: `${process.env.FRONTEND_URL || 'http://localhost:8080'}/contract-ready/${token.id}`,
+      });
+    }
+    return res.status(500).json({ success: false, error: result.error });
+  } catch (e: any) {
+    return res.status(500).json({ success: false, error: e?.message || 'Failed to send' });
+  }
+});
 
 // Public routes for contracts (no auth required) - must be before protected routes
 app.get('/api/protection/contracts/:dealId/view', viewContractHandler);

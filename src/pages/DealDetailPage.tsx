@@ -272,7 +272,7 @@ function DealDetailPageContent() {
 
       const baseUrl =
         typeof window !== 'undefined' ? window.location.origin : 'https://noticebazaar.com';
-      const link = `${baseUrl}/#/contract-ready/${data.token.id}`;
+      const link = `${baseUrl}/contract-ready/${data.token.id}`;
       setBrandReplyLink(link);
       return link;
     } catch (error) {
