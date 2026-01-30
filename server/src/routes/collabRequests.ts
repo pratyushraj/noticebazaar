@@ -14,6 +14,8 @@ import {
   sendCollabRequestCounterEmail,
   sendCollabRequestDeclinedEmail,
   sendCollabRequestCreatorNotificationEmail,
+  sendCollabAcceptMagicLinkEmail,
+  sendCollabDraftResumeEmail,
 } from '../services/collabRequestEmailService.js';
 import { resolveOrCreateBrandContact } from '../services/brandContactService.js';
 
@@ -62,6 +64,244 @@ function detectDeviceType(userAgent: string | undefined): string {
 // ============================================================================
 // PUBLIC ROUTES (No auth required)
 // ============================================================================
+
+/**
+ * GET /api/collab/:username/resume?token=xxx
+ * Load draft form data for "Save and continue later" (no auth)
+ */
+router.get('/:username/resume', async (req: Request, res: Response) => {
+  try {
+    const { username } = req.params;
+    const token = typeof req.query.token === 'string' ? req.query.token.trim() : '';
+    if (!username || !token) {
+      return res.status(400).json({ success: false, error: 'Username and token are required' });
+    }
+    const { data: draft, error: draftError } = await supabase
+      .from('collab_request_drafts')
+      .select('form_data, expires_at, creator_username')
+      .eq('resume_token', token)
+      .eq('creator_username', username.toLowerCase().trim())
+      .maybeSingle();
+    if (draftError) {
+      console.error('[CollabRequests] Draft fetch error:', draftError);
+      return res.status(500).json({ success: false, error: 'Failed to load draft' });
+    }
+    if (!draft) {
+      return res.status(404).json({ success: false, error: 'Draft not found or link expired' });
+    }
+    const expiresAt = new Date(draft.expires_at);
+    if (expiresAt.getTime() < Date.now()) {
+      return res.status(410).json({ success: false, error: 'This link has expired' });
+    }
+    return res.json({
+      success: true,
+      formData: draft.form_data || {},
+    });
+  } catch (e) {
+    console.error('[CollabRequests] Resume draft error:', e);
+    return res.status(500).json({ success: false, error: 'Failed to load draft' });
+  }
+});
+
+/**
+ * POST /api/collab/:username/save-draft
+ * Save form draft and send "Continue later" email (no auth)
+ */
+router.post('/:username/save-draft', async (req: Request, res: Response) => {
+  try {
+    const { username } = req.params;
+    const { email, formData } = req.body || {};
+    if (!username || username.trim() === '') {
+      return res.status(400).json({ success: false, error: 'Username is required' });
+    }
+    const emailStr = typeof email === 'string' ? email.trim() : '';
+    if (!emailStr || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailStr)) {
+      return res.status(400).json({ success: false, error: 'Valid email is required' });
+    }
+    const payload = typeof formData === 'object' && formData !== null ? formData : {};
+    const resumeToken = crypto.randomBytes(24).toString('hex');
+    const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
+
+    const normalizedUsername = username.toLowerCase().trim();
+    const { error: insertError } = await supabase
+      .from('collab_request_drafts')
+      .insert({
+        creator_username: normalizedUsername,
+        brand_email: emailStr,
+        form_data: payload,
+        resume_token: resumeToken,
+        expires_at: expiresAt.toISOString(),
+      });
+    if (insertError) {
+      console.error('[CollabRequests] Save draft error:', insertError);
+      return res.status(500).json({ success: false, error: 'Failed to save draft' });
+    }
+
+    const frontendUrl = process.env.FRONTEND_URL || 'https://creatorarmour.com';
+    const resumeUrl = `${frontendUrl}/collab/${encodeURIComponent(normalizedUsername)}?resume=${encodeURIComponent(resumeToken)}`;
+
+    let creatorName = 'the creator';
+    const profileRes = await supabase
+      .from('profiles')
+      .select('first_name, last_name, business_name')
+      .or(`username.eq.${normalizedUsername},instagram_handle.eq.${normalizedUsername}`)
+      .eq('role', 'creator')
+      .maybeSingle();
+    if (profileRes.data) {
+      const p = profileRes.data as any;
+      creatorName = p.business_name || [p.first_name, p.last_name].filter(Boolean).join(' ') || 'the creator';
+    }
+
+    const emailResult = await sendCollabDraftResumeEmail(emailStr, creatorName, resumeUrl);
+    if (!emailResult.success) {
+      console.error('[CollabRequests] Draft resume email failed:', emailResult.error);
+    }
+
+    return res.json({
+      success: true,
+      message: 'Check your email for a link to continue your request.',
+    });
+  } catch (e) {
+    console.error('[CollabRequests] Save draft error:', e);
+    return res.status(500).json({ success: false, error: 'Failed to save draft' });
+  }
+});
+
+// ============================================================================
+// ACCEPT FROM EMAIL (public routes – must be before /:username)
+// ============================================================================
+
+/**
+ * GET /api/collab/accept/preview/:requestToken
+ * Public: get deal summary for accept-from-email page (no auth)
+ */
+router.get('/accept/preview/:requestToken', async (req: Request, res: Response) => {
+  try {
+    const requestToken = typeof req.params.requestToken === 'string' ? req.params.requestToken.trim() : '';
+    if (!requestToken) {
+      return res.status(400).json({ success: false, error: 'Invalid link' });
+    }
+    const { data: tokenRow, error: tokenError } = await supabase
+      .from('collab_accept_tokens')
+      .select('id, collab_request_id, creator_email, expires_at')
+      .eq('id', requestToken)
+      .maybeSingle();
+    if (tokenError || !tokenRow) {
+      return res.status(404).json({ success: false, error: 'Invalid link' });
+    }
+    const expiresAt = new Date(tokenRow.expires_at);
+    if (expiresAt.getTime() < Date.now()) {
+      return res.status(410).json({
+        success: false,
+        error: 'expired',
+        message: 'This link has expired',
+      });
+    }
+    const { data: request, error: reqError } = await supabase
+      .from('collab_requests')
+      .select('id, brand_name, collab_type, exact_budget, barter_value, barter_description, deliverables, deadline, status')
+      .eq('id', tokenRow.collab_request_id)
+      .maybeSingle();
+    if (reqError || !request) {
+      return res.status(404).json({ success: false, error: 'Request not found' });
+    }
+    if (request.status !== 'pending') {
+      return res.status(200).json({
+        success: true,
+        alreadyHandled: true,
+        status: request.status,
+        message: 'This request has already been handled',
+        brand_name: request.brand_name,
+        collab_type: request.collab_type,
+        deliverables: request.deliverables || [],
+        deadline: request.deadline,
+        amount: request.exact_budget ?? request.barter_value ?? null,
+      });
+    }
+    let deliverablesArray: string[] = [];
+    try {
+      deliverablesArray = Array.isArray(request.deliverables)
+        ? request.deliverables
+        : typeof request.deliverables === 'string'
+          ? JSON.parse(request.deliverables)
+          : [];
+    } catch {
+      deliverablesArray = [];
+    }
+    const dealType = request.collab_type === 'barter' ? 'Barter' : request.collab_type === 'paid' ? 'Paid' : 'Paid / Barter';
+    const amount = request.collab_type === 'barter' ? (request.barter_value ?? null) : (request.exact_budget ?? null);
+    return res.json({
+      success: true,
+      alreadyHandled: false,
+      brand_name: request.brand_name,
+      collab_type: request.collab_type,
+      deal_type_label: dealType,
+      amount,
+      deliverables: deliverablesArray,
+      deadline: request.deadline,
+      creator_email: tokenRow.creator_email,
+      expires_at: tokenRow.expires_at,
+    });
+  } catch (e) {
+    console.error('[CollabRequests] Accept preview error:', e);
+    return res.status(500).json({ success: false, error: 'Something went wrong' });
+  }
+});
+
+/**
+ * POST /api/collab/accept/send-verification
+ * Public: send magic link to creator email for soft auth (no login page)
+ */
+router.post('/accept/send-verification', async (req: Request, res: Response) => {
+  try {
+    const { requestToken } = req.body || {};
+    const tokenStr = typeof requestToken === 'string' ? requestToken.trim() : '';
+    if (!tokenStr) {
+      return res.status(400).json({ success: false, error: 'Invalid link' });
+    }
+    const { data: tokenRow, error: tokenError } = await supabase
+      .from('collab_accept_tokens')
+      .select('id, collab_request_id, creator_email, expires_at')
+      .eq('id', tokenStr)
+      .maybeSingle();
+    if (tokenError || !tokenRow) {
+      return res.status(404).json({ success: false, error: 'Invalid link' });
+    }
+    const expiresAt = new Date(tokenRow.expires_at);
+    if (expiresAt.getTime() < Date.now()) {
+      return res.status(410).json({ success: false, error: 'This link has expired' });
+    }
+    const { data: request } = await supabase
+      .from('collab_requests')
+      .select('id, status')
+      .eq('id', tokenRow.collab_request_id)
+      .maybeSingle();
+    if (!request || request.status !== 'pending') {
+      return res.status(400).json({ success: false, error: 'This request has already been handled' });
+    }
+    const frontendUrl = (process.env.FRONTEND_URL || 'https://creatorarmour.com').replace(/\/$/, '');
+    const redirectTo = `${frontendUrl}/collab/accept/${encodeURIComponent(tokenStr)}?verified=true`;
+    const { data: linkData, error: linkError } = await supabase.auth.admin.generateLink({
+      type: 'magiclink',
+      email: tokenRow.creator_email,
+      options: { redirectTo },
+    });
+    const magicLink = (linkData as any)?.properties?.action_link ?? (linkData as any)?.action_link;
+    if (linkError || !magicLink) {
+      console.error('[CollabRequests] Magic link generate error:', linkError);
+      return res.status(500).json({ success: false, error: 'Failed to send verification email' });
+    }
+    const emailResult = await sendCollabAcceptMagicLinkEmail(tokenRow.creator_email, magicLink);
+    if (!emailResult.success) {
+      console.error('[CollabRequests] Magic link email failed:', emailResult.error);
+      return res.status(500).json({ success: false, error: 'Failed to send verification email' });
+    }
+    return res.json({ success: true, message: 'Verification link sent to your email' });
+  } catch (e) {
+    console.error('[CollabRequests] Send verification error:', e);
+    return res.status(500).json({ success: false, error: 'Something went wrong' });
+  }
+});
 
 /**
  * GET /api/collab/:username
@@ -125,15 +365,18 @@ router.get('/:username', async (req: Request, res: Response) => {
         .from('profiles')
         .select(`
           creator_category,
-        youtube_channel_id,
-        tiktok_handle,
-        twitter_handle,
-        facebook_profile_url,
-        instagram_followers,
-        youtube_subs,
-        tiktok_followers,
-        twitter_followers,
-          facebook_followers
+          youtube_channel_id,
+          tiktok_handle,
+          twitter_handle,
+          facebook_profile_url,
+          instagram_followers,
+          youtube_subs,
+          tiktok_followers,
+          twitter_followers,
+          facebook_followers,
+          open_to_collabs,
+          content_niches,
+          media_kit_url
       `)
         .eq('id', profile.id)
       .maybeSingle();
@@ -232,6 +475,9 @@ router.get('/:username', async (req: Request, res: Response) => {
         category: profile.creator_category,
         platforms,
         bio: profile.bio,
+        open_to_collabs: (profile as any).open_to_collabs !== false,
+        content_niches: Array.isArray((profile as any).content_niches) ? (profile as any).content_niches : [],
+        media_kit_url: (profile as any).media_kit_url || null,
       },
     });
   } catch (error: any) {
@@ -603,6 +849,23 @@ router.post('/:username/submit', async (req: Request, res: Response) => {
         if (!authError && authUser?.user?.email) {
           const creatorEmail = authUser.user.email;
 
+          // Create accept-from-email token (7 days) and build Accept Deal URL
+          const frontendUrl = (process.env.FRONTEND_URL || 'https://creatorarmour.com').replace(/\/$/, '');
+          let acceptUrl: string | undefined;
+          const acceptTokenId = crypto.randomBytes(24).toString('hex');
+          const acceptExpiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+          const { error: tokenInsertError } = await supabase
+            .from('collab_accept_tokens')
+            .insert({
+              id: acceptTokenId,
+              collab_request_id: collabRequest.id,
+              creator_email: creatorEmail,
+              expires_at: acceptExpiresAt.toISOString(),
+            });
+          if (!tokenInsertError) {
+            acceptUrl = `${frontendUrl}/collab/accept/${acceptTokenId}`;
+          }
+
           // Calculate total follower count
           const profileAny = creatorProfile as any;
           let totalFollowers = 0;
@@ -611,7 +874,7 @@ router.post('/:username/submit', async (req: Request, res: Response) => {
           if (profileAny?.tiktok_followers) totalFollowers += profileAny.tiktok_followers;
           if (profileAny?.twitter_followers) totalFollowers += profileAny.twitter_followers;
 
-          // Send creator notification email
+          // Send creator notification email (with Accept Deal CTA if token created)
           sendCollabRequestCreatorNotificationEmail(creatorEmail, {
             creatorName,
             creatorCategory: creatorProfile?.creator_category || undefined,
@@ -631,6 +894,7 @@ router.post('/:username/submit', async (req: Request, res: Response) => {
             timeline: deadline || undefined, // Use deadline as timeline
             notes: undefined, // Don't duplicate campaign description in notes
             requestId: collabRequest.id,
+            acceptUrl,
           }).then((result) => {
             if (result.success) {
               console.log('[CollabRequests] Creator notification email sent successfully:', result.emailId);
@@ -752,6 +1016,250 @@ router.get('/', async (req: AuthenticatedRequest, res: Response) => {
 });
 
 /**
+ * POST /api/collab-requests/accept/confirm
+ * Accept via requestToken (after magic-link verification). Auth required.
+ */
+router.post('/accept/confirm', async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const userId = req.user!.id;
+    const { requestToken } = req.body || {};
+    const tokenStr = typeof requestToken === 'string' ? requestToken.trim() : '';
+    if (!tokenStr) {
+      return res.status(400).json({ success: false, error: 'Invalid link' });
+    }
+    const clientIp = req.ip || (req.socket as any)?.remoteAddress || 'unknown';
+    const userAgent = req.get('user-agent') || 'unknown';
+
+    const { data: tokenRow, error: tokenError } = await supabase
+      .from('collab_accept_tokens')
+      .select('id, collab_request_id, creator_email, expires_at')
+      .eq('id', tokenStr)
+      .maybeSingle();
+    if (tokenError || !tokenRow) {
+      return res.status(404).json({ success: false, error: 'Invalid link' });
+    }
+    const expiresAt = new Date(tokenRow.expires_at);
+    if (expiresAt.getTime() < Date.now()) {
+      return res.status(410).json({ success: false, error: 'This link has expired' });
+    }
+
+    const { data: request, error: requestError } = await supabase
+      .from('collab_requests')
+      .select('*')
+      .eq('id', tokenRow.collab_request_id)
+      .maybeSingle();
+    if (requestError || !request) {
+      return res.status(404).json({ success: false, error: 'Request not found' });
+    }
+    if (request.creator_id !== userId) {
+      return res.status(403).json({ success: false, error: 'This link is for a different account' });
+    }
+    if (request.status !== 'pending') {
+      return res.status(400).json({ success: false, error: 'This request has already been handled' });
+    }
+
+    const id = request.id;
+    const now = new Date().toISOString();
+
+    // Parse deliverables
+    let deliverablesArray: string[] = [];
+    try {
+      deliverablesArray = typeof request.deliverables === 'string'
+        ? JSON.parse(request.deliverables)
+        : request.deliverables || [];
+    } catch {
+      deliverablesArray = [];
+    }
+    let dealAmount = 0;
+    if (request.collab_type === 'paid' || request.collab_type === 'both') {
+      dealAmount = request.exact_budget || 0;
+    }
+    const isBarter = request.collab_type === 'barter';
+
+    const dealData: any = {
+      creator_id: userId,
+      brand_name: request.brand_name,
+      brand_email: request.brand_email,
+      deal_amount: dealAmount,
+      deliverables: deliverablesArray.join(', '),
+      due_date: request.deadline || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+      payment_expected_date: request.deadline || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+      platform: 'Other',
+      status: 'Drafting',
+      deal_type: isBarter ? 'barter' : 'paid',
+      created_via: 'collab_request',
+    };
+    const { data: deal, error: dealError } = await supabase
+      .from('brand_deals')
+      .insert(dealData)
+      .select('id')
+      .single();
+    if (dealError || !deal) {
+      console.error('[CollabRequests] Accept confirm: create deal error:', dealError);
+      return res.status(500).json({ success: false, error: 'Failed to create deal' });
+    }
+
+    const dealBrandContactId = await resolveOrCreateBrandContact({
+      legalName: request.brand_name || '',
+      email: request.brand_email || '',
+      phone: request.brand_phone || null,
+      website: null,
+      instagram: null,
+      address: request.brand_address?.trim() || null,
+      gstin: request.brand_gstin?.trim().toUpperCase() || null,
+    });
+    if (dealBrandContactId) {
+      await supabase.from('brand_deals').update({ brand_contact_id: dealBrandContactId, updated_at: now }).eq('id', deal.id);
+    }
+
+    await supabase
+      .from('collab_requests')
+      .update({
+        status: 'accepted',
+        deal_id: deal.id,
+        accepted_at: now,
+        accepted_by_creator_id: userId,
+        accepted_ip: clientIp,
+        accepted_user_agent: userAgent,
+        updated_at: now,
+      })
+      .eq('id', id);
+
+    await supabase.from('collab_request_audit_log').insert({
+      collab_request_id: id,
+      action: 'accepted',
+      actor_id: userId,
+      auth_method: 'magic_link',
+      ip_address: clientIp,
+      user_agent: userAgent,
+      metadata: {},
+    });
+
+    if (isBarter) {
+      return res.json({
+        success: true,
+        deal: { id: deal.id },
+        needs_delivery_details: true,
+        message: 'Deal accepted. Please add delivery details so we can generate the contract.',
+      });
+    }
+
+    let contractUrl: string | null = null;
+    let contractReadyToken: string | null = null;
+    try {
+      const { data: existingDeal } = await supabase
+        .from('brand_deals')
+        .select('contract_file_url')
+        .eq('id', deal.id)
+        .single();
+      if (existingDeal?.contract_file_url) {
+        contractUrl = existingDeal.contract_file_url;
+      } else {
+        const { data: creatorProfile, error: creatorError } = await supabase
+          .from('profiles')
+          .select('first_name, last_name, email, location, address')
+          .eq('id', userId)
+          .maybeSingle();
+        if (creatorError) throw new Error('Failed to fetch creator profile');
+        const creatorName = creatorProfile
+          ? `${creatorProfile.first_name || ''} ${creatorProfile.last_name || ''}`.trim() || 'Creator'
+          : 'Creator';
+        const creatorEmail = creatorProfile?.email || req.user?.email || undefined;
+        const creatorAddress = creatorProfile?.location || creatorProfile?.address || undefined;
+        let paymentTerms: string | undefined;
+        if (request.collab_type === 'paid' || request.collab_type === 'both') {
+          paymentTerms = `Payment expected by ${request.deadline ? new Date(request.deadline).toLocaleDateString() : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString()}`;
+        }
+        const dealSchema = {
+          deal_amount: dealAmount,
+          deliverables: deliverablesArray.length > 0 ? deliverablesArray : ['As per agreement'],
+          delivery_deadline: request.deadline || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+          payment: { method: 'Bank Transfer', timeline: paymentTerms || 'Within 7 days of content delivery' },
+          usage: { type: request.usage_rights ? 'Exclusive' : 'Non-exclusive', platforms: ['All platforms'], duration: '6 months', paid_ads: false, whitelisting: false },
+          exclusivity: { enabled: false, category: null, duration: null },
+          termination: { notice_days: 7 },
+          jurisdiction_city: 'Mumbai',
+        };
+        const contractResult = await generateContractFromScratch({
+          brandName: request.brand_name,
+          creatorName,
+          creatorEmail,
+          dealAmount,
+          deliverables: deliverablesArray.length > 0 ? deliverablesArray : ['As per agreement'],
+          paymentTerms,
+          dueDate: request.deadline ? new Date(request.deadline).toLocaleDateString() : undefined,
+          paymentExpectedDate: request.deadline ? new Date(request.deadline).toLocaleDateString() : undefined,
+          platform: 'Multiple Platforms',
+          brandEmail: request.brand_email || undefined,
+          brandAddress: request.brand_address?.trim() || undefined,
+          brandGstin: request.brand_gstin?.trim() || undefined,
+          creatorAddress,
+          dealSchema,
+          usageType: request.usage_rights ? 'Exclusive' : 'Non-exclusive',
+          usagePlatforms: ['All platforms'],
+          usageDuration: '6 months',
+          paidAdsAllowed: false,
+          whitelistingAllowed: false,
+          exclusivityEnabled: false,
+          exclusivityCategory: null,
+          exclusivityDuration: null,
+          terminationNoticeDays: 7,
+          jurisdictionCity: 'Mumbai',
+          additionalTerms: request.collab_type === 'barter' && request.barter_description ? `Barter Collaboration: ${request.barter_description}` : undefined,
+        });
+        const timestamp = Date.now();
+        const storagePath = `contracts/${deal.id}/${timestamp}_${contractResult.fileName}`;
+        const { error: uploadError } = await supabase.storage
+          .from('creator-assets')
+          .upload(storagePath, contractResult.contractDocx, {
+            contentType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            upsert: false,
+          });
+        if (uploadError) throw new Error('Failed to upload contract');
+        const { data: publicUrlData } = supabase.storage.from('creator-assets').getPublicUrl(storagePath);
+        contractUrl = publicUrlData?.publicUrl || null;
+        if (contractUrl) {
+          await supabase.from('brand_deals').update({
+            contract_file_url: contractUrl,
+            status: 'Drafting',
+            updated_at: now,
+          }).eq('id', deal.id);
+        }
+        const token = await createContractReadyToken({ dealId: deal.id, creatorId: userId, expiresAt: null });
+        contractReadyToken = token.id;
+        if (request.brand_email && contractReadyToken) {
+          const creatorNameForEmail = creatorProfile
+            ? `${(creatorProfile as any).first_name || ''} ${(creatorProfile as any).last_name || ''}`.trim() || 'Creator'
+            : 'Creator';
+          sendCollabRequestAcceptedEmail(request.brand_email, {
+            creatorName: creatorNameForEmail,
+            brandName: request.brand_name,
+            dealAmount,
+            dealType: request.collab_type === 'barter' ? 'barter' : 'paid',
+            deliverables: deliverablesArray.length > 0 ? deliverablesArray : ['As per agreement'],
+            contractReadyToken,
+            contractUrl: contractUrl || undefined,
+            barterValue: request.barter_value ?? undefined,
+          }).catch((e) => console.error('[CollabRequests] Accept confirm: brand email failed:', e));
+        }
+      }
+    } catch (contractErr) {
+      console.error('[CollabRequests] Accept confirm: contract generation failed:', contractErr);
+    }
+
+    return res.json({
+      success: true,
+      deal: { id: deal.id },
+      contract: contractUrl ? { url: contractUrl, token: contractReadyToken } : null,
+      message: contractUrl ? 'Deal accepted. Contract has been generated and sent to the brand.' : 'Deal accepted.',
+    });
+  } catch (error: any) {
+    console.error('[CollabRequests] Accept confirm error:', error);
+    return res.status(500).json({ success: false, error: 'Something went wrong' });
+  }
+});
+
+/**
  * PATCH /api/collab-requests/:id/accept
  * Accept a collaboration request and create deal + contract
  */
@@ -843,13 +1351,21 @@ router.patch('/:id/accept', async (req: AuthenticatedRequest, res: Response) => 
       await supabase.from('brand_deals').update({ brand_contact_id: dealBrandContactId, updated_at: new Date().toISOString() }).eq('id', deal.id);
     }
 
-    // Update collab request status
+    const now = new Date().toISOString();
+    const clientIp = req.ip || (req.socket as any)?.remoteAddress || 'unknown';
+    const userAgent = req.get('user-agent') || 'unknown';
+
+    // Update collab request status and acceptance metadata
     const { error: updateError } = await supabase
       .from('collab_requests')
       .update({
         status: 'accepted',
         deal_id: deal.id,
-        updated_at: new Date().toISOString(),
+        accepted_at: now,
+        accepted_by_creator_id: userId,
+        accepted_ip: clientIp,
+        accepted_user_agent: userAgent,
+        updated_at: now,
       })
       .eq('id', id);
 
@@ -857,6 +1373,16 @@ router.patch('/:id/accept', async (req: AuthenticatedRequest, res: Response) => 
       console.error('[CollabRequests] Error updating request:', updateError);
       // Deal was created, so continue anyway
     }
+
+    await supabase.from('collab_request_audit_log').insert({
+      collab_request_id: id,
+      action: 'accepted',
+      actor_id: userId,
+      auth_method: 'session',
+      ip_address: clientIp,
+      user_agent: userAgent,
+      metadata: {},
+    }).then(({ error: logErr }) => { if (logErr) console.warn('[CollabRequests] Audit log insert failed:', logErr); });
 
     // Barter: require delivery details before contract generation. Redirect creator to delivery-details screen.
     if (isBarter) {

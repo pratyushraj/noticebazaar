@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Checkbox } from '@/components/ui/checkbox';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Instagram, Youtube, Twitter, Facebook, CheckCircle2, Loader2, ExternalLink } from 'lucide-react';
 import { toast } from 'sonner';
 import { trackEvent } from '@/lib/utils/analytics';
@@ -45,6 +46,9 @@ interface Creator {
   category: string | null;
   platforms: Array<{ name: string; handle: string; followers?: number }>;
   bio: string | null;
+  open_to_collabs?: boolean;
+  content_niches?: string[];
+  media_kit_url?: string | null;
 }
 
 type CollabType = 'paid' | 'barter' | 'both';
@@ -113,6 +117,53 @@ const CollabLinkLanding = () => {
   const [usageRights, setUsageRights] = useState(false);
   const [deadline, setDeadline] = useState('');
   const [errors, setErrors] = useState<FormErrors>({});
+
+  // Save and continue later
+  const [showSaveDraftModal, setShowSaveDraftModal] = useState(false);
+  const [draftEmail, setDraftEmail] = useState('');
+  const [saveDraftSubmitting, setSaveDraftSubmitting] = useState(false);
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  // Build form payload for save-draft / resume
+  const getDraftFormData = () => ({
+    collabType,
+    brandName,
+    brandEmail,
+    brandAddress,
+    brandGstin,
+    brandPhone,
+    brandWebsite,
+    brandInstagram,
+    budgetRange,
+    exactBudget,
+    barterValue,
+    barterProductImageUrl,
+    campaignDescription,
+    deliverables,
+    usageRights,
+    deadline,
+  });
+
+  const applyDraftFormData = (data: Record<string, unknown>) => {
+    if (typeof data.collabType === 'string' && ['paid', 'barter', 'both'].includes(data.collabType)) {
+      setCollabType(data.collabType as 'paid' | 'barter' | 'both');
+    }
+    if (typeof data.brandName === 'string') setBrandName(data.brandName);
+    if (typeof data.brandEmail === 'string') setBrandEmail(data.brandEmail);
+    if (typeof data.brandAddress === 'string') setBrandAddress(data.brandAddress);
+    if (typeof data.brandGstin === 'string') setBrandGstin(data.brandGstin);
+    if (typeof data.brandPhone === 'string') setBrandPhone(data.brandPhone);
+    if (typeof data.brandWebsite === 'string') setBrandWebsite(data.brandWebsite);
+    if (typeof data.brandInstagram === 'string') setBrandInstagram(data.brandInstagram);
+    if (typeof data.budgetRange === 'string') setBudgetRange(data.budgetRange);
+    if (typeof data.exactBudget === 'string') setExactBudget(data.exactBudget);
+    if (typeof data.barterValue === 'string') setBarterValue(data.barterValue);
+    if (typeof data.barterProductImageUrl === 'string') setBarterProductImageUrl(data.barterProductImageUrl || null);
+    if (typeof data.campaignDescription === 'string') setCampaignDescription(data.campaignDescription);
+    if (Array.isArray(data.deliverables)) setDeliverables(data.deliverables.filter((d): d is string => typeof d === 'string'));
+    if (typeof data.usageRights === 'boolean') setUsageRights(data.usageRights);
+    if (typeof data.deadline === 'string') setDeadline(data.deadline);
+  };
 
   // Demo data prefill function
   const fillDemoData = () => {
@@ -237,12 +288,16 @@ const CollabLinkLanding = () => {
     }
   };
 
-  // Fetch creator profile
-  useEffect(() => {
-    const fetchCreator = async () => {
-      if (!username) return;
+  // Fetch creator profile (with timeout so page doesn't stay stuck on spinner)
+  const CREATOR_FETCH_TIMEOUT_MS = 12000;
 
-      // Normalize username (handle URL encoding and case)
+  useEffect(() => {
+    if (!username) return;
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), CREATOR_FETCH_TIMEOUT_MS);
+
+    const fetchCreator = async () => {
       const normalizedUsername = decodeURIComponent(username).trim();
       const apiBaseUrl = getApiBaseUrl();
       const apiUrl = `${apiBaseUrl}/api/collab/${encodeURIComponent(normalizedUsername)}`;
@@ -256,7 +311,7 @@ const CollabLinkLanding = () => {
       });
 
       try {
-        const response = await fetch(apiUrl);
+        const response = await fetch(apiUrl, { signal: controller.signal });
         
         if (!response.ok) {
           const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
@@ -335,29 +390,103 @@ const CollabLinkLanding = () => {
           toast.error(errorMsg);
         }
       } catch (error: any) {
-        console.error('[CollabLinkLanding] Fetch error:', {
-          error,
-          message: error?.message,
-          stack: error?.stack,
-          username: normalizedUsername,
-          apiUrl,
-        });
-        setLoading(false);
-        
-        // Check if it's a network error
-        let errorMsg = 'Failed to load creator profile. Please try again later.';
-        if (error?.message?.includes('Failed to fetch') || error?.message?.includes('NetworkError')) {
-          errorMsg = 'Network error: Unable to connect to the server. Please check your internet connection.';
+        if (error?.name === 'AbortError') {
+          setError('Request timed out. Make sure the server is running at ' + apiBaseUrl + ' and try again.');
+          toast.error('Request timed out. Check that the API server is running.');
+        } else {
+          console.error('[CollabLinkLanding] Fetch error:', {
+            error,
+            message: error?.message,
+            username: normalizedUsername,
+            apiUrl,
+          });
+          let errorMsg = 'Failed to load creator profile. Please try again later.';
+          if (error?.message?.includes('Failed to fetch') || error?.message?.includes('NetworkError')) {
+            errorMsg = 'Unable to connect. Is the server running at ' + apiBaseUrl + '?';
+          }
+          setError(errorMsg);
+          toast.error(errorMsg);
         }
-        setError(errorMsg);
-        toast.error(errorMsg);
       } finally {
+        clearTimeout(timeoutId);
         setLoading(false);
       }
     };
 
     fetchCreator();
-  }, [username, navigate]);
+    return () => {
+      controller.abort();
+      clearTimeout(timeoutId);
+    };
+  }, [username]);
+
+  // Resume draft from ?resume= token (after creator is loaded)
+  useEffect(() => {
+    const resumeToken = searchParams.get('resume');
+    const normalizedUsername = username?.toLowerCase().trim();
+    if (!resumeToken || !normalizedUsername || !creator) return;
+
+    const loadDraft = async () => {
+      try {
+        const apiBaseUrl = getApiBaseUrl();
+        const res = await fetch(
+          `${apiBaseUrl}/api/collab/${encodeURIComponent(normalizedUsername)}/resume?token=${encodeURIComponent(resumeToken)}`
+        );
+        const data = await res.json();
+        if (data.success && data.formData && typeof data.formData === 'object') {
+          applyDraftFormData(data.formData);
+          toast.success('Form restored. You can continue where you left off.');
+          setSearchParams((prev) => {
+            const next = new URLSearchParams(prev);
+            next.delete('resume');
+            return next;
+          }, { replace: true });
+        } else if (res.status === 410) {
+          toast.error('This link has expired.');
+          setSearchParams((prev) => {
+            const next = new URLSearchParams(prev);
+            next.delete('resume');
+            return next;
+          }, { replace: true });
+        } else if (!res.ok) {
+          toast.error(data.error || 'Could not load saved draft.');
+        }
+      } catch {
+        toast.error('Could not load saved draft.');
+      }
+    };
+    loadDraft();
+  }, [creator, username, searchParams, setSearchParams]);
+
+  const handleSaveDraftSubmit = async () => {
+    const emailStr = draftEmail.trim();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailStr)) {
+      toast.error('Please enter a valid email address.');
+      return;
+    }
+    if (!username?.trim()) return;
+    setSaveDraftSubmitting(true);
+    try {
+      const apiBaseUrl = getApiBaseUrl();
+      const res = await fetch(`${apiBaseUrl}/api/collab/${encodeURIComponent(username.toLowerCase().trim())}/save-draft`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: emailStr, formData: getDraftFormData() }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        toast.success('Check your email for a link to continue your request.');
+        setShowSaveDraftModal(false);
+        setDraftEmail('');
+      } else {
+        toast.error(data.error || 'Failed to save draft.');
+      }
+    } catch {
+      toast.error('Failed to save draft. Please try again.');
+    } finally {
+      setSaveDraftSubmitting(false);
+    }
+  };
 
   const handleDeliverableToggle = (deliverable: string) => {
     setDeliverables(prev =>
@@ -558,7 +687,7 @@ const CollabLinkLanding = () => {
   const followerText = followerCount > 0 
     ? `with ${followerCount >= 1000 ? `${(followerCount / 1000).toFixed(1)}K` : followerCount} followers` 
     : '';
-  const metaDescription = `Collaborate with ${creatorName}${creator.category ? `, ${creator.category} creator` : ''} ${followerText ? followerText : ''} on ${platformNames || 'social media'}. Submit secure collaboration requests via CreatorArmour. ${creator.bio ? creator.bio.substring(0, 80) : ''}`.substring(0, 160);
+  const metaDescription = `Collaborate with ${creatorName}${creator.category ? `, ${creator.category} creator` : ''} ${followerText ? followerText : ''} on ${platformNames || 'social media'}. Submit your request here — contracts and payments are protected by CreatorArmour. ${creator.bio ? creator.bio.substring(0, 60) : ''}`.substring(0, 160);
   
   // Use clean URL for SEO (no hash)
   const canonicalUrl = `https://creatorarmour.com/collab/${creator.username}`;
@@ -627,7 +756,7 @@ const CollabLinkLanding = () => {
     <div className="min-h-screen bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 text-white">
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         {/* Header - Creator Profile Card */}
-        <Card className="bg-white/10 backdrop-blur-md border-white/20 mb-8">
+        <Card className="bg-white/10 backdrop-blur-md border-white/20 mb-6">
           <CardContent className="p-6">
             <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
               <div className="flex-1">
@@ -693,6 +822,25 @@ const CollabLinkLanding = () => {
           </CardContent>
         </Card>
 
+        {/* How it works — for brands (SEO + trust) */}
+        <div className="mb-8 rounded-xl bg-white/5 backdrop-blur-md border border-white/10 p-6" role="region" aria-label="How it works">
+          <h2 className="text-xl font-semibold text-white mb-4">How it works</h2>
+          <ol className="space-y-3 text-purple-200">
+            <li className="flex items-start gap-3">
+              <span className="flex-shrink-0 w-6 h-6 rounded-full bg-purple-500/30 border border-purple-400/50 flex items-center justify-center text-white text-sm font-semibold">1</span>
+              <span><strong className="text-white">Fill the form below</strong> with your campaign details, budget, and deliverables.</span>
+            </li>
+            <li className="flex items-start gap-3">
+              <span className="flex-shrink-0 w-6 h-6 rounded-full bg-purple-500/30 border border-purple-400/50 flex items-center justify-center text-white text-sm font-semibold">2</span>
+              <span><strong className="text-white">The creator reviews</strong> your request and can accept, counter, or decline — all in one place.</span>
+            </li>
+            <li className="flex items-start gap-3">
+              <span className="flex-shrink-0 w-6 h-6 rounded-full bg-purple-500/30 border border-purple-400/50 flex items-center justify-center text-white text-sm font-semibold">3</span>
+              <span><strong className="text-white">Contract & payment</strong> are handled securely by Creator Armour. No DMs, no confusion.</span>
+            </li>
+          </ol>
+        </div>
+
         {/* SEO-Friendly Content Section - Indexable */}
         <div className="mb-8 space-y-4">
           {/* Creator Bio & Platforms - Indexable Content */}
@@ -746,6 +894,43 @@ const CollabLinkLanding = () => {
               </div>
             )}
 
+            {/* Open to collabs + niches + media kit (creator readiness for brands) */}
+            {(creator.open_to_collabs !== false || (creator.content_niches && creator.content_niches.length > 0) || creator.media_kit_url) && (
+              <div className="mt-6 pt-6 border-t border-white/10 space-y-3">
+                {creator.open_to_collabs !== false && (
+                  <p className="text-sm text-green-300 font-medium flex items-center gap-2">
+                    <CheckCircle2 className="h-4 w-4 shrink-0" />
+                    Open to collabs
+                  </p>
+                )}
+                {creator.content_niches && creator.content_niches.length > 0 && (
+                  <div>
+                    <p className="text-xs text-purple-400 mb-1">Content niches</p>
+                    <div className="flex flex-wrap gap-2">
+                      {creator.content_niches.map((niche, i) => (
+                        <Badge key={i} variant="secondary" className="bg-white/10 text-purple-200 border-white/20">
+                          {niche}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {creator.media_kit_url && (
+                  <div>
+                    <a
+                      href={creator.media_kit_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-sm text-purple-200 hover:text-white inline-flex items-center gap-1"
+                    >
+                      <ExternalLink className="h-4 w-4 shrink-0" />
+                      Media kit
+                    </a>
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* Collaboration Info */}
             <div className="mt-6 pt-6 border-t border-white/10">
               <h2 className="text-xl font-semibold text-white mb-3">
@@ -782,11 +967,24 @@ const CollabLinkLanding = () => {
           </p>
         </div>
 
-        {/* Trust & Safety Warning */}
-        <div className="text-center mb-4">
+        {/* Trust line + reduce drop-off: Save and continue later */}
+        <div className="text-center mb-4 space-y-2">
+          <p className="text-sm text-purple-200">
+            Contracts are legally valid. Used by creators across India.
+          </p>
           <p className="text-xs text-purple-300/70">
             Requests sent via DMs are not protected.
           </p>
+          <div className="flex flex-wrap items-center justify-center gap-2 mt-3">
+            <button
+              type="button"
+              onClick={() => setShowSaveDraftModal(true)}
+              className="text-sm text-purple-200 hover:text-white border border-white/20 hover:border-white/40 rounded-lg px-4 py-2 transition-colors"
+            >
+              Save and continue later
+            </button>
+            <span className="text-xs text-purple-400/80">We’ll email you a link (valid 7 days)</span>
+          </div>
         </div>
 
         {/* Demo Fill Button - Only in development or with ?demo=true */}
@@ -1336,9 +1534,59 @@ const CollabLinkLanding = () => {
             <p className="text-sm mt-4 pt-4 border-t border-white/10">
               This collaboration page is optimized for brands and agencies looking to partner with {creator.name} for influencer marketing campaigns. All requests are processed securely through Creator Armour's platform.
             </p>
+            <p className="text-sm mt-3">
+              <a href="mailto:support@creatorarmour.com" className="text-purple-300 hover:text-white underline">
+                Help / Contact us
+              </a>
+              <span className="text-purple-400/80 ml-1">— we’re here before any issue becomes a dispute.</span>
+            </p>
           </div>
         </div>
       </div>
+
+      {/* Save and continue later modal */}
+      <Dialog open={showSaveDraftModal} onOpenChange={setShowSaveDraftModal}>
+        <DialogContent className="bg-purple-900/95 border-white/20 text-white">
+          <DialogHeader>
+            <DialogTitle>Save and continue later</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-purple-200">
+            Enter your email. We&apos;ll send you a link to continue this request (valid for 7 days).
+          </p>
+          <Input
+            type="email"
+            placeholder="you@company.com"
+            value={draftEmail}
+            onChange={(e) => setDraftEmail(e.target.value)}
+            className="bg-white/5 border-white/20 text-white placeholder:text-white/50"
+          />
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setShowSaveDraftModal(false)}
+              className="border-white/20 text-white hover:bg-white/10"
+            >
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              onClick={handleSaveDraftSubmit}
+              disabled={saveDraftSubmitting}
+              className="bg-purple-600 hover:bg-purple-700 text-white"
+            >
+              {saveDraftSubmitting ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                  Sending…
+                </>
+              ) : (
+                'Send link'
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
     </>
   );

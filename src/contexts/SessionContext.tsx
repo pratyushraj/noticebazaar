@@ -57,7 +57,7 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
       // Include location and bio for profile settings
       const { data, error } = await (supabase
         .from('profiles')
-        .select('id, first_name, last_name, avatar_url, role, updated_at, business_name, gstin, business_entity_type, onboarding_complete, organization_id, is_trial, trial_started_at, trial_expires_at, trial_locked, phone, location, bio, username, instagram_handle') as any)
+        .select('id, first_name, last_name, avatar_url, role, updated_at, business_name, gstin, business_entity_type, onboarding_complete, organization_id, is_trial, trial_started_at, trial_expires_at, trial_locked, phone, location, bio, username, instagram_handle, open_to_collabs, content_niches, media_kit_url') as any)
         .eq('id', user.id)
         .single();
 
@@ -84,7 +84,7 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
       // Include username and instagram_handle as they're essential for collab links
       const { data: trialData, error: trialError } = await (supabase
         .from('profiles')
-          .select('id, first_name, last_name, avatar_url, role, updated_at, business_name, gstin, business_entity_type, onboarding_complete, organization_id, is_trial, trial_started_at, trial_expires_at, trial_locked, phone, location, bio, username, instagram_handle') as any)
+          .select('id, first_name, last_name, avatar_url, role, updated_at, business_name, gstin, business_entity_type, onboarding_complete, organization_id, is_trial, trial_started_at, trial_expires_at, trial_locked, phone, location, bio, username, instagram_handle, open_to_collabs, content_niches, media_kit_url') as any)
         .eq('id', user.id)
         .single();
 
@@ -386,6 +386,15 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
             'free-legal-check', 'thank-you', 'dashboard-white-preview', 'dashboard-preview',
             'creators', 'consumer-complaints', 'plan', 'p'];
           
+          // Pathname-based check: /collab/:username or legacy /:username (no hash) are public
+          const pathname = window.location.pathname || '';
+          const isCollabPathname = /^\/collab\/[^/]+/.test(pathname);
+          const isLegacyUsernamePathname = /^\/[^/]+$/.test(pathname) && pathname.length > 1 &&
+            !pathname.startsWith('/creator-') && !pathname.startsWith('/admin-') &&
+            !pathname.startsWith('/client-') && !pathname.startsWith('/ca-') &&
+            !pathname.startsWith('/lawyer-') && !publicRoutes.includes(pathname.slice(1));
+          const isPublicPathname = isCollabPathname || isLegacyUsernamePathname;
+          
           // Check if current route is a public route (like /:username for collab links)
           // Username routes don't match any of the reserved/public routes above
           const isPublicRoute = publicRoutes.includes(intendedRoute || '');
@@ -394,24 +403,27 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
             !intendedRoute.startsWith('client-') && !intendedRoute.startsWith('ca-') && 
             !intendedRoute.startsWith('lawyer-') && !intendedRoute.includes('/');
           
-          // If we're on /login but have tokens, the intended route should be dashboard/onboarding
-          // Check sessionStorage for stored intended route from OAuth call
-          // Skip redirect logic for public routes and username routes
-          if (!isPublicRoute && !isUsernameRoute && (!intendedRoute || intendedRoute === 'login')) {
+          // If we're on a public pathname (e.g. /collab/rahul) with no hash, don't default intended route
+          if (isPublicPathname && !hasAccessToken) {
+            intendedRoute = null;
+            // Only log in dev to avoid noise
+            if (import.meta.env?.DEV && isCollabPathname) {
+              console.log('[SessionContext] Collab pathname detected, skipping default route');
+            }
+          } else if (!isPublicRoute && !isUsernameRoute && (!intendedRoute || intendedRoute === 'login')) {
+            // If we're on /login but have tokens, the intended route should be dashboard/onboarding
+            // Check sessionStorage for stored intended route from OAuth call
             const storedRoute = sessionStorage.getItem('oauth_intended_route');
             if (storedRoute && storedRoute !== 'login') {
               intendedRoute = storedRoute;
               console.log('[SessionContext] Using stored intended route from sessionStorage:', intendedRoute);
             } else if (!intendedRoute || intendedRoute === 'login') {
-              // Default to dashboard if no route specified (only for authenticated users)
-              // Don't set default if we're on a public route
               intendedRoute = 'creator-dashboard';
               console.log('[SessionContext] No intended route found, defaulting to creator-dashboard');
             }
           } else if (isUsernameRoute) {
-            // For username routes (collab links), don't set a default intended route
             console.log('[SessionContext] Username route detected, skipping redirect logic:', intendedRoute);
-            intendedRoute = null; // Clear intended route to prevent redirect
+            intendedRoute = null;
           }
         }
         

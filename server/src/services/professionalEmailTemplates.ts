@@ -329,13 +329,17 @@ function getUrgencyLine(): string {
 }
 
 /**
- * Email Footer
+ * Email Footer (includes help/contact so issues are caught before chargebacks or disputes)
  */
 function getEmailFooter(): string {
+  const supportEmail = 'support@creatorarmour.com';
   return `
     <tr>
       <td style="padding: 30px; border-top: 1px solid #e2e8f0; background-color: #f7fafc; text-align: center;">
-        <p style="margin: 0 0 8px 0; font-size: 16px; font-weight: 700; color: #2d3748; line-height: 1.5;">
+        <p style="margin: 0 0 8px 0; font-size: 14px; color: #4a5568; line-height: 1.5;">
+          <a href="mailto:${supportEmail}" style="color: #667eea; text-decoration: none; font-weight: 500;">Need help? Contact us</a> — we’re here to help before any issue becomes a dispute.
+        </p>
+        <p style="margin: 12px 0 0 0; font-size: 16px; font-weight: 700; color: #2d3748; line-height: 1.5;">
           Secured by Creator Armour
         </p>
         <p style="margin: 0; font-size: 13px; color: #718096; line-height: 1.5;">

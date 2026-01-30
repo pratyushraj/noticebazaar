@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2, Instagram, Youtube, Facebook, Twitter, Globe, DollarSign, Building2, CreditCard, FileText } from 'lucide-react';
+import { Loader2, Instagram, Youtube, Facebook, Twitter, Globe, DollarSign, Building2, CreditCard, FileText, Link2, CheckCircle2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Profile } from '@/types';
 import { useUpdateProfile } from '@/lib/hooks/useProfiles';
@@ -15,14 +15,27 @@ import CategorySelect from '@/components/profile/CategorySelect';
 import ReferralCard from '@/components/profile/ReferralCard';
 import SocialSyncButton from '@/components/profile/SocialSyncButton';
 import { useSession } from '@/contexts/SessionContext';
+import { Checkbox } from '@/components/ui/checkbox';
 
 interface CreatorProfileFormProps {
   initialProfile: Profile;
   onSaveSuccess?: () => void;
 }
 
+// Suggested content niches for quick selection (brands can filter by these on collab pages)
+const SUGGESTED_NICHES = [
+  'Fashion', 'Fitness', 'Tech', 'Beauty', 'Food', 'Travel', 'Lifestyle',
+  'Gaming', 'Education', 'Finance', 'Health', 'Entertainment', 'Parenting',
+];
+
 const CreatorProfileForm: React.FC<CreatorProfileFormProps> = ({ initialProfile, onSaveSuccess }) => {
   const { user, refetchProfile } = useSession();
+
+  const toggleNiche = (niche: string) => {
+    setContentNiches((prev) =>
+      prev.includes(niche) ? prev.filter((n) => n !== niche) : [...prev, niche]
+    );
+  };
   
   // Personal Information
   const [firstName, setFirstName] = useState(initialProfile.first_name || '');
@@ -31,6 +44,11 @@ const CreatorProfileForm: React.FC<CreatorProfileFormProps> = ({ initialProfile,
   
   // Creator Category
   const [creatorCategory, setCreatorCategory] = useState(initialProfile.creator_category || '');
+  
+  // Collab readiness (open to collabs, content niches, media kit)
+  const [openToCollabs, setOpenToCollabs] = useState(initialProfile.open_to_collabs !== false);
+  const [contentNiches, setContentNiches] = useState<string[]>(Array.isArray(initialProfile.content_niches) ? initialProfile.content_niches : []);
+  const [mediaKitUrl, setMediaKitUrl] = useState(initialProfile.media_kit_url || '');
   
   // Pricing
   const [pricingMin, setPricingMin] = useState(initialProfile.pricing_min?.toString() || '');
@@ -68,6 +86,9 @@ const CreatorProfileForm: React.FC<CreatorProfileFormProps> = ({ initialProfile,
     setLastName(initialProfile.last_name || '');
     setAvatarUrl(initialProfile.avatar_url || '');
     setCreatorCategory(initialProfile.creator_category || '');
+    setOpenToCollabs(initialProfile.open_to_collabs !== false);
+    setContentNiches(Array.isArray(initialProfile.content_niches) ? initialProfile.content_niches : []);
+    setMediaKitUrl(initialProfile.media_kit_url || '');
     setPricingMin(initialProfile.pricing_min?.toString() || '');
     setPricingAvg(initialProfile.pricing_avg?.toString() || '');
     setPricingMax(initialProfile.pricing_max?.toString() || '');
@@ -104,6 +125,9 @@ const CreatorProfileForm: React.FC<CreatorProfileFormProps> = ({ initialProfile,
         last_name: lastName.trim(),
         avatar_url: avatarUrl.trim() || null,
         creator_category: creatorCategory || null,
+        open_to_collabs: openToCollabs,
+        content_niches: contentNiches.length > 0 ? contentNiches : null,
+        media_kit_url: mediaKitUrl.trim() || null,
         pricing_min: pricingMin ? parseInt(pricingMin) : null,
         pricing_avg: pricingAvg ? parseInt(pricingAvg) : null,
         pricing_max: pricingMax ? parseInt(pricingMax) : null,
@@ -250,6 +274,64 @@ const CreatorProfileForm: React.FC<CreatorProfileFormProps> = ({ initialProfile,
             onChange={setCreatorCategory}
             disabled={updateProfileMutation.isPending}
           />
+        </CardContent>
+      </Card>
+
+      {/* Collab readiness: I'm open + content niches + media kit */}
+      <Card className="bg-[#0A0F1C] border-white/10 rounded-xl shadow-[0_0_20px_-4px_rgba(255,255,255,0.06)]">
+        <CardHeader>
+          <CardTitle className="text-lg font-semibold text-white flex items-center gap-2">
+            <CheckCircle2 className="h-5 w-5 text-green-400" />
+            Collab readiness
+          </CardTitle>
+          <p className="text-sm text-white/60 mt-1">Help brands find you. Toggle &quot;I&apos;m open&quot; and add niches so your collab link stands out.</p>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id="openToCollabs"
+              checked={openToCollabs}
+              onCheckedChange={(checked) => setOpenToCollabs(checked === true)}
+              disabled={updateProfileMutation.isPending}
+              className="border-white/30 data-[state=checked]:bg-green-600 data-[state=checked]:border-green-600"
+            />
+            <Label htmlFor="openToCollabs" className="text-white font-medium cursor-pointer">
+              I&apos;m open to collabs
+            </Label>
+          </div>
+          <div>
+            <Label className="text-white mb-2 block">Content niches</Label>
+            <p className="text-xs text-white/50 mb-2">Select niches that match your content (brands filter by these)</p>
+            <div className="flex flex-wrap gap-2">
+              {SUGGESTED_NICHES.map((niche) => (
+                <label key={niche} className="flex items-center gap-2 cursor-pointer">
+                  <Checkbox
+                    checked={contentNiches.includes(niche)}
+                    onCheckedChange={() => toggleNiche(niche)}
+                    disabled={updateProfileMutation.isPending}
+                    className="border-white/30 data-[state=checked]:bg-purple-600 data-[state=checked]:border-purple-600"
+                  />
+                  <span className="text-sm text-white/90">{niche}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+          <div>
+            <Label htmlFor="mediaKitUrl" className="text-white flex items-center gap-2">
+              <Link2 className="h-4 w-4 text-blue-400" />
+              Media kit URL
+            </Label>
+            <Input
+              id="mediaKitUrl"
+              type="url"
+              value={mediaKitUrl}
+              onChange={(e) => setMediaKitUrl(e.target.value)}
+              disabled={updateProfileMutation.isPending}
+              placeholder="https://..."
+              className="bg-[#0F121A] text-white border-white/10 mt-1"
+            />
+            <p className="text-xs text-white/50 mt-1">Link to your media kit or portfolio (optional)</p>
+          </div>
         </CardContent>
       </Card>
 

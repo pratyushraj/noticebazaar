@@ -43,6 +43,10 @@ export type Profile = Tables<'profiles'> & {
   platforms?: string[] | null; // Array of platform IDs (youtube, instagram, etc.)
   goals?: string[] | null; // Array of goal IDs (protect, earnings, etc.)
   username?: string | null; // Unique username for creator collab links
+  // Creator readiness for brands (open to collabs, niches, media kit)
+  open_to_collabs?: boolean | null;
+  content_niches?: string[] | null;
+  media_kit_url?: string | null;
 };
 
 export type Message = Tables<'messages'> & {

@@ -517,6 +517,12 @@ const CreatorOnboarding = () => {
               platformsCount={onboardingData.platforms.length}
               goalsCount={onboardingData.goals.length}
               onGoToDashboard={() => navigate('/creator-dashboard')}
+              collabLink={profile?.instagram_handle || profile?.username
+                ? `${typeof window !== 'undefined' ? window.location.origin : ''}/collab/${profile?.instagram_handle || profile?.username}`
+                : undefined}
+              collabShortLabel={profile?.instagram_handle || profile?.username
+                ? `creatorarmour.com/collab/${profile?.instagram_handle || profile?.username}`
+                : undefined}
             />
           )}
         </AnimatePresence>

@@ -238,6 +238,10 @@ interface UpdateProfileVariables {
   bio?: string | null;
   platforms?: string[] | null;
   goals?: string[] | null;
+  // Creator readiness for brands
+  open_to_collabs?: boolean | null;
+  content_niches?: string[] | null;
+  media_kit_url?: string | null;
 }
 
 export const useUpdateProfile = () => {
@@ -284,6 +288,9 @@ export const useUpdateProfile = () => {
       bio,
       platforms,
       goals,
+      open_to_collabs,
+      content_niches,
+      media_kit_url,
     }) => {
       const updateData: { 
         first_name: string; 
@@ -322,6 +329,9 @@ export const useUpdateProfile = () => {
         bio?: string | null;
         platforms?: string[] | null;
         goals?: string[] | null;
+        open_to_collabs?: boolean | null;
+        content_niches?: string[] | null;
+        media_kit_url?: string | null;
       } = {
         first_name,
         last_name,
@@ -435,6 +445,15 @@ export const useUpdateProfile = () => {
       if (goals !== undefined) {
         updateData.goals = goals;
       }
+      if (open_to_collabs !== undefined) {
+        updateData.open_to_collabs = open_to_collabs;
+      }
+      if (content_niches !== undefined) {
+        updateData.content_niches = content_niches;
+      }
+      if (media_kit_url !== undefined) {
+        updateData.media_kit_url = media_kit_url;
+      }
 
       const { error } = await supabase
         .from('profiles')
@@ -476,6 +495,9 @@ export const useUpdateProfile = () => {
           delete safeUpdateData.tiktok_followers;
           delete safeUpdateData.twitter_followers;
           delete safeUpdateData.facebook_followers;
+          delete safeUpdateData.open_to_collabs;
+          delete safeUpdateData.content_niches;
+          delete safeUpdateData.media_kit_url;
           
           // Retry with safe fields only (core fields that should always exist)
           const { error: retryError } = await supabase

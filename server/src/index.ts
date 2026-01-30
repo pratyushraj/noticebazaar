@@ -55,6 +55,7 @@ import collabRequestsRouter from './routes/collabRequests.js';
 import collabAnalyticsRouter from './routes/collabAnalytics.js';
 import creatorsRouter from './routes/creators.js';
 import shippingRouter from './routes/shipping.js';
+import cronDealRemindersRouter from './routes/cronDealReminders.js';
 import { sendCollabRequestAcceptedEmail, sendCollabRequestCreatorNotificationEmail } from './services/collabRequestEmailService.js';
 import { createContractReadyToken } from './services/contractReadyTokenService.js';
 // Log router import for debugging
@@ -287,6 +288,7 @@ app.use('/api/collab', collabRequestsRouter); // Public collab link routes (/:us
 app.use('/api/collab-analytics', collabAnalyticsRouter); // Public analytics tracking + authenticated analytics endpoints
 app.use('/api/creators', creatorsRouter); // Public creator directory routes
 app.use('/api/shipping', shippingRouter); // Public shipping update (brand, no auth)
+app.use('/api/cron', cronDealRemindersRouter); // Cron: deal reminders (protected by CRON_SECRET in route)
 
 // API Routes (protected)
 app.use('/api/brand-reply-tokens', authMiddleware, rateLimitMiddleware, brandReplyTokensRouter);

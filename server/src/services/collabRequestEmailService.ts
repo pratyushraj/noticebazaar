@@ -74,6 +74,8 @@ interface CollabRequestCreatorNotificationData {
   timeline?: string;
   notes?: string;
   requestId: string;
+  /** Optional: direct link to accept this request (e.g. /collab/accept/:requestToken) */
+  acceptUrl?: string;
 }
 
 /**
@@ -229,6 +231,9 @@ function getEmailTemplate(
           <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
             <p style="color: #9ca3af; font-size: 12px; margin: 0;">
               This is an automated email from CreatorArmour. Please do not reply to this email.
+            </p>
+            <p style="color: #6b7280; font-size: 12px; margin: 8px 0 0 0;">
+              <a href="mailto:support@creatorarmour.com" style="color: #667eea; text-decoration: none;">Need help? Contact us</a> — we’re here before any issue becomes a dispute.
             </p>
           </div>
         </div>
@@ -401,6 +406,7 @@ function getBarterAcceptedEmailHtml(
 
       <div style="margin-top: 28px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
         <p style="color: #9ca3af; font-size: 12px; margin: 0;">This is an automated email from Creator Armour. Please do not reply to this email.</p>
+        <p style="color: #6b7280; font-size: 12px; margin: 8px 0 0 0;"><a href="mailto:support@creatorarmour.com" style="color: #667eea; text-decoration: none;">Need help? Contact us</a> — we’re here before any issue becomes a dispute.</p>
         <p style="color: #9ca3af; font-size: 12px; margin: 8px 0 0 0;">
           <a href="${barterProtectionUrl}" style="color: #667eea; text-decoration: none;">Learn how barter protection works</a>
         </p>
@@ -454,6 +460,8 @@ WHAT HAPPENS NEXT
 Review & Sign Contract: ${contractReadyLink}
 
 This collaboration is legally protected by Creator Armour. All actions are timestamped and recorded for transparency.
+
+Need help? Contact us: support@creatorarmour.com — we're here before any issue becomes a dispute.
 
 ---
 This is an automated email from Creator Armour. Please do not reply to this email.
@@ -546,6 +554,7 @@ function getPaidAcceptedEmailHtml(
 
       <div style="margin-top: 28px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
         <p style="color: #9ca3af; font-size: 12px; margin: 0;">This is an automated email from Creator Armour. Please do not reply to this email.</p>
+        <p style="color: #6b7280; font-size: 12px; margin: 8px 0 0 0;"><a href="mailto:support@creatorarmour.com" style="color: #667eea; text-decoration: none;">Need help? Contact us</a> — we’re here before any issue becomes a dispute.</p>
         <p style="color: #9ca3af; font-size: 12px; margin: 8px 0 0 0;">
           <a href="${barterProtectionUrl}" style="color: #667eea; text-decoration: none;">Learn how barter protection works</a>
         </p>
@@ -769,7 +778,7 @@ export async function sendCollabRequestCreatorNotificationEmail(
     totalFollowers = data.followerCount;
   }
 
-  // Use professional email template
+  // Use professional email template (acceptUrl = Accept Deal CTA from email)
   const html = getCreatorNotificationEmailTemplate({
     creatorName: data.creatorName,
     creatorCategory: data.creatorCategory,
@@ -783,6 +792,7 @@ export async function sendCollabRequestCreatorNotificationEmail(
     timeline: timelineText,
     notes: data.notes,
     viewRequestUrl: dashboardLink,
+    acceptUrl: data.acceptUrl,
     barterProductImageUrl: data.barterProductImageUrl ?? undefined,
   });
 
@@ -798,3 +808,55 @@ export async function sendCollabRequestCreatorNotificationEmail(
   );
 }
 
+/**
+ * 6. Send magic link for accept-from-email verification (soft auth)
+ */
+export async function sendCollabAcceptMagicLinkEmail(
+  creatorEmail: string,
+  magicLinkUrl: string
+): Promise<{ success: boolean; emailId?: string; error?: string }> {
+  const subject = 'Verify your identity to accept this collaboration';
+  const html = `
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #1f2937; max-width: 480px; margin: 0 auto; padding: 24px;">
+  <p style="margin: 0 0 16px;">You requested to confirm and generate the contract for this collaboration.</p>
+  <p style="margin: 0 0 24px;">This action is legally binding. Click the button below to verify your identity and complete the acceptance.</p>
+  <p style="margin: 0 0 24px;">
+    <a href="${magicLinkUrl}" style="display: inline-block; padding: 14px 28px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #fff; text-decoration: none; border-radius: 8px; font-weight: 600;">Verify &amp; accept</a>
+  </p>
+  <p style="margin: 0; font-size: 14px; color: #6b7280;">If you didn't request this, you can ignore this email.</p>
+  <p style="margin: 12px 0 0 0; font-size: 12px; color: #6b7280;"><a href="mailto:support@creatorarmour.com" style="color: #667eea; text-decoration: none;">Need help? Contact us</a> — we're here before any issue becomes a dispute.</p>
+  <p style="margin: 24px 0 0; font-size: 12px; color: #9ca3af;">Creator Armour – Contracts and payments protected.</p>
+</body>
+</html>`;
+  return sendEmail(creatorEmail, subject, html);
+}
+
+/**
+ * 7. Send "Continue your collaboration request" email (Save and continue later)
+ */
+export async function sendCollabDraftResumeEmail(
+  brandEmail: string,
+  creatorName: string,
+  resumeUrl: string
+): Promise<{ success: boolean; emailId?: string; error?: string }> {
+  const subject = `Continue your collaboration request with ${creatorName}`;
+  const html = `
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+<body style="font-family: system-ui, -apple-system, sans-serif; line-height: 1.5; color: #1f2937; max-width: 480px; margin: 0 auto; padding: 24px;">
+  <p style="margin: 0 0 16px;">You started a collaboration request with <strong>${creatorName}</strong> on Creator Armour.</p>
+  <p style="margin: 0 0 24px;">Click the button below to continue where you left off. This link expires in 7 days.</p>
+  <p style="margin: 0 0 24px;">
+    <a href="${resumeUrl}" style="display: inline-block; padding: 12px 24px; background: linear-gradient(to right, #8B5CF6, #6366F1); color: #fff; text-decoration: none; border-radius: 8px; font-weight: 600;">Continue request</a>
+  </p>
+  <p style="margin: 0; font-size: 14px; color: #6b7280;">If you didn't request this, you can ignore this email.</p>
+  <p style="margin: 12px 0 0 0; font-size: 12px; color: #6b7280;"><a href="mailto:support@creatorarmour.com" style="color: #667eea; text-decoration: none;">Need help? Contact us</a> — we're here before any issue becomes a dispute.</p>
+  <p style="margin: 24px 0 0; font-size: 12px; color: #9ca3af;">Creator Armour – Contracts and payments protected.</p>
+</body>
+</html>`;
+  return sendEmail(brandEmail, subject, html);
+}

@@ -105,6 +105,7 @@ import ConsumerComplaintsHowItWorks from "./pages/ConsumerComplaintsHowItWorks";
 import UpgradePage from "./pages/UpgradePage";
 import CollabLinkLanding from "./pages/CollabLinkLanding";
 import CollabLinkSuccess from "./pages/CollabLinkSuccess";
+import CollabAcceptPage from "./pages/CollabAcceptPage";
 import LegacyCollabRedirect from "./components/collab/LegacyCollabRedirect";
 import LegacyCollabSuccessRedirect from "./components/collab/LegacyCollabSuccessRedirect";
 import CreatorsDirectory from "./pages/CreatorsDirectory";
@@ -301,6 +302,8 @@ const App = () => {
               <Route path="/creator/:username" element={<CreatorProfilePage />} />
               
               {/* Collaboration Request Link Routes (Public) - SEO-friendly clean URLs */}
+              {/* Accept from email: public preview + soft auth, then redirect to deal */}
+              <Route path="/collab/accept/:requestToken" element={<CollabAcceptPage />} />
               {/* Primary route: /collab/:username (clean URL for SEO) */}
               <Route path="/collab/:username" element={<CollabLinkLanding />} />
               <Route path="/collab/:username/success" element={<CollabLinkSuccess />} />

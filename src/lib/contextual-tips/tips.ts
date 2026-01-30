@@ -30,6 +30,8 @@ export interface UserState {
   messagesSent: number;
   checkedPayments: boolean;
   viewedDeals: boolean;
+  /** True once deals have been loaded; avoids showing "no deals" tips while still loading */
+  dealsDataReady?: boolean;
 }
 
 export const getAllTips = (userState: UserState): Tip[] => {
@@ -57,7 +59,7 @@ export const getAllTips = (userState: UserState): Tip[] => {
       id: 'earnings-zero',
       trigger: 'view',
       view: 'dashboard',
-      condition: () => userState.earnings === 0 && userState.totalDeals === 0,
+      condition: () => userState.dealsDataReady === true && userState.earnings === 0 && userState.totalDeals === 0,
       priority: 'medium',
       icon: DollarSign,
       color: 'from-green-500 to-emerald-500',
@@ -128,7 +130,7 @@ export const getAllTips = (userState: UserState): Tip[] => {
       id: 'deals-empty',
       trigger: 'view',
       view: 'deals',
-      condition: () => userState.totalDeals === 0,
+      condition: () => userState.dealsDataReady === true && userState.totalDeals === 0,
       priority: 'medium',
       icon: TrendingUp,
       color: 'from-purple-500 to-pink-500',

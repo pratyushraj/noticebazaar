@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from 'react';
-import { Home, Briefcase, CreditCard, Shield, TrendingUp, Calendar, FileText, FileEdit, AlertCircle, Clock, ChevronRight, Plus, Search, Target, BarChart3, RefreshCw, LogOut, Loader2, XCircle, Menu, Link2, Copy, ExternalLink, Check, AlertTriangle } from 'lucide-react';
+import { Home, Briefcase, CreditCard, Shield, TrendingUp, Calendar, FileText, FileEdit, AlertCircle, Clock, ChevronRight, Plus, Search, Target, BarChart3, RefreshCw, LogOut, Loader2, XCircle, Menu, Link2, Copy, ExternalLink, Check, AlertTriangle, MessageCircle, Instagram } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { toast } from 'sonner';
 import { useSignOut } from '@/lib/hooks/useAuth';
@@ -81,7 +81,8 @@ const CreatorDashboard = () => {
   const [collabRequestsLoading, setCollabRequestsLoading] = useState(true);
   const [hintDismissed, setHintDismissed] = useState(false);
 
-  const fetchPendingCollabRequestsPreview = async () => {
+  const fetchPendingCollabRequestsPreview = async (signal?: AbortSignal, options?: { silent?: boolean }) => {
+    const silent = options?.silent === true;
     try {
       const { data: sessionData } = await supabase.auth.getSession();
       const sess = sessionData.session;
@@ -89,10 +90,20 @@ const CreatorDashboard = () => {
       const apiUrl = getApiBaseUrl();
       const res = await fetch(`${apiUrl}/api/collab-requests`, {
         headers: { 'Authorization': `Bearer ${sess.access_token}`, 'Content-Type': 'application/json' },
+        signal: signal ?? undefined,
       });
-      const data = res.ok ? await res.json() : { success: false, requests: [] };
+      let data: { success?: boolean; requests?: unknown[] };
+      if (res.ok) {
+        data = await res.json().catch(() => ({ success: false, requests: [] }));
+      } else {
+        if (import.meta.env.DEV) {
+          const body = await res.text();
+          logger.warn('[CreatorDashboard] collab-requests API error', { status: res.status, statusText: res.statusText, body: body.slice(0, 200) });
+        }
+        data = { success: false, requests: [] };
+      }
       const list = Array.isArray(data?.requests) ? data.requests : [];
-      const pending = list.filter((r: { status?: string }) => r.status === 'pending');
+      const pending = list.filter((r: { status?: string }) => (r.status || '').toLowerCase() === 'pending');
       setPendingCollabRequestsCount(pending.length);
       // Keep the list small on dashboard, but unified (paid + barter in one list)
       setCollabRequestsPreview(
@@ -109,7 +120,10 @@ const CreatorDashboard = () => {
           raw: r,
         }))
       );
-    } catch {
+    } catch (err: any) {
+      // AbortError is expected when effect cleans up or timeout fires — don't log or clear state
+      if (err?.name === 'AbortError') return;
+      if (import.meta.env.DEV && !silent) logger.warn('[CreatorDashboard] collab-requests fetch failed', err);
       setPendingCollabRequestsCount(0);
       setCollabRequestsPreview([]);
     }
@@ -118,13 +132,34 @@ const CreatorDashboard = () => {
   // Pending collaboration requests (count + preview for decision-first inbox)
   useEffect(() => {
     let cancelled = false;
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 15000); // 15s timeout so card never sticks loading
     setCollabRequestsLoading(true);
     (async () => {
-      if (cancelled) return;
-      await fetchPendingCollabRequestsPreview();
-      if (!cancelled) setCollabRequestsLoading(false);
+      try {
+        if (cancelled) return;
+        await fetchPendingCollabRequestsPreview(controller.signal);
+      } finally {
+        clearTimeout(timeoutId);
+        // Always clear loading so skeleton never sticks (even when aborted)
+        setCollabRequestsLoading(false);
+      }
     })();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+      controller.abort();
+      clearTimeout(timeoutId);
+    };
+  }, [session?.user?.id]);
+
+  // Refetch collab requests when tab becomes visible (e.g. after brand submits in another tab)
+  useEffect(() => {
+    if (!session?.user?.id) return;
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') fetchPendingCollabRequestsPreview(undefined, { silent: true });
+    };
+    document.addEventListener('visibilitychange', onVisible);
+    return () => document.removeEventListener('visibilitychange', onVisible);
   }, [session?.user?.id]);
 
   // Check for contextual tips to avoid overlap
@@ -221,8 +256,10 @@ const CreatorDashboard = () => {
   const handleRefresh = async () => {
     setIsRefreshing(true);
     triggerHaptic(HapticPatterns.medium);
-    // Simulate data refresh
-    await new Promise(resolve => setTimeout(resolve, 1500));
+    await Promise.all([
+      new Promise(resolve => setTimeout(resolve, 500)),
+      fetchPendingCollabRequestsPreview(undefined, { silent: true }),
+    ]);
     setIsRefreshing(false);
     triggerHaptic(HapticPatterns.light);
   };
@@ -1060,6 +1097,61 @@ const CreatorDashboard = () => {
                       <Copy className={iconSizes.md} />
                       Copy Collab Link
                     </motion.button>
+                    <div className="grid grid-cols-2 gap-2">
+                      <motion.button
+                        type="button"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          const username = profile?.instagram_handle || profile?.username;
+                          if (username) {
+                            const link = `${typeof window !== 'undefined' ? window.location.origin : ''}/collab/${username}`;
+                            const message = encodeURIComponent(`For collaborations, submit here:\n\n${link}`);
+                            window.open(`https://wa.me/?text=${message}`, '_blank');
+                            toast.success('Opening WhatsApp…');
+                            triggerHaptic(HapticPatterns.light);
+                          } else {
+                            toast.error('Username not set. Please complete your profile.');
+                          }
+                        }}
+                        onMouseDown={(e) => e.stopPropagation()}
+                        onTouchStart={(e) => e.stopPropagation()}
+                        whileTap={animations.microTap}
+                        className={cn(
+                          "min-h-[40px] rounded-lg border border-white/20 bg-white/5 text-white/90 text-sm font-medium flex items-center justify-center gap-1.5 hover:bg-white/10 transition-colors"
+                        )}
+                        aria-label="Share via WhatsApp"
+                      >
+                        <MessageCircle className="w-4 h-4" />
+                        WhatsApp
+                      </motion.button>
+                      <motion.button
+                        type="button"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          const username = profile?.instagram_handle || profile?.username;
+                          if (username) {
+                            const link = `${typeof window !== 'undefined' ? window.location.origin : ''}/collab/${username}`;
+                            navigator.clipboard.writeText(link);
+                            toast.success('Link copied. Paste in bio or DMs.');
+                            triggerHaptic(HapticPatterns.light);
+                          } else {
+                            toast.error('Username not set. Please complete your profile.');
+                          }
+                        }}
+                        onMouseDown={(e) => e.stopPropagation()}
+                        onTouchStart={(e) => e.stopPropagation()}
+                        whileTap={animations.microTap}
+                        className={cn(
+                          "min-h-[40px] rounded-lg border border-white/20 bg-white/5 text-white/90 text-sm font-medium flex items-center justify-center gap-1.5 hover:bg-white/10 transition-colors"
+                        )}
+                        aria-label="Share via Instagram"
+                      >
+                        <Instagram className="w-4 h-4" />
+                        Instagram
+                      </motion.button>
+                    </div>
                     <motion.a
                       href={(profile?.instagram_handle || profile?.username) ? `/collab/${profile?.instagram_handle || profile?.username}` : undefined}
                       target="_blank"
@@ -1538,7 +1630,7 @@ const CreatorDashboard = () => {
                           {collabLinkCopied ? <span className="text-xs font-medium">Copied!</span> : <Copy className="w-4 h-4" />}
                         </motion.button>
                       </div>
-                      <div className="mt-3 flex gap-2">
+                      <div className="mt-3 flex flex-wrap gap-2">
                         <motion.button
                           type="button"
                           whileTap={animations.microTap}
@@ -1550,7 +1642,7 @@ const CreatorDashboard = () => {
                             triggerHaptic(HapticPatterns.light);
                             setTimeout(() => setCollabLinkCopied(false), 2000);
                           }}
-                          className={cn(buttons.secondary, "flex-1 min-h-[44px] flex items-center justify-center gap-2 text-purple-100 border-purple-400/40")}
+                          className={cn(buttons.secondary, "flex-1 min-h-[44px] min-w-[80px] flex items-center justify-center gap-2 text-purple-100 border-purple-400/40")}
                         >
                           <Copy className="w-4 h-4" />
                           Copy
@@ -1558,8 +1650,41 @@ const CreatorDashboard = () => {
                         <motion.button
                           type="button"
                           whileTap={animations.microTap}
+                          onClick={() => {
+                            const link = `${typeof window !== 'undefined' ? window.location.origin : ''}/collab/${profile?.instagram_handle || profile?.username}`;
+                            const message = encodeURIComponent(`For collaborations, submit here:\n\n${link}`);
+                            window.open(`https://wa.me/?text=${message}`, '_blank');
+                            toast.success('Opening WhatsApp…');
+                            triggerHaptic(HapticPatterns.light);
+                          }}
+                          className={cn(buttons.secondary, "flex-1 min-h-[44px] min-w-[80px] flex items-center justify-center gap-2 text-purple-100 border-purple-400/40")}
+                          aria-label="Share via WhatsApp"
+                        >
+                          <MessageCircle className="w-4 h-4" />
+                          WhatsApp
+                        </motion.button>
+                        <motion.button
+                          type="button"
+                          whileTap={animations.microTap}
+                          onClick={() => {
+                            const link = `${typeof window !== 'undefined' ? window.location.origin : ''}/collab/${profile?.instagram_handle || profile?.username}`;
+                            navigator.clipboard?.writeText(link);
+                            setCollabLinkCopied(true);
+                            toast.success('Link copied. Paste in bio or DMs.');
+                            triggerHaptic(HapticPatterns.light);
+                            setTimeout(() => setCollabLinkCopied(false), 2000);
+                          }}
+                          className={cn(buttons.secondary, "flex-1 min-h-[44px] min-w-[80px] flex items-center justify-center gap-2 text-purple-100 border-purple-400/40")}
+                          aria-label="Share via Instagram"
+                        >
+                          <Instagram className="w-4 h-4" />
+                          Instagram
+                        </motion.button>
+                        <motion.button
+                          type="button"
+                          whileTap={animations.microTap}
                           onClick={() => { triggerHaptic(HapticPatterns.light); window.open(`/collab/${profile?.instagram_handle || profile?.username}`, '_blank'); }}
-                          className={cn(buttons.secondary, "flex-1 min-h-[44px] flex items-center justify-center gap-2 text-purple-100 border-purple-400/40")}
+                          className={cn(buttons.secondary, "flex-1 min-h-[44px] min-w-[80px] flex items-center justify-center gap-2 text-purple-100 border-purple-400/40")}
                         >
                           <ExternalLink className="w-4 h-4" />
                           Preview

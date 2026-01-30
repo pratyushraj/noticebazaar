@@ -27,15 +27,16 @@ export const useContextualTips = (currentView?: string) => {
   });
 
   // Fetch user data for state
-  const { data: brandDeals = [] } = useBrandDeals({
+  const { data: brandDeals = [], isLoading: isLoadingDeals } = useBrandDeals({
     creatorId: profile?.id,
     enabled: !!profile?.id,
   });
 
-  // Calculate user state
+  // Calculate user state (dealsDataReady only true once deals have finished loading)
   const userState: UserState = useMemo(() => {
     const hasUploadedContract = brandDeals.length > 0;
     const totalDeals = brandDeals.length;
+    const dealsDataReady = !!profile?.id && !isLoadingDeals;
     const earnings = brandDeals
       .filter((deal) => deal.status === 'Completed' && deal.payment_received_date)
       .reduce((sum, deal) => sum + (deal.deal_amount || 0), 0);
@@ -62,8 +63,9 @@ export const useContextualTips = (currentView?: string) => {
       messagesSent,
       checkedPayments: userActions.checkedPayments,
       viewedDeals: userActions.viewedDeals,
+      dealsDataReady,
     };
-  }, [brandDeals, profile, userActions]);
+  }, [brandDeals, profile, userActions, isLoadingDeals]);
 
   // Load dismissed tips from localStorage IMMEDIATELY when profile is available
   useEffect(() => {
