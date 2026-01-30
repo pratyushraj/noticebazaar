@@ -73,6 +73,7 @@ export async function generateContractDocx(schema: ContractSchema): Promise<Buff
       brand_name: schema.brand_name.trim(),
       brand_address: schema.brand_address.trim(),
       brand_email: schema.brand_email?.trim() || '',
+      brand_gstin: (schema as any).brand_gstin?.trim() || '',
       creator_name: schema.creator_name.trim(),
       creator_address: (schema.creator_address && typeof schema.creator_address === 'string') 
         ? schema.creator_address.trim() 
@@ -248,8 +249,24 @@ export async function generateContractDocx(schema: ContractSchema): Promise<Buff
               }),
             ],
             alignment: AlignmentType.JUSTIFIED,
+            spacing: { after: PARAGRAPH_SPACING_AFTER / 2, line: LINE_SPACING },
+          }),
+          ...(data.brand_gstin ? [
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: `GSTIN: ${data.brand_gstin}`,
+                font: 'Times New Roman',
+                size: BODY_FONT_SIZE,
+                underline: {
+                  type: UnderlineType.NONE,
+                },
+              }),
+            ],
+            alignment: AlignmentType.JUSTIFIED,
             spacing: { after: PARAGRAPH_SPACING_AFTER, line: LINE_SPACING },
           }),
+          ] : []),
           
           // AND separator
           new Paragraph({

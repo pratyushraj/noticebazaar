@@ -28,6 +28,7 @@ export interface ContractGenerationRequest {
   // New structured fields for v2
   dealSchema?: DealSchema;
   brandAddress?: string;
+  brandGstin?: string;
   creatorAddress?: string;
   usageType?: 'Exclusive' | 'Non-exclusive';
   usagePlatforms?: string[];
@@ -155,6 +156,7 @@ export async function generateContractFromScratch(
         name: request.brandName,
         address: request.brandAddress || '',
         email: request.brandEmail || '',
+        gstin: request.brandGstin?.trim() || undefined,
       },
       {
         name: request.creatorName,

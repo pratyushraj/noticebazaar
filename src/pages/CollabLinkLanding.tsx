@@ -52,6 +52,8 @@ type CollabType = 'paid' | 'barter' | 'both';
 interface FormErrors {
   brandName?: string;
   brandEmail?: string;
+  brandAddress?: string;
+  brandGstin?: string;
   brandWebsite?: string;
   campaignDescription?: string;
   deliverables?: string;
@@ -94,6 +96,10 @@ const CollabLinkLanding = () => {
   const [collabType, setCollabType] = useState<'paid' | 'barter' | 'both'>('paid');
   const [brandName, setBrandName] = useState('');
   const [brandEmail, setBrandEmail] = useState('');
+  const [brandAddress, setBrandAddress] = useState('');
+  const [brandGstin, setBrandGstin] = useState('');
+  const [isGstLookupLoading, setIsGstLookupLoading] = useState(false);
+  const [gstLookupError, setGstLookupError] = useState<string | null>(null);
   const [brandPhone, setBrandPhone] = useState('');
   const [brandWebsite, setBrandWebsite] = useState('');
   const [brandInstagram, setBrandInstagram] = useState('');
@@ -112,6 +118,8 @@ const CollabLinkLanding = () => {
   const fillDemoData = () => {
     setBrandName('Demo Brand Co.');
     setBrandEmail('demo@brandco.com');
+    setBrandAddress('123 Business Park, Andheri East, Mumbai, Maharashtra 400069');
+    setBrandGstin('27AABCU9603R1ZX');
     setBrandPhone('+91 98765 43210');
     setBrandWebsite('https://www.demobrandco.com');
     setBrandInstagram('@demobrandco');
@@ -146,6 +154,50 @@ const CollabLinkLanding = () => {
     if (origin.includes('creatorarmour.com')) return 'https://api.creatorarmour.com';
     if (origin.includes('noticebazaar.com')) return 'https://api.noticebazaar.com';
     return 'http://localhost:3001';
+  };
+
+  // Fetch company name and address from GST by GSTIN
+  const handleGstLookup = async () => {
+    const gstin = brandGstin.trim().toUpperCase();
+    if (!gstin || gstin.length !== 15) {
+      setGstLookupError('Please enter a valid 15-digit GSTIN first');
+      return;
+    }
+    if (!/^[0-9A-Z]{15}$/.test(gstin)) {
+      setGstLookupError('GSTIN must be 15 characters (letters and numbers only)');
+      return;
+    }
+    setIsGstLookupLoading(true);
+    setGstLookupError(null);
+    try {
+      const apiBaseUrl = getApiBaseUrl();
+      const response = await fetch(`${apiBaseUrl}/api/gst/lookup?gstin=${encodeURIComponent(gstin)}`, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error || 'GST lookup failed. Enter details manually.');
+      }
+      if (!data.success || !data.data) {
+        throw new Error(data.error || 'GST lookup failed. Enter details manually.');
+      }
+      const { legalName, address, state } = data.data;
+      if (legalName?.trim()) setBrandName(legalName.trim());
+      if (address?.trim()) {
+        const fullAddress = state?.trim() ? `${address.trim()}, ${state.trim()}` : address.trim();
+        setBrandAddress(fullAddress);
+      }
+      setBrandGstin(gstin);
+      setErrors((prev) => ({ ...prev, brandName: '', brandAddress: '', brandGstin: '' }));
+      toast.success('Company name and address filled from GST');
+    } catch (err: any) {
+      const msg = err?.message || 'GST lookup failed. Enter details manually.';
+      setGstLookupError(msg);
+      toast.error(msg);
+    } finally {
+      setIsGstLookupLoading(false);
+    }
   };
 
   // Upload barter product image and store public URL
@@ -328,6 +380,19 @@ const CollabLinkLanding = () => {
       newErrors.brandEmail = 'Please enter a valid email address';
     }
 
+    if (!brandAddress.trim()) {
+      newErrors.brandAddress = 'Company / brand address is required for contract';
+    } else if (brandAddress.trim().length < 15) {
+      newErrors.brandAddress = 'Please enter full registered address (at least 15 characters)';
+    }
+
+    if (brandGstin.trim()) {
+      const gstin = brandGstin.trim().toUpperCase();
+      if (!/^[0-9A-Z]{15}$/.test(gstin)) {
+        newErrors.brandGstin = 'GSTIN must be 15 characters (letters and numbers only)';
+      }
+    }
+
     if (!campaignDescription.trim()) {
       newErrors.campaignDescription = 'Campaign description is required';
     } else if (campaignDescription.trim().length < 20) {
@@ -394,6 +459,8 @@ const CollabLinkLanding = () => {
         body: JSON.stringify({
           brand_name: brandName,
           brand_email: brandEmail,
+          brand_address: brandAddress.trim(),
+          brand_gstin: brandGstin.trim() ? brandGstin.trim().toUpperCase() : undefined,
           brand_phone: brandPhone || undefined,
           brand_website: brandWebsite ? normalizeWebsiteUrl(brandWebsite) : undefined,
           brand_instagram: brandInstagram || undefined,
@@ -1091,6 +1158,73 @@ const CollabLinkLanding = () => {
                   {errors.brandEmail && (
                     <p className="text-xs text-red-400 mt-1">{errors.brandEmail}</p>
                   )}
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-white mb-2">
+                    Company / Brand Address <span className="text-red-400">*</span>
+                  </label>
+                  <Textarea
+                    value={brandAddress}
+                    onChange={(e) => {
+                      setBrandAddress(e.target.value);
+                      if (errors.brandAddress) setErrors({ ...errors, brandAddress: '' });
+                    }}
+                    required
+                    placeholder="Full registered address (required for contract)"
+                    rows={3}
+                    className={`bg-white/5 border-white/20 text-white min-h-[80px] ${errors.brandAddress ? 'border-red-400/50' : ''}`}
+                  />
+                  {errors.brandAddress && (
+                    <p className="text-xs text-red-400 mt-1">{errors.brandAddress}</p>
+                  )}
+                  <p className="text-xs text-purple-300/70 mt-1.5">
+                    Used for the collaboration agreement when the creator accepts
+                  </p>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-white mb-2">
+                    GSTIN (Optional)
+                  </label>
+                  <div className="flex flex-col sm:flex-row gap-2">
+                    <Input
+                      type="text"
+                      value={brandGstin}
+                      onChange={(e) => {
+                        setBrandGstin(e.target.value.toUpperCase().slice(0, 15));
+                        if (errors.brandGstin) setErrors({ ...errors, brandGstin: '' });
+                        setGstLookupError(null);
+                      }}
+                      placeholder="15-digit GSTIN for invoicing"
+                      maxLength={15}
+                      className={`flex-1 bg-white/5 border-white/20 text-white font-mono ${errors.brandGstin ? 'border-red-400/50' : ''}`}
+                      disabled={isGstLookupLoading}
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={handleGstLookup}
+                      disabled={isGstLookupLoading || !brandGstin.trim() || brandGstin.trim().length !== 15}
+                      className="shrink-0 bg-white/5 border-white/20 text-white hover:bg-white/10 font-mono"
+                      aria-label="Fetch company name and address from GST"
+                    >
+                      {isGstLookupLoading ? (
+                        <>
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" aria-hidden />
+                          Fetching...
+                        </>
+                      ) : (
+                        'Fetch from GST'
+                      )}
+                    </Button>
+                  </div>
+                  {(errors.brandGstin || gstLookupError) && (
+                    <p className="text-xs text-red-400 mt-1">{errors.brandGstin || gstLookupError}</p>
+                  )}
+                  <p className="text-xs text-purple-300/70 mt-1.5">
+                    Optional. Use &quot;Fetch from GST&quot; to auto-fill company name and address.
+                  </p>
                 </div>
 
                 <div>

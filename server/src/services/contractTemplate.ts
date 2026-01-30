@@ -46,6 +46,7 @@ export interface ContractVariables {
   brand_name: string;
   brand_address?: string;
   brand_email?: string;
+  brand_gstin?: string;
   creator_name: string;
   creator_address?: string;
   creator_email?: string;
@@ -77,6 +78,7 @@ export function mapDealSchemaToContractVariables(
     name: string;
     address?: string;
     email?: string;
+    gstin?: string;
   },
   creatorInfo: {
     name: string;
@@ -209,6 +211,7 @@ export function mapDealSchemaToContractVariables(
     brand_name: brandInfo.name,
     brand_address: brandInfo.address || '',
     brand_email: brandInfo.email || '',
+    brand_gstin: brandInfo.gstin?.trim() || undefined,
     creator_name: creatorInfo.name,
     creator_address: (creatorInfo.address && typeof creatorInfo.address === 'string' && creatorInfo.address.trim() !== '') 
       ? creatorInfo.address.trim() 

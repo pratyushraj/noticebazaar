@@ -681,6 +681,14 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
             return;
           }
           
+          // If we're already on a dashboard path, skip profile fetch and redirect (avoids timeout + log spam on token refresh / repeated SIGNED_IN)
+          const pathname = window.location.pathname;
+          const dashboardPaths = ['/creator-dashboard', '/admin-dashboard', '/ca-dashboard', '/lawyer-dashboard', '/creator-onboarding'];
+          if (dashboardPaths.includes(pathname)) {
+            setIsAuthInitializing(false);
+            return;
+          }
+          
           console.log('[SessionContext] Session established after OAuth, redirecting...', {
             event,
             isOAuthCallback,

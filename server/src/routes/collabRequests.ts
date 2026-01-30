@@ -15,6 +15,7 @@ import {
   sendCollabRequestDeclinedEmail,
   sendCollabRequestCreatorNotificationEmail,
 } from '../services/collabRequestEmailService.js';
+import { resolveOrCreateBrandContact } from '../services/brandContactService.js';
 
 const router = express.Router();
 
@@ -299,6 +300,8 @@ router.post('/:username/submit', async (req: Request, res: Response) => {
     const {
       brand_name,
       brand_email,
+      brand_address,
+      brand_gstin,
       brand_phone,
       brand_website,
       brand_instagram,
@@ -327,6 +330,23 @@ router.post('/:username/submit', async (req: Request, res: Response) => {
         success: false,
         error: 'Brand name, email, and campaign description are required',
       });
+    }
+
+    if (!brand_address || typeof brand_address !== 'string' || brand_address.trim().length < 15) {
+      return res.status(400).json({
+        success: false,
+        error: 'Company / brand address is required (full registered address, at least 15 characters) for contract generation',
+      });
+    }
+
+    if (brand_gstin != null && typeof brand_gstin === 'string' && brand_gstin.trim()) {
+      const gstin = brand_gstin.trim().toUpperCase();
+      if (!/^[0-9A-Z]{15}$/.test(gstin)) {
+        return res.status(400).json({
+          success: false,
+          error: 'GSTIN must be 15 characters (letters and numbers only)',
+        });
+      }
     }
 
     if (!collab_type || !['paid', 'barter', 'both'].includes(collab_type)) {
@@ -404,11 +424,24 @@ router.post('/:username/submit', async (req: Request, res: Response) => {
       console.log('[CollabRequests] Rate limiting disabled in development mode');
     }
 
+    // Resolve or create canonical brand for agency (deduped by email)
+    const brandContactId = await resolveOrCreateBrandContact({
+      legalName: brand_name.trim(),
+      email: brand_email.trim(),
+      phone: brand_phone?.trim() || null,
+      website: brand_website?.trim() || null,
+      instagram: brand_instagram?.trim() || null,
+      address: brand_address?.trim() || null,
+      gstin: brand_gstin && typeof brand_gstin === 'string' ? brand_gstin.trim().toUpperCase() : null,
+    });
+
     // Create collab request
     const insertData: any = {
       creator_id: creator.id,
       brand_name: brand_name.trim(),
       brand_email: brand_email.toLowerCase().trim(),
+      brand_address: brand_address.trim(),
+      brand_gstin: brand_gstin && typeof brand_gstin === 'string' ? brand_gstin.trim().toUpperCase() : null,
       brand_phone: brand_phone?.trim() || null,
       brand_website: brand_website?.trim() || null,
       brand_instagram: brand_instagram?.trim() || null,
@@ -419,6 +452,7 @@ router.post('/:username/submit', async (req: Request, res: Response) => {
       deadline: deadline || null,
       submitted_ip: clientIp,
       submitted_user_agent: userAgent,
+      ...(brandContactId ? { brand_contact_id: brandContactId } : {}),
     };
 
     // Add budget/barter fields based on collab_type
@@ -795,6 +829,20 @@ router.patch('/:id/accept', async (req: AuthenticatedRequest, res: Response) => 
       });
     }
 
+    // Link deal to canonical brand for agency
+    const dealBrandContactId = await resolveOrCreateBrandContact({
+      legalName: request.brand_name || '',
+      email: request.brand_email || '',
+      phone: request.brand_phone || null,
+      website: null,
+      instagram: null,
+      address: request.brand_address?.trim() || null,
+      gstin: request.brand_gstin?.trim().toUpperCase() || null,
+    });
+    if (dealBrandContactId) {
+      await supabase.from('brand_deals').update({ brand_contact_id: dealBrandContactId, updated_at: new Date().toISOString() }).eq('id', deal.id);
+    }
+
     // Update collab request status
     const { error: updateError } = await supabase
       .from('collab_requests')
@@ -921,7 +969,8 @@ router.patch('/:id/accept', async (req: AuthenticatedRequest, res: Response) => 
             : undefined,
           platform: 'Multiple Platforms',
           brandEmail: request.brand_email || undefined,
-          brandAddress: undefined, // Not available from collab request
+          brandAddress: request.brand_address?.trim() || undefined,
+          brandGstin: request.brand_gstin?.trim() || undefined,
           creatorAddress,
           dealSchema,
           usageType: request.usage_rights ? 'Exclusive' : 'Non-exclusive',
