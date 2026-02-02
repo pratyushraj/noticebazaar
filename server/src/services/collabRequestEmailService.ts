@@ -832,9 +832,7 @@ export async function sendCollabAcceptMagicLinkEmail(
 </body>
 </html>`;
   return sendEmail(creatorEmail, subject, html);
-}
-
-/**
+}/**
  * 7. Send "Continue your collaboration request" email (Save and continue later)
  */
 export async function sendCollabDraftResumeEmail(

@@ -209,6 +209,7 @@ interface UpdateProfileVariables {
   gstin?: string | null; // Added new field
   business_entity_type?: string | null; // Added new field
   onboarding_complete?: boolean; // Added new field
+  username?: string | null; // For collab link slug (same as instagram_handle when set)
   instagram_handle?: string | null; // NEW
   youtube_channel_id?: string | null; // NEW
   tiktok_handle?: string | null; // NEW
@@ -259,6 +260,7 @@ export const useUpdateProfile = () => {
       gstin, 
       business_entity_type, 
       onboarding_complete, 
+      username,
       instagram_handle, 
       youtube_channel_id, 
       tiktok_handle, 
@@ -302,6 +304,7 @@ export const useUpdateProfile = () => {
         gstin?: string | null;
         business_entity_type?: string | null;
         onboarding_complete?: boolean;
+        username?: string | null;
         instagram_handle?: string | null;
         youtube_channel_id?: string | null;
         tiktok_handle?: string | null;
@@ -353,6 +356,9 @@ export const useUpdateProfile = () => {
       }
       if (onboarding_complete !== undefined) {
         updateData.onboarding_complete = onboarding_complete;
+      }
+      if (username !== undefined) {
+        updateData.username = username;
       }
       if (instagram_handle !== undefined) {
         updateData.instagram_handle = instagram_handle;

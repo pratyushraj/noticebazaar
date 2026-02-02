@@ -49,19 +49,19 @@ router.get('/lookup', async (req: Request, res: Response) => {
         });
       }
 
-      // API authentication failure
-      if (error.message.includes('authentication failed')) {
-        return res.status(502).json({
+      // API key missing or external service failure
+      if (error.message.includes('not configured') || error.message.includes('authentication failed')) {
+        return res.status(503).json({
           success: false,
-          error: 'GST lookup service temporarily unavailable',
+          error: 'GST lookup is temporarily unavailable. Please enter company name and address manually.',
         });
       }
     }
 
-    // Generic API failure
-    return res.status(502).json({
+    // Generic failure (external API down, timeout, etc.) - return 503 so client can show "temporarily unavailable"
+    return res.status(503).json({
       success: false,
-      error: 'Failed to lookup GST data. Please try again or enter details manually.',
+      error: 'GST lookup is temporarily unavailable. Please enter company name and address manually.',
     });
   }
 });

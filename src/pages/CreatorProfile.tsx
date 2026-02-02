@@ -1218,7 +1218,7 @@ const ProfileSettings = () => {
                         }));
                       }}
                       disabled={!editMode}
-                      placeholder="rahul_creates"
+                      placeholder="e.g. your_handle"
                       className={`flex-1 bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder-white/40 outline-none transition-colors ${editMode ? 'focus:border-purple-500 focus:bg-white/10' : 'cursor-not-allowed'}`}
                     />
                   </div>

@@ -89,17 +89,20 @@ const Signup = () => {
       if (!justSignedUp) {
       // Wait a moment for profile to be created by database trigger
       const timer = setTimeout(() => {
-        // Check if we have a profile now
-        if (user) {
-          // Profile should be created by trigger, navigate based on role
-          // The ProtectedRoute will handle the actual routing
-          navigate('/', { replace: true });
+        // Session has user; redirect to intended route (e.g. after Google login) or creator-dashboard, not homepage
+        if (session?.user) {
+          const intendedRoute = sessionStorage.getItem('oauth_intended_route');
+          const path = intendedRoute && intendedRoute !== 'login' && intendedRoute !== 'signup'
+            ? `/${intendedRoute}`
+            : '/creator-dashboard';
+          sessionStorage.removeItem('oauth_intended_route');
+          navigate(path, { replace: true });
         }
       }, 500);
       return () => clearTimeout(timer);
     }
     }
-  }, [session, loading, navigate, user, isLoading]);
+  }, [session, loading, navigate, isLoading]);
 
   const handleEmailPasswordSignup = async (e: React.FormEvent) => {
     e.preventDefault();

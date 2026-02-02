@@ -22,13 +22,14 @@ import { WelcomeScreen2 } from '@/components/onboarding/welcome/WelcomeScreen2';
 import { WelcomeScreen3 } from '@/components/onboarding/welcome/WelcomeScreen3';
 import { WelcomeScreen4 } from '@/components/onboarding/welcome/WelcomeScreen4';
 import { NameStep } from '@/components/onboarding/setup/NameStep';
+import { InstagramStep } from '@/components/onboarding/setup/InstagramStep';
 import { UserTypeStep } from '@/components/onboarding/setup/UserTypeStep';
 import { PlatformsStep } from '@/components/onboarding/setup/PlatformsStep';
 import { GoalsStep } from '@/components/onboarding/setup/GoalsStep';
 import { SuccessStep } from '@/components/onboarding/setup/SuccessStep';
 
 type WelcomeStep = 0 | 1 | 2 | 3 | 4;
-type SetupStep = 'name' | 'type' | 'platforms' | 'goals' | 'success';
+type SetupStep = 'name' | 'instagram' | 'type' | 'platforms' | 'goals' | 'success';
 
 type UserType = 'creator' | 'freelancer' | 'entrepreneur';
 type Platform = 'youtube' | 'instagram' | 'twitter' | 'linkedin' | 'website' | 'podcast';
@@ -36,6 +37,7 @@ type Goal = 'protect' | 'earnings' | 'taxes' | 'deals' | 'advice' | 'grow';
 
 interface OnboardingData {
   name: string;
+  instagramUsername: string;
   userType: UserType | '';
   platforms: Platform[];
   goals: Goal[];
@@ -54,12 +56,13 @@ const CreatorOnboarding = () => {
     const saved = localStorage.getItem('onboarding-data');
     if (saved) {
       try {
-        return JSON.parse(saved);
+        const parsed = JSON.parse(saved);
+        return { instagramUsername: '', ...parsed, instagramUsername: parsed.instagramUsername ?? '' };
       } catch {
-        return { name: '', userType: '', platforms: [], goals: [] };
+        return { name: '', instagramUsername: '', userType: '', platforms: [], goals: [] };
       }
     }
-    return { name: '', userType: '', platforms: [], goals: [] };
+    return { name: '', instagramUsername: '', userType: '', platforms: [], goals: [] };
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [stepStartTime, setStepStartTime] = useState<number>(Date.now());
@@ -74,6 +77,8 @@ const CreatorOnboarding = () => {
       // Setup steps - navigate forward
       else if (setupStep === 'name') {
         if (onboardingData.name.trim()) handleNameNext();
+      } else if (setupStep === 'instagram') {
+        if (onboardingData.instagramUsername.trim().length >= 3) handleInstagramNext();
       } else if (setupStep === 'type') {
         if (onboardingData.userType) handleTypeNext();
       } else if (setupStep === 'platforms') {
@@ -88,8 +93,10 @@ const CreatorOnboarding = () => {
         handleBackWelcome();
       }
       // Setup steps - navigate back
-      else if (setupStep === 'type') {
+      else if (setupStep === 'instagram') {
         setSetupStep('name');
+      } else if (setupStep === 'type') {
+        setSetupStep('instagram');
       } else if (setupStep === 'platforms') {
         setSetupStep('type');
       } else if (setupStep === 'goals') {
@@ -113,15 +120,16 @@ const CreatorOnboarding = () => {
   useEffect(() => {
     if (setupStep !== 'name' && setupStep !== 'success') {
       const stepMap: Record<string, { name: string; number: number }> = {
-        type: { name: 'user_type', number: 1 },
-        platforms: { name: 'platforms', number: 2 },
-        goals: { name: 'goals', number: 3 }
+        instagram: { name: 'instagram_username', number: 1 },
+        type: { name: 'user_type', number: 2 },
+        platforms: { name: 'platforms', number: 3 },
+        goals: { name: 'goals', number: 4 }
       };
       
       const stepInfo = stepMap[setupStep];
       if (stepInfo) {
         const timeSpent = Date.now() - stepStartTime;
-        onboardingAnalytics.trackStep(stepInfo.name, stepInfo.number, 4, timeSpent);
+        onboardingAnalytics.trackStep(stepInfo.name, stepInfo.number, 5, timeSpent);
         setStepStartTime(Date.now());
       }
     }
@@ -198,6 +206,7 @@ const CreatorOnboarding = () => {
     // Set defaults if missing
     const defaultData: OnboardingData = {
       name: onboardingData.name || 'Creator',
+      instagramUsername: onboardingData.instagramUsername || '',
       userType: onboardingData.userType || 'creator',
       platforms: onboardingData.platforms.length > 0 ? onboardingData.platforms : ['youtube'],
       goals: onboardingData.goals.length > 0 ? onboardingData.goals : ['protect'],
@@ -228,6 +237,12 @@ const CreatorOnboarding = () => {
 
   const handleNameNext = () => {
     if (onboardingData.name.trim()) {
+      setSetupStep('instagram');
+    }
+  };
+
+  const handleInstagramNext = () => {
+    if (onboardingData.instagramUsername.trim().length >= 3) {
       setSetupStep('type');
     }
   };
@@ -314,6 +329,12 @@ const CreatorOnboarding = () => {
         creatorCategory = 'creator';
       }
 
+      // Normalize Instagram username for collab link (same as username so link = /collab/username)
+      const instagramHandle = onboardingData.instagramUsername
+        ? onboardingData.instagramUsername.replace(/@/g, '').replace(/\s/g, '').toLowerCase().trim()
+        : null;
+      const collabUsername = instagramHandle && instagramHandle.length >= 3 ? instagramHandle : null;
+
       // Try to update with all fields first
       try {
         await updateProfileMutation.mutateAsync({
@@ -325,6 +346,10 @@ const CreatorOnboarding = () => {
           platforms: onboardingData.platforms.length > 0 ? onboardingData.platforms : null,
           goals: onboardingData.goals.length > 0 ? onboardingData.goals : null,
           onboarding_complete: true,
+          ...(collabUsername && {
+            instagram_handle: collabUsername,
+            username: collabUsername,
+          }),
         });
       } catch (firstError: any) {
         // If error is due to missing creator_category column, retry without it
@@ -344,6 +369,10 @@ const CreatorOnboarding = () => {
             platforms: onboardingData.platforms.length > 0 ? onboardingData.platforms : null,
             goals: onboardingData.goals.length > 0 ? onboardingData.goals : null,
             onboarding_complete: true,
+            ...(collabUsername && {
+              instagram_handle: collabUsername,
+              username: collabUsername,
+            }),
           });
         } else {
           // Re-throw if it's a different error
@@ -421,9 +450,10 @@ const CreatorOnboarding = () => {
   const getStepNumber = () => {
     switch (setupStep) {
       case 'name': return 1;
-      case 'type': return 2;
-      case 'platforms': return 3;
-      case 'goals': return 4;
+      case 'instagram': return 2;
+      case 'type': return 3;
+      case 'platforms': return 4;
+      case 'goals': return 5;
       default: return 0;
     }
   };
@@ -436,7 +466,7 @@ const CreatorOnboarding = () => {
           <div className="pt-[max(60px,calc(env(safe-area-inset-top,0px)+36px))] md:pt-10 flex-shrink-0">
             <OnboardingProgressBar
               currentStep={getStepNumber()}
-              totalSteps={4}
+              totalSteps={5}
             />
           </div>
         )}
@@ -455,7 +485,21 @@ const CreatorOnboarding = () => {
             />
           )}
 
-          {/* Step 2: User Type */}
+          {/* Step 2: Instagram username (collab link) */}
+          {setupStep === 'instagram' && (
+            <InstagramStep
+              key="instagram"
+              instagramUsername={onboardingData.instagramUsername}
+              onUsernameChange={(username) =>
+                setOnboardingData((prev) => ({ ...prev, instagramUsername: username }))
+              }
+              onNext={handleInstagramNext}
+              onBack={() => setSetupStep('name')}
+              onSkip={handleSkipSetup}
+            />
+          )}
+
+          {/* Step 3: User Type */}
           {setupStep === 'type' && (
             <UserTypeStep
               key="type"
@@ -464,7 +508,7 @@ const CreatorOnboarding = () => {
                 setOnboardingData((prev) => ({ ...prev, userType: type }))
               }
               onNext={handleTypeNext}
-              onBack={() => setSetupStep('name')}
+              onBack={() => setSetupStep('instagram')}
               onSkip={handleSkipSetup}
             />
           )}

@@ -730,16 +730,16 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
           }
           
           if (targetPath === '/creator-dashboard' && session?.user?.id) {
-            // Fetch profile to determine role-based redirect, with 2.5s timeout so we never block redirect
+            // Fetch profile to determine role-based redirect and onboarding status, with 2.5s timeout
             const profileFetchTimeoutMs = 2500;
             try {
               console.log('[SessionContext] Fetching profile for user:', session.user.id);
               const profilePromise = supabase
                 .from('profiles')
-                .select('role')
+                .select('role, onboarding_complete')
                 .eq('id', session.user.id)
                 .single();
-              const timeoutFallback = { data: null as { role: string } | null, error: { message: 'timeout' } };
+              const timeoutFallback = { data: null as { role: string; onboarding_complete?: boolean } | null, error: { message: 'timeout' } };
               const result = await Promise.race([
                 profilePromise,
                 new Promise<typeof timeoutFallback>((resolve) =>
@@ -754,7 +754,7 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
               }
               
               if (profileData) {
-                console.log('[SessionContext] Profile fetched, role:', profileData.role);
+                console.log('[SessionContext] Profile fetched, role:', profileData.role, 'onboarding_complete:', profileData.onboarding_complete);
                 const userEmail = session.user.email?.toLowerCase();
                 const isPratyush = userEmail === 'pratyushraj@outlook.com';
                 
@@ -769,6 +769,11 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
                   targetPath = '/lawyer-dashboard';
                 } else {
                   targetPath = '/creator-dashboard';
+                  // Send new creators (onboarding not complete) to onboarding after Google login
+                  if (profileData.onboarding_complete === false) {
+                    targetPath = '/creator-onboarding';
+                    console.log('[SessionContext] New creator, redirecting to onboarding');
+                  }
                 }
               } else {
                 console.log('[SessionContext] No profile data / timeout, defaulting to creator dashboard');

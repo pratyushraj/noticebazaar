@@ -226,12 +226,32 @@ const CollabLinkLanding = () => {
         method: 'GET',
         headers: { 'Content-Type': 'application/json' },
       });
-      const data = await response.json();
+      let data: { success?: boolean; data?: { legalName?: string; address?: string; state?: string }; error?: string } = {};
+      try {
+        data = await response.json();
+      } catch {
+        // Server returned non-JSON (e.g. 502/503 HTML from proxy)
+        if (response.status === 502 || response.status === 503) {
+          setGstLookupError('GST lookup is temporarily unavailable. Please enter company name and address manually.');
+          toast.error('GST lookup is temporarily unavailable. Please enter details manually.');
+        } else {
+          setGstLookupError('Failed to lookup GST data. Please try again or enter details manually.');
+          toast.error('Failed to lookup GST data. Please enter details manually.');
+        }
+        return;
+      }
       if (!response.ok) {
-        throw new Error(data.error || 'GST lookup failed. Enter details manually.');
+        const msg = data.error || (response.status === 502 || response.status === 503
+          ? 'GST lookup is temporarily unavailable. Please enter company name and address manually.'
+          : 'GST lookup failed. Enter details manually.');
+        setGstLookupError(msg);
+        toast.error(msg);
+        return;
       }
       if (!data.success || !data.data) {
-        throw new Error(data.error || 'GST lookup failed. Enter details manually.');
+        setGstLookupError(data.error || 'GST lookup failed. Enter details manually.');
+        toast.error(data.error || 'GST lookup failed. Enter details manually.');
+        return;
       }
       const { legalName, address, state } = data.data;
       if (legalName?.trim()) setBrandName(legalName.trim());
@@ -243,7 +263,7 @@ const CollabLinkLanding = () => {
       setErrors((prev) => ({ ...prev, brandName: '', brandAddress: '', brandGstin: '' }));
       toast.success('Company name and address filled from GST');
     } catch (err: any) {
-      const msg = err?.message || 'GST lookup failed. Enter details manually.';
+      const msg = err?.message || 'Failed to lookup GST data. Please try again or enter details manually.';
       setGstLookupError(msg);
       toast.error(msg);
     } finally {
@@ -1105,7 +1125,23 @@ const CollabLinkLanding = () => {
                       className="block w-full text-sm text-white/80 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-purple-500/30 file:text-purple-100 file:text-sm file:font-medium"
                     />
                     {barterProductImageUrl && (
-                      <p className="text-xs text-green-400/90 mt-1.5">Image uploaded</p>
+                      <div className="mt-2 flex items-start gap-3 rounded-lg border border-purple-500/20 bg-white/5 p-2">
+                        <img
+                          src={barterProductImageUrl}
+                          alt="Product"
+                          className="h-20 w-20 shrink-0 rounded-md object-cover"
+                        />
+                        <div className="min-w-0 flex-1">
+                          <p className="text-xs text-green-400/90">Image uploaded</p>
+                          <button
+                            type="button"
+                            onClick={() => setBarterProductImageUrl(null)}
+                            className="mt-1 text-xs text-purple-300 hover:text-white underline"
+                          >
+                            Remove image
+                          </button>
+                        </div>
+                      </div>
                     )}
                   </div>
                 </div>
@@ -1184,7 +1220,23 @@ const CollabLinkLanding = () => {
                           className="block w-full text-sm text-white/80 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-purple-500/30 file:text-purple-100 file:text-sm file:font-medium"
                         />
                         {barterProductImageUrl && (
-                          <p className="text-xs text-green-400/90 mt-1.5">Image uploaded</p>
+                          <div className="mt-2 flex items-start gap-3 rounded-lg border border-purple-500/20 bg-white/5 p-2">
+                            <img
+                              src={barterProductImageUrl}
+                              alt="Product"
+                              className="h-20 w-20 shrink-0 rounded-md object-cover"
+                            />
+                            <div className="min-w-0 flex-1">
+                              <p className="text-xs text-green-400/90">Image uploaded</p>
+                              <button
+                                type="button"
+                                onClick={() => setBarterProductImageUrl(null)}
+                                className="mt-1 text-xs text-purple-300 hover:text-white underline"
+                              >
+                                Remove image
+                              </button>
+                            </div>
+                          </div>
                         )}
                       </div>
                     </div>
@@ -1360,29 +1412,6 @@ const CollabLinkLanding = () => {
 
                 <div>
                   <label className="block text-sm font-semibold text-white mb-2">
-                    Company / Brand Address <span className="text-red-400">*</span>
-                  </label>
-                  <Textarea
-                    value={brandAddress}
-                    onChange={(e) => {
-                      setBrandAddress(e.target.value);
-                      if (errors.brandAddress) setErrors({ ...errors, brandAddress: '' });
-                    }}
-                    required
-                    placeholder="Full registered address (required for contract)"
-                    rows={3}
-                    className={`bg-white/5 border-white/20 text-white min-h-[80px] ${errors.brandAddress ? 'border-red-400/50' : ''}`}
-                  />
-                  {errors.brandAddress && (
-                    <p className="text-xs text-red-400 mt-1">{errors.brandAddress}</p>
-                  )}
-                  <p className="text-xs text-purple-300/70 mt-1.5">
-                    Used for the collaboration agreement when the creator accepts
-                  </p>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-semibold text-white mb-2">
                     GSTIN (Optional)
                   </label>
                   <div className="flex flex-col sm:flex-row gap-2">
@@ -1422,6 +1451,29 @@ const CollabLinkLanding = () => {
                   )}
                   <p className="text-xs text-purple-300/70 mt-1.5">
                     Optional. Use &quot;Fetch from GST&quot; to auto-fill company name and address.
+                  </p>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-white mb-2">
+                    Company / Brand Address <span className="text-red-400">*</span>
+                  </label>
+                  <Textarea
+                    value={brandAddress}
+                    onChange={(e) => {
+                      setBrandAddress(e.target.value);
+                      if (errors.brandAddress) setErrors({ ...errors, brandAddress: '' });
+                    }}
+                    required
+                    placeholder="Full registered address (required for contract)"
+                    rows={3}
+                    className={`bg-white/5 border-white/20 text-white min-h-[80px] ${errors.brandAddress ? 'border-red-400/50' : ''}`}
+                  />
+                  {errors.brandAddress && (
+                    <p className="text-xs text-red-400 mt-1">{errors.brandAddress}</p>
+                  )}
+                  <p className="text-xs text-purple-300/70 mt-1.5">
+                    Used for the collaboration agreement when the creator accepts
                   </p>
                 </div>
 
