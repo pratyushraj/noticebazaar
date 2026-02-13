@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, Package } from "lucide-react";
+import { ArrowLeft, Package, Lock } from "lucide-react";
 import { useSession } from "@/contexts/SessionContext";
 import { useBrandDealById } from "@/lib/hooks/useBrandDeals";
 import { getApiBaseUrl } from "@/lib/utils/api";
@@ -27,13 +27,15 @@ export default function DealDeliveryDetailsPage() {
   const [deliveryPhone, setDeliveryPhone] = useState("");
   const [deliveryAddress, setDeliveryAddress] = useState("");
   const [addressLine, setAddressLine] = useState("");
+  const [addressLine2, setAddressLine2] = useState("");
   const [city, setCity] = useState("");
   const [state, setState] = useState("");
   const [pincode, setPincode] = useState("");
   const [deliveryNotes, setDeliveryNotes] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
-  const [touched, setTouched] = useState({ phone: false, address: false, city: false, state: false, pincode: false });
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [touched, setTouched] = useState({ name: false, phone: false, address: false, city: false, state: false, pincode: false });
 
   const dealType = (deal as any)?.deal_type;
   const hasExistingDelivery =
@@ -50,7 +52,19 @@ export default function DealDeliveryDetailsPage() {
       if (fullAddress && fullAddress.includes(",")) {
         try {
           const parts = fullAddress.split(",");
-          if (parts.length >= 3) {
+          if (parts.length >= 4) {
+            setAddressLine(parts[0].trim());
+            setAddressLine2(parts[1].trim());
+            setCity(parts[2].trim());
+            const lastPart = parts[3].trim();
+            if (lastPart.includes("-")) {
+              const [s, p] = lastPart.split("-");
+              setState(s.trim());
+              setPincode(p.trim());
+            } else {
+              setState(lastPart);
+            }
+          } else if (parts.length >= 3) {
             setAddressLine(parts[0].trim());
             setCity(parts[1].trim());
             const lastPart = parts[2].trim();
@@ -68,7 +82,7 @@ export default function DealDeliveryDetailsPage() {
           setAddressLine(fullAddress);
         }
       } else {
-        setAddressLine(fullAddress);
+      setAddressLine(fullAddress);
       }
       setDeliveryNotes((deal as any).delivery_notes ?? "");
     }
@@ -109,9 +123,10 @@ export default function DealDeliveryDetailsPage() {
     if (!dealId || !session?.access_token || !canSubmit) return;
     triggerHaptic(HapticPatterns.light);
     setIsSubmitting(true);
+    setSubmitError(null);
 
     // Combine structured address
-    const combinedAddress = `${addressLine.trim()}, ${city.trim()}, ${state.trim()} - ${pincode.trim()}`;
+    const combinedAddress = `${addressLine.trim()}${addressLine2.trim() ? `, ${addressLine2.trim()}` : ""}, ${city.trim()}, ${state.trim()} - ${pincode.trim()}`;
 
     try {
       const res = await fetch(`${getApiBaseUrl()}/api/deals/${dealId}/delivery-details`, {
@@ -142,10 +157,14 @@ export default function DealDeliveryDetailsPage() {
           navigate(`/creator-contracts/${dealId}`, { replace: true });
         }, 2500);
       } else {
-        toast.error(data.error || "Failed to save delivery details");
+        const err = data?.error || "Failed to save delivery details";
+        setSubmitError(err);
+        toast.error(err);
       }
     } catch {
-      toast.error("Failed to save. Please try again.");
+      const err = "Failed to save. Please try again.";
+      setSubmitError(err);
+      toast.error(err);
     } finally {
       setIsSubmitting(false);
     }
@@ -187,8 +206,8 @@ export default function DealDeliveryDetailsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-muted/20 pb-safe">
-      <div className="sticky top-0 z-10 bg-background/95 backdrop-blur border-b">
+      <div className="min-h-screen bg-gradient-to-b from-background to-muted/20 pb-safe">
+      <div className="sticky top-0 z-10 bg-background/90 backdrop-blur-xl border-b border-white/10">
         <div className="flex items-center gap-3 px-4 py-3 max-w-xl mx-auto">
           <button
             type="button"
@@ -198,13 +217,19 @@ export default function DealDeliveryDetailsPage() {
           >
             <ArrowLeft className="h-5 w-5" />
           </button>
-          <h1 className="text-lg font-semibold">Delivery Details (For Barter Only)</h1>
+          <div className="flex-1 min-w-0">
+            <h1 className="text-base sm:text-lg font-semibold leading-tight">
+              Delivery Details (For Barter Only)
+            </h1>
+          </div>
         </div>
       </div>
 
-      <div className="bg-primary/5 border-b border-primary/10">
-        <div className="max-w-xl mx-auto px-4 py-2.5 flex items-center gap-2 text-xs font-medium text-primary">
-          <span aria-hidden>🔒</span>
+      <div className="bg-white/6 border-b border-white/12">
+        <div className="max-w-xl mx-auto px-4 py-3 flex items-start gap-2 text-xs font-semibold text-white/80">
+          <span className="mt-0.5 text-white/70" aria-hidden>
+            <Lock className="h-4 w-4" />
+          </span>
           Your address is shared only after contract signing and only with this brand.
         </div>
       </div>
@@ -219,22 +244,29 @@ export default function DealDeliveryDetailsPage() {
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-6 pb-24">
           <div className="space-y-2">
-            <Label htmlFor="delivery_name">Receiver Name</Label>
+            <Label htmlFor="delivery_name" className="text-white/70">Receiver Name</Label>
             <Input
               id="delivery_name"
               value={deliveryName}
               onChange={(e) => setDeliveryName(e.target.value)}
+              onBlur={() => setTouched((t) => ({ ...t, name: true }))}
               placeholder="Full name for courier label"
-              className="h-12 bg-background border-muted-foreground/20 focus:border-primary"
+              className={cn(
+                "h-11 sm:h-12 bg-white/8 border-white/20 text-white placeholder:text-white/50 focus:border-purple-300/60 focus:ring-2 focus:ring-purple-400/20",
+                touched.name && !nameValid && "border-destructive focus:border-destructive"
+              )}
               required
               autoComplete="name"
             />
+            {touched.name && !nameValid && (
+              <p className="text-xs text-destructive font-medium">Receiver name is required</p>
+            )}
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="delivery_phone">WhatsApp / Phone Number</Label>
+            <Label htmlFor="delivery_phone" className="text-white/70">WhatsApp / Phone Number</Label>
             <Input
               id="delivery_phone"
               type="tel"
@@ -244,13 +276,13 @@ export default function DealDeliveryDetailsPage() {
               onBlur={() => setTouched((t) => ({ ...t, phone: true }))}
               placeholder="10-digit phone number"
               className={cn(
-                "h-12 bg-background border-muted-foreground/20 focus:border-primary",
+                "h-11 sm:h-12 bg-white/8 border-white/20 text-white placeholder:text-white/50 focus:border-purple-300/60 focus:ring-2 focus:ring-purple-400/20",
                 touched.phone && !phoneValid && "border-destructive focus:border-destructive"
               )}
               required
               autoComplete="tel"
             />
-            <p className="text-[11px] leading-tight text-muted-foreground opacity-80">
+            <p className="text-[11px] leading-tight text-white/55">
               Used strictly for courier updates. Never used for marketing. Never shared publicly.
             </p>
             {touched.phone && !phoneValid && deliveryPhone.length > 0 && (
@@ -259,37 +291,56 @@ export default function DealDeliveryDetailsPage() {
           </div>
 
           <div className="space-y-4">
-            <Label>Where should the product be delivered?</Label>
+            <Label className="text-white/70">Where should the product be delivered?</Label>
 
             <div className="space-y-2">
+              <Label className="text-xs text-white/55">Address line 1</Label>
               <Input
                 value={addressLine}
                 onChange={(e) => setAddressLine(e.target.value)}
                 onBlur={() => setTouched((t) => ({ ...t, address: true }))}
                 placeholder="Flat / Building / Street Address"
                 className={cn(
-                  "h-12 bg-background border-muted-foreground/20 focus:border-primary",
+                  "h-11 sm:h-12 bg-white/8 border-white/20 text-white placeholder:text-white/50 focus:border-purple-300/60 focus:ring-2 focus:ring-purple-400/20",
                   touched.address && !addressLine.trim() && "border-destructive"
                 )}
                 required
+              />
+              {touched.address && !addressLine.trim() && (
+                <p className="text-xs text-destructive font-medium">Address line 1 is required</p>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <Label className="text-xs text-white/55">Address line 2 (optional)</Label>
+              <Input
+                value={addressLine2}
+                onChange={(e) => setAddressLine2(e.target.value)}
+                placeholder="Area / Landmark / Apartment"
+                className="h-11 sm:h-12 bg-white/8 border-white/20 text-white placeholder:text-white/50 focus:border-purple-300/60 focus:ring-2 focus:ring-purple-400/20"
               />
             </div>
 
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-2">
+                <Label className="text-xs text-white/55">City</Label>
                 <Input
                   value={city}
                   onChange={(e) => setCity(e.target.value)}
                   onBlur={() => setTouched((t) => ({ ...t, city: true }))}
                   placeholder="City"
                   className={cn(
-                    "h-12 bg-background border-muted-foreground/20 focus:border-primary",
+                    "h-11 sm:h-12 bg-white/8 border-white/20 text-white placeholder:text-white/50 focus:border-purple-300/60 focus:ring-2 focus:ring-purple-400/20",
                     touched.city && !city.trim() && "border-destructive"
                   )}
                   required
                 />
+                {touched.city && !city.trim() && (
+                  <p className="text-xs text-destructive font-medium">City is required</p>
+                )}
               </div>
               <div className="space-y-2">
+                <Label className="text-xs text-white/55">Pincode</Label>
                 <Input
                   value={pincode}
                   onChange={(e) => setPincode(e.target.value.replace(/\D/g, "").slice(0, 6))}
@@ -297,45 +348,54 @@ export default function DealDeliveryDetailsPage() {
                   placeholder="Pincode"
                   inputMode="numeric"
                   className={cn(
-                    "h-12 bg-background border-muted-foreground/20 focus:border-primary",
+                    "h-11 sm:h-12 bg-white/8 border-white/20 text-white placeholder:text-white/50 focus:border-purple-300/60 focus:ring-2 focus:ring-purple-400/20",
                     touched.pincode && !pincodeValid && "border-destructive"
                   )}
                   required
                 />
+                {touched.pincode && !pincodeValid && pincode.length > 0 && (
+                  <p className="text-xs text-destructive font-medium">Valid 6-digit Pincode required</p>
+                )}
               </div>
             </div>
 
             <div className="space-y-2">
+              <Label className="text-xs text-white/55">State</Label>
               <Input
                 value={state}
                 onChange={(e) => setState(e.target.value)}
                 onBlur={() => setTouched((t) => ({ ...t, state: true }))}
                 placeholder="State"
                 className={cn(
-                  "h-12 bg-background border-muted-foreground/20 focus:border-primary",
+                  "h-11 sm:h-12 bg-white/8 border-white/20 text-white placeholder:text-white/50 focus:border-purple-300/60 focus:ring-2 focus:ring-purple-400/20",
                   touched.state && !state.trim() && "border-destructive"
                 )}
                 required
               />
+              {touched.state && !state.trim() && (
+                <p className="text-xs text-destructive font-medium">State is required</p>
+              )}
             </div>
-            {touched.pincode && !pincodeValid && pincode.length > 0 && (
-              <p className="text-xs text-destructive font-medium">Valid 6-digit Pincode required</p>
-            )}
           </div>
 
           <div className="space-y-2 pt-2">
-            <Label htmlFor="delivery_notes" className="text-sm">Delivery Notes (optional)</Label>
+            <Label htmlFor="delivery_notes" className="text-sm text-white/70">Delivery Notes (optional)</Label>
             <Textarea
               id="delivery_notes"
               value={deliveryNotes}
               onChange={(e) => setDeliveryNotes(e.target.value)}
               placeholder="e.g. Near HDFC Bank, Doorbell not working"
               rows={2}
-              className="resize-none bg-background border-muted-foreground/20 focus:border-primary"
+              className="resize-none bg-white/8 border-white/20 text-white placeholder:text-white/50 focus:border-purple-300/60 focus:ring-2 focus:ring-purple-400/20"
             />
           </div>
 
-          <div className="pt-4 space-y-3">
+          <div className="sticky bottom-0 -mx-4 px-4 pb-4 pt-3 bg-gradient-to-t from-[#1b1034] via-[#1b1034]/95 to-transparent backdrop-blur border-t border-white/10 space-y-3">
+            {submitError && (
+              <div className="rounded-xl border border-red-400/40 bg-red-500/10 text-red-200 text-sm px-3 py-2">
+                {submitError}
+              </div>
+            )}
             <Button
               type="submit"
               className="w-full h-14 text-base font-bold shadow-lg shadow-primary/20"
