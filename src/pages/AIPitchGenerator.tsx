@@ -560,7 +560,7 @@ const AIPitchGenerator = () => {
               </div>
             </div>
           )}
-        </div>
+        </motion.div>
 
         <div className="flex gap-6">
           {/* Main Content */}
@@ -794,7 +794,7 @@ const AIPitchGenerator = () => {
             historyContent
           )}
         </BottomSheet>
-      </div>
+      </motion.div>
     </div>
   );
 };
