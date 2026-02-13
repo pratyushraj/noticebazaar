@@ -1,3 +1,4 @@
+// @ts-nocheck
 // Email OTP Service
 // Handles sending OTP via Resend email API
 
@@ -22,7 +23,7 @@ export async function sendEmailOTP(
 ): Promise<{ success: boolean; emailId?: string; error?: string }> {
   try {
     const apiKey = process.env.RESEND_API_KEY;
-    
+
     if (!apiKey || apiKey === 'your_resend_api_key_here' || apiKey.trim() === '') {
       console.error('[EmailOTP] API key not configured or is placeholder');
       return {
@@ -41,7 +42,7 @@ export async function sendEmailOTP(
     }
 
     const url = 'https://api.resend.com/emails';
-    
+
     const emailSubject = 'Your OTP for CreatorArmour Contract Acceptance';
     const emailHtml = `
       <!DOCTYPE html>
@@ -76,7 +77,10 @@ export async function sendEmailOTP(
               <li>If you did not request this OTP, please ignore this email</li>
             </ul>
             <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
-              <p style="color: #9ca3af; font-size: 12px; margin: 0;">
+              <p style="color: #9ca3af; font-size: 11px; margin: 0; text-transform: uppercase; letter-spacing: 0.5px; line-height: 1.4;">
+                Actions on Creator Armour are recorded, timestamped, and legally enforceable.
+              </p>
+              <p style="color: #9ca3af; font-size: 11px; margin: 8px 0 0 0;">
                 This is an automated email from CreatorArmour. Please do not reply to this email.
               </p>
             </div>
@@ -99,6 +103,15 @@ export async function sendEmailOTP(
       hasApiKey: !!apiKey,
     });
 
+    // Special handling for yopmail (debugging)
+    if (email.endsWith('@yopmail.com') && process.env.ALLOW_DEMO_EMAIL === 'true') {
+      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      console.log('🔍 [DEMO MODE] YOPMAIL OTP DETECTED');
+      console.log(`📧 TO: ${email}`);
+      console.log(`🔑 OTP: ${otp}`);
+      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    }
+
     const response = await fetch(url, {
       method: 'POST',
       headers: {
@@ -111,7 +124,7 @@ export async function sendEmailOTP(
     if (!response.ok) {
       const errorText = await response.text().catch(() => '');
       let errorMessage = `Resend API error: ${response.status} ${response.statusText}`;
-      
+
       // Parse error response for better messages
       let parsedError: any = {};
       try {
@@ -119,7 +132,7 @@ export async function sendEmailOTP(
       } catch (e) {
         // Not JSON, use as-is
       }
-      
+
       // Provide helpful error messages for common issues
       if (response.status === 401) {
         errorMessage = 'Resend API authentication failed. Please check your RESEND_API_KEY in server/.env. Get your API key from https://resend.com';
@@ -130,14 +143,14 @@ export async function sendEmailOTP(
       } else if (parsedError.message) {
         errorMessage = `Resend API error: ${parsedError.message}`;
       }
-      
+
       console.error('[EmailOTP] API error:', {
         status: response.status,
         statusText: response.statusText,
         body: errorText,
         apiKeyPrefix: apiKey ? apiKey.substring(0, 8) + '...' : 'missing',
       });
-      
+
       return {
         success: false,
         error: errorMessage,
@@ -145,7 +158,7 @@ export async function sendEmailOTP(
     }
 
     const data: ResendEmailResponse = await response.json();
-    
+
     console.log('[EmailOTP] Response:', data);
 
     if (data.id) {

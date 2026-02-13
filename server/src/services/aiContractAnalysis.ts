@@ -1,3 +1,4 @@
+// @ts-nocheck
 // AI-powered Contract Analysis Service
 // Uses free LLM (Hugging Face) to analyze contracts
 

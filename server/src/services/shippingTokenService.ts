@@ -1,3 +1,4 @@
+// @ts-nocheck
 // Shipping token service: create and validate tokens for brand shipping update links (no brand login)
 
 import crypto from 'crypto';

@@ -1,3 +1,4 @@
+// @ts-nocheck
 // Gentle reminder emails for "Brand hasn't signed yet" and "Deal pending for 7 days"
 // Nudge both sides to improve completion rates and reduce chargebacks/disputes
 

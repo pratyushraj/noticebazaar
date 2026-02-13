@@ -24,21 +24,8 @@ import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { useSession } from '@/contexts/SessionContext';
 import { supabase } from '@/integrations/supabase/client';
+import { getApiBaseUrl } from '@/lib/utils/api';
 
-// Helper to get API base URL
-function getApiBaseUrl(): string {
-  if (typeof window === 'undefined') return 'http://localhost:3001';
-  
-  const envUrl = import.meta.env.VITE_API_BASE_URL;
-  if (envUrl) return envUrl.replace(/\/$/, '');
-  
-  const origin = window.location.origin;
-  if (origin.includes('noticebazaar.com')) {
-    return 'https://api.noticebazaar.com';
-  }
-  
-  return 'http://localhost:3001';
-}
 
 interface ConsumerComplaintModalProps {
   open: boolean;
@@ -79,7 +66,7 @@ const ConsumerComplaintModal: React.FC<ConsumerComplaintModalProps> = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [complaintId, setComplaintId] = useState<string | null>(null);
-  
+
   // Pre-filing actions state
   const [preFilingActions, setPreFilingActions] = useState({
     wants_lawyer_review: false,
@@ -235,7 +222,7 @@ const ConsumerComplaintModal: React.FC<ConsumerComplaintModalProps> = ({
 
       setIsSubmitting(false);
       setCurrentStep('success');
-      
+
       // Reset form after showing success
       setTimeout(() => {
         setIsSuccess(false);
@@ -254,7 +241,7 @@ const ConsumerComplaintModal: React.FC<ConsumerComplaintModalProps> = ({
         setComplaintId(null);
         onOpenChange(false);
         onSubmit();
-        
+
         if (newStatus === 'lawyer_review_requested') {
           toast.success('Complaint submitted for lawyer review. You\'ll be notified when the review is complete.');
         } else if (newStatus === 'notice_generated') {

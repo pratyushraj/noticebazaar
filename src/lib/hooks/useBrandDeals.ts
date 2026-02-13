@@ -11,7 +11,7 @@ import { logger } from '@/lib/utils/logger';
 // Updated to match Payments page requirements exactly
 const getDemoBrandDeals = (creatorId: string): BrandDeal[] => {
   const now = new Date();
-  
+
   // Fixed dates for payments page demo data
   const nov10 = new Date(2025, 10, 10); // Nov 10, 2025 - boAt overdue
   const nov20 = new Date(2025, 10, 20); // Nov 20, 2025 - Mamaearth due in 2 days
@@ -169,7 +169,7 @@ export const useBrandDeals = (options: UseBrandDealsOptions) => {
       if (import.meta.env.DEV) {
         console.log('[useBrandDeals] Fetching deals for creatorId:', creatorId);
       }
-      
+
       if (!creatorId) {
         if (import.meta.env.DEV) {
           console.log('[useBrandDeals] No creatorId provided, returning empty array');
@@ -180,11 +180,11 @@ export const useBrandDeals = (options: UseBrandDealsOptions) => {
       // Get current session to verify auth.uid() matches creatorId
       const { data: { session } } = await supabase.auth.getSession();
       const authUserId = session?.user?.id;
-      
+
       if (import.meta.env.DEV) {
         console.log('[useBrandDeals] Auth user ID:', authUserId, 'Creator ID:', creatorId);
       }
-      
+
       if (authUserId !== creatorId) {
         if (import.meta.env.DEV) {
           console.warn('[useBrandDeals] WARNING: auth.uid() does not match creatorId. This may cause RLS issues.');
@@ -201,6 +201,8 @@ export const useBrandDeals = (options: UseBrandDealsOptions) => {
         'Content Delivered',
         'completed',
         'COMPLETED',
+        'FULLY_EXECUTED', // Both parties signed
+        'fully_executed',
         'Drafting', // Barter deal created, delivery details pending
         'Awaiting Product Shipment', // Barter: delivery details saved, waiting for brand to ship
       ];
@@ -220,7 +222,7 @@ export const useBrandDeals = (options: UseBrandDealsOptions) => {
           query = query.eq('status', statusFilter);
         }
       }
-      
+
       if (platformFilter && platformFilter !== 'All') { // NEW FILTER
         query = query.eq('platform', platformFilter);
       }
@@ -241,14 +243,14 @@ export const useBrandDeals = (options: UseBrandDealsOptions) => {
           creatorId,
           authUserId,
         });
-        
+
         // Check for RLS/permission errors
-        const isRLSError = 
+        const isRLSError =
           error.code === '42501' || // Insufficient privilege
           error.message?.includes('permission denied') ||
           error.message?.includes('row-level security') ||
           error.message?.toLowerCase().includes('policy');
-        
+
         if (isRLSError) {
           console.error('[useBrandDeals] RLS ERROR: Permission denied. Check RLS policies for brand_deals table.');
           console.error('[useBrandDeals] RLS Error Details:', {
@@ -257,11 +259,11 @@ export const useBrandDeals = (options: UseBrandDealsOptions) => {
             errorMessage: error.message,
           });
         }
-        
+
         // Check if error is due to missing table/relation (404, PGRST116, 42P01)
-        const isMissingTableError = 
-          error.code === 'PGRST116' || 
-          error.code === '42P01' || 
+        const isMissingTableError =
+          error.code === 'PGRST116' ||
+          error.code === '42P01' ||
           (error as any).status === 404 ||
           error.message?.includes('does not exist') ||
           error.message?.includes('relation') ||
@@ -369,23 +371,23 @@ interface AddBrandDealVariables {
 export const useAddBrandDeal = () => {
   const queryClient = useQueryClient();
   return useSupabaseMutation<void, Error, AddBrandDealVariables>(
-    async ({ 
-      creator_id, 
+    async ({
+      creator_id,
       organization_id, // DESTRUCTURE NEW FIELD
-      brand_name, 
-      deal_amount, 
-      deliverables, 
-      contract_file, 
+      brand_name,
+      deal_amount,
+      deliverables,
+      contract_file,
       contract_file_url: providedContractUrl, // NEW: Use provided URL if available
-      due_date, 
-      payment_expected_date, 
-      contact_person, 
-      platform, 
-      status, 
-      invoice_file, 
-      utr_number, 
-      brand_email, 
-      payment_received_date 
+      due_date,
+      payment_expected_date,
+      contact_person,
+      platform,
+      status,
+      invoice_file,
+      utr_number,
+      brand_email,
+      payment_received_date
     }) => {
       let contract_file_url: string | null = null;
       let invoice_file_url: string | null = null;
@@ -450,31 +452,31 @@ export const useAddBrandDeal = () => {
         }
         invoice_file_url = publicUrlData.publicUrl;
       }
-      
+
       let finalStatus = status;
       // Consistency Check: If payment received date is provided, force status to Completed.
       if (payment_received_date) {
-          finalStatus = 'Completed';
+        finalStatus = 'Completed';
       }
 
       // Build insert payload - only include organization_id if it's a valid UUID
       // We explicitly omit it if null to avoid NOT NULL constraint violations
       const insertPayload: Database['public']['Tables']['brand_deals']['Insert'] = {
-          creator_id,
-          brand_name,
-          deal_amount,
-          deliverables,
-          due_date,
-          payment_expected_date,
-          status: finalStatus, // Use finalStatus
-          contract_file_url,
-          invoice_file_url,
-          contact_person: contact_person || null,
-          platform: platform || null,
-          utr_number: utr_number || null,
-          brand_email: brand_email || null,
-          brand_phone: brand_phone || null,
-          payment_received_date: payment_received_date || null,
+        creator_id,
+        brand_name,
+        deal_amount,
+        deliverables,
+        due_date,
+        payment_expected_date,
+        status: finalStatus, // Use finalStatus
+        contract_file_url,
+        invoice_file_url,
+        contact_person: contact_person || null,
+        platform: platform || null,
+        utr_number: utr_number || null,
+        brand_email: brand_email || null,
+        brand_phone: brand_phone || null,
+        payment_received_date: payment_received_date || null,
       };
 
       // Only include organization_id if it's provided, not null, and is a valid UUID
@@ -490,7 +492,7 @@ export const useAddBrandDeal = () => {
           console.warn('Invalid organization_id format, omitting from insert:', organization_id);
         }
       }
-      
+
       // Debug logging removed for production
 
       const { error: insertError } = await supabase
@@ -517,14 +519,14 @@ export const useAddBrandDeal = () => {
     {
       onSuccess: (_, variables) => {
         // Invalidate all brand_deals queries for this creator to ensure fresh data
-        queryClient.invalidateQueries({ 
+        queryClient.invalidateQueries({
           queryKey: ['brand_deals'],
-          exact: false 
+          exact: false
         });
         // Also refetch immediately to ensure UI updates
-        queryClient.refetchQueries({ 
+        queryClient.refetchQueries({
           queryKey: ['brand_deals', variables.creator_id],
-          exact: false 
+          exact: false
         });
       },
       successMessage: 'Brand deal added successfully!',
@@ -624,22 +626,22 @@ export const useUpdateBrandDeal = () => {
       if (invoice_file_url !== undefined) {
         updatePayload.invoice_file_url = invoice_file_url;
       }
-      
+
       // Include proof_of_payment_url if provided
       if (updates.proof_of_payment_url !== undefined) {
         updatePayload.proof_of_payment_url = updates.proof_of_payment_url;
       }
-      
+
       if (organization_id !== undefined) { // Include organization_id if provided
-          updatePayload.organization_id = organization_id;
+        updatePayload.organization_id = organization_id;
       }
 
       // Consistency Check: If payment received date is provided, force status to Completed.
       if (updates.payment_received_date) {
-          updatePayload.status = 'Completed';
+        updatePayload.status = 'Completed';
       } else if (updates.payment_received_date === null && updatePayload.status === 'Completed') {
-          // If payment date is cleared, revert status to Payment Pending
-          updatePayload.status = 'Payment Pending';
+        // If payment date is cleared, revert status to Payment Pending
+        updatePayload.status = 'Payment Pending';
       }
 
       const { error } = await supabase
@@ -654,23 +656,23 @@ export const useUpdateBrandDeal = () => {
     {
       onSuccess: (_, variables) => {
         // Invalidate all brand_deals queries for this creator to ensure fresh data
-        queryClient.invalidateQueries({ 
+        queryClient.invalidateQueries({
           queryKey: ['brand_deals'],
-          exact: false 
+          exact: false
         });
         // Also invalidate the specific deal query (singular 'brand_deal')
-        queryClient.invalidateQueries({ 
+        queryClient.invalidateQueries({
           queryKey: ['brand_deal', variables.id],
-          exact: false 
+          exact: false
         });
         // Also refetch immediately to ensure UI updates
-        queryClient.refetchQueries({ 
+        queryClient.refetchQueries({
           queryKey: ['brand_deals', variables.creator_id],
-          exact: false 
+          exact: false
         });
-        queryClient.refetchQueries({ 
+        queryClient.refetchQueries({
           queryKey: ['brand_deal', variables.id],
-          exact: false 
+          exact: false
         });
       },
       successMessage: 'Brand deal updated successfully!',
@@ -693,9 +695,9 @@ export const useBrandDealById = (dealId: string | undefined, creatorId: string |
         .single();
 
       if (error) {
-        const isMissingTableError = 
-          error.code === 'PGRST116' || 
-          error.code === '42P01' || 
+        const isMissingTableError =
+          error.code === 'PGRST116' ||
+          error.code === '42P01' ||
           (error as any).status === 404 ||
           error.message?.includes('does not exist') ||
           error.message?.includes('relation') ||
@@ -750,14 +752,14 @@ export const useDeleteBrandDeal = () => {
     {
       onSuccess: (_, variables) => {
         // Invalidate all brand_deals queries
-        queryClient.invalidateQueries({ 
+        queryClient.invalidateQueries({
           queryKey: ['brand_deals'],
-          exact: false 
+          exact: false
         });
         // Also refetch immediately to ensure UI updates
-        queryClient.refetchQueries({ 
+        queryClient.refetchQueries({
           queryKey: ['brand_deals', variables.creator_id],
-          exact: false 
+          exact: false
         });
       },
       successMessage: 'Brand deal deleted successfully!',
@@ -770,12 +772,14 @@ export const useDeleteBrandDeal = () => {
 // DEAL PROGRESS UPDATE HELPER
 // ============================================
 
-export type DealStage = 
-  | 'details_submitted' 
-  | 'contract_ready' 
-  | 'signed' 
-  | 'needs_changes' 
-  | 'declined' 
+export type DealStage =
+  | 'details_submitted'
+  | 'contract_ready'
+  | 'brand_signed'
+  | 'fully_executed'
+  | 'live_deal'
+  | 'needs_changes'
+  | 'declined'
   | 'completed'
   | 'awaiting_product_shipment' // Barter: delivery details saved
   | 'negotiation' // Legacy support
@@ -784,35 +788,41 @@ export type DealStage =
 
 export const DEAL_PROGRESS_STAGES = {
   details_submitted: { percent: 20, next: 'contract_ready' },
-  contract_ready: { percent: 55, next: 'signed' },
-  signed: { percent: 100, next: 'completed' },
-  needs_changes: { percent: 55, next: 'contract_ready' },
+  contract_ready: { percent: 40, next: 'brand_signed' },
+  brand_signed: { percent: 60, next: 'fully_executed' },
+  fully_executed: { percent: 100, next: 'live_deal' },
+  live_deal: { percent: 100, next: 'completed' },
+  needs_changes: { percent: 40, next: 'contract_ready' },
   declined: { percent: 0, next: null },
   completed: { percent: 100, next: null },
-  awaiting_product_shipment: { percent: 50, next: 'signed' },
+  awaiting_product_shipment: { percent: 50, next: 'brand_signed' },
   // Legacy stages for backward compatibility
-  negotiation: { percent: 30, next: 'signed' },
+  negotiation: { percent: 30, next: 'brand_signed' },
   content_making: { percent: 80, next: 'content_delivered' },
   content_delivered: { percent: 90, next: 'completed' },
 } as const;
 
 export const STAGE_TO_PROGRESS: Record<DealStage, number> = {
   details_submitted: 20,
-  contract_ready: 55,
-  signed: 100,
-  needs_changes: 55,
+  contract_ready: 40,
+  brand_signed: 60,
+  fully_executed: 80,
+  live_deal: 100,
+  needs_changes: 40,
   declined: 0,
   completed: 100,
   awaiting_product_shipment: 50,
   negotiation: 30,
-  content_making: 80,
-  content_delivered: 90,
+  content_making: 85,
+  content_delivered: 95,
 };
 
 export const STAGE_TO_STATUS: Record<DealStage, string> = {
   details_submitted: 'Brand_Details_Submitted',
   contract_ready: 'CONTRACT_READY',
-  signed: 'SIGNED_BY_BRAND',
+  brand_signed: 'SIGNED_BY_BRAND',
+  fully_executed: 'FULLY_EXECUTED',
+  live_deal: 'LIVE',
   needs_changes: 'NEEDS_CHANGES',
   declined: 'REJECTED',
   completed: 'COMPLETED',
@@ -823,12 +833,14 @@ export const STAGE_TO_STATUS: Record<DealStage, string> = {
 };
 
 export const STAGE_LABELS: Record<DealStage, string> = {
-  details_submitted: 'Details Submitted',
-  contract_ready: 'Contract Ready – Awaiting Brand Signature',
-  signed: 'Signed',
+  details_submitted: 'Pending Creator Action',
+  contract_ready: 'Awaiting Brand Signature',
+  brand_signed: 'Awaiting Creator Signature',
+  fully_executed: 'Legally Active',
+  live_deal: 'Live Deal (In Progress)',
   needs_changes: 'Requires Changes',
   declined: 'Declined',
-  completed: 'Completed',
+  completed: 'Completed / Delivered',
   awaiting_product_shipment: 'Awaiting Product Shipment',
   negotiation: 'Negotiation',
   content_making: 'Content Making',
@@ -841,9 +853,9 @@ export const STAGE_LABELS: Record<DealStage, string> = {
  */
 export const getDealStageFromStatus = (status: string | null | undefined, progressPercentage?: number | null): DealStage => {
   if (!status && progressPercentage === undefined) return 'details_submitted';
-  
+
   const statusLower = status?.toLowerCase() || '';
-  
+
   // New status model - exact matches first
   if (statusLower === 'brand_details_submitted' || statusLower.includes('brand_details_submitted')) {
     return 'details_submitted';
@@ -852,7 +864,13 @@ export const getDealStageFromStatus = (status: string | null | undefined, progre
     return 'contract_ready';
   }
   if (statusLower === 'signed_by_brand' || statusLower.includes('signed_by_brand')) {
-    return 'signed';
+    return 'brand_signed';
+  }
+  if (statusLower === 'fully_executed' || statusLower === 'fully_signed' || statusLower === 'executed') {
+    return 'fully_executed';
+  }
+  if (statusLower === 'live' || statusLower === 'in_progress' || statusLower.includes('live')) {
+    return 'live_deal';
   }
   if (statusLower === 'needs_changes' || statusLower.includes('needs_changes') || statusLower.includes('brand_requested_changes')) {
     return 'needs_changes';
@@ -874,18 +892,19 @@ export const getDealStageFromStatus = (status: string | null | undefined, progre
   if (statusLower.includes('signed') && !statusLower.includes('pending')) return 'signed';
   if (statusLower.includes('content_making') || statusLower.includes('content making')) return 'content_making';
   if (statusLower.includes('content_delivered') || statusLower.includes('content delivered')) return 'content_delivered';
-  
+
   // Fallback: use progress_percentage if available
   if (progressPercentage !== null && progressPercentage !== undefined) {
     if (progressPercentage >= 100) return 'completed';
-    if (progressPercentage >= 90) return 'content_delivered';
-    if (progressPercentage >= 80) return 'content_making';
-    if (progressPercentage >= 70) return 'signed';
-    if (progressPercentage >= 55) return 'contract_ready';
+    if (progressPercentage >= 95) return 'content_delivered';
+    if (progressPercentage >= 85) return 'content_making';
+    if (progressPercentage >= 80) return 'fully_executed';
+    if (progressPercentage >= 60) return 'brand_signed';
+    if (progressPercentage >= 40) return 'contract_ready';
     if (progressPercentage >= 20) return 'details_submitted';
     return 'details_submitted';
   }
-  
+
   // Default fallback
   return 'details_submitted';
 };
@@ -907,29 +926,30 @@ export const useUpdateDealProgress = () => {
 
       // Validate sequential progression
       const currentProgress = (currentDeal as any)?.progress_percentage ?? 0;
-      
+
       // Get current stage from progress
       const getCurrentStageFromProgress = (progress: number): DealStage | null => {
         if (progress >= 100) return 'completed';
-        if (progress >= 90) return 'content_delivered';
-        if (progress >= 80) return 'content_making';
-        if (progress >= 70) return 'signed';
+        if (progress >= 95) return 'content_delivered';
+        if (progress >= 85) return 'content_making';
+        if (progress >= 80) return 'fully_executed';
+        if (progress >= 60) return 'brand_signed';
         if (progress >= 30) return 'negotiation';
         return null;
       };
 
       const currentStage = getCurrentStageFromProgress(currentProgress);
-      
+
       // Check if progression is valid (must be next stage or same stage)
       if (currentStage) {
         const currentStageConfig = DEAL_PROGRESS_STAGES[currentStage];
         const targetStageConfig = DEAL_PROGRESS_STAGES[stage];
-        
+
         // Allow same stage (no-op) or next stage only
         if (stage !== currentStage && targetStageConfig.percent <= currentStageConfig.percent) {
           throw new Error(`Cannot skip stages. Current: ${currentStage}, Attempted: ${stage}`);
         }
-        
+
         // Ensure we're moving to the next stage only
         if (currentStageConfig.next && stage !== currentStage && stage !== currentStageConfig.next) {
           throw new Error(`Must progress sequentially. Current: ${currentStage}, Next allowed: ${currentStageConfig.next}, Attempted: ${stage}`);
@@ -957,17 +977,17 @@ export const useUpdateDealProgress = () => {
     {
       onSuccess: (_, variables) => {
         // Optimistically update UI
-        queryClient.invalidateQueries({ 
+        queryClient.invalidateQueries({
           queryKey: ['brand_deals'],
-          exact: false 
+          exact: false
         });
-        queryClient.invalidateQueries({ 
+        queryClient.invalidateQueries({
           queryKey: ['brand_deal', variables.dealId],
-          exact: false 
+          exact: false
         });
-        queryClient.refetchQueries({ 
+        queryClient.refetchQueries({
           queryKey: ['brand_deals', variables.creator_id],
-          exact: false 
+          exact: false
         });
       },
       successMessage: 'Deal progress updated successfully!',

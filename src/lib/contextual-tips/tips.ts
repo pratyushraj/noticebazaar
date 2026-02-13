@@ -4,7 +4,6 @@
  */
 
 import {
-  Lightbulb,
   DollarSign,
   Shield,
   Upload,
@@ -15,7 +14,6 @@ import {
   Calendar,
   MessageCircle,
   Star,
-  FileText,
 } from 'lucide-react';
 import { Tip } from '@/components/contextual-tips/TipCard';
 
@@ -37,24 +35,6 @@ export interface UserState {
 export const getAllTips = (userState: UserState): Tip[] => {
   return [
     // Dashboard tips
-    {
-      id: 'dashboard-welcome',
-      trigger: 'view',
-      view: 'dashboard',
-      condition: () => userState.daysActive <= 2,
-      priority: 'high',
-      icon: Lightbulb,
-      color: 'from-purple-500 to-pink-500',
-      title: 'Welcome Back!',
-      message: 'Tap the blue + button to upload your first contract and get AI protection!',
-      action: {
-        label: 'Upload Now',
-        type: 'navigate',
-        target: '/contract-upload',
-      },
-      position: 'top',
-      persistent: false,
-    },
     {
       id: 'earnings-zero',
       trigger: 'view',

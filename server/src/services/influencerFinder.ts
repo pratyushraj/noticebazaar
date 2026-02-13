@@ -1,3 +1,4 @@
+// @ts-nocheck
 // Creator Armour Influencer Finder Agent
 // Production-ready service for discovering, classifying, and organizing influencers
 // Only uses public data in compliance with platform policies

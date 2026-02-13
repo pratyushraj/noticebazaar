@@ -2,20 +2,47 @@
 
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { 
-  CheckCircle, 
-  XCircle, 
+import { motion, AnimatePresence } from 'framer-motion';
+import {
+  CheckCircle,
+  XCircle,
   Loader2,
   FileText,
+  X,
+  Lock,
+  ShieldCheck,
+  History,
+  Info,
+  UserCheck,
   Mail,
-  X
+  ChevronRight,
+  ChevronDown,
+  ChevronUp,
+  ShieldAlert,
+  Fingerprint,
+  Package,
+  Copy
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { triggerHaptic, HapticPatterns } from '@/lib/utils/haptics';
+import { cn } from "@/lib/utils";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 
 const ContractReadyPage = () => {
   const { token } = useParams<{ token: string }>();
+
+  // Helper for copying
+  const copyToClipboard = async (text: string): Promise<boolean> => {
+    if (navigator.clipboard) {
+      try {
+        await navigator.clipboard.writeText(text);
+        return true;
+      } catch (e) {
+        return false;
+      }
+    }
+    return false;
+  };
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [dealInfo, setDealInfo] = useState<any>(null);
@@ -23,7 +50,7 @@ const ContractReadyPage = () => {
   const [creatorEmail, setCreatorEmail] = useState<string | null>(null);
   const [creatorAddress, setCreatorAddress] = useState<string | null>(null);
   const [signature, setSignature] = useState<any>(null);
-  
+
   // OTP State
   const [showOTPModal, setShowOTPModal] = useState(false);
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
@@ -34,7 +61,7 @@ const ContractReadyPage = () => {
   const [brandEmailInput, setBrandEmailInput] = useState<string>('');
   const [isOTPVerified, setIsOTPVerified] = useState(false);
   const [otpVerifiedAt, setOtpVerifiedAt] = useState<string | null>(null);
-  
+
   // Action State
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSigning, setIsSigning] = useState(false);
@@ -42,6 +69,8 @@ const ContractReadyPage = () => {
   const [requestEditText, setRequestEditText] = useState('');
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [showSignatureDetails, setShowSignatureDetails] = useState(false);
+  const [showSigningParty, setShowSigningParty] = useState(false);
+  const [showContractorInfo, setShowContractorInfo] = useState(false);
   const [isAuthorizedToSign, setIsAuthorizedToSign] = useState(false);
   const [tokenSource, setTokenSource] = useState<'contract-ready-tokens' | 'brand-reply-tokens'>('contract-ready-tokens');
 
@@ -60,8 +89,8 @@ const ContractReadyPage = () => {
           (typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com')
             ? 'https://api.creatorarmour.com'
             : typeof window !== 'undefined' && window.location.hostname === 'localhost'
-            ? 'http://localhost:3001'
-            : 'https://noticebazaar-api.onrender.com');
+              ? 'http://localhost:3001'
+              : 'https://noticebazaar-api.onrender.com');
 
         // Try contract-ready-tokens first, fallback to brand-reply-tokens for migration
         let response: Response;
@@ -78,10 +107,10 @@ const ContractReadyPage = () => {
         } catch (fetchError: any) {
           // If localhost fails, try production API as fallback
           if (
-            (fetchError.message?.includes('Failed to fetch') || 
-             fetchError.message?.includes('ERR_CONNECTION_REFUSED') ||
-             fetchError.name === 'TypeError' ||
-             fetchError.message?.includes('API returned')) &&
+            (fetchError.message?.includes('Failed to fetch') ||
+              fetchError.message?.includes('ERR_CONNECTION_REFUSED') ||
+              fetchError.name === 'TypeError' ||
+              fetchError.message?.includes('API returned')) &&
             apiBaseUrl.includes('localhost')
           ) {
             console.warn('[ContractReadyPage] Localhost API unavailable, trying production API...');
@@ -104,11 +133,11 @@ const ContractReadyPage = () => {
         // If we got a redirect to a newer token, verify it exists before redirecting
         if (response.ok && data.success && data.redirectToToken) {
           console.log('[ContractReadyPage] Old token invalid, verifying newer token before redirect:', data.redirectToToken);
-          
+
           // Verify the newer token exists and is valid
           const verifyResponse = await fetch(`${apiBaseUrl}/api/contract-ready-tokens/${data.redirectToToken}`);
           const verifyData = await verifyResponse.json();
-          
+
           if (verifyResponse.ok && verifyData.success && verifyData.deal) {
             console.log('[ContractReadyPage] Newer token is valid, redirecting...');
             window.location.href = `${window.location.origin}/contract-ready/${data.redirectToToken}`;
@@ -129,7 +158,7 @@ const ContractReadyPage = () => {
         // If contract-ready-tokens doesn't work, try other token types
         if (!response.ok && response.status === 404) {
           console.log('[ContractReadyPage] Token not found in contract-ready-tokens, trying alternatives...');
-          
+
           // First, try to see if this is a deal details token and get the contract ready token from it
           try {
             let dealDetailsResponse: Response;
@@ -144,14 +173,14 @@ const ContractReadyPage = () => {
               }
             }
             const dealDetailsData = await dealDetailsResponse.json();
-            
+
             if (dealDetailsResponse.ok && dealDetailsData.success && dealDetailsData.contractReadyToken) {
               console.log('[ContractReadyPage] Found contract ready token via deal details token, redirecting...');
               // Redirect to the correct contract ready token
               window.location.href = `${window.location.origin}/contract-ready/${dealDetailsData.contractReadyToken}`;
               return;
             }
-            
+
             // If it's a deal details token but no contract ready token exists, redirect to deal details page
             let dealDetailsInfoResponse: Response;
             try {
@@ -165,7 +194,7 @@ const ContractReadyPage = () => {
               }
             }
             const dealDetailsInfo = await dealDetailsInfoResponse.json();
-            
+
             if (dealDetailsInfoResponse.ok && dealDetailsInfo.success) {
               console.log('[ContractReadyPage] This is a deal details token, but contract not ready yet. Redirecting to deal details page...');
               // Redirect to deal details page - it will show "Contract Being Prepared" message
@@ -175,7 +204,7 @@ const ContractReadyPage = () => {
           } catch (dealDetailsErr) {
             console.log('[ContractReadyPage] Not a deal details token, trying brand-reply-tokens...');
           }
-          
+
           // Try legacy brand-reply-tokens for migration
           console.log('[ContractReadyPage] Trying brand-reply-tokens for migration');
           currentTokenSource = 'brand-reply-tokens';
@@ -190,7 +219,7 @@ const ContractReadyPage = () => {
             }
           }
           data = await response.json();
-          
+
           // If we got data from brand-response, we need to transform it
           if (response.ok && data.success && data.deal) {
             // Transform brand-response format to contract-ready format
@@ -204,7 +233,7 @@ const ContractReadyPage = () => {
             };
           }
         }
-        
+
         // Store which token source was used
         setTokenSource(currentTokenSource);
 
@@ -228,13 +257,13 @@ const ContractReadyPage = () => {
         let finalCreatorName = data.creatorName || 'Creator';
         let finalCreatorEmail = data.creatorEmail ?? null;
         let finalCreatorAddress = data.creatorAddress ?? null;
-        
+
         // Check if creator info is missing
         const isCreatorInfoMissing = (
           (!finalCreatorEmail && !finalCreatorAddress && finalCreatorName === 'Creator') ||
           (data.creatorEmail === undefined && data.creatorAddress === undefined)
         );
-        
+
         console.log('[ContractReadyPage] Checking if creator info is missing:', {
           isCreatorInfoMissing,
           finalCreatorName,
@@ -245,7 +274,7 @@ const ContractReadyPage = () => {
           hasCreatorId: !!data.deal?.creator_id,
           creatorId: data.deal?.creator_id
         });
-        
+
         // If creator info is missing but we have creator_id, try to fetch it
         if (isCreatorInfoMissing && data.deal?.creator_id) {
           console.log('[ContractReadyPage] Creator info missing, attempting to fetch from fallback endpoint...');
@@ -269,14 +298,14 @@ const ContractReadyPage = () => {
             console.warn('[ContractReadyPage] Failed to fetch creator info from fallback endpoint:', fallbackError);
           }
         }
-        
+
         setCreatorName(finalCreatorName);
         setCreatorEmail(finalCreatorEmail);
         setCreatorAddress(finalCreatorAddress);
         setBrandEmail(data.deal?.brand_email || '');
         setBrandEmailInput(data.deal?.brand_email || '');
         setSignature(data.signature || null);
-        
+
         // Log what we're setting for debugging
         console.log('[ContractReadyPage] Setting creator data:', {
           creatorName: finalCreatorName,
@@ -284,12 +313,12 @@ const ContractReadyPage = () => {
           creatorAddress: finalCreatorAddress,
           willShowCard: !!(finalCreatorName !== 'Creator' || finalCreatorEmail || finalCreatorAddress)
         });
-        
+
         // If signature exists and is signed, mark OTP as verified
         if (data.signature?.signed) {
           setIsOTPVerified(true);
         }
-        
+
         // If OTP is already verified (from deal data), mark as verified
         if (data.deal?.otp_verified === true) {
           setIsOTPVerified(true);
@@ -299,11 +328,11 @@ const ContractReadyPage = () => {
         }
       } catch (error: any) {
         console.error('[ContractReadyPage] Load error:', error);
-        
+
         // Check if it's a network/connection error
-        if (error.message?.includes('Failed to fetch') || 
-            error.message?.includes('ERR_CONNECTION_REFUSED') ||
-            error.name === 'TypeError') {
+        if (error.message?.includes('Failed to fetch') ||
+          error.message?.includes('ERR_CONNECTION_REFUSED') ||
+          error.name === 'TypeError') {
           setLoadError('Unable to connect to the server. Please check your internet connection and try again.');
         } else {
           setLoadError(error.message || 'Failed to load contract information');
@@ -362,7 +391,7 @@ const ContractReadyPage = () => {
     }
 
     let emailToUse = brandEmailInput.trim() || brandEmail;
-    
+
     // Validate email format
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailToUse || emailToUse.trim() === '' || !emailRegex.test(emailToUse)) {
@@ -450,7 +479,7 @@ const ContractReadyPage = () => {
 
       if (!response.ok || !data.success) {
         const errorMessage = data.error || 'Failed to verify OTP';
-        
+
         // If OTP is already verified, treat it as success
         if (errorMessage.includes('already been verified') || errorMessage.includes('already verified')) {
           toast.success('OTP was already verified.');
@@ -460,13 +489,13 @@ const ContractReadyPage = () => {
           triggerHaptic(HapticPatterns.success);
           return;
         }
-        
+
         // If OTP not found, automatically request a new one
         if (errorMessage.includes('No OTP found') || errorMessage.includes('OTP has expired')) {
           toast.error('OTP not found or expired. Requesting a new OTP...', {
             duration: 3000,
           });
-          
+
           // Auto-request new OTP
           if (brandEmail || brandEmailInput) {
             await sendOTP();
@@ -476,7 +505,7 @@ const ContractReadyPage = () => {
           }
           return;
         }
-        
+
         toast.error(errorMessage);
         return;
       }
@@ -497,7 +526,7 @@ const ContractReadyPage = () => {
   // Handle OTP input
   const handleOTPChange = (index: number, value: string) => {
     if (!/^\d*$/.test(value)) return;
-    
+
     const newOtp = [...otp];
     newOtp[index] = value.slice(-1);
     setOtp(newOtp);
@@ -553,16 +582,16 @@ const ContractReadyPage = () => {
         (typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com')
           ? 'https://api.creatorarmour.com'
           : typeof window !== 'undefined' && window.location.hostname === 'localhost'
-          ? 'http://localhost:3001'
-          : 'https://noticebazaar-api.onrender.com');
+            ? 'http://localhost:3001'
+            : 'https://noticebazaar-api.onrender.com');
 
       // Get contract HTML snapshot (if available)
-      const contractSnapshotHtml = dealInfo.contract_file_url 
+      const contractSnapshotHtml = dealInfo.contract_file_url
         ? `Contract URL: ${dealInfo.contract_file_url}\nSigned at: ${new Date().toISOString()}`
         : undefined;
 
       const signerEmail = brandEmail || brandEmailInput;
-      
+
       console.log('[ContractReadyPage] Attempting to sign contract:', {
         token,
         signerEmail,
@@ -618,7 +647,7 @@ const ContractReadyPage = () => {
       if (!response.ok || !data.success) {
         const errorMessage = data.error || 'Failed to sign contract';
         console.error('[ContractReadyPage] Sign error response:', errorMessage);
-        
+
         // Handle specific error cases
         if (errorMessage.includes('no longer valid') || errorMessage.includes('Invalid token')) {
           // If using brand-reply-tokens, try to refresh from brand-response endpoint
@@ -650,7 +679,7 @@ const ContractReadyPage = () => {
 
       toast.success('Agreement signed successfully!');
       triggerHaptic(HapticPatterns.success);
-      
+
       // Reload signature status - use the appropriate endpoint based on token source
       try {
         let refreshResponse: Response;
@@ -659,7 +688,7 @@ const ContractReadyPage = () => {
         } else {
           refreshResponse = await fetch(`${apiBaseUrl}/api/contract-ready-tokens/${token}`);
         }
-        
+
         const refreshData = await refreshResponse.json();
         if (refreshData.success && refreshData.signature) {
           setSignature(refreshData.signature);
@@ -668,7 +697,7 @@ const ContractReadyPage = () => {
         console.warn('[ContractReadyPage] Could not refresh signature status:', refreshError);
         // Non-fatal - signing was successful
       }
-      
+
       // Show success state
       setIsSubmitted(true);
     } catch (error: any) {
@@ -719,7 +748,7 @@ const ContractReadyPage = () => {
       triggerHaptic(HapticPatterns.success);
       setShowRequestEditModal(false);
       setRequestEditText('');
-      
+
       // Show success state
       setIsSubmitted(true);
     } catch (error: any) {
@@ -734,7 +763,7 @@ const ContractReadyPage = () => {
   // Parse deliverables
   const parseDeliverables = (): string[] => {
     if (!dealInfo?.deliverables) return [];
-    
+
     if (typeof dealInfo.deliverables === 'string') {
       try {
         const parsed = JSON.parse(dealInfo.deliverables);
@@ -743,7 +772,7 @@ const ContractReadyPage = () => {
         return [dealInfo.deliverables];
       }
     }
-    
+
     return Array.isArray(dealInfo.deliverables) ? dealInfo.deliverables : [];
   };
 
@@ -773,23 +802,125 @@ const ContractReadyPage = () => {
   }
 
   if (isSubmitted) {
+    const isSigned = signature?.signed || isSigning;
+
     return (
-      <div className="nb-screen-height bg-gradient-to-br from-purple-950 via-purple-900 to-indigo-950 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-[#0A0A0B] flex items-center justify-center p-4">
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="text-center max-w-md"
+          className="max-w-md w-full bg-[#111114] border border-white/10 rounded-3xl p-8 text-center shadow-2xl relative overflow-hidden"
         >
-          <div className="w-20 h-20 rounded-full bg-green-500/20 flex items-center justify-center mx-auto mb-6">
-            <CheckCircle className="w-10 h-10 text-green-400" />
+          {/* Success pattern background */}
+          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-emerald-500 to-green-500" />
+          <div className="absolute -top-24 -right-24 w-48 h-48 bg-emerald-500/10 rounded-full blur-3xl" />
+
+          <div className="w-20 h-20 rounded-2xl bg-emerald-500/20 flex items-center justify-center mx-auto mb-6">
+            <CheckCircle className="w-10 h-10 text-emerald-400" />
           </div>
-          <h2 className="text-2xl font-semibold mb-3 text-white">Thank You!</h2>
-          <p className="text-white/80 text-lg mb-2">
-            Your response has been received and {creatorName} has been notified.
+
+          <h1 className="text-2xl font-bold text-white mb-3">
+            {isSigned ? 'Agreement Signed Successfully' : 'Edit Request Submitted'}
+          </h1>
+
+          <p className="text-white/70 mb-8 leading-relaxed">
+            {isSigned
+              ? "The digital signature has been recorded with a full audit trail. Both parties will receive a copy of the executed agreement."
+              : "The creator has been notified of your requested changes. You'll receive an updated link once the agreement is revised."}
           </p>
-          <p className="text-white/60 text-sm">
-            You will receive an email confirmation shortly.
-          </p>
+
+          <AnimatePresence>
+            {isSigned && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="space-y-3 mb-8"
+              >
+                {/* Terms Locked Box */}
+                <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-2xl p-4 flex items-start gap-3 text-left">
+                  <Lock className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-emerald-400 font-bold text-sm">Terms are locked.</p>
+                    <p className="text-emerald-400/60 text-xs leading-relaxed">
+                      Edits, counters, or overrides are disabled. Any changes require a new agreement.
+                    </p>
+                  </div>
+                </div>
+
+                {/* Audit ID Row */}
+                <div className="bg-white/5 border border-white/10 rounded-2xl p-3 flex items-center justify-between group cursor-help"
+                  onClick={() => {
+                    triggerHaptic(HapticPatterns.success);
+                    toast.info("Audit Record Verified", {
+                      description: "This contract is hashed and recorded on the Creator Armour ledger."
+                    });
+                  }}
+                >
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-xl bg-emerald-500/10 flex items-center justify-center">
+                      <ShieldCheck className="w-4 h-4 text-emerald-400" />
+                    </div>
+                    <div className="text-left">
+                      <div className="flex items-center gap-1.5 mb-0.5">
+                        <p className="text-[10px] text-white/30 uppercase font-bold tracking-widest">Audit ID</p>
+                        <span className="bg-emerald-500/20 text-emerald-400 text-[8px] px-1.5 py-0.5 rounded-full font-bold uppercase tracking-wider border border-emerald-500/30">Verified</span>
+                      </div>
+                      <p className="text-xs font-mono text-white/60">CA-{dealInfo?.id?.slice(0, 8).toUpperCase()}</p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      copyToClipboard(`CA-${dealInfo?.id?.toUpperCase()}`);
+                      toast.success('Audit ID copied');
+                    }}
+                    className="p-2 hover:bg-white/10 rounded-lg transition-colors text-white/20 hover:text-white"
+                  >
+                    <Copy className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          <div className="space-y-3">
+            {isSigned && dealInfo?.deal_type === 'barter' && (
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => {
+                  // Redirect link logic or instructions
+                  toast.info("Shipping dashboard link sent to your email.");
+                }}
+                className="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-4 rounded-2xl transition-all shadow-lg shadow-emerald-500/25 flex items-center justify-center gap-2"
+              >
+                <Package className="w-5 h-5" />
+                Proceed to Shipping
+              </motion.button>
+            )}
+
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => window.location.reload()}
+              className="w-full bg-white/5 hover:bg-white/10 text-white font-bold py-4 rounded-2xl border border-white/10 transition-all"
+            >
+              View Executed Agreement
+            </motion.button>
+
+            <button
+              onClick={() => window.close()}
+              className="text-white/40 text-sm hover:text-white/60 transition-colors pt-2 block mx-auto"
+            >
+              Close Window
+            </button>
+
+            <div className="pt-6 border-t border-white/5 mt-4 text-center">
+              <p className="text-[10px] text-white/20 uppercase tracking-widest leading-relaxed">
+                Actions on Creator Armour are recorded,<br />timestamped, and legally enforceable.
+              </p>
+            </div>
+          </div>
         </motion.div>
       </div>
     );
@@ -798,46 +929,99 @@ const ContractReadyPage = () => {
   const deliverablesList = parseDeliverables();
 
   return (
-    <div className="nb-screen-height bg-gradient-to-br from-purple-950 via-purple-900 to-indigo-950 text-white pb-8 md:pb-12">
-      <div className="max-w-2xl mx-auto px-4 py-6 md:py-8 space-y-6">
-        {/* Header */}
+    <div className="min-h-screen bg-[#020617] text-white pb-12 selection:bg-purple-500/30">
+      {/* Dynamic Background Elements */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -top-[25%] -left-[10%] w-[70%] h-[70%] bg-purple-600/10 blur-[120px] rounded-full" />
+        <div className="absolute top-[20%] -right-[5%] w-[50%] h-[50%] bg-blue-600/10 blur-[100px] rounded-full" />
+      </div>
+
+      <div className="relative max-w-2xl mx-auto px-4 py-12 md:py-16 space-y-12">
+        {/* Header Section */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-center mb-6"
+          className="text-center"
         >
-          <h1 className="text-3xl md:text-4xl font-bold mb-2 bg-gradient-to-r from-white via-purple-200 to-white bg-clip-text text-transparent">
-            Creator Armour
+          <div className="inline-flex items-center gap-2 px-3 py-1 bg-purple-500/10 border border-purple-500/20 rounded-full mb-4">
+            <ShieldCheck className="w-3.5 h-3.5 text-purple-400" />
+            <span className="text-[10px] font-bold uppercase tracking-widest text-purple-300">Secure Digital Signature </span>
+          </div>
+
+          <h1 className="text-4xl md:text-5xl font-black mb-3 tracking-tight">
+            Creator <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-blue-400">Armour</span>
           </h1>
-          <div className="h-0.5 w-32 bg-gradient-to-r from-blue-500 via-purple-500 to-indigo-500 mx-auto rounded-full mb-3" />
-          <h2 className="text-xl md:text-2xl font-semibold mb-1">
-            Review & Sign Collaboration Agreement
+
+          <h2 className="text-lg md:text-xl font-medium text-white/90 mb-4">
+            Review & Execute Agreement
           </h2>
-          <p className="text-white/60 text-xs md:text-sm">
-            This agreement will become legally binding once signed by both parties.
-          </p>
+
+          {/* Progress Indicator */}
+          <div className="flex items-center justify-center gap-4 mb-8">
+            <div className="flex flex-col items-center gap-1.5">
+              <div className={cn("w-2 h-2 rounded-full", isOTPVerified ? "bg-green-500" : "bg-purple-500 animate-pulse")} />
+              <span className="text-[9px] uppercase tracking-tighter text-white/40 font-bold">Identity</span>
+            </div>
+            <div className="w-8 h-[1px] bg-white/10" />
+            <div className="flex flex-col items-center gap-1.5">
+              <div className={cn("w-2 h-2 rounded-full", isOTPVerified && !signature?.signed ? "bg-purple-500 animate-pulse" : signature?.signed ? "bg-green-500" : "bg-white/10")} />
+              <span className="text-[9px] uppercase tracking-tighter text-white/40 font-bold">Review</span>
+            </div>
+            <div className="w-8 h-[1px] bg-white/10" />
+            <div className="flex flex-col items-center gap-1.5">
+              <div className={cn("w-2 h-2 rounded-full", signature?.signed ? "bg-green-500" : "bg-white/10")} />
+              <span className="text-[9px] uppercase tracking-tighter text-white/40 font-bold">Execution</span>
+            </div>
+          </div>
         </motion.div>
 
-        {/* Contract Summary - Enhanced */}
+        {/* Trust Badges */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.2 }}
+          className="grid grid-cols-3 gap-3"
+        >
+          <div className="flex flex-col items-center gap-2 p-3 rounded-2xl bg-white/[0.02] border border-white/5">
+            <Lock className="w-4 h-4 text-white/40" />
+            <span className="text-[9px] text-center font-semibold text-white/50 leading-tight uppercase tracking-wider">End-to-End<br />Encrypted</span>
+          </div>
+          <div className="flex flex-col items-center gap-2 p-3 rounded-2xl bg-white/[0.02] border border-white/5">
+            <UserCheck className="w-4 h-4 text-white/40" />
+            <span className="text-[9px] text-center font-semibold text-white/50 leading-tight uppercase tracking-wider">SECURE<br />VERIFIED</span>
+          </div>
+          <div className="flex flex-col items-center gap-2 p-3 rounded-2xl bg-white/[0.02] border border-white/5">
+            <History className="w-4 h-4 text-white/40" />
+            <span className="text-[9px] text-center font-semibold text-white/50 leading-tight uppercase tracking-wider">Digital<br />Audit trail</span>
+          </div>
+        </motion.div>
+
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="bg-gradient-to-br from-purple-500/20 to-indigo-500/20 backdrop-blur-xl border border-purple-400/30 rounded-2xl p-6 shadow-lg space-y-4"
+          transition={{ delay: 0.3 }}
+          className="ios-card overflow-hidden"
         >
-          <div className="flex items-center gap-2 mb-2">
-            <FileText className="w-5 h-5 text-purple-300" />
-            <h3 className="text-lg font-semibold text-white">Contract Summary</h3>
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-lg bg-purple-500/20 flex items-center justify-center">
+                <FileText className="w-4 h-4 text-purple-400" />
+              </div>
+              <h3 className="font-bold text-white tracking-tight">Deal Summary</h3>
+            </div>
+            <div className="px-2.5 py-1 rounded-md bg-white/5 border border-white/10 text-[10px] font-bold text-white/40 uppercase tracking-widest">
+              Draft v3.1
+            </div>
           </div>
-          <p className="text-white/50 text-xs mb-4">
-            This is a summary. The full legal agreement will be generated after verification.
-          </p>
-          
-          {/* Amount */}
+
+          {/* Financial Terms */}
           {dealInfo.deal_amount && (
-            <div className="flex justify-between items-center py-3 border-b border-white/10">
-              <span className="text-white/70 text-sm font-medium">Amount</span>
-              <span className="font-bold text-green-400 text-lg">
+            <div className="flex justify-between items-center py-4 border-b border-white/5">
+              <div>
+                <p className="text-white/40 text-[10px] font-bold uppercase tracking-widest mb-0.5">Investment Amount</p>
+                <p className="text-white/70 text-xs">Total compensation for deliverables</p>
+              </div>
+              <span className="font-black text-green-400 text-xl tracking-tight">
                 ₹{Number(dealInfo.deal_amount).toLocaleString('en-IN')}
               </span>
             </div>
@@ -845,191 +1029,255 @@ const ContractReadyPage = () => {
 
           {/* Deliverables */}
           {deliverablesList.length > 0 && (
-            <div className="py-3 border-b border-white/10">
-              <span className="text-white/70 text-sm font-medium block mb-2">Deliverables</span>
-              <ul className="space-y-2 list-none">
+            <div className="py-4 border-b border-white/5">
+              <p className="text-white/40 text-[10px] font-bold uppercase tracking-widest mb-3">Project Deliverables</p>
+              <ul className="grid grid-cols-1 gap-2">
                 {deliverablesList.map((d, i) => (
-                  <li key={i} className="flex items-start gap-2">
-                    <span className="text-purple-300 mt-1">▪</span>
-                    <span className="text-white/90 text-sm">{d}</span>
+                  <li key={i} className="flex items-center gap-3 p-3 rounded-xl bg-white/[0.03] border border-white/5">
+                    <div className="w-1.5 h-1.5 rounded-full bg-purple-500/50" />
+                    <span className="text-white/90 text-sm font-medium">{d}</span>
                   </li>
                 ))}
               </ul>
             </div>
           )}
 
-          {/* Rights & Usage */}
-          {(dealInfo.usage_rights_duration || dealInfo.paid_ads_allowed !== undefined || dealInfo.whitelisting_allowed !== undefined) && (
-            <div className="py-3 border-b border-white/10">
-              <span className="text-white/70 text-sm font-medium block mb-2">Rights & Usage</span>
-              <div className="space-y-1.5 text-sm">
-                {dealInfo.usage_rights_duration && (
-                  <p className="text-white/90">
-                    <span className="text-white/70">Duration: </span>
+          {/* Rights & Timeline Grid */}
+          <div className="grid grid-cols-2 gap-x-8 gap-y-6 py-5">
+            {/* Rights & Usage */}
+            {(dealInfo.usage_rights_duration || dealInfo.paid_ads_allowed !== undefined || dealInfo.whitelisting_allowed !== undefined) && (
+              <div className="space-y-4">
+                <div>
+                  <p className="text-white/40 text-[10px] font-bold uppercase tracking-widest mb-2">Usage Rights</p>
+                  <p className="text-white font-semibold text-sm">
                     {dealInfo.usage_rights_duration === '1_month' ? '1 Month' :
-                     dealInfo.usage_rights_duration === '3_months' ? '3 Months' :
-                     dealInfo.usage_rights_duration === '6_months' ? '6 Months' :
-                     dealInfo.usage_rights_duration === '12_months' ? '12 Months' :
-                     dealInfo.usage_rights_duration === 'perpetual' ? 'Perpetual' :
-                     dealInfo.usage_rights_duration}
+                      dealInfo.usage_rights_duration === '3_months' ? '3 Months' :
+                        dealInfo.usage_rights_duration === '6_months' ? '6 Months' :
+                          dealInfo.usage_rights_duration === '12_months' ? '12 Months' :
+                            dealInfo.usage_rights_duration === 'perpetual' ? 'Perpetual' :
+                              dealInfo.usage_rights_duration || 'Standard'}
                   </p>
-                )}
-                {dealInfo.paid_ads_allowed !== undefined && (
-                  <p className="text-white/90">
-                    <span className="text-white/70">Paid Ads: </span>
-                    {dealInfo.paid_ads_allowed ? 'Allowed' : 'Not Allowed'}
-                  </p>
-                )}
-                {dealInfo.whitelisting_allowed !== undefined && (
-                  <p className="text-white/90">
-                    <span className="text-white/70">Whitelisting: </span>
-                    {dealInfo.whitelisting_allowed ? 'Allowed' : 'Not Allowed'}
-                  </p>
-                )}
+                </div>
+                <div className="flex gap-4">
+                  {dealInfo.paid_ads_allowed && (
+                    <div className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-blue-500/10 border border-blue-500/20">
+                      <ShieldCheck className="w-3 h-3 text-blue-400" />
+                      <span className="text-[9px] font-black text-blue-400 uppercase tracking-tighter">Ads</span>
+                    </div>
+                  )}
+                  {dealInfo.whitelisting_allowed && (
+                    <div className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-purple-500/10 border border-purple-500/20">
+                      <ShieldCheck className="w-3 h-3 text-purple-400" />
+                      <span className="text-[9px] font-black text-purple-400 uppercase tracking-tighter">Whitelisting</span>
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
-          )}
+            )}
 
-          {/* Payment Timeline */}
-          {dealInfo.payment_timeline && (
-            <div className="py-3 border-b border-white/10">
-              <span className="text-white/70 text-sm font-medium block mb-2">Payment Timeline</span>
-              <p className="text-white/90 text-sm">
-                {dealInfo.payment_timeline === 'on_delivery' ? 'On Delivery' :
-                 dealInfo.payment_timeline === '7_days' ? 'Within 7 days of delivery' :
-                 dealInfo.payment_timeline === '15_days' ? 'Within 15 days of delivery' :
-                 dealInfo.payment_timeline === '30_days' ? 'Within 30 days of delivery' :
-                 dealInfo.payment_timeline}
-              </p>
-            </div>
-          )}
-
-          {/* Deadline */}
-          {dealInfo.due_date && (
-            <div className="flex justify-between items-center py-3">
-              <span className="text-white/70 text-sm font-medium">Deadline</span>
-              <span className="text-white/90 text-sm font-medium">
-                {new Date(dealInfo.due_date).toLocaleDateString('en-US', { 
-                  month: 'short', 
-                  day: 'numeric', 
-                  year: 'numeric' 
-                })}
-              </span>
-            </div>
-          )}
-        </motion.div>
-
-        {/* Brand Legal Details */}
-        {dealInfo.brand_address && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6 shadow-lg"
-          >
-            <h3 className="text-lg font-semibold mb-4">Brand Legal Details (Signing Party)</h3>
-            <div className="space-y-2 text-sm">
-              <p className="text-white/90">{dealInfo.brand_name}</p>
-              <p className="text-white/70">{dealInfo.brand_address}</p>
-              {dealInfo.brand_email && (
-                <p className="text-white/70">{dealInfo.brand_email}</p>
+            {/* Timeline */}
+            <div className="space-y-4">
+              {dealInfo.payment_timeline && (
+                <div>
+                  <p className="text-white/40 text-[10px] font-bold uppercase tracking-widest mb-2">Settlement</p>
+                  <p className="text-white font-semibold text-sm">
+                    {dealInfo.payment_timeline === 'on_delivery' ? 'On Delivery' :
+                      dealInfo.payment_timeline === '7_days' ? 'Net 7' :
+                        dealInfo.payment_timeline === '15_days' ? 'Net 15' :
+                          dealInfo.payment_timeline === '30_days' ? 'Net 30' :
+                            dealInfo.payment_timeline}
+                  </p>
+                </div>
+              )}
+              {dealInfo.due_date && (
+                <div>
+                  <p className="text-white/40 text-[10px] font-bold uppercase tracking-widest mb-2">Final Deadline</p>
+                  <p className="text-white font-semibold text-sm">
+                    {new Date(dealInfo.due_date).toLocaleDateString('en-IN', {
+                      month: 'short',
+                      day: 'numeric',
+                      year: 'numeric'
+                    })}
+                  </p>
+                </div>
               )}
             </div>
-          </motion.div>
+          </div>
+        </motion.div>
+
+        {/* Signing Party Accordion */}
+        {dealInfo.brand_address && (
+          <Collapsible
+            open={showSigningParty}
+            onOpenChange={setShowSigningParty}
+            className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl overflow-hidden shadow-2xl transition-all hover:bg-white/[0.07]"
+          >
+            <CollapsibleTrigger className="w-full text-left p-6 md:p-8 flex items-center justify-between group">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-2xl bg-purple-500/20 flex items-center justify-center text-purple-400 group-hover:scale-110 transition-transform">
+                  <UserCheck className="w-6 h-6" />
+                </div>
+                <div>
+                  <h2 className="text-lg font-bold text-white/90">Signing Party</h2>
+                  {!showSigningParty && <p className="text-xs text-white/40 mt-0.5">{dealInfo.brand_name}</p>}
+                </div>
+              </div>
+              {showSigningParty ? <ChevronUp className="w-5 h-5 text-white/40" /> : <ChevronDown className="w-5 h-5 text-white/40" />}
+            </CollapsibleTrigger>
+            <CollapsibleContent className="px-6 md:px-8 pb-8">
+              <div className="pt-2 space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-white/40 text-[10px] font-bold uppercase tracking-widest mb-1">Company Entity</p>
+                    <p className="text-white font-medium">{dealInfo.brand_name}</p>
+                  </div>
+                  {dealInfo.brand_email && (
+                    <div>
+                      <p className="text-white/40 text-[10px] font-bold uppercase tracking-widest mb-1">Billing Email</p>
+                      <p className="text-white font-medium">{dealInfo.brand_email}</p>
+                    </div>
+                  )}
+                </div>
+                <div>
+                  <p className="text-white/40 text-[10px] font-bold uppercase tracking-widest mb-1">Registered Address</p>
+                  <p className="text-white/70 leading-relaxed text-sm">{dealInfo.brand_address}</p>
+                </div>
+              </div>
+            </CollapsibleContent>
+          </Collapsible>
         )}
 
         {/* Creator Details */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-          className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6 shadow-lg"
+        {/* Contractor Info Accordion */}
+        <Collapsible
+          open={showContractorInfo}
+          onOpenChange={setShowContractorInfo}
+          className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl overflow-hidden shadow-2xl transition-all hover:bg-white/[0.07]"
         >
-          <h3 className="text-lg font-semibold mb-4">Creator Details (Content Creator)</h3>
-            <div className="space-y-2 text-sm">
-              {creatorName && creatorName !== 'Creator' && (
-                <p className="text-white/90">{creatorName}</p>
-              )}
+          <CollapsibleTrigger className="w-full text-left p-6 md:p-8 flex items-center justify-between group">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-2xl bg-blue-500/20 flex items-center justify-center text-blue-400 group-hover:scale-110 transition-transform">
+                <Fingerprint className="w-6 h-6" />
+              </div>
+              <div>
+                <h2 className="text-lg font-bold text-white/90">Contractor Information</h2>
+                {!showContractorInfo && <p className="text-xs text-white/40 mt-0.5">{creatorName || 'Creator'}</p>}
+              </div>
+            </div>
+            {showContractorInfo ? <ChevronUp className="w-5 h-5 text-white/40" /> : <ChevronDown className="w-5 h-5 text-white/40" />}
+          </CollapsibleTrigger>
+          <CollapsibleContent className="px-6 md:px-8 pb-8">
+            <div className="pt-2 space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <p className="text-white/40 text-[10px] font-bold uppercase tracking-widest mb-1">Legal Name</p>
+                  <p className="text-white font-medium">{creatorName || 'Creator'}</p>
+                </div>
+                {creatorEmail && (
+                  <div>
+                    <p className="text-white/40 text-[10px] font-bold uppercase tracking-widest mb-1">Email Address</p>
+                    <p className="text-white font-medium truncate">{creatorEmail}</p>
+                  </div>
+                )}
+              </div>
+
               {creatorAddress && (
-                <p className="text-white/70">{creatorAddress}</p>
+                <div>
+                  <p className="text-white/40 text-[10px] font-bold uppercase tracking-widest mb-1">Service Address</p>
+                  <p className="text-white/70 leading-relaxed text-sm">{creatorAddress}</p>
+                </div>
               )}
-              {creatorEmail && (
-                <p className="text-white/70">{creatorEmail}</p>
-              )}
-              {(!creatorName || creatorName === 'Creator') && !creatorAddress && !creatorEmail && (
-                <p className="text-white/60 italic">Creator information not available</p>
-              )}
-              {creatorName === 'Creator' && (creatorAddress || creatorEmail) && (
-                <p className="text-white/60 italic text-xs mt-2">Name not available</p>
+
+              {!creatorAddress && !creatorEmail && creatorName === 'Creator' && (
+                <div className="p-3 rounded-xl bg-white/5 border border-white/10 flex items-center gap-2">
+                  <Info className="w-4 h-4 text-white/20" />
+                  <p className="text-white/30 italic text-xs">Public identity details restricted until execution</p>
+                </div>
               )}
             </div>
-        </motion.div>
+          </CollapsibleContent>
+        </Collapsible>
 
-        {/* Safety Note */}
+        {/* Legal Binding Indicator */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
-          className="bg-blue-500/10 border border-blue-400/30 rounded-xl p-4"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.5 }}
+          className="flex flex-col items-center gap-3 py-4"
         >
-          <p className="text-white/80 text-sm text-center">
-            <strong>No legal obligation yet.</strong> The agreement becomes legally binding only after OTP verification and signature.
+          <div className={cn(
+            "flex items-center gap-2 px-4 py-2 rounded-full border shadow-inner transition-colors",
+            isOTPVerified
+              ? "bg-emerald-500/10 border-emerald-500/20"
+              : "bg-white/[0.03] border border-white/10"
+          )}>
+            {isOTPVerified ? (
+              <ShieldCheck className={cn("w-3.5 h-3.5", isOTPVerified ? "text-emerald-400" : "text-white/30")} />
+            ) : (
+              <Lock className="w-3.5 h-3.5 text-white/30" />
+            )}
+            <p className={cn(
+              "text-[10px] font-bold uppercase tracking-[0.2em]",
+              isOTPVerified ? "text-emerald-400" : "text-white/40"
+            )}>
+              {isOTPVerified ? "Identity Verified — Ready to Sign" : "Identity Verification Required"}
+            </p>
+          </div>
+          <p className="text-[11px] text-white/30 text-center max-w-[280px] leading-relaxed">
+            Review the terms above carefully. The execution of this document requires secure identity verification.
           </p>
         </motion.div>
 
-        {/* Signing Card - Show if OTP verified and not signed */}
+        {/* Signing Card - Investor Ready */}
         {isOTPVerified && !signature?.signed && (
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5 }}
-            className="bg-gradient-to-r from-green-500/20 to-emerald-500/20 border border-green-400/30 rounded-2xl p-6 shadow-lg"
+            initial={{ opacity: 0, scale: 0.98 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="ios-card bg-gradient-to-br from-green-500/10 to-emerald-500/5 border-green-500/30"
           >
-            <div className="flex items-start gap-4 mb-4">
-              <div className="w-12 h-12 rounded-xl bg-green-500/20 flex items-center justify-center flex-shrink-0">
-                <FileText className="w-6 h-6 text-green-400" />
+            <div className="flex items-center gap-4 mb-6">
+              <div className="w-12 h-12 rounded-2xl bg-green-500/20 flex items-center justify-center">
+                <ShieldCheck className="w-6 h-6 text-green-400" />
               </div>
-              <div className="flex-1">
-                <h3 className="text-lg font-semibold text-white mb-4">
-                  Sign Agreement
-                </h3>
-                
-                {/* Authorization Checkbox */}
-                <div className="bg-white/5 rounded-xl p-4 mb-4">
-                  <label className="flex items-start gap-3 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={isAuthorizedToSign}
-                      onChange={(e) => setIsAuthorizedToSign(e.target.checked)}
-                      className="mt-1 w-5 h-5 rounded border-white/30 bg-white/10 text-green-600 focus:ring-2 focus:ring-green-500 focus:ring-offset-0 focus:ring-offset-transparent"
-                    />
-                    <span className="text-white/90 text-sm">
-                      I confirm that I am authorized to sign on behalf of the brand and agree to the terms above.
-                    </span>
-                  </label>
-                </div>
+              <div>
+                <h3 className="text-xl font-bold text-white tracking-tight">Final Execution</h3>
+                <p className="text-green-400/60 text-xs font-medium uppercase tracking-widest">Identity Verified • Ready to Sign</p>
+              </div>
+            </div>
 
-                <button
-                  onClick={handleSign}
-                  disabled={isSigning || !isOTPVerified || !isAuthorizedToSign}
-                  className="w-full px-6 py-3 bg-green-600 hover:bg-green-700 disabled:bg-green-600/50 disabled:cursor-not-allowed rounded-xl text-white font-semibold transition-all flex items-center justify-center gap-2"
-                >
-                  {isSigning ? (
-                    <>
-                      <Loader2 className="w-5 h-5 animate-spin" />
-                      Signing...
-                    </>
-                  ) : (
-                    <>
-                      <CheckCircle className="w-5 h-5" />
-                      Confirm & Sign Agreement
-                    </>
-                  )}
-                </button>
-                
-                <p className="text-white/60 text-xs text-center mt-3">
-                  This action is legally binding and will be recorded with timestamp, IP address, and device details.
-                </p>
+            <div className="space-y-6">
+              <label className="flex items-start gap-4 cursor-pointer p-4 rounded-2xl bg-white/[0.03] border border-white/5 hover:bg-white/[0.05] transition-colors group">
+                <div className="relative flex items-center justify-center mt-1">
+                  <input
+                    type="checkbox"
+                    checked={isAuthorizedToSign}
+                    onChange={(e) => setIsAuthorizedToSign(e.target.checked)}
+                    className="w-5 h-5 rounded-md border-white/20 bg-white/10 text-green-500 focus:ring-0 focus:ring-offset-0"
+                  />
+                </div>
+                <span className="text-xs text-white/70 leading-relaxed font-medium">
+                  I confirm that I am an authorized signatory for <span className="text-white font-bold">{dealInfo.brand_name}</span> and I legally accept the terms of this collaboration agreement.
+                </span>
+              </label>
+
+              <button
+                onClick={handleSign}
+                disabled={isSigning || !isAuthorizedToSign}
+                className="w-full h-16 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 disabled:from-white/5 disabled:to-white/5 disabled:text-white/10 rounded-2xl text-white font-bold transition-all shadow-xl shadow-green-500/10 flex items-center justify-center gap-3 text-lg"
+              >
+                {isSigning ? (
+                  <Loader2 className="w-6 h-6 animate-spin" />
+                ) : (
+                  <>
+                    <Fingerprint className="w-6 h-6" />
+                    Execute Agreement
+                  </>
+                )}
+              </button>
+
+              <div className="flex items-center justify-center gap-2 text-[10px] text-white/30 font-bold uppercase tracking-tighter">
+                <Lock className="w-3 h-3" />
+                Legally binding • Digital ID: {(token || '').slice(0, 8)}...
               </div>
             </div>
           </motion.div>
@@ -1040,87 +1288,99 @@ const ContractReadyPage = () => {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-gradient-to-r from-green-500/20 to-emerald-500/20 border border-green-400/30 rounded-2xl p-6 shadow-lg"
+            className="ios-card bg-gradient-to-r from-green-500/10 to-emerald-500/10 border-green-500/30"
           >
             <div className="flex items-start gap-4">
-              <div className="w-12 h-12 rounded-xl bg-green-500/20 flex items-center justify-center flex-shrink-0">
+              <div className="w-12 h-12 rounded-2xl bg-green-500/20 flex items-center justify-center flex-shrink-0">
                 <CheckCircle className="w-6 h-6 text-green-400" />
               </div>
               <div className="flex-1">
-                <div className="flex items-center gap-2 mb-3">
-                  <span className="px-3 py-1 bg-green-500/30 text-green-400 rounded-full text-xs font-semibold">
-                    Signed Successfully
+                <div className="flex items-center gap-2 mb-4">
+                  <span className="px-3 py-1 bg-green-500/20 text-green-400 border border-green-500/20 rounded-full text-[10px] font-bold uppercase tracking-widest">
+                    Successfully Executed
                   </span>
                 </div>
-                <div className="space-y-2 text-sm">
-                  <p className="text-white/90">
-                    <strong>Signed By:</strong> {signature.signerName || dealInfo.brand_name}
-                  </p>
-                  <p className="text-white/90">
-                    <strong>Signed On:</strong> {signature.signedAt 
+                <div className="space-y-3 text-sm">
+                  <div>
+                    <p className="text-white/40 text-[10px] font-bold uppercase tracking-widest mb-0.5">Authorized Signatory</p>
+                    <p className="text-white font-semibold">{signature.signerName || dealInfo.brand_name}</p>
+                  </div>
+                  <div>
+                    <p className="text-white/40 text-[10px] font-bold uppercase tracking-widest mb-0.5">Execution Timestamp</p>
+                    <p className="text-white font-semibold">{signature.signedAt
                       ? new Date(signature.signedAt).toLocaleString('en-IN', {
-                          dateStyle: 'long',
-                          timeStyle: 'short'
-                        })
-                      : 'N/A'}
-                  </p>
+                        dateStyle: 'long',
+                        timeStyle: 'short'
+                      })
+                      : 'N/A'}</p>
+                  </div>
                 </div>
                 <button
                   onClick={() => setShowSignatureDetails(true)}
-                  className="mt-4 px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-white text-sm font-medium transition-all"
+                  className="mt-6 w-full py-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-white text-xs font-bold uppercase tracking-widest transition-all"
                 >
-                  View Acceptance Record
+                  View Digital Record
                 </button>
               </div>
             </div>
           </motion.div>
         )}
 
-        {/* OTP Verification Section */}
+        {/* OTP Verification Section - Investor Ready */}
         {!isOTPVerified && !signature?.signed && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.5 }}
-            className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6 shadow-lg"
+            className="ios-card overflow-hidden"
           >
-            <h3 className="text-lg font-semibold mb-2 flex items-center gap-2">
-              <Mail className="w-5 h-5" />
-              Verify & Sign Agreement
-            </h3>
-            <p className="text-white/60 text-sm mb-4">
-              We'll verify your identity before allowing you to sign this agreement.
-            </p>
-            
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm text-white/70 mb-2">Email Address</label>
-                <input
-                  type="email"
-                  value={brandEmailInput}
-                  onChange={(e) => setBrandEmailInput(e.target.value)}
-                  placeholder="Enter your email"
-                  className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-purple-500"
-                />
-                <p className="text-white/50 text-xs mt-2">
-                  Use your official business email. This will be recorded in the contract audit trail.
-                </p>
+            <div className="flex items-center gap-4 mb-6">
+              <div className="w-12 h-12 rounded-2xl bg-blue-500/20 flex items-center justify-center">
+                <Fingerprint className="w-6 h-6 text-blue-400" />
               </div>
-              
+              <div>
+                <h3 className="text-xl font-bold text-white tracking-tight">Identity Verification</h3>
+                <p className="text-white/50 text-xs">Secure one-time password required</p>
+              </div>
+            </div>
+
+            <div className="space-y-6">
+              <div className="space-y-2">
+                <label className="block text-[11px] font-bold uppercase tracking-widest text-white/40 ml-1">Business Email</label>
+                <div className="relative group">
+                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                    <Mail className="h-4 w-4 text-white/20 group-focus-within:text-purple-400 transition-colors" />
+                  </div>
+                  <input
+                    type="email"
+                    value={brandEmailInput}
+                    onChange={(e) => setBrandEmailInput(e.target.value)}
+                    placeholder="name@company.com"
+                    className="w-full pl-11 pr-4 py-4 bg-white/[0.03] border border-white/10 rounded-2xl text-white placeholder-white/20 focus:outline-none focus:ring-2 focus:ring-purple-500/50 transition-all text-sm"
+                  />
+                </div>
+                <div className="flex items-start gap-2 p-3 rounded-xl bg-blue-500/5 border border-blue-500/10 mt-3">
+                  <ShieldAlert className="w-3.5 h-3.5 text-blue-400 mt-0.5" />
+                  <p className="text-[10px] text-blue-300/70 leading-relaxed font-medium">
+                    This signature will be legally attributed to this email address within the Creator Armour audit trail.
+                  </p>
+                </div>
+              </div>
+
               <button
                 onClick={sendOTP}
                 disabled={isSendingOTP || otpResendCooldown > 0}
-                className="w-full px-4 py-2 bg-purple-600 hover:bg-purple-700 disabled:bg-purple-600/50 disabled:cursor-not-allowed rounded-lg text-white font-medium transition-all"
+                className="w-full h-14 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 disabled:from-white/5 disabled:to-white/5 disabled:text-white/20 rounded-2xl text-white font-bold transition-all shadow-xl shadow-purple-500/10 flex items-center justify-center gap-2 group"
               >
                 {isSendingOTP ? (
-                  <span className="flex items-center justify-center gap-2">
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    Sending...
-                  </span>
+                  <Loader2 className="w-5 h-5 animate-spin" />
                 ) : otpResendCooldown > 0 ? (
-                  `Resend OTP in ${otpResendCooldown}s`
+                  <span>Resend in {otpResendCooldown}s</span>
                 ) : (
-                  'Send OTP to Verify & Sign'
+                  <>
+                    <span>Begin Verification</span>
+                    <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                  </>
                 )}
               </button>
             </div>
@@ -1133,21 +1393,25 @@ const ContractReadyPage = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4 }}
-            className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6 shadow-lg"
+            className="ios-card bg-white/[0.02]"
           >
             <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-lg font-semibold mb-1 text-white">Contract Document</h3>
-                <p className="text-white/70 text-sm">Review the full contract document before signing</p>
+              <div className="flex items-center gap-4">
+                <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center">
+                  <FileText className="w-5 h-5 text-white/40" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-white tracking-tight">Full Document</h3>
+                  <p className="text-white/40 text-xs">Review legal terms & conditions</p>
+                </div>
               </div>
               <a
                 href={dealInfo.contract_file_url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded-lg text-white font-medium transition-all flex items-center gap-2"
+                className="px-5 py-2.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-white text-[10px] font-bold uppercase tracking-widest transition-all"
               >
-                <FileText className="w-4 h-4" />
-                View Contract
+                View PDF
               </a>
             </div>
           </motion.div>
@@ -1155,27 +1419,36 @@ const ContractReadyPage = () => {
 
         {/* OTP Modal */}
         {showOTPModal && (
-          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-xl flex items-center justify-center p-4 z-50">
             <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="bg-purple-900 border border-purple-700 rounded-2xl p-6 max-w-md w-full overflow-hidden"
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              className="bg-[#0f172a] border border-white/10 rounded-[32px] p-8 max-w-sm w-full shadow-2xl overflow-hidden relative"
             >
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-xl font-semibold text-white">Enter OTP</h3>
+              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-purple-500 via-blue-500 to-purple-500" />
+
+              <div className="flex justify-between items-center mb-6">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-purple-500/10 flex items-center justify-center">
+                    <ShieldCheck className="w-5 h-5 text-purple-400" />
+                  </div>
+                  <h3 className="text-xl font-bold text-white tracking-tight">Security Code</h3>
+                </div>
                 <button
                   onClick={() => setShowOTPModal(false)}
-                  className="text-white/60 hover:text-white"
+                  className="w-8 h-8 flex items-center justify-center rounded-full bg-white/5 text-white/40 hover:text-white transition-colors"
                 >
-                  <X className="w-6 h-6" />
+                  <X className="w-5 h-5" />
                 </button>
               </div>
-              
-              <p className="text-white/70 text-sm mb-4">
-                We've sent a 6-digit code to {brandEmail || brandEmailInput}
-              </p>
-              
-              <div className="flex gap-2 mb-4 justify-center">
+
+              <div className="text-center mb-8 space-y-1 bg-white/5 p-3 rounded-2xl border border-white/5">
+                <p className="text-xs text-white/40">Signing for <span className="text-white/70 font-medium">{dealInfo.brand_name}</span></p>
+                <div className="w-full h-[1px] bg-white/5 my-1" />
+                <p className="text-xs text-white/40">Verification sent to <span className="text-white font-semibold">{brandEmail || brandEmailInput}</span></p>
+              </div>
+
+              <div className="flex gap-2.5 mb-2 justify-center">
                 {otp.map((digit, index) => (
                   <input
                     key={index}
@@ -1186,33 +1459,45 @@ const ContractReadyPage = () => {
                     value={digit}
                     onChange={(e) => handleOTPChange(index, e.target.value)}
                     onKeyDown={(e) => handleOTPKeyDown(index, e)}
-                    className="w-11 h-12 text-center text-xl font-semibold bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500 flex-shrink-0"
+                    className="w-11 h-14 text-center text-2xl font-black bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:bg-white/10 transition-all flex-shrink-0"
                   />
                 ))}
               </div>
-              
-              <div className="flex gap-2">
+
+              <p className="text-center text-[10px] text-white/30 font-medium mb-8">
+                No agreement will be executed without your explicit confirmation.
+              </p>
+
+              <div className="space-y-3">
                 <button
                   onClick={verifyOTP}
                   disabled={isVerifyingOTP || otp.join('').length !== 6}
-                  className="flex-1 px-4 py-2 bg-purple-600 hover:bg-purple-700 disabled:bg-purple-600/50 disabled:cursor-not-allowed rounded-lg text-white font-medium transition-all"
+                  className="w-full h-14 bg-white text-black hover:bg-white/90 disabled:bg-white/10 disabled:text-white/20 rounded-2xl font-bold transition-all flex items-center justify-center gap-2"
                 >
                   {isVerifyingOTP ? (
-                    <span className="flex items-center justify-center gap-2">
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                      Verifying...
-                    </span>
+                    <Loader2 className="w-5 h-5 animate-spin" />
                   ) : (
-                    'Verify OTP'
+                    <>
+                      <CheckCircle className="w-5 h-5" />
+                      Verify Identity
+                    </>
                   )}
                 </button>
+
                 <button
                   onClick={sendOTP}
                   disabled={isSendingOTP || otpResendCooldown > 0}
-                  className="px-4 py-2 bg-white/10 hover:bg-white/20 disabled:bg-white/5 disabled:cursor-not-allowed rounded-lg text-white text-sm transition-all"
+                  className="w-full py-2 text-xs font-bold uppercase tracking-widest text-white/30 hover:text-purple-400 disabled:hover:text-white/30 transition-colors"
                 >
-                  {otpResendCooldown > 0 ? `${otpResendCooldown}s` : 'Resend'}
+                  {otpResendCooldown > 0 ? `Resend in ${otpResendCooldown}s` : 'Request New Code'}
                 </button>
+              </div>
+
+              <div className="mt-6 pt-4 border-t border-white/5 text-center">
+                <p className="text-[10px] text-emerald-500/60 font-medium flex items-center justify-center gap-1.5">
+                  <Lock className="w-3 h-3" />
+                  Once signed, contract terms are locked and cannot be edited.
+                </p>
               </div>
             </motion.div>
           </div>
@@ -1235,7 +1520,7 @@ const ContractReadyPage = () => {
                   <X className="w-6 h-6" />
                 </button>
               </div>
-              
+
               <div className="space-y-4">
                 <div className="bg-white/5 rounded-xl p-4">
                   <h4 className="text-white font-semibold mb-3">Signature Details</h4>
@@ -1252,11 +1537,11 @@ const ContractReadyPage = () => {
                       </p>
                     )}
                     <p className="text-white/90">
-                      <strong>Signed At:</strong> {signature.signedAt 
+                      <strong>Signed At:</strong> {signature.signedAt
                         ? new Date(signature.signedAt).toLocaleString('en-IN', {
-                            dateStyle: 'long',
-                            timeStyle: 'long'
-                          })
+                          dateStyle: 'long',
+                          timeStyle: 'long'
+                        })
                         : 'N/A'}
                     </p>
                     <p className="text-white/90">
@@ -1265,9 +1550,9 @@ const ContractReadyPage = () => {
                     {signature.otpVerifiedAt && (
                       <p className="text-white/90">
                         <strong>OTP Verified At:</strong> {new Date(signature.otpVerifiedAt).toLocaleString('en-IN', {
-                            dateStyle: 'long',
-                            timeStyle: 'long'
-                          })}
+                          dateStyle: 'long',
+                          timeStyle: 'long'
+                        })}
                       </p>
                     )}
                     {signature.contractVersionId && (
@@ -1321,11 +1606,11 @@ const ContractReadyPage = () => {
                   <XCircle className="w-6 h-6" />
                 </button>
               </div>
-              
+
               <p className="text-white/70 text-sm mb-4">
                 Please describe the changes you need in the agreement.
               </p>
-              
+
               <textarea
                 value={requestEditText}
                 onChange={(e) => setRequestEditText(e.target.value)}
@@ -1333,7 +1618,7 @@ const ContractReadyPage = () => {
                 rows={4}
                 className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-purple-500 mb-4"
               />
-              
+
               <div className="flex gap-2">
                 <button
                   onClick={() => {

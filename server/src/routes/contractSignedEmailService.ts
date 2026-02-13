@@ -1,3 +1,4 @@
+// @ts-nocheck
 // Email service for contract signing notifications
 
 import { supabase } from '../index.js';

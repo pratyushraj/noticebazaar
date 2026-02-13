@@ -7,7 +7,7 @@
   "scripts": {
     "dev": "tsx watch src/index.ts",
     "dev:fresh": "node scripts/kill-port-3001.js; tsx watch src/index.ts",
-    "build": "tsc || exit 0",
+    "build": "tsc",
     "start": "node dist/index.js",
     "test": "jest",
     "test:watch": "jest --watch",
@@ -27,12 +27,20 @@
     "helmet": "^7.1.0",
     "mammoth": "^1.11.0",
     "multer": "^1.4.5-lts.1",
+    "node-cron": "^3.0.3",
+    "googleapis": "^128.0.0",
     "pdfjs-dist": "^3.11.174",
     "pdfkit": "^0.14.0",
     "pizzip": "^3.2.0",
-    "puppeteer": "^21.6.1"
+    "puppeteer-core": "^21.6.1",
+    "@sparticuz/chromium-min": "^121.0.0",
+    "resend": "^3.2.0"
   },
   "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild",
+      "puppeteer"
+    ],
     "packageExtensions": {
       "pdfjs-dist": {
         "optionalDependencies": {

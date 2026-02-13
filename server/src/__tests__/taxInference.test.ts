@@ -1,6 +1,6 @@
 // Unit tests for tax inference service
 
-import { analyzeTaxFromContract, calculateTaxSuggestion } from '../services/taxInference';
+import { analyzeTaxFromContract, calculateTaxSuggestion } from '../services/taxInference.js';
 
 describe('Tax Inference Service', () => {
   describe('calculateTaxSuggestion', () => {

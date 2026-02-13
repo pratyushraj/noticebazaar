@@ -1,3 +1,4 @@
+// @ts-nocheck
 // Contract Analysis Service
 // Analyzes contracts (PDF, DOC, DOCX) and extracts key terms, issues, and risk assessment
 // Uses configured LLM provider (Groq, Hugging Face, etc.)

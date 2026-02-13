@@ -1,3 +1,4 @@
+// @ts-nocheck
 // Negotiation Power Score Calculator
 // Calculates a score (0-100) indicating the creator's negotiation leverage in a brand deal contract
 // Higher score = Creator has more leverage

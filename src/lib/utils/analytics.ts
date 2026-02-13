@@ -102,15 +102,18 @@ async function trackEventToSupabase(
 ): Promise<void> {
   try {
     const { supabase } = await import('@/integrations/supabase/client');
-    
-    // Check if analytics_logs table exists, if not, just return
-    const { error } = await supabase
-      .from('analytics_logs')
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.user?.id) return;
+
+    // Check if analytics_events table exists, if not, just return
+    const { error } = await (supabase
+      .from('analytics_events')
       .insert({
+        user_id: session.user.id,
         event_name: event,
-        properties: properties || {},
+        metadata: properties || {},
         created_at: new Date().toISOString(),
-      });
+      } as any));
 
     if (error) {
       // Table might not exist, that's okay

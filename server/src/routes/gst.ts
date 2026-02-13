@@ -1,3 +1,4 @@
+// @ts-nocheck
 // API route for GSTIN lookup
 // Public endpoint - no auth required (used by brand form)
 

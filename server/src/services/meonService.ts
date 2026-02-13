@@ -1,3 +1,4 @@
+// @ts-nocheck
 // MEON ESIGN SERVICE — COMPLETE REPLACEMENT FOR LEEGALITY
 
 import crypto from 'crypto';

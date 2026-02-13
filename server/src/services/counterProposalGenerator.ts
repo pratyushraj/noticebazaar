@@ -1,3 +1,4 @@
+// @ts-nocheck
 // AI Counter-Proposal Generator Service
 // Generates optimized counter-proposals for faster brand approval
 

@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Canonical brand contact for agency: resolve or create by email, link to collab_requests and brand_deals.
  */

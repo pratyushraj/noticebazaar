@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "installCommand": "pnpm install --ignore-scripts || (pnpm install --no-optional --ignore-scripts && echo 'Canvas installation skipped')",
+  "installCommand": "rm -rf node_modules pnpm-lock.yaml package-lock.json && npm install --no-optional --ignore-scripts --legacy-peer-deps",
   "builds": [
     {
       "src": "src/index.ts",
@@ -9,11 +9,15 @@
   ],
   "routes": [
     {
+      "src": "/health",
+      "dest": "src/index.ts"
+    },
+    {
       "src": "/api/(.*)",
       "dest": "src/index.ts"
     },
     {
-      "src": "/health",
+      "src": "/(.*)",
       "dest": "src/index.ts"
     }
   ],
@@ -21,4 +25,3 @@
     "NODE_ENV": "production"
   }
 }
-

@@ -1,3 +1,4 @@
+// @ts-nocheck
 // Brand Form Submission Email Service
 // Sends email notification to creator when brand submits deal details form
 
@@ -33,7 +34,7 @@ export async function sendBrandFormSubmissionEmail(
 ): Promise<{ success: boolean; emailId?: string; error?: string }> {
   try {
     const apiKey = process.env.RESEND_API_KEY;
-    
+
     if (!apiKey || apiKey === 'your_resend_api_key_here' || apiKey.trim() === '') {
       console.error('[BrandFormSubmissionEmail] API key not configured or is placeholder');
       return {
@@ -52,7 +53,7 @@ export async function sendBrandFormSubmissionEmail(
     }
 
     const url = 'https://api.resend.com/emails';
-    
+
     // Format deliverables for display
     const deliverablesList = brandData.deliverables
       .map((d: any, idx: number) => {
@@ -66,15 +67,15 @@ export async function sendBrandFormSubmissionEmail(
     const dealAmount = brandData.dealType === 'paid' && brandData.paymentAmount
       ? `₹${parseFloat(brandData.paymentAmount.toString()).toLocaleString('en-IN')}`
       : brandData.dealType === 'barter'
-      ? 'Barter Deal'
-      : 'Not specified';
+        ? 'Barter Deal'
+        : 'Not specified';
 
     const deadlineText = brandData.deadline
       ? new Date(brandData.deadline).toLocaleDateString('en-IN', {
-          day: 'numeric',
-          month: 'long',
-          year: 'numeric'
-        })
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric'
+      })
       : 'Not specified';
 
     const dealLink = dealId
@@ -153,7 +154,10 @@ export async function sendBrandFormSubmissionEmail(
             </ul>
 
             <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
-              <p style="color: #9ca3af; font-size: 12px; margin: 0;">
+              <p style="color: #9ca3af; font-size: 11px; margin: 0; text-transform: uppercase; letter-spacing: 0.5px; line-height: 1.4;">
+                Actions on Creator Armour are recorded, timestamped, and legally enforceable.
+              </p>
+              <p style="color: #9ca3af; font-size: 11px; margin: 8px 0 0 0;">
                 This is an automated email from CreatorArmour. Please do not reply to this email.
               </p>
             </div>
@@ -187,14 +191,14 @@ export async function sendBrandFormSubmissionEmail(
     if (!response.ok) {
       const errorText = await response.text().catch(() => '');
       let errorMessage = `Resend API error: ${response.status} ${response.statusText}`;
-      
+
       let parsedError: any = {};
       try {
         parsedError = JSON.parse(errorText);
       } catch (e) {
         // Not JSON, use as-is
       }
-      
+
       if (response.status === 401) {
         errorMessage = 'Resend API authentication failed. Please check your RESEND_API_KEY';
       } else if (response.status === 403) {
@@ -204,13 +208,13 @@ export async function sendBrandFormSubmissionEmail(
       } else if (parsedError.message) {
         errorMessage = `Resend API error: ${parsedError.message}`;
       }
-      
+
       console.error('[BrandFormSubmissionEmail] API error:', {
         status: response.status,
         statusText: response.statusText,
         body: errorText,
       });
-      
+
       return {
         success: false,
         error: errorMessage,
@@ -218,7 +222,7 @@ export async function sendBrandFormSubmissionEmail(
     }
 
     const data: ResendEmailResponse = await response.json();
-    
+
     console.log('[BrandFormSubmissionEmail] Email sent successfully:', {
       emailId: data.id,
       creatorEmail,

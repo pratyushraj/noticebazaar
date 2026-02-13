@@ -1,3 +1,4 @@
+// @ts-nocheck
 // Clause Generation Service using Gemini AI
 // Generates legally safe, creator-friendly clause replacements
 

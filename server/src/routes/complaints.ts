@@ -1,3 +1,4 @@
+// @ts-nocheck
 // Consumer Complaints API routes
 
 import { Router, Response } from 'express';

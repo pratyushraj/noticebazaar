@@ -2,10 +2,10 @@
 
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { 
-  Shield, 
-  FileText, 
-  Download, 
+import {
+  Shield,
+  FileText,
+  Download,
   Calendar,
   Building2,
   AlertCircle,
@@ -19,6 +19,7 @@ import { useSession } from '@/contexts/SessionContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { getApiBaseUrl } from '@/lib/utils/api';
 
 interface Complaint {
   id: string;
@@ -35,58 +36,44 @@ interface Complaint {
 }
 
 const STATUS_CONFIG: Record<string, { label: string; color: string; bgColor: string; icon: React.ElementType }> = {
-  draft_created: { 
-    label: 'Draft Created', 
-    color: 'text-gray-300', 
+  draft_created: {
+    label: 'Draft Created',
+    color: 'text-gray-300',
     bgColor: 'bg-gray-500/20',
     icon: FileText
   },
-  lawyer_review_requested: { 
-    label: 'Under Review', 
-    color: 'text-blue-300', 
+  lawyer_review_requested: {
+    label: 'Under Review',
+    color: 'text-blue-300',
     bgColor: 'bg-blue-500/20',
     icon: Clock
   },
-  lawyer_review_completed: { 
-    label: 'Review Completed', 
-    color: 'text-purple-300', 
+  lawyer_review_completed: {
+    label: 'Review Completed',
+    color: 'text-purple-300',
     bgColor: 'bg-purple-500/20',
     icon: CheckCircle2
   },
-  notice_generated: { 
-    label: 'Notice Ready', 
-    color: 'text-green-300', 
+  notice_generated: {
+    label: 'Notice Ready',
+    color: 'text-green-300',
     bgColor: 'bg-green-500/20',
     icon: FileText
   },
-  ready_to_file: { 
-    label: 'Ready to File', 
-    color: 'text-yellow-300', 
+  ready_to_file: {
+    label: 'Ready to File',
+    color: 'text-yellow-300',
     bgColor: 'bg-yellow-500/20',
     icon: AlertCircle
   },
-  filed_by_user: { 
-    label: 'Filed', 
-    color: 'text-emerald-300', 
+  filed_by_user: {
+    label: 'Filed',
+    color: 'text-emerald-300',
     bgColor: 'bg-emerald-500/20',
     icon: CheckCircle2
   },
 };
 
-// Helper to get API base URL
-function getApiBaseUrl(): string {
-  if (typeof window === 'undefined') return 'http://localhost:3001';
-  
-  const envUrl = import.meta.env.VITE_API_BASE_URL;
-  if (envUrl) return envUrl.replace(/\/$/, '');
-  
-  const origin = window.location.origin;
-  if (origin.includes('noticebazaar.com')) {
-    return 'https://api.noticebazaar.com';
-  }
-  
-  return 'http://localhost:3001';
-}
 
 const MyConsumerComplaintsPage: React.FC = () => {
   const { profile, user } = useSession();
@@ -341,7 +328,7 @@ const MyConsumerComplaintsPage: React.FC = () => {
                       );
                     })()}
                   </div>
-                  
+
                   {/* Status Timeline */}
                   <div>
                     <p className="text-sm text-white/60 mb-3">Status Timeline</p>

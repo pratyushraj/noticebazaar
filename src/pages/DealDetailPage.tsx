@@ -3,10 +3,11 @@
 import { useState, useCallback, lazy, Suspense, useMemo, useEffect, useRef } from 'react';
 import type { ChangeEvent } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Eye, Download, Flag, Loader2, Building2, Calendar, FileText, CheckCircle, Clock, Trash2, AlertCircle, XCircle, Bell, Mail, MessageSquare, Phone, Edit, X, Check, Share2, Copy, Link2, Upload, ChevronDown, ChevronUp, Lock, Package, ExternalLink } from 'lucide-react';
+import { ArrowLeft, Eye, Download, Flag, Loader2, Building2, Calendar, FileText, CheckCircle, Clock, Trash2, AlertCircle, XCircle, Bell, Mail, MessageSquare, Phone, Edit, X, Check, Share2, Copy, Link2, Upload, ChevronDown, ChevronUp, Lock, Package, ExternalLink, ShieldCheck, PenTool, TrendingUp } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from '@/components/ui/collapsible';
 import { toast } from 'sonner';
+import { useDealSignatures } from '@/lib/hooks/useDealSignatures';
 import { useDeal, DealProvider } from '@/contexts/DealContext';
 import { useQueryClient } from '@tanstack/react-query';
 import { useIssues } from '@/lib/hooks/useIssues';
@@ -15,6 +16,7 @@ import { useCreateIssue, useAddIssueHistory } from '@/lib/hooks/useIssues';
 import { useCreateActionLog } from '@/lib/hooks/useActionLogs';
 import { useSession } from '@/contexts/SessionContext';
 import { downloadFile, getFilenameFromUrl } from '@/lib/utils/fileDownload';
+import { downloadContractSecure } from '@/lib/utils/secureContractDownload';
 import { trackEvent } from '@/lib/utils/analytics';
 import { generateIssueMessage, IssueType } from '@/components/deals/IssueTypeModal';
 import { createCalendarEvent, downloadEventAsICal, openEventInGoogleCalendar } from '@/lib/utils/createCalendarEvent';
@@ -25,7 +27,6 @@ import { useUpdateDealProgress, DealStage, STAGE_TO_PROGRESS, useDeleteBrandDeal
 import { triggerHaptic, HapticPatterns } from '@/lib/utils/haptics';
 import { animations, iconSizes } from '@/lib/design-system';
 import { motion } from 'framer-motion';
-import { TrendingUp } from 'lucide-react';
 import { NativeLoadingSheet } from '@/components/mobile/NativeLoadingSheet';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
@@ -42,12 +43,12 @@ const OverduePaymentCard = lazy(() => import('@/components/deals/OverduePaymentC
 // Safari-compatible clipboard copy helper
 const copyToClipboard = async (text: string): Promise<boolean> => {
   // Check for secure context (required for clipboard API)
-  const isSecureContext = typeof window !== 'undefined' && 
-    (window.isSecureContext || 
-     window.location.protocol === 'https:' || 
-     window.location.hostname === 'localhost' ||
-     window.location.hostname === '127.0.0.1');
-  
+  const isSecureContext = typeof window !== 'undefined' &&
+    (window.isSecureContext ||
+      window.location.protocol === 'https:' ||
+      window.location.hostname === 'localhost' ||
+      window.location.hostname === '127.0.0.1');
+
   // Try modern Clipboard API first (works in most browsers)
   if (navigator.clipboard && isSecureContext) {
     try {
@@ -58,7 +59,7 @@ const copyToClipboard = async (text: string): Promise<boolean> => {
       console.warn('[DealDetailPage] Clipboard API failed, trying fallback:', clipboardError);
     }
   }
-  
+
   // Fallback for Safari and older browsers: use execCommand
   // This works better in Safari which has stricter clipboard permissions
   const textArea = document.createElement('textarea');
@@ -68,11 +69,11 @@ const copyToClipboard = async (text: string): Promise<boolean> => {
   textArea.style.top = '-999999px';
   textArea.setAttribute('readonly', '');
   document.body.appendChild(textArea);
-  
+
   // Select and copy
   textArea.select();
   textArea.setSelectionRange(0, text.length); // For mobile devices
-  
+
   try {
     const successful = document.execCommand('copy');
     document.body.removeChild(textArea);
@@ -88,7 +89,7 @@ function DealDetailPageContent() {
   const navigate = useNavigate();
   const { dealId } = useParams<{ dealId: string }>();
   const { profile, session, user } = useSession();
-  
+
   // Hooks
   const { deal, isLoadingDeal, refreshAll } = useDeal();
   const queryClient = useQueryClient();
@@ -97,7 +98,7 @@ function DealDetailPageContent() {
   const createIssue = useCreateIssue();
   const addIssueHistory = useAddIssueHistory();
   const createActionLog = useCreateActionLog();
-  
+
   // State
   const [showContractPreview, setShowContractPreview] = useState(false);
   const [showIssueTypeModal, setShowIssueTypeModal] = useState(false);
@@ -105,31 +106,31 @@ function DealDetailPageContent() {
   const [showProgressSheet, setShowProgressSheet] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
   const [reportIssueMessage, setReportIssueMessage] = useState('');
-  
+
   // Deal progress update
   const updateDealProgress = useUpdateDealProgress();
   const deleteDeal = useDeleteBrandDeal();
-  
+
   // Delete confirmation state
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  
+
   // Remind brand state
   const [isSendingReminder, setIsSendingReminder] = useState(false);
   const [brandReplyLink, setBrandReplyLink] = useState<string | null>(null);
-  
-  
+
+
   // Brand phone edit state
   const [isEditingBrandPhone, setIsEditingBrandPhone] = useState(false);
   const [brandPhoneInput, setBrandPhoneInput] = useState('+91 ');
   const updateBrandDealMutation = useUpdateBrandDeal();
-  
+
   // PDF generation state
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
   const [protectionReport, setProtectionReport] = useState<any>(null);
   const [protectionIssues, setProtectionIssues] = useState<any[]>([]);
   const signedContractInputRef = useRef<HTMLInputElement | null>(null);
   const [isUploadingSignedContract, setIsUploadingSignedContract] = useState(false);
-  
+
   // Final contract generation state
   const [isGeneratingSafeContract, setIsGeneratingSafeContract] = useState(false);
   const [showMarkSignedModal, setShowMarkSignedModal] = useState(false);
@@ -137,12 +138,12 @@ function DealDetailPageContent() {
   // Removed tempSafeContractUrl and contractHtml state - DOCX-first architecture
   const [contractGenerationError, setContractGenerationError] = useState<string | null>(null);
   const [missingFields, setMissingFields] = useState<string[]>([]);
-  
+
   // Brand details submission state
   const [brandSubmissionDetails, setBrandSubmissionDetails] = useState<any>(null);
   const [isLoadingSubmission, setIsLoadingSubmission] = useState(false);
   const [hasReviewedDetails, setHasReviewedDetails] = useState(false);
-  
+
   // Collapsible sections state
   const [showVerificationDetails, setShowVerificationDetails] = useState(false);
   const [showDealSummaryFull, setShowDealSummaryFull] = useState(false);
@@ -153,7 +154,7 @@ function DealDetailPageContent() {
   const [reportIssueReason, setReportIssueReason] = useState('');
   const [isConfirmingReceived, setIsConfirmingReceived] = useState(false);
   const [isReportingIssue, setIsReportingIssue] = useState(false);
-  
+
   // Creator signing states
   const [showCreatorSigningModal, setShowCreatorSigningModal] = useState(false);
   const [isSendingCreatorOTP, setIsSendingCreatorOTP] = useState(false);
@@ -161,45 +162,50 @@ function DealDetailPageContent() {
   const [creatorOTP, setCreatorOTP] = useState('');
   const [creatorSigningStep, setCreatorSigningStep] = useState<'send' | 'verify'>('send');
   const [isSigningAsCreator, setIsSigningAsCreator] = useState(false);
-  const [isCreatorSigned, setIsCreatorSigned] = useState(false);
-  const [creatorSignature, setCreatorSignature] = useState<any>(null);
-  const [brandSignature, setBrandSignature] = useState<any>(null);
-  
+  // Use hook for signatures (replaces old state)
+  const { data: signatureData } = useDealSignatures(dealId);
+  const isCreatorSigned = signatureData?.isCreatorSigned || false;
+  // If brand signature is not found in hook, we fallback to false (or whatever brand logic exists later, but isBrandSigned is usually derived)
+  // Wait, isBrandSigned is a derived variable later in the file (line ~1135).
+  // But we need 'brandSignature' variable for line 1135.
+  const brandSignature = signatureData?.brandSignature || null;
+  const creatorSignature = signatureData?.creatorSignature || null;
+
   // Get current stage from deal status - uses canonical mapping
   const getCurrentStage = (status: string | null | undefined, progressPercentage?: number | null): DealStage | undefined => {
     return getDealStageFromStatus(status, progressPercentage);
   };
-  
+
   // Helper to validate creator address and phone before contract operations
   const validateCreatorContactInfo = (): { isValid: boolean; message: string; missingFields: string[] } => {
     const missingFields: string[] = [];
-    
+
     // Check address
     const creatorAddress = profile?.location || profile?.address || '';
     const trimmedAddress = creatorAddress?.trim() || '';
-    
-    if (!trimmedAddress || 
-        trimmedAddress === '' || 
-        trimmedAddress.toLowerCase() === 'not specified' ||
-        trimmedAddress.toLowerCase() === 'n/a' ||
-        trimmedAddress.length < 5) {
+
+    if (!trimmedAddress ||
+      trimmedAddress === '' ||
+      trimmedAddress.toLowerCase() === 'not specified' ||
+      trimmedAddress.toLowerCase() === 'n/a' ||
+      trimmedAddress.length < 5) {
       missingFields.push('address');
     }
-    
+
     // Check phone
     const creatorPhone = profile?.phone || '';
     const trimmedPhone = creatorPhone?.trim() || '';
-    
+
     // Phone should be at least 10 digits (excluding country code)
     const phoneDigits = trimmedPhone.replace(/\D/g, '');
-    if (!trimmedPhone || 
-        trimmedPhone === '' || 
-        trimmedPhone === '+91' ||
-        trimmedPhone === '+91 ' ||
-        phoneDigits.length < 10) {
+    if (!trimmedPhone ||
+      trimmedPhone === '' ||
+      trimmedPhone === '+91' ||
+      trimmedPhone === '+91 ' ||
+      phoneDigits.length < 10) {
       missingFields.push('phone number');
     }
-    
+
     if (missingFields.length > 0) {
       const fieldsText = missingFields.join(' and ');
       return {
@@ -208,10 +214,10 @@ function DealDetailPageContent() {
         missingFields
       };
     }
-    
+
     return { isValid: true, message: '', missingFields: [] };
   };
-  
+
   // Helper to create a secure brand reply link token for this deal
   const generateBrandReplyLink = async (targetDealId: string): Promise<string | null> => {
     try {
@@ -250,7 +256,7 @@ function DealDetailPageContent() {
       });
 
       let data = await response.json();
-      
+
       // If contract-ready-tokens endpoint doesn't exist, try legacy brand-reply-tokens
       if (!response.ok && response.status === 404) {
         console.log('[DealDetailPage] contract-ready-tokens not found, trying brand-reply-tokens for migration');
@@ -292,239 +298,8 @@ function DealDetailPageContent() {
     }
   }, [deal, dealId, isLoadingDeal, navigate]);
 
-  // Fetch signatures
-  useEffect(() => {
-    const fetchSignatures = async () => {
-      if (!deal?.id || !session?.access_token) return;
+  // Signature fetching handled by useDealSignatures hook
 
-      try {
-        // Try to get API base URL with fallback logic
-        let apiBaseUrl =
-          import.meta.env.VITE_API_BASE_URL ||
-          (typeof window !== 'undefined' && window.location.origin.includes('noticebazaar.com')
-            ? 'https://api.noticebazaar.com'
-            : typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com')
-              ? 'https://api.creatorarmour.com'
-              : 'http://localhost:3001');
-
-        // If localhost, try it first, then fallback to production
-        if (apiBaseUrl.includes('localhost')) {
-          try {
-            const brandResp = await fetch(`${apiBaseUrl}/api/esign/status/${deal.id}`, {
-              headers: { Authorization: `Bearer ${session.access_token}` }
-            });
-            if (brandResp.ok) {
-              const brandData = await brandResp.json();
-              if (brandData.success && (brandData.status === 'signed' || brandData.meonStatus === 'SIGNED')) {
-                setBrandSignature({ signed: true, signedAt: brandData.signedAt });
-              }
-            }
-          } catch (localhostError) {
-            console.warn('[DealDetailPage] Localhost API unavailable for signatures, using Supabase only');
-            // Continue to Supabase fetch below
-          }
-        } else {
-          // Use production API
-          try {
-            const brandResp = await fetch(`${apiBaseUrl}/api/esign/status/${deal.id}`, {
-              headers: { Authorization: `Bearer ${session.access_token}` }
-            });
-            if (brandResp.ok) {
-              const brandData = await brandResp.json();
-              if (brandData.success && (brandData.status === 'signed' || brandData.meonStatus === 'SIGNED')) {
-                setBrandSignature({ signed: true, signedAt: brandData.signedAt });
-              }
-            }
-          } catch (apiError) {
-            console.warn('[DealDetailPage] API signature fetch failed, using Supabase only');
-          }
-        }
-
-        // Fetch signatures from our own table (always try this)
-        const { data: ourSignatures, error: sigError } = await supabase
-          .from('contract_signatures' as any)
-          .select('*')
-          .eq('deal_id', deal.id);
-
-        if (sigError) {
-          if (import.meta.env.DEV) {
-            console.warn('[DealDetailPage] Error fetching signatures:', sigError);
-          }
-          setIsCreatorSigned(false);
-        } else if (ourSignatures && Array.isArray(ourSignatures) && ourSignatures.length > 0) {
-          const creatorSig = ourSignatures.find((s: any) => s?.signer_role === 'creator' && s?.signed === true);
-          const brandSig = ourSignatures.find((s: any) => s?.signer_role === 'brand' && s?.signed === true);
-
-          if (import.meta.env.DEV) {
-            console.log('[DealDetailPage] Signature check:', {
-              totalSignatures: ourSignatures.length,
-              creatorSig: creatorSig ? 'found' : 'not found',
-              brandSig: brandSig ? 'found' : 'not found',
-              creatorSigned: creatorSig ? (creatorSig as any).signed : false,
-              creatorSigDetails: creatorSig ? {
-                signer_role: (creatorSig as any).signer_role,
-                signed: (creatorSig as any).signed,
-                signed_at: (creatorSig as any).signed_at,
-                id: (creatorSig as any).id,
-              } : null,
-              allSignatures: ourSignatures.map((s: any) => ({
-                signer_role: s?.signer_role,
-                signed: s?.signed,
-                id: s?.id,
-              })),
-            });
-          }
-
-          // Only set creator as signed if we have a valid creator signature
-          // Must have: creator role, signed === true, AND a valid signed_at timestamp
-          const hasCreatorSigRecord = creatorSig && 
-            (creatorSig as any).signer_role === 'creator' && 
-            (creatorSig as any).signed === true;
-          
-          // Additional validation: Check if signed_at exists and is valid
-          let hasValidCreatorSignature = false;
-          if (hasCreatorSigRecord) {
-            const signedAt = (creatorSig as any).signed_at;
-            if (signedAt) {
-              const signedAtDate = new Date(signedAt);
-              const now = new Date();
-              const isValidTimestamp = signedAtDate.getTime() > 0 && 
-                signedAtDate.getTime() <= now.getTime() + 60000 && // Allow 1 minute future tolerance
-                signedAtDate.getTime() > new Date('2020-01-01').getTime(); // Must be after 2020
-              
-              // Also verify the signature email matches the current user's email
-              // IMPORTANT: We require currentUserEmail to exist - if it's undefined, we can't verify ownership
-              // Email is in auth.users (session.user.email), not in profiles table
-              const currentUserEmail = (session?.user?.email || user?.email || profile?.email)?.toLowerCase();
-              const signatureEmail = (creatorSig as any).signer_email?.toLowerCase();
-              // Email matches only if BOTH emails exist AND they match
-              const emailMatches = !!currentUserEmail && !!signatureEmail && currentUserEmail === signatureEmail;
-              
-              // Verify the signature belongs to this deal
-              const dealIdMatches = (creatorSig as any).deal_id === deal?.id;
-              
-              // Verify OTP was verified (required for valid signatures)
-              const otpVerified = (creatorSig as any).otp_verified === true;
-              const otpVerifiedAt = (creatorSig as any).otp_verified_at;
-              const hasOtpVerifiedAt = otpVerifiedAt && new Date(otpVerifiedAt).getTime() > 0;
-              
-              // Verify signature has required audit trail fields (indicates real signature, not placeholder)
-              const hasIpAddress = !!(creatorSig as any).ip_address;
-              const hasUserAgent = !!(creatorSig as any).user_agent;
-              
-              // Only consider valid if all checks pass
-              hasValidCreatorSignature = isValidTimestamp && 
-                                        emailMatches && 
-                                        dealIdMatches && 
-                                        otpVerified && 
-                                        hasOtpVerifiedAt &&
-                                        hasIpAddress &&
-                                        hasUserAgent;
-              
-              if (import.meta.env.DEV) {
-                // Log each check individually for clarity
-                console.group('[DealDetailPage] Creator Signature Validation Details');
-                console.log('✓ Timestamp valid:', isValidTimestamp, '| signed_at:', signedAt);
-                console.log('✓ Email matches:', emailMatches, '| signature:', signatureEmail, '| current:', currentUserEmail);
-                console.log('✓ Deal ID matches:', dealIdMatches, '| signature deal_id:', (creatorSig as any).deal_id, '| current deal_id:', deal?.id);
-                console.log('✓ OTP verified:', otpVerified, '| otp_verified:', (creatorSig as any).otp_verified);
-                console.log('✓ OTP verified_at exists:', hasOtpVerifiedAt, '| otp_verified_at:', (creatorSig as any).otp_verified_at);
-                console.log('✓ IP address present:', hasIpAddress, '| ip_address:', (creatorSig as any).ip_address ? 'present' : 'MISSING');
-                console.log('✓ User agent present:', hasUserAgent, '| user_agent:', (creatorSig as any).user_agent ? 'present' : 'MISSING');
-                console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-                console.log('🎯 FINAL RESULT: hasValidCreatorSignature =', hasValidCreatorSignature);
-                console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-                console.groupEnd();
-                
-                const validationDetails = {
-                  signed_at: signedAt,
-                  signedAtDate: signedAtDate.toISOString(),
-                  signer_email: (creatorSig as any).signer_email,
-                  signer_name: (creatorSig as any).signer_name,
-                  currentUserEmail,
-                  signatureEmail,
-                  emailMatches,
-                  isValidTimestamp,
-                  deal_id: (creatorSig as any).deal_id,
-                  currentDealId: deal?.id,
-                  dealIdMatches: (creatorSig as any).deal_id === deal?.id,
-                  otp_verified: (creatorSig as any).otp_verified,
-                  otpVerified: (creatorSig as any).otp_verified === true,
-                  otp_verified_at: (creatorSig as any).otp_verified_at,
-                  hasOtpVerifiedAt: hasOtpVerifiedAt,
-                  hasIpAddress: hasIpAddress,
-                  hasUserAgent: hasUserAgent,
-                  ip_address: (creatorSig as any).ip_address ? 'present' : 'missing',
-                  user_agent: (creatorSig as any).user_agent ? 'present' : 'missing',
-                  hasValidCreatorSignature,
-                  validationChecks: {
-                    isValidTimestamp,
-                    emailMatches,
-                    dealIdMatches,
-                    otpVerified,
-                    hasOtpVerifiedAt,
-                    hasIpAddress,
-                    hasUserAgent,
-                  },
-                  timestampCheck: {
-                    isPositive: signedAtDate.getTime() > 0,
-                    isNotFuture: signedAtDate.getTime() <= now.getTime() + 60000,
-                    isAfter2020: signedAtDate.getTime() > new Date('2020-01-01').getTime(),
-                  },
-                };
-                console.log('[DealDetailPage] Creator signature validation (full object):', validationDetails);
-                console.log('[DealDetailPage] Full signature object:', JSON.parse(JSON.stringify(creatorSig)));
-                
-                // If validation is passing but shouldn't, log a warning
-                if (hasValidCreatorSignature) {
-                  console.warn('[DealDetailPage] ⚠️ Creator signature VALIDATED as signed. If this is incorrect, check the signature record in the database.');
-                  console.warn('[DealDetailPage] ⚠️ To allow signing, the signature record needs to be deleted or marked as invalid in the database.');
-                }
-              }
-            } else {
-              if (import.meta.env.DEV) {
-                console.warn('[DealDetailPage] Creator signature found but has no signed_at timestamp');
-              }
-            }
-          }
-          
-          if (hasValidCreatorSignature) {
-            setIsCreatorSigned(true);
-            setCreatorSignature(creatorSig);
-          } else {
-            // Explicitly set to false if no valid creator signature found
-            if (import.meta.env.DEV) {
-              if (hasCreatorSigRecord) {
-                console.warn('[DealDetailPage] Creator signature found but invalid - treating as unsigned');
-              } else {
-                console.log('[DealDetailPage] Setting isCreatorSigned to FALSE - no valid creator signature', {
-                  hasCreatorSig: !!creatorSig,
-                  signer_role: creatorSig ? (creatorSig as any).signer_role : 'none',
-                  signed: creatorSig ? (creatorSig as any).signed : false,
-                  signed_at: creatorSig ? (creatorSig as any).signed_at : 'none',
-                });
-              }
-            }
-            setIsCreatorSigned(false);
-          }
-          if (brandSig) {
-            setBrandSignature(brandSig);
-          }
-        } else {
-          // No signatures found, ensure creator is not marked as signed
-          if (import.meta.env.DEV) {
-            console.log('[DealDetailPage] No signatures found in database');
-          }
-          setIsCreatorSigned(false);
-        }
-      } catch (error) {
-        console.error('[DealDetailPage] Error fetching signatures:', error);
-        // Don't show error toast - signatures are optional
-      }
-    };
-
-    fetchSignatures();
-  }, [deal?.id, session?.access_token, session?.user?.email, user?.email]);
 
   const handleSendCreatorOTP = async () => {
     if (!deal?.id || !session?.access_token) return;
@@ -595,7 +370,7 @@ function DealDetailPageContent() {
       }
     } catch (error: any) {
       console.error('[DealDetailPage] OTP send error:', error);
-      
+
       // Handle CORS errors specifically
       if (error.message === 'CORS_ERROR' || error.message?.includes('CORS') || error.message?.includes('Failed to fetch')) {
         toast.error(
@@ -725,7 +500,7 @@ function DealDetailPageContent() {
             },
             body: JSON.stringify({
               signerName: profile?.first_name ? `${profile.first_name} ${profile.last_name || ''}`.trim() : 'Creator',
-              signerEmail: profile?.email || '',
+              signerEmail: user?.email || profile?.email || '',
               contractSnapshotHtml: `Contract URL: ${deal.contract_file_url}\nSigned at: ${new Date().toISOString()}`,
             }),
           });
@@ -734,10 +509,9 @@ function DealDetailPageContent() {
             const data = await resp.json();
             if (data.success) {
               toast.success('Contract signed successfully!');
-              setIsCreatorSigned(true);
-              setCreatorSignature(data.signature);
+              queryClient.invalidateQueries({ queryKey: ['deal-signatures', deal.id] });
               setShowCreatorSigningModal(false);
-              refreshAll(); // Refresh deal data to show updated status
+              refreshAll();
               return;
             } else {
               // If localhost returns an error, try production API
@@ -765,7 +539,7 @@ function DealDetailPageContent() {
         },
         body: JSON.stringify({
           signerName: profile?.first_name ? `${profile.first_name} ${profile.last_name || ''}`.trim() : 'Creator',
-          signerEmail: profile?.email || '',
+          signerEmail: user?.email || profile?.email || '',
           contractSnapshotHtml: `Contract URL: ${deal.contract_file_url}\nSigned at: ${new Date().toISOString()}`,
         }),
       });
@@ -791,10 +565,9 @@ function DealDetailPageContent() {
       const data = await resp.json();
       if (data.success) {
         toast.success('Contract signed successfully!');
-        setIsCreatorSigned(true);
-        setCreatorSignature(data.signature);
+        queryClient.invalidateQueries({ queryKey: ['deal-signatures', deal.id] });
         setShowCreatorSigningModal(false);
-        refreshAll(); // Refresh deal data to show updated status
+        refreshAll();
       } else {
         toast.error(data.error || 'Failed to sign contract');
       }
@@ -808,10 +581,10 @@ function DealDetailPageContent() {
   // Parse deliverables - useMemo must be called unconditionally
   const deliverables = useMemo(() => {
     if (!deal?.deliverables) return [];
-    
+
     try {
       let parsed: any;
-      
+
       if (typeof deal.deliverables === 'string') {
         // Try to parse as JSON first
         try {
@@ -823,17 +596,17 @@ function DealDetailPageContent() {
             .split(/\r?\n/)
             .map(line => line.trim())
             .filter(line => line.length > 0);
-          
+
           // If we have lines, return as array of strings
           // Otherwise, return as single-item array
-          return lines.length > 0 
+          return lines.length > 0
             ? lines.map((line, idx) => ({ title: line, name: line, index: idx }))
             : [{ title: deal.deliverables, name: deal.deliverables }];
         }
       } else {
         parsed = deal.deliverables;
       }
-      
+
       // If parsed is already an array, return it (with proper structure)
       if (Array.isArray(parsed)) {
         return parsed.map((item, idx) => {
@@ -845,7 +618,7 @@ function DealDetailPageContent() {
           return { title: String(item), name: String(item), index: idx };
         });
       }
-      
+
       // If parsed is a single value (string/number), wrap it
       return [{ title: String(parsed), name: String(parsed) }];
     } catch (error) {
@@ -925,7 +698,7 @@ function DealDetailPageContent() {
   // Extract requested contract clarifications - useMemo must be called unconditionally
   const requestedClarifications = useMemo(() => {
     const clarifications: string[] = [];
-    
+
     // First, try to get from deal.requested_changes if it exists
     const dealRequestedChanges = (deal as any)?.requested_changes;
     if (dealRequestedChanges && Array.isArray(dealRequestedChanges)) {
@@ -938,39 +711,53 @@ function DealDetailPageContent() {
         }
       });
     }
-    
-      // If no clarifications from deal.requested_changes, derive from protection issues
-      if (clarifications.length === 0) {
-        // Helper function to convert issue to creator-friendly string
-        const convertIssueToClarification = (issue: any): string | null => {
-          if (!issue.title) return null;
-          
-          let text = issue.title;
-          // Remove severity labels and technical prefixes
-          text = text.replace(/\[(HIGH|MEDIUM|WARNING)\s*PRIORITY\]/gi, '').trim();
-          text = text.replace(/^Category:\s*/i, '').trim();
-          text = text.replace(/^Issue:\s*/i, '').trim();
-          
-          // Convert common technical terms to creator-friendly language
-          text = text.replace(/payment terms?/gi, 'payment amount and payment timeline');
-          text = text.replace(/exclusivity/gi, 'exclusivity duration and scope');
-          text = text.replace(/usage rights?|ip rights?|content ownership/gi, 'content usage rights duration');
-          text = text.replace(/termination/gi, 'termination notice period');
-          
-          // Capitalize first letter
-          text = text.charAt(0).toUpperCase() + text.slice(1);
-          
-          // Take first sentence or truncate to 100 chars
-          const firstSentence = text.split(/[.!?]/)[0].trim();
-          if (firstSentence.length > 0 && firstSentence.length <= 100) {
-            return firstSentence;
-          }
-          return text.length > 100 ? text.substring(0, 100).trim() + '...' : text.trim();
-        };
-        
-        // Try from protectionIssues (already fetched)
-        if (protectionIssues && Array.isArray(protectionIssues)) {
-          protectionIssues
+
+    // If no clarifications from deal.requested_changes, derive from protection issues
+    if (clarifications.length === 0) {
+      // Helper function to convert issue to creator-friendly string
+      const convertIssueToClarification = (issue: any): string | null => {
+        if (!issue.title) return null;
+
+        let text = issue.title;
+        // Remove severity labels and technical prefixes
+        text = text.replace(/\[(HIGH|MEDIUM|WARNING)\s*PRIORITY\]/gi, '').trim();
+        text = text.replace(/^Category:\s*/i, '').trim();
+        text = text.replace(/^Issue:\s*/i, '').trim();
+
+        // Convert common technical terms to creator-friendly language
+        text = text.replace(/payment terms?/gi, 'payment amount and payment timeline');
+        text = text.replace(/exclusivity/gi, 'exclusivity duration and scope');
+        text = text.replace(/usage rights?|ip rights?|content ownership/gi, 'content usage rights duration');
+        text = text.replace(/termination/gi, 'termination notice period');
+
+        // Capitalize first letter
+        text = text.charAt(0).toUpperCase() + text.slice(1);
+
+        // Take first sentence or truncate to 100 chars
+        const firstSentence = text.split(/[.!?]/)[0].trim();
+        if (firstSentence.length > 0 && firstSentence.length <= 100) {
+          return firstSentence;
+        }
+        return text.length > 100 ? text.substring(0, 100).trim() + '...' : text.trim();
+      };
+
+      // Try from protectionIssues (already fetched)
+      if (protectionIssues && Array.isArray(protectionIssues)) {
+        protectionIssues
+          .filter((issue: any) => issue.severity && issue.severity !== 'low')
+          .forEach((issue: any) => {
+            const clarification = convertIssueToClarification(issue);
+            if (clarification && !clarifications.includes(clarification)) {
+              clarifications.push(clarification);
+            }
+          });
+      }
+
+      // If still empty, try from analysis_json issues
+      if (clarifications.length === 0 && protectionReport?.analysis_json?.issues) {
+        const analysisIssues = protectionReport.analysis_json.issues;
+        if (Array.isArray(analysisIssues)) {
+          analysisIssues
             .filter((issue: any) => issue.severity && issue.severity !== 'low')
             .forEach((issue: any) => {
               const clarification = convertIssueToClarification(issue);
@@ -979,33 +766,19 @@ function DealDetailPageContent() {
               }
             });
         }
-        
-        // If still empty, try from analysis_json issues
-        if (clarifications.length === 0 && protectionReport?.analysis_json?.issues) {
-          const analysisIssues = protectionReport.analysis_json.issues;
-          if (Array.isArray(analysisIssues)) {
-            analysisIssues
-              .filter((issue: any) => issue.severity && issue.severity !== 'low')
-              .forEach((issue: any) => {
-                const clarification = convertIssueToClarification(issue);
-                if (clarification && !clarifications.includes(clarification)) {
-                  clarifications.push(clarification);
-                }
-              });
-          }
-        }
-      
+      }
+
       // If still empty, check for missing key terms
       if (clarifications.length === 0 && protectionReport?.analysis_json?.keyTerms) {
         const keyTerms = protectionReport.analysis_json.keyTerms;
         const missingTerms: string[] = [];
-        
+
         // Check for common missing terms
         if (!keyTerms.dealValue || keyTerms.dealValue === 'Not specified') {
           missingTerms.push('Clarify payment amount and payment timeline');
         }
-        if (!keyTerms.exclusivity || keyTerms.exclusivity === 'Not specified' || 
-            (typeof keyTerms.exclusivity === 'string' && keyTerms.exclusivity.toLowerCase().includes('unlimited'))) {
+        if (!keyTerms.exclusivity || keyTerms.exclusivity === 'Not specified' ||
+          (typeof keyTerms.exclusivity === 'string' && keyTerms.exclusivity.toLowerCase().includes('unlimited'))) {
           missingTerms.push('Limit exclusivity duration and scope');
         }
         if (!keyTerms.usageRights || keyTerms.usageRights === 'Not specified') {
@@ -1014,11 +787,11 @@ function DealDetailPageContent() {
         if (!keyTerms.termination || keyTerms.termination === 'Not specified') {
           missingTerms.push('Add reasonable termination notice period');
         }
-        
+
         clarifications.push(...missingTerms);
       }
     }
-    
+
     return clarifications;
   }, [deal, protectionIssues, protectionReport]);
 
@@ -1034,9 +807,9 @@ function DealDetailPageContent() {
       metadata?: Record<string, unknown>;
     };
     const entries: ActionLogEntryType[] = [];
-    
+
     if (!deal) return entries;
-    
+
     if (deal.created_at && deal.id) {
       entries.push({
         id: `action-${deal.id}-created`,
@@ -1071,7 +844,7 @@ function DealDetailPageContent() {
       });
     }
 
-    return entries.sort((a, b) => 
+    return entries.sort((a, b) =>
       new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
     );
   }, [deal, logs, profile]);
@@ -1100,7 +873,7 @@ function DealDetailPageContent() {
     return `${deal.brand_name} · Collaboration Agreement`;
   }, [deal?.brand_name]);
   const contractFileName = useMemo(() => deal?.contract_file_url ? getFilenameFromUrl(deal.contract_file_url) : null, [deal?.contract_file_url]);
-  
+
   // Extract deal status fields (must be defined before getContractStatus)
   const signedContractUrl = (deal as any)?.signed_contract_url as string | null | undefined;
   const signedContractUploadedAt = (deal as any)?.signed_contract_uploaded_at as string | null | undefined;
@@ -1111,7 +884,7 @@ function DealDetailPageContent() {
   // v2 contracts have all fixes applied (currency, artifacts, jurisdiction, etc.)
   // DOCX contract URL (primary source)
   const contractDocxUrl = deal?.contract_file_url as string | null | undefined;
-  
+
   const contractUrlInfo = {
     contractDocxUrl: contractDocxUrl || 'null',
     signedContractUrl: signedContractUrl || 'null',
@@ -1128,87 +901,72 @@ function DealDetailPageContent() {
   const contractVersion = (deal as any)?.contract_version as string | null | undefined;
   const signedAt = (deal as any)?.signed_at as string | null | undefined;
   const signedVia = (deal as any)?.signed_via as string | null | undefined;
-  
+
+  // Signing status flags
+  const isContractSigned = dealExecutionStatus === 'signed' || dealExecutionStatus === 'completed' ||
+    !!signedContractUrl || !!signedAt ||
+    (deal?.status?.toLowerCase()?.includes('signed') ?? false);
+  const isBrandSigned = brandSignature?.signed || isContractSigned;
+  const bothSigned = isBrandSigned && isCreatorSigned;
+
   // Map deal status to display status (shared logic)
   const getContractStatus = useCallback((): string => {
-    // Check signed contract status first
-    if (dealExecutionStatus === 'signed' || dealExecutionStatus === 'completed') {
-      return 'Signed';
-    }
-    
-    // Check brand response status
-    if (brandResponseStatus === 'accepted_verified') {
-      return 'Approved';
-    }
-    if (brandResponseStatus === 'accepted') {
-      return 'Approved';
-    }
-    if (brandResponseStatus === 'sent') {
-      return 'Shared';
-    }
-    if (brandResponseStatus === 'negotiating') {
-      return 'Draft';
-    }
-    if (brandResponseStatus === 'rejected') {
-      return 'Declined';
-    }
-    
-    // Check deal status - use canonical mapping
     const statusLower = deal?.status?.toLowerCase() || '';
-    
-    // New status model - exact matches first
+    const executionStatus = dealExecutionStatus?.toLowerCase() || '';
+    const shippingStatus = (deal as any)?.shipping_status?.toLowerCase() || '';
+
+    // Phase 1: Fully Executed / Shipping
+    if (statusLower === 'fully_executed' || statusLower === 'executed' || executionStatus === 'signed' || executionStatus === 'completed') {
+      if (deal?.deal_type === 'barter' && (shippingStatus === 'shipped' || shippingStatus === 'in_transit')) {
+        return 'SHIPPING_IN_PROGRESS';
+      }
+      return 'Legally Active';
+    }
+
+    // Phase 2: Live/Active
+    if (statusLower === 'live' || statusLower === 'live_deal' || statusLower.includes('live')) {
+      return 'Legally Active';
+    }
+
+    // Phase 3: Signing process
     if (statusLower === 'signed_by_brand' || statusLower.includes('signed_by_brand')) {
-      return 'Signed';
+      return 'AWAITING_CREATOR_SIGNATURE';
     }
-    if (statusLower === 'contract_ready' || statusLower.includes('contract_ready')) {
-      return 'Contract Ready – Awaiting Brand Signature';
+    if (isCreatorSigned && !isBrandSigned) {
+      return 'AWAITING_BRAND_SIGNATURE';
     }
-    if (statusLower === 'brand_details_submitted' || statusLower.includes('brand_details_submitted')) {
-      return 'Details Submitted';
+    if (statusLower === 'contract_ready' || statusLower.includes('contract_ready') || brandResponseStatus === 'accepted_verified') {
+      return 'CONTRACT_READY';
     }
-    if (statusLower === 'needs_changes' || statusLower.includes('needs_changes') || statusLower.includes('brand_requested_changes')) {
-      return 'Requires Changes';
+
+    // Phase 4: Review/Drafting
+    if (brandResponseStatus === 'sent' || statusLower === 'drafting') {
+      return 'CONTRACT_READY';
     }
+    if (statusLower === 'needs_changes' || statusLower.includes('needs_changes')) {
+      return 'Revision Required';
+    }
+
+    // Fallbacks
     if (statusLower === 'rejected' || statusLower.includes('rejected') || statusLower.includes('declined')) {
       return 'Declined';
     }
-    if (statusLower === 'completed' || statusLower.includes('completed')) {
-      return 'Completed';
-    }
-    
-    // Legacy status mappings
-    if (statusLower.includes('signed_pending_creator')) {
-      return 'Signed';
-    }
-    if (statusLower.includes('agreement_prepared')) {
-      return 'Contract Ready – Awaiting Brand Signature';
-    }
-    if (statusLower.includes('signed') && !statusLower.includes('pending')) {
-      return 'Signed';
-    }
-    if (statusLower.includes('approved') || statusLower.includes('accepted')) {
-      return 'Approved';
-    }
-    if (statusLower.includes('sent') || statusLower.includes('shared')) {
-      return 'Shared';
-    }
-    
-    // Default to Details Submitted (new default for form-submitted deals)
-    return 'Details Submitted';
-  }, [deal?.status, dealExecutionStatus, brandResponseStatus]);
+
+    return 'Detail Syncing';
+  }, [deal?.status, deal?.deal_type, dealExecutionStatus, brandResponseStatus, isCreatorSigned, isBrandSigned]);
 
   // Compute clean display name for contract (UI-only, doesn't change stored filename)
   // Status is shown separately as a badge, so we don't include it in the name
   const displayContractName = useMemo(() => {
     if (!deal?.contract_file_url || !deal?.brand_name) return null;
-    
+
     // Get creator name
     const creatorFirstName = profile?.first_name || '';
     const creatorLastName = profile?.last_name || '';
     const creatorName = `${creatorFirstName} ${creatorLastName}`.trim() || 'Creator';
-    
+
     const contractType = 'Collaboration Agreement';
-    
+
     // Format: {Brand} × {Creator} — Collaboration Agreement
     // Status is shown separately as a badge
     return `${deal.brand_name} × ${creatorName} — ${contractType}`;
@@ -1227,7 +985,7 @@ function DealDetailPageContent() {
   const handlePreviewContract = useCallback(() => {
     // Check for HTML contract first (primary source)
     const contractDocxUrl = deal?.contract_file_url as string | null | undefined;
-    
+
     if (contractDocxUrl && deal?.id) {
       // Download DOCX contract
       const link = document.createElement('a');
@@ -1236,28 +994,28 @@ function DealDetailPageContent() {
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-      
-      trackEvent('contract_downloaded', { 
+
+      trackEvent('contract_downloaded', {
         dealId: deal.id,
         dealTitle: deal.brand_name,
         contractType: 'docx',
       });
-      
+
       return;
     }
-    
+
     // Fallback to PDF preview if HTML not available
     if (!deal?.contract_file_url) {
       toast.error('No contract available');
       return;
     }
-    
-    trackEvent('contract_preview_opened', { 
+
+    trackEvent('contract_preview_opened', {
       dealId: deal.id,
       dealTitle: deal.brand_name,
       contractType: 'pdf',
     });
-    
+
     setShowContractPreview(true);
   }, [deal?.id, deal?.contract_file_url, deal?.brand_name]);
 
@@ -1278,7 +1036,7 @@ function DealDetailPageContent() {
       const brandContactInfo = extractBrandContactInfo(analysisData);
 
       // Prepare deliverables
-      const deliverablesList = deliverables.map((d: any) => 
+      const deliverablesList = deliverables.map((d: any) =>
         typeof d === 'string' ? d : (d.title || d.name || String(d))
       );
 
@@ -1301,9 +1059,9 @@ function DealDetailPageContent() {
         }));
 
       // Get AI recommendations from analysis
-      const aiRecommendations = analysisData?.recommendations || 
-                                analysisData?.negotiationPoints || 
-                                [];
+      const aiRecommendations = analysisData?.recommendations ||
+        analysisData?.negotiationPoints ||
+        [];
 
       // Get creator's fix requests from issues
       const creatorFixRequests = (issues || []).map((issue: any) => ({
@@ -1346,112 +1104,103 @@ function DealDetailPageContent() {
   }, [deal, deliverables, protectionReport, protectionIssues, issues]);
 
   const handleDownloadContract = useCallback(async () => {
-    // Prioritize signed contract URL if available (after both parties have signed)
-    // Otherwise use the regular contract URL
-    let contractUrl = signedContractUrl || contractDocxUrl;
-    
-    console.log('[DealDetailPage] Download clicked:', {
-      contractUrl,
-      signedContractUrl,
-      contractDocxUrl,
-      hasContract: !!contractUrl,
-      dealId: deal?.id
-    });
-    
-    // If no direct URL, try to use the download-docx API endpoint
-    if (!contractUrl && deal?.id) {
-      console.log('[DealDetailPage] No direct contract URL, trying download-docx API endpoint...');
-      try {
-        // Try to get API base URL
-        let apiBaseUrl =
-          import.meta.env.VITE_API_BASE_URL ||
-          (typeof window !== 'undefined' && window.location.origin.includes('noticebazaar.com')
-            ? 'https://api.noticebazaar.com'
-            : typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com')
-              ? 'https://api.creatorarmour.com'
-              : 'http://localhost:3001');
-
-        // Use the download-docx endpoint
-        const downloadUrl = `${apiBaseUrl}/api/protection/contracts/${deal.id}/download-docx`;
-        console.log('[DealDetailPage] Using download endpoint:', downloadUrl);
-        
-        // Trigger download via the API endpoint
-        const link = document.createElement('a');
-        link.href = downloadUrl;
-        link.download = `contract-${deal.id}.docx`;
-        link.target = '_blank';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        
-        toast.success('Downloading contract...');
-        return;
-      } catch (error: any) {
-        console.error('[DealDetailPage] Failed to use download endpoint:', error);
-        // Fall through to show error message
-      }
-    }
-    
-    if (!contractUrl) {
-      console.error('[DealDetailPage] No contract URL available for download');
-      toast.error('No contract file available', {
-        description: 'The contract file is not available. The contract may need to be regenerated. Please contact support.',
+    if (!deal?.id) {
+      toast.error('No contract available', {
+        description: 'Deal information is missing.',
       });
       return;
     }
 
     setIsDownloading(true);
-    const progressToast = toast.loading('Downloading contract...');
+    const progressToast = toast.loading('Preparing secure download...');
 
     try {
-      const filename = getFilenameFromUrl(contractUrl) || 
-        (signedContractUrl ? 'signed-contract.pdf' : 'contract.docx');
-      await downloadFile(contractUrl, filename);
-      
+      // Use the new secure download method that generates signed URLs
+      await downloadContractSecure(deal.id);
+
       toast.dismiss(progressToast);
       toast.success('Contract downloaded!', {
-        description: `Downloaded ${filename}`,
+        description: 'Your contract has been securely downloaded.',
       });
-      
+
       // Create action log
       if (profile?.id) {
         await createActionLog.mutateAsync({
           deal_id: deal.id,
           event: 'contract_downloaded',
-          metadata: { filename, isSigned: !!signedContractUrl },
+          metadata: {
+            isSigned: !!signedContractUrl,
+            secure: true // Indicates this used signed URL
+          },
         });
       }
-      
-      trackEvent('zip_bundle_downloaded', { dealId: deal.id });
+
+      trackEvent('contract_downloaded', { dealId: deal.id, secure: true });
     } catch (error: any) {
       toast.dismiss(progressToast);
-      console.error('[DealDetailPage] Download error:', error);
-      console.error('[DealDetailPage] Download context:', {
-        contractUrl,
-        signedContractUrl,
-        contractDocxUrl,
-        hasContract: !!contractUrl,
-        dealId: deal?.id
-      });
-      
-      // Provide more helpful error messages
-      if (!contractUrl) {
-        toast.error('No contract available', {
-          description: 'The contract file is not available. Please contact support.',
+      console.error('[DealDetailPage] Secure download error:', error);
+
+      // Fallback to legacy download method if secure download fails
+      console.log('[DealDetailPage] Attempting fallback to legacy download...');
+
+      try {
+        // Prioritize signed contract URL if available
+        let contractUrl = signedContractUrl || contractDocxUrl;
+
+        if (!contractUrl && deal?.id) {
+          // Try the download-docx API endpoint as last resort
+          let apiBaseUrl =
+            import.meta.env.VITE_API_BASE_URL ||
+            (typeof window !== 'undefined' && window.location.origin.includes('noticebazaar.com')
+              ? 'https://api.noticebazaar.com'
+              : typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com')
+                ? 'https://api.creatorarmour.com'
+                : 'http://localhost:3001');
+
+          const downloadUrl = `${apiBaseUrl}/api/protection/contracts/${deal.id}/download-docx`;
+          const link = document.createElement('a');
+          link.href = downloadUrl;
+          link.download = `contract-${deal.id}.docx`;
+          link.target = '_blank';
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+
+          toast.success('Downloading contract...');
+          return;
+        }
+
+        if (!contractUrl) {
+          throw new Error('No contract file available');
+        }
+
+        const filename = getFilenameFromUrl(contractUrl) ||
+          (signedContractUrl ? 'signed-contract.pdf' : 'contract.docx');
+        await downloadFile(contractUrl, filename);
+
+        toast.success('Contract downloaded!', {
+          description: `Downloaded ${filename} (legacy method)`,
         });
-      } else if (error.message?.includes('CORS') || error.message?.includes('network')) {
+
+        if (profile?.id) {
+          await createActionLog.mutateAsync({
+            deal_id: deal.id,
+            event: 'contract_downloaded',
+            metadata: { filename, isSigned: !!signedContractUrl, secure: false },
+          });
+        }
+
+        trackEvent('contract_downloaded_legacy', { dealId: deal.id });
+      } catch (fallbackError: any) {
+        console.error('[DealDetailPage] Fallback download also failed:', fallbackError);
         toast.error('Download failed', {
-          description: 'Network error. Please check your connection and try again.',
-        });
-      } else {
-        toast.error('Failed to download contract', {
-          description: error.message || 'Please try again or contact support.',
+          description: error.message || 'Unable to download contract. Please contact support.',
         });
       }
-          } finally {
+    } finally {
       setIsDownloading(false);
     }
-  }, [deal?.id, deal?.contract_file_url, signedContractUrl, contractDocxUrl, profile?.id, createActionLog]);
+  }, [deal?.id, signedContractUrl, contractDocxUrl, profile?.id, createActionLog]);
 
   // Upload final signed contract PDF (Phase 2 - storage only, no e-sign)
   const handleSignedContractUpload = useCallback(
@@ -1486,7 +1235,7 @@ function DealDetailPageContent() {
         const apiBaseUrl =
           import.meta.env.VITE_API_BASE_URL ||
           (typeof window !== 'undefined' &&
-          window.location.origin.includes('creatorarmour.com')
+            window.location.origin.includes('creatorarmour.com')
             ? 'https://api.creatorarmour.com'
             : 'https://noticebazaar-api.onrender.com');
 
@@ -1580,8 +1329,8 @@ function DealDetailPageContent() {
       });
 
       // Track analytics
-      trackEvent('issue_reported', { 
-        dealId: deal.id, 
+      trackEvent('issue_reported', {
+        dealId: deal.id,
         category: type,
         issueId: issue.id,
       });
@@ -1590,7 +1339,7 @@ function DealDetailPageContent() {
       setReportIssueMessage(message);
       setShowIssueTypeModal(false);
       setShowMessageModal(true);
-      
+
       toast.success('Issue reported successfully!', {
         description: "You can now send a message to the brand.",
       });
@@ -1608,8 +1357,8 @@ function DealDetailPageContent() {
   const handleAddToCalendar = useCallback((type: 'deliverable' | 'payment') => {
     if (!deal) return;
 
-    const date = type === 'deliverable' 
-      ? deal.due_date 
+    const date = type === 'deliverable'
+      ? deal.due_date
       : deal.payment_expected_date || deal.due_date;
 
     if (!date) {
@@ -1618,7 +1367,7 @@ function DealDetailPageContent() {
     }
 
     const event = createCalendarEvent({
-      title: type === 'deliverable' 
+      title: type === 'deliverable'
         ? `Deliverable Due: ${deal.brand_name}`
         : `Payment Due: ${deal.brand_name}`,
       date: new Date(date),
@@ -1628,7 +1377,7 @@ function DealDetailPageContent() {
     });
 
     // Track analytics
-    trackEvent('calendar_sync_added', { 
+    trackEvent('calendar_sync_added', {
       dealId: deal.id,
       type,
     });
@@ -1664,8 +1413,8 @@ Best regards`;
 
     setReportIssueMessage(reminderMessage);
     setShowMessageModal(true);
-    
-    trackEvent('overdue_payment_reminder_sent', { 
+
+    trackEvent('overdue_payment_reminder_sent', {
       dealId: deal.id,
       daysOverdue,
     });
@@ -1713,19 +1462,19 @@ Best regards`;
   useEffect(() => {
     const fetchSubmissionDetails = async () => {
       if (!deal?.id || !session?.access_token) return;
-      
+
       // If we already have the data, don't fetch again
       if (brandSubmissionDetails) return;
-      
+
       const createdVia = (deal as any)?.created_via;
-      
+
       // Check if form data is already in the deal object
       if ((deal as any)?.form_data) {
         console.log('[DealDetailPage] Found form_data in deal object:', (deal as any).form_data);
         setBrandSubmissionDetails((deal as any).form_data);
         return;
       }
-      
+
       // Try to fetch submission details for any deal
       // The API will return empty if no data exists
       setIsLoadingSubmission(true);
@@ -1735,8 +1484,8 @@ Best regards`;
           (typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com')
             ? 'https://api.creatorarmour.com'
             : typeof window !== 'undefined' && window.location.hostname === 'localhost'
-            ? 'http://localhost:3001'
-            : 'https://noticebazaar-api.onrender.com');
+              ? 'http://localhost:3001'
+              : 'https://noticebazaar-api.onrender.com');
 
         let response: Response;
         try {
@@ -1748,9 +1497,9 @@ Best regards`;
         } catch (fetchError: any) {
           // If localhost fails, try production API as fallback
           if (
-            (fetchError.message?.includes('Failed to fetch') || 
-             fetchError.message?.includes('ERR_CONNECTION_REFUSED') ||
-             fetchError.name === 'TypeError') &&
+            (fetchError.message?.includes('Failed to fetch') ||
+              fetchError.message?.includes('ERR_CONNECTION_REFUSED') ||
+              fetchError.name === 'TypeError') &&
             apiBaseUrl.includes('localhost')
           ) {
             console.warn('[DealDetailPage] Localhost API unavailable, trying production API...');
@@ -1843,9 +1592,9 @@ Best regards`;
           >
             <ArrowLeft className="w-6 h-6" />
           </button>
-          
+
           <div className="text-lg font-semibold">Deal Details</div>
-          
+
           <button
             onClick={() => {
               triggerHaptic(HapticPatterns.light);
@@ -1865,7 +1614,7 @@ Best regards`;
         <p className="text-sm text-white/70 text-center mb-4 px-2">
           Everything about this collaboration, organized and protected in one place.
         </p>
-        
+
         {/* Contract Generated Banner */}
         {(deal as any)?.contract_status === 'DraftGenerated' && deal?.contract_file_url && (
           <motion.div
@@ -1897,26 +1646,26 @@ Best regards`;
             </div>
           </motion.div>
         )}
-        
+
         {/* Status Card - Replaces Header Section */}
         {(() => {
           const statusLower = deal?.status?.toLowerCase() || '';
           const isContractReady = statusLower === 'contract_ready' || statusLower.includes('contract_ready');
-          const isSigned = statusLower === 'signed_by_brand' || statusLower.includes('signed_by_brand') || 
-                          dealExecutionStatus === 'signed' || dealExecutionStatus === 'completed' ||
+          const isSigned = statusLower === 'signed_by_brand' || statusLower.includes('signed_by_brand') ||
+            dealExecutionStatus === 'signed' || dealExecutionStatus === 'completed' ||
             contractStatus === 'Signed';
           const hasContract = !!contractDocxUrl;
           const signedAtDate = signedAt || signedContractUploadedAt || (deal as any)?.brand_response_at;
-          
+
           if (isContractReady && !isSigned && hasContract) {
             // CONTRACT_READY and not signed
             return (
               <div className="bg-gradient-to-br from-blue-500/20 to-indigo-500/20 backdrop-blur-xl border-2 border-blue-400/30 rounded-2xl p-6 shadow-lg">
                 <h2 className="text-2xl font-bold text-white mb-2">Contract Ready for Signature</h2>
                 <p className="text-white/70 text-sm mb-6">Brand identity verified. This agreement is ready to be signed.</p>
-                
+
                 <div className="space-y-3">
-            <motion.button
+                  <motion.button
                     onClick={async () => {
                       if (!deal?.id) return;
                       const link = brandReplyLink || (await generateBrandReplyLink(deal.id));
@@ -1929,15 +1678,15 @@ Best regards`;
                   >
                     <FileText className="w-5 h-5" />
                     Sign Contract
-            </motion.button>
-                  
-            <button
+                  </motion.button>
+
+                  <button
                     onClick={handleDownloadContract}
                     disabled={(!contractDocxUrl && !signedContractUrl && !deal?.id) || isDownloading}
                     className="w-full text-sm text-white/70 hover:text-white transition-colors underline disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {isDownloading ? 'Downloading...' : 'View Contract PDF'}
-            </button>
+                  </button>
                 </div>
               </div>
             );
@@ -1981,13 +1730,13 @@ Best regards`;
                 {/* Signed Timestamp - Small, Muted */}
                 {signedAtDate && (
                   <div className="text-xs text-white/50 mt-2">
-                    Signed on {new Date(signedAtDate).toLocaleDateString('en-US', { 
-                            month: 'long', 
-                            day: 'numeric', 
+                    Signed on {new Date(signedAtDate).toLocaleDateString('en-US', {
+                      month: 'long',
+                      day: 'numeric',
                       year: 'numeric'
                     })}
-                    </div>
-                  )}
+                  </div>
+                )}
               </div>
             );
           } else {
@@ -2010,10 +1759,20 @@ Best regards`;
                 </div>
 
                 {/* Deal Value */}
-                <div className="bg-white/5 rounded-xl p-4">
-                  <div className="text-sm text-white/60 mb-1">Total Deal Value</div>
-                  <div className="text-3xl font-bold text-green-400">₹{Math.round(dealAmount).toLocaleString('en-IN')}</div>
-                  <div className="text-xs text-white/50 mt-1">(Protected)</div>
+                <div className="bg-white/5 rounded-xl p-4 border border-white/5 hover:border-white/10 transition-colors">
+                  <div className="text-sm text-white/60 mb-1 flex items-center gap-1.5">
+                    <TrendingUp className="w-3.5 h-3.5 text-green-400" />
+                    Deal Value
+                  </div>
+                  <div className="text-3xl font-bold bg-gradient-to-r from-green-400 to-emerald-400 text-transparent bg-clip-text">
+                    {(deal as any)?.deal_type === 'barter' || dealAmount === 0
+                      ? 'Barter Deal'
+                      : `₹${Math.round(dealAmount).toLocaleString('en-IN')}`}
+                  </div>
+                  <div className="flex items-center gap-1.5 mt-1">
+                    <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+                    <span className="text-[10px] uppercase tracking-wider font-bold text-white/40">Secure Settlement Asset</span>
+                  </div>
                 </div>
               </div>
             );
@@ -2032,37 +1791,37 @@ Best regards`;
                   </div>
                 );
               }
-              
+
               const responseStatus = (deal as any).brand_response_status || 'pending';
               const responseMessage = (deal as any).brand_response_message;
               const responseAt = (deal as any).brand_response_at;
               const lastRemindedAt = (deal as any).last_reminded_at;
-              
+
               // Normalize response status - treat accepted_verified as final, accepted as intermediate
               const normalizedStatus = responseStatus === 'accepted_verified' ? 'accepted_verified' :
-                                     responseStatus === 'accepted' ? 'accepted' :
-                                     responseStatus === 'negotiating' ? 'negotiating' :
-                                     responseStatus === 'rejected' ? 'rejected' :
-                                     'pending';
-              
+                responseStatus === 'accepted' ? 'accepted' :
+                  responseStatus === 'negotiating' ? 'negotiating' :
+                    responseStatus === 'rejected' ? 'rejected' :
+                      'pending';
+
               // Handle remind brand with universal system share
               const handleRemindBrand = async () => {
                 if (!deal || !deal.id || !profile) {
                   toast.error('Deal information not available');
                   return;
                 }
-                
+
                 // Verify deal exists in database before sharing
                 try {
-                  const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 
-                    (typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com') 
-                      ? 'https://api.creatorarmour.com' 
+                  const apiBaseUrl = import.meta.env.VITE_API_BASE_URL ||
+                    (typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com')
+                      ? 'https://api.creatorarmour.com'
                       : 'http://localhost:3001');
-                  
+
                   const verifyResponse = await fetch(`${apiBaseUrl}/api/brand-response/${deal.id}`, {
                     method: 'GET',
                   });
-                  
+
                   if (!verifyResponse.ok) {
                     const verifyData = await verifyResponse.json();
                     if (verifyData.error === 'Deal not found') {
@@ -2074,24 +1833,24 @@ Best regards`;
                   console.warn('[DealDetailPage] Could not verify deal existence:', verifyError);
                   // Continue anyway - might be a network issue
                 }
-                
+
                 // Check 24-hour cooldown
                 const lastRemindedAt = (deal as any).last_reminded_at;
                 if (lastRemindedAt) {
                   const lastReminded = new Date(lastRemindedAt);
                   const now = new Date();
                   const hoursSinceLastReminder = (now.getTime() - lastReminded.getTime()) / (1000 * 60 * 60);
-                  
+
                   if (hoursSinceLastReminder < 24) {
                     const hoursRemaining = Math.ceil(24 - hoursSinceLastReminder);
                     toast.error(`Reminder sent • Try again in ${hoursRemaining}h`);
                     return;
                   }
                 }
-                
+
                 setIsSendingReminder(true);
                 triggerHaptic(HapticPatterns.medium);
-                
+
                 try {
                   // Generate secure brand reply link (token-based)
                   const link = await generateBrandReplyLink(deal.id);
@@ -2100,14 +1859,14 @@ Best regards`;
                     setIsSendingReminder(false);
                     return;
                   }
-                  
+
                   // Reminder message template
                   const reminderMessage = `Hi, just following up on the contract revisions sent earlier.
 
 Please review and confirm your decision here:
 
 ${link}`;
-                  
+
                   // Try native share API first
                   let sharePlatform: string | null = null;
                   if (navigator.share) {
@@ -2129,13 +1888,13 @@ ${link}`;
                       }
                     }
                   }
-                  
+
                   // Fallback to clipboard if share API not available or failed
                   if (!sharePlatform) {
                     try {
                       const success = await copyToClipboard(`${reminderMessage}\n\n${link}`);
                       if (success) {
-                      toast.success('Share message copied');
+                        toast.success('Share message copied');
                       } else {
                         throw new Error('Copy failed');
                       }
@@ -2146,14 +1905,14 @@ ${link}`;
                       return;
                     }
                   }
-                  
+
                   // Log reminder to API
                   try {
-                    const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 
-                      (typeof window !== 'undefined' && window.location.origin.includes('noticebazaar.com') 
-                        ? 'https://api.noticebazaar.com' 
+                    const apiBaseUrl = import.meta.env.VITE_API_BASE_URL ||
+                      (typeof window !== 'undefined' && window.location.origin.includes('noticebazaar.com')
+                        ? 'https://api.noticebazaar.com'
                         : 'http://localhost:3001');
-                    
+
                     await fetch(`${apiBaseUrl}/api/deals/log-reminder`, {
                       method: 'POST',
                       headers: {
@@ -2174,10 +1933,10 @@ ${link}`;
                     console.error('[DealDetailPage] Failed to log reminder:', logError);
                     // Don't fail the whole operation if logging fails
                   }
-                  
+
                   // Refresh deal data
                   await refreshAll();
-                  
+
                   if (sharePlatform) {
                     toast.success('✅ Reminder shared');
                   }
@@ -2188,25 +1947,25 @@ ${link}`;
                   setIsSendingReminder(false);
                 }
               };
-              
+
               // Handle copy link with Safari compatibility
               const handleCopyLink = async () => {
                 if (!deal || !dealId) {
                   toast.error('Deal information not available');
                   return;
                 }
-                
+
                 try {
-          const link = brandReplyLink || (await generateBrandReplyLink(deal.id));
-          if (!link) {
-            toast.error('Could not generate brand reply link. Please try again.');
-            return;
-          }
-                  
+                  const link = brandReplyLink || (await generateBrandReplyLink(deal.id));
+                  if (!link) {
+                    toast.error('Could not generate brand reply link. Please try again.');
+                    return;
+                  }
+
                   const success = await copyToClipboard(link);
                   if (success) {
-                  triggerHaptic(HapticPatterns.light);
-                  toast.success('Link copied to clipboard');
+                    triggerHaptic(HapticPatterns.light);
+                    toast.success('Link copied to clipboard');
                   } else {
                     throw new Error('Copy failed');
                   }
@@ -2215,14 +1974,14 @@ ${link}`;
                   toast.error('Failed to copy link. Please try again.');
                 }
               };
-              
+
               // Check if link has been shared (either reminder sent or link exists)
               const hasBeenShared = !!lastRemindedAt || !!brandReplyLink;
-              
+
               // Determine if we're BEFORE or AFTER sharing
               const isBeforeSharing = normalizedStatus === 'pending' && !hasBeenShared;
               const isAfterSharing = normalizedStatus === 'pending' && hasBeenShared;
-              
+
               const statusConfig = {
                 pending: {
                   icon: Clock,
@@ -2260,10 +2019,10 @@ ${link}`;
                   borderColor: 'border-red-500/30',
                 },
               };
-              
+
               const config = statusConfig[normalizedStatus as keyof typeof statusConfig] || statusConfig.pending;
               const StatusIcon = config.icon;
-              
+
               return (
                 <div className="space-y-4">
                   {/* Header - Different content for BEFORE vs AFTER sharing */}
@@ -2298,9 +2057,9 @@ ${link}`;
                       </h2>
                       {responseAt && (
                         <p className="text-sm text-white/70 mb-4">
-                          Responded on {new Date(responseAt).toLocaleDateString('en-US', { 
-                            month: 'short', 
-                            day: 'numeric', 
+                          Responded on {new Date(responseAt).toLocaleDateString('en-US', {
+                            month: 'short',
+                            day: 'numeric',
                             year: 'numeric',
                             hour: '2-digit',
                             minute: '2-digit'
@@ -2309,7 +2068,7 @@ ${link}`;
                       )}
                     </>
                   )}
-                  
+
                   {/* Status indicator card - only show for non-pending or after sharing */}
                   {!isBeforeSharing && (
                     <div className={cn(
@@ -2324,31 +2083,31 @@ ${link}`;
                         </div>
                         {responseAt && (
                           <div className="text-xs text-white/60 mt-1">
-                            Responded on {new Date(responseAt).toLocaleDateString('en-US', { 
-                              month: 'short', 
-                              day: 'numeric', 
+                            Responded on {new Date(responseAt).toLocaleDateString('en-US', {
+                              month: 'short',
+                              day: 'numeric',
                               year: 'numeric',
                               hour: '2-digit',
                               minute: '2-digit'
                             })}
                           </div>
                         )}
-                      {/* Show OTP verification date for accepted_verified */}
-                      {normalizedStatus === 'accepted_verified' && (deal as any)?.otp_verified_at && (
-                        <div className="text-xs text-green-300/80 mt-1">
-                          Verified on {new Date((deal as any).otp_verified_at).toLocaleDateString('en-US', { 
-                            month: 'short', 
-                            day: 'numeric', 
-                            year: 'numeric',
-                            hour: '2-digit',
-                            minute: '2-digit'
-                          })}
-                        </div>
-                      )}
+                        {/* Show OTP verification date for accepted_verified */}
+                        {normalizedStatus === 'accepted_verified' && (deal as any)?.otp_verified_at && (
+                          <div className="text-xs text-green-300/80 mt-1">
+                            Verified on {new Date((deal as any).otp_verified_at).toLocaleDateString('en-US', {
+                              month: 'short',
+                              day: 'numeric',
+                              year: 'numeric',
+                              hour: '2-digit',
+                              minute: '2-digit'
+                            })}
+                          </div>
+                        )}
+                      </div>
                     </div>
-                  </div>
                   )}
-                  
+
                   {responseMessage && (
                     <div className="bg-purple-500/10 border border-purple-500/30 rounded-xl p-4">
                       <div className="text-sm font-medium text-purple-300 mb-2">Brand's Message:</div>
@@ -2358,7 +2117,7 @@ ${link}`;
                       </p>
                     </div>
                   )}
-                  
+
                   {/* Next Step Highlight for accepted_verified */}
                   {normalizedStatus === 'accepted_verified' && (
                     <div className="mt-4 bg-gradient-to-r from-emerald-500/20 to-green-500/20 border border-emerald-400/30 rounded-xl p-4">
@@ -2375,43 +2134,43 @@ ${link}`;
                       </div>
                     </div>
                   )}
-                  
+
                   {/* Share/Remind Brand Buttons - Show different content for BEFORE vs AFTER sharing */}
                   {normalizedStatus === 'pending' && deal && deal.id && (() => {
                     let canSendReminder = true;
                     let hoursRemaining = 0;
-                    
+
                     if (lastRemindedAt) {
                       const lastReminded = new Date(lastRemindedAt);
                       const now = new Date();
                       const hoursSinceLastReminder = (now.getTime() - lastReminded.getTime()) / (1000 * 60 * 60);
-                      
+
                       if (hoursSinceLastReminder < 24) {
                         canSendReminder = false;
                         hoursRemaining = Math.ceil(24 - hoursSinceLastReminder);
                       }
                     }
-                    
+
                     // Generate brand reply link using actual deal ID (not URL param)
                     const link = brandReplyLink;
-                    
+
                     // Test link handler - verify deal exists before sharing
                     const handleTestLink = async () => {
                       if (!deal || !deal.id) {
                         toast.error('Deal information not available. Please refresh the page.');
                         return;
                       }
-                      
+
                       const finalLink = link || (await generateBrandReplyLink(deal.id));
                       if (!finalLink) {
                         toast.error('Could not generate brand reply link. Please try again.');
                         return;
                       }
-                      
+
                       window.open(finalLink, '_blank');
                       toast.success('✅ Opening brand reply link');
                     };
-                    
+
                     // Show different UI for BEFORE vs AFTER sharing
                     if (isBeforeSharing) {
                       // BEFORE Sharing - Show share button
@@ -2420,24 +2179,24 @@ ${link}`;
                           <motion.button
                             onClick={handleRemindBrand}
                             disabled={isSendingReminder}
-                            whileHover={!isSendingReminder ? { scale: 1.02 } : {}}
+                            whileHover={!isSendingReminder ? { scale: 1.02, y: -2 } : {}}
                             whileTap={!isSendingReminder ? { scale: 0.98 } : {}}
                             className={cn(
-                              "w-full py-3 px-4 rounded-xl font-semibold transition-all flex items-center justify-center gap-2",
+                              "w-full py-4 px-4 rounded-xl font-bold transition-all flex items-center justify-center gap-3",
                               !isSendingReminder
-                                ? "bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white"
+                                ? "bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white shadow-xl shadow-purple-500/20"
                                 : "bg-purple-500/20 text-purple-300/50 border border-purple-400/20 cursor-not-allowed"
                             )}
                           >
                             {isSendingReminder ? (
                               <>
                                 <Loader2 className="w-5 h-5 animate-spin" />
-                                <span className="text-sm">Generating link...</span>
+                                <span className="text-sm">Initiating Secure Review...</span>
                               </>
                             ) : (
                               <>
                                 <Share2 className="w-5 h-5" />
-                                <span className="text-sm">Share with Brand</span>
+                                <span className="text-sm tracking-wide uppercase">Share for Brand Approval</span>
                               </>
                             )}
                           </motion.button>
@@ -2481,7 +2240,7 @@ ${link}`;
                               </motion.button>
                             </div>
                           </div>
-                          
+
                           <div className="grid grid-cols-2 gap-2">
                             <motion.button
                               onClick={handleRemindBrand}
@@ -2512,7 +2271,7 @@ ${link}`;
                                 </>
                               )}
                             </motion.button>
-                            
+
                             <motion.button
                               onClick={handleCopyLink}
                               whileHover={{ scale: 1.02 }}
@@ -2523,7 +2282,7 @@ ${link}`;
                               <span className="text-sm">Copy Link</span>
                             </motion.button>
                           </div>
-                          
+
                           <p className="text-xs text-white/50 text-center mt-3">
                             This reply does not legally bind you until approved.
                           </p>
@@ -2531,7 +2290,7 @@ ${link}`;
                       );
                     }
                   })()}
-                  
+
                   {/* OTP Verification Status - Only show for accepted (not verified yet) */}
                   {normalizedStatus === 'accepted' && !(deal as any)?.otp_verified && (
                     <div className="mt-4">
@@ -2556,29 +2315,29 @@ ${link}`;
           // Check if we should show this section
           // Show if brand reply link has been generated (or can be generated) OR brand_response_status exists
           const hasBrandReplyLink = !!brandReplyLink || (deal?.id && brandResponseStatus);
-          const hasBrandResponseStatus = !!brandResponseStatus && 
+          const hasBrandResponseStatus = !!brandResponseStatus &&
             ['sent', 'accepted', 'accepted_verified', 'negotiating', 'rejected'].includes(brandResponseStatus);
-          
+
           // Must have clarifications to show
           if (requestedClarifications.length === 0) {
             return null;
           }
-          
+
           // Show if either condition is met
           const shouldShow = hasBrandReplyLink || hasBrandResponseStatus;
-          
+
           if (!shouldShow) {
             return null;
           }
-          
+
           // Get status indicator text - treat accepted_verified as final
           const getStatusText = () => {
             if (!brandResponseStatus) return null;
             // Normalize status - treat accepted_verified as final, never show "waiting"
             const normalizedStatus = brandResponseStatus === 'accepted_verified' ? 'accepted_verified' :
-                                     brandResponseStatus === 'accepted' ? 'accepted' :
-                                     brandResponseStatus;
-            
+              brandResponseStatus === 'accepted' ? 'accepted' :
+                brandResponseStatus;
+
             switch (normalizedStatus) {
               case 'sent':
               case 'pending':
@@ -2595,32 +2354,39 @@ ${link}`;
                 return null;
             }
           };
-          
+
           const statusText = getStatusText();
-          
+
           return (
-            <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-4 md:p-6 shadow-lg shadow-black/20">
-              <h2 className="font-semibold text-lg mb-2 flex items-center gap-2">
+            <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-4 md:p-6 shadow-lg shadow-black/20 border-l-4 border-l-purple-500">
+              <h2 className="font-semibold text-lg mb-2 flex items-center gap-2 text-white/90">
+                <Bell className="w-5 h-5 text-purple-400" />
                 Requested Contract Clarifications
               </h2>
               <p className="text-sm text-white/60 mb-4">
-                These points were shared with the brand for alignment.
+                These points have been shared with the brand for alignment and mutual transparency.
               </p>
-              
+
               {/* Clarifications List */}
-              <div className="space-y-2 mb-4">
+              <div className="space-y-3 mb-6">
                 {requestedClarifications.map((clarification, index) => (
-                  <div key={index} className="flex items-start gap-3">
-                    <CheckCircle className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
-                    <span className="text-sm text-white/90 flex-1">{clarification}</span>
+                  <div key={index} className="flex items-start gap-3 bg-white/5 p-3 rounded-xl border border-white/5">
+                    <div className="w-6 h-6 rounded-full bg-green-500/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <Check className="w-4 h-4 text-green-400" />
+                    </div>
+                    <span className="text-sm text-white/80 leading-relaxed font-medium">{clarification}</span>
                   </div>
                 ))}
               </div>
-              
+
               {/* Status Indicator */}
               {statusText && (
-                <div className="pt-3 border-t border-white/10">
-                  <p className="text-sm text-white/60">{statusText}</p>
+                <div className="pt-4 border-t border-white/10 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full bg-purple-500 animate-pulse" />
+                    <p className="text-xs font-bold uppercase tracking-widest text-purple-400">{statusText}</p>
+                  </div>
+                  <span className="text-[10px] text-white/30 uppercase font-bold">Auto-tracked</span>
                 </div>
               )}
             </div>
@@ -2632,19 +2398,12 @@ ${link}`;
           <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6 shadow-lg shadow-black/20 mb-6">
             {(() => {
               const contractDocxUrl = deal?.contract_file_url as string | null | undefined;
-              const isContractSigned = dealExecutionStatus === 'signed' || dealExecutionStatus === 'completed' || 
-                                     signedContractUrl || signedAt ||
-                                     (deal?.status?.toLowerCase()?.includes('signed'));
-              
-              // Determine signing status
-              const isBrandSigned = brandSignature?.signed || isContractSigned;
-              const bothSigned = isBrandSigned && isCreatorSigned;
-              
+
               return (
                 <>
                   <h2 className="font-semibold text-xl mb-2 flex items-center gap-2">
                     {bothSigned ? (
-                      <CheckCircle className="w-6 h-6 text-purple-400" />
+                      <ShieldCheck className="w-6 h-6 text-emerald-400" />
                     ) : (
                       <FileText className="w-6 h-6 text-purple-400" />
                     )}
@@ -2654,35 +2413,52 @@ ${link}`;
                     {bothSigned
                       ? 'This agreement has been legally executed. CreatorArmour provides verification and audit records.'
                       : !isBrandSigned && !isCreatorSigned
-                      ? 'This contract has been generated based on confirmed details. Both parties need to sign to finalize the deal.'
-                      : !isBrandSigned
-                      ? 'Please share the signing link with the brand to complete the agreement.'
-                      : 'The brand has signed the agreement. Please review and sign to finalize the deal.'}
+                        ? 'This contract has been generated based on confirmed details. Both parties need to sign to finalize the deal.'
+                        : !isBrandSigned
+                          ? 'Please share the signing link with the brand to complete the agreement.'
+                          : 'The brand has signed the agreement. Please review and sign to finalize the deal.'}
                   </p>
 
                   <div className="flex flex-col gap-3">
                     {/* Sign as Creator - Always show */}
                     {isCreatorSigned ? (
-                      <div className="w-full bg-gradient-to-r from-green-500/20 to-emerald-500/20 border border-green-400/30 px-6 py-3 rounded-xl flex items-center justify-center gap-2">
-                        <CheckCircle className="w-5 h-5 text-green-400" />
-                        <span className="font-semibold text-white">Signed as Creator</span>
+                      <div className="w-full bg-gradient-to-r from-green-500/20 to-emerald-500/20 border border-green-400/30 px-6 py-4 rounded-xl flex items-center justify-between group">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-full bg-green-500/20 flex items-center justify-center">
+                            <CheckCircle className="w-5 h-5 text-green-400" />
+                          </div>
+                          <div>
+                            <span className="font-bold text-white block">Creator Signed</span>
+                            <span className="text-[10px] text-green-400/70 uppercase tracking-widest font-bold">Identity Verified via OTP</span>
+                          </div>
+                        </div>
+                        <ShieldCheck className="w-5 h-5 text-green-400/40" />
                       </div>
                     ) : (
                       <motion.button
                         onClick={() => setShowCreatorSigningModal(true)}
+                        whileHover={{ scale: 1.01, y: -2 }}
                         whileTap={{ scale: 0.98 }}
-                        className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 px-6 py-3 rounded-xl font-semibold text-white transition-all flex items-center justify-center gap-2"
+                        className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 px-6 py-4 rounded-xl font-bold text-white transition-all flex items-center justify-center gap-3 shadow-lg shadow-blue-500/25"
                       >
-                        <FileText className="w-5 h-5" />
-                        Sign as Creator
+                        <PenTool className="w-5 h-5" />
+                        E-Sign Agreement as Creator
                       </motion.button>
                     )}
 
                     {/* Sign as Brand - Always show */}
                     {isBrandSigned ? (
-                      <div className="w-full bg-gradient-to-r from-green-500/20 to-emerald-500/20 border border-green-400/30 px-6 py-3 rounded-xl flex items-center justify-center gap-2">
-                        <CheckCircle className="w-5 h-5 text-green-400" />
-                        <span className="font-semibold text-white">Signed as Brand</span>
+                      <div className="w-full bg-gradient-to-r from-green-500/20 to-emerald-500/20 border border-green-400/30 px-6 py-4 rounded-xl flex items-center justify-between group">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-full bg-green-500/20 flex items-center justify-center">
+                            <CheckCircle className="w-5 h-5 text-green-400" />
+                          </div>
+                          <div>
+                            <span className="font-bold text-white block">Brand Signed</span>
+                            <span className="text-[10px] text-green-400/70 uppercase tracking-widest font-bold">Authorized Signatory Verified</span>
+                          </div>
+                        </div>
+                        <ShieldCheck className="w-5 h-5 text-green-400/40" />
                       </div>
                     ) : (
                       <motion.button
@@ -2690,25 +2466,76 @@ ${link}`;
                           if (!deal?.id) return;
                           const link = brandReplyLink || (await generateBrandReplyLink(deal.id));
                           if (link) {
+                            // Copy to clipboard first
+                            const success = await copyToClipboard(link);
+                            if (success) {
+                              toast.success('Brand signing link copied! Sharing it now...');
+                            }
+                            // Then open
                             window.open(link, '_blank');
                           }
                         }}
+                        whileHover={{ scale: 1.01, y: -2 }}
                         whileTap={{ scale: 0.98 }}
-                        className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 px-6 py-3 rounded-xl font-semibold text-white transition-all flex items-center justify-center gap-2"
+                        className="w-full bg-white/5 hover:bg-white/10 border border-white/10 px-6 py-4 rounded-xl font-bold text-white transition-all flex items-center justify-center gap-3 group"
                       >
-                        <FileText className="w-5 h-5" />
-                        Sign as Brand
+                        <Share2 className="w-5 h-5 text-purple-400 group-hover:scale-110 transition-transform" />
+                        Send for Brand Signature
                       </motion.button>
                     )}
 
                     {/* Download and Audit Trail - Show if both signed */}
                     {bothSigned && (
                       <>
+                        {/* Terms Locked Indicator */}
+                        <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-4 mb-2 flex items-start gap-3">
+                          <Lock className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
+                          <div>
+                            <p className="text-sm font-bold text-emerald-400">Terms are locked.</p>
+                            <p className="text-xs text-emerald-400/70 leading-relaxed">
+                              Edits, counters, or overrides are disabled. Any changes require a new agreement.
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* Audit ID Display */}
+                        <div className="bg-white/5 border border-white/10 rounded-xl p-3 mb-2 flex items-center justify-between group cursor-help"
+                          onClick={() => {
+                            triggerHaptic(HapticPatterns.success);
+                            toast.info("Audit Record CA-" + deal?.id?.slice(0, 8).toUpperCase() + " verified by Creator Armour ledger.", {
+                              description: "All signatures and timestamps are cryptographically hashed."
+                            });
+                          }}
+                        >
+                          <div className="flex items-center gap-2">
+                            <div className="w-6 h-6 rounded-lg bg-emerald-500/10 flex items-center justify-center">
+                              <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+                            </div>
+                            <div>
+                              <div className="flex items-center gap-1.5 mb-0.5">
+                                <p className="text-[10px] text-white/40 uppercase font-bold tracking-widest">Digital Audit ID</p>
+                                <span className="bg-emerald-500/20 text-emerald-400 text-[8px] px-1.5 py-0.5 rounded-full font-bold uppercase tracking-wider border border-emerald-500/30">Verified</span>
+                              </div>
+                              <p className="text-sm font-mono text-white/80">CA-{deal?.id?.slice(0, 8).toUpperCase()}</p>
+                            </div>
+                          </div>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              copyToClipboard(`CA-${deal?.id?.toUpperCase() || ''}`);
+                              toast.success('Audit ID copied to clipboard');
+                            }}
+                            className="p-2 hover:bg-white/10 rounded-lg transition-colors text-white/40 hover:text-white"
+                          >
+                            <Copy className="w-4 h-4" />
+                          </button>
+                        </div>
+
                         <motion.button
                           onClick={handleDownloadContract}
                           disabled={(!contractDocxUrl && !signedContractUrl && !deal?.id) || isDownloading}
                           whileTap={{ scale: 0.98 }}
-                          className="w-full px-6 py-3 rounded-xl font-semibold text-white transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500"
+                          className="w-full px-6 py-4 rounded-xl font-bold text-white transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 shadow-lg shadow-green-900/20"
                         >
                           {isDownloading ? (
                             <>
@@ -2718,21 +2545,23 @@ ${link}`;
                           ) : (
                             <>
                               <Download className="w-5 h-5" />
-                              Download Signed Agreement
+                              Download Executed Agreement
                             </>
                           )}
                         </motion.button>
-                        
+
                         <button
                           onClick={() => setShowAuditTrail(true)}
-                          className="w-full text-sm text-white/70 hover:text-white transition-colors underline text-center py-2"
+                          className="w-full text-sm text-white/50 hover:text-white transition-colors underline text-center py-2"
                         >
-                          View Audit Trail
+                          View Full Audit Records
                         </button>
-                        
-                        <p className="text-xs text-white/50 mt-2 text-center">
-                          Includes OTP verification, IP address, timestamp, and device record.
-                        </p>
+
+                        <div className="pt-2 border-t border-white/5 mt-2">
+                          <p className="text-[10px] text-white/30 text-center uppercase tracking-tight font-medium">
+                            Actions on Creator Armour are recorded, timestamped, and legally enforceable.
+                          </p>
+                        </div>
                       </>
                     )}
 
@@ -2777,7 +2606,7 @@ ${link}`;
               <p className="text-xs text-white/50 mb-4">
                 Deliverables are auto-tracked and marked completed on their due dates.
               </p>
-              
+
               {/* Auto-completion info banner */}
               {deliverables.length > 0 && (
                 <div className="mb-4">
@@ -2799,76 +2628,99 @@ ${link}`;
               )}
 
               {deliverables.length > 0 ? (
-                <>
-                  <div className="space-y-2">
-                  {deliverables.map((item: any, index: number) => (
+                <div className="relative">
+                  {/* Status-aware Deliverables state */}
+                  {!bothSigned && (
+                    <div className="absolute inset-x-0 -top-2 -bottom-2 z-10 bg-black/40 backdrop-blur-[2px] rounded-2xl flex flex-col items-center justify-center p-6 text-center border border-white/10">
+                      <Lock className="w-8 h-8 text-white/40 mb-3" />
+                      <p className="text-sm font-bold text-white/90">Deliverables Locked</p>
+                      <p className="text-[11px] text-white/60 mt-1 max-w-[200px]">Unlock for tracking once the agreement is signed by both brand and creator.</p>
+                    </div>
+                  )}
+
+                  <div className={cn("space-y-2", !bothSigned && "opacity-40 grayscale pointer-events-none select-none")}>
+                    {deliverables.map((item: any, index: number) => (
                       <div key={index} className="bg-white/5 rounded-xl p-3 border border-white/10">
-                      <div className="flex items-start gap-3">
-                        <div className="flex-1 min-w-0">
-                          <div className="font-medium text-white/90 break-words mb-1">
-                            {item.title || item.name || `Deliverable ${index + 1}`}
-                          </div>
-                          {item.dueDate && (
-                            <div className="text-xs text-white/60 mt-1.5 flex items-center gap-1.5">
-                              <Calendar className="w-3.5 h-3.5 flex-shrink-0" />
-                              <span>Due: {item.dueDate}</span>
+                        <div className="flex items-start gap-3">
+                          <div className="flex-1 min-w-0">
+                            <div className="font-medium text-white/90 break-words mb-1">
+                              {item.title || item.name || `Deliverable ${index + 1}`}
                             </div>
-                          )}
-                          {item.status && (
+                            {item.dueDate && (
+                              <div className="text-xs text-white/60 mt-1.5 flex items-center gap-1.5">
+                                <Calendar className="w-3.5 h-3.5 flex-shrink-0" />
+                                <span>Due: {item.dueDate}</span>
+                              </div>
+                            )}
+                            {item.status && (
                               <div className="mt-2">
                                 <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${item.status === 'completed' ? 'bg-green-500/20 text-green-400 border border-green-500/30' :
-                                item.status === 'in_progress' ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30' :
-                                'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30'
-                              }`}>
-                                {item.status === 'completed' ? 'Completed' :
-                                 item.status === 'in_progress' ? 'In Progress' :
-                                 'Pending'}
-                              </span>
-                            </div>
-                          )}
+                                  item.status === 'in_progress' ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30' :
+                                    'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30'
+                                  }`}>
+                                  {item.status === 'completed' ? 'Completed' :
+                                    item.status === 'in_progress' ? 'In Progress' :
+                                      'Pending'}
+                                </span>
+                              </div>
+                            )}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
-                </>
               ) : (
-                <div className="text-sm text-white/60 py-4">No deliverables specified</div>
+                <div className="text-sm text-white/60 py-4 flex flex-col items-center gap-2">
+                  <Package className="w-8 h-8 text-white/20" />
+                  No deliverables specified
+                </div>
               )}
             </div>
 
             {/* Audit Trail (Advanced) - Collapsed by default */}
-            {actionLogEntries.length > 0 && (
-              <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-4 md:p-6 shadow-lg shadow-black/20">
-                <Collapsible open={showAuditTrail} onOpenChange={setShowAuditTrail}>
-                  <CollapsibleTrigger asChild>
-                    <button className="w-full flex items-center justify-between">
-                      <div className="text-left">
-                        <h3 className="font-semibold text-lg">Audit Trail & Verification</h3>
-                        <p className="text-xs text-white/50 mt-1">For legal review, disputes, or compliance.</p>
-                      </div>
-                      {showAuditTrail ? (
-                        <ChevronUp className="w-5 h-5 text-white/60" />
-                      ) : (
-                        <ChevronDown className="w-5 h-5 text-white/60" />
-                      )}
-                    </button>
-                  </CollapsibleTrigger>
-                  <CollapsibleContent>
-                    <p className="text-sm text-white/70 mb-6 mt-2">
-                      Complete timeline of system events and actions.
-                    </p>
-                    <Suspense fallback={<div className="text-white/60 p-4">Loading audit trail...</div>}>
-                      <ActionLog entries={actionLogEntries.filter(entry => 
-                        entry.action?.toLowerCase().includes('signed') || 
+            <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-4 md:p-6 shadow-lg shadow-black/20 overflow-hidden relative">
+              <Collapsible open={showAuditTrail} onOpenChange={setShowAuditTrail}>
+                <CollapsibleTrigger asChild>
+                  <button className="w-full flex items-center justify-between group">
+                    <div className="text-left">
+                      <h3 className="font-semibold text-lg flex items-center gap-2">
+                        <Lock className="w-4 h-4 text-purple-400" />
+                        Audit Trail & Verification
+                      </h3>
+                      <p className="text-xs text-white/50 mt-1">Immutable record of all legal actions.</p>
+                    </div>
+                    {showAuditTrail ? (
+                      <ChevronUp className="w-5 h-5 text-white/60 group-hover:text-white transition-colors" />
+                    ) : (
+                      <ChevronDown className="w-5 h-5 text-white/60 group-hover:text-white transition-colors" />
+                    )}
+                  </button>
+                </CollapsibleTrigger>
+                <CollapsibleContent>
+                  <p className="text-sm text-white/70 mb-6 mt-4 pb-4 border-b border-white/5">
+                    A comprehensive timeline of system events, OTP verifications, and digital signatures for legal compliance.
+                  </p>
+                  {actionLogEntries.length > 0 ? (
+                    <Suspense fallback={<div className="text-white/60 p-4">Syncing audit logs...</div>}>
+                      <ActionLog entries={actionLogEntries.filter(entry =>
+                        entry.action?.toLowerCase().includes('signed') ||
                         entry.action?.toLowerCase().includes('verified') ||
                         entry.action?.toLowerCase().includes('brand verified')
                       )} />
-                </Suspense>
-                  </CollapsibleContent>
-                </Collapsible>
-              </div>
-            )}
+                    </Suspense>
+                  ) : (
+                    <div className="py-8 text-center px-6">
+                      <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center mx-auto mb-3">
+                        <ShieldCheck className="w-6 h-6 text-white/20" />
+                      </div>
+                      <p className="text-sm font-medium text-white/60">No legal events recorded yet.</p>
+                      <p className="text-[11px] text-white/40 mt-1">All actions will be cryptographically logged once the brand interaction begins.</p>
+                    </div>
+                  )}
+                </CollapsibleContent>
+              </Collapsible>
+            </div>
           </div>
 
           {/* Right Column */}
@@ -2884,8 +2736,8 @@ ${link}`;
                       status: latestIssue.status,
                       assignedTeam: latestIssue.assigned_team || undefined,
                       lastUpdated: latestIssue.updated_at,
-                      userLastMessage: latestIssue.message.length > 100 
-                        ? latestIssue.message.substring(0, 100) + '...' 
+                      userLastMessage: latestIssue.message.length > 100
+                        ? latestIssue.message.substring(0, 100) + '...'
                         : latestIssue.message,
                       createdAt: latestIssue.created_at,
                     }}
@@ -2932,13 +2784,13 @@ ${link}`;
                           if (contactInfo.brandEmail && !deal.brand_email) {
                             updateData.brand_email = contactInfo.brandEmail;
                           }
-                          
+
                           await updateBrandDealMutation.mutateAsync({
                             id: deal.id,
                             creator_id: profile?.id || '',
                             ...updateData,
                           });
-                          
+
                           toast.success('Brand contact info auto-filled from contract');
                           await refreshAll();
                         } catch (error: any) {
@@ -2957,11 +2809,11 @@ ${link}`;
                   </motion.button>
                 )}
               </div>
-              
+
               <p className="text-xs text-white/60 mb-4">
                 Verified brand contact details used for this agreement.
               </p>
-              
+
               <div className="space-y-4 text-sm">
                 <div className="flex items-center gap-2 text-white/80">
                   <span className="font-medium">{deal.brand_name}</span>
@@ -2979,7 +2831,7 @@ ${link}`;
                   // Show extracted contact info if available
                   const analysisData = protectionReport?.analysis_json;
                   const contactInfo = analysisData ? extractBrandContactInfo(analysisData) : {};
-                  
+
                   return (
                     <>
                       {contactInfo.brandLegalContact && (
@@ -3002,7 +2854,7 @@ ${link}`;
                     <span>Contact: {deal.contact_person}</span>
                   </div>
                 )}
-                
+
                 {/* Brand Phone Number */}
                 <div className="flex items-center gap-2">
                   {!isEditingBrandPhone ? (
@@ -3012,13 +2864,13 @@ ${link}`;
                         // 1. Direct field on deal (if it exists in DB)
                         // 2. From brand submission details
                         // 3. From form_data nested in deal
-                        const phoneNumber = 
-                          (deal as any)?.brand_phone || 
+                        const phoneNumber =
+                          (deal as any)?.brand_phone ||
                           brandSubmissionDetails?.companyPhone ||
                           (deal as any)?.form_data?.companyPhone ||
                           (deal as any)?.form_data?.brandPhone ||
                           null;
-                        
+
                         // Debug log in development
                         if (import.meta.env.DEV && !phoneNumber) {
                           console.log('[DealDetailPage] Phone number sources:', {
@@ -3030,29 +2882,29 @@ ${link}`;
                             'hasFormData': !!(deal as any)?.form_data,
                           });
                         }
-                        
+
                         return phoneNumber ? (
-                        <div className="flex items-center gap-2 text-white/60 flex-1">
-                          <Phone className="w-4 h-4 text-white/40 flex-shrink-0" />
+                          <div className="flex items-center gap-2 text-white/60 flex-1">
+                            <Phone className="w-4 h-4 text-white/40 flex-shrink-0" />
                             <span>{phoneNumber}</span>
-                        </div>
-                      ) : (
-                        <div className="flex items-center gap-2 text-white/40 flex-1">
-                          <Phone className="w-4 h-4 text-white/30 flex-shrink-0" />
-                          <span className="text-xs">No phone added (optional)</span>
-                        </div>
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-2 text-white/40 flex-1">
+                            <Phone className="w-4 h-4 text-white/30 flex-shrink-0" />
+                            <span className="text-xs">No phone added (optional)</span>
+                          </div>
                         );
                       })()}
                       <motion.button
                         onClick={() => {
                           // Check all possible sources for phone number
-                          let phoneValue = 
-                            (deal as any)?.brand_phone || 
+                          let phoneValue =
+                            (deal as any)?.brand_phone ||
                             brandSubmissionDetails?.companyPhone ||
                             (deal as any)?.form_data?.companyPhone ||
                             (deal as any)?.form_data?.brandPhone ||
                             '';
-                          
+
                           // Ensure phone starts with +91 when editing
                           if (phoneValue && !phoneValue.startsWith('+91')) {
                             phoneValue = phoneValue.startsWith('+') ? phoneValue : `+91 ${phoneValue}`;
@@ -3099,7 +2951,7 @@ ${link}`;
                             toast.error('User not found');
                             return;
                           }
-                          
+
                           try {
                             // Clean phone number - validate it has more than just the prefix
                             let phoneValue = brandPhoneInput.trim();
@@ -3110,20 +2962,20 @@ ${link}`;
                               // If somehow +91 is missing, add it
                               phoneValue = '+91 ' + phoneValue.replace(/^\+91\s*/, '');
                             }
-                            
+
                             // Validate phone has digits after +91
                             const digitsAfterPrefix = phoneValue.replace(/^\+91\s*/, '').replace(/\D/g, '');
                             if (digitsAfterPrefix.length < 10) {
                               toast.error('Please enter a valid 10-digit phone number');
                               return;
                             }
-                            
+
                             await updateBrandDealMutation.mutateAsync({
                               id: deal.id,
                               creator_id: profile.id,
                               brand_phone: phoneValue,
                             });
-                            
+
                             toast.success('Brand phone number updated');
                             setIsEditingBrandPhone(false);
                             await refreshAll();
@@ -3182,10 +3034,12 @@ ${link}`;
                         {contractStatus && displayContractName && (
                           <span className={cn(
                             "px-2.5 py-1 rounded-full text-xs font-medium flex-shrink-0 whitespace-nowrap",
-                            contractStatus === 'Signed' && "bg-green-500/20 text-green-400 border border-green-500/30",
+                            (contractStatus === 'Signed' || contractStatus === 'Legally Active') && "bg-green-500/20 text-green-400 border border-green-500/30",
                             contractStatus === 'Approved' && "bg-blue-500/20 text-blue-400 border border-blue-500/30",
                             contractStatus === 'Shared' && "bg-purple-500/20 text-purple-400 border border-purple-500/30",
-                            contractStatus === 'Draft' && "bg-yellow-500/20 text-yellow-400 border border-yellow-500/30"
+                            contractStatus === 'Draft' && "bg-yellow-500/20 text-yellow-400 border border-yellow-500/30",
+                            contractStatus === 'SHIPPING_IN_PROGRESS' && "bg-blue-500/20 text-blue-400 border border-blue-500/30",
+                            contractStatus === 'AWAITING_CREATOR_SIGNATURE' && "bg-orange-500/20 text-orange-400 border border-orange-500/30"
                           )}>
                             {contractStatus}
                           </span>
@@ -3200,16 +3054,16 @@ ${link}`;
                       {/* Upload date */}
                       {deal.created_at && (
                         <div className="text-xs text-white/60">
-                          Uploaded {new Date(deal.created_at).toLocaleDateString('en-US', { 
-                            month: 'short', 
-                            day: 'numeric', 
-                            year: 'numeric' 
+                          Uploaded {new Date(deal.created_at).toLocaleDateString('en-US', {
+                            month: 'short',
+                            day: 'numeric',
+                            year: 'numeric'
                           })}
                         </div>
                       )}
                     </div>
                   </div>
-                  
+
                   {/* Download Contract Summary PDF Button */}
                   {(protectionReport || protectionIssues.length > 0) && (
                     <motion.button
@@ -3235,158 +3089,158 @@ ${link}`;
               </div>
             )}
 
-                  </div>
-                      </div>
+          </div>
+        </div>
 
-                {/* Confirm Signed Contract Received Modal */}
-                <Dialog open={showMarkSignedModal} onOpenChange={setShowMarkSignedModal}>
-              <DialogContent className="bg-purple-900/95 backdrop-blur-xl border border-white/10 text-white max-w-md">
-                <DialogHeader>
-                  <DialogTitle className="text-xl font-semibold">Confirm Signed Contract Received</DialogTitle>
-                  <DialogDescription className="text-white/70">
-                    Have you received the signed contract from both parties?
-                  </DialogDescription>
-                </DialogHeader>
-                <div className="space-y-4 mt-4">
-                  <p className="text-sm text-white/80">
-                    This will update the deal status to "Signed" for organizational purposes. This is not a legal validation.
-                  </p>
-                  
-                  {/* Optional: Upload signed contract */}
-                  <div>
-                    <label className="block text-sm font-medium mb-2 text-white/70">
-                      Upload Signed Contract (Optional)
-                    </label>
-                    <input
-                      type="file"
-                      accept="application/pdf"
-                      onChange={async (e) => {
-                        const file = e.target.files?.[0];
-                        if (!file || !deal?.id) return;
+        {/* Confirm Signed Contract Received Modal */}
+        <Dialog open={showMarkSignedModal} onOpenChange={setShowMarkSignedModal}>
+          <DialogContent className="bg-purple-900/95 backdrop-blur-xl border border-white/10 text-white max-w-md">
+            <DialogHeader>
+              <DialogTitle className="text-xl font-semibold">Confirm Signed Contract Received</DialogTitle>
+              <DialogDescription className="text-white/70">
+                Have you received the signed contract from both parties?
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 mt-4">
+              <p className="text-sm text-white/80">
+                This will update the deal status to "Signed" for organizational purposes. This is not a legal validation.
+              </p>
 
-                        try {
-                          setIsUploadingSignedContract(true);
-                          const formData = new FormData();
-                          formData.append('file', file);
-                          formData.append('dealId', deal.id);
+              {/* Optional: Upload signed contract */}
+              <div>
+                <label className="block text-sm font-medium mb-2 text-white/70">
+                  Upload Signed Contract (Optional)
+                </label>
+                <input
+                  type="file"
+                  accept="application/pdf"
+                  onChange={async (e) => {
+                    const file = e.target.files?.[0];
+                    if (!file || !deal?.id) return;
 
-                          const apiBaseUrl =
-                            import.meta.env.VITE_API_BASE_URL ||
-                            (typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com')
-                              ? 'https://api.creatorarmour.com'
-                              : typeof window !== 'undefined' && window.location.hostname === 'localhost'
-                              ? 'http://localhost:3001'
-                              : 'https://noticebazaar-api.onrender.com');
+                    try {
+                      setIsUploadingSignedContract(true);
+                      const formData = new FormData();
+                      formData.append('file', file);
+                      formData.append('dealId', deal.id);
 
-                          const response = await fetch(`${apiBaseUrl}/api/deals/${deal.id}/signed-contract`, {
-                            method: 'POST',
-                            headers: {
-                              Authorization: `Bearer ${session?.access_token}`,
-                            },
-                            body: formData,
-                          });
+                      const apiBaseUrl =
+                        import.meta.env.VITE_API_BASE_URL ||
+                        (typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com')
+                          ? 'https://api.creatorarmour.com'
+                          : typeof window !== 'undefined' && window.location.hostname === 'localhost'
+                            ? 'http://localhost:3001'
+                            : 'https://noticebazaar-api.onrender.com');
 
-                          if (!response.ok) {
-                            throw new Error('Failed to upload signed contract');
-                          }
+                      const response = await fetch(`${apiBaseUrl}/api/deals/${deal.id}/signed-contract`, {
+                        method: 'POST',
+                        headers: {
+                          Authorization: `Bearer ${session?.access_token}`,
+                        },
+                        body: formData,
+                      });
 
-                          toast.success('Signed contract uploaded');
-                        } catch (error: any) {
-                          console.error('[DealDetailPage] Upload signed contract error:', error);
-                          toast.error('Failed to upload signed contract');
-                        } finally {
-                          setIsUploadingSignedContract(false);
-                        }
-                      }}
-                      className="w-full text-sm text-white/60 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-medium file:bg-purple-500/20 file:text-purple-200 hover:file:bg-purple-500/30"
-                    />
-                    <p className="text-xs text-white/50 mt-1">
-                      PDF only. This helps with records and audits.
-                    </p>
-                  </div>
-
-                  <div className="flex gap-3">
-                    <button
-                      onClick={async () => {
-                        if (!deal?.id) return;
-                        
-                        try {
-                          const updateData: any = {
-                            status: 'Signed',
-                            contract_version: 'signed',
-                            signed_at: new Date().toISOString(),
-                            updated_at: new Date().toISOString(),
-                          };
-
-                          // Keep existing signed_via if already set
-                          if (!signedVia) {
-                            updateData.signed_via = null; // Will be set when user clicks signing button
-                          }
-
-                          const { error } = await supabase
-                            .from('brand_deals')
-                            .update(updateData)
-                            .eq('id', deal.id);
-
-                          if (error) throw error;
-
-                          toast.success('Signed contract confirmed');
-                          setShowMarkSignedModal(false);
-                          refreshAll();
-                        } catch (error: any) {
-                          console.error('[DealDetailPage] Confirm signed error:', error);
-                          toast.error('Failed to update status');
-                        }
-                      }}
-                      className="flex-1 bg-green-600 hover:bg-green-700 px-4 py-2 rounded-xl font-medium transition-colors"
-                    >
-                      Confirm
-                    </button>
-                    <button
-                      onClick={() => setShowMarkSignedModal(false)}
-                      className="flex-1 bg-white/10 hover:bg-white/20 px-4 py-2 rounded-xl font-medium transition-colors"
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                </div>
-              </DialogContent>
-                </Dialog>
-
-
-            {/* Invoice Ready */}
-            {(deal as any)?.invoice_url && (
-              <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-4 shadow-lg shadow-black/20">
-                <h2 className="font-semibold text-lg mb-4 flex items-center gap-2">
-                  <FileText className="w-5 h-5" />
-                  🧾 Invoice Ready
-                </h2>
-                <div className="space-y-3">
-                  <p className="text-sm text-white/80">
-                    Download your invoice for this campaign
-                  </p>
-                  {(deal as any)?.invoice_number && (
-                    <p className="text-xs text-white/60">
-                      Invoice #: {(deal as any).invoice_number}
-                    </p>
-                  )}
-                  <motion.button
-                    onClick={() => {
-                      if ((deal as any)?.invoice_url) {
-                        window.open((deal as any).invoice_url, '_blank');
-                        trackEvent('invoice_downloaded', { dealId: deal.id });
+                      if (!response.ok) {
+                        throw new Error('Failed to upload signed contract');
                       }
-                    }}
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    className="w-full bg-purple-500/20 hover:bg-purple-500/30 border border-purple-400/30 text-purple-300 px-4 py-3 rounded-xl font-semibold transition-all flex items-center justify-center gap-2"
-                  >
-                    <Download className="w-5 h-5" />
-                    Download Invoice
-                  </motion.button>
-                </div>
+
+                      toast.success('Signed contract uploaded');
+                    } catch (error: any) {
+                      console.error('[DealDetailPage] Upload signed contract error:', error);
+                      toast.error('Failed to upload signed contract');
+                    } finally {
+                      setIsUploadingSignedContract(false);
+                    }
+                  }}
+                  className="w-full text-sm text-white/60 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-medium file:bg-purple-500/20 file:text-purple-200 hover:file:bg-purple-500/30"
+                />
+                <p className="text-xs text-white/50 mt-1">
+                  PDF only. This helps with records and audits.
+                </p>
               </div>
-            )}
+
+              <div className="flex gap-3">
+                <button
+                  onClick={async () => {
+                    if (!deal?.id) return;
+
+                    try {
+                      const updateData: any = {
+                        status: 'Signed',
+                        contract_version: 'signed',
+                        signed_at: new Date().toISOString(),
+                        updated_at: new Date().toISOString(),
+                      };
+
+                      // Keep existing signed_via if already set
+                      if (!signedVia) {
+                        updateData.signed_via = null; // Will be set when user clicks signing button
+                      }
+
+                      const { error } = await supabase
+                        .from('brand_deals')
+                        .update(updateData)
+                        .eq('id', deal.id);
+
+                      if (error) throw error;
+
+                      toast.success('Signed contract confirmed');
+                      setShowMarkSignedModal(false);
+                      refreshAll();
+                    } catch (error: any) {
+                      console.error('[DealDetailPage] Confirm signed error:', error);
+                      toast.error('Failed to update status');
+                    }
+                  }}
+                  className="flex-1 bg-green-600 hover:bg-green-700 px-4 py-2 rounded-xl font-medium transition-colors"
+                >
+                  Confirm
+                </button>
+                <button
+                  onClick={() => setShowMarkSignedModal(false)}
+                  className="flex-1 bg-white/10 hover:bg-white/20 px-4 py-2 rounded-xl font-medium transition-colors"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+
+        {/* Invoice Ready */}
+        {(deal as any)?.invoice_url && (
+          <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-4 shadow-lg shadow-black/20">
+            <h2 className="font-semibold text-lg mb-4 flex items-center gap-2">
+              <FileText className="w-5 h-5" />
+              🧾 Invoice Ready
+            </h2>
+            <div className="space-y-3">
+              <p className="text-sm text-white/80">
+                Download your invoice for this campaign
+              </p>
+              {(deal as any)?.invoice_number && (
+                <p className="text-xs text-white/60">
+                  Invoice #: {(deal as any).invoice_number}
+                </p>
+              )}
+              <motion.button
+                onClick={() => {
+                  if ((deal as any)?.invoice_url) {
+                    window.open((deal as any).invoice_url, '_blank');
+                    trackEvent('invoice_downloaded', { dealId: deal.id });
+                  }
+                }}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                className="w-full bg-purple-500/20 hover:bg-purple-500/30 border border-purple-400/30 text-purple-300 px-4 py-3 rounded-xl font-semibold transition-all flex items-center justify-center gap-2"
+              >
+                <Download className="w-5 h-5" />
+                Download Invoice
+              </motion.button>
+            </div>
+          </div>
+        )}
 
         {/* Brand Submission Details - Show at the end */}
         {brandSubmissionDetails && (
@@ -3397,9 +3251,9 @@ ${link}`;
                 <CollapsibleTrigger asChild>
                   <button className="w-full flex items-center justify-between items-center mb-4">
                     <div className="flex items-center gap-2">
-                <span className="text-xl">📌</span>
-                <h3 className="font-semibold text-lg">Deal Summary</h3>
-              </div>
+                      <span className="text-xl">📌</span>
+                      <h3 className="font-semibold text-lg">Deal Summary</h3>
+                    </div>
                     {showDealSummaryFull ? (
                       <ChevronUp className="w-5 h-5 text-white/60" />
                     ) : (
@@ -3408,51 +3262,51 @@ ${link}`;
                   </button>
                 </CollapsibleTrigger>
                 <CollapsibleContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <div className="text-sm text-white/60 mb-1">Brand</div>
-                  <div className="text-white font-medium">{brandSubmissionDetails.brandName || 'Not provided'}</div>
-                </div>
-                {brandSubmissionDetails.campaignName && (
-                  <div>
-                    <div className="text-sm text-white/60 mb-1">Campaign</div>
-                    <div className="text-white font-medium">{brandSubmissionDetails.campaignName}</div>
-                  </div>
-                )}
-                <div>
-                  <div className="text-sm text-white/60 mb-1">Deal Type</div>
-                  <div className="text-white font-medium capitalize">{brandSubmissionDetails.dealType || 'paid'}</div>
-                </div>
-                <div>
-                  <div className="text-sm text-white/60 mb-1">Deal Value</div>
-                  <div className="text-white font-semibold text-lg">
-                    {brandSubmissionDetails.dealType === 'paid' && brandSubmissionDetails.paymentAmount
-                      ? `₹${parseFloat(brandSubmissionDetails.paymentAmount.toString()).toLocaleString('en-IN')}`
-                      : brandSubmissionDetails.dealType === 'barter'
-                      ? 'Barter Deal'
-                      : 'Not specified'}
-                  </div>
-                </div>
-                {brandSubmissionDetails.deadline && (
-                  <div className="md:col-span-2">
-                    <div className="text-sm text-white/60 mb-1">Timeline</div>
-                    <div className="text-white font-medium">
-                      {(() => {
-                        try {
-                          const date = new Date(brandSubmissionDetails.deadline);
-                          return date.toLocaleDateString('en-IN', {
-                            day: 'numeric',
-                            month: 'long',
-                            year: 'numeric'
-                          });
-                        } catch {
-                          return brandSubmissionDetails.deadline;
-                        }
-                      })()}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <div className="text-sm text-white/60 mb-1">Brand</div>
+                      <div className="text-white font-medium">{brandSubmissionDetails.brandName || 'Not provided'}</div>
                     </div>
+                    {brandSubmissionDetails.campaignName && (
+                      <div>
+                        <div className="text-sm text-white/60 mb-1">Campaign</div>
+                        <div className="text-white font-medium">{brandSubmissionDetails.campaignName}</div>
+                      </div>
+                    )}
+                    <div>
+                      <div className="text-sm text-white/60 mb-1">Deal Type</div>
+                      <div className="text-white font-medium capitalize">{brandSubmissionDetails.dealType || 'paid'}</div>
+                    </div>
+                    <div>
+                      <div className="text-sm text-white/60 mb-1">Deal Value</div>
+                      <div className="text-white font-semibold text-lg">
+                        {brandSubmissionDetails.dealType === 'paid' && brandSubmissionDetails.paymentAmount
+                          ? `₹${parseFloat(brandSubmissionDetails.paymentAmount.toString()).toLocaleString('en-IN')}`
+                          : brandSubmissionDetails.dealType === 'barter'
+                            ? 'Barter Deal'
+                            : 'Not specified'}
+                      </div>
+                    </div>
+                    {brandSubmissionDetails.deadline && (
+                      <div className="md:col-span-2">
+                        <div className="text-sm text-white/60 mb-1">Timeline</div>
+                        <div className="text-white font-medium">
+                          {(() => {
+                            try {
+                              const date = new Date(brandSubmissionDetails.deadline);
+                              return date.toLocaleDateString('en-IN', {
+                                day: 'numeric',
+                                month: 'long',
+                                year: 'numeric'
+                              });
+                            } catch {
+                              return brandSubmissionDetails.deadline;
+                            }
+                          })()}
+                        </div>
+                      </div>
+                    )}
                   </div>
-                )}
-              </div>
                 </CollapsibleContent>
               </Collapsible>
             </div>
@@ -3493,9 +3347,9 @@ ${link}`;
                       <div className="text-white font-medium">{brandSubmissionDetails.paymentMethod.join(', ')}</div>
                     </div>
                   )}
-            </div>
-          </div>
-        )}
+                </div>
+              </div>
+            )}
 
             {/* Rights & Usage Card - Moved to position 5 */}
             {(brandSubmissionDetails.usageRightsDuration || brandSubmissionDetails.paidAdsAllowed !== undefined || brandSubmissionDetails.whitelistingAllowed !== undefined || brandSubmissionDetails.exclusivityPeriod || brandSubmissionDetails.exclusivity || brandSubmissionDetails.usageRights || brandSubmissionDetails.cancellationTerms) && (
@@ -3884,7 +3738,7 @@ ${link}`;
         )
         }
       </div>
-      
+
       {/* Lazy Modals */}
       <Suspense fallback={null}>
         {showContractPreview && deal.contract_file_url && (
@@ -4018,12 +3872,12 @@ ${link}`;
                 <p className="text-sm text-white/60">This action cannot be undone</p>
               </div>
             </div>
-            
+
             <p className="text-white/80 mb-6">
-              Are you sure you want to delete <span className="font-semibold">"{deal.brand_name}"</span>? 
+              Are you sure you want to delete <span className="font-semibold">"{deal.brand_name}"</span>?
               This will permanently remove the deal and all associated data.
             </p>
-            
+
             <div className="flex gap-3">
               <button
                 onClick={() => {
@@ -4041,34 +3895,34 @@ ${link}`;
                     toast.error('User not found');
                     return;
                   }
-                  
+
                   if (!deal?.id) {
                     toast.error('Deal not found');
                     return;
                   }
-                  
+
                   triggerHaptic(HapticPatterns.medium);
-                  
+
                   try {
                     // Double-check deal status before deletion
                     const contractStatus = getContractStatus();
-                    const isSignedOrCompleted = contractStatus === 'Signed' || 
-                                              dealExecutionStatus === 'signed' || 
-                                              dealExecutionStatus === 'completed';
-                    
+                    const isSignedOrCompleted = contractStatus === 'Signed' ||
+                      dealExecutionStatus === 'signed' ||
+                      dealExecutionStatus === 'completed';
+
                     if (isSignedOrCompleted) {
                       toast.error('Cannot delete a deal that has been signed or completed');
                       setShowDeleteConfirm(false);
                       return;
                     }
-                    
+
                     await deleteDeal.mutateAsync({
                       id: deal.id,
                       creator_id: profile.id,
                       contract_file_url: deal.contract_file_url || null,
                       invoice_file_url: deal.invoice_file_url || null,
                     });
-                    
+
                     toast.success('Deal deleted successfully');
                     setShowDeleteConfirm(false);
                     navigate('/creator-contracts');

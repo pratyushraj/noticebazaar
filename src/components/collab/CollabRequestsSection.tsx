@@ -2,9 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { 
-  Briefcase, 
-  MessageSquare, 
+import {
+  Briefcase,
+  MessageSquare,
   Loader2,
   ExternalLink,
   ChevronRight,
@@ -84,7 +84,7 @@ const CollabRequestsSection = ({ copyCollabLink, usernameForLink: usernameFromPa
     try {
       // Get current session (Supabase auto-refreshes tokens)
       const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
-      
+
       if (sessionError || !sessionData.session) {
         console.error('[CollabRequestsSection] No session:', sessionError);
         setLoading(false);
@@ -320,12 +320,15 @@ const CollabRequestsSection = ({ copyCollabLink, usernameForLink: usernameFromPa
           </CardContent>
         </Card>
       ) : (
-        <Card className="bg-white/5 rounded-2xl backdrop-blur-xl p-3.5 md:p-5 relative overflow-hidden w-full border border-purple-400/40 ring-1 ring-purple-400/15 shadow-md shadow-purple-500/10 transition-all duration-200">
-          <CardContent className="p-0 space-y-2">
+        <Card
+          onClick={() => navigate('/collab-requests')}
+          className="bg-white/5 rounded-2xl backdrop-blur-xl p-3.5 md:p-5 relative overflow-hidden w-full border border-purple-400/40 ring-1 ring-purple-400/15 shadow-md shadow-purple-500/10 transition-all duration-200 cursor-pointer hover:bg-white/10 active:scale-[0.99] group"
+        >
+          <CardContent className="p-0 space-y-2 pointer-events-none group-active:scale-100">
             {/* Title + count pill (single line) */}
             <div className="flex items-center justify-between gap-2 min-w-0">
               <h3 className="text-base font-semibold text-white truncate">
-                New Brand Requests
+                Incoming Brand Requests
               </h3>
               <span className="shrink-0 inline-flex items-center justify-center min-w-[28px] h-7 px-2 rounded-full text-sm font-semibold bg-purple-500/30 text-purple-200 border border-purple-400/40">
                 {pendingRequests.length}

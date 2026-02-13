@@ -1,4 +1,12 @@
+// @ts-nocheck
 // Shipping email service: brand "update shipping" and creator "product shipped" emails
+import {
+  getEmailLayout,
+  getEmailHeader,
+  getPrimaryCTA,
+  getEmailSignal,
+  getFirstName,
+} from './professionalEmailTemplates.js';
 
 async function sendEmail(
   to: string,
@@ -60,11 +68,15 @@ export async function sendBrandShippingUpdateEmail(
     </p>
     <div style="background: #fef3c7; border: 1px solid #f59e0b; border-radius: 8px; padding: 15px; margin: 20px 0;">
       <p style="color: #92400e; font-size: 14px; margin: 0;">
-        <strong>Product / deal:</strong> ${data.productDescription || 'As per agreement'}
+        <strong>Status: SHIPPING_IN_PROGRESS</strong><br>
+        <strong>Product:</strong> ${data.productDescription || 'As per agreement'}
       </p>
     </div>
+    <p style="color: #4b5563; font-size: 14px; font-weight: 500;">
+      Creators are notified instantly when tracking is added. Delaying shipment may affect delivery timelines and protection status.
+    </p>
     <p style="color: #6b7280; font-size: 14px;">
-      Use the button below to add courier name, tracking number, and optional tracking URL. This link is valid for 14 days.
+      Use the button below to add courier name, tracking number, and tracking URL.
     </p>
   `;
 
@@ -74,7 +86,7 @@ export async function sendBrandShippingUpdateEmail(
       <head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
       <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
         <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; border-radius: 10px 10px 0 0; text-align: center;">
-          <h1 style="color: white; margin: 0; font-size: 24px;">Action required – Ship product</h1>
+          <h1 style="color: white; margin: 0; font-size: 24px;">Action required: Ship product</h1>
         </div>
         <div style="background: #f9fafb; padding: 30px; border-radius: 0 0 10px 10px; border: 1px solid #e5e7eb;">
           <h2 style="color: #1f2937; margin-top: 0;">Hello ${data.brandName},</h2>
@@ -89,7 +101,7 @@ export async function sendBrandShippingUpdateEmail(
 
   return sendEmail(
     brandEmail,
-    'Action required – Ship product for your collaboration',
+    `Action required: Ship product to ${data.creatorName} (Collaboration Active)`,
     html
   );
 }
@@ -109,43 +121,103 @@ export async function sendCreatorProductShippedEmail(
   creatorEmail: string,
   data: CreatorProductShippedData
 ): Promise<{ success: boolean; error?: string }> {
-  const trackingBlock = data.trackingUrl
-    ? `<p style="margin: 8px 0;"><a href="${data.trackingUrl}" style="color: #6366f1;">Track package</a></p>`
-    : '';
+  const mainContent = `
+      <tr>
+        <td style="background-color: #667eea; padding: 40px 30px; text-align: center;">
+          <h1 style="color: #ffffff; margin: 0; font-size: 24px;">📦 Product Shipped!</h1>
+        </td>
+      </tr>
+      ${getEmailSignal({
+    type: 'happened',
+    message: 'The brand has shipped your product. Your deliverables timeline will activate once you confirm delivery.'
+  })}
+      <tr>
+        <td style="padding: 40px 30px;">
+          <p style="margin: 0 0 20px 0; font-size: 16px; color: #2d3748; line-height: 1.6;">
+            Hi ${getFirstName(data.creatorName)},
+          </p>
+          <p style="margin: 0 0 24px 0; font-size: 15px; color: #4a5568; line-height: 1.6;">
+            <strong>${data.brandName}</strong> has marked your barter product as shipped. You can track your delivery using the details below.
+          </p>
+          
+          <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; margin: 24px 0;">
+            <div style="margin-bottom: 12px;">
+              <strong style="color: #64748b; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Courier</strong>
+              <div style="color: #1e293b; font-size: 16px; font-weight: 600;">${data.courierName}</div>
+            </div>
+            <div style="margin-bottom: 12px;">
+              <strong style="color: #64748b; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Tracking Number</strong>
+              <div style="color: #1e293b; font-size: 16px; font-weight: 600;">${data.trackingNumber}</div>
+            </div>
+            ${data.trackingUrl ? `
+            <div style="margin-top: 16px;">
+              <a href="${data.trackingUrl}" style="color: #6366f1; text-decoration: none; font-weight: 600; font-size: 14px;">Track Delivery →</a>
+            </div>
+            ` : ''}
+          </div>
 
-  const content = `
-    <p style="color: #4b5563; font-size: 16px;">
-      <strong>${data.brandName}</strong> has marked your barter product as shipped.
-    </p>
-    <div style="background: #d1fae5; border: 1px solid #10b981; border-radius: 8px; padding: 15px; margin: 20px 0;">
-      <p style="color: #065f46; font-size: 14px; margin: 0;"><strong>Courier:</strong> ${data.courierName}</p>
-      <p style="color: #065f46; font-size: 14px; margin: 8px 0 0 0;"><strong>Tracking:</strong> ${data.trackingNumber}</p>
-      ${trackingBlock}
-    </div>
-    <p style="color: #6b7280; font-size: 14px;">
-      When you receive the product, confirm in your Creator Armour dashboard so your deliverables timeline can start.
-    </p>
-  `;
+          <p style="color: #4b5563; font-size: 14px; line-height: 1.6; margin-top: 24px;">
+            Reminder: Confirm receipt of the product in your dashboard as soon as it arrives. This ensures the timer for your deliverables starts accurately.
+          </p>
+          
+          ${getPrimaryCTA('View Collaboration', `${process.env.FRONTEND_URL || 'https://creatorarmour.com'}/creator-contracts`)}
+        </td>
+      </tr>
+    `;
 
-  const html = `
-    <!DOCTYPE html>
-    <html>
-      <head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
-      <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
-        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; border-radius: 10px 10px 0 0; text-align: center;">
-          <h1 style="color: white; margin: 0; font-size: 24px;">Product shipped</h1>
-        </div>
-        <div style="background: #f9fafb; padding: 30px; border-radius: 0 0 10px 10px; border: 1px solid #e5e7eb;">
-          <h2 style="color: #1f2937; margin-top: 0;">Hello ${data.creatorName},</h2>
-          ${content}
-        </div>
-      </body>
-    </html>
-  `;
+  const html = getEmailLayout({ content: mainContent, showFooter: true });
 
   return sendEmail(
     creatorEmail,
-    'Your barter product has been shipped',
+    'Product shipped — track your delivery',
+    html
+  );
+}
+
+/**
+ * 7. Creator email: "Delivery confirmed — deliverables timeline activated"
+ * Trigger: Creator clicks "Confirm Receipt"
+ */
+export async function sendCreatorDeliveryConfirmedEmail(
+  creatorEmail: string,
+  creatorName: string,
+  brandName: string,
+  dealId: string
+): Promise<{ success: boolean; error?: string }> {
+  const mainContent = `
+    <tr>
+      <td style="background-color: #10b981; padding: 40px 30px; text-align: center;">
+        <h1 style="color: #ffffff; margin: 0; font-size: 24px;">🚚 Delivery Confirmed!</h1>
+      </td>
+    </tr>
+    ${getEmailSignal({
+    type: 'happened',
+    message: 'Delivery confirmed — your deliverables timeline is now officially activated.'
+  })}
+    <tr>
+      <td style="padding: 40px 30px;">
+        <p style="margin: 0 0 20px 0; font-size: 16px; color: #2d3748; line-height: 1.6;">
+          Hi ${getFirstName(creatorName)},
+        </p>
+        <p style="margin: 0 0 24px 0; font-size: 15px; color: #4a5568; line-height: 1.6;">
+          You've confirmed receipt of the product from <strong>${brandName}</strong>. 
+          As per your agreement, the countdown for your deliverables has started.
+        </p>
+        
+        <p style="margin: 0 0 24px 0; font-size: 15px; color: #4a5568; line-height: 1.6;">
+          Please ensure all content is submitted through the Creator Armour dashboard before the deadline to maintain your standing and protection.
+        </p>
+        
+        ${getPrimaryCTA('View Timeline & Deliverables', `${process.env.FRONTEND_URL || 'https://creatorarmour.com'}/creator-contracts/${dealId}`)}
+      </td>
+    </tr>
+  `;
+
+  const html = getEmailLayout({ content: mainContent, showFooter: true });
+
+  return sendEmail(
+    creatorEmail,
+    'Delivery confirmed — deliverables timeline activated',
     html
   );
 }

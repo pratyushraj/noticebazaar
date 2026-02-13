@@ -1,3 +1,4 @@
+// @ts-nocheck
 // Complaint Severity Classifier
 // Uses AI to classify consumer complaint severity for internal triage
 

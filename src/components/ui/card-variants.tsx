@@ -14,16 +14,16 @@ interface BaseCardProps {
   interactive?: boolean;
 }
 
-export const BaseCard = ({ 
-  variant = 'tertiary', 
-  className, 
-  children, 
+export const BaseCard = ({
+  variant = 'tertiary',
+  className,
+  children,
   onClick,
-  interactive = false 
+  interactive = false
 }: BaseCardProps) => {
   const variantStyles = cardVariants[variant];
   const baseClasses = `${variantStyles.base} ${variantStyles.padding} ${variantStyles.radius} ${variantStyles.shadow} ${variantStyles.backdrop}`;
-  
+
   return (
     <div
       className={cn(
@@ -34,9 +34,15 @@ export const BaseCard = ({
       )}
       onClick={(e) => {
         if (onClick) {
+          // Check if the click was on a button or an interactive child
+          const target = e.target as HTMLElement;
+          if (target.closest('button')) {
+            return;
+          }
+
           e.preventDefault();
           e.stopPropagation();
-          onClick();
+          onClick(e);
         }
       }}
       role={onClick ? "button" : undefined}
@@ -60,15 +66,15 @@ interface SectionCardProps extends BaseCardProps {
   action?: ReactNode;
 }
 
-export const SectionCard = ({ 
-  title, 
-  subtitle, 
-  icon, 
-  action, 
-  children, 
+export const SectionCard = ({
+  title,
+  subtitle,
+  icon,
+  action,
+  children,
   variant = 'tertiary',
   className,
-  ...props 
+  ...props
 }: SectionCardProps) => {
   return (
     <BaseCard variant={variant} className={cn(spacing.card, className)} {...props}>
@@ -104,21 +110,21 @@ interface StatCardProps {
   showAffordance?: boolean; // Show chevron to indicate tappable
 }
 
-export const StatCard = ({ 
-  label, 
-  value, 
-  icon, 
-  trend, 
+export const StatCard = ({
+  label,
+  value,
+  icon,
+  trend,
   subtitle,
   variant = 'tertiary',
   className,
   isEmpty = false,
   showAffordance = false
 }: StatCardProps) => {
-  const displayValue = isEmpty 
+  const displayValue = isEmpty
     ? (label === 'Total Value' ? '₹0' : '0')
     : (typeof value === 'number' ? (label === 'Total Value' ? `₹${value.toLocaleString('en-IN')}` : value.toLocaleString('en-IN')) : value);
-  
+
   return (
     <BaseCard variant={variant} className={cn(
       "text-left flex flex-col justify-between",
@@ -133,15 +139,15 @@ export const StatCard = ({
           <div className="w-9 h-9 md:w-10 md:h-10 p-2 rounded-xl bg-white/5 flex items-center justify-center">{icon}</div>
         </div>
       )}
-      
+
       {/* Label */}
       <div className={cn("text-xs md:text-sm tracking-wide opacity-80 mb-1 md:mb-2")}>{label}</div>
-      
+
       {/* Large Value */}
       <div className={cn("text-2xl md:text-3xl font-semibold text-white mb-1 md:mb-2")}>
         {displayValue}
       </div>
-      
+
       {/* Subtitle or Trend - Show on second line */}
       <div className="flex items-center justify-between">
         {subtitle ? (
@@ -175,12 +181,12 @@ interface ActionCardProps {
   className?: string;
 }
 
-export const ActionCard = ({ 
-  icon, 
-  label, 
-  onClick, 
+export const ActionCard = ({
+  icon,
+  label,
+  onClick,
   variant = 'tertiary',
-  className 
+  className
 }: ActionCardProps) => {
   const handleClick = (e?: React.MouseEvent) => {
     if (e) {
@@ -194,8 +200,8 @@ export const ActionCard = ({
   };
 
   return (
-    <BaseCard 
-      variant={variant} 
+    <BaseCard
+      variant={variant}
       className={cn(
         "flex flex-col items-center justify-center gap-2 text-center cursor-pointer",
         "pointer-events-auto",

@@ -31,13 +31,13 @@ export const ContractPreviewModal: React.FC<ContractPreviewModalProps> = ({
     if (open && fileUrl) {
       setIsLoading(true);
       setError(null);
-      
+
       // Track analytics
-      trackEvent('contract_preview_opened', { 
+      trackEvent('contract_preview_opened', {
         dealTitle,
         fileUrl: fileUrl.substring(0, 50), // Truncate for privacy
       });
-      
+
       // Fetch metadata
       getContractMetadata(fileUrl).then((meta) => {
         setMetadata(meta);
@@ -244,9 +244,8 @@ export const ContractPreviewModal: React.FC<ContractPreviewModalProps> = ({
                 <div className="h-full w-full flex-1 overflow-hidden">
                   <iframe
                     src={fileUrl}
-                    type="application/pdf"
                     className="w-full h-full border-0"
-                    style={{ 
+                    style={{
                       minHeight: isMobileDevice() ? 'calc(100dvh - 70px)' : '100%',
                       height: '100%'
                     }}
@@ -319,6 +318,12 @@ export const ContractPreviewModal: React.FC<ContractPreviewModalProps> = ({
                   </button>
                 </div>
               )}
+            </div>
+            {/* Philosophy Footer */}
+            <div className="p-3 border-t border-white/5 bg-black/40 text-center flex-shrink-0">
+              <p className="text-[10px] text-white/30 uppercase tracking-widest font-medium">
+                Actions on Creator Armour are recorded, timestamped, and legally enforceable.
+              </p>
             </div>
           </motion.div>
         </>

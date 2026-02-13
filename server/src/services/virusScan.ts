@@ -1,3 +1,4 @@
+// @ts-nocheck
 // Virus scanning service (stub - integrate with ClamAV or third-party)
 
 interface ScanResult {

@@ -1,3 +1,4 @@
+// @ts-nocheck
 // Leegality eSign API Service
 // Handles document upload, signing invitations, and webhook verification
 

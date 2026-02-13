@@ -23,14 +23,14 @@ export const authMiddleware = async (
     if (!supabaseInitialized) {
       return res.status(500).json({ error: 'Server configuration error: Supabase not initialized. Please check environment variables.' });
     }
-    
+
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return res.status(401).json({ error: 'Missing or invalid authorization header' });
     }
 
     const token = authHeader.substring(7);
-    
+
     // Get user with timeout protection
     let user, authError;
     try {
@@ -48,6 +48,13 @@ export const authMiddleware = async (
     }
 
     if (authError || !user) {
+      console.warn('[AuthMiddleware] Token verification failed:', {
+        event: 'auth_failure',
+        error: authError?.message,
+        errorCode: authError?.status,
+        hasUser: !!user,
+        tokenPrefix: token.substring(0, 10) + '...'
+      });
       return res.status(401).json({ error: 'Invalid or expired token', details: authError?.message });
     }
 
@@ -57,7 +64,7 @@ export const authMiddleware = async (
       const profileResult = await Promise.race([
         supabase.from('profiles').select('role').eq('id', user.id).single(),
         new Promise((_, reject) => setTimeout(() => reject(new Error('Profile timeout')), 3000))
-      ]) as Awaited<ReturnType<typeof supabase.from>>;
+      ]) as any;
       profile = profileResult.data;
     } catch (err: any) {
       // If profile query times out or fails, continue with default role

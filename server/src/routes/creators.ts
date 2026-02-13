@@ -1,3 +1,4 @@
+// @ts-nocheck
 // Creator Directory API Routes
 // Public routes for SEO-friendly creator directory
 

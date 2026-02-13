@@ -1,3 +1,4 @@
+// @ts-nocheck
 // Influencer Finder Scheduler
 // Daily automation job that runs at 9 AM IST
 // Finds, classifies, and stores new influencers

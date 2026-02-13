@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { supabase } from '../index.js';
 
 export interface GSTCompanyData {

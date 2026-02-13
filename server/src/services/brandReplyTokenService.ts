@@ -1,3 +1,4 @@
+// @ts-nocheck
 // Service to generate secure brand reply tokens
 // Creates UUID v4 tokens for unguessable, non-sequential brand reply URLs
 

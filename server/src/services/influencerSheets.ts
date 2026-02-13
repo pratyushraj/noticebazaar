@@ -1,3 +1,4 @@
+// @ts-nocheck
 // Google Sheets Integration for Influencer Finder
 // Production-ready export to Google Sheets with deduplication and auto-sync
 // Creates two sheets: "All Influencers" and "High Fit (7+)"

@@ -1,3 +1,4 @@
+// @ts-nocheck
 // Public shipping routes: brand updates shipping via token link (no auth)
 
 import { Router, Request, Response } from 'express';

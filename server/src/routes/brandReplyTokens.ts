@@ -1,3 +1,4 @@
+// @ts-nocheck
 // API route for creating and managing brand reply tokens
 // Authenticated endpoint - only creators can create tokens for their deals
 

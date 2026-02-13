@@ -25,11 +25,12 @@ import { NameStep } from '@/components/onboarding/setup/NameStep';
 import { InstagramStep } from '@/components/onboarding/setup/InstagramStep';
 import { UserTypeStep } from '@/components/onboarding/setup/UserTypeStep';
 import { PlatformsStep } from '@/components/onboarding/setup/PlatformsStep';
+import { NicheStep } from '@/components/onboarding/setup/NicheStep';
 import { GoalsStep } from '@/components/onboarding/setup/GoalsStep';
 import { SuccessStep } from '@/components/onboarding/setup/SuccessStep';
 
 type WelcomeStep = 0 | 1 | 2 | 3 | 4;
-type SetupStep = 'name' | 'instagram' | 'type' | 'platforms' | 'goals' | 'success';
+type SetupStep = 'name' | 'instagram' | 'type' | 'platforms' | 'niches' | 'goals' | 'success';
 
 type UserType = 'creator' | 'freelancer' | 'entrepreneur';
 type Platform = 'youtube' | 'instagram' | 'twitter' | 'linkedin' | 'website' | 'podcast';
@@ -40,6 +41,7 @@ interface OnboardingData {
   instagramUsername: string;
   userType: UserType | '';
   platforms: Platform[];
+  contentNiches: string[];
   goals: Goal[];
 }
 
@@ -48,7 +50,7 @@ const CreatorOnboarding = () => {
   const navigate = useNavigate();
   const updateProfileMutation = useUpdateProfile();
   const [isNavigating, setIsNavigating] = useState(false);
-  
+
   const [welcomeStep, setWelcomeStep] = useState<WelcomeStep>(0);
   const [setupStep, setSetupStep] = useState<SetupStep>('name');
   const [onboardingData, setOnboardingData] = useState<OnboardingData>(() => {
@@ -57,12 +59,20 @@ const CreatorOnboarding = () => {
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
-        return { instagramUsername: '', ...parsed, instagramUsername: parsed.instagramUsername ?? '' };
+        return {
+          name: '',
+          instagramUsername: '',
+          userType: '',
+          platforms: [],
+          contentNiches: [],
+          goals: [],
+          ...parsed
+        };
       } catch {
-        return { name: '', instagramUsername: '', userType: '', platforms: [], goals: [] };
+        return { name: '', instagramUsername: '', userType: '', platforms: [], contentNiches: [], goals: [] };
       }
     }
-    return { name: '', instagramUsername: '', userType: '', platforms: [], goals: [] };
+    return { name: '', instagramUsername: '', userType: '', platforms: [], contentNiches: [], goals: [] };
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [stepStartTime, setStepStartTime] = useState<number>(Date.now());
@@ -83,6 +93,8 @@ const CreatorOnboarding = () => {
         if (onboardingData.userType) handleTypeNext();
       } else if (setupStep === 'platforms') {
         if (onboardingData.platforms.length > 0) handlePlatformsNext();
+      } else if (setupStep === 'niches') {
+        if (onboardingData.contentNiches.length > 0) handleNichesNext();
       } else if (setupStep === 'goals') {
         if (onboardingData.goals.length > 0) handleGoalsNext();
       }
@@ -99,8 +111,10 @@ const CreatorOnboarding = () => {
         setSetupStep('instagram');
       } else if (setupStep === 'platforms') {
         setSetupStep('type');
-      } else if (setupStep === 'goals') {
+      } else if (setupStep === 'niches') {
         setSetupStep('platforms');
+      } else if (setupStep === 'goals') {
+        setSetupStep('niches');
       }
     },
   });
@@ -123,9 +137,10 @@ const CreatorOnboarding = () => {
         instagram: { name: 'instagram_username', number: 1 },
         type: { name: 'user_type', number: 2 },
         platforms: { name: 'platforms', number: 3 },
-        goals: { name: 'goals', number: 4 }
+        niches: { name: 'niches', number: 4 },
+        goals: { name: 'goals', number: 5 }
       };
-      
+
       const stepInfo = stepMap[setupStep];
       if (stepInfo) {
         const timeSpent = Date.now() - stepStartTime;
@@ -138,7 +153,7 @@ const CreatorOnboarding = () => {
   // Handle navigation in useEffect to avoid render-time navigation warnings
   useEffect(() => {
     if (sessionLoading) return;
-    
+
     if (!profile || profile.role !== 'creator') {
       setIsNavigating(true);
       navigate('/login');
@@ -202,18 +217,19 @@ const CreatorOnboarding = () => {
   const handleSkipSetup = () => {
     // Skip to completion with default values
     onboardingAnalytics.track('setup_skipped', { step: setupStep });
-    
+
     // Set defaults if missing
     const defaultData: OnboardingData = {
       name: onboardingData.name || 'Creator',
       instagramUsername: onboardingData.instagramUsername || '',
       userType: onboardingData.userType || 'creator',
       platforms: onboardingData.platforms.length > 0 ? onboardingData.platforms : ['youtube'],
+      contentNiches: onboardingData.contentNiches.length > 0 ? onboardingData.contentNiches : ['Lifestyle'],
       goals: onboardingData.goals.length > 0 ? onboardingData.goals : ['protect'],
     };
-    
+
     setOnboardingData(defaultData);
-    
+
     // Complete onboarding with defaults
     handleOnboardingComplete();
   };
@@ -255,6 +271,12 @@ const CreatorOnboarding = () => {
 
   const handlePlatformsNext = () => {
     if (onboardingData.platforms.length > 0) {
+      setSetupStep('niches');
+    }
+  };
+
+  const handleNichesNext = () => {
+    if (onboardingData.contentNiches.length > 0) {
       setSetupStep('goals');
     }
   };
@@ -268,11 +290,11 @@ const CreatorOnboarding = () => {
   const handleOnboardingComplete = async () => {
     if (!profile.id || !user?.id) return;
     setIsSubmitting(true);
-    
+
     try {
       // Track step completion
-      onboardingAnalytics.trackStep('goals', 4, 4, Date.now() - stepStartTime);
-      
+      onboardingAnalytics.trackStep('goals', 5, 5, Date.now() - stepStartTime);
+
       // Handle referral tracking
       const referralCode = sessionStorage.getItem('referral_code');
       if (referralCode) {
@@ -344,6 +366,7 @@ const CreatorOnboarding = () => {
           avatar_url: profile.avatar_url || null,
           creator_category: creatorCategory,
           platforms: onboardingData.platforms.length > 0 ? onboardingData.platforms : null,
+          content_niches: onboardingData.contentNiches.length > 0 ? onboardingData.contentNiches : null,
           goals: onboardingData.goals.length > 0 ? onboardingData.goals : null,
           onboarding_complete: true,
           ...(collabUsername && {
@@ -354,10 +377,10 @@ const CreatorOnboarding = () => {
       } catch (firstError: any) {
         // If error is due to missing creator_category column, retry without it
         const isColumnError = firstError?.message?.includes('creator_category') ||
-                             firstError?.message?.includes('column') ||
-                             firstError?.message?.includes('does not exist') ||
-                             (firstError as any)?.code === '42703';
-        
+          firstError?.message?.includes('column') ||
+          firstError?.message?.includes('does not exist') ||
+          (firstError as any)?.code === '42703';
+
         if (isColumnError) {
           // Retry without creator_category (migration not run yet)
           await updateProfileMutation.mutateAsync({
@@ -367,6 +390,7 @@ const CreatorOnboarding = () => {
             avatar_url: profile.avatar_url || null,
             // Skip creator_category if column doesn't exist
             platforms: onboardingData.platforms.length > 0 ? onboardingData.platforms : null,
+            content_niches: onboardingData.contentNiches.length > 0 ? onboardingData.contentNiches : null,
             goals: onboardingData.goals.length > 0 ? onboardingData.goals : null,
             onboarding_complete: true,
             ...(collabUsername && {
@@ -379,28 +403,28 @@ const CreatorOnboarding = () => {
           throw firstError;
         }
       }
-      
+
       // Save completion to localStorage
       localStorage.setItem('onboarding-complete', 'true');
       localStorage.setItem('onboarding-completed-at', Date.now().toString());
       localStorage.removeItem('onboarding-data'); // Clean up
-      
+
       refetchProfile();
       setSetupStep('success');
     } catch (error: any) {
       // User-friendly error message
       const errorMessage = error?.message || 'An unexpected error occurred';
-      const isColumnError = errorMessage.includes('column') || 
-                           errorMessage.includes('does not exist') ||
-                           errorMessage.includes('creator_category');
-      
+      const isColumnError = errorMessage.includes('column') ||
+        errorMessage.includes('does not exist') ||
+        errorMessage.includes('creator_category');
+
       if (isColumnError) {
-        toast.error('Database migration required', { 
+        toast.error('Database migration required', {
           description: 'Please contact support. Some database columns are missing. Your data was saved, but some fields may not be available yet.',
           duration: 8000
         });
       } else {
-        toast.error('Failed to complete onboarding', { 
+        toast.error('Failed to complete onboarding', {
           description: errorMessage,
           duration: 5000
         });
@@ -453,7 +477,8 @@ const CreatorOnboarding = () => {
       case 'instagram': return 2;
       case 'type': return 3;
       case 'platforms': return 4;
-      case 'goals': return 5;
+      case 'niches': return 5;
+      case 'goals': return 6;
       default: return 0;
     }
   };
@@ -466,7 +491,7 @@ const CreatorOnboarding = () => {
           <div className="pt-[max(60px,calc(env(safe-area-inset-top,0px)+36px))] md:pt-10 flex-shrink-0">
             <OnboardingProgressBar
               currentStep={getStepNumber()}
-              totalSteps={5}
+              totalSteps={6}
             />
           </div>
         )}
@@ -532,7 +557,26 @@ const CreatorOnboarding = () => {
             />
           )}
 
-          {/* Step 4: Goals */}
+          {/* Step 5: Niches */}
+          {setupStep === 'niches' && (
+            <NicheStep
+              key="niches"
+              selectedNiches={onboardingData.contentNiches}
+              onNicheToggle={(niche) => {
+                setOnboardingData((prev) => ({
+                  ...prev,
+                  contentNiches: prev.contentNiches.includes(niche)
+                    ? prev.contentNiches.filter((n) => n !== niche)
+                    : [...prev.contentNiches, niche],
+                }));
+              }}
+              onNext={handleNichesNext}
+              onBack={() => setSetupStep('platforms')}
+              onSkip={handleSkipSetup}
+            />
+          )}
+
+          {/* Step 6: Goals */}
           {setupStep === 'goals' && (
             <GoalsStep
               key="goals"
@@ -546,7 +590,7 @@ const CreatorOnboarding = () => {
                 }));
               }}
               onNext={handleGoalsNext}
-              onBack={() => setSetupStep('platforms')}
+              onBack={() => setSetupStep('niches')}
               isSubmitting={isSubmitting}
               onSkip={handleSkipSetup}
             />

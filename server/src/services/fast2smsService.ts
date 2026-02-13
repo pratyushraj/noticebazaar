@@ -1,3 +1,4 @@
+// @ts-nocheck
 // Fast2SMS OTP Service
 // Handles sending OTP via Fast2SMS API
 

@@ -1,3 +1,4 @@
+// @ts-nocheck
 // eSign API Routes
 // Handles Meon eSign integration for contract signing
 

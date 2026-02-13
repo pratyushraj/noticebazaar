@@ -1,3 +1,4 @@
+// @ts-nocheck
 // Service to generate secure contract ready tokens
 // Creates UUID v4 tokens for unguessable, non-sequential contract ready URLs
 

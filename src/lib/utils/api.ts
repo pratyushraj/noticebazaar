@@ -7,14 +7,48 @@
  * Call this when making requests so production (creatorarmour.com) uses the correct API host.
  */
 export function getApiBaseUrl(): string {
-  const envUrl = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL;
-  if (envUrl) return String(envUrl).replace(/\/$/, '');
-  if (typeof window !== 'undefined' && window.location?.origin) {
+  // Use VITE_API_URL or VITE_API_BASE_URL if explicitly provided
+  let apiUrl = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || '';
+
+  if (!apiUrl && typeof window !== 'undefined' && window.location?.origin) {
     const origin = window.location.origin;
-    if (origin.includes('creatorarmour.com')) return 'https://api.creatorarmour.com';
-    if (origin.includes('noticebazaar.com')) return 'https://api.noticebazaar.com';
+
+    // Check if we are on a production-like environment (Vercel, custom domain, etc.)
+    // For unified deployments (where frontend and API share the same domain),
+    // returning an empty string allows for relative fetches like "/api/..."
+    // which is more robust than hardcoding a domain that might change or have CORS issues.
+    if (
+      origin.includes('creatorarmour.com') ||
+      origin.includes('noticebazaar.com') ||
+      origin.includes('vercel.app') ||
+      (!origin.includes('localhost') && !origin.includes('127.0.0.1'))
+    ) {
+      // Use relative paths for the same-origin API
+      apiUrl = '';
+    } else {
+      // Local development fallback
+      apiUrl = 'http://localhost:3001';
+    }
   }
-  return 'http://localhost:3001';
+
+  // Fallback for non-browser environments
+  if (apiUrl === undefined) apiUrl = 'http://localhost:3001';
+
+  // Cleanup: No trailing slashes
+  let cleanedUrl = (apiUrl || '').replace(/\/$/, '');
+
+  // CRITICAL SAFETY: Many components in this codebase manually append '/api' to the base URL.
+  // (e.g. fetch(`${getApiBaseUrl()}/api/collab-requests`))
+  // If the determined base URL already ends with '/api', we must strip it once to prevent 
+  // duplicate prefixing (results in /api/api/...) which causes 404s.
+  if (cleanedUrl.endsWith('/api')) {
+    cleanedUrl = cleanedUrl.substring(0, cleanedUrl.length - 4);
+  }
+
+  // Also handle relative path case explicitly
+  if (cleanedUrl === '/api') return '';
+
+  return cleanedUrl;
 }
 
 export const API_TIMEOUT = 30000; // 30 seconds default timeout

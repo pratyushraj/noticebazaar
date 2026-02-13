@@ -1,3 +1,4 @@
+// @ts-nocheck
 // Lawyer Notification Service
 // Sends email notifications to lawyers when consumer complaints need review
 

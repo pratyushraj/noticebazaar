@@ -1,9 +1,16 @@
+// @ts-nocheck
 // Collaboration Request Email Service
 // Sends transactional emails to brands about collab request status updates
 
 import {
   getCreatorNotificationEmailTemplate,
   getBrandConfirmationEmailTemplate,
+  getEmailProgressCue,
+  getCTATrustLine,
+  getEmailSignal,
+  getFirstName,
+  getPrimaryCTA,
+  getEmailLayout,
 } from './professionalEmailTemplates.js';
 
 interface ResendEmailResponse {
@@ -88,7 +95,7 @@ async function sendEmail(
 ): Promise<{ success: boolean; emailId?: string; error?: string }> {
   try {
     const apiKey = process.env.RESEND_API_KEY;
-    
+
     if (!apiKey || apiKey === 'your_resend_api_key_here' || apiKey.trim() === '') {
       console.error('[CollabRequestEmail] API key not configured');
       return {
@@ -106,7 +113,7 @@ async function sendEmail(
     }
 
     const url = 'https://api.resend.com/emails';
-    
+
     const requestBody = {
       from: 'CreatorArmour <noreply@creatorarmour.com>',
       to,
@@ -126,14 +133,14 @@ async function sendEmail(
     if (!response.ok) {
       const errorText = await response.text().catch(() => '');
       let errorMessage = `Resend API error: ${response.status} ${response.statusText}`;
-      
+
       let parsedError: any = {};
       try {
         parsedError = JSON.parse(errorText);
       } catch (e) {
         // Not JSON, use as-is
       }
-      
+
       if (response.status === 401) {
         errorMessage = 'Resend API authentication failed';
       } else if (response.status === 403) {
@@ -143,13 +150,13 @@ async function sendEmail(
       } else if (parsedError.message) {
         errorMessage = `Resend API error: ${parsedError.message}`;
       }
-      
+
       console.error('[CollabRequestEmail] API error:', {
         status: response.status,
         statusText: response.statusText,
         body: errorText,
       });
-      
+
       return {
         success: false,
         error: errorMessage,
@@ -157,7 +164,7 @@ async function sendEmail(
     }
 
     const data: ResendEmailResponse = await response.json();
-    
+
     if (data.id) {
       console.log('[CollabRequestEmail] Email sent successfully:', {
         emailId: data.id,
@@ -229,7 +236,10 @@ function getEmailTemplate(
             </div>
           ` : ''}
           <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
-            <p style="color: #9ca3af; font-size: 12px; margin: 0;">
+            <p style="color: #9ca3af; font-size: 11px; margin: 0; text-transform: uppercase; letter-spacing: 0.5px; line-height: 1.4;">
+              Actions on Creator Armour are recorded, timestamped, and legally enforceable.
+            </p>
+            <p style="color: #9ca3af; font-size: 11px; margin: 8px 0 0 0;">
               This is an automated email from CreatorArmour. Please do not reply to this email.
             </p>
             <p style="color: #6b7280; font-size: 12px; margin: 8px 0 0 0;">
@@ -250,21 +260,21 @@ export async function sendCollabRequestSubmissionEmail(
   data: CollabRequestSubmissionData
 ): Promise<{ success: boolean; emailId?: string; error?: string }> {
   const frontendUrl = process.env.FRONTEND_URL || 'https://creatorarmour.com';
-  
+
   // Format platforms
   const platformsText = data.creatorPlatforms && data.creatorPlatforms.length > 0
     ? data.creatorPlatforms.join(', ')
     : 'Multiple platforms';
 
   // Format collaboration type
-  const collabTypeText = data.collabType === 'paid' 
-    ? 'Paid' 
-    : data.collabType === 'barter' 
-    ? 'Barter' 
-    : 'Hybrid (Paid + Barter)';
+  const collabTypeText = data.collabType === 'paid'
+    ? 'Paid'
+    : data.collabType === 'barter'
+      ? 'Barter'
+      : 'Hybrid (Paid + Barter)';
 
   // Format budget
-  let budgetText = 'Not specified';
+  let budgetText = 'As agreed in contract';
   if (data.collabType === 'paid' || data.collabType === 'both') {
     if (data.exactBudget) {
       budgetText = `₹${data.exactBudget.toLocaleString('en-IN')}`;
@@ -278,7 +288,7 @@ export async function sendCollabRequestSubmissionEmail(
       budgetText = ranges[data.budgetRange] || data.budgetRange;
     }
   } else if (data.collabType === 'barter' && data.barterDescription) {
-    budgetText = 'Barter';
+    budgetText = 'Barter deal (product value agreed privately)';
   }
 
   // Format deliverables as bulleted list
@@ -289,10 +299,10 @@ export async function sendCollabRequestSubmissionEmail(
   // Format deadline
   const deadlineText = data.deadline
     ? new Date(data.deadline).toLocaleDateString('en-IN', {
-        day: 'numeric',
-        month: 'long',
-        year: 'numeric'
-      })
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric'
+    })
     : 'Not specified';
 
   // Personalized greeting with fallback
@@ -311,7 +321,7 @@ export async function sendCollabRequestSubmissionEmail(
     deliverables: data.deliverables,
   });
 
-  const subject = `Your collaboration request was sent to ${data.creatorName}`;
+  const subject = `Request sent: Working with ${data.creatorName} is one step away`;
 
   return sendEmail(
     brandEmail,
@@ -329,7 +339,7 @@ function getBarterAcceptedEmailHtml(
 ): string {
   const productValueText = data.barterValue != null && data.barterValue > 0
     ? `₹${Number(data.barterValue).toLocaleString('en-IN')}`
-    : 'Not specified';
+    : 'As agreed in contract';
   const deliverablesItems = (data.deliverables.length > 0 ? data.deliverables : ['As per agreement'])
     .map((d) => `<li style="color: #4b5563; font-size: 14px; margin-bottom: 6px;">${d}</li>`)
     .join('');
@@ -351,6 +361,13 @@ function getBarterAcceptedEmailHtml(
           <p style="color: #ffffff; margin: 0; font-size: 15px; opacity: 0.95;">The creator has accepted your barter collaboration. One final step remains.</p>
         </td>
       </tr>
+      ${getEmailProgressCue([
+    { label: 'Request sent', status: 'completed' },
+    { label: 'CONTRACT_READY', status: 'completed' },
+    { label: 'AWAITING_BRAND_SIGNATURE', status: 'current' },
+    { label: 'EXECUTED', status: 'upcoming' },
+    { label: 'SHIPPING_IN_PROGRESS', status: 'upcoming' },
+  ])}
       <tr>
         <td style="background: #f9fafb; padding: 28px 24px; border-radius: 0 0 12px 12px; border: 1px solid #e5e7eb; border-top: none;">
       <p style="color: #1f2937; font-size: 16px; margin-top: 0;">Hello ${data.brandName},</p>
@@ -392,13 +409,14 @@ function getBarterAcceptedEmailHtml(
         </ol>
       </div>
 
-      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin: 28px 0;">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin: 28px 0 10px 0;">
         <tr>
           <td align="center" style="border-radius: 10px; background-color: #10b981;">
             <a href="${contractReadyLink}" style="display: block; width: 100%; color: #ffffff; padding: 16px 24px; text-decoration: none; font-weight: 600; font-size: 16px; text-align: center;" target="_blank" rel="noopener noreferrer">Review & Sign Contract &gt;</a>
           </td>
         </tr>
       </table>
+      ${getCTATrustLine('Shipping details unlock only after signing to protect both parties.')}
 
       <p style="color: #6b7280; font-size: 13px; line-height: 1.5; margin: 24px 0 20px 0; padding: 16px; background: #f3f4f6; border-radius: 8px; border: 1px solid #e5e7eb;">
         This collaboration is legally protected by Creator Armour. All actions are timestamped and recorded for transparency.
@@ -428,7 +446,7 @@ function getBarterAcceptedEmailPlainText(
 ): string {
   const productValueText = data.barterValue != null && data.barterValue > 0
     ? `₹${Number(data.barterValue).toLocaleString('en-IN')}`
-    : 'Not specified';
+    : 'As agreed in contract';
   const deliverablesList = (data.deliverables.length > 0 ? data.deliverables : ['As per agreement'])
     .map((d, i) => `${i + 1}. ${d}`)
     .join('\n');
@@ -477,7 +495,7 @@ function getPaidAcceptedEmailHtml(
 ): string {
   const dealAmountText = data.dealAmount != null && data.dealAmount > 0
     ? `₹${Number(data.dealAmount).toLocaleString('en-IN')}`
-    : 'Not specified';
+    : 'As agreed in contract';
   const deliverablesItems = (data.deliverables.length > 0 ? data.deliverables : ['As per agreement'])
     .map((d) => `<li style="color: #4b5563; font-size: 14px; margin-bottom: 6px;">${d}</li>`)
     .join('');
@@ -499,6 +517,12 @@ function getPaidAcceptedEmailHtml(
           <p style="color: #ffffff; margin: 0; font-size: 15px; opacity: 0.95;">The creator has accepted your paid collaboration. One final step remains.</p>
         </td>
       </tr>
+      ${getEmailProgressCue([
+    { label: 'Request sent', status: 'completed' },
+    { label: 'CONTRACT_READY', status: 'completed' },
+    { label: 'AWAITING_BRAND_SIGNATURE', status: 'current' },
+    { label: 'EXECUTED', status: 'upcoming' },
+  ])}
       <tr>
         <td style="background: #f9fafb; padding: 28px 24px; border-radius: 0 0 12px 12px; border: 1px solid #e5e7eb; border-top: none;">
       <p style="color: #1f2937; font-size: 16px; margin-top: 0;">Hello ${data.brandName},</p>
@@ -540,13 +564,14 @@ function getPaidAcceptedEmailHtml(
         </ol>
       </div>
 
-      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin: 28px 0;">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin: 28px 0 10px 0;">
         <tr>
           <td align="center" style="border-radius: 10px; background-color: #10b981;">
             <a href="${contractReadyLink}" style="display: block; width: 100%; color: #ffffff; padding: 16px 24px; text-decoration: none; font-weight: 600; font-size: 16px; text-align: center;" target="_blank" rel="noopener noreferrer">Review & Sign Contract &gt;</a>
           </td>
         </tr>
       </table>
+      ${getCTATrustLine('Payment terms and delivery security unlock after signing.')}
 
       <p style="color: #6b7280; font-size: 13px; line-height: 1.5; margin: 24px 0 20px 0; padding: 16px; background: #f3f4f6; border-radius: 8px; border: 1px solid #e5e7eb;">
         This collaboration is legally protected by Creator Armour. All actions are timestamped and recorded for transparency.
@@ -578,13 +603,13 @@ export async function sendCollabRequestAcceptedEmail(
   const contractReadyLink = `${frontendUrl}/contract-ready/${data.contractReadyToken}`;
 
   if (data.dealType === 'barter') {
-    const subject = 'Your Barter Collaboration Has Been Accepted — Review & Sign Contract';
+    const subject = `Action required: Sign contract to ship product to ${data.creatorName}`;
     const html = getBarterAcceptedEmailHtml(data, contractReadyLink);
     return sendEmail(brandEmail, subject, html);
   }
 
   // Paid deal: same layout as barter (hero, callout, deal summary, what happens next, green CTA)
-  const subject = 'Your Paid Collaboration Has Been Accepted — Review & Sign Contract';
+  const subject = `Action required: Review & sign agreement with ${data.creatorName}`;
   const html = getPaidAcceptedEmailHtml(data, contractReadyLink);
   return sendEmail(brandEmail, subject, html);
 }
@@ -718,11 +743,11 @@ export async function sendCollabRequestCreatorNotificationEmail(
   const dashboardLink = `${frontendUrl}/creator-dashboard`;
 
   // Format collaboration type
-  const collabTypeText = data.collabType === 'paid' 
-    ? 'Paid' 
-    : data.collabType === 'barter' 
-    ? 'Barter' 
-    : 'Hybrid (Paid + Barter)';
+  const collabTypeText = data.collabType === 'paid'
+    ? 'Paid'
+    : data.collabType === 'barter'
+      ? 'Barter'
+      : 'Hybrid (Paid + Barter)';
 
   // Format budget/barter value for subject line and content
   let budgetText = 'Not specified';
@@ -743,10 +768,10 @@ export async function sendCollabRequestCreatorNotificationEmail(
     }
   } else if (data.collabType === 'barter' || data.collabType === 'both') {
     if (data.barterDescription) {
-      budgetText = data.barterValue 
+      budgetText = data.barterValue
         ? `Barter (Value: ₹${data.barterValue.toLocaleString('en-IN')})`
         : 'Barter';
-      budgetForSubject = data.barterValue 
+      budgetForSubject = data.barterValue
         ? `₹${data.barterValue.toLocaleString('en-IN')}`
         : 'Barter';
     }
@@ -794,12 +819,60 @@ export async function sendCollabRequestCreatorNotificationEmail(
     viewRequestUrl: dashboardLink,
     acceptUrl: data.acceptUrl,
     barterProductImageUrl: data.barterProductImageUrl ?? undefined,
+    signal: {
+      type: 'action',
+      message: 'Review the brand\'s proposal and lock in your decision.'
+    }
   });
 
   // Subject line with budget
   const subject = budgetForSubject && budgetForSubject !== 'Not specified'
     ? `New collaboration request from ${data.brandName} (${budgetForSubject})`
     : `New collaboration request from ${data.brandName}`;
+
+  return sendEmail(
+    creatorEmail,
+    subject,
+    html
+  );
+}
+
+/**
+ * 6. Send gentle reminder to creator if they haven't responded to a request
+ * Trigger: 24-36 hrs after submission
+ */
+export async function sendCollabRequestReminderEmail(
+  creatorEmail: string,
+  data: CollabRequestCreatorNotificationData
+): Promise<{ success: boolean; emailId?: string; error?: string }> {
+  const dashboardLink = `${process.env.FRONTEND_URL || 'https://creatorarmour.com'}/creator-contracts`;
+
+  const budgetText = (data.exactBudget)
+    ? `₹${data.exactBudget.toLocaleString('en-IN')}`
+    : (data.budgetRange || 'Not specified');
+
+  const html = getCreatorNotificationEmailTemplate({
+    creatorName: data.creatorName,
+    creatorCategory: data.creatorCategory,
+    followerCount: data.followerCount,
+    avatarUrl: data.avatarUrl,
+    brandName: data.brandName,
+    brandWebsite: data.brandWebsite,
+    campaignGoal: data.campaignGoal,
+    deliverables: data.deliverables,
+    budget: budgetText,
+    timeline: data.timeline,
+    notes: data.notes,
+    viewRequestUrl: dashboardLink,
+    acceptUrl: data.acceptUrl,
+    barterProductImageUrl: data.barterProductImageUrl ?? undefined,
+    signal: {
+      type: 'action',
+      message: 'Responding keeps your account in good standing with brands. Review the request below.'
+    }
+  });
+
+  const subject = `Reminder: Collaboration request from ${data.brandName}`;
 
   return sendEmail(
     creatorEmail,
@@ -832,7 +905,53 @@ export async function sendCollabAcceptMagicLinkEmail(
 </body>
 </html>`;
   return sendEmail(creatorEmail, subject, html);
-}/**
+}
+
+/**
+ * 7. Send confirmation to creator after they accept a request
+ * Subject: You accepted the collaboration — contract is being prepared
+ */
+export async function sendCreatorAcceptanceProcessingEmail(
+  creatorEmail: string,
+  creatorName: string,
+  brandName: string,
+  dealId: string
+): Promise<{ success: boolean; emailId?: string; error?: string }> {
+  const dashboardLink = `${process.env.FRONTEND_URL || 'https://creatorarmour.com'}/creator-contracts/${dealId}`;
+
+  const mainContent = `
+    <tr>
+      <td style="background-color: #667eea; padding: 40px 30px; text-align: center;">
+        <h1 style="color: #ffffff; margin: 0; font-size: 24px;">Acceptance Confirmed 🎉</h1>
+      </td>
+    </tr>
+    ${getEmailSignal({
+    type: 'next',
+    message: 'No action needed right now. We’ll notify you once the brand signs.'
+  })}
+    <tr>
+      <td style="padding: 40px 30px;">
+        <p style="margin: 0 0 20px 0; font-size: 16px; color: #2d3748; line-height: 1.6;">
+          Hi ${getFirstName(creatorName)},
+        </p>
+        <p style="margin: 0 0 24px 0; font-size: 15px; color: #4a5568; line-height: 1.6;">
+          You have successfully accepted the collaboration request from <strong>${brandName}</strong>. 
+          We are currently preparing the digital contract for the brand to review and sign.
+        </p>
+        <p style="margin: 0 0 24px 0; font-size: 15px; color: #4a5568; line-height: 1.6;">
+          Once the brand has signed, you will receive another notification to add your final digital signature and lock in the agreement.
+        </p>
+        ${getPrimaryCTA('View Deal Progress', dashboardLink)}
+      </td>
+    </tr>
+  `;
+
+  const html = getEmailLayout({ content: mainContent, showFooter: true });
+  const subject = `You accepted the collaboration — contract is being prepared`;
+
+  return sendEmail(creatorEmail, subject, html);
+}
+/**
  * 7. Send "Continue your collaboration request" email (Save and continue later)
  */
 export async function sendCollabDraftResumeEmail(

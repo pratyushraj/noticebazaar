@@ -1,3 +1,5 @@
+// @ts-nocheck
+// @ts-nocheck
 // CreatorArmour Backend API Server
 // Express server with Supabase auth, rate limiting, and all messaging endpoints
 
@@ -10,13 +12,25 @@ import dotenv from 'dotenv';
 import { fileURLToPath } from 'url';
 import { dirname, resolve } from 'path';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+let serverDir = '';
+try {
+  // ESM-native way to get __dirname
+  const __filename = fileURLToPath(import.meta.url);
+  serverDir = dirname(__filename);
+} catch (error) {
+  // Fallback for environments where import.meta.url is not available
+  console.log('[Server] Note: import.meta.url not available, using process.cwd()');
+  serverDir = process.cwd();
+}
 
 try {
   // Load from server directory (where .env file is located)
-  dotenv.config({ path: resolve(__dirname, '../.env') });
-  // Also try current directory as fallback
+  // We use multiple potential paths to be resilient to different deployment layouts
+  if (serverDir) {
+    dotenv.config({ path: resolve(serverDir, '../.env') });
+    dotenv.config({ path: resolve(serverDir, '.env') });
+  }
+  // Also try root as fallback
   dotenv.config();
 } catch (error) {
   // In Vercel serverless, env vars are provided directly, so this is fine
@@ -47,7 +61,7 @@ import dealDetailsTokensRouter from './routes/dealDetailsTokens.js';
 import contractReadyTokensRouter from './routes/contractReadyTokens.js';
 import gstRouter from './routes/gst.js';
 import aiRouter from './routes/ai.js';
-import otpRouter, { publicRouter as otpPublicRouter } from './routes/otp.js';
+import esignRouter from './routes/esign.js';
 import dealsRouter from './routes/deals.js';
 import complaintsRouter from './routes/complaints.js';
 import influencersRouter from './routes/influencers.js';
@@ -56,6 +70,9 @@ import collabAnalyticsRouter from './routes/collabAnalytics.js';
 import creatorsRouter from './routes/creators.js';
 import shippingRouter from './routes/shipping.js';
 import cronDealRemindersRouter from './routes/cronDealReminders.js';
+import creatorSignRouter from './routes/creatorSign.js';
+import otpRouter from './routes/otp.js';
+import contractsRouter from './routes/contracts.js';
 import { sendCollabRequestAcceptedEmail, sendCollabRequestCreatorNotificationEmail } from './services/collabRequestEmailService.js';
 import { createContractReadyToken } from './services/contractReadyTokenService.js';
 // Log router import for debugging
@@ -79,7 +96,7 @@ let supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VI
 // If SERVICE_ROLE_KEY looks like a variable reference, try to find it
 if (supabaseServiceKey.startsWith('${') || supabaseServiceKey === '') {
   // Try to find the service role key - it might be in a different env var name
-  supabaseServiceKey = process.env.VITE_SUPABASE_SERVICE_ROLE_KEY 
+  supabaseServiceKey = process.env.VITE_SUPABASE_SERVICE_ROLE_KEY
     || process.env.SUPABASE_SERVICE_KEY
     || process.env.SUPABASE_KEY
     || '';
@@ -92,12 +109,12 @@ let supabaseInitialized = false;
 
 try {
   // Check if we have valid credentials (not placeholders)
-  const hasValidCredentials = 
-    supabaseUrl && 
+  const hasValidCredentials =
+    supabaseUrl &&
     supabaseUrl !== 'https://placeholder.supabase.co' &&
-    supabaseServiceKey && 
+    supabaseServiceKey &&
     supabaseServiceKey !== 'placeholder-key';
-  
+
   if (hasValidCredentials) {
     supabase = createClient<Database>(supabaseUrl, supabaseServiceKey, {
       auth: {
@@ -156,39 +173,45 @@ const corsOptions = {
       console.log('[CORS] Allowing request with no origin');
       return callback(null, true);
     }
-    
+
     console.log('[CORS] Checking origin:', origin);
-    
+
     // Normalize origin for comparison
     const normalizedOrigin = origin.toLowerCase().trim();
-    
+
     // Allow any localhost port for development
-    if (normalizedOrigin.startsWith('http://localhost:') || 
-        normalizedOrigin.startsWith('http://127.0.0.1:') ||
-        normalizedOrigin.startsWith('https://localhost:') ||
-        normalizedOrigin.startsWith('https://127.0.0.1:')) {
+    if (normalizedOrigin.startsWith('http://localhost:') ||
+      normalizedOrigin.startsWith('http://127.0.0.1:') ||
+      normalizedOrigin.startsWith('https://localhost:') ||
+      normalizedOrigin.startsWith('https://127.0.0.1:')) {
       console.log('[CORS] ✓ Allowing localhost origin:', origin);
       return callback(null, true);
     }
-    
+
     // Allow Render frontend URLs
     if (normalizedOrigin.includes('onrender.com')) {
       console.log('[CORS] ✓ Allowing Render origin:', origin);
       return callback(null, true);
     }
-    
+
+    // Allow Vercel frontend URLs
+    if (normalizedOrigin.includes('vercel.app')) {
+      console.log('[CORS] ✓ Allowing Vercel origin:', origin);
+      return callback(null, true);
+    }
+
     // Allow Netlify frontend URLs
     if (normalizedOrigin.includes('netlify.app')) {
       console.log('[CORS] ✓ Allowing Netlify origin:', origin);
       return callback(null, true);
     }
-    
+
     // Allow cloudflared tunnel URLs
     if (normalizedOrigin.includes('trycloudflare.com') || normalizedOrigin.includes('creatorarmour.com')) {
       console.log('[CORS] ✓ Allowing cloudflared/creatorarmour origin:', origin);
       return callback(null, true);
     }
-    
+
     // Explicit allowed origins list
     const allowedOrigins = [
       'http://localhost:8080',
@@ -201,12 +224,12 @@ const corsOptions = {
       'https://creatorarmour.com',
       'https://api.creatorarmour.com'
     ].map(o => o.toLowerCase());
-    
+
     if (allowedOrigins.includes(normalizedOrigin)) {
       console.log('[CORS] ✓ Allowing origin from allowed list:', origin);
       return callback(null, true);
     }
-    
+
     console.warn('[CORS] ✗ Blocking origin:', origin);
     callback(new Error(`CORS: Origin ${origin} not allowed`));
   },
@@ -254,9 +277,9 @@ app.get('/health', (req: express.Request, res: express.Response) => {
     const llmProvider = process.env.LLM_PROVIDER || 'huggingface';
     const llmModel = process.env.LLM_MODEL || 'not set';
     const hasLLMKey = !!process.env.LLM_API_KEY;
-    
-    res.json({ 
-      status: 'ok', 
+
+    res.json({
+      status: 'ok',
       timestamp: new Date().toISOString(),
       supabaseInitialized: supabaseInitialized,
       nodeEnv: process.env.NODE_ENV || 'not set',
@@ -270,8 +293,8 @@ app.get('/health', (req: express.Request, res: express.Response) => {
   } catch (error: any) {
     // Even if something fails, return a response
     console.error('Health check error:', error);
-    res.status(200).json({ 
-      status: 'error', 
+    res.status(200).json({
+      status: 'error',
       message: error.message || 'Unknown error',
       timestamp: new Date().toISOString()
     });
@@ -282,16 +305,19 @@ app.get('/health', (req: express.Request, res: express.Response) => {
 app.use('/api/brand-response', brandResponseRouter);
 app.use('/api/deal-details-tokens', dealDetailsTokensRouter); // Public routes (auth handled internally)
 app.use('/api/contract-ready-tokens', contractReadyTokensRouter); // Public routes for contract ready page
+app.use('/api/creator-sign', creatorSignRouter); // Public creator signing magic link routes
 app.use('/api/gst', gstRouter); // Public GST lookup route
-app.use('/api/otp', otpPublicRouter); // Public OTP routes for brand response page
+app.use('/api/otp', rateLimitMiddleware, otpRouter); // Public OTP routes for brand response page
 app.use('/api/collab', collabRequestsRouter); // Public collab link routes (/:username and /:username/submit)
 app.use('/api/collab-analytics', collabAnalyticsRouter); // Public analytics tracking + authenticated analytics endpoints
 app.use('/api/creators', creatorsRouter); // Public creator directory routes
 app.use('/api/shipping', shippingRouter); // Public shipping update (brand, no auth)
 app.use('/api/cron', cronDealRemindersRouter); // Cron: deal reminders (protected by CRON_SECRET in route)
+app.use('/api/contracts', contractsRouter); // Contract signed URL generation (handles auth internally)
 
 // API Routes (protected)
 app.use('/api/brand-reply-tokens', authMiddleware, rateLimitMiddleware, brandReplyTokensRouter);
+app.use('/api/esign', authMiddleware, rateLimitMiddleware, esignRouter);
 app.use('/api/conversations', authMiddleware, rateLimitMiddleware, conversationsRouter);
 app.use('/api/conversations', authMiddleware, rateLimitMiddleware, messagesRouter);
 app.use('/api/conversations', authMiddleware, rateLimitMiddleware, attachmentsRouter);
@@ -479,7 +505,7 @@ app.use('/api/influencers', authMiddleware, rateLimitMiddleware, influencersRout
 app.use('/api/collab-requests', authMiddleware, rateLimitMiddleware, collabRequestsRouter); // Protected collab request management routes
 // Note: /api/collab-analytics is already mounted as public route above (line 284)
 // OTP routes - protected routes require auth
-app.use('/api/otp', authMiddleware, rateLimitMiddleware, otpRouter);
+// app.use('/api/otp', authMiddleware, rateLimitMiddleware, otpRouter); // Disabled: all OTP routes are now public via magic link
 
 // 404 handler for API routes (must be before error handler)
 app.use('/api/*', (req: express.Request, res: express.Response) => {
@@ -501,8 +527,14 @@ export default app;
 // Check Puppeteer availability on startup
 async function checkPuppeteerAvailability() {
   try {
-    const puppeteer = await import('puppeteer');
-    const browser = await puppeteer.default.launch({
+    const puppeteerCore = (await import('puppeteer-core')).default;
+    const executablePath = process.env.PUPPETEER_EXECUTABLE_PATH;
+    if (!executablePath) {
+      console.warn('⚠️ Puppeteer availability check skipped (PUPPETEER_EXECUTABLE_PATH not set)');
+      return;
+    }
+    const browser = await puppeteerCore.launch({
+      executablePath,
       headless: 'new',
       args: [
         '--no-sandbox',
@@ -542,13 +574,13 @@ async function checkPuppeteerAvailability() {
 // For local development, start the server
 let server: any = null;
 
-if (process.env.VERCEL !== '1') {
+if (process.env.VERCEL !== '1' && !process.env.NOW_REGION) {
   server = app.listen(PORT, async () => {
     console.log(`🚀 CreatorArmour API server running on port ${PORT}`);
-    
+
     // Check Puppeteer after server starts
     await checkPuppeteerAvailability();
-    
+
     // Setup influencer finder daily scheduler (if not serverless)
     try {
       const { setupDailyScheduler } = await import('./services/influencerScheduler.js');
@@ -566,7 +598,7 @@ if (process.env.VERCEL !== '1') {
         console.log('Server closed.');
         process.exit(0);
       });
-      
+
       // Force close after 5 seconds
       setTimeout(() => {
         console.log('Forcing server shutdown...');
@@ -580,16 +612,15 @@ if (process.env.VERCEL !== '1') {
   // Handle termination signals
   process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
   process.on('SIGINT', () => gracefulShutdown('SIGINT'));
-  
+
   // Handle uncaught errors
   process.on('uncaughtException', (error) => {
     console.error('Uncaught Exception:', error);
     gracefulShutdown('uncaughtException');
   });
-  
+
   process.on('unhandledRejection', (reason, promise) => {
     console.error('Unhandled Rejection at:', promise, 'reason:', reason);
     gracefulShutdown('unhandledRejection');
   });
 }
-

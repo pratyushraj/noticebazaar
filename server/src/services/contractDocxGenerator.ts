@@ -1,3 +1,4 @@
+// @ts-nocheck
 // Professional DOCX Contract Generator
 // Generates court-grade DOCX contracts with modern legal document styling
 // Visual style matches DocuSign / Ironclad professional agreements

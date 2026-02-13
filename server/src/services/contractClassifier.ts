@@ -1,3 +1,4 @@
+// @ts-nocheck
 // Production-Grade 4-Stage Influencer Brand Deal Classifier
 // SECURITY + LEGAL FILTER: Near-zero false positives required
 

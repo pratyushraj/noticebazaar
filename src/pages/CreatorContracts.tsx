@@ -21,7 +21,7 @@ import { formatIndianCurrency } from '@/lib/utils/currency';
 const CreatorContracts = () => {
   const navigate = useNavigate();
   const { profile } = useSession();
-  
+
   // Fetch real brand deals data (single call for both data and loading state)
   const { data: brandDeals = [], isLoading: isLoadingDeals, refetch: refetchDeals } = useBrandDeals({
     creatorId: profile?.id,
@@ -33,7 +33,7 @@ const CreatorContracts = () => {
     if (profile?.id) {
       // Refetch on mount to ensure we have the latest deals
       refetchDeals();
-      
+
       // Also refetch when page becomes visible (user switches back to tab)
       const handleVisibilityChange = () => {
         if (document.visibilityState === 'visible') {
@@ -41,7 +41,7 @@ const CreatorContracts = () => {
         }
       };
       document.addEventListener('visibilitychange', handleVisibilityChange);
-      
+
       return () => {
         document.removeEventListener('visibilitychange', handleVisibilityChange);
       };
@@ -59,7 +59,7 @@ const CreatorContracts = () => {
       // Map status from database to UI status
       // Check brand_response_status FIRST - it's the source of truth for brand acceptance
       const brandResponseStatus = (deal as any).brand_response_status;
-      
+
       // If brand has accepted_verified, never show "waiting" - it's final
       if (brandResponseStatus === 'accepted_verified') {
         return {
@@ -70,7 +70,7 @@ const CreatorContracts = () => {
           status: 'signed', // Treat accepted_verified as signed/approved
           progress: 70, // Progress to signed stage
           brandResponseStatus: brandResponseStatus,
-          deadline: deal.payment_expected_date 
+          deadline: deal.payment_expected_date
             ? new Date(deal.payment_expected_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
             : (deal.due_date ? new Date(deal.due_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'TBD'),
           platform: deal.platform || 'Multiple',
@@ -79,7 +79,7 @@ const CreatorContracts = () => {
           updatedAt: deal.updated_at,
         };
       }
-      
+
       // Preserve Draft and Sent statuses (only if not accepted_verified)
       const statusLower = (deal.status || '').toLowerCase();
       let status: string = 'pending';
@@ -112,6 +112,11 @@ const CreatorContracts = () => {
         status = 'awaiting_product_shipment';
         progress = 50;
         nextStep = 'Brand will ship product';
+      } else if (statusLower === 'fully_executed') {
+        // Both parties have signed - deal is complete
+        status = 'completed';
+        progress = 100;
+        nextStep = 'Deal completed - both parties signed';
       } else if (statusLower === 'sent') {
         // Only show "waiting" if brand_response_status is not accepted/accepted_verified
         if (brandResponseStatus === 'accepted' || brandResponseStatus === 'accepted_verified') {
@@ -177,7 +182,7 @@ const CreatorContracts = () => {
         status,
         progress,
         brandResponseStatus: (deal as any).brand_response_status || null,
-        deadline: deal.payment_expected_date 
+        deadline: deal.payment_expected_date
           ? new Date(deal.payment_expected_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
           : (deal.due_date ? new Date(deal.due_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'TBD'),
         platform: deal.platform || 'Multiple',
@@ -216,7 +221,7 @@ const CreatorContracts = () => {
       return brandResponseStatus === 'rejected';
     }).length;
     const totalValue = brandDeals.reduce((sum, d) => sum + (d.deal_amount || 0), 0);
-    
+
     // Calculate this month's deals
     const now = new Date();
     const thisMonth = brandDeals.filter(d => {
@@ -232,10 +237,10 @@ const CreatorContracts = () => {
         const status = d.status?.toLowerCase() || '';
         if (!status.includes('payment') && status !== 'payment pending') return false;
         if (d.payment_received_date) return false; // Already paid
-        
+
         const dueDate = d.payment_expected_date || d.due_date;
         if (!dueDate) return false;
-        
+
         const due = new Date(dueDate);
         const daysUntil = Math.ceil((due.getTime() - nowForRisk.getTime()) / (1000 * 60 * 60 * 24));
         return daysUntil <= 7; // Due within 7 days or overdue
@@ -261,32 +266,32 @@ const CreatorContracts = () => {
   const getStatusPill = (status: string, dealData: any) => {
     const statusLower = status?.toLowerCase() || '';
     const brandResponseStatus = dealData?.brand_response_status?.toLowerCase() || '';
-    
+
     // Payment Pending → orange
     if (statusLower.includes('payment') || statusLower === 'payment pending') {
       return { label: 'Payment Pending', color: 'bg-orange-500/20 text-orange-400 border-orange-500/30' };
     }
-    
+
     // Completed → grey
     if (statusLower.includes('completed') || statusLower.includes('paid')) {
       return { label: 'Completed', color: 'bg-gray-500/20 text-gray-400 border-gray-500/30' };
     }
-    
+
     // Signed → green
     if (statusLower.includes('signed') || brandResponseStatus === 'accepted_verified' || brandResponseStatus === 'accepted') {
       return { label: 'Signed', color: 'bg-green-500/20 text-green-400 border-green-500/30' };
     }
-    
+
     // Awaiting Product Shipment (barter) → amber
     if (statusLower.includes('awaiting product shipment') || statusLower === 'awaiting_product_shipment') {
       return { label: 'Awaiting Product Shipment', color: 'bg-amber-500/20 text-amber-400 border-amber-500/30' };
     }
-    
+
     // Contract Ready (sent, draft ready) → blue
     if (statusLower === 'sent' || statusLower === 'draft' || statusLower.includes('contract_ready') || statusLower.includes('agreement_prepared')) {
       return { label: 'Contract Ready', color: 'bg-blue-500/20 text-blue-400 border-blue-500/30' };
     }
-    
+
     // Negotiation → yellow (includes barter "Drafting" = Delivery Details Pending)
     if (statusLower.includes('negotiation') || statusLower.includes('negotiating') || brandResponseStatus === 'negotiating') {
       const dealStatus = dealData?.status?.toLowerCase() || '';
@@ -296,18 +301,18 @@ const CreatorContracts = () => {
         color: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
       };
     }
-    
+
     // Default fallback
     return { label: status || 'Pending', color: 'bg-gray-500/20 text-gray-400 border-gray-500/30' };
   };
-  
+
   // Get primary CTA button text and action
   const getPrimaryAction = (status: string, dealData: any) => {
     const statusLower = status?.toLowerCase() || '';
     const brandResponseStatus = dealData?.brand_response_status?.toLowerCase() || '';
     const dealStatus = dealData?.status?.toLowerCase() || '';
     const isBarterDrafting = (dealData as any)?.deal_type === 'barter' && dealStatus === 'drafting';
-    
+
     if (isBarterDrafting) {
       return { label: 'Add delivery details', action: 'delivery_details' };
     }
@@ -334,9 +339,9 @@ const CreatorContracts = () => {
     return brandDeals.filter(deal => {
       const status = deal.status?.toLowerCase() || '';
       const brandResponseStatus = (deal as any)?.brand_response_status?.toLowerCase() || '';
-      return status.includes('completed') || 
-             status.includes('paid') ||
-             brandResponseStatus === 'rejected';
+      return status.includes('completed') ||
+        status.includes('paid') ||
+        brandResponseStatus === 'rejected';
     }).length;
   }, [brandDeals]);
 
@@ -346,17 +351,17 @@ const CreatorContracts = () => {
       const status = deal.status?.toLowerCase() || '';
       const hasNextAction = !!(deal as any)?.next_action;
       return hasNextAction ||
-             status === 'draft' ||
-             status.includes('sent') ||
-             status.includes('accepted') ||
-             status.includes('under_watch') ||
-             status.includes('under watch');
+        status === 'draft' ||
+        status.includes('sent') ||
+        status.includes('accepted') ||
+        status.includes('under_watch') ||
+        status.includes('under watch');
     }).length;
   }, [brandDeals]);
 
   // Initialize activeFilter state - default to "All Deals"
   const [activeFilter, setActiveFilter] = useState<'all' | 'action_needed' | 'closed'>('all');
-  
+
   // Sort state
   const [sortBy, setSortBy] = useState<'newest' | 'oldest' | 'amount_high' | 'amount_low' | 'deadline_soon' | 'deadline_later' | 'status'>('newest');
 
@@ -381,7 +386,7 @@ const CreatorContracts = () => {
 
   const filteredDeals = useMemo(() => {
     let filtered = deals;
-    
+
     // Apply main filter tabs
     if (activeFilter === 'all') {
       filtered = [...deals];
@@ -392,13 +397,13 @@ const CreatorContracts = () => {
         const status = dealData?.status?.toLowerCase() || '';
         const brandResponseStatus = (dealData as any)?.brand_response_status?.toLowerCase() || '';
         const hasNextAction = (dealData as any)?.next_action || false;
-        
-        return hasNextAction || 
-               status === 'draft' || 
-               status.includes('sent') ||
-               brandResponseStatus === 'accepted' ||
-               status.includes('under_watch') ||
-               status.includes('under watch');
+
+        return hasNextAction ||
+          status === 'draft' ||
+          status.includes('sent') ||
+          brandResponseStatus === 'accepted' ||
+          status.includes('under_watch') ||
+          status.includes('under watch');
       });
     } else if (activeFilter === 'closed') {
       // Closed: paid + rejected deals
@@ -406,9 +411,9 @@ const CreatorContracts = () => {
         const dealData = brandDeals.find(d => d.id === deal.id);
         const status = dealData?.status?.toLowerCase() || '';
         const brandResponseStatus = (dealData as any)?.brand_response_status?.toLowerCase() || '';
-        return status.includes('completed') || 
-               status.includes('paid') ||
-               brandResponseStatus === 'rejected';
+        return status.includes('completed') ||
+          status.includes('paid') ||
+          brandResponseStatus === 'rejected';
       });
     }
 
@@ -417,9 +422,9 @@ const CreatorContracts = () => {
     if (statusFilter !== 'all') {
       filtered = filtered.filter(deal => {
         const dealStatus = deal.status?.toLowerCase() || '';
-        return dealStatus === statusFilter.toLowerCase() || 
-               (statusFilter === 'signed' && (dealStatus === 'signed' || deal.brandResponseStatus === 'accepted_verified')) ||
-               (statusFilter === 'in_progress' && (dealStatus === 'content_making' || dealStatus === 'negotiation'));
+        return dealStatus === statusFilter.toLowerCase() ||
+          (statusFilter === 'signed' && (dealStatus === 'signed' || deal.brandResponseStatus === 'accepted_verified')) ||
+          (statusFilter === 'in_progress' && (dealStatus === 'content_making' || dealStatus === 'negotiation'));
       });
     }
 
@@ -478,12 +483,12 @@ const CreatorContracts = () => {
         }
       });
     }
-    
+
     // Apply sorting
     filtered = [...filtered].sort((a, b) => {
       const aDeal = brandDeals.find(d => d.id === a.id);
       const bDeal = brandDeals.find(d => d.id === b.id);
-      
+
       switch (sortBy) {
         case 'newest':
           // Prioritize drafts and newly submitted deals, then by most recent activity (updated_at or created_at)
@@ -493,38 +498,38 @@ const CreatorContracts = () => {
           const bIsDraft = bStatus === 'draft';
           const aIsNewlySubmitted = aStatus.includes('brand_details_submitted') || aStatus.includes('details_submitted');
           const bIsNewlySubmitted = bStatus.includes('brand_details_submitted') || bStatus.includes('details_submitted');
-          
+
           // Drafts first
           if (aIsDraft && !bIsDraft) return -1;
           if (!aIsDraft && bIsDraft) return 1;
-          
+
           // Then newly submitted deals
           if (aIsNewlySubmitted && !bIsNewlySubmitted) return -1;
           if (!aIsNewlySubmitted && bIsNewlySubmitted) return 1;
-          
+
           // Then by most recent activity: use updated_at if available (for recently signed/updated deals), otherwise created_at
           const aUpdatedDate = aDeal?.updated_at ? new Date(aDeal.updated_at).getTime() : 0;
           const bUpdatedDate = bDeal?.updated_at ? new Date(bDeal.updated_at).getTime() : 0;
           const aCreatedDate = aDeal?.created_at ? new Date(aDeal.created_at).getTime() : 0;
           const bCreatedDate = bDeal?.created_at ? new Date(bDeal.created_at).getTime() : 0;
-          
+
           // Use the most recent date (updated_at or created_at) for comparison
           const aMostRecent = Math.max(aUpdatedDate, aCreatedDate);
           const bMostRecent = Math.max(bUpdatedDate, bCreatedDate);
-          
+
           return bMostRecent - aMostRecent;
-        
+
         case 'oldest':
           const aDateOld = aDeal?.created_at ? new Date(aDeal.created_at).getTime() : 0;
           const bDateOld = bDeal?.created_at ? new Date(bDeal.created_at).getTime() : 0;
           return aDateOld - bDateOld;
-        
+
         case 'amount_high':
           return (b.value || 0) - (a.value || 0);
-        
+
         case 'amount_low':
           return (a.value || 0) - (b.value || 0);
-        
+
         case 'deadline_soon':
           const aDeadline = aDeal?.due_date || aDeal?.payment_expected_date;
           const bDeadline = bDeal?.due_date || bDeal?.payment_expected_date;
@@ -532,7 +537,7 @@ const CreatorContracts = () => {
           if (!aDeadline) return 1;
           if (!bDeadline) return -1;
           return new Date(aDeadline).getTime() - new Date(bDeadline).getTime();
-        
+
         case 'deadline_later':
           const aDeadlineLate = aDeal?.due_date || aDeal?.payment_expected_date;
           const bDeadlineLate = bDeal?.due_date || bDeal?.payment_expected_date;
@@ -540,7 +545,7 @@ const CreatorContracts = () => {
           if (!aDeadlineLate) return 1;
           if (!bDeadlineLate) return -1;
           return new Date(bDeadlineLate).getTime() - new Date(aDeadlineLate).getTime();
-        
+
         case 'status':
           // Sort by status priority: draft < negotiation < awaiting_product_shipment < signed < ... < completed
           const statusPriority: Record<string, number> = {
@@ -557,12 +562,12 @@ const CreatorContracts = () => {
           const aPriority = statusPriority[a.status] ?? 99;
           const bPriority = statusPriority[b.status] ?? 99;
           return aPriority - bPriority;
-        
+
         default:
           return 0;
       }
     });
-    
+
     return filtered;
   }, [deals, activeFilter, brandDeals, sortBy, statusFilter, brandFilter, minAmount, maxAmount, dateRangeFilter]);
 
@@ -681,11 +686,11 @@ const CreatorContracts = () => {
                   role="tablist"
                   aria-label="Deal filters"
                   className={cn(
-                  "flex items-center justify-start md:justify-center gap-2 md:gap-4",
-                  "overflow-x-auto overflow-y-visible py-1 -mx-4 px-4 md:mx-0 md:px-0",
-                  "[&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]",
-                  "flex-nowrap snap-x snap-mandatory w-full sm:w-auto"
-                )}>
+                    "flex items-center justify-start md:justify-center gap-2 md:gap-4",
+                    "overflow-x-auto overflow-y-visible py-1 -mx-4 px-4 md:mx-0 md:px-0",
+                    "[&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]",
+                    "flex-nowrap snap-x snap-mandatory w-full sm:w-auto"
+                  )}>
                   {filters.map((filter) => {
                     const isActive = activeFilter === filter.id;
                     return (
@@ -721,7 +726,7 @@ const CreatorContracts = () => {
                     );
                   })}
                 </div>
-                
+
                 {/* Sort and Advanced Filter Controls */}
                 <div className="flex items-center gap-2 w-full sm:w-auto">
                   {/* Advanced Filter Toggle */}
@@ -904,78 +909,78 @@ const CreatorContracts = () => {
               ) : filteredDeals.length > 0 ? (
                 /* Deals List - Compact card style (match Payments page) */
                 <div className={cn("space-y-3")}>
-          {filteredDeals.map((deal, index) => {
-            const dealData = brandDeals.find(d => d.id === deal.id);
-            const statusPill = getStatusPill(deal.status, dealData);
-            const primaryAction = getPrimaryAction(deal.status, dealData);
-            const dueDate = dealData?.payment_expected_date || dealData?.due_date;
-            const now = new Date();
-            const daysUntil = dueDate
-              ? Math.ceil((new Date(dueDate).getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
-              : null;
-            const dueLabel =
-              daysUntil === null
-                ? statusPill.label
-                : daysUntil < 0
-                  ? `Overdue by ${Math.abs(daysUntil)} day${Math.abs(daysUntil) !== 1 ? 's' : ''}`
-                  : daysUntil === 0
-                    ? 'Due today'
-                    : `Due in ${daysUntil} day${daysUntil !== 1 ? 's' : ''}`;
+                  {filteredDeals.map((deal, index) => {
+                    const dealData = brandDeals.find(d => d.id === deal.id);
+                    const statusPill = getStatusPill(deal.status, dealData);
+                    const primaryAction = getPrimaryAction(deal.status, dealData);
+                    const dueDate = dealData?.payment_expected_date || dealData?.due_date;
+                    const now = new Date();
+                    const daysUntil = dueDate
+                      ? Math.ceil((new Date(dueDate).getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
+                      : null;
+                    const dueLabel =
+                      daysUntil === null
+                        ? statusPill.label
+                        : daysUntil < 0
+                          ? `Overdue by ${Math.abs(daysUntil)} day${Math.abs(daysUntil) !== 1 ? 's' : ''}`
+                          : daysUntil === 0
+                            ? 'Due today'
+                            : `Due in ${daysUntil} day${daysUntil !== 1 ? 's' : ''}`;
 
-            return (
-              <motion.div
-                key={deal.id}
-                initial={motionTokens.slide.up.initial}
-                animate={motionTokens.slide.up.animate}
-                transition={{ ...motionTokens.slide.up.transition, delay: index * 0.05 }}
-                whileHover={{ y: -2 }}
-                whileTap={animations.microTap}
-                className="relative bg-white/5 backdrop-blur-xl rounded-xl p-3.5 border border-white/10 cursor-pointer transition-all duration-200 hover:bg-white/7 hover:border-white/15"
-                role="button"
-                tabIndex={0}
-                aria-label={`Deal: ${deal.brand} - ${statusPill.label}`}
-                onClick={() => {
-                  triggerHaptic(HapticPatterns.light);
-                  if (primaryAction.action === 'delivery_details') {
-                    navigate(`/creator-contracts/${deal.id}/delivery-details`);
-                  } else {
-                    navigate(`/creator-contracts/${deal.id}`);
-                  }
-                }}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    if (primaryAction.action === 'delivery_details') {
-                      navigate(`/creator-contracts/${deal.id}/delivery-details`);
-                    } else {
-                      navigate(`/creator-contracts/${deal.id}`);
-                    }
-                  }
-                }}
-              >
-                <div className="flex items-center justify-between gap-3">
-                  <div className="flex-1 min-w-0">
-                    <h3 className="text-base font-bold text-white truncate">{deal.brand}</h3>
-                  </div>
-                  <div className="flex-shrink-0 flex flex-col items-end gap-1.5">
-                    <div className="text-lg font-bold text-white">
-                      ₹{Math.round(deal.value).toLocaleString('en-IN')}
-                    </div>
-                    <span className={cn(
-                      "inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border",
-                      daysUntil !== null && daysUntil < 0
-                        ? "bg-red-500/20 text-red-400 border-red-500/30"
-                        : daysUntil === 0
-                          ? "bg-amber-500/20 text-amber-400 border-amber-500/30"
-                          : statusPill.color
-                    )}>
-                      {dueLabel}
-                    </span>
-                  </div>
-                </div>
-              </motion.div>
-            );
-          })}
+                    return (
+                      <motion.div
+                        key={deal.id}
+                        initial={motionTokens.slide.up.initial}
+                        animate={motionTokens.slide.up.animate}
+                        transition={{ ...motionTokens.slide.up.transition, delay: index * 0.05 }}
+                        whileHover={{ y: -2 }}
+                        whileTap={animations.microTap}
+                        className="relative bg-white/5 backdrop-blur-xl rounded-xl p-3.5 border border-white/10 cursor-pointer transition-all duration-200 hover:bg-white/7 hover:border-white/15"
+                        role="button"
+                        tabIndex={0}
+                        aria-label={`Deal: ${deal.brand} - ${statusPill.label}`}
+                        onClick={() => {
+                          triggerHaptic(HapticPatterns.light);
+                          if (primaryAction.action === 'delivery_details') {
+                            navigate(`/creator-contracts/${deal.id}/delivery-details`);
+                          } else {
+                            navigate(`/creator-contracts/${deal.id}`);
+                          }
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            if (primaryAction.action === 'delivery_details') {
+                              navigate(`/creator-contracts/${deal.id}/delivery-details`);
+                            } else {
+                              navigate(`/creator-contracts/${deal.id}`);
+                            }
+                          }
+                        }}
+                      >
+                        <div className="flex items-center justify-between gap-3">
+                          <div className="flex-1 min-w-0">
+                            <h3 className="text-base font-bold text-white truncate">{deal.brand}</h3>
+                          </div>
+                          <div className="flex-shrink-0 flex flex-col items-end gap-1.5">
+                            <div className="text-lg font-bold text-white">
+                              ₹{Math.round(deal.value).toLocaleString('en-IN')}
+                            </div>
+                            <span className={cn(
+                              "inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border",
+                              daysUntil !== null && daysUntil < 0
+                                ? "bg-red-500/20 text-red-400 border-red-500/30"
+                                : daysUntil === 0
+                                  ? "bg-amber-500/20 text-amber-400 border-amber-500/30"
+                                  : statusPill.color
+                            )}>
+                              {dueLabel}
+                            </span>
+                          </div>
+                        </div>
+                      </motion.div>
+                    );
+                  })}
                 </div>
               ) : (
                 /* Empty State - Centered and compact */

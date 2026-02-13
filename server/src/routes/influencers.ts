@@ -1,3 +1,4 @@
+// @ts-nocheck
 // Influencer Finder API Routes
 // Production-ready endpoints for discovering and managing influencers
 

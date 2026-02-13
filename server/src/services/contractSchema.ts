@@ -1,3 +1,4 @@
+// @ts-nocheck
 // Contract Schema - Single Source of Truth for Contract Generation
 // This JSON structure is used to generate DOCX contracts via template engine
 

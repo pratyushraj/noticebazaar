@@ -1,0 +1,877 @@
+// @ts-nocheck
+// Safe Contract Generator Service
+// Generates a new contract PDF with risky clauses replaced by safe clauses
+
+import { supabase, supabaseConfig } from '../index';
+import { generateSafeClause } from './clauseGenerator';
+// PDF.js is imported dynamically in extractTextFromPdf to handle module resolution issues
+import { generateReportPdf } from './pdfGenerator';
+import path from 'path';
+import fs from 'fs';
+import { fileURLToPath } from 'url';
+
+// ES module equivalent of __dirname
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Get resolved Supabase URL and service role key from the main client
+// The supabase client in index.ts already has these resolved correctly
+function getSupabaseConfig() {
+  // Get from environment with proper resolution (same logic as index.ts)
+  let supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || '';
+
+  // If SUPABASE_URL contains a variable reference (${...}), resolve it
+  if (supabaseUrl && supabaseUrl.startsWith('${') && supabaseUrl.endsWith('}')) {
+    const varName = supabaseUrl.slice(2, -1); // Extract variable name (e.g., "VITE_SUPABASE_URL")
+    supabaseUrl = process.env[varName] || process.env.VITE_SUPABASE_URL || '';
+  }
+
+  // Fallback to VITE_SUPABASE_URL if still empty or contains unresolved variables
+  if (!supabaseUrl || supabaseUrl.trim() === '' || supabaseUrl.includes('${')) {
+    supabaseUrl = process.env.VITE_SUPABASE_URL || '';
+  }
+
+  let serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_SERVICE_ROLE_KEY || '';
+
+  // If SERVICE_ROLE_KEY contains a variable reference, resolve it
+  if (serviceRoleKey && serviceRoleKey.startsWith('${') && serviceRoleKey.endsWith('}')) {
+    const varName = serviceRoleKey.slice(2, -1); // Extract variable name
+    serviceRoleKey = process.env[varName] || process.env.VITE_SUPABASE_SERVICE_ROLE_KEY || '';
+  }
+
+  // Fallback to VITE_SUPABASE_SERVICE_ROLE_KEY if still empty or contains unresolved variables
+  // Use same fallback chain as index.ts
+  if (!serviceRoleKey || serviceRoleKey.trim() === '' || serviceRoleKey.includes('${')) {
+    serviceRoleKey = process.env.VITE_SUPABASE_SERVICE_ROLE_KEY
+      || process.env.SUPABASE_SERVICE_KEY
+      || process.env.SUPABASE_KEY
+      || '';
+  }
+
+  return { supabaseUrl, serviceRoleKey };
+}
+
+// Define AnalysisResult interface locally
+interface AnalysisResult {
+  protectionScore: number;
+  negotiationPowerScore?: number;
+  overallRisk: 'low' | 'medium' | 'high';
+  issues: Array<{
+    severity: 'high' | 'medium' | 'low' | 'warning';
+    category: string;
+    title: string;
+    description: string;
+    clause?: string;
+    recommendation: string;
+  }>;
+  verified: Array<{
+    category: string;
+    title: string;
+    description: string;
+    clause?: string;
+  }>;
+  keyTerms: {
+    dealValue?: string;
+    duration?: string;
+    deliverables?: string;
+    paymentSchedule?: string;
+    exclusivity?: string;
+    payment?: string;
+  };
+  recommendations: string[];
+}
+
+// PDF.js is now imported dynamically in extractTextFromPdf function
+// This avoids module resolution issues and allows proper error handling
+
+export interface SafeContractRequest {
+  reportId: string;
+  originalFilePath: string;
+  userId: string;
+}
+
+export interface SafeContractResponse {
+  safeContractUrl?: string; // Optional - only if uploaded to storage
+  safeContractPath?: string; // Optional - only if uploaded to storage
+  fileBuffer?: Buffer; // Direct file buffer for download (bypasses storage)
+  fileName?: string; // Suggested filename
+  contentType?: string; // Content type (application/pdf or text/plain)
+  contractHtml?: string; // Direct HTML content for display or conversion
+}
+
+/**
+ * Generate a safe contract by replacing risky clauses with safe clauses
+ */
+export async function generateSafeContract(
+  request: SafeContractRequest
+): Promise<SafeContractResponse> {
+  const { reportId, originalFilePath, userId } = request;
+
+  // 1. Fetch original contract from Supabase Storage
+  // originalFilePath might be in format "bucket/path" or just "path"
+  // Also might be a full URL - handle all cases
+  let filePath = originalFilePath;
+
+  // If it's a full URL, extract the path
+  if (originalFilePath.startsWith('http')) {
+    // Extract path from Supabase storage URL
+    const urlMatch = originalFilePath.match(/\/storage\/v1\/object\/public\/[^\/]+\/(.+)$/);
+    if (urlMatch) {
+      filePath = urlMatch[1];
+    } else {
+      // Try to extract from other URL formats
+      const pathMatch = originalFilePath.match(/creator-assets\/(.+)$/);
+      if (pathMatch) {
+        filePath = pathMatch[1];
+      }
+    }
+  } else if (originalFilePath.includes('/')) {
+    // If it's "bucket/path", extract just the path
+    const parts = originalFilePath.split('/');
+    if (parts.length > 1 && parts[0] === 'creator-assets') {
+      filePath = parts.slice(1).join('/');
+    } else if (parts.length > 1) {
+      // Assume first part is bucket, rest is path
+      filePath = parts.slice(1).join('/');
+    }
+  }
+
+  console.log('[SafeContractGenerator] Downloading contract from path:', filePath);
+
+  const { data: contractData, error: downloadError } = await supabase.storage
+    .from('creator-assets')
+    .download(filePath);
+
+  if (downloadError || !contractData) {
+    console.error('[SafeContractGenerator] Download error:', downloadError);
+    console.error('[SafeContractGenerator] Original path:', originalFilePath);
+    console.error('[SafeContractGenerator] Processed path:', filePath);
+    throw new Error(`Failed to download original contract: ${JSON.stringify(downloadError) || 'File not found'}`);
+  }
+
+  const contractBuffer = Buffer.from(await contractData.arrayBuffer());
+
+  // 2. Extract text from original contract
+  const contractText = await extractTextFromPdf(contractBuffer);
+
+  // 3. Fetch all issues and safe clauses for this report (if reportId is valid)
+  let issues: any[] = [];
+  let existingSafeClauses: any[] = [];
+
+  // Only fetch from database if reportId is not 'temp' (meaning it's a real report)
+  if (reportId && reportId !== 'temp') {
+    const { data: issuesData, error: issuesError } = await supabase
+      .from('protection_issues')
+      .select('*')
+      .eq('report_id', reportId);
+
+    if (issuesError) {
+      console.warn('[SafeContractGenerator] Failed to fetch issues, continuing without them:', issuesError.message);
+      // Continue without issues - we'll generate a basic safe contract
+    } else {
+      issues = issuesData || [];
+    }
+
+    // 4. Fetch existing safe clauses or generate new ones
+    const { data: safeClausesData } = await supabase
+      .from('safe_clauses')
+      .select('*')
+      .eq('report_id', reportId);
+
+    existingSafeClauses = safeClausesData || [];
+  } else {
+    console.warn('[SafeContractGenerator] No reportId provided, generating basic safe contract without issue-specific fixes');
+  }
+
+  const safeClausesMap = new Map<string, string>();
+
+  // Use existing safe clauses or generate new ones (only if we have issues)
+  if (issues && issues.length > 0) {
+    for (const issue of issues) {
+      const existingClause = existingSafeClauses?.find(
+        sc => sc.issue_id === issue.id
+      );
+
+      if (existingClause?.safe_clause) {
+        safeClausesMap.set(issue.clause_reference || issue.title, existingClause.safe_clause);
+      } else {
+        // Generate new safe clause
+        try {
+          const generated = await generateSafeClause({
+            originalClause: issue.clause_reference || '',
+            issueContext: issue.description,
+            issueCategory: issue.category
+          });
+
+          // Save to database (only if reportId is valid)
+          if (reportId && reportId !== 'temp') {
+            const insertData: any = {
+              report_id: reportId,
+              issue_id: issue.id,
+              original_clause: issue.clause_reference || '',
+              safe_clause: generated.safeClause,
+              explanation: generated.explanation || ''
+            };
+            await (supabase as any).from('safe_clauses').insert(insertData);
+          }
+
+          safeClausesMap.set(issue.clause_reference || issue.title, generated.safeClause);
+        } catch (error) {
+          console.warn(`[SafeContractGenerator] Failed to generate clause for issue ${issue.id}:`, error);
+          // Continue with other clauses
+        }
+      }
+    }
+  } else {
+    console.log('[SafeContractGenerator] No issues found, generating basic safe contract without clause replacements');
+  }
+
+  // 5. Replace risky clauses with safe clauses in contract text
+  let safeContractText = contractText;
+  for (const [originalClause, safeClause] of safeClausesMap.entries()) {
+    if (originalClause && safeClause) {
+      // Replace the original clause with safe clause
+      safeContractText = safeContractText.replace(
+        new RegExp(escapeRegex(originalClause), 'gi'),
+        safeClause
+      );
+    }
+  }
+
+  // 6. Generate HTML as the canonical source (PRIMARY OUTPUT)
+  const contractHtml = generateContractHtml(safeContractText, {
+    dealId: undefined, // reportId-based contracts don't have dealId
+    brandName: 'Brand',
+    creatorName: 'Creator',
+    generatedAt: new Date().toISOString(),
+  });
+
+  console.log('[SafeContractGenerator] HTML contract generated, length:', contractHtml.length);
+
+  // NOTE: PDF generation removed from default flow
+  // PDF is no longer generated by default - users can print from HTML or download as DOCX
+  // This aligns with legal workflow: Template → HTML → DOCX → Download
+
+  console.log('[SafeContractGenerator] Returning safe contract (HTML only - DOCX available on demand)');
+  console.log('[SafeContractGenerator] Has HTML:', !!contractHtml);
+
+  // Return HTML as primary output - DOCX is generated on-demand via download endpoint
+  return {
+    contractHtml, // PRIMARY OUTPUT - source of truth
+  };
+}
+
+/**
+ * Extract text from PDF buffer
+ * Handles PDF.js errors gracefully
+ */
+async function extractTextFromPdf(buffer: Buffer): Promise<string> {
+  try {
+    // Dynamically import pdfjs-dist
+    const pdfjsModule = await import('pdfjs-dist');
+    const pdfjsLib: any = pdfjsModule.default || pdfjsModule;
+
+    // Get getDocument function
+    let getDocument = pdfjsLib.getDocument || (pdfjsModule as any).getDocument;
+
+    if (!getDocument || typeof getDocument !== 'function') {
+      throw new Error('PDF.js getDocument function not found');
+    }
+
+    // Configure worker if needed
+    if (pdfjsLib.GlobalWorkerOptions) {
+      if (typeof process !== 'undefined' && process.versions && process.versions.node) {
+        pdfjsLib.GlobalWorkerOptions.workerSrc = '';
+      }
+    }
+
+    const uint8Array = new Uint8Array(buffer);
+    const loadingTask = getDocument({
+      data: uint8Array,
+      verbosity: 0,
+      stopAtErrors: false
+    });
+    const pdf = await loadingTask.promise;
+
+    let fullText = '';
+    for (let i = 1; i <= pdf.numPages; i++) {
+      const page = await pdf.getPage(i);
+      const textContent = await page.getTextContent();
+      const pageText = textContent.items
+        .map((item: any) => item.str || '')
+        .join(' ');
+      fullText += pageText + '\n';
+    }
+
+    return fullText;
+  } catch (error: any) {
+    console.error('[SafeContractGenerator] PDF extraction error:', error.message);
+    throw new Error(`Failed to extract text from PDF: ${error.message || 'PDF.js error'}`);
+  }
+}
+
+/**
+ * Generate PDF from safe contract text
+ * Falls back to text file if Puppeteer is unavailable
+ */
+/**
+ * Convert plain text contract to structured HTML
+ * Preserves sections, headings, lists, and formatting
+ */
+function convertTextToStructuredHtml(text: string): string {
+  let html = '';
+  const lines = text.split('\n');
+  let inList = false;
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i].trim();
+    const nextLine = i < lines.length - 1 ? lines[i + 1].trim() : '';
+
+    // Skip empty lines (will be handled by spacing)
+    if (!line) {
+      if (inList) {
+        html += '</ul>\n';
+        inList = false;
+      }
+      continue;
+    }
+
+    // Main title
+    if (line.includes('CREATOR–BRAND COLLABORATION AGREEMENT')) {
+      if (inList) {
+        html += '</ul>\n';
+        inList = false;
+      }
+      html += `<h1>${escapeHtml(line)}</h1>\n`;
+      continue;
+    }
+
+    // Section headings (numbered sections like "1. Scope of Work")
+    if (/^\d+\.\s+[A-Z]/.test(line)) {
+      if (inList) {
+        html += '</ul>\n';
+        inList = false;
+      }
+      html += `<div class="section"><h2>${escapeHtml(line)}</h2>\n`;
+      continue;
+    }
+
+    // Subheadings (like "Late Payment Protection" - all caps or title case, short)
+    if (line.length < 60 && /^[A-Z][a-zA-Z\s]+$/.test(line) && !line.includes(':') && !line.includes('•')) {
+      if (inList) {
+        html += '</ul>\n';
+        inList = false;
+      }
+      html += `<h3>${escapeHtml(line)}</h3>\n`;
+      continue;
+    }
+
+    // Bullet points
+    if (line.startsWith('•') || line.startsWith('-')) {
+      if (!inList) {
+        html += '<ul>\n';
+        inList = true;
+      }
+      const listItem = line.substring(1).trim();
+      html += `<li>${escapeHtml(listItem)}</li>\n`;
+      continue;
+    }
+
+    // Close list if we hit a non-list item
+    if (inList) {
+      html += '</ul>\n';
+      inList = false;
+    }
+
+    // Regular paragraphs
+    html += `<p>${escapeHtml(line)}</p>\n`;
+  }
+
+  // Close any open list
+  if (inList) {
+    html += '</ul>\n';
+  }
+
+  return html;
+}
+
+function escapeHtml(text: string): string {
+  return text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+/**
+ * Generate HTML contract as the canonical source
+ * This is the primary output format - PDF is optional and non-blocking
+ */
+export function generateContractHtml(
+  text: string,
+  metadata?: {
+    dealId?: string;
+    brandName?: string;
+    creatorName?: string;
+    generatedAt?: string;
+  }
+): string {
+  // POST-PROCESSING: Clean artifacts before HTML conversion
+  let processedText = text
+    // Remove .; artifacts
+    .replace(/\.\s*;\s*(\d)/g, '$1') // Remove .; before numbers
+    .replace(/([a-zA-Z0-9])\s*\.\s*;\s*/g, '$1.') // Remove .; after text
+    .replace(/\.\s*;\s*/g, '.') // Remove any remaining .;
+    // Normalize newlines (ensure double breaks between sections)
+    .replace(/\n{3,}/g, '\n\n') // Max 2 newlines
+    .replace(/\n\n\n/g, '\n\n') // Triple -> double
+    // Fix currency
+    .replace(/\bRs\.\s*(\d[\d,]*)/g, '₹$1')
+    .replace(/\bRs\s+(\d[\d,]*)/g, '₹$1')
+    .replace(/¹/g, '₹');
+
+  // Convert plain text to structured HTML
+  const structuredHtml = convertTextToStructuredHtml(processedText);
+
+  // Generate full HTML document with professional legal document styling
+  const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Contract - ${metadata?.brandName || 'Creator-Brand'} Collaboration Agreement</title>
+  <style>
+    /* Professional Legal Document Styling */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    
+    /* Screen view: Dark background with white paper container */
+    body {
+      font-family: 'Times New Roman', 'Times', serif;
+      background: #2d2d2d;
+      padding: 40px 20px;
+      min-height: 100vh;
+      line-height: 0;
+    }
+    
+    /* White paper container - centered, max 800px width */
+    /* Legal typography - Times New Roman, 11pt, left-aligned */
+    .contract-container {
+      max-width: 800px;
+      margin: 0 auto;
+      background: #ffffff;
+      padding: 60px 80px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+      line-height: 1.8;
+      font-size: 11pt;
+      color: #1a1a1a;
+      text-align: left;
+    }
+    
+    /* Document title - centered, bold, large */
+    h1 {
+      font-size: 18pt;
+      font-weight: bold;
+      text-align: center;
+      margin-bottom: 40px;
+      margin-top: 0;
+      color: #000000;
+      letter-spacing: 0.5px;
+      page-break-after: avoid;
+    }
+    
+    /* Section headings - bold, clear hierarchy */
+    h2 {
+      font-size: 14pt;
+      font-weight: bold;
+      margin-top: 36px;
+      margin-bottom: 18px;
+      color: #000000;
+      page-break-after: avoid;
+      page-break-inside: avoid;
+    }
+    
+    /* Subsection headings */
+    h3 {
+      font-size: 12pt;
+      font-weight: bold;
+      margin-top: 28px;
+      margin-bottom: 14px;
+      color: #000000;
+      page-break-after: avoid;
+    }
+    
+    /* Paragraphs - left-aligned, proper spacing */
+    p {
+      margin: 14px 0;
+      text-align: left;
+      line-height: 1.8;
+      orphans: 3;
+      widows: 3;
+    }
+    
+    /* Lists - proper indentation and spacing */
+    ul, ol {
+      margin: 18px 0;
+      padding-left: 36px;
+    }
+    
+    li {
+      margin: 10px 0;
+      line-height: 1.8;
+      text-align: left;
+    }
+    
+    /* Section spacing */
+    .section {
+      margin-bottom: 36px;
+      page-break-inside: avoid;
+    }
+    
+    /* Footer - centered, smaller font */
+    .footer {
+      margin-top: 60px;
+      padding-top: 32px;
+      border-top: 1px solid #d1d5db;
+      text-align: center;
+      font-size: 10pt;
+      color: #4b5563;
+      page-break-inside: avoid;
+    }
+    
+    .footer p {
+      text-align: center;
+      margin: 10px 0;
+      line-height: 1.6;
+    }
+    
+    .footer p:first-child {
+      font-weight: 500;
+      margin-bottom: 12px;
+    }
+    
+    /* Print actions - fixed position, hidden in print */
+    .print-actions {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 1000;
+      background: #ffffff;
+      padding: 12px 16px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+    
+    .print-actions button {
+      background: #2563eb;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      transition: background 0.2s;
+    }
+    
+    .print-actions button:hover {
+      background: #1d4ed8;
+    }
+    
+    /* Print styles - remove background, show white paper */
+    @media print {
+      @page {
+        margin: 20mm 15mm;
+        size: A4;
+      }
+      
+      body {
+        background: #ffffff;
+        padding: 0;
+      }
+      
+      .contract-container {
+        max-width: 100%;
+        padding: 0;
+        box-shadow: none;
+        margin: 0;
+      }
+      
+      .print-actions {
+        display: none;
+      }
+      
+      /* Ensure proper page breaks */
+      h1, h2, h3 {
+        page-break-after: avoid;
+      }
+      
+      p, li {
+        page-break-inside: avoid;
+      }
+    }
+    
+    /* Mobile responsiveness */
+    @media (max-width: 900px) {
+      body {
+        padding: 20px 10px;
+      }
+      
+      .contract-container {
+        padding: 40px 30px;
+      }
+      
+      .print-actions {
+        position: relative;
+        top: auto;
+        right: auto;
+        margin-bottom: 20px;
+        text-align: center;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="print-actions no-print">
+    <button onclick="window.print()">Print / Save as PDF</button>
+  </div>
+  
+  <div class="contract-container">
+    ${structuredHtml}
+    
+    <div class="footer">
+      <p><strong>Disclaimer:</strong> This agreement was generated using the CreatorArmour Contract Scanner based on information provided by the Parties. CreatorArmour is not a party to this agreement and does not provide legal representation.</p>
+      <p>The Parties are advised to independently review this agreement before execution.</p>
+    </div>
+  </div>
+</body>
+</html>`;
+
+  return html;
+}
+
+export async function generateSafeContractPdf(text: string, reportId: string): Promise<Buffer> {
+  // CRITICAL: Contracts MUST use Puppeteer only - PDFKit is not acceptable for legal documents
+  // PDFKit destroys formatting (line breaks, headings, lists) and is only suitable for invoices/receipts
+
+  // SAFETY ASSERTION: Verify contract text structure before generation
+  if (!text || text.length < 500) {
+    throw new Error('Contract text is too short or empty. Cannot generate PDF.');
+  }
+
+  // Assert that text contains newlines (structure indicator)
+  if (!text.includes('\n')) {
+    throw new Error('Contract text appears malformed (no line breaks). Cannot generate PDF.');
+  }
+
+  // Assert that key sections exist
+  const requiredSections = [
+    'CREATOR–BRAND COLLABORATION AGREEMENT',
+    'Scope of Work',
+    'Compensation & Payment Terms'
+  ];
+
+  const missingSections = requiredSections.filter(section => !text.includes(section));
+  if (missingSections.length > 0) {
+    throw new Error(`Contract text is missing required sections: ${missingSections.join(', ')}`);
+  }
+
+  // POST-PROCESSING: Clean artifacts before HTML conversion
+  let processedText = text
+    // Remove .; artifacts
+    .replace(/\.\s*;\s*(\d)/g, '$1') // Remove .; before numbers
+    .replace(/([a-zA-Z0-9])\s*\.\s*;\s*/g, '$1.') // Remove .; after text
+    .replace(/\.\s*;\s*/g, '.') // Remove any remaining .;
+    // Normalize newlines (ensure double breaks between sections)
+    .replace(/\n{3,}/g, '\n\n') // Max 2 newlines
+    .replace(/\n\n\n/g, '\n\n') // Triple -> double
+    // Fix currency
+    .replace(/\bRs\.\s*(\d[\d,]*)/g, '₹$1')
+    .replace(/\bRs\s+(\d[\d,]*)/g, '₹$1')
+    .replace(/¹/g, '₹');
+
+  // Convert plain text to structured HTML
+  const structuredHtml = convertTextToStructuredHtml(processedText);
+
+  // Try Puppeteer (REQUIRED - no fallback)
+  try {
+    let browser;
+
+    if (process.env.VERCEL) {
+      // Vercel-compatible Puppeteer initialization
+      const chromium = (await import('@sparticuz/chromium')).default;
+      const puppeteerCore = (await import('puppeteer-core')).default;
+
+      browser = await puppeteerCore.launch({
+        args: chromium.args,
+        defaultViewport: chromium.defaultViewport,
+        executablePath: await chromium.executablePath(),
+        headless: chromium.headless,
+      });
+    } else {
+      // Local / Render initialization (puppeteer-core requires an explicit Chrome path)
+      const puppeteerCore = (await import('puppeteer-core')).default;
+      const executablePath: string | undefined = process.env.PUPPETEER_EXECUTABLE_PATH;
+      if (!executablePath) {
+        throw new Error(
+          'PUPPETEER_EXECUTABLE_PATH is required for local contract PDF generation when using puppeteer-core.'
+        );
+      }
+
+      // Build launch options
+      const launchOptions: any = {
+        executablePath,
+        headless: 'new',
+        args: [
+          '--no-sandbox',
+          '--disable-setuid-sandbox',
+          '--disable-dev-shm-usage',
+          '--disable-gpu',
+          '--disable-extensions',
+          '--disable-background-timer-throttling',
+          '--disable-backgrounding-occluded-windows',
+          '--disable-renderer-backgrounding',
+          '--disable-features=TranslateUI',
+          '--disable-ipc-flooding-protection',
+          '--disable-software-rasterizer',
+          '--disable-web-security',
+          '--disable-features=VizDisplayCompositor',
+          '--disable-crash-reporter',
+          '--disable-breakpad',
+        ],
+        timeout: 30000,
+      };
+      browser = await puppeteerCore.launch(launchOptions);
+    }
+
+    try {
+      // Wrap structured HTML in full document
+      const html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <style>
+    body {
+      font-family: 'Times New Roman', serif;
+      line-height: 1.7;
+      padding: 40px;
+      color: #333;
+      font-size: 11pt;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 30px;
+      color: #667eea;
+      font-size: 18pt;
+    }
+    h2 {
+      font-size: 14pt;
+      font-weight: bold;
+      margin-top: 24px;
+      margin-bottom: 12px;
+      page-break-after: avoid;
+    }
+    h3 {
+      font-size: 12pt;
+      font-weight: bold;
+      margin-top: 18px;
+      margin-bottom: 8px;
+    }
+    p {
+      margin: 12px 0;
+      text-align: justify;
+    }
+    ul, ol {
+      margin: 12px 0;
+      padding-left: 24px;
+    }
+    li {
+      margin: 6px 0;
+      line-height: 1.7;
+    }
+    .header {
+      text-align: center;
+      margin-bottom: 40px;
+      padding-bottom: 20px;
+      border-bottom: 2px solid #e5e7eb;
+    }
+    .section {
+      margin-bottom: 24px;
+      page-break-inside: avoid;
+    }
+    .footer {
+      margin-top: 40px;
+      padding-top: 20px;
+      border-top: 1px solid #e5e7eb;
+      text-align: center;
+      font-size: 10pt;
+      color: #6b7280;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>Safe Contract Version</h1>
+    <p>Report ID: ${reportId}</p>
+    <p>Generated: ${new Date().toLocaleString()}</p>
+  </div>
+  ${structuredHtml}
+  <div class="footer">
+    <p>This agreement was generated using the CreatorArmour Contract Scanner based on information provided by the Parties. CreatorArmour is not a party to this agreement and does not provide legal representation.</p>
+    <p style="margin-top: 8px; font-weight: 500;">The Parties are advised to independently review this agreement before execution.</p>
+  </div>
+</body>
+</html>
+      `;
+
+      const page = await browser.newPage();
+      await page.setContent(html, { waitUntil: 'networkidle0' });
+
+      const pdf = await page.pdf({
+        format: 'A4',
+        printBackground: true,
+        margin: { top: '20mm', right: '15mm', bottom: '20mm', left: '15mm' }
+      });
+
+      await browser.close();
+      return Buffer.from(pdf);
+    } catch (error) {
+      await browser.close().catch(() => { });
+      throw error;
+    }
+  } catch (puppeteerError: any) {
+    // CRITICAL: Do NOT fallback to PDFKit for contracts
+    // PDFKit destroys formatting and is unacceptable for legal documents
+    console.error('[SafeContractGenerator] Puppeteer failed:', puppeteerError.message);
+
+    // Provide helpful error message
+    if (puppeteerError.message?.includes('Could not find Chrome')) {
+      throw new Error(
+        'Contract PDF generation failed. Chrome/Puppeteer is required.\n\n' +
+        'To fix this, run: npx puppeteer browsers install chrome\n\n' +
+        'PDFKit fallback is disabled for legal contracts to ensure proper formatting.'
+      );
+    }
+
+    throw new Error(
+      `Contract PDF generation failed. Puppeteer is required for legal documents.\n\n` +
+      `Error: ${puppeteerError.message}\n\n` +
+      `PDFKit fallback is intentionally disabled to prevent formatting corruption.`
+    );
+  }
+}
+
+/**
+ * Escape special regex characters
+ */
+function escapeRegex(str: string): string {
+  return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+

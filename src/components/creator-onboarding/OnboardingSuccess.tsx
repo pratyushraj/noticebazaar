@@ -53,7 +53,7 @@ const OnboardingSuccess = ({ userName }: OnboardingSuccessProps) => {
           You're All Set! 🎉
         </h1>
         <p className="text-xl text-purple-200">
-          Welcome to NoticeBazaar, {userName || 'Creator'}!
+          Welcome to Creator Armour, {userName || 'Creator'}!
         </p>
       </motion.div>
 

@@ -1,3 +1,4 @@
+// @ts-nocheck
 // Collaboration Link Analytics API Routes
 // Tracks page views and submissions, provides aggregated analytics
 

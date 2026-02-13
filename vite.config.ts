@@ -6,44 +6,28 @@ import { existsSync } from "fs";
 
 // Dynamically resolve React paths to ensure single instance
 function resolveReactPath() {
-  // Try pnpm structure first (most common)
-  const pnpmReactPath = path.resolve(__dirname, "./node_modules/.pnpm/react@18.3.1/node_modules/react");
-  const pnpmReactDomPath = path.resolve(__dirname, "./node_modules/.pnpm/react-dom@18.3.1_react@18.3.1/node_modules/react-dom");
-  
-  if (existsSync(pnpmReactPath) && existsSync(pnpmReactDomPath)) {
-    return {
-      react: pnpmReactPath,
-      reactDom: pnpmReactDomPath,
-      jsxRuntime: path.join(pnpmReactPath, "jsx-runtime"),
-      jsxDevRuntime: path.join(pnpmReactPath, "jsx-dev-runtime"),
-    };
-  }
-  
-  // Fallback to standard node_modules structure
-  const standardReactPath = path.resolve(__dirname, "./node_modules/react");
-  const standardReactDomPath = path.resolve(__dirname, "./node_modules/react-dom");
-  
+  const root = process.cwd();
   return {
-    react: standardReactPath,
-    reactDom: standardReactDomPath,
-    jsxRuntime: path.join(standardReactPath, "jsx-runtime"),
-    jsxDevRuntime: path.join(standardReactPath, "jsx-dev-runtime"),
+    react: path.resolve(root, "node_modules/react"),
+    reactDom: path.resolve(root, "node_modules/react-dom"),
+    jsxRuntime: path.resolve(root, "node_modules/react/jsx-runtime"),
+    jsxDevRuntime: path.resolve(root, "node_modules/react/jsx-dev-runtime"),
   };
 }
 
 const reactPaths = resolveReactPath();
 
 // Plugin to fix use-sync-external-store/shim CommonJS export issue
-const useSyncExternalStoreShimPlugin = () => {
+const useSyncExternalStoreShimPlugin = (): any => {
   const virtualModuleId = '\0virtual:use-sync-external-store-shim';
   return {
     name: 'use-sync-external-store-shim-fix',
-    enforce: 'pre', // Run before other plugins
-    resolveId(id, importer) {
+    enforce: 'pre' as const, // Run before other plugins
+    resolveId(id: string) {
       // Intercept use-sync-external-store/shim imports (any form)
-      if (id === 'use-sync-external-store/shim' || 
-          id.endsWith('use-sync-external-store/shim') ||
-          id.includes('use-sync-external-store/shim/index')) {
+      if (id === 'use-sync-external-store/shim' ||
+        id.endsWith('use-sync-external-store/shim') ||
+        id.includes('use-sync-external-store/shim/index')) {
         return virtualModuleId;
       }
       // Also catch the actual file path from pnpm
@@ -52,7 +36,7 @@ const useSyncExternalStoreShimPlugin = () => {
       }
       return null;
     },
-    load(id) {
+    load(id: string) {
       // Handle our virtual module
       if (id === virtualModuleId) {
         // Return ESM that exports React's built-in useSyncExternalStore
@@ -68,23 +52,20 @@ const useSyncExternalStoreShimPlugin = () => {
 };
 
 // Plugin to force React into a single pre-bundled chunk
-const forceSingleReactChunkPlugin = () => {
+const forceSingleReactChunkPlugin = (): any => {
   return {
     name: 'force-single-react-chunk',
-    enforce: 'pre',
-    resolveId(id) {
+    enforce: 'pre' as const,
+    resolveId(id: string) {
       // Force all React imports to resolve to the same location
-      if (id === 'react' || id === 'react-dom' || id === 'react/jsx-runtime' || id === 'react/jsx-dev-runtime') {
-        // Return null to let Vite handle it, but ensure dedupe works
-        return null;
-      }
+      if (id === 'react') return reactPaths.react;
+      if (id === 'react-dom') return reactPaths.reactDom;
+      if (id === 'react/jsx-runtime') return reactPaths.jsxRuntime;
+      if (id === 'react/jsx-dev-runtime') return reactPaths.jsxDevRuntime;
       return null;
     },
-    configResolved(config) {
+    configResolved() {
       // Ensure React dependencies are bundled together
-      if (config.optimizeDeps) {
-        // This will be handled in optimizeDeps config
-      }
     },
   };
 };
@@ -133,7 +114,7 @@ export default defineConfig(() => ({
       "use-sync-external-store/shim": path.resolve(__dirname, "./src/lib/use-sync-external-store-shim.ts"),
     },
     // Critical: Dedupe React to prevent multiple instances
-    dedupe: ["react", "react-dom", "react/jsx-runtime", "react/jsx-dev-runtime", "use-sync-external-store"],
+    dedupe: ["react", "react-dom", "react/jsx-runtime", "react/jsx-dev-runtime", "use-sync-external-store", "framer-motion"],
     conditions: ["import", "module", "browser", "default"],
     // Don't preserve symlinks - resolve to actual files for consistent React instance
     preserveSymlinks: false,
@@ -141,7 +122,7 @@ export default defineConfig(() => ({
   // Force single chunk for React in dev mode
   esbuild: {
     // This helps ensure consistent module resolution
-    logOverride: { 'this-is-undefined-in-esm': 'silent' },
+    logOverride: { 'this-is-undefined-in-esm': 'silent' as any },
   },
   optimizeDeps: {
     // Include React to ensure proper jsx-runtime resolution
@@ -161,7 +142,7 @@ export default defineConfig(() => ({
     holdUntilCrawlEnd: true,
     esbuildOptions: {
       plugins: [],
-      format: 'esm',
+      format: 'esm' as any,
     },
     // Force React to be in a single pre-bundled chunk
     entries: [

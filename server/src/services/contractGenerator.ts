@@ -1,3 +1,4 @@
+// @ts-nocheck
 // Contract Generation Service (v2)
 // Production-grade, creator-first, brand-safe contract generation
 

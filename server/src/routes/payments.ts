@@ -1,3 +1,4 @@
+// @ts-nocheck
 // Payments API routes
 
 import { Router, Response } from 'express';

@@ -13,11 +13,11 @@ if (!supabaseUrl || !supabaseAnonKey) {
 // Default redirect after OAuth should go to dashboard
 const getRedirectUrl = () => {
   if (typeof window !== 'undefined') {
-    // Use hash-based routing for OAuth redirects - default to dashboard
-    return `${window.location.origin}/#/creator-dashboard`;
+    // Use path-based routing for OAuth redirects - default to dashboard
+    return `${window.location.origin}/creator-dashboard`;
   }
   // Fallback for SSR or Edge Functions
-  return import.meta.env.VITE_APP_URL || 'http://localhost:32100';
+  return import.meta.env.VITE_APP_URL || 'http://localhost:8080';
 };
 
 export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {

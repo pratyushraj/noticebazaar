@@ -18,21 +18,8 @@ import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { useSession } from '@/contexts/SessionContext';
 import { supabase } from '@/integrations/supabase/client';
+import { getApiBaseUrl } from '@/lib/utils/api';
 
-// Helper to get API base URL
-function getApiBaseUrl(): string {
-  if (typeof window === 'undefined') return 'http://localhost:3001';
-  
-  const envUrl = import.meta.env.VITE_API_BASE_URL;
-  if (envUrl) return envUrl.replace(/\/$/, '');
-  
-  const origin = window.location.origin;
-  if (origin.includes('noticebazaar.com')) {
-    return 'https://api.noticebazaar.com';
-  }
-  
-  return 'http://localhost:3001';
-}
 
 const issueTypes = [
   'Refund not processed',
@@ -51,7 +38,7 @@ const ComplaintFormPage: React.FC = () => {
   const [searchParams] = useSearchParams();
   const category = searchParams.get('category') || null;
   const categoryName = searchParams.get('categoryName') || '';
-  
+
   const { profile, user } = useSession();
   const [currentStep, setCurrentStep] = useState<Step>('form');
   const [formData, setFormData] = useState({
@@ -62,9 +49,8 @@ const ComplaintFormPage: React.FC = () => {
   });
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isSuccess, setIsSuccess] = useState(false);
   const [complaintId, setComplaintId] = useState<string | null>(null);
-  
+
   // Pre-filing actions state
   const [preFilingActions, setPreFilingActions] = useState({
     wants_lawyer_review: false,
@@ -227,11 +213,11 @@ const ComplaintFormPage: React.FC = () => {
 
       setIsSubmitting(false);
       setCurrentStep('success');
-      
+
       // Redirect after showing success
       setTimeout(() => {
         navigate('/dashboard/consumer-complaints');
-        
+
         if (newStatus === 'lawyer_review_requested') {
           toast.success('Complaint submitted for lawyer review. You\'ll be notified when the review is complete.');
         } else if (newStatus === 'notice_generated') {
@@ -256,10 +242,10 @@ const ComplaintFormPage: React.FC = () => {
 
   // Check if form step 1 is valid (Company & Issue)
   const isStep1Valid = formData.companyName.trim() && formData.issueType;
-  
+
   // Check if form step 2 is valid (Details)
   const isStep2Valid = formData.description.trim();
-  
+
   // Current form step (1-3)
   const formStep = uploadedFile ? 3 : formData.description.trim() ? 2 : 1;
 
@@ -481,7 +467,7 @@ const ComplaintFormPage: React.FC = () => {
         <div className="mb-6">
           <div className="flex items-center gap-2 mb-2">
             <div className="flex-1 h-1 bg-white/10 rounded-full overflow-hidden">
-              <div 
+              <div
                 className="h-full bg-emerald-400 transition-all duration-300"
                 style={{ width: `${(formStep / 3) * 100}%` }}
               />

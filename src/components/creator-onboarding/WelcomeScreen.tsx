@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from 'framer-motion';
-import { Sparkles, Shield, CreditCard, Briefcase, ArrowRight, Check } from 'lucide-react';
+import { Sparkles, Shield, CreditCard, Briefcase, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface WelcomeScreenProps {
@@ -49,7 +49,7 @@ const WelcomeScreen = ({ onNext, userName }: WelcomeScreenProps) => {
         >
           <Sparkles className="w-10 h-10 text-white" />
         </motion.div>
-        
+
         <motion.h1
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -58,14 +58,14 @@ const WelcomeScreen = ({ onNext, userName }: WelcomeScreenProps) => {
         >
           Welcome{userName ? `, ${userName}` : ''}! 👋
         </motion.h1>
-        
+
         <motion.p
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4 }}
           className="text-xl text-purple-200 max-w-lg mx-auto"
         >
-          Let's set up your NoticeBazaar account in just 2 minutes
+          Let's set up your Creator Armour account in just 2 minutes
         </motion.p>
       </div>
 
@@ -86,11 +86,10 @@ const WelcomeScreen = ({ onNext, userName }: WelcomeScreenProps) => {
               transition={{ delay: 0.6 + index * 0.1 }}
               className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 hover:bg-white/15 transition-all"
             >
-              <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-4 mx-auto ${
-                feature.color === 'text-blue-400' ? 'bg-gradient-to-br from-blue-500/20 to-blue-400/10' :
+              <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-4 mx-auto ${feature.color === 'text-blue-400' ? 'bg-gradient-to-br from-blue-500/20 to-blue-400/10' :
                 feature.color === 'text-green-400' ? 'bg-gradient-to-br from-green-500/20 to-green-400/10' :
-                'bg-gradient-to-br from-purple-500/20 to-purple-400/10'
-              }`}>
+                  'bg-gradient-to-br from-purple-500/20 to-purple-400/10'
+                }`}>
                 <Icon className={`w-6 h-6 ${feature.color}`} />
               </div>
               <h3 className="font-semibold text-white mb-2">{feature.title}</h3>

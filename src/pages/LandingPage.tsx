@@ -3,16 +3,15 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useSession } from '@/contexts/SessionContext';
-import { 
-  Shield, FileText, DollarSign, MessageCircle, 
-  CheckCircle, Star, Users, ArrowRight, 
+import {
+  Shield, FileText, DollarSign, MessageCircle,
+  CheckCircle, Star, Users, ArrowRight,
   Menu, X, Loader2, ChevronRight,
-  Instagram, Youtube, Lock, AlertCircle,
-  Clock, TrendingUp, BarChart3, Zap,
-  Copy, ExternalLink, Link2, Send
+  Instagram, Youtube,
+  Clock, TrendingUp, BarChart3,
+  Link2
 } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { cn } from '@/lib/utils';
 
 const LandingPage = () => {
   const { session, loading, profile } = useSession();
@@ -22,11 +21,11 @@ const LandingPage = () => {
   // SEO Meta Tags
   useEffect(() => {
     document.title = 'Creator Armour — Replace Brand DMs With One Secure Collaboration Link';
-    
+
     const updateMetaTag = (property: string, content: string) => {
-      let meta = document.querySelector(`meta[property="${property}"]`) || 
-                 document.querySelector(`meta[name="${property}"]`);
-      
+      let meta = document.querySelector(`meta[property="${property}"]`) ||
+        document.querySelector(`meta[name="${property}"]`);
+
       if (!meta) {
         meta = document.createElement('meta');
         if (property.startsWith('og:') || property.startsWith('twitter:')) {
@@ -36,7 +35,7 @@ const LandingPage = () => {
         }
         document.head.appendChild(meta);
       }
-      
+
       meta.setAttribute('content', content);
     };
 
@@ -51,12 +50,12 @@ const LandingPage = () => {
   useEffect(() => {
     // Only redirect if we're sure user is logged in (not during initial loading)
     if (loading) return; // Wait for auth to resolve
-    
+
     if (session && profile) {
       const userEmail = session?.user?.email?.toLowerCase();
       const isPratyush = userEmail === 'pratyushraj@outlook.com';
-      
-      if (isPratyush || profile.role === 'creator' || !profile.role) {
+
+      if (isPratyush || profile.role === 'creator' || profile.role === 'client' || !profile.role) {
         navigate('/creator-dashboard', { replace: true });
       } else if (profile.role === 'admin') {
         navigate('/admin-dashboard', { replace: true });
@@ -67,6 +66,16 @@ const LandingPage = () => {
       }
     }
   }, [session, profile, loading, navigate]);
+
+  // Prevent flashing content if we're about to redirect or loading session
+  // We show the loader if we are in the process of redirecting (session + profile exists)
+  if (loading || (session && profile)) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-purple-400" />
+      </div>
+    );
+  }
 
   const painPoints = [
     {
@@ -251,7 +260,7 @@ const LandingPage = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 text-white overflow-hidden">
       {/* Navigation */}
-      <nav 
+      <nav
         className="sticky top-0 z-50 bg-purple-900/80 backdrop-blur-xl border-b border-white/5"
         style={{
           paddingTop: 'env(safe-area-inset-top, 0px)'
@@ -275,8 +284,8 @@ const LandingPage = () => {
               <a href="#protection" className="text-purple-200 hover:text-white transition-colors">Protection</a>
               <a href="#pricing" className="text-purple-200 hover:text-white transition-colors">Pricing</a>
               <Link to="/login" className="text-purple-200 hover:text-white transition-colors">Login</Link>
-              <Link 
-                to="/signup" 
+              <Link
+                to="/signup"
                 className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 px-6 py-2 rounded-full font-semibold transition-all transform hover:scale-105"
               >
                 Get Started Free
@@ -308,8 +317,8 @@ const LandingPage = () => {
               <a href="#protection" onClick={() => setIsMenuOpen(false)} className="block py-2 text-purple-200 hover:text-white transition-colors">Protection</a>
               <a href="#pricing" onClick={() => setIsMenuOpen(false)} className="block py-2 text-purple-200 hover:text-white transition-colors">Pricing</a>
               <Link to="/login" className="block py-2 text-purple-200 hover:text-white transition-colors">Login</Link>
-              <Link 
-                to="/signup" 
+              <Link
+                to="/signup"
                 className="block bg-gradient-to-r from-purple-600 to-pink-600 px-6 py-2 rounded-full font-semibold text-center transition-all"
               >
                 Get Started Free
@@ -320,7 +329,7 @@ const LandingPage = () => {
       </nav>
 
       {/* 1️⃣ HERO SECTION */}
-      <section 
+      <section
         className="relative pt-12 md:pt-32 pb-16 md:pb-20 px-4 sm:px-6 lg:px-8 overflow-hidden"
         style={{
           paddingTop: 'max(3rem, calc(env(safe-area-inset-top, 0px) + 3rem))',
@@ -362,7 +371,7 @@ const LandingPage = () => {
                   Collaboration Link
                 </span>
               </h1>
-              
+
               {/* Subheadline */}
               <p className="text-lg md:text-2xl text-white/90 font-medium mb-4 max-w-3xl mx-auto">
                 Creator Armour gives you a single link where brands submit deals, contracts are auto-generated, and payments are tracked.
@@ -391,7 +400,7 @@ const LandingPage = () => {
                 <span className="relative z-10">Get My Collab Link</span>
                 <ArrowRight className="w-5 h-5 relative z-10 transition-transform duration-300 group-hover:translate-x-1" />
               </Link>
-              
+
               <button
                 onClick={() => {
                   const element = document.getElementById('solution');
@@ -410,52 +419,74 @@ const LandingPage = () => {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.8, delay: 0.4 }}
-              className="flex items-center justify-center gap-3 mb-12 text-sm text-purple-300/80"
+              className="flex flex-wrap items-center justify-center gap-3 md:gap-6 mb-12 text-sm text-purple-200/60"
             >
-              <CheckCircle className="w-4 h-4 text-green-400" />
-              <span>No card required</span>
-              <span className="text-purple-400/50">•</span>
-              <span>Takes under 60 seconds</span>
-              <span className="text-purple-400/50">•</span>
-              <span>Free forever plan</span>
+              <div className="flex items-center gap-2">
+                <CheckCircle className="w-4 h-4 text-green-400" />
+                <span>No card required</span>
+              </div>
+              <div className="hidden md:block h-1 w-1 rounded-full bg-purple-500/30"></div>
+              <div className="flex items-center gap-2">
+                <Clock className="w-4 h-4 text-blue-400" />
+                <span>Takes 60 seconds</span>
+              </div>
+              <div className="hidden md:block h-1 w-1 rounded-full bg-purple-500/30"></div>
+              <div className="flex items-center gap-2">
+                <Shield className="w-4 h-4 text-pink-400" />
+                <span>Free forever plan</span>
+              </div>
             </motion.div>
 
-            {/* Visual: Collab Link UI Mock */}
+            {/* Visual: Premium Hero Asset */}
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.4 }}
-              className="max-w-4xl mx-auto"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 1, delay: 0.5 }}
+              className="relative max-w-5xl mx-auto"
             >
-              <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 md:p-8 border border-white/20 shadow-2xl">
-                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4">
-                  <div className="flex-1">
-                    <h3 className="text-xl md:text-2xl font-bold mb-2">creatorarmour.com/collab/yourname</h3>
-                    <p className="text-purple-200 text-sm">Your personalized collaboration link</p>
+              <div className="relative z-10 p-1 md:p-2 bg-gradient-to-br from-purple-500/20 to-pink-500/20 rounded-[2.5rem] backdrop-blur-3xl border border-white/10 shadow-[0_0_50px_rgba(168,85,247,0.15)] overflow-hidden">
+                <img
+                  src="/creator_armour_hero_mockup.png"
+                  alt="Creator Armour Platform Mockup"
+                  className="w-full h-auto rounded-[2rem] shadow-2xl"
+                />
+
+                {/* Floating UI Badges */}
+                <motion.div
+                  animate={{ y: [0, -10, 0] }}
+                  transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+                  className="absolute top-1/4 -left-4 md:-left-8 bg-black/60 backdrop-blur-xl border border-white/10 p-4 rounded-2xl hidden md:block"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-green-500/20 flex items-center justify-center">
+                      <DollarSign className="w-5 h-5 text-green-400" />
+                    </div>
+                    <div>
+                      <div className="text-xs text-purple-300">New Deal Received</div>
+                      <div className="text-sm font-bold">₹75,000 Protected</div>
+                    </div>
                   </div>
-                  <div className="flex gap-2">
-                    <button className="px-4 py-2 bg-purple-600/30 hover:bg-purple-600/40 rounded-lg border border-purple-500/30 flex items-center gap-2 text-sm font-medium transition-colors">
-                      <Copy className="w-4 h-4" />
-                      Copy Link
-                    </button>
-                    <button className="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg border border-white/20 flex items-center gap-2 text-sm font-medium transition-colors">
-                      <ExternalLink className="w-4 h-4" />
-                      Preview
-                    </button>
+                </motion.div>
+
+                <motion.div
+                  animate={{ y: [0, 10, 0] }}
+                  transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+                  className="absolute bottom-1/4 -right-4 md:-right-8 bg-black/60 backdrop-blur-xl border border-white/10 p-4 rounded-2xl hidden md:block"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center">
+                      <Shield className="w-5 h-5 text-blue-400" />
+                    </div>
+                    <div>
+                      <div className="text-xs text-purple-300">Contract Status</div>
+                      <div className="text-sm font-bold">Legally Signed</div>
+                    </div>
                   </div>
-                </div>
-                <div className="flex flex-wrap gap-2 pt-4 border-t border-white/10">
-                  <button className="px-3 py-1.5 bg-green-500/20 hover:bg-green-500/30 rounded-lg border border-green-500/30 text-green-300 text-xs font-medium transition-colors">
-                    WhatsApp
-                  </button>
-                  <button className="px-3 py-1.5 bg-blue-500/20 hover:bg-blue-500/30 rounded-lg border border-blue-500/30 text-blue-300 text-xs font-medium transition-colors">
-                    Email
-                  </button>
-                  <button className="px-3 py-1.5 bg-pink-500/20 hover:bg-pink-500/30 rounded-lg border border-pink-500/30 text-pink-300 text-xs font-medium transition-colors">
-                    Instagram
-                  </button>
-                </div>
+                </motion.div>
               </div>
+
+              {/* Decorative Glow */}
+              <div className="absolute -inset-4 bg-gradient-to-r from-purple-600/20 to-pink-600/20 blur-[100px] -z-10" />
             </motion.div>
           </div>
         </div>
@@ -949,7 +980,7 @@ const LandingPage = () => {
           </div>
           <div className="pt-8 border-t border-white/10 flex flex-col md:flex-row items-center justify-between gap-4">
             <p className="text-sm text-purple-300">
-              © 2024 CreatorArmour. All rights reserved.
+              © 2026 CreatorArmour. All rights reserved.
             </p>
             <p className="text-xs text-purple-400/70 italic">
               CreatorArmour is a software platform and does not provide legal advice or representation.

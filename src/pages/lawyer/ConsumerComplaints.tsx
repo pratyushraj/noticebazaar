@@ -10,6 +10,7 @@ import {
   Scale, Calendar, User, Building2, FileCheck, Filter
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { getApiBaseUrl } from '@/lib/utils/api';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -77,22 +78,6 @@ const SEVERITY_CONFIG: Record<string, { label: string; color: string; bgColor: s
 
 type StatusFilter = 'all' | 'lawyer_review_requested' | 'notice_generated' | 'ready_to_file';
 
-function getApiBaseUrl(): string {
-  if (typeof window === 'undefined') return 'http://localhost:3001';
-  
-  // Check for explicit API base URL
-  const envUrl = import.meta.env.VITE_API_BASE_URL;
-  if (envUrl) return envUrl.replace(/\/$/, '');
-  
-  // Auto-detect from current origin
-  const origin = window.location.origin;
-  if (origin.includes('noticebazaar.com')) {
-    return 'https://api.noticebazaar.com';
-  }
-  
-  // Default to localhost for development
-  return 'http://localhost:3001';
-}
 
 export default function ConsumerComplaints() {
   const { user } = useSession();
@@ -212,13 +197,13 @@ export default function ConsumerComplaints() {
 
       const data = await response.json();
       setSelectedComplaint(data.complaint);
-      
+
       // Clear internal notes after successful update
       setInternalNotes('');
-      
+
       // Refresh list
       await fetchComplaints();
-      
+
       toast.success('Complaint status updated');
     } catch (error: any) {
       console.error('Error updating status:', error);
@@ -236,7 +221,7 @@ export default function ConsumerComplaints() {
       // Upload to complaint-proofs bucket
       const fileExt = file.name.split('.').pop();
       const fileName = `${selectedComplaint.id}/notice-${Date.now()}.${fileExt}`;
-      
+
       const { error: uploadError } = await supabase.storage
         .from('complaint-proofs')
         .upload(fileName, file);
@@ -252,7 +237,7 @@ export default function ConsumerComplaints() {
 
       // Update complaint status
       await handleUpdateStatus('notice_generated', urlData.publicUrl);
-      
+
       toast.success('Notice uploaded successfully');
     } catch (error: any) {
       console.error('Error uploading notice:', error);
@@ -419,7 +404,7 @@ export default function ConsumerComplaints() {
                           </TooltipProvider>
                         )}
                       </div>
-                      
+
                       <div className="space-y-1 text-sm text-white/70 ml-8">
                         <div className="flex items-center gap-2">
                           <span className="text-white/50">Issue:</span>
@@ -689,7 +674,7 @@ export default function ConsumerComplaints() {
                         Mark Review Complete
                       </Button>
                     )}
-                    
+
                     {selectedComplaint.wants_notice_draft && !selectedComplaint.notice_draft_url && (
                       <label className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-500 rounded-lg cursor-pointer transition-colors">
                         <Upload className="w-4 h-4" />

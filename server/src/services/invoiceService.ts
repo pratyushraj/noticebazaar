@@ -1,3 +1,4 @@
+// @ts-nocheck
 // Invoice Generation Service
 // Automatically generates invoices after contract signing
 

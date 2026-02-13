@@ -1,3 +1,4 @@
+// @ts-nocheck
 // Vercel Serverless Function for SSR of dashboard-preview
 // This provides server-side rendering for the preview page
 

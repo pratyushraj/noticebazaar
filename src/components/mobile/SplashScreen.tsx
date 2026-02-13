@@ -54,10 +54,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete }) => {
           >
             <div className="w-24 h-24 rounded-3xl bg-white/10 backdrop-blur-xl border border-white/20 flex items-center justify-center mb-4 mx-auto shadow-2xl">
               <span className="text-4xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
-                NB
+                CA
               </span>
             </div>
-            <h1 className="text-2xl font-bold text-white">NoticeBazaar</h1>
+            <h1 className="text-2xl font-bold text-white">Creator Armour</h1>
           </motion.div>
         </motion.div>
       )}

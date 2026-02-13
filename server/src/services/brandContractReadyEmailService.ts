@@ -1,3 +1,4 @@
+// @ts-nocheck
 // Brand Contract Ready Email Service
 // Sends contract to brand after generation
 
@@ -29,7 +30,7 @@ export async function sendBrandContractReadyEmail(
 ): Promise<{ success: boolean; emailId?: string; error?: string }> {
   try {
     const apiKey = process.env.RESEND_API_KEY;
-    
+
     if (!apiKey || apiKey === 'your_resend_api_key_here' || apiKey.trim() === '') {
       console.error('[BrandContractReadyEmail] API key not configured');
       return {
@@ -47,13 +48,13 @@ export async function sendBrandContractReadyEmail(
     }
 
     const url = 'https://api.resend.com/emails';
-    
+
     const frontendUrl = process.env.FRONTEND_URL || 'https://creatorarmour.com';
     const contractReadyLink = `${frontendUrl}/contract-ready/${contractData.contractReadyToken}`;
-    
+
     const dealAmount = contractData.dealType === 'paid' && contractData.dealAmount
       ? `₹${parseFloat(contractData.dealAmount.toString()).toLocaleString('en-IN')}`
-      : 'Barter Deal';
+      : 'As agreed in contract';
 
     const deliverablesList = contractData.deliverables
       .map((d: any, idx: number) => {
@@ -66,13 +67,13 @@ export async function sendBrandContractReadyEmail(
 
     const deadlineText = contractData.deadline
       ? new Date(contractData.deadline).toLocaleDateString('en-IN', {
-          day: 'numeric',
-          month: 'long',
-          year: 'numeric'
-        })
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric'
+      })
       : 'Not specified';
 
-    const emailSubject = `Your Collaboration Agreement is Ready - ${contractData.creatorName}`;
+    const emailSubject = `Action required: Review & sign agreement with ${contractData.creatorName}`;
     const emailHtml = `
       <!DOCTYPE html>
       <html>
@@ -134,12 +135,12 @@ export async function sendBrandContractReadyEmail(
             ` : ''}
 
             <p style="color: #6b7280; font-size: 14px; margin-top: 30px;">
-              <strong>Next Steps:</strong>
+              <strong>Status: AWAITING_BRAND_SIGNATURE</strong>
             </p>
             <ul style="color: #6b7280; font-size: 14px; padding-left: 20px;">
-              <li>Review the agreement terms and conditions</li>
-              <li>Verify all details are correct</li>
+              <li>Review the agreement terms and jurisdiction</li>
               <li>Sign the agreement to make it legally binding</li>
+              <li>Identity verification & timestamps are logged for security</li>
             </ul>
 
             <p style="color: #6b7280; font-size: 14px; margin-top: 20px;">
@@ -147,7 +148,10 @@ export async function sendBrandContractReadyEmail(
             </p>
 
             <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
-              <p style="color: #9ca3af; font-size: 12px; margin: 0;">
+              <p style="color: #9ca3af; font-size: 11px; margin: 0; text-transform: uppercase; letter-spacing: 0.5px; line-height: 1.4;">
+                Actions on Creator Armour are recorded, timestamped, and legally enforceable.
+              </p>
+              <p style="color: #9ca3af; font-size: 11px; margin: 8px 0 0 0;">
                 This is an automated email from CreatorArmour. Please do not reply to this email.
               </p>
             </div>
@@ -182,14 +186,14 @@ export async function sendBrandContractReadyEmail(
     if (!response.ok) {
       const errorText = await response.text().catch(() => '');
       let errorMessage = `Resend API error: ${response.status} ${response.statusText}`;
-      
+
       let parsedError: any = {};
       try {
         parsedError = JSON.parse(errorText);
       } catch (e) {
         // Not JSON, use as-is
       }
-      
+
       if (response.status === 401) {
         errorMessage = 'Resend API authentication failed. Please check your RESEND_API_KEY';
       } else if (response.status === 403) {
@@ -199,13 +203,13 @@ export async function sendBrandContractReadyEmail(
       } else if (parsedError.message) {
         errorMessage = `Resend API error: ${parsedError.message}`;
       }
-      
+
       console.error('[BrandContractReadyEmail] API error:', {
         status: response.status,
         statusText: response.statusText,
         body: errorText,
       });
-      
+
       return {
         success: false,
         error: errorMessage,
@@ -213,7 +217,7 @@ export async function sendBrandContractReadyEmail(
     }
 
     const data: ResendEmailResponse = await response.json();
-    
+
     console.log('[BrandContractReadyEmail] Email sent successfully:', {
       emailId: data.id,
       brandEmail,

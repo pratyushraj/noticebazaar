@@ -14,19 +14,26 @@ import { toast } from "sonner";
 import { triggerHaptic, HapticPatterns } from "@/lib/utils/haptics";
 import { trackEvent } from "@/lib/utils/analytics";
 import { cn } from "@/lib/utils";
+import { useQueryClient } from "@tanstack/react-query";
 
 export default function DealDeliveryDetailsPage() {
   const { dealId } = useParams<{ dealId: string }>();
   const navigate = useNavigate();
   const { profile, session } = useSession();
+  const queryClient = useQueryClient();
   const { data: deal, isLoading: isLoadingDeal } = useBrandDealById(dealId, profile?.id);
 
   const [deliveryName, setDeliveryName] = useState("");
   const [deliveryPhone, setDeliveryPhone] = useState("");
   const [deliveryAddress, setDeliveryAddress] = useState("");
+  const [addressLine, setAddressLine] = useState("");
+  const [city, setCity] = useState("");
+  const [state, setState] = useState("");
+  const [pincode, setPincode] = useState("");
   const [deliveryNotes, setDeliveryNotes] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [touched, setTouched] = useState({ phone: false, address: false });
+  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [touched, setTouched] = useState({ phone: false, address: false, city: false, state: false, pincode: false });
 
   const dealType = (deal as any)?.deal_type;
   const hasExistingDelivery =
@@ -36,7 +43,33 @@ export default function DealDeliveryDetailsPage() {
     if (deal) {
       setDeliveryName((deal as any).delivery_name ?? "");
       setDeliveryPhone((deal as any).delivery_phone ?? "");
-      setDeliveryAddress((deal as any).delivery_address ?? "");
+      const fullAddress = (deal as any).delivery_address ?? "";
+      setDeliveryAddress(fullAddress);
+
+      // Try to parse existing address if it follows our pattern: "line, city, state - pincode"
+      if (fullAddress && fullAddress.includes(",")) {
+        try {
+          const parts = fullAddress.split(",");
+          if (parts.length >= 3) {
+            setAddressLine(parts[0].trim());
+            setCity(parts[1].trim());
+            const lastPart = parts[2].trim();
+            if (lastPart.includes("-")) {
+              const [s, p] = lastPart.split("-");
+              setState(s.trim());
+              setPincode(p.trim());
+            } else {
+              setState(lastPart);
+            }
+          } else {
+            setAddressLine(fullAddress);
+          }
+        } catch (e) {
+          setAddressLine(fullAddress);
+        }
+      } else {
+        setAddressLine(fullAddress);
+      }
       setDeliveryNotes((deal as any).delivery_notes ?? "");
     }
   }, [deal]);
@@ -66,7 +99,8 @@ export default function DealDeliveryDetailsPage() {
 
   const phoneDigits = deliveryPhone.replace(/\D/g, "");
   const phoneValid = phoneDigits.length >= 10;
-  const addressValid = deliveryAddress.trim().length > 0;
+  const pincodeValid = /^\d{6}$/.test(pincode.trim());
+  const addressValid = addressLine.trim().length > 0 && city.trim().length > 0 && state.trim().length > 0 && pincodeValid;
   const nameValid = deliveryName.trim().length > 0;
   const canSubmit = nameValid && phoneValid && addressValid && !isSubmitting;
 
@@ -75,6 +109,10 @@ export default function DealDeliveryDetailsPage() {
     if (!dealId || !session?.access_token || !canSubmit) return;
     triggerHaptic(HapticPatterns.light);
     setIsSubmitting(true);
+
+    // Combine structured address
+    const combinedAddress = `${addressLine.trim()}, ${city.trim()}, ${state.trim()} - ${pincode.trim()}`;
+
     try {
       const res = await fetch(`${getApiBaseUrl()}/api/deals/${dealId}/delivery-details`, {
         method: "PATCH",
@@ -85,15 +123,24 @@ export default function DealDeliveryDetailsPage() {
         body: JSON.stringify({
           delivery_name: deliveryName.trim(),
           delivery_phone: deliveryPhone.trim(),
-          delivery_address: deliveryAddress.trim(),
+          delivery_address: combinedAddress,
           delivery_notes: deliveryNotes.trim() || undefined,
         }),
       });
       const data = await res.json();
       if (data.success) {
         trackEvent("delivery_details_submitted", { deal_id: dealId, creator_id: profile?.id });
-        toast.success("Delivery details saved. Contract is being prepared.");
-        navigate(`/creator-contracts/${dealId}`, { replace: true });
+        toast.success("Delivery details saved!");
+
+        // Invalidate queries to ensure fresh data on redirect
+        queryClient.invalidateQueries({ queryKey: ["brand_deals"] });
+        queryClient.invalidateQueries({ queryKey: ["brand_deal", dealId] });
+
+        setIsSubmitted(true);
+        // We delay navigation to show the confirmation state
+        setTimeout(() => {
+          navigate(`/creator-contracts/${dealId}`, { replace: true });
+        }, 2500);
       } else {
         toast.error(data.error || "Failed to save delivery details");
       }
@@ -122,6 +169,23 @@ export default function DealDeliveryDetailsPage() {
     return null;
   }
 
+  if (isSubmitted) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-background to-muted/20 flex flex-col items-center justify-center p-6 text-center">
+        <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-6">
+          <Package className="h-8 w-8 text-primary animate-bounce" />
+        </div>
+        <h2 className="text-2xl font-bold text-foreground mb-2">Delivery details locked for this deal</h2>
+        <p className="text-muted-foreground mb-8">
+          You can update this before shipment begins from the deal details page.
+        </p>
+        <div className="animate-pulse text-sm text-primary font-medium">
+          Redirecting to your contract...
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/20 pb-safe">
       <div className="sticky top-0 z-10 bg-background/95 backdrop-blur border-b">
@@ -138,27 +202,39 @@ export default function DealDeliveryDetailsPage() {
         </div>
       </div>
 
-      <main className="max-w-xl mx-auto px-4 py-6">
-        <p className="text-sm text-muted-foreground mb-4">
-          This is required so brands can ship your product. Your details are shared only after contract signing.
-        </p>
+      <div className="bg-primary/5 border-b border-primary/10">
+        <div className="max-w-xl mx-auto px-4 py-2.5 flex items-center gap-2 text-xs font-medium text-primary">
+          <span aria-hidden>🔒</span>
+          Your address is shared only after contract signing and only with this brand.
+        </div>
+      </div>
 
-        <form onSubmit={handleSubmit} className="space-y-5">
+      <main className="max-w-xl mx-auto px-4 py-6">
+        <div className="mb-6">
+          <p className="text-sm font-medium text-foreground mb-1">
+            Brands cannot ship your product until this is filled.
+          </p>
+          <p className="text-sm text-muted-foreground">
+            This protects you from fake or delayed deliveries by ensuring brand accountability.
+          </p>
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-2">
-            <Label htmlFor="delivery_name">Full Name</Label>
+            <Label htmlFor="delivery_name">Receiver Name</Label>
             <Input
               id="delivery_name"
               value={deliveryName}
               onChange={(e) => setDeliveryName(e.target.value)}
-              placeholder="Your full name"
-              className="h-12"
+              placeholder="Full name for courier label"
+              className="h-12 bg-background border-muted-foreground/20 focus:border-primary"
               required
               autoComplete="name"
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="delivery_phone">Phone Number</Label>
+            <Label htmlFor="delivery_phone">WhatsApp / Phone Number</Label>
             <Input
               id="delivery_phone"
               type="tel"
@@ -167,67 +243,125 @@ export default function DealDeliveryDetailsPage() {
               onChange={(e) => setDeliveryPhone(e.target.value.replace(/\D/g, "").slice(0, 15))}
               onBlur={() => setTouched((t) => ({ ...t, phone: true }))}
               placeholder="10-digit phone number"
-              className={cn("h-12", touched.phone && !phoneValid && "border-destructive")}
+              className={cn(
+                "h-12 bg-background border-muted-foreground/20 focus:border-primary",
+                touched.phone && !phoneValid && "border-destructive focus:border-destructive"
+              )}
               required
               autoComplete="tel"
             />
-            <p className="text-xs text-muted-foreground">Used only for delivery updates — never shared publicly</p>
+            <p className="text-[11px] leading-tight text-muted-foreground opacity-80">
+              Used strictly for courier updates. Never used for marketing. Never shared publicly.
+            </p>
             {touched.phone && !phoneValid && deliveryPhone.length > 0 && (
-              <p className="text-xs text-destructive">Enter at least 10 digits</p>
+              <p className="text-xs text-destructive font-medium">Please enter a valid 10-digit number</p>
             )}
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="delivery_address">Where should the product be delivered?</Label>
-            <Textarea
-              id="delivery_address"
-              value={deliveryAddress}
-              onChange={(e) => setDeliveryAddress(e.target.value)}
-              onBlur={() => setTouched((t) => ({ ...t, address: true }))}
-              placeholder="Street, city, state, PIN"
-              rows={4}
-              className={cn("resize-none", touched.address && !addressValid && "border-destructive")}
-              required
-              autoComplete="street-address"
-            />
-            {touched.address && !addressValid && deliveryAddress.length > 0 && (
-              <p className="text-xs text-destructive">Address is required</p>
+          <div className="space-y-4">
+            <Label>Where should the product be delivered?</Label>
+
+            <div className="space-y-2">
+              <Input
+                value={addressLine}
+                onChange={(e) => setAddressLine(e.target.value)}
+                onBlur={() => setTouched((t) => ({ ...t, address: true }))}
+                placeholder="Flat / Building / Street Address"
+                className={cn(
+                  "h-12 bg-background border-muted-foreground/20 focus:border-primary",
+                  touched.address && !addressLine.trim() && "border-destructive"
+                )}
+                required
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-2">
+                <Input
+                  value={city}
+                  onChange={(e) => setCity(e.target.value)}
+                  onBlur={() => setTouched((t) => ({ ...t, city: true }))}
+                  placeholder="City"
+                  className={cn(
+                    "h-12 bg-background border-muted-foreground/20 focus:border-primary",
+                    touched.city && !city.trim() && "border-destructive"
+                  )}
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Input
+                  value={pincode}
+                  onChange={(e) => setPincode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                  onBlur={() => setTouched((t) => ({ ...t, pincode: true }))}
+                  placeholder="Pincode"
+                  inputMode="numeric"
+                  className={cn(
+                    "h-12 bg-background border-muted-foreground/20 focus:border-primary",
+                    touched.pincode && !pincodeValid && "border-destructive"
+                  )}
+                  required
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Input
+                value={state}
+                onChange={(e) => setState(e.target.value)}
+                onBlur={() => setTouched((t) => ({ ...t, state: true }))}
+                placeholder="State"
+                className={cn(
+                  "h-12 bg-background border-muted-foreground/20 focus:border-primary",
+                  touched.state && !state.trim() && "border-destructive"
+                )}
+                required
+              />
+            </div>
+            {touched.pincode && !pincodeValid && pincode.length > 0 && (
+              <p className="text-xs text-destructive font-medium">Valid 6-digit Pincode required</p>
             )}
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="delivery_notes">Delivery Notes (optional)</Label>
+          <div className="space-y-2 pt-2">
+            <Label htmlFor="delivery_notes" className="text-sm">Delivery Notes (optional)</Label>
             <Textarea
               id="delivery_notes"
               value={deliveryNotes}
               onChange={(e) => setDeliveryNotes(e.target.value)}
-              placeholder="e.g. gate code, landmark"
+              placeholder="e.g. Near HDFC Bank, Doorbell not working"
               rows={2}
-              className="resize-none"
+              className="resize-none bg-background border-muted-foreground/20 focus:border-primary"
             />
           </div>
 
-          <p className="text-xs text-muted-foreground flex items-center gap-1.5">
-            <span aria-hidden>🔒</span> Your address is visible only to this brand for this deal.
-          </p>
-
-          <Button
-            type="submit"
-            className="w-full h-12 font-medium"
-            disabled={!canSubmit}
-          >
-            {isSubmitting ? "Saving…" : "Confirm Delivery Details"}
-          </Button>
+          <div className="pt-4 space-y-3">
+            <Button
+              type="submit"
+              className="w-full h-14 text-base font-bold shadow-lg shadow-primary/20"
+              disabled={!canSubmit}
+            >
+              {isSubmitting ? (
+                <span className="flex items-center gap-2">
+                  <span className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  Saving Address...
+                </span>
+              ) : (
+                "Confirm Address & Continue"
+              )}
+            </Button>
+            <p className="text-[11px] text-center text-muted-foreground font-medium uppercase tracking-wider">
+              Product ships only after contract signing
+            </p>
+          </div>
         </form>
 
-        <p className="text-xs text-muted-foreground text-center mt-4">
-          No product ships without a signed contract.
-        </p>
-
-        {hasExistingDelivery && (
-          <p className="text-center text-sm text-muted-foreground mt-2">
-            You can update your delivery details above and save again.
-          </p>
+        {hasExistingDelivery && !isSubmitted && (
+          <div className="mt-8 p-4 rounded-xl bg-muted/40 border border-dashed border-muted-foreground/20 text-center">
+            <p className="text-xs text-muted-foreground">
+              You already have delivery details saved. Updating them will regenerate the contract with the new address.
+            </p>
+          </div>
         )}
       </main>
     </div>
