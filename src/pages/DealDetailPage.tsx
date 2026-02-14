@@ -101,6 +101,7 @@ function DealDetailPageContent() {
 
   // State
   const [showContractPreview, setShowContractPreview] = useState(false);
+  const [showBrandContact, setShowBrandContact] = useState(false);
   const [showIssueTypeModal, setShowIssueTypeModal] = useState(false);
   const [showMessageModal, setShowMessageModal] = useState(false);
   const [showProgressSheet, setShowProgressSheet] = useState(false);
@@ -239,11 +240,7 @@ function DealDetailPageContent() {
         return null;
       }
 
-      const apiBaseUrl =
-        import.meta.env.VITE_API_BASE_URL ||
-        (typeof window !== 'undefined' && window.location.origin.includes('noticebazaar.com')
-          ? 'https://api.noticebazaar.com'
-          : 'http://localhost:3001');
+      const apiBaseUrl = getApiBaseUrl();
 
       // Try to create contract-ready token first, fallback to brand-reply-tokens for migration
       let response = await fetch(`${apiBaseUrl}/api/contract-ready-tokens`, {
@@ -306,43 +303,7 @@ function DealDetailPageContent() {
 
     setIsSendingCreatorOTP(true);
     try {
-      // Try to get API base URL with fallback logic
-      let apiBaseUrl =
-        import.meta.env.VITE_API_BASE_URL ||
-        (typeof window !== 'undefined' && window.location.origin.includes('noticebazaar.com')
-          ? 'https://api.noticebazaar.com'
-          : typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com')
-            ? 'https://api.creatorarmour.com'
-            : 'http://localhost:3001');
-
-      // If localhost, try it first, then fallback to production
-      if (apiBaseUrl.includes('localhost')) {
-        try {
-          const resp = await fetch(`${apiBaseUrl}/api/otp/send-creator`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: `Bearer ${session.access_token}`,
-            },
-            body: JSON.stringify({ dealId: deal.id }),
-          });
-
-          if (resp.ok) {
-            const data = await resp.json();
-            if (data.success) {
-              toast.success('OTP sent to your email');
-              setCreatorSigningStep('verify');
-              return;
-            }
-          }
-        } catch (localhostError) {
-          console.warn('[DealDetailPage] Localhost API unavailable, trying production API...');
-          // Fallback to production API
-          apiBaseUrl = 'https://noticebazaar-api.onrender.com';
-        }
-      }
-
-      // Use production API (either as primary or fallback)
+      const apiBaseUrl = getApiBaseUrl();
       const resp = await fetch(`${apiBaseUrl}/api/otp/send-creator`, {
         method: 'POST',
         headers: {
@@ -390,48 +351,7 @@ function DealDetailPageContent() {
 
     setIsVerifyingCreatorOTP(true);
     try {
-      // Try to get API base URL with fallback logic
-      let apiBaseUrl =
-        import.meta.env.VITE_API_BASE_URL ||
-        (typeof window !== 'undefined' && window.location.origin.includes('noticebazaar.com')
-          ? 'https://api.noticebazaar.com'
-          : typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com')
-            ? 'https://api.creatorarmour.com'
-            : 'http://localhost:3001');
-
-      // If localhost, try it first, then fallback to production
-      if (apiBaseUrl.includes('localhost')) {
-        try {
-          const resp = await fetch(`${apiBaseUrl}/api/otp/verify-creator`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: `Bearer ${session.access_token}`,
-            },
-            body: JSON.stringify({ dealId: deal.id, otp: creatorOTP }),
-          });
-
-          const data = await resp.json();
-          if (resp.ok && data.success) {
-            toast.success('OTP verified! Now signing contract...');
-            await handleSignAsCreator();
-            return;
-          } else {
-            // If OTP is already verified, proceed to signing anyway
-            if (data.error && data.error.includes('already been verified')) {
-              toast.success('OTP already verified. Signing contract...');
-              await handleSignAsCreator();
-              return;
-            }
-          }
-        } catch (localhostError) {
-          console.warn('[DealDetailPage] Localhost API unavailable, trying production API...');
-          // Fallback to production API
-          apiBaseUrl = 'https://noticebazaar-api.onrender.com';
-        }
-      }
-
-      // Use production API (either as primary or fallback)
+      const apiBaseUrl = getApiBaseUrl();
       const resp = await fetch(`${apiBaseUrl}/api/otp/verify-creator`, {
         method: 'POST',
         headers: {
@@ -487,7 +407,7 @@ function DealDetailPageContent() {
           ? 'https://api.noticebazaar.com'
           : typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com')
             ? 'https://api.creatorarmour.com'
-            : 'http://localhost:3001');
+            : getApiBaseUrl());
 
       // If localhost, try it first, then fallback to production
       if (apiBaseUrl.includes('localhost')) {
@@ -1155,7 +1075,7 @@ function DealDetailPageContent() {
               ? 'https://api.noticebazaar.com'
               : typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com')
                 ? 'https://api.creatorarmour.com'
-                : 'http://localhost:3001');
+                : getApiBaseUrl());
 
           const downloadUrl = `${apiBaseUrl}/api/protection/contracts/${deal.id}/download-docx`;
           const link = document.createElement('a');
@@ -1479,13 +1399,7 @@ Best regards`;
       // The API will return empty if no data exists
       setIsLoadingSubmission(true);
       try {
-        let apiBaseUrl =
-          import.meta.env.VITE_API_BASE_URL ||
-          (typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com')
-            ? 'https://api.creatorarmour.com'
-            : typeof window !== 'undefined' && window.location.hostname === 'localhost'
-              ? 'http://localhost:3001'
-              : 'https://noticebazaar-api.onrender.com');
+        let apiBaseUrl = getApiBaseUrl();
 
         let response: Response;
         try {
@@ -1816,7 +1730,7 @@ Best regards`;
                   const apiBaseUrl = import.meta.env.VITE_API_BASE_URL ||
                     (typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com')
                       ? 'https://api.creatorarmour.com'
-                      : 'http://localhost:3001');
+                      : getApiBaseUrl());
 
                   const verifyResponse = await fetch(`${apiBaseUrl}/api/brand-response/${deal.id}`, {
                     method: 'GET',
@@ -1911,7 +1825,7 @@ ${link}`;
                     const apiBaseUrl = import.meta.env.VITE_API_BASE_URL ||
                       (typeof window !== 'undefined' && window.location.origin.includes('noticebazaar.com')
                         ? 'https://api.noticebazaar.com'
-                        : 'http://localhost:3001');
+                        : getApiBaseUrl());
 
                     await fetch(`${apiBaseUrl}/api/deals/log-reminder`, {
                       method: 'POST',
@@ -2631,14 +2545,16 @@ ${link}`;
                 <div className="relative">
                   {/* Status-aware Deliverables state */}
                   {!bothSigned && (
-                    <div className="absolute inset-x-0 -top-2 -bottom-2 z-10 bg-black/40 backdrop-blur-[2px] rounded-2xl flex flex-col items-center justify-center p-6 text-center border border-white/10">
-                      <Lock className="w-8 h-8 text-white/40 mb-3" />
-                      <p className="text-sm font-bold text-white/90">Deliverables Locked</p>
-                      <p className="text-[11px] text-white/60 mt-1 max-w-[200px]">Unlock for tracking once the agreement is signed by both brand and creator.</p>
+                    <div className="mb-3 flex items-start gap-2 rounded-lg border border-white/10 bg-white/5 p-2.5">
+                      <Lock className="w-4 h-4 text-white/50 mt-0.5 flex-shrink-0" />
+                      <div>
+                        <p className="text-xs font-semibold text-white/80">Deliverables locked</p>
+                        <p className="text-[11px] text-white/55">Unlock after both signatures.</p>
+                      </div>
                     </div>
                   )}
 
-                  <div className={cn("space-y-2", !bothSigned && "opacity-40 grayscale pointer-events-none select-none")}>
+                  <div className={cn("space-y-2", !bothSigned && "opacity-60 pointer-events-none select-none")}>
                     {deliverables.map((item: any, index: number) => (
                       <div key={index} className="bg-white/5 rounded-xl p-3 border border-white/10">
                         <div className="flex items-start gap-3">
@@ -2768,248 +2684,263 @@ ${link}`;
 
             {/* Brand Info */}
             <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-4 md:p-6 shadow-lg shadow-black/20">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="font-semibold text-lg flex items-center gap-2">
-                  <Building2 className="w-5 h-5" />
-                  Brand Contact
-                </h2>
-                {/* Auto-fill button if analysis data exists */}
-                {protectionReport?.analysis_json && !deal.brand_email && (
-                  <motion.button
-                    onClick={async () => {
-                      const contactInfo = extractBrandContactInfo(protectionReport.analysis_json);
-                      if (contactInfo.brandEmail || contactInfo.brandLegalContact || contactInfo.brandAddress) {
-                        try {
-                          const updateData: any = {};
-                          if (contactInfo.brandEmail && !deal.brand_email) {
-                            updateData.brand_email = contactInfo.brandEmail;
-                          }
-
-                          await updateBrandDealMutation.mutateAsync({
-                            id: deal.id,
-                            creator_id: profile?.id || '',
-                            ...updateData,
-                          });
-
-                          toast.success('Brand contact info auto-filled from contract');
-                          await refreshAll();
-                        } catch (error: any) {
-                          console.error('[DealDetailPage] Auto-fill error:', error);
-                          toast.error('Failed to auto-fill contact info');
-                        }
-                      } else {
-                        toast.info('No contact information found in contract analysis');
-                      }
-                    }}
-                    whileTap={{ scale: 0.95 }}
-                    className="px-3 py-1.5 text-xs bg-purple-500/20 hover:bg-purple-500/30 border border-purple-500/30 rounded-lg transition-colors text-purple-300"
-                    title="Auto-fill from contract analysis"
-                  >
-                    ✨ Auto-fill
-                  </motion.button>
-                )}
-              </div>
-
-              <p className="text-xs text-white/60 mb-4">
-                Verified brand contact details used for this agreement.
-              </p>
-
-              <div className="space-y-4 text-sm">
-                <div className="flex items-center gap-2 text-white/80">
-                  <span className="font-medium">{deal.brand_name}</span>
-                </div>
-                {deal.brand_email && (
-                  <div className="flex items-center gap-2 text-white/60 break-words">
-                    <Mail className="w-4 h-4 text-white/40 flex-shrink-0" />
-                    <span className="flex-1">{deal.brand_email}</span>
-                    <span className="px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-green-500/20 text-green-400 border border-green-500/30">
-                      Verified
-                    </span>
-                  </div>
-                )}
-                {(() => {
-                  // Show extracted contact info if available
-                  const analysisData = protectionReport?.analysis_json;
-                  const contactInfo = analysisData ? extractBrandContactInfo(analysisData) : {};
-
-                  return (
-                    <>
-                      {contactInfo.brandLegalContact && (
-                        <div className="flex items-center gap-2 text-white/60">
-                          <span className="text-white/40">Legal Contact:</span>
-                          <span>{contactInfo.brandLegalContact}</span>
-                        </div>
-                      )}
-                      {contactInfo.brandAddress && (
-                        <div className="flex items-start gap-2 text-white/60">
-                          <span className="text-white/40 flex-shrink-0">Address:</span>
-                          <span className="break-words">{contactInfo.brandAddress}</span>
-                        </div>
-                      )}
-                    </>
-                  );
-                })()}
-                {deal.contact_person && (
-                  <div className="flex items-center gap-2 text-white/60">
-                    <span>Contact: {deal.contact_person}</span>
-                  </div>
-                )}
-
-                {/* Brand Phone Number */}
-                <div className="flex items-center gap-2">
-                  {!isEditingBrandPhone ? (
-                    <>
-                      {(() => {
-                        // Check all possible sources for phone number
-                        // 1. Direct field on deal (if it exists in DB)
-                        // 2. From brand submission details
-                        // 3. From form_data nested in deal
-                        const phoneNumber =
-                          (deal as any)?.brand_phone ||
-                          brandSubmissionDetails?.companyPhone ||
-                          (deal as any)?.form_data?.companyPhone ||
-                          (deal as any)?.form_data?.brandPhone ||
-                          null;
-
-                        // Debug log in development
-                        if (import.meta.env.DEV && !phoneNumber) {
-                          console.log('[DealDetailPage] Phone number sources:', {
-                            'deal.brand_phone': (deal as any)?.brand_phone,
-                            'brandSubmissionDetails?.companyPhone': brandSubmissionDetails?.companyPhone,
-                            'deal.form_data?.companyPhone': (deal as any)?.form_data?.companyPhone,
-                            'deal.form_data?.brandPhone': (deal as any)?.form_data?.brandPhone,
-                            'hasBrandSubmissionDetails': !!brandSubmissionDetails,
-                            'hasFormData': !!(deal as any)?.form_data,
-                          });
-                        }
-
-                        return phoneNumber ? (
-                          <div className="flex items-center gap-2 text-white/60 flex-1">
-                            <Phone className="w-4 h-4 text-white/40 flex-shrink-0" />
-                            <span>{phoneNumber}</span>
-                          </div>
-                        ) : (
-                          <div className="flex items-center gap-2 text-white/40 flex-1">
-                            <Phone className="w-4 h-4 text-white/30 flex-shrink-0" />
-                            <span className="text-xs">No phone added (optional)</span>
-                          </div>
-                        );
-                      })()}
-                      <motion.button
-                        onClick={() => {
-                          // Check all possible sources for phone number
-                          let phoneValue =
-                            (deal as any)?.brand_phone ||
-                            brandSubmissionDetails?.companyPhone ||
-                            (deal as any)?.form_data?.companyPhone ||
-                            (deal as any)?.form_data?.brandPhone ||
-                            '';
-
-                          // Ensure phone starts with +91 when editing
-                          if (phoneValue && !phoneValue.startsWith('+91')) {
-                            phoneValue = phoneValue.startsWith('+') ? phoneValue : `+91 ${phoneValue}`;
-                          } else if (!phoneValue) {
-                            phoneValue = '+91 ';
-                          }
-                          setBrandPhoneInput(phoneValue);
-                          setIsEditingBrandPhone(true);
-                        }}
-                        whileTap={{ scale: 0.95 }}
-                        className="p-1.5 hover:bg-white/10 rounded-lg transition-colors"
-                        title="Edit phone number"
-                      >
-                        <Edit className="w-4 h-4 text-white/60" />
-                      </motion.button>
-                    </>
-                  ) : (
-                    <div className="flex items-center gap-2 flex-1">
-                      <Phone className="w-4 h-4 text-white/40 flex-shrink-0" />
-                      <input
-                        type="tel"
-                        value={brandPhoneInput}
-                        onChange={(e) => {
-                          let value = e.target.value;
-                          // Ensure +91 prefix is always present
-                          if (!value.startsWith('+91')) {
-                            // If user tries to delete +91, restore it
-                            if (value.length < 3) {
-                              value = '+91 ';
-                            } else {
-                              // If user pastes or types a number without +91, add it
-                              value = '+91 ' + value.replace(/^\+91\s*/, '');
-                            }
-                          }
-                          setBrandPhoneInput(value);
-                        }}
-                        placeholder="+91 9876543210"
-                        className="flex-1 bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-white text-sm placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-purple-500/50"
-                        autoFocus
-                      />
+              <Collapsible open={showBrandContact} onOpenChange={setShowBrandContact}>
+                <CollapsibleTrigger asChild>
+                  <button className="w-full flex items-center justify-between mb-2 group">
+                    <div className="text-left">
+                      <h2 className="font-semibold text-lg flex items-center gap-2">
+                        <Building2 className="w-5 h-5" />
+                        Brand Contact
+                      </h2>
+                      <p className="text-xs text-white/60 mt-1">
+                        Verified brand contact details used for this agreement.
+                      </p>
+                    </div>
+                    {showBrandContact ? (
+                      <ChevronUp className="w-5 h-5 text-white/60 group-hover:text-white transition-colors" />
+                    ) : (
+                      <ChevronDown className="w-5 h-5 text-white/60 group-hover:text-white transition-colors" />
+                    )}
+                  </button>
+                </CollapsibleTrigger>
+                <CollapsibleContent>
+                  <div className="flex items-center justify-between mb-4">
+                    <div />
+                    {/* Auto-fill button if analysis data exists */}
+                    {protectionReport?.analysis_json && !deal.brand_email && (
                       <motion.button
                         onClick={async () => {
-                          if (!profile?.id) {
-                            toast.error('User not found');
-                            return;
-                          }
+                          const contactInfo = extractBrandContactInfo(protectionReport.analysis_json);
+                          if (contactInfo.brandEmail || contactInfo.brandLegalContact || contactInfo.brandAddress) {
+                            try {
+                              const updateData: any = {};
+                              if (contactInfo.brandEmail && !deal.brand_email) {
+                                updateData.brand_email = contactInfo.brandEmail;
+                              }
 
-                          try {
-                            // Clean phone number - validate it has more than just the prefix
-                            let phoneValue = brandPhoneInput.trim();
-                            if (phoneValue === '+91' || phoneValue === '+91 ' || phoneValue === '') {
-                              toast.error('Please enter a valid phone number');
-                              return;
-                            } else if (!phoneValue.startsWith('+91')) {
-                              // If somehow +91 is missing, add it
-                              phoneValue = '+91 ' + phoneValue.replace(/^\+91\s*/, '');
+                              await updateBrandDealMutation.mutateAsync({
+                                id: deal.id,
+                                creator_id: profile?.id || '',
+                                ...updateData,
+                              });
+
+                              toast.success('Brand contact info auto-filled from contract');
+                              await refreshAll();
+                            } catch (error: any) {
+                              console.error('[DealDetailPage] Auto-fill error:', error);
+                              toast.error('Failed to auto-fill contact info');
                             }
-
-                            // Validate phone has digits after +91
-                            const digitsAfterPrefix = phoneValue.replace(/^\+91\s*/, '').replace(/\D/g, '');
-                            if (digitsAfterPrefix.length < 10) {
-                              toast.error('Please enter a valid 10-digit phone number');
-                              return;
-                            }
-
-                            await updateBrandDealMutation.mutateAsync({
-                              id: deal.id,
-                              creator_id: profile.id,
-                              brand_phone: phoneValue,
-                            });
-
-                            toast.success('Brand phone number updated');
-                            setIsEditingBrandPhone(false);
-                            await refreshAll();
-                          } catch (error: any) {
-                            console.error('[DealDetailPage] Update phone error:', error);
-                            toast.error(error.message || 'Failed to update phone number');
+                          } else {
+                            toast.info('No contact information found in contract analysis');
                           }
                         }}
-                        disabled={updateBrandDealMutation.isPending}
                         whileTap={{ scale: 0.95 }}
-                        className="p-1.5 hover:bg-green-500/20 rounded-lg transition-colors disabled:opacity-50"
-                        title="Save"
+                        className="px-3 py-1.5 text-xs bg-purple-500/20 hover:bg-purple-500/30 border border-purple-500/30 rounded-lg transition-colors text-purple-300"
+                        title="Auto-fill from contract analysis"
                       >
-                        {updateBrandDealMutation.isPending ? (
-                          <Loader2 className="w-4 h-4 text-green-400 animate-spin" />
-                        ) : (
-                          <Check className="w-4 h-4 text-green-400" />
-                        )}
+                        ✨ Auto-fill
                       </motion.button>
-                      <motion.button
-                        onClick={() => {
-                          setIsEditingBrandPhone(false);
-                          setBrandPhoneInput('');
-                        }}
-                        whileTap={{ scale: 0.95 }}
-                        className="p-1.5 hover:bg-red-500/20 rounded-lg transition-colors"
-                        title="Cancel"
-                      >
-                        <X className="w-4 h-4 text-red-400" />
-                      </motion.button>
+                    )}
+                  </div>
+
+                  <div className="space-y-4 text-sm">
+                    <div className="flex items-center gap-2 text-white/80">
+                      <span className="font-medium">{deal.brand_name}</span>
                     </div>
-                  )}
-                </div>
-              </div>
+                    {deal.brand_email && (
+                      <div className="flex items-center gap-2 text-white/60 break-words">
+                        <Mail className="w-4 h-4 text-white/40 flex-shrink-0" />
+                        <span className="flex-1">{deal.brand_email}</span>
+                        <span className="px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-green-500/20 text-green-400 border border-green-500/30">
+                          Verified
+                        </span>
+                      </div>
+                    )}
+                    {(() => {
+                      // Show extracted contact info if available
+                      const analysisData = protectionReport?.analysis_json;
+                      const contactInfo = analysisData ? extractBrandContactInfo(analysisData) : {};
+
+                      return (
+                        <>
+                          {contactInfo.brandLegalContact && (
+                            <div className="flex items-center gap-2 text-white/60">
+                              <span className="text-white/40">Legal Contact:</span>
+                              <span>{contactInfo.brandLegalContact}</span>
+                            </div>
+                          )}
+                          {contactInfo.brandAddress && (
+                            <div className="flex items-start gap-2 text-white/60">
+                              <span className="text-white/40 flex-shrink-0">Address:</span>
+                              <span className="break-words">{contactInfo.brandAddress}</span>
+                            </div>
+                          )}
+                        </>
+                      );
+                    })()}
+                    {deal.contact_person && (
+                      <div className="flex items-center gap-2 text-white/60">
+                        <span>Contact: {deal.contact_person}</span>
+                      </div>
+                    )}
+
+                    {/* Brand Phone Number */}
+                    <div className="flex items-center gap-2">
+                      {!isEditingBrandPhone ? (
+                        <>
+                          {(() => {
+                            // Check all possible sources for phone number
+                            // 1. Direct field on deal (if it exists in DB)
+                            // 2. From brand submission details
+                            // 3. From form_data nested in deal
+                            const phoneNumber =
+                              (deal as any)?.brand_phone ||
+                              brandSubmissionDetails?.companyPhone ||
+                              (deal as any)?.form_data?.companyPhone ||
+                              (deal as any)?.form_data?.brandPhone ||
+                              null;
+
+                            // Debug log in development
+                            if (import.meta.env.DEV && !phoneNumber) {
+                              console.log('[DealDetailPage] Phone number sources:', {
+                                'deal.brand_phone': (deal as any)?.brand_phone,
+                                'brandSubmissionDetails?.companyPhone': brandSubmissionDetails?.companyPhone,
+                                'deal.form_data?.companyPhone': (deal as any)?.form_data?.companyPhone,
+                                'deal.form_data?.brandPhone': (deal as any)?.form_data?.brandPhone,
+                                'hasBrandSubmissionDetails': !!brandSubmissionDetails,
+                                'hasFormData': !!(deal as any)?.form_data,
+                              });
+                            }
+
+                            return phoneNumber ? (
+                              <div className="flex items-center gap-2 text-white/60 flex-1">
+                                <Phone className="w-4 h-4 text-white/40 flex-shrink-0" />
+                                <span>{phoneNumber}</span>
+                              </div>
+                            ) : (
+                              <div className="flex items-center gap-2 text-white/40 flex-1">
+                                <Phone className="w-4 h-4 text-white/30 flex-shrink-0" />
+                                <span className="text-xs">No phone added (optional)</span>
+                              </div>
+                            );
+                          })()}
+                          <motion.button
+                            onClick={() => {
+                              // Check all possible sources for phone number
+                              let phoneValue =
+                                (deal as any)?.brand_phone ||
+                                brandSubmissionDetails?.companyPhone ||
+                                (deal as any)?.form_data?.companyPhone ||
+                                (deal as any)?.form_data?.brandPhone ||
+                                '';
+
+                              // Ensure phone starts with +91 when editing
+                              if (phoneValue && !phoneValue.startsWith('+91')) {
+                                phoneValue = phoneValue.startsWith('+') ? phoneValue : `+91 ${phoneValue}`;
+                              } else if (!phoneValue) {
+                                phoneValue = '+91 ';
+                              }
+                              setBrandPhoneInput(phoneValue);
+                              setIsEditingBrandPhone(true);
+                            }}
+                            whileTap={{ scale: 0.95 }}
+                            className="p-1.5 hover:bg-white/10 rounded-lg transition-colors"
+                            title="Edit phone number"
+                          >
+                            <Edit className="w-4 h-4 text-white/60" />
+                          </motion.button>
+                        </>
+                      ) : (
+                        <div className="flex items-center gap-2 flex-1">
+                          <Phone className="w-4 h-4 text-white/40 flex-shrink-0" />
+                          <input
+                            type="tel"
+                            value={brandPhoneInput}
+                            onChange={(e) => {
+                              let value = e.target.value;
+                              // Ensure +91 prefix is always present
+                              if (!value.startsWith('+91')) {
+                                // If user tries to delete +91, restore it
+                                if (value.length < 3) {
+                                  value = '+91 ';
+                                } else {
+                                  // If user pastes or types a number without +91, add it
+                                  value = '+91 ' + value.replace(/^\+91\s*/, '');
+                                }
+                              }
+                              setBrandPhoneInput(value);
+                            }}
+                            placeholder="+91 9876543210"
+                            className="flex-1 bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-white text-sm placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-purple-500/50"
+                            autoFocus
+                          />
+                          <motion.button
+                            onClick={async () => {
+                              if (!profile?.id) {
+                                toast.error('User not found');
+                                return;
+                              }
+
+                              try {
+                                // Clean phone number - validate it has more than just the prefix
+                                let phoneValue = brandPhoneInput.trim();
+                                if (phoneValue === '+91' || phoneValue === '+91 ' || phoneValue === '') {
+                                  toast.error('Please enter a valid phone number');
+                                  return;
+                                } else if (!phoneValue.startsWith('+91')) {
+                                  // If somehow +91 is missing, add it
+                                  phoneValue = '+91 ' + phoneValue.replace(/^\+91\s*/, '');
+                                }
+
+                                // Validate phone has digits after +91
+                                const digitsAfterPrefix = phoneValue.replace(/^\+91\s*/, '').replace(/\D/g, '');
+                                if (digitsAfterPrefix.length < 10) {
+                                  toast.error('Please enter a valid 10-digit phone number');
+                                  return;
+                                }
+
+                                await updateBrandDealMutation.mutateAsync({
+                                  id: deal.id,
+                                  creator_id: profile.id,
+                                  brand_phone: phoneValue,
+                                });
+
+                                toast.success('Brand phone number updated');
+                                setIsEditingBrandPhone(false);
+                                await refreshAll();
+                              } catch (error: any) {
+                                console.error('[DealDetailPage] Update phone error:', error);
+                                toast.error(error.message || 'Failed to update phone number');
+                              }
+                            }}
+                            disabled={updateBrandDealMutation.isPending}
+                            whileTap={{ scale: 0.95 }}
+                            className="p-1.5 hover:bg-green-500/20 rounded-lg transition-colors disabled:opacity-50"
+                            title="Save"
+                          >
+                            {updateBrandDealMutation.isPending ? (
+                              <Loader2 className="w-4 h-4 text-green-400 animate-spin" />
+                            ) : (
+                              <Check className="w-4 h-4 text-green-400" />
+                            )}
+                          </motion.button>
+                          <motion.button
+                            onClick={() => {
+                              setIsEditingBrandPhone(false);
+                              setBrandPhoneInput('');
+                            }}
+                            whileTap={{ scale: 0.95 }}
+                            className="p-1.5 hover:bg-red-500/20 rounded-lg transition-colors"
+                            title="Cancel"
+                          >
+                            <X className="w-4 h-4 text-red-400" />
+                          </motion.button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </CollapsibleContent>
+              </Collapsible>
             </div>
 
             {/* Contract Info */}
@@ -3027,23 +2958,9 @@ ${link}`;
                     <div className="flex-1 min-w-0 space-y-1.5">
                       {/* Clean display name with status badge */}
                       <div className="flex items-center gap-2 flex-wrap">
-                        <h3 className="font-semibold text-base text-white/95 break-words flex-1 min-w-0">
+                        <h3 className="font-semibold text-base text-white/95 truncate flex-1 min-w-0" title={displayContractName || contractFileName}>
                           {displayContractName || contractFileName}
                         </h3>
-                        {/* Status badge */}
-                        {contractStatus && displayContractName && (
-                          <span className={cn(
-                            "px-2.5 py-1 rounded-full text-xs font-medium flex-shrink-0 whitespace-nowrap",
-                            (contractStatus === 'Signed' || contractStatus === 'Legally Active') && "bg-green-500/20 text-green-400 border border-green-500/30",
-                            contractStatus === 'Approved' && "bg-blue-500/20 text-blue-400 border border-blue-500/30",
-                            contractStatus === 'Shared' && "bg-purple-500/20 text-purple-400 border border-purple-500/30",
-                            contractStatus === 'Draft' && "bg-yellow-500/20 text-yellow-400 border border-yellow-500/30",
-                            contractStatus === 'SHIPPING_IN_PROGRESS' && "bg-blue-500/20 text-blue-400 border border-blue-500/30",
-                            contractStatus === 'AWAITING_CREATOR_SIGNATURE' && "bg-orange-500/20 text-orange-400 border border-orange-500/30"
-                          )}>
-                            {contractStatus}
-                          </span>
-                        )}
                       </div>
                       {/* Original filename as secondary metadata - truncated */}
                       {contractFileName && displayContractName && (
@@ -3124,13 +3041,7 @@ ${link}`;
                       formData.append('file', file);
                       formData.append('dealId', deal.id);
 
-                      const apiBaseUrl =
-                        import.meta.env.VITE_API_BASE_URL ||
-                        (typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com')
-                          ? 'https://api.creatorarmour.com'
-                          : typeof window !== 'undefined' && window.location.hostname === 'localhost'
-                            ? 'http://localhost:3001'
-                            : 'https://noticebazaar-api.onrender.com');
+                      const apiBaseUrl = getApiBaseUrl();
 
                       const response = await fetch(`${apiBaseUrl}/api/deals/${deal.id}/signed-contract`, {
                         method: 'POST',
@@ -3741,11 +3652,11 @@ ${link}`;
 
       {/* Lazy Modals */}
       <Suspense fallback={null}>
-        {showContractPreview && deal.contract_file_url && (
+        {showContractPreview && (deal as any).contract_file_url && (
           <ContractPreviewModal
             open={showContractPreview}
             onClose={() => setShowContractPreview(false)}
-            fileUrl={deal.contract_file_url}
+            fileUrl={(deal as any).contract_file_url}
             fileName={contractFileName || undefined}
             dealTitle={dealTitle}
           />
@@ -4065,4 +3976,3 @@ export default function DealDetailPage() {
     </DealProvider>
   );
 }
-
