@@ -359,8 +359,8 @@ const LandingPage = () => {
                   <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
                   <span className="text-purple-200 font-medium">4.9/5 from 500+ creators</span>
                 </div>
-                <div className="h-4 w-px bg-purple-400/30"></div>
-                <span className="text-purple-200 font-medium">₹50Cr+ protected</span>
+                <div className="hidden md:block h-4 w-px bg-purple-400/30"></div>
+                <span className="hidden md:inline text-purple-200 font-medium">₹50Cr+ protected</span>
               </motion.div>
 
               {/* Main Headline */}
@@ -386,20 +386,20 @@ const LandingPage = () => {
             </motion.div>
 
             {/* CTAs */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.2 }}
-              className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-4"
-            >
-              <Link
-                to="/signup"
-                className="group relative bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 px-8 py-4 rounded-full font-bold text-lg transition-all duration-300 transform hover:scale-105 active:scale-95 shadow-2xl shadow-purple-500/50 flex items-center gap-2 border-2 border-white/20 overflow-hidden min-h-[56px]"
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: 0.2 }}
+                className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-4"
               >
-                <span className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></span>
-                <span className="relative z-10">Get My Collab Link</span>
-                <ArrowRight className="w-5 h-5 relative z-10 transition-transform duration-300 group-hover:translate-x-1" />
-              </Link>
+                <Link
+                  to="/signup"
+                  className="group relative bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 px-8 py-4 rounded-full font-bold text-lg transition-all duration-300 transform hover:scale-105 active:scale-95 shadow-2xl shadow-purple-500/50 flex items-center gap-2 border-2 border-white/20 overflow-hidden min-h-[56px]"
+                >
+                  <span className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></span>
+                  <span className="relative z-10">Get My Collab Link</span>
+                  <ArrowRight className="w-5 h-5 relative z-10 transition-transform duration-300 group-hover:translate-x-1" />
+                </Link>
 
               <button
                 onClick={() => {
@@ -408,18 +408,29 @@ const LandingPage = () => {
                     element.scrollIntoView({ behavior: 'smooth', block: 'start' });
                   }
                 }}
-                className="flex items-center gap-2 px-6 py-3 rounded-full text-base md:text-lg text-purple-100/80 hover:text-white/90 transition-all font-medium bg-white/10 hover:bg-white/20 border border-white/20 hover:scale-105 min-h-[48px]"
+                className="hidden sm:flex items-center gap-2 px-6 py-3 rounded-full text-base md:text-lg text-purple-100/80 hover:text-white/90 transition-all font-medium bg-white/10 hover:bg-white/20 border border-white/20 hover:scale-105 min-h-[48px]"
               >
                 View Demo
               </button>
             </motion.div>
+            <button
+              onClick={() => {
+                const element = document.getElementById('solution');
+                if (element) {
+                  element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+              }}
+              className="sm:hidden text-sm text-purple-200/80 hover:text-white/90 underline underline-offset-4"
+            >
+              View demo
+            </button>
 
             {/* Micro-trust line */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.8, delay: 0.4 }}
-              className="flex flex-wrap items-center justify-center gap-3 md:gap-6 mb-12 text-sm text-purple-200/60"
+              className="hidden md:flex flex-wrap items-center justify-center gap-3 md:gap-6 mb-12 text-sm text-purple-200/60"
             >
               <div className="flex items-center gap-2">
                 <CheckCircle className="w-4 h-4 text-green-400" />
@@ -512,7 +523,7 @@ const LandingPage = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: index * 0.1 }}
                 viewport={{ once: true }}
-                className="group bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/10 hover:bg-white/15 transition-all hover:transform hover:scale-105 hover:shadow-2xl hover:shadow-purple-500/20"
+                className={`group bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/10 hover:bg-white/15 transition-all hover:transform hover:scale-105 hover:shadow-2xl hover:shadow-purple-500/20 ${index > 1 ? 'hidden md:block' : ''}`}
               >
                 <div className={`w-14 h-14 rounded-xl bg-gradient-to-r ${pain.color} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform shadow-lg`}>
                   <pain.icon className="w-7 h-7 text-white" />
@@ -623,7 +634,7 @@ const LandingPage = () => {
                 whileInView={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.5, delay: index * 0.1 }}
                 viewport={{ once: true }}
-                className="relative"
+                className={`relative ${index > 1 ? 'hidden md:block' : ''}`}
               >
                 <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/10 h-full">
                   <div className="absolute -top-4 -left-4 w-12 h-12 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full flex items-center justify-center font-bold text-xl shadow-lg">
@@ -664,7 +675,7 @@ const LandingPage = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: index * 0.1 }}
                 viewport={{ once: true }}
-                className="relative text-center"
+                className={`relative text-center ${index > 2 ? 'hidden md:block' : ''}`}
               >
                 <div className={`w-16 h-16 rounded-full bg-gradient-to-r ${step.color} flex items-center justify-center mx-auto mb-4 shadow-lg`}>
                   <step.icon className="w-8 h-8 text-white" />
@@ -707,7 +718,7 @@ const LandingPage = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: index * 0.1 }}
                 viewport={{ once: true }}
-                className="group bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/10 hover:bg-white/15 transition-all hover:transform hover:scale-105"
+                className={`group bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/10 hover:bg-white/15 transition-all hover:transform hover:scale-105 ${index > 1 ? 'hidden md:block' : ''}`}
               >
                 <div className={`w-14 h-14 rounded-xl bg-gradient-to-r ${feature.color} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform shadow-lg`}>
                   <feature.icon className="w-7 h-7 text-white" />
@@ -740,7 +751,7 @@ const LandingPage = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: index * 0.1 }}
                 viewport={{ once: true }}
-                className="group bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/10 hover:bg-white/15 transition-all hover:transform hover:scale-105"
+                className={`group bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/10 hover:bg-white/15 transition-all hover:transform hover:scale-105 ${index > 1 ? 'hidden md:block' : ''}`}
               >
                 <div className={`w-14 h-14 rounded-xl bg-gradient-to-r ${useCase.color} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform shadow-lg`}>
                   <useCase.icon className="w-7 h-7 text-white" />
@@ -793,7 +804,7 @@ const LandingPage = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: index * 0.1 }}
                 viewport={{ once: true }}
-                className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/10"
+                className={`bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/10 ${index > 0 ? 'hidden md:block' : ''}`}
               >
                 <div className="flex items-center gap-1 mb-4">
                   {[...Array(testimonial.rating)].map((_, i) => (
