@@ -1310,11 +1310,19 @@ const CreatorDashboard = () => {
                         className={cn(spacing.cardPadding.secondary, "text-center cursor-pointer hover:bg-white/10 active:scale-[0.99] transition-all group")}
                         onClick={() => navigate('/collab-requests')}
                       >
-                        <p className={cn(typography.bodySmall, "group-hover:text-purple-300 transition-colors")}>No brand requests yet</p>
-                        <p className={cn(typography.caption, "mt-1 text-purple-300/60")}>Share your collab link to receive requests.</p>
-                        <div className={cn("mt-3 inline-flex items-center text-xs font-medium text-purple-400 group-hover:text-purple-300")}>
+                        <p className={cn(typography.bodySmall, "text-white/80")}>No brand requests yet</p>
+                        <p className={cn(typography.caption, "mt-1 text-purple-300/70")}>Share your collab link to get your first request.</p>
+                        <button
+                          type="button"
+                          onClick={(e) => { e.stopPropagation(); triggerHaptic(HapticPatterns.light); navigate('/collab-requests'); }}
+                          className={cn(
+                            "mt-3 w-full min-h-[40px] rounded-lg text-xs font-semibold text-white",
+                            "bg-gradient-to-r from-[#8B5CF6] to-[#6366F1] hover:from-[#7C3AED] hover:to-[#4F46E5]",
+                            "shadow-[0_2px_12px_rgba(139,92,246,0.35)] transition-colors"
+                          )}
+                        >
                           Open Requests Page →
-                        </div>
+                        </button>
                       </BaseCard>
                     ) : (
                       <div className="space-y-6">
@@ -1404,6 +1412,8 @@ const CreatorDashboard = () => {
                     )}
                   </div>
 
+                  <div className={separators.section} />
+
                   {/* Desktop 2-Column Layout (≥1024px) */}
                   <div className="lg:grid lg:grid-cols-[65%_35%] lg:gap-6 space-y-6 lg:space-y-0">
                     {/* LEFT COLUMN - Primary Information */}
@@ -1429,14 +1439,18 @@ const CreatorDashboard = () => {
                             <div className={cn(vision.spotlight.base, "opacity-20")} />
                             <Briefcase className={cn(iconSizes.xl, "text-purple-400/50 mx-auto mb-3")} />
                             <p className={typography.bodySmall}>No active collaborations yet</p>
-                            <p className={cn(typography.caption, "mt-1 text-purple-300/60")}>Once accepted via Brand Requests, Creator Armour protects you here.</p>
+                            <p className={cn(typography.caption, "mt-1 text-purple-300/70")}>Accept a request to see your active deals here.</p>
                             <motion.button
                               onClick={() => {
                                 triggerHaptic(HapticPatterns.light);
                                 navigate('/creator-collab');
                               }}
                               whileTap={animations.microTap}
-                              className={cn("mt-4", sectionHeader.action)}
+                              className={cn(
+                                "mt-4 w-full min-h-[40px] rounded-lg text-xs font-semibold text-white",
+                                "bg-gradient-to-r from-[#8B5CF6] to-[#6366F1] hover:from-[#7C3AED] hover:to-[#4F46E5]",
+                                "shadow-[0_2px_12px_rgba(139,92,246,0.35)] transition-colors"
+                              )}
                             >
                               Share your collab link →
                             </motion.button>
@@ -1472,7 +1486,12 @@ const CreatorDashboard = () => {
                                 >
                                   <BaseCard
                                     variant="tertiary"
-                                    className="rounded-xl md:rounded-2xl cursor-pointer hover:shadow-xl transition-shadow relative overflow-hidden w-full"
+                                    className={cn(
+                                      "rounded-xl md:rounded-2xl cursor-pointer hover:shadow-xl transition-shadow relative overflow-hidden w-full",
+                                      deal.paymentStatus === 'overdue'
+                                        ? "border border-red-500/30 shadow-[0_10px_30px_rgba(239,68,68,0.25)]"
+                                        : "border border-white/10"
+                                    )}
                                     onClick={() => {
                                       triggerHaptic(HapticPatterns.light);
                                       navigate(`/creator-contracts/${deal.id}`);
@@ -1551,7 +1570,7 @@ const CreatorDashboard = () => {
                                         <>
                                           <span className={cn(
                                             "inline-flex items-center justify-center gap-1.5 w-full min-h-[36px] rounded-lg text-xs font-semibold text-white",
-                                            "bg-gradient-to-r from-[#EF4444] to-[#F97316] hover:from-[#DC2626] hover:to-[#EA580C] transition-colors shadow-[0_2px_12px_rgba(239,68,68,0.3)]",
+                                            "bg-gradient-to-r from-[#EF4444] to-[#F97316] hover:from-[#DC2626] hover:to-[#EA580C] transition-colors shadow-[0_2px_16px_rgba(239,68,68,0.45)]",
                                             deal.deadline && (Date.now() - new Date(deal.deadline).getTime() > 3 * 24 * 60 * 60 * 1000) && "animate-pulse"
                                           )}>
                                             <AlertTriangle className="w-3.5 h-3.5" />
@@ -1577,6 +1596,8 @@ const CreatorDashboard = () => {
                         )}
                       </div>
 
+                      <div className={separators.subtle} />
+
                       {/* Collab Link — utility card (Copy | Preview only) */}
                       <div className="space-y-6 md:space-y-8">
                         <div className="flex items-center gap-2">
@@ -1584,9 +1605,9 @@ const CreatorDashboard = () => {
                           <p className={cn("text-sm font-medium text-white/90")}>All brand deals start here</p>
                         </div>
                         {(profile?.instagram_handle || profile?.username) ? (
-                          <BaseCard variant="tertiary" className="p-4 border border-white/10">
+                          <BaseCard variant="tertiary" className="p-4 border border-white/15 bg-white/8">
                             <div className="flex items-center gap-2">
-                              <code className="flex-1 min-w-0 truncate text-sm text-purple-200 bg-white/5 px-3 py-2 rounded-lg border border-white/10">
+                              <code className="flex-1 min-w-0 truncate text-sm text-purple-100 bg-white/10 px-3 py-2 rounded-lg border border-white/20">
                                 creatorarmour.com/collab/{profile?.instagram_handle || profile?.username}
                               </code>
                               <motion.button
@@ -1603,7 +1624,7 @@ const CreatorDashboard = () => {
                                 }}
                                 className={cn(
                                   "flex-shrink-0 p-2 rounded-lg border transition-colors",
-                                  collabLinkCopied ? "bg-green-500/20 border-green-500/40 text-green-300" : "border-white/20 bg-white/5 text-purple-200 hover:bg-white/10"
+                                  collabLinkCopied ? "bg-green-500/20 border-green-500/40 text-green-300" : "border-white/25 bg-white/10 text-white hover:bg-white/15"
                                 )}
                               >
                                 {collabLinkCopied ? <span className="text-xs font-medium">Copied!</span> : <Copy className="w-4 h-4" />}
@@ -1621,7 +1642,7 @@ const CreatorDashboard = () => {
                                   triggerHaptic(HapticPatterns.light);
                                   setTimeout(() => setCollabLinkCopied(false), 2000);
                                 }}
-                                className={cn(buttons.secondary, "flex-1 min-h-[44px] min-w-[80px] flex items-center justify-center gap-2 text-purple-100 border-purple-400/40")}
+                                className={cn(buttons.primary, "flex-1 min-h-[44px] min-w-[80px] flex items-center justify-center gap-2")}
                               >
                                 <Copy className="w-4 h-4" />
                                 Copy

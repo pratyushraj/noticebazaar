@@ -168,6 +168,17 @@ const CollabLinkAnalytics: React.FC = () => {
     );
   };
 
+  const maxMetricBase = Math.max(
+    analytics.views.total,
+    analytics.submissions.total,
+    Math.max(1, analytics.conversionRate.value)
+  );
+
+  const metricWidth = (value: number) => {
+    if (maxMetricBase <= 0) return 0;
+    return Math.min(100, Math.max(6, Math.round((value / maxMetricBase) * 100)));
+  };
+
   return (
     <Card className="bg-white/5 backdrop-blur-md border-white/10">
       <CardContent className="p-3">
@@ -183,10 +194,10 @@ const CollabLinkAnalytics: React.FC = () => {
             <button
               onClick={() => setPeriod('7')}
               aria-label="Last 7 days"
-              className={`px-2 py-0.5 text-[10px] rounded transition-colors ${
+              className={`px-2 py-0.5 text-[10px] rounded border transition-colors ${
                 period === '7'
-                  ? 'bg-purple-600 text-white'
-                  : 'bg-white/5 text-purple-300 hover:bg-white/10'
+                  ? 'bg-purple-600 text-white border-purple-400/40 shadow-[0_0_0_1px_rgba(255,255,255,0.06)]'
+                  : 'bg-white/10 text-purple-200 border-white/20 hover:bg-white/15'
               }`}
             >
               7d
@@ -194,10 +205,10 @@ const CollabLinkAnalytics: React.FC = () => {
             <button
               onClick={() => setPeriod('30')}
               aria-label="Last 30 days"
-              className={`px-2 py-0.5 text-[10px] rounded transition-colors ${
+              className={`px-2 py-0.5 text-[10px] rounded border transition-colors ${
                 period === '30'
-                  ? 'bg-purple-600 text-white'
-                  : 'bg-white/5 text-purple-300 hover:bg-white/10'
+                  ? 'bg-purple-600 text-white border-purple-400/40 shadow-[0_0_0_1px_rgba(255,255,255,0.06)]'
+                  : 'bg-white/10 text-purple-200 border-white/20 hover:bg-white/15'
               }`}
             >
               30d
@@ -208,7 +219,7 @@ const CollabLinkAnalytics: React.FC = () => {
         {/* Stats Grid - Compact */}
         <div className="grid grid-cols-3 gap-2 mb-2">
           {/* Total Views */}
-          <div className="bg-white/5 rounded-lg p-2 border border-white/10">
+          <div className="bg-white/8 rounded-lg p-2 border border-white/15">
             <div className="flex items-center gap-1 mb-1">
               <Eye className="h-3 w-3 text-purple-400" />
               <span className="text-[10px] text-purple-300">Views</span>
@@ -222,10 +233,16 @@ const CollabLinkAnalytics: React.FC = () => {
                 direction={analytics.views.trendDirection} 
               />
             </div>
+            <div className="mt-1 h-1 rounded-full bg-white/10 overflow-hidden">
+              <div
+                className="h-full rounded-full bg-gradient-to-r from-purple-400/80 to-indigo-400/80"
+                style={{ width: `${metricWidth(analytics.views.total)}%` }}
+              />
+            </div>
           </div>
 
           {/* Requests Received */}
-          <div className="bg-white/5 rounded-lg p-2 border border-white/10">
+          <div className="bg-white/8 rounded-lg p-2 border border-white/15">
             <div className="flex items-center gap-1 mb-1">
               <Send className="h-3 w-3 text-green-400" />
               <span className="text-[10px] text-purple-300">Requests</span>
@@ -239,10 +256,16 @@ const CollabLinkAnalytics: React.FC = () => {
                 direction={analytics.submissions.trendDirection} 
               />
             </div>
+            <div className="mt-1 h-1 rounded-full bg-white/10 overflow-hidden">
+              <div
+                className="h-full rounded-full bg-gradient-to-r from-green-400/80 to-emerald-400/80"
+                style={{ width: `${metricWidth(analytics.submissions.total)}%` }}
+              />
+            </div>
           </div>
 
           {/* Acceptance Rate */}
-          <div className="bg-white/5 rounded-lg p-2 border border-white/10">
+          <div className="bg-white/8 rounded-lg p-2 border border-white/15">
             <div className="flex items-center gap-1 mb-1">
               <BarChart3 className="h-3 w-3 text-purple-400" />
               <span className="text-[10px] text-purple-300">Acceptance Rate</span>
@@ -251,6 +274,12 @@ const CollabLinkAnalytics: React.FC = () => {
               <span className="text-lg font-bold text-white">
                 {analytics.conversionRate.value.toFixed(1)}%
               </span>
+            </div>
+            <div className="mt-1 h-1 rounded-full bg-white/10 overflow-hidden">
+              <div
+                className="h-full rounded-full bg-gradient-to-r from-purple-400/80 to-pink-400/80"
+                style={{ width: `${metricWidth(analytics.conversionRate.value)}%` }}
+              />
             </div>
           </div>
         </div>
@@ -295,4 +324,3 @@ const CollabLinkAnalytics: React.FC = () => {
 };
 
 export default CollabLinkAnalytics;
-
