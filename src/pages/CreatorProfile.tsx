@@ -857,7 +857,7 @@ const ProfileSettings = () => {
         <div
           role="tablist"
           aria-label="Profile sections"
-          className="flex gap-1 bg-white/5 rounded-lg p-1 border border-white/10 max-w-2xl mx-auto"
+          className="flex gap-1 bg-white/8 rounded-lg p-1 border border-white/20 max-w-2xl mx-auto"
         >
           <button
             role="tab"
@@ -867,8 +867,8 @@ const ProfileSettings = () => {
             className={cn(
               "flex-1 min-h-[44px] px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 text-center flex items-center justify-center gap-1.5",
               activeSection === 'profile'
-                ? "bg-white/10 text-white shadow-sm"
-                : "text-white/60 hover:text-white/80"
+                ? "bg-white/15 text-white shadow-sm ring-1 ring-white/15 border border-white/20"
+                : "text-white/50 hover:text-white/80"
             )}
           >
             <User className="w-4 h-4" />
@@ -882,8 +882,8 @@ const ProfileSettings = () => {
             className={cn(
               "flex-1 min-h-[44px] px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 text-center flex items-center justify-center gap-1.5",
               activeSection === 'account'
-                ? "bg-white/10 text-white shadow-sm"
-                : "text-white/60 hover:text-white/80"
+                ? "bg-white/15 text-white shadow-sm ring-1 ring-white/15 border border-white/20"
+                : "text-white/50 hover:text-white/80"
             )}
           >
             <Lock className="w-4 h-4" />
@@ -897,8 +897,8 @@ const ProfileSettings = () => {
             className={cn(
               "flex-1 min-h-[44px] px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 text-center flex items-center justify-center gap-1.5",
               activeSection === 'support'
-                ? "bg-white/10 text-white shadow-sm"
-                : "text-white/60 hover:text-white/80"
+                ? "bg-white/15 text-white shadow-sm ring-1 ring-white/15 border border-white/20"
+                : "text-white/50 hover:text-white/80"
             )}
           >
             <HelpCircle className="w-4 h-4" />
@@ -907,9 +907,9 @@ const ProfileSettings = () => {
         </div>
       </div>
 
-      <div className="p-4 space-y-3" style={{ paddingBottom: 'calc(120px + env(safe-area-inset-bottom, 0px))' }}>
+      <div className="p-4 space-y-3" style={{ paddingBottom: 'calc(160px + env(safe-area-inset-bottom, 0px))' }}>
         {/* Profile Summary - Mobile Optimized */}
-        <div className="bg-white/5 rounded-xl p-4 border border-white/10 mb-4">
+        <div className="bg-white/8 rounded-xl p-4 border border-white/15 mb-4">
           <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4">
             {/* Avatar - Editable - Centered on mobile */}
             <div className="relative flex-shrink-0">
@@ -1016,7 +1016,7 @@ const ProfileSettings = () => {
             {/* View Stats Button - Full width on mobile */}
             <button
               onClick={() => setShowStats(!showStats)}
-              className="w-full sm:w-auto px-4 py-2 sm:px-3 sm:py-1.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-xs font-medium text-white/70 hover:text-white/90 transition-colors"
+              className="w-full sm:w-auto px-4 py-2 sm:px-3 sm:py-1.5 bg-white/8 hover:bg-white/12 border border-white/20 rounded-lg text-xs font-medium text-white/75 hover:text-white/95 transition-colors"
             >
               {showStats ? 'Hide Stats' : 'View Stats'}
             </button>
@@ -1051,25 +1051,25 @@ const ProfileSettings = () => {
         {activeSection === 'profile' && (
           <div className="space-y-3">
             {/* Basic Information */}
-            <div className="bg-white/5 rounded-xl p-4 border border-white/10">
+            <div className="bg-white/8 rounded-xl p-4 border border-white/15">
               <h2 className="font-semibold text-base mb-3 flex items-center gap-2">
                 <User className="w-4 h-4" />
                 Basic Information
               </h2>
-              <div className="space-y-3">
+              <div className="space-y-2.5">
                 <div>
-                  <label className="text-xs text-white/60 mb-1.5 block">Full Name *</label>
+                  <label className="text-xs text-white/70 mb-1.5 block">Full Name *</label>
                   <input
                     type="text"
                     value={formData.name}
                     onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
                     disabled={!editMode}
                     placeholder="Enter your full name"
-                    className={`w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder-white/40 outline-none transition-colors ${editMode ? 'focus:border-purple-500 focus:bg-white/10' : 'cursor-not-allowed'}`}
+                    className={`w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-sm text-white placeholder-white/40 outline-none transition-colors ${editMode ? 'focus:border-purple-300/60 focus:ring-2 focus:ring-purple-400/20 focus:bg-white/12' : 'cursor-not-allowed'}`}
                   />
                 </div>
                 <div>
-                  <label className="text-xs text-white/60 mb-1.5 block">Email</label>
+                  <label className="text-xs text-white/70 mb-1.5 block">Email</label>
                   <div className="flex items-center gap-2">
                     <Mail className="w-4 h-4 text-white/50 flex-shrink-0" />
                     <input
@@ -1077,13 +1077,13 @@ const ProfileSettings = () => {
                       value={formData.email}
                       disabled={true}
                       title="Email cannot be changed"
-                      className="flex-1 bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white/60 placeholder-white/40 outline-none cursor-not-allowed"
+                      className="flex-1 bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-sm text-white/70 placeholder-white/40 outline-none cursor-not-allowed"
                     />
                   </div>
-                  <p className="text-xs text-white/50 mt-1">Email cannot be changed for security reasons</p>
+                  <p className="text-xs text-white/60 mt-1">Email cannot be changed for security reasons</p>
                 </div>
                 <div>
-                  <label className="text-xs text-white/60 mb-1.5 block">Phone</label>
+                  <label className="text-xs text-white/70 mb-1.5 block">Phone</label>
                   <div className="flex items-center gap-2">
                     <Phone className="w-4 h-4 text-white/50 flex-shrink-0" />
                     <input
@@ -1105,13 +1105,13 @@ const ProfileSettings = () => {
                       }}
                       disabled={!editMode}
                       placeholder="+91 98765 43210"
-                      className={`flex-1 bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder-white/40 outline-none transition-colors ${editMode ? 'focus:border-purple-500 focus:bg-white/10' : 'cursor-not-allowed'}`}
+                      className={`flex-1 bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-sm text-white placeholder-white/40 outline-none transition-colors ${editMode ? 'focus:border-purple-300/60 focus:ring-2 focus:ring-purple-400/20 focus:bg-white/12' : 'cursor-not-allowed'}`}
                     />
                   </div>
                 </div>
                 {/* Address Line */}
                 <div>
-                  <label className="text-xs text-white/60 mb-1.5 block">Address Line *</label>
+                  <label className="text-xs text-white/70 mb-1.5 block">Address Line *</label>
                   <div className="flex items-center gap-2">
                     <MapPin className="w-4 h-4 text-white/50 flex-shrink-0" />
                     <input
@@ -1120,85 +1120,89 @@ const ProfileSettings = () => {
                       onChange={(e) => setFormData(prev => ({ ...prev, addressLine: e.target.value }))}
                       disabled={!editMode}
                       placeholder="House/Flat No., Building, Street"
-                      className={`flex-1 bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder-white/40 outline-none transition-colors ${editMode ? 'focus:border-purple-500 focus:bg-white/10' : 'cursor-not-allowed'}`}
+                      className={`flex-1 bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-sm text-white placeholder-white/40 outline-none transition-colors ${editMode ? 'focus:border-purple-300/60 focus:ring-2 focus:ring-purple-400/20 focus:bg-white/12' : 'cursor-not-allowed'}`}
                     />
                   </div>
                 </div>
 
-                {/* Pincode with auto-fetch */}
-                <div>
-                  <label className="text-xs text-white/60 mb-1.5 block">Pincode *</label>
-                  <div className="flex items-center gap-2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {/* Pincode with auto-fetch */}
+                  <div>
+                    <label className="text-xs text-white/70 mb-1.5 block">Pincode *</label>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="text"
+                        value={formData.pincode}
+                        onChange={(e) => {
+                          const value = e.target.value.replace(/\D/g, '').slice(0, 6);
+                          handlePincodeChange(value);
+                        }}
+                        disabled={!editMode}
+                        placeholder="6-digit pincode"
+                        maxLength={6}
+                        className={`flex-1 bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-sm text-white placeholder-white/40 outline-none transition-colors ${editMode ? 'focus:border-purple-300/60 focus:ring-2 focus:ring-purple-400/20 focus:bg-white/12' : 'cursor-not-allowed'}`}
+                      />
+                      {isLookingUpPincode && (
+                        <Loader2 className="w-4 h-4 animate-spin text-purple-400 flex-shrink-0" />
+                      )}
+                    </div>
+                    {pincodeError && (
+                      <p className="text-xs text-yellow-400 mt-1">{pincodeError}</p>
+                    )}
+                    {formData.pincode.length === 6 && !isLookingUpPincode && !pincodeError && (
+                      <p className="text-xs text-green-400 mt-1">✓ City and State auto-filled</p>
+                    )}
+                    <p className="text-xs text-white/60 mt-1">Enter 6-digit pincode to auto-fill city and state</p>
+                  </div>
+
+                  {/* City */}
+                  <div>
+                    <label className="text-xs text-white/70 mb-1.5 block">City *</label>
                     <input
                       type="text"
-                      value={formData.pincode}
+                      value={formData.city || ''}
                       onChange={(e) => {
-                        const value = e.target.value.replace(/\D/g, '').slice(0, 6);
-                        handlePincodeChange(value);
+                        const newCity = e.target.value;
+                        console.log('[CreatorProfile] City input changed:', newCity);
+                        setFormData(prev => {
+                          const updated = { ...prev, city: newCity };
+                          console.log('[CreatorProfile] City updated in formData:', updated.city);
+                          return updated;
+                        });
                       }}
-                      disabled={!editMode}
-                      placeholder="6-digit pincode"
-                      maxLength={6}
-                      className={`flex-1 bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder-white/40 outline-none transition-colors ${editMode ? 'focus:border-purple-500 focus:bg-white/10' : 'cursor-not-allowed'}`}
+                      disabled={!editMode || isLookingUpPincode}
+                      placeholder="City"
+                      className={`w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-sm text-white placeholder-white/40 outline-none transition-colors ${editMode ? 'focus:border-purple-300/60 focus:ring-2 focus:ring-purple-400/20 focus:bg-white/12' : 'cursor-not-allowed'} ${isLookingUpPincode ? 'opacity-50' : ''}`}
                     />
-                    {isLookingUpPincode && (
-                      <Loader2 className="w-4 h-4 animate-spin text-purple-400 flex-shrink-0" />
-                    )}
                   </div>
-                  {pincodeError && (
-                    <p className="text-xs text-yellow-400 mt-1">{pincodeError}</p>
-                  )}
-                  {formData.pincode.length === 6 && !isLookingUpPincode && !pincodeError && (
-                    <p className="text-xs text-green-400 mt-1">✓ City and State auto-filled</p>
-                  )}
-                  <p className="text-xs text-white/50 mt-1">Enter 6-digit pincode to auto-fill city and state</p>
                 </div>
 
-                {/* City */}
-                <div>
-                  <label className="text-xs text-white/60 mb-1.5 block">City *</label>
-                  <input
-                    type="text"
-                    value={formData.city || ''}
-                    onChange={(e) => {
-                      const newCity = e.target.value;
-                      console.log('[CreatorProfile] City input changed:', newCity);
-                      setFormData(prev => {
-                        const updated = { ...prev, city: newCity };
-                        console.log('[CreatorProfile] City updated in formData:', updated.city);
-                        return updated;
-                      });
-                    }}
-                    disabled={!editMode || isLookingUpPincode}
-                    placeholder="City"
-                    className={`w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder-white/40 outline-none transition-colors ${editMode ? 'focus:border-purple-500 focus:bg-white/10' : 'cursor-not-allowed'} ${isLookingUpPincode ? 'opacity-50' : ''}`}
-                  />
-                </div>
-
-                {/* State */}
-                <div>
-                  <label className="text-xs text-white/60 mb-1.5 block">State *</label>
-                  <input
-                    type="text"
-                    value={formData.state}
-                    onChange={(e) => setFormData(prev => ({ ...prev, state: e.target.value }))}
-                    disabled={!editMode || isLookingUpPincode}
-                    placeholder="State"
-                    className={`w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder-white/40 outline-none transition-colors ${editMode ? 'focus:border-purple-500 focus:bg-white/10' : 'cursor-not-allowed'} ${isLookingUpPincode ? 'opacity-50' : ''}`}
-                  />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {/* State */}
+                  <div>
+                    <label className="text-xs text-white/70 mb-1.5 block">State *</label>
+                    <input
+                      type="text"
+                      value={formData.state}
+                      onChange={(e) => setFormData(prev => ({ ...prev, state: e.target.value }))}
+                      disabled={!editMode || isLookingUpPincode}
+                      placeholder="State"
+                      className={`w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-sm text-white placeholder-white/40 outline-none transition-colors ${editMode ? 'focus:border-purple-300/60 focus:ring-2 focus:ring-purple-400/20 focus:bg-white/12' : 'cursor-not-allowed'} ${isLookingUpPincode ? 'opacity-50' : ''}`}
+                    />
+                  </div>
                 </div>
               </div>
             </div>
 
             {/* Social Profiles Section */}
-            <div className="bg-white/5 rounded-xl p-4 border border-white/10">
+            <div className="bg-white/8 rounded-xl p-4 border border-white/15">
               <h2 className="font-semibold text-base mb-3 flex items-center gap-2">
                 <Instagram className="w-4 h-4" />
                 Social Profiles
               </h2>
               <div className="space-y-3">
                 <div>
-                  <label className="text-xs text-white/60 mb-1.5 block">Instagram Username</label>
+                  <label className="text-xs text-white/70 mb-1.5 block">Instagram Username</label>
                   <div className="flex items-center gap-2">
                     <Instagram className="w-4 h-4 text-white/50 flex-shrink-0" />
                     <input
@@ -1219,10 +1223,10 @@ const ProfileSettings = () => {
                       }}
                       disabled={!editMode}
                       placeholder="e.g. your_handle"
-                      className={`flex-1 bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder-white/40 outline-none transition-colors ${editMode ? 'focus:border-purple-500 focus:bg-white/10' : 'cursor-not-allowed'}`}
+                      className={`flex-1 bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-sm text-white placeholder-white/40 outline-none transition-colors ${editMode ? 'focus:border-purple-300/60 focus:ring-2 focus:ring-purple-400/20 focus:bg-white/12' : 'cursor-not-allowed'}`}
                     />
                   </div>
-                  <p className="text-xs text-white/50 mt-1">
+                  <p className="text-xs text-white/60 mt-1">
                     This will be shown to brands on your collaboration page and used in your collaboration link: /{formData.instagramHandle || 'username'}
                   </p>
                   {formData.instagramHandle && (
@@ -1235,7 +1239,7 @@ const ProfileSettings = () => {
             </div>
 
             {/* Account Milestones */}
-            <div className="bg-white/5 rounded-xl p-4 border border-white/10">
+            <div className="bg-white/8 rounded-xl p-4 border border-white/15">
               <h2 className="font-semibold text-base mb-3 flex items-center gap-2">
                 <Award className="w-4 h-4" />
                 Account Milestones
@@ -1248,8 +1252,8 @@ const ProfileSettings = () => {
                       key={achievement.id}
                       className={`p-3 rounded-lg border ${
                         achievement.earned
-                          ? 'bg-yellow-500/10 border-yellow-500/20'
-                          : 'bg-white/5 border-white/10'
+                          ? 'bg-yellow-500/10 border-yellow-500/25'
+                          : 'bg-white/8 border-white/15'
                       }`}
                     >
                       <div className={`w-10 h-10 rounded-lg ${
@@ -1261,7 +1265,15 @@ const ProfileSettings = () => {
                       {achievement.earned ? (
                         <div className="text-xs text-yellow-400/80">Earned {achievement.date}</div>
                       ) : (
-                        <div className="text-xs text-white/50">{achievement.progress}% complete</div>
+                        <>
+                          <div className="text-xs text-white/60">{achievement.progress}% complete</div>
+                          <div className="mt-2 h-1.5 rounded-full bg-white/10 overflow-hidden">
+                            <div
+                              className="h-full bg-gradient-to-r from-purple-400/80 to-indigo-400/80 rounded-full"
+                              style={{ width: `${Math.min(100, Math.max(0, achievement.progress))}%` }}
+                            />
+                          </div>
+                        </>
                       )}
                     </div>
                   );
@@ -1270,7 +1282,7 @@ const ProfileSettings = () => {
             </div>
 
             {/* Collaboration Link — mobile-first, conversion-focused */}
-            <div className="bg-white/5 rounded-xl p-4 border border-white/10">
+            <div className="bg-white/8 rounded-xl p-4 border border-white/15">
               <h2 className="font-semibold text-base mb-1 flex items-center gap-2">
                 <Link2 className="w-4 h-4" />
                 Your Official Collaboration Link
@@ -1288,8 +1300,8 @@ const ProfileSettings = () => {
                   return hasUsername ? (
                     <>
                       {/* 1. Collab link card — one line + Copy primary CTA */}
-                      <div className="rounded-xl overflow-hidden border border-white/10">
-                        <div className="bg-white/10 px-3 py-2.5 flex items-center gap-2">
+                      <div className="rounded-xl overflow-hidden border border-white/15">
+                        <div className="bg-white/15 px-3 py-2.5 flex items-center gap-2">
                           <code className="text-sm text-white/90 truncate flex-1 min-w-0" title={shortLink}>
                             {shortLink}
                           </code>
@@ -1305,14 +1317,14 @@ const ProfileSettings = () => {
                                 toast.error('Failed to copy');
                               }
                             }}
-                            className="flex-shrink-0 h-9 px-3 bg-white/20 hover:bg-white/30 border border-white/20 text-white font-medium"
+                            className="flex-shrink-0 h-9 px-3 bg-white/30 hover:bg-white/40 border border-white/30 text-white font-medium"
                             aria-label="Copy creator link"
                           >
                             {copiedLink ? <Check className="h-4 w-4 text-green-400" /> : <Copy className="h-4 w-4" />}
                             <span className="ml-1.5">{copiedLink ? 'Copied' : 'Copy'}</span>
                           </Button>
                         </div>
-                        <p className="text-[11px] text-white/50 px-3 py-1.5 flex items-center gap-1 bg-white/5">
+                        <p className="text-[11px] text-white/60 px-3 py-1.5 flex items-center gap-1 bg-white/8">
                           <Lock className="h-3 w-3" />
                           Legally protected · Contracts & payments enabled
                         </p>
@@ -1320,7 +1332,7 @@ const ProfileSettings = () => {
 
                       {/* 2. Share via — compact icon row */}
                       <div>
-                        <p className="text-xs text-white/50 mb-2">Share via</p>
+                        <p className="text-xs text-white/60 mb-2">Share via</p>
                         <div className="grid grid-cols-3 gap-2">
                           <Button
                             variant="outline"
@@ -1330,7 +1342,7 @@ const ProfileSettings = () => {
                               window.open(`https://wa.me/?text=${message}`, '_blank');
                               toast.success('Opening WhatsApp…');
                             }}
-                            className="h-9 text-xs bg-white/5 border-white/20 text-white/80 hover:bg-white/10"
+                            className="h-9 text-xs bg-white/8 border-white/25 text-white/85 hover:bg-white/15"
                             aria-label="Share via WhatsApp"
                           >
                             <MessageCircle className="h-3.5 w-3.5 mr-1" />
@@ -1347,7 +1359,7 @@ const ProfileSettings = () => {
                                 toast.error('Failed to copy');
                               }
                             }}
-                            className="h-9 text-xs bg-white/5 border-white/20 text-white/80 hover:bg-white/10"
+                            className="h-9 text-xs bg-white/8 border-white/25 text-white/85 hover:bg-white/15"
                             aria-label="Share via Instagram"
                           >
                             <Instagram className="h-3.5 w-3.5 mr-1" />
@@ -1362,21 +1374,21 @@ const ProfileSettings = () => {
                               window.location.href = `mailto:?subject=${subject}&body=${body}`;
                               toast.success('Opening email…');
                             }}
-                            className="h-9 text-xs bg-white/5 border-white/20 text-white/80 hover:bg-white/10"
+                            className="h-9 text-xs bg-white/8 border-white/25 text-white/85 hover:bg-white/15"
                             aria-label="Share via Email"
                           >
                             <Mail className="h-3.5 w-3.5 mr-1" />
                             Email
                           </Button>
                         </div>
-                        <p className="text-[11px] text-white/45 mt-1.5">Perfect for Instagram bio.</p>
+                        <p className="text-[11px] text-white/55 mt-1.5">Perfect for Instagram bio.</p>
                       </div>
 
                       {/* 3. Primary CTA — view public page */}
                       <div className="space-y-1">
                         <Button
                           variant="outline"
-                          className="w-full h-11 bg-white/10 border-white/20 text-white font-medium hover:bg-white/15"
+                          className="w-full h-11 bg-white/15 border-white/25 text-white font-medium hover:bg-white/20"
                           onClick={() => {
                             if (usernameForLink) {
                               window.open(`/collab/${usernameForLink}`, '_blank');
@@ -1389,13 +1401,13 @@ const ProfileSettings = () => {
                           <ExternalLink className="h-4 w-4 mr-2" />
                           View how brands see your link
                         </Button>
-                        <p className="text-[11px] text-white/50 text-center">Preview your creator profile</p>
+                        <p className="text-[11px] text-white/60 text-center">Preview your creator profile</p>
                       </div>
 
                       {/* 4. How it works — accordion, collapsed by default, 3 steps */}
                       <Collapsible open={showHowItWorks} onOpenChange={setShowHowItWorks}>
                         <CollapsibleTrigger
-                          className="w-full rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 transition-colors"
+                          className="w-full rounded-xl border border-white/15 bg-white/8 hover:bg-white/12 transition-colors"
                           aria-expanded={showHowItWorks}
                           aria-label={showHowItWorks ? 'How it works, collapse' : 'How it works, expand for steps'}
                         >
@@ -1408,7 +1420,7 @@ const ProfileSettings = () => {
                           </div>
                         </CollapsibleTrigger>
                         <CollapsibleContent>
-                          <div className="rounded-b-xl border border-t-0 border-white/10 bg-white/5 p-3">
+                          <div className="rounded-b-xl border border-t-0 border-white/15 bg-white/8 p-3">
                             <ol className="space-y-2 text-xs text-white/70">
                               <li className="flex gap-2"><span className="text-white/50 font-medium flex-shrink-0">1.</span> Brand opens your link</li>
                               <li className="flex gap-2"><span className="text-white/50 font-medium flex-shrink-0">2.</span> Submits deal details</li>
@@ -1419,20 +1431,20 @@ const ProfileSettings = () => {
                       </Collapsible>
 
                       {/* 5. One compact trust card */}
-                      <div className="rounded-xl border border-white/10 bg-white/5 p-3 flex items-start gap-2">
+                      <div className="rounded-xl border border-white/15 bg-white/8 p-3 flex items-start gap-2">
                         <Shield className="h-4 w-4 text-white/60 mt-0.5 flex-shrink-0" />
                         <div>
                           <p className="text-xs font-medium text-white/90">This link replaces DMs</p>
-                          <p className="text-[11px] text-white/55 mt-0.5">All brand requests are logged, timestamped, and legally protected.</p>
+                          <p className="text-[11px] text-white/60 mt-0.5">All brand requests are logged, timestamped, and legally protected.</p>
                         </div>
                       </div>
 
                       {/* 6. Analytics — soft empty state */}
-                      <div className="rounded-xl border border-white/10 bg-white/5 p-3">
+                      <div className="rounded-xl border border-white/15 bg-white/8 p-3">
                         <div className="flex items-center gap-2">
                           <Eye className="h-4 w-4 text-white/50 flex-shrink-0" />
                           {analyticsLoading ? (
-                            <span className="text-xs text-white/50 flex items-center gap-2">
+                            <span className="text-xs text-white/60 flex items-center gap-2">
                               <Loader2 className="h-3 w-3 animate-spin" /> Loading…
                             </span>
                           ) : analyticsSummary && analyticsSummary.weeklyViews > 0 ? (
@@ -1440,7 +1452,7 @@ const ProfileSettings = () => {
                               {analyticsSummary.weeklyViews} {analyticsSummary.weeklyViews === 1 ? 'brand' : 'brands'} viewed your link this week
                             </p>
                           ) : (
-                            <p className="text-xs text-white/60">
+                            <p className="text-xs text-white/65">
                               No brand visits yet. Share your link in bio to start receiving requests.
                             </p>
                           )}
@@ -1448,11 +1460,11 @@ const ProfileSettings = () => {
                       </div>
                     </>
                   ) : (
-                    <div className="rounded-xl border border-white/10 bg-white/5 p-3 flex items-start gap-2">
+                    <div className="rounded-xl border border-white/15 bg-white/8 p-3 flex items-start gap-2">
                       <AlertCircle className="h-4 w-4 text-white/50 mt-0.5 flex-shrink-0" />
                       <div>
                         <p className="text-sm font-medium text-white/80">Complete your profile to activate your collab link</p>
-                        <p className="text-xs text-white/55 mt-0.5">Save your profile and your link will be generated automatically.</p>
+                        <p className="text-xs text-white/65 mt-0.5">Save your profile and your link will be generated automatically.</p>
                       </div>
                     </div>
                   );
@@ -1475,7 +1487,7 @@ const ProfileSettings = () => {
                     setShowLogoutDialog(true);
                   }}
                   disabled={signOutMutation.isPending}
-                  className="w-full bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 text-red-400 font-medium py-2.5 rounded-lg transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed text-sm min-h-[44px]"
+                  className="w-full bg-transparent hover:bg-red-500/10 border border-red-500/40 text-red-300 font-medium py-2 rounded-lg transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed text-sm min-h-[40px]"
                   aria-label="Log out of your account"
                   aria-describedby="logout-description"
                   type="button"
