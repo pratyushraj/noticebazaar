@@ -2,6 +2,8 @@
 // Brand Form Submission Email Service
 // Sends email notification to creator when brand submits deal details form
 
+import { getCTATrustLine, getEmailLayout, getEmailProgressCue, getEmailSignal, getPrimaryCTA } from './professionalEmailTemplates.js';
+
 interface ResendEmailResponse {
   id?: string;
   error?: {
@@ -83,88 +85,99 @@ export async function sendBrandFormSubmissionEmail(
       : `${process.env.FRONTEND_URL || 'https://creatorarmour.com'}/creator-contracts`;
 
     const emailSubject = `New Collaboration Request from ${brandData.brandName}`;
-    const emailHtml = `
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <meta charset="utf-8">
-          <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        </head>
-        <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
-          <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; border-radius: 10px 10px 0 0; text-align: center;">
-            <h1 style="color: white; margin: 0; font-size: 24px;">CreatorArmour</h1>
+    const emailContent = `
+      <tr>
+        <td style="background-color: #5b21b6; padding: 48px 30px; text-align: center;">
+          <div style="width: 70px; height: 70px; margin: 0 auto 16px auto; border-radius: 18px; background-color: rgba(255, 255, 255, 0.16); display: inline-block; line-height: 70px;">
+            <span style="font-size: 30px; color: #ffffff;">✨</span>
           </div>
-          <div style="background: #f9fafb; padding: 30px; border-radius: 0 0 10px 10px; border: 1px solid #e5e7eb; border-top: none;">
-            <h2 style="color: #1f2937; margin-top: 0; font-size: 20px;">🎉 New Collaboration Request!</h2>
-            <p style="color: #4b5563; font-size: 16px;">
-              Hello ${creatorName || 'there'},
-            </p>
-            <p style="color: #4b5563; font-size: 16px;">
-              Great news! <strong>${brandData.brandName}</strong> has submitted their collaboration details through your form link.
-            </p>
-            
-            <div style="background: white; border: 1px solid #e5e7eb; border-radius: 8px; padding: 20px; margin: 20px 0;">
-              <h3 style="color: #1f2937; margin-top: 0; font-size: 18px;">Collaboration Details:</h3>
-              <table style="width: 100%; border-collapse: collapse;">
-                <tr>
-                  <td style="padding: 8px 0; color: #6b7280; font-size: 14px; width: 40%;"><strong>Brand Name:</strong></td>
-                  <td style="padding: 8px 0; color: #1f2937; font-size: 14px;">${brandData.brandName}</td>
-                </tr>
-                ${brandData.campaignName ? `
-                <tr>
-                  <td style="padding: 8px 0; color: #6b7280; font-size: 14px;"><strong>Campaign Name:</strong></td>
-                  <td style="padding: 8px 0; color: #1f2937; font-size: 14px;">${brandData.campaignName}</td>
-                </tr>
-                ` : ''}
-                <tr>
-                  <td style="padding: 8px 0; color: #6b7280; font-size: 14px;"><strong>Deal Type:</strong></td>
-                  <td style="padding: 8px 0; color: #1f2937; font-size: 14px; text-transform: capitalize;">${brandData.dealType}</td>
-                </tr>
-                <tr>
-                  <td style="padding: 8px 0; color: #6b7280; font-size: 14px;"><strong>Deal Value:</strong></td>
-                  <td style="padding: 8px 0; color: #1f2937; font-size: 14px; font-weight: 600;">${dealAmount}</td>
-                </tr>
-                <tr>
-                  <td style="padding: 8px 0; color: #6b7280; font-size: 14px;"><strong>Deadline:</strong></td>
-                  <td style="padding: 8px 0; color: #1f2937; font-size: 14px;">${deadlineText}</td>
-                </tr>
-              </table>
-            </div>
-
-            <div style="background: white; border: 1px solid #e5e7eb; border-radius: 8px; padding: 20px; margin: 20px 0;">
-              <h3 style="color: #1f2937; margin-top: 0; font-size: 18px;">Deliverables:</h3>
-              <div style="color: #4b5563; font-size: 14px;">
+          <h1 style="margin: 0 0 8px 0; font-size: 24px; font-weight: 700; color: #ffffff !important; line-height: 1.3;">
+            New collaboration request
+          </h1>
+          <p style="margin: 0; font-size: 14px; color: #ffffff !important; opacity: 0.95;">
+            ${brandData.brandName} sent you deal details
+          </p>
+        </td>
+      </tr>
+      <tr>
+        <td style="padding: 24px 32px 6px 32px;">
+          <p style="margin: 0 0 10px 0; font-size: 16px; font-weight: 600; color: #111827;">Hello ${creatorName || 'there'},</p>
+          <p style="margin: 0; font-size: 14px; color: #4b5563; line-height: 1.7;">
+            Great news! ${brandData.brandName} submitted their collaboration details through your link. Review the deal and generate a protected contract to move forward.
+          </p>
+        </td>
+      </tr>
+      ${getEmailSignal({
+        type: 'action',
+        message: 'Review the details and generate a contract before the brand loses momentum.'
+      })}
+      ${getEmailProgressCue([
+        { label: 'Request In', status: 'completed' },
+        { label: 'Review & Contract', status: 'current' },
+        { label: 'Brand Signs', status: 'upcoming' }
+      ])}
+      <tr>
+        <td style="padding: 20px 32px 0 32px;">
+          <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background-color: #f8fafc; border: 1px solid #e5e7eb; border-radius: 12px; padding: 16px;">
+            <tr>
+              <td style="font-size: 13px; font-weight: 700; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px; padding-bottom: 12px;">Deal Summary</td>
+            </tr>
+            <tr>
+              <td>
+                <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="border-collapse: collapse;">
+                  <tr>
+                    <td style="padding: 10px 0; color: #6b7280; font-size: 13px; width: 38%; font-weight: 600;">Brand</td>
+                    <td style="padding: 10px 0; color: #111827; font-size: 14px; font-weight: 600;">${brandData.brandName}</td>
+                  </tr>
+                  ${brandData.campaignName ? `
+                  <tr>
+                    <td style="padding: 10px 0; color: #6b7280; font-size: 13px; font-weight: 600;">Campaign</td>
+                    <td style="padding: 10px 0; color: #111827; font-size: 14px;">${brandData.campaignName}</td>
+                  </tr>
+                  ` : ''}
+                  <tr>
+                    <td style="padding: 10px 0; color: #6b7280; font-size: 13px; font-weight: 600;">Deal type</td>
+                    <td style="padding: 10px 0; color: #111827; font-size: 14px; text-transform: capitalize;">${brandData.dealType}</td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 10px 0; color: #6b7280; font-size: 13px; font-weight: 600;">Deal value</td>
+                    <td style="padding: 10px 0; color: #111827; font-size: 14px; font-weight: 700;">${dealAmount}</td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 10px 0; color: #6b7280; font-size: 13px; font-weight: 600;">Deadline</td>
+                    <td style="padding: 10px 0; color: #111827; font-size: 14px;">${deadlineText}</td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+      <tr>
+        <td style="padding: 16px 32px 0 32px;">
+          <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background-color: #ffffff; border: 1px solid #e5e7eb; border-radius: 12px; padding: 16px;">
+            <tr>
+              <td style="font-size: 13px; font-weight: 700; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px; padding-bottom: 10px;">Deliverables</td>
+            </tr>
+            <tr>
+              <td style="color: #4b5563; font-size: 14px; line-height: 1.7;">
                 ${deliverablesList || 'No deliverables specified'}
-              </div>
-            </div>
-
-            <div style="text-align: center; margin: 30px 0;">
-              <a href="${dealLink}" style="display: inline-block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px;">
-                Review & Create Contract
-              </a>
-            </div>
-
-            <p style="color: #6b7280; font-size: 14px; margin-top: 30px;">
-              <strong>Next Steps:</strong>
-            </p>
-            <ul style="color: #6b7280; font-size: 14px; padding-left: 20px;">
-              <li>Review the collaboration details in your dashboard</li>
-              <li>Generate a protected contract based on these details</li>
-              <li>Share the contract with the brand for review</li>
-            </ul>
-
-            <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
-              <p style="color: #9ca3af; font-size: 11px; margin: 0; text-transform: uppercase; letter-spacing: 0.5px; line-height: 1.4;">
-                Actions on Creator Armour are recorded, timestamped, and legally enforceable.
-              </p>
-              <p style="color: #9ca3af; font-size: 11px; margin: 8px 0 0 0;">
-                This is an automated email from CreatorArmour. Please do not reply to this email.
-              </p>
-            </div>
-          </div>
-        </body>
-      </html>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+      ${getPrimaryCTA('Review & Create Contract', dealLink)}
+      ${getCTATrustLine('Contracts are auto-logged and provide legal protection.')}
+      <tr>
+        <td style="padding: 0 32px 28px 32px;">
+          <p style="margin: 0; font-size: 13px; color: #6b7280; line-height: 1.6;">
+            Once you generate the contract, we’ll notify the brand instantly. Reply in-app if they request changes.
+          </p>
+        </td>
+      </tr>
     `;
+    const emailHtml = getEmailLayout({ content: emailContent, showFooter: true, backgroundStyle: 'purple' });
 
     const requestBody = {
       from: 'CreatorArmour <noreply@creatorarmour.com>',
@@ -252,4 +265,3 @@ export async function sendBrandFormSubmissionEmail(
     };
   }
 }
-

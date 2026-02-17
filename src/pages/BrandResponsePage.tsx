@@ -3,10 +3,10 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  CheckCircle, 
-  AlertCircle, 
-  XCircle, 
+import {
+  CheckCircle,
+  AlertCircle,
+  XCircle,
   Loader2,
   X,
   ChevronDown,
@@ -15,6 +15,7 @@ import {
 import { toast } from 'sonner';
 import { triggerHaptic, HapticPatterns } from '@/lib/utils/haptics';
 import { cn } from '@/lib/utils';
+import { getApiBaseUrl } from '@/lib/utils/api';
 
 interface RequestedChange {
   title: string;
@@ -46,7 +47,7 @@ const BrandResponsePage = () => {
   const [otherNegotiationText, setOtherNegotiationText] = useState('');
   const [analysisData, setAnalysisData] = useState<any>(null);
   const [isContractSummaryExpanded, setIsContractSummaryExpanded] = useState(false);
-  
+
   // OTP Modal State
   const [showOTPModal, setShowOTPModal] = useState(false);
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
@@ -66,33 +67,33 @@ const BrandResponsePage = () => {
     if (requestedChanges && requestedChanges.length > 0) {
       return true;
     }
-    
+
     // Check if there are safeguards/clarifications in analysis data
     if (analysisData) {
       const keyTerms = analysisData.keyTerms || {};
       const issues = Array.isArray(analysisData.issues) ? analysisData.issues : [];
-      
+
       // Check for missing critical terms that would require clarification
-      const hasMissingTerms = 
+      const hasMissingTerms =
         (!keyTerms?.usageRights || keyTerms.usageRights === 'Not specified') ||
         (!keyTerms?.exclusivity || keyTerms.exclusivity === 'Not specified') ||
         (!keyTerms?.paymentSchedule || keyTerms.paymentSchedule === 'Not specified') ||
         (!keyTerms?.termination || keyTerms.termination === 'Not specified');
-      
+
       // Check if there are high/medium severity issues
-      const hasImportantIssues = issues.some((issue: any) => 
+      const hasImportantIssues = issues.some((issue: any) =>
         issue.severity === 'high' || issue.severity === 'medium'
       );
-      
+
       return hasMissingTerms || hasImportantIssues;
     }
-    
+
     return false;
   };
 
   // Use API flag as primary source, fallback to local logic
-  const hasClarifications = requiresConfirmation !== null 
-    ? requiresConfirmation 
+  const hasClarifications = requiresConfirmation !== null
+    ? requiresConfirmation
     : requiresClarifications();
 
   // Brand Confirmation Page Component (when no clarifications needed)
@@ -149,7 +150,7 @@ const BrandResponsePage = () => {
           className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6 shadow-lg space-y-4"
         >
           <h3 className="text-lg font-semibold mb-4">Deal Summary</h3>
-          
+
           {/* Deal Value */}
           {dealValue && (
             <div className="flex justify-between items-center py-2 border-b border-white/10">
@@ -332,12 +333,12 @@ const BrandResponsePage = () => {
   };
 
   // Brand Summary Card Component
-  const BrandSummaryCard = ({ 
-    dealValue, 
-    deliverables 
-  }: { 
-    dealValue?: number | string | null; 
-    deliverables?: string | string[] | null; 
+  const BrandSummaryCard = ({
+    dealValue,
+    deliverables
+  }: {
+    dealValue?: number | string | null;
+    deliverables?: string | string[] | null;
   }) => {
     // Parse deliverables - handle JSON string or array
     let deliverablesList: string[] = [];
@@ -686,7 +687,7 @@ const BrandResponsePage = () => {
                   <div>
                     <div className="text-xs text-white/60 uppercase tracking-wide mb-1">Deal Value</div>
                     <div className="text-white font-medium">
-                      {typeof dealValue === 'number' 
+                      {typeof dealValue === 'number'
                         ? `₹${Number(dealValue).toLocaleString('en-IN')}`
                         : dealValue}
                     </div>
@@ -749,7 +750,7 @@ const BrandResponsePage = () => {
                 <div className="pt-4 mt-4 border-t border-white/10 flex justify-end">
                   <button
                     onClick={downloadFullSummaryPDF}
-                  className="px-4 py-2.5 bg-purple-600 hover:bg-purple-700 rounded-xl transition-all duration-200 flex items-center gap-2 text-sm font-medium text-white active:scale-[0.98]"
+                    className="px-4 py-2.5 bg-purple-600 hover:bg-purple-700 rounded-xl transition-all duration-200 flex items-center gap-2 text-sm font-medium text-white active:scale-[0.98]"
                   >
                     <Download className="w-4 h-4" />
                     Download Full Summary PDF
@@ -779,13 +780,8 @@ const BrandResponsePage = () => {
       }
 
       try {
-        const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 
-          (typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com') 
-            ? 'https://api.creatorarmour.com' 
-            : (typeof window !== 'undefined' && window.location.hostname === 'localhost'
-              ? 'http://localhost:3001'
-              : 'https://noticebazaar-api.onrender.com'));
-        
+        const apiBaseUrl = getApiBaseUrl();
+
         const response = await fetch(`${apiBaseUrl}/api/brand-response/${token}`);
         const data = await response.json();
 
@@ -793,7 +789,7 @@ const BrandResponsePage = () => {
           // Handle token validation errors - show error message to user
           const errorMessage = data.error || 'Failed to load deal information';
           console.error('[BrandResponsePage] API error:', errorMessage, 'Status:', response.status);
-          
+
           // Set error state
           setDealInfo(null);
           setRequestedChanges([]);
@@ -802,7 +798,7 @@ const BrandResponsePage = () => {
           setLoadError(errorMessage);
           return;
         }
-        
+
         // Validate that we have deal data
         if (!data.deal) {
           console.error('[BrandResponsePage] No deal data in response');
@@ -813,14 +809,14 @@ const BrandResponsePage = () => {
           setLoadError('Failed to load deal information');
           return;
         }
-        
+
         // Clear any previous errors
         setLoadError(null);
 
         // Check if deal is already accepted/accepted_verified BEFORE setting state
         const responseStatus = data.deal?.response_status || data.deal?.brand_response_status || 'pending';
         console.log('[BrandResponsePage] Response status:', responseStatus, 'Full deal data:', data.deal);
-        
+
         // Set deal info first
         setDealInfo(data.deal);
         if (data.requested_changes && Array.isArray(data.requested_changes)) {
@@ -829,12 +825,12 @@ const BrandResponsePage = () => {
         if (data.analysis_data) {
           setAnalysisData(data.analysis_data);
         }
-        
+
         // Set requires_confirmation flag from API (primary source of truth)
         if (typeof data.requires_confirmation === 'boolean') {
           setRequiresConfirmation(data.requires_confirmation);
         }
-        
+
         // Check status and set submitted state
         if (responseStatus && responseStatus !== 'pending') {
           console.log('[BrandResponsePage] Deal already has response status:', responseStatus, '- showing success page');
@@ -876,7 +872,7 @@ const BrandResponsePage = () => {
 
     // Use input email if provided, otherwise use deal's brand_email
     let emailToUse = brandEmailInput.trim() || brandEmail;
-    
+
     // Validate email format
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailToUse || emailToUse.trim() === '' || !emailRegex.test(emailToUse)) {
@@ -886,19 +882,14 @@ const BrandResponsePage = () => {
 
     setIsSendingOTP(true);
     try {
-      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 
-        (typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com') 
-          ? 'https://api.creatorarmour.com' 
-          : (typeof window !== 'undefined' && window.location.hostname === 'localhost'
-            ? 'http://localhost:3001'
-            : 'https://noticebazaar-api.onrender.com'));
-      
+      const apiBaseUrl = getApiBaseUrl();
+
       const response = await fetch(`${apiBaseUrl}/api/otp/send`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           token,
           email: emailToUse, // Send email address
         }),
@@ -931,19 +922,19 @@ const BrandResponsePage = () => {
       }
     } catch (error: any) {
       console.error('[BrandResponsePage] OTP send error:', error);
-      
+
       // Provide user-friendly error messages
       let userMessage = error.message || 'Failed to send OTP. Please try again.';
-      
+
       // Hide technical server configuration errors from users
       if (error.message && (
-        error.message.includes('Resend API key') || 
+        error.message.includes('Resend API key') ||
         error.message.includes('RESEND_API_KEY') ||
         error.message.includes('server/.env')
       )) {
         userMessage = 'Email service is temporarily unavailable. Please contact the creator or try again later.';
       }
-      
+
       toast.error(userMessage, {
         duration: 5000,
       });
@@ -967,13 +958,8 @@ const BrandResponsePage = () => {
 
     setIsVerifyingOTP(true);
     try {
-      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 
-        (typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com') 
-          ? 'https://api.creatorarmour.com' 
-          : (typeof window !== 'undefined' && window.location.hostname === 'localhost'
-            ? 'http://localhost:3001'
-            : 'https://noticebazaar-api.onrender.com'));
-      
+      const apiBaseUrl = getApiBaseUrl();
+
       const response = await fetch(`${apiBaseUrl}/api/otp/verify`, {
         method: 'POST',
         headers: {
@@ -989,31 +975,26 @@ const BrandResponsePage = () => {
         triggerHaptic(HapticPatterns.success);
         // Close OTP modal
         setShowOTPModal(false);
-        
+
         // After OTP verification, the deal status is already set to 'accepted_verified'
         // So we should refresh the deal info instead of trying to submit again
         // Only submit if user has selected a status and it's different from accepted_verified
         if (selectedStatus && selectedStatus !== 'accepted') {
           // User selected a different status, submit it
-        await submitBrandResponse();
-      } else {
+          await submitBrandResponse();
+        } else {
           // OTP verification already set status to accepted_verified
           // Refresh deal info to show success state
           setIsSubmitted(true);
           setSelectedStatus('accepted');
-          
+
           // Refresh deal info from server
           try {
-            const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 
-              (typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com') 
-                ? 'https://api.creatorarmour.com' 
-                : (typeof window !== 'undefined' && window.location.hostname === 'localhost'
-                  ? 'http://localhost:3001'
-                  : 'https://noticebazaar-api.onrender.com'));
-            
+            const apiBaseUrl = getApiBaseUrl();
+
             const refreshResponse = await fetch(`${apiBaseUrl}/api/brand-response/${token}`);
             const refreshData = await refreshResponse.json();
-            
+
             if (refreshResponse.ok && refreshData.success && refreshData.deal) {
               setDealInfo(refreshData.deal);
               if (refreshData.requested_changes && Array.isArray(refreshData.requested_changes)) {
@@ -1034,22 +1015,17 @@ const BrandResponsePage = () => {
           toast.success('OTP was already verified.');
           triggerHaptic(HapticPatterns.success);
           setShowOTPModal(false);
-          
+
           // Refresh deal info to show current state
           setIsSubmitted(true);
           setSelectedStatus('accepted');
-          
+
           try {
-            const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 
-              (typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com') 
-                ? 'https://api.creatorarmour.com' 
-                : (typeof window !== 'undefined' && window.location.hostname === 'localhost'
-                  ? 'http://localhost:3001'
-                  : 'https://noticebazaar-api.onrender.com'));
-            
+            const apiBaseUrl = getApiBaseUrl();
+
             const refreshResponse = await fetch(`${apiBaseUrl}/api/brand-response/${token}`);
             const refreshData = await refreshResponse.json();
-            
+
             if (refreshResponse.ok && refreshData.success && refreshData.deal) {
               setDealInfo(refreshData.deal);
               if (refreshData.requested_changes && Array.isArray(refreshData.requested_changes)) {
@@ -1065,13 +1041,13 @@ const BrandResponsePage = () => {
           return;
         }
         const errorMessage = data.error || 'Invalid OTP';
-        
+
         // If OTP not found or expired, automatically request a new one
         if (errorMessage.includes('No OTP found') || errorMessage.includes('OTP has expired')) {
           toast.error('OTP not found or expired. Requesting a new OTP...', {
             duration: 3000,
           });
-          
+
           // Auto-request new OTP if email is available
           if (brandEmail || brandEmailInput) {
             await sendOTP();
@@ -1081,18 +1057,18 @@ const BrandResponsePage = () => {
           }
           return;
         }
-        
+
         throw new Error(errorMessage);
       }
     } catch (error: any) {
       console.error('[BrandResponsePage] OTP verify error:', error);
-      
+
       // Check if error is about OTP not found or expired
       if (error.message && (error.message.includes('No OTP found') || error.message.includes('OTP has expired'))) {
         toast.error('OTP not found or expired. Requesting a new OTP...', {
           duration: 3000,
         });
-        
+
         // Auto-request new OTP if email is available
         if (brandEmail || brandEmailInput) {
           await sendOTP();
@@ -1102,28 +1078,23 @@ const BrandResponsePage = () => {
         }
         return;
       }
-      
+
       // Check if error is about OTP already being verified
       if (error.message && error.message.includes('already been verified')) {
         toast.success('OTP was already verified.');
         triggerHaptic(HapticPatterns.success);
         setShowOTPModal(false);
-        
+
         // Refresh deal info instead of submitting
         setIsSubmitted(true);
         setSelectedStatus('accepted');
-        
+
         try {
-          const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 
-            (typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com') 
-              ? 'https://api.creatorarmour.com' 
-              : (typeof window !== 'undefined' && window.location.hostname === 'localhost'
-                ? 'http://localhost:3001'
-                : 'https://noticebazaar-api.onrender.com'));
-          
+          const apiBaseUrl = getApiBaseUrl();
+
           const refreshResponse = await fetch(`${apiBaseUrl}/api/brand-response/${token}`);
           const refreshData = await refreshResponse.json();
-          
+
           if (refreshResponse.ok && refreshData.success && refreshData.deal) {
             setDealInfo(refreshData.deal);
             if (refreshData.requested_changes && Array.isArray(refreshData.requested_changes)) {
@@ -1170,13 +1141,8 @@ const BrandResponsePage = () => {
     triggerHaptic(HapticPatterns.medium);
 
     try {
-      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 
-        (typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com') 
-          ? 'https://api.creatorarmour.com' 
-          : (typeof window !== 'undefined' && window.location.hostname === 'localhost'
-            ? 'http://localhost:3001'
-            : 'https://noticebazaar-api.onrender.com'));
-      
+      const apiBaseUrl = getApiBaseUrl();
+
       // Build message with negotiation points if negotiating
       let finalMessage = message.trim();
       if (selectedStatus === 'negotiating' && (negotiationPoints.length > 0 || otherNegotiationText.trim())) {
@@ -1186,18 +1152,18 @@ const BrandResponsePage = () => {
           finalMessage = `Points to negotiate:\n${pointsList}${otherText}${finalMessage ? '\n\nAdditional comments:\n' + finalMessage : ''}`;
         }
       }
-      
+
       // For confirmation page (no clarifications), use brand_confirmed status
       // For clarification page, use the existing status flow
-      const statusToSubmit = hasClarifications 
+      const statusToSubmit = hasClarifications
         ? (selectedStatus === 'accepted' ? 'accepted_verified' : selectedStatus)
         : (selectedStatus === 'accepted' ? 'brand_confirmed' : 'brand_requested_changes');
-      
+
       // If requesting changes from confirmation page, include the request text
       if (!hasClarifications && selectedStatus === 'negotiating' && requestChangesText.trim()) {
         finalMessage = `Requested Changes:\n${requestChangesText.trim()}${finalMessage ? '\n\nAdditional comments:\n' + finalMessage : ''}`;
       }
-      
+
       const response = await fetch(`${apiBaseUrl}/api/brand-response/${token}`, {
         method: 'POST',
         headers: {
@@ -1217,7 +1183,7 @@ const BrandResponsePage = () => {
         // Handle token validation errors
         const errorMessage = data.error || 'Failed to submit response';
         console.error('[BrandResponsePage] Submit error:', errorMessage);
-        
+
         // If token is invalid/expired, show error and reset state
         if (response.status === 404 || response.status === 403 || errorMessage.includes('no longer valid')) {
           setLoadError(errorMessage);
@@ -1226,7 +1192,7 @@ const BrandResponsePage = () => {
           toast.error(errorMessage);
           return;
         }
-        
+
         toast.error(errorMessage);
         return;
       }
@@ -1235,7 +1201,7 @@ const BrandResponsePage = () => {
         // Handle token validation errors
         const errorMessage = data.error || 'Failed to submit response';
         console.error('[BrandResponsePage] Submit error:', errorMessage, 'Status:', response.status);
-        
+
         // If token is invalid/expired, show error and reset state
         if (response.status === 404 || response.status === 403 || errorMessage.includes('no longer valid') || errorMessage.includes('expired')) {
           setLoadError(errorMessage);
@@ -1246,7 +1212,7 @@ const BrandResponsePage = () => {
           triggerHaptic(HapticPatterns.error);
           return;
         }
-        
+
         toast.error(errorMessage);
         triggerHaptic(HapticPatterns.error);
         return;
@@ -1254,7 +1220,7 @@ const BrandResponsePage = () => {
 
       if (data.success) {
         setIsSubmitted(true);
-        
+
         // If contract was auto-generated, show special message
         if (data.contract_generated) {
           setIsPreparingContract(true);
@@ -1263,7 +1229,7 @@ const BrandResponsePage = () => {
             duration: 5000
           });
           triggerHaptic(HapticPatterns.success);
-          
+
           // Redirect brand to success page (they can't access creator dashboard)
           setTimeout(() => {
             // Show success message that contract was generated
@@ -1277,7 +1243,7 @@ const BrandResponsePage = () => {
     } catch (error: any) {
       console.error('[BrandResponsePage] Submit error:', error);
       const errorMessage = error.message || 'Failed to submit response. Please try again.';
-      
+
       // Check if it's a token-related error
       if (errorMessage.includes('no longer valid') || errorMessage.includes('expired') || errorMessage.includes('404')) {
         setLoadError('This link is no longer valid. Please contact the creator.');
@@ -1285,7 +1251,7 @@ const BrandResponsePage = () => {
         setDealInfo(null);
         setSelectedStatus(null);
       }
-      
+
       toast.error(errorMessage);
       triggerHaptic(HapticPatterns.error);
     } finally {
@@ -1309,14 +1275,14 @@ const BrandResponsePage = () => {
     // If accepting, validate email first
     if (selectedStatus === 'accepted') {
       let emailToUse = brandEmailInput.trim() || brandEmail;
-      
+
       // Validate email format
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailToUse || emailToUse.trim() === '' || !emailRegex.test(emailToUse)) {
         toast.error('Please enter a valid email address.');
         return;
       }
-      
+
       setShowOTPModal(true);
       // Auto-send OTP when modal opens
       await sendOTP();
@@ -1331,7 +1297,7 @@ const BrandResponsePage = () => {
   const handleStatusSelect = (status: 'accepted' | 'negotiating' | 'rejected') => {
     setSelectedStatus(status);
     triggerHaptic(HapticPatterns.light);
-    
+
     if (status === 'negotiating') {
       if (hasClarifications) {
         // Show negotiation modal for clarification page
@@ -1347,8 +1313,8 @@ const BrandResponsePage = () => {
   };
 
   const toggleNegotiationPoint = (point: string) => {
-    setNegotiationPoints(prev => 
-      prev.includes(point) 
+    setNegotiationPoints(prev =>
+      prev.includes(point)
         ? prev.filter(p => p !== point)
         : [...prev, point]
     );
@@ -1357,7 +1323,7 @@ const BrandResponsePage = () => {
   // OTP Input Handlers
   const handleOTPChange = (index: number, value: string) => {
     if (!/^\d*$/.test(value)) return; // Only allow digits
-    
+
     const newOtp = [...otp];
     newOtp[index] = value.slice(-1); // Only take last character
     setOtp(newOtp);
@@ -1394,8 +1360,8 @@ const BrandResponsePage = () => {
     if (!emailToUse) return '****';
     const [localPart, domain] = emailToUse.split('@');
     if (localPart && domain) {
-      const maskedLocal = localPart.length > 2 
-        ? localPart.substring(0, 2) + '***' 
+      const maskedLocal = localPart.length > 2
+        ? localPart.substring(0, 2) + '***'
         : '***';
       return `${maskedLocal}@${domain}`;
     }
@@ -1498,7 +1464,7 @@ const BrandResponsePage = () => {
             {hasClarifications ? (
               <>
                 {/* Brand Summary Card - Only show for clarification page */}
-                <BrandSummaryCard 
+                <BrandSummaryCard
                   dealValue={dealInfo?.deal_amount}
                   deliverables={dealInfo?.deliverables}
                 />
@@ -1526,132 +1492,132 @@ const BrandResponsePage = () => {
             {/* Accept All Changes / Confirm & Continue - Show based on page type */}
             {hasClarifications && (
               <>
-            {/* Accept All Changes */}
-            <motion.button
-              onClick={() => handleStatusSelect('accepted')}
-              className={cn(
-                "w-full rounded-xl p-5 md:p-6 text-left transition-all duration-200 relative",
-                "border-2 backdrop-blur-xl",
-                selectedStatus === 'accepted'
-                  ? "bg-white/10 border-green-400/70 shadow-[0_0_0_1px_rgba(34,197,94,0.35)]"
-                  : "bg-white/5 border-white/20 hover:border-white/40 hover:bg-white/10",
-                selectedStatus && selectedStatus !== 'accepted' && "opacity-60"
-              )}
-              whileHover={selectedStatus !== 'accepted' ? { scale: 1.02 } : {}}
-              whileTap={{ scale: 0.98 }}
-              transition={{ duration: 0.15 }}
-            >
-              <div className="flex items-start gap-4">
-                <div className={cn(
-                  "w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 border-2 transition-all duration-200",
-                  selectedStatus === 'accepted'
-                    ? "bg-green-500/20 border-green-400"
-                    : "bg-white/10 border-white/30"
-                )}>
-                  {selectedStatus === 'accepted' ? (
-                    <CheckCircle className="w-6 h-6 text-green-400" />
-                  ) : (
-                    <div className="w-4 h-4 rounded-full border-2 border-white/40" />
+                {/* Accept All Changes */}
+                <motion.button
+                  onClick={() => handleStatusSelect('accepted')}
+                  className={cn(
+                    "w-full rounded-xl p-5 md:p-6 text-left transition-all duration-200 relative",
+                    "border-2 backdrop-blur-xl",
+                    selectedStatus === 'accepted'
+                      ? "bg-white/10 border-green-400/70 shadow-[0_0_0_1px_rgba(34,197,94,0.35)]"
+                      : "bg-white/5 border-white/20 hover:border-white/40 hover:bg-white/10",
+                    selectedStatus && selectedStatus !== 'accepted' && "opacity-60"
                   )}
-                </div>
-                <div className="flex-1">
-                  <div className="flex items-start justify-between gap-2">
-                    <h3 className="text-lg md:text-xl font-semibold mb-1.5">
-                      Accept All Changes
-                    </h3>
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-green-500/10 border border-green-500/25 text-[10px] font-medium text-green-200">
-                      <CheckCircle className="w-3 h-3" />
-                      Recommended
-                    </span>
+                  whileHover={selectedStatus !== 'accepted' ? { scale: 1.02 } : {}}
+                  whileTap={{ scale: 0.98 }}
+                  transition={{ duration: 0.15 }}
+                >
+                  <div className="flex items-start gap-4">
+                    <div className={cn(
+                      "w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 border-2 transition-all duration-200",
+                      selectedStatus === 'accepted'
+                        ? "bg-green-500/20 border-green-400"
+                        : "bg-white/10 border-white/30"
+                    )}>
+                      {selectedStatus === 'accepted' ? (
+                        <CheckCircle className="w-6 h-6 text-green-400" />
+                      ) : (
+                        <div className="w-4 h-4 rounded-full border-2 border-white/40" />
+                      )}
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-start justify-between gap-2">
+                        <h3 className="text-lg md:text-xl font-semibold mb-1.5">
+                          Accept All Changes
+                        </h3>
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-green-500/10 border border-green-500/25 text-[10px] font-medium text-green-200">
+                          <CheckCircle className="w-3 h-3" />
+                          Recommended
+                        </span>
+                      </div>
+                      <p className="text-white/70 text-sm leading-relaxed">
+                        Proceed with all requested clarifications and safety updates.
+                      </p>
+                    </div>
                   </div>
-                  <p className="text-white/70 text-sm leading-relaxed">
-                    Proceed with all requested clarifications and safety updates.
-                  </p>
-                </div>
-              </div>
-            </motion.button>
+                </motion.button>
 
-            {/* Want to Negotiate */}
-            <motion.button
-              onClick={() => handleStatusSelect('negotiating')}
-              className={cn(
-                "w-full rounded-xl p-5 md:p-6 text-left transition-all duration-200",
-                "border-2 backdrop-blur-xl",
-                selectedStatus === 'negotiating'
-                  ? "bg-white/10 border-blue-400/60 shadow-sm"
-                  : "bg-white/4 border-white/15 hover:border-white/30 hover:bg-white/8",
-                selectedStatus && selectedStatus !== 'negotiating' && "opacity-60"
-              )}
-              whileHover={selectedStatus !== 'negotiating' ? { scale: 1.02 } : {}}
-              whileTap={{ scale: 0.98 }}
-              transition={{ duration: 0.15 }}
-            >
-              <div className="flex items-start gap-4">
-                <div className={cn(
-                  "w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 border-2 transition-all duration-200",
-                  selectedStatus === 'negotiating'
-                    ? "bg-blue-500/20 border-blue-400"
-                    : "bg-white/10 border-white/30"
-                )}>
-                  {selectedStatus === 'negotiating' ? (
-                    <CheckCircle className="w-6 h-6 text-blue-400" />
-                  ) : (
-                    <div className="w-4 h-4 rounded-full border-2 border-white/40" />
+                {/* Want to Negotiate */}
+                <motion.button
+                  onClick={() => handleStatusSelect('negotiating')}
+                  className={cn(
+                    "w-full rounded-xl p-5 md:p-6 text-left transition-all duration-200",
+                    "border-2 backdrop-blur-xl",
+                    selectedStatus === 'negotiating'
+                      ? "bg-white/10 border-blue-400/60 shadow-sm"
+                      : "bg-white/4 border-white/15 hover:border-white/30 hover:bg-white/8",
+                    selectedStatus && selectedStatus !== 'negotiating' && "opacity-60"
                   )}
-                </div>
-                <div className="flex-1">
-                  <h3 className="text-lg md:text-xl font-semibold mb-1.5">Want to Negotiate</h3>
-                  <p className="text-white/70 text-sm leading-relaxed">
-                    Discuss specific points before finalizing.
-                  </p>
-                </div>
-              </div>
-            </motion.button>
+                  whileHover={selectedStatus !== 'negotiating' ? { scale: 1.02 } : {}}
+                  whileTap={{ scale: 0.98 }}
+                  transition={{ duration: 0.15 }}
+                >
+                  <div className="flex items-start gap-4">
+                    <div className={cn(
+                      "w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 border-2 transition-all duration-200",
+                      selectedStatus === 'negotiating'
+                        ? "bg-blue-500/20 border-blue-400"
+                        : "bg-white/10 border-white/30"
+                    )}>
+                      {selectedStatus === 'negotiating' ? (
+                        <CheckCircle className="w-6 h-6 text-blue-400" />
+                      ) : (
+                        <div className="w-4 h-4 rounded-full border-2 border-white/40" />
+                      )}
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="text-lg md:text-xl font-semibold mb-1.5">Want to Negotiate</h3>
+                      <p className="text-white/70 text-sm leading-relaxed">
+                        Discuss specific points before finalizing.
+                      </p>
+                    </div>
+                  </div>
+                </motion.button>
 
-            {/* Reject Changes */}
-            <motion.button
-              onClick={() => handleStatusSelect('rejected')}
-              className={cn(
-                "w-full rounded-xl p-5 md:p-6 text-left transition-all duration-200",
-                "border-2 backdrop-blur-xl",
-                selectedStatus === 'rejected'
-                  ? "bg-red-500/5 border-red-300/60 shadow-sm"
-                  : "bg-white/4 border-white/15 hover:border-white/30 hover:bg-white/8",
-                selectedStatus && selectedStatus !== 'rejected' && "opacity-60"
-              )}
-              whileHover={selectedStatus !== 'rejected' ? { scale: 1.02 } : {}}
-              whileTap={{ scale: 0.98 }}
-              transition={{ duration: 0.15 }}
-            >
-              <div className="flex items-start gap-4">
-                <div className={cn(
-                  "w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 border-2 transition-all duration-200",
-                  selectedStatus === 'rejected'
-                    ? "bg-red-500/15 border-red-300"
-                    : "bg-white/8 border-white/25"
-                )}>
-                  {selectedStatus === 'rejected' ? (
-                    <CheckCircle className="w-6 h-6 text-red-300" />
-                  ) : (
-                    <div className="w-4 h-4 rounded-full border-2 border-white/40" />
+                {/* Reject Changes */}
+                <motion.button
+                  onClick={() => handleStatusSelect('rejected')}
+                  className={cn(
+                    "w-full rounded-xl p-5 md:p-6 text-left transition-all duration-200",
+                    "border-2 backdrop-blur-xl",
+                    selectedStatus === 'rejected'
+                      ? "bg-red-500/5 border-red-300/60 shadow-sm"
+                      : "bg-white/4 border-white/15 hover:border-white/30 hover:bg-white/8",
+                    selectedStatus && selectedStatus !== 'rejected' && "opacity-60"
                   )}
-                </div>
-                <div className="flex-1">
-                  <h3 className="text-lg md:text-xl font-semibold mb-1.5">
-                    Proceed Without Updates
-                  </h3>
-                  <p className="text-white/70 text-sm leading-relaxed">
-                    Proceed with the original contract terms. Creator may request safeguards later.
-                  </p>
-                  {selectedStatus === 'rejected' && (
-                    <p className="mt-2 text-[11px] text-white/50">
-                      The creator can still follow up to confirm protections if needed.
-                    </p>
-                  )}
-                </div>
-              </div>
-            </motion.button>
-            </>
+                  whileHover={selectedStatus !== 'rejected' ? { scale: 1.02 } : {}}
+                  whileTap={{ scale: 0.98 }}
+                  transition={{ duration: 0.15 }}
+                >
+                  <div className="flex items-start gap-4">
+                    <div className={cn(
+                      "w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 border-2 transition-all duration-200",
+                      selectedStatus === 'rejected'
+                        ? "bg-red-500/15 border-red-300"
+                        : "bg-white/8 border-white/25"
+                    )}>
+                      {selectedStatus === 'rejected' ? (
+                        <CheckCircle className="w-6 h-6 text-red-300" />
+                      ) : (
+                        <div className="w-4 h-4 rounded-full border-2 border-white/40" />
+                      )}
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="text-lg md:text-xl font-semibold mb-1.5">
+                        Proceed Without Updates
+                      </h3>
+                      <p className="text-white/70 text-sm leading-relaxed">
+                        Proceed with the original contract terms. Creator may request safeguards later.
+                      </p>
+                      {selectedStatus === 'rejected' && (
+                        <p className="mt-2 text-[11px] text-white/50">
+                          The creator can still follow up to confirm protections if needed.
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </motion.button>
+              </>
             )}
 
             {/* 3. NAME + COMMENTS SECTION - Show only after decision selected */}
@@ -1665,68 +1631,68 @@ const BrandResponsePage = () => {
                   className="bg-white/5 backdrop-blur-xl rounded-xl p-5 md:p-6 border border-white/20 shadow-lg space-y-5"
                 >
                   {/* Email Input - Required for OTP if accepting - Show FIRST when accepting */}
-              {selectedStatus === 'accepted' && (
+                  {selectedStatus === 'accepted' && (
                     <div className="bg-white/5 border border-white/20 rounded-xl p-4 space-y-2">
-                  <label className="block text-sm font-semibold mb-2 text-white">
+                      <label className="block text-sm font-semibold mb-2 text-white">
                         📧 Email Address <span className="text-red-400">*</span>
-                    <span className="text-xs font-normal text-white/60 ml-2">(Required for OTP verification)</span>
-                  </label>
-                  <input
+                        <span className="text-xs font-normal text-white/60 ml-2">(Required for OTP verification)</span>
+                      </label>
+                      <input
                         type="email"
                         value={brandEmailInput}
-                    onChange={(e) => {
+                        onChange={(e) => {
                           setBrandEmailInput(e.target.value);
-                    }}
-                    onFocus={(e) => {
+                        }}
+                        onFocus={(e) => {
                           // Auto-fill if empty and we have brand email
                           if (!e.target.value && brandEmail) {
                             setBrandEmailInput(brandEmail);
-                      }
-                    }}
+                          }
+                        }}
                         placeholder="brand@example.com"
                         className="w-full p-4 rounded-xl bg-white/10 border-2 border-white/30 text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 transition-all duration-200 text-lg font-medium"
-                    autoFocus
-                  />
-                  <p className="text-xs text-white/70 mt-1 flex items-center gap-1">
-                    <span className="text-yellow-400">⚠️</span>
+                        autoFocus
+                      />
+                      <p className="text-xs text-white/70 mt-1 flex items-center gap-1">
+                        <span className="text-yellow-400">⚠️</span>
                         We'll send a 6-digit OTP to this email address to verify your acceptance
-                  </p>
-                </div>
-              )}
+                      </p>
+                    </div>
+                  )}
 
-              <div>
-                <label className="block text-sm font-medium mb-2 text-white/90">
-                  Your Name / Team (Optional)
-                </label>
-                <input
-                  type="text"
-                  value={brandTeamName}
-                  onChange={(e) => setBrandTeamName(e.target.value)}
+                  <div>
+                    <label className="block text-sm font-medium mb-2 text-white/90">
+                      Your Name / Team (Optional)
+                    </label>
+                    <input
+                      type="text"
+                      value={brandTeamName}
+                      onChange={(e) => setBrandTeamName(e.target.value)}
                       placeholder="Aditi – Brand Partnerships"
                       className="w-full p-4 rounded-xl bg-white/5 border border-white/20 text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 transition-all duration-200"
-                  maxLength={100}
-                />
-              </div>
+                      maxLength={100}
+                    />
+                  </div>
 
-              <div>
-                <label className="block text-sm font-medium mb-2 text-white/90">
-                  Additional Comments (Optional)
-                </label>
-                <textarea
-                  value={message}
-                  onChange={(e) => setMessage(e.target.value)}
+                  <div>
+                    <label className="block text-sm font-medium mb-2 text-white/90">
+                      Additional Comments (Optional)
+                    </label>
+                    <textarea
+                      value={message}
+                      onChange={(e) => setMessage(e.target.value)}
                       placeholder="Optional notes for the creator…"
                       className="w-full p-4 rounded-xl bg-white/5 border border-white/20 text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 resize-none min-h-[120px] transition-all duration-200"
-                  maxLength={1000}
-                  style={{ 
-                    minHeight: '120px',
-                    height: message ? `${Math.max(120, message.split('\n').length * 24 + 32)}px` : '120px'
-                  }}
-                />
-                <div className="text-xs text-white/50 mt-2 text-right">
-                  {message.length}/1000
-                </div>
-              </div>
+                      maxLength={1000}
+                      style={{
+                        minHeight: '120px',
+                        height: message ? `${Math.max(120, message.split('\n').length * 24 + 32)}px` : '120px'
+                      }}
+                    />
+                    <div className="text-xs text-white/50 mt-2 text-right">
+                      {message.length}/1000
+                    </div>
+                  </div>
                 </motion.div>
               )}
             </AnimatePresence>
@@ -1764,10 +1730,10 @@ const BrandResponsePage = () => {
                 selectedStatus === 'accepted' && !isSubmitting
                   ? "bg-green-600 hover:bg-green-700 text-white"
                   : selectedStatus === 'negotiating' && !isSubmitting
-                  ? "bg-blue-600 hover:bg-blue-700 text-white"
-                  : selectedStatus === 'rejected' && !isSubmitting
-                  ? "bg-orange-600 hover:bg-orange-700 text-white"
-                  : "bg-white/10 text-white/50 cursor-not-allowed border border-white/20"
+                    ? "bg-blue-600 hover:bg-blue-700 text-white"
+                    : selectedStatus === 'rejected' && !isSubmitting
+                      ? "bg-orange-600 hover:bg-orange-700 text-white"
+                      : "bg-white/10 text-white/50 cursor-not-allowed border border-white/20"
               )}
             >
               {isSubmitting ? (
@@ -1813,7 +1779,7 @@ const BrandResponsePage = () => {
             >
               <CheckCircle className="w-20 h-20 text-green-400 mx-auto mb-4" />
             </motion.div>
-            
+
             {dealInfo && (dealInfo.response_status === 'accepted_verified' || dealInfo.response_status === 'accepted') ? (
               <>
                 <h3 className="text-3xl font-bold mb-3 bg-gradient-to-r from-green-400 to-emerald-400 bg-clip-text text-transparent">
@@ -1879,7 +1845,7 @@ const BrandResponsePage = () => {
                 onClick={() => setShowNegotiateModal(false)}
                 className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40"
               />
-              
+
               {/* Modal */}
               <motion.div
                 initial={{ opacity: 0, scale: 0.9, y: 20 }}
@@ -1896,7 +1862,7 @@ const BrandResponsePage = () => {
                     <X className="w-5 h-5" />
                   </button>
                 </div>
-                
+
                 <div className="space-y-3 max-h-[60vh] overflow-y-auto pr-2">
                   {availableNegotiationPoints.length > 0 ? (
                     availableNegotiationPoints.map((point) => (
@@ -1918,7 +1884,7 @@ const BrandResponsePage = () => {
                       No specific negotiation points available
                     </p>
                   )}
-                  
+
                   {/* Other field */}
                   <div className="pt-2 border-t border-white/10">
                     <label className="block text-sm font-medium mb-2 text-white/90">
@@ -1933,7 +1899,7 @@ const BrandResponsePage = () => {
                     />
                   </div>
                 </div>
-                
+
                 <button
                   onClick={() => setShowNegotiateModal(false)}
                   className="mt-4 w-full py-3 bg-blue-600 hover:bg-blue-700 rounded-xl text-sm font-medium transition-all duration-200 text-white"
@@ -1960,7 +1926,7 @@ const BrandResponsePage = () => {
                 }}
                 className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40"
               />
-              
+
               {/* Modal */}
               <motion.div
                 initial={{ opacity: 0, scale: 0.9, y: 20 }}
@@ -1980,7 +1946,7 @@ const BrandResponsePage = () => {
                     <X className="w-5 h-5" />
                   </button>
                 </div>
-                
+
                 <div className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium mb-2 text-white/90">
@@ -1998,7 +1964,7 @@ const BrandResponsePage = () => {
                     </div>
                   </div>
                 </div>
-                
+
                 <div className="flex gap-3 mt-6">
                   <button
                     onClick={() => {
@@ -2046,7 +2012,7 @@ const BrandResponsePage = () => {
                 }}
                 className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40"
               />
-              
+
               {/* Modal */}
               <motion.div
                 initial={{ opacity: 0, scale: 0.9, y: 20 }}

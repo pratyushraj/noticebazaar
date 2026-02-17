@@ -2,15 +2,14 @@
 
 import { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Briefcase, AlertCircle, IndianRupee, Shield, ArrowUpDown, Filter, X } from 'lucide-react';
+import { ArrowUpDown, Filter, X, Shield } from 'lucide-react';
 import { toast } from 'sonner';
 import { useSession } from '@/contexts/SessionContext';
 import { useBrandDeals } from '@/lib/hooks/useBrandDeals';
 import { motion } from 'framer-motion';
 import { ContextualTipsProvider } from '@/components/contextual-tips/ContextualTipsProvider';
 import { FilteredNoMatchesEmptyState, NoDealsEmptyState } from '@/components/empty-states/PreconfiguredEmptyStates';
-import { animations, spacing, typography, iconSizes, radius, motion as motionTokens, gradients } from '@/lib/design-system';
-import { BaseCard, StatCard } from '@/components/ui/card-variants';
+import { animations, spacing, typography, motion as motionTokens, gradients } from '@/lib/design-system';
 import { triggerHaptic, HapticPatterns } from '@/lib/utils/haptics';
 import { ErrorBoundary } from '@/components/ui/error-boundary';
 import { SkeletonCard } from '@/components/ui/SkeletonCard';
@@ -23,10 +22,20 @@ const CreatorContracts = () => {
   const { profile } = useSession();
 
   // Fetch real brand deals data (single call for both data and loading state)
-  const { data: brandDeals = [], isLoading: isLoadingDeals, refetch: refetchDeals } = useBrandDeals({
+  const { data: rawBrandDeals = [], isLoading: isLoadingDeals, refetch: refetchDeals } = useBrandDeals({
     creatorId: profile?.id,
     enabled: !!profile?.id,
   });
+
+  // Filter out incomplete barter deals (no delivery address)
+  const brandDeals = useMemo(() => {
+    return rawBrandDeals.filter(deal => {
+      if (deal.deal_type === 'barter' && (deal.status === 'Drafting' || (deal as any).status === 'drafting') && !deal.delivery_address) {
+        return false;
+      }
+      return true;
+    });
+  }, [rawBrandDeals]);
 
   // Refetch deals when component mounts or becomes visible (to catch newly created deals)
   useEffect(() => {
@@ -608,39 +617,41 @@ const CreatorContracts = () => {
                   <SkeletonCard variant="secondary" />
                 </div>
               ) : (
-                <div className="mb-4 space-y-4">
-                  {/* Primary Card: Total Value Protected (Payments-style highlight) */}
+                <div className="mb-4 grid grid-cols-1 gap-3">
+                  {/* Primary Card: Total Value Protected */}
                   <div className="bg-white/10 backdrop-blur-xl border-2 border-yellow-500/30 rounded-2xl p-4 shadow-lg shadow-yellow-500/10">
                     <div className="text-sm text-white/70 mb-1">Total Value Protected</div>
                     <div className="text-3xl font-bold text-yellow-400 mb-1">{formatIndianCurrency(stats.totalValue)}</div>
                     <div className="text-xs text-white/60">Across active protected deals</div>
                   </div>
 
-                  {/* Secondary Card: Active Deals */}
-                  <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-4">
-                    <div className="text-sm text-white/70 mb-1">Active Deals</div>
-                    <div className="text-2xl font-bold text-white">{stats.active.toLocaleString('en-IN')}</div>
-                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    {/* Secondary Card: Active Deals */}
+                    <div className="bg-white/6 backdrop-blur-xl border border-white/12 rounded-2xl p-3">
+                      <div className="text-xs text-white/70 mb-1">Active Deals</div>
+                      <div className="text-xl font-bold text-white">{stats.active.toLocaleString('en-IN')}</div>
+                    </div>
 
-                  {/* Secondary Card: Payments at Risk (smaller, muted unless non-zero) */}
-                  <div
-                    className={cn(
-                      "bg-white/3 backdrop-blur-xl border border-white/5 rounded-xl p-3",
-                      stats.paymentsAtRisk > 0 && "bg-orange-500/10 border-orange-500/20"
-                    )}
-                  >
-                    <div className="text-xs text-white/50 mb-0.5">Payments at Risk</div>
+                    {/* Secondary Card: Payments at Risk */}
                     <div
                       className={cn(
-                        "text-lg font-semibold",
-                        stats.paymentsAtRisk > 0 ? "text-orange-300" : "text-white/70"
+                        "bg-white/6 backdrop-blur-xl border border-white/12 rounded-2xl p-3",
+                        stats.paymentsAtRisk > 0 && "bg-orange-500/15 border-orange-500/30"
                       )}
                     >
-                      {formatIndianCurrency(stats.paymentsAtRisk)}
+                      <div className="text-xs text-white/70 mb-1">Payments at Risk</div>
+                      <div
+                        className={cn(
+                          "text-lg font-semibold",
+                          stats.paymentsAtRisk > 0 ? "text-orange-300" : "text-white/80"
+                        )}
+                      >
+                        {formatIndianCurrency(stats.paymentsAtRisk)}
+                      </div>
+                      {stats.paymentsAtRisk === 0 && (
+                        <div className="text-[11px] text-white/60 mt-0.5">All payments secure</div>
+                      )}
                     </div>
-                    {stats.paymentsAtRisk === 0 && (
-                      <div className="text-[11px] text-white/50 mt-0.5">All payments secure</div>
-                    )}
                   </div>
                 </div>
               )}
@@ -656,14 +667,14 @@ const CreatorContracts = () => {
                 whileTap={animations.microTap}
                 className={cn(
                   "w-full",
-                  "relative bg-gradient-to-br from-purple-500/20 to-pink-600/10",
+                  "relative bg-gradient-to-r from-purple-600/30 to-pink-600/20",
                   "backdrop-blur-xl rounded-2xl p-4",
-                  "border border-purple-500/30 shadow-lg shadow-purple-500/10",
-                  "hover:bg-white/10 transition-all"
+                  "border border-purple-400/40 shadow-lg shadow-purple-500/20",
+                  "hover:bg-white/12 transition-all"
                 )}
               >
                 <div className="flex items-center gap-3">
-                  <div className="bg-purple-500/20 w-10 h-10 rounded-full flex items-center justify-center">
+                  <div className="bg-purple-500/30 w-10 h-10 rounded-full flex items-center justify-center">
                     <Shield className="w-5 h-5 text-purple-200" />
                   </div>
                   <div className="text-left">
@@ -706,11 +717,11 @@ const CreatorContracts = () => {
                         whileTap={animations.microTap}
                         className={cn(
                           "whitespace-nowrap rounded-full border transition-all select-none",
-                          "text-sm md:text-base px-3 md:px-5 py-1.5 md:py-2",
+                          "text-sm px-3 py-1.5",
                           "flex-shrink-0 font-semibold snap-start",
                           isActive
-                            ? "bg-white/15 text-white border-2 border-white/20 scale-[1.02] shadow-sm"
-                            : "bg-white/5 text-white/70 border border-white/10 hover:bg-white/8"
+                            ? "bg-white/20 text-white border-2 border-white/25 shadow-sm"
+                            : "bg-white/8 text-white/70 border border-white/15 hover:bg-white/12"
                         )}
                       >
                         {filter.label}
@@ -738,7 +749,7 @@ const CreatorContracts = () => {
                     whileTap={animations.microTap}
                     className={cn(
                       "flex items-center gap-2 px-3 py-1.5 rounded-lg border transition-all",
-                      "bg-white/5 text-white border-white/10 hover:bg-white/8",
+                      "bg-white/8 text-white border-white/15 hover:bg-white/12",
                       hasActiveAdvancedFilters && "bg-purple-500/20 border-purple-400/30 text-purple-300",
                       "text-sm h-9"
                     )}
@@ -762,8 +773,8 @@ const CreatorContracts = () => {
                   >
                     <SelectTrigger className={cn(
                       "w-full sm:w-[180px]",
-                      "bg-white/5 text-white border-white/10",
-                      "hover:bg-white/8 focus:ring-2 focus:ring-purple-500/50",
+                      "bg-white/8 text-white border-white/15",
+                      "hover:bg-white/12 focus:ring-2 focus:ring-purple-500/50",
                       "h-9 text-sm"
                     )}>
                       <div className="flex items-center gap-2">

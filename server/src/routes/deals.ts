@@ -328,7 +328,17 @@ router.post('/barter/delivery-details', authMiddleware, async (req: Authenticate
     const creator = (deal as any).creator;
     const creatorName = creator ? `${creator.first_name || ''} ${creator.last_name || ''}`.trim() : 'Creator';
     const creatorAddress = (creator as any).location || (creator as any).address || '';
-    const creatorEmail = req.user?.email || '';
+
+    // Try to get email from profile, then from req.user, then from auth
+    let creatorEmail = creator?.email || req.user?.email || '';
+    if (!creatorEmail) {
+      try {
+        const { data: authUser } = await supabase.auth.admin.getUserById(userId);
+        creatorEmail = authUser?.user?.email || '';
+      } catch (e) {
+        console.error('[Deals] Failed to fetch creator email from auth:', e);
+      }
+    }
 
     // Generate contract
     const contractResult = await generateContractFromScratch({
@@ -383,6 +393,7 @@ router.post('/barter/delivery-details', authMiddleware, async (req: Authenticate
         shipping_required: !!shippingRequired,
         barter_value: barterProductValue || 0,
         contract_file_url: urlData.publicUrl,
+        contract_file_path: filePath, // Use new secure path column
         status: 'contract_ready',
         updated_at: new Date().toISOString()
       } as any)
@@ -488,14 +499,27 @@ router.patch('/:dealId/delivery-details', authMiddleware, async (req: Authentica
       } else {
         const { data: creatorProfile } = await supabase
           .from('profiles')
-          .select('first_name, last_name')
+          .select('first_name, last_name, email')
           .eq('id', userId)
           .maybeSingle();
 
         const creatorName = creatorProfile
           ? `${((creatorProfile as any).first_name || '').trim()} ${((creatorProfile as any).last_name || '').trim()}`.trim() || delivery_name.trim()
           : delivery_name.trim();
-        const creatorEmail = (creatorProfile as any)?.email || req.user?.email || undefined;
+
+        // Try to get email from profile, then from req.user, then from auth as last resort
+        let creatorEmail = (creatorProfile as any)?.email || req.user?.email;
+
+        if (!creatorEmail) {
+          try {
+            const { data: authUser } = await supabase.auth.admin.getUserById(userId);
+            creatorEmail = authUser?.user?.email;
+          } catch (e) {
+            console.error('[Deals] Failed to fetch creator email from auth:', e);
+          }
+        }
+
+        creatorEmail = creatorEmail || undefined;
 
         let deliverablesArray: string[] = [];
         try {
@@ -530,75 +554,96 @@ router.patch('/:dealId/delivery-details', authMiddleware, async (req: Authentica
           jurisdiction_city: 'Mumbai',
         };
 
-        const contractResult = await generateContractFromScratch({
-          brandName: deal.brand_name,
-          creatorName,
-          creatorEmail,
-          dealAmount: 0,
-          deliverables: deliverablesArray.length > 0 ? deliverablesArray : ['As per agreement'],
-          paymentTerms: 'Barter – product shipment within 7 days of acceptance.',
-          dueDate: dueDateStr,
-          paymentExpectedDate: dueDateStr,
-          platform: 'Multiple Platforms',
-          brandEmail: deal.brand_email || undefined,
-          brandAddress: (deal as any).brand_address || undefined,
-          brandPhone: (deal as any).brand_phone || undefined,
-          creatorAddress: delivery_address.trim(),
-          dealSchema: dealSchema as any,
-          usageType: 'Non-exclusive',
-          usagePlatforms: ['All platforms'],
-          usageDuration: '6 months',
-          paidAdsAllowed: false,
-          whitelistingAllowed: false,
-          exclusivityEnabled: false,
-          exclusivityCategory: null,
-          exclusivityDuration: null,
-          terminationNoticeDays: 7,
-          jurisdictionCity: 'Mumbai',
-          additionalTerms: productDeliveryTerms,
-        });
+        // Check if we have enough information for contract generation
+        const canGenerateContract =
+          deal.brand_name &&
+          deal.brand_email &&
+          (deal as any).brand_address &&
+          creatorName &&
+          creatorEmail &&
+          delivery_address.trim();
 
-        const storagePath = `contracts/${dealId}/${Date.now()}_${contractResult.fileName}`;
-        const { error: uploadError } = await supabase.storage
-          .from('creator-assets')
-          .upload(storagePath, contractResult.contractDocx, {
-            contentType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-            upsert: false,
+        if (canGenerateContract) {
+          const contractResult = await generateContractFromScratch({
+            brandName: deal.brand_name,
+            creatorName,
+            creatorEmail,
+            dealAmount: 0,
+            deliverables: deliverablesArray.length > 0 ? deliverablesArray : ['As per agreement'],
+            paymentTerms: 'Barter – product shipment within 7 days of acceptance.',
+            dueDate: dueDateStr,
+            paymentExpectedDate: dueDateStr,
+            platform: 'Multiple Platforms',
+            brandEmail: deal.brand_email || undefined,
+            brandAddress: (deal as any).brand_address || undefined,
+            brandPhone: (deal as any).brand_phone || undefined,
+            creatorAddress: delivery_address.trim(),
+            dealSchema: dealSchema as any,
+            usageType: 'Non-exclusive',
+            usagePlatforms: ['All platforms'],
+            usageDuration: '6 months',
+            paidAdsAllowed: false,
+            whitelistingAllowed: false,
+            exclusivityEnabled: false,
+            exclusivityCategory: null,
+            exclusivityDuration: null,
+            terminationNoticeDays: 7,
+            jurisdictionCity: 'Mumbai',
+            additionalTerms: productDeliveryTerms,
           });
 
-        if (uploadError) {
-          console.error('[Deals] delivery-details contract upload error:', uploadError);
-          return res.status(500).json({ success: false, error: 'Failed to generate contract' });
-        }
+          const storagePath = `contracts/${dealId}/${Date.now()}_${contractResult.fileName}`;
+          const { error: uploadError } = await supabase.storage
+            .from('creator-assets')
+            .upload(storagePath, contractResult.contractDocx, {
+              contentType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+              upsert: false,
+            });
 
-        const { data: publicUrlData } = supabase.storage.from('creator-assets').getPublicUrl(storagePath);
-        contractUrl = publicUrlData?.publicUrl || null;
+          if (uploadError) {
+            console.error('[Deals] delivery-details contract upload error:', uploadError);
+            // Don't fail the whole request if only contract failed
+          } else {
+            const { data: publicUrlData } = supabase.storage.from('creator-assets').getPublicUrl(storagePath);
+            contractUrl = publicUrlData?.publicUrl || null;
 
-        await supabase
-          .from('brand_deals')
-          .update({
-            contract_file_url: contractUrl,
-            updated_at: new Date().toISOString(),
-          } as any)
-          .eq('id', dealId);
+            await supabase
+              .from('brand_deals')
+              .update({
+                contract_file_url: contractUrl,
+                contract_file_path: storagePath, // Use new secure path column
+                updated_at: new Date().toISOString(),
+              } as any)
+              .eq('id', dealId);
 
-        const token = await createContractReadyToken({
-          dealId,
-          creatorId: userId,
-          expiresAt: null,
-        });
-        contractReadyToken = token.id;
+            const token = await createContractReadyToken({
+              dealId,
+              creatorId: userId,
+              expiresAt: null,
+            });
+            contractReadyToken = token.id;
 
-        if (deal.brand_email && contractReadyToken && contractUrl) {
-          sendCollabRequestAcceptedEmail(deal.brand_email, {
-            creatorName,
-            brandName: deal.brand_name,
-            dealAmount: 0,
-            dealType: 'barter',
-            deliverables: deliverablesArray.length > 0 ? deliverablesArray : ['As per agreement'],
-            contractReadyToken,
-            contractUrl,
-          }).catch((e) => console.error('[Deals] delivery-details acceptance email failed:', e));
+            if (deal.brand_email && contractReadyToken && contractUrl) {
+              sendCollabRequestAcceptedEmail(deal.brand_email, {
+                creatorName,
+                brandName: deal.brand_name,
+                dealAmount: 0,
+                dealType: 'barter',
+                deliverables: deliverablesArray.length > 0 ? deliverablesArray : ['As per agreement'],
+                contractReadyToken,
+                contractUrl,
+              }).catch((e) => console.error('[Deals] delivery-details acceptance email failed:', e));
+            }
+          }
+        } else {
+          console.log('[Deals] Skipping contract generation due to missing info:', {
+            hasBrandName: !!deal.brand_name,
+            hasBrandEmail: !!deal.brand_email,
+            hasBrandAddress: !!(deal as any).brand_address,
+            hasCreatorName: !!creatorName,
+            hasCreatorEmail: !!creatorEmail,
+            hasCreatorAddress: !!delivery_address.trim()
+          });
         }
 
         // Barter shipping: create token and send brand "Update Shipping Details" email (link valid 14 days)
@@ -621,7 +666,11 @@ router.patch('/:dealId/delivery-details', authMiddleware, async (req: Authentica
       }
     } catch (contractErr: any) {
       console.error('[Deals] delivery-details contract generation error:', contractErr);
-      return res.status(500).json({ success: false, error: 'Delivery details saved but contract generation failed. Please try again from the deal page.' });
+      // More helpful error for common contract generation failures
+      const errorMsg = contractErr.missingFields
+        ? `Missing required details for contract: ${contractErr.missingFields.join(', ')}`
+        : 'Delivery details saved but contract generation failed. Brand info might be incomplete.';
+      return res.status(500).json({ success: false, error: errorMsg });
     }
 
     return res.json({

@@ -447,26 +447,28 @@ const CreatorPaymentsAndRecovery = () => {
       </div>
 
       {/* Stats Overview - Refactored for Mobile */}
-      <div className="mb-4 space-y-4">
-        {/* Primary Card 1: Pending Amount (Highlighted) */}
+      <div className="mb-4 grid grid-cols-1 gap-3">
+        {/* Primary Card: Pending Amount (Highlighted) */}
         <div className="bg-white/10 backdrop-blur-xl border-2 border-yellow-500/30 rounded-2xl p-4 shadow-lg shadow-yellow-500/10">
           <div className="text-sm text-white/70 mb-1">Pending Amount</div>
           <div className="text-3xl font-bold text-yellow-400 mb-1">{formatIndianCurrency(totalPending)}</div>
           <div className="text-xs text-white/60">Across active signed deals</div>
         </div>
 
-        {/* Primary Card 2: Paid This Month */}
-        <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-4">
-          <div className="text-sm text-white/70 mb-1">Paid This Month</div>
-          <div className="text-2xl font-bold text-green-400">{formatIndianCurrency(stats.thisMonth)}</div>
-        </div>
+        <div className="grid grid-cols-2 gap-3">
+          {/* Paid This Month */}
+          <div className="bg-white/6 backdrop-blur-xl border border-white/12 rounded-2xl p-3">
+            <div className="text-xs text-white/70 mb-1">Paid This Month</div>
+            <div className="text-xl font-bold text-green-400">{formatIndianCurrency(stats.thisMonth)}</div>
+          </div>
 
-        {/* Secondary Card: Total Earnings (Smaller, Muted) */}
-        <div className="bg-white/3 backdrop-blur-xl border border-white/5 rounded-xl p-3">
-          <div className="text-xs text-white/50 mb-0.5">Total Earnings</div>
-          <div className="text-lg font-semibold text-white/70">{formatIndianCurrency(stats.totalReceived)}</div>
+          {/* Total Earnings */}
+          <div className="bg-white/6 backdrop-blur-xl border border-white/12 rounded-2xl p-3">
+            <div className="text-xs text-white/70 mb-1">Total Earnings</div>
+            <div className="text-lg font-semibold text-white/85">{formatIndianCurrency(stats.totalReceived)}</div>
+          </div>
         </div>
-        </div>
+      </div>
 
       {/* Section Separator */}
       <div className={separators.section} />
@@ -480,7 +482,7 @@ const CreatorPaymentsAndRecovery = () => {
             setShowPaymentRequest(true);
           }}
           whileTap={animations.microTap}
-          className="relative bg-gradient-to-br from-green-500/20 to-green-600/10 backdrop-blur-xl rounded-2xl p-4 border border-green-500/30 shadow-lg shadow-green-500/10 hover:bg-green-500/25 transition-all"
+          className="relative bg-gradient-to-r from-green-500/25 to-emerald-500/15 backdrop-blur-xl rounded-2xl p-4 border border-green-500/40 shadow-lg shadow-green-500/20 hover:bg-green-500/25 transition-all"
         >
           <div className="flex items-center gap-3">
             <div className="bg-green-500/20 w-10 h-10 rounded-full flex items-center justify-center">
@@ -522,7 +524,7 @@ const CreatorPaymentsAndRecovery = () => {
             }
           }}
           whileTap={animations.microTap}
-          className="relative bg-white/5 backdrop-blur-xl rounded-2xl p-4 border border-white/10 hover:bg-white/8 transition-all"
+          className="relative bg-white/8 backdrop-blur-xl rounded-2xl p-4 border border-white/15 hover:bg-white/12 transition-all"
         >
           <div className="flex items-center gap-3">
             <div className="bg-purple-500/20 w-10 h-10 rounded-full flex items-center justify-center">
@@ -544,7 +546,7 @@ const CreatorPaymentsAndRecovery = () => {
             setShowAddExpense(true);
           }}
           whileTap={animations.microTap}
-          className="w-full bg-white/3 backdrop-blur-xl rounded-xl p-3 border border-white/5 hover:bg-white/5 transition-all text-left"
+          className="w-full bg-white/5 backdrop-blur-xl rounded-xl p-3 border border-white/10 hover:bg-white/8 transition-all text-left"
         >
           <div className="flex items-center gap-3">
             <CreditCard className="w-4 h-4 flex-shrink-0 text-white/70" />
@@ -615,8 +617,8 @@ const CreatorPaymentsAndRecovery = () => {
                 className={cn(
                   "px-4 py-2 rounded-full text-sm font-semibold transition-all duration-150 whitespace-nowrap flex-shrink-0",
                   isActive
-                    ? 'bg-white/15 text-white border-2 border-white/20 shadow-lg shadow-white/10'
-                    : 'bg-white/5 text-white/70 border border-white/10 hover:bg-white/8'
+                    ? 'bg-white/20 text-white border-2 border-white/25 shadow-lg shadow-white/10'
+                    : 'bg-white/8 text-white/70 border border-white/15 hover:bg-white/12'
                 )}
               >
                 {filter.label}

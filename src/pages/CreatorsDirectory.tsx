@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Search, Instagram, Youtube, Twitter, Facebook, Loader2, Users } from 'lucide-react';
 import { SEOHead } from '@/components/seo/SEOHead';
 import { BreadcrumbSchema } from '@/components/seo/SchemaMarkup';
+import { getApiBaseUrl } from '@/lib/utils/api';
 
 interface Creator {
   id: string;
@@ -32,9 +33,9 @@ const CreatorsDirectory = () => {
   const fetchCreators = async () => {
     try {
       const url = category && category !== 'all'
-        ? `${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/creators?category=${category}&limit=100`
-        : `${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/creators?limit=100`;
-      
+        ? `${getApiBaseUrl()}/api/creators?category=${category}&limit=100`
+        : `${getApiBaseUrl()}/api/creators?limit=100`;
+
       const response = await fetch(url);
       const data = await response.json();
 
@@ -50,7 +51,7 @@ const CreatorsDirectory = () => {
 
   const fetchCategories = async () => {
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/creators/categories`);
+      const response = await fetch(`${getApiBaseUrl()}/api/creators/categories`);
       const data = await response.json();
 
       if (data.success) {
@@ -86,7 +87,7 @@ const CreatorsDirectory = () => {
   const pageTitle = category && category !== 'all'
     ? `${category} Creators | Creator Directory`
     : 'Creator Directory | Find Influencers & Content Creators';
-  
+
   const metaDescription = category && category !== 'all'
     ? `Browse ${category} creators and influencers. Find verified content creators in ${category} for brand collaborations and partnerships.`
     : 'Browse verified creators and influencers. Find content creators by category for brand collaborations, influencer marketing, and partnerships.';
@@ -144,11 +145,10 @@ const CreatorsDirectory = () => {
             <Link to="/creators">
               <Badge
                 variant={!category || category === 'all' ? 'default' : 'outline'}
-                className={`cursor-pointer ${
-                  !category || category === 'all'
+                className={`cursor-pointer ${!category || category === 'all'
                     ? 'bg-purple-600 text-white'
                     : 'bg-white/5 text-purple-200 border-white/20 hover:bg-white/10'
-                }`}
+                  }`}
               >
                 All Categories
               </Badge>
@@ -157,11 +157,10 @@ const CreatorsDirectory = () => {
               <Link key={cat} to={`/creators/${encodeURIComponent(cat)}`}>
                 <Badge
                   variant={category === cat ? 'default' : 'outline'}
-                  className={`cursor-pointer ${
-                    category === cat
+                  className={`cursor-pointer ${category === cat
                       ? 'bg-purple-600 text-white'
                       : 'bg-white/5 text-purple-200 border-white/20 hover:bg-white/10'
-                  }`}
+                    }`}
                 >
                   {cat}
                 </Badge>
@@ -284,7 +283,7 @@ const CreatorsDirectory = () => {
               About the Creator Directory
             </h2>
             <p className="text-purple-200 leading-relaxed mb-4">
-              Our creator directory helps brands discover verified influencers and content creators for collaborations. 
+              Our creator directory helps brands discover verified influencers and content creators for collaborations.
               All creators listed have verified profiles and can be contacted through secure collaboration links.
             </p>
             <p className="text-purple-200 leading-relaxed">

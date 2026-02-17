@@ -193,10 +193,20 @@ const CreatorDashboard = () => {
     checkProStatus();
   }, [user?.id]);
 
-  const { data: brandDeals = [], isLoading: isLoadingDeals, error: brandDealsError } = useBrandDeals({
+  const { data: rawBrandDeals = [], isLoading: isLoadingDeals, error: brandDealsError } = useBrandDeals({
     creatorId: creatorId,
     enabled: !sessionLoading && !!creatorId,
   });
+
+  // Filter out incomplete barter deals (no delivery address)
+  const brandDeals = useMemo(() => {
+    return rawBrandDeals.filter(deal => {
+      if (deal.deal_type === 'barter' && (deal.status === 'Drafting' || (deal as any).status === 'drafting') && !deal.delivery_address) {
+        return false;
+      }
+      return true;
+    });
+  }, [rawBrandDeals]);
 
   // Debug: Log dashboard state (dev only)
   useEffect(() => {

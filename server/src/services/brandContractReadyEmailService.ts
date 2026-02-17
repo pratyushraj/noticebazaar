@@ -9,6 +9,8 @@ interface ResendEmailResponse {
   };
 }
 
+import { getCTATrustLine, getEmailLayout, getEmailProgressCue, getEmailSignal, getPrimaryCTA } from './professionalEmailTemplates.js';
+
 interface BrandContractReadyData {
   brandName: string;
   creatorName: string;
@@ -74,91 +76,114 @@ export async function sendBrandContractReadyEmail(
       : 'Not specified';
 
     const emailSubject = `Action required: Review & sign agreement with ${contractData.creatorName}`;
-    const emailHtml = `
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <meta charset="utf-8">
-          <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        </head>
-        <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
-          <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; border-radius: 10px 10px 0 0; text-align: center;">
-            <h1 style="color: white; margin: 0; font-size: 24px;">📄 Your Agreement is Ready</h1>
+    const emailContent = `
+      <tr>
+        <td style="background-color: #5b21b6; padding: 48px 30px; text-align: center;">
+          <div style="width: 70px; height: 70px; margin: 0 auto 16px auto; border-radius: 50%; background-color: rgba(255, 255, 255, 0.16); display: inline-block; line-height: 70px;">
+            <span style="font-size: 28px; color: #ffffff;">✍️</span>
           </div>
-          <div style="background: #f9fafb; padding: 30px; border-radius: 0 0 10px 10px; border: 1px solid #e5e7eb; border-top: none;">
-            <h2 style="color: #1f2937; margin-top: 0; font-size: 20px;">Hello ${brandName},</h2>
-            <p style="color: #4b5563; font-size: 16px;">
-              Your collaboration agreement with <strong>${contractData.creatorName}</strong> has been generated and is ready for your review and signature.
-            </p>
-            
-            <div style="background: white; border: 1px solid #e5e7eb; border-radius: 8px; padding: 20px; margin: 20px 0;">
-              <h3 style="color: #1f2937; margin-top: 0; font-size: 18px;">Agreement Summary:</h3>
-              <table style="width: 100%; border-collapse: collapse;">
-                <tr>
-                  <td style="padding: 8px 0; color: #6b7280; font-size: 14px; width: 40%;"><strong>Creator:</strong></td>
-                  <td style="padding: 8px 0; color: #1f2937; font-size: 14px;">${contractData.creatorName}</td>
-                </tr>
-                <tr>
-                  <td style="padding: 8px 0; color: #6b7280; font-size: 14px;"><strong>Deal Type:</strong></td>
-                  <td style="padding: 8px 0; color: #1f2937; font-size: 14px; text-transform: capitalize;">${contractData.dealType}</td>
-                </tr>
-                <tr>
-                  <td style="padding: 8px 0; color: #6b7280; font-size: 14px;"><strong>Deal Value:</strong></td>
-                  <td style="padding: 8px 0; color: #1f2937; font-size: 14px; font-weight: 600;">${dealAmount}</td>
-                </tr>
-                <tr>
-                  <td style="padding: 8px 0; color: #6b7280; font-size: 14px;"><strong>Deadline:</strong></td>
-                  <td style="padding: 8px 0; color: #1f2937; font-size: 14px;">${deadlineText}</td>
-                </tr>
-              </table>
-            </div>
-
-            <div style="background: white; border: 1px solid #e5e7eb; border-radius: 8px; padding: 20px; margin: 20px 0;">
-              <h3 style="color: #1f2937; margin-top: 0; font-size: 18px;">Deliverables:</h3>
-              <div style="color: #4b5563; font-size: 14px;">
+          <h1 style="margin: 0 0 8px 0; font-size: 24px; font-weight: 700; color: #ffffff !important; line-height: 1.3;">
+            Agreement ready for signature
+          </h1>
+          <p style="margin: 0; font-size: 14px; color: #ffffff !important; opacity: 0.95;">
+            ${contractData.creatorName} is waiting for your review
+          </p>
+        </td>
+      </tr>
+      <tr>
+        <td style="padding: 24px 32px 8px 32px;">
+          <p style="margin: 0 0 10px 0; font-size: 16px; color: #1f2937; font-weight: 600;">Hello ${brandName},</p>
+          <p style="margin: 0; font-size: 14px; color: #4b5563; line-height: 1.7;">
+            Your collaboration agreement has been generated and is ready for your signature. Please review the summary below and sign to activate the partnership.
+          </p>
+        </td>
+      </tr>
+      ${getEmailSignal({
+        type: 'action',
+        message: 'Review the agreement and sign to lock in deliverables, payment terms, and timelines.'
+      })}
+      ${getEmailProgressCue([
+        { label: 'Agreement Ready', status: 'current' },
+        { label: 'Signed', status: 'upcoming' },
+        { label: 'Deliverables Start', status: 'upcoming' }
+      ])}
+      <tr>
+        <td style="padding: 20px 32px 0 32px;">
+          <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background-color: #f8fafc; border: 1px solid #e5e7eb; border-radius: 12px; padding: 16px;">
+            <tr>
+              <td style="font-size: 13px; font-weight: 700; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px; padding-bottom: 12px;">Agreement Summary</td>
+            </tr>
+            <tr>
+              <td>
+                <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="border-collapse: collapse;">
+                  <tr>
+                    <td style="padding: 10px 0; color: #6b7280; font-size: 13px; width: 38%; font-weight: 600;">Creator</td>
+                    <td style="padding: 10px 0; color: #111827; font-size: 14px; font-weight: 600;">${contractData.creatorName}</td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 10px 0; color: #6b7280; font-size: 13px; font-weight: 600;">Deal type</td>
+                    <td style="padding: 10px 0; color: #111827; font-size: 14px; text-transform: capitalize;">${contractData.dealType}</td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 10px 0; color: #6b7280; font-size: 13px; font-weight: 600;">Deal value</td>
+                    <td style="padding: 10px 0; color: #111827; font-size: 14px; font-weight: 700;">${dealAmount}</td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 10px 0; color: #6b7280; font-size: 13px; font-weight: 600;">Deadline</td>
+                    <td style="padding: 10px 0; color: #111827; font-size: 14px;">${deadlineText}</td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+      <tr>
+        <td style="padding: 16px 32px 0 32px;">
+          <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background-color: #ffffff; border: 1px solid #e5e7eb; border-radius: 12px; padding: 16px;">
+            <tr>
+              <td style="font-size: 13px; font-weight: 700; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px; padding-bottom: 10px;">Deliverables</td>
+            </tr>
+            <tr>
+              <td style="color: #4b5563; font-size: 14px; line-height: 1.7;">
                 ${deliverablesList || 'No deliverables specified'}
-              </div>
-            </div>
-
-            <div style="text-align: center; margin: 30px 0;">
-              <a href="${contractReadyLink}" style="display: inline-block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px;">
-                Review & Sign Agreement
-              </a>
-            </div>
-
-            ${contractData.contractUrl ? `
-            <div style="text-align: center; margin: 20px 0;">
-              <a href="${contractData.contractUrl}" style="display: inline-block; color: #667eea; padding: 10px 20px; text-decoration: none; border: 1px solid #667eea; border-radius: 8px; font-size: 14px;">
-                Download Contract PDF
-              </a>
-            </div>
-            ` : ''}
-
-            <p style="color: #6b7280; font-size: 14px; margin-top: 30px;">
-              <strong>Status: AWAITING_BRAND_SIGNATURE</strong>
-            </p>
-            <ul style="color: #6b7280; font-size: 14px; padding-left: 20px;">
-              <li>Review the agreement terms and jurisdiction</li>
-              <li>Sign the agreement to make it legally binding</li>
-              <li>Identity verification & timestamps are logged for security</li>
-            </ul>
-
-            <p style="color: #6b7280; font-size: 14px; margin-top: 20px;">
-              If you have any questions or need to request changes, you can do so directly on the agreement page.
-            </p>
-
-            <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
-              <p style="color: #9ca3af; font-size: 11px; margin: 0; text-transform: uppercase; letter-spacing: 0.5px; line-height: 1.4;">
-                Actions on Creator Armour are recorded, timestamped, and legally enforceable.
-              </p>
-              <p style="color: #9ca3af; font-size: 11px; margin: 8px 0 0 0;">
-                This is an automated email from CreatorArmour. Please do not reply to this email.
-              </p>
-            </div>
-          </div>
-        </body>
-      </html>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+      ${getPrimaryCTA('Review & Sign Agreement', contractReadyLink)}
+      ${getCTATrustLine('Signing typically takes under 2 minutes. No payment is processed until both parties sign.')}
+      ${contractData.contractUrl ? `
+      <tr>
+        <td style="padding: 0 32px 24px 32px; text-align: center;">
+          <a href="${contractData.contractUrl}" style="display: inline-block; color: #4f46e5; padding: 10px 18px; text-decoration: none; border: 1px solid #c7d2fe; border-radius: 8px; font-size: 13px; font-weight: 600;">
+            Download Contract PDF
+          </a>
+        </td>
+      </tr>
+      ` : ''}
+      <tr>
+        <td style="padding: 0 32px 24px 32px;">
+          <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background-color: #fef9c3; border: 1px solid #fde68a; border-radius: 12px; padding: 14px;">
+            <tr>
+              <td style="font-size: 12px; font-weight: 700; color: #92400e; text-transform: uppercase; letter-spacing: 0.6px; padding-bottom: 6px;">Status</td>
+            </tr>
+            <tr>
+              <td style="font-size: 13px; color: #92400e;">AWAITING_BRAND_SIGNATURE</td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+      <tr>
+        <td style="padding: 0 32px 32px 32px;">
+          <p style="margin: 0; font-size: 13px; color: #6b7280; line-height: 1.6;">
+            Identity verification and timestamps are logged for legal enforceability. You can request changes directly on the agreement page before signing.
+          </p>
+        </td>
+      </tr>
     `;
+    const emailHtml = getEmailLayout({ content: emailContent, showFooter: true, backgroundStyle: 'purple' });
 
     const requestBody = {
       from: 'CreatorArmour <noreply@creatorarmour.com>',
@@ -247,4 +272,3 @@ export async function sendBrandContractReadyEmail(
     };
   }
 }
-

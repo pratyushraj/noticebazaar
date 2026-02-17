@@ -3,8 +3,8 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { 
-  CheckCircle, 
+import {
+  CheckCircle,
   Loader2,
   FileText,
   Calendar,
@@ -18,6 +18,7 @@ import {
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { getApiBaseUrl } from '@/lib/utils/api';
 
 // Structured deliverable interface
 interface Deliverable {
@@ -102,7 +103,7 @@ const BrandDealDetailsPage = () => {
   const [gstLookupSuccess, setGstLookupSuccess] = useState(false);
   const [gstStatus, setGstStatus] = useState<'Active' | 'Cancelled' | 'Suspended' | null>(null);
   const [companyTradeName, setCompanyTradeName] = useState<string>('');
-  
+
   const [formData, setFormData] = useState<DealDetailsFormData>({
     brandName: '',
     campaignName: '',
@@ -140,12 +141,12 @@ const BrandDealDetailsPage = () => {
   // Update Open Graph meta tags for social sharing
   useEffect(() => {
     const currentUrl = typeof window !== 'undefined' ? window.location.href : 'https://creatorarmour.com';
-    
+
     // Helper function to update or create meta tag
     const updateMetaTag = (property: string, content: string) => {
-      let meta = document.querySelector(`meta[property="${property}"]`) || 
-                 document.querySelector(`meta[name="${property}"]`);
-      
+      let meta = document.querySelector(`meta[property="${property}"]`) ||
+        document.querySelector(`meta[name="${property}"]`);
+
       if (!meta) {
         meta = document.createElement('meta');
         if (property.startsWith('og:') || property.startsWith('twitter:')) {
@@ -155,7 +156,7 @@ const BrandDealDetailsPage = () => {
         }
         document.head.appendChild(meta);
       }
-      
+
       meta.setAttribute('content', content);
     };
 
@@ -191,13 +192,7 @@ const BrandDealDetailsPage = () => {
       }
 
       try {
-        let apiBaseUrl =
-          import.meta.env.VITE_API_BASE_URL ||
-          (typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com')
-            ? 'https://api.creatorarmour.com'
-            : typeof window !== 'undefined' && window.location.hostname === 'localhost'
-            ? 'http://localhost:3001'
-            : 'https://noticebazaar-api.onrender.com');
+        let apiBaseUrl = getApiBaseUrl();
 
         let response: Response;
         try {
@@ -205,9 +200,9 @@ const BrandDealDetailsPage = () => {
         } catch (fetchError: any) {
           // If localhost fails, try production API as fallback
           if (
-            (fetchError.message?.includes('Failed to fetch') || 
-             fetchError.message?.includes('ERR_CONNECTION_REFUSED') ||
-             fetchError.name === 'TypeError') &&
+            (fetchError.message?.includes('Failed to fetch') ||
+              fetchError.message?.includes('ERR_CONNECTION_REFUSED') ||
+              fetchError.name === 'TypeError') &&
             apiBaseUrl.includes('localhost')
           ) {
             console.warn('[BrandDealDetailsPage] Localhost API unavailable, trying production API...');
@@ -232,14 +227,14 @@ const BrandDealDetailsPage = () => {
           setIsFormUsed(true);
           setDealId(data.dealId || null);
           setIsSigned(data.isSigned || false);
-          
+
           // Always fetch contract ready token dynamically to ensure we have the latest one
           if (!data.isSigned && token) {
             setIsFetchingContractToken(true);
             try {
               const contractTokenResponse = await fetch(`${apiBaseUrl}/api/deal-details-tokens/${token}/contract-ready-token`);
               const contractTokenData = await contractTokenResponse.json();
-              
+
               if (contractTokenData.success && contractTokenData.contractReadyToken) {
                 setContractReadyToken(contractTokenData.contractReadyToken);
               } else {
@@ -256,7 +251,7 @@ const BrandDealDetailsPage = () => {
             // Deal is signed, no need to fetch token
             setContractReadyToken(null);
           }
-          
+
           setIsLoading(false);
           return;
         }
@@ -277,7 +272,7 @@ const BrandDealDetailsPage = () => {
       const tomorrow = new Date();
       tomorrow.setDate(tomorrow.getDate() + 1);
       const deadlineStr = tomorrow.toISOString().split('T')[0]; // Format: YYYY-MM-DD
-      
+
       setFormData({
         brandName: 'Test Brand Company',
         campaignName: 'Summer Campaign 2025',
@@ -323,7 +318,7 @@ const BrandDealDetailsPage = () => {
         additionalRequirements: 'Please ensure high-quality content with brand colors.',
         specialInstructions: 'Content should be family-friendly and align with brand values.',
       });
-      
+
       console.log('[BrandDealDetailsPage] Test mode: Form auto-filled with sample data');
     }
   }, [isTestMode, isLoading, isFormUsed]);
@@ -338,7 +333,7 @@ const BrandDealDetailsPage = () => {
   const handleDeliverableChange = (index: number, field: keyof Deliverable, value: string | number) => {
     setFormData(prev => ({
       ...prev,
-      deliverables: prev.deliverables.map((d, i) => 
+      deliverables: prev.deliverables.map((d, i) =>
         i === index ? { ...d, [field]: value } : d
       )
     }));
@@ -368,28 +363,22 @@ const BrandDealDetailsPage = () => {
     setGstLookupSuccess(false);
 
     try {
-      let apiBaseUrl =
-        import.meta.env.VITE_API_BASE_URL ||
-        (typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com')
-          ? 'https://api.creatorarmour.com'
-          : typeof window !== 'undefined' && window.location.hostname === 'localhost'
-          ? 'http://localhost:3001'
-          : 'https://noticebazaar-api.onrender.com');
+      let apiBaseUrl = getApiBaseUrl();
 
       let response: Response;
       try {
         response = await fetch(`${apiBaseUrl}/api/gst/lookup?gstin=${encodeURIComponent(gstin)}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
       } catch (fetchError: any) {
         // If localhost fails, try production API as fallback
         if (
-          (fetchError.message?.includes('Failed to fetch') || 
-           fetchError.message?.includes('ERR_CONNECTION_REFUSED') ||
-           fetchError.name === 'TypeError') &&
+          (fetchError.message?.includes('Failed to fetch') ||
+            fetchError.message?.includes('ERR_CONNECTION_REFUSED') ||
+            fetchError.name === 'TypeError') &&
           apiBaseUrl.includes('localhost')
         ) {
           console.warn('[BrandDealDetailsPage] Localhost API unavailable, trying production API...');
@@ -436,7 +425,7 @@ const BrandDealDetailsPage = () => {
       setCompanyTradeName(data.data.tradeName || '');
 
       setGstLookupSuccess(true);
-      
+
       // Clear success message after 5 seconds
       setTimeout(() => {
         setGstLookupSuccess(false);
@@ -453,7 +442,7 @@ const BrandDealDetailsPage = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Validation
     if (!formData.brandName.trim()) {
       toast.error('Please enter your brand name');
@@ -503,7 +492,7 @@ const BrandDealDetailsPage = () => {
       toast.error('Please select cancellation terms');
       return;
     }
-    
+
     // Company Contact Details validation
     if (!formData.companyLegalName?.trim()) {
       toast.error('Please enter company legal name');
@@ -533,14 +522,7 @@ const BrandDealDetailsPage = () => {
     setIsSubmitting(true);
 
     // Determine API base URL (needed for retry logic)
-    const getApiBaseUrl = () => {
-      return import.meta.env.VITE_API_BASE_URL ||
-        (typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com')
-          ? 'https://api.creatorarmour.com'
-          : typeof window !== 'undefined' && window.location.hostname === 'localhost'
-          ? 'http://localhost:3001'
-          : 'https://noticebazaar-api.onrender.com');
-    };
+    // getApiBaseUrl utility is imported and used below
 
     try {
       let apiBaseUrl = getApiBaseUrl();
@@ -554,7 +536,7 @@ const BrandDealDetailsPage = () => {
           },
           body: JSON.stringify({
             ...formData,
-            deliverables: formData.deliverables.map(d => 
+            deliverables: formData.deliverables.map(d =>
               `${d.quantity} ${d.platform} ${d.contentType}${d.duration ? ` (${d.duration}s)` : ''}`
             ),
             // Auto-set jurisdiction
@@ -564,9 +546,9 @@ const BrandDealDetailsPage = () => {
       } catch (fetchError: any) {
         // If localhost fails, try production API as fallback
         if (
-          (fetchError.message?.includes('Failed to fetch') || 
-           fetchError.message?.includes('ERR_CONNECTION_REFUSED') ||
-           fetchError.name === 'TypeError') &&
+          (fetchError.message?.includes('Failed to fetch') ||
+            fetchError.message?.includes('ERR_CONNECTION_REFUSED') ||
+            fetchError.name === 'TypeError') &&
           apiBaseUrl.includes('localhost')
         ) {
           console.warn('[BrandDealDetailsPage] Localhost API unavailable, trying production API...');
@@ -578,7 +560,7 @@ const BrandDealDetailsPage = () => {
             },
             body: JSON.stringify({
               ...formData,
-              deliverables: formData.deliverables.map(d => 
+              deliverables: formData.deliverables.map(d =>
                 `${d.quantity} ${d.platform} ${d.contentType}${d.duration ? ` (${d.duration}s)` : ''}`
               ),
               // Auto-set jurisdiction
@@ -596,8 +578,8 @@ const BrandDealDetailsPage = () => {
         throw new Error(data.error || 'Failed to submit details');
       }
 
-      console.log('[BrandDealDetailsPage] Submit response:', { 
-        success: data.success, 
+      console.log('[BrandDealDetailsPage] Submit response:', {
+        success: data.success,
         contractReadyToken: data.contractReadyToken,
         dealId: data.dealId,
         fullResponse: data
@@ -607,7 +589,7 @@ const BrandDealDetailsPage = () => {
       if (data.contractReadyToken) {
         // Redirect to contract ready page using React Router
         console.log('[BrandDealDetailsPage] Redirecting to contract-ready with token:', data.contractReadyToken);
-        
+
         // Small delay to ensure state is updated
         setTimeout(() => {
           navigate(`/contract-ready/${data.contractReadyToken}`, { replace: true });
@@ -616,20 +598,20 @@ const BrandDealDetailsPage = () => {
         // Fallback: Token might be created asynchronously, try to wait and retry
         console.warn('[BrandDealDetailsPage] No contractReadyToken in response, but dealId exists:', data.dealId);
         console.warn('[BrandDealDetailsPage] This might indicate token creation failed or is delayed');
-        
+
         // Show success message
         setIsSubmitted(true);
         toast.success('Details received!', {
           description: 'Your contract is being prepared. Please wait...',
           duration: 5000
         });
-        
+
         // Try to poll for the token (contract generation might be async)
         // Note: This is a workaround - ideally backend should always return token
         let retryCount = 0;
         const maxRetries = 3;
         const retryInterval = 2000; // 2 seconds
-        
+
         const pollForToken = async () => {
           if (retryCount >= maxRetries) {
             console.error('[BrandDealDetailsPage] Max retries reached, showing success screen');
@@ -638,15 +620,15 @@ const BrandDealDetailsPage = () => {
             });
             return;
           }
-          
+
           retryCount++;
           console.log(`[BrandDealDetailsPage] Retry ${retryCount}/${maxRetries}: Checking for contract ready token...`);
-          
+
           try {
             // Use the public endpoint to get contract ready token from the original deal details token
             let checkApiBaseUrl = getApiBaseUrl();
             let checkResponse: Response;
-            
+
             try {
               const checkUrl = `${checkApiBaseUrl}/api/deal-details-tokens/${token}/contract-ready-token`;
               checkResponse = await fetch(checkUrl, {
@@ -658,9 +640,9 @@ const BrandDealDetailsPage = () => {
             } catch (fetchError: any) {
               // If localhost fails, try production API as fallback
               if (
-                (fetchError.message?.includes('Failed to fetch') || 
-                 fetchError.message?.includes('ERR_CONNECTION_REFUSED') ||
-                 fetchError.name === 'TypeError') &&
+                (fetchError.message?.includes('Failed to fetch') ||
+                  fetchError.message?.includes('ERR_CONNECTION_REFUSED') ||
+                  fetchError.name === 'TypeError') &&
                 checkApiBaseUrl.includes('localhost')
               ) {
                 console.warn('[BrandDealDetailsPage] Poll: Localhost API unavailable, trying production API...');
@@ -672,11 +654,11 @@ const BrandDealDetailsPage = () => {
                     'Content-Type': 'application/json',
                   },
                 });
-      } else {
+              } else {
                 throw fetchError;
               }
             }
-            
+
             if (checkResponse.ok) {
               const checkData = await checkResponse.json();
               if (checkData.success && checkData.contractReadyToken) {
@@ -691,7 +673,7 @@ const BrandDealDetailsPage = () => {
           } catch (pollError) {
             console.warn('[BrandDealDetailsPage] Poll error:', pollError);
           }
-          
+
           // Schedule next retry
           if (retryCount < maxRetries) {
             setTimeout(pollForToken, retryInterval);
@@ -701,7 +683,7 @@ const BrandDealDetailsPage = () => {
             });
           }
         };
-        
+
         // Start polling after initial delay
         setTimeout(pollForToken, retryInterval);
       } else {
@@ -745,7 +727,7 @@ const BrandDealDetailsPage = () => {
         </div>
       );
     }
-    
+
     // If we have a contract ready token, show sign option
     if (contractReadyToken) {
       const contractReadyUrl = `/contract-ready/${contractReadyToken}`;
@@ -768,17 +750,11 @@ const BrandDealDetailsPage = () => {
                 e.preventDefault();
                 // Verify the token exists before redirecting
                 try {
-                  let apiBaseUrl =
-                    import.meta.env.VITE_API_BASE_URL ||
-                    (typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com')
-                      ? 'https://api.creatorarmour.com'
-                      : typeof window !== 'undefined' && window.location.hostname === 'localhost'
-                      ? 'http://localhost:3001'
-                      : 'https://noticebazaar-api.onrender.com');
-                  
+                  let apiBaseUrl = getApiBaseUrl();
+
                   const verifyResponse = await fetch(`${apiBaseUrl}/api/contract-ready-tokens/${contractReadyToken}`);
                   const verifyData = await verifyResponse.json();
-                  
+
                   if (verifyResponse.ok && verifyData.success) {
                     window.location.href = contractReadyUrl;
                   } else {
@@ -786,7 +762,7 @@ const BrandDealDetailsPage = () => {
                     if (token) {
                       const tokenResponse = await fetch(`${apiBaseUrl}/api/deal-details-tokens/${token}/contract-ready-token`);
                       const tokenData = await tokenResponse.json();
-                      
+
                       if (tokenResponse.ok && tokenData.success && tokenData.contractReadyToken) {
                         window.location.href = `${window.location.origin}/contract-ready/${tokenData.contractReadyToken}`;
                       } else {
@@ -983,16 +959,16 @@ const BrandDealDetailsPage = () => {
                 <div key={index} className="bg-white/5 border border-white/10 rounded-xl p-4 space-y-3">
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-sm text-white/70">Deliverable {index + 1}</span>
-                  {formData.deliverables.length > 1 && (
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveDeliverable(index)}
+                    {formData.deliverables.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveDeliverable(index)}
                         className="text-xs text-red-400 hover:text-red-300 transition-colors disabled:opacity-50"
-                      disabled={isFormUsed}
-                    >
-                      Remove
-                    </button>
-                  )}
+                        disabled={isFormUsed}
+                      >
+                        Remove
+                      </button>
+                    )}
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
@@ -1070,7 +1046,7 @@ const BrandDealDetailsPage = () => {
               <FileText className="w-5 h-5 text-purple-300" />
               Content Approval & Revisions
             </h3>
-            
+
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium mb-2">
@@ -1279,7 +1255,7 @@ const BrandDealDetailsPage = () => {
                   Clarifies when payment is expected to avoid delays or disputes.
                 </p>
               </div>
-              
+
               {/* Payment Trigger - Required for Paid */}
               <div>
                 <label className="block text-sm font-medium mb-2">
@@ -1323,7 +1299,7 @@ const BrandDealDetailsPage = () => {
                           }
                         }}
                         className="w-4 h-4 rounded border-white/20 bg-white/10 text-purple-600 focus:ring-purple-400/50 disabled:opacity-50"
-                  disabled={isFormUsed}
+                        disabled={isFormUsed}
                       />
                       <span className="text-sm text-white/80">{method}</span>
                     </label>
@@ -1430,7 +1406,7 @@ const BrandDealDetailsPage = () => {
               <Shield className="w-5 h-5 text-purple-300" />
               Rights & Usage
             </h3>
-            
+
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium mb-2">
@@ -1463,7 +1439,7 @@ const BrandDealDetailsPage = () => {
                       checked={formData.paidAdsAllowed === true}
                       onChange={() => setFormData(prev => ({ ...prev, paidAdsAllowed: true }))}
                       className="w-4 h-4 border-white/20 bg-white/10 text-purple-600 focus:ring-purple-400/50 disabled:opacity-50"
-                  disabled={isFormUsed}
+                      disabled={isFormUsed}
                     />
                     <span className="text-sm text-white/80">Yes</span>
                   </label>
@@ -1584,7 +1560,7 @@ const BrandDealDetailsPage = () => {
               <Shield className="w-5 h-5 text-purple-300" />
               Jurisdiction / Governing Law
             </h3>
-            
+
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium mb-2">
@@ -1630,7 +1606,7 @@ const BrandDealDetailsPage = () => {
               <Shield className="w-5 h-5 text-purple-300" />
               Company Details
             </h3>
-            
+
             <div className="space-y-4">
               {/* GSTIN with Fetch Button */}
               <div>
@@ -1693,7 +1669,7 @@ const BrandDealDetailsPage = () => {
                   <div className="mt-2">
                     <span className={cn(
                       "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium",
-                      gstStatus === 'Active' 
+                      gstStatus === 'Active'
                         ? "bg-green-500/20 text-green-300 border border-green-500/30"
                         : "bg-amber-500/20 text-amber-300 border border-amber-500/30"
                     )}>
@@ -1843,7 +1819,7 @@ const BrandDealDetailsPage = () => {
             <p className="text-xs text-white/40 mt-4 italic">
               CreatorArmour does not verify GST filings. Information is provided for convenience only.
             </p>
-            
+
             {/* Disclosure */}
             <p className="text-xs text-white/50 mt-4 border-t border-white/10 pt-4">
               Company details are sourced from public GST records. CreatorArmour does not verify ownership or signing authority. Please verify before submitting.

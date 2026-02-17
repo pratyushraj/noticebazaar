@@ -2,16 +2,65 @@
 // OTP Routes for Creator Magic Link Signing
 // Handles OTP generation and verification for contract signing
 
-import express from 'express';
+import express, { Response } from 'express';
 import crypto from 'crypto';
 import { supabase } from '../index.js';
 import { sendOTPEmail } from '../services/otpEmailService.js';
+import { AuthenticatedRequest, authMiddleware } from '../middleware/auth.js';
 
 const router = express.Router();
+
+// Diagnostic route to test Resend directly
+router.get('/test-resend', async (req, res) => {
+  try {
+    const testEmail = req.query.email as string || 'notice3@yopmail.com';
+    console.log('[OTP Test] Attempting direct Resend test to:', testEmail);
+    await sendOTPEmail(testEmail, '123456');
+    return res.json({ success: true, message: 'Test email sent successfully' });
+  } catch (err: any) {
+    console.error('[OTP Test] direct Resend test failed:', err);
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 const sendRateStore: Record<string, { count: number; resetAt: number; lastSentAt: number }> = {};
 const SEND_WINDOW_MS = 10 * 60 * 1000;
 const SEND_MAX = 5;
 const SEND_COOLDOWN_MS = 60 * 1000;
+
+/**
+ * Generate a 6-digit OTP
+ */
+function generateOTP(): string {
+  return Math.floor(100000 + Math.random() * 900000).toString();
+}
+
+/**
+ * Hash OTP using SHA256
+ */
+function hashOTP(otp: string): string {
+  return crypto.createHash('sha256').update(otp).digest('hex');
+}
+
+/**
+ * Log deal action to deal_action_logs table
+ */
+async function logDealAction(
+  dealId: string,
+  event: string,
+  metadata: Record<string, any> = {}
+): Promise<void> {
+  try {
+    await supabase.from('deal_action_logs').insert({
+      deal_id: dealId,
+      event,
+      metadata,
+    });
+  } catch (error: any) {
+    console.error('[OTP] Failed to log deal action:', error);
+    // Don't throw - logging failure shouldn't block the operation
+  }
+}
 
 // Generate and send OTP
 router.post('/send', async (req, res) => {
@@ -110,8 +159,8 @@ router.post('/send', async (req, res) => {
     }
 
     // Generate 6-digit OTP
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    const otpHash = crypto.createHash('sha256').update(otp).digest('hex');
+    const otp = generateOTP();
+    const otpHash = hashOTP(otp);
 
     // Store OTP in database (expires in 10 minutes)
     const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
@@ -260,7 +309,7 @@ router.post('/verify', async (req, res) => {
     }
 
     // Verify OTP
-    const otpHash = crypto.createHash('sha256').update(otp).digest('hex');
+    const otpHash = hashOTP(otp);
 
     if (otpHash !== storedHash) {
       // Increment attempts
@@ -320,6 +369,305 @@ router.post('/verify', async (req, res) => {
     res.status(500).json({
       success: false,
       error: 'Failed to verify OTP'
+    });
+  }
+});
+
+// POST /api/otp/send-creator (PROTECTED - for creators)
+// Send OTP to creator's email - requires auth
+router.post('/send-creator', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    console.log('[OTP] Received send-creator request for dealId:', req.body?.dealId, 'from user:', req.user?.id);
+
+    if (!req.user || !req.user.id) {
+      console.warn('[OTP] send-creator failed: No user in request');
+      return res.status(401).json({
+        success: false,
+        error: 'Authentication required',
+      });
+    }
+
+    const { dealId } = req.body;
+
+    if (!dealId) {
+      console.warn('[OTP] send-creator failed: Missing dealId in body');
+      return res.status(400).json({
+        success: false,
+        error: 'Missing required field: dealId',
+      });
+    }
+
+    // Fetch deal
+    const { data: deal, error: dealError } = await supabase
+      .from('brand_deals')
+      .select('*')
+      .eq('id', dealId)
+      .maybeSingle();
+
+    if (dealError || !deal) {
+      console.warn('[OTP] send-creator failed: Deal not found or error:', dealError);
+      return res.status(404).json({
+        success: false,
+        error: 'Deal not found',
+      });
+    }
+
+    // Verify user has access (must be the creator or admin)
+    if (deal.creator_id !== req.user.id && req.user?.role !== 'admin') {
+      console.warn('[OTP] send-creator failed: Access denied. Deal creator:', deal.creator_id, 'User:', req.user.id);
+      return res.status(403).json({
+        success: false,
+        error: 'Access denied',
+      });
+    }
+
+    // Get creator's email from auth.users (email is in auth, not profiles)
+    const { data: authUser, error: authError } = await supabase.auth.admin.getUserById(req.user.id);
+
+    if (authError) {
+      console.error('[OTP] Error fetching user from auth:', authError);
+      return res.status(500).json({
+        success: false,
+        error: 'Failed to fetch user information',
+      });
+    }
+
+    if (!authUser?.user?.email) {
+      console.error('[OTP] Creator email not found for user:', req.user.id);
+      return res.status(404).json({
+        success: false,
+        error: 'Creator email not found. Please ensure your account has a valid email address.',
+      });
+    }
+
+    const creatorEmail = authUser.user.email.trim();
+
+    // Validate email format before sending
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(creatorEmail)) {
+      console.error('[OTP] Invalid email format:', creatorEmail);
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid email address format',
+      });
+    }
+
+    // Generate OTP
+    const otp = generateOTP();
+    const otpHash = hashOTP(otp);
+    const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+
+    // Send OTP email
+    try {
+      await sendOTPEmail(creatorEmail, otp);
+      console.log('[OTP] Creator OTP sent successfully to:', creatorEmail);
+    } catch (emailError: any) {
+      console.error('[OTP] Failed to send OTP email:', emailError);
+      return res.status(500).json({
+        success: false,
+        error: emailError.message || 'Failed to send OTP email',
+      });
+    }
+
+    // Store OTP hash in deal (for creator signing)
+    const updateData: any = {
+      creator_otp_hash: otpHash,
+      creator_otp_expires_at: expiresAt.toISOString(),
+      creator_otp_attempts: 0,
+      creator_otp_verified: false,
+      updated_at: new Date().toISOString(),
+    };
+
+    const { error: updateError } = await supabase
+      .from('brand_deals')
+      .update(updateData)
+      .eq('id', dealId);
+
+    if (updateError) {
+      console.error('[OTP] Failed to update deal:', updateError);
+      return res.status(500).json({
+        success: false,
+        error: `Failed to save OTP: ${updateError.message}`,
+      });
+    }
+
+    // Log the action
+    await logDealAction(dealId, 'CREATOR_OTP_SENT', {
+      email: creatorEmail.replace(/(.{2})(.*)(@.*)/, '$1***$3'), // Mask email
+    });
+
+    return res.json({
+      success: true,
+      message: 'OTP sent successfully to your email',
+      expiresAt: expiresAt.toISOString(),
+    });
+
+  } catch (error: any) {
+    console.error('[OTP] send-creator error:', error);
+    return res.status(500).json({
+      success: false,
+      error: error.message || 'Internal server error',
+    });
+  }
+});
+
+// POST /api/otp/verify-creator (PROTECTED - for creators)
+// Verify OTP entered by creator - requires auth
+router.post('/verify-creator', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    if (!req.user || !req.user.id) {
+      return res.status(401).json({
+        success: false,
+        error: 'Authentication required',
+      });
+    }
+
+    const { dealId, otp } = req.body;
+
+    if (!dealId || !otp) {
+      return res.status(400).json({
+        success: false,
+        error: 'Missing required fields: dealId and otp',
+      });
+    }
+
+    // Verify OTP format (6 digits)
+    if (!/^\d{6}$/.test(otp)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid OTP format. OTP must be 6 digits',
+      });
+    }
+
+    // Fetch deal with OTP info
+    const { data: deal, error: dealError } = await supabase
+      .from('brand_deals')
+      .select('*')
+      .eq('id', dealId)
+      .maybeSingle();
+
+    if (dealError || !deal) {
+      return res.status(404).json({
+        success: false,
+        error: 'Deal not found',
+      });
+    }
+
+    // Verify user has access
+    if (deal.creator_id !== req.user.id && req.user?.role !== 'admin') {
+      return res.status(403).json({
+        success: false,
+        error: 'Access denied',
+      });
+    }
+
+    // Check if OTP exists (use creator-specific fields)
+    const storedHash = (deal as any).creator_otp_hash;
+    if (!storedHash) {
+      return res.status(400).json({
+        success: false,
+        error: 'No OTP found. Please request a new OTP',
+      });
+    }
+
+    // Check if OTP is already verified
+    if ((deal as any).creator_otp_verified === true) {
+      return res.status(400).json({
+        success: false,
+        error: 'OTP has already been verified',
+      });
+    }
+
+    // Check expiration
+    const expiresAt = (deal as any).creator_otp_expires_at;
+    if (expiresAt) {
+      const expirationTime = new Date(expiresAt);
+      const now = new Date();
+
+      if (now > expirationTime) {
+        return res.status(400).json({
+          success: false,
+          error: 'OTP has expired. Please request a new OTP',
+        });
+      }
+    }
+
+    // Check max attempts (prevent brute force)
+    const attempts = (deal as any).creator_otp_attempts || 0;
+    if (attempts >= 5) {
+      return res.status(429).json({
+        success: false,
+        error: 'Maximum OTP verification attempts exceeded. Please request a new OTP',
+      });
+    }
+
+    // Verify OTP
+    const inputHash = hashOTP(otp);
+    const isValid = crypto.timingSafeEqual(
+      Buffer.from(storedHash),
+      Buffer.from(inputHash)
+    );
+
+    if (!isValid) {
+      // Increment attempts
+      const newAttempts = attempts + 1;
+      await supabase
+        .from('brand_deals')
+        .update({
+          creator_otp_attempts: newAttempts,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', dealId);
+
+      // Log failed attempt
+      await logDealAction(dealId, 'CREATOR_OTP_FAILED_ATTEMPT', {
+        attempts: newAttempts,
+      });
+
+      return res.status(400).json({
+        success: false,
+        error: `Invalid OTP. ${5 - newAttempts} attempts remaining`,
+        attemptsRemaining: 5 - newAttempts,
+      });
+    }
+
+    // OTP is valid - mark as verified
+    const updateData: any = {
+      creator_otp_verified: true,
+      creator_otp_verified_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
+
+    const { error: updateError } = await supabase
+      .from('brand_deals')
+      .update(updateData)
+      .eq('id', dealId);
+
+    if (updateError) {
+      console.error('[OTP] Failed to update deal:', updateError);
+      return res.status(500).json({
+        success: false,
+        error: `Failed to verify OTP: ${updateError.message}`,
+      });
+    }
+
+    // Log successful verification
+    await logDealAction(dealId, 'CREATOR_OTP_VERIFIED', {
+      verifiedAt: updateData.creator_otp_verified_at,
+    });
+
+    console.log('[OTP] Creator OTP verified successfully for deal:', dealId);
+
+    return res.json({
+      success: true,
+      message: 'OTP verified successfully',
+      verifiedAt: updateData.creator_otp_verified_at,
+    });
+  } catch (error: any) {
+    console.error('[OTP] verify-creator error:', error);
+    return res.status(500).json({
+      success: false,
+      error: error.message || 'Internal server error',
     });
   }
 });

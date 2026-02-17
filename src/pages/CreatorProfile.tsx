@@ -14,6 +14,7 @@ import { getInitials } from '@/lib/utils/avatar';
 import { logger } from '@/lib/utils/logger';
 import { cn } from '@/lib/utils';
 import { fetchPincodeData, parseLocationString, formatLocationString } from '@/lib/utils/pincodeLookup';
+import { getApiBaseUrl } from '@/lib/utils/api';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -67,7 +68,7 @@ const ProfileSettings = () => {
       try {
         // Get current session (don't refresh unless needed - Supabase auto-refreshes)
         const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
-        
+
         if (sessionError || !sessionData.session) {
           console.error('[CreatorProfile] No session:', sessionError);
           setAnalyticsLoading(false);
@@ -75,7 +76,7 @@ const ProfileSettings = () => {
         }
 
         const response = await fetch(
-          `${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/collab-analytics/summary`,
+          `${getApiBaseUrl()}/api/collab-analytics/summary`,
           {
             headers: {
               'Authorization': `Bearer ${sessionData.session.access_token}`,
@@ -133,7 +134,7 @@ const ProfileSettings = () => {
 
   // Load user data from session (only on initial load)
   const [hasInitialized, setHasInitialized] = useState(false);
-  
+
   useEffect(() => {
     if (profile && user && !hasInitialized) {
       // Ensure phone starts with +91
@@ -144,17 +145,17 @@ const ProfileSettings = () => {
       } else if (!phoneValue) {
         phoneValue = '+91 ';
       }
-      
+
       // Parse existing location to extract address components
       const location = profile.location || '';
       const parsedLocation = parseLocationString(location);
-      
+
       console.log('[CreatorProfile] Initializing formData from profile:', {
         location,
         parsedLocation,
         profileLocation: profile.location
       });
-      
+
       setFormData({
         name: `${profile.first_name || ''} ${profile.last_name || ''}`.trim() || 'Creator',
         displayName: profile.instagram_handle?.replace('@', '') || user.email?.split('@')[0] || 'creator',
@@ -169,7 +170,7 @@ const ProfileSettings = () => {
         instagramHandle: profile.instagram_handle || '',
         username: profile.instagram_handle || profile.username || '' // Use Instagram handle as username
       });
-      
+
       setHasInitialized(true);
     }
   }, [profile, user, hasInitialized]);
@@ -193,22 +194,22 @@ const ProfileSettings = () => {
             state: pincodeData.state,
             district: pincodeData.district
           });
-          
+
           setFormData(prev => {
             // Ensure we use the city from API if available, otherwise keep existing
-            const newCity = pincodeData.city && pincodeData.city.trim() 
-              ? pincodeData.city.trim() 
+            const newCity = pincodeData.city && pincodeData.city.trim()
+              ? pincodeData.city.trim()
               : (prev.city || '');
             const newState = pincodeData.state && pincodeData.state.trim()
               ? pincodeData.state.trim()
               : (prev.state || '');
-            
+
             const updated = {
               ...prev,
               city: newCity,
               state: newState,
             };
-            
+
             console.log('[CreatorProfile] Updated formData:', {
               oldCity: prev.city,
               newCity: updated.city,
@@ -220,7 +221,7 @@ const ProfileSettings = () => {
               stateTrimmed: pincodeData.state?.trim(),
               fullFormData: updated
             });
-            
+
             // If city is still empty after update, log a warning
             if (!updated.city || !updated.city.trim()) {
               if (pincodeData.city && pincodeData.city.trim()) {
@@ -231,7 +232,7 @@ const ProfileSettings = () => {
             } else {
               console.log('[CreatorProfile] SUCCESS: City set to:', updated.city);
             }
-            
+
             return updated;
           });
           setPincodeError(null);
@@ -244,8 +245,8 @@ const ProfileSettings = () => {
       } finally {
         setIsLookingUpPincode(false);
       }
-    } else if (cleanPincode.length > 0 && cleanPincode.length < 6) {
-      // Clear city/state if pincode is incomplete
+    } else if (cleanPincode.length === 0) {
+      // Only clear city/state if pincode is completely removed
       setFormData(prev => ({ ...prev, city: '', state: '' }));
     }
   };
@@ -256,11 +257,11 @@ const ProfileSettings = () => {
     const totalEarnings = brandDeals
       .filter(deal => deal.status === 'Completed' && deal.payment_received_date)
       .reduce((sum, deal) => sum + (deal.deal_amount || 0), 0);
-    const activeDeals = brandDeals.filter(deal => 
+    const activeDeals = brandDeals.filter(deal =>
       deal.status !== 'Completed' && deal.status !== 'Drafting'
     ).length;
     const protectionScore = 85; // TODO: Calculate from content protection data
-      const streak = (partnerStats as any)?.streak_days ? Math.floor((partnerStats as any).streak_days / 7) : 0;
+    const streak = (partnerStats as any)?.streak_days ? Math.floor((partnerStats as any).streak_days / 7) : 0;
 
     return {
       totalDeals,
@@ -274,7 +275,7 @@ const ProfileSettings = () => {
   // Build platforms array from actual profile data
   const platforms = useMemo(() => {
     const platformList = [];
-    
+
     if (profile?.youtube_channel_id) {
       const followers = profile.youtube_subs || 0;
       platformList.push({
@@ -285,7 +286,7 @@ const ProfileSettings = () => {
         color: "bg-red-500"
       });
     }
-    
+
     if (profile?.instagram_handle) {
       const followers = profile.instagram_followers || 0;
       platformList.push({
@@ -296,7 +297,7 @@ const ProfileSettings = () => {
         color: "bg-pink-500"
       });
     }
-    
+
     if (profile?.twitter_handle) {
       const followers = profile.twitter_followers || 0;
       platformList.push({
@@ -307,7 +308,7 @@ const ProfileSettings = () => {
         color: "bg-blue-400"
       });
     }
-    
+
     if (profile?.tiktok_handle) {
       const followers = profile.tiktok_followers || 0;
       platformList.push({
@@ -318,7 +319,7 @@ const ProfileSettings = () => {
         color: "bg-black"
       });
     }
-    
+
     if (profile?.facebook_profile_url) {
       const followers = profile.facebook_followers || 0;
       platformList.push({
@@ -329,7 +330,7 @@ const ProfileSettings = () => {
         color: "bg-blue-600"
       });
     }
-    
+
     return platformList;
   }, [profile]);
 
@@ -341,7 +342,7 @@ const ProfileSettings = () => {
       .filter(deal => deal.status === 'Completed' && deal.payment_received_date)
       .reduce((sum, deal) => sum + (deal.deal_amount || 0), 0);
     const protectionScore = calculatedStats.protectionScore;
-    
+
     // First Deal achievement
     if (totalDeals >= 1) {
       const firstDeal = brandDeals
@@ -351,13 +352,13 @@ const ProfileSettings = () => {
           const dateB = b.payment_received_date ? new Date(b.payment_received_date).getTime() : 0;
           return dateA - dateB;
         })[0];
-      
-      const earnedDate = firstDeal?.payment_received_date 
+
+      const earnedDate = firstDeal?.payment_received_date
         ? new Date(firstDeal.payment_received_date).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
-        : profile?.updated_at 
+        : profile?.updated_at
           ? new Date(profile.updated_at).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
           : null;
-      
+
       achievementList.push({
         id: 1,
         title: "First Deal Monitored",
@@ -374,7 +375,7 @@ const ProfileSettings = () => {
         progress: 0
       });
     }
-    
+
     // 10 Deals achievement
     if (totalDeals >= 10) {
       const tenthDeal = brandDeals
@@ -384,11 +385,11 @@ const ProfileSettings = () => {
           const dateB = b.payment_received_date ? new Date(b.payment_received_date).getTime() : 0;
           return dateA - dateB;
         })[9];
-      
-      const earnedDate = tenthDeal?.payment_received_date 
+
+      const earnedDate = tenthDeal?.payment_received_date
         ? new Date(tenthDeal.payment_received_date).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
         : null;
-      
+
       achievementList.push({
         id: 2,
         title: "10 Deals Monitored",
@@ -405,13 +406,13 @@ const ProfileSettings = () => {
         progress: Math.min(100, Math.round((totalDeals / 10) * 100))
       });
     }
-    
+
     // ₹1M Under Watch achievement
     const oneMillion = 1000000;
     const totalUnderWatch = brandDeals
       .filter(deal => deal.status !== 'Completed' || !deal.payment_received_date)
       .reduce((sum, deal) => sum + (deal.deal_amount || 0), 0);
-    
+
     if (totalUnderWatch >= oneMillion) {
       achievementList.push({
         id: 3,
@@ -429,7 +430,7 @@ const ProfileSettings = () => {
         progress: Math.min(100, Math.round((totalUnderWatch / oneMillion) * 100))
       });
     }
-    
+
     return achievementList;
   }, [brandDeals, calculatedStats.protectionScore, profile?.updated_at]);
 
@@ -483,24 +484,24 @@ const ProfileSettings = () => {
     // Check if we have address components or the combined location
     const hasAddressComponents = formData.addressLine.trim() || formData.city.trim() || formData.state.trim() || formData.pincode.trim();
     const hasLocation = formData.location.trim();
-    
+
     if (!hasAddressComponents && !hasLocation) {
       toast.error('Please enter your address (required for generating legal contracts)');
       return false;
     }
-    
+
     // Validate that we have at least city and state (minimum requirement)
     if (!formData.city.trim() && !formData.state.trim() && !hasLocation) {
       toast.error('Please enter at least city and state, or use pincode to auto-fill');
       return false;
     }
-    
+
     // Validate city specifically (required for contracts)
     if (!formData.city.trim() && !hasLocation) {
       toast.error('City is required. Enter pincode to auto-fill or enter manually.');
       return false;
     }
-    
+
     // Validate state specifically (required for contracts)
     if (!formData.state.trim() && !hasLocation) {
       toast.error('State is required. Enter pincode to auto-fill or enter manually.');
@@ -512,7 +513,7 @@ const ProfileSettings = () => {
   // Handle save
   const handleSave = async () => {
     if (!editMode || !profile) return;
-    
+
     if (!validateForm()) {
       return;
     }
@@ -535,10 +536,10 @@ const ProfileSettings = () => {
         // If user typed a number without +91, add it
         phoneValue = '+91 ' + phoneValue.replace(/^\+91\s*/, '');
       }
-      
+
       // Build location string from address components (always use components if available)
       let locationValue = '';
-      
+
       // Clean addressLine to remove any city/state/pincode that might have been added previously
       let cleanAddressLine = formData.addressLine.trim();
       if (cleanAddressLine && (formData.city || formData.state || formData.pincode)) {
@@ -566,7 +567,7 @@ const ProfileSettings = () => {
           .replace(/,\s*$/g, '') // Final trailing comma removal
           .trim();
       }
-      
+
       console.log('[CreatorProfile] Building location from formData:', {
         originalAddressLine: formData.addressLine,
         cleanAddressLine,
@@ -575,7 +576,7 @@ const ProfileSettings = () => {
         pincode: formData.pincode,
         hasComponents: !!(cleanAddressLine || formData.city || formData.state || formData.pincode)
       });
-      
+
       if (cleanAddressLine || formData.city || formData.state || formData.pincode) {
         locationValue = formatLocationString(
           cleanAddressLine,
@@ -589,7 +590,7 @@ const ProfileSettings = () => {
         locationValue = formData.location.trim();
         console.log('[CreatorProfile] Using existing location:', locationValue);
       }
-      
+
       // Validate that we have city and state before saving (both are required)
       if (!formData.city || !formData.city.trim()) {
         toast.error('City is required. Please enter pincode to auto-fill or enter manually.');
@@ -601,13 +602,13 @@ const ProfileSettings = () => {
         setIsSaving(false);
         return;
       }
-      
+
       // CRITICAL: Always rebuild locationValue to ensure city and state are included
       // This ensures the saved location always has city and state, even if addressLine is empty
       const finalCity = formData.city.trim();
       const finalState = formData.state.trim();
       const finalPincode = formData.pincode.trim();
-      
+
       // Rebuild locationValue with guaranteed city and state
       locationValue = formatLocationString(
         cleanAddressLine,
@@ -615,7 +616,7 @@ const ProfileSettings = () => {
         finalState,
         finalPincode
       );
-      
+
       console.log('[CreatorProfile] Final locationValue (guaranteed city/state):', {
         locationValue,
         city: finalCity,
@@ -625,7 +626,7 @@ const ProfileSettings = () => {
         includesCity: locationValue.includes(finalCity),
         includesState: locationValue.includes(finalState)
       });
-      
+
       // Double-check that city and state are in the location string
       if (!locationValue.includes(finalCity) || !locationValue.includes(finalState)) {
         console.error('[CreatorProfile] ERROR: City or state missing from locationValue!', {
@@ -637,14 +638,14 @@ const ProfileSettings = () => {
         setIsSaving(false);
         return;
       }
-      
+
       // Ensure locationValue is not empty before saving
       if (!locationValue || !locationValue.trim()) {
         toast.error('Address is required. Please enter your address with city and state.');
         setIsSaving(false);
         return;
       }
-      
+
       const updatePayload: any = {
         id: profile.id,
         first_name: firstName,
@@ -653,14 +654,14 @@ const ProfileSettings = () => {
         // Save trimmed value
         location: locationValue.trim(),
       };
-      
+
       console.log('[CreatorProfile] Saving profile with location:', {
         locationValue: updatePayload.location,
         locationLength: updatePayload.location.length,
         includesCity: updatePayload.location.includes(finalCity),
         includesState: updatePayload.location.includes(finalState),
       });
-      
+
       // Only include phone if it has a value (null is valid to clear)
       if (phoneValue !== null) {
         updatePayload.phone = phoneValue;
@@ -668,7 +669,7 @@ const ProfileSettings = () => {
         // Explicitly set to null to clear the field
         updatePayload.phone = null;
       }
-      
+
       // Only include optional fields if they're provided and likely exist
       if (profile.avatar_url) {
         updatePayload.avatar_url = profile.avatar_url;
@@ -676,7 +677,7 @@ const ProfileSettings = () => {
       if (formData.bio) {
         updatePayload.bio = formData.bio;
       }
-      
+
       // Handle Instagram handle - normalize and save
       // NOTE: Instagram handle is NEVER used for username generation
       // Username is only auto-generated from first_name + last_name (or email) via database trigger
@@ -691,7 +692,7 @@ const ProfileSettings = () => {
       } else {
         updatePayload.instagram_handle = null;
       }
-      
+
       // Handle username - sync with Instagram handle
       // Username is used in collaboration link URL: /{username} (Instagram-style)
       // Use Instagram handle as username (normalized)
@@ -703,7 +704,7 @@ const ProfileSettings = () => {
           .toLowerCase()
           .replace(/[^a-z0-9_-]/g, '')
           .trim();
-        
+
         if (normalizedUsername.length >= 3) {
           updatePayload.username = normalizedUsername;
         } else {
@@ -712,15 +713,15 @@ const ProfileSettings = () => {
           return;
         }
       }
-      
-      logger.info('Update payload', { 
-        updatePayload, 
+
+      logger.info('Update payload', {
+        updatePayload,
         locationValue: updatePayload.location,
         locationLength: updatePayload.location?.length || 0,
         formDataLocation: formData.location,
         instagramHandle: updatePayload.instagram_handle
       });
-      
+
       await updateProfileMutation.mutateAsync(updatePayload);
 
       // Update formData immediately with saved values to ensure UI reflects the change
@@ -734,7 +735,7 @@ const ProfileSettings = () => {
         state: savedParsedLocation.state || finalState || prev.state, // Ensure state is preserved
         pincode: savedParsedLocation.pincode || finalPincode || prev.pincode
       }));
-      
+
       console.log('[CreatorProfile] Updated formData after save:', {
         locationValue,
         parsedLocation: savedParsedLocation,
@@ -742,17 +743,17 @@ const ProfileSettings = () => {
         finalState,
         finalPincode
       });
-      
+
       // Refetch profile to get updated username (if it was auto-generated by database trigger)
       await refetchProfile();
-      
+
       // Small delay to ensure profile state updates before showing success
       await new Promise(resolve => setTimeout(resolve, 100));
-      
+
       toast.success('Profile updated successfully!');
       setEditMode(false);
-      logger.success('Profile updated', { 
-        profileId: profile.id, 
+      logger.success('Profile updated', {
+        profileId: profile.id,
         location: updatePayload.location,
         locationValue: locationValue
       });
@@ -771,7 +772,7 @@ const ProfileSettings = () => {
       if (navigator.vibrate) {
         navigator.vibrate([50, 30, 50]);
       }
-      
+
       // Analytics tracking
       if (typeof window !== 'undefined' && (window as any).gtag) {
         (window as any).gtag('event', 'logout', {
@@ -780,7 +781,7 @@ const ProfileSettings = () => {
           method: 'profile_settings'
         });
       }
-      
+
       logger.info('User logging out');
       // Close dialog first
       setShowLogoutDialog(false);
@@ -825,9 +826,9 @@ const ProfileSettings = () => {
           >
             <ArrowLeft className="w-6 h-6" />
           </button>
-          
+
           <div className="text-lg font-semibold">Profile & Settings</div>
-          
+
           <button
             type="button"
             onClick={() => {
@@ -915,7 +916,7 @@ const ProfileSettings = () => {
             <div className="relative flex-shrink-0">
               {profile?.id ? (
                 <div className="relative">
-                  <div 
+                  <div
                     className="w-20 h-20 sm:w-16 sm:h-16 rounded-full bg-purple-600 flex items-center justify-center text-2xl sm:text-xl font-bold overflow-hidden cursor-pointer hover:opacity-90 transition-opacity"
                     onClick={() => {
                       const fileInput = document.createElement('input');
@@ -924,19 +925,19 @@ const ProfileSettings = () => {
                       fileInput.onchange = async (e: any) => {
                         const file = e.target.files?.[0];
                         if (!file) return;
-                        
+
                         // Validate file type
                         if (!file.type.startsWith('image/')) {
                           toast.error('Please select an image file');
                           return;
                         }
-                        
+
                         // Validate file size (max 5MB)
                         if (file.size > 5 * 1024 * 1024) {
                           toast.error('Image size must be less than 5MB');
                           return;
                         }
-                        
+
                         try {
                           // Upload to Supabase Storage
                           const fileExt = file.name.split('.').pop();
@@ -947,24 +948,24 @@ const ProfileSettings = () => {
                               cacheControl: '3600',
                               upsert: true,
                             });
-                          
+
                           if (uploadError) throw uploadError;
-                          
+
                           // Get public URL
                           const { data: { publicUrl } } = supabase.storage
                             .from('creator-assets')
                             .getPublicUrl(fileName);
-                          
+
                           // Update profile
                           await updateProfileMutation.mutateAsync({
                             id: profile.id,
                             avatar_url: publicUrl,
                           });
-                          
+
                           if (refetchProfile) {
                             await refetchProfile();
                           }
-                          
+
                           toast.success('Profile photo updated!');
                         } catch (error: any) {
                           console.error('Error uploading avatar:', error);
@@ -975,8 +976,8 @@ const ProfileSettings = () => {
                     }}
                   >
                     {profile.avatar_url ? (
-                      <img 
-                        src={profile.avatar_url} 
+                      <img
+                        src={profile.avatar_url}
                         alt={userData.name}
                         className="w-full h-full object-cover"
                       />
@@ -999,7 +1000,7 @@ const ProfileSettings = () => {
                 </div>
               )}
             </div>
-            
+
             {/* Name and Role - Centered on mobile; capitalize for display (e.g. rahul -> Rahul) */}
             <div className="flex-1 min-w-0 text-center sm:text-left w-full sm:w-auto">
               <h1 className="text-xl sm:text-lg font-semibold">
@@ -1215,8 +1216,8 @@ const ProfileSettings = () => {
                           .replace(/\s/g, '')
                           .toLowerCase();
                         // Sync username with Instagram handle
-                        setFormData(prev => ({ 
-                          ...prev, 
+                        setFormData(prev => ({
+                          ...prev,
                           instagramHandle: value,
                           username: value // Use same value for collab link username
                         }));
@@ -1250,15 +1251,13 @@ const ProfileSettings = () => {
                   return (
                     <div
                       key={achievement.id}
-                      className={`p-3 rounded-lg border ${
-                        achievement.earned
-                          ? 'bg-yellow-500/10 border-yellow-500/25'
-                          : 'bg-white/8 border-white/15'
-                      }`}
+                      className={`p-3 rounded-lg border ${achievement.earned
+                        ? 'bg-yellow-500/10 border-yellow-500/25'
+                        : 'bg-white/8 border-white/15'
+                        }`}
                     >
-                      <div className={`w-10 h-10 rounded-lg ${
-                        achievement.earned ? 'bg-yellow-500/20' : 'bg-white/10'
-                      } flex items-center justify-center mb-2`}>
+                      <div className={`w-10 h-10 rounded-lg ${achievement.earned ? 'bg-yellow-500/20' : 'bg-white/10'
+                        } flex items-center justify-center mb-2`}>
                         <Icon className={`w-5 h-5 ${achievement.earned ? 'text-yellow-400' : 'text-white/60'}`} />
                       </div>
                       <div className="font-medium text-sm mb-1">{achievement.title}</div>
@@ -1475,7 +1474,7 @@ const ProfileSettings = () => {
             {/* Logout Button - At Bottom of Profile Section */}
             <div className="mt-6 mb-4">
               <div className="bg-red-500/5 rounded-lg p-3 border border-red-500/20">
-                <button 
+                <button
                   onClick={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
@@ -1519,7 +1518,7 @@ const ProfileSettings = () => {
             <NotificationPreferences />
 
             {/* Subscription - Utility Emphasis */}
-            <div className="bg-white/5 rounded-lg p-3.5 border border-white/10">
+            <div className="bg-white/8 rounded-xl p-3.5 border border-white/15">
               <h2 className="font-semibold text-base mb-3 flex items-center gap-2">
                 <CreditCard className="w-4 h-4" />
                 Subscription
@@ -1537,23 +1536,23 @@ const ProfileSettings = () => {
                 Next billing: {userData.subscription.nextBilling}
               </div>
               <div className="flex gap-2">
-                <button className="flex-1 bg-white/10 hover:bg-white/15 font-medium py-2 rounded-lg transition-colors text-sm">
+                <button className="flex-1 bg-white/12 hover:bg-white/18 font-medium py-2 rounded-lg transition-colors text-sm">
                   Manage Plan
                 </button>
-                <button className="flex-1 bg-purple-600 hover:bg-purple-700 font-medium py-2 rounded-lg transition-colors text-sm">
+                <button className="flex-1 bg-gradient-to-r from-[#8B5CF6] to-[#6366F1] hover:from-[#7C3AED] hover:to-[#4F46E5] font-semibold py-2 rounded-lg transition-colors text-sm shadow-[0_2px_12px_rgba(139,92,246,0.35)]">
                   Upgrade
                 </button>
               </div>
             </div>
 
             {/* Security & Privacy - Utility Emphasis */}
-            <div className="bg-white/5 rounded-lg p-3.5 border border-white/10">
+            <div className="bg-white/8 rounded-xl p-3.5 border border-white/15">
               <h2 className="font-semibold text-base mb-3 flex items-center gap-2">
                 <Lock className="w-4 h-4 text-white/60" />
                 Security & Privacy
               </h2>
               <div className="space-y-2">
-                <button className="w-full flex items-center justify-between p-2.5 bg-white/5 rounded-lg border border-white/10 hover:bg-white/10 transition-colors">
+                <button className="w-full flex items-center justify-between p-2.5 bg-white/8 rounded-lg border border-white/15 hover:bg-white/12 transition-colors">
                   <div className="flex items-center gap-2.5">
                     <Lock className="w-4 h-4 text-white/50" />
                     <div className="text-left">
@@ -1564,7 +1563,7 @@ const ProfileSettings = () => {
                   <ChevronRight className="w-4 h-4 text-white/50" />
                 </button>
 
-                <button className="w-full flex items-center justify-between p-2.5 bg-white/5 rounded-lg border border-white/10 hover:bg-white/10 transition-colors">
+                <button className="w-full flex items-center justify-between p-2.5 bg-white/8 rounded-lg border border-white/15 hover:bg-white/12 transition-colors">
                   <div className="flex items-center gap-2.5">
                     <Shield className="w-4 h-4 text-white/50" />
                     <div className="text-left">
@@ -1575,7 +1574,7 @@ const ProfileSettings = () => {
                   <ChevronRight className="w-4 h-4 text-white/50" />
                 </button>
 
-                <button className="w-full flex items-center justify-between p-2.5 bg-white/5 rounded-lg border border-white/10 hover:bg-white/10 transition-colors">
+                <button className="w-full flex items-center justify-between p-2.5 bg-white/8 rounded-lg border border-white/15 hover:bg-white/12 transition-colors">
                   <div className="flex items-center gap-2.5">
                     <Download className="w-4 h-4 text-white/50" />
                     <div className="text-left">
@@ -1586,7 +1585,7 @@ const ProfileSettings = () => {
                   <ChevronRight className="w-4 h-4 text-white/50" />
                 </button>
 
-                <button className="w-full flex items-center justify-between p-2.5 bg-white/5 rounded-lg border border-white/10 hover:bg-red-500/10 transition-colors">
+                <button className="w-full flex items-center justify-between p-2.5 bg-white/8 rounded-lg border border-white/15 hover:bg-red-500/10 transition-colors">
                   <div className="flex items-center gap-2.5">
                     <Trash2 className="w-4 h-4 text-red-400/70" />
                     <div className="text-left">
@@ -1604,11 +1603,11 @@ const ProfileSettings = () => {
         {/* Support Section */}
         {activeSection === 'support' && (
           <div className="space-y-3">
-            <div className="bg-white/5 rounded-xl p-4 border border-white/10">
+            <div className="bg-white/8 rounded-xl p-4 border border-white/15">
               <h2 className="font-semibold text-base mb-3">Help & Support</h2>
               <div className="space-y-2">
                 {/* Contact Support - Primary */}
-                <button className="w-full flex items-center justify-between min-h-[44px] p-2 bg-gradient-to-r from-purple-600/20 to-indigo-600/20 rounded-lg border border-purple-500/30 hover:from-purple-600/30 hover:to-indigo-600/30 transition-all backdrop-blur-sm">
+                <button className="w-full flex items-center justify-between min-h-[44px] p-2 bg-gradient-to-r from-purple-600/25 to-indigo-600/20 rounded-lg border border-purple-400/40 hover:from-purple-600/35 hover:to-indigo-600/30 transition-all backdrop-blur-sm">
                   <div className="flex items-center gap-2.5">
                     <MessageCircle className="w-4 h-4 text-purple-300" />
                     <div className="text-left">
@@ -1620,7 +1619,7 @@ const ProfileSettings = () => {
                 </button>
 
                 {/* Help Center - Secondary */}
-                <button className="w-full flex items-center justify-between min-h-[44px] p-2 bg-white/5 rounded-lg border border-white/10 hover:bg-white/10 transition-colors">
+                <button className="w-full flex items-center justify-between min-h-[44px] p-2 bg-white/8 rounded-lg border border-white/15 hover:bg-white/12 transition-colors">
                   <div className="flex items-center gap-2.5">
                     <HelpCircle className="w-3.5 h-3.5 text-white/50" />
                     <div className="text-left">
@@ -1632,7 +1631,7 @@ const ProfileSettings = () => {
                 </button>
 
                 {/* Restart Tutorial - Secondary */}
-                <button 
+                <button
                   onClick={() => {
                     if (profile?.id) {
                       // Clear tutorial state
@@ -1645,7 +1644,7 @@ const ProfileSettings = () => {
                       }, 1000);
                     }
                   }}
-                  className="w-full flex items-center justify-between min-h-[44px] p-2 bg-white/5 rounded-lg border border-white/10 hover:bg-white/10 transition-colors"
+                  className="w-full flex items-center justify-between min-h-[44px] p-2 bg-white/8 rounded-lg border border-white/15 hover:bg-white/12 transition-colors"
                 >
                   <div className="flex items-center gap-2.5">
                     <Sparkles className="w-3.5 h-3.5 text-white/50" />
@@ -1660,10 +1659,10 @@ const ProfileSettings = () => {
             </div>
 
             {/* Legal Subsection - Muted */}
-            <div className="bg-white/3 rounded-lg p-3 border border-white/8">
+            <div className="bg-white/5 rounded-lg p-3 border border-white/10">
               <h3 className="text-xs font-medium text-white/50 mb-2 uppercase tracking-wide">Legal</h3>
               <div className="space-y-1.5">
-                <button className="w-full flex items-center justify-between min-h-[44px] p-2 bg-white/5 rounded-lg border border-white/10 hover:bg-white/10 transition-colors">
+                <button className="w-full flex items-center justify-between min-h-[44px] p-2 bg-white/8 rounded-lg border border-white/15 hover:bg-white/12 transition-colors">
                   <div className="flex items-center gap-2.5">
                     <FileText className="w-3.5 h-3.5 text-white/40" />
                     <div className="text-left">
@@ -1674,7 +1673,7 @@ const ProfileSettings = () => {
                   <ChevronRight className="w-4 h-4 text-white/40" />
                 </button>
 
-                <button className="w-full flex items-center justify-between min-h-[44px] p-2 bg-white/5 rounded-lg border border-white/10 hover:bg-white/10 transition-colors">
+                <button className="w-full flex items-center justify-between min-h-[44px] p-2 bg-white/8 rounded-lg border border-white/15 hover:bg-white/12 transition-colors">
                   <div className="flex items-center gap-2.5">
                     <Shield className="w-3.5 h-3.5 text-white/40" />
                     <div className="text-left">
@@ -1691,7 +1690,7 @@ const ProfileSettings = () => {
             <div className="border-t border-white/10 my-4"></div>
 
             {/* App Info - Muted and Centered */}
-            <div className="bg-white/3 rounded-lg p-3 border border-white/8">
+            <div className="bg-white/5 rounded-lg p-3 border border-white/10">
               <div className="text-center text-sm text-white/50">
                 <div className="font-medium mb-0.5">CreatorArmour</div>
                 <div className="text-xs mb-1">Version 1.0.0</div>
@@ -1702,7 +1701,7 @@ const ProfileSettings = () => {
             {/* Logout Button - At Bottom */}
             <div className="mt-6 mb-4">
               <div className="bg-red-500/5 rounded-lg p-3 border border-red-500/20">
-                <button 
+                <button
                   onClick={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
@@ -1757,7 +1756,7 @@ const ProfileSettings = () => {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter className="gap-2 sm:gap-0">
-            <AlertDialogCancel 
+            <AlertDialogCancel
               onClick={() => {
                 if (navigator.vibrate) {
                   navigator.vibrate(30);

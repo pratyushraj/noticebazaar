@@ -13,6 +13,7 @@ import { toast } from 'sonner';
 import { trackEvent } from '@/lib/utils/analytics';
 import { SEOHead } from '@/components/seo/SEOHead';
 import { ArticleSchema } from '@/components/seo/SchemaMarkup';
+import { getApiBaseUrl } from '@/lib/utils/api';
 
 // Person Schema Component (for structured data)
 const PersonSchema = ({ schema }: { schema: any }) => {
@@ -88,7 +89,7 @@ const CollabLinkLanding = () => {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  
+
   // Check if username is reserved (redirect to 404 if so)
   useEffect(() => {
     if (username && RESERVED_USERNAMES.includes(username.toLowerCase())) {
@@ -196,16 +197,8 @@ const CollabLinkLanding = () => {
     }
   }, []);
 
-  // Helper to get API base URL (same logic as other pages)
-  const getApiBaseUrl = (): string => {
-    if (typeof window === 'undefined') return 'http://localhost:3001';
-    const envUrl = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL;
-    if (envUrl) return envUrl.replace(/\/$/, '');
-    const origin = window.location.origin;
-    if (origin.includes('creatorarmour.com')) return 'https://api.creatorarmour.com';
-    if (origin.includes('noticebazaar.com')) return 'https://api.noticebazaar.com';
-    return 'http://localhost:3001';
-  };
+  // No longer need local getApiBaseUrl helper as it's imported from @/lib/utils/api
+
 
   // Fetch company name and address from GST by GSTIN
   const handleGstLookup = async () => {
@@ -321,7 +314,7 @@ const CollabLinkLanding = () => {
       const normalizedUsername = decodeURIComponent(username).trim();
       const apiBaseUrl = getApiBaseUrl();
       const apiUrl = `${apiBaseUrl}/api/collab/${encodeURIComponent(normalizedUsername)}`;
-      
+
       console.log('[CollabLinkLanding] Fetching creator:', {
         originalUsername: username,
         normalizedUsername,
@@ -332,7 +325,7 @@ const CollabLinkLanding = () => {
 
       try {
         const response = await fetch(apiUrl, { signal: controller.signal });
-        
+
         if (!response.ok) {
           const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
           console.error('[CollabLinkLanding] API error:', {
@@ -342,7 +335,7 @@ const CollabLinkLanding = () => {
             username: normalizedUsername,
             apiUrl,
           });
-          
+
           if (response.status === 404) {
             // Don't redirect immediately - show error state instead
             setLoading(false);
@@ -350,7 +343,7 @@ const CollabLinkLanding = () => {
             toast.error(`Creator "${normalizedUsername}" not found. Please check the username and try again.`);
             return;
           }
-          
+
           // For other errors, show error but don't redirect
           const errorMessage = errorData.error || 'Failed to load creator profile';
           console.error('[CollabLinkLanding] Error:', errorMessage);
@@ -359,7 +352,7 @@ const CollabLinkLanding = () => {
           toast.error(errorMessage);
           return;
         }
-        
+
         const data = await response.json();
 
         if (data.success && data.creator) {
@@ -392,7 +385,7 @@ const CollabLinkLanding = () => {
             if (!trackResponse.ok) {
               const trackErrorData = await trackResponse.json().catch(() => ({ error: 'Unknown error' }));
               console.error('[CollabLinkLanding] View tracking failed:', trackResponse.status, trackErrorData);
-        } else {
+            } else {
               const trackData = await trackResponse.json().catch(() => null);
               if (import.meta.env.DEV) {
                 console.log('[CollabLinkLanding] View tracked successfully:', trackData);
@@ -704,16 +697,20 @@ const CollabLinkLanding = () => {
   const metaTitle = `Collaborate with ${creatorName} | Official Brand Collaboration Link`;
   const platformNames = creator.platforms.map(p => p.name).join(', ');
   const followerCount = creator.platforms.reduce((sum, p) => sum + (p.followers || 0), 0);
-  const followerText = followerCount > 0 
-    ? `with ${followerCount >= 1000 ? `${(followerCount / 1000).toFixed(1)}K` : followerCount} followers` 
+  const followerText = followerCount > 0
+    ? `with ${followerCount >= 1000 ? `${(followerCount / 1000).toFixed(1)}K` : followerCount} followers`
     : '';
   const metaDescription = `Collaborate with ${creatorName}${creator.category ? `, ${creator.category} creator` : ''} ${followerText ? followerText : ''} on ${platformNames || 'social media'}. Submit your request here — contracts and payments are protected by CreatorArmour. ${creator.bio ? creator.bio.substring(0, 60) : ''}`.substring(0, 160);
-  
+
   // Use clean URL for SEO (no hash)
   const canonicalUrl = `https://creatorarmour.com/collab/${creator.username}`;
-  const pageImage = creator.platforms.length > 0 
+  const pageImage = creator.platforms.length > 0
     ? `https://creatorarmour.com/og-creator-${creator.username}.png`
     : 'https://creatorarmour.com/og-preview.png';
+
+  const surfaceClass = 'bg-white/[0.08] backdrop-blur-xl border border-white/15 shadow-[0_10px_30px_rgba(9,3,33,0.28)]';
+  const inputClass = 'bg-white/[0.07] border-white/20 text-white placeholder:text-white/55 focus-visible:ring-2 focus-visible:ring-fuchsia-400/40 focus-visible:border-fuchsia-300/50';
+  const helperTextClass = 'text-xs text-violet-100/70';
 
   return (
     <>
@@ -773,876 +770,875 @@ const CollabLinkLanding = () => {
         }).filter(Boolean),
       }} />
 
-    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 text-white">
-      <div className="container mx-auto px-4 py-8 max-w-4xl">
-        {/* Header - Creator Profile Card */}
-        <Card className="bg-white/10 backdrop-blur-md border-white/20 mb-6">
-          <CardContent className="p-6">
-            <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
-              <div className="flex-1">
-                {/* Creator Identity Block - Instagram First */}
-                <div className="mb-4">
-                  <h1 className="text-3xl font-bold text-white mb-3">{creator.name}</h1>
-                  {creator.platforms.some(p => p.name.toLowerCase() === 'instagram' && p.handle) ? (
-                    <div className="flex items-center gap-3 mb-3">
-                      <div className="flex items-center gap-2 bg-white/10 px-3 py-1.5 rounded-lg border border-white/20">
-                        <Instagram className="h-5 w-5 text-white" />
-                        <span className="font-medium text-white">
-                          @{creator.platforms.find(p => p.name.toLowerCase() === 'instagram')?.handle.replace('@', '')}
-                        </span>
-                        <CheckCircle2 className="h-4 w-4 text-green-400" />
-                      </div>
-                      <a
-                        href={`https://instagram.com/${creator.platforms.find(p => p.name.toLowerCase() === 'instagram')?.handle.replace('@', '')}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-purple-300 hover:text-white transition-colors"
-                      >
-                        <ExternalLink className="h-4 w-4" />
-                      </a>
-                    </div>
-                  ) : (
-                    <div className="flex items-center gap-2 text-purple-300/70 mb-3">
-                      <Instagram className="h-4 w-4" />
-                      <span className="text-sm">Instagram not verified yet</span>
-                    </div>
-                  )}
-                  <Badge className="bg-gradient-to-r from-purple-600 to-pink-600 text-white border-0">
-                    <CheckCircle2 className="h-3 w-3 mr-1" />
-                    Verified by Creator Armour
-                  </Badge>
-                </div>
-                {creator.category && (
-                  <Badge variant="outline" className="text-purple-200 border-purple-400/50 mb-3">
-                    {creator.category}
-                  </Badge>
-                )}
-                {creator.platforms.length > 0 && (
-                  <div className="flex flex-wrap gap-3 mt-3">
-                    {creator.platforms.map((platform, idx) => (
-                      <div key={idx} className="flex items-center gap-2 text-sm text-purple-200">
-                        {getPlatformIcon(platform.name)}
-                        <span>{platform.name}</span>
-                        {platform.followers && (
-                          <span className="text-purple-300">
-                            {platform.followers >= 1000
-                              ? `${(platform.followers / 1000).toFixed(1)}K`
-                              : platform.followers}
+      <div className="min-h-screen bg-gradient-to-br from-violet-950 via-purple-900 to-indigo-950 text-white">
+        <div className="container mx-auto px-4 py-8 max-w-4xl relative">
+          {/* Header - Creator Profile Card */}
+          <Card className={`${surfaceClass} mb-6`}>
+            <CardContent className="p-6">
+              <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
+                <div className="flex-1">
+                  {/* Creator Identity Block - Instagram First */}
+                  <div className="mb-4">
+                    <h1 className="text-3xl font-bold text-white mb-3">{creator.name}</h1>
+                    {creator.platforms.some(p => p.name.toLowerCase() === 'instagram' && p.handle) ? (
+                      <div className="flex items-center gap-3 mb-3">
+                        <div className="flex items-center gap-2 bg-white/[0.11] px-3 py-1.5 rounded-lg border border-white/25">
+                          <Instagram className="h-5 w-5 text-white" />
+                          <span className="font-medium text-white">
+                            @{creator.platforms.find(p => p.name.toLowerCase() === 'instagram')?.handle.replace('@', '')}
                           </span>
-                        )}
+                          <CheckCircle2 className="h-4 w-4 text-green-400" />
+                        </div>
+                        <a
+                          href={`https://instagram.com/${creator.platforms.find(p => p.name.toLowerCase() === 'instagram')?.handle.replace('@', '')}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        className="text-violet-200 hover:text-white transition-colors"
+                        >
+                          <ExternalLink className="h-4 w-4" />
+                        </a>
                       </div>
-                    ))}
+                    ) : (
+                      <div className="flex items-center gap-2 text-violet-200/70 mb-3">
+                        <Instagram className="h-4 w-4" />
+                        <span className="text-sm">Instagram not verified yet</span>
+                      </div>
+                    )}
+                    <Badge className="bg-gradient-to-r from-purple-600 to-pink-600 text-white border-0">
+                      <CheckCircle2 className="h-3 w-3 mr-1" />
+                      Verified by Creator Armour
+                    </Badge>
                   </div>
-                )}
-                {creator.bio && (
-                  <p className="text-purple-200 mt-3">{creator.bio}</p>
-                )}
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* How it works — for brands (SEO + trust) */}
-        <div className="mb-8 rounded-xl bg-white/5 backdrop-blur-md border border-white/10 p-6" role="region" aria-label="How it works">
-          <h2 className="text-xl font-semibold text-white mb-4">How it works</h2>
-          <ol className="space-y-3 text-purple-200">
-            <li className="flex items-start gap-3">
-              <span className="flex-shrink-0 w-6 h-6 rounded-full bg-purple-500/30 border border-purple-400/50 flex items-center justify-center text-white text-sm font-semibold">1</span>
-              <span><strong className="text-white">Fill the form below</strong> with your campaign details, budget, and deliverables.</span>
-            </li>
-            <li className="flex items-start gap-3">
-              <span className="flex-shrink-0 w-6 h-6 rounded-full bg-purple-500/30 border border-purple-400/50 flex items-center justify-center text-white text-sm font-semibold">2</span>
-              <span><strong className="text-white">The creator reviews</strong> your request and can accept, counter, or decline — all in one place.</span>
-            </li>
-            <li className="flex items-start gap-3">
-              <span className="flex-shrink-0 w-6 h-6 rounded-full bg-purple-500/30 border border-purple-400/50 flex items-center justify-center text-white text-sm font-semibold">3</span>
-              <span><strong className="text-white">Contract & payment</strong> are handled securely by Creator Armour. No DMs, no confusion.</span>
-            </li>
-          </ol>
-        </div>
-
-        {/* SEO-Friendly Content Section - Indexable */}
-        <div className="mb-8 space-y-4">
-          {/* Creator Bio & Platforms - Indexable Content */}
-          <div className="bg-white/5 backdrop-blur-md rounded-xl p-6 border border-white/10">
-            {creator.bio && (
-              <p className="text-purple-200 leading-relaxed mb-4">
-                {creator.bio}
-              </p>
-            )}
-            
-            {creator.platforms.length > 0 && (
-              <div className="space-y-3">
-                <h2 className="text-xl font-semibold text-white mb-3">
-                  Active on {creator.platforms.length > 1 ? 'Platforms' : 'Platform'}
-                </h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {creator.platforms.map((platform, idx) => {
-                    const isInstagram = platform.name.toLowerCase() === 'instagram';
-                    return (
-                      <div key={idx} className="flex items-center gap-3 text-purple-200">
-                        {getPlatformIcon(platform.name)}
-                        <div className="flex-1">
-                          <p className="font-medium text-white">{platform.name}</p>
-                          {isInstagram && platform.handle ? (
-                            <a
-                              href={`https://instagram.com/${platform.handle.replace('@', '')}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-sm text-purple-300 hover:text-white transition-colors flex items-center gap-1"
-                            >
-                              @{platform.handle.replace('@', '')}
-                              <ExternalLink className="h-3 w-3 opacity-60" />
-                            </a>
-                          ) : (
-                            <p className="text-sm text-purple-300">
-                              {platform.handle}
-                            </p>
-                          )}
+                  {creator.category && (
+                    <Badge variant="outline" className="text-violet-100 border-violet-300/40 mb-3">
+                      {creator.category}
+                    </Badge>
+                  )}
+                  {creator.platforms.length > 0 && (
+                    <div className="flex flex-wrap gap-3 mt-3">
+                      {creator.platforms.map((platform, idx) => (
+                        <div key={idx} className="flex items-center gap-2 text-sm text-violet-100/85">
+                          {getPlatformIcon(platform.name)}
+                          <span>{platform.name}</span>
                           {platform.followers && (
-                            <p className="text-xs text-purple-400 mt-1">
+                            <span className="text-purple-300">
                               {platform.followers >= 1000
-                                ? `${(platform.followers / 1000).toFixed(1)}K followers`
-                                : `${platform.followers} followers`}
-                            </p>
+                                ? `${(platform.followers / 1000).toFixed(1)}K`
+                                : platform.followers}
+                            </span>
                           )}
                         </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
-            {/* Open to collabs + niches + media kit (creator readiness for brands) */}
-            {(creator.open_to_collabs !== false || (creator.content_niches && creator.content_niches.length > 0) || creator.media_kit_url) && (
-              <div className="mt-6 pt-6 border-t border-white/10 space-y-3">
-                {creator.open_to_collabs !== false && (
-                  <p className="text-sm text-green-300 font-medium flex items-center gap-2">
-                    <CheckCircle2 className="h-4 w-4 shrink-0" />
-                    Open to collabs
-                  </p>
-                )}
-                {creator.content_niches && creator.content_niches.length > 0 && (
-                  <div>
-                    <p className="text-xs text-purple-400 mb-1">Content niches</p>
-                    <div className="flex flex-wrap gap-2">
-                      {creator.content_niches.map((niche, i) => (
-                        <Badge key={i} variant="secondary" className="bg-white/10 text-purple-200 border-white/20">
-                          {niche}
-                        </Badge>
                       ))}
                     </div>
-                  </div>
-                )}
-                {creator.media_kit_url && (
-                  <div>
-                    <a
-                      href={creator.media_kit_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-sm text-purple-200 hover:text-white inline-flex items-center gap-1"
-                    >
-                      <ExternalLink className="h-4 w-4 shrink-0" />
-                      Media kit
-                    </a>
-                  </div>
-                )}
+                  )}
+                  {creator.bio && (
+                    <p className="text-violet-100/85 mt-3">{creator.bio}</p>
+                  )}
+                </div>
               </div>
-            )}
+            </CardContent>
+          </Card>
 
-            {/* Collaboration Info */}
-            <div className="mt-6 pt-6 border-t border-white/10">
-              <h2 className="text-xl font-semibold text-white mb-3">
-                How to Collaborate
-              </h2>
-              <p className="text-purple-200 leading-relaxed mb-4">
-                Submit your collaboration request below. This helps {creator.name} respond faster and ensures all deals are handled securely through CreatorArmour's contract and payment protection system.
-              </p>
-              <ul className="space-y-2 text-purple-200">
-                <li className="flex items-start gap-2">
-                  <CheckCircle2 className="h-5 w-5 text-green-400 flex-shrink-0 mt-0.5" />
-                  <span>Secure contract generation and management</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <CheckCircle2 className="h-5 w-5 text-green-400 flex-shrink-0 mt-0.5" />
-                  <span>Payment tracking and protection</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <CheckCircle2 className="h-5 w-5 text-green-400 flex-shrink-0 mt-0.5" />
-                  <span>Professional collaboration workflow</span>
-                </li>
-              </ul>
+          {/* How it works — for brands (SEO + trust) */}
+          <div className="mb-8 rounded-xl bg-white/[0.07] backdrop-blur-xl border border-white/15 p-6" role="region" aria-label="How it works">
+            <h2 className="text-xl font-semibold text-white mb-4">How it works</h2>
+            <ol className="space-y-3 text-violet-100/85">
+              <li className="flex items-start gap-3">
+                <span className="flex-shrink-0 w-6 h-6 rounded-full bg-purple-500/30 border border-purple-400/50 flex items-center justify-center text-white text-sm font-semibold">1</span>
+                <span><strong className="text-white">Fill the form below</strong> with your campaign details, budget, and deliverables.</span>
+              </li>
+              <li className="flex items-start gap-3">
+                <span className="flex-shrink-0 w-6 h-6 rounded-full bg-purple-500/30 border border-purple-400/50 flex items-center justify-center text-white text-sm font-semibold">2</span>
+                <span><strong className="text-white">The creator reviews</strong> your request and can accept, counter, or decline — all in one place.</span>
+              </li>
+              <li className="flex items-start gap-3">
+                <span className="flex-shrink-0 w-6 h-6 rounded-full bg-purple-500/30 border border-purple-400/50 flex items-center justify-center text-white text-sm font-semibold">3</span>
+                <span><strong className="text-white">Contract & payment</strong> are handled securely by Creator Armour. No DMs, no confusion.</span>
+              </li>
+            </ol>
+          </div>
+
+          {/* SEO-Friendly Content Section - Indexable */}
+          <div className="mb-8 space-y-4">
+            {/* Creator Bio & Platforms - Indexable Content */}
+            <div className="bg-white/[0.07] backdrop-blur-xl rounded-xl p-6 border border-white/15">
+              {creator.bio && (
+                <p className="text-violet-100/85 leading-relaxed mb-4">
+                  {creator.bio}
+                </p>
+              )}
+
+              {creator.platforms.length > 0 && (
+                <div className="space-y-3">
+                  <h2 className="text-xl font-semibold text-white mb-3">
+                    Active on {creator.platforms.length > 1 ? 'Platforms' : 'Platform'}
+                  </h2>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {creator.platforms.map((platform, idx) => {
+                      const isInstagram = platform.name.toLowerCase() === 'instagram';
+                      return (
+                        <div key={idx} className="flex items-center gap-3 text-violet-100/85">
+                          {getPlatformIcon(platform.name)}
+                          <div className="flex-1">
+                            <p className="font-medium text-white">{platform.name}</p>
+                            {isInstagram && platform.handle ? (
+                              <a
+                                href={`https://instagram.com/${platform.handle.replace('@', '')}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                              className="text-sm text-violet-200 hover:text-white transition-colors flex items-center gap-1"
+                              >
+                                @{platform.handle.replace('@', '')}
+                                <ExternalLink className="h-3 w-3 opacity-60" />
+                              </a>
+                            ) : (
+                              <p className="text-sm text-violet-200/90">
+                                {platform.handle}
+                              </p>
+                            )}
+                            {platform.followers && (
+                              <p className="text-xs text-violet-200/65 mt-1">
+                                {platform.followers >= 1000
+                                  ? `${(platform.followers / 1000).toFixed(1)}K followers`
+                                  : `${platform.followers} followers`}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* Open to collabs + niches + media kit (creator readiness for brands) */}
+              {(creator.open_to_collabs !== false || (creator.content_niches && creator.content_niches.length > 0) || creator.media_kit_url) && (
+                <div className="mt-6 pt-6 border-t border-white/10 space-y-3">
+                  {creator.open_to_collabs !== false && (
+                    <p className="text-sm text-green-300 font-medium flex items-center gap-2">
+                      <CheckCircle2 className="h-4 w-4 shrink-0" />
+                      Open to collabs
+                    </p>
+                  )}
+                  {creator.content_niches && creator.content_niches.length > 0 && (
+                    <div>
+                      <p className="text-xs text-purple-400 mb-1">Content niches</p>
+                      <div className="flex flex-wrap gap-2">
+                        {creator.content_niches.map((niche, i) => (
+                          <Badge key={i} variant="secondary" className="bg-white/10 text-purple-200 border-white/20">
+                            {niche}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {creator.media_kit_url && (
+                    <div>
+                      <a
+                        href={creator.media_kit_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-sm text-purple-200 hover:text-white inline-flex items-center gap-1"
+                      >
+                        <ExternalLink className="h-4 w-4 shrink-0" />
+                        Media kit
+                      </a>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Collaboration Info */}
+              <div className="mt-6 pt-6 border-t border-white/10">
+                <h2 className="text-xl font-semibold text-white mb-3">
+                  How to Collaborate
+                </h2>
+                <p className="text-violet-100/85 leading-relaxed mb-4">
+                  Submit your collaboration request below. This helps {creator.name} respond faster and ensures all deals are handled securely through CreatorArmour's contract and payment protection system.
+                </p>
+                <ul className="space-y-2 text-violet-100/85">
+                  <li className="flex items-start gap-2">
+                    <CheckCircle2 className="h-5 w-5 text-green-400 flex-shrink-0 mt-0.5" />
+                    <span>Secure contract generation and management</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <CheckCircle2 className="h-5 w-5 text-green-400 flex-shrink-0 mt-0.5" />
+                    <span>Payment tracking and protection</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <CheckCircle2 className="h-5 w-5 text-green-400 flex-shrink-0 mt-0.5" />
+                    <span>Professional collaboration workflow</span>
+                  </li>
+                </ul>
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* Intro Text */}
-        <div className="text-center mb-6 space-y-2">
-          <h2 className="text-2xl font-bold text-white">
-            Submit Your Collaboration Request
-          </h2>
-          <p className="text-lg text-purple-200">
-            Fill out the form below with your campaign details. All information is secure and will only be shared with {creator.name}.
-          </p>
-        </div>
-
-        {/* Trust line + reduce drop-off: Save and continue later */}
-        <div className="text-center mb-4 space-y-2">
-          <p className="text-sm text-purple-200">
-            Contracts are legally valid. Used by creators across India.
-          </p>
-          <p className="text-xs text-purple-300/70">
-            Requests sent via DMs are not protected.
-          </p>
-          <div className="flex flex-wrap items-center justify-center gap-2 mt-3">
-            <button
-              type="button"
-              onClick={() => setShowSaveDraftModal(true)}
-              className="text-sm text-purple-200 hover:text-white border border-white/20 hover:border-white/40 rounded-lg px-4 py-2 transition-colors"
-            >
-              Save and continue later
-            </button>
-            <span className="text-xs text-purple-400/80">We’ll email you a link (valid 7 days)</span>
+          {/* Intro Text */}
+          <div className="text-center mb-6 space-y-2">
+            <h2 className="text-2xl font-bold text-white">
+              Submit Your Collaboration Request
+            </h2>
+            <p className="text-base md:text-lg text-violet-100/85 max-w-2xl mx-auto">
+              Fill out the form below with your campaign details. All information is secure and will only be shared with {creator.name}.
+            </p>
           </div>
-        </div>
 
-        {/* Demo Fill Button - Only in development or with ?demo=true */}
-        {(import.meta.env.DEV || new URLSearchParams(window.location.search).get('demo') === 'true') && (
-          <div className="mb-4 flex justify-center">
-            <Button
-              type="button"
-              onClick={fillDemoData}
-              variant="outline"
-              className="border-purple-400/50 text-purple-200 hover:bg-purple-500/20 hover:text-white"
-            >
-              🧪 Fill Demo Data
-            </Button>
+          {/* Trust line + reduce drop-off: Save and continue later */}
+          <div className="text-center mb-4 space-y-2">
+            <p className="text-sm text-violet-100/85">
+              Contracts are legally valid. Used by creators across India.
+            </p>
+            <p className="text-xs text-violet-100/65">
+              Requests sent via DMs are not protected.
+            </p>
+            <div className="flex flex-wrap items-center justify-center gap-2 mt-3">
+              <button
+                type="button"
+                onClick={() => setShowSaveDraftModal(true)}
+                className="text-sm text-violet-100 hover:text-white border border-white/25 hover:border-white/45 rounded-lg px-4 py-2 transition-colors bg-white/[0.04] hover:bg-white/[0.08]"
+              >
+                Save and continue later
+              </button>
+              <span className="text-xs text-violet-100/60">We’ll email you a link (valid 7 days)</span>
+            </div>
           </div>
-        )}
 
-        {/* Form */}
-        <Card className="bg-white/10 backdrop-blur-md border-white/20">
-          <CardContent className="p-6 md:p-8">
-            <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Collaboration Type */}
-              <div>
-                <label className="block text-sm font-semibold text-white mb-2">
-                  Collaboration Type <span className="text-red-400">*</span>
-                </label>
-                <Select value={collabType} onValueChange={(value: CollabType) => {
-                  setCollabType(value);
-                  // Reset form fields when type changes
-                  if (value === 'paid') {
-                    setBarterValue('');
-                  } else if (value === 'barter') {
-                    setBudgetRange('');
-                    setExactBudget('');
-                  }
-                }}>
-                  <SelectTrigger className="bg-white/5 border-white/20 text-white">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="paid">Paid Collaboration</SelectItem>
-                    <SelectItem value="barter">Barter Collaboration</SelectItem>
-                    <SelectItem value="both">Open to Both</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+          {/* Demo Fill Button - Only in development or with ?demo=true */}
+          {(import.meta.env.DEV || new URLSearchParams(window.location.search).get('demo') === 'true') && (
+            <div className="mb-4 flex justify-center">
+              <Button
+                type="button"
+                onClick={fillDemoData}
+                variant="outline"
+                className="border-purple-400/50 text-purple-200 hover:bg-purple-500/20 hover:text-white"
+              >
+                🧪 Fill Demo Data
+              </Button>
+            </div>
+          )}
 
-              {/* Budget / Offer Section - Smart Visibility */}
-              {collabType === 'paid' && (
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-semibold text-white mb-2">
-                      Budget Range
-                    </label>
-                    <Select value={budgetRange} onValueChange={setBudgetRange}>
-                      <SelectTrigger className="bg-white/5 border-white/20 text-white">
-                        <SelectValue placeholder="Select budget range" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="under-5000">Under ₹5,000</SelectItem>
-                        <SelectItem value="5000-10000">₹5,000 – ₹10,000</SelectItem>
-                        <SelectItem value="10000-25000">₹10,000 – ₹25,000</SelectItem>
-                        <SelectItem value="25000+">₹25,000+</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <p className="text-xs text-purple-300/70 mt-1.5">
-                      If your budget is flexible, select a range — the creator may counter with a proposal.
-                    </p>
-                    {budgetRange && !exactBudget && (
-                      <p className="text-xs text-purple-300/80 mt-1.5 flex items-center gap-1">
-                        <span className="text-purple-400">ℹ️</span>
-                        <span>Creator may counter-offer</span>
+          {/* Form */}
+          <Card className={`${surfaceClass}`}>
+            <CardContent className="p-6 md:p-8">
+              <form onSubmit={handleSubmit} className="space-y-6">
+                {/* Collaboration Type */}
+                <div>
+                  <label className="block text-sm font-semibold text-white mb-2">
+                    Collaboration Type <span className="text-red-400">*</span>
+                  </label>
+                  <Select value={collabType} onValueChange={(value: CollabType) => {
+                    setCollabType(value);
+                    // Reset form fields when type changes
+                    if (value === 'paid') {
+                      setBarterValue('');
+                    } else if (value === 'barter') {
+                      setBudgetRange('');
+                      setExactBudget('');
+                    }
+                  }}>
+                    <SelectTrigger className={inputClass}>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="paid">Paid Collaboration</SelectItem>
+                      <SelectItem value="barter">Barter Collaboration</SelectItem>
+                      <SelectItem value="both">Open to Both</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Budget / Offer Section - Smart Visibility */}
+                {collabType === 'paid' && (
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-semibold text-white mb-2">
+                        Budget Range
+                      </label>
+                      <Select value={budgetRange} onValueChange={setBudgetRange}>
+                        <SelectTrigger className={inputClass}>
+                          <SelectValue placeholder="Select budget range" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="under-5000">Under ₹5,000</SelectItem>
+                          <SelectItem value="5000-10000">₹5,000 – ₹10,000</SelectItem>
+                          <SelectItem value="10000-25000">₹10,000 – ₹25,000</SelectItem>
+                          <SelectItem value="25000+">₹25,000+</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <p className={`${helperTextClass} mt-1.5`}>
+                        If your budget is flexible, select a range — the creator may counter with a proposal.
                       </p>
-                    )}
-                  </div>
-                  <div>
-                    <label className="block text-sm font-semibold text-white mb-2">
-                      Exact Amount (Optional)
-                    </label>
-                    <Input
-                      type="number"
-                      value={exactBudget}
-                      onChange={(e) => setExactBudget(e.target.value)}
-                      placeholder="₹0"
-                      min="0"
-                      className="bg-white/5 border-white/20 text-white"
-                    />
-                  </div>
-                </div>
-              )}
-
-              {collabType === 'barter' && (
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-semibold text-white mb-2">
-                      Estimated Product Value (Optional)
-                    </label>
-                    <Input
-                      type="number"
-                      value={barterValue}
-                      onChange={(e) => setBarterValue(e.target.value)}
-                      placeholder="₹0"
-                      min="0"
-                      className="bg-white/5 border-white/20 text-white"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-semibold text-white mb-2">
-                      Product Image (optional)
-                    </label>
-                    <p className="text-xs text-purple-200/80 mb-2">
-                      Upload a clear image of the product or service you&apos;re offering
-                    </p>
-                    <input
-                      type="file"
-                      accept="image/jpeg,image/png,image/webp,image/gif"
-                      onChange={handleBarterImageChange}
-                      disabled={barterImageUploading}
-                      className="block w-full text-sm text-white/80 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-purple-500/30 file:text-purple-100 file:text-sm file:font-medium"
-                    />
-                    {barterProductImageUrl && (
-                      <div className="mt-2 flex items-start gap-3 rounded-lg border border-purple-500/20 bg-white/5 p-2">
-                        <img
-                          src={barterProductImageUrl}
-                          alt="Product"
-                          className="h-20 w-20 shrink-0 rounded-md object-cover"
-                        />
-                        <div className="min-w-0 flex-1">
-                          <p className="text-xs text-green-400/90">Image uploaded</p>
-                          <button
-                            type="button"
-                            onClick={() => setBarterProductImageUrl(null)}
-                            className="mt-1 text-xs text-purple-300 hover:text-white underline"
-                          >
-                            Remove image
-                          </button>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {(collabType === 'both') && (
-                <div className="space-y-4">
-                  <div className="bg-purple-500/10 border border-purple-500/20 rounded-lg p-4">
-                    <p className="text-sm text-purple-200 mb-4">
-                      Please specify both paid budget and barter details:
-                    </p>
-                    <div className="space-y-4">
-                      <div>
-                        <label className="block text-sm font-semibold text-white mb-2">
-                          Budget Range (Paid)
-                        </label>
-                        <Select value={budgetRange} onValueChange={setBudgetRange}>
-                          <SelectTrigger className="bg-white/5 border-white/20 text-white">
-                            <SelectValue placeholder="Select budget range" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="under-5000">Under ₹5,000</SelectItem>
-                            <SelectItem value="5000-10000">₹5,000 – ₹10,000</SelectItem>
-                            <SelectItem value="10000-25000">₹10,000 – ₹25,000</SelectItem>
-                            <SelectItem value="25000+">₹25,000+</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <p className="text-xs text-purple-300/70 mt-1.5">
-                          If your budget is flexible, select a range — the creator may counter with a proposal.
+                      {budgetRange && !exactBudget && (
+                        <p className="text-xs text-purple-300/80 mt-1.5 flex items-center gap-1">
+                          <span className="text-purple-400">ℹ️</span>
+                          <span>Creator may counter-offer</span>
                         </p>
-                        {budgetRange && !exactBudget && (
-                          <p className="text-xs text-purple-300/80 mt-1.5 flex items-center gap-1">
-                            <span className="text-purple-400">ℹ️</span>
-                            <span>Creator may counter-offer</span>
-                          </p>
-                        )}
-                      </div>
-                      <div>
-                        <label className="block text-sm font-semibold text-white mb-2">
-                          Exact Amount (Optional)
-                        </label>
-                        <Input
-                          type="number"
-                          value={exactBudget}
-                          onChange={(e) => setExactBudget(e.target.value)}
-                          placeholder="₹0"
-                          min="0"
-                          className="bg-white/5 border-white/20 text-white"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-semibold text-white mb-2">
-                          Estimated Product Value (Optional)
-                        </label>
-                        <Input
-                          type="number"
-                          value={barterValue}
-                          onChange={(e) => setBarterValue(e.target.value)}
-                          placeholder="₹0"
-                          min="0"
-                          className="bg-white/5 border-white/20 text-white"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-semibold text-white mb-2">
-                          Product Image (optional)
-                        </label>
-                        <p className="text-xs text-purple-200/80 mb-2">
-                          Upload a clear image of the product or service you&apos;re offering
-                        </p>
-                        <input
-                          type="file"
-                          accept="image/jpeg,image/png,image/webp,image/gif"
-                          onChange={handleBarterImageChange}
-                          disabled={barterImageUploading}
-                          className="block w-full text-sm text-white/80 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-purple-500/30 file:text-purple-100 file:text-sm file:font-medium"
-                        />
-                        {barterProductImageUrl && (
-                          <div className="mt-2 flex items-start gap-3 rounded-lg border border-purple-500/20 bg-white/5 p-2">
-                            <img
-                              src={barterProductImageUrl}
-                              alt="Product"
-                              className="h-20 w-20 shrink-0 rounded-md object-cover"
-                            />
-                            <div className="min-w-0 flex-1">
-                              <p className="text-xs text-green-400/90">Image uploaded</p>
-                              <button
-                                type="button"
-                                onClick={() => setBarterProductImageUrl(null)}
-                                className="mt-1 text-xs text-purple-300 hover:text-white underline"
-                              >
-                                Remove image
-                              </button>
-                            </div>
+                      )}
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-white mb-2">
+                        Exact Amount (Optional)
+                      </label>
+                      <Input
+                        type="number"
+                        value={exactBudget}
+                        onChange={(e) => setExactBudget(e.target.value)}
+                        placeholder="₹0"
+                        min="0"
+                        className={inputClass}
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {collabType === 'barter' && (
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-semibold text-white mb-2">
+                        Estimated Product Value (Optional)
+                      </label>
+                      <Input
+                        type="number"
+                        value={barterValue}
+                        onChange={(e) => setBarterValue(e.target.value)}
+                        placeholder="₹0"
+                        min="0"
+                        className={inputClass}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-white mb-2">
+                        Product Image (optional)
+                      </label>
+                      <p className="text-xs text-violet-100/75 mb-2">
+                        Upload a clear image of the product or service you&apos;re offering
+                      </p>
+                      <input
+                        type="file"
+                        accept="image/jpeg,image/png,image/webp,image/gif"
+                        onChange={handleBarterImageChange}
+                        disabled={barterImageUploading}
+                        className="block w-full text-sm text-white/80 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-purple-500/30 file:text-purple-100 file:text-sm file:font-medium"
+                      />
+                      {barterProductImageUrl && (
+                        <div className="mt-2 flex items-start gap-3 rounded-lg border border-purple-500/20 bg-white/5 p-2">
+                          <img
+                            src={barterProductImageUrl}
+                            alt="Product"
+                            className="h-20 w-20 shrink-0 rounded-md object-cover"
+                          />
+                          <div className="min-w-0 flex-1">
+                            <p className="text-xs text-green-400/90">Image uploaded</p>
+                            <button
+                              type="button"
+                              onClick={() => setBarterProductImageUrl(null)}
+                              className="mt-1 text-xs text-purple-300 hover:text-white underline"
+                            >
+                              Remove image
+                            </button>
                           </div>
-                        )}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {(collabType === 'both') && (
+                  <div className="space-y-4">
+                    <div className="bg-purple-500/10 border border-purple-500/20 rounded-lg p-4">
+                      <p className="text-sm text-purple-200 mb-4">
+                        Please specify both paid budget and barter details:
+                      </p>
+                      <div className="space-y-4">
+                        <div>
+                          <label className="block text-sm font-semibold text-white mb-2">
+                            Budget Range (Paid)
+                          </label>
+                          <Select value={budgetRange} onValueChange={setBudgetRange}>
+                            <SelectTrigger className={inputClass}>
+                              <SelectValue placeholder="Select budget range" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="under-5000">Under ₹5,000</SelectItem>
+                              <SelectItem value="5000-10000">₹5,000 – ₹10,000</SelectItem>
+                              <SelectItem value="10000-25000">₹10,000 – ₹25,000</SelectItem>
+                              <SelectItem value="25000+">₹25,000+</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <p className={`${helperTextClass} mt-1.5`}>
+                            If your budget is flexible, select a range — the creator may counter with a proposal.
+                          </p>
+                          {budgetRange && !exactBudget && (
+                            <p className="text-xs text-purple-300/80 mt-1.5 flex items-center gap-1">
+                              <span className="text-purple-400">ℹ️</span>
+                              <span>Creator may counter-offer</span>
+                            </p>
+                          )}
+                        </div>
+                        <div>
+                          <label className="block text-sm font-semibold text-white mb-2">
+                            Exact Amount (Optional)
+                          </label>
+                          <Input
+                            type="number"
+                            value={exactBudget}
+                            onChange={(e) => setExactBudget(e.target.value)}
+                            placeholder="₹0"
+                            min="0"
+                            className={inputClass}
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-semibold text-white mb-2">
+                            Estimated Product Value (Optional)
+                          </label>
+                          <Input
+                            type="number"
+                            value={barterValue}
+                            onChange={(e) => setBarterValue(e.target.value)}
+                            placeholder="₹0"
+                            min="0"
+                            className={inputClass}
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-semibold text-white mb-2">
+                            Product Image (optional)
+                          </label>
+                          <p className="text-xs text-violet-100/75 mb-2">
+                            Upload a clear image of the product or service you&apos;re offering
+                          </p>
+                          <input
+                            type="file"
+                            accept="image/jpeg,image/png,image/webp,image/gif"
+                            onChange={handleBarterImageChange}
+                            disabled={barterImageUploading}
+                            className="block w-full text-sm text-white/80 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-purple-500/30 file:text-purple-100 file:text-sm file:font-medium"
+                          />
+                          {barterProductImageUrl && (
+                            <div className="mt-2 flex items-start gap-3 rounded-lg border border-purple-500/20 bg-white/5 p-2">
+                              <img
+                                src={barterProductImageUrl}
+                                alt="Product"
+                                className="h-20 w-20 shrink-0 rounded-md object-cover"
+                              />
+                              <div className="min-w-0 flex-1">
+                                <p className="text-xs text-green-400/90">Image uploaded</p>
+                                <button
+                                  type="button"
+                                  onClick={() => setBarterProductImageUrl(null)}
+                                  className="mt-1 text-xs text-purple-300 hover:text-white underline"
+                                >
+                                  Remove image
+                                </button>
+                              </div>
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              )}
+                )}
 
-              {/* Campaign Details */}
-              <div className="space-y-4">
-                <h3 className="text-xl font-bold text-white">Campaign Details</h3>
-                
-                <div>
-                  <label className="block text-sm font-semibold text-white mb-2">
-                    Brand Name <span className="text-red-400">*</span>
-                  </label>
-                  <Input
-                    type="text"
-                    value={brandName}
-                    onChange={(e) => {
-                      setBrandName(e.target.value);
-                      if (errors.brandName) setErrors({ ...errors, brandName: '' });
-                    }}
-                    required
-                    className={`bg-white/5 border-white/20 text-white ${errors.brandName ? 'border-red-400/50' : ''}`}
-                  />
-                  {errors.brandName && (
-                    <p className="text-xs text-red-400 mt-1">{errors.brandName}</p>
-                  )}
-                </div>
+                {/* Campaign Details */}
+                <div className="space-y-4 rounded-xl border border-white/15 bg-white/[0.04] p-4 md:p-5">
+                  <h3 className="text-xl font-bold text-white">Campaign Details</h3>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-semibold text-white mb-2">
-                      Website
+                      Brand Name <span className="text-red-400">*</span>
                     </label>
                     <Input
                       type="text"
-                      value={brandWebsite}
+                      value={brandName}
                       onChange={(e) => {
-                        setBrandWebsite(e.target.value);
-                        if (errors.brandWebsite) setErrors({ ...errors, brandWebsite: '' });
+                        setBrandName(e.target.value);
+                        if (errors.brandName) setErrors({ ...errors, brandName: '' });
                       }}
-                      placeholder="example.com or www.example.com"
-                      className={`bg-white/5 border-white/20 text-white ${errors.brandWebsite ? 'border-red-400/50' : ''}`}
+                      required
+                      className={`${inputClass} ${errors.brandName ? 'border-red-400/50' : ''}`}
                     />
-                    {errors.brandWebsite && (
-                      <p className="text-xs text-red-400 mt-1">{errors.brandWebsite}</p>
+                    {errors.brandName && (
+                      <p className="text-xs text-red-400 mt-1">{errors.brandName}</p>
                     )}
                   </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-semibold text-white mb-2">
+                        Website
+                      </label>
+                      <Input
+                        type="text"
+                        value={brandWebsite}
+                        onChange={(e) => {
+                          setBrandWebsite(e.target.value);
+                          if (errors.brandWebsite) setErrors({ ...errors, brandWebsite: '' });
+                        }}
+                        placeholder="example.com or www.example.com"
+                        className={`${inputClass} ${errors.brandWebsite ? 'border-red-400/50' : ''}`}
+                      />
+                      {errors.brandWebsite && (
+                        <p className="text-xs text-red-400 mt-1">{errors.brandWebsite}</p>
+                      )}
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-white mb-2">
+                        Instagram Handle
+                      </label>
+                      <Input
+                        type="text"
+                        value={brandInstagram}
+                        onChange={(e) => setBrandInstagram(e.target.value)}
+                        placeholder="@brandname"
+                        className={inputClass}
+                      />
+                    </div>
+                  </div>
+
                   <div>
                     <label className="block text-sm font-semibold text-white mb-2">
-                      Instagram Handle
+                      Campaign Description <span className="text-red-400">*</span>
                     </label>
-                    <Input
-                      type="text"
-                      value={brandInstagram}
-                      onChange={(e) => setBrandInstagram(e.target.value)}
-                      placeholder="@brandname"
-                      className="bg-white/5 border-white/20 text-white"
+                    <Textarea
+                      value={campaignDescription}
+                      onChange={(e) => {
+                        setCampaignDescription(e.target.value);
+                        if (errors.campaignDescription) setErrors({ ...errors, campaignDescription: '' });
+                      }}
+                      required
+                      placeholder="Tell us about your campaign..."
+                      className={`${inputClass} min-h-[120px] ${errors.campaignDescription ? 'border-red-400/50' : ''}`}
                     />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-semibold text-white mb-2">
-                    Campaign Description <span className="text-red-400">*</span>
-                  </label>
-                  <Textarea
-                    value={campaignDescription}
-                    onChange={(e) => {
-                      setCampaignDescription(e.target.value);
-                      if (errors.campaignDescription) setErrors({ ...errors, campaignDescription: '' });
-                    }}
-                    required
-                    placeholder="Tell us about your campaign..."
-                    className={`bg-white/5 border-white/20 text-white min-h-[120px] ${errors.campaignDescription ? 'border-red-400/50' : ''}`}
-                  />
-                  {errors.campaignDescription && (
-                    <p className="text-xs text-red-400 mt-1">{errors.campaignDescription}</p>
-                  )}
-                  {campaignDescription && !errors.campaignDescription && (
-                    <p className="text-xs text-purple-300 mt-1">
+                    {errors.campaignDescription && (
+                      <p className="text-xs text-red-400 mt-1">{errors.campaignDescription}</p>
+                    )}
+                    {campaignDescription && !errors.campaignDescription && (
+                    <p className="text-xs text-violet-100/65 mt-1">
                       {campaignDescription.length} characters
                     </p>
-                  )}
-                </div>
-
-                <div>
-                  <label className="block text-sm font-semibold text-white mb-2">
-                    Deliverables Requested <span className="text-red-400">*</span>
-                  </label>
-                  <p className="text-xs text-purple-300/70 mb-3">Multiple selections allowed</p>
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mt-2">
-                    {[
-                      { label: 'Instagram Reel', icon: '🎥' },
-                      { label: 'Post', icon: '🖼️' },
-                      { label: 'Story', icon: '📖' },
-                      { label: 'YouTube Video', icon: '🎬' },
-                      { label: 'Custom', icon: '➕' }
-                    ].map((item) => (
-                      <div key={item.label} className="flex items-center space-x-2">
-                        <Checkbox
-                          id={item.label}
-                          checked={deliverables.includes(item.label)}
-                          onCheckedChange={() => handleDeliverableToggle(item.label)}
-                          className="border-white/30 data-[state=checked]:bg-purple-600"
-                        />
-                        <label
-                          htmlFor={item.label}
-                          className="text-sm text-purple-200 cursor-pointer flex items-center gap-1.5"
-                        >
-                          <span>{item.icon}</span>
-                          <span>{item.label}</span>
-                        </label>
-                      </div>
-                    ))}
+                    )}
                   </div>
-                  {errors.deliverables && (
-                    <p className="text-xs text-red-400 mt-1">{errors.deliverables}</p>
-                  )}
-                </div>
 
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="usage-rights"
-                    checked={usageRights}
-                    onCheckedChange={(checked) => setUsageRights(checked === true)}
-                    className="border-white/30 data-[state=checked]:bg-purple-600"
-                  />
-                  <label htmlFor="usage-rights" className="text-sm text-purple-200 cursor-pointer">
-                    Usage rights needed?
-                  </label>
-                </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-white mb-2">
+                      Deliverables Requested <span className="text-red-400">*</span>
+                    </label>
+                    <p className={`${helperTextClass} mb-3`}>Multiple selections allowed</p>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mt-2">
+                      {[
+                        { label: 'Instagram Reel', icon: '🎥' },
+                        { label: 'Post', icon: '🖼️' },
+                        { label: 'Story', icon: '📖' },
+                        { label: 'YouTube Video', icon: '🎬' },
+                        { label: 'Custom', icon: '➕' }
+                      ].map((item) => (
+                        <div key={item.label} className="flex items-center space-x-2">
+                          <Checkbox
+                            id={item.label}
+                            checked={deliverables.includes(item.label)}
+                            onCheckedChange={() => handleDeliverableToggle(item.label)}
+                            className="border-white/30 data-[state=checked]:bg-purple-600"
+                          />
+                          <label
+                            htmlFor={item.label}
+                            className="text-sm text-violet-100/85 cursor-pointer flex items-center gap-1.5"
+                          >
+                            <span>{item.icon}</span>
+                            <span>{item.label}</span>
+                          </label>
+                        </div>
+                      ))}
+                    </div>
+                    {errors.deliverables && (
+                      <p className="text-xs text-red-400 mt-1">{errors.deliverables}</p>
+                    )}
+                  </div>
 
-                <div>
-                  <label className="block text-sm font-semibold text-white mb-2">
-                    Timeline / Deadline
-                  </label>
-                  <Input
-                    type="date"
-                    value={deadline}
-                    onChange={(e) => setDeadline(e.target.value)}
-                    className="bg-white/5 border-white/20 text-white"
-                  />
-                  <p className="text-xs text-purple-300/70 mt-1.5">
-                    Suggested: at least 5–7 working days after approval
-                  </p>
-                </div>
-              </div>
-
-              {/* Contact Info */}
-              <div className="space-y-4">
-                <h3 className="text-xl font-bold text-white">Contact Information</h3>
-                
-                <div>
-                  <label className="block text-sm font-semibold text-white mb-2">
-                    Brand Email <span className="text-red-400">*</span>
-                  </label>
-                  <Input
-                    type="email"
-                    value={brandEmail}
-                    onChange={(e) => {
-                      setBrandEmail(e.target.value);
-                      if (errors.brandEmail) setErrors({ ...errors, brandEmail: '' });
-                    }}
-                    required
-                    className={`bg-white/5 border-white/20 text-white ${errors.brandEmail ? 'border-red-400/50' : ''}`}
-                  />
-                  {errors.brandEmail && (
-                    <p className="text-xs text-red-400 mt-1">{errors.brandEmail}</p>
-                  )}
-                </div>
-
-                <div>
-                  <label className="block text-sm font-semibold text-white mb-2">
-                    GSTIN (Optional)
-                  </label>
-                  <div className="flex flex-col sm:flex-row gap-2">
-                    <Input
-                      type="text"
-                      value={brandGstin}
-                      onChange={(e) => {
-                        setBrandGstin(e.target.value.toUpperCase().slice(0, 15));
-                        if (errors.brandGstin) setErrors({ ...errors, brandGstin: '' });
-                        setGstLookupError(null);
-                      }}
-                      placeholder="15-digit GSTIN for invoicing"
-                      maxLength={15}
-                      className={`flex-1 bg-white/5 border-white/20 text-white font-mono ${errors.brandGstin ? 'border-red-400/50' : ''}`}
-                      disabled={isGstLookupLoading}
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="usage-rights"
+                      checked={usageRights}
+                      onCheckedChange={(checked) => setUsageRights(checked === true)}
+                      className="border-white/30 data-[state=checked]:bg-purple-600"
                     />
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={handleGstLookup}
-                      disabled={isGstLookupLoading || !brandGstin.trim() || brandGstin.trim().length !== 15}
-                      className="shrink-0 bg-white/5 border-white/20 text-white hover:bg-white/10 font-mono"
-                      aria-label="Fetch company name and address from GST"
-                    >
-                      {isGstLookupLoading ? (
-                        <>
-                          <Loader2 className="h-4 w-4 mr-2 animate-spin" aria-hidden />
-                          Fetching...
-                        </>
-                      ) : (
-                        'Fetch from GST'
-                      )}
-                    </Button>
+                    <label htmlFor="usage-rights" className="text-sm text-violet-100/85 cursor-pointer">
+                      Usage rights needed?
+                    </label>
                   </div>
-                  {(errors.brandGstin || gstLookupError) && (
-                    <p className="text-xs text-red-400 mt-1">{errors.brandGstin || gstLookupError}</p>
-                  )}
-                  <p className="text-xs text-purple-300/70 mt-1.5">
-                    Optional. Use &quot;Fetch from GST&quot; to auto-fill company name and address.
+
+                  <div>
+                    <label className="block text-sm font-semibold text-white mb-2">
+                      Timeline / Deadline
+                    </label>
+                    <Input
+                      type="date"
+                      value={deadline}
+                      onChange={(e) => setDeadline(e.target.value)}
+                      className={inputClass}
+                    />
+                    <p className={`${helperTextClass} mt-1.5`}>
+                      Suggested: at least 5–7 working days after approval
+                    </p>
+                  </div>
+                </div>
+
+                {/* Contact Info */}
+                <div className="space-y-4 rounded-xl border border-white/15 bg-white/[0.04] p-4 md:p-5">
+                  <h3 className="text-xl font-bold text-white">Contact Information</h3>
+
+                  <div>
+                    <label className="block text-sm font-semibold text-white mb-2">
+                      Brand Email <span className="text-red-400">*</span>
+                    </label>
+                    <Input
+                      type="email"
+                      value={brandEmail}
+                      onChange={(e) => {
+                        setBrandEmail(e.target.value);
+                        if (errors.brandEmail) setErrors({ ...errors, brandEmail: '' });
+                      }}
+                      required
+                      className={`${inputClass} ${errors.brandEmail ? 'border-red-400/50' : ''}`}
+                    />
+                    {errors.brandEmail && (
+                      <p className="text-xs text-red-400 mt-1">{errors.brandEmail}</p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold text-white mb-2">
+                      GSTIN (Optional)
+                    </label>
+                    <div className="flex flex-col sm:flex-row gap-2">
+                      <Input
+                        type="text"
+                        value={brandGstin}
+                        onChange={(e) => {
+                          setBrandGstin(e.target.value.toUpperCase().slice(0, 15));
+                          if (errors.brandGstin) setErrors({ ...errors, brandGstin: '' });
+                          setGstLookupError(null);
+                        }}
+                        placeholder="15-digit GSTIN for invoicing"
+                        maxLength={15}
+                        className={`flex-1 ${inputClass} font-mono ${errors.brandGstin ? 'border-red-400/50' : ''}`}
+                        disabled={isGstLookupLoading}
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={handleGstLookup}
+                        disabled={isGstLookupLoading || !brandGstin.trim() || brandGstin.trim().length !== 15}
+                        className="shrink-0 bg-white/[0.07] border-white/25 text-violet-100 hover:bg-white/[0.12] font-mono"
+                        aria-label="Fetch company name and address from GST"
+                      >
+                        {isGstLookupLoading ? (
+                          <>
+                            <Loader2 className="h-4 w-4 mr-2 animate-spin" aria-hidden />
+                            Fetching...
+                          </>
+                        ) : (
+                          'Fetch from GST'
+                        )}
+                      </Button>
+                    </div>
+                    {(errors.brandGstin || gstLookupError) && (
+                      <p className="text-xs text-red-400 mt-1">{errors.brandGstin || gstLookupError}</p>
+                    )}
+                    <p className={`${helperTextClass} mt-1.5`}>
+                      Optional. Use &quot;Fetch from GST&quot; to auto-fill company name and address.
+                    </p>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold text-white mb-2">
+                      Company / Brand Address <span className="text-red-400">*</span>
+                    </label>
+                    <Textarea
+                      value={brandAddress}
+                      onChange={(e) => {
+                        setBrandAddress(e.target.value);
+                        if (errors.brandAddress) setErrors({ ...errors, brandAddress: '' });
+                      }}
+                      required
+                      placeholder="Full registered address (required for contract)"
+                      rows={3}
+                      className={`${inputClass} min-h-[80px] ${errors.brandAddress ? 'border-red-400/50' : ''}`}
+                    />
+                    {errors.brandAddress && (
+                      <p className="text-xs text-red-400 mt-1">{errors.brandAddress}</p>
+                    )}
+                    <p className={`${helperTextClass} mt-1.5`}>
+                      Used for the collaboration agreement when the creator accepts
+                    </p>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold text-white mb-2">
+                      Phone (Optional)
+                    </label>
+                    <Input
+                      type="tel"
+                      value={brandPhone}
+                      onChange={(e) => setBrandPhone(e.target.value)}
+                      className={inputClass}
+                    />
+                  </div>
+                </div>
+
+                {/* Trust Indicators */}
+                <div className="bg-violet-500/10 border border-violet-300/25 rounded-lg p-4 space-y-2">
+                  <div className="flex items-center gap-2 text-sm text-violet-100/85">
+                    <CheckCircle2 className="h-4 w-4 text-violet-300" />
+                    <span>Secured by Creator Armour</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm text-violet-100/85">
+                    <CheckCircle2 className="h-4 w-4 text-violet-300" />
+                    <span>Details visible only to creator</span>
+                  </div>
+                </div>
+
+                {/* Submit Button */}
+                <div className="space-y-2">
+                  <Button
+                    type="submit"
+                    disabled={submitting || Object.keys(errors).length > 0}
+                    className="w-full bg-gradient-to-r from-indigo-500 via-violet-500 to-fuchsia-500 hover:from-indigo-400 hover:via-violet-400 hover:to-fuchsia-400 text-white border-0 shadow-lg shadow-violet-900/45 h-14 text-lg font-bold disabled:opacity-50 disabled:cursor-not-allowed"
+                    aria-label={submitting ? 'Submitting collaboration request' : 'Submit secure collaboration request'}
+                    aria-busy={submitting}
+                  >
+                    {submitting ? (
+                      <>
+                        <Loader2 className="h-5 w-5 mr-2 animate-spin" aria-hidden />
+                        Submitting...
+                      </>
+                    ) : (
+                      'Submit Secure Collaboration Request'
+                    )}
+                  </Button>
+                  <p className="text-xs text-violet-100/65 text-center">
+                    No DMs. Clear terms. Faster response.
                   </p>
                 </div>
+              </form>
+            </CardContent>
+          </Card>
 
-                <div>
-                  <label className="block text-sm font-semibold text-white mb-2">
-                    Company / Brand Address <span className="text-red-400">*</span>
-                  </label>
-                  <Textarea
-                    value={brandAddress}
-                    onChange={(e) => {
-                      setBrandAddress(e.target.value);
-                      if (errors.brandAddress) setErrors({ ...errors, brandAddress: '' });
-                    }}
-                    required
-                    placeholder="Full registered address (required for contract)"
-                    rows={3}
-                    className={`bg-white/5 border-white/20 text-white min-h-[80px] ${errors.brandAddress ? 'border-red-400/50' : ''}`}
-                  />
-                  {errors.brandAddress && (
-                    <p className="text-xs text-red-400 mt-1">{errors.brandAddress}</p>
-                  )}
-                  <p className="text-xs text-purple-300/70 mt-1.5">
-                    Used for the collaboration agreement when the creator accepts
-                  </p>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-semibold text-white mb-2">
-                    Phone (Optional)
-                  </label>
-                  <Input
-                    type="tel"
-                    value={brandPhone}
-                    onChange={(e) => setBrandPhone(e.target.value)}
-                    className="bg-white/5 border-white/20 text-white"
-                  />
-                </div>
-              </div>
-
-              {/* Trust Indicators */}
-              <div className="bg-purple-500/10 border border-purple-500/20 rounded-lg p-4 space-y-2">
-                <div className="flex items-center gap-2 text-sm text-purple-200">
-                  <CheckCircle2 className="h-4 w-4 text-purple-400" />
-                  <span>Secured by Creator Armour</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm text-purple-200">
-                  <CheckCircle2 className="h-4 w-4 text-purple-400" />
-                  <span>Details visible only to creator</span>
-                </div>
-              </div>
-
-              {/* Submit Button */}
-              <div className="space-y-2">
-              <Button
-                type="submit"
-                disabled={submitting || Object.keys(errors).length > 0}
-                className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white border-0 shadow-lg shadow-purple-500/30 h-14 text-lg font-bold disabled:opacity-50 disabled:cursor-not-allowed"
-                aria-label={submitting ? 'Submitting collaboration request' : 'Submit secure collaboration request'}
-                aria-busy={submitting}
-              >
-                {submitting ? (
-                  <>
-                    <Loader2 className="h-5 w-5 mr-2 animate-spin" aria-hidden />
-                    Submitting...
-                  </>
-                ) : (
-                    'Submit Secure Collaboration Request'
-                )}
-              </Button>
-                <p className="text-xs text-purple-300/70 text-center">
-                  No DMs. Clear terms. Faster response.
-                </p>
-              </div>
-            </form>
-          </CardContent>
-        </Card>
-
-        {/* Footer Trust Note */}
-        <div className="text-center mt-6 text-purple-200 text-sm">
-          <p className="flex items-center justify-center gap-1.5">
-            <span>🔒</span>
-            <span>All collaborations are logged and protected by Creator Armour.</span>
-          </p>
-        </div>
-
-        {/* Additional SEO Content - Brand-Focused */}
-        <div className="mt-12 max-w-3xl mx-auto bg-white/5 backdrop-blur-md rounded-xl p-6 border border-white/10">
-          <h2 className="text-2xl font-bold text-white mb-4">
-            Professional Collaboration Workflow
-          </h2>
-          <div className="space-y-4 text-purple-200 leading-relaxed">
-            <p>
-              When you submit a collaboration request through this page, you're choosing a professional workflow designed for brands and agencies.
-            </p>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-              <div className="space-y-2">
-                <h3 className="font-semibold text-white flex items-center gap-2">
-                  <CheckCircle2 className="h-4 w-4 text-green-400" />
-                  Clear Contracts
-                </h3>
-                <p className="text-sm">
-                  Every collaboration gets a legally binding contract automatically generated with your terms, deliverables, and payment details.
-                </p>
-      </div>
-              <div className="space-y-2">
-                <h3 className="font-semibold text-white flex items-center gap-2">
-                  <CheckCircle2 className="h-4 w-4 text-green-400" />
-                  Faster Approvals
-                </h3>
-                <p className="text-sm">
-                  Structured requests mean quicker responses. Creators can accept, counter, or decline with clear terms from day one.
-                </p>
-    </div>
-              <div className="space-y-2">
-                <h3 className="font-semibold text-white flex items-center gap-2">
-                  <CheckCircle2 className="h-4 w-4 text-green-400" />
-                  Payment Safety
-                </h3>
-                <p className="text-sm">
-                  All payments are tracked and protected. No chasing invoices or payment delays—everything is logged and monitored.
-                </p>
-              </div>
-              <div className="space-y-2">
-                <h3 className="font-semibold text-white flex items-center gap-2">
-                  <CheckCircle2 className="h-4 w-4 text-green-400" />
-                  Professional Workflow
-                </h3>
-                <p className="text-sm">
-                  Skip the back-and-forth DMs. Submit once, get a response, and move forward with confidence.
-                </p>
-              </div>
-            </div>
-            <p className="text-sm mt-4 pt-4 border-t border-white/10">
-              This collaboration page is optimized for brands and agencies looking to partner with {creator.name} for influencer marketing campaigns. All requests are processed securely through Creator Armour's platform.
-            </p>
-            <p className="text-sm mt-3">
-              <a href="mailto:support@creatorarmour.com" className="text-purple-300 hover:text-white underline">
-                Help / Contact us
-              </a>
-              <span className="text-purple-400/80 ml-1">— we’re here before any issue becomes a dispute.</span>
+          {/* Footer Trust Note */}
+          <div className="text-center mt-6 text-violet-100/85 text-sm">
+            <p className="flex items-center justify-center gap-1.5">
+              <span>🔒</span>
+              <span>All collaborations are logged and protected by Creator Armour.</span>
             </p>
           </div>
-        </div>
-      </div>
 
-      {/* Save and continue later modal */}
-      <Dialog open={showSaveDraftModal} onOpenChange={setShowSaveDraftModal}>
-        <DialogContent className="bg-purple-900/95 border-white/20 text-white">
-          <DialogHeader>
-            <DialogTitle>Save and continue later</DialogTitle>
-          </DialogHeader>
-          <p className="text-sm text-purple-200">
-            Enter your email. We&apos;ll send you a link to continue this request (valid for 7 days).
-          </p>
-          <Input
-            type="email"
-            placeholder="you@company.com"
-            value={draftEmail}
-            onChange={(e) => setDraftEmail(e.target.value)}
-            className="bg-white/5 border-white/20 text-white placeholder:text-white/50"
-          />
-          <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setShowSaveDraftModal(false)}
-              className="border-white/20 text-white hover:bg-white/10"
-            >
-              Cancel
-            </Button>
-            <Button
-              type="button"
-              onClick={handleSaveDraftSubmit}
-              disabled={saveDraftSubmitting}
-              className="bg-purple-600 hover:bg-purple-700 text-white"
-            >
-              {saveDraftSubmitting ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                  Sending…
-                </>
-              ) : (
-                'Send link'
-              )}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </div>
+          {/* Additional SEO Content - Brand-Focused */}
+          <div className="mt-12 max-w-3xl mx-auto bg-white/[0.07] backdrop-blur-xl rounded-xl p-6 border border-white/15">
+            <h2 className="text-2xl font-bold text-white mb-4">
+              Professional Collaboration Workflow
+            </h2>
+            <div className="space-y-4 text-violet-100/85 leading-relaxed">
+              <p>
+                When you submit a collaboration request through this page, you're choosing a professional workflow designed for brands and agencies.
+              </p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                <div className="space-y-2">
+                  <h3 className="font-semibold text-white flex items-center gap-2">
+                    <CheckCircle2 className="h-4 w-4 text-green-400" />
+                    Clear Contracts
+                  </h3>
+                  <p className="text-sm">
+                    Every collaboration gets a legally binding contract automatically generated with your terms, deliverables, and payment details.
+                  </p>
+                </div>
+                <div className="space-y-2">
+                  <h3 className="font-semibold text-white flex items-center gap-2">
+                    <CheckCircle2 className="h-4 w-4 text-green-400" />
+                    Faster Approvals
+                  </h3>
+                  <p className="text-sm">
+                    Structured requests mean quicker responses. Creators can accept, counter, or decline with clear terms from day one.
+                  </p>
+                </div>
+                <div className="space-y-2">
+                  <h3 className="font-semibold text-white flex items-center gap-2">
+                    <CheckCircle2 className="h-4 w-4 text-green-400" />
+                    Payment Safety
+                  </h3>
+                  <p className="text-sm">
+                    All payments are tracked and protected. No chasing invoices or payment delays—everything is logged and monitored.
+                  </p>
+                </div>
+                <div className="space-y-2">
+                  <h3 className="font-semibold text-white flex items-center gap-2">
+                    <CheckCircle2 className="h-4 w-4 text-green-400" />
+                    Professional Workflow
+                  </h3>
+                  <p className="text-sm">
+                    Skip the back-and-forth DMs. Submit once, get a response, and move forward with confidence.
+                  </p>
+                </div>
+              </div>
+              <p className="text-sm mt-4 pt-4 border-t border-white/10">
+                This collaboration page is optimized for brands and agencies looking to partner with {creator.name} for influencer marketing campaigns. All requests are processed securely through Creator Armour's platform.
+              </p>
+              <p className="text-sm mt-3">
+                <a href="mailto:support@creatorarmour.com" className="text-violet-200 hover:text-white underline">
+                  Help / Contact us
+                </a>
+                <span className="text-purple-400/80 ml-1">— we’re here before any issue becomes a dispute.</span>
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Save and continue later modal */}
+        <Dialog open={showSaveDraftModal} onOpenChange={setShowSaveDraftModal}>
+          <DialogContent className="bg-purple-900/95 border-white/20 text-white">
+            <DialogHeader>
+              <DialogTitle>Save and continue later</DialogTitle>
+            </DialogHeader>
+            <p className="text-sm text-violet-100/85">
+              Enter your email. We&apos;ll send you a link to continue this request (valid for 7 days).
+            </p>
+            <Input
+              type="email"
+              placeholder="you@company.com"
+              value={draftEmail}
+              onChange={(e) => setDraftEmail(e.target.value)}
+              className={inputClass}
+            />
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setShowSaveDraftModal(false)}
+                className="border-white/20 text-white hover:bg-white/10"
+              >
+                Cancel
+              </Button>
+              <Button
+                type="button"
+                onClick={handleSaveDraftSubmit}
+                disabled={saveDraftSubmitting}
+                className="bg-purple-600 hover:bg-purple-700 text-white"
+              >
+                {saveDraftSubmitting ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                    Sending…
+                  </>
+                ) : (
+                  'Send link'
+                )}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      </div>
     </>
   );
 };
 
 export default CollabLinkLanding;
-

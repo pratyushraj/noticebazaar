@@ -88,9 +88,10 @@ router.get('/deal/:dealId', authMiddleware, async (req: AuthenticatedRequest, re
     const details = await getDealSubmissionDetails(dealId);
 
     if (!details) {
-      return res.status(404).json({
-        success: false,
-        error: 'No submission found for this deal'
+      return res.json({
+        success: true,
+        submission: null,
+        formData: null
       });
     }
 

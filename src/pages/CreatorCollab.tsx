@@ -29,7 +29,7 @@ const CreatorCollab = () => {
 
   return (
     <CreatorNavigationWrapper title="Collaboration" hidePageTitle compactHeader>
-      <div className={cn(sectionLayout.container, "space-y-5 md:space-y-8 pb-28 md:pb-28")}>
+      <div className={cn(sectionLayout.container, "space-y-4 md:space-y-7 pb-28 md:pb-28")}>
         {/* Header — compact on mobile so Collab Link + Brand Requests CTA fit above fold */}
         <div className="flex items-center justify-between mb-3 md:mb-6">
           <div className="space-y-1 md:space-y-2">
@@ -43,7 +43,7 @@ const CreatorCollab = () => {
           variant="tertiary"
           className={cn(
             "p-3.5 md:p-5 relative overflow-hidden w-full",
-            "border border-purple-400/40 ring-1 ring-purple-400/15 shadow-md shadow-purple-500/10"
+            "border border-purple-400/45 ring-1 ring-purple-400/20 shadow-md shadow-purple-500/15"
           )}
         >
           <div className="absolute top-0 right-0 w-20 h-20 md:w-24 md:h-24 bg-purple-500/10 rounded-full blur-2xl" />
@@ -68,8 +68,9 @@ const CreatorCollab = () => {
                 whileTap={animations.microTap}
                 className={cn(
                   "w-full min-h-[44px] px-4 rounded-lg flex items-center justify-center gap-2",
-                  "bg-purple-600/40 hover:bg-purple-600/50 border border-purple-400/50",
-                  "font-medium text-purple-100 text-sm transition-colors"
+                  "bg-gradient-to-r from-[#8B5CF6] to-[#6366F1] hover:from-[#7C3AED] hover:to-[#4F46E5]",
+                  "border border-purple-300/40 shadow-[0_2px_12px_rgba(139,92,246,0.35)]",
+                  "font-semibold text-white text-sm transition-colors"
                 )}
               >
                 <Copy className="w-4 h-4 flex-shrink-0" />
@@ -88,7 +89,8 @@ const CreatorCollab = () => {
                   }
                 }}
                 className={cn(
-                  "inline-flex items-center justify-center gap-1.5 font-medium text-purple-200/90 text-sm hover:text-purple-100 transition-colors min-h-[44px]",
+                  "inline-flex items-center justify-center gap-1.5 font-medium text-purple-200/90 text-sm min-h-[44px]",
+                  "bg-white/8 hover:bg-white/12 border border-white/20 rounded-lg transition-colors",
                   !usernameForLink && "pointer-events-none opacity-60"
                 )}
               >
@@ -114,4 +116,3 @@ const CreatorCollab = () => {
 };
 
 export default CreatorCollab;
-

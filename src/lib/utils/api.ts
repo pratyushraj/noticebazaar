@@ -9,25 +9,55 @@
 export function getApiBaseUrl(): string {
   // Use VITE_API_URL or VITE_API_BASE_URL if explicitly provided
   let apiUrl = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || '';
+  const localhostPattern = /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/i;
 
-  if (!apiUrl && typeof window !== 'undefined' && window.location?.origin) {
-    const origin = window.location.origin;
+  if (!apiUrl && typeof window !== 'undefined') {
+    // Check for local testing mode via localStorage or URL parameters
+    // This allows developers to test with a local API via tunnel even on production domains
+    const urlParams = new URLSearchParams(window.location.search);
+    const useLocalApi = localStorage.getItem('useLocalApi') === 'true' || urlParams.get('localApi') === 'true';
+    const tunnelUrl = urlParams.get('tunnelUrl') || localStorage.getItem('tunnelUrl');
 
-    // Check if we are on a production-like environment (Vercel, custom domain, etc.)
-    // For unified deployments (where frontend and API share the same domain),
-    // returning an empty string allows for relative fetches like "/api/..."
-    // which is more robust than hardcoding a domain that might change or have CORS issues.
-    if (
-      origin.includes('creatorarmour.com') ||
-      origin.includes('noticebazaar.com') ||
-      origin.includes('vercel.app') ||
-      (!origin.includes('localhost') && !origin.includes('127.0.0.1'))
-    ) {
-      // Use relative paths for the same-origin API
-      apiUrl = '';
-    } else {
-      // Local development fallback
-      apiUrl = 'http://localhost:3001';
+    if (useLocalApi && tunnelUrl) {
+      apiUrl = tunnelUrl.replace(/\/$/, '');
+    } else if (window.location.origin) {
+      const origin = window.location.origin;
+
+      // Check if we are on a production-like environment (Vercel, custom domain, etc.)
+      // For unified deployments (where frontend and API share the same domain),
+      // returning an empty string allows for relative fetches like "/api/..."
+      // which is more robust than hardcoding a domain that might change or have CORS issues.
+      const isProduction =
+        origin.includes('creatorarmour.com') ||
+        origin.includes('noticebazaar.com') ||
+        origin.includes('vercel.app') ||
+        origin.includes('netlify.app') ||
+        origin.includes('trycloudflare.com');
+
+      const isLocalhost =
+        origin.includes('localhost') ||
+        origin.includes('127.0.0.1');
+
+      // Check for local network IPs (192.168.x.x, 172.16-31.x.x, 10.x.x.x)
+      const isLocalNetwork =
+        /^http:\/\/(192\.168\.|172\.(1[6-9]|2[0-9]|3[0-1])\.|10\.)/.test(origin);
+
+      if (useLocalApi && !isProduction) {
+        // Local debug mode should only force localhost on local/non-production hosts.
+        apiUrl = 'http://localhost:3001';
+      } else if (isProduction) {
+        // Use relative paths for the production API
+        apiUrl = '';
+      } else if (isLocalhost) {
+        // Standard localhost fallback
+        apiUrl = 'http://localhost:3001';
+      } else if (isLocalNetwork) {
+        // Use the same IP but port 3001 for the API
+        apiUrl = origin.replace(/:\d+$/, '') + ':3001';
+      } else {
+        // Fallback for tunnels or other cases
+        apiUrl = 'http://localhost:3001';
+      }
     }
   }
 
@@ -36,6 +66,21 @@ export function getApiBaseUrl(): string {
 
   // Cleanup: No trailing slashes
   let cleanedUrl = (apiUrl || '').replace(/\/$/, '');
+
+  // Production safety: never point to localhost when the app is on a public domain.
+  if (typeof window !== 'undefined') {
+    const host = window.location.hostname.toLowerCase();
+    const isPublicHost =
+      host.endsWith('creatorarmour.com') ||
+      host.endsWith('noticebazaar.com') ||
+      host.endsWith('vercel.app') ||
+      host.endsWith('netlify.app') ||
+      host.endsWith('trycloudflare.com');
+
+    if (isPublicHost && localhostPattern.test(cleanedUrl)) {
+      cleanedUrl = '';
+    }
+  }
 
   // CRITICAL SAFETY: Many components in this codebase manually append '/api' to the base URL.
   // (e.g. fetch(`${getApiBaseUrl()}/api/collab-requests`))
@@ -173,4 +218,3 @@ export const getErrorMessage = (error: any, defaultMessage: string = 'An unexpec
 
   return defaultMessage;
 };
-

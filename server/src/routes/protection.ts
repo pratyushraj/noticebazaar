@@ -11,6 +11,10 @@ import { generateSafeContract } from '../services/safeContractGenerator.js';
 import { generateContractFromScratch } from '../services/contractGenerator.js';
 import { callLLM } from '../services/aiContractAnalysis.js';
 import crypto from 'crypto';
+import { generateSignedDownloadUrl } from '../services/storage.js';
+import { getDealSubmissionDetails } from '../services/dealDetailsTokenService.js';
+import { buildDealSchemaFromDealData, mapDealSchemaToContractVariables, validateRequiredContractFields } from '../services/contractTemplate.js';
+import { generateContractDocx, prepareHtmlForDocx } from '../services/docxGenerator.js';
 
 const router = Router();
 
@@ -431,7 +435,7 @@ router.get('/:id/report.pdf', async (req: AuthenticatedRequest, res: Response) =
 
     // Generate signed download URL
     const path = reportData.pdf_report_url.split('/').slice(-2).join('/');
-    const { generateSignedDownloadUrl } = await import('../services/storage');
+    // const { generateSignedDownloadUrl } = await import('../services/storage');
     const signedUrl = await generateSignedDownloadUrl(path, 3600);
 
     res.redirect(signedUrl);
@@ -909,7 +913,7 @@ router.post('/generate-contract-from-scratch', async (req: AuthenticatedRequest,
     }
 
     // Build structured deal schema (v2)
-    const { buildDealSchemaFromDealData, validateRequiredContractFields } = await import('../services/contractTemplate.js');
+    // const { buildDealSchemaFromDealData, validateRequiredContractFields } = await import('../services/contractTemplate.js');
     const dealSchema = buildDealSchemaFromDealData(deal);
 
     // Validate required fields before generation
@@ -2089,7 +2093,7 @@ router.get('/download-report/:reportId', async (req: AuthenticatedRequest, res: 
 
     // Generate signed download URL
     const path = reportData.pdf_report_url.split('/').slice(-2).join('/');
-    const { generateSignedDownloadUrl } = await import('../services/storage');
+    // const { generateSignedDownloadUrl } = await import('../services/storage');
     const signedUrl = await generateSignedDownloadUrl(path, 3600);
 
     res.redirect(signedUrl);
@@ -2239,7 +2243,7 @@ export const downloadContractDocxHandler = async (req: Request, res: Response) =
         }
 
         // Fetch deal submission details to get form_data with all contract details
-        const { getDealSubmissionDetails } = await import('../services/dealDetailsTokenService.js');
+        // const { getDealSubmissionDetails } = await import('../services/dealDetailsTokenService.js');
         const submissionDetails = await getDealSubmissionDetails(dealId);
         const formData = submissionDetails?.formData || {};
 
@@ -2268,7 +2272,7 @@ export const downloadContractDocxHandler = async (req: Request, res: Response) =
         const creatorEmail = creatorAuth?.user?.email || '';
 
         // Build deal schema from deal data
-        const { buildDealSchemaFromDealData, mapDealSchemaToContractVariables, validateRequiredContractFields } = await import('../services/contractTemplate.js');
+        // const { buildDealSchemaFromDealData, mapDealSchemaToContractVariables, validateRequiredContractFields } = await import('../services/contractTemplate.js');
         const dealSchema = buildDealSchemaFromDealData(fullDeal);
 
         // Get signatures first (needed for creator name fallback)
@@ -2893,7 +2897,7 @@ export const downloadContractDocxHandler = async (req: Request, res: Response) =
         const bodyMatch = contractSummary.match(/<body[^>]*>([\s\S]*?)<\/body>/i);
         const bodyContent = bodyMatch ? bodyMatch[1] : contractSummary;
 
-        const { generateContractDocx, prepareHtmlForDocx } = await import('../services/docxGenerator.js');
+        // const { generateContractDocx, prepareHtmlForDocx } = await import('../services/docxGenerator.js');
         const docxCompatibleHtml = prepareHtmlForDocx(bodyContent);
         const docxBuffer = await generateContractDocx(docxCompatibleHtml);
 

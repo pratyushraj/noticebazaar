@@ -127,10 +127,25 @@ export interface CreatorKpi {
 export type BrandDeal = Tables<'brand_deals'> & {
   organization_id: string; // NEW: Added organization_id
   progress_percentage?: number | null; // Deal progress percentage (0-100)
+  // Additional dynamic fields potentially from migrations not yet synced to types
+  contract_file_url?: string | null;
+  contract_file_path?: string | null;
+  signed_contract_url?: string | null;
+  signed_contract_path?: string | null;
+  deal_type?: 'paid' | 'barter' | null;
+  brand_phone?: string | null;
+  brand_address?: string | null;
+  brand_submission_details?: any | null;
+  delivery_address?: string | null;
+  delivery_name?: string | null;
+  delivery_phone?: string | null;
+  delivery_notes?: string | null;
+  shipping_required?: boolean | null;
+  shipping_status?: string | null;
 };
 
 // NEW: Payment Reminder Type
-export type PaymentReminder = Tables<'payment_reminders'>;
+export type PaymentReminder = any; // Tables<'payment_reminders'>;
 
 // NEW: Copyright Scanner Types
 export type OriginalContent = Tables<'original_content'>;

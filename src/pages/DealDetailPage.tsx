@@ -299,19 +299,47 @@ function DealDetailPageContent() {
 
 
   const handleSendCreatorOTP = async () => {
-    if (!deal?.id || !session?.access_token) return;
+    console.log('[DealDetailPage] handleSendCreatorOTP clicked', {
+      dealId: deal?.id,
+      hasSession: !!session,
+      hasAccessToken: !!session?.access_token
+    });
+
+    if (!deal?.id) {
+      toast.error('Deal information is missing. Please refresh.');
+      return;
+    }
+
+    if (!session?.access_token) {
+      toast.error('Authentication session not found. Please log in again.');
+      return;
+    }
 
     setIsSendingCreatorOTP(true);
     try {
       const apiBaseUrl = getApiBaseUrl();
-      const resp = await fetch(`${apiBaseUrl}/api/otp/send-creator`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${session.access_token}`,
-        },
-        body: JSON.stringify({ dealId: deal.id }),
-      });
+      console.log('[DealDetailPage] Sending creator OTP via:', `${apiBaseUrl}/api/otp/send-creator`);
+      let resp;
+      try {
+        resp = await fetch(`${apiBaseUrl}/api/otp/send-creator`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${session.access_token}`,
+          },
+          body: JSON.stringify({ dealId: deal.id }),
+        });
+      } catch (e) {
+        console.warn('Local API failed, trying production...', e);
+        resp = await fetch(`https://noticebazaar-api.onrender.com/api/otp/send-creator`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${session.access_token}`,
+          },
+          body: JSON.stringify({ dealId: deal.id }),
+        });
+      }
 
       if (!resp.ok) {
         // Check for CORS errors (status 0 typically indicates CORS failure)
@@ -352,14 +380,27 @@ function DealDetailPageContent() {
     setIsVerifyingCreatorOTP(true);
     try {
       const apiBaseUrl = getApiBaseUrl();
-      const resp = await fetch(`${apiBaseUrl}/api/otp/verify-creator`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${session.access_token}`,
-        },
-        body: JSON.stringify({ dealId: deal.id, otp: creatorOTP }),
-      });
+      let resp;
+      try {
+        resp = await fetch(`${apiBaseUrl}/api/otp/verify-creator`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${session.access_token}`,
+          },
+          body: JSON.stringify({ dealId: deal.id, otp: creatorOTP }),
+        });
+      } catch (e) {
+        console.warn('Local API failed, trying production...', e);
+        resp = await fetch(`https://noticebazaar-api.onrender.com/api/otp/verify-creator`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${session.access_token}`,
+          },
+          body: JSON.stringify({ dealId: deal.id, otp: creatorOTP }),
+        });
+      }
 
       const data = await resp.json();
       if (data.success) {
@@ -1580,18 +1621,15 @@ Best regards`;
 
                 <div className="space-y-3">
                   <motion.button
-                    onClick={async () => {
-                      if (!deal?.id) return;
-                      const link = brandReplyLink || (await generateBrandReplyLink(deal.id));
-                      if (link) {
-                        window.open(link, '_blank');
-                      }
+                    onClick={() => {
+                      triggerHaptic(HapticPatterns.medium);
+                      setShowCreatorSigningModal(true);
                     }}
                     whileTap={{ scale: 0.98 }}
                     className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 px-6 py-3 rounded-xl font-semibold text-white transition-all flex items-center justify-center gap-2"
                   >
                     <FileText className="w-5 h-5" />
-                    Sign Contract
+                    Sign Contract (Secure)
                   </motion.button>
 
                   <button
@@ -3863,27 +3901,27 @@ ${link}`;
       )}
       {/* Creator Signing Modal */}
       <Dialog open={showCreatorSigningModal} onOpenChange={setShowCreatorSigningModal}>
-        <DialogContent className="sm:max-w-[425px] bg-neutral-900 border-neutral-800 text-white">
+        <DialogContent className="sm:max-w-[440px] bg-neutral-950/98 border-white/15 text-white rounded-2xl p-0 overflow-hidden shadow-2xl shadow-black/60">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <FileText className="w-5 h-5 text-blue-400" />
+            <DialogTitle className="flex items-center gap-2 px-6 pt-6 text-2xl font-semibold tracking-tight">
+              <FileText className="w-5 h-5 text-sky-400" />
               Sign Agreement
             </DialogTitle>
-            <DialogDescription className="text-neutral-400">
+            <DialogDescription className="text-neutral-300 px-6 pb-2 text-base leading-relaxed">
               {creatorSigningStep === 'send'
                 ? 'We will send a secure OTP to your registered email to verify your identity and sign the contract.'
                 : 'Enter the 6-digit code sent to your email to complete the signing process.'}
             </DialogDescription>
           </DialogHeader>
 
-          <div className="py-6">
+          <div className="px-6 py-5">
             {creatorSigningStep === 'send' ? (
               <div className="space-y-4">
-                <div className="p-4 bg-blue-500/10 border border-blue-500/20 rounded-xl flex items-start gap-3">
-                  <Mail className="w-5 h-5 text-blue-400 mt-0.5" />
+                <div className="p-4 bg-sky-500/12 border border-sky-400/35 rounded-xl flex items-start gap-3">
+                  <Mail className="w-5 h-5 text-sky-300 mt-0.5" />
                   <div>
-                    <p className="text-sm font-medium text-blue-400">OTP Verification</p>
-                    <p className="text-xs text-blue-400/70 mt-1">
+                    <p className="text-sm font-semibold text-sky-200">OTP Verification</p>
+                    <p className="text-xs text-sky-100/80 mt-1">
                       Signing as: <span className="text-white">{profile?.email}</span>
                     </p>
                   </div>
@@ -3892,7 +3930,7 @@ ${link}`;
                   onClick={handleSendCreatorOTP}
                   disabled={isSendingCreatorOTP}
                   whileTap={{ scale: 0.98 }}
-                  className="w-full bg-blue-600 hover:bg-blue-500 py-3 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 disabled:bg-neutral-800 disabled:text-neutral-500"
+                  className="w-full bg-sky-600 hover:bg-sky-500 py-3.5 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 disabled:bg-neutral-800 disabled:text-neutral-500"
                 >
                   {isSendingCreatorOTP ? (
                     <>
@@ -3910,15 +3948,18 @@ ${link}`;
             ) : (
               <div className="space-y-4">
                 <div>
-                  <label className="text-xs font-medium text-neutral-400 mb-2 block">Enterprise OTP Code</label>
+                  <label className="text-xs font-semibold text-neutral-300 mb-2 block tracking-wide uppercase">Enterprise OTP Code</label>
                   <input
                     type="text"
                     maxLength={6}
                     placeholder="123456"
                     value={creatorOTP}
                     onChange={(e) => setCreatorOTP(e.target.value.replace(/\D/g, ''))}
-                    className="w-full bg-neutral-800 border border-neutral-700 rounded-xl px-4 py-3 text-center text-2xl tracking-[0.5em] font-mono focus:border-blue-500 outline-none transition-all placeholder:text-neutral-600 placeholder:tracking-normal"
+                    inputMode="numeric"
+                    autoComplete="one-time-code"
+                    className="w-full bg-neutral-900 border border-neutral-600 rounded-xl px-4 py-3.5 text-center text-3xl tracking-[0.32em] font-mono text-white focus:border-sky-400 focus:ring-2 focus:ring-sky-400/25 outline-none transition-all placeholder:text-neutral-500 placeholder:tracking-normal"
                   />
+                  <p className="text-xs text-neutral-400 mt-2">Code expires in 10 minutes.</p>
                 </div>
 
                 <div className="flex flex-col gap-2">
@@ -3926,7 +3967,7 @@ ${link}`;
                     onClick={handleVerifyCreatorOTP}
                     disabled={isVerifyingCreatorOTP || creatorOTP.length !== 6 || isSigningAsCreator}
                     whileTap={{ scale: 0.98 }}
-                    className="w-full bg-green-600 hover:bg-green-500 py-3 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 disabled:bg-neutral-800 disabled:text-neutral-500"
+                    className="w-full bg-emerald-600 hover:bg-emerald-500 py-3.5 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 disabled:bg-neutral-800 disabled:text-neutral-500"
                   >
                     {isVerifyingCreatorOTP || isSigningAsCreator ? (
                       <>
@@ -3947,17 +3988,17 @@ ${link}`;
                       setCreatorOTP('');
                     }}
                     disabled={isVerifyingCreatorOTP || isSigningAsCreator}
-                    className="text-xs text-neutral-500 hover:text-neutral-300 py-2 transition-all uppercase tracking-wider font-bold"
+                    className="text-xs text-neutral-400 hover:text-neutral-200 py-2 transition-all tracking-wide font-semibold"
                   >
-                    Change Method / Resend OTP
+                    Change method or resend OTP
                   </button>
                 </div>
               </div>
             )}
           </div>
 
-          <div className="flex items-center gap-2 text-[10px] text-neutral-500 border-t border-neutral-800 pt-4 mt-2">
-            <Lock className="w-3 h-3" />
+          <div className="flex items-center gap-2 text-[11px] text-neutral-400 border-t border-white/10 px-6 py-4">
+            <Lock className="w-3.5 h-3.5" />
             <span>Secure Enterprise-grade E-signature powered by NoticeBazaar Armor</span>
           </div>
         </DialogContent>

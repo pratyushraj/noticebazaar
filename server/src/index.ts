@@ -183,8 +183,12 @@ const corsOptions = {
     if (normalizedOrigin.startsWith('http://localhost:') ||
       normalizedOrigin.startsWith('http://127.0.0.1:') ||
       normalizedOrigin.startsWith('https://localhost:') ||
-      normalizedOrigin.startsWith('https://127.0.0.1:')) {
-      console.log('[CORS] ✓ Allowing localhost origin:', origin);
+      normalizedOrigin.startsWith('https://127.0.0.1:') ||
+      // Allow common local network IPs (192.168.x.x, 172.16-31.x.x, 10.x.x.x)
+      /^https?:\/\/192\.168\./.test(normalizedOrigin) ||
+      /^https?:\/\/172\.(1[6-9]|2[0-9]|3[0-1])\./.test(normalizedOrigin) ||
+      /^https?:\/\/10\./.test(normalizedOrigin)) {
+      console.log('[CORS] ✓ Allowing localhost or local network origin:', origin);
       return callback(null, true);
     }
 

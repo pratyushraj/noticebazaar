@@ -115,7 +115,7 @@ async function sendEmail(
     const url = 'https://api.resend.com/emails';
 
     const requestBody = {
-      from: 'CreatorArmour <noreply@creatorarmour.com>',
+      from: process.env.EMAIL_FROM || 'CreatorArmour <noreply@creatorarmour.com>',
       to,
       subject,
       html,

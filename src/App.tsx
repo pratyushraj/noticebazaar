@@ -352,6 +352,7 @@ const App = () => {
                         <Route path="/partner-program" element={<ProtectedLayout allowedRoles={['creator']}><PartnerProgram /></ProtectedLayout>} />
                         {/* NEW: Creator-specific pages */}
                         <Route path="/creator-contracts" element={<ProtectedLayout allowedRoles={['creator']}><CreatorContracts /></ProtectedLayout>} />
+                        <Route path="/dashboard/brand-deals" element={<Navigate to="/collab-requests" replace />} />
                         <Route path="/brand-deals" element={<ProtectedLayout allowedRoles={['creator']}><CreatorContracts /></ProtectedLayout>} />
                         <Route path="/create-deal" element={<ProtectedLayout allowedRoles={['creator']}><CreateDealPage /></ProtectedLayout>} />
                         <Route path="/creator-contracts/:dealId/delivery-details" element={<ProtectedLayout allowedRoles={['creator']}><DealDeliveryDetailsPage /></ProtectedLayout>} />

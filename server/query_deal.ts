@@ -1,34 +1,38 @@
 import { createClient } from '@supabase/supabase-js';
-import dotenv from 'dotenv';
+import * as dotenv from 'dotenv';
 dotenv.config();
 
-const supabase = createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
+const supabaseUrl = process.env.SUPABASE_URL || '';
+const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
+const supabase = createClient(supabaseUrl, supabaseKey);
 
-async function run() {
-  const dealId = 'ac01cd76-9469-412f-bc2f-5009df57e15b';
-  const { data: deal, error: dealError } = await supabase
-    .from('brand_deals')
-    .select('*')
-    .eq('id', dealId)
-    .single();
+async function checkDeal() {
+    const dealId = 'cd9cbc37-2b14-439e-8f3b-4edcecadafc7';
+    const { data, error } = await supabase
+        .from('brand_deals')
+        .select('*')
+        .eq('id', dealId)
+        .single();
 
-  if (dealError) {
-    console.error('Error fetching deal:', dealError);
-  } else {
-    console.log('Deal:', JSON.stringify(deal, null, 2));
-  }
+    if (error) {
+        console.error('Error fetching deal:', error);
+        return;
+    }
 
-  const { data: logs, error: logsError } = await supabase
-    .from('deal_action_logs')
-    .select('*')
-    .eq('deal_id', dealId)
-    .order('created_at', { ascending: false });
-
-  if (logsError) {
-    console.error('Error fetching logs:', logsError);
-  } else {
-    console.log('Logs:', JSON.stringify(logs, null, 2));
-  }
+    console.log('Deal Data:', JSON.stringify(data, null, 2));
+    
+    // Also check logs
+    const { data: logs, error: logsError } = await supabase
+        .from('deal_action_logs')
+        .select('*')
+        .eq('deal_id', dealId)
+        .order('created_at', { ascending: true });
+        
+    if (logsError) {
+        console.error('Error fetching logs:', logsError);
+    } else {
+        console.log('Action Logs:', JSON.stringify(logs, null, 2));
+    }
 }
 
-run();
+checkDeal();

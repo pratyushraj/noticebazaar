@@ -6,6 +6,7 @@ import { Sparkles, Loader2, CheckCircle, AlertCircle, TrendingUp, Edit, ArrowLef
 import { toast } from 'sonner';
 import { triggerHaptic, HapticPatterns } from '@/lib/utils/haptics';
 import { cn } from '@/lib/utils';
+import { getApiBaseUrl } from '@/lib/utils/api';
 
 interface CounterProposalResponse {
   tone: string;
@@ -70,10 +71,7 @@ export function AICounterProposal({
     triggerHaptic(HapticPatterns.light);
 
     try {
-      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 
-        (typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com') 
-          ? 'https://api.creatorarmour.com' 
-          : 'http://localhost:3001');
+      const apiBaseUrl = getApiBaseUrl();
 
       const response = await fetch(`${apiBaseUrl}/api/ai/counter-proposal`, {
         method: 'POST',
@@ -168,8 +166,8 @@ export function AICounterProposal({
           <div className={cn(
             "px-3 py-1.5 rounded-lg text-xs font-semibold",
             proposal.risk_level === 'low' ? "bg-green-500/20 text-green-300 border border-green-500/30" :
-            proposal.risk_level === 'medium' ? "bg-yellow-500/20 text-yellow-300 border border-yellow-500/30" :
-            "bg-red-500/20 text-red-300 border border-red-500/30"
+              proposal.risk_level === 'medium' ? "bg-yellow-500/20 text-yellow-300 border border-yellow-500/30" :
+                "bg-red-500/20 text-red-300 border border-red-500/30"
           )}>
             Risk: {proposal.risk_level.toUpperCase()}
           </div>

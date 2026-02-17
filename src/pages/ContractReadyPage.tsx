@@ -27,6 +27,7 @@ import { toast } from 'sonner';
 import { triggerHaptic, HapticPatterns } from '@/lib/utils/haptics';
 import { cn } from "@/lib/utils";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { getApiBaseUrl } from '@/lib/utils/api';
 
 const ContractReadyPage = () => {
   const { token } = useParams<{ token: string }>();
@@ -84,13 +85,7 @@ const ContractReadyPage = () => {
       }
 
       try {
-        let apiBaseUrl =
-          import.meta.env.VITE_API_BASE_URL ||
-          (typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com')
-            ? 'https://api.creatorarmour.com'
-            : typeof window !== 'undefined' && window.location.hostname === 'localhost'
-              ? 'http://localhost:3001'
-              : 'https://noticebazaar-api.onrender.com');
+        let apiBaseUrl = getApiBaseUrl();
 
         // Try contract-ready-tokens first, fallback to brand-reply-tokens for migration
         let response: Response;
@@ -406,7 +401,7 @@ const ContractReadyPage = () => {
         import.meta.env.VITE_API_BASE_URL ||
         (typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com')
           ? 'https://api.creatorarmour.com'
-          : 'http://localhost:3001');
+          : getApiBaseUrl());
 
       const response = await fetch(`${apiBaseUrl}/api/otp/send`, {
         method: 'POST',
@@ -465,7 +460,7 @@ const ContractReadyPage = () => {
         import.meta.env.VITE_API_BASE_URL ||
         (typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com')
           ? 'https://api.creatorarmour.com'
-          : 'http://localhost:3001');
+          : getApiBaseUrl());
 
       const response = await fetch(`${apiBaseUrl}/api/otp/verify`, {
         method: 'POST',
@@ -582,8 +577,8 @@ const ContractReadyPage = () => {
         (typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com')
           ? 'https://api.creatorarmour.com'
           : typeof window !== 'undefined' && window.location.hostname === 'localhost'
-            ? 'http://localhost:3001'
-            : 'https://noticebazaar-api.onrender.com');
+            ? getApiBaseUrl()
+            : getApiBaseUrl());
 
       // Get contract HTML snapshot (if available)
       const contractSnapshotHtml = dealInfo.contract_file_url
@@ -728,7 +723,7 @@ const ContractReadyPage = () => {
         import.meta.env.VITE_API_BASE_URL ||
         (typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com')
           ? 'https://api.creatorarmour.com'
-          : 'http://localhost:3001');
+          : getApiBaseUrl());
 
       const response = await fetch(`${apiBaseUrl}/api/contract-ready-tokens/${token}/request-edit`, {
         method: 'POST',

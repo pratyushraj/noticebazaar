@@ -1,4 +1,4 @@
-# Migrations checklist – all migrations
+creator-contracts:1 Error while trying to use the following icon from the Manifest: https://creatorarmour.com/icon-192x192.png (Download error or resource isn't a valid image)# Migrations checklist – all migrations
 
 Use this list to confirm every migration is applied to your Supabase project.
 

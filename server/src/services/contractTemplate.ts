@@ -49,7 +49,7 @@ export interface ContractVariables {
   brand_email?: string;
   brand_gstin?: string;
   creator_name: string;
-
+  creator_address?: string;
   creator_email?: string;
   deliverables_list: string;
   delivery_deadline: string;
@@ -214,7 +214,7 @@ export function mapDealSchemaToContractVariables(
     brand_email: brandInfo.email || '',
     brand_gstin: brandInfo.gstin?.trim() || undefined,
     creator_name: creatorInfo.name,
-
+    creator_address: creatorInfo.address || '',
     creator_email: creatorInfo.email || '',
     deliverables_list: deliverablesList,
     delivery_deadline: deliveryDeadline,
@@ -521,6 +521,17 @@ export function validateRequiredContractFields(
     missingFields.push('Creator email');
   }
 
+  // Creator address - must be full address
+  const creatorAddress = creatorInfo.address?.trim() || '';
+  if (!creatorAddress ||
+    creatorAddress === '' ||
+    creatorAddress === 'Not specified' ||
+    creatorAddress.toLowerCase() === 'not specified' ||
+    creatorAddress === 'N/A' ||
+    creatorAddress.toLowerCase() === 'n/a') {
+    missingFields.push('Creator address (full address required)');
+  }
+
   return {
     isValid: missingFields.length === 0,
     missingFields,
@@ -551,7 +562,7 @@ AND
 Creator:
 
 Name: ${variables.creator_name}
-
+Address: ${variables.creator_address}
 Email: ${variables.creator_email}
 
 Collectively referred to as the "Parties".

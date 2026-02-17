@@ -343,41 +343,38 @@ router.get('/:username', async (req: Request, res: Response) => {
     // Check both fields to support legacy usernames and new Instagram handle-based usernames
     const normalizedUsername = username.toLowerCase().trim();
 
-    // Try username first, then instagram_handle as fallback
-    // Using minimal required columns first, then fetching additional data if needed
-    let { data: profile, error: profileError } = await supabase
+    // Use limit(1) instead of maybeSingle() to avoid 500s on duplicate usernames/handles.
+    const baseProfileSelect = `
+      id,
+      first_name,
+      last_name,
+      business_name,
+      instagram_handle,
+      bio,
+      username
+    `;
+
+    const { data: usernameProfiles, error: usernameError } = await supabase
       .from('profiles')
-      .select(`
-        id,
-        first_name,
-        last_name,
-        business_name,
-        instagram_handle,
-        bio,
-        username
-      `)
+      .select(baseProfileSelect)
       .eq('username', normalizedUsername)
       .eq('role', 'creator')
-      .maybeSingle();
+      .limit(1);
+
+    let profile = (usernameProfiles && usernameProfiles.length > 0) ? usernameProfiles[0] : null;
+    let profileError = usernameError;
 
     // If not found by username, try instagram_handle
     if (!profile && !profileError) {
-      const result = await supabase
+      const { data: instagramProfiles, error: instagramError } = await supabase
         .from('profiles')
-        .select(`
-          id,
-          first_name,
-          last_name,
-          business_name,
-          instagram_handle,
-          bio,
-          username
-        `)
+        .select(baseProfileSelect)
         .eq('instagram_handle', normalizedUsername)
         .eq('role', 'creator')
-        .maybeSingle();
-      profile = result.data;
-      profileError = result.error;
+        .limit(1);
+
+      profile = (instagramProfiles && instagramProfiles.length > 0) ? instagramProfiles[0] : null;
+      profileError = instagramError;
     }
 
     // If profile found, fetch additional optional columns separately (to handle missing columns gracefully)
@@ -665,8 +662,9 @@ router.post('/:username/submit', async (req: Request, res: Response) => {
     const clientIp = req.ip || req.socket.remoteAddress || 'unknown';
     const userAgent = req.get('user-agent') || 'unknown';
     const isDevelopment = process.env.NODE_ENV === 'development' || !process.env.NODE_ENV;
+    const allowDemoEmail = process.env.ALLOW_DEMO_EMAIL === 'true';
 
-    if (!isDevelopment) {
+    if (!isDevelopment && !allowDemoEmail) {
       const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
 
       const { data: recentSubmissions, error: rateLimitError } = await supabase
@@ -889,7 +887,7 @@ router.post('/:username/submit', async (req: Request, res: Response) => {
             acceptUrl = `${frontendUrl}/collab/accept/${acceptTokenId}`;
           }
           */
-          acceptUrl = `${frontendUrl}/dashboard/brand-deals`;
+          acceptUrl = `${frontendUrl}/collab-requests`;
           console.warn('[CollabRequests] Magic link token creation skipped: collab_accept_tokens table missing');
 
           // Calculate total follower count
@@ -1866,4 +1864,3 @@ router.patch('/:id/decline', async (req: AuthenticatedRequest, res: Response) =>
 });
 
 export default router;
-

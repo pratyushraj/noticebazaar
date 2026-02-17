@@ -4,6 +4,7 @@
  */
 
 import { supabase } from '@/integrations/supabase/client';
+import { getApiBaseUrl } from './api';
 
 export interface SignedUrlResponse {
     success: boolean;
@@ -25,12 +26,7 @@ export async function getSignedContractUrl(dealId: string): Promise<SignedUrlRes
         throw new Error('Not authenticated');
     }
 
-    const apiBaseUrl = import.meta.env.VITE_API_BASE_URL ||
-        (typeof window !== 'undefined' && window.location.origin.includes('noticebazaar.com')
-            ? 'https://api.noticebazaar.com'
-            : typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com')
-                ? 'https://api.creatorarmour.com'
-                : 'http://localhost:3001');
+    const apiBaseUrl = getApiBaseUrl();
 
     const response = await fetch(`${apiBaseUrl}/api/contracts/signed-url`, {
         method: 'POST',
@@ -59,12 +55,7 @@ export async function getSignedContractUrlWithToken(
     token: string,
     type: 'contract' | 'signed' = 'contract'
 ): Promise<SignedUrlResponse> {
-    const apiBaseUrl = import.meta.env.VITE_API_BASE_URL ||
-        (typeof window !== 'undefined' && window.location.origin.includes('noticebazaar.com')
-            ? 'https://api.noticebazaar.com'
-            : typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com')
-                ? 'https://api.creatorarmour.com'
-                : 'http://localhost:3001');
+    const apiBaseUrl = getApiBaseUrl();
 
     const response = await fetch(`${apiBaseUrl}/api/contracts/signed-url-token`, {
         method: 'POST',

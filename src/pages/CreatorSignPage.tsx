@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { triggerHaptic, HapticPatterns } from '@/lib/utils/haptics';
+import { getApiBaseUrl } from '@/lib/utils/api';
 
 const CreatorSignPage = () => {
     const { token } = useParams<{ token: string }>();
@@ -51,11 +52,7 @@ const CreatorSignPage = () => {
             }
 
             try {
-                const apiBaseUrl =
-                    import.meta.env.VITE_API_BASE_URL ||
-                    (window.location.origin.includes('creatorarmour.com')
-                        ? 'https://api.creatorarmour.com'
-                        : 'http://localhost:3001');
+                const apiBaseUrl = getApiBaseUrl();
 
                 const response = await fetch(`${apiBaseUrl}/api/creator-sign/${token}`);
                 const data = await response.json();
@@ -110,7 +107,7 @@ const CreatorSignPage = () => {
                 import.meta.env.VITE_API_BASE_URL ||
                 (window.location.origin.includes('creatorarmour.com')
                     ? 'https://api.creatorarmour.com'
-                    : 'http://localhost:3001');
+                    : getApiBaseUrl());
 
             const response = await fetch(`${apiBaseUrl}/api/otp/send`, {
                 method: 'POST',
@@ -151,7 +148,7 @@ const CreatorSignPage = () => {
                 import.meta.env.VITE_API_BASE_URL ||
                 (window.location.origin.includes('creatorarmour.com')
                     ? 'https://api.creatorarmour.com'
-                    : 'http://localhost:3001');
+                    : getApiBaseUrl());
 
             const response = await fetch(`${apiBaseUrl}/api/otp/verify`, {
                 method: 'POST',
@@ -218,7 +215,7 @@ const CreatorSignPage = () => {
                 import.meta.env.VITE_API_BASE_URL ||
                 (window.location.origin.includes('creatorarmour.com')
                     ? 'https://api.creatorarmour.com'
-                    : 'http://localhost:3001');
+                    : getApiBaseUrl());
 
             const response = await fetch(`${apiBaseUrl}/api/creator-sign/${token}/sign`, {
                 method: 'POST',

@@ -41,7 +41,7 @@ router.post('/send', async (req: AuthenticatedRequest, res: Response) => {
         error: 'Authentication required'
       });
     }
-    
+
     const userId = req.user.id;
     const { dealId, pdfUrl, brandName, creatorName, brandPhone, creatorPhone, brandEmail, creatorEmail } = req.body;
 
@@ -60,7 +60,7 @@ router.post('/send', async (req: AuthenticatedRequest, res: Response) => {
       .select('*')
       .eq('id', dealId)
       .maybeSingle();
-    
+
     if (dealError) {
       console.error('[eSign] Error fetching deal:', dealError);
       return res.status(500).json({
@@ -68,14 +68,14 @@ router.post('/send', async (req: AuthenticatedRequest, res: Response) => {
         error: `Database error: ${dealError.message}`
       });
     }
-    
+
     if (!deal) {
       return res.status(404).json({
         success: false,
         error: 'Deal not found'
       });
     }
-    
+
     // Verify user has access
     if (deal.creator_id !== userId && req.user?.role !== 'admin') {
       return res.status(403).json({
@@ -83,35 +83,35 @@ router.post('/send', async (req: AuthenticatedRequest, res: Response) => {
         error: 'Access denied'
       });
     }
-    
+
     // Use provided pdfUrl or fallback to deal's contract_file_url
     const finalPdfUrl = pdfUrl || (deal as any).contract_file_url;
-    
+
     if (!finalPdfUrl) {
       return res.status(400).json({
         success: false,
         error: 'Contract PDF URL is required. Please ensure the deal has a contract file uploaded.'
       });
     }
-    
+
     // Fetch creator profile for phone and email
     const { data: creatorProfile } = await supabase
       .from('profiles')
       .select('id, first_name, last_name, phone, email')
       .eq('id', deal.creator_id)
       .maybeSingle();
-    
+
     // Prepare signer information
-    const finalCreatorName = creatorName || 
-      (creatorProfile ? `${creatorProfile.first_name || ''} ${creatorProfile.last_name || ''}`.trim() : '') || 
+    const finalCreatorName = creatorName ||
+      (creatorProfile ? `${creatorProfile.first_name || ''} ${creatorProfile.last_name || ''}`.trim() : '') ||
       'Creator';
-    
+
     const finalCreatorPhone = creatorPhone || (creatorProfile?.phone || '');
     const finalCreatorEmail = creatorEmail || (creatorProfile?.email || '');
     const dealBrandPhone = (deal as any).brand_phone || brandPhone || '';
     const dealBrandEmail = (deal as any).brand_email || brandEmail || '';
     const finalBrandName = brandName || deal.brand_name;
-    
+
     // Validate required phone numbers
     if (!dealBrandPhone || dealBrandPhone.trim() === '' || dealBrandPhone === '+91' || dealBrandPhone === '+91 ') {
       return res.status(400).json({
@@ -119,7 +119,7 @@ router.post('/send', async (req: AuthenticatedRequest, res: Response) => {
         error: 'Brand phone number is required for eSign'
       });
     }
-    
+
     if (!finalCreatorPhone || finalCreatorPhone.trim() === '') {
       return res.status(400).json({
         success: false,
@@ -158,7 +158,7 @@ router.post('/send', async (req: AuthenticatedRequest, res: Response) => {
     // Step 2: Upload PDF to Meon
     const fileName = `${finalBrandName}_${finalCreatorName}_Contract_${Date.now()}.pdf`;
     const uploadResult = await uploadPDF(pdfBuffer, fileName);
-    
+
     if (!uploadResult.success || !uploadResult.fileId) {
       console.error('[eSign] Upload failed:', uploadResult.error);
       return res.status(500).json({
@@ -166,14 +166,14 @@ router.post('/send', async (req: AuthenticatedRequest, res: Response) => {
         error: uploadResult.error || 'Failed to upload PDF to Meon'
       });
     }
-    
+
     console.log('[eSign] PDF uploaded to Meon, token:', uploadResult.fileId);
 
     // Step 3: Meon returns token and esign_url directly from uploadPDF
     // The uploadResult.fileId is actually the token, and esignUrl is in the response
     const token = uploadResult.fileId; // This is the token from Meon
     const esignUrl = (uploadResult as any).esignUrl;
-    
+
     if (!token) {
       console.error('[eSign] No token received from Meon upload');
       return res.status(500).json({
@@ -181,7 +181,7 @@ router.post('/send', async (req: AuthenticatedRequest, res: Response) => {
         error: 'Failed to get signing token from Meon'
       });
     }
-    
+
     console.log('[eSign] Meon upload successful:', {
       token: token,
       esignUrl: esignUrl,
@@ -195,7 +195,7 @@ router.post('/send', async (req: AuthenticatedRequest, res: Response) => {
       esign_url: esignUrl || null,
       updated_at: new Date().toISOString(),
     };
-    
+
     const { error: updateError } = await supabase
       .from('brand_deals')
       .update(updateData)
@@ -232,7 +232,7 @@ publicRouter.post('/webhook', async (req: express.Request, res: Response) => {
   try {
     // Get raw body for signature verification
     const rawBody = JSON.stringify(req.body);
-    
+
     // Verify webhook signature
     const isValid = verifyWebhookSignature(req, rawBody);
     if (!isValid) {
@@ -244,7 +244,7 @@ publicRouter.post('/webhook', async (req: express.Request, res: Response) => {
     }
 
     const { invitationId, status, event } = req.body;
-    
+
     console.log('[eSign Webhook] Received webhook:', {
       invitationId,
       status,
@@ -277,10 +277,10 @@ publicRouter.post('/webhook', async (req: express.Request, res: Response) => {
     // Handle different webhook events
     if (status === 'SIGNED' || event === 'document.signed' || status === 'signed') {
       console.log('[eSign Webhook] Document signed, downloading signed PDF...');
-      
+
       // Download signed PDF
       const downloadResult = await downloadSignedPDF(invitationId);
-      
+
       if (!downloadResult.success || !downloadResult.pdfBuffer) {
         console.error('[eSign Webhook] Failed to download signed PDF:', downloadResult.error);
         // Update status to failed but don't fail the webhook
@@ -291,7 +291,7 @@ publicRouter.post('/webhook', async (req: express.Request, res: Response) => {
             updated_at: new Date().toISOString(),
           })
           .eq('id', deal.id);
-        
+
         return res.status(500).json({
           success: false,
           error: downloadResult.error || 'Failed to download signed PDF'
@@ -302,7 +302,7 @@ publicRouter.post('/webhook', async (req: express.Request, res: Response) => {
       const creatorId = deal.creator_id;
       const fileName = `signed-contract-${deal.id}-${Date.now()}.pdf`;
       const filePath = `${creatorId}/signed-contracts/${fileName}`;
-      
+
       const { error: uploadError } = await supabase.storage
         .from('creator-assets')
         .upload(filePath, downloadResult.pdfBuffer, {
@@ -338,6 +338,7 @@ publicRouter.post('/webhook', async (req: express.Request, res: Response) => {
       const updateData: any = {
         esign_status: 'signed',
         signed_pdf_url: publicUrlData.publicUrl,
+        signed_contract_path: filePath, // Use new secure path column
         signed_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       };
@@ -366,7 +367,7 @@ publicRouter.post('/webhook', async (req: express.Request, res: Response) => {
       }
 
       console.log('[eSign Webhook] Deal updated successfully, status: signed');
-      
+
       return res.json({
         success: true,
         message: 'Webhook processed successfully'
@@ -380,9 +381,9 @@ publicRouter.post('/webhook', async (req: express.Request, res: Response) => {
           updated_at: new Date().toISOString(),
         })
         .eq('id', deal.id);
-      
+
       console.log('[eSign Webhook] Deal status updated to failed');
-      
+
       return res.json({
         success: true,
         message: 'Webhook processed, status: failed'
@@ -397,9 +398,9 @@ publicRouter.post('/webhook', async (req: express.Request, res: Response) => {
           updated_at: new Date().toISOString(),
         })
         .eq('id', deal.id);
-      
+
       console.log('[eSign Webhook] Deal status updated to:', newStatus);
-      
+
       return res.json({
         success: true,
         message: `Webhook processed, status: ${newStatus}`
@@ -424,7 +425,7 @@ router.get('/status/:dealId', async (req: AuthenticatedRequest, res: Response) =
         error: 'Authentication required'
       });
     }
-    
+
     const userId = req.user.id;
     const { dealId } = req.params;
 
@@ -434,14 +435,14 @@ router.get('/status/:dealId', async (req: AuthenticatedRequest, res: Response) =
       .select('*')
       .eq('id', dealId)
       .maybeSingle();
-    
+
     if (dealError || !deal) {
       return res.status(404).json({
         success: false,
         error: 'Deal not found'
       });
     }
-    
+
     if (deal.creator_id !== userId && req.user?.role !== 'admin') {
       return res.status(403).json({
         success: false,
@@ -450,7 +451,7 @@ router.get('/status/:dealId', async (req: AuthenticatedRequest, res: Response) =
     }
 
     const invitationId = (deal as any).esign_invitation_id;
-    
+
     if (!invitationId) {
       return res.json({
         success: true,
@@ -461,7 +462,7 @@ router.get('/status/:dealId', async (req: AuthenticatedRequest, res: Response) =
 
     // Get status from Meon
     const statusResult = await getInviteStatus(invitationId);
-    
+
     if (!statusResult.success) {
       return res.json({
         success: true,

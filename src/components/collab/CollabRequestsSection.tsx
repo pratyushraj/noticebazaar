@@ -322,7 +322,7 @@ const CollabRequestsSection = ({ copyCollabLink, usernameForLink: usernameFromPa
       ) : (
         <Card
           onClick={() => navigate('/collab-requests')}
-          className="bg-white/5 rounded-2xl backdrop-blur-xl p-3.5 md:p-5 relative overflow-hidden w-full border border-purple-400/40 ring-1 ring-purple-400/15 shadow-md shadow-purple-500/10 transition-all duration-200 cursor-pointer hover:bg-white/10 active:scale-[0.99] group"
+          className="bg-white/8 rounded-2xl backdrop-blur-xl p-3.5 md:p-5 relative overflow-hidden w-full border border-purple-400/45 ring-1 ring-purple-400/20 shadow-md shadow-purple-500/15 transition-all duration-200 cursor-pointer hover:bg-white/12 active:scale-[0.99] group"
         >
           <CardContent className="p-0 space-y-2 pointer-events-none group-active:scale-100">
             {/* Title + count pill (single line) */}
@@ -342,7 +342,7 @@ const CollabRequestsSection = ({ copyCollabLink, usernameForLink: usernameFromPa
             <div className="space-y-1">
               <Button
                 onClick={() => navigate('/collab-requests')}
-                className="w-full min-h-[44px] px-4 rounded-lg flex items-center justify-center gap-2 bg-purple-600/40 hover:bg-purple-600/50 border border-purple-400/50 font-medium text-purple-100 text-sm transition-colors"
+                className="w-full min-h-[44px] px-4 rounded-lg flex items-center justify-center gap-2 bg-gradient-to-r from-[#8B5CF6] to-[#6366F1] hover:from-[#7C3AED] hover:to-[#4F46E5] border border-purple-300/40 shadow-[0_2px_12px_rgba(139,92,246,0.35)] font-semibold text-white text-sm transition-colors"
                 aria-label={`Review collab requests, ${pendingRequests.length} pending`}
               >
                 <MessageSquare className="h-4 w-4 flex-shrink-0" aria-hidden />
@@ -352,7 +352,7 @@ const CollabRequestsSection = ({ copyCollabLink, usernameForLink: usernameFromPa
                 </span>
                 <ChevronRight className="h-4 w-4 flex-shrink-0" aria-hidden />
               </Button>
-              <p className="text-[10px] text-white/50 text-center">
+              <p className="text-[10px] text-white/55 text-center">
                 Faster replies increase acceptance rate
               </p>
             </div>
@@ -486,4 +486,3 @@ const CollabRequestsSection = ({ copyCollabLink, usernameForLink: usernameFromPa
 };
 
 export default CollabRequestsSection;
-

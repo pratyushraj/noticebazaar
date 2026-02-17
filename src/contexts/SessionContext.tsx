@@ -386,7 +386,9 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
             'free-influencer-contract', 'collaboration-agreement-generator', 'pricing-comparison',
             'privacy-policy', 'terms-of-service', 'refund-policy', 'delete-data', 'sitemap',
             'free-legal-check', 'thank-you', 'dashboard-white-preview', 'dashboard-preview',
-            'creators', 'consumer-complaints', 'plan', 'p', 'creator-sign'];
+            'creators', 'consumer-complaints', 'plan', 'p', 'creator-sign',
+            'contract-ready', 'ship', 'deal-details', 'deal', 'feedback',
+            'brand-reply', 'brand/response', 'deal/brand-response'];
 
           // Pathname-based check: /collab/:username or legacy /:username (no hash) are public
           const pathname = window.location.pathname || '';
@@ -396,7 +398,16 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
             !pathname.startsWith('/client-') && !pathname.startsWith('/ca-') &&
             !pathname.startsWith('/lawyer-') && !publicRoutes.includes(pathname.slice(1));
           const isCreatorSignPathname = pathname.startsWith('/creator-sign/');
-          const isPublicPathname = isCollabPathname || isLegacyUsernamePathname || isCreatorSignPathname;
+          const isPublicPathname = isCollabPathname || isLegacyUsernamePathname || isCreatorSignPathname ||
+            pathname.startsWith('/contract-ready/') ||
+            pathname.startsWith('/ship/') ||
+            pathname.startsWith('/deal-details/') ||
+            pathname.startsWith('/deal/') ||
+            pathname.startsWith('/feedback/') ||
+            pathname.startsWith('/brand-reply/') ||
+            pathname.startsWith('/brand/response/') ||
+            pathname.startsWith('/deal/brand-response/') ||
+            pathname.startsWith('/creator-contracts/');
 
           // Check if current route is a public route (like /:username for collab links)
           // Username routes don't match any of the reserved/public routes above
@@ -658,6 +669,8 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
         if (session && (event === 'SIGNED_IN' || isOAuthCallback || (event === 'INITIAL_SESSION' && hasHashTokens))) {
           // Set auth initializing state for OAuth callbacks too
           setIsAuthInitializing(true);
+          const pathname = window.location.pathname || '';
+
           // Get intended route from sessionStorage if not already extracted from hash
           if (!intendedRoute) {
             const storedRoute = sessionStorage.getItem('oauth_intended_route');
@@ -673,7 +686,9 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
             'free-influencer-contract', 'collaboration-agreement-generator', 'pricing-comparison',
             'privacy-policy', 'terms-of-service', 'refund-policy', 'delete-data', 'sitemap',
             'free-legal-check', 'thank-you', 'dashboard-white-preview', 'dashboard-preview',
-            'creators', 'consumer-complaints', 'plan', 'p'];
+            'creators', 'consumer-complaints', 'plan', 'p', 'creator-sign',
+            'contract-ready', 'ship', 'deal-details', 'deal', 'feedback',
+            'brand-reply', 'brand/response', 'deal/brand-response'];
 
           // Check if current route is a username route (collab link)
           const isUsernameRoute = intendedRoute && !publicRoutes.includes(intendedRoute) &&
@@ -682,14 +697,26 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
             !intendedRoute.startsWith('lawyer-') && !intendedRoute.includes('/');
 
           // Skip redirect for public routes and username routes (collab links)
-          if (isUsernameRoute) {
-            console.log('[SessionContext] Username route detected, skipping redirect:', intendedRoute);
+          const isPublicRoute = intendedRoute && publicRoutes.includes(intendedRoute);
+          const isCreatorSignPathname = pathname.startsWith('/creator-sign/');
+          const isPublicPathname = isCreatorSignPathname ||
+            pathname.startsWith('/contract-ready/') ||
+            pathname.startsWith('/ship/') ||
+            pathname.startsWith('/deal-details/') ||
+            pathname.startsWith('/deal/') ||
+            pathname.startsWith('/feedback/') ||
+            pathname.startsWith('/brand-reply/') ||
+            pathname.startsWith('/brand/response/') ||
+            pathname.startsWith('/deal/brand-response/') ||
+            pathname.startsWith('/creator-contracts/');
+
+          if (isUsernameRoute || isPublicRoute || isPublicPathname || (!isOAuthCallback && pathname !== '/' && pathname !== '/login')) {
+            console.log('[SessionContext] Skipping redirect (already on valid path or not an auth flow):', pathname);
             setIsAuthInitializing(false);
             return;
           }
 
           // If we're already on a dashboard path, skip profile fetch and redirect (avoids timeout + log spam on token refresh / repeated SIGNED_IN)
-          const pathname = window.location.pathname;
           const dashboardPaths = ['/creator-dashboard', '/admin-dashboard', '/ca-dashboard', '/lawyer-dashboard', '/creator-onboarding'];
           if (dashboardPaths.includes(pathname)) {
             setIsAuthInitializing(false);

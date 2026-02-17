@@ -2,6 +2,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useSession } from '@/contexts/SessionContext';
+import { getApiBaseUrl } from '@/lib/utils/api';
 
 export interface SignatureStatus {
     signed: boolean;
@@ -56,13 +57,8 @@ export const useDealSignatures = (dealId: string | undefined, enabled: boolean =
             const brandSigRecord = signatures.find((s: any) => s.signer_role === 'brand' && s.signed === true);
 
             // 2. Fetch from API (Secondary/Validation Source)
-            // We check for localhost vs production URL
-            const apiBaseUrl = import.meta.env.VITE_API_BASE_URL ||
-                (typeof window !== 'undefined' && window.location.origin.includes('noticebazaar.com')
-                    ? 'https://api.noticebazaar.com'
-                    : typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com')
-                        ? 'https://api.creatorarmour.com'
-                        : 'https://noticebazaar-api.onrender.com');
+            // We use 'as any' since getApiBaseUrl() is correctly imported
+            const apiBaseUrl = getApiBaseUrl();
 
             let apiBrandStatus = false;
             let apiSignedAt = undefined;

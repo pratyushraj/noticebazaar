@@ -7,6 +7,7 @@ import { Instagram, Youtube, Twitter, Facebook, CheckCircle2, Loader2, ExternalL
 import { toast } from 'sonner';
 import { SEOHead } from '@/components/seo/SEOHead';
 import { BreadcrumbSchema } from '@/components/seo/SchemaMarkup';
+import { getApiBaseUrl } from '@/lib/utils/api';
 
 // Person Schema Component (defined before use)
 const PersonSchema = ({ schema }: { schema: any }) => {
@@ -56,7 +57,7 @@ const CreatorProfilePage = () => {
   const fetchCreator = async () => {
     try {
       const response = await fetch(
-        `${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/collab/${username}`
+        `${getApiBaseUrl()}/api/collab/${username}`
       );
       const data = await response.json();
 
@@ -112,15 +113,15 @@ const CreatorProfilePage = () => {
   const creatorName = creator.name || 'Creator';
   const platformNames = creator.platforms.map(p => p.name).join(', ');
   const followerCount = creator.platforms.reduce((sum, p) => sum + (p.followers || 0), 0);
-  const followerText = followerCount > 0 
-    ? `with ${followerCount >= 1000 ? `${(followerCount / 1000).toFixed(1)}K` : followerCount} followers` 
+  const followerText = followerCount > 0
+    ? `with ${followerCount >= 1000 ? `${(followerCount / 1000).toFixed(1)}K` : followerCount} followers`
     : '';
-  
+
   const metaTitle = `${creatorName} | ${creator.category || 'Creator'} Profile`;
   const metaDescription = `Brands can collaborate securely with ${creatorName}${creator.category ? `, ${creator.category} creator` : ''} ${followerText ? followerText : ''} on ${platformNames || 'social media'}. View profile, platforms, and collaboration details.`;
-  
+
   const canonicalUrl = `https://creatorarmour.com/creator/${creator.username}`;
-  const pageImage = creator.platforms.length > 0 
+  const pageImage = creator.platforms.length > 0
     ? `https://creatorarmour.com/og-creator-${creator.username}.png`
     : 'https://creatorarmour.com/og-preview.png';
 
@@ -172,7 +173,7 @@ const CreatorProfilePage = () => {
           'India',
         ]}
         image={pageImage}
-        type="profile"
+        type="article"
         canonicalUrl={canonicalUrl}
       />
 
@@ -230,7 +231,7 @@ const CreatorProfilePage = () => {
                   {/* SEO Copy */}
                   <div className="bg-purple-500/10 border border-purple-500/20 rounded-lg p-4 mt-4">
                     <p className="text-purple-200 leading-relaxed">
-                      <strong className="text-white">Brands can collaborate securely with {creator.name}</strong> through CreatorArmour's 
+                      <strong className="text-white">Brands can collaborate securely with {creator.name}</strong> through CreatorArmour's
                       secure collaboration system. Submit collaboration requests, manage contracts, and track payments all in one place.
                     </p>
                   </div>
@@ -293,7 +294,7 @@ const CreatorProfilePage = () => {
                 Collaborate with {creator.name}
               </h2>
               <p className="text-purple-200 mb-4">
-                Submit a collaboration request through our secure system. All deals are handled with proper contracts, 
+                Submit a collaboration request through our secure system. All deals are handled with proper contracts,
                 payment tracking, and legal protection.
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
@@ -338,7 +339,7 @@ const CreatorProfilePage = () => {
               })()}
             </p>
             <p className="text-purple-200 leading-relaxed">
-              This creator profile is part of CreatorArmour's verified creator directory, helping brands discover and 
+              This creator profile is part of CreatorArmour's verified creator directory, helping brands discover and
               connect with influencers for marketing campaigns and brand partnerships.
             </p>
           </div>

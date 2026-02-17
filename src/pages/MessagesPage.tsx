@@ -9,7 +9,7 @@ import { useSession } from '@/contexts/SessionContext';
 import { toast } from 'sonner';
 import { useProfiles } from '@/lib/hooks/useProfiles';
 import { useMessages, useSendMessage } from '@/lib/hooks/useMessages';
-import { 
+import {
   findOrCreateConversation,
   isLawyerOrAdvisor,
   getAuthUserIdFromProfileId,
@@ -59,9 +59,9 @@ function LocalAvatar({ src, alt, size = 'md', className }: { src?: string; alt?:
   const dims = size === 'sm' ? 'w-10 h-10' : size === 'lg' ? 'w-12 h-12' : 'w-10 h-10';
   const textSize = size === 'sm' ? 'text-xs' : size === 'lg' ? 'text-sm' : 'text-xs';
   const initials = alt ? alt.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() : 'U';
-  
+
   return (
-    <div 
+    <div
       className={cn(
         'inline-flex items-center justify-center overflow-hidden rounded-full',
         'bg-gradient-to-br from-purple-500/20 to-indigo-500/20',
@@ -70,14 +70,14 @@ function LocalAvatar({ src, alt, size = 'md', className }: { src?: string; alt?:
         'shadow-sm',
         dims,
         className
-      )} 
+      )}
       title={alt}
     >
       {src ? (
-        <img 
-          src={src} 
-          alt={alt} 
-          className="object-cover w-full h-full" 
+        <img
+          src={src}
+          alt={alt}
+          className="object-cover w-full h-full"
         />
       ) : (
         <span className={cn(
@@ -107,23 +107,23 @@ function AdvisorCardScoped({ advisor, selected, onClick }: { advisor: Advisor; s
         radius.lg,
         'border',
         // replaced-by-ultra-polish
-        selected 
+        selected
           ? cn(
-              badges.info, 
-              'ring-2 ring-blue-400/50 border-blue-400/50', 
-              shadows.sm, 
-              'px-3 py-2 md:py-2.5', 
-              'scale-[1.02]',
-              'bg-blue-500/10 backdrop-blur-sm'
-            ) 
+            badges.info,
+            'ring-2 ring-blue-400/50 border-blue-400/50',
+            shadows.sm,
+            'px-3 py-2 md:py-2.5',
+            'scale-[1.02]',
+            'bg-blue-500/10 backdrop-blur-sm'
+          )
           : cn(
-              glass.appleSubtle, 
-              'border-white/10', 
-              'px-3 py-2 md:py-2.5', 
-              'hover:bg-white/10 hover:border-white/20',
-              'transition-all duration-200',
-              advisor.unreadCount && advisor.unreadCount > 0 && 'border-purple-400/30 bg-purple-500/5'
-            )
+            glass.appleSubtle,
+            'border-white/10',
+            'px-3 py-2 md:py-2.5',
+            'hover:bg-white/10 hover:border-white/20',
+            'transition-all duration-200',
+            advisor.unreadCount && advisor.unreadCount > 0 && 'border-purple-400/30 bg-purple-500/5'
+          )
       )}
     >
       {/* Spotlight on hover */}
@@ -146,15 +146,15 @@ function AdvisorCardScoped({ advisor, selected, onClick }: { advisor: Advisor; s
               <span className="inline-block w-2 h-2 bg-green-400 rounded-full ring-1 ring-white/20 animate-pulse" />
             )}
             {/* Typing indicator */}
-          {advisor.isTyping && (
+            {advisor.isTyping && (
               <div className="flex gap-0.5 items-center">
-              <span className={cn("w-1.5 h-1.5 bg-blue-400", radius.full, "animate-bounce")} style={{ animationDelay: '0ms' }} />
-              <span className={cn("w-1.5 h-1.5 bg-blue-400", radius.full, "animate-bounce")} style={{ animationDelay: '150ms' }} />
-              <span className={cn("w-1.5 h-1.5 bg-blue-400", radius.full, "animate-bounce")} style={{ animationDelay: '300ms' }} />
+                <span className={cn("w-1.5 h-1.5 bg-blue-400", radius.full, "animate-bounce")} style={{ animationDelay: '0ms' }} />
+                <span className={cn("w-1.5 h-1.5 bg-blue-400", radius.full, "animate-bounce")} style={{ animationDelay: '150ms' }} />
+                <span className={cn("w-1.5 h-1.5 bg-blue-400", radius.full, "animate-bounce")} style={{ animationDelay: '300ms' }} />
                 <span className="text-[10px] text-blue-400 ml-1">typing...</span>
-            </div>
-          )}
-        </div>
+              </div>
+            )}
+          </div>
           {/* Timestamp or unread indicator */}
           {advisor.unreadCount && advisor.unreadCount > 0 ? (
             <span className={cn(
@@ -167,16 +167,16 @@ function AdvisorCardScoped({ advisor, selected, onClick }: { advisor: Advisor; s
           ) : advisor.lastMessage ? (
             <span className="text-[10px] text-white/40 flex-shrink-0">Now</span>
           ) : null}
-          </div>
-        
+        </div>
+
         {/* Role - subtle */}
         <div className={cn("text-white/50 truncate text-[10px] md:text-xs mb-1")}>{advisor.role}</div>
-        
+
         {/* Last message preview - styled like chat preview */}
         <div className={cn(
           "truncate text-[11px] md:text-xs leading-tight",
-          advisor.lastMessage 
-            ? "text-white/70 font-medium" 
+          advisor.lastMessage
+            ? "text-white/70 font-medium"
             : "text-white/50 italic",
           advisor.unreadCount && advisor.unreadCount > 0 && "text-white/90 font-semibold"
         )}>
@@ -192,14 +192,14 @@ function AdvisorCardScoped({ advisor, selected, onClick }: { advisor: Advisor; s
 
       {/* Chat icon - more prominent when unread */}
       <div className={cn(
-        'p-1.5', 
-        radius.md, 
+        'p-1.5',
+        radius.md,
         "flex-shrink-0 relative z-10 transition-all duration-200",
-        selected 
-          ? 'text-blue-400 bg-blue-400/10' 
+        selected
+          ? 'text-blue-400 bg-blue-400/10'
           : advisor.unreadCount && advisor.unreadCount > 0
-          ? 'text-purple-400 bg-purple-400/10'
-          : 'text-white/40'
+            ? 'text-purple-400 bg-purple-400/10'
+            : 'text-white/40'
       )}>
         <MessageSquare className={iconSizes.sm} />
         {/* New message indicator */}
@@ -212,14 +212,14 @@ function AdvisorCardScoped({ advisor, selected, onClick }: { advisor: Advisor; s
 }
 
 // --- AdvisorList (scoped) ---
-function AdvisorListScoped({ 
-  advisors, 
-  selectedId, 
-  onSelect, 
-  isLoading 
-}: { 
-  advisors: Advisor[]; 
-  selectedId?: string | null; 
+function AdvisorListScoped({
+  advisors,
+  selectedId,
+  onSelect,
+  isLoading
+}: {
+  advisors: Advisor[];
+  selectedId?: string | null;
   onSelect?: (a: Advisor) => void;
   isLoading?: boolean;
 }) {
@@ -270,10 +270,10 @@ function AdvisorListScoped({
     )}>
       {/* Vision Pro depth elevation */}
       <div className={vision.depth.elevation} />
-      
+
       {/* Spotlight gradient */}
       <div className={cn(vision.spotlight.base, "opacity-30")} />
-      
+
       <div className={cn("px-4 py-2 md:py-2.5 border-b border-white/10", colors.bg.secondary, "relative z-10")}>
         <div className={cn(typography.label, "text-white/60 text-xs md:text-sm")}>Select Advisor</div>
       </div>
@@ -297,24 +297,24 @@ function AdvisorListScoped({
 }
 
 // --- ChatHeader (scoped) ---
-function ChatHeaderScoped({ 
-  advisor, 
-  advisors, 
-  onSwitchAdvisor 
-}: { 
+function ChatHeaderScoped({
+  advisor,
+  advisors,
+  onSwitchAdvisor
+}: {
   advisor?: Advisor | null;
   advisors?: Advisor[];
   onSwitchAdvisor?: (advisorId: string) => void;
 }) {
   const otherAdvisor = advisors?.find(a => a.id !== advisor?.id);
   const currentMode: "ca" | "advisor" = advisor?.role === 'Chartered Accountant' ? "ca" : "advisor";
-  
+
   const handleToggle = () => {
     if (otherAdvisor && onSwitchAdvisor) {
       onSwitchAdvisor(otherAdvisor.id);
     }
   };
-  
+
   return (
     <div className={cn(
       "flex items-center justify-between",
@@ -333,10 +333,10 @@ function ChatHeaderScoped({
     )}>
       {/* Vision Pro depth elevation - desktop only - reduced intensity */}
       <div className={cn("hidden md:block", vision.depth.elevation, "opacity-60")} />
-      
+
       {/* Spotlight gradient - desktop only - reduced intensity */}
       <div className={cn("hidden md:block", vision.spotlight.base, "opacity-25")} />
-      
+
       <div className={cn("flex items-center gap-2 md:gap-3 flex-1 min-w-0 relative z-10")}>
         <LocalAvatar size="sm" src={advisor?.avatarUrl} alt={advisor?.name || 'Advisor'} />
         <div className="leading-tight flex-1 min-w-0">
@@ -347,7 +347,7 @@ function ChatHeaderScoped({
 
       <div className={cn("flex items-center gap-2 flex-shrink-0 mr-2 relative z-10")}>
         {otherAdvisor && onSwitchAdvisor && (
-          <AdvisorModeSwitch 
+          <AdvisorModeSwitch
             mode={currentMode}
             onToggle={handleToggle}
           />
@@ -361,16 +361,16 @@ function ChatHeaderScoped({
 // --- MessageInput (scoped) ---
 type MessageInputVariant = 'inline' | 'mobile-fixed';
 
-function MessageInputScoped({ 
-  onSend, 
+function MessageInputScoped({
+  onSend,
   isLoading,
   variant = 'inline',
   className,
   onFocus,
   conversationId,
   userId,
-}: { 
-  onSend?: (text: string) => void; 
+}: {
+  onSend?: (text: string) => void;
   isLoading?: boolean;
   variant?: MessageInputVariant;
   className?: string;
@@ -440,10 +440,10 @@ function MessageInputScoped({
 
   const handleSend = async () => {
     if ((!value.trim() && !selectedFile) || isLoading || isUploading) return;
-    
+
     try {
       setIsUploading(true);
-      
+
       // If there's a file, upload it first
       let attachmentId: string | null = null;
       if (selectedFile && conversationId) {
@@ -453,8 +453,8 @@ function MessageInputScoped({
           if (!sessionData?.session) {
             throw new Error('Not authenticated');
           }
-          
-          const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+
+          const apiUrl = getApiBaseUrl();
           const response = await fetch(
             `${apiUrl}/api/conversations/${conversationId}/attachments/request-upload`,
             {
@@ -470,14 +470,14 @@ function MessageInputScoped({
               }),
             }
           );
-          
+
           if (!response.ok) {
             const error = await response.json();
             throw new Error(error.error || 'Failed to request upload URL');
           }
-          
+
           const { signedUrl, attachment_id } = await response.json();
-          
+
           // Upload file to signed URL
           const uploadResponse = await fetch(signedUrl, {
             method: 'PUT',
@@ -486,11 +486,11 @@ function MessageInputScoped({
               'Content-Type': selectedFile.type,
             },
           });
-          
+
           if (!uploadResponse.ok) {
             throw new Error('Failed to upload file');
           }
-          
+
           attachmentId = attachment_id;
           toast.success('File uploaded successfully');
         } catch (error: any) {
@@ -499,18 +499,18 @@ function MessageInputScoped({
           return;
         }
       }
-      
+
       // Send message (with or without attachment)
       const messageText = value.trim() || (selectedFile ? `📎 ${selectedFile.name}` : '');
       onSend?.(messageText);
-      
+
       // Clear form
       setValue('');
       setSelectedFile(null);
       if (textareaRef.current) {
         textareaRef.current.style.height = 'auto';
       }
-      
+
       // Refocus textarea so keyboard stays up on mobile
       setTimeout(() => {
         textareaRef.current?.focus();
@@ -532,7 +532,7 @@ function MessageInputScoped({
   // Update typing status in presence table
   const updateTypingStatus = async (status: 'typing' | 'online') => {
     if (!conversationId || !userId) return;
-    
+
     try {
       const { error } = await supabase.from('presence').upsert({
         conversation_id: conversationId,
@@ -542,7 +542,7 @@ function MessageInputScoped({
       }, {
         onConflict: 'conversation_id,user_id'
       });
-      
+
       // Silently handle expected errors (409 conflict, RLS blocking, table doesn't exist)
       if (error && (
         (error as any).code === '23505' || // Unique violation
@@ -556,7 +556,7 @@ function MessageInputScoped({
         // Expected errors - table might not exist or RLS blocking
         return;
       }
-      
+
       if (error) {
         // Only log unexpected errors
         console.warn('Failed to update typing status:', error);
@@ -584,16 +584,16 @@ function MessageInputScoped({
   // Handle typing indicator
   useEffect(() => {
     if (!conversationId || !userId) return;
-    
+
     if (value.trim()) {
       // User is typing
       updateTypingStatus('typing');
-      
+
       // Clear existing timeout
       if (typingTimeoutRef.current) {
         clearTimeout(typingTimeoutRef.current);
       }
-      
+
       // Set timeout to stop typing after 300ms of no input
       typingTimeoutRef.current = setTimeout(() => {
         updateTypingStatus('online');
@@ -602,7 +602,7 @@ function MessageInputScoped({
       // No text, set to online
       updateTypingStatus('online');
     }
-    
+
     return () => {
       if (typingTimeoutRef.current) {
         clearTimeout(typingTimeoutRef.current);
@@ -617,50 +617,50 @@ function MessageInputScoped({
   const wrapperClasses =
     variant === 'mobile-fixed'
       ? cn(
-          "md:hidden fixed left-0 right-0",
-          // Position above bottom nav with safe area
-          "bottom-[calc(56px+env(safe-area-inset-bottom,0px))]",
-          // z-index above bottom nav (bottom nav is z-9999, input should be z-[10000])
-          "z-[10000]",
-          // Sticky bottom with gradient
-          "bg-gradient-to-b from-transparent to-purple-900/70 backdrop-blur-xl",
-          // Horizontal padding
-          "px-3 py-2"
-        )
+        "md:hidden fixed left-0 right-0",
+        // Position above bottom nav with safe area
+        "bottom-[calc(56px+env(safe-area-inset-bottom,0px))]",
+        // z-index above bottom nav (bottom nav is z-9999, input should be z-[10000])
+        "z-[10000]",
+        // Sticky bottom with gradient
+        "bg-gradient-to-b from-transparent to-purple-900/70 backdrop-blur-xl",
+        // Horizontal padding
+        "px-3 py-2"
+      )
       : "w-full flex flex-col flex-shrink-0";
 
   const bubbleClasses =
     variant === 'mobile-fixed'
       ? cn(
-          // Auto height to fit content
-          "min-h-[56px] sm:min-h-[64px]",
-          // Flex container with items centered
-          "flex items-center gap-2",
-          // Glass morphism - reduced intensity
-          "bg-white/8 backdrop-blur-md",
-          "border border-white/8",
-          "rounded-2xl",
-          // Padding
-          "py-2.5 px-3",
-          // Overflow visible to prevent clipping
-          "overflow-visible",
-          // Smooth transitions
-          "transition-all duration-300 ease-out",
-          // Focus state: subtle lift - reduced intensity
-          isFocused 
-            ? "shadow-[0_4px_12px_rgba(138,60,255,0.2)] border-white/15" 
-            : ""
-        )
+        // Auto height to fit content
+        "min-h-[56px] sm:min-h-[64px]",
+        // Flex container with items centered
+        "flex items-center gap-2",
+        // Glass morphism - reduced intensity
+        "bg-white/8 backdrop-blur-md",
+        "border border-white/8",
+        "rounded-2xl",
+        // Padding
+        "py-2.5 px-3",
+        // Overflow visible to prevent clipping
+        "overflow-visible",
+        // Smooth transitions
+        "transition-all duration-300 ease-out",
+        // Focus state: subtle lift - reduced intensity
+        isFocused
+          ? "shadow-[0_4px_12px_rgba(138,60,255,0.2)] border-white/15"
+          : ""
+      )
       : cn(
-          "w-full",
-          spacing.cardPadding.secondary,
-          "flex items-end gap-2.5",
-          glass.appleStrong,
-          radius.xl,
-          shadows.vision,
-          "transition-all duration-300 ease-out focus-within:border-white/40 focus-within:shadow-[0_18px_40px_rgba(0,0,0,0.5)]",
-          "relative overflow-hidden"
-        );
+        "w-full",
+        spacing.cardPadding.secondary,
+        "flex items-end gap-2.5",
+        glass.appleStrong,
+        radius.xl,
+        shadows.vision,
+        "transition-all duration-300 ease-out focus-within:border-white/40 focus-within:shadow-[0_18px_40px_rgba(0,0,0,0.5)]",
+        "relative overflow-hidden"
+      );
 
   const rowClasses =
     variant === 'mobile-fixed'
@@ -671,146 +671,146 @@ function MessageInputScoped({
     <div className={cn(wrapperClasses, className)}>
       <div className={bubbleClasses}>
         <div className={rowClasses}>
-        {/* Attachment button */}
-        {variant === 'mobile-fixed' ? (
-          <motion.button
-            className={cn(
-              "h-10 w-10 rounded-xl flex items-center justify-center flex-shrink-0",
-              "bg-white/10 backdrop-blur-xl",
-              "mr-2",
-              "transition-all duration-200",
-              "text-white/80 hover:bg-white/20 active:scale-95"
-            )}
-            whileTap={animations.microTap}
-            style={{ touchAction: 'manipulation' }}
-            type="button"
-            onClick={() => fileInputRef.current?.click()}
-            aria-label="Attach file"
-          >
-            <Paperclip className="text-lg text-white/80" />
-          </motion.button>
-        ) : (
-          <motion.button
-            className={cn(
-              "h-11 w-11 md:w-12 md:h-12 flex items-center justify-center flex-shrink-0",
-              radius.full,
-              "border border-white/20 transition-all duration-200",
-              "bg-white/10 text-white/80",
-              "hover:bg-white/20 hover:scale-105",
-              "active:scale-95"
-            )}
-            whileTap={animations.microTap}
-            style={{ touchAction: 'manipulation' }}
-            type="button"
-            onClick={() => fileInputRef.current?.click()}
-            aria-label="Attach file"
-          >
-            <Paperclip className={cn(iconSizes.sm, "md:w-5 md:h-5")} />
-          </motion.button>
-        )}
+          {/* Attachment button */}
+          {variant === 'mobile-fixed' ? (
+            <motion.button
+              className={cn(
+                "h-10 w-10 rounded-xl flex items-center justify-center flex-shrink-0",
+                "bg-white/10 backdrop-blur-xl",
+                "mr-2",
+                "transition-all duration-200",
+                "text-white/80 hover:bg-white/20 active:scale-95"
+              )}
+              whileTap={animations.microTap}
+              style={{ touchAction: 'manipulation' }}
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              aria-label="Attach file"
+            >
+              <Paperclip className="text-lg text-white/80" />
+            </motion.button>
+          ) : (
+            <motion.button
+              className={cn(
+                "h-11 w-11 md:w-12 md:h-12 flex items-center justify-center flex-shrink-0",
+                radius.full,
+                "border border-white/20 transition-all duration-200",
+                "bg-white/10 text-white/80",
+                "hover:bg-white/20 hover:scale-105",
+                "active:scale-95"
+              )}
+              whileTap={animations.microTap}
+              style={{ touchAction: 'manipulation' }}
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              aria-label="Attach file"
+            >
+              <Paperclip className={cn(iconSizes.sm, "md:w-5 md:h-5")} />
+            </motion.button>
+          )}
 
-        {/* Hidden file input */}
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept="image/*,application/pdf"
-          className="hidden"
-          onChange={(e) => {
-            const file = e.target.files?.[0];
-            if (file) {
-              // Validate file
-              const maxSize = 5 * 1024 * 1024; // 5MB
-              const validTypes = ['image/*', 'application/pdf'];
-              const isValidType = file.type.startsWith('image/') || file.type === 'application/pdf';
-              
-              if (!isValidType) {
-                toast.error('Invalid file type. Please select an image or PDF.');
-                e.target.value = '';
-                return;
+          {/* Hidden file input */}
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*,application/pdf"
+            className="hidden"
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (file) {
+                // Validate file
+                const maxSize = 5 * 1024 * 1024; // 5MB
+                const validTypes = ['image/*', 'application/pdf'];
+                const isValidType = file.type.startsWith('image/') || file.type === 'application/pdf';
+
+                if (!isValidType) {
+                  toast.error('Invalid file type. Please select an image or PDF.');
+                  e.target.value = '';
+                  return;
+                }
+
+                if (file.size > maxSize) {
+                  toast.error(`File too large. Maximum size is 5MB.`);
+                  e.target.value = '';
+                  return;
+                }
+
+                setSelectedFile(file);
+                toast.success(`File selected: ${file.name}`);
               }
-              
-              if (file.size > maxSize) {
-                toast.error(`File too large. Maximum size is 5MB.`);
-                e.target.value = '';
-                return;
-              }
-              
-              setSelectedFile(file);
-              toast.success(`File selected: ${file.name}`);
-            }
-            e.target.value = ''; // Reset input
-          }}
-        />
+              e.target.value = ''; // Reset input
+            }}
+          />
 
 
-        {/* Voice message button (hold to record) - iOS 17 + visionOS */}
-        {variant === 'mobile-fixed' ? (
-          <motion.button 
-            className={cn(
-              // Compact mobile button
-              "h-10 w-10 rounded-xl flex items-center justify-center flex-shrink-0",
-              "bg-white/10 backdrop-blur-xl",
-              "mr-2",
-              "transition-all duration-200",
-              // replaced-by-ultra-polish
-              isRecording
-                ? cn(badges.danger, "animate-pulse", shadows.md, "scale-110")
-                : "text-white/80 hover:bg-white/20 active:scale-95"
-            )}
-            whileTap={animations.microTap}
-            style={{ touchAction: 'manipulation' }}
-            type="button"
-            onMouseDown={handleMicMouseDown}
-            onMouseUp={handleMicMouseUp}
-            onTouchStart={handleMicMouseDown}
-            onTouchEnd={handleMicMouseUp}
-            aria-label="Hold to record voice message"
-          >
-            <Mic className="text-lg text-white/80" />
-          </motion.button>
-        ) : (
-          <motion.button 
-            className={cn(
-              // Desktop button
-              "h-11 w-11 md:w-12 md:h-12 flex items-center justify-center flex-shrink-0",
-              radius.full,
-              "border border-white/20 transition-all duration-200",
-              // replaced-by-ultra-polish
-              isRecording
-                ? cn(badges.danger, "animate-pulse", shadows.md, "scale-110")
-                : cn(
+          {/* Voice message button (hold to record) - iOS 17 + visionOS */}
+          {variant === 'mobile-fixed' ? (
+            <motion.button
+              className={cn(
+                // Compact mobile button
+                "h-10 w-10 rounded-xl flex items-center justify-center flex-shrink-0",
+                "bg-white/10 backdrop-blur-xl",
+                "mr-2",
+                "transition-all duration-200",
+                // replaced-by-ultra-polish
+                isRecording
+                  ? cn(badges.danger, "animate-pulse", shadows.md, "scale-110")
+                  : "text-white/80 hover:bg-white/20 active:scale-95"
+              )}
+              whileTap={animations.microTap}
+              style={{ touchAction: 'manipulation' }}
+              type="button"
+              onMouseDown={handleMicMouseDown}
+              onMouseUp={handleMicMouseUp}
+              onTouchStart={handleMicMouseDown}
+              onTouchEnd={handleMicMouseUp}
+              aria-label="Hold to record voice message"
+            >
+              <Mic className="text-lg text-white/80" />
+            </motion.button>
+          ) : (
+            <motion.button
+              className={cn(
+                // Desktop button
+                "h-11 w-11 md:w-12 md:h-12 flex items-center justify-center flex-shrink-0",
+                radius.full,
+                "border border-white/20 transition-all duration-200",
+                // replaced-by-ultra-polish
+                isRecording
+                  ? cn(badges.danger, "animate-pulse", shadows.md, "scale-110")
+                  : cn(
                     "bg-white/10 text-white/80",
                     "hover:bg-white/20 hover:scale-105",
                     "active:scale-95"
                   )
-            )}
-            whileTap={animations.microTap}
-            style={{ touchAction: 'manipulation' }}
-            type="button"
-            onMouseDown={handleMicMouseDown}
-            onMouseUp={handleMicMouseUp}
-            onTouchStart={handleMicMouseDown}
-            onTouchEnd={handleMicMouseUp}
-            aria-label="Hold to record voice message"
-          >
-            <Mic className={cn(iconSizes.sm, "md:w-5 md:h-5")} />
-          </motion.button>
-        )}
+              )}
+              whileTap={animations.microTap}
+              style={{ touchAction: 'manipulation' }}
+              type="button"
+              onMouseDown={handleMicMouseDown}
+              onMouseUp={handleMicMouseUp}
+              onTouchStart={handleMicMouseDown}
+              onTouchEnd={handleMicMouseUp}
+              aria-label="Hold to record voice message"
+            >
+              <Mic className={cn(iconSizes.sm, "md:w-5 md:h-5")} />
+            </motion.button>
+          )}
 
-        {/* Text input area - iOS 17 + visionOS */}
-        <textarea
-          ref={textareaRef}
-          value={value}
-          onChange={(e) => setValue(e.target.value)}
-          onKeyDown={handleKeyDown}
-          placeholder="Type your secure message…"
-          aria-label="Type your secure message"
-          disabled={isLoading}
-          onFocus={handleFocus}
-          onBlur={handleBlur}
-          className={cn(
-            variant === 'mobile-fixed' 
-              ? cn(
+          {/* Text input area - iOS 17 + visionOS */}
+          <textarea
+            ref={textareaRef}
+            value={value}
+            onChange={(e) => setValue(e.target.value)}
+            onKeyDown={handleKeyDown}
+            placeholder="Type your secure message…"
+            aria-label="Type your secure message"
+            disabled={isLoading}
+            onFocus={handleFocus}
+            onBlur={handleBlur}
+            className={cn(
+              variant === 'mobile-fixed'
+                ? cn(
                   // Mobile-specific styling
                   "flex-1 min-w-0 bg-transparent outline-none",
                   "text-white text-[15px]",
@@ -829,7 +829,7 @@ function MessageInputScoped({
                   "opacity-100",
                   "visible"
                 )
-              : cn(
+                : cn(
                   // Desktop styling
                   "bg-transparent resize-none overflow-hidden w-full flex-1 min-w-0",
                   "text-white",
@@ -843,106 +843,106 @@ function MessageInputScoped({
                   "px-2 py-2.5",
                   "selection:bg-white/20 selection:text-white"
                 )
-          )}
-          rows={variant === 'mobile-fixed' ? 1 : 1}
-        />
+            )}
+            rows={variant === 'mobile-fixed' ? 1 : 1}
+          />
 
-        {/* Send button - iOS 17 + visionOS */}
-        {variant === 'mobile-fixed' ? (
-          <motion.button
-            onClick={() => {
-              triggerHaptic(HapticPatterns.light);
-              handleSend();
-            }}
-            disabled={(!value.trim() && !selectedFile) || isLoading || isUploading}
-            whileTap={animations.microTap}
-            className={cn(
-              // Compact mobile button
-              "flex-shrink-0 h-10 w-10 rounded-xl",
-              "flex items-center justify-center",
-              "bg-white/10 backdrop-blur-xl",
-              "ml-2",
-              "transition-all duration-300 ease-out",
-              "disabled:cursor-not-allowed",
-              (value.trim() || selectedFile)
-                ? cn(
+          {/* Send button - iOS 17 + visionOS */}
+          {variant === 'mobile-fixed' ? (
+            <motion.button
+              onClick={() => {
+                triggerHaptic(HapticPatterns.light);
+                handleSend();
+              }}
+              disabled={(!value.trim() && !selectedFile) || isLoading || isUploading}
+              whileTap={animations.microTap}
+              className={cn(
+                // Compact mobile button
+                "flex-shrink-0 h-10 w-10 rounded-xl",
+                "flex items-center justify-center",
+                "bg-white/10 backdrop-blur-xl",
+                "ml-2",
+                "transition-all duration-300 ease-out",
+                "disabled:cursor-not-allowed",
+                (value.trim() || selectedFile)
+                  ? cn(
                     gradients.primary,
                     "text-white",
                     "hover:scale-105 active:scale-95"
                   )
-                : "text-white/30"
-            )}
-            style={{ touchAction: 'manipulation' }}
-            aria-label="Send message"
-            type="button"
-          >
-            {(isLoading || isUploading) ? (
-              <Loader2 className="text-lg animate-spin" />
-            ) : (
-              <ArrowUp className="text-lg text-white/80" />
-            )}
-          </motion.button>
-        ) : (
-          <motion.button
-            onClick={() => {
-              triggerHaptic(HapticPatterns.light);
-              handleSend();
-            }}
-            disabled={(!value.trim() && !selectedFile) || isLoading || isUploading}
-            whileTap={animations.microTap}
-            className={cn(
-              // Desktop button
-              "flex-shrink-0 h-11 w-11 md:w-12 md:h-12",
-              radius.full,
-              "flex items-center justify-center",
-              "transition-all duration-300 ease-out",
-              "disabled:cursor-not-allowed",
-              "border border-white/20",
-              "relative z-10",
-              (value.trim() || selectedFile)
-                ? cn(
+                  : "text-white/30"
+              )}
+              style={{ touchAction: 'manipulation' }}
+              aria-label="Send message"
+              type="button"
+            >
+              {(isLoading || isUploading) ? (
+                <Loader2 className="text-lg animate-spin" />
+              ) : (
+                <ArrowUp className="text-lg text-white/80" />
+              )}
+            </motion.button>
+          ) : (
+            <motion.button
+              onClick={() => {
+                triggerHaptic(HapticPatterns.light);
+                handleSend();
+              }}
+              disabled={(!value.trim() && !selectedFile) || isLoading || isUploading}
+              whileTap={animations.microTap}
+              className={cn(
+                // Desktop button
+                "flex-shrink-0 h-11 w-11 md:w-12 md:h-12",
+                radius.full,
+                "flex items-center justify-center",
+                "transition-all duration-300 ease-out",
+                "disabled:cursor-not-allowed",
+                "border border-white/20",
+                "relative z-10",
+                (value.trim() || selectedFile)
+                  ? cn(
                     gradients.primary,
                     "text-white",
                     shadows.md,
                     "hover:scale-105 active:scale-95",
                     "shadow-[0_4px_16px_rgba(138,60,255,0.4)]"
                   )
-                : cn(
+                  : cn(
                     "bg-white/10 text-white/30",
                     "hover:bg-white/15"
                   )
-            )}
-            style={{ touchAction: 'manipulation' }}
-            aria-label="Send message"
-            type="button"
-          >
-            {(isLoading || isUploading) ? (
-              <Loader2 className={cn(iconSizes.md, "animate-spin")} />
-            ) : (
-              <ArrowUp className={iconSizes.md} />
-            )}
-          </motion.button>
-        )}
+              )}
+              style={{ touchAction: 'manipulation' }}
+              aria-label="Send message"
+              type="button"
+            >
+              {(isLoading || isUploading) ? (
+                <Loader2 className={cn(iconSizes.md, "animate-spin")} />
+              ) : (
+                <ArrowUp className={iconSizes.md} />
+              )}
+            </motion.button>
+          )}
+        </div>
       </div>
     </div>
-  </div>
   );
 }
 
 // --- MessageBubble (scoped) ---
-function MessageBubbleScoped({ 
-  message, 
-  isCurrentUser, 
-  currentUserAvatar, 
-  advisorAvatar, 
-  currentUserName, 
+function MessageBubbleScoped({
+  message,
+  isCurrentUser,
+  currentUserAvatar,
+  advisorAvatar,
+  currentUserName,
   advisorName,
   isGrouped = false,
   showTail = false,
   isLastInGroup = false,
   onRetry
-}: { 
-  message: Message; 
+}: {
+  message: Message;
   isCurrentUser: boolean;
   currentUserAvatar?: string;
   advisorAvatar?: string;
@@ -953,16 +953,16 @@ function MessageBubbleScoped({
   isLastInGroup?: boolean;
   onRetry?: (messageId: string) => void;
 }) {
-  const time = new Date(message.createdAt).toLocaleTimeString([], { 
-    hour: '2-digit', 
-    minute: '2-digit' 
+  const time = new Date(message.createdAt).toLocaleTimeString([], {
+    hour: '2-digit',
+    minute: '2-digit'
   });
 
   // Only show avatar for advisor messages, on the first message of a group
   const showAdvisorAvatar = !isCurrentUser && !isGrouped;
 
   return (
-    <motion.div 
+    <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.15 }}
@@ -976,36 +976,36 @@ function MessageBubbleScoped({
       {!isCurrentUser && (
         <div className="flex-shrink-0 w-7">
           {showAdvisorAvatar ? (
-            <LocalAvatar 
-              src={advisorAvatar} 
-              alt={advisorName || 'Advisor'} 
+            <LocalAvatar
+              src={advisorAvatar}
+              alt={advisorName || 'Advisor'}
               size="sm"
               className="w-7 h-7"
             />
           ) : (
-            <div className="w-7" /> 
+            <div className="w-7" />
           )}
         </div>
       )}
-      
+
       <div className={cn(
         "max-w-[90%] px-3 py-2.5 text-sm",
         // Enhanced color differentiation
         isCurrentUser
           ? cn(
-              // User message: brighter purple (more saturated)
-              "bg-gradient-to-br from-purple-500 to-purple-600 text-white",
-              "shadow-sm shadow-purple-500/20",
-              showTail ? "rounded-2xl rounded-br-sm" : "rounded-2xl"
-            )
+            // User message: brighter purple (more saturated)
+            "bg-gradient-to-br from-purple-500 to-purple-600 text-white",
+            "shadow-sm shadow-purple-500/20",
+            showTail ? "rounded-2xl rounded-br-sm" : "rounded-2xl"
+          )
           : cn(
-              // Advisor message: solid, authoritative, muted gray-purple for contrast
-              "bg-slate-700/40 backdrop-blur-md text-white",
-              "border border-slate-500/30",
-              // Combined shadow for depth and inner glow
-              "shadow-[0_2px_8px_rgba(0,0,0,0.2),inset_0_1px_0_rgba(255,255,255,0.08)]",
-              showTail ? "rounded-2xl rounded-bl-sm" : "rounded-2xl"
-            ),
+            // Advisor message: solid, authoritative, muted gray-purple for contrast
+            "bg-slate-700/40 backdrop-blur-md text-white",
+            "border border-slate-500/30",
+            // Combined shadow for depth and inner glow
+            "shadow-[0_2px_8px_rgba(0,0,0,0.2),inset_0_1px_0_rgba(255,255,255,0.08)]",
+            showTail ? "rounded-2xl rounded-bl-sm" : "rounded-2xl"
+          ),
         // Failed message styling
         message.failed && isCurrentUser && "opacity-75 border border-red-400/30"
       )}>
@@ -1016,7 +1016,7 @@ function MessageBubbleScoped({
         )}>
           {/* Time - show only on last message of group */}
           {(isLastInGroup || !isGrouped) && <span className="opacity-70">{time}</span>}
-          
+
           {/* Seen status (only for user messages) */}
           {isCurrentUser && !message.failed && (
             <span className="ml-0.5">
@@ -1027,7 +1027,7 @@ function MessageBubbleScoped({
               )}
             </span>
           )}
-          
+
           {/* Failed message retry option */}
           {message.failed && isCurrentUser && onRetry && (
             <button
@@ -1039,24 +1039,24 @@ function MessageBubbleScoped({
               <RefreshCw className="w-3 h-3 text-red-300" />
             </button>
           )}
-          
+
           {/* Failed indicator */}
           {message.failed && isCurrentUser && (
             <AlertCircle className="w-3 h-3 text-red-300 ml-0.5" aria-label="Failed to send" />
           )}
         </div>
       </div>
-      
+
       {/* No avatar for user messages - cleaner like iMessage */}
     </motion.div>
   );
 }
 
 // --- ChatWindow (scoped) ---
-function ChatWindowScoped({ 
+function ChatWindowScoped({
   advisor,
   advisors,
-  messages, 
+  messages,
   onSend,
   onSwitchAdvisor,
   currentUserAvatar,
@@ -1064,10 +1064,10 @@ function ChatWindowScoped({
   isLoading,
   conversationId,
   userId
-}: { 
+}: {
   advisor?: Advisor | null;
   advisors?: Advisor[];
-  messages?: Message[]; 
+  messages?: Message[];
   onSend?: (text: string) => void;
   onSwitchAdvisor?: (advisorId: string) => void;
   currentUserAvatar?: string;
@@ -1108,13 +1108,13 @@ function ChatWindowScoped({
   useEffect(() => {
     const handler = () => scrollToBottom();
     window.addEventListener("resize", handler);
-    
+
     // Handle mobile keyboard appearance/disappearance
     if (window.visualViewport) {
       window.visualViewport.addEventListener("resize", handler);
       window.visualViewport.addEventListener("scroll", handler);
     }
-    
+
     return () => {
       window.removeEventListener("resize", handler);
       if (window.visualViewport) {
@@ -1126,11 +1126,11 @@ function ChatWindowScoped({
 
   const handleSend = async () => {
     if (!newMessage.trim() || isLoading) return;
-    
+
     try {
       await onSend?.(newMessage);
       setNewMessage('');
-      
+
       // Refocus input so keyboard stays up on mobile
       setTimeout(() => {
         inputRef.current?.focus();
@@ -1153,15 +1153,15 @@ function ChatWindowScoped({
     )}>
       {/* Vision Pro depth elevation - desktop only */}
       <div className={cn("hidden md:block", vision.depth.elevation)} />
-      
+
       {/* Spotlight gradient - desktop only */}
       <div className={cn("hidden md:block", vision.spotlight.base, "opacity-30")} />
-      
+
       {/* Header - fixed height, not scrollable */}
       <ChatHeaderScoped advisor={advisor} advisors={advisors} onSwitchAdvisor={onSwitchAdvisor} />
 
       {/* Messages area - ONLY scrollable container */}
-      <div 
+      <div
         id="MessagesScrollContainer"
         ref={messagesContainerRef}
         className={cn(
@@ -1190,25 +1190,25 @@ function ChatWindowScoped({
               const messageList = messages || [];
               const prevMsg = index > 0 ? messageList[index - 1] : null;
               const nextMsg = index < messageList.length - 1 ? messageList[index + 1] : null;
-              
+
               // Check if this is a new day
               const currentDate = new Date(m.createdAt);
               const prevDate = prevMsg ? new Date(prevMsg.createdAt) : null;
-              const isNewDay = !prevDate || 
+              const isNewDay = !prevDate ||
                 currentDate.toDateString() !== prevDate.toDateString();
-              
+
               // Format date for separator
               const formatDateSeparator = (date: Date): string => {
                 const today = new Date();
                 const yesterday = new Date(today);
                 yesterday.setDate(yesterday.getDate() - 1);
-                
+
                 if (date.toDateString() === today.toDateString()) {
                   return 'Today';
                 } else if (date.toDateString() === yesterday.toDateString()) {
                   return 'Yesterday';
                 } else {
-                  return date.toLocaleDateString('en-US', { 
+                  return date.toLocaleDateString('en-US', {
                     weekday: 'long',
                     year: 'numeric',
                     month: 'long',
@@ -1216,20 +1216,20 @@ function ChatWindowScoped({
                   });
                 }
               };
-              
-              const isFirstOfGroup = 
+
+              const isFirstOfGroup =
                 index === 0 ||
                 !prevMsg ||
                 prevMsg.author !== m.author ||
                 new Date(m.createdAt).getTime() - new Date(prevMsg.createdAt).getTime() > 300000; // 5 minute gap
-              
-              const isLastInGroup = !nextMsg || 
+
+              const isLastInGroup = !nextMsg ||
                 nextMsg.author !== m.author ||
                 new Date(nextMsg.createdAt).getTime() - new Date(m.createdAt).getTime() > 300000; // 5 minute gap
-              
+
               const showTail = isFirstOfGroup;
               const isGrouped = !isFirstOfGroup;
-              
+
               return (
                 <React.Fragment key={m.id}>
                   {/* Date separator */}
@@ -1245,7 +1245,7 @@ function ChatWindowScoped({
                       </div>
                     </div>
                   )}
-                  
+
                   <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -1282,7 +1282,7 @@ function ChatWindowScoped({
       {(() => {
         const referrer = document.referrer || '';
         const contextualActions: Array<{ label: string; message: string }> = [];
-        
+
         if (referrer.includes('/contract-upload') || referrer.includes('/contract')) {
           contextualActions.push({ label: 'Ask about this contract', message: 'I have a question about the contract I just analyzed.' });
         }
@@ -1292,7 +1292,7 @@ function ChatWindowScoped({
         if (referrer.includes('/protection')) {
           contextualActions.push({ label: 'Ask about risky clause', message: 'I need help understanding a risky clause in my contract.' });
         }
-        
+
         return contextualActions.length > 0 ? (
           <div className="px-4 pb-2 hidden md:flex flex-wrap gap-2 border-t border-white/10">
             {contextualActions.map((action, index) => (
@@ -1432,7 +1432,7 @@ export default function MessagesPage() {
     } else {
       const result: Advisor[] = [];
       const seenIds = new Set<string>();
-      
+
       if (adminProfile && !seenIds.has(adminProfile.id)) {
         seenIds.add(adminProfile.id);
         // Special case: Prateek (lawyer) - user ID: 27239566-f735-4423-a898-8dbaee1ec77f
@@ -1440,7 +1440,7 @@ export default function MessagesPage() {
         const firstName = isPrateek ? 'Prateek' : (adminProfile.first_name || '');
         const lastName = isPrateek ? '' : (adminProfile.last_name || '');
         const displayName = isPrateek ? 'Prateek' : `${firstName} ${lastName}`.trim() || 'Legal Advisor';
-        
+
         result.push({
           id: adminProfile.id,
           name: displayName,
@@ -1523,7 +1523,7 @@ export default function MessagesPage() {
 
   // Sample history disabled - no demo messages for any users
   const sampleHistory: never[] = [];
-  
+
   // Convert messages to new format (CometChat, Conversation, or Legacy)
   const messages: Message[] = useMemo(() => {
     if (!selectedAdvisorId || !currentUserId) return [];
@@ -1584,16 +1584,16 @@ export default function MessagesPage() {
   const advisorsWithMetadata = useMemo(() => {
     return advisors.map(advisor => {
       const advisorMessages = messages.filter(m => m.advisorId === advisor.id);
-      const lastMessage = advisorMessages.length > 0 
+      const lastMessage = advisorMessages.length > 0
         ? advisorMessages[advisorMessages.length - 1]
         : null;
-      
+
       // Get last message preview text
       let lastMessageText: string | undefined;
       if (lastMessage) {
         const prefix = lastMessage.author === 'user' ? 'You: ' : `${advisor.name.split(' ')[0]}: `;
-        lastMessageText = prefix + (lastMessage.text.length > 40 
-          ? lastMessage.text.substring(0, 40) + '...' 
+        lastMessageText = prefix + (lastMessage.text.length > 40
+          ? lastMessage.text.substring(0, 40) + '...'
           : lastMessage.text);
       }
 
@@ -1613,7 +1613,7 @@ export default function MessagesPage() {
   // Typing indicator simulation (only if not using CometChat)
   useEffect(() => {
     if (useCometChatEnabled) return; // CometChat handles typing indicators
-    
+
     const interval = setInterval(() => {
       if (selectedAdvisorId && Math.random() > 0.7) {
         setTypingAdvisors(new Set([selectedAdvisorId]));
@@ -1696,7 +1696,7 @@ export default function MessagesPage() {
   // Check if advisor is lawyer/CA and setup conversation
   useEffect(() => {
     if (!selectedAdvisorId || !currentUserId) return;
-    
+
     // Check if conversation already exists to avoid unnecessary setup
     if (conversationIds.has(selectedAdvisorId)) {
       return;
@@ -1713,13 +1713,13 @@ export default function MessagesPage() {
         // Use the outer selectedAdvisor or find it here
         const advisor = advisors.find(a => a.id === selectedAdvisorId);
         const advisorName = advisor?.name || 'Advisor';
-        
+
         const convId = await findOrCreateConversation(
           currentUserId,
           advisorAuthId,
           `Chat with ${advisorName}`
         );
-        
+
         setConversationIds(prev => {
           const next = new Map(prev);
           next.set(selectedAdvisorId, convId);
@@ -1754,7 +1754,7 @@ export default function MessagesPage() {
 
       // Use the outer selectedAdvisor that's already declared
       const isAdvisorChat = selectedAdvisor?.role === 'Legal Advisor' || selectedAdvisor?.role === 'Chartered Accountant';
-      
+
       if (import.meta.env.DEV) {
         console.log('[MessagesPage] Send attempt:', {
           selectedAdvisorId,
@@ -1855,51 +1855,51 @@ export default function MessagesPage() {
 
   return (
     <ContextualTipsProvider currentView="messages">
-    <div className="flex flex-col min-h-full overflow-hidden bg-transparent">
-      {/* Content area - simplified structure - Maintain 2-column layout on iPad (≥768px) */}
-      <div className="flex-1 min-h-0 flex gap-4 md:gap-6 md:p-6 px-3 md:px-6 overflow-hidden">
-        {/* Desktop & iPad: Fixed sidebar - Always visible at ≥768px */}
-        {!isMobile && (
-          <AdvisorListScoped
-            advisors={advisorsWithMetadata}
-            selectedId={selectedAdvisorId}
-            onSelect={handleSelectAdvisor}
-            isLoading={isLoadingAdvisors}
-          />
-        )}
+      <div className="flex flex-col min-h-full overflow-hidden bg-transparent">
+        {/* Content area - simplified structure - Maintain 2-column layout on iPad (≥768px) */}
+        <div className="flex-1 min-h-0 flex gap-4 md:gap-6 md:p-6 px-3 md:px-6 overflow-hidden">
+          {/* Desktop & iPad: Fixed sidebar - Always visible at ≥768px */}
+          {!isMobile && (
+            <AdvisorListScoped
+              advisors={advisorsWithMetadata}
+              selectedId={selectedAdvisorId}
+              onSelect={handleSelectAdvisor}
+              isLoading={isLoadingAdvisors}
+            />
+          )}
 
-        {/* Chat Window - simplified to single flex container, no h-full */}
-        <div className="flex-1 min-w-0 flex flex-col min-h-0 -mx-3 md:mx-0 overflow-hidden">
-          <ChatWindowScoped
-            advisor={selectedAdvisor}
-            advisors={advisors}
-            messages={messages}
-            onSend={handleSend}
-            onSwitchAdvisor={(advisorId) => {
-              const advisor = advisors.find(a => a.id === advisorId);
-              if (advisor) {
-                handleSelectAdvisor(advisor);
-              }
-            }}
-            currentUserAvatar={profile?.avatar_url || undefined}
-            currentUserName={currentUserName}
-            isLoading={sendMessageMutation.isPending || sendConversationMessageMutation.isPending || isLoadingMessages || isLoadingConversationMessages || cometChat.isLoading}
-            conversationId={selectedAdvisorId ? conversationIds.get(selectedAdvisorId) || undefined : undefined}
-            userId={currentUserId || undefined}
-          />
+          {/* Chat Window - simplified to single flex container, no h-full */}
+          <div className="flex-1 min-w-0 flex flex-col min-h-0 -mx-3 md:mx-0 overflow-hidden">
+            <ChatWindowScoped
+              advisor={selectedAdvisor}
+              advisors={advisors}
+              messages={messages}
+              onSend={handleSend}
+              onSwitchAdvisor={(advisorId) => {
+                const advisor = advisors.find(a => a.id === advisorId);
+                if (advisor) {
+                  handleSelectAdvisor(advisor);
+                }
+              }}
+              currentUserAvatar={profile?.avatar_url || undefined}
+              currentUserName={currentUserName}
+              isLoading={sendMessageMutation.isPending || sendConversationMessageMutation.isPending || isLoadingMessages || isLoadingConversationMessages || cometChat.isLoading}
+              conversationId={selectedAdvisorId ? conversationIds.get(selectedAdvisorId) || undefined : undefined}
+              userId={currentUserId || undefined}
+            />
+          </div>
         </div>
-      </div>
 
-      {/* Mobile fixed composer - rendered at page level for proper visibility */}
-      <MessageInputScoped
-        onSend={handleSend}
-        isLoading={sendMessageMutation.isPending || isLoadingMessages || cometChat.isLoading}
-        variant="mobile-fixed"
-        className="md:hidden"
-        conversationId={selectedAdvisorId ? conversationIds.get(selectedAdvisorId) || undefined : undefined}
-        userId={currentUserId || undefined}
-      />
-    </div>
+        {/* Mobile fixed composer - rendered at page level for proper visibility */}
+        <MessageInputScoped
+          onSend={handleSend}
+          isLoading={sendMessageMutation.isPending || isLoadingMessages || cometChat.isLoading}
+          variant="mobile-fixed"
+          className="md:hidden"
+          conversationId={selectedAdvisorId ? conversationIds.get(selectedAdvisorId) || undefined : undefined}
+          userId={currentUserId || undefined}
+        />
+      </div>
     </ContextualTipsProvider>
   );
 }

@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useLocation, Link } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { CheckCircle2, Loader2 } from 'lucide-react';
+import { getApiBaseUrl } from '@/lib/utils/api';
 
 const CollabLinkSuccess = () => {
   const { username } = useParams<{ username: string }>();
@@ -27,7 +28,7 @@ const CollabLinkSuccess = () => {
       }
 
       try {
-        const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/collab/${username}`);
+        const response = await fetch(`${getApiBaseUrl()}/api/collab/${username}`);
         if (response.ok) {
           const data = await response.json();
           if (data.success && data.creator) {
@@ -45,10 +46,10 @@ const CollabLinkSuccess = () => {
   }, [username, location.state]);
 
   // Determine display name with fallback
-  const displayName = loading 
+  const displayName = loading
     ? 'the creator'
-    : (creatorName && creatorName !== 'the creator' && creatorName.trim() !== '') 
-      ? creatorName 
+    : (creatorName && creatorName !== 'the creator' && creatorName.trim() !== '')
+      ? creatorName
       : 'the creator';
 
   const confirmationText = displayName === 'the creator'
@@ -58,19 +59,19 @@ const CollabLinkSuccess = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 text-white flex items-center justify-center px-4 py-8">
       <Card className="bg-white/10 backdrop-blur-md border-white/20 max-w-lg w-full">
-        <CardContent className="p-6 md:p-8">
+        <CardContent className="p-5 md:p-7">
           {/* Success Icon */}
           <div className="flex justify-center mb-6">
             <div className="rounded-full bg-gradient-to-r from-purple-600 to-pink-600 p-4 animate-in fade-in duration-500">
               <CheckCircle2 className="h-12 w-12 text-white" aria-hidden="true" />
             </div>
           </div>
-          
+
           {/* Headline */}
           <h1 className="text-3xl font-bold text-white mb-4 text-center">
             Request Sent Successfully!
           </h1>
-          
+
           {/* Confirmation Message */}
           <p className="text-lg text-purple-200 mb-6 text-center leading-relaxed">
             {loading ? (
@@ -84,7 +85,7 @@ const CollabLinkSuccess = () => {
           </p>
 
           {/* What happens next section */}
-          <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-lg p-5 mb-6 text-left">
+          <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-lg p-4 mb-5 text-left">
             <h2 className="text-lg font-semibold text-white mb-3">What happens next?</h2>
             <ul className="space-y-2 text-purple-200 text-sm leading-relaxed">
               <li className="flex items-start gap-2">
@@ -97,22 +98,18 @@ const CollabLinkSuccess = () => {
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-purple-400 mt-0.5">•</span>
-                <span>If accepted, a contract is generated automatically</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-purple-400 mt-0.5">•</span>
                 <span>Payments and deliverables are tracked inside Creator Armour</span>
               </li>
             </ul>
           </div>
 
           {/* Trust Reinforcement */}
-          <div className="bg-purple-900/30 border border-purple-500/20 rounded-lg p-4 mb-6">
+          <div className="bg-purple-900/30 border border-purple-500/20 rounded-lg p-4 mb-5">
             <p className="text-purple-200 text-sm text-center leading-relaxed">
               All collaboration details, contracts, and payments are handled securely on Creator Armour — no DMs required.
-          </p>
+            </p>
           </div>
-          
+
           {/* CTA Buttons */}
           <div className="space-y-3">
             <Button
@@ -122,28 +119,27 @@ const CollabLinkSuccess = () => {
             >
               <Link to="/">Go to Creator Armour Home</Link>
             </Button>
-            
+
             {username && (
               <>
-              <Button
-                asChild
-                variant="outline"
-                className="w-full border-white/20 text-white hover:bg-white/10"
+                <Button
+                  asChild
+                  variant="outline"
+                  className="w-full border-white/20 text-white hover:bg-white/10"
                   aria-label="Send another collaboration request"
-              >
+                >
                   <Link to={`/${username}`}>Send another collaboration request</Link>
-              </Button>
-                
+                </Button>
+
                 {/* Tertiary text link */}
-                <div className="text-center pt-2">
-                  <Link
-                    to={`/${username}`}
-                    className="text-purple-300 hover:text-white text-sm underline underline-offset-2 transition-colors"
-                    aria-label="View this creator's collab link again"
-                  >
-                    View this creator's collab link again
-                  </Link>
-                </div>
+                <Button
+                  asChild
+                  variant="outline"
+                  className="w-full border-white/10 text-purple-200/90 hover:bg-white/5"
+                  aria-label="View this creator's collab link again"
+                >
+                  <Link to={`/${username}`}>View this creator&apos;s collab link again</Link>
+                </Button>
               </>
             )}
           </div>
@@ -154,4 +150,3 @@ const CollabLinkSuccess = () => {
 };
 
 export default CollabLinkSuccess;
-

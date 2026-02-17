@@ -95,7 +95,7 @@ router.post('/log-share', async (req: AuthenticatedRequest, res: Response) => {
       .select('brand_response_status')
       .eq('id', dealId)
       .single();
-    
+
     // Don't reset status if already accepted_verified (final state)
     if (currentDeal?.brand_response_status === 'accepted_verified') {
       // Only update updated_at, don't change status
@@ -105,7 +105,7 @@ router.post('/log-share', async (req: AuthenticatedRequest, res: Response) => {
           updated_at: new Date().toISOString(),
         })
         .eq('id', dealId);
-      
+
       if (updateError) {
         console.error('[Deals] Failed to update deal timestamp:', updateError);
       }
@@ -119,7 +119,7 @@ router.post('/log-share', async (req: AuthenticatedRequest, res: Response) => {
           updated_at: new Date().toISOString(),
         })
         .eq('id', dealId);
-      
+
       if (updateError) {
         console.error('[Deals] Failed to update deal status:', updateError);
       }
@@ -184,7 +184,7 @@ router.post('/log-reminder', async (req: AuthenticatedRequest, res: Response) =>
 
     // Extract metadata from request body (if provided)
     const requestMetadata = req.body.metadata || {};
-    
+
     // Log to deal_action_logs
     const { data: logEntry, error: logError } = await supabase
       .from('deal_action_logs')
@@ -476,180 +476,180 @@ router.get(
 // POST /api/deals/:dealId/sign-as-creator
 // Allow creators to sign contracts after brand has signed
 const signAsCreatorHandler = async (req: AuthenticatedRequest, res: Response) => {
-    console.log('[Deals] sign-creator route hit:', req.method, req.path, req.params);
-    try {
-      const userId = req.user!.id;
-      const { dealId } = req.params;
-      const {
-        signerName,
-        signerEmail,
-        signerPhone,
-        contractVersionId,
-        contractSnapshotHtml,
-        otpVerified,
-        otpVerifiedAt,
-      } = req.body;
+  console.log('[Deals] sign-creator route hit:', req.method, req.path, req.params);
+  try {
+    const userId = req.user!.id;
+    const { dealId } = req.params;
+    const {
+      signerName,
+      signerEmail,
+      signerPhone,
+      contractVersionId,
+      contractSnapshotHtml,
+      otpVerified,
+      otpVerifiedAt,
+    } = req.body;
 
-      console.log('[Deals] sign-creator - userId:', userId, 'dealId:', dealId);
+    console.log('[Deals] sign-creator - userId:', userId, 'dealId:', dealId);
 
-      if (!dealId) {
-        return res.status(400).json({
-          success: false,
-          error: 'Deal ID is required',
-        });
-      }
-
-      // Verify deal exists and belongs to current creator
-      // Note: contract_version column may not exist in all databases, so we don't select it
-      const { data: deal, error: dealError } = await supabase
-        .from('brand_deals')
-        .select('id, creator_id, contract_file_url, creator_otp_verified, creator_otp_verified_at')
-        .eq('id', dealId)
-        .single();
-
-      console.log('[Deals] sign-creator - deal lookup result:', { 
-        dealExists: !!deal, 
-        dealError: dealError?.message,
-        dealId: deal?.id,
-        creatorId: deal?.creator_id,
-        userId 
-      });
-
-      if (dealError || !deal) {
-        console.error('[Deals] sign-creator - Deal not found:', {
-          dealError: dealError?.message,
-          dealErrorCode: dealError?.code,
-          dealErrorDetails: dealError?.details,
-          dealId: dealId,
-          hasDeal: !!deal,
-          supabaseInitialized: !!supabase
-        });
-        return res.status(404).json({
-          success: false,
-          error: 'Deal not found',
-          details: dealError?.message || 'No deal returned from database',
-        });
-      }
-
-      if (deal.creator_id !== userId && req.user!.role !== 'admin') {
-        console.log('[Deals] sign-creator - Access denied: creator_id mismatch');
-        return res.status(403).json({
-          success: false,
-          error: 'You can only sign contracts for your own deals',
-        });
-      }
-
-      // Verify creator OTP was verified
-      const dealData = deal as any;
-      console.log('[Deals] sign-creator - OTP check:', {
-        creator_otp_verified: dealData.creator_otp_verified,
-        creator_otp_verified_at: dealData.creator_otp_verified_at
-      });
-      
-      if (!dealData.creator_otp_verified) {
-        console.log('[Deals] sign-creator - OTP not verified, rejecting');
-        return res.status(400).json({
-          success: false,
-          error: 'OTP verification is required before signing. Please verify your OTP first.',
-        });
-      }
-      
-      console.log('[Deals] sign-creator - OTP verified, proceeding with signing');
-
-      // Get creator profile for default values
-      console.log('[Deals] sign-creator - Fetching creator profile...');
-      const { data: profile, error: profileError } = await supabase
-        .from('profiles')
-        .select('first_name, last_name, phone')
-        .eq('id', userId)
-        .single();
-
-      if (profileError) {
-        console.error('[Deals] sign-creator - Profile fetch error:', profileError);
-      }
-
-      // Get email from auth.users (email is in auth, not profiles)
-      let creatorEmail: string | null = null;
-      if (!signerEmail) {
-        console.log('[Deals] sign-creator - Fetching email from auth.users...');
-        const { data: authUser, error: authError } = await supabase.auth.admin.getUserById(userId);
-        if (authError) {
-          console.error('[Deals] sign-creator - Auth user fetch error:', authError);
-        } else {
-          creatorEmail = authUser?.user?.email || null;
-          console.log('[Deals] sign-creator - Email from auth:', creatorEmail ? `${creatorEmail.substring(0, 3)}***` : 'not found');
-        }
-      }
-
-      const finalSignerName = signerName || 
-        (profile?.first_name && profile?.last_name 
-          ? `${profile.first_name} ${profile.last_name}`
-          : profile?.first_name || 'Creator');
-      const finalSignerEmail = signerEmail || creatorEmail;
-      const finalSignerPhone = signerPhone || profile?.phone;
-
-      console.log('[Deals] sign-creator - Signer info:', {
-        name: finalSignerName,
-        email: finalSignerEmail ? `${finalSignerEmail.substring(0, 3)}***` : 'missing',
-        phone: finalSignerPhone ? 'provided' : 'missing'
-      });
-
-      if (!finalSignerEmail) {
-        console.log('[Deals] sign-creator - Missing signer email, rejecting');
-        return res.status(400).json({
-          success: false,
-          error: 'Signer email is required',
-        });
-      }
-
-      // Get client info
-      const { getClientIp, getDeviceInfo } = await import('../services/contractSigningService.js');
-      const ipAddress = getClientIp(req);
-      const userAgent = req.headers['user-agent'] || 'Unknown';
-      const deviceInfo = getDeviceInfo(userAgent);
-
-      // Sign contract as creator
-      console.log('[Deals] sign-creator - Calling signContractAsCreator service...');
-      const { signContractAsCreator } = await import('../services/contractSigningService.js');
-      const result = await signContractAsCreator({
-        dealId,
-        creatorId: userId,
-        signerName: finalSignerName,
-        signerEmail: finalSignerEmail,
-        signerPhone: finalSignerPhone,
-        contractVersionId: contractVersionId || 'v3', // Default to v3 if not provided
-        contractSnapshotHtml: contractSnapshotHtml || 
-          (deal.contract_file_url 
-            ? `Contract URL: ${deal.contract_file_url}\nSigned at: ${new Date().toISOString()}`
-            : undefined),
-        ipAddress,
-        userAgent,
-        deviceInfo,
-        otpVerified: true, // Already verified above
-        otpVerifiedAt: otpVerifiedAt || dealData.creator_otp_verified_at || new Date().toISOString(),
-      });
-
-      if (!result.success) {
-        console.error('[Deals] sign-creator - Signing failed:', result.error);
-        return res.status(400).json({
-          success: false,
-          error: result.error || 'Failed to sign contract',
-        });
-      }
-
-      console.log('[Deals] sign-creator - Contract signed successfully!');
-      return res.json({
-        success: true,
-        message: 'Contract signed successfully',
-        signature: result.signature,
-      });
-    } catch (error: any) {
-      console.error('[Deals] Sign as creator error:', error);
-      return res.status(500).json({
+    if (!dealId) {
+      return res.status(400).json({
         success: false,
-        error: error.message || 'Internal server error',
+        error: 'Deal ID is required',
       });
     }
+
+    // Verify deal exists and belongs to current creator
+    // Note: contract_version column may not exist in all databases, so we don't select it
+    const { data: deal, error: dealError } = await supabase
+      .from('brand_deals')
+      .select('id, creator_id, contract_file_url, creator_otp_verified, creator_otp_verified_at')
+      .eq('id', dealId)
+      .single();
+
+    console.log('[Deals] sign-creator - deal lookup result:', {
+      dealExists: !!deal,
+      dealError: dealError?.message,
+      dealId: deal?.id,
+      creatorId: deal?.creator_id,
+      userId
+    });
+
+    if (dealError || !deal) {
+      console.error('[Deals] sign-creator - Deal not found:', {
+        dealError: dealError?.message,
+        dealErrorCode: dealError?.code,
+        dealErrorDetails: dealError?.details,
+        dealId: dealId,
+        hasDeal: !!deal,
+        supabaseInitialized: !!supabase
+      });
+      return res.status(404).json({
+        success: false,
+        error: 'Deal not found',
+        details: dealError?.message || 'No deal returned from database',
+      });
+    }
+
+    if (deal.creator_id !== userId && req.user!.role !== 'admin') {
+      console.log('[Deals] sign-creator - Access denied: creator_id mismatch');
+      return res.status(403).json({
+        success: false,
+        error: 'You can only sign contracts for your own deals',
+      });
+    }
+
+    // Verify creator OTP was verified
+    const dealData = deal as any;
+    console.log('[Deals] sign-creator - OTP check:', {
+      creator_otp_verified: dealData.creator_otp_verified,
+      creator_otp_verified_at: dealData.creator_otp_verified_at
+    });
+
+    if (!dealData.creator_otp_verified) {
+      console.log('[Deals] sign-creator - OTP not verified, rejecting');
+      return res.status(400).json({
+        success: false,
+        error: 'OTP verification is required before signing. Please verify your OTP first.',
+      });
+    }
+
+    console.log('[Deals] sign-creator - OTP verified, proceeding with signing');
+
+    // Get creator profile for default values
+    console.log('[Deals] sign-creator - Fetching creator profile...');
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('first_name, last_name, phone')
+      .eq('id', userId)
+      .single();
+
+    if (profileError) {
+      console.error('[Deals] sign-creator - Profile fetch error:', profileError);
+    }
+
+    // Get email from auth.users (email is in auth, not profiles)
+    let creatorEmail: string | null = null;
+    if (!signerEmail) {
+      console.log('[Deals] sign-creator - Fetching email from auth.users...');
+      const { data: authUser, error: authError } = await supabase.auth.admin.getUserById(userId);
+      if (authError) {
+        console.error('[Deals] sign-creator - Auth user fetch error:', authError);
+      } else {
+        creatorEmail = authUser?.user?.email || null;
+        console.log('[Deals] sign-creator - Email from auth:', creatorEmail ? `${creatorEmail.substring(0, 3)}***` : 'not found');
+      }
+    }
+
+    const finalSignerName = signerName ||
+      (profile?.first_name && profile?.last_name
+        ? `${profile.first_name} ${profile.last_name}`
+        : profile?.first_name || 'Creator');
+    const finalSignerEmail = signerEmail || creatorEmail;
+    const finalSignerPhone = signerPhone || profile?.phone;
+
+    console.log('[Deals] sign-creator - Signer info:', {
+      name: finalSignerName,
+      email: finalSignerEmail ? `${finalSignerEmail.substring(0, 3)}***` : 'missing',
+      phone: finalSignerPhone ? 'provided' : 'missing'
+    });
+
+    if (!finalSignerEmail) {
+      console.log('[Deals] sign-creator - Missing signer email, rejecting');
+      return res.status(400).json({
+        success: false,
+        error: 'Signer email is required',
+      });
+    }
+
+    // Get client info
+    const { getClientIp, getDeviceInfo } = await import('../services/contractSigningService.js');
+    const ipAddress = getClientIp(req);
+    const userAgent = req.headers['user-agent'] || 'Unknown';
+    const deviceInfo = getDeviceInfo(userAgent);
+
+    // Sign contract as creator
+    console.log('[Deals] sign-creator - Calling signContractAsCreator service...');
+    const { signContractAsCreator } = await import('../services/contractSigningService.js');
+    const result = await signContractAsCreator({
+      dealId,
+      creatorId: userId,
+      signerName: finalSignerName,
+      signerEmail: finalSignerEmail,
+      signerPhone: finalSignerPhone,
+      contractVersionId: contractVersionId || 'v3', // Default to v3 if not provided
+      contractSnapshotHtml: contractSnapshotHtml ||
+        (deal.contract_file_url
+          ? `Contract URL: ${deal.contract_file_url}\nSigned at: ${new Date().toISOString()}`
+          : undefined),
+      ipAddress,
+      userAgent,
+      deviceInfo,
+      otpVerified: true, // Already verified above
+      otpVerifiedAt: otpVerifiedAt || dealData.creator_otp_verified_at || new Date().toISOString(),
+    });
+
+    if (!result.success) {
+      console.error('[Deals] sign-creator - Signing failed:', result.error);
+      return res.status(400).json({
+        success: false,
+        error: result.error || 'Failed to sign contract',
+      });
+    }
+
+    console.log('[Deals] sign-creator - Contract signed successfully!');
+    return res.json({
+      success: true,
+      message: 'Contract signed successfully',
+      signature: result.signature,
+    });
+  } catch (error: any) {
+    console.error('[Deals] Sign as creator error:', error);
+    return res.status(500).json({
+      success: false,
+      error: error.message || 'Internal server error',
+    });
+  }
 };
 
 // Add both route aliases - IMPORTANT: These must be registered before any catch-all routes
@@ -672,7 +672,7 @@ router.patch('/:dealId/delivery-details', async (req: AuthenticatedRequest, res:
 
     const { data: deal, error: dealError } = await supabase
       .from('brand_deals')
-      .select('id, creator_id, deal_type, brand_name, brand_email, deliverables, due_date, payment_expected_date')
+      .select('id, creator_id, deal_type, brand_name, brand_email, brand_address, brand_phone, deliverables, due_date, payment_expected_date')
       .eq('id', dealId)
       .single();
 
@@ -739,7 +739,20 @@ router.patch('/:dealId/delivery-details', async (req: AuthenticatedRequest, res:
         const creatorName = creatorProfile
           ? `${(creatorProfile.first_name || '').trim()} ${(creatorProfile.last_name || '').trim()}`.trim() || delivery_name.trim()
           : delivery_name.trim();
-        const creatorEmail = creatorProfile?.email || req.user?.email || undefined;
+
+        // Try to get email from profile, then from req.user, then from auth as last resort
+        let creatorEmail = creatorProfile?.email || req.user?.email;
+
+        if (!creatorEmail) {
+          try {
+            const { data: authUser } = await supabase.auth.admin.getUserById(userId);
+            creatorEmail = authUser?.user?.email;
+          } catch (e) {
+            console.error('[Deals] Failed to fetch creator email from auth:', e);
+          }
+        }
+
+        creatorEmail = creatorEmail || undefined;
 
         let deliverablesArray: string[] = [];
         try {
@@ -774,73 +787,95 @@ router.patch('/:dealId/delivery-details', async (req: AuthenticatedRequest, res:
           jurisdiction_city: 'Mumbai',
         };
 
-        const contractResult = await generateContractFromScratch({
-          brandName: deal.brand_name,
-          creatorName,
-          creatorEmail,
-          dealAmount: 0,
-          deliverables: deliverablesArray.length > 0 ? deliverablesArray : ['As per agreement'],
-          paymentTerms: 'Barter – product shipment within 7 days of acceptance.',
-          dueDate: dueDateStr,
-          paymentExpectedDate: dueDateStr,
-          platform: 'Multiple Platforms',
-          brandEmail: deal.brand_email || undefined,
-          creatorAddress: delivery_address.trim(),
-          dealSchema,
-          usageType: 'Non-exclusive',
-          usagePlatforms: ['All platforms'],
-          usageDuration: '6 months',
-          paidAdsAllowed: false,
-          whitelistingAllowed: false,
-          exclusivityEnabled: false,
-          exclusivityCategory: null,
-          exclusivityDuration: null,
-          terminationNoticeDays: 7,
-          jurisdictionCity: 'Mumbai',
-          additionalTerms: productDeliveryTerms,
-        });
+        // Check if we have enough information for contract generation
+        const canGenerateContract =
+          deal.brand_name &&
+          deal.brand_email &&
+          (deal as any).brand_address &&
+          creatorName &&
+          creatorEmail &&
+          delivery_address.trim();
 
-        const storagePath = `contracts/${dealId}/${Date.now()}_${contractResult.fileName}`;
-        const { error: uploadError } = await supabase.storage
-          .from('creator-assets')
-          .upload(storagePath, contractResult.contractDocx, {
-            contentType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-            upsert: false,
+        if (canGenerateContract) {
+          const contractResult = await generateContractFromScratch({
+            brandName: deal.brand_name,
+            creatorName,
+            creatorEmail,
+            dealAmount: 0,
+            deliverables: deliverablesArray.length > 0 ? deliverablesArray : ['As per agreement'],
+            paymentTerms: 'Barter – product shipment within 7 days of acceptance.',
+            dueDate: dueDateStr,
+            paymentExpectedDate: dueDateStr,
+            platform: 'Multiple Platforms',
+            brandEmail: deal.brand_email || undefined,
+            brandAddress: (deal as any).brand_address || undefined,
+            brandPhone: (deal as any).brand_phone || undefined,
+            creatorAddress: delivery_address.trim(),
+            dealSchema,
+            usageType: 'Non-exclusive',
+            usagePlatforms: ['All platforms'],
+            usageDuration: '6 months',
+            paidAdsAllowed: false,
+            whitelistingAllowed: false,
+            exclusivityEnabled: false,
+            exclusivityCategory: null,
+            exclusivityDuration: null,
+            terminationNoticeDays: 7,
+            jurisdictionCity: 'Mumbai',
+            additionalTerms: productDeliveryTerms,
           });
 
-        if (uploadError) {
-          console.error('[Deals] delivery-details contract upload error:', uploadError);
-          return res.status(500).json({ success: false, error: 'Failed to generate contract' });
-        }
+          const storagePath = `contracts/${dealId}/${Date.now()}_${contractResult.fileName}`;
+          const { error: uploadError } = await supabase.storage
+            .from('creator-assets')
+            .upload(storagePath, contractResult.contractDocx, {
+              contentType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+              upsert: false,
+            });
 
-        const { data: publicUrlData } = supabase.storage.from('creator-assets').getPublicUrl(storagePath);
-        contractUrl = publicUrlData?.publicUrl || null;
+          if (uploadError) {
+            console.error('[Deals] delivery-details contract upload error:', uploadError);
+          } else {
+            const { data: publicUrlData } = supabase.storage.from('creator-assets').getPublicUrl(storagePath);
+            contractUrl = publicUrlData?.publicUrl || null;
 
-        await supabase
-          .from('brand_deals')
-          .update({
-            contract_file_url: contractUrl,
-            updated_at: new Date().toISOString(),
-          })
-          .eq('id', dealId);
+            await supabase
+              .from('brand_deals')
+              .update({
+                contract_file_url: contractUrl,
+                contract_file_path: storagePath, // Use new secure path column
+                updated_at: new Date().toISOString(),
+              })
+              .eq('id', dealId);
 
-        const token = await createContractReadyToken({
-          dealId,
-          creatorId: userId,
-          expiresAt: null,
-        });
-        contractReadyToken = token.id;
+            const token = await createContractReadyToken({
+              dealId,
+              creatorId: userId,
+              expiresAt: null,
+            });
+            contractReadyToken = token.id;
 
-        if (deal.brand_email && contractReadyToken && contractUrl) {
-          sendCollabRequestAcceptedEmail(deal.brand_email, {
-            creatorName,
-            brandName: deal.brand_name,
-            dealAmount: 0,
-            dealType: 'barter',
-            deliverables: deliverablesArray.length > 0 ? deliverablesArray : ['As per agreement'],
-            contractReadyToken,
-            contractUrl,
-          }).catch((e) => console.error('[Deals] delivery-details acceptance email failed:', e));
+            if (deal.brand_email && contractReadyToken && contractUrl) {
+              sendCollabRequestAcceptedEmail(deal.brand_email, {
+                creatorName,
+                brandName: deal.brand_name,
+                dealAmount: 0,
+                dealType: 'barter',
+                deliverables: deliverablesArray.length > 0 ? deliverablesArray : ['As per agreement'],
+                contractReadyToken,
+                contractUrl,
+              }).catch((e) => console.error('[Deals] delivery-details acceptance email failed:', e));
+            }
+          }
+        } else {
+          console.log('[Deals] Skipping contract generation due to missing info:', {
+            hasBrandName: !!deal.brand_name,
+            hasBrandEmail: !!deal.brand_email,
+            hasBrandAddress: !!(deal as any).brand_address,
+            hasCreatorName: !!creatorName,
+            hasCreatorEmail: !!creatorEmail,
+            hasCreatorAddress: !!delivery_address.trim()
+          });
         }
 
         // Barter shipping: create token and send brand "Update Shipping Details" email (link valid 14 days)
@@ -863,7 +898,10 @@ router.patch('/:dealId/delivery-details', async (req: AuthenticatedRequest, res:
       }
     } catch (contractErr: any) {
       console.error('[Deals] delivery-details contract generation error:', contractErr);
-      return res.status(500).json({ success: false, error: 'Delivery details saved but contract generation failed. Please try again from the deal page.' });
+      const errorMsg = contractErr.missingFields
+        ? `Missing required details for contract: ${contractErr.missingFields.join(', ')}`
+        : 'Delivery details saved but contract generation failed. Brand info might be incomplete.';
+      return res.status(500).json({ success: false, error: errorMsg });
     }
 
     return res.json({
@@ -932,7 +970,7 @@ router.patch('/:dealId/shipping/confirm-received', async (req: AuthenticatedRequ
       deal_id: dealId,
       event: 'shipping_confirmed_delivered',
       metadata: {},
-    }).then(() => {}).catch((e: any) => console.warn('[Deals] shipping audit log failed:', e));
+    }).then(() => { }).catch((e: any) => console.warn('[Deals] shipping audit log failed:', e));
 
     return res.json({
       success: true,
@@ -1005,7 +1043,7 @@ router.patch('/:dealId/shipping/report-issue', async (req: AuthenticatedRequest,
       deal_id: dealId,
       event: 'shipping_issue_reported',
       metadata: { reason: reasonStr },
-    }).then(() => {}).catch((e: any) => console.warn('[Deals] shipping audit log failed:', e));
+    }).then(() => { }).catch((e: any) => console.warn('[Deals] shipping audit log failed:', e));
 
     if (deal.brand_email) {
       const { data: profile } = await supabase
