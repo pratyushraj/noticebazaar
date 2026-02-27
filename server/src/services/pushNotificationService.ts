@@ -3,10 +3,7 @@
 
 import webpush from 'web-push';
 import { supabase } from '../lib/supabase.js';
-import {
-  sendCollabPushFallbackEmail,
-  sendCollabRequestCreatorNotificationEmail,
-} from './collabRequestEmailService.js';
+import { sendCollabRequestCreatorNotificationEmail } from './collabRequestEmailService.js';
 
 const toUrlSafeBase64 = (value?: string | null): string => {
   if (!value) return '';
@@ -65,6 +62,56 @@ type TestPushResult = {
   delivered: number;
   failed: number;
   reason?: string;
+};
+
+const sendCollabPushFallbackEmail = async (
+  creatorEmail: string,
+  data: { creatorName: string; brandName: string }
+): Promise<{ success: boolean; emailId?: string; error?: string }> => {
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey || !creatorEmail) {
+    return { success: false, error: 'email_not_configured' };
+  }
+
+  const frontendUrl = process.env.FRONTEND_URL || 'https://creatorarmour.com';
+  const dashboardLink = `${frontendUrl}/collab-requests`;
+  const firstName = (data.creatorName || 'Creator').trim().split(/\s+/)[0] || 'Creator';
+
+  const html = `
+    <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif; color: #111827;">
+      <h2 style="margin: 0 0 12px;">New Collaboration Request</h2>
+      <p style="margin: 0 0 10px;">Hi ${firstName},</p>
+      <p style="margin: 0 0 10px;">A brand has sent you a collaboration request on CreatorArmour.</p>
+      <p style="margin: 0 0 16px;">Review, accept, counter, or decline directly in your dashboard.</p>
+      <a href="${dashboardLink}" style="display:inline-block;background:#7c3aed;color:#fff;text-decoration:none;padding:10px 14px;border-radius:8px;">Open CreatorArmour</a>
+    </div>
+  `;
+
+  try {
+    const resp = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        from: process.env.EMAIL_FROM || 'CreatorArmour <noreply@creatorarmour.com>',
+        to: creatorEmail,
+        subject: 'New Collaboration Request',
+        html,
+      }),
+    });
+
+    if (!resp.ok) {
+      const txt = await resp.text().catch(() => '');
+      return { success: false, error: `resend_error_${resp.status}:${txt}` };
+    }
+
+    const json: any = await resp.json().catch(() => ({}));
+    return { success: true, emailId: json?.id };
+  } catch (e: any) {
+    return { success: false, error: e?.message || 'email_send_failed' };
+  }
 };
 
 const isGoneSubscriptionError = (error: any): boolean => {
