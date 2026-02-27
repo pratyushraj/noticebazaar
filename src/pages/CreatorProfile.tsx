@@ -2778,13 +2778,18 @@ const ProfileSettings = () => {
                   onClick={handleEnablePushFromAccount}
                   disabled={
                     isPushBusy
-                    || isPushSubscribed
                     || !isPushSupported
                     || (!isIOSNeedsInstall && !hasVapidKey)
                   }
                   className="inline-flex items-center justify-center rounded-lg px-4 py-2 text-sm font-semibold bg-violet-500 hover:bg-violet-400 text-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
-                  {isPushSubscribed ? 'Enabled' : isPushBusy ? 'Enabling…' : isIOSNeedsInstall ? 'Add to Home Screen' : 'Enable Notifications'}
+                  {isPushBusy
+                    ? 'Updating…'
+                    : isIOSNeedsInstall
+                      ? 'Add to Home Screen'
+                      : isPushSubscribed
+                        ? 'Refresh Notifications'
+                        : 'Enable Notifications'}
                 </button>
                 {isPushSubscribed && (
                   <>
