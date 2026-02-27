@@ -990,7 +990,20 @@ const CreatorDashboard = () => {
         })
       });
 
-      const data = await response.json();
+      const raw = await response.text();
+      let data: any = {};
+      try {
+        data = raw ? JSON.parse(raw) : {};
+      } catch {
+        data = { error: raw?.slice(0, 160) || `HTTP ${response.status}` };
+      }
+
+      if (!response.ok) {
+        const apiError = data?.error || data?.reason || `Test push request failed (${response.status})`;
+        toast.error(String(apiError));
+        return;
+      }
+
       if (data.success && data.sentCount > 0) {
         toast.success('Test notification sent to your device!');
       } else {
