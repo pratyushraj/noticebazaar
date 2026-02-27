@@ -48,6 +48,7 @@ import dealDetailsTokensRouter from './routes/dealDetailsTokens.js';
 import contractReadyTokensRouter from './routes/contractReadyTokens.js';
 import gstRouter from './routes/gst.js';
 import aiRouter from './routes/ai.js';
+import creatorSignRouter from './routes/creatorSign.js';
 import otpRouter from './routes/otp.js';
 import dealsRouter from './routes/deals.js';
 import complaintsRouter from './routes/complaints.js';
@@ -55,6 +56,7 @@ import influencersRouter from './routes/influencers.js';
 import collabRequestsRouter from './routes/collabRequests.js';
 import collabAnalyticsRouter from './routes/collabAnalytics.js';
 import creatorsRouter from './routes/creators.js';
+import pushNotificationsRouter from './routes/pushNotifications.js';
 import shippingRouter from './routes/shipping.js';
 import cronDealRemindersRouter from './routes/cronDealReminders.js';
 import { sendCollabRequestAcceptedEmail, sendCollabRequestCreatorNotificationEmail } from './services/collabRequestEmailService.js';
@@ -337,6 +339,7 @@ app.get('/health', (req: express.Request, res: express.Response) => {
 app.use('/api/brand-response', brandResponseRouter);
 app.use('/api/deal-details-tokens', dealDetailsTokensRouter); // Public routes (auth handled internally)
 app.use('/api/contract-ready-tokens', contractReadyTokensRouter); // Public routes for contract ready page
+app.use('/api/creator-sign', creatorSignRouter); // Public creator signing magic link routes
 app.use('/api/gst', gstRouter); // Public GST lookup route
 // OTP routes are mounted below with auth/rate-limit middleware.
 app.use('/api/collab', collabRequestsRouter); // Public collab link routes (/:username and /:username/submit)
@@ -351,6 +354,7 @@ app.use('/api/conversations', authMiddleware, rateLimitMiddleware, conversations
 app.use('/api/conversations', authMiddleware, rateLimitMiddleware, messagesRouter);
 app.use('/api/conversations', authMiddleware, rateLimitMiddleware, attachmentsRouter);
 app.use('/api/payments', authMiddleware, rateLimitMiddleware, paymentsRouter);
+app.use('/api/push', authMiddleware, rateLimitMiddleware, pushNotificationsRouter);
 
 // Demo email (only when ALLOW_DEMO_EMAIL=true; restricted to *@yopmail.com)
 app.post('/api/demo-email/barter-accepted', async (req: express.Request, res: express.Response) => {
