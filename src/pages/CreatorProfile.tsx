@@ -1,8 +1,8 @@
-import { useState, useEffect, useMemo } from 'react';
-import { ArrowLeft, User, Mail, Phone, MapPin, Instagram, Edit, Lock, CreditCard, Shield, HelpCircle, FileText, LogOut, ChevronRight, ChevronDown, Check, Download, Trash2, Star, TrendingUp, Award, MessageCircle, Loader2, Sparkles, Camera, Link2, Copy, ExternalLink, AlertCircle, Eye } from 'lucide-react';
+import { useState, useEffect, useMemo, useRef } from 'react';
+import { ArrowLeft, User, Mail, Phone, MapPin, Instagram, Lock, CreditCard, Shield, HelpCircle, FileText, LogOut, ChevronRight, ChevronDown, Check, Download, Trash2, Star, TrendingUp, Award, MessageCircle, Loader2, Sparkles, Camera, Link2, Copy, ExternalLink, AlertCircle, Eye, SlidersHorizontal } from 'lucide-react';
 import NotificationPreferences from '@/components/notifications/NotificationPreferences';
 import AvatarUploader from '@/components/profile/AvatarUploader';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useSession } from '@/contexts/SessionContext';
 import { useUpdateProfile } from '@/lib/hooks/useProfiles';
 import { useSignOut } from '@/lib/hooks/useAuth';
@@ -15,6 +15,7 @@ import { logger } from '@/lib/utils/logger';
 import { cn } from '@/lib/utils';
 import { fetchPincodeData, parseLocationString, formatLocationString } from '@/lib/utils/pincodeLookup';
 import { getApiBaseUrl } from '@/lib/utils/api';
+import { useDealAlertNotifications } from '@/hooks/useDealAlertNotifications';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -28,24 +29,237 @@ import {
 import { Button } from '@/components/ui/button';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 
+const CREATOR_CATEGORY_OPTIONS = [
+  'General',
+  'Fashion',
+  'Beauty',
+  'Fitness',
+  'Tech',
+  'Food',
+  'Travel',
+  'Lifestyle',
+  'Gaming',
+  'Education',
+  'Finance',
+  'Health',
+  'Parenting',
+];
+
+const CONTENT_NICHE_OPTIONS = [
+  'Fashion',
+  'Fitness',
+  'Tech',
+  'Beauty',
+  'Food',
+  'Travel',
+  'Lifestyle',
+  'Gaming',
+  'Education',
+  'Finance',
+  'Health',
+  'Entertainment',
+  'Parenting',
+];
+
+const COLLAB_PREFERENCE_OPTIONS = ['paid', 'barter', 'hybrid'] as const;
+const TYPICAL_DEAL_SIZE_OPTIONS = [
+  {
+    key: 'starter',
+    title: 'Starter Deals',
+    range: '₹2K - ₹5K',
+    helper: 'Best for small / testing brands',
+    min: 2000,
+    max: 5000,
+  },
+  {
+    key: 'standard',
+    title: 'Standard Deals',
+    range: '₹5K - ₹15K',
+    helper: 'Most common collaborations',
+    min: 5000,
+    max: 15000,
+  },
+  {
+    key: 'premium',
+    title: 'Premium Deals',
+    range: '₹15K+',
+    helper: 'For serious campaign partnerships',
+    min: 15000,
+    max: null as number | null,
+  },
+  {
+    key: 'custom',
+    title: 'Custom Range',
+    range: 'Set your own later',
+    helper: 'Flexible for unique deal structures',
+    min: null as number | null,
+    max: null as number | null,
+  },
+] as const;
+type TypicalDealSize = (typeof TYPICAL_DEAL_SIZE_OPTIONS)[number]['key'];
+type CreatorTier = 'Nano' | 'Micro' | 'Rising' | 'Pro' | 'Macro';
+
+function getCreatorTier(profileInput: {
+  avg_reel_rate?: number | null;
+  avg_rate_reel?: number | null;
+  niches?: string[] | null;
+  content_niches?: string[] | null;
+  media_kit_url?: string | null;
+  past_brand_count?: number;
+} | null): CreatorTier {
+  if (!profileInput) return 'Nano';
+
+  const hasPricing = !!(profileInput.avg_reel_rate || profileInput.avg_rate_reel);
+  const hasNiches = (profileInput.niches?.length || profileInput.content_niches?.length || 0) > 0;
+  const hasMediaKit = !!profileInput.media_kit_url;
+  const hasDealHistory = (profileInput.past_brand_count || 0) > 0;
+
+  if (hasPricing && hasNiches && hasMediaKit && hasDealHistory) return 'Macro';
+  if (hasPricing && hasNiches && hasMediaKit) return 'Pro';
+  if (hasPricing && hasNiches) return 'Rising';
+  if (hasPricing) return 'Micro';
+  return 'Nano';
+}
+
+function getTierHelper(tier: string) {
+  switch (tier) {
+    case "Nano":
+      return {
+        identity: "Early-stage creators exploring brand collaborations",
+        brandSignal: "Great for pilot campaigns"
+      };
+    case "Micro":
+      return {
+        identity: "Creators beginning to attract paid partnerships",
+        brandSignal: "Strong for niche audiences"
+      };
+    case "Rising":
+      return {
+        identity: "Actively working with emerging brands",
+        brandSignal: "Ideal for growth-stage brands"
+      };
+    case "Pro":
+      return {
+        identity: "Trusted by brands for repeat campaigns",
+        brandSignal: "Reliable campaign partner"
+      };
+    case "Macro":
+      return {
+        identity: "High-demand creators with strong deal flow",
+        brandSignal: "Scales reach fast"
+      };
+    default:
+      return { identity: "", brandSignal: "" };
+  }
+}
+
+const normalizeAudienceText = (value: string) =>
+  value
+    .trim()
+    .replace(/\s+/g, ' ')
+    .toLowerCase()
+    .replace(/\b([a-z])([a-z']*)/g, (_match, first: string, rest: string) => `${first.toUpperCase()}${rest}`);
+
+const COLLAB_AUDIENCE_FIT_OPTIONS = [
+  'Regional audience focus',
+  'Niche community reach',
+  'Youth-driven audience',
+  'Metro audience mix',
+  'Pan-India reach',
+];
+
+const COLLAB_RECENT_ACTIVITY_OPTIONS = [
+  'Recently active with brand collaborations',
+  'Running ongoing campaigns',
+  'Posting consistently',
+  'Open for new partnerships',
+];
+
+const COLLAB_DELIVERY_RELIABILITY_OPTIONS = [
+  'Fast',
+  'Flexible',
+  'Planned',
+];
+
+const COLLAB_CAMPAIGN_SLOT_OPTIONS = [
+  '1-2',
+  '3-5',
+  '5-10',
+  '10+',
+];
+
+const COLLAB_CTA_BEHAVIOR_OPTIONS = [
+  'Quick',
+  'Review-first',
+  'Brand-guided',
+];
+
+const splitPresetAndCustom = (value: string | null | undefined, presets: string[]) => {
+  const normalized = (value || '').trim();
+  if (!normalized) return { preset: '', custom: '' };
+  if (presets.includes(normalized)) return { preset: normalized, custom: '' };
+  return { preset: '', custom: normalized };
+};
+
+const buildNoteValue = (preset: string, custom: string) => {
+  const customValue = custom.trim();
+  if (customValue) return customValue;
+  return preset.trim() || null;
+};
+
 const ProfileSettings = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { profile, user, loading: sessionLoading, refetchProfile } = useSession();
   const updateProfileMutation = useUpdateProfile();
   const signOutMutation = useSignOut();
-  const [activeSection, setActiveSection] = useState('profile');
-  const [editMode, setEditMode] = useState(false);
+  const getInitialSection = () => {
+    const section = new URLSearchParams(location.search).get('section');
+    return section === 'profile' || section === 'account' || section === 'collab' || section === 'support'
+      ? section
+      : 'profile';
+  };
+  const [activeSection, setActiveSection] = useState(getInitialSection);
+  const [dealSettingsRequired, setDealSettingsRequired] = useState(
+    new URLSearchParams(location.search).get('forceDealSettings') === '1'
+  );
+  const [editMode, setEditMode] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [showLogoutDialog, setShowLogoutDialog] = useState(false);
   const [showStats, setShowStats] = useState(false);
   const [showHowItWorks, setShowHowItWorks] = useState(false);
+  const [showAdvancedInsights, setShowAdvancedInsights] = useState(false);
+  const [showAdvancedDealDrawer, setShowAdvancedDealDrawer] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
+  const [collabHeroAnimated, setCollabHeroAnimated] = useState(false);
+  const [copyPulse, setCopyPulse] = useState(false);
+  const [highlightNiche, setHighlightNiche] = useState<string | null>(null);
+  const [activeNudgeField, setActiveNudgeField] = useState<'avgViews' | 'region' | 'mediaKit' | null>(null);
+  const [positioningNudge, setPositioningNudge] = useState<string | null>(null);
+  const [ctaPressed, setCtaPressed] = useState(false);
+  const [isTestingPush, setIsTestingPush] = useState(false);
+  const passiveNudgeIndexRef = useRef(0);
+  const successNudgeTimeoutRef = useRef<number | null>(null);
+  const hasManualDealSizeSelectionRef = useRef(false);
+  const prevMissingRef = useRef({
+    avgViews: true,
+    region: true,
+    mediaKit: true,
+  });
   const [analyticsSummary, setAnalyticsSummary] = useState<{
     weeklyViews: number;
     totalViews: number;
     submissions: number;
   } | null>(null);
   const [analyticsLoading, setAnalyticsLoading] = useState(true);
+  const {
+    isSupported: isPushSupported,
+    isSubscribed: isPushSubscribed,
+    isBusy: isPushBusy,
+    hasVapidKey,
+    isIOSNeedsInstall,
+    enableNotifications,
+  } = useDealAlertNotifications();
 
   // Fetch real data for stats
   const { data: brandDeals = [] } = useBrandDeals({
@@ -125,12 +339,48 @@ const ProfileSettings = () => {
     pincode: "",
     bio: "",
     instagramHandle: "",
-    username: ""
+    username: "",
+    creatorCategory: "General",
+    avgRateReel: "",
+    pricingMin: "",
+    pricingAvg: "",
+    pricingMax: "",
+    typicalDealSize: "standard" as TypicalDealSize,
+    avgReelViewsManual: "",
+    avgLikesManual: "",
+    collabBrandsCountOverride: "",
+    activeBrandCollabsMonth: "",
+    collabRegionLabel: "",
+    collabAudienceFitPreset: "",
+    collabAudienceFitCustom: "",
+    collabRecentActivityPreset: "",
+    collabRecentActivityCustom: "",
+    collabAudienceRelevanceNote: "",
+    collabDeliveryReliabilityPreset: "",
+    collabDeliveryReliabilityCustom: "",
+    collabResponseBehaviorPreset: "",
+    collabResponseBehaviorCustom: "",
+    campaignSlotPreset: "",
+    campaignSlotCustom: "",
+    collabCtaTrustNote: "",
+    collabCtaDmNote: "",
+    collabCtaPlatformNote: "",
+    openToCollabs: true,
+    mediaKitUrl: "",
+    contentNiches: [] as string[],
+    collaborationPreference: "hybrid" as (typeof COLLAB_PREFERENCE_OPTIONS)[number],
   });
 
   // Pincode lookup state
   const [isLookingUpPincode, setIsLookingUpPincode] = useState(false);
   const [pincodeError, setPincodeError] = useState<string | null>(null);
+  const [collabBudgetError, setCollabBudgetError] = useState<string | null>(null);
+  const [genderSplit, setGenderSplit] = useState(profile?.audience_gender_split || "");
+  const [topCities, setTopCities] = useState<string[]>(Array.isArray(profile?.top_cities) ? profile.top_cities : []);
+  const [cityInput, setCityInput] = useState("");
+  const [ageRange, setAgeRange] = useState(profile?.audience_age_range || "");
+  const [language, setLanguage] = useState(profile?.primary_audience_language || "");
+  const [postingFrequency, setPostingFrequency] = useState(profile?.posting_frequency || "");
 
   // Load user data from session (only on initial load)
   const [hasInitialized, setHasInitialized] = useState(false);
@@ -156,7 +406,37 @@ const ProfileSettings = () => {
         profileLocation: profile.location
       });
 
+      let savedCollabPreference: (typeof COLLAB_PREFERENCE_OPTIONS)[number] = 'hybrid';
+      try {
+        const key = `creator-collab-preference-${profile.id}`;
+        const value = localStorage.getItem(key);
+        if (value === 'paid' || value === 'barter' || value === 'hybrid') {
+          savedCollabPreference = value;
+        }
+      } catch (_error) {
+        // Ignore localStorage errors and use default.
+      }
+
       setFormData({
+        ...(function () {
+          const audienceFit = splitPresetAndCustom(profile.collab_audience_fit_note || '', COLLAB_AUDIENCE_FIT_OPTIONS);
+          const recentActivity = splitPresetAndCustom(profile.collab_recent_activity_note || '', COLLAB_RECENT_ACTIVITY_OPTIONS);
+          const delivery = splitPresetAndCustom(profile.collab_delivery_reliability_note || '', COLLAB_DELIVERY_RELIABILITY_OPTIONS);
+          const campaignSlots = splitPresetAndCustom(profile.campaign_slot_note || '', COLLAB_CAMPAIGN_SLOT_OPTIONS);
+          const ctaBehavior = splitPresetAndCustom(profile.collab_response_behavior_note || '', COLLAB_CTA_BEHAVIOR_OPTIONS);
+          return {
+            collabAudienceFitPreset: audienceFit.preset,
+            collabAudienceFitCustom: audienceFit.custom,
+            collabRecentActivityPreset: recentActivity.preset,
+            collabRecentActivityCustom: recentActivity.custom,
+            collabDeliveryReliabilityPreset: delivery.preset,
+            collabDeliveryReliabilityCustom: delivery.custom,
+            campaignSlotPreset: campaignSlots.preset,
+            campaignSlotCustom: campaignSlots.custom,
+            collabResponseBehaviorPreset: ctaBehavior.preset,
+            collabResponseBehaviorCustom: ctaBehavior.custom,
+          };
+        })(),
         name: `${profile.first_name || ''} ${profile.last_name || ''}`.trim() || 'Creator',
         displayName: profile.instagram_handle?.replace('@', '') || user.email?.split('@')[0] || 'creator',
         email: user.email || '',
@@ -168,12 +448,176 @@ const ProfileSettings = () => {
         pincode: parsedLocation.pincode,
         bio: profile.bio || '',
         instagramHandle: profile.instagram_handle || '',
-        username: profile.instagram_handle || profile.username || '' // Use Instagram handle as username
+        username: profile.instagram_handle || profile.username || '', // Use Instagram handle as username
+        creatorCategory: profile.creator_category || 'General',
+        avgRateReel: profile.avg_rate_reel?.toString() || '',
+        pricingMin: profile.pricing_min?.toString() || '',
+        pricingAvg: profile.pricing_avg?.toString() || '',
+        pricingMax: profile.pricing_max?.toString() || '',
+        typicalDealSize: ((profile as any).typical_deal_size as TypicalDealSize) || (
+          Number(profile.avg_rate_reel || 0) <= 1500 ? 'starter' : Number(profile.avg_rate_reel || 0) <= 5000 ? 'standard' : 'premium'
+        ),
+        avgReelViewsManual: profile.avg_reel_views_manual?.toString() || '',
+        avgLikesManual: profile.avg_likes_manual?.toString() || '',
+        collabBrandsCountOverride: profile.collab_brands_count_override?.toString() || '',
+        activeBrandCollabsMonth: profile.active_brand_collabs_month?.toString() || '',
+        collabRegionLabel: profile.collab_region_label || '',
+        collabAudienceRelevanceNote: profile.collab_audience_relevance_note || '',
+        collabCtaTrustNote: profile.collab_cta_trust_note || '',
+        collabCtaDmNote: profile.collab_cta_dm_note || '',
+        collabCtaPlatformNote: profile.collab_cta_platform_note || '',
+        openToCollabs: profile.open_to_collabs !== false,
+        mediaKitUrl: profile.media_kit_url || '',
+        contentNiches: Array.isArray(profile.content_niches) ? profile.content_niches : [],
+        collaborationPreference: savedCollabPreference,
       });
+      setGenderSplit(profile.audience_gender_split || '');
+      setTopCities(
+        Array.isArray(profile.top_cities)
+          ? profile.top_cities.map((city) => normalizeAudienceText(String(city))).filter(Boolean)
+          : []
+      );
+      setCityInput('');
+      setAgeRange(profile.audience_age_range || '');
+      setLanguage(normalizeAudienceText(profile.primary_audience_language || ''));
+      setPostingFrequency(profile.posting_frequency || '');
 
       setHasInitialized(true);
     }
   }, [profile, user, hasInitialized]);
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const section = params.get('section');
+    const forceDealSettings = params.get('forceDealSettings') === '1';
+
+    if (forceDealSettings) {
+      setDealSettingsRequired(true);
+      setActiveSection('collab');
+      setEditMode(true);
+      return;
+    }
+
+    if (section === 'profile' || section === 'account' || section === 'collab' || section === 'support') {
+      setActiveSection(section);
+    }
+  }, [location.search]);
+
+  const handleSectionChange = (section: 'profile' | 'account' | 'collab' | 'support') => {
+    if (dealSettingsRequired && section !== 'collab') {
+      toast.message('Complete Deal Settings first to continue.');
+      return;
+    }
+    setActiveSection(section);
+  };
+
+  const addCity = () => {
+    const city = normalizeAudienceText(cityInput);
+    if (!city) return;
+    if (topCities.length >= 5) return;
+    if (topCities.some((existing) => existing.toLowerCase() === city.toLowerCase())) return;
+    setTopCities([...topCities, city]);
+    setCityInput("");
+  };
+
+  const removeCity = (city: string) => {
+    setTopCities(topCities.filter((c) => c !== city));
+  };
+
+  const handleEnablePushFromAccount = async () => {
+    const result = await enableNotifications();
+    if (result.success) {
+      toast.success('Instant deal alerts enabled.');
+      return;
+    }
+
+    if (result.reason === 'unsupported') {
+      toast.error('Push notifications are not supported in this browser.');
+      return;
+    }
+
+    if (result.reason === 'missing_vapid_key') {
+      toast.error('Push alerts are not configured yet.');
+      return;
+    }
+
+    if (result.reason === 'denied') {
+      toast.error('Notification permission is blocked in browser settings.');
+      return;
+    }
+
+    if (result.reason === 'not_authenticated') {
+      toast.error('Please sign in again and retry.');
+      return;
+    }
+
+    if (result.reason === 'subscribe_failed') {
+      toast.error('Could not save notification subscription.');
+      return;
+    }
+
+    toast.error('Could not enable notifications right now.');
+  };
+
+  const handleTestPushFromAccount = async () => {
+    if (isTestingPush || !isPushSubscribed) return;
+
+    setIsTestingPush(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) {
+        toast.error('Please sign in again and retry.');
+        return;
+      }
+
+      const response = await fetch(`${getApiBaseUrl()}/api/push/test`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({
+          title: 'Test Notification 🚀',
+          body: 'If you see this, your push notifications are working perfectly!',
+          url: '/creator-profile?section=account',
+        }),
+      });
+
+      const data = await response.json();
+      if (data.success && data.sentCount > 0) {
+        toast.success('Test notification sent to your device!');
+      } else {
+        toast.error(data.error || 'No active devices found. Try enabling notifications again.');
+      }
+    } catch (error) {
+      logger.error('CreatorProfile', 'Failed to send test push notification', error);
+      toast.error('Failed to send test notification.');
+    } finally {
+      setIsTestingPush(false);
+    }
+  };
+
+  useEffect(() => {
+    if (!profile?.id) return;
+    try {
+      localStorage.setItem(`creator-collab-preference-${profile.id}`, formData.collaborationPreference);
+    } catch (_error) {
+      // Ignore localStorage errors.
+    }
+  }, [profile?.id, formData.collaborationPreference]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('creatorTier', getCreatorTier({
+        avg_rate_reel: Number(formData.avgRateReel) || profile?.avg_rate_reel || null,
+        content_niches: formData.contentNiches,
+        media_kit_url: formData.mediaKitUrl || null,
+        past_brand_count: brandDeals.length,
+      }));
+    } catch (_error) {
+      // Ignore localStorage errors.
+    }
+  }, [formData.avgRateReel, formData.contentNiches, formData.mediaKitUrl, brandDeals.length, profile?.avg_rate_reel]);
 
   // Handle pincode lookup
   const handlePincodeChange = async (pincode: string) => {
@@ -456,8 +900,147 @@ const ProfileSettings = () => {
     }
   };
 
+  const parsedReelRate = Number(formData.avgRateReel) || 0;
+  const parsedMinBudget = Number(formData.pricingMin) || 0;
+  const parsedMaxBudget = Number(formData.pricingMax) || 0;
+  const parsedAvgBudget = Number(formData.pricingAvg) || 0;
+
+  const normalizedRangeMin = parsedMinBudget > 0 ? parsedMinBudget : 2000;
+  const normalizedRangeMax = parsedMaxBudget > 0 ? parsedMaxBudget : Math.max(normalizedRangeMin + 1000, 8000);
+  const safeRangeMin = Math.min(normalizedRangeMin, normalizedRangeMax);
+  const safeRangeMax = Math.max(normalizedRangeMin, normalizedRangeMax);
+  const isAvgViewsMissing = !formData.avgReelViewsManual.trim();
+  const isRegionMissing = !formData.collabRegionLabel.trim();
+  const isMediaKitMissing = !formData.mediaKitUrl.trim();
+  const isCollabPositioningIncomplete = isAvgViewsMissing || isRegionMissing || isMediaKitMissing;
+  const isKeyPositioningMissing = isAvgViewsMissing || isRegionMissing;
+
+  const effectiveReelRate = parsedReelRate || parsedAvgBudget || Math.round((safeRangeMin + safeRangeMax) / 2);
+  const previewPostRate = Math.max(500, Math.round(effectiveReelRate * 0.7));
+  const previewBarterValue = Math.max(Math.round(effectiveReelRate * 1.25), safeRangeMax);
+  const creatorTier = getCreatorTier({
+    avg_rate_reel: parsedReelRate || profile?.avg_rate_reel || null,
+    content_niches: formData.contentNiches,
+    media_kit_url: formData.mediaKitUrl || null,
+    past_brand_count: brandDeals.length,
+  });
+  const tierInfo = getTierHelper(creatorTier);
+  const dealConfidence = creatorTier === 'Macro' || creatorTier === 'Pro'
+    ? 'High'
+    : creatorTier === 'Rising'
+      ? 'Medium'
+      : 'Growing';
+  const tierBadgeClass: Record<CreatorTier, string> = {
+    Nano: 'bg-[#6b7280]',
+    Micro: 'bg-[#3b82f6]',
+    Rising: 'bg-[#14b8a6]',
+    Pro: 'bg-[#8b5cf6]',
+    Macro: 'bg-[#f59e0b]',
+  };
+  const pastBrandWorkValue = Number(formData.collabBrandsCountOverride || 0);
+  const pastBrandWorkKey =
+    !pastBrandWorkValue || pastBrandWorkValue <= 0
+      ? 'just-starting'
+      : pastBrandWorkValue <= 5
+        ? 'one-to-five'
+        : pastBrandWorkValue <= 20
+          ? 'five-to-twenty'
+          : 'twenty-plus';
+  const ongoingDealsValue = Number(formData.activeBrandCollabsMonth || 0);
+  const ongoingDealsKey =
+    !ongoingDealsValue || ongoingDealsValue <= 0
+      ? '0'
+      : ongoingDealsValue <= 2
+        ? '1-2'
+        : ongoingDealsValue <= 5
+          ? '3-5'
+          : '6+';
+
+  useEffect(() => {
+    if (activeSection !== 'collab') return;
+
+    if (!collabHeroAnimated) {
+      const introTimer = window.setTimeout(() => setCollabHeroAnimated(true), 20);
+      return () => window.clearTimeout(introTimer);
+    }
+
+    const pulseInterval = window.setInterval(() => {
+      setCopyPulse(true);
+      window.setTimeout(() => setCopyPulse(false), 900);
+    }, 8000);
+
+    return () => window.clearInterval(pulseInterval);
+  }, [activeSection, collabHeroAnimated]);
+
+  useEffect(() => {
+    if (activeSection !== 'collab') return;
+    const missingFields: Array<'avgViews' | 'region' | 'mediaKit'> = [];
+    if (isAvgViewsMissing) missingFields.push('avgViews');
+    if (isRegionMissing) missingFields.push('region');
+    if (isMediaKitMissing) missingFields.push('mediaKit');
+    if (missingFields.length === 0) return;
+
+    const interval = window.setInterval(() => {
+      const index = passiveNudgeIndexRef.current % missingFields.length;
+      const nextField = missingFields[index];
+      passiveNudgeIndexRef.current += 1;
+      setActiveNudgeField(nextField);
+      window.setTimeout(() => setActiveNudgeField((current) => (current === nextField ? null : current)), 300);
+    }, 15000);
+
+    return () => window.clearInterval(interval);
+  }, [activeSection, isAvgViewsMissing, isRegionMissing, isMediaKitMissing]);
+
+  useEffect(() => {
+    const justFilled =
+      (prevMissingRef.current.avgViews && !isAvgViewsMissing) ||
+      (prevMissingRef.current.region && !isRegionMissing) ||
+      (prevMissingRef.current.mediaKit && !isMediaKitMissing);
+
+    prevMissingRef.current = {
+      avgViews: isAvgViewsMissing,
+      region: isRegionMissing,
+      mediaKit: isMediaKitMissing,
+    };
+
+    if (!justFilled) return;
+
+    setPositioningNudge('Better brand targeting enabled');
+    if (successNudgeTimeoutRef.current) window.clearTimeout(successNudgeTimeoutRef.current);
+    successNudgeTimeoutRef.current = window.setTimeout(() => setPositioningNudge(null), 2000);
+
+    return () => {
+      if (successNudgeTimeoutRef.current) window.clearTimeout(successNudgeTimeoutRef.current);
+    };
+  }, [isAvgViewsMissing, isRegionMissing, isMediaKitMissing]);
+
+  useEffect(() => {
+    if (hasManualDealSizeSelectionRef.current) return;
+    const rate = Number(formData.avgRateReel) || 0;
+    const suggested: TypicalDealSize = rate <= 1500 ? 'starter' : rate <= 5000 ? 'standard' : 'premium';
+    const preset = TYPICAL_DEAL_SIZE_OPTIONS.find((option) => option.key === suggested);
+    if (!preset) return;
+
+    setFormData((prev) => {
+      if (prev.typicalDealSize === suggested) return prev;
+      return {
+        ...prev,
+        typicalDealSize: suggested,
+        pricingMin: preset.min ? String(preset.min) : prev.pricingMin,
+        pricingMax: preset.max ? String(preset.max) : '',
+        pricingAvg: preset.min && preset.max
+          ? String(Math.round((preset.min + preset.max) / 2))
+          : preset.min
+            ? String(preset.min)
+            : prev.pricingAvg,
+      };
+    });
+  }, [formData.avgRateReel]);
+
   // Form validation
   const validateForm = (): boolean => {
+    setCollabBudgetError(null);
+
     if (!formData.name.trim()) {
       toast.error('Please enter your name');
       return false;
@@ -507,12 +1090,31 @@ const ProfileSettings = () => {
       toast.error('State is required. Enter pincode to auto-fill or enter manually.');
       return false;
     }
+
+    const minBudget = formData.pricingMin ? Number(formData.pricingMin) : null;
+    const maxBudget = formData.pricingMax ? Number(formData.pricingMax) : null;
+
+    if (
+      (minBudget !== null && Number.isNaN(minBudget)) ||
+      (maxBudget !== null && Number.isNaN(maxBudget))
+    ) {
+      setCollabBudgetError('Enter valid budget values.');
+      toast.error('Please enter valid budget values.');
+      return false;
+    }
+
+    if (minBudget !== null && maxBudget !== null && minBudget > maxBudget) {
+      setCollabBudgetError('Minimum budget cannot be greater than maximum budget.');
+      toast.error('Minimum budget cannot be greater than maximum budget.');
+      return false;
+    }
+
     return true;
   };
 
   // Handle save
   const handleSave = async () => {
-    if (!editMode || !profile) return;
+    if (!profile) return;
 
     if (!validateForm()) {
       return;
@@ -678,6 +1280,83 @@ const ProfileSettings = () => {
         updatePayload.bio = formData.bio;
       }
 
+      // Only send extended creator fields when they have meaningful values.
+      // This avoids avoidable 400s in environments where optional migrations are not applied yet.
+      const creatorCategoryValue = formData.creatorCategory?.trim();
+      if (creatorCategoryValue) {
+        updatePayload.creator_category = creatorCategoryValue;
+      }
+
+      const avgRateReelValue = formData.avgRateReel?.trim();
+      if (avgRateReelValue) {
+        updatePayload.avg_rate_reel = Number(avgRateReelValue);
+      }
+      const avgReelViewsManualValue = formData.avgReelViewsManual?.trim();
+      updatePayload.avg_reel_views_manual = avgReelViewsManualValue ? Number(avgReelViewsManualValue) : null;
+      const avgLikesManualValue = formData.avgLikesManual?.trim();
+      updatePayload.avg_likes_manual = avgLikesManualValue ? Number(avgLikesManualValue) : null;
+      const collabBrandsCountOverrideValue = formData.collabBrandsCountOverride?.trim();
+      updatePayload.collab_brands_count_override = collabBrandsCountOverrideValue
+        ? Math.max(0, Math.floor(Number(collabBrandsCountOverrideValue)))
+        : null;
+      const activeBrandCollabsMonthValue = formData.activeBrandCollabsMonth?.trim();
+      updatePayload.active_brand_collabs_month = activeBrandCollabsMonthValue ? Math.max(0, Number(activeBrandCollabsMonthValue)) : null;
+      updatePayload.campaign_slot_note = buildNoteValue(formData.campaignSlotPreset, formData.campaignSlotCustom);
+      updatePayload.collab_region_label = formData.collabRegionLabel?.trim() || null;
+      updatePayload.collab_audience_fit_note = buildNoteValue(formData.collabAudienceFitPreset, formData.collabAudienceFitCustom);
+      updatePayload.collab_recent_activity_note = buildNoteValue(formData.collabRecentActivityPreset, formData.collabRecentActivityCustom);
+      updatePayload.collab_audience_relevance_note = formData.collabAudienceRelevanceNote?.trim() || null;
+      updatePayload.collab_delivery_reliability_note = buildNoteValue(formData.collabDeliveryReliabilityPreset, formData.collabDeliveryReliabilityCustom);
+      updatePayload.collab_response_behavior_note = buildNoteValue(formData.collabResponseBehaviorPreset, formData.collabResponseBehaviorCustom);
+      updatePayload.collab_cta_trust_note = formData.collabCtaTrustNote?.trim() || null;
+      updatePayload.collab_cta_dm_note = formData.collabCtaDmNote?.trim() || null;
+      updatePayload.collab_cta_platform_note = formData.collabCtaPlatformNote?.trim() || null;
+
+      const pricingMinValue = formData.pricingMin?.trim();
+      if (pricingMinValue) {
+        updatePayload.pricing_min = Number(pricingMinValue);
+      }
+
+      const pricingAvgValue = formData.pricingAvg?.trim();
+      if (pricingAvgValue) {
+        updatePayload.pricing_avg = Number(pricingAvgValue);
+      }
+
+      const pricingMaxValue = formData.pricingMax?.trim();
+      if (pricingMaxValue) {
+        updatePayload.pricing_max = Number(pricingMaxValue);
+      } else {
+        updatePayload.pricing_max = null;
+      }
+      if ('typical_deal_size' in (profile as any)) {
+        updatePayload.typical_deal_size = formData.typicalDealSize;
+      }
+
+      updatePayload.open_to_collabs = !!formData.openToCollabs;
+
+      const mediaKitUrlValue = formData.mediaKitUrl?.trim();
+      if (mediaKitUrlValue) {
+        updatePayload.media_kit_url = mediaKitUrlValue;
+      }
+
+      updatePayload.content_niches = formData.contentNiches.length > 0 ? formData.contentNiches : [];
+
+      const audienceGenderSplitValue = genderSplit.trim();
+      updatePayload.audience_gender_split = audienceGenderSplitValue || null;
+
+      const normalizedTopCities = topCities
+        .map((city) => normalizeAudienceText(city))
+        .filter(Boolean)
+        .filter((city, index, arr) => arr.findIndex((item) => item.toLowerCase() === city.toLowerCase()) === index);
+      updatePayload.top_cities = normalizedTopCities.length > 0 ? normalizedTopCities : [];
+
+      updatePayload.audience_age_range = ageRange || null;
+
+      const primaryAudienceLanguageValue = normalizeAudienceText(language);
+      updatePayload.primary_audience_language = primaryAudienceLanguageValue || null;
+
+      updatePayload.posting_frequency = postingFrequency || null;
+
       // Handle Instagram handle - normalize and save
       // NOTE: Instagram handle is NEVER used for username generation
       // Username is only auto-generated from first_name + last_name (or email) via database trigger
@@ -751,7 +1430,10 @@ const ProfileSettings = () => {
       await new Promise(resolve => setTimeout(resolve, 100));
 
       toast.success('Profile updated successfully!');
-      setEditMode(false);
+      if (dealSettingsRequired) {
+        setDealSettingsRequired(false);
+        navigate('/creator-profile?section=collab', { replace: true });
+      }
       logger.success('Profile updated', {
         profileId: profile.id,
         location: updatePayload.location,
@@ -820,7 +1502,13 @@ const ProfileSettings = () => {
         <div className="flex items-center justify-between p-4">
           <button
             type="button"
-            onClick={() => navigate('/creator-dashboard')}
+            onClick={() => {
+              if (dealSettingsRequired) {
+                toast.message('Complete Deal Settings first to continue.');
+                return;
+              }
+              navigate('/creator-dashboard');
+            }}
             className="p-2 hover:bg-white/10 rounded-lg transition-colors"
             aria-label="Back to dashboard"
           >
@@ -832,22 +1520,16 @@ const ProfileSettings = () => {
           <button
             type="button"
             onClick={() => {
-              if (editMode) {
-                handleSave();
-              } else {
-                setEditMode(true);
-              }
+              handleSave();
             }}
             disabled={isSaving}
             className="p-2 hover:bg-white/10 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-            aria-label={editMode ? 'Save profile' : 'Edit profile'}
+            aria-label="Save profile"
           >
             {isSaving ? (
               <Loader2 className="w-6 h-6 animate-spin text-purple-400" />
-            ) : editMode ? (
-              <Check className="w-6 h-6 text-green-400" />
             ) : (
-              <Edit className="w-6 h-6" />
+              <Check className="w-6 h-6 text-green-400" />
             )}
           </button>
         </div>
@@ -858,15 +1540,15 @@ const ProfileSettings = () => {
         <div
           role="tablist"
           aria-label="Profile sections"
-          className="flex gap-1 bg-white/8 rounded-lg p-1 border border-white/20 max-w-2xl mx-auto"
+          className="grid grid-cols-2 sm:flex gap-1 bg-white/8 rounded-lg p-1 border border-white/20 max-w-2xl mx-auto"
         >
           <button
             role="tab"
             aria-selected={activeSection === 'profile'}
             aria-label="Profile"
-            onClick={() => setActiveSection('profile')}
+            onClick={() => handleSectionChange('profile')}
             className={cn(
-              "flex-1 min-h-[44px] px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 text-center flex items-center justify-center gap-1.5",
+              "w-full sm:flex-1 min-h-[44px] px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 text-center flex items-center justify-center gap-1.5",
               activeSection === 'profile'
                 ? "bg-white/15 text-white shadow-sm ring-1 ring-white/15 border border-white/20"
                 : "text-white/50 hover:text-white/80"
@@ -879,9 +1561,9 @@ const ProfileSettings = () => {
             role="tab"
             aria-selected={activeSection === 'account'}
             aria-label="Account"
-            onClick={() => setActiveSection('account')}
+            onClick={() => handleSectionChange('account')}
             className={cn(
-              "flex-1 min-h-[44px] px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 text-center flex items-center justify-center gap-1.5",
+              "w-full sm:flex-1 min-h-[44px] px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 text-center flex items-center justify-center gap-1.5",
               activeSection === 'account'
                 ? "bg-white/15 text-white shadow-sm ring-1 ring-white/15 border border-white/20"
                 : "text-white/50 hover:text-white/80"
@@ -892,11 +1574,26 @@ const ProfileSettings = () => {
           </button>
           <button
             role="tab"
+            aria-selected={activeSection === 'collab'}
+            aria-label="Your Offer"
+            onClick={() => handleSectionChange('collab')}
+            className={cn(
+              "w-full sm:flex-1 min-h-[44px] px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 text-center flex items-center justify-center gap-1.5",
+              activeSection === 'collab'
+                ? "bg-white/15 text-white shadow-sm ring-1 ring-white/15 border border-white/20"
+                : "text-white/50 hover:text-white/80"
+            )}
+          >
+            <SlidersHorizontal className="w-4 h-4" />
+            <span>Your Offer</span>
+          </button>
+          <button
+            role="tab"
             aria-selected={activeSection === 'support'}
             aria-label="Support"
-            onClick={() => setActiveSection('support')}
+            onClick={() => handleSectionChange('support')}
             className={cn(
-              "flex-1 min-h-[44px] px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 text-center flex items-center justify-center gap-1.5",
+              "w-full sm:flex-1 min-h-[44px] px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 text-center flex items-center justify-center gap-1.5",
               activeSection === 'support'
                 ? "bg-white/15 text-white shadow-sm ring-1 ring-white/15 border border-white/20"
                 : "text-white/50 hover:text-white/80"
@@ -907,6 +1604,14 @@ const ProfileSettings = () => {
           </button>
         </div>
       </div>
+
+      {dealSettingsRequired && (
+        <div className="px-4 pt-3">
+          <div className="max-w-2xl mx-auto rounded-xl border border-purple-300/35 bg-purple-500/15 px-4 py-3 text-sm text-purple-100">
+            Complete your Deal Settings to finish onboarding and start receiving collaboration offers.
+          </div>
+        </div>
+      )}
 
       <div className="p-4 space-y-3" style={{ paddingBottom: 'calc(160px + env(safe-area-inset-bottom, 0px))' }}>
         {/* Profile Summary - Mobile Optimized */}
@@ -1052,7 +1757,12 @@ const ProfileSettings = () => {
         {activeSection === 'profile' && (
           <div className="space-y-3">
             {/* Basic Information */}
-            <div className="bg-white/8 rounded-xl p-4 border border-white/15">
+            <div
+              className={cn(
+                "bg-white/8 rounded-xl p-4 border border-white/15 transition-all duration-200 ease-out",
+                collabHeroAnimated ? "opacity-100 scale-100 shadow-[0_0_0_1px_rgba(255,255,255,0.08),0_14px_30px_rgba(139,92,246,0.22)]" : "opacity-0 scale-[0.96]"
+              )}
+            >
               <h2 className="font-semibold text-base mb-3 flex items-center gap-2">
                 <User className="w-4 h-4" />
                 Basic Information
@@ -1211,7 +1921,7 @@ const ProfileSettings = () => {
                       value={formData.instagramHandle}
                       onChange={(e) => {
                         // Strip @ symbol and convert to lowercase, remove spaces
-                        let value = e.target.value
+                        const value = e.target.value
                           .replace(/@/g, '')
                           .replace(/\s/g, '')
                           .toLowerCase();
@@ -1508,12 +2218,590 @@ const ProfileSettings = () => {
                 </p>
               </div>
             </div>
+
+            <div className="mb-4">
+              <button
+                type="button"
+                onClick={() => {
+                  handleSave();
+                }}
+                disabled={isSaving}
+                className="w-full h-11 rounded-xl bg-gradient-to-r from-[#8B5CF6] to-[#6366F1] hover:from-[#7C3AED] hover:to-[#4F46E5] text-white font-semibold shadow-[0_8px_24px_rgba(139,92,246,0.35)] disabled:opacity-70 disabled:cursor-not-allowed"
+              >
+                {isSaving ? 'Saving...' : 'Save Profile'}
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Collab Link Builder Section */}
+        {activeSection === 'collab' && (
+          <div className="space-y-3">
+            <div className="bg-white/8 rounded-xl p-4 border border-white/15">
+              <div className="inline-flex items-center rounded-full border border-amber-300/40 bg-amber-300/10 px-2.5 py-1 text-[11px] font-semibold text-amber-100 mb-2">
+                ⭐ Your Brand Entry Point
+              </div>
+              <h2 className="font-semibold text-base mb-2 flex items-center gap-2">
+                <Link2 className="w-4 h-4" />
+                Your Collaboration Link
+              </h2>
+              <p className="text-xs text-white/60 mb-1">Share this link so brands can send offers directly.</p>
+              <p className="text-xs text-white/55 mb-1.5">This replaces DM negotiations.</p>
+              <p className="text-xs text-emerald-200/80 mb-3">Verified deal flow — no agency middle layer</p>
+              {(() => {
+                const usernameForLink = formData.instagramHandle || profile?.instagram_handle || profile?.username;
+                const hasUsername = usernameForLink && usernameForLink.trim() !== '';
+                const collabLink = hasUsername ? `${window.location.origin}/collab/${usernameForLink}` : '';
+                const shortLink = hasUsername ? `creatorarmour.com/collab/${usernameForLink}` : '';
+
+                if (!hasUsername) {
+                  return (
+                    <p className="text-xs text-amber-200/90">Add your Instagram username in Profile to activate your collab link.</p>
+                  );
+                }
+
+                return (
+                  <div className="space-y-2">
+                    <div className="rounded-lg border border-white/20 bg-white/10 px-3 py-2.5">
+                      <code className="text-sm text-white/90 truncate block" title={shortLink}>{shortLink}</code>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={async () => {
+                          try {
+                            await navigator.clipboard.writeText(collabLink);
+                            setCopiedLink(true);
+                            toast.success('Link copied');
+                            setTimeout(() => setCopiedLink(false), 2000);
+                          } catch {
+                            toast.error('Failed to copy');
+                          }
+                        }}
+                        className={cn(
+                          "h-10 bg-white/8 border-white/25 text-white/85 hover:bg-white/15 transition-all",
+                          copyPulse && "shadow-[0_0_0_1px_rgba(167,139,250,0.55),0_0_18px_rgba(167,139,250,0.35)]"
+                        )}
+                        aria-label="Copy collaboration link"
+                      >
+                        {copiedLink ? <Check className="h-4 w-4 text-green-400" /> : <Copy className="h-4 w-4" />}
+                        <span className="ml-1.5">{copiedLink ? 'Copied' : 'Copy'}</span>
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => window.open(`/collab/${usernameForLink}`, '_blank')}
+                        className="h-10 bg-white/8 border-white/25 text-white/85 hover:bg-white/15"
+                        aria-label="Preview collaboration link"
+                      >
+                        <ExternalLink className="h-4 w-4 mr-1.5" />
+                        Preview
+                      </Button>
+                    </div>
+                    <p className="text-[11px] text-white/65">
+                      {isCollabPositioningIncomplete ? 'Add a few details to attract better offers' : 'Ready to receive offers'}
+                    </p>
+                  </div>
+                );
+              })()}
+            </div>
+
+            <div className="bg-white/8 rounded-xl p-4 border border-white/15">
+              <h2 className="font-semibold text-base mb-2">Your Deal Terms</h2>
+              <p className="text-xs text-white/60 mb-3">This is what brands see before sending an offer.</p>
+
+              <div className="space-y-3">
+                <div>
+                  <label className="text-xs text-white/70 mb-1.5 block">Content Type</label>
+                  <select
+                    value={formData.creatorCategory}
+                    onChange={(e) => setFormData(prev => ({ ...prev, creatorCategory: e.target.value }))}
+                    disabled={!editMode}
+                    className={`w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-sm text-white outline-none transition-colors ${editMode ? 'focus:border-purple-300/60 focus:ring-2 focus:ring-purple-400/20 focus:bg-white/12' : 'cursor-not-allowed opacity-80'}`}
+                  >
+                    {CREATOR_CATEGORY_OPTIONS.map((option) => (
+                      <option key={option} value={option} className="bg-[#1b1037] text-white">{option}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="text-xs text-white/70 mb-1.5 block">Typical Reel Price (INR)</label>
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-white/60">₹</span>
+                    <input
+                      type="number"
+                      min="0"
+                      step="1"
+                      value={formData.avgRateReel}
+                      onChange={(e) => setFormData(prev => ({ ...prev, avgRateReel: e.target.value }))}
+                      disabled={!editMode}
+                      placeholder="e.g. 1500"
+                      className={`w-full bg-white/10 border border-white/20 rounded-lg pl-7 pr-3 py-2 text-sm text-white placeholder-white/40 outline-none transition-colors ${editMode ? 'focus:border-purple-300/60 focus:ring-2 focus:ring-purple-400/20 focus:bg-white/12' : 'cursor-not-allowed'}`}
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="text-xs text-white/70 mb-2 block">Typical Collaboration Size</label>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                    {TYPICAL_DEAL_SIZE_OPTIONS.map((option) => {
+                      const selected = formData.typicalDealSize === option.key;
+                      return (
+                        <button
+                          key={option.key}
+                          type="button"
+                          onClick={() => {
+                            hasManualDealSizeSelectionRef.current = true;
+                            setCollabBudgetError(null);
+                            setFormData((prev) => ({
+                              ...prev,
+                              typicalDealSize: option.key,
+                              pricingMin: option.min ? String(option.min) : prev.pricingMin,
+                              pricingMax: option.max ? String(option.max) : '',
+                              pricingAvg: option.min && option.max
+                                ? String(Math.round((option.min + option.max) / 2))
+                                : option.min
+                                  ? String(option.min)
+                                  : prev.pricingAvg,
+                            }));
+                          }}
+                          className={cn(
+                            "w-full text-left rounded-xl p-3 border transition-all duration-200 hover:scale-[1.01]",
+                            selected
+                              ? "scale-[1.03] bg-white/10 backdrop-blur-md border-white/20 shadow-[0_0_0_1px_rgba(255,255,255,0.16),0_10px_24px_rgba(139,92,246,0.3)]"
+                              : "bg-white/5 border-white/10"
+                          )}
+                        >
+                          <p className="text-sm font-semibold text-white/95">{option.title}</p>
+                          <p className="text-xs text-purple-100/90 mt-1">{option.range}</p>
+                          <p className="text-[11px] text-white/60 mt-1">{option.helper}</p>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {collabBudgetError && <p className="text-xs text-amber-300">{collabBudgetError}</p>}
+                <p className="text-[11px] text-white/60">This helps brands send relevant offers only.</p>
+
+                <div>
+                  <label className="text-xs text-white/70 mb-1.5 block">Open To</label>
+                  <div className="flex flex-wrap gap-2">
+                    {COLLAB_PREFERENCE_OPTIONS.map((option) => {
+                      const isSelected = formData.collaborationPreference === option;
+                      return (
+                        <button
+                          key={option}
+                          type="button"
+                          disabled={!editMode}
+                          onClick={() => setFormData(prev => ({ ...prev, collaborationPreference: option }))}
+                          aria-pressed={isSelected}
+                          className={`px-3 py-1.5 rounded-full text-xs border transition-all ${isSelected
+                            ? 'bg-gradient-to-r from-fuchsia-500/90 to-indigo-500/90 border-fuchsia-200/90 text-white shadow-[0_0_0_1px_rgba(255,255,255,0.22),0_8px_20px_rgba(99,102,241,0.35)] font-semibold'
+                            : 'bg-white/8 border-white/20 text-white/75'} ${!editMode ? 'opacity-70 cursor-not-allowed' : 'hover:bg-white/15 hover:border-white/35'}`}
+                        >
+                          {option === 'paid' ? 'Paid' : option === 'barter' ? 'Barter' : 'Hybrid'}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-white/8 rounded-xl p-4 border border-white/15">
+              <h2 className="font-semibold text-base mb-2">Best-Fit Brands</h2>
+              <p className="text-xs text-white/60 mb-3">Helps attract the right collaborations.</p>
+
+              <div className="space-y-3">
+                <div>
+                  <label className="text-xs text-white/70 mb-1.5 block">Content Niches</label>
+                  <div className="flex flex-wrap gap-2">
+                    {CONTENT_NICHE_OPTIONS.map((niche) => {
+                      const selected = formData.contentNiches.includes(niche);
+                      return (
+                        <button
+                          key={niche}
+                          type="button"
+                          disabled={!editMode}
+                          onClick={() => {
+                            if (selected) {
+                              setFormData((prev) => ({ ...prev, contentNiches: prev.contentNiches.filter((item) => item !== niche) }));
+                            } else if (formData.contentNiches.length < 5) {
+                              setHighlightNiche(niche);
+                              window.setTimeout(() => setHighlightNiche((current) => (current === niche ? null : current)), 220);
+                              setFormData((prev) => ({ ...prev, contentNiches: [...prev.contentNiches, niche] }));
+                            }
+                          }}
+                          className={`px-3 py-1.5 rounded-full text-xs border transition-all ${selected
+                            ? 'bg-gradient-to-r from-fuchsia-500/90 to-indigo-500/90 border-fuchsia-200/90 text-white shadow-[0_0_0_1px_rgba(255,255,255,0.22),0_8px_20px_rgba(99,102,241,0.35)] font-semibold'
+                            : 'bg-white/8 border-white/20 text-white/75'} ${highlightNiche === niche ? 'scale-[1.03] shadow-[0_0_0_1px_rgba(244,114,182,0.4),0_0_24px_rgba(167,139,250,0.45)]' : ''} ${!editMode ? 'opacity-70 cursor-not-allowed' : 'hover:bg-white/15 hover:border-white/35'}`}
+                        >
+                          {niche}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div className={cn(
+                  "rounded-lg transition-all",
+                  activeNudgeField === 'avgViews' && "ring-1 ring-purple-300/60 bg-purple-400/10"
+                )}>
+                  <label className="text-xs text-white/70 mb-1.5 block">Avg Reel Views</label>
+                  <input
+                    type="number"
+                    min="0"
+                    step="1"
+                    value={formData.avgReelViewsManual}
+                    onChange={(e) => setFormData(prev => ({ ...prev, avgReelViewsManual: e.target.value }))}
+                    disabled={!editMode}
+                    placeholder="e.g. 12000"
+                    className={`w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-sm text-white placeholder-white/40 outline-none transition-colors ${editMode ? 'focus:border-purple-300/60 focus:ring-2 focus:ring-purple-400/20 focus:bg-white/12' : 'cursor-not-allowed'}`}
+                  />
+                  {isAvgViewsMissing && (
+                    <p className="text-[11px] text-white/55 mt-1">Helps brands estimate reach</p>
+                  )}
+                </div>
+
+                <div className={cn(
+                  "rounded-lg transition-all",
+                  activeNudgeField === 'region' && "ring-1 ring-purple-300/60 bg-purple-400/10"
+                )}>
+                  <label className="text-xs text-white/70 mb-1.5 block">Primary Audience Region</label>
+                  <input
+                    type="text"
+                    value={formData.collabRegionLabel}
+                    onChange={(e) => setFormData(prev => ({ ...prev, collabRegionLabel: e.target.value }))}
+                    disabled={!editMode}
+                    placeholder="NCR (Delhi Region)"
+                    className={`w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-sm text-white placeholder-white/40 outline-none transition-colors ${editMode ? 'focus:border-purple-300/60 focus:ring-2 focus:ring-purple-400/20 focus:bg-white/12' : 'cursor-not-allowed'}`}
+                  />
+                  {isRegionMissing && (
+                    <p className="text-[11px] text-white/55 mt-1">Improves local deal matching</p>
+                  )}
+                </div>
+
+                <Collapsible open={showAdvancedInsights} onOpenChange={setShowAdvancedInsights}>
+                  <CollapsibleTrigger className="w-full rounded-lg border border-white/10 bg-white/5 hover:bg-white/10 transition-colors">
+                    <div className="px-3 py-2 flex items-center justify-between text-sm text-white/90">
+                      <span>Improve Brand Match</span>
+                      <ChevronDown className={cn('h-4 w-4 text-white/60 transition-transform', showAdvancedInsights && 'rotate-180')} />
+                    </div>
+                  </CollapsibleTrigger>
+                  <CollapsibleContent className="space-y-3 pt-3">
+                    <div>
+                      <label className="text-xs text-white/70 mb-1.5 block">Gender Split</label>
+                      <input
+                        type="text"
+                        value={genderSplit}
+                        onChange={(e) => setGenderSplit(e.target.value)}
+                        placeholder="Example: 70% Women • 30% Men"
+                        disabled={!editMode}
+                        className={`w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-sm text-white placeholder-white/40 outline-none transition-colors ${editMode ? 'focus:border-purple-300/60 focus:ring-2 focus:ring-purple-400/20 focus:bg-white/12' : 'cursor-not-allowed'}`}
+                      />
+                    </div>
+                    <div>
+                      <label className="text-xs text-white/70 mb-1.5 block">Top Cities</label>
+                      <div className="flex flex-wrap gap-2 mb-2">
+                        {topCities.map((city) => (
+                          <span key={city} className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full text-xs border border-white/20 bg-white/10 text-white/90">
+                            {city}
+                            <button type="button" onClick={() => removeCity(city)} disabled={!editMode} className="text-white/70 hover:text-white">×</button>
+                          </span>
+                        ))}
+                      </div>
+                      <div className="flex gap-2">
+                        <input
+                          type="text"
+                          value={cityInput}
+                          onChange={(e) => setCityInput(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              e.preventDefault();
+                              if (!editMode) return;
+                              addCity();
+                            }
+                          }}
+                          placeholder="Type city & press Enter"
+                          disabled={!editMode}
+                          className={`flex-1 bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-sm text-white placeholder-white/40 outline-none transition-colors ${editMode ? 'focus:border-purple-300/60 focus:ring-2 focus:ring-purple-400/20 focus:bg-white/12' : 'cursor-not-allowed'}`}
+                        />
+                        <button type="button" onClick={addCity} disabled={!editMode} className={`px-3 py-2 rounded-lg text-sm border border-white/20 ${editMode ? 'bg-white/10 hover:bg-white/15 text-white' : 'opacity-70 cursor-not-allowed text-white/70 bg-white/5'}`}>
+                          Add
+                        </button>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      <div>
+                        <label className="text-xs text-white/70 mb-1.5 block">Age Range</label>
+                        <select
+                          value={ageRange}
+                          onChange={(e) => setAgeRange(e.target.value)}
+                          disabled={!editMode}
+                          className={`w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-sm text-white outline-none transition-colors ${editMode ? 'focus:border-purple-300/60 focus:ring-2 focus:ring-purple-400/20 focus:bg-white/12' : 'cursor-not-allowed opacity-80'}`}
+                        >
+                          <option value="" className="bg-[#1b1037] text-white">Select</option>
+                          <option value="18-24" className="bg-[#1b1037] text-white">18-24</option>
+                          <option value="25-34" className="bg-[#1b1037] text-white">25-34</option>
+                          <option value="35-44" className="bg-[#1b1037] text-white">35-44</option>
+                          <option value="Mixed" className="bg-[#1b1037] text-white">Mixed</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="text-xs text-white/70 mb-1.5 block">Posting Frequency</label>
+                        <select
+                          value={postingFrequency}
+                          onChange={(e) => setPostingFrequency(e.target.value)}
+                          disabled={!editMode}
+                          className={`w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-sm text-white outline-none transition-colors ${editMode ? 'focus:border-purple-300/60 focus:ring-2 focus:ring-purple-400/20 focus:bg-white/12' : 'cursor-not-allowed opacity-80'}`}
+                        >
+                          <option value="" className="bg-[#1b1037] text-white">Select</option>
+                          <option value="Daily" className="bg-[#1b1037] text-white">Daily</option>
+                          <option value="3–4 times/week" className="bg-[#1b1037] text-white">3–4 times/week</option>
+                          <option value="Weekly" className="bg-[#1b1037] text-white">Weekly</option>
+                          <option value="Occasional" className="bg-[#1b1037] text-white">Occasional</option>
+                        </select>
+                      </div>
+                    </div>
+                    <div>
+                      <label className="text-xs text-white/70 mb-1.5 block">Primary Audience Language</label>
+                      <input
+                        type="text"
+                        value={language}
+                        onChange={(e) => setLanguage(e.target.value)}
+                        placeholder="Example: Hindi • English"
+                        disabled={!editMode}
+                        className={`w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-sm text-white placeholder-white/40 outline-none transition-colors ${editMode ? 'focus:border-purple-300/60 focus:ring-2 focus:ring-purple-400/20 focus:bg-white/12' : 'cursor-not-allowed'}`}
+                      />
+                    </div>
+                  </CollapsibleContent>
+                </Collapsible>
+              </div>
+            </div>
+
+            <div className="bg-white/8 rounded-xl p-4 border border-white/15">
+              <h2 className="font-semibold text-base mb-2">Your Working Style</h2>
+              <p className="text-xs text-white/60 mb-3">Sets expectations before the deal starts.</p>
+
+              <div className="rounded-xl border border-white/15 bg-white/6 p-3 space-y-3">
+                <div>
+                  <p className="text-xs font-semibold text-white/85">Deal Expectations</p>
+                  <p className="text-[11px] text-white/55 mt-0.5">Prevents misunderstandings before campaigns start.</p>
+                </div>
+                <div>
+                  <label className="text-xs text-white/70 mb-1.5 block">Delivery Speed</label>
+                  <select
+                    value={formData.collabDeliveryReliabilityPreset}
+                    onChange={(e) => setFormData(prev => ({ ...prev, collabDeliveryReliabilityPreset: e.target.value }))}
+                    disabled={!editMode}
+                    className={`w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-sm text-white outline-none transition-colors ${editMode ? 'focus:border-purple-300/60 focus:ring-2 focus:ring-purple-400/20 focus:bg-white/12' : 'cursor-not-allowed opacity-80'}`}
+                  >
+                    <option value="" className="bg-[#1b1037] text-white">Select</option>
+                    {COLLAB_DELIVERY_RELIABILITY_OPTIONS.map((option) => (
+                      <option key={option} value={option} className="bg-[#1b1037] text-white">{option}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="text-xs text-white/70 mb-1.5 block">Approval Style</label>
+                  <select
+                    value={formData.collabResponseBehaviorPreset}
+                    onChange={(e) => setFormData(prev => ({ ...prev, collabResponseBehaviorPreset: e.target.value }))}
+                    disabled={!editMode}
+                    className={`w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-sm text-white outline-none transition-colors ${editMode ? 'focus:border-purple-300/60 focus:ring-2 focus:ring-purple-400/20 focus:bg-white/12' : 'cursor-not-allowed opacity-80'}`}
+                  >
+                    <option value="" className="bg-[#1b1037] text-white">Select</option>
+                    {COLLAB_CTA_BEHAVIOR_OPTIONS.map((option) => (
+                      <option key={option} value={option} className="bg-[#1b1037] text-white">{option}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="text-xs text-white/70 mb-1.5 block">Usage Preference</label>
+                  <input
+                    type="text"
+                    value={formData.collabCtaTrustNote}
+                    onChange={(e) => setFormData(prev => ({ ...prev, collabCtaTrustNote: e.target.value }))}
+                    disabled={!editMode}
+                    placeholder="Mention rights or usage preference"
+                    className={`w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-sm text-white placeholder-white/40 outline-none transition-colors ${editMode ? 'focus:border-purple-300/60 focus:ring-2 focus:ring-purple-400/20 focus:bg-white/12' : 'cursor-not-allowed'}`}
+                  />
+                </div>
+              </div>
+              <p className="text-[11px] text-white/60 mt-3">Sets expectations before campaigns begin</p>
+            </div>
+
+            <div className="bg-white/8 rounded-xl p-4 border border-white/15 space-y-3">
+              <h2 className="font-semibold text-base">Professional Signals</h2>
+
+              <div>
+                <label className="text-xs text-white/70 mb-1.5 block">Past Brand Work</label>
+                <p className="text-[11px] text-white/55 mb-2">Have you worked with brands before?</p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  {[
+                    { key: 'just-starting', label: 'Just starting', value: '0' },
+                    { key: 'one-to-five', label: '1-5 brands', value: '3' },
+                    { key: 'five-to-twenty', label: '5-20 brands', value: '12' },
+                    { key: 'twenty-plus', label: '20+ brands', value: '25' },
+                  ].map((option) => (
+                    <button
+                      key={option.key}
+                      type="button"
+                      onClick={() => setFormData(prev => ({ ...prev, collabBrandsCountOverride: option.value }))}
+                      className={cn(
+                        "rounded-lg border px-3 py-2 text-sm text-left transition-colors",
+                        pastBrandWorkKey === option.key
+                          ? "bg-white/12 border-white/30 text-white"
+                          : "bg-white/5 border-white/15 text-white/80 hover:bg-white/10"
+                      )}
+                    >
+                      {option.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label className="text-xs text-white/70 mb-1.5 block">Ongoing Deals</label>
+                <select
+                  value={ongoingDealsKey}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    const mapped = value === '0' ? '0' : value === '1-2' ? '2' : value === '3-5' ? '4' : '6';
+                    setFormData(prev => ({ ...prev, activeBrandCollabsMonth: mapped }));
+                  }}
+                  disabled={!editMode}
+                  className={`w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-sm text-white outline-none transition-colors ${editMode ? 'focus:border-purple-300/60 focus:ring-2 focus:ring-purple-400/20 focus:bg-white/12' : 'cursor-not-allowed opacity-80'}`}
+                >
+                  <option value="0" className="bg-[#1b1037] text-white">None yet</option>
+                  <option value="1-2" className="bg-[#1b1037] text-white">1-2 deals</option>
+                  <option value="3-5" className="bg-[#1b1037] text-white">3-5 deals</option>
+                  <option value="6+" className="bg-[#1b1037] text-white">6+ deals</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="text-xs text-white/70 mb-1.5 block">Monthly Collab Capacity</label>
+                <p className="text-[11px] text-white/55 mb-2">How many deals can you handle per month?</p>
+                <select
+                  value={formData.campaignSlotPreset}
+                  onChange={(e) => setFormData(prev => ({ ...prev, campaignSlotPreset: e.target.value }))}
+                  disabled={!editMode}
+                  className={`w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-sm text-white outline-none transition-colors ${editMode ? 'focus:border-purple-300/60 focus:ring-2 focus:ring-purple-400/20 focus:bg-white/12' : 'cursor-not-allowed opacity-80'}`}
+                >
+                  <option value="" className="bg-[#1b1037] text-white">Select capacity</option>
+                  {COLLAB_CAMPAIGN_SLOT_OPTIONS.map((option) => (
+                    <option key={option} value={option} className="bg-[#1b1037] text-white">{option}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="relative">
+                {showAdvancedDealDrawer && (
+                  <div className="absolute inset-0 rounded-xl bg-black/25 backdrop-blur-[1px] -z-10 transition-opacity duration-300 opacity-100" />
+                )}
+                <Collapsible open={showAdvancedDealDrawer} onOpenChange={setShowAdvancedDealDrawer}>
+                  <CollapsibleTrigger className="w-full rounded-xl border border-white/15 bg-white/8 hover:bg-white/12 transition-colors">
+                    <div className="p-3 flex items-center justify-between">
+                      <span className="text-sm font-medium text-white/90">Improve how brands trust you</span>
+                      <ChevronDown className={cn('h-4 w-4 text-white/60 transition-transform', showAdvancedDealDrawer && 'rotate-180')} />
+                    </div>
+                  </CollapsibleTrigger>
+                  <CollapsibleContent className="pt-3">
+                    <div className="bg-white/8 rounded-xl p-4 border border-white/15 space-y-3">
+                      <div>
+                        <label className="text-xs text-white/70 mb-1.5 block">Media Kit URL</label>
+                        <input type="url" value={formData.mediaKitUrl} onChange={(e) => setFormData(prev => ({ ...prev, mediaKitUrl: e.target.value }))} disabled={!editMode} placeholder="https://..." className={`w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-sm text-white placeholder-white/40 outline-none transition-colors ${editMode ? 'focus:border-purple-300/60 focus:ring-2 focus:ring-purple-400/20 focus:bg-white/12' : 'cursor-not-allowed'}`} />
+                        {isMediaKitMissing && (
+                          <p className="text-[11px] text-white/55 mt-1">Increases premium deal invites</p>
+                        )}
+                      </div>
+                    </div>
+                  </CollapsibleContent>
+                </Collapsible>
+              </div>
+            </div>
+
+            <div className="mb-4">
+              <p className="text-xs text-white/65 mb-2.5 text-center">
+                Complete this to receive better-matched offers.
+              </p>
+              {positioningNudge && (
+                <p className="text-[11px] text-emerald-200/80 mb-2 text-center transition-opacity duration-200">{positioningNudge}</p>
+              )}
+              <button
+                type="button"
+                onClick={() => {
+                  setCtaPressed(true);
+                  window.setTimeout(() => setCtaPressed(false), 180);
+                  if (navigator.vibrate) navigator.vibrate(120);
+                  handleSave();
+                }}
+                disabled={isSaving}
+                className={cn(
+                  "relative overflow-hidden w-full h-11 rounded-xl bg-gradient-to-r from-[#8B5CF6] to-[#6366F1] hover:from-[#7C3AED] hover:to-[#4F46E5] text-white font-semibold shadow-[0_8px_24px_rgba(139,92,246,0.35)] disabled:opacity-70 disabled:cursor-not-allowed transition-transform duration-150",
+                  ctaPressed && "scale-[0.98]"
+                )}
+              >
+                <span
+                  aria-hidden
+                  className={cn(
+                    "absolute inset-y-0 -left-1/3 w-1/3 bg-white/25 blur-sm transition-transform duration-500",
+                    ctaPressed ? "translate-x-[440%]" : "translate-x-0"
+                  )}
+                />
+                <span className="relative z-10">
+                  {isSaving ? 'Saving...' : isKeyPositioningMissing ? '✨ Improve My Deal Positioning' : '✨ Update How Brands See Me'}
+                </span>
+              </button>
+            </div>
           </div>
         )}
 
         {/* Account Section */}
         {activeSection === 'account' && (
           <div className="space-y-3">
+            <div className="bg-white/8 rounded-xl p-3.5 border border-white/15">
+              <h2 className="font-semibold text-base mb-3 flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 text-white/70" />
+                Instant Deal Alerts
+              </h2>
+              <p className="text-sm text-white/70 mb-3">
+                Get notified as soon as a brand sends a collaboration request.
+              </p>
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  type="button"
+                  onClick={handleEnablePushFromAccount}
+                  disabled={
+                    isPushBusy
+                    || isPushSubscribed
+                    || !isPushSupported
+                    || (!isIOSNeedsInstall && !hasVapidKey)
+                  }
+                  className="inline-flex items-center justify-center rounded-lg px-4 py-2 text-sm font-semibold bg-violet-500 hover:bg-violet-400 text-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  {isPushSubscribed ? 'Enabled' : isPushBusy ? 'Enabling…' : isIOSNeedsInstall ? 'Add to Home Screen' : 'Enable Notifications'}
+                </button>
+                {isPushSubscribed && (
+                  <>
+                    <button
+                      type="button"
+                      onClick={handleTestPushFromAccount}
+                      disabled={isTestingPush}
+                      className="inline-flex items-center justify-center rounded-lg px-4 py-2 text-sm font-semibold bg-violet-500/20 hover:bg-violet-500/30 text-violet-200 border border-violet-500/30 disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
+                    >
+                      {isTestingPush ? 'Sending…' : 'Send Test Notification'}
+                    </button>
+                    <span className="text-xs text-emerald-300/90">Push alerts active</span>
+                  </>
+                )}
+              </div>
+            </div>
+
             {/* Notifications */}
             <NotificationPreferences />
 
