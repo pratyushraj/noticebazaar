@@ -82,7 +82,7 @@ let supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VI
 // If SERVICE_ROLE_KEY looks like a variable reference, try to find it
 if (supabaseServiceKey.startsWith('${') || supabaseServiceKey === '') {
   // Try to find the service role key - it might be in a different env var name
-  supabaseServiceKey = process.env.VITE_SUPABASE_SERVICE_ROLE_KEY 
+  supabaseServiceKey = process.env.VITE_SUPABASE_SERVICE_ROLE_KEY
     || process.env.SUPABASE_SERVICE_KEY
     || process.env.SUPABASE_KEY
     || '';
@@ -95,12 +95,12 @@ let supabaseInitialized = false;
 
 try {
   // Check if we have valid credentials (not placeholders)
-  const hasValidCredentials = 
-    supabaseUrl && 
+  const hasValidCredentials =
+    supabaseUrl &&
     supabaseUrl !== 'https://placeholder.supabase.co' &&
-    supabaseServiceKey && 
+    supabaseServiceKey &&
     supabaseServiceKey !== 'placeholder-key';
-  
+
   if (hasValidCredentials) {
     supabase = createClient<Database>(supabaseUrl, supabaseServiceKey, {
       auth: {
@@ -159,39 +159,39 @@ const corsOptions = {
       console.log('[CORS] Allowing request with no origin');
       return callback(null, true);
     }
-    
+
     console.log('[CORS] Checking origin:', origin);
-    
+
     // Normalize origin for comparison
     const normalizedOrigin = origin.toLowerCase().trim();
-    
+
     // Allow any localhost port for development
-    if (normalizedOrigin.startsWith('http://localhost:') || 
-        normalizedOrigin.startsWith('http://127.0.0.1:') ||
-        normalizedOrigin.startsWith('https://localhost:') ||
-        normalizedOrigin.startsWith('https://127.0.0.1:')) {
+    if (normalizedOrigin.startsWith('http://localhost:') ||
+      normalizedOrigin.startsWith('http://127.0.0.1:') ||
+      normalizedOrigin.startsWith('https://localhost:') ||
+      normalizedOrigin.startsWith('https://127.0.0.1:')) {
       console.log('[CORS] ✓ Allowing localhost origin:', origin);
       return callback(null, true);
     }
-    
+
     // Allow Render frontend URLs
     if (normalizedOrigin.includes('onrender.com')) {
       console.log('[CORS] ✓ Allowing Render origin:', origin);
       return callback(null, true);
     }
-    
+
     // Allow Netlify frontend URLs
     if (normalizedOrigin.includes('netlify.app')) {
       console.log('[CORS] ✓ Allowing Netlify origin:', origin);
       return callback(null, true);
     }
-    
+
     // Allow cloudflared tunnel URLs
     if (normalizedOrigin.includes('trycloudflare.com') || normalizedOrigin.includes('creatorarmour.com')) {
       console.log('[CORS] ✓ Allowing cloudflared/creatorarmour origin:', origin);
       return callback(null, true);
     }
-    
+
     // Explicit allowed origins list
     const allowedOrigins = [
       'http://localhost:8080',
@@ -204,17 +204,18 @@ const corsOptions = {
       'https://creatorarmour.com',
       'https://api.creatorarmour.com'
     ].map(o => o.toLowerCase());
-    
+
     if (allowedOrigins.includes(normalizedOrigin)) {
       console.log('[CORS] ✓ Allowing origin from allowed list:', origin);
       return callback(null, true);
     }
-    
+
     console.warn('[CORS] ✗ Blocking origin:', origin);
     callback(new Error(`CORS: Origin ${origin} not allowed`));
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'X-Client-Info', 'apikey', 'Prefer', 'X-Supabase-Api-Version'],
   // Reflect Access-Control-Request-Headers so Supabase client headers
   // like apikey/x-client-info/x-supabase-api-version are accepted.
   exposedHeaders: ['Content-Length', 'Content-Type'],
@@ -311,9 +312,9 @@ app.get('/health', (req: express.Request, res: express.Response) => {
     const llmProvider = process.env.LLM_PROVIDER || 'huggingface';
     const llmModel = process.env.LLM_MODEL || 'not set';
     const hasLLMKey = !!process.env.LLM_API_KEY;
-    
-    res.json({ 
-      status: 'ok', 
+
+    res.json({
+      status: 'ok',
       timestamp: new Date().toISOString(),
       supabaseInitialized: supabaseInitialized,
       nodeEnv: process.env.NODE_ENV || 'not set',
@@ -327,8 +328,8 @@ app.get('/health', (req: express.Request, res: express.Response) => {
   } catch (error: any) {
     // Even if something fails, return a response
     console.error('Health check error:', error);
-    res.status(200).json({ 
-      status: 'error', 
+    res.status(200).json({
+      status: 'error',
       message: error.message || 'Unknown error',
       timestamp: new Date().toISOString()
     });
@@ -610,10 +611,10 @@ let server: any = null;
 if (process.env.VERCEL !== '1') {
   server = app.listen(PORT, async () => {
     console.log(`🚀 CreatorArmour API server running on port ${PORT}`);
-    
+
     // Check Puppeteer after server starts
     await checkPuppeteerAvailability();
-    
+
     // Setup influencer finder daily scheduler (if not serverless)
     try {
       const { setupDailyScheduler } = await import('./services/influencerScheduler.js');
@@ -631,7 +632,7 @@ if (process.env.VERCEL !== '1') {
         console.log('Server closed.');
         process.exit(0);
       });
-      
+
       // Force close after 5 seconds
       setTimeout(() => {
         console.log('Forcing server shutdown...');
@@ -645,13 +646,13 @@ if (process.env.VERCEL !== '1') {
   // Handle termination signals
   process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
   process.on('SIGINT', () => gracefulShutdown('SIGINT'));
-  
+
   // Handle uncaught errors
   process.on('uncaughtException', (error) => {
     console.error('Uncaught Exception:', error);
     gracefulShutdown('uncaughtException');
   });
-  
+
   process.on('unhandledRejection', (reason, promise) => {
     console.error('Unhandled Rejection at:', promise, 'reason:', reason);
     gracefulShutdown('unhandledRejection');

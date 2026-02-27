@@ -1,35 +1,43 @@
 // Authentication middleware using Supabase JWT
 
-import { Request, Response, NextFunction } from 'express';
-import { supabase, supabaseInitialized } from '../index.js';
+import express from 'express';
+import { supabase, supabaseInitialized } from '../lib/supabase.js';
 
-export interface AuthenticatedRequest extends Request {
+export interface AuthenticatedRequest extends express.Request {
   user?: {
     id: string;
     email?: string;
     role?: string;
   };
-  body: any;
-  params: any;
-  query: any;
 }
+
 
 export const authMiddleware = async (
   req: AuthenticatedRequest,
-  res: Response,
-  next: NextFunction
+  res: express.Response,
+  next: express.NextFunction
 ) => {
   try {
     if (!supabaseInitialized) {
       return res.status(500).json({ error: 'Server configuration error: Supabase not initialized. Please check environment variables.' });
     }
 
+    // DEBUG: Log all hits to authMiddleware
+    console.log(`[AuthMiddleware] Hit: ${req.method} ${req.path}`, {
+      hasAuthHeader: !!req.headers.authorization,
+      authHeaderPrefix: req.headers.authorization?.substring(0, 15)
+    });
+
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return res.status(401).json({ error: 'Missing or invalid authorization header' });
     }
 
-    const token = authHeader.substring(7);
+    let token = authHeader.substring(7).trim();
+    // Remove surrounding quotes if present
+    if (token.startsWith('"') && token.endsWith('"')) {
+      token = token.substring(1, token.length - 1);
+    }
 
     // Get user with timeout protection
     let user, authError;
@@ -53,9 +61,15 @@ export const authMiddleware = async (
         error: authError?.message,
         errorCode: authError?.status,
         hasUser: !!user,
-        tokenPrefix: token.substring(0, 10) + '...'
+        tokenPrefix: token.substring(0, 10) + '...',
+        path: req.path,
+        method: req.method
       });
-      return res.status(401).json({ error: 'Invalid or expired token', details: authError?.message });
+      return res.status(401).json({
+        error: 'Invalid or expired token',
+        details: authError?.message || 'User not found for token',
+        path: req.path
+      });
     }
 
     // Get user profile for role (with timeout)
