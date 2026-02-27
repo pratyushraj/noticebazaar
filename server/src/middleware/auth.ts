@@ -1,9 +1,13 @@
 // Authentication middleware using Supabase JWT
 
 import express from 'express';
+import type { IncomingHttpHeaders } from 'http';
 import { supabase, supabaseInitialized } from '../lib/supabase.js';
 
 export interface AuthenticatedRequest extends express.Request {
+  method: string;
+  path: string;
+  headers: IncomingHttpHeaders & { authorization?: string };
   user?: {
     id: string;
     email?: string;
@@ -24,11 +28,11 @@ export const authMiddleware = async (
 
     // DEBUG: Log all hits to authMiddleware
     console.log(`[AuthMiddleware] Hit: ${req.method} ${req.path}`, {
-      hasAuthHeader: !!req.headers.authorization,
-      authHeaderPrefix: req.headers.authorization?.substring(0, 15)
+      hasAuthHeader: !!req.headers?.authorization,
+      authHeaderPrefix: req.headers?.authorization?.substring(0, 15)
     });
 
-    const authHeader = req.headers.authorization;
+    const authHeader = req.headers?.authorization;
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return res.status(401).json({ error: 'Missing or invalid authorization header' });
     }
@@ -101,4 +105,3 @@ export const authMiddleware = async (
     res.status(500).json({ error: 'Authentication failed', details: error.message });
   }
 };
-
