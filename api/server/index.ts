@@ -231,7 +231,8 @@ const corsOptions = {
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
+  // Reflect Access-Control-Request-Headers so Supabase client headers are allowed
+  // (apikey, x-client-info, x-supabase-api-version, prefer, range, etc).
   exposedHeaders: ['Content-Length', 'Content-Type'],
   preflightContinue: false,
   optionsSuccessStatus: 204
@@ -252,6 +253,53 @@ app.use((req: express.Request, res: express.Response, next: express.NextFunction
 
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+/**
+ * Supabase proxy to bypass ISP DNS/hostname blocks in India.
+ * Routes frontend Supabase traffic through api.creatorarmour.com.
+ */
+app.all('/supabase-proxy/*', async (req: express.Request, res: express.Response) => {
+  const targetPath = req.params[0];
+  const baseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
+
+  if (!baseUrl) {
+    return res.status(500).json({ error: 'Database URL not configured' });
+  }
+
+  const targetUrl = `${baseUrl.replace(/\/$/, '')}/${targetPath}`;
+
+  const headers = { ...req.headers } as Record<string, string>;
+  delete headers.host;
+  delete headers.connection;
+  delete headers.origin;
+  delete headers.referer;
+  delete headers['content-length'];
+
+  if (!headers.apikey && process.env.SUPABASE_ANON_KEY) {
+    headers.apikey = process.env.SUPABASE_ANON_KEY;
+  }
+
+  try {
+    const upstream = await fetch(targetUrl + (Object.keys(req.query || {}).length ? `?${new URLSearchParams(req.query as Record<string, string>).toString()}` : ''), {
+      method: req.method,
+      headers,
+      body: req.method === 'GET' || req.method === 'HEAD' ? undefined : JSON.stringify(req.body),
+    });
+
+    res.status(upstream.status);
+    upstream.headers.forEach((value, key) => {
+      const k = key.toLowerCase();
+      if (['content-encoding', 'transfer-encoding', 'access-control-allow-origin', 'content-length'].includes(k)) return;
+      res.setHeader(key, value);
+    });
+
+    const buffer = Buffer.from(await upstream.arrayBuffer());
+    return res.send(buffer);
+  } catch (error: any) {
+    console.error('[SupabaseProxy] error:', error?.message || error);
+    return res.status(500).json({ error: 'ISP Bypass Proxy Error' });
+  }
+});
 
 // Root route - API information
 app.get('/', (req: express.Request, res: express.Response) => {
@@ -617,4 +665,3 @@ if (process.env.VERCEL !== '1' && !process.env.NOW_REGION) {
     gracefulShutdown('unhandledRejection');
   });
 }
-
