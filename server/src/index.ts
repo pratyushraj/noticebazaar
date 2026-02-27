@@ -48,7 +48,7 @@ import dealDetailsTokensRouter from './routes/dealDetailsTokens.js';
 import contractReadyTokensRouter from './routes/contractReadyTokens.js';
 import gstRouter from './routes/gst.js';
 import aiRouter from './routes/ai.js';
-import otpRouter, { publicRouter as otpPublicRouter } from './routes/otp.js';
+import otpRouter from './routes/otp.js';
 import dealsRouter from './routes/deals.js';
 import complaintsRouter from './routes/complaints.js';
 import influencersRouter from './routes/influencers.js';
@@ -338,7 +338,7 @@ app.use('/api/brand-response', brandResponseRouter);
 app.use('/api/deal-details-tokens', dealDetailsTokensRouter); // Public routes (auth handled internally)
 app.use('/api/contract-ready-tokens', contractReadyTokensRouter); // Public routes for contract ready page
 app.use('/api/gst', gstRouter); // Public GST lookup route
-app.use('/api/otp', otpPublicRouter); // Public OTP routes for brand response page
+// OTP routes are mounted below with auth/rate-limit middleware.
 app.use('/api/collab', collabRequestsRouter); // Public collab link routes (/:username and /:username/submit)
 app.use('/api/collab-analytics', collabAnalyticsRouter); // Public analytics tracking + authenticated analytics endpoints
 app.use('/api/creators', creatorsRouter); // Public creator directory routes
@@ -556,8 +556,14 @@ export default app;
 // Check Puppeteer availability on startup
 async function checkPuppeteerAvailability() {
   try {
-    const puppeteer = await import('puppeteer');
-    const browser = await puppeteer.default.launch({
+    const puppeteerCore = await import('puppeteer-core');
+    const executablePath = process.env.PUPPETEER_EXECUTABLE_PATH;
+    if (!executablePath) {
+      console.warn('⚠️ Puppeteer availability check skipped (PUPPETEER_EXECUTABLE_PATH not set)');
+      return;
+    }
+    const browser = await puppeteerCore.default.launch({
+      executablePath,
       headless: 'new',
       args: [
         '--no-sandbox',
