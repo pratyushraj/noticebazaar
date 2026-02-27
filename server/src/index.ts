@@ -1,53 +1,9 @@
-// @ts-nocheck
-// @ts-nocheck
-// CreatorArmour Backend API Server
-// Express server with Supabase auth, rate limiting, and all messaging endpoints
-
-// Load environment variables
-import dotenv from 'dotenv';
-
-// Load environment variables
-// In Vercel, environment variables are already set, so dotenv is only needed for local dev
-// Try to load .env files, but don't fail if they don't exist (Vercel provides env vars directly)
-import { fileURLToPath } from 'url';
-import { dirname, resolve } from 'path';
-
-let serverDir = '';
-try {
-  // ESM-native way to get __dirname
-  const __filename = fileURLToPath(import.meta.url);
-  serverDir = dirname(__filename);
-} catch (error) {
-  // Fallback for environments where import.meta.url is not available
-  console.log('[Server] Note: import.meta.url not available, using process.cwd()');
-  serverDir = process.cwd();
-}
-
-try {
-  // Load from server directory (where .env file is located)
-  // We use multiple potential paths to be resilient to different deployment layouts
-  if (serverDir) {
-    dotenv.config({ path: resolve(serverDir, '../.env') });
-    dotenv.config({ path: resolve(serverDir, '.env') });
-  }
-  // Also try root as fallback
-  dotenv.config();
-} catch (error) {
-  // In Vercel serverless, env vars are provided directly, so this is fine
-  console.log('⚠️ Could not load .env files (this is normal in Vercel)');
-}
-
-// Debug: Log if RESEND_API_KEY is loaded (only first few chars for security)
-if (process.env.RESEND_API_KEY) {
-  console.log('[Server] RESEND_API_KEY loaded:', process.env.RESEND_API_KEY.substring(0, 8) + '...');
-} else {
-  console.warn('[Server] ⚠️ RESEND_API_KEY not found in environment variables');
-}
-
+import './loadEnv.js';
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import { createClient } from '@supabase/supabase-js';
+
 import type { Database } from './types/supabase.js';
 import conversationsRouter from './routes/conversations.js';
 import messagesRouter from './routes/messages.js';
@@ -67,97 +23,32 @@ import complaintsRouter from './routes/complaints.js';
 import influencersRouter from './routes/influencers.js';
 import collabRequestsRouter from './routes/collabRequests.js';
 import collabAnalyticsRouter from './routes/collabAnalytics.js';
+import collabActionRouter from './routes/collabAction.js';
 import creatorsRouter from './routes/creators.js';
+import pushNotificationsRouter from './routes/pushNotifications.js';
 import shippingRouter from './routes/shipping.js';
 import cronDealRemindersRouter from './routes/cronDealReminders.js';
+import cronInstagramSyncRouter from './routes/cronInstagramSync.js';
 import creatorSignRouter from './routes/creatorSign.js';
 import otpRouter from './routes/otp.js';
 import contractsRouter from './routes/contracts.js';
-import { sendCollabRequestAcceptedEmail, sendCollabRequestCreatorNotificationEmail } from './services/collabRequestEmailService.js';
-import { createContractReadyToken } from './services/contractReadyTokenService.js';
-// Log router import for debugging
-console.log('[Server] Influencers router imported:', typeof influencersRouter, influencersRouter ? '✓' : '✗');
-import { authMiddleware } from './middleware/auth.js';
-import { rateLimitMiddleware } from './middleware/rateLimit.js';
-import { errorHandler } from './middleware/errorHandler.js';
+import feedbackRouter from './routes/feedback.js';
+import profileRouter from './routes/profile.js';
+import instagramOAuthRouter from './routes/instagramOAuth.js';
 
 const app = express();
+
 const PORT = process.env.PORT || 3001; // Fly.io uses 8080, but we keep 3001 for local dev
 
-// Initialize Supabase client
-// Use VITE_SUPABASE_URL if SUPABASE_URL is not set or is a variable reference (for local dev)
-let supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || '';
-// If SUPABASE_URL looks like a variable reference (${...}), use VITE_SUPABASE_URL instead
-if (supabaseUrl.startsWith('${') || supabaseUrl === '') {
-  supabaseUrl = process.env.VITE_SUPABASE_URL || '';
-}
-
-let supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_SERVICE_ROLE_KEY || '';
-// If SERVICE_ROLE_KEY looks like a variable reference, try to find it
-if (supabaseServiceKey.startsWith('${') || supabaseServiceKey === '') {
-  // Try to find the service role key - it might be in a different env var name
-  supabaseServiceKey = process.env.VITE_SUPABASE_SERVICE_ROLE_KEY
-    || process.env.SUPABASE_SERVICE_KEY
-    || process.env.SUPABASE_KEY
-    || '';
-}
-
-// Initialize Supabase client with error handling
-// Don't throw errors during module initialization (crashes Vercel serverless functions)
-let supabase: ReturnType<typeof createClient<Database>>;
-let supabaseInitialized = false;
-
-try {
-  // Check if we have valid credentials (not placeholders)
-  const hasValidCredentials =
-    supabaseUrl &&
-    supabaseUrl !== 'https://placeholder.supabase.co' &&
-    supabaseServiceKey &&
-    supabaseServiceKey !== 'placeholder-key';
-
-  if (hasValidCredentials) {
-    supabase = createClient<Database>(supabaseUrl, supabaseServiceKey, {
-      auth: {
-        autoRefreshToken: false,
-        persistSession: false
-      }
-    });
-    supabaseInitialized = true;
-    console.log('✅ Supabase client initialized successfully');
-  } else {
-    // Create a dummy client to prevent crashes (will fail on actual use)
-    supabase = createClient<Database>('https://placeholder.supabase.co', 'placeholder-key', {
-      auth: {
-        autoRefreshToken: false,
-        persistSession: false
-      }
-    });
-    console.warn('⚠️ Supabase client initialized with placeholder values. API calls will fail.');
-  }
-} catch (error: any) {
-  console.error('❌ Failed to initialize Supabase client:', error.message);
-  // Create a dummy client to prevent crashes
-  supabase = createClient<Database>('https://placeholder.supabase.co', 'placeholder-key', {
-    auth: {
-      autoRefreshToken: false,
-      persistSession: false
-    }
-  });
-}
-
-export { supabase, supabaseInitialized };
-
-// Export resolved config for use in other services (e.g., REST API calls)
-export const supabaseConfig = {
-  url: supabaseUrl,
-  serviceRoleKey: supabaseServiceKey
-};
+import axios from 'axios';
+import { supabase, supabaseInitialized, supabaseConfig } from './lib/supabase.js';
+export { supabase, supabaseInitialized, supabaseConfig };
 
 // Verify service role key is being used (for debugging)
-if (supabaseInitialized && supabaseServiceKey && supabaseServiceKey.length > 50) {
-  console.log('✅ Supabase client initialized with service role key (length:', supabaseServiceKey.length, ')');
+if (supabaseInitialized && supabaseConfig.serviceKey && supabaseConfig.serviceKey.length > 50) {
+  console.log('✅ Supabase client initialized with service role key (length:', supabaseConfig.serviceKey.length, ')');
 } else if (supabaseInitialized) {
-  console.warn('⚠️ Supabase client may not be using service role key. Key length:', supabaseServiceKey?.length || 0);
+  console.warn('⚠️ Supabase client may not be using service role key. Key length:', supabaseConfig.serviceKey?.length || 0);
 }
 
 // Middleware
@@ -239,7 +130,8 @@ const corsOptions = {
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
+  // Reflect requested headers so Supabase client headers are always allowed
+  // (e.g. apikey, x-client-info, x-supabase-api-version, prefer, range, etc).
   exposedHeaders: ['Content-Length', 'Content-Type'],
   preflightContinue: false,
   optionsSuccessStatus: 204
@@ -258,8 +150,71 @@ app.use((req: express.Request, res: express.Response, next: express.NextFunction
   next();
 });
 
+
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+/**
+ * Supabase Proxy to bypass ISP blocks (Jio/Airtel/ACT) in India.
+ * This routes client-side Supabase traffic through the backend server,
+ * making the requests appear as if they are coming from noticebazaar.com/creatorarmour.com.
+ */
+app.all('/supabase-proxy/*', async (req: express.Request, res: express.Response) => {
+  const targetPath = req.params[0];
+  const supabaseUrl = process.env.SUPABASE_URL;
+
+  if (!supabaseUrl) {
+    console.error('[SupabaseProxy] Missing SUPABASE_URL in env');
+    return res.status(500).json({ error: 'Database URL not configured' });
+  }
+
+  // Build the target Supabase URL (e.g., https://xyz.supabase.co/rest/v1/...)
+  const targetUrl = `${supabaseUrl}/${targetPath}`;
+
+  // Clean headers to avoid host/origin conflicts
+  const headers = { ...req.headers };
+  delete headers.host;
+  delete headers.connection;
+  delete headers.origin;
+  delete headers.referer;
+  delete headers['content-length'];
+
+  // Ensure the base token is set if not provided by client
+  if (!headers.apikey && process.env.SUPABASE_ANON_KEY) {
+    headers.apikey = process.env.SUPABASE_ANON_KEY;
+  }
+
+  try {
+    const response = await axios({
+      method: req.method as any,
+      url: targetUrl,
+      params: req.query,
+      data: req.method !== 'GET' ? req.body : undefined,
+      headers: headers as any,
+      validateStatus: () => true, // Forward all status codes
+      responseType: 'arraybuffer' // Preserve original format (JSON, binary, etc.)
+    });
+
+    // Mirror status and headers
+    res.status(response.status);
+    Object.entries(response.headers).forEach(([key, value]) => {
+      const lowerKey = key.toLowerCase();
+      // Skip headers that node/express should manage or that might break the response
+      if (['content-encoding', 'transfer-encoding', 'access-control-allow-origin', 'content-length'].includes(lowerKey)) return;
+      res.setHeader(key, value as string);
+    });
+
+    return res.send(response.data);
+  } catch (error: any) {
+    console.error(`[SupabaseProxy] Proxy failed for ${targetUrl}:`, error.message);
+    return res.status(500).json({
+      error: 'ISP Bypass Proxy Error',
+      details: error.message,
+      target: targetUrl.split('.co/')[0] + '.co/...' // Hide sensitive path info in logs
+    });
+  }
+});
+
 
 // Root route - API information
 app.get('/', (req: express.Request, res: express.Response) => {
@@ -305,19 +260,32 @@ app.get('/health', (req: express.Request, res: express.Response) => {
   }
 });
 
+// Consolidated API Routes
 // Public API Routes (no auth required)
+
 app.use('/api/brand-response', brandResponseRouter);
 app.use('/api/deal-details-tokens', dealDetailsTokensRouter); // Public routes (auth handled internally)
 app.use('/api/contract-ready-tokens', contractReadyTokensRouter); // Public routes for contract ready page
 app.use('/api/creator-sign', creatorSignRouter); // Public creator signing magic link routes
 app.use('/api/gst', gstRouter); // Public GST lookup route
 app.use('/api/otp', rateLimitMiddleware, otpRouter); // Public OTP routes for brand response page
-app.use('/api/collab', collabRequestsRouter); // Public collab link routes (/:username and /:username/submit)
+
+// IMPORTANT: Specific paths must come BEFORE generic prefixes to avoid shadowing
+// e.g., /api/collab-requests (protected) and /api/collab-analytics must be BEFORE /api/collab (public prefix)
+app.use('/api/collab-requests', authMiddleware, rateLimitMiddleware, collabRequestsRouter); // Protected collab request management routes
 app.use('/api/collab-analytics', collabAnalyticsRouter); // Public analytics tracking + authenticated analytics endpoints
+app.use('/api/collab', collabRequestsRouter); // Public collab link routes (/:username and /:username/submit)
+app.use('/api/collab-action', collabActionRouter); // Public token-based collab actions (accept/decline/counter)
 app.use('/api/creators', creatorsRouter); // Public creator directory routes
 app.use('/api/shipping', shippingRouter); // Public shipping update (brand, no auth)
 app.use('/api/cron', cronDealRemindersRouter); // Cron: deal reminders (protected by CRON_SECRET in route)
+app.use('/api/cron', cronInstagramSyncRouter); // Cron: weekly instagram sync (protected by CRON_SECRET in route)
 app.use('/api/contracts', contractsRouter); // Contract signed URL generation (handles auth internally)
+app.use('/api/instagram', instagramOAuthRouter); // Instagram Graph OAuth + insights sync
+
+// Public routes for protection features (no auth required) - must be before protected routes
+app.get('/api/protection/contracts/:dealId/view', viewContractHandler);
+app.get('/api/protection/contracts/:dealId/download-docx', downloadContractDocxHandler);
 
 // API Routes (protected)
 app.use('/api/brand-reply-tokens', authMiddleware, rateLimitMiddleware, brandReplyTokensRouter);
@@ -326,6 +294,15 @@ app.use('/api/conversations', authMiddleware, rateLimitMiddleware, conversations
 app.use('/api/conversations', authMiddleware, rateLimitMiddleware, messagesRouter);
 app.use('/api/conversations', authMiddleware, rateLimitMiddleware, attachmentsRouter);
 app.use('/api/payments', authMiddleware, rateLimitMiddleware, paymentsRouter);
+app.use('/api/protection', authMiddleware, rateLimitMiddleware, protectionRouter);
+app.use('/api/admin', authMiddleware, adminRouter);
+app.use('/api/ai', authMiddleware, rateLimitMiddleware, aiRouter);
+app.use('/api/deals', authMiddleware, rateLimitMiddleware, dealsRouter);
+app.use('/api/complaints', authMiddleware, rateLimitMiddleware, complaintsRouter);
+app.use('/api/influencers', authMiddleware, rateLimitMiddleware, influencersRouter);
+app.use('/api/feedback', feedbackRouter);
+app.use('/api/profile', authMiddleware, rateLimitMiddleware, profileRouter);
+app.use('/api/push', authMiddleware, rateLimitMiddleware, pushNotificationsRouter);
 
 // Demo email (only when ALLOW_DEMO_EMAIL=true; restricted to *@yopmail.com)
 app.post('/api/demo-email/barter-accepted', async (req: express.Request, res: express.Response) => {
@@ -495,18 +472,8 @@ app.post('/api/demo-email/send-brand-contract-for-deal', async (req: express.Req
   }
 });
 
-// Public routes for contracts (no auth required) - must be before protected routes
-app.get('/api/protection/contracts/:dealId/view', viewContractHandler);
-app.get('/api/protection/contracts/:dealId/download-docx', downloadContractDocxHandler);
-
-// Protected routes for protection features
-app.use('/api/protection', authMiddleware, rateLimitMiddleware, protectionRouter);
-app.use('/api/admin', authMiddleware, adminRouter);
-app.use('/api/ai', authMiddleware, rateLimitMiddleware, aiRouter);
-app.use('/api/deals', authMiddleware, rateLimitMiddleware, dealsRouter);
-app.use('/api/complaints', authMiddleware, rateLimitMiddleware, complaintsRouter);
-app.use('/api/influencers', authMiddleware, rateLimitMiddleware, influencersRouter);
-app.use('/api/collab-requests', authMiddleware, rateLimitMiddleware, collabRequestsRouter); // Protected collab request management routes
+// Error handler
+app.use(errorHandler);
 // Note: /api/collab-analytics is already mounted as public route above (line 284)
 // OTP routes - protected routes require auth
 // app.use('/api/otp', authMiddleware, rateLimitMiddleware, otpRouter); // Disabled: all OTP routes are now public via magic link
