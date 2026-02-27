@@ -1,8 +1,33 @@
 import { createClient } from '@supabase/supabase-js';
 import { Database } from '@/types/supabase'; // Import the Database type
+import { getApiBaseUrl } from '@/lib/utils/api';
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const rawSupabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+/**
+ * ISP Bypass Implementation (Method B):
+ * Proxy is opt-in via VITE_USE_SUPABASE_PROXY=true.
+ * Default remains direct Supabase for production stability.
+ */
+const getSupabaseUrl = () => {
+  if (!rawSupabaseUrl) return '';
+
+  const isLocalhost = typeof window !== 'undefined' &&
+    (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+
+  const useProxy = import.meta.env.VITE_USE_SUPABASE_PROXY === 'true' && !isLocalhost;
+
+  if (useProxy) {
+    const apiBase = getApiBaseUrl();
+    // getApiBaseUrl returns "https://api.creatorarmour.com" (no trailing slash)
+    return `${apiBase}/supabase-proxy`;
+  }
+
+  return rawSupabaseUrl;
+};
+
+const supabaseUrl = getSupabaseUrl();
 
 if (!supabaseUrl || !supabaseAnonKey) {
   console.error('Supabase URL or Anon Key is missing. Please check your .env file.');
