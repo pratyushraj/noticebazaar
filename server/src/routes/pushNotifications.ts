@@ -140,7 +140,13 @@ router.post('/test', async (req: AuthenticatedRequest, res: Response) => {
       url: req.body?.url,
     });
 
-    return res.json({ success: true, ...result });
+    return res.json({
+      success: result.sent,
+      ...result,
+      sentCount: result.delivered,
+      attemptedCount: result.attempted,
+      failedCount: result.failed,
+    });
   } catch (error: any) {
     console.error('[PushNotifications] POST /test failed:', error);
     return res.status(500).json({ success: false, error: 'Failed to send test push' });

@@ -587,7 +587,16 @@ const ProfileSettings = () => {
       if (data.success && data.sentCount > 0) {
         toast.success('Test notification sent to your device!');
       } else {
-        toast.error(data.error || 'No active devices found. Try enabling notifications again.');
+        const reason = data?.reason || data?.error || 'unknown';
+        if (reason === 'vapid_not_configured') {
+          toast.error('Push server is not configured (missing VAPID keys).');
+        } else if (reason === 'no_subscriptions') {
+          toast.error('No active device subscription found. Tap Refresh Notifications and try again.');
+        } else if (reason === 'all_push_attempts_failed') {
+          toast.error(`Push delivery failed for all devices (${data?.failedCount || data?.failed || 0}). Please refresh and retry.`);
+        } else {
+          toast.error(`Test push failed: ${reason}`);
+        }
       }
     } catch (error) {
       logger.error('CreatorProfile', 'Failed to send test push notification', error);
