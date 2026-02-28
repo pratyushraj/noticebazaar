@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { getApiBaseUrl } from '@/lib/utils/api';
+import { getApiBaseUrl, fetchWithTimeout } from '@/lib/utils/api';
+import { logger } from '@/lib/utils/logger';
 
 const PROMPT_DISMISSED_KEY = 'deal_alert_prompt_dismissed';
 
@@ -64,8 +65,9 @@ export const useDealAlertNotifications = () => {
         setIsSubscribed(true);
         return;
       }
-    } catch (error) {
+    } catch (error: any) {
       // Non-fatal: we still allow email fallback
+      logger.warn('Service worker check failed in syncSubscriptionStatus', { error: error?.message });
     }
 
     try {
@@ -76,21 +78,23 @@ export const useDealAlertNotifications = () => {
         return;
       }
 
-      const response = await fetch(`${pushApiBase}/api/push/status`, {
+      const response = await fetchWithTimeout(`${pushApiBase}/api/push/status`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
-      });
+      }, 5000); // 5s timeout for status check
+
       if (!response.ok) {
         setIsSubscribed(false);
         return;
       }
       const data = await response.json();
       setIsSubscribed(!!data?.hasSubscription);
-    } catch (error) {
+    } catch (error: any) {
+      logger.error('Push status check failed', { error: error?.message });
       setIsSubscribed(false);
     }
-  }, []);
+  }, [pushApiBase]);
 
   useEffect(() => {
     const supported = 'Notification' in window && 'serviceWorker' in navigator && 'PushManager' in window;
@@ -145,7 +149,7 @@ export const useDealAlertNotifications = () => {
         return { success: false, reason: 'not_authenticated' };
       }
 
-      const response = await fetch(`${pushApiBase}/api/push/subscribe`, {
+      const response = await fetchWithTimeout(`${pushApiBase}/api/push/subscribe`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -154,7 +158,7 @@ export const useDealAlertNotifications = () => {
         body: JSON.stringify({
           subscription: subscription.toJSON(),
         }),
-      });
+      }, 15000); // 15s timeout for subscription
 
       if (!response.ok) {
         let errorReason = 'subscribe_failed';
@@ -187,7 +191,7 @@ export const useDealAlertNotifications = () => {
         return { success: false, reason: 'not_authenticated' };
       }
 
-      const response = await fetch(`${pushApiBase}/api/push/test`, {
+      const response = await fetchWithTimeout(`${pushApiBase}/api/push/test`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -198,9 +202,16 @@ export const useDealAlertNotifications = () => {
           body: options?.body || 'If you see this, your push notifications are working perfectly!',
           url: '/creator-profile?section=account',
         }),
-      });
+      }, 20000); // 20s timeout for test push
 
-      const data = await response.json().catch(() => ({}));
+      const textBody = await response.text();
+      let data: any = {};
+      try {
+        data = JSON.parse(textBody);
+      } catch (err) {
+        logger.warn('Failed to parse push test response as JSON', { body: textBody });
+      }
+
       if (!response.ok) {
         return { success: false, reason: data.error || data.reason || `server_error_${response.status}` };
       }
@@ -211,7 +222,12 @@ export const useDealAlertNotifications = () => {
 
       return { success: false, reason: data.reason || 'all_push_attempts_failed' };
     } catch (error: any) {
-      return { success: false, reason: error?.message || 'unknown_error' };
+      const msg = error?.message || String(error);
+      logger.error('Push test failed', { error: msg });
+      if (msg.includes('Load failed') || msg.includes('Failed to fetch')) {
+        return { success: false, reason: 'Network error or blocked. Please refresh your browser or check your connection.' };
+      }
+      return { success: false, reason: msg };
     } finally {
       setIsBusy(false);
     }
