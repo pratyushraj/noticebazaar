@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Bell, Bug, Send, ShieldCheck, Zap } from 'lucide-react';
+import { Bell, Bug, Copy, Send, ShieldCheck, Zap } from 'lucide-react';
 import { useSession } from '@/contexts/SessionContext';
 import { useDealAlertNotifications } from '@/hooks/useDealAlertNotifications';
 import { getApiBaseUrl } from '@/lib/utils/api';
@@ -26,6 +26,8 @@ const PushTestLab = () => {
   const [loadingDebug, setLoadingDebug] = useState(false);
   const [loadingTest, setLoadingTest] = useState(false);
   const [loadingDirect, setLoadingDirect] = useState(false);
+  const [loadingCopyCurl, setLoadingCopyCurl] = useState(false);
+  const [copyMessage, setCopyMessage] = useState<string | null>(null);
 
   const apiBaseUrl = useMemo(() => getApiBaseUrl(), []);
 
@@ -129,6 +131,44 @@ const PushTestLab = () => {
     }
   };
 
+  const copyAuthCurl = async () => {
+    setError(null);
+    setCopyMessage(null);
+    setLoadingCopyCurl(true);
+    try {
+      const token = await getToken();
+      if (!token) throw new Error('No auth token');
+      if (!('serviceWorker' in navigator)) throw new Error('Service worker not supported');
+
+      const registration = await navigator.serviceWorker.register('/sw.js');
+      const subscription = await registration.pushManager.getSubscription();
+      if (!subscription) throw new Error('No browser subscription found. Click Enable / Refresh first.');
+
+      const payload = {
+        subscription: subscription.toJSON(),
+        title: 'Direct Push Test (No DB)',
+        body: 'This test bypasses Supabase reads and sends directly.',
+        url: '/push-test',
+      };
+      const resolvedApiBaseUrl = apiBaseUrl || window.location.origin;
+
+      const escapedPayload = JSON.stringify(payload).replace(/'/g, `'\"'\"'`);
+      const curl = [
+        `curl -X POST "${resolvedApiBaseUrl}/api/push/direct-test"`,
+        `  -H "Content-Type: application/json"`,
+        `  -H "Authorization: Bearer ${token}"`,
+        `  -d '${escapedPayload}'`,
+      ].join(' \\\n');
+
+      await navigator.clipboard.writeText(curl);
+      setCopyMessage('Auth curl copied. Paste into terminal to test direct push API.');
+    } catch (e: any) {
+      setError(`Copy curl failed: ${e?.message || 'unknown error'}`);
+    } finally {
+      setLoadingCopyCurl(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-[#120623] text-white p-4 md:p-8">
       <div className="max-w-3xl mx-auto space-y-4">
@@ -148,7 +188,7 @@ const PushTestLab = () => {
           <p className="text-sm text-white/80">Browser subscribed: {isSubscribed ? 'yes' : 'no'}</p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
           <button
             onClick={handleEnable}
             disabled={isBusy}
@@ -181,11 +221,24 @@ const PushTestLab = () => {
             <Zap className="h-4 w-4" />
             {loadingDirect ? 'Sending...' : 'Send Direct Push'}
           </button>
+          <button
+            onClick={copyAuthCurl}
+            disabled={loadingCopyCurl}
+            className="rounded-xl px-4 py-3 bg-cyan-700 hover:bg-cyan-600 disabled:opacity-50 flex items-center justify-center gap-2"
+          >
+            <Copy className="h-4 w-4" />
+            {loadingCopyCurl ? 'Copying...' : 'Copy Auth Test curl'}
+          </button>
         </div>
 
         {error && (
           <div className="rounded-xl border border-red-400/30 bg-red-500/10 p-3 text-sm text-red-200">
             {error}
+          </div>
+        )}
+        {copyMessage && (
+          <div className="rounded-xl border border-cyan-400/30 bg-cyan-500/10 p-3 text-sm text-cyan-200">
+            {copyMessage}
           </div>
         )}
 
