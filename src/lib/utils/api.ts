@@ -46,18 +46,9 @@ export function getApiBaseUrl(): string {
         // Local debug mode should only force localhost on local/non-production hosts.
         apiUrl = 'http://localhost:3001';
       } else if (isProduction) {
-        // Use same-origin API paths in production and rely on platform rewrites.
-        // This avoids direct browser connections to api.* domains that may be intermittently
-        // blocked/closed by ISP or network middleboxes.
-        const host = window.location.hostname.toLowerCase();
-        if (host.endsWith('creatorarmour.com')) {
-          apiUrl = '';
-        } else if (host.endsWith('noticebazaar.com')) {
-          apiUrl = '';
-        } else {
-          // Preview domains may rely on same-origin rewrites.
-          apiUrl = '';
-        }
+        // Production: use dedicated API domain to avoid route drift
+        // between frontend serverless handlers and backend API routes.
+        apiUrl = 'https://api.creatorarmour.com';
       } else if (isLocalhost) {
         // Localhost default: use production API to avoid local backend dependency.
         // To force local API, set localStorage.useLocalApi = 'true'.
