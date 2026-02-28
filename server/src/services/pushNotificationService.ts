@@ -324,6 +324,8 @@ export const sendTestPushToCreator = async (
   });
 
   const pushPromises = subs.map(async (sub) => {
+    const isApple = sub.endpoint.includes('web.push.apple.com');
+    const deviceType = isApple ? 'iOS/Safari' : sub.endpoint.includes('fcm.googleapis.com') ? 'Chrome/Android' : 'Unknown';
     try {
       await webpush.sendNotification(
         {
@@ -335,27 +337,32 @@ export const sendTestPushToCreator = async (
         },
         notificationPayload
       );
-      return { success: true, id: sub.id };
+      console.log(`[PushNotificationService] ✅ Test push delivered to ${deviceType} (id: ${sub.id})`);
+      return { success: true, id: sub.id, deviceType };
     } catch (error: any) {
-      console.warn('[PushNotificationService] Test push failed:', error?.message || error);
-      const isGone = isGoneSubscriptionError(error);
+      const statusCode = error?.statusCode || error?.status;
+      const errorBody = error?.body || error?.message || String(error);
+      console.warn(`[PushNotificationService] ❌ Test push FAILED for ${deviceType} (id: ${sub.id}) — status: ${statusCode}, body: ${JSON.stringify(errorBody)}`);
+      const isGone = statusCode === 404 || statusCode === 410;
       if (isGone) {
-        // Background delete
+        // Background delete stale subscription
         supabase.from('creator_push_subscriptions').delete().eq('id', sub.id).catch(() => { });
       }
-      return { success: false, id: sub.id, isGone };
+      return { success: false, id: sub.id, deviceType, statusCode, error: errorBody, isGone };
     }
   });
 
   const results = await Promise.all(pushPromises);
   const delivered = results.filter(r => r.success).length;
   const failed = results.filter(r => !r.success).length;
+  const deviceResults = results.map(r => ({ deviceType: r.deviceType, success: r.success, ...(r.success ? {} : { statusCode: (r as any).statusCode, error: (r as any).error }) }));
 
   return {
     sent: delivered > 0,
     attempted: subs.length,
     delivered,
     failed,
+    deviceResults,
     reason: delivered > 0 ? undefined : 'all_push_attempts_failed',
   };
 };

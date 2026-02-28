@@ -155,6 +155,7 @@ router.post('/test', async (req: AuthenticatedRequest, res: Response) => {
       sentCount: result.delivered,
       attemptedCount: result.attempted,
       failedCount: result.failed,
+      deviceResults: (result as any).deviceResults || [],
     });
   } catch (error: any) {
     console.error('[PushNotifications] POST /test failed:', error);
