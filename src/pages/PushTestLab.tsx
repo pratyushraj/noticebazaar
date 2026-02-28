@@ -37,6 +37,28 @@ const PushTestLab = () => {
     return data.session?.access_token || null;
   };
 
+  const ensureBrowserSubscription = async () => {
+    if (!('serviceWorker' in navigator)) {
+      throw new Error('Service worker not supported');
+    }
+
+    const registration = await navigator.serviceWorker.register('/sw.js');
+    let subscription = await registration.pushManager.getSubscription();
+    if (subscription) return subscription;
+
+    // Auto-attempt provisioning via existing hook flow.
+    const result = await enableNotifications();
+    if (!result.success) {
+      throw new Error(result.reason || 'subscription_enable_failed');
+    }
+
+    subscription = await registration.pushManager.getSubscription();
+    if (!subscription) {
+      throw new Error('No browser subscription found after enabling notifications.');
+    }
+    return subscription;
+  };
+
   const handleEnable = async () => {
     setError(null);
     const result = await enableNotifications();
@@ -103,10 +125,7 @@ const PushTestLab = () => {
       const token = await getToken();
       if (!token) throw new Error('No auth token');
 
-      if (!('serviceWorker' in navigator)) throw new Error('Service worker not supported');
-      const registration = await navigator.serviceWorker.register('/sw.js');
-      const subscription = await registration.pushManager.getSubscription();
-      if (!subscription) throw new Error('No browser subscription found. Click Enable / Refresh first.');
+      const subscription = await ensureBrowserSubscription();
 
       const response = await fetch(`${apiBaseUrl}/api/push/direct-test`, {
         method: 'POST',
@@ -138,11 +157,7 @@ const PushTestLab = () => {
     try {
       const token = await getToken();
       if (!token) throw new Error('No auth token');
-      if (!('serviceWorker' in navigator)) throw new Error('Service worker not supported');
-
-      const registration = await navigator.serviceWorker.register('/sw.js');
-      const subscription = await registration.pushManager.getSubscription();
-      if (!subscription) throw new Error('No browser subscription found. Click Enable / Refresh first.');
+      const subscription = await ensureBrowserSubscription();
 
       const payload = {
         subscription: subscription.toJSON(),
