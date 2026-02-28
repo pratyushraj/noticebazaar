@@ -168,11 +168,9 @@ const CollabLinkAnalytics: React.FC = () => {
     );
   };
 
-  const maxMetricBase = Math.max(
-    analytics.views.total,
-    analytics.submissions.total,
-    Math.max(1, analytics.conversionRate.value)
-  );
+  const maxMetricBase = Math.max(1, analytics.views.total, analytics.submissions.total);
+  const requestRateValue = Math.max(0, analytics.conversionRate.value);
+  const requestRateWidth = Math.min(100, requestRateValue);
 
   const metricWidth = (value: number) => {
     if (maxMetricBase <= 0) return 0;
@@ -264,23 +262,30 @@ const CollabLinkAnalytics: React.FC = () => {
             </div>
           </div>
 
-          {/* Acceptance Rate */}
+          {/* Request Rate (submissions / views) */}
           <div className="bg-white/8 rounded-lg p-2 border border-white/15">
             <div className="flex items-center gap-1 mb-1">
               <BarChart3 className="h-3 w-3 text-purple-400" />
-              <span className="text-[10px] text-purple-300">Acceptance Rate</span>
+              <span className="text-[10px] text-purple-300">Request Rate</span>
             </div>
             <div className="flex items-baseline gap-1">
               <span className="text-lg font-bold text-white">
-                {analytics.conversionRate.value.toFixed(1)}%
+                {requestRateValue.toFixed(1)}%
               </span>
+              <TrendIndicator
+                trend={analytics.conversionRate.trend}
+                direction={analytics.conversionRate.trendDirection}
+              />
             </div>
             <div className="mt-1 h-1 rounded-full bg-white/10 overflow-hidden">
               <div
                 className="h-full rounded-full bg-gradient-to-r from-purple-400/80 to-pink-400/80"
-                style={{ width: `${metricWidth(analytics.conversionRate.value)}%` }}
+                style={{ width: `${requestRateWidth}%` }}
               />
             </div>
+            <p className="mt-1 text-[10px] text-purple-300/70">
+              {analytics.submissions.total.toLocaleString()} of {analytics.views.total.toLocaleString()} views submitted
+            </p>
           </div>
         </div>
 

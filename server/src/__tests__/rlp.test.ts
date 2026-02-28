@@ -1,6 +1,6 @@
 // Integration tests for RLS policies
 
-import { supabase } from '../index.js';
+import { supabase } from '../lib/supabase.js';
 
 describe('RLS Policies', () => {
   const creatorUserId = 'test-creator-id';

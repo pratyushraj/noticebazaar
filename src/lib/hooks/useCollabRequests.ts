@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { getApiBaseUrl } from '@/lib/utils/api';
 
 export type CollabRequestStatus = 'pending' | 'accepted' | 'countered' | 'declined';
-export type CollabType = 'paid' | 'barter' | 'both';
+export type CollabType = 'paid' | 'barter' | 'hybrid' | 'both';
 
 export interface CollabRequest {
   id: string;

@@ -74,6 +74,12 @@ export default defineConfig(() => ({
   server: {
     host: "::",
     port: 8080,
+    hmr: {
+      host: "localhost",
+      port: 8080,
+      clientPort: 8080,
+      protocol: "ws",
+    },
   },
   // Disable code splitting in dev mode to prevent multiple React instances
   build: {

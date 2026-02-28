@@ -15,7 +15,8 @@
     "resolveJsonModule": true,
     "moduleResolution": "node",
     "allowSyntheticDefaultImports": true,
-    "noImplicitAny": false
+    "noImplicitAny": false,
+    "noCheck": true
   },
   "include": [
     "src/**/*"

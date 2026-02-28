@@ -1,7 +1,7 @@
 "use client";
 
 import { supabase } from '@/integrations/supabase/client';
-import { Scale, ArrowLeft, Sparkles, Shield, TrendingUp, MessageCircle, Eye, EyeOff, Loader2 } from 'lucide-react';
+import { Scale, ArrowLeft, Sparkles, Shield, TrendingUp, MessageCircle, Eye, EyeOff, Loader2, Link2 } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useSession } from '@/contexts/SessionContext';
 import { useEffect, useState } from 'react';
@@ -364,21 +364,27 @@ const Signup = () => {
 
   const features = [
     {
+      icon: Link2,
+      title: 'Collab Link',
+      description: 'Share one link to receive brand deals safely',
+      color: 'text-violet-400'
+    },
+    {
       icon: Shield,
-      title: 'AI Contract Review',
-      description: 'Get instant analysis in 30 seconds',
+      title: 'Auto-Protected Deals',
+      description: 'Contracts + payments handled automatically',
       color: 'text-green-400'
     },
     {
       icon: TrendingUp,
-      title: 'Track Earnings',
-      description: 'Monitor payments & income',
+      title: 'Track Brand Earnings',
+      description: 'Know what you earned from every collab',
       color: 'text-blue-400'
     },
     {
       icon: MessageCircle,
-      title: 'Legal Advisors',
-      description: 'Chat with experts anytime',
+      title: 'Expert Backup',
+      description: 'Legal help when you actually need it',
       color: 'text-purple-400'
     }
   ];
@@ -412,11 +418,11 @@ const Signup = () => {
             </div>
 
             <h2 className="text-4xl font-bold leading-tight">
-              Legal & Tax Services<br />
-              Built for Content Creators
+              Your Professional<br />
+              Collab Link
             </h2>
             <p className="text-xl text-purple-200 leading-relaxed">
-              Protect your deals, track your earnings, and get expert legal advice—all in one place.
+              Stop negotiating in DMs. Receive structured, protected brand deals in one flow.
             </p>
           </div>
 
@@ -833,4 +839,3 @@ const Signup = () => {
 };
 
 export default Signup;
-

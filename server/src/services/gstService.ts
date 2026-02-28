@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { supabase } from '../index.js';
+import { supabase } from '../lib/supabase.js';
 
 export interface GSTCompanyData {
   legalName: string;

@@ -3,7 +3,7 @@
 
 import crypto from 'crypto';
 
-import { supabase } from '../index.js';
+import { supabase } from '../lib/supabase.js';
 
 function getMeonConfig() {
   return {

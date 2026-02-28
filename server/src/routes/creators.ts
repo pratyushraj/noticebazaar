@@ -3,7 +3,7 @@
 // Public routes for SEO-friendly creator directory
 
 import express, { Request, Response } from 'express';
-import { supabase } from '../index.js';
+import { supabase } from '../lib/supabase.js';
 
 const router = express.Router();
 
@@ -31,6 +31,8 @@ router.get('/', async (req: Request, res: Response) => {
         twitter_handle,
         facebook_profile_url,
         instagram_followers,
+        instagram_profile_photo,
+        last_instagram_sync,
         youtube_subs,
         tiktok_followers,
         twitter_followers,
@@ -105,6 +107,9 @@ router.get('/', async (req: Request, res: Response) => {
         name: creatorName,
         category: profile.creator_category,
         bio: profile.bio,
+        profile_photo: (profile as any).instagram_profile_photo || null,
+        followers: profile.instagram_followers ?? null,
+        last_instagram_sync: (profile as any).last_instagram_sync || null,
         platforms,
       };
     });
@@ -161,4 +166,3 @@ router.get('/categories', async (req: Request, res: Response) => {
 });
 
 export default router;
-

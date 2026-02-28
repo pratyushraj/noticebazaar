@@ -3,7 +3,7 @@
 // This ensures contracts can only be accessed by authorized users with time-limited URLs
 
 import express from 'express';
-import { supabase } from '../index.js';
+import { supabase } from '../lib/supabase.js';
 import { generateSignedDownloadUrl } from '../services/storage.js';
 
 const router = express.Router();

@@ -15,11 +15,11 @@ import { CreatorNavigationWrapper } from '@/components/navigation/CreatorNavigat
 const CreatorCollab = () => {
   const { profile } = useSession();
   const usernameForLink = profile?.instagram_handle || profile?.username;
+  const collabLink = usernameForLink ? `${window.location.origin}/collab/${usernameForLink}` : '';
 
   const copyCollabLink = () => {
     if (usernameForLink) {
-      const link = `${window.location.origin}/collab/${usernameForLink}`;
-      navigator.clipboard.writeText(link);
+      navigator.clipboard.writeText(collabLink);
       toast.success('Collab link copied!');
       triggerHaptic(HapticPatterns.light);
     } else {
@@ -62,6 +62,11 @@ const CreatorCollab = () => {
             <p className="text-sm text-purple-200/90 mb-3 break-words">
               One link for brands to send protected collaboration requests.
             </p>
+            {usernameForLink && (
+              <div className="mb-2.5 rounded-lg border border-white/20 bg-white/8 px-3 py-2 text-xs text-purple-100/90 truncate">
+                {collabLink}
+              </div>
+            )}
             <div className="flex flex-col gap-2.5">
               <motion.button
                 onClick={copyCollabLink}

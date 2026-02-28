@@ -2,7 +2,7 @@
 // Conversations API routes
 
 import { Router, Response } from 'express';
-import { supabase } from '../index.js';
+import { supabase } from '../lib/supabase.js';
 import { AuthenticatedRequest } from '../middleware/auth.js';
 
 const router = Router();

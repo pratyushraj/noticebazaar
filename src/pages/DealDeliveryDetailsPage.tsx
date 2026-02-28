@@ -188,6 +188,12 @@ export default function DealDeliveryDetailsPage() {
     return null;
   }
 
+  // Force readable input contrast across webviews/browsers where input backgrounds may be normalized to white.
+  const fieldClass =
+    "h-11 sm:h-12 !bg-white !text-neutral-900 !caret-neutral-900 border-white/20 placeholder:!text-neutral-500 focus:!border-purple-400 focus:ring-2 focus:ring-purple-400/20";
+  const textAreaFieldClass =
+    "!bg-white !text-neutral-900 !caret-neutral-900 border-white/20 placeholder:!text-neutral-500 focus:!border-purple-400 focus:ring-2 focus:ring-purple-400/20";
+
   if (isSubmitted) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-background to-muted/20 flex flex-col items-center justify-center p-6 text-center">
@@ -254,7 +260,7 @@ export default function DealDeliveryDetailsPage() {
               onBlur={() => setTouched((t) => ({ ...t, name: true }))}
               placeholder="Full name for courier label"
               className={cn(
-                "h-11 sm:h-12 bg-white/8 border-white/20 text-white placeholder:text-white/50 focus:border-purple-300/60 focus:ring-2 focus:ring-purple-400/20",
+                fieldClass,
                 touched.name && !nameValid && "border-destructive focus:border-destructive"
               )}
               required
@@ -276,7 +282,7 @@ export default function DealDeliveryDetailsPage() {
               onBlur={() => setTouched((t) => ({ ...t, phone: true }))}
               placeholder="10-digit phone number"
               className={cn(
-                "h-11 sm:h-12 bg-white/8 border-white/20 text-white placeholder:text-white/50 focus:border-purple-300/60 focus:ring-2 focus:ring-purple-400/20",
+                fieldClass,
                 touched.phone && !phoneValid && "border-destructive focus:border-destructive"
               )}
               required
@@ -301,7 +307,7 @@ export default function DealDeliveryDetailsPage() {
                 onBlur={() => setTouched((t) => ({ ...t, address: true }))}
                 placeholder="Flat / Building / Street Address"
                 className={cn(
-                  "h-11 sm:h-12 bg-white/8 border-white/20 text-white placeholder:text-white/50 focus:border-purple-300/60 focus:ring-2 focus:ring-purple-400/20",
+                  fieldClass,
                   touched.address && !addressLine.trim() && "border-destructive"
                 )}
                 required
@@ -317,7 +323,7 @@ export default function DealDeliveryDetailsPage() {
                 value={addressLine2}
                 onChange={(e) => setAddressLine2(e.target.value)}
                 placeholder="Area / Landmark / Apartment"
-                className="h-11 sm:h-12 bg-white/8 border-white/20 text-white placeholder:text-white/50 focus:border-purple-300/60 focus:ring-2 focus:ring-purple-400/20"
+                className={fieldClass}
               />
             </div>
 
@@ -330,7 +336,7 @@ export default function DealDeliveryDetailsPage() {
                   onBlur={() => setTouched((t) => ({ ...t, city: true }))}
                   placeholder="City"
                   className={cn(
-                    "h-11 sm:h-12 bg-white/8 border-white/20 text-white placeholder:text-white/50 focus:border-purple-300/60 focus:ring-2 focus:ring-purple-400/20",
+                    fieldClass,
                     touched.city && !city.trim() && "border-destructive"
                   )}
                   required
@@ -348,7 +354,7 @@ export default function DealDeliveryDetailsPage() {
                   placeholder="Pincode"
                   inputMode="numeric"
                   className={cn(
-                    "h-11 sm:h-12 bg-white/8 border-white/20 text-white placeholder:text-white/50 focus:border-purple-300/60 focus:ring-2 focus:ring-purple-400/20",
+                    fieldClass,
                     touched.pincode && !pincodeValid && "border-destructive"
                   )}
                   required
@@ -367,7 +373,7 @@ export default function DealDeliveryDetailsPage() {
                 onBlur={() => setTouched((t) => ({ ...t, state: true }))}
                 placeholder="State"
                 className={cn(
-                  "h-11 sm:h-12 bg-white/8 border-white/20 text-white placeholder:text-white/50 focus:border-purple-300/60 focus:ring-2 focus:ring-purple-400/20",
+                  fieldClass,
                   touched.state && !state.trim() && "border-destructive"
                 )}
                 required
@@ -386,7 +392,7 @@ export default function DealDeliveryDetailsPage() {
               onChange={(e) => setDeliveryNotes(e.target.value)}
               placeholder="e.g. Near HDFC Bank, Doorbell not working"
               rows={2}
-              className="resize-none bg-white/8 border-white/20 text-white placeholder:text-white/50 focus:border-purple-300/60 focus:ring-2 focus:ring-purple-400/20"
+              className={cn("resize-none", textAreaFieldClass)}
             />
           </div>
 

@@ -4,7 +4,7 @@
 
 import express, { Response } from 'express';
 import crypto from 'crypto';
-import { supabase } from '../index.js';
+import { supabase } from '../lib/supabase.js';
 import { sendOTPEmail } from '../services/otpEmailService.js';
 import { AuthenticatedRequest, authMiddleware } from '../middleware/auth.js';
 
@@ -203,6 +203,30 @@ router.post('/send', async (req, res) => {
     try {
       await sendOTPEmail(email, otp);
       console.log('[OTP] OTP sent successfully to:', email, 'for token type:', tokenType);
+
+      // Also send via WhatsApp if phone number is available
+      let phoneNumber = null;
+      if (tokenType === 'creator_signing' && tokenData.profiles?.phone) {
+        phoneNumber = tokenData.profiles.phone;
+      } else if (tokenType === 'contract_ready_tokens' && tokenData.brand_deals?.brand_phone) {
+        phoneNumber = tokenData.brand_deals.brand_phone;
+      }
+
+      if (phoneNumber) {
+        // Dynamic import to avoid issues if service is missing
+        import('../services/msg91Service.js').then(async ({ sendOTPviaWhatsApp }) => {
+          try {
+            const waResult = await sendOTPviaWhatsApp(phoneNumber!, otp);
+            if (waResult.success) {
+              console.log('[OTP] WhatsApp OTP sent successfully to:', phoneNumber);
+            } else {
+              console.warn('[OTP] Failed to send WhatsApp OTP:', waResult.error);
+            }
+          } catch (waError) {
+            console.error('[OTP] Check: Error sending WhatsApp OTP:', waError);
+          }
+        });
+      }
     } catch (emailError) {
       console.error('[OTP] Error sending email:', emailError);
       return res.status(500).json({
@@ -243,9 +267,10 @@ router.post('/verify', async (req, res) => {
     let tokenData: any = null;
     let tokenType: 'creator_signing' | 'contract_ready' = 'creator_signing';
 
+    // Fetch creator token with profile phone
     const { data: creatorTokenData, error: creatorTokenError } = await supabase
       .from('creator_signing_tokens')
-      .select('*')
+      .select('*, profiles(phone)')
       .eq('token', token)
       .eq('is_valid', true)
       .maybeSingle();
@@ -256,7 +281,7 @@ router.post('/verify', async (req, res) => {
     } else {
       const { data: contractTokenData, error: contractTokenError } = await supabase
         .from('contract_ready_tokens')
-        .select('*')
+        .select('*, brand_deals!inner(brand_email, brand_phone)')
         .eq('id', token)
         .eq('is_valid', true)
         .maybeSingle();
@@ -461,6 +486,29 @@ router.post('/send-creator', authMiddleware, async (req: AuthenticatedRequest, r
     try {
       await sendOTPEmail(creatorEmail, otp);
       console.log('[OTP] Creator OTP sent successfully to:', creatorEmail);
+
+      // Try sending via WhatsApp also
+      try {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('phone')
+          .eq('id', req.user.id)
+          .single();
+
+        if (profile?.phone) {
+          import('../services/msg91Service.js').then(async ({ sendOTPviaWhatsApp }) => {
+            const waResult = await sendOTPviaWhatsApp(profile.phone, otp);
+            if (waResult.success) {
+              console.log('[OTP] Creator WhatsApp OTP sent successfully');
+            } else {
+              console.warn('[OTP] Failed to send Creator WhatsApp OTP:', waResult.error);
+            }
+          });
+        }
+      } catch (waError) {
+        console.error('[OTP] Error attempting WhatsApp sending:', waError);
+      }
+
     } catch (emailError: any) {
       console.error('[OTP] Failed to send OTP email:', emailError);
       return res.status(500).json({

@@ -2,7 +2,7 @@
 // Service to generate secure brand reply tokens
 // Creates UUID v4 tokens for unguessable, non-sequential brand reply URLs
 
-import { supabase } from '../index.js';
+import { supabase } from '../lib/supabase.js';
 
 export interface CreateTokenOptions {
   dealId: string;

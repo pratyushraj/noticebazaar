@@ -3,7 +3,7 @@
 // Handles deal-related operations like logging reminders and delivery details (barter)
 
 import { Router, Response } from 'express';
-import { supabase } from '../index.js';
+import { supabase } from '../lib/supabase.js';
 import { AuthenticatedRequest } from '../middleware/auth.js';
 import multer from 'multer';
 import { generateContractFromScratch } from '../services/contractGenerator.js';
@@ -33,7 +33,7 @@ const upload = multer({
 
 // POST /api/deals/log-share
 // Log a brand message share
-router.post('/log-share', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
+router.post('/log-share', async (req: AuthenticatedRequest, res: Response) => {
   try {
     const userId = req.user!.id;
     const { dealId, message, metadata } = req.body;
@@ -427,7 +427,7 @@ router.post('/barter/delivery-details', authMiddleware, async (req: Authenticate
  * PATCH /api/deals/:dealId/delivery-details
  * Save delivery details for a barter deal (post-acceptance). Generates contract and sets status to Awaiting Product Shipment.
  */
-router.patch('/:dealId/delivery-details', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
+router.patch('/:dealId/delivery-details', async (req: AuthenticatedRequest, res: Response) => {
   try {
     const userId = req.user!.id;
     const { dealId } = req.params;
@@ -808,15 +808,15 @@ const confirmReceivedHandler = async (req: AuthenticatedRequest, res: Response) 
   }
 };
 
-router.patch('/:id/shipping/confirm-received', authMiddleware, confirmReceivedHandler);
-router.patch('/:dealId/shipping/confirm-received', authMiddleware, confirmReceivedHandler);
-router.post('/:id/confirm-receipt', authMiddleware, confirmReceivedHandler);
+router.patch('/:id/shipping/confirm-received', confirmReceivedHandler);
+router.patch('/:dealId/shipping/confirm-received', confirmReceivedHandler);
+router.post('/:id/confirm-receipt', confirmReceivedHandler);
 
 /**
  * POST /api/deals/:dealId/regenerate-contract
  * Manual trigger to regenerate contract for a deal if it failed or needs update.
  */
-router.post('/:dealId/regenerate-contract', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
+router.post('/:dealId/regenerate-contract', async (req: AuthenticatedRequest, res: Response) => {
   try {
     const userId = req.user!.id;
     const { dealId } = req.params;
@@ -975,7 +975,7 @@ router.post('/:dealId/regenerate-contract', authMiddleware, async (req: Authenti
  * PATCH /api/deals/:dealId/shipping/report-issue
  * Creator reports shipping issue (shipping_status = issue_reported, notify brand).
  */
-router.patch('/:dealId/shipping/report-issue', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
+router.patch('/:dealId/shipping/report-issue', async (req: AuthenticatedRequest, res: Response) => {
   try {
     const userId = req.user!.id;
     const { dealId } = req.params;
@@ -1052,7 +1052,7 @@ router.patch('/:dealId/shipping/report-issue', authMiddleware, async (req: Authe
  * POST /api/deals/:id/sign-creator
  * Legally sign the contract as a creator after OTP verification
  */
-router.post('/:id/sign-creator', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
+router.post('/:id/sign-creator', async (req: AuthenticatedRequest, res: Response) => {
   try {
     const dealId = req.params.id;
     const userId = req.user!.id;
@@ -1112,14 +1112,8 @@ router.post('/:id/sign-creator', authMiddleware, async (req: AuthenticatedReques
       });
     }
 
-    // 5. Update deal status to FULLY_EXECUTED
-    await supabase
-      .from('brand_deals')
-      .update({
-        status: 'FULLY_EXECUTED',
-        updated_at: new Date().toISOString()
-      } as any)
-      .eq('id', dealId);
+    // Status update is now handled internally by signContractAsCreator
+    // based on whether both parties have signed.
 
     return res.json({
       success: true,

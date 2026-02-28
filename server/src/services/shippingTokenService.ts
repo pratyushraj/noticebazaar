@@ -2,7 +2,7 @@
 // Shipping token service: create and validate tokens for brand shipping update links (no brand login)
 
 import crypto from 'crypto';
-import { supabase } from '../index.js';
+import { supabase } from '../lib/supabase.js';
 
 const TOKEN_EXPIRY_DAYS = 14;
 

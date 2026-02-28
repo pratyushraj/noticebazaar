@@ -28,6 +28,8 @@ interface ContractSigningData {
   deliverables: string[];
   deadline?: string;
   contractUrl?: string;
+  creatorSigningToken?: string;
+  brandSigningLink?: string;
 }
 
 /**
@@ -308,69 +310,196 @@ export async function sendBrandSigningConfirmationEmail(
       error: error.message || 'Failed to send email',
     };
   }
-}
+  // --------------------------------------------------------------------------
+  // NOTIFICATIONS: When Creator Signs -> Notify Brand
+  // --------------------------------------------------------------------------
 
-/**
- * Send email notification to creator when brand signs contract
- */
-export async function sendCreatorSigningNotificationEmail(
-  creatorEmail: string,
-  creatorName: string,
-  dealData: ContractSigningData
-): Promise<{ success: boolean; emailId?: string; error?: string }> {
-  try {
-    const apiKey = process.env.RESEND_API_KEY;
+  /**
+   * Send email notification to brand when CREATOR signs first
+   */
+  export async function sendBrandSigningNotificationEmail(
+    brandEmail: string,
+    brandName: string,
+    dealData: ContractSigningData
+  ): Promise<{ success: boolean; emailId?: string; error?: string }> {
+    try {
+      const apiKey = process.env.RESEND_API_KEY;
 
-    if (!apiKey || apiKey === 'your_resend_api_key_here' || apiKey.trim() === '') {
-      console.error('[ContractSigningEmail] API key not configured');
+      if (!apiKey || apiKey === 'your_resend_api_key_here' || apiKey.trim() === '') {
+        console.error('[ContractSigningEmail] API key not configured');
+        return {
+          success: false,
+          error: 'Resend API key is not configured',
+        };
+      }
+
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(brandEmail)) {
+        return {
+          success: false,
+          error: 'Invalid email address format',
+        };
+      }
+
+      const url = 'https://api.resend.com/emails';
+
+      const dealAmount = dealData.dealType === 'paid' && dealData.dealAmount
+        ? `₹${parseFloat(dealData.dealAmount.toString()).toLocaleString('en-IN')}`
+        : 'Barter Deal';
+
+      const deliverablesList = dealData.deliverables
+        .map((d, idx) => `${idx + 1}. ${d}`)
+        .join('<br>');
+
+      // Use provided brand signing link or fallback
+      const dealLink = dealData.brandSigningLink || `${process.env.FRONTEND_URL || 'https://creatorarmour.com'}/brand/deals/${dealData.dealId}`;
+
+      const emailSubject = `Creator signed: Counter-signature required for ${dealData.creatorName}`;
+      const mainContent = `
+      <tr>
+        <td style="background-color: #667eea; padding: 40px 30px; text-align: center;">
+          <h1 style="color: #ffffff; margin: 0; font-size: 24px;">✍️ Creator Has Signed</h1>
+        </td>
+      </tr>
+      ${getEmailSignal({
+        type: 'action',
+        message: 'Creator has signed. Your counter-signature is required to activate the agreement.'
+      })}
+      <tr>
+        <td style="padding: 40px 30px;">
+          <p style="margin: 0 0 20px 0; font-size: 16px; color: #2d3748; line-height: 1.6;">
+            Hi ${getFirstName(brandName)},
+          </p>
+          <p style="margin: 0 0 24px 0; font-size: 15px; color: #4a5568; line-height: 1.6;">
+            <strong>${dealData.creatorName}</strong> has reviewed and signed the collaboration agreement. To finalize the deal and lock in the deliverables, please provide your counter-signature.
+          </p>
+          
+          <div style="background: white; border-radius: 8px; padding: 20px; margin: 20px 0; border: 1px solid #e5e7eb;">
+            <h3 style="color: #1f2937; margin-top: 0; font-size: 18px;">Agreement Summary</h3>
+            <div style="margin: 15px 0;">
+              <strong style="color: #374151;">Creator:</strong>
+              <span style="color: #4b5563; margin-left: 10px;">${dealData.creatorName}</span>
+            </div>
+            <div style="margin: 15px 0;">
+              <strong style="color: #374151;">Deal Value:</strong>
+              <span style="color: #059669; font-size: 18px; font-weight: 600; margin-left: 10px;">${dealAmount}</span>
+            </div>
+            <div style="margin: 15px 0;">
+              <strong style="color: #374151;">Deliverables:</strong>
+              <div style="color: #4b5563; margin-top: 8px;">${deliverablesList}</div>
+            </div>
+          </div>
+
+          <div style="text-align: center;">
+            ${getPrimaryCTA('Review & Counter-Sign', dealLink)}
+          </div>
+          
+          ${getCTATrustLine('Secure OTP verification required.')}
+        </td>
+      </tr>
+    `;
+
+      const emailHtml = getEmailLayout({ content: mainContent, showFooter: true });
+
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${apiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          from: 'CreatorArmour <noreply@creatorarmour.com>',
+          to: [brandEmail],
+          subject: emailSubject,
+          html: emailHtml,
+        }),
+      });
+
+      const data: ResendEmailResponse = await response.json();
+
+      if (!response.ok || data.error) {
+        console.error('[ContractSigningEmail] Failed to send brand notification:', data.error);
+        return {
+          success: false,
+          error: data.error?.message || 'Failed to send email',
+        };
+      }
+
+      console.log('[ContractSigningEmail] Brand notification email sent:', data.id);
+      return {
+        success: true,
+        emailId: data.id,
+      };
+    } catch (error: any) {
+      console.error('[ContractSigningEmail] Error sending brand notification:', error);
       return {
         success: false,
-        error: 'Resend API key is not configured',
+        error: error.message || 'Failed to send email',
       };
     }
+  }
 
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(creatorEmail)) {
-      return {
-        success: false,
-        error: 'Invalid email address format',
-      };
-    }
+  /**
+   * Send email notification to creator when brand signs contract
+   */
+  export async function sendCreatorSigningNotificationEmail(
+    creatorEmail: string,
+    creatorName: string,
+    dealData: ContractSigningData
+  ): Promise<{ success: boolean; emailId?: string; error?: string }> {
+    try {
+      const apiKey = process.env.RESEND_API_KEY;
 
-    const url = 'https://api.resend.com/emails';
+      if (!apiKey || apiKey === 'your_resend_api_key_here' || apiKey.trim() === '') {
+        console.error('[ContractSigningEmail] API key not configured');
+        return {
+          success: false,
+          error: 'Resend API key is not configured',
+        };
+      }
 
-    const dealAmount = dealData.dealType === 'paid' && dealData.dealAmount
-      ? `₹${parseFloat(dealData.dealAmount.toString()).toLocaleString('en-IN')}`
-      : 'Barter Deal';
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(creatorEmail)) {
+        return {
+          success: false,
+          error: 'Invalid email address format',
+        };
+      }
 
-    const deliverablesList = dealData.deliverables
-      .map((d, idx) => `${idx + 1}. ${d}`)
-      .join('<br>');
+      const url = 'https://api.resend.com/emails';
 
-    const deadlineText = dealData.deadline
-      ? new Date(dealData.deadline).toLocaleDateString('en-IN', {
-        day: 'numeric',
-        month: 'long',
-        year: 'numeric'
-      })
-      : 'Not specified';
+      const dealAmount = dealData.dealType === 'paid' && dealData.dealAmount
+        ? `₹${parseFloat(dealData.dealAmount.toString()).toLocaleString('en-IN')}`
+        : 'Barter Deal';
 
-    // Use magic link if token is available, otherwise fallback to dashboard link
-    const dealLink = dealData.creatorSigningToken
-      ? `${process.env.FRONTEND_URL || 'https://creatorarmour.com'}/creator-sign/${dealData.creatorSigningToken}`
-      : `${process.env.FRONTEND_URL || 'https://creatorarmour.com'}/creator-contracts/${dealData.dealId}`;
+      const deliverablesList = dealData.deliverables
+        .map((d, idx) => `${idx + 1}. ${d}`)
+        .join('<br>');
 
-    const emailSubject = `Action required: Sign contract to lock this collaboration`;
-    const mainContent = `
+      const deadlineText = dealData.deadline
+        ? new Date(dealData.deadline).toLocaleDateString('en-IN', {
+          day: 'numeric',
+          month: 'long',
+          year: 'numeric'
+        })
+        : 'Not specified';
+
+      // Use magic link if token is available, otherwise fallback to dashboard link
+      const dealLink = dealData.creatorSigningToken
+        ? `${process.env.FRONTEND_URL || 'https://creatorarmour.com'}/creator-sign/${dealData.creatorSigningToken}`
+        : `${process.env.FRONTEND_URL || 'https://creatorarmour.com'}/creator-contracts/${dealData.dealId}`;
+
+      const emailSubject = `Action required: Sign contract to lock this collaboration`;
+      const mainContent = `
       <tr>
         <td style="background-color: #667eea; padding: 40px 30px; text-align: center;">
           <h1 style="color: #ffffff; margin: 0; font-size: 24px;">🎉 Brand Has Signed!</h1>
         </td>
       </tr>
       ${getEmailSignal({
-      type: 'action',
-      message: 'Sign contract to lock this collaboration. This agreement is legally binding once signed.'
-    })}
+        type: 'action',
+        message: 'Sign contract to lock this collaboration. This agreement is legally binding once signed.'
+      })}
       <tr>
         <td style="padding: 40px 30px;">
           <p style="margin: 0 0 20px 0; font-size: 16px; color: #2d3748; line-height: 1.6;">
@@ -407,104 +536,104 @@ export async function sendCreatorSigningNotificationEmail(
       </tr>
     `;
 
-    const emailHtml = getEmailLayout({ content: mainContent, showFooter: true });
+      const emailHtml = getEmailLayout({ content: mainContent, showFooter: true });
 
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${apiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        from: 'CreatorArmour <noreply@creatorarmour.com>',
-        to: [creatorEmail],
-        subject: emailSubject,
-        html: emailHtml,
-      }),
-    });
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${apiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          from: 'CreatorArmour <noreply@creatorarmour.com>',
+          to: [creatorEmail],
+          subject: emailSubject,
+          html: emailHtml,
+        }),
+      });
 
-    const data: ResendEmailResponse = await response.json();
+      const data: ResendEmailResponse = await response.json();
 
-    if (!response.ok || data.error) {
-      console.error('[ContractSigningEmail] Failed to send creator notification:', data.error);
+      if (!response.ok || data.error) {
+        console.error('[ContractSigningEmail] Failed to send creator notification:', data.error);
+        return {
+          success: false,
+          error: data.error?.message || 'Failed to send email',
+        };
+      }
+
+      console.log('[ContractSigningEmail] Creator notification email sent:', data.id);
+      return {
+        success: true,
+        emailId: data.id,
+      };
+    } catch (error: any) {
+      console.error('[ContractSigningEmail] Error sending creator notification:', error);
       return {
         success: false,
-        error: data.error?.message || 'Failed to send email',
+        error: error.message || 'Failed to send email',
       };
     }
-
-    console.log('[ContractSigningEmail] Creator notification email sent:', data.id);
-    return {
-      success: true,
-      emailId: data.id,
-    };
-  } catch (error: any) {
-    console.error('[ContractSigningEmail] Error sending creator notification:', error);
-    return {
-      success: false,
-      error: error.message || 'Failed to send email',
-    };
   }
-}
 
-/**
- * Send confirmation email to creator when they sign contract
- */
-export async function sendCreatorSigningConfirmationEmail(
-  creatorEmail: string,
-  creatorName: string,
-  dealData: ContractSigningData
-): Promise<{ success: boolean; emailId?: string; error?: string }> {
-  try {
-    const apiKey = process.env.RESEND_API_KEY;
+  /**
+   * Send confirmation email to creator when they sign contract
+   */
+  export async function sendCreatorSigningConfirmationEmail(
+    creatorEmail: string,
+    creatorName: string,
+    dealData: ContractSigningData
+  ): Promise<{ success: boolean; emailId?: string; error?: string }> {
+    try {
+      const apiKey = process.env.RESEND_API_KEY;
 
-    if (!apiKey || apiKey === 'your_resend_api_key_here' || apiKey.trim() === '') {
-      console.error('[ContractSigningEmail] API key not configured');
-      return {
-        success: false,
-        error: 'Resend API key is not configured',
-      };
-    }
+      if (!apiKey || apiKey === 'your_resend_api_key_here' || apiKey.trim() === '') {
+        console.error('[ContractSigningEmail] API key not configured');
+        return {
+          success: false,
+          error: 'Resend API key is not configured',
+        };
+      }
 
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(creatorEmail)) {
-      return {
-        success: false,
-        error: 'Invalid email address format',
-      };
-    }
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(creatorEmail)) {
+        return {
+          success: false,
+          error: 'Invalid email address format',
+        };
+      }
 
-    const url = 'https://api.resend.com/emails';
+      const url = 'https://api.resend.com/emails';
 
-    const dealAmount = dealData.dealType === 'paid' && dealData.dealAmount
-      ? `₹${parseFloat(dealData.dealAmount.toString()).toLocaleString('en-IN')}`
-      : 'Barter Deal';
+      const dealAmount = dealData.dealType === 'paid' && dealData.dealAmount
+        ? `₹${parseFloat(dealData.dealAmount.toString()).toLocaleString('en-IN')}`
+        : 'Barter Deal';
 
-    const deliverablesList = dealData.deliverables
-      .map((d, idx) => `${idx + 1}. ${d}`)
-      .join('<br>');
+      const deliverablesList = dealData.deliverables
+        .map((d, idx) => `${idx + 1}. ${d}`)
+        .join('<br>');
 
-    const deadlineText = dealData.deadline
-      ? new Date(dealData.deadline).toLocaleDateString('en-IN', {
-        day: 'numeric',
-        month: 'long',
-        year: 'numeric'
-      })
-      : 'Not specified';
+      const deadlineText = dealData.deadline
+        ? new Date(dealData.deadline).toLocaleDateString('en-IN', {
+          day: 'numeric',
+          month: 'long',
+          year: 'numeric'
+        })
+        : 'Not specified';
 
-    const dealLink = `${process.env.FRONTEND_URL || 'https://creatorarmour.com'}/creator-contracts/${dealData.dealId}`;
+      const dealLink = `${process.env.FRONTEND_URL || 'https://creatorarmour.com'}/creator-contracts/${dealData.dealId}`;
 
-    const emailSubject = `Agreement executed — you’re now protected`;
-    const mainContent = `
+      const emailSubject = `Agreement executed — you’re now protected`;
+      const mainContent = `
       <tr>
         <td style="background-color: #10b981; padding: 40px 30px; text-align: center;">
           <h1 style="color: #ffffff; margin: 0; font-size: 24px;">✅ Contract Executed!</h1>
         </td>
       </tr>
       ${getEmailSignal({
-      type: 'happened',
-      message: 'This agreement is now legally binding. All actions are recorded and timestamped.'
-    })}
+        type: 'happened',
+        message: 'This agreement is now legally binding. All actions are recorded and timestamped.'
+      })}
       <tr>
         <td style="padding: 40px 30px;">
           <p style="margin: 0 0 20px 0; font-size: 16px; color: #2d3748; line-height: 1.6;">
@@ -546,70 +675,70 @@ export async function sendCreatorSigningConfirmationEmail(
       </tr>
     `;
 
-    const emailHtml = getEmailLayout({ content: mainContent, showFooter: true });
+      const emailHtml = getEmailLayout({ content: mainContent, showFooter: true });
 
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${apiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        from: 'CreatorArmour <noreply@creatorarmour.com>',
-        to: [creatorEmail],
-        subject: emailSubject,
-        html: emailHtml,
-      }),
-    });
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${apiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          from: 'CreatorArmour <noreply@creatorarmour.com>',
+          to: [creatorEmail],
+          subject: emailSubject,
+          html: emailHtml,
+        }),
+      });
 
-    const data: ResendEmailResponse = await response.json();
+      const data: ResendEmailResponse = await response.json();
 
-    if (!response.ok || data.error) {
-      console.error('[ContractSigningEmail] Failed to send creator confirmation:', data.error);
+      if (!response.ok || data.error) {
+        console.error('[ContractSigningEmail] Failed to send creator confirmation:', data.error);
+        return {
+          success: false,
+          error: data.error?.message || 'Failed to send email',
+        };
+      }
+
+      console.log('[ContractSigningEmail] Creator confirmation email sent:', data.id);
+      return {
+        success: true,
+        emailId: data.id,
+      };
+    } catch (error: any) {
+      console.error('[ContractSigningEmail] Error sending creator confirmation:', error);
       return {
         success: false,
-        error: data.error?.message || 'Failed to send email',
+        error: error.message || 'Failed to send email',
       };
     }
-
-    console.log('[ContractSigningEmail] Creator confirmation email sent:', data.id);
-    return {
-      success: true,
-      emailId: data.id,
-    };
-  } catch (error: any) {
-    console.error('[ContractSigningEmail] Error sending creator confirmation:', error);
-    return {
-      success: false,
-      error: error.message || 'Failed to send email',
-    };
   }
-}
 
-/**
- * 1️⃣ Silent Safety Net Email
- * Trigger: Creator hasn’t signed 48h after brand signs
- */
-export async function sendCreatorSigningSafetyNetEmail(
-  creatorEmail: string,
-  creatorName: string,
-  brandName: string,
-  dealId: string
-): Promise<{ success: boolean; emailId?: string; error?: string }> {
-  try {
-    const apiKey = process.env.RESEND_API_KEY;
-    const dealLink = `${process.env.FRONTEND_URL || 'https://creatorarmour.com'}/creator-contracts/${dealId}`;
+  /**
+   * 1️⃣ Silent Safety Net Email
+   * Trigger: Creator hasn’t signed 48h after brand signs
+   */
+  export async function sendCreatorSigningSafetyNetEmail(
+    creatorEmail: string,
+    creatorName: string,
+    brandName: string,
+    dealId: string
+  ): Promise<{ success: boolean; emailId?: string; error?: string }> {
+    try {
+      const apiKey = process.env.RESEND_API_KEY;
+      const dealLink = `${process.env.FRONTEND_URL || 'https://creatorarmour.com'}/creator-contracts/${dealId}`;
 
-    const mainContent = `
+      const mainContent = `
       <tr>
         <td style="background-color: #667eea; padding: 40px 30px; text-align: center;">
           <h1 style="color: #ffffff; margin: 0; font-size: 24px;">🛡️ Protect Your Collaboration</h1>
         </td>
       </tr>
       ${getEmailSignal({
-      type: 'action',
-      message: 'Your contract is waiting — sign to ensure you are legally protected before starting work.'
-    })}
+        type: 'action',
+        message: 'Your contract is waiting — sign to ensure you are legally protected before starting work.'
+      })}
       <tr>
         <td style="padding: 40px 30px;">
           <p style="margin: 0 0 20px 0; font-size: 16px; color: #2d3748; line-height: 1.6;">
@@ -631,32 +760,33 @@ export async function sendCreatorSigningSafetyNetEmail(
       </tr>
     `;
 
-    const html = getEmailLayout({ content: mainContent, showFooter: true });
-    const subject = `Your contract is waiting — sign to stay protected`;
+      const html = getEmailLayout({ content: mainContent, showFooter: true });
+      const subject = `Your contract is waiting — sign to stay protected`;
 
-    const response = await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${apiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        from: 'CreatorArmour <noreply@creatorarmour.com>',
-        to: [creatorEmail],
-        subject: subject,
-        html: html,
-      }),
-    });
+      const response = await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${apiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          from: 'CreatorArmour <noreply@creatorarmour.com>',
+          to: [creatorEmail],
+          subject: subject,
+          html: html,
+        }),
+      });
 
-    const data: ResendEmailResponse = await response.json();
+      const data: ResendEmailResponse = await response.json();
 
-    if (!response.ok || data.error) {
-      return { success: false, error: data.error?.message || 'Failed to send email' };
+      if (!response.ok || data.error) {
+        return { success: false, error: data.error?.message || 'Failed to send email' };
+      }
+
+      return { success: true, emailId: data.id };
+    } catch (error: any) {
+      return { success: false, error: error.message || 'Internal error' };
     }
-
-    return { success: true, emailId: data.id };
-  } catch (error: any) {
-    return { success: false, error: error.message || 'Internal error' };
   }
-}
 
+}

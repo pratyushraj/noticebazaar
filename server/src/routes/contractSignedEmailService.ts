@@ -1,7 +1,7 @@
 // @ts-nocheck
 // Email service for contract signing notifications
 
-import { supabase } from '../index.js';
+import { supabase } from '../lib/supabase.js';
 
 export interface SignatureRecord {
   id: string;

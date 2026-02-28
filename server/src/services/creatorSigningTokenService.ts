@@ -2,7 +2,7 @@
 // Creator Signing Token Service
 // Generates and validates magic link tokens for creator contract signing
 
-import { supabase } from '../index.js';
+import { supabase } from '../lib/supabase.js';
 
 interface CreatorSigningToken {
     id: string;

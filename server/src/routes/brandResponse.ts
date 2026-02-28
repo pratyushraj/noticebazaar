@@ -4,7 +4,7 @@
 // Uses cryptographically secure UUID v4 tokens for unguessable URLs
 
 import { Router, Request, Response } from 'express';
-import { supabase, supabaseInitialized } from '../index.js';
+import { supabase, supabaseInitialized } from '../lib/supabase.js';
 import crypto from 'crypto';
 import { generateContractFromScratch } from '../services/contractGenerator.js';
 

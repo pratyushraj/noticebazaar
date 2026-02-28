@@ -6,6 +6,7 @@ interface EmailLayoutProps {
   content: string;
   showFooter?: boolean;
   backgroundStyle?: 'purple' | 'dark';
+  preheaderText?: string;
 }
 
 interface CreatorProfileProps {
@@ -30,7 +31,12 @@ interface CollaborationRequestCardProps {
 /**
  * Base email layout - Stripe-style white card on light gray background
  */
-export function getEmailLayout({ content, showFooter = true, backgroundStyle = 'purple' }: EmailLayoutProps): string {
+export function getEmailLayout({
+  content,
+  showFooter = true,
+  backgroundStyle = 'purple',
+  preheaderText = 'Secure collaboration update from Creator Armour.',
+}: EmailLayoutProps): string {
   const backgroundGradient = backgroundStyle === 'dark'
     ? 'linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%)'
     : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
@@ -47,17 +53,31 @@ export function getEmailLayout({ content, showFooter = true, backgroundStyle = '
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <title>Creator Armour</title>
+  <style>
+    @media only screen and (max-width: 620px) {
+      .email-outer {
+        padding: 12px !important;
+      }
+      .email-container {
+        width: 100% !important;
+        max-width: 100% !important;
+      }
+    }
+  </style>
   <!--[if mso]>
   <style type="text/css">
     body, table, td {font-family: Arial, sans-serif !important;}
   </style>
   <![endif]-->
 </head>
-<body style="margin: 0; padding: 0; background: ${backgroundGradient}; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
+<body style="margin: 0; padding: 0; background: ${backgroundGradient}; background-color: #111827; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
+  <div style="display: none; max-height: 0px; overflow: hidden; opacity: 0; mso-hide: all; color: transparent;">
+    ${preheaderText}
+  </div>
   <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background: ${backgroundGradient};">
     <tr>
-      <td align="center" style="padding: 20px;">
-        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="600" style="max-width: 600px; background-color: #ffffff; border-radius: 16px; box-shadow: ${boxShadow}; overflow: hidden;">
+      <td align="center" class="email-outer" style="padding: 20px;">
+        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" class="email-container" style="max-width: 600px; background-color: #ffffff; border-radius: 16px; box-shadow: ${boxShadow}; overflow: hidden;">
           ${content}
           ${showFooter ? getEmailFooter() : ''}
         </table>
@@ -229,7 +249,7 @@ export function getPrimaryCTA(text: string, url: string): string {
         <table role="presentation" cellspacing="0" cellpadding="0" border="0" align="center">
           <tr>
             <td style="background-color: #667eea; border-radius: 8px;">
-              <a href="${url}" style="display: inline-block; background-color: #667eea; color: #ffffff !important; text-decoration: none; padding: 14px 40px; border-radius: 8px; font-weight: 600; font-size: 16px; line-height: 1.5; mso-hide: all;" target="_blank" rel="noopener noreferrer">
+              <a href="${url}" style="display: inline-block; min-width: 220px; background-color: #667eea; color: #ffffff !important; text-decoration: none; padding: 14px 24px; border-radius: 8px; font-weight: 600; font-size: 16px; line-height: 1.5; mso-hide: all;" target="_blank" rel="noopener noreferrer">
                 <span style="color: #ffffff;">${text}</span>
               </a>
             </td>
@@ -254,7 +274,7 @@ export function getSecondaryActions(
     actions.push({ text: 'Accept', url: acceptUrl, bgColor: '#48bb78', textColor: '#ffffff', borderColor: '#48bb78' });
   }
   if (counterUrl) {
-    actions.push({ text: 'Ask for Changes', url: counterUrl, bgColor: '#ffffff', textColor: '#667eea', borderColor: '#667eea' });
+    actions.push({ text: 'Adjust Terms', url: counterUrl, bgColor: '#ffffff', textColor: '#667eea', borderColor: '#667eea' });
   }
   if (declineUrl) {
     actions.push({ text: 'Decline', url: declineUrl, bgColor: '#ffffff', textColor: '#e53e3e', borderColor: '#e53e3e' });
@@ -265,7 +285,7 @@ export function getSecondaryActions(
   if (actions.length === 0) {
     actions.push(
       { text: 'Accept', url: baseUrl, bgColor: '#48bb78', textColor: '#ffffff', borderColor: '#48bb78' },
-      { text: 'Ask for Changes', url: baseUrl, bgColor: '#ffffff', textColor: '#667eea', borderColor: '#667eea' },
+      { text: 'Adjust Terms', url: baseUrl, bgColor: '#ffffff', textColor: '#667eea', borderColor: '#667eea' },
       { text: 'Decline', url: baseUrl, bgColor: '#ffffff', textColor: '#e53e3e', borderColor: '#e53e3e' }
     );
   }
@@ -458,23 +478,24 @@ export function getEmailFooter(): string {
   const supportEmail = 'support@creatorarmour.com';
   return `
     <tr>
-      <td style="padding: 30px; border-top: 1px solid #e2e8f0; background-color: #f7fafc; text-align: center;">
-        <p style="margin: 0 0 16px 0; padding: 12px; background: #fff5f5; border: 1px solid #fed7d7; border-radius: 8px; font-size: 13px; color: #c53030; line-height: 1.5;">
-          <strong>Legal Note:</strong> If the product isn’t shipped or deliverables aren't met after signing, Creator Armour records all delays and activity logs for official dispute resolution.
+      <td style="padding: 28px 24px; border-top: 1px solid #e2e8f0; background-color: #f8fafc; text-align: center;">
+        <p style="margin: 0 0 14px 0; padding: 12px; background: #eef2ff; border: 1px solid #c7d2fe; border-radius: 8px; font-size: 12px; color: #3730a3; line-height: 1.5;">
+          <strong>Records & Compliance:</strong> Key actions are timestamped and logged for verification and dispute support.
         </p>
         <p style="margin: 0 0 8px 0; font-size: 14px; color: #4a5568; line-height: 1.5;">
-          <a href="mailto:${supportEmail}" style="color: #667eea; text-decoration: none; font-weight: 500;">Need help? Contact us</a> — we’re here to help before any issue becomes a dispute.
+          <a href="mailto:${supportEmail}" style="color: #4f46e5; text-decoration: none; font-weight: 600;">Need help? Contact support</a>
+          <span style="color: #64748b;"> — we can help before issues escalate.</span>
         </p>
-        <p style="margin: 12px 0 0 0; font-size: 14px; font-weight: 700; color: #2d3748; line-height: 1.5;">
+        <p style="margin: 12px 0 0 0; font-size: 13px; font-weight: 700; color: #1f2937; line-height: 1.5;">
           Secured by Creator Armour
         </p>
-        <p style="margin: 4px 0 0 0; font-size: 11px; color: #a0aec0; line-height: 1.4; text-transform: uppercase; letter-spacing: 0.5px;">
+        <p style="margin: 4px 0 0 0; font-size: 10px; color: #94a3b8; line-height: 1.4; text-transform: uppercase; letter-spacing: 0.6px;">
           Actions on Creator Armour are recorded, timestamped, and legally enforceable.
         </p>
-        <p style="margin: 12px 0 0 0; font-size: 13px; color: #718096; line-height: 1.5;">
+        <p style="margin: 10px 0 0 0; font-size: 12px; color: #64748b; line-height: 1.5;">
           Building authentic brand-creator partnerships with trust and transparency
         </p>
-        <p style="margin: 8px 0 0 0; font-size: 12px; color: #a0aec0; line-height: 1.5;">
+        <p style="margin: 8px 0 0 0; font-size: 11px; color: #94a3b8; line-height: 1.5;">
           Creator Armour, C 1107, Amarpali Princely Estate, Noida Sector 76, 201306, India
         </p>
       </td>
@@ -588,7 +609,7 @@ export function getBrandConfirmationEmailTemplate(data: {
   brandName: string;
   creatorName: string;
   platforms?: string[];
-  collabType: 'paid' | 'barter' | 'both';
+  collabType: 'paid' | 'barter' | 'hybrid' | 'both';
   budget: string;
   deadline?: string;
   deliverables: string[];

@@ -54,6 +54,7 @@ const CreatorProfileForm: React.FC<CreatorProfileFormProps> = ({ initialProfile,
   const [pricingMin, setPricingMin] = useState(initialProfile.pricing_min?.toString() || '');
   const [pricingAvg, setPricingAvg] = useState(initialProfile.pricing_avg?.toString() || '');
   const [pricingMax, setPricingMax] = useState(initialProfile.pricing_max?.toString() || '');
+  const [avgRateReel, setAvgRateReel] = useState(initialProfile.avg_rate_reel?.toString() || '');
   
   // Social Accounts
   const [instagramHandle, setInstagramHandle] = useState(initialProfile.instagram_handle || '');
@@ -92,6 +93,7 @@ const CreatorProfileForm: React.FC<CreatorProfileFormProps> = ({ initialProfile,
     setPricingMin(initialProfile.pricing_min?.toString() || '');
     setPricingAvg(initialProfile.pricing_avg?.toString() || '');
     setPricingMax(initialProfile.pricing_max?.toString() || '');
+    setAvgRateReel(initialProfile.avg_rate_reel?.toString() || '');
     setInstagramHandle(initialProfile.instagram_handle || '');
     setYoutubeChannelId(initialProfile.youtube_channel_id || '');
     setTiktokHandle(initialProfile.tiktok_handle || '');
@@ -131,6 +133,7 @@ const CreatorProfileForm: React.FC<CreatorProfileFormProps> = ({ initialProfile,
         pricing_min: pricingMin ? parseInt(pricingMin) : null,
         pricing_avg: pricingAvg ? parseInt(pricingAvg) : null,
         pricing_max: pricingMax ? parseInt(pricingMax) : null,
+        avg_rate_reel: avgRateReel ? parseFloat(avgRateReel) : null,
         instagram_handle: instagramHandle.trim() || null,
         youtube_channel_id: youtubeChannelId.trim() || null,
         tiktok_handle: tiktokHandle.trim() || null,
@@ -163,6 +166,7 @@ const CreatorProfileForm: React.FC<CreatorProfileFormProps> = ({ initialProfile,
     avatar_url: avatarUrl,
     creator_category: creatorCategory,
     pricing_avg: pricingAvg ? parseInt(pricingAvg) : null,
+    avg_rate_reel: avgRateReel ? parseFloat(avgRateReel) : null,
     instagram_handle: instagramHandle,
     youtube_channel_id: youtubeChannelId,
     bank_account_number: bankAccountNumber,
@@ -345,6 +349,20 @@ const CreatorProfileForm: React.FC<CreatorProfileFormProps> = ({ initialProfile,
           <p className="text-sm text-white/60 mt-1">Set your brand deal rates (in ₹)</p>
         </CardHeader>
         <CardContent className="space-y-4">
+          <div>
+            <Label htmlFor="avgRateReel" className="text-white">Average Reel Rate (INR)</Label>
+            <Input
+              id="avgRateReel"
+              type="number"
+              value={avgRateReel}
+              onChange={(e) => setAvgRateReel(e.target.value)}
+              disabled={updateProfileMutation.isPending}
+              placeholder="e.g., 15000"
+              className="bg-[#0F121A] text-white border-white/10"
+            />
+            <p className="text-xs text-white/50 mt-1">Used for “Typical Paid Budget” on your collab page.</p>
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <Label htmlFor="pricingMin" className="text-white">Minimum Rate</Label>
@@ -647,4 +665,3 @@ const CreatorProfileForm: React.FC<CreatorProfileFormProps> = ({ initialProfile,
 };
 
 export default CreatorProfileForm;
-

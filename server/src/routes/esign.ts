@@ -3,7 +3,7 @@
 // Handles Meon eSign integration for contract signing
 
 import express, { Router, Response } from 'express';
-import { supabase } from '../index.js';
+import { supabase } from '../lib/supabase.js';
 import { AuthenticatedRequest } from '../middleware/auth.js';
 import {
   uploadPDF,

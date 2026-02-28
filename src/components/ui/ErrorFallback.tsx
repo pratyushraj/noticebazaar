@@ -69,7 +69,7 @@ export const ErrorFallback: React.FC<ErrorFallbackProps> = ({
         </button>
       </div>
 
-      {process.env.NODE_ENV === 'development' && error && (
+      {import.meta.env.DEV && error && (
         <details className="mt-6 text-left max-w-2xl mx-auto">
           <summary className={`${typography.caption} cursor-pointer mb-2`}>
             Error Details (Development Only)
@@ -109,4 +109,3 @@ export const ErrorFallback: React.FC<ErrorFallbackProps> = ({
     </div>
   );
 };
-

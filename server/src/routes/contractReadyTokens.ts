@@ -3,7 +3,7 @@
 // Public endpoint for brands to view and sign contracts
 
 import { Router, Request, Response } from 'express';
-import { supabase } from '../index.js';
+import { supabase } from '../lib/supabase.js';
 import { getContractReadyTokenInfo } from '../services/contractReadyTokenService.js';
 import { signContractAsBrand, getClientIp, getDeviceInfo, getSignature } from '../services/contractSigningService.js';
 import { authMiddleware } from '../middleware/auth.js';

@@ -6,7 +6,6 @@ import { Shield, TrendingUp, Target, Zap, MessageCircle, CheckCircle } from 'luc
 import { PrimaryButton } from '../PrimaryButton';
 import { SecondaryButton } from '../SecondaryButton';
 import { GradientCard } from '../GradientCard';
-import { SkipButton } from '../SkipButton';
 
 type Goal = 'protect' | 'earnings' | 'taxes' | 'deals' | 'advice' | 'grow';
 
@@ -16,7 +15,6 @@ interface GoalsStepProps {
   onNext: () => void;
   onBack: () => void;
   isSubmitting?: boolean;
-  onSkip?: () => void;
 }
 
 /**
@@ -30,7 +28,6 @@ export const GoalsStep: React.FC<GoalsStepProps> = ({
   onNext,
   onBack,
   isSubmitting = false,
-  onSkip,
 }) => {
   const goals: Array<{
     id: Goal;
@@ -46,9 +43,7 @@ export const GoalsStep: React.FC<GoalsStepProps> = ({
   ];
 
   return (
-    <>
-      {onSkip && <SkipButton onClick={onSkip} />}
-      <motion.div
+    <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: -20 }}
@@ -104,7 +99,5 @@ export const GoalsStep: React.FC<GoalsStepProps> = ({
         </div>
       </GradientCard>
     </motion.div>
-    </>
   );
 };
-

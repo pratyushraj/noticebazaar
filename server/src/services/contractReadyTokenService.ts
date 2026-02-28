@@ -2,7 +2,7 @@
 // Service to generate secure contract ready tokens
 // Creates UUID v4 tokens for unguessable, non-sequential contract ready URLs
 
-import { supabase } from '../index.js';
+import { supabase } from '../lib/supabase.js';
 
 export interface CreateTokenOptions {
   dealId?: string | null; // Optional - can use submissionId instead

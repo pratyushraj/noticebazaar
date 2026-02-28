@@ -1,7 +1,7 @@
 // @ts-nocheck
 // Storage service for signed URL generation (Supabase Storage)
 
-import { supabase } from '../index.js';
+import { supabase } from '../lib/supabase.js';
 
 const BUCKET_NAME = process.env.STORAGE_BUCKET || 'creator-assets';
 

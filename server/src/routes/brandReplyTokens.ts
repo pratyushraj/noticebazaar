@@ -3,7 +3,7 @@
 // Authenticated endpoint - only creators can create tokens for their deals
 
 import { Router, Response } from 'express';
-import { supabase } from '../index.js';
+import { supabase } from '../lib/supabase.js';
 import { AuthenticatedRequest } from '../middleware/auth.js';
 import { createBrandReplyToken, revokeBrandReplyToken, getAuditSummary } from '../services/brandReplyTokenService.js';
 

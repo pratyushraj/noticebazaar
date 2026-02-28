@@ -11,6 +11,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { AnimatePresence } from 'framer-motion';
 import { onboardingAnalytics } from '@/lib/onboarding/analytics';
 import { useSwipeGesture } from '@/components/onboarding/useSwipeGesture';
+import { getApiBaseUrl } from '@/lib/utils/api';
 
 // Import new components
 import { OnboardingContainer } from '@/components/onboarding/OnboardingContainer';
@@ -21,28 +22,25 @@ import { WelcomeScreen1 } from '@/components/onboarding/welcome/WelcomeScreen1';
 import { WelcomeScreen2 } from '@/components/onboarding/welcome/WelcomeScreen2';
 import { WelcomeScreen3 } from '@/components/onboarding/welcome/WelcomeScreen3';
 import { WelcomeScreen4 } from '@/components/onboarding/welcome/WelcomeScreen4';
+import { WelcomeScreen5 } from '@/components/onboarding/welcome/WelcomeScreen5';
 import { NameStep } from '@/components/onboarding/setup/NameStep';
 import { InstagramStep } from '@/components/onboarding/setup/InstagramStep';
-import { UserTypeStep } from '@/components/onboarding/setup/UserTypeStep';
-import { PlatformsStep } from '@/components/onboarding/setup/PlatformsStep';
 import { NicheStep } from '@/components/onboarding/setup/NicheStep';
-import { GoalsStep } from '@/components/onboarding/setup/GoalsStep';
+import { ReelRateStep } from '@/components/onboarding/setup/ReelRateStep';
 import { SuccessStep } from '@/components/onboarding/setup/SuccessStep';
 
-type WelcomeStep = 0 | 1 | 2 | 3 | 4;
-type SetupStep = 'name' | 'instagram' | 'type' | 'platforms' | 'niches' | 'goals' | 'success';
-
-type UserType = 'creator' | 'freelancer' | 'entrepreneur';
-type Platform = 'youtube' | 'instagram' | 'twitter' | 'linkedin' | 'website' | 'podcast';
-type Goal = 'protect' | 'earnings' | 'taxes' | 'deals' | 'advice' | 'grow';
+type WelcomeStep = 0 | 1 | 2 | 3 | 4 | 5;
+type SetupStep = 'name' | 'instagram' | 'niches' | 'reelRate' | 'success';
+type DealType = 'paid' | 'barter' | 'hybrid' | 'all';
 
 interface OnboardingData {
   name: string;
   instagramUsername: string;
-  userType: UserType | '';
-  platforms: Platform[];
   contentNiches: string[];
-  goals: Goal[];
+  reelRate: string;
+  dealType: DealType;
+  barterValueMin: string;
+  barterValueMax: string;
 }
 
 const CreatorOnboarding = () => {
@@ -62,17 +60,18 @@ const CreatorOnboarding = () => {
         return {
           name: '',
           instagramUsername: '',
-          userType: '',
-          platforms: [],
           contentNiches: [],
-          goals: [],
+          reelRate: '',
+          dealType: 'paid',
+          barterValueMin: '',
+          barterValueMax: '',
           ...parsed
         };
       } catch {
-        return { name: '', instagramUsername: '', userType: '', platforms: [], contentNiches: [], goals: [] };
+        return { name: '', instagramUsername: '', contentNiches: [], reelRate: '', dealType: 'paid', barterValueMin: '', barterValueMax: '' };
       }
     }
-    return { name: '', instagramUsername: '', userType: '', platforms: [], contentNiches: [], goals: [] };
+    return { name: '', instagramUsername: '', contentNiches: [], reelRate: '', dealType: 'paid', barterValueMin: '', barterValueMax: '' };
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [stepStartTime, setStepStartTime] = useState<number>(Date.now());
@@ -81,7 +80,7 @@ const CreatorOnboarding = () => {
   useSwipeGesture({
     onSwipeLeft: () => {
       // Welcome screens
-      if (setupStep === 'name' && welcomeStep < 3) {
+      if (setupStep === 'name' && welcomeStep < 5) {
         handleNextWelcome();
       }
       // Setup steps - navigate forward
@@ -89,14 +88,10 @@ const CreatorOnboarding = () => {
         if (onboardingData.name.trim()) handleNameNext();
       } else if (setupStep === 'instagram') {
         if (onboardingData.instagramUsername.trim().length >= 3) handleInstagramNext();
-      } else if (setupStep === 'type') {
-        if (onboardingData.userType) handleTypeNext();
-      } else if (setupStep === 'platforms') {
-        if (onboardingData.platforms.length > 0) handlePlatformsNext();
       } else if (setupStep === 'niches') {
         if (onboardingData.contentNiches.length > 0) handleNichesNext();
-      } else if (setupStep === 'goals') {
-        if (onboardingData.goals.length > 0) handleGoalsNext();
+      } else if (setupStep === 'reelRate') {
+        handleReelRateNext();
       }
     },
     onSwipeRight: () => {
@@ -107,13 +102,9 @@ const CreatorOnboarding = () => {
       // Setup steps - navigate back
       else if (setupStep === 'instagram') {
         setSetupStep('name');
-      } else if (setupStep === 'type') {
-        setSetupStep('instagram');
-      } else if (setupStep === 'platforms') {
-        setSetupStep('type');
       } else if (setupStep === 'niches') {
-        setSetupStep('platforms');
-      } else if (setupStep === 'goals') {
+        setSetupStep('instagram');
+      } else if (setupStep === 'reelRate') {
         setSetupStep('niches');
       }
     },
@@ -135,10 +126,8 @@ const CreatorOnboarding = () => {
     if (setupStep !== 'name' && setupStep !== 'success') {
       const stepMap: Record<string, { name: string; number: number }> = {
         instagram: { name: 'instagram_username', number: 1 },
-        type: { name: 'user_type', number: 2 },
-        platforms: { name: 'platforms', number: 3 },
-        niches: { name: 'niches', number: 4 },
-        goals: { name: 'goals', number: 5 }
+        niches: { name: 'niches', number: 2 },
+        reelRate: { name: 'reel_rate', number: 3 }
       };
 
       const stepInfo = stepMap[setupStep];
@@ -162,7 +151,7 @@ const CreatorOnboarding = () => {
 
     if (profile.onboarding_complete) {
       setIsNavigating(true);
-      navigate('/creator-dashboard', { replace: true });
+      navigate('/creator-profile?section=collab&forceDealSettings=1', { replace: true });
       return;
     }
   }, [sessionLoading, profile, navigate]);
@@ -222,10 +211,11 @@ const CreatorOnboarding = () => {
     const defaultData: OnboardingData = {
       name: onboardingData.name || 'Creator',
       instagramUsername: onboardingData.instagramUsername || '',
-      userType: onboardingData.userType || 'creator',
-      platforms: onboardingData.platforms.length > 0 ? onboardingData.platforms : ['youtube'],
       contentNiches: onboardingData.contentNiches.length > 0 ? onboardingData.contentNiches : ['Lifestyle'],
-      goals: onboardingData.goals.length > 0 ? onboardingData.goals : ['protect'],
+      reelRate: onboardingData.reelRate || '',
+      dealType: onboardingData.dealType || 'paid',
+      barterValueMin: onboardingData.barterValueMin || '',
+      barterValueMax: onboardingData.barterValueMax || '',
     };
 
     setOnboardingData(defaultData);
@@ -235,12 +225,12 @@ const CreatorOnboarding = () => {
   };
 
   const handleNextWelcome = () => {
-    if (welcomeStep < 3) {
+    if (welcomeStep < 4) {
       setWelcomeStep((prev) => (prev + 1) as WelcomeStep);
     } else {
       // Move from welcome screens to setup steps
-      // Set welcomeStep to 4 so the welcome screen condition becomes false
-      setWelcomeStep(4 as WelcomeStep);
+      // Set welcomeStep to 5 so the welcome screen condition becomes false
+      setWelcomeStep(5 as WelcomeStep);
       setSetupStep('name');
     }
   };
@@ -259,32 +249,37 @@ const CreatorOnboarding = () => {
 
   const handleInstagramNext = () => {
     if (onboardingData.instagramUsername.trim().length >= 3) {
-      setSetupStep('type');
-    }
-  };
-
-  const handleTypeNext = () => {
-    if (onboardingData.userType) {
-      setSetupStep('platforms');
-    }
-  };
-
-  const handlePlatformsNext = () => {
-    if (onboardingData.platforms.length > 0) {
       setSetupStep('niches');
     }
   };
 
   const handleNichesNext = () => {
     if (onboardingData.contentNiches.length > 0) {
-      setSetupStep('goals');
+      setSetupStep('reelRate');
     }
   };
 
-  const handleGoalsNext = async () => {
-    if (onboardingData.goals.length > 0) {
-      await handleOnboardingComplete();
+  const handleReelRateNext = () => {
+    const parsed = Number.parseFloat(onboardingData.reelRate);
+    const parsedBarterMin = Number.parseFloat(onboardingData.barterValueMin);
+    const parsedBarterMax = Number.parseFloat(onboardingData.barterValueMax);
+    const requiresPaid = onboardingData.dealType === 'paid' || onboardingData.dealType === 'hybrid' || onboardingData.dealType === 'all';
+    const requiresBarter = onboardingData.dealType === 'barter' || onboardingData.dealType === 'hybrid' || onboardingData.dealType === 'all';
+
+    if (requiresPaid && (!Number.isFinite(parsed) || parsed <= 0)) {
+      toast.error('Please enter your Reel price in INR');
+      return;
     }
+    if (requiresBarter && (!Number.isFinite(parsedBarterMin) || parsedBarterMin <= 0)) {
+      toast.error('Please enter minimum barter value');
+      return;
+    }
+    if (onboardingData.barterValueMax.trim().length > 0 && (!Number.isFinite(parsedBarterMax) || parsedBarterMax < parsedBarterMin)) {
+      toast.error('Maximum barter value should be greater than or equal to minimum');
+      return;
+    }
+
+    handleOnboardingComplete();
   };
 
   const handleOnboardingComplete = async () => {
@@ -293,7 +288,7 @@ const CreatorOnboarding = () => {
 
     try {
       // Track step completion
-      onboardingAnalytics.trackStep('goals', 5, 5, Date.now() - stepStartTime);
+      onboardingAnalytics.trackStep('reel_rate', 4, 4, Date.now() - stepStartTime);
 
       // Handle referral tracking
       const referralCode = sessionStorage.getItem('referral_code');
@@ -341,15 +336,8 @@ const CreatorOnboarding = () => {
       const firstName = nameParts[0];
       const lastName = nameParts.slice(1).join(' ') || '';
 
-      // Map user type to creator_category
-      let creatorCategory: string | null = onboardingData.userType || null;
-      if (onboardingData.userType === 'freelancer') {
-        creatorCategory = 'freelancer';
-      } else if (onboardingData.userType === 'entrepreneur') {
-        creatorCategory = 'business';
-      } else if (onboardingData.userType === 'creator') {
-        creatorCategory = 'creator';
-      }
+      // Creator-only onboarding path
+      const creatorCategory: string | null = 'creator';
 
       // Normalize Instagram username for collab link (same as username so link = /collab/username)
       const instagramHandle = onboardingData.instagramUsername
@@ -365,10 +353,17 @@ const CreatorOnboarding = () => {
           last_name: lastName,
           avatar_url: profile.avatar_url || null,
           creator_category: creatorCategory,
-          platforms: onboardingData.platforms.length > 0 ? onboardingData.platforms : null,
           content_niches: onboardingData.contentNiches.length > 0 ? onboardingData.contentNiches : null,
-          goals: onboardingData.goals.length > 0 ? onboardingData.goals : null,
           onboarding_complete: true,
+          avg_rate_reel: (onboardingData.dealType === 'paid' || onboardingData.dealType === 'hybrid' || onboardingData.dealType === 'all') && onboardingData.reelRate
+            ? parseFloat(onboardingData.reelRate)
+            : null,
+          suggested_barter_value_min: (onboardingData.dealType === 'barter' || onboardingData.dealType === 'hybrid' || onboardingData.dealType === 'all') && onboardingData.barterValueMin
+            ? parseFloat(onboardingData.barterValueMin)
+            : null,
+          suggested_barter_value_max: (onboardingData.dealType === 'barter' || onboardingData.dealType === 'hybrid' || onboardingData.dealType === 'all')
+            ? (onboardingData.barterValueMax ? parseFloat(onboardingData.barterValueMax) : (onboardingData.barterValueMin ? parseFloat(onboardingData.barterValueMin) : null))
+            : null,
           ...(collabUsername && {
             instagram_handle: collabUsername,
             username: collabUsername,
@@ -389,10 +384,17 @@ const CreatorOnboarding = () => {
             last_name: lastName,
             avatar_url: profile.avatar_url || null,
             // Skip creator_category if column doesn't exist
-            platforms: onboardingData.platforms.length > 0 ? onboardingData.platforms : null,
             content_niches: onboardingData.contentNiches.length > 0 ? onboardingData.contentNiches : null,
-            goals: onboardingData.goals.length > 0 ? onboardingData.goals : null,
             onboarding_complete: true,
+            avg_rate_reel: (onboardingData.dealType === 'paid' || onboardingData.dealType === 'hybrid' || onboardingData.dealType === 'all') && onboardingData.reelRate
+              ? parseFloat(onboardingData.reelRate)
+              : null,
+            suggested_barter_value_min: (onboardingData.dealType === 'barter' || onboardingData.dealType === 'hybrid' || onboardingData.dealType === 'all') && onboardingData.barterValueMin
+              ? parseFloat(onboardingData.barterValueMin)
+              : null,
+            suggested_barter_value_max: (onboardingData.dealType === 'barter' || onboardingData.dealType === 'hybrid' || onboardingData.dealType === 'all')
+              ? (onboardingData.barterValueMax ? parseFloat(onboardingData.barterValueMax) : (onboardingData.barterValueMin ? parseFloat(onboardingData.barterValueMin) : null))
+              : null,
             ...(collabUsername && {
               instagram_handle: collabUsername,
               username: collabUsername,
@@ -408,6 +410,23 @@ const CreatorOnboarding = () => {
       localStorage.setItem('onboarding-complete', 'true');
       localStorage.setItem('onboarding-completed-at', Date.now().toString());
       localStorage.removeItem('onboarding-data'); // Clean up
+
+      // Best effort: attach pre-onboarding collab leads to this account immediately
+      try {
+        const { data: sessionData } = await supabase.auth.getSession();
+        const accessToken = sessionData?.session?.access_token;
+        if (accessToken) {
+          await fetch(`${getApiBaseUrl()}/api/collab-requests/attach-leads`, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${accessToken}`,
+              'Content-Type': 'application/json',
+            },
+          });
+        }
+      } catch (attachError) {
+        console.warn('[CreatorOnboarding] Failed to attach pre-onboarding collab leads (non-fatal):', attachError);
+      }
 
       refetchProfile();
       setSetupStep('success');
@@ -434,11 +453,20 @@ const CreatorOnboarding = () => {
   };
 
   // Welcome Screens
-  if (setupStep === 'name' && welcomeStep < 4 && !onboardingData.name) {
+  if (setupStep === 'name' && welcomeStep < 5 && !onboardingData.name) {
     return (
       <OnboardingContainer>
-        <SkipButton onClick={handleSkipWelcome} />
-        <OnboardingProgressDots totalSteps={4} currentStep={welcomeStep} />
+        <div className="w-full relative z-50 h-12 md:h-14 max-w-3xl mx-auto px-4 md:px-6 flex items-center justify-center">
+          <OnboardingProgressDots
+            totalSteps={5}
+            currentStep={welcomeStep}
+            className="!top-1/2 !left-1/2 !-translate-y-1/2"
+          />
+          <SkipButton
+            onClick={handleSkipWelcome}
+            className="!top-1/2 !right-0 !-translate-y-1/2 !px-2 md:!px-3"
+          />
+        </div>
 
         <AnimatePresence mode="wait">
           {welcomeStep === 0 && (
@@ -465,6 +493,13 @@ const CreatorOnboarding = () => {
               onBack={handleBackWelcome}
             />
           )}
+          {welcomeStep === 4 && (
+            <WelcomeScreen5
+              key="welcome-4"
+              onNext={handleNextWelcome}
+              onBack={handleBackWelcome}
+            />
+          )}
         </AnimatePresence>
       </OnboardingContainer>
     );
@@ -475,10 +510,8 @@ const CreatorOnboarding = () => {
     switch (setupStep) {
       case 'name': return 1;
       case 'instagram': return 2;
-      case 'type': return 3;
-      case 'platforms': return 4;
-      case 'niches': return 5;
-      case 'goals': return 6;
+      case 'niches': return 3;
+      case 'reelRate': return 4;
       default: return 0;
     }
   };
@@ -491,133 +524,118 @@ const CreatorOnboarding = () => {
           <div className="pt-[max(60px,calc(env(safe-area-inset-top,0px)+36px))] md:pt-10 flex-shrink-0">
             <OnboardingProgressBar
               currentStep={getStepNumber()}
-              totalSteps={6}
+              totalSteps={4}
             />
           </div>
         )}
 
-        <AnimatePresence mode="wait">
-          {/* Step 1: Name */}
-          {setupStep === 'name' && (
-            <NameStep
-              key="name"
-              name={onboardingData.name}
-              onNameChange={(name) =>
-                setOnboardingData((prev) => ({ ...prev, name }))
-              }
-              onNext={handleNameNext}
-              onSkip={handleSkipSetup}
-            />
-          )}
+        {/* Calculate suggested India-market rate based on followers if available */}
+        {(() => {
+          const followers = profile?.instagram_followers || 0;
+          let suggestedRate = followers > 0 ? Math.round(followers * 0.06) : undefined;
+          if (followers > 5000000) suggestedRate = Math.max(suggestedRate || 0, 150000);
+          else if (followers > 1000000) suggestedRate = Math.max(suggestedRate || 0, 80000);
+          else if (followers > 500000) suggestedRate = Math.max(suggestedRate || 0, 40000);
+          if (followers >= 10000) suggestedRate = Math.max(suggestedRate || 0, 2000);
+          else if (followers >= 5000) suggestedRate = Math.max(suggestedRate || 0, 1500);
+          if (suggestedRate) suggestedRate = Math.max(1500, Math.min(800000, suggestedRate));
 
-          {/* Step 2: Instagram username (collab link) */}
-          {setupStep === 'instagram' && (
-            <InstagramStep
-              key="instagram"
-              instagramUsername={onboardingData.instagramUsername}
-              onUsernameChange={(username) =>
-                setOnboardingData((prev) => ({ ...prev, instagramUsername: username }))
-              }
-              onNext={handleInstagramNext}
-              onBack={() => setSetupStep('name')}
-              onSkip={handleSkipSetup}
-            />
-          )}
+          return (
+            <AnimatePresence mode="wait">
+              {/* Step 1: Name */}
+              {setupStep === 'name' && (
+                <NameStep
+                  key="name"
+                  name={onboardingData.name}
+                  onNameChange={(name) =>
+                    setOnboardingData((prev) => ({ ...prev, name }))
+                  }
+                  onNext={handleNameNext}
+                  onSkip={handleSkipSetup}
+                />
+              )}
 
-          {/* Step 3: User Type */}
-          {setupStep === 'type' && (
-            <UserTypeStep
-              key="type"
-              selectedType={onboardingData.userType}
-              onTypeSelect={(type) =>
-                setOnboardingData((prev) => ({ ...prev, userType: type }))
-              }
-              onNext={handleTypeNext}
-              onBack={() => setSetupStep('instagram')}
-              onSkip={handleSkipSetup}
-            />
-          )}
+              {/* Step 2: Instagram username (collab link) */}
+              {setupStep === 'instagram' && (
+                <InstagramStep
+                  key="instagram"
+                  instagramUsername={onboardingData.instagramUsername}
+                  onUsernameChange={(username) =>
+                    setOnboardingData((prev) => ({ ...prev, instagramUsername: username }))
+                  }
+                  onNext={handleInstagramNext}
+                  onBack={() => setSetupStep('name')}
+                  onSkip={handleSkipSetup}
+                />
+              )}
 
-          {/* Step 3: Platforms */}
-          {setupStep === 'platforms' && (
-            <PlatformsStep
-              key="platforms"
-              selectedPlatforms={onboardingData.platforms}
-              onPlatformToggle={(platform) => {
-                setOnboardingData((prev) => ({
-                  ...prev,
-                  platforms: prev.platforms.includes(platform)
-                    ? prev.platforms.filter((p) => p !== platform)
-                    : [...prev.platforms, platform],
-                }));
-              }}
-              onNext={handlePlatformsNext}
-              onBack={() => setSetupStep('type')}
-              onSkip={handleSkipSetup}
-            />
-          )}
+              {/* Step 5: Niches */}
+              {setupStep === 'niches' && (
+                <NicheStep
+                  key="niches"
+                  selectedNiches={onboardingData.contentNiches}
+                  onNicheToggle={(niche) => {
+                    setOnboardingData((prev) => ({
+                      ...prev,
+                      contentNiches: prev.contentNiches.includes(niche)
+                        ? prev.contentNiches.filter((n) => n !== niche)
+                        : [...prev.contentNiches, niche],
+                    }));
+                  }}
+                  onNext={handleNichesNext}
+                  onBack={() => setSetupStep('instagram')}
+                  onSkip={handleSkipSetup}
+                />
+              )}
 
-          {/* Step 5: Niches */}
-          {setupStep === 'niches' && (
-            <NicheStep
-              key="niches"
-              selectedNiches={onboardingData.contentNiches}
-              onNicheToggle={(niche) => {
-                setOnboardingData((prev) => ({
-                  ...prev,
-                  contentNiches: prev.contentNiches.includes(niche)
-                    ? prev.contentNiches.filter((n) => n !== niche)
-                    : [...prev.contentNiches, niche],
-                }));
-              }}
-              onNext={handleNichesNext}
-              onBack={() => setSetupStep('platforms')}
-              onSkip={handleSkipSetup}
-            />
-          )}
+              {/* Step 6: Reel Rate */}
+              {setupStep === 'reelRate' && (
+                <ReelRateStep
+                  key="reelRate"
+                  reelRate={onboardingData.reelRate}
+                  dealType={onboardingData.dealType}
+                  barterValueMin={onboardingData.barterValueMin}
+                  barterValueMax={onboardingData.barterValueMax}
+                  suggestedRate={suggestedRate}
+                  onRateChange={(rate) =>
+                    setOnboardingData((prev) => ({ ...prev, reelRate: rate }))
+                  }
+                  onDealTypeChange={(dealType) =>
+                    setOnboardingData((prev) => ({ ...prev, dealType }))
+                  }
+                  onBarterValueMinChange={(barterValueMin) =>
+                    setOnboardingData((prev) => ({ ...prev, barterValueMin }))
+                  }
+                  onBarterValueMaxChange={(barterValueMax) =>
+                    setOnboardingData((prev) => ({ ...prev, barterValueMax }))
+                  }
+                  onNext={handleReelRateNext}
+                  onBack={() => setSetupStep('niches')}
+                />
+              )}
 
-          {/* Step 6: Goals */}
-          {setupStep === 'goals' && (
-            <GoalsStep
-              key="goals"
-              selectedGoals={onboardingData.goals}
-              onGoalToggle={(goal) => {
-                setOnboardingData((prev) => ({
-                  ...prev,
-                  goals: prev.goals.includes(goal)
-                    ? prev.goals.filter((g) => g !== goal)
-                    : [...prev.goals, goal],
-                }));
-              }}
-              onNext={handleGoalsNext}
-              onBack={() => setSetupStep('niches')}
-              isSubmitting={isSubmitting}
-              onSkip={handleSkipSetup}
-            />
-          )}
-
-          {/* Success Screen */}
-          {setupStep === 'success' && (
-            <SuccessStep
-              key="success"
-              userName={onboardingData.name}
-              userType={onboardingData.userType}
-              platformsCount={onboardingData.platforms.length}
-              goalsCount={onboardingData.goals.length}
-              onGoToDashboard={() => navigate('/creator-dashboard')}
-              collabLink={profile?.instagram_handle || profile?.username
-                ? `${typeof window !== 'undefined' ? window.location.origin : ''}/collab/${profile?.instagram_handle || profile?.username}`
-                : undefined}
-              collabShortLabel={profile?.instagram_handle || profile?.username
-                ? `creatorarmour.com/collab/${profile?.instagram_handle || profile?.username}`
-                : undefined}
-            />
-          )}
-        </AnimatePresence>
+              {/* Success Screen */}
+              {setupStep === 'success' && (
+                <SuccessStep
+                  key="success"
+                  userName={onboardingData.name}
+                  onGoToDashboard={() => navigate('/creator-profile?section=collab&forceDealSettings=1')}
+                  onCompleteCollabProfile={() => navigate('/creator-profile?section=collab&forceDealSettings=1')}
+                  collabProfile={profile as unknown as Record<string, any>}
+                  collabLink={profile?.instagram_handle || profile?.username
+                    ? `${typeof window !== 'undefined' ? window.location.origin : ''}/collab/${profile?.instagram_handle || profile?.username}`
+                    : undefined}
+                  collabShortLabel={profile?.instagram_handle || profile?.username
+                    ? `creatorarmour.com/collab/${profile?.instagram_handle || profile?.username}`
+                    : undefined}
+                />
+              )}
+            </AnimatePresence>
+          );
+        })()}
       </div>
     </OnboardingContainer>
   );
 };
 
 export default CreatorOnboarding;
-

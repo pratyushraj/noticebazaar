@@ -24,7 +24,7 @@ interface CollabRequestSubmissionData {
   creatorName: string;
   creatorPlatforms?: string[];
   brandName: string;
-  collabType: 'paid' | 'barter' | 'both';
+  collabType: 'paid' | 'barter' | 'hybrid' | 'both';
   budgetRange?: string | null;
   exactBudget?: number | null;
   barterDescription?: string | null;
@@ -51,6 +51,7 @@ interface CollabRequestCounterData {
   originalBudget?: number | null;
   counterPrice?: number | null;
   counterDeliverables?: string | null;
+  counterTimeline?: string | null;
   counterNotes?: string | null;
   requestId: string;
 }
@@ -69,7 +70,7 @@ interface CollabRequestCreatorNotificationData {
   brandName: string;
   brandWebsite?: string;
   campaignGoal?: string;
-  collabType: 'paid' | 'barter' | 'both';
+  collabType: 'paid' | 'barter' | 'hybrid' | 'both';
   budgetRange?: string | null;
   exactBudget?: number | null;
   barterDescription?: string | null;
@@ -83,6 +84,11 @@ interface CollabRequestCreatorNotificationData {
   requestId: string;
   /** Optional: direct link to accept this request (e.g. /collab/accept/:requestToken) */
   acceptUrl?: string;
+}
+
+interface CollabPushFallbackEmailData {
+  creatorName: string;
+  brandName: string;
 }
 
 /**
@@ -196,6 +202,32 @@ async function sendEmail(
 }
 
 /**
+ * Lightweight email fallback for push delivery failures
+ */
+export async function sendCollabPushFallbackEmail(
+  creatorEmail: string,
+  data: CollabPushFallbackEmailData
+): Promise<{ success: boolean; emailId?: string; error?: string }> {
+  const frontendUrl = process.env.FRONTEND_URL || 'https://creatorarmour.com';
+  const dashboardLink = `${frontendUrl}/collab-requests`;
+  const firstName = getFirstName(data.creatorName || 'Creator');
+  const subject = 'New Collaboration Request';
+  const html = getEmailTemplate(
+    'Brand Offer Waiting',
+    `Hi ${firstName},`,
+    `
+      <p style="margin: 0 0 16px;">A brand has sent you a collaboration request on CreatorArmour.</p>
+      <p style="margin: 0 0 16px;">You can review, accept, counter, or decline directly inside your dashboard.</p>
+      <p style="margin: 0 0 16px; color: #6b7280; font-size: 13px;">Enable instant alerts to avoid delays.</p>
+    `,
+    'Open CreatorArmour',
+    dashboardLink
+  );
+
+  return sendEmail(creatorEmail, subject, html);
+}
+
+/**
  * Email template helper
  */
 function getEmailTemplate(
@@ -275,7 +307,7 @@ export async function sendCollabRequestSubmissionEmail(
 
   // Format budget
   let budgetText = 'As agreed in contract';
-  if (data.collabType === 'paid' || data.collabType === 'both') {
+  if (data.collabType === 'paid' || data.collabType === 'both' || data.collabType === 'hybrid') {
     if (data.exactBudget) {
       budgetText = `₹${data.exactBudget.toLocaleString('en-IN')}`;
     } else if (data.budgetRange) {
@@ -614,130 +646,14 @@ export async function sendCollabRequestAcceptedEmail(
   return sendEmail(brandEmail, subject, html);
 }
 
-/**
- * 3. Send email when counter offer is submitted
- */
-export async function sendCollabRequestCounterEmail(
-  brandEmail: string,
-  data: CollabRequestCounterData
-): Promise<{ success: boolean; emailId?: string; error?: string }> {
-  const frontendUrl = process.env.FRONTEND_URL || 'https://creatorarmour.com';
-
-  const content = `
-    <p style="color: #4b5563; font-size: 16px;">
-      <strong>${data.creatorName}</strong> has sent you a counter offer for your collaboration request.
-    </p>
-    
-    <div style="background: #fef3c7; border: 1px solid #f59e0b; border-radius: 8px; padding: 15px; margin: 20px 0;">
-      <p style="color: #92400e; font-size: 14px; margin: 0;">
-        <strong>📝 Counter Offer Received</strong> - Review the updated terms below.
-      </p>
-    </div>
-
-    <div style="background: white; border: 1px solid #e5e7eb; border-radius: 8px; padding: 20px; margin: 20px 0;">
-      <h3 style="color: #1f2937; margin-top: 0; font-size: 18px;">Counter Offer Details:</h3>
-      ${data.counterPrice ? `
-        <table style="width: 100%; border-collapse: collapse; margin-bottom: 15px;">
-          <tr>
-            <td style="padding: 8px 0; color: #6b7280; font-size: 14px; width: 40%;"><strong>Original Price:</strong></td>
-            <td style="padding: 8px 0; color: #1f2937; font-size: 14px;">${data.originalBudget ? `₹${data.originalBudget.toLocaleString('en-IN')}` : 'Not specified'}</td>
-          </tr>
-          <tr>
-            <td style="padding: 8px 0; color: #6b7280; font-size: 14px;"><strong>Counter Price:</strong></td>
-            <td style="padding: 8px 0; color: #1f2937; font-size: 14px; font-weight: 600;">₹${data.counterPrice.toLocaleString('en-IN')}</td>
-          </tr>
-        </table>
-      ` : ''}
-      ${data.counterDeliverables ? `
-        <div style="margin-top: 15px;">
-          <strong style="color: #6b7280; font-size: 14px;">Updated Deliverables:</strong>
-          <p style="color: #4b5563; font-size: 14px; margin-top: 5px;">${data.counterDeliverables}</p>
-        </div>
-      ` : ''}
-      ${data.counterNotes ? `
-        <div style="margin-top: 15px;">
-          <strong style="color: #6b7280; font-size: 14px;">Notes:</strong>
-          <p style="color: #4b5563; font-size: 14px; margin-top: 5px;">${data.counterNotes}</p>
-        </div>
-      ` : ''}
-    </div>
-
-    <p style="color: #6b7280; font-size: 14px; margin-top: 20px;">
-      You can accept this counter offer, propose your own terms, or decline. All communication stays secure on CreatorArmour.
-    </p>
-  `;
-
-  const html = getEmailTemplate(
-    '💼 Counter Offer',
-    `Hello ${data.brandName},`,
-    content
-    // No CTA for counter - brands can respond via CreatorArmour dashboard if they have access
-    // In future, could add a public response page
-  );
-
-  return sendEmail(
-    brandEmail,
-    `${data.creatorName} sent a counter offer`,
-    html
-  );
-}
-
-/**
- * 4. Send email when request is declined
- */
-export async function sendCollabRequestDeclinedEmail(
-  brandEmail: string,
-  data: CollabRequestDeclinedData
-): Promise<{ success: boolean; emailId?: string; error?: string }> {
-  const frontendUrl = process.env.FRONTEND_URL || 'https://creatorarmour.com';
-  const collabLink = `${frontendUrl}/collab/${data.creatorUsername}`;
-
-  const content = `
-    <p style="color: #4b5563; font-size: 16px;">
-      <strong>${data.creatorName}</strong> has declined your collaboration request.
-    </p>
-    
-    <div style="background: #fee2e2; border: 1px solid #ef4444; border-radius: 8px; padding: 15px; margin: 20px 0;">
-      <p style="color: #991b1b; font-size: 14px; margin: 0;">
-        <strong>Request Declined</strong> - This creator is not available for this collaboration at this time.
-      </p>
-    </div>
-
-    <p style="color: #6b7280; font-size: 14px; margin-top: 20px;">
-      Don't worry! This is common in the creator industry. Creators may decline requests due to:
-    </p>
-    <ul style="color: #6b7280; font-size: 14px; padding-left: 20px;">
-      <li>Current workload or availability</li>
-      <li>Brand fit or alignment</li>
-      <li>Budget or timeline constraints</li>
-    </ul>
-
-    <p style="color: #6b7280; font-size: 14px; margin-top: 20px;">
-      <strong>What's Next?</strong> You can submit a new collaboration request with adjusted terms, or explore other creators on CreatorArmour.
-    </p>
-  `;
-
-  const html = getEmailTemplate(
-    '📋 Request Update',
-    `Hello ${data.brandName},`,
-    content,
-    'Submit New Request',
-    collabLink
-  );
-
-  return sendEmail(
-    brandEmail,
-    `${data.creatorName} declined your collaboration request`,
-    html
-  );
-}
 
 /**
  * 5. Send email to creator when new collab request is submitted
  */
 export async function sendCollabRequestCreatorNotificationEmail(
   creatorEmail: string,
-  data: CollabRequestCreatorNotificationData
+  data: CollabRequestCreatorNotificationData,
+  creatorId?: string  // Optional for backward compatibility, but needed for WhatsApp
 ): Promise<{ success: boolean; emailId?: string; error?: string }> {
   const frontendUrl = process.env.FRONTEND_URL || 'https://creatorarmour.com';
   const dashboardLink = `${frontendUrl}/creator-dashboard`;
@@ -752,7 +668,7 @@ export async function sendCollabRequestCreatorNotificationEmail(
   // Format budget/barter value for subject line and content
   let budgetText = 'Not specified';
   let budgetForSubject = '';
-  if (data.collabType === 'paid' || data.collabType === 'both') {
+  if (data.collabType === 'paid' || data.collabType === 'both' || data.collabType === 'hybrid') {
     if (data.exactBudget) {
       budgetText = `₹${data.exactBudget.toLocaleString('en-IN')}`;
       budgetForSubject = `₹${data.exactBudget.toLocaleString('en-IN')}`;
@@ -766,7 +682,7 @@ export async function sendCollabRequestCreatorNotificationEmail(
       budgetText = ranges[data.budgetRange] || data.budgetRange;
       budgetForSubject = ranges[data.budgetRange] || data.budgetRange;
     }
-  } else if (data.collabType === 'barter' || data.collabType === 'both') {
+  } else if (data.collabType === 'barter' || data.collabType === 'both' || data.collabType === 'hybrid') {
     if (data.barterDescription) {
       budgetText = data.barterValue
         ? `Barter (Value: ₹${data.barterValue.toLocaleString('en-IN')})`
@@ -829,6 +745,86 @@ export async function sendCollabRequestCreatorNotificationEmail(
   const subject = budgetForSubject && budgetForSubject !== 'Not specified'
     ? `New collaboration request from ${data.brandName} (${budgetForSubject})`
     : `New collaboration request from ${data.brandName}`;
+
+  /* 
+  // Send WhatsApp notification if creatorId is provided
+  // DISABLED: User requested to stop paid WhatsApp notifications and use free push/email instead.
+  if (creatorId) {
+    try {
+      // Use dynamic import for supabase client to avoid circular dependencies
+      const { supabase } = await import('../lib/supabase.js');
+
+      // Get creator phone
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('phone')
+        .eq('id', creatorId)
+        .maybeSingle();
+
+      if (profile?.phone) {
+        import('./msg91Service.js').then(async ({ sendCollabRequestWhatsApp }) => {
+          try {
+            // Determine type and value based on collabType
+            const isPaid = data.collabType === 'paid' || data.collabType === 'both' || data.collabType === 'hybrid';
+            const templateType = isPaid ? 'paid' : 'barter';
+
+            let value = 'Negotiable';
+            if (isPaid) {
+              value = budgetForSubject || 'Negotiable';
+            } else {
+              // Barter value
+              value = data.barterValue ? `₹${data.barterValue.toLocaleString('en-IN')}` : 'To be discussed';
+            }
+
+            // Timeline text
+            const timeStr = timelineText || 'Flexible';
+
+            // Generate frictionless action links (Review -> Confirm flow)
+            let acceptUrl: string | undefined;
+            let declineUrl: string | undefined;
+            let counterUrl: string | undefined;
+
+            try {
+              const { generateActionToken } = await import('../utils/token.js');
+              // 7 day expiry for action links
+              const acceptToken = generateActionToken(data.requestId, 'accept', 24 * 7);
+              const declineToken = generateActionToken(data.requestId, 'decline', 24 * 7);
+              const counterToken = generateActionToken(data.requestId, 'counter', 24 * 7);
+
+              // Base URL for actions
+              const baseUrl = (process.env.FRONTEND_URL || 'https://creatorarmour.com').replace(/\/$/, '');
+              acceptUrl = `${baseUrl}/collab-action?token=${acceptToken}`;
+              declineUrl = `${baseUrl}/collab-action?token=${declineToken}`;
+              counterUrl = `${baseUrl}/collab-action?token=${counterToken}`;
+            } catch (tokenErr) {
+              console.warn('[CollabRequestEmail] Failed to generate action tokens', tokenErr);
+            }
+
+            await sendCollabRequestWhatsApp(
+              profile.phone,
+              templateType,
+              {
+                brand_name: data.brandName,
+                value: value,
+                deliverables: data.deliverables.length > 0 ? data.deliverables.join(', ') : 'Details inside',
+                timeline: timeStr,
+                action_url: dashboardLink,
+                accept_url: acceptUrl,
+                decline_url: declineUrl,
+                counter_url: counterUrl,
+                image_url: (data as any).barterProductImageUrl // Assuming interface might not have it strictly typed but runtime object does
+              }
+            );
+          } catch (waError) {
+            console.error('[CollabRequestEmail] WhatsApp sending error:', waError);
+          }
+        });
+      }
+    } catch (err) {
+      console.error('[CollabRequestEmail] Error preparing WhatsApp notification:', err);
+    }
+  }
+  */
 
   return sendEmail(
     creatorEmail,
@@ -976,4 +972,140 @@ export async function sendCollabDraftResumeEmail(
 </body>
 </html>`;
   return sendEmail(brandEmail, subject, html);
+}
+
+/**
+ * Notify brand that creator declined request
+ */
+export async function sendCollabRequestDeclinedEmail(
+  brandEmail: string,
+  data: CollabRequestDeclinedData
+): Promise<{ success: boolean; emailId?: string; error?: string }> {
+  const subject = `${data.creatorName} declined your collaboration request`;
+
+  const mainContent = `
+    <tr>
+      <td style="padding: 40px 30px;">
+        <h2 style="margin: 0 0 20px 0; color: #1a202c;">Update on your requests</h2>
+        <p style="margin: 0 0 20px 0; font-size: 16px; color: #4a5568; line-height: 1.6;">
+          Hi ${data.brandName},
+        </p>
+        <p style="margin: 0 0 20px 0; font-size: 16px; color: #4a5568; line-height: 1.6;">
+          <strong>${data.creatorName}</strong> (@${data.creatorUsername}) has declined your collaboration request.
+        </p>
+        
+        ${data.declineReason ? `
+        <div style="background-color: #f7fafc; border-left: 4px solid #cbd5e0; padding: 15px; margin-bottom: 24px;">
+          <p style="margin: 0; color: #4a5568; font-style: italic;">" ${data.declineReason} "</p>
+        </div>` : ''}
+
+        <p style="margin: 0 0 24px 0; font-size: 16px; color: #4a5568; line-height: 1.6;">
+          Don't worry, there are plenty of other creators perfect for your campaign.
+        </p>
+        
+        ${getPrimaryCTA('Find More Creators', `${process.env.FRONTEND_URL}/creators`)}
+      </td>
+    </tr>
+  `;
+
+  const html = getEmailLayout({ content: mainContent, showFooter: true });
+  return sendEmail(brandEmail, subject, html);
+}
+
+/**
+ * Notify brand about counter proposal
+ */
+export async function sendCollabRequestCounterEmail(
+  brandEmail: string,
+  data: CollabRequestCounterData
+): Promise<{ success: boolean; emailId?: string; error?: string }> {
+  const subject = `Counter Proposal: ${data.creatorName} proposed changes`;
+
+  const mainContent = `
+    <tr>
+      <td style="padding: 40px 30px;">
+        <h2 style="margin: 0 0 20px 0; color: #1a202c;">Counter Proposal Received</h2>
+        <p style="margin: 0 0 20px 0; font-size: 16px; color: #4a5568; line-height: 1.6;">
+          Hi ${data.brandName},
+        </p>
+        <p style="margin: 0 0 20px 0; font-size: 16px; color: #4a5568; line-height: 1.6;">
+          <strong>${data.creatorName}</strong> is interested in your collaboration request but has proposed some changes:
+        </p>
+        
+        <div style="background-color: #ebf8ff; border: 1px solid #bee3f8; border-radius: 8px; padding: 20px; margin-bottom: 24px;">
+          ${data.counterPrice && data.counterPrice !== data.originalBudget ? `
+          <div style="margin-bottom: 12px; display: flex; justify-content: space-between; border-bottom: 1px dashed #bee3f8; padding-bottom: 12px;">
+            <span style="color: #4a5568; font-weight: 500;">Proposed Budget:</span>
+            <span style="color: #2b6cb0; font-weight: 700;">₹${data.counterPrice.toLocaleString('en-IN')}</span>
+          </div>` : ''}
+          
+          ${data.counterTimeline ? `
+          <div style="margin-bottom: 12px; display: flex; justify-content: space-between; border-bottom: 1px dashed #bee3f8; padding-bottom: 12px;">
+            <span style="color: #4a5568; font-weight: 500;">Proposed Timeline:</span>
+            <span style="color: #2b6cb0; font-weight: 700;">${data.counterTimeline}</span>
+          </div>` : ''}
+          
+          ${data.counterDeliverables ? `
+          <div style="margin-bottom: 12px;">
+            <p style="margin: 0 0 4px 0; color: #4a5568; font-weight: 500;">Proposed Deliverables:</p>
+            <p style="margin: 0; color: #2d3748;">${data.counterDeliverables}</p>
+          </div>` : ''}
+          
+          ${data.counterNotes ? `
+          <div>
+            <p style="margin: 0 0 4px 0; color: #4a5568; font-weight: 500;">Note from Creator:</p>
+            <p style="margin: 0; color: #2d3748; font-style: italic;">"${data.counterNotes}"</p>
+          </div>` : ''}
+        </div>
+
+        <p style="margin: 0 0 24px 0; font-size: 16px; color: #4a5568; line-height: 1.6;">
+          You can review, accept, or decline this counter proposal in your dashboard.
+        </p>
+        
+        ${getPrimaryCTA('Review Proposal', `${process.env.FRONTEND_URL}/brand/collab-requests/${data.requestId}`)}
+      </td>
+    </tr>
+  `;
+
+  const html = getEmailLayout({ content: mainContent, showFooter: true });
+  return sendEmail(brandEmail, subject, html);
+}
+
+/**
+ * Internal alert when a collab request is captured as a lead
+ * (creator profile does not exist yet and request will be auto-attached after onboarding)
+ */
+export async function sendCollabLeadCapturedAlertEmail(
+  to: string,
+  data: {
+    targetHandle: string;
+    brandName: string;
+    brandEmail: string;
+    collabType: 'paid' | 'barter' | 'hybrid' | 'both';
+    campaignDescription: string;
+    leadId: string;
+  }
+): Promise<{ success: boolean; emailId?: string; error?: string }> {
+  const subject = `Lead captured for @${data.targetHandle} (${data.brandName})`;
+  const frontendUrl = (process.env.FRONTEND_URL || 'https://creatorarmour.com').replace(/\/$/, '');
+  const html = `
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #1f2937; max-width: 560px; margin: 0 auto; padding: 24px;">
+  <h2 style="margin: 0 0 16px; font-size: 20px;">New Collab Lead Captured</h2>
+  <p style="margin: 0 0 16px;">A brand request was submitted for a creator who has not onboarded yet. It has been stored as a lead and will auto-attach after onboarding.</p>
+  <table style="width: 100%; border-collapse: collapse; margin: 0 0 16px;">
+    <tr><td style="padding: 6px 0; font-weight: 600;">Target handle</td><td style="padding: 6px 0;">@${data.targetHandle}</td></tr>
+    <tr><td style="padding: 6px 0; font-weight: 600;">Brand</td><td style="padding: 6px 0;">${data.brandName}</td></tr>
+    <tr><td style="padding: 6px 0; font-weight: 600;">Brand email</td><td style="padding: 6px 0;">${data.brandEmail}</td></tr>
+    <tr><td style="padding: 6px 0; font-weight: 600;">Collab type</td><td style="padding: 6px 0;">${data.collabType}</td></tr>
+    <tr><td style="padding: 6px 0; font-weight: 600;">Lead ID</td><td style="padding: 6px 0; font-family: monospace;">${data.leadId}</td></tr>
+  </table>
+  <p style="margin: 0 0 18px; font-size: 14px; color: #4b5563;">${(data.campaignDescription || '').slice(0, 220)}</p>
+  <a href="${frontendUrl}/collab/${encodeURIComponent(data.targetHandle)}" style="display:inline-block; background:#4f46e5; color:#fff; text-decoration:none; padding:10px 16px; border-radius:8px; font-weight:600;">Open Public Link</a>
+</body>
+</html>`;
+
+  return sendEmail(to, subject, html);
 }

@@ -2,7 +2,7 @@
 // Protection/Contract Analysis API routes
 
 import { Router, Response, Request } from 'express';
-import { supabase } from '../index.js';
+import { supabase } from '../lib/supabase.js';
 import { AuthenticatedRequest } from '../middleware/auth.js';
 import { analyzeContract } from '../services/contractAnalysis.js';
 import { generateReportPdf } from '../services/pdfGenerator.js';

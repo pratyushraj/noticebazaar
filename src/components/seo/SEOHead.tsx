@@ -11,6 +11,9 @@ interface SEOHeadProps {
   modifiedTime?: string; // ISO format
   author?: string;
   canonicalUrl?: string;
+  robots?: string;
+  imageAlt?: string;
+  locale?: string;
 }
 
 /**
@@ -27,6 +30,9 @@ export const SEOHead: React.FC<SEOHeadProps> = ({
   modifiedTime,
   author = 'CreatorArmour',
   canonicalUrl,
+  robots = 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1',
+  imageAlt,
+  locale = 'en_IN',
 }) => {
   const location = useLocation();
   const baseUrl = 'https://creatorarmour.com';
@@ -76,15 +82,19 @@ export const SEOHead: React.FC<SEOHeadProps> = ({
     updateLinkTag('canonical', currentUrl);
 
     // Robots meta tag
-    updateMetaTag('robots', 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1');
+    updateMetaTag('robots', robots);
 
     // Open Graph tags
     updateMetaTag('og:type', type);
     updateMetaTag('og:title', title);
     updateMetaTag('og:description', description);
     updateMetaTag('og:image', image);
+    if (imageAlt) {
+      updateMetaTag('og:image:alt', imageAlt);
+    }
     updateMetaTag('og:url', currentUrl);
     updateMetaTag('og:site_name', 'CreatorArmour');
+    updateMetaTag('og:locale', locale);
 
     // Article-specific OG tags
     if (type === 'article') {
@@ -104,13 +114,13 @@ export const SEOHead: React.FC<SEOHeadProps> = ({
     updateMetaTag('twitter:title', title);
     updateMetaTag('twitter:description', description);
     updateMetaTag('twitter:image', image);
+    updateMetaTag('twitter:url', currentUrl);
 
     // Cleanup function
     return () => {
       // Optionally restore default meta tags when component unmounts
     };
-  }, [title, description, keywords, image, type, publishedTime, modifiedTime, author, currentUrl]);
+  }, [title, description, keywords, image, type, publishedTime, modifiedTime, author, currentUrl, robots, imageAlt, locale]);
 
   return null; // This component doesn't render anything
 };
-

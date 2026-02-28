@@ -1,7 +1,7 @@
 "use client";
 
 import React from 'react';
-import { TrendingUp, CheckCircle } from 'lucide-react';
+import { ShieldCheck } from 'lucide-react';
 import { OnboardingSlide } from '../OnboardingSlide';
 import { IconBubble } from '../IconBubble';
 import { GradientCard } from '../GradientCard';
@@ -14,58 +14,38 @@ interface WelcomeScreen3Props {
 }
 
 /**
- * Welcome Screen 3: Earnings Tracking
- * - Benefit list with checkmarks
- * - Animated trending icon
- * - Back/Next navigation
+ * Welcome Screen 3: Protection Layer
  */
 export const WelcomeScreen3: React.FC<WelcomeScreen3Props> = ({ onNext, onBack }) => {
-  const benefits = [
-    'Real-time earnings tracking',
-    'Payment reminders',
-    'Tax calculation & filing',
-    'Invoice generation',
+  const stats = [
+    { value: '10,000+', label: 'Deals structured' },
+    { value: '85%', label: 'Risk clauses flagged' },
+    { value: '₹2Cr+', label: 'Creator payments secured' },
   ];
 
   return (
     <OnboardingSlide>
-      {/* Animated Icon */}
-      <div className="mt-12 md:mt-0 mb-8 md:mb-8">
-        <IconBubble
-          icon={TrendingUp}
-          size="lg"
-          color="blue"
-          animated
-          animationProps={{
-            animate: { scale: [1, 1.1, 1] },
-            transition: { duration: 2, repeat: Infinity },
-          }}
-        />
+      <div className="mt-12 md:mt-0 mb-8">
+        <IconBubble icon={ShieldCheck} size="lg" color="green" animated />
       </div>
 
-      {/* Title */}
-      <h1 className="text-2xl md:text-3xl font-bold leading-tight mb-3 md:mb-4">
-        Track Every Rupee
+      <h1 className="text-2xl md:text-3xl font-bold leading-tight mb-3">
+        Deals That Protect You
       </h1>
 
-      {/* Subtitle */}
-      <p className="text-lg md:text-xl font-semibold text-white/80 mb-6 md:mb-12">
-        Financial Dashboard Benefits
+      <p className="text-lg md:text-xl font-semibold text-white/80 mb-6 md:mb-10">
+        No more &quot;bro trust me&quot; partnerships.
       </p>
 
-      {/* Benefits List */}
-      <div className="space-y-3 max-w-md w-full mb-6 md:mb-12">
-        {benefits.map((benefit, index) => (
-          <GradientCard key={index} padding="sm">
-            <div className="flex items-center gap-3">
-              <CheckCircle className="w-5 h-5 text-green-400 flex-shrink-0" />
-              <span className="text-base text-white/80">{benefit}</span>
-            </div>
+      <div className="space-y-3 md:space-y-4 max-w-md w-full mb-6 md:mb-10">
+        {stats.map((stat, index) => (
+          <GradientCard key={index} padding="md">
+            <div className="text-3xl font-bold text-green-400 mb-2">{stat.value}</div>
+            <div className="text-base text-white/80">{stat.label}</div>
           </GradientCard>
         ))}
       </div>
 
-      {/* Navigation Buttons */}
       <div className="flex gap-4">
         <SecondaryButton onClick={onBack} showBackIcon>
           Back
@@ -75,4 +55,3 @@ export const WelcomeScreen3: React.FC<WelcomeScreen3Props> = ({ onNext, onBack }
     </OnboardingSlide>
   );
 };
-

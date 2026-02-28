@@ -10,6 +10,7 @@ import {
   Receipt,
   Sparkles,
   Settings,
+  Bell,
   Search,
   ChevronRight,
   MessageSquare,
@@ -294,6 +295,13 @@ const Sidebar: React.FC<SidebarProps> = ({ className, profileRole }) => {
           path: "/settings", 
           iconColor: "#8E8E93",
           roles: ['creator'] 
+        },
+        {
+          name: "Notification Settings",
+          icon: Bell,
+          path: "/creator-profile?section=account",
+          iconColor: "#8E8E93",
+          roles: ['creator']
         },
       ]
     }

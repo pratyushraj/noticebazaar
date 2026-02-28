@@ -2,7 +2,7 @@
 // Safe Contract Generator Service
 // Generates a new contract PDF with risky clauses replaced by safe clauses
 
-import { supabase, supabaseConfig } from '../index.js';
+import { supabase, supabaseConfig } from '../lib/supabase.js';
 import { generateSafeClause } from './clauseGenerator.js';
 // PDF.js is imported dynamically in extractTextFromPdf to handle module resolution issues
 import { generateReportPdf } from './pdfGenerator.js';

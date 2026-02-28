@@ -10,7 +10,9 @@ import {
   Loader2,
   X,
   ChevronDown,
-  Download
+  Download,
+  Lock,
+  ShieldCheck
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { triggerHaptic, HapticPatterns } from '@/lib/utils/haptics';
@@ -60,6 +62,7 @@ const BrandResponsePage = () => {
   const [requestChangesText, setRequestChangesText] = useState('');
   const [requiresConfirmation, setRequiresConfirmation] = useState<boolean | null>(null);
   const [isPreparingContract, setIsPreparingContract] = useState(false);
+  const [acceptedJourneyPhase, setAcceptedJourneyPhase] = useState(0);
 
   // Check if clarifications are required (fallback logic if API doesn't provide flag)
   const requiresClarifications = () => {
@@ -95,6 +98,29 @@ const BrandResponsePage = () => {
   const hasClarifications = requiresConfirmation !== null
     ? requiresConfirmation
     : requiresClarifications();
+
+  const isAcceptedResponse = Boolean(
+    dealInfo && (dealInfo.response_status === 'accepted_verified' || dealInfo.response_status === 'accepted')
+  );
+
+  useEffect(() => {
+    if (!isSubmitted || !isAcceptedResponse) {
+      setAcceptedJourneyPhase(0);
+      return;
+    }
+
+    setAcceptedJourneyPhase(0);
+    const timers = [
+      window.setTimeout(() => setAcceptedJourneyPhase(1), 240),
+      window.setTimeout(() => setAcceptedJourneyPhase(2), 680),
+      window.setTimeout(() => setAcceptedJourneyPhase(3), 1220),
+      window.setTimeout(() => setAcceptedJourneyPhase(4), 1780),
+    ];
+
+    return () => {
+      timers.forEach((timer) => window.clearTimeout(timer));
+    };
+  }, [isSubmitted, isAcceptedResponse]);
 
   // Brand Confirmation Page Component (when no clarifications needed)
   const BrandConfirmationPage = () => {
@@ -464,7 +490,7 @@ const BrandResponsePage = () => {
       >
         {/* Title Row */}
         <h2 className="text-lg font-semibold text-white flex items-center gap-2">
-          <span>📄</span> Requested Clarifications for Finalizing the Collaboration
+          <span>📄</span> Creator Suggested an Adjustment
         </h2>
 
         {/* Deal Value Row */}
@@ -502,7 +528,7 @@ const BrandResponsePage = () => {
           <div className="mt-4 rounded-xl bg-white/5 border border-white/10 p-3 space-y-2">
             <div className="flex flex-col gap-1">
               <p className="text-sm font-medium text-white">
-                Requested Clarifications for Finalizing the Collaboration
+                Creator Suggested an Adjustment
               </p>
               <p className="text-xs text-white/60">
                 These are common clarifications creators request to avoid confusion later. They
@@ -1446,10 +1472,10 @@ const BrandResponsePage = () => {
               </div>
               <div className="flex-1">
                 <h3 className="text-lg font-semibold text-white mb-1">
-                  We just need your confirmation
+                  Creator Suggested an Adjustment
                 </h3>
                 <p className="text-white/80 text-sm mb-2">
-                  Everything looks good — we just need to align a few safety and clarity details before finalizing.
+                  Everything looks close — align these details to finalize smoothly.
                 </p>
                 <p className="text-white/60 text-xs">
                   This doesn't legally bind you yet.
@@ -1523,7 +1549,7 @@ const BrandResponsePage = () => {
                     <div className="flex-1">
                       <div className="flex items-start justify-between gap-2">
                         <h3 className="text-lg md:text-xl font-semibold mb-1.5">
-                          Accept All Changes
+                          Accept
                         </h3>
                         <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-green-500/10 border border-green-500/25 text-[10px] font-medium text-green-200">
                           <CheckCircle className="w-3 h-3" />
@@ -1566,7 +1592,7 @@ const BrandResponsePage = () => {
                       )}
                     </div>
                     <div className="flex-1">
-                      <h3 className="text-lg md:text-xl font-semibold mb-1.5">Want to Negotiate</h3>
+                      <h3 className="text-lg md:text-xl font-semibold mb-1.5">Adjust Again</h3>
                       <p className="text-white/70 text-sm leading-relaxed">
                         Discuss specific points before finalizing.
                       </p>
@@ -1604,7 +1630,7 @@ const BrandResponsePage = () => {
                     </div>
                     <div className="flex-1">
                       <h3 className="text-lg md:text-xl font-semibold mb-1.5">
-                        Proceed Without Updates
+                        Decline
                       </h3>
                       <p className="text-white/70 text-sm leading-relaxed">
                         Proceed with the original contract terms. Creator may request safeguards later.
@@ -1782,12 +1808,141 @@ const BrandResponsePage = () => {
 
             {dealInfo && (dealInfo.response_status === 'accepted_verified' || dealInfo.response_status === 'accepted') ? (
               <>
+                <div className="relative rounded-2xl border border-white/20 bg-white/[0.04] p-4 md:p-5 overflow-hidden">
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: acceptedJourneyPhase >= 2 ? 0.08 : 0 }}
+                    transition={{ duration: 0.3 }}
+                    className="absolute inset-0 bg-black pointer-events-none"
+                  />
+                  <AnimatePresence mode="wait">
+                    {acceptedJourneyPhase === 0 ? (
+                      <motion.p
+                        key="under-review"
+                        initial={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -6 }}
+                        transition={{ duration: 0.22 }}
+                        className="text-sm font-medium text-violet-100/90"
+                      >
+                        Under Review
+                      </motion.p>
+                    ) : (
+                      <motion.p
+                        key="accepted"
+                        initial={{ opacity: 0, y: 6 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.22 }}
+                        className="text-sm font-semibold text-emerald-300"
+                      >
+                        Accepted
+                      </motion.p>
+                    )}
+                  </AnimatePresence>
+
+                  <motion.div
+                    animate={acceptedJourneyPhase >= 1 ? { scale: [1, 1.06, 1] } : { scale: 1 }}
+                    transition={{ duration: 0.5 }}
+                    className="mx-auto mt-3 mb-2 h-14 w-14 rounded-full border border-white/20 bg-white/10 flex items-center justify-center text-white font-semibold"
+                  >
+                    {(dealInfo.brand_name || 'B').trim().charAt(0).toUpperCase()}
+                  </motion.div>
+
+                  <AnimatePresence>
+                    {acceptedJourneyPhase >= 2 && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 16 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 12 }}
+                        transition={{ duration: 0.28 }}
+                        className="rounded-xl border border-emerald-400/35 bg-emerald-500/10 p-4 text-left"
+                      >
+                        <h4 className="text-base font-semibold text-emerald-200">Creator has accepted your offer</h4>
+                        <p className="text-sm text-violet-100/85 mt-1">Preparing secure collaboration setup</p>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+
                 <h3 className="text-3xl font-bold mb-3 bg-gradient-to-r from-green-400 to-emerald-400 bg-clip-text text-transparent">
-                  Collaboration Accepted ✓
+                  Collaboration Locked
                 </h3>
                 <p className="text-white/90 text-base max-w-md mx-auto mb-4">
-                  Your acceptance has been verified and shared with the creator.
+                  Both parties are now aligned. Secure contract setup begins.
                 </p>
+
+                <AnimatePresence>
+                  {acceptedJourneyPhase >= 3 && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 12 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: 8 }}
+                      transition={{ duration: 0.3 }}
+                      className="rounded-xl border border-white/15 bg-white/[0.03] p-4 text-left space-y-2"
+                    >
+                      {[
+                        'Terms confirmed',
+                        'Contract being generated',
+                        'Deal moving to secure stage',
+                      ].map((item, idx) => (
+                        <motion.div
+                          key={item}
+                          initial={{ opacity: 0, y: 6 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: idx * 0.12, duration: 0.2 }}
+                          className="flex items-center gap-2 text-sm text-violet-100/90"
+                        >
+                          <CheckCircle className="h-4 w-4 text-emerald-400" />
+                          <span>{item}</span>
+                        </motion.div>
+                      ))}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                <AnimatePresence>
+                  {acceptedJourneyPhase >= 4 && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: 6 }}
+                      className="rounded-xl border border-violet-300/20 bg-violet-500/10 p-4 text-left"
+                    >
+                      <div className="flex items-center justify-between mb-3">
+                        <h4 className="text-sm font-semibold text-white">Payment Setup Initiated</h4>
+                        <motion.div
+                          initial={{ scale: 0.8, rotate: -10, opacity: 0 }}
+                          animate={{ scale: 1, rotate: 0, opacity: 1 }}
+                          transition={{ duration: 0.3 }}
+                        >
+                          <Lock className="h-4 w-4 text-emerald-300" />
+                        </motion.div>
+                      </div>
+                      <div className="grid grid-cols-3 gap-2 text-[11px] text-violet-100/80 mb-2">
+                        <span>Agreement ✓</span>
+                        <span>Contract ✓</span>
+                        <span>Payment Setup •</span>
+                      </div>
+                      <div className="h-1 w-full rounded-full bg-white/15 overflow-hidden mb-3">
+                        <motion.div
+                          initial={{ width: 0 }}
+                          animate={{ width: '100%' }}
+                          transition={{ duration: 0.7, ease: 'easeOut' }}
+                          className="h-full rounded-full bg-emerald-400"
+                        />
+                      </div>
+                      <motion.p
+                        initial={{ opacity: 0, y: 6 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.2 }}
+                        className="inline-flex items-center gap-2 text-xs text-emerald-200"
+                      >
+                        <ShieldCheck className="h-3.5 w-3.5" />
+                        Funds will be secured before content delivery.
+                      </motion.p>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
                 <div className="bg-green-500/10 border border-green-500/30 rounded-xl p-4 mb-4">
                   <p className="text-sm text-green-300 font-medium mb-1">OTP Verified</p>
                   <p className="text-xs text-white/70">

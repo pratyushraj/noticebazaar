@@ -30,7 +30,7 @@ import { getApiBaseUrl } from '@/lib/utils/api';
 import { trackEvent } from '@/lib/utils/analytics';
 
 type CollabRequestStatus = 'pending' | 'accepted' | 'countered' | 'declined';
-type CollabType = 'paid' | 'barter' | 'both';
+type CollabType = 'paid' | 'barter' | 'hybrid' | 'both';
 
 interface CollabRequest {
   id: string;
@@ -80,6 +80,24 @@ const CollabRequestsSection = ({ copyCollabLink, usernameForLink: usernameFromPa
     fetchRequests();
   }, []);
 
+  const parseApiResponse = async (response: Response) => {
+    if (response.status >= 500) {
+      return {
+        success: false,
+        error: 'Server temporarily unavailable. Please try again in a moment.',
+      };
+    }
+    const contentType = response.headers.get('content-type') || '';
+    if (contentType.includes('application/json')) {
+      return response.json();
+    }
+    const text = await response.text();
+    return {
+      success: false,
+      error: text?.slice(0, 200) || `Request failed (${response.status})`,
+    };
+  };
+
   const fetchRequests = async () => {
     try {
       // Get current session (Supabase auto-refreshes tokens)
@@ -108,7 +126,7 @@ const CollabRequestsSection = ({ copyCollabLink, usernameForLink: usernameFromPa
         return;
       }
 
-      const data = await response.json();
+      const data = await parseApiResponse(response);
       if (data.success) {
         setRequests(data.requests || []);
       } else {
@@ -142,7 +160,7 @@ const CollabRequestsSection = ({ copyCollabLink, usernameForLink: usernameFromPa
         }
       );
 
-      const data = await response.json();
+      const data = await parseApiResponse(response);
       if (data.success) {
         trackEvent('creator_accepted_request', {
           deal_id: data.deal?.id,
@@ -200,7 +218,7 @@ const CollabRequestsSection = ({ copyCollabLink, usernameForLink: usernameFromPa
         }
       );
 
-      const data = await response.json();
+      const data = await parseApiResponse(response);
       if (data.success) {
         trackEvent('creator_countered_request', {
           request_id: selectedRequest?.id,
@@ -241,7 +259,7 @@ const CollabRequestsSection = ({ copyCollabLink, usernameForLink: usernameFromPa
         }
       );
 
-      const data = await response.json();
+      const data = await parseApiResponse(response);
       if (data.success) {
         trackEvent('creator_declined_request', { request_id: request.id, creator_id: profile?.id });
         toast.success('Request declined');

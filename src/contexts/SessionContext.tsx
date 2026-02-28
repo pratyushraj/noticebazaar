@@ -53,238 +53,100 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
     if (!user?.id) return null; // Don't fetch if no user ID
 
     try {
-      // Start with core fields that should always exist to avoid 400 errors
-      // Extended creator profile fields will be fetched separately if needed
-      // Include phone for eSign functionality (email is in auth.users, not profiles)
-      // Include location and bio for profile settings
-      const { data, error } = await (supabase
+      // Keep the profile query intentionally narrow so it doesn't fail in partially-migrated environments.
+      const { data: coreData, error: coreError } = await (supabase
         .from('profiles')
-        .select('id, first_name, last_name, avatar_url, role, updated_at, business_name, gstin, business_entity_type, onboarding_complete, organization_id, is_trial, trial_started_at, trial_expires_at, trial_locked, phone, location, bio, username, instagram_handle, open_to_collabs, content_niches, media_kit_url') as any)
+        .select('id, first_name, last_name, avatar_url, role, updated_at, onboarding_complete, organization_id, is_trial, trial_started_at, trial_expires_at, trial_locked, phone, location, bio') as any)
         .eq('id', user.id)
         .single();
 
-      // If error is due to missing columns (400 or 42703), try with fewer fields
-      // Check for various error indicators: PostgreSQL column errors, HTTP 400, or column-related messages
-      const isColumnError = error && (
-        (error as any).code === '42703' ||
-        (error as any).code === 'P0001' ||
-        (error as any).message?.includes('column') ||
-        (error as any).message?.includes('does not exist') ||
-        (error as any).status === 400 ||
-        (error as any).statusCode === 400 ||
-        (error as any).hint?.includes('column') ||
-        // Check if error message contains "Bad Request" or HTTP 400 indicators
-        String((error as any).message || '').toLowerCase().includes('bad request') ||
-        // Check response status if available
-        ((error as any).response?.status === 400)
-      );
-
-      if (isColumnError) {
-        // Silently handle missing columns - expected if migrations haven't run yet
-
-        // Retry with basic + trial fields only (excluding bank fields and social media fields that may not exist)
-        // Include username and instagram_handle as they're essential for collab links
-        const { data: trialData, error: trialError } = await (supabase
+      if (coreError) {
+        const { data: minimalData, error: minimalError } = await (supabase
           .from('profiles')
-          .select('id, first_name, last_name, avatar_url, role, updated_at, business_name, gstin, business_entity_type, onboarding_complete, organization_id, is_trial, trial_started_at, trial_expires_at, trial_locked, phone, location, bio, username, instagram_handle, open_to_collabs, content_niches, media_kit_url') as any)
+          .select('id, first_name, last_name, avatar_url, role, updated_at') as any)
           .eq('id', user.id)
           .single();
 
-        const isTrialColumnError = trialError && (
-          (trialError as any).code === '42703' ||
-          (trialError as any).status === 400 ||
-          (trialError as any).statusCode === 400 ||
-          (trialError as any).message?.includes('column') ||
-          (trialError as any).message?.includes('does not exist') ||
-          String((trialError as any).message || '').toLowerCase().includes('bad request') ||
-          ((trialError as any).response?.status === 400)
-        );
-
-        if (isTrialColumnError) {
-          // If trial fields also don't exist, try with just core basic fields (no social media)
-          // Include username and instagram_handle as they're essential for collab links
-          const { data: basicData, error: basicError } = await (supabase
-            .from('profiles')
-            .select('id, first_name, last_name, avatar_url, role, updated_at, business_name, gstin, business_entity_type, onboarding_complete, organization_id, phone, location, bio, username, instagram_handle') as any)
-            .eq('id', user.id)
-            .single();
-
-          const isBasicColumnError = basicError && (
-            (basicError as any).code === '42703' ||
-            (basicError as any).status === 400 ||
-            (basicError as any).statusCode === 400 ||
-            (basicError as any).message?.includes('column') ||
-            (basicError as any).message?.includes('does not exist') ||
-            String((basicError as any).message || '').toLowerCase().includes('bad request') ||
-            ((basicError as any).response?.status === 400)
-          );
-
-          if (isBasicColumnError) {
-            // If even basic fields are missing, try absolute minimum
-            // Try without username first in case column doesn't exist
-            const { data: minimalData, error: minimalError } = await (supabase
-              .from('profiles')
-              .select('id, first_name, last_name, avatar_url, role') as any)
-              .eq('id', user.id)
-              .single();
-
-            if (minimalError && (minimalError as any).code !== 'PGRST116') {
-              // Only log non-column errors (PGRST116 is "not found", which is fine)
-              const isMinimalColumnError = (minimalError as any).code === '42703' ||
-                (minimalError as any).status === 400 ||
-                (minimalError as any).statusCode === 400 ||
-                (minimalError as any).message?.includes('column');
-              if (!isMinimalColumnError) {
-                logger.error('SessionContext: Error fetching profile', minimalError);
-              }
-              return null;
-            }
-
-            // Try to fetch username separately if column exists
-            let usernameValue = null;
-            if (minimalData && !minimalError) {
-              try {
-                const { data: usernameData } = await supabase
-                  .from('profiles')
-                  .select('username')
-                  .eq('id', user.id)
-                  .single();
-                usernameValue = usernameData?.username || null;
-              } catch (e) {
-                // Username column might not exist, that's okay - will be null
-                usernameValue = null;
-              }
-            }
-
-            // Return with all defaults
-            return {
-              ...(minimalData as any),
-              updated_at: new Date().toISOString(),
-              business_name: null,
-              gstin: null,
-              business_entity_type: null,
-              onboarding_complete: false,
-              organization_id: null,
-              is_trial: false,
-              trial_started_at: null,
-              trial_expires_at: null,
-              trial_locked: false,
-              phone: null,
-              location: null,
-              bio: null,
-              email: null,
-              username: usernameValue, // Fetch username separately if column exists
-              bank_account_name: null,
-              bank_account_number: null,
-              bank_ifsc: null,
-              bank_upi: null,
-              gst_number: null,
-              pan_number: null,
-              referral_code: null,
-              instagram_followers: null,
-              youtube_subs: null,
-              tiktok_followers: null,
-              twitter_followers: null,
-              facebook_followers: null,
-              instagram_handle: null,
-              youtube_channel_id: null,
-              tiktok_handle: null,
-              facebook_profile_url: null,
-              twitter_handle: null,
-            } as Profile | null;
-          }
-
-          if (basicError && (basicError as any).code !== 'PGRST116') {
-            logger.error('SessionContext: Error fetching profile', basicError);
-            return null;
-          }
-
-          // Add default values for missing fields
-          return {
-            ...(basicData as any),
-            is_trial: false,
-            trial_started_at: null,
-            trial_expires_at: null,
-            trial_locked: false,
-            location: (basicData as any)?.location || null,
-            bio: (basicData as any)?.bio || null,
-            username: (basicData as any)?.username || null, // Preserve username if it exists
-            creator_category: null,
-            pricing_min: null,
-            pricing_avg: null,
-            pricing_max: null,
-            bank_account_name: null,
-            bank_account_number: null,
-            bank_ifsc: null,
-            bank_upi: null,
-            gst_number: null,
-            pan_number: null,
-            referral_code: null,
-            instagram_followers: null,
-            youtube_subs: null,
-            tiktok_followers: null,
-            twitter_followers: null,
-            facebook_followers: null,
-            instagram_handle: null,
-            youtube_channel_id: null,
-            tiktok_handle: null,
-            facebook_profile_url: null,
-            twitter_handle: null,
-          } as Profile | null;
-        }
-
-        if (trialError && (trialError as any).code !== 'PGRST116') {
-          logger.error('SessionContext: Error fetching profile', trialError);
+        if (minimalError && (minimalError as any).code !== 'PGRST116') {
+          logger.error('SessionContext: Error fetching profile', minimalError);
           return null;
         }
 
-        // Add default values for missing creator profile fields
+        if (!minimalData) return null;
+
         return {
-          ...(trialData as any),
-          creator_category: null,
-          pricing_min: null,
-          pricing_avg: null,
-          pricing_max: null,
-          bank_account_name: null,
-          bank_account_number: null,
-          bank_ifsc: null,
-          bank_upi: null,
-          gst_number: null,
-          pan_number: null,
-          referral_code: null,
-          instagram_followers: null,
-          youtube_subs: null,
-          tiktok_followers: null,
-          twitter_followers: null,
-          facebook_followers: null,
-          // Ensure location and bio are included if not in trialData
-          location: (trialData as any)?.location || null,
-          bio: (trialData as any)?.bio || null,
-          // Ensure username is preserved - essential for collab links
-          username: (trialData as any)?.username || null,
-          // Ensure social handles are included if not in trialData
-          instagram_handle: (trialData as any)?.instagram_handle || null,
-          youtube_channel_id: (trialData as any)?.youtube_channel_id || null,
-          tiktok_handle: (trialData as any)?.tiktok_handle || null,
-          facebook_profile_url: (trialData as any)?.facebook_profile_url || null,
-          twitter_handle: (trialData as any)?.twitter_handle || null,
+          ...(minimalData as any),
+          onboarding_complete: false,
+          organization_id: null,
+          is_trial: false,
+          trial_started_at: null,
+          trial_expires_at: null,
+          trial_locked: false,
+          phone: null,
+          location: null,
+          bio: null,
+          username: null,
+          instagram_handle: null,
         } as Profile | null;
       }
 
-      if (error && (error as any).code !== 'PGRST116') { // PGRST116 means no rows found, which is fine
-        logger.error('SessionContext: Error fetching profile', error);
-        return null;
+      let usernameValue: string | null = null;
+      let instagramHandleValue: string | null = null;
+      let optionalFields: Partial<Profile> = {};
+      try {
+        const { data: handleData, error: handleError } = await (supabase
+          .from('profiles')
+          .select('username, instagram_handle, creator_category, avg_rate_reel, pricing_min, pricing_avg, pricing_max, open_to_collabs, content_niches, media_kit_url, avg_reel_views_manual, avg_likes_manual, audience_gender_split, top_cities, audience_age_range, primary_audience_language, posting_frequency, active_brand_collabs_month, campaign_slot_note, collab_brands_count_override, collab_response_hours_override, collab_cancellations_percent_override, collab_region_label, collab_audience_fit_note, collab_recent_activity_note, collab_audience_relevance_note, collab_delivery_reliability_note, collab_engagement_confidence_note, collab_response_behavior_note, collab_cta_trust_note, collab_cta_dm_note, collab_cta_platform_note') as any)
+          .eq('id', user.id)
+          .single();
+        if (!handleError) {
+          usernameValue = (handleData as any)?.username || null;
+          instagramHandleValue = (handleData as any)?.instagram_handle || null;
+          optionalFields = {
+            creator_category: (handleData as any)?.creator_category ?? null,
+            avg_rate_reel: (handleData as any)?.avg_rate_reel ?? null,
+            pricing_min: (handleData as any)?.pricing_min ?? null,
+            pricing_avg: (handleData as any)?.pricing_avg ?? null,
+            pricing_max: (handleData as any)?.pricing_max ?? null,
+            open_to_collabs: (handleData as any)?.open_to_collabs ?? true,
+            content_niches: Array.isArray((handleData as any)?.content_niches) ? (handleData as any).content_niches : [],
+            media_kit_url: (handleData as any)?.media_kit_url ?? null,
+            avg_reel_views_manual: (handleData as any)?.avg_reel_views_manual ?? null,
+            avg_likes_manual: (handleData as any)?.avg_likes_manual ?? null,
+            audience_gender_split: (handleData as any)?.audience_gender_split ?? null,
+            top_cities: Array.isArray((handleData as any)?.top_cities) ? (handleData as any).top_cities : [],
+            audience_age_range: (handleData as any)?.audience_age_range ?? null,
+            primary_audience_language: (handleData as any)?.primary_audience_language ?? null,
+            posting_frequency: (handleData as any)?.posting_frequency ?? null,
+            active_brand_collabs_month: (handleData as any)?.active_brand_collabs_month ?? null,
+            campaign_slot_note: (handleData as any)?.campaign_slot_note ?? null,
+            collab_brands_count_override: (handleData as any)?.collab_brands_count_override ?? null,
+            collab_response_hours_override: (handleData as any)?.collab_response_hours_override ?? null,
+            collab_cancellations_percent_override: (handleData as any)?.collab_cancellations_percent_override ?? null,
+            collab_region_label: (handleData as any)?.collab_region_label ?? null,
+            collab_audience_fit_note: (handleData as any)?.collab_audience_fit_note ?? null,
+            collab_recent_activity_note: (handleData as any)?.collab_recent_activity_note ?? null,
+            collab_audience_relevance_note: (handleData as any)?.collab_audience_relevance_note ?? null,
+            collab_delivery_reliability_note: (handleData as any)?.collab_delivery_reliability_note ?? null,
+            collab_engagement_confidence_note: (handleData as any)?.collab_engagement_confidence_note ?? null,
+            collab_response_behavior_note: (handleData as any)?.collab_response_behavior_note ?? null,
+            collab_cta_trust_note: (handleData as any)?.collab_cta_trust_note ?? null,
+            collab_cta_dm_note: (handleData as any)?.collab_cta_dm_note ?? null,
+            collab_cta_platform_note: (handleData as any)?.collab_cta_platform_note ?? null,
+          };
+        }
+      } catch (_error) {
+        // Optional fields may not exist in older schemas.
       }
-      return data as Profile | null;
+
+      return {
+        ...(coreData as any),
+        username: usernameValue,
+        instagram_handle: instagramHandleValue,
+        ...optionalFields,
+      } as Profile | null;
     } catch (err: any) {
-      // Catch any unexpected errors (network, parsing, etc.)
-      // Check if it's a 400 error (column doesn't exist)
-      if (err?.status === 400 || err?.statusCode === 400 || err?.message?.includes('Bad Request')) {
-        // Silently handle - will fall through to basic query
-        logger.warn('SessionContext: Column error detected, using fallback query');
-      } else {
-        logger.error('SessionContext: Unexpected error fetching profile', err);
-      }
+      logger.error('SessionContext: Unexpected error fetching profile', err);
       return null;
     }
   }, [user?.id]); // Dependency for useCallback
@@ -430,10 +292,14 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
             const storedRoute = sessionStorage.getItem('oauth_intended_route');
             if (storedRoute && storedRoute !== 'login') {
               intendedRoute = storedRoute;
-              console.log('[SessionContext] Using stored intended route from sessionStorage:', intendedRoute);
+              if (import.meta.env?.DEV) {
+                console.log('[SessionContext] Using stored intended route from sessionStorage:', intendedRoute);
+              }
             } else if (!intendedRoute || intendedRoute === 'login') {
               intendedRoute = 'creator-dashboard';
-              console.log('[SessionContext] No intended route found, defaulting to creator-dashboard');
+              if (import.meta.env?.DEV) {
+                console.log('[SessionContext] No intended route found, defaulting to creator-dashboard');
+              }
             }
           } else if (isUsernameRoute) {
             console.log('[SessionContext] Username route detected, skipping redirect logic:', intendedRoute);

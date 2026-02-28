@@ -1,8 +1,9 @@
 // @ts-nocheck
 // Service for legally valid contract signing with audit trail
 
-import { supabase } from '../index.js';
+import { supabase } from '../lib/supabase.js';
 import { Request } from 'express';
+import { qualifiesForRateLearning, updateLearnedRateForCreator } from './creatorRateService.js';
 
 export interface SignContractRequest {
   dealId: string;
@@ -287,14 +288,18 @@ export async function signContractAsBrand(
       signature = created as unknown as SignatureRecord;
     }
 
-    // Update deal status to SIGNED_BY_BRAND
+    // Check if creator has already signed
+    const creatorSignature = await getSignature(request.dealId, 'creator');
+    const newStatus = (creatorSignature && creatorSignature.signed) ? 'FULLY_EXECUTED' : 'SIGNED_BY_BRAND';
+
+    // Update deal status
     try {
       const { error: updateDealError } = await supabase
         .from('brand_deals' as any)
         .update({
           brand_response_status: 'accepted_verified',
           brand_response_at: new Date().toISOString(),
-          status: 'SIGNED_BY_BRAND', // Brand has signed the contract
+          status: newStatus, // Brand signed, mark accordingly
           updated_at: new Date().toISOString()
         })
         .eq('id', request.dealId);
@@ -303,7 +308,15 @@ export async function signContractAsBrand(
         console.error('[ContractSigningService] Error updating deal status:', updateDealError);
         // Non-fatal: signature is already created, just log the error
       } else {
-        console.log('[ContractSigningService] Deal status updated to SIGNED_BY_BRAND');
+        console.log(`[ContractSigningService] Deal status updated to ${newStatus}`);
+
+        // Trigger learned rate update if deal is fully executed
+        if (newStatus === 'FULLY_EXECUTED' && qualifiesForRateLearning(deal)) {
+          console.log(`[ContractSigningService] Deal qualifies for rate learning, updating creator ${deal.creator_id}`);
+          updateLearnedRateForCreator(deal.creator_id, deal.deal_amount).catch(err => {
+            console.error('[ContractSigningService] Failed to update learned rate:', err);
+          });
+        }
       }
     } catch (dealUpdateError) {
       console.error('[ContractSigningService] Deal status update failed (non-fatal):', dealUpdateError);
@@ -433,25 +446,23 @@ export async function signContractAsBrand(
         console.error('[ContractSigningService] CRITICAL: Creator email not found! Cannot send notification. Creator ID:', deal.creator_id);
       }
 
-      // Send emails in parallel (non-blocking)
-      Promise.all([
+      // Send emails in parallel — MUST await to prevent Vercel from killing the function
+      const [brandResult, creatorResult] = await Promise.all([
         sendBrandSigningConfirmationEmail(request.signerEmail, request.signerName, emailData),
         creatorEmail ? sendCreatorSigningNotificationEmail(creatorEmail, creatorName, emailData) : Promise.resolve({ success: false, error: 'Creator email not found' })
-      ]).then(([brandResult, creatorResult]) => {
-        if (brandResult.success) {
-          console.log('[ContractSigningService] Brand confirmation email sent');
-        } else {
-          console.error('[ContractSigningService] Failed to send brand confirmation email:', brandResult.error || 'Unknown error');
-        }
-        if (creatorResult.success) {
-          console.log('[ContractSigningService] Creator notification email sent');
-        } else {
-          const creatorError = (creatorResult as any).error;
-          console.error('[ContractSigningService] Failed to send creator notification email:', creatorError || 'Unknown error');
-        }
-      }).catch((emailError) => {
-        console.error('[ContractSigningService] Email sending error (non-fatal):', emailError);
-      });
+      ]);
+
+      if (brandResult.success) {
+        console.log('[ContractSigningService] Brand confirmation email sent');
+      } else {
+        console.error('[ContractSigningService] Failed to send brand confirmation email:', brandResult.error || 'Unknown error');
+      }
+      if (creatorResult.success) {
+        console.log('[ContractSigningService] Creator notification email sent');
+      } else {
+        const creatorError = (creatorResult as any).error;
+        console.error('[ContractSigningService] Failed to send creator notification email:', creatorError || 'Unknown error');
+      }
     } catch (emailServiceError) {
       console.error('[ContractSigningService] Email service error (non-fatal):', emailServiceError);
     }
@@ -521,14 +532,18 @@ export async function signContractAsCreator(
       };
     }
 
-    // Check if brand has signed first
+    // Check if brand has signed (optional for order, but needed for status)
     const brandSignature = await getSignature(request.dealId, 'brand');
+    /* 
+    // RELAXED: Allow creator to sign first if needed.
+    // In many professional workflows, the order of signatures does not matter legally.
     if (!brandSignature || !brandSignature.signed) {
       return {
         success: false,
         error: 'Brand must sign the contract first'
       };
     }
+    */
 
     // Check if already signed
     const { data: existingSignature, error: checkError } = await supabase
@@ -617,15 +632,27 @@ export async function signContractAsCreator(
       signature = created as unknown as SignatureRecord;
     }
 
-    // Update deal status to completed when both parties have signed
+    // Update deal status to completed when both parties have signed, otherwise mark as SIGNED_BY_CREATOR
     try {
+      const newStatus = (brandSignature && brandSignature.signed) ? 'FULLY_EXECUTED' : 'SIGNED_BY_CREATOR';
+
       await supabase
         .from('brand_deals' as any)
         .update({
-          status: 'FULLY_EXECUTED',
+          status: newStatus,
           updated_at: new Date().toISOString(),
         })
         .eq('id', request.dealId);
+
+      console.log(`[ContractSigningService] Deal status updated to ${newStatus}`);
+
+      // Trigger learned rate update if deal is fully executed
+      if (newStatus === 'FULLY_EXECUTED' && qualifiesForRateLearning(deal)) {
+        console.log(`[ContractSigningService] Deal qualifies for rate learning, updating creator ${deal.creator_id}`);
+        updateLearnedRateForCreator(deal.creator_id, deal.deal_amount).catch(err => {
+          console.error('[ContractSigningService] Failed to update learned rate:', err);
+        });
+      }
     } catch (updateError) {
       console.error('[ContractSigningService] Error updating deal status:', updateError);
     }
@@ -668,7 +695,7 @@ export async function signContractAsCreator(
 
     // Send email notifications (non-blocking)
     try {
-      const { sendCreatorSigningConfirmationEmail } = await import('./contractSigningEmailService.js');
+      const { sendCreatorSigningConfirmationEmail, sendBrandSigningNotificationEmail } = await import('./contractSigningEmailService.js');
 
       // Fetch brand details for email
       const { data: brandDeal, error: brandDealError } = await supabase
@@ -700,17 +727,24 @@ export async function signContractAsCreator(
           contractUrl: brandDealData.contract_file_url || undefined,
         };
 
-        sendCreatorSigningConfirmationEmail(request.signerEmail, request.signerName, emailData)
-          .then((result) => {
-            if (result.success) {
-              console.log('[ContractSigningService] Creator confirmation email sent');
-            } else {
-              console.error('[ContractSigningService] Failed to send creator confirmation email:', result.error || 'Unknown error');
-            }
-          })
-          .catch((emailError) => {
-            console.error('[ContractSigningService] Email sending error (non-fatal):', emailError);
-          });
+        // Send Creator Confirmation + Brand Notification — MUST await for Vercel
+        const [creatorConfirmResult, brandNotifyResult] = await Promise.all([
+          sendCreatorSigningConfirmationEmail(request.signerEmail, request.signerName, emailData),
+          emailData.brandEmail
+            ? sendBrandSigningNotificationEmail(emailData.brandEmail, emailData.brandName, emailData)
+            : Promise.resolve({ success: false, error: 'Brand email not found' })
+        ]);
+
+        if (creatorConfirmResult.success) {
+          console.log('[ContractSigningService] Creator confirmation email sent');
+        } else {
+          console.error('[ContractSigningService] Failed to send creator confirmation email:', creatorConfirmResult.error || 'Unknown error');
+        }
+        if (brandNotifyResult.success) {
+          console.log('[ContractSigningService] Brand signing notification email sent');
+        } else {
+          console.error('[ContractSigningService] Failed to send brand notification email:', (brandNotifyResult as any).error || 'Unknown error');
+        }
       }
     } catch (emailServiceError) {
       console.error('[ContractSigningService] Email service error (non-fatal):', emailServiceError);

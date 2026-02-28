@@ -3,7 +3,7 @@
 // Authenticated endpoint - only creators can create tokens
 
 import { Router, Request, Response } from 'express';
-import { supabase } from '../index.js';
+import { supabase } from '../lib/supabase.js';
 import { AuthenticatedRequest, authMiddleware } from '../middleware/auth.js';
 import {
   createDealDetailsToken,

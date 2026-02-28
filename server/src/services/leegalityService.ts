@@ -3,7 +3,7 @@
 // Handles document upload, signing invitations, and webhook verification
 
 import crypto from 'crypto';
-import { supabase } from '../index.js';
+import { supabase } from '../lib/supabase.js';
 
 // Read environment variables dynamically (not at module load time)
 function getLeegalityConfig() {

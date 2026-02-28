@@ -3,7 +3,7 @@
 // Includes counter-proposal generation and other AI features
 
 import { Router, Response } from 'express';
-import { supabase } from '../index.js';
+import { supabase } from '../lib/supabase.js';
 import { AuthenticatedRequest } from '../middleware/auth.js';
 import { generateAICounterProposal, CounterProposalRequest } from '../services/counterProposalGenerator.js';
 import { callLLM } from '../services/aiContractAnalysis.js';

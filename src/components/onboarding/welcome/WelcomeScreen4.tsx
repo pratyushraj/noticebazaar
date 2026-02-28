@@ -1,7 +1,7 @@
 "use client";
 
 import React from 'react';
-import { MessageCircle, Users, Shield } from 'lucide-react';
+import { TrendingUp, CheckCircle } from 'lucide-react';
 import { OnboardingSlide } from '../OnboardingSlide';
 import { IconBubble } from '../IconBubble';
 import { GradientCard } from '../GradientCard';
@@ -14,82 +14,56 @@ interface WelcomeScreen4Props {
 }
 
 /**
- * Welcome Screen 4: Expert Support
- * - Advisor cards
- * - Animated message icon
- * - Back/Get Started navigation
+ * Welcome Screen 4: Earnings Layer
  */
 export const WelcomeScreen4: React.FC<WelcomeScreen4Props> = ({ onNext, onBack }) => {
-  const advisors = [
-    {
-      icon: Users,
-      name: 'Anjali Sharma',
-      role: 'CA, Creator Taxes',
-      color: 'blue' as const,
-    },
-    {
-      icon: Shield,
-      name: 'Prateek Sharma',
-      role: 'Legal Advisor, Brand Contracts',
-      color: 'purple' as const,
-    },
+  const benefits = [
+    'Real-time earnings',
+    'Auto invoices',
+    'Payment reminders',
+    'Tax-ready reports',
   ];
 
   return (
     <OnboardingSlide>
-      {/* Animated Icon */}
-      <div className="mt-12 md:mt-0 mb-8 md:mb-8">
+      <div className="mt-12 md:mt-0 mb-8">
         <IconBubble
-          icon={MessageCircle}
+          icon={TrendingUp}
           size="lg"
-          color="purple"
+          color="blue"
           animated
+          animationProps={{
+            animate: { scale: [1, 1.1, 1] },
+            transition: { duration: 2, repeat: Infinity },
+          }}
         />
       </div>
 
-      {/* Title */}
-      <h1 className="text-2xl md:text-3xl font-bold leading-tight mb-3 md:mb-4">
-        Expert Help When You Need It
+      <h1 className="text-2xl md:text-3xl font-bold leading-tight mb-3">
+        Know What You Earn
       </h1>
 
-      {/* Subtitle */}
-      <p className="text-lg md:text-xl font-semibold text-white/80 mb-6 md:mb-12">
-        Connect with Legal & Tax Advisors
+      <p className="text-lg md:text-xl font-semibold text-white/80 mb-6 md:mb-10">
+        Every deal tracked automatically.
       </p>
 
-      {/* Advisor Cards */}
-      <div className="space-y-3 md:space-y-4 max-w-md w-full mb-6 md:mb-12">
-        {advisors.map((advisor, index) => {
-          const Icon = advisor.icon;
-          return (
-            <GradientCard key={index} padding="md" className="text-left">
-              <div className="flex items-center gap-4">
-                <IconBubble
-                  icon={Icon}
-                  size="md"
-                  color={advisor.color}
-                  className="flex-shrink-0"
-                />
-                <div className="flex-1">
-                  <div className="text-base font-semibold mb-1">
-                    {advisor.name}
-                  </div>
-                  <div className="text-sm text-white/60">{advisor.role}</div>
-                </div>
-              </div>
-            </GradientCard>
-          );
-        })}
+      <div className="space-y-3 max-w-md w-full mb-6 md:mb-10">
+        {benefits.map((benefit, index) => (
+          <GradientCard key={index} padding="sm">
+            <div className="flex items-center gap-3">
+              <CheckCircle className="w-5 h-5 text-green-400 flex-shrink-0" />
+              <span className="text-base text-white/80">{benefit}</span>
+            </div>
+          </GradientCard>
+        ))}
       </div>
 
-      {/* Navigation Buttons */}
       <div className="flex gap-4">
         <SecondaryButton onClick={onBack} showBackIcon>
           Back
         </SecondaryButton>
-        <PrimaryButton onClick={onNext}>Get Started</PrimaryButton>
+        <PrimaryButton onClick={onNext}>Next</PrimaryButton>
       </div>
     </OnboardingSlide>
   );
 };
-

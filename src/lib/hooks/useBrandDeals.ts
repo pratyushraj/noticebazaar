@@ -195,6 +195,7 @@ export const useBrandDeals = (options: UseBrandDealsOptions) => {
       const signedStatuses = [
         'signed',
         'SIGNED_BY_BRAND',
+        'SIGNED_BY_CREATOR',
         'content_making',
         'Content Making',
         'content_delivered',

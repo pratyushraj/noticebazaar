@@ -336,6 +336,7 @@ export default function PremiumDrawer({
     ],
     settings: [
       { id: 'profile', label: 'Profile Settings', icon: Settings, path: '/creator-profile' },
+      { id: 'notification-settings', label: 'Notification Settings', icon: Bell, path: '/creator-profile?section=account' },
       { id: 'help', label: 'Help & Support', icon: HelpCircle },
       { id: 'analytics', label: 'Analytics', icon: BarChart3, path: '/creator-analytics' },
     ],
@@ -349,7 +350,16 @@ export default function PremiumDrawer({
 
     // Fallback to location-based detection
     if (item.path) {
-      return location.pathname === item.path || location.pathname.startsWith(item.path + '/');
+      const [pathOnly, queryString] = item.path.split('?');
+      if (location.pathname !== pathOnly && !location.pathname.startsWith(pathOnly + '/')) {
+        return false;
+      }
+      if (!queryString) {
+        return true;
+      }
+      const targetQuery = new URLSearchParams(queryString);
+      const currentQuery = new URLSearchParams(location.search);
+      return Array.from(targetQuery.entries()).every(([key, value]) => currentQuery.get(key) === value);
     }
 
     if (item.tab) {
@@ -550,7 +560,7 @@ export const DEFAULT_MENU_DATA: DrawerMenuData = {
   ],
   settings: [
     { id: 'profile', label: 'Profile Settings', icon: Settings, path: '/creator-profile' },
-    { id: 'notifications', label: 'Notifications', icon: Bell },
+    { id: 'notification-settings', label: 'Notification Settings', icon: Bell, path: '/creator-profile?section=account' },
     { id: 'help', label: 'Help & Support', icon: HelpCircle },
     { id: 'analytics', label: 'Analytics', icon: BarChart3, path: '/creator-analytics' },
   ],

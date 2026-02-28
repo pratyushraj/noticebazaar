@@ -3,6 +3,9 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useSession } from '@/contexts/SessionContext';
+import { SEOHead } from '@/components/seo/SEOHead';
+import { FAQSchema, BreadcrumbSchema } from '@/components/seo/SchemaMarkup';
+import { unlockBodyScroll } from '@/lib/scrollLock';
 import {
   Shield, FileText, DollarSign, MessageCircle,
   CheckCircle, Star, Users, ArrowRight,
@@ -17,33 +20,41 @@ const LandingPage = () => {
   const { session, loading, profile } = useSession();
   const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const canonicalUrl = 'https://creatorarmour.com/';
+  const seoTitle = 'Creator Armour | Secure Collaboration Link for Creators';
+  const seoDescription = 'Replace brand DMs with one secure collaboration link. Receive structured offers, auto-generate contracts, and track payments in one creator workflow.';
+  const seoKeywords = [
+    'creator collaboration link',
+    'influencer contract generator',
+    'brand deal protection',
+    'creator payment tracking',
+    'influencer legal tools India',
+    'creator armour',
+  ];
+  const faqItems = [
+    {
+      question: 'What is Creator Armour?',
+      answer: 'Creator Armour helps creators replace unstructured brand DMs with a secure collaboration link, deal workflows, auto-generated contracts, and payment tracking.',
+    },
+    {
+      question: 'How does the collaboration link work?',
+      answer: 'Brands open your link, submit structured offer details, and you can accept, counter, or decline. If accepted, contract and tracking flows are created automatically.',
+    },
+    {
+      question: 'Does Creator Armour provide legal representation?',
+      answer: 'Creator Armour is a software platform for creator deal workflows and legal readiness. It is not a law firm and does not provide legal representation.',
+    },
+    {
+      question: 'Can I use Creator Armour for Indian brand deals?',
+      answer: 'Yes. The workflow is optimized for Indian creators and brand collaborations, including structured deal documentation and payment follow-up support.',
+    },
+  ];
 
-  // SEO Meta Tags
+  // Safety reset: clear any stale scroll locks left by drawers/modals on previous routes.
   useEffect(() => {
-    document.title = 'Creator Armour — Replace Brand DMs With One Secure Collaboration Link';
-
-    const updateMetaTag = (property: string, content: string) => {
-      let meta = document.querySelector(`meta[property="${property}"]`) ||
-        document.querySelector(`meta[name="${property}"]`);
-
-      if (!meta) {
-        meta = document.createElement('meta');
-        if (property.startsWith('og:') || property.startsWith('twitter:')) {
-          meta.setAttribute('property', property);
-        } else {
-          meta.setAttribute('name', property);
-        }
-        document.head.appendChild(meta);
-      }
-
-      meta.setAttribute('content', content);
-    };
-
-    updateMetaTag('description', 'Stop brand DMs. Use one protected collaboration link instead. Creator Armour gives you a single link where brands submit deals, contracts are auto-generated, and payments are tracked.');
-    updateMetaTag('og:title', 'Creator Armour — Replace Brand DMs With One Secure Collaboration Link');
-    updateMetaTag('og:description', 'Stop brand DMs. Use one protected collaboration link instead. Get structured, protected brand deals with auto-generated contracts and payment tracking.');
-    updateMetaTag('og:type', 'website');
-    updateMetaTag('og:url', typeof window !== 'undefined' ? window.location.href : 'https://creatorarmour.com');
+    unlockBodyScroll();
+    document.documentElement.style.overflow = '';
+    document.body.style.overflow = '';
   }, []);
 
   // Redirect logged-in users to dashboard (only after auth is determined)
@@ -258,10 +269,21 @@ const LandingPage = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 text-white overflow-hidden">
+    <div className="min-h-screen bg-[#090B14] text-white overflow-x-hidden">
+      <div className="pointer-events-none fixed inset-0 opacity-60 [background:radial-gradient(ellipse_at_top,rgba(88,28,135,0.32),transparent_50%),radial-gradient(ellipse_at_bottom,rgba(14,116,144,0.22),transparent_55%)]" />
+      <SEOHead
+        title={seoTitle}
+        description={seoDescription}
+        keywords={seoKeywords}
+        canonicalUrl={canonicalUrl}
+        image="https://creatorarmour.com/og-preview.png"
+        imageAlt="Creator Armour secure collaboration link workflow for creators and brands"
+      />
+      <FAQSchema faqs={faqItems} />
+      <BreadcrumbSchema items={[{ name: 'Creator Armour', url: canonicalUrl }]} />
       {/* Navigation */}
       <nav
-        className="sticky top-0 z-50 bg-purple-900/80 backdrop-blur-xl border-b border-white/5"
+        className="sticky top-0 z-50 bg-[#090B14]/80 backdrop-blur-xl border-b border-white/10"
         style={{
           paddingTop: 'env(safe-area-inset-top, 0px)'
         }}
@@ -330,16 +352,16 @@ const LandingPage = () => {
 
       {/* 1️⃣ HERO SECTION */}
       <section
-        className="relative pt-12 md:pt-32 pb-16 md:pb-20 px-4 sm:px-6 lg:px-8 overflow-hidden"
+        className="relative pt-12 md:pt-28 pb-16 md:pb-20 px-4 sm:px-6 lg:px-8 overflow-hidden"
         style={{
           paddingTop: 'max(3rem, calc(env(safe-area-inset-top, 0px) + 3rem))',
           paddingBottom: 'max(4rem, calc(env(safe-area-inset-bottom, 0px) + 4rem))',
           minHeight: 'calc(100dvh - 64px)'
         }}
       >
-        {/* Animated background elements */}
-        <div className="absolute top-20 left-1/4 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl animate-pulse" />
-        <div className="absolute bottom-20 right-1/4 w-96 h-96 bg-pink-500/20 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
+        {/* Ambient background elements */}
+        <div className="absolute top-20 left-1/4 w-96 h-96 bg-violet-500/15 rounded-full blur-3xl" />
+        <div className="absolute bottom-20 right-1/4 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl" />
 
         <div className="max-w-7xl mx-auto relative z-10">
           <div className="text-center">
@@ -364,24 +386,24 @@ const LandingPage = () => {
               </motion.div>
 
               {/* Main Headline */}
-              <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight">
-                <span className="block mb-2">Replace Brand DMs</span>
-                <span className="block mb-2">With One Secure</span>
+              <h1 className="text-4xl md:text-6xl lg:text-7xl font-semibold tracking-tight mb-6 leading-tight">
+                <span className="block mb-2">Stop Negotiating in DMs.</span>
+                <span className="block mb-2">Run Every Brand Deal Through</span>
                 <span className="block bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 text-transparent bg-clip-text">
-                  Collaboration Link
+                  One Structured Link
                 </span>
               </h1>
 
               {/* Subheadline */}
-              <p className="text-lg md:text-2xl text-white/90 font-medium mb-4 max-w-3xl mx-auto">
-                Creator Armour gives you a single link where brands submit deals, contracts are auto-generated, and payments are tracked.
+              <p className="text-lg md:text-2xl text-white/85 font-medium mb-4 max-w-3xl mx-auto">
+                Creator Armour turns inbound collabs into a clean workflow: offer details, contract setup, and payment visibility in one place.
               </p>
               {/* Emotional sub-line */}
-              <p className="text-base md:text-lg text-purple-200/90 mb-2 max-w-3xl mx-auto font-medium">
-                Stop losing money to brands who ghost you. Stop worrying about payment delays. Get every deal protected.
+              <p className="text-base md:text-lg text-slate-300 mb-2 max-w-3xl mx-auto font-medium">
+                Less chaos, fewer payment surprises, better deal quality.
               </p>
-              <p className="text-sm text-purple-400/70 mb-8 max-w-3xl mx-auto">
-                Stop chasing brands. Start protecting yourself.
+              <p className="text-sm text-slate-400 mb-8 max-w-3xl mx-auto">
+                Built for creators who want structure without slowing down.
               </p>
             </motion.div>
 
@@ -394,7 +416,7 @@ const LandingPage = () => {
               >
                 <Link
                   to="/signup"
-                  className="group relative bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 px-8 py-4 rounded-full font-bold text-lg transition-all duration-300 transform hover:scale-105 active:scale-95 shadow-2xl shadow-purple-500/50 flex items-center gap-2 border-2 border-white/20 overflow-hidden min-h-[56px]"
+                  className="group relative bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 px-8 py-4 rounded-full font-bold text-lg transition-all duration-300 active:scale-95 shadow-2xl shadow-violet-900/50 flex items-center gap-2 border border-white/20 overflow-hidden min-h-[56px]"
                 >
                   <span className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></span>
                   <span className="relative z-10">Get My Collab Link</span>
@@ -408,7 +430,7 @@ const LandingPage = () => {
                     element.scrollIntoView({ behavior: 'smooth', block: 'start' });
                   }
                 }}
-                className="hidden sm:flex items-center gap-2 px-6 py-3 rounded-full text-base md:text-lg text-purple-100/80 hover:text-white/90 transition-all font-medium bg-white/10 hover:bg-white/20 border border-white/20 hover:scale-105 min-h-[48px]"
+                className="hidden sm:flex items-center gap-2 px-6 py-3 rounded-full text-base md:text-lg text-slate-200 hover:text-white transition-all font-medium bg-white/5 hover:bg-white/10 border border-white/20 min-h-[48px]"
               >
                 View Demo
               </button>
@@ -448,70 +470,19 @@ const LandingPage = () => {
               </div>
             </motion.div>
 
-            {/* Visual: Premium Hero Asset */}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 1, delay: 0.5 }}
-              className="relative max-w-5xl mx-auto"
-            >
-              <div className="relative z-10 p-1 md:p-2 bg-gradient-to-br from-purple-500/20 to-pink-500/20 rounded-[2.5rem] backdrop-blur-3xl border border-white/10 shadow-[0_0_50px_rgba(168,85,247,0.15)] overflow-hidden">
-                <img
-                  src="/creator_armour_hero_mockup.png"
-                  alt="Creator Armour Platform Mockup"
-                  className="w-full h-auto rounded-[2rem] shadow-2xl"
-                />
-
-                {/* Floating UI Badges */}
-                <motion.div
-                  animate={{ y: [0, -10, 0] }}
-                  transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-                  className="absolute top-1/4 -left-4 md:-left-8 bg-black/60 backdrop-blur-xl border border-white/10 p-4 rounded-2xl hidden md:block"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-green-500/20 flex items-center justify-center">
-                      <DollarSign className="w-5 h-5 text-green-400" />
-                    </div>
-                    <div>
-                      <div className="text-xs text-purple-300">New Deal Received</div>
-                      <div className="text-sm font-bold">₹75,000 Protected</div>
-                    </div>
-                  </div>
-                </motion.div>
-
-                <motion.div
-                  animate={{ y: [0, 10, 0] }}
-                  transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-                  className="absolute bottom-1/4 -right-4 md:-right-8 bg-black/60 backdrop-blur-xl border border-white/10 p-4 rounded-2xl hidden md:block"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center">
-                      <Shield className="w-5 h-5 text-blue-400" />
-                    </div>
-                    <div>
-                      <div className="text-xs text-purple-300">Contract Status</div>
-                      <div className="text-sm font-bold">Legally Signed</div>
-                    </div>
-                  </div>
-                </motion.div>
-              </div>
-
-              {/* Decorative Glow */}
-              <div className="absolute -inset-4 bg-gradient-to-r from-purple-600/20 to-pink-600/20 blur-[100px] -z-10" />
-            </motion.div>
           </div>
         </div>
       </section>
 
       {/* 2️⃣ THE PROBLEM (WHY DMs SUCK) */}
-      <section id="problem" className="py-20 px-4 sm:px-6 lg:px-8 bg-white/5 backdrop-blur-sm">
+      <section id="problem" className="py-20 px-4 sm:px-6 lg:px-8 bg-white/[0.03]">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold mb-4">
-              Why Brand DMs Don't Work
+            <h2 className="text-4xl md:text-5xl font-semibold mb-4 tracking-tight">
+              Where DM-Based Deals Break
             </h2>
-            <p className="text-xl text-purple-200 max-w-2xl mx-auto">
-              Real problems creators face every day
+            <p className="text-xl text-slate-300 max-w-2xl mx-auto">
+              Common failure points in creator-brand workflows.
             </p>
           </div>
 
@@ -523,7 +494,7 @@ const LandingPage = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: index * 0.1 }}
                 viewport={{ once: true }}
-                className={`group bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/10 hover:bg-white/15 transition-all hover:transform hover:scale-105 hover:shadow-2xl hover:shadow-purple-500/20 ${index > 1 ? 'hidden md:block' : ''}`}
+                className={`group bg-white/5 backdrop-blur-md rounded-2xl p-6 border border-white/10 hover:bg-white/10 transition-all ${index > 1 ? 'hidden md:block' : ''}`}
               >
                 <div className={`w-14 h-14 rounded-xl bg-gradient-to-r ${pain.color} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform shadow-lg`}>
                   <pain.icon className="w-7 h-7 text-white" />
@@ -540,15 +511,15 @@ const LandingPage = () => {
       <section className="py-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">
+            <h2 className="text-3xl md:text-4xl font-semibold mb-4 tracking-tight">
               DMs vs Creator Armour
             </h2>
-            <p className="text-lg text-purple-200 max-w-2xl mx-auto">
-              See the difference
+            <p className="text-lg text-slate-300 max-w-2xl mx-auto">
+              Same collaboration. Different operating model.
             </p>
           </div>
 
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 md:p-8 border border-white/10">
+          <div className="bg-white/5 backdrop-blur-md rounded-2xl p-6 md:p-8 border border-white/10">
             <div className="grid md:grid-cols-2 gap-6">
               {/* Left: Instagram / WhatsApp DMs */}
               <div>
@@ -618,11 +589,11 @@ const LandingPage = () => {
       <section id="solution" className="py-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold mb-4">
-              One Link. Zero Chaos.
+            <h2 className="text-4xl md:text-5xl font-semibold mb-4 tracking-tight">
+              One Link. Structured Workflow.
             </h2>
-            <p className="text-xl text-purple-200 max-w-2xl mx-auto">
-              How Creator Armour replaces messy DMs with structured collaboration
+            <p className="text-xl text-slate-300 max-w-2xl mx-auto">
+              How Creator Armour replaces ad-hoc chats with predictable deal flow.
             </p>
           </div>
 
@@ -636,7 +607,7 @@ const LandingPage = () => {
                 viewport={{ once: true }}
                 className={`relative ${index > 1 ? 'hidden md:block' : ''}`}
               >
-                <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/10 h-full">
+                  <div className="bg-white/5 backdrop-blur-md rounded-2xl p-8 border border-white/10 h-full">
                   <div className="absolute -top-4 -left-4 w-12 h-12 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full flex items-center justify-center font-bold text-xl shadow-lg">
                     {step.step}
                   </div>
@@ -656,13 +627,13 @@ const LandingPage = () => {
       </section>
 
       {/* 4️⃣ HOW BRANDS WORK WITH YOU */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-white/5 backdrop-blur-sm">
+      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-white/[0.03]">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold mb-4">
+            <h2 className="text-4xl md:text-5xl font-semibold mb-4 tracking-tight">
               How Brands Work With You
             </h2>
-            <p className="text-xl text-purple-200 max-w-2xl mx-auto">
+            <p className="text-xl text-slate-300 max-w-2xl mx-auto">
               Simple, structured, protected. No more chaos.
             </p>
           </div>
@@ -702,10 +673,10 @@ const LandingPage = () => {
       <section id="protection" className="py-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold mb-4">
+            <h2 className="text-4xl md:text-5xl font-semibold mb-4 tracking-tight">
               Every Collaboration Is Protected
             </h2>
-            <p className="text-xl text-purple-200 max-w-2xl mx-auto">
+            <p className="text-xl text-slate-300 max-w-2xl mx-auto">
               Empowering protection, not threatening legal jargon
             </p>
           </div>
@@ -718,7 +689,7 @@ const LandingPage = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: index * 0.1 }}
                 viewport={{ once: true }}
-                className={`group bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/10 hover:bg-white/15 transition-all hover:transform hover:scale-105 ${index > 1 ? 'hidden md:block' : ''}`}
+                className={`group bg-white/5 backdrop-blur-md rounded-2xl p-6 border border-white/10 hover:bg-white/10 transition-all ${index > 1 ? 'hidden md:block' : ''}`}
               >
                 <div className={`w-14 h-14 rounded-xl bg-gradient-to-r ${feature.color} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform shadow-lg`}>
                   <feature.icon className="w-7 h-7 text-white" />
@@ -732,13 +703,13 @@ const LandingPage = () => {
       </section>
 
       {/* 6️⃣ REAL USE CASES */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-white/5 backdrop-blur-sm">
+      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-white/[0.03]">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold mb-4">
+            <h2 className="text-4xl md:text-5xl font-semibold mb-4 tracking-tight">
               Who Is Creator Armour For?
             </h2>
-            <p className="text-xl text-purple-200 max-w-2xl mx-auto">
+            <p className="text-xl text-slate-300 max-w-2xl mx-auto">
               Built for creators who want structure and protection
             </p>
           </div>
@@ -751,7 +722,7 @@ const LandingPage = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: index * 0.1 }}
                 viewport={{ once: true }}
-                className={`group bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/10 hover:bg-white/15 transition-all hover:transform hover:scale-105 ${index > 1 ? 'hidden md:block' : ''}`}
+                className={`group bg-white/5 backdrop-blur-md rounded-2xl p-6 border border-white/10 hover:bg-white/10 transition-all ${index > 1 ? 'hidden md:block' : ''}`}
               >
                 <div className={`w-14 h-14 rounded-xl bg-gradient-to-r ${useCase.color} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform shadow-lg`}>
                   <useCase.icon className="w-7 h-7 text-white" />
@@ -768,10 +739,10 @@ const LandingPage = () => {
       <section className="py-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold mb-4">
+            <h2 className="text-4xl md:text-5xl font-semibold mb-4 tracking-tight">
               Creators Are Already Switching
             </h2>
-            <p className="text-xl text-purple-200 max-w-2xl mx-auto">
+            <p className="text-xl text-slate-300 max-w-2xl mx-auto">
               Join thousands of creators protecting their brand deals
             </p>
           </div>
@@ -804,7 +775,7 @@ const LandingPage = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: index * 0.1 }}
                 viewport={{ once: true }}
-                className={`bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/10 ${index > 0 ? 'hidden md:block' : ''}`}
+              className={`bg-white/5 backdrop-blur-md rounded-2xl p-6 border border-white/10 ${index > 0 ? 'hidden md:block' : ''}`}
               >
                 <div className="flex items-center gap-1 mb-4">
                   {[...Array(testimonial.rating)].map((_, i) => (
@@ -828,13 +799,13 @@ const LandingPage = () => {
       </section>
 
       {/* 8️⃣ PRICING PREVIEW */}
-      <section id="pricing" className="py-20 px-4 sm:px-6 lg:px-8 bg-white/5 backdrop-blur-sm">
+      <section id="pricing" className="py-20 px-4 sm:px-6 lg:px-8 bg-white/[0.03]">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold mb-4">
+            <h2 className="text-4xl md:text-5xl font-semibold mb-4 tracking-tight">
               Simple Pricing
             </h2>
-            <p className="text-xl text-purple-200 max-w-2xl mx-auto">
+            <p className="text-xl text-slate-300 max-w-2xl mx-auto">
               Start free. Upgrade when you need protection.
             </p>
           </div>
@@ -846,7 +817,7 @@ const LandingPage = () => {
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
               viewport={{ once: true }}
-              className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/10"
+              className="bg-white/5 backdrop-blur-md rounded-2xl p-8 border border-white/10"
             >
               <h3 className="text-2xl font-bold mb-2">Free</h3>
               <p className="text-purple-300 text-sm mb-1">Collab link only</p>
@@ -880,7 +851,7 @@ const LandingPage = () => {
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.1 }}
               viewport={{ once: true }}
-              className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border-2 border-purple-400 ring-4 ring-purple-400/20 relative"
+              className="bg-white/5 backdrop-blur-md rounded-2xl p-8 border-2 border-violet-400 ring-4 ring-violet-400/20 relative"
             >
               <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-purple-600 to-pink-600 px-4 py-1 rounded-full text-sm font-semibold">
                 Most Popular
@@ -930,13 +901,13 @@ const LandingPage = () => {
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
             viewport={{ once: true }}
-            className="bg-gradient-to-r from-purple-600/20 to-pink-600/20 backdrop-blur-md rounded-3xl p-12 border border-white/10"
+            className="bg-gradient-to-r from-violet-600/15 to-cyan-600/15 backdrop-blur-md rounded-3xl p-12 border border-white/10"
           >
-            <h2 className="text-4xl md:text-5xl font-bold mb-6">
+            <h2 className="text-4xl md:text-5xl font-semibold tracking-tight mb-6">
               Your Next Brand Deal<br />
               Deserves Protection
             </h2>
-            <p className="text-xl text-purple-200 mb-8 max-w-2xl mx-auto">
+            <p className="text-xl text-slate-200 mb-8 max-w-2xl mx-auto">
               Get your collab link in 2 minutes. No credit card required.
             </p>
             <Link

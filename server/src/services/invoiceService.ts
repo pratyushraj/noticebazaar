@@ -2,7 +2,7 @@
 // Invoice Generation Service
 // Automatically generates invoices after contract signing
 
-import { supabase } from '../index.js';
+import { supabase } from '../lib/supabase.js';
 
 const CREATOR_ASSETS_BUCKET = 'creator-assets';
 

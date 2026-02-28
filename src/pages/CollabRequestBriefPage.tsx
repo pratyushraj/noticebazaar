@@ -7,7 +7,7 @@ import { spacing } from '@/lib/design-system';
 import { Lock } from 'lucide-react';
 
 type CollabRequestStatus = 'pending' | 'accepted' | 'countered' | 'declined';
-type CollabType = 'paid' | 'barter' | 'both';
+type CollabType = 'paid' | 'barter' | 'hybrid' | 'both';
 
 interface CollabRequest {
   id: string;
@@ -37,8 +37,17 @@ const parseDeliverables = (deliverables: string | string[]): string[] => {
   }
 };
 
+const isHybrid = (collabType: CollabType) => collabType === 'hybrid' || collabType === 'both';
+const isPaidLike = (collabType: CollabType) => collabType === 'paid' || isHybrid(collabType);
+const isBarterLike = (collabType: CollabType) => collabType === 'barter' || isHybrid(collabType);
+const collabTypeLabel = (collabType: CollabType) => {
+  if (collabType === 'paid') return 'Paid';
+  if (collabType === 'barter') return 'Barter';
+  return 'Hybrid';
+};
+
 const formatBudget = (request: CollabRequest): string => {
-  if (request.collab_type === 'paid' || request.collab_type === 'both') {
+  if (isPaidLike(request.collab_type)) {
     if (request.exact_budget) return `₹${request.exact_budget.toLocaleString()}`;
     if (request.budget_range) {
       const ranges: { [key: string]: string } = {
@@ -50,7 +59,7 @@ const formatBudget = (request: CollabRequest): string => {
       return ranges[request.budget_range] || request.budget_range;
     }
   }
-  if (request.collab_type === 'barter' || request.collab_type === 'both') {
+  if (isBarterLike(request.collab_type)) {
     if (request.barter_value) return `Barter (₹${request.barter_value.toLocaleString()})`;
     return 'Barter';
   }
@@ -69,7 +78,7 @@ const CollabRequestBriefPage = () => {
   }
 
   const deliverablesList = parseDeliverables(request.deliverables);
-  const subtitle = (request.collab_type === 'barter' || request.collab_type === 'both') ? 'Barter collaboration' : (request.brand_name ?? 'Brand');
+  const subtitle = isBarterLike(request.collab_type) ? 'Barter collaboration' : (request.brand_name ?? 'Brand');
 
   return (
     <CreatorNavigationWrapper
@@ -89,7 +98,7 @@ const CollabRequestBriefPage = () => {
               "flex-shrink-0 px-2 py-0.5 rounded-md text-[11px] font-medium border",
               request.collab_type === 'barter' ? "bg-blue-500/20 text-blue-200 border-blue-500/30" : request.collab_type === 'paid' ? "bg-green-500/20 text-green-200 border-green-500/30" : "bg-purple-500/20 text-purple-200 border-purple-500/30"
             )}>
-              {request.collab_type === 'paid' ? 'Paid' : request.collab_type === 'barter' ? 'Barter' : 'Both'}
+              {collabTypeLabel(request.collab_type)}
             </span>
           </div>
           {request.brand_email && (
@@ -98,7 +107,7 @@ const CollabRequestBriefPage = () => {
 
           {/* Value + deadline */}
           <div className="flex flex-wrap items-center gap-2 py-2.5 px-3 rounded-xl bg-white/[0.06] border border-white/[0.06]">
-            {(request.collab_type === 'barter' || request.collab_type === 'both') && request.barter_product_image_url && (
+            {isBarterLike(request.collab_type) && request.barter_product_image_url && (
               <img
                 src={request.barter_product_image_url}
                 alt="Barter product"

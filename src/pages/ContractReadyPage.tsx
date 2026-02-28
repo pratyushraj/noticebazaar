@@ -800,25 +800,26 @@ const ContractReadyPage = () => {
     const isSigned = signature?.signed || isSigning;
 
     return (
-      <div className="min-h-screen bg-[#0A0A0B] flex items-center justify-center p-4">
+      <div className="min-h-screen bg-[#06070B] flex items-center justify-center p-4">
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="max-w-md w-full bg-[#111114] border border-white/10 rounded-3xl p-8 text-center shadow-2xl relative overflow-hidden"
+          className="max-w-xl w-full bg-[#0f1016] border border-white/15 rounded-3xl p-8 md:p-10 text-center shadow-2xl shadow-black/60 relative overflow-hidden"
         >
           {/* Success pattern background */}
-          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-emerald-500 to-green-500" />
-          <div className="absolute -top-24 -right-24 w-48 h-48 bg-emerald-500/10 rounded-full blur-3xl" />
+          <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-emerald-400 via-green-400 to-teal-400" />
+          <div className="absolute -top-24 -right-24 w-56 h-56 bg-emerald-500/12 rounded-full blur-3xl" />
+          <div className="absolute -bottom-28 -left-24 w-56 h-56 bg-cyan-500/8 rounded-full blur-3xl" />
 
-          <div className="w-20 h-20 rounded-2xl bg-emerald-500/20 flex items-center justify-center mx-auto mb-6">
-            <CheckCircle className="w-10 h-10 text-emerald-400" />
+          <div className="w-20 h-20 rounded-2xl bg-emerald-500/18 border border-emerald-300/25 flex items-center justify-center mx-auto mb-6">
+            <CheckCircle className="w-10 h-10 text-emerald-300" />
           </div>
 
-          <h1 className="text-2xl font-bold text-white mb-3">
+          <h1 className="text-3xl font-bold text-white mb-3 tracking-tight">
             {isSigned ? 'Agreement Signed Successfully' : 'Edit Request Submitted'}
           </h1>
 
-          <p className="text-white/70 mb-8 leading-relaxed">
+          <p className="text-white/78 mb-8 leading-relaxed text-lg">
             {isSigned
               ? "The digital signature has been recorded with a full audit trail. Both parties will receive a copy of the executed agreement."
               : "The creator has been notified of your requested changes. You'll receive an updated link once the agreement is revised."}
@@ -832,18 +833,18 @@ const ContractReadyPage = () => {
                 className="space-y-3 mb-8"
               >
                 {/* Terms Locked Box */}
-                <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-2xl p-4 flex items-start gap-3 text-left">
-                  <Lock className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
+                <div className="bg-emerald-500/12 border border-emerald-300/35 rounded-2xl p-5 flex items-start gap-3 text-left">
+                  <Lock className="w-5 h-5 text-emerald-300 shrink-0 mt-0.5" />
                   <div>
-                    <p className="text-emerald-400 font-bold text-sm">Terms are locked.</p>
-                    <p className="text-emerald-400/60 text-xs leading-relaxed">
+                    <p className="text-emerald-200 font-bold text-lg">Terms are locked.</p>
+                    <p className="text-emerald-100/80 text-sm leading-relaxed mt-1">
                       Edits, counters, or overrides are disabled. Any changes require a new agreement.
                     </p>
                   </div>
                 </div>
 
                 {/* Audit ID Row */}
-                <div className="bg-white/5 border border-white/10 rounded-2xl p-3 flex items-center justify-between group cursor-help"
+                <div className="bg-white/[0.06] border border-white/15 rounded-2xl p-4 flex items-center justify-between group cursor-help"
                   onClick={() => {
                     triggerHaptic(HapticPatterns.success);
                     toast.info("Audit Record Verified", {
@@ -852,15 +853,15 @@ const ContractReadyPage = () => {
                   }}
                 >
                   <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-xl bg-emerald-500/10 flex items-center justify-center">
-                      <ShieldCheck className="w-4 h-4 text-emerald-400" />
+                    <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-300/25 flex items-center justify-center">
+                      <ShieldCheck className="w-5 h-5 text-emerald-300" />
                     </div>
                     <div className="text-left">
                       <div className="flex items-center gap-1.5 mb-0.5">
-                        <p className="text-[10px] text-white/30 uppercase font-bold tracking-widest">Audit ID</p>
-                        <span className="bg-emerald-500/20 text-emerald-400 text-[8px] px-1.5 py-0.5 rounded-full font-bold uppercase tracking-wider border border-emerald-500/30">Verified</span>
+                        <p className="text-[11px] text-white/55 uppercase font-bold tracking-widest">Audit ID</p>
+                        <span className="bg-emerald-500/20 text-emerald-200 text-[9px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider border border-emerald-300/35">Verified</span>
                       </div>
-                      <p className="text-xs font-mono text-white/60">CA-{dealInfo?.id?.slice(0, 8).toUpperCase()}</p>
+                      <p className="text-base font-mono text-white/85">CA-{dealInfo?.id?.slice(0, 8).toUpperCase()}</p>
                     </div>
                   </div>
                   <button
@@ -869,7 +870,7 @@ const ContractReadyPage = () => {
                       copyToClipboard(`CA-${dealInfo?.id?.toUpperCase()}`);
                       toast.success('Audit ID copied');
                     }}
-                    className="p-2 hover:bg-white/10 rounded-lg transition-colors text-white/20 hover:text-white"
+                    className="p-2 hover:bg-white/12 rounded-lg transition-colors text-white/45 hover:text-white"
                   >
                     <Copy className="w-3.5 h-3.5" />
                   </button>
@@ -898,20 +899,20 @@ const ContractReadyPage = () => {
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               onClick={() => window.location.reload()}
-              className="w-full bg-white/5 hover:bg-white/10 text-white font-bold py-4 rounded-2xl border border-white/10 transition-all"
+              className="w-full bg-gradient-to-r from-indigo-500 via-violet-500 to-fuchsia-500 hover:from-indigo-400 hover:via-violet-400 hover:to-fuchsia-400 text-white font-bold py-4 rounded-2xl border border-white/20 transition-all shadow-lg shadow-violet-900/40"
             >
               View Executed Agreement
             </motion.button>
 
             <button
               onClick={() => window.close()}
-              className="text-white/40 text-sm hover:text-white/60 transition-colors pt-2 block mx-auto"
+              className="text-white/55 text-base hover:text-white/80 transition-colors pt-1 block mx-auto"
             >
               Close Window
             </button>
 
-            <div className="pt-6 border-t border-white/5 mt-4 text-center">
-              <p className="text-[10px] text-white/20 uppercase tracking-widest leading-relaxed">
+            <div className="pt-6 border-t border-white/10 mt-4 text-center">
+              <p className="text-[10px] text-white/35 uppercase tracking-widest leading-relaxed">
                 Actions on Creator Armour are recorded,<br />timestamped, and legally enforceable.
               </p>
             </div>
@@ -1648,4 +1649,3 @@ const ContractReadyPage = () => {
 };
 
 export default ContractReadyPage;
-

@@ -20,11 +20,13 @@ import { downloadContractSecure } from '@/lib/utils/secureContractDownload';
 import { trackEvent } from '@/lib/utils/analytics';
 import { generateIssueMessage, IssueType } from '@/components/deals/IssueTypeModal';
 import { createCalendarEvent, downloadEventAsICal, openEventInGoogleCalendar } from '@/lib/utils/createCalendarEvent';
+import { copyToClipboard } from '@/lib/utils/copyToClipboard';
 import { DeliverableAutoInfo } from '@/components/deals/DeliverableAutoInfo';
 import { MessageBrandModal } from '@/components/brand-messages/MessageBrandModal';
 import ProgressUpdateSheet from '@/components/deals/ProgressUpdateSheet';
 import { useUpdateDealProgress, DealStage, STAGE_TO_PROGRESS, useDeleteBrandDeal, useUpdateBrandDeal, getDealStageFromStatus } from '@/lib/hooks/useBrandDeals';
 import { triggerHaptic, HapticPatterns } from '@/lib/utils/haptics';
+import { DealStatusCard } from '@/components/deals/DealStatusCard';
 import { animations, iconSizes } from '@/lib/design-system';
 import { motion } from 'framer-motion';
 import { NativeLoadingSheet } from '@/components/mobile/NativeLoadingSheet';
@@ -870,6 +872,17 @@ function DealDetailPageContent() {
   const isBrandSigned = brandSignature?.signed || isContractSigned;
   const bothSigned = isBrandSigned && isCreatorSigned;
 
+  // Auto-refresh when waiting for brand signature (Step 2)
+  // This ensures the creator sees the update quickly without manual refresh
+  useEffect(() => {
+    if (isCreatorSigned && !isBrandSigned) {
+      const timer = setInterval(() => {
+        refreshAll?.();
+      }, 5000); // 5 seconds polling
+      return () => clearInterval(timer);
+    }
+  }, [isCreatorSigned, isBrandSigned, refreshAll]);
+
   // Map deal status to display status (shared logic)
   const getContractStatus = useCallback((): string => {
     const statusLower = deal?.status?.toLowerCase() || '';
@@ -900,8 +913,13 @@ function DealDetailPageContent() {
       return 'CONTRACT_READY';
     }
 
-    // Phase 4: Review/Drafting
-    if (brandResponseStatus === 'sent' || statusLower === 'drafting') {
+    // Phase 4: Review/Drafting/Shipment (for Barter)
+    if (brandResponseStatus === 'sent' ||
+      statusLower === 'drafting' ||
+      statusLower.includes('product shipment') ||
+      statusLower.includes('awaiting shipment') ||
+      statusLower.includes('in transit') ||
+      statusLower.includes('product received')) {
       return 'CONTRACT_READY';
     }
     if (statusLower === 'needs_changes' || statusLower.includes('needs_changes')) {
@@ -938,6 +956,11 @@ function DealDetailPageContent() {
   const showContractExecutionSection =
     !!deal &&
     (brandResponseStatus === 'accepted_verified' ||
+      contractStatus === 'CONTRACT_READY' ||
+      (deal?.status?.toLowerCase() === 'drafting' && !!deal?.contract_file_url) ||
+      (deal?.status?.toLowerCase().includes('shipment') && !!deal?.contract_file_url) ||
+      (deal?.status?.toLowerCase().includes('transit') && !!deal?.contract_file_url) ||
+      (deal?.status?.toLowerCase().includes('received') && !!deal?.contract_file_url) ||
       !!signedContractUrl ||
       !!dealExecutionStatus);
 
@@ -1605,93 +1628,49 @@ Best regards`;
         {/* Status Card - Replaces Header Section */}
         {(() => {
           const statusLower = deal?.status?.toLowerCase() || '';
-          const isContractReady = statusLower === 'contract_ready' || statusLower.includes('contract_ready');
+          const isContractReady = statusLower === 'contract_ready' ||
+            statusLower.includes('contract_ready') ||
+            brandResponseStatus === 'accepted_verified' ||
+            (statusLower === 'drafting' && !!contractDocxUrl) ||
+            (statusLower.includes('product shipment') && !!contractDocxUrl) ||
+            (statusLower.includes('awaiting shipment') && !!contractDocxUrl) ||
+            (statusLower.includes('in transit') && !!contractDocxUrl) ||
+            (statusLower.includes('product received') && !!contractDocxUrl);
           const isSigned = statusLower === 'signed_by_brand' || statusLower.includes('signed_by_brand') ||
             dealExecutionStatus === 'signed' || dealExecutionStatus === 'completed' ||
             contractStatus === 'Signed';
           const hasContract = !!contractDocxUrl;
           const signedAtDate = signedAt || signedContractUploadedAt || (deal as any)?.brand_response_at;
 
-          if (isContractReady && !isSigned && hasContract) {
-            // CONTRACT_READY and not signed
+          // Consolidated Status Card logic covers: Contract Ready, Creator Signed (Waiting for Brand), and Fully Signed
+          const showContractCard = (isContractReady && hasContract) || (isSigned && isCreatorSigned) || ((isCreatorSigned || signedContractUrl) && hasContract);
+
+          if (showContractCard) {
             return (
-              <div className="bg-gradient-to-br from-blue-500/20 to-indigo-500/20 backdrop-blur-xl border-2 border-blue-400/30 rounded-2xl p-6 shadow-lg">
-                <h2 className="text-2xl font-bold text-white mb-2">Contract Ready for Signature</h2>
-                <p className="text-white/70 text-sm mb-6">Brand identity verified. This agreement is ready to be signed.</p>
-
-                <div className="space-y-3">
-                  <motion.button
-                    onClick={() => {
-                      triggerHaptic(HapticPatterns.medium);
-                      setShowCreatorSigningModal(true);
-                    }}
-                    whileTap={{ scale: 0.98 }}
-                    className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 px-6 py-3 rounded-xl font-semibold text-white transition-all flex items-center justify-center gap-2"
-                  >
-                    <FileText className="w-5 h-5" />
-                    Sign Contract (Secure)
-                  </motion.button>
-
-                  <button
-                    onClick={handleDownloadContract}
-                    disabled={(!contractDocxUrl && !signedContractUrl && !deal?.id) || isDownloading}
-                    className="w-full text-sm text-white/70 hover:text-white transition-colors underline disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {isDownloading ? 'Downloading...' : 'View Contract PDF'}
-                  </button>
-                </div>
-              </div>
+              <DealStatusCard
+                deal={deal}
+                isContractReady={isContractReady}
+                hasContract={hasContract}
+                isSigned={isSigned}
+                isCreatorSigned={isCreatorSigned}
+                isBrandSigned={isBrandSigned}
+                bothSigned={bothSigned}
+                signedContractUrl={signedContractUrl}
+                contractDocxUrl={contractDocxUrl}
+                signedAtDate={signedAtDate}
+                dealAmount={dealAmount}
+                onSignCreator={() => {
+                  triggerHaptic(HapticPatterns.medium);
+                  setShowCreatorSigningModal(true);
+                }}
+                onDownloadContract={handleDownloadContract}
+                brandReplyLink={brandReplyLink}
+                generateBrandReplyLink={generateBrandReplyLink}
+                copyToClipboard={copyToClipboard}
+              />
             );
-          } else if (isSigned && isCreatorSigned) {
-            // SIGNED / AGREEMENT EXECUTED - Final state
-            return (
-              <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-4 md:p-6 shadow-lg shadow-black/20">
-                <div className="flex items-start justify-between mb-4">
-                  <div className="flex-1">
-                    <h1 className="text-2xl font-bold mb-2 leading-tight">Collaboration Agreement — Signed</h1>
-                    <div className="flex items-center gap-2 flex-wrap mb-3">
-                      <span className="px-3 py-1 rounded-full text-xs font-medium bg-green-500/20 text-green-400 border border-green-500/30 flex items-center gap-1">
-                        <CheckCircle className="w-3 h-3" />
-                        Legally Executed
-                      </span>
-                    </div>
-                    <p className="text-sm text-white/60">
-                      This agreement has been legally executed. CreatorArmour provides verification and audit records.
-                    </p>
-                  </div>
-                </div>
-
-                {/* Deal Value - Prominent */}
-                <div className="bg-white/5 rounded-xl p-4 mb-4">
-                  <div className="text-sm text-white/60 mb-1">Total Deal Value</div>
-                  <div className="text-3xl font-bold text-green-400">₹{Math.round(dealAmount).toLocaleString('en-IN')}</div>
-                </div>
-
-                {/* Brand Identity Verified Badge */}
-                {(deal as any)?.brand_response_status === 'accepted_verified' && (
-                  <div className="flex items-center gap-2 mb-3">
-                    <div className="w-8 h-8 rounded-lg bg-green-500/20 flex items-center justify-center">
-                      <Lock className="w-4 h-4 text-green-400" />
-                    </div>
-                    <div className="flex-1">
-                      <div className="text-xs font-medium text-white/80">Brand Identity Verified</div>
-                    </div>
-                  </div>
-                )}
-
-                {/* Signed Timestamp - Small, Muted */}
-                {signedAtDate && (
-                  <div className="text-xs text-white/50 mt-2">
-                    Signed on {new Date(signedAtDate).toLocaleDateString('en-US', {
-                      month: 'long',
-                      day: 'numeric',
-                      year: 'numeric'
-                    })}
-                  </div>
-                )}
-              </div>
-            );
-          } else {
+          }
+          else {
             // Default status card for other states
             return (
               <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-4 md:p-6 shadow-lg shadow-black/20">
@@ -1731,8 +1710,8 @@ Best regards`;
           }
         })()}
 
-        {/* Brand Response Tracker - Only show for pending/negotiating/rejected (not verified) */}
-        {deal && deal.id && (deal as any)?.brand_response_status && (deal as any)?.brand_response_status !== 'accepted_verified' && (
+        {/* Brand Response Tracker - Only show for pending/negotiating/rejected (not verified) AND no contract generated yet */}
+        {deal && deal.id && (deal as any)?.brand_response_status && (deal as any)?.brand_response_status !== 'accepted_verified' && !(deal as any)?.contract_file_url && (
           <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-4 md:p-6 shadow-lg shadow-black/20">
             {(() => {
               // Double-check that deal exists and has an ID
@@ -2345,8 +2324,8 @@ ${link}`;
           );
         })()}
 
-        {/* Final Contract Section - Moved above Deliverables */}
-        {brandResponseStatus === 'accepted_verified' && (
+        {/* Final Contract Section - Disabled as Merged to Top Card */}
+        {(false) && (
           <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6 shadow-lg shadow-black/20 mb-6">
             {(() => {
               const contractDocxUrl = deal?.contract_file_url as string | null | undefined;
@@ -2571,7 +2550,14 @@ ${link}`;
                 <div className="mb-4">
                   <button
                     onClick={() => handleAddToCalendar('deliverable')}
-                    className="w-full px-4 py-2.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl transition-all active:scale-[0.98] flex items-center justify-center gap-2 text-sm text-white"
+                    disabled={!bothSigned}
+                    title={!bothSigned ? "Unlocks after both parties sign." : "Add to Calendar"}
+                    className={cn(
+                      "w-full px-4 py-2.5 border rounded-xl transition-all flex items-center justify-center gap-2 text-sm",
+                      !bothSigned
+                        ? "bg-white/5 border-white/5 text-white/30 cursor-not-allowed"
+                        : "bg-white/5 hover:bg-white/10 border-white/10 text-white active:scale-[0.98]"
+                    )}
                   >
                     <Calendar className="w-4 h-4" />
                     Add to Calendar
@@ -2586,8 +2572,8 @@ ${link}`;
                     <div className="mb-3 flex items-start gap-2 rounded-lg border border-white/10 bg-white/5 p-2.5">
                       <Lock className="w-4 h-4 text-white/50 mt-0.5 flex-shrink-0" />
                       <div>
-                        <p className="text-xs font-semibold text-white/80">Deliverables locked</p>
-                        <p className="text-[11px] text-white/55">Unlock after both signatures.</p>
+                        <p className="text-xs font-semibold text-white/80">Locked until signed</p>
+                        <p className="text-[11px] text-white/55">Unlocks automatically after both signatures.</p>
                       </div>
                     </div>
                   )}

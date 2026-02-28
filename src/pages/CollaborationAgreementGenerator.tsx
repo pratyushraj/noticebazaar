@@ -68,7 +68,7 @@ const SoftwareApplicationSchema = ({
 const CollaborationAgreementGenerator = () => {
   const [brandName, setBrandName] = useState('');
   const [creatorName, setCreatorName] = useState('');
-  const [collabType, setCollabType] = useState<'paid' | 'barter' | 'both'>('paid');
+  const [collabType, setCollabType] = useState<'paid' | 'barter' | 'hybrid' | 'both'>('paid');
   const [dealAmount, setDealAmount] = useState('');
   const [deliverables, setDeliverables] = useState<string[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -88,7 +88,7 @@ const CollaborationAgreementGenerator = () => {
       return;
     }
 
-    if ((collabType === 'paid' || collabType === 'both') && !dealAmount) {
+    if ((collabType === 'paid' || collabType === 'both' || collabType === 'hybrid') && !dealAmount) {
       toast.error('Please enter deal amount for paid collaborations');
       return;
     }
@@ -281,19 +281,19 @@ const CollaborationAgreementGenerator = () => {
                     <label className="block text-sm font-semibold text-white mb-2">
                       Collaboration Type <span className="text-red-400">*</span>
                     </label>
-                    <Select value={collabType} onValueChange={(value: 'paid' | 'barter' | 'both') => setCollabType(value)}>
+                    <Select value={collabType} onValueChange={(value: 'paid' | 'barter' | 'hybrid' | 'both') => setCollabType(value)}>
                       <SelectTrigger className="bg-white/5 border-white/20 text-white">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="paid">Paid Collaboration</SelectItem>
                         <SelectItem value="barter">Barter Collaboration</SelectItem>
-                        <SelectItem value="both">Both (Paid + Barter)</SelectItem>
+                        <SelectItem value="hybrid">Hybrid (Paid + Barter)</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
 
-                  {(collabType === 'paid' || collabType === 'both') && (
+                  {(collabType === 'paid' || collabType === 'both' || collabType === 'hybrid') && (
                     <div>
                       <label className="block text-sm font-semibold text-white mb-2">
                         Deal Amount (₹) <span className="text-red-400">*</span>
@@ -331,7 +331,7 @@ const CollaborationAgreementGenerator = () => {
 
                   <Button
                     onClick={handleGenerate}
-                    disabled={isGenerating || !brandName || !creatorName || deliverables.length === 0 || ((collabType === 'paid' || collabType === 'both') && !dealAmount)}
+                    disabled={isGenerating || !brandName || !creatorName || deliverables.length === 0 || ((collabType === 'paid' || collabType === 'both' || collabType === 'hybrid') && !dealAmount)}
                     className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white"
                   >
                     {isGenerating ? (
@@ -437,4 +437,3 @@ const CollaborationAgreementGenerator = () => {
 };
 
 export default CollaborationAgreementGenerator;
-

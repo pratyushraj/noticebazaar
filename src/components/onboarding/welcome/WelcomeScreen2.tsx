@@ -1,7 +1,7 @@
 "use client";
 
 import React from 'react';
-import { Shield } from 'lucide-react';
+import { Link2, CheckCircle } from 'lucide-react';
 import { OnboardingSlide } from '../OnboardingSlide';
 import { IconBubble } from '../IconBubble';
 import { GradientCard } from '../GradientCard';
@@ -14,53 +14,38 @@ interface WelcomeScreen2Props {
 }
 
 /**
- * Welcome Screen 2: Protection Features
- * - Stats cards with numbers
- * - Animated shield icon
- * - Back/Next navigation
+ * Welcome Screen 2: Core Product
  */
 export const WelcomeScreen2: React.FC<WelcomeScreen2Props> = ({ onNext, onBack }) => {
-  const stats = [
-    { value: '10,000+', label: 'Contracts Analyzed' },
-    { value: '85%', label: 'Issues Caught' },
-    { value: '₹2Cr+', label: 'Creator Value Protected' },
-  ];
+  const bullets = ['Receive offers', 'Track terms', 'Approve safely'];
 
   return (
     <OnboardingSlide>
-      {/* Animated Icon */}
-      <div className="mt-12 md:mt-0 mb-8 md:mb-8">
-        <IconBubble
-          icon={Shield}
-          size="lg"
-          color="green"
-          animated
-        />
+      <div className="mt-12 md:mt-0 mb-8">
+        <IconBubble icon={Link2} size="lg" color="purple" animated />
       </div>
 
-      {/* Title */}
-      <h1 className="text-2xl md:text-3xl font-bold leading-tight mb-3 md:mb-4">
-        Never Sign a Bad Deal Again
+      <h1 className="text-2xl md:text-3xl font-bold leading-tight mb-3">
+        Your Professional Collab Link
       </h1>
 
-      {/* Subtitle */}
-      <p className="text-lg md:text-xl font-semibold text-white/80 mb-6 md:mb-12">
-        AI-Powered Contract Protection
+      <p className="text-lg md:text-xl font-semibold text-white/80 mb-6">
+        One link for all brand deals.
       </p>
 
-      {/* Stats Cards */}
-      <div className="space-y-3 md:space-y-4 max-w-md w-full mb-6 md:mb-12">
-        {stats.map((stat, index) => (
-          <GradientCard key={index} padding="md">
-            <div className="text-3xl font-bold text-green-400 mb-2">
-              {stat.value}
+      <div className="space-y-3 max-w-md w-full mb-4">
+        {bullets.map((item, index) => (
+          <GradientCard key={index} padding="sm">
+            <div className="flex items-center gap-3">
+              <CheckCircle className="w-5 h-5 text-green-400 flex-shrink-0" />
+              <span className="text-base text-white/80">{item}</span>
             </div>
-            <div className="text-base text-white/80">{stat.label}</div>
           </GradientCard>
         ))}
       </div>
 
-      {/* Navigation Buttons */}
+      <p className="text-sm text-white/65 mb-8">Send this instead of your Instagram bio.</p>
+
       <div className="flex gap-4">
         <SecondaryButton onClick={onBack} showBackIcon>
           Back
@@ -70,4 +55,3 @@ export const WelcomeScreen2: React.FC<WelcomeScreen2Props> = ({ onNext, onBack }
     </OnboardingSlide>
   );
 };
-

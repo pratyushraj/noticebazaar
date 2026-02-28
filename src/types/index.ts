@@ -32,6 +32,8 @@ export type Profile = Tables<'profiles'> & {
   pan_number?: string | null;
   referral_code?: string | null;
   instagram_followers?: number | null;
+  instagram_profile_photo?: string | null;
+  last_instagram_sync?: string | null;
   youtube_subs?: number | null;
   tiktok_followers?: number | null;
   twitter_followers?: number | null;
@@ -47,6 +49,32 @@ export type Profile = Tables<'profiles'> & {
   open_to_collabs?: boolean | null;
   content_niches?: string[] | null;
   media_kit_url?: string | null;
+  // NEW: Creator Rate fields
+  avg_rate_reel?: number | null;
+  learned_avg_rate_reel?: number | null;
+  learned_deal_count?: number | null;
+  avg_reel_views_manual?: number | null;
+  avg_likes_manual?: number | null;
+  audience_gender_split?: string | null;
+  top_cities?: string[] | null;
+  audience_age_range?: string | null;
+  primary_audience_language?: string | null;
+  posting_frequency?: string | null;
+  active_brand_collabs_month?: number | null;
+  campaign_slot_note?: string | null;
+  collab_brands_count_override?: number | null;
+  collab_response_hours_override?: number | null;
+  collab_cancellations_percent_override?: number | null;
+  collab_region_label?: string | null;
+  collab_audience_fit_note?: string | null;
+  collab_recent_activity_note?: string | null;
+  collab_audience_relevance_note?: string | null;
+  collab_delivery_reliability_note?: string | null;
+  collab_engagement_confidence_note?: string | null;
+  collab_response_behavior_note?: string | null;
+  collab_cta_trust_note?: string | null;
+  collab_cta_dm_note?: string | null;
+  collab_cta_platform_note?: string | null;
 };
 
 export type Message = Tables<'messages'> & {

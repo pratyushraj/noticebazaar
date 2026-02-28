@@ -46,7 +46,8 @@ export const useDealAlertNotifications = () => {
       host.endsWith('creatorarmour.com') ||
       host.endsWith('noticebazaar.com') ||
       host.endsWith('vercel.app');
-    return isPublicHost ? '' : base;
+    // Hard-pin push routes to known-good backend to avoid edge rewrite drift.
+    return isPublicHost ? 'https://noticebazaar-api.onrender.com' : base;
   }, []);
 
   const hasVapidKey = !!import.meta.env.VITE_VAPID_PUBLIC_KEY;

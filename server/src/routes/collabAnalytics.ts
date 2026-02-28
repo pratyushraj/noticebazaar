@@ -3,7 +3,7 @@
 // Tracks page views and submissions, provides aggregated analytics
 
 import express, { Request, Response } from 'express';
-import { supabase, supabaseInitialized } from '../index.js';
+import { supabase, supabaseInitialized } from '../lib/supabase.js';
 import { AuthenticatedRequest, authMiddleware } from '../middleware/auth.js';
 import crypto from 'crypto';
 
@@ -14,12 +14,12 @@ const router = express.Router();
  */
 function hashIp(ip: string): string {
   if (!ip || ip === 'unknown') return 'unknown';
-  
+
   const parts = ip.split('.');
   if (parts.length >= 3) {
     return `${parts[0]}.${parts[1]}.${parts[2]}.xxx`;
   }
-  
+
   // For IPv6 or other formats, hash it
   return crypto.createHash('sha256').update(ip).digest('hex').substring(0, 16) + '...';
 }
@@ -29,7 +29,7 @@ function hashIp(ip: string): string {
  */
 function detectDeviceType(userAgent: string | undefined): string {
   if (!userAgent) return 'unknown';
-  
+
   const ua = userAgent.toLowerCase();
   if (ua.includes('mobile') || ua.includes('android') || ua.includes('iphone')) {
     return 'mobile';
@@ -75,40 +75,38 @@ router.post('/track', async (req: Request, res: Response) => {
 
     // Normalize username
     const normalizedUsername = creator_username.toLowerCase().trim();
-    
+
     console.log('[CollabAnalytics] Tracking event:', {
       event_type,
       creator_username: normalizedUsername,
       original_username: creator_username,
     });
-    
-    // Get creator ID - don't filter by role (some creators might not have role set)
-    const { data: creator, error: creatorError } = await supabase
+
+    // Get creator ID - check both username and instagram_handle to support all collab link variants
+    const { data: creatorByUsername } = await supabase
       .from('profiles')
-      .select('id, role, username')
+      .select('id, role, username, instagram_handle')
       .eq('username', normalizedUsername)
       .maybeSingle();
 
-    if (creatorError) {
-      console.error('[CollabAnalytics] Error looking up creator:', {
-        username: normalizedUsername,
-        error: creatorError,
-        errorCode: creatorError.code,
-        errorMessage: creatorError.message,
-      });
-      return res.status(500).json({
-        success: false,
-        error: 'Failed to lookup creator',
-        details: process.env.NODE_ENV === 'development' ? creatorError.message : undefined,
-      });
+    let creator = creatorByUsername;
+
+    if (!creator) {
+      const { data: creatorByInstagram } = await supabase
+        .from('profiles')
+        .select('id, role, username, instagram_handle')
+        .eq('instagram_handle', normalizedUsername)
+        .maybeSingle();
+
+      creator = creatorByInstagram;
     }
 
     if (!creator) {
-      console.warn('[CollabAnalytics] Creator not found:', {
-        username: normalizedUsername,
-        original_username: creator_username,
+      console.warn('[CollabAnalytics] Creator not found for tracking:', {
+        slug: normalizedUsername,
+        original: creator_username,
       });
-      
+
       // Try alternative lookup methods for debugging
       if (process.env.NODE_ENV === 'development') {
         const { data: allUsernames } = await supabase
@@ -117,7 +115,7 @@ router.post('/track', async (req: Request, res: Response) => {
           .limit(10);
         console.log('[CollabAnalytics] Sample usernames in database:', allUsernames);
       }
-      
+
       return res.status(404).json({
         success: false,
         error: 'Creator not found',
@@ -155,15 +153,15 @@ router.post('/track', async (req: Request, res: Response) => {
 
     // Insert event
     const eventData = {
-        creator_id: creator.id,
-        event_type,
-        request_id: request_id || null,
-        device_type: detectDeviceType(userAgent),
-        utm_source: utm_source || null,
-        utm_medium: utm_medium || null,
-        utm_campaign: utm_campaign || null,
-        ip_hash: hashIp(clientIp),
-        user_agent_hash: crypto.createHash('sha256').update(userAgent).digest('hex').substring(0, 16),
+      creator_id: creator.id,
+      event_type,
+      request_id: request_id || null,
+      device_type: detectDeviceType(userAgent),
+      utm_source: utm_source || null,
+      utm_medium: utm_medium || null,
+      utm_campaign: utm_campaign || null,
+      ip_hash: hashIp(clientIp),
+      user_agent_hash: crypto.createHash('sha256').update(userAgent).digest('hex').substring(0, 16),
     };
 
     const { data: insertedData, error: insertError } = await supabase
@@ -234,6 +232,24 @@ router.get('/', authMiddleware, async (req: AuthenticatedRequest, res: Response)
       .order('created_at', { ascending: false });
 
     if (eventsError) {
+      const missingSchema =
+        eventsError.code === '42P01' ||
+        eventsError.code === '42703' ||
+        /does not exist|relation .* does not exist|column .* does not exist/i.test(eventsError.message || '');
+      if (missingSchema) {
+        console.warn('[CollabAnalytics] Missing table/column in production schema, returning empty analytics:', eventsError.message);
+        return res.json({
+          success: true,
+          analytics: {
+            period: daysNum,
+            views: { total: 0, unique: 0, trend: 0, trendDirection: 'up' },
+            submissions: { total: 0, trend: 0, trendDirection: 'up' },
+            conversionRate: { value: 0, trend: 0, trendDirection: 'neutral' },
+            deviceBreakdown: { mobile: 0, desktop: 0, tablet: 0, unknown: 0 },
+            recentActivity: [],
+          },
+        });
+      }
       console.error('[CollabAnalytics] Error fetching events:', eventsError);
       console.error('[CollabAnalytics] Error details:', JSON.stringify(eventsError, null, 2));
       console.error('[CollabAnalytics] User ID:', userId);
@@ -354,20 +370,20 @@ router.get('/summary', authMiddleware, async (req: AuthenticatedRequest, res: Re
     // Get all time stats - use service role to bypass RLS
     console.log('[CollabAnalytics] Fetching events for creator_id:', userId);
     console.log('[CollabAnalytics] Supabase client initialized:', supabaseInitialized);
-    
+
     // Try the query with explicit error handling
     let allTimeEvents: any[] | null = null;
     let allTimeError: any = null;
-    
+
     try {
       const result = await supabase
         .from('collab_link_events')
         .select('event_type, ip_hash, created_at')
         .eq('creator_id', userId);
-      
+
       allTimeEvents = result.data;
       allTimeError = result.error;
-      
+
       console.log('[CollabAnalytics] Query result:', {
         hasData: !!allTimeEvents,
         dataLength: allTimeEvents?.length || 0,
@@ -388,7 +404,7 @@ router.get('/summary', authMiddleware, async (req: AuthenticatedRequest, res: Re
       console.error('[CollabAnalytics] Error hint:', allTimeError.hint);
       console.error('[CollabAnalytics] User ID:', userId);
       console.error('[CollabAnalytics] Supabase initialized:', supabaseInitialized);
-      
+
       // Return detailed error in development
       return res.status(500).json({
         success: false,
@@ -463,4 +479,3 @@ router.get('/summary', authMiddleware, async (req: AuthenticatedRequest, res: Re
 });
 
 export default router;
-

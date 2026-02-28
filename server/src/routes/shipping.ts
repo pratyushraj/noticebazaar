@@ -2,7 +2,7 @@
 // Public shipping routes: brand updates shipping via token link (no auth)
 
 import { Router, Request, Response } from 'express';
-import { supabase } from '../index.js';
+import { supabase } from '../lib/supabase.js';
 import { getShippingTokenInfo, useShippingToken } from '../services/shippingTokenService.js';
 import { sendBrandShippingUpdateEmail, sendCreatorProductShippedEmail } from '../services/shippingEmailService.js';
 

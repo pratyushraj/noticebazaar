@@ -3,12 +3,13 @@
 // Protect with CRON_SECRET or similar; call daily (e.g. Vercel cron, GitHub Actions)
 
 import { Router, Request, Response } from 'express';
-import { supabase } from '../index.js';
+import { supabase } from '../lib/supabase.js';
 import {
   sendBrandSigningReminderEmail,
   sendDealPendingReminderToBrand,
   sendDealPendingReminderToCreator,
 } from '../services/dealReminderEmailService.js';
+import { syncInstagramStats } from '../jobs/instagramSync.js';
 
 const router = Router();
 
@@ -292,6 +293,25 @@ router.post('/deal-reminders', async (req: Request, res: Response) => {
   } catch (err: any) {
     console.error('[CronDealReminders] Error:', err);
     return res.status(500).json({ success: false, error: err?.message || 'Internal error' });
+  }
+});
+
+// POST /api/cron/instagram-sync (weekly suggested)
+router.post('/instagram-sync', async (req: Request, res: Response) => {
+  try {
+    const secret = process.env.CRON_SECRET || process.env.DEAL_REMINDERS_CRON_SECRET;
+    const authHeader = req.headers.authorization;
+    const headerSecret = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : null;
+    const cronSecret = headerSecret || (req.headers['x-cron-secret'] as string) || null;
+    if (secret && cronSecret !== secret) {
+      return res.status(401).json({ success: false, error: 'Unauthorized' });
+    }
+
+    const result = await syncInstagramStats();
+    return res.json({ success: true, ...result });
+  } catch (error: any) {
+    console.error('[Cron] instagram-sync failed:', error);
+    return res.status(500).json({ success: false, error: error?.message || 'Instagram sync failed' });
   }
 });
 

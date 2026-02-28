@@ -5,7 +5,7 @@
 
 import { callLLM } from './aiContractAnalysis.js';
 import axios from 'axios';
-import { supabase } from '../index.js';
+import { supabase } from '../lib/supabase.js';
 
 // ============================================================================
 // TYPES & INTERFACES

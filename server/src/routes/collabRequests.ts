@@ -5,7 +5,7 @@
 import express, { Request, Response } from 'express';
 import multer from 'multer';
 import crypto from 'crypto';
-import { supabase, supabaseInitialized } from '../index.js';
+import { supabase, supabaseInitialized } from '../lib/supabase.js';
 import { AuthenticatedRequest } from '../middleware/auth.js';
 import { generateContractFromScratch } from '../services/contractGenerator.js';
 import { createContractReadyToken } from '../services/contractReadyTokenService.js';
@@ -17,8 +17,12 @@ import {
   sendCollabRequestCreatorNotificationEmail,
   sendCollabAcceptMagicLinkEmail,
   sendCollabDraftResumeEmail,
+  sendCollabLeadCapturedAlertEmail,
 } from '../services/collabRequestEmailService.js';
 import { resolveOrCreateBrandContact } from '../services/brandContactService.js';
+import { estimateBarterValueRange, estimateReelBudgetRange, estimateReelRate, getEffectiveReelRate } from '../services/creatorRateService.js';
+import { fetchInstagramPublicData } from '../services/instagramService.js';
+import { notifyCreatorOnCollabRequestCreated } from '../services/pushNotificationService.js';
 
 const router = express.Router();
 
@@ -60,6 +64,384 @@ function detectDeviceType(userAgent: string | undefined): string {
     return 'desktop';
   }
   return 'unknown';
+}
+
+type CollabTypeValue = 'paid' | 'barter' | 'hybrid' | 'both';
+
+const normalizeCollabTypeForDb = (value: unknown): 'paid' | 'barter' | 'both' | null => {
+  if (value === 'hybrid' || value === 'both') return 'both';
+  if (value === 'paid' || value === 'barter') return value;
+  return null;
+};
+
+const normalizeCollabTypeForApi = (value: unknown): CollabTypeValue | null => {
+  if (value === 'both') return 'hybrid';
+  if (value === 'paid' || value === 'barter' || value === 'hybrid') return value;
+  return null;
+};
+
+const isPaidLikeCollab = (value: unknown): boolean => {
+  const normalized = normalizeCollabTypeForDb(value);
+  return normalized === 'paid' || normalized === 'both';
+};
+
+const isBarterLikeCollab = (value: unknown): boolean => {
+  const normalized = normalizeCollabTypeForDb(value);
+  return normalized === 'barter' || normalized === 'both';
+};
+
+const normalizeHandle = (value: unknown): string | null => {
+  if (typeof value !== 'string') return null;
+  const normalized = value.trim().toLowerCase().replace(/^@+/, '');
+  return normalized.length > 0 ? normalized : null;
+};
+
+const normalizeImageUrl = (value: unknown): string | null => {
+  if (typeof value !== 'string' || !value.trim()) return null;
+  return value
+    .replace(/\\u0026/g, '&')
+    .replace(/&amp;/g, '&')
+    .replace(/\\\//g, '/')
+    .trim();
+};
+
+const getCollabLeadAlertEmail = (): string => {
+  const configured = process.env.COLLAB_LEADS_ALERT_EMAIL || process.env.INTERNAL_LEADS_EMAIL;
+  return (configured && configured.trim()) || 'support@creatorarmour.com';
+};
+
+const NON_REGISTERED_IG_CACHE_TTL_MS = 24 * 60 * 60 * 1000;
+const NON_REGISTERED_IG_CACHE = new Map<string, { fetchedAt: number; data: Awaited<ReturnType<typeof fetchInstagramPublicData>> }>();
+const PRIMARY_UNCLAIMED_REQUESTS_TABLE = 'unclaimed_collab_requests';
+const LEGACY_LEADS_TABLE = 'collab_request_leads';
+const LEAD_SOURCE_TABLES = [PRIMARY_UNCLAIMED_REQUESTS_TABLE, LEGACY_LEADS_TABLE];
+
+const isMissingTableError = (error: any): boolean => {
+  if (!error) return false;
+  return error.code === '42P01' || /relation .* does not exist/i.test(error.message || '');
+};
+
+const isMissingColumnError = (error: any): boolean => {
+  if (!error) return false;
+  return error.code === '42703' || /column .* does not exist/i.test(error.message || '');
+};
+
+const isUpstreamConnectivityError = (error: any): boolean => {
+  if (!error) return false;
+  const haystack = `${error?.message || ''} ${error?.details || ''} ${error?.hint || ''}`.toLowerCase();
+  return (
+    haystack.includes('fetch failed')
+    || haystack.includes('connect timeout')
+    || haystack.includes('und_err_connect_timeout')
+    || haystack.includes('etimedout')
+    || haystack.includes('enotfound')
+    || haystack.includes('econnreset')
+  );
+};
+
+const getCachedInstagramPublicData = async (handle: string) => {
+  const normalized = normalizeHandle(handle);
+  if (!normalized) return null;
+
+  const cached = NON_REGISTERED_IG_CACHE.get(normalized);
+  if (cached && (Date.now() - cached.fetchedAt) < NON_REGISTERED_IG_CACHE_TTL_MS) {
+    return cached.data;
+  }
+
+  const fresh = await fetchInstagramPublicData(normalized);
+  NON_REGISTERED_IG_CACHE.set(normalized, { fetchedAt: Date.now(), data: fresh });
+  return fresh;
+};
+
+const startRegisteredCreatorBackgroundSync = (profile: any) => {
+  if (!profile?.id || !profile?.instagram_handle) return;
+
+  const existingFollowers = profile.instagram_followers;
+  const existingPhoto = profile.instagram_profile_photo;
+  const lastSync = profile.last_instagram_sync
+    ? new Date(profile.last_instagram_sync).getTime()
+    : 0;
+  const sevenDaysMs = 7 * 24 * 60 * 60 * 1000;
+  const isStale = !lastSync || (Date.now() - lastSync) > sevenDaysMs;
+  const shouldSync = isStale || !existingFollowers || !existingPhoto;
+  if (!shouldSync) return;
+
+  setTimeout(async () => {
+    try {
+      const instaData = await fetchInstagramPublicData(profile.instagram_handle as string);
+      if (!instaData) return;
+
+      const updatePayload: Record<string, unknown> = {
+        last_instagram_sync: new Date().toISOString(),
+      };
+      if (typeof instaData.followers === 'number') updatePayload.instagram_followers = instaData.followers;
+      if (instaData.profile_photo) updatePayload.instagram_profile_photo = instaData.profile_photo;
+      // Optional enrichment: only backfill bio if creator hasn't set one already.
+      if (!profile.bio && instaData.bio) updatePayload.bio = instaData.bio;
+
+      await supabase
+        .from('profiles')
+        .update(updatePayload as any)
+        .eq('id', profile.id);
+    } catch (syncError: any) {
+      console.warn('[CollabRequests] Background Instagram sync skipped:', syncError?.message || syncError);
+    }
+  }, 0);
+};
+
+const insertUnclaimedCollabRequest = async (payload: Record<string, unknown>) => {
+  const insertOrder = [PRIMARY_UNCLAIMED_REQUESTS_TABLE, LEGACY_LEADS_TABLE];
+  let lastError: any = null;
+
+  for (const table of insertOrder) {
+    const { data, error } = await supabase
+      .from(table)
+      .insert(payload as any)
+      .select('id, created_at')
+      .single();
+
+    if (!error && data) {
+      return { record: data, table };
+    }
+
+    if (isMissingTableError(error) || isMissingColumnError(error)) {
+      lastError = error;
+      continue;
+    }
+
+    throw error;
+  }
+
+  throw lastError || new Error('No lead table available for unclaimed collab requests');
+};
+
+async function attachPendingCollabLeadsForCreator(creatorId: string): Promise<{ attached: number; failed: number }> {
+  if (!creatorId) return { attached: 0, failed: 0 };
+
+  const { data: creatorProfile } = await supabase
+    .from('profiles')
+    .select('id, first_name, last_name, business_name, username, instagram_handle, creator_category, avatar_url, instagram_followers, youtube_subs, tiktok_followers, twitter_followers')
+    .eq('id', creatorId)
+    .maybeSingle();
+
+  if (!creatorProfile) return { attached: 0, failed: 0 };
+
+  const handleSet = new Set<string>();
+  const usernameHandle = normalizeHandle((creatorProfile as any).username);
+  const instagramHandle = normalizeHandle((creatorProfile as any).instagram_handle);
+  if (usernameHandle) handleSet.add(usernameHandle);
+  if (instagramHandle) handleSet.add(instagramHandle);
+  if (handleSet.size === 0) return { attached: 0, failed: 0 };
+
+  const handles = Array.from(handleSet);
+  const collectedLeads: Array<any> = [];
+
+  for (const table of LEAD_SOURCE_TABLES) {
+    const { data: leads, error: leadFetchError } = await supabase
+      .from(table)
+      .select('*')
+      .in('target_handle', handles)
+      .in('status', ['pending', 'failed'])
+      .order('created_at', { ascending: true })
+      .limit(100);
+
+    if (leadFetchError) {
+      if (isMissingTableError(leadFetchError)) continue;
+      console.warn('[CollabRequests] Failed to fetch attachable leads from table:', table, leadFetchError.message);
+      continue;
+    }
+
+    if (Array.isArray(leads) && leads.length > 0) {
+      collectedLeads.push(
+        ...leads.map((lead) => ({ ...lead, __source_table: table })),
+      );
+    }
+  }
+
+  const leads = collectedLeads
+    .sort((a, b) => new Date(a.created_at || 0).getTime() - new Date(b.created_at || 0).getTime())
+    .slice(0, 100);
+
+  if (leads.length === 0) {
+    return { attached: 0, failed: 0 };
+  }
+
+  const frontendUrl = process.env.FRONTEND_URL || 'https://creatorarmour.com';
+  const creatorName = (creatorProfile as any).business_name
+    || `${(creatorProfile as any).first_name || ''} ${(creatorProfile as any).last_name || ''}`.trim()
+    || 'Creator';
+
+  let creatorEmail: string | null = null;
+  try {
+    const { data: authUser } = await supabase.auth.admin.getUserById(creatorId);
+    creatorEmail = authUser?.user?.email || null;
+  } catch (error) {
+    console.warn('[CollabRequests] Failed to fetch creator email for lead attachment notifications:', error);
+  }
+
+  let attached = 0;
+  let failed = 0;
+
+  for (const lead of leads) {
+    try {
+      const claimTime = new Date().toISOString();
+      const leadSourceTable = lead.__source_table || LEGACY_LEADS_TABLE;
+      const { data: claimedLead, error: claimError } = await supabase
+        .from(leadSourceTable)
+        .update({ status: 'processing', updated_at: claimTime, last_error: null })
+        .eq('id', lead.id)
+        .in('status', ['pending', 'failed'])
+        .select('*')
+        .maybeSingle();
+
+      if (claimError || !claimedLead) continue;
+
+      const collabTypeForDb = normalizeCollabTypeForDb(claimedLead.collab_type) || 'paid';
+      const collabTypeForApi = normalizeCollabTypeForApi(claimedLead.collab_type) || collabTypeForDb;
+
+      const brandContactId = await resolveOrCreateBrandContact({
+        legalName: claimedLead.brand_name || '',
+        email: claimedLead.brand_email || '',
+        phone: claimedLead.brand_phone || null,
+        website: claimedLead.brand_website || null,
+        instagram: claimedLead.brand_instagram || null,
+        address: claimedLead.brand_address || null,
+        gstin: claimedLead.brand_gstin || null,
+      });
+
+      const insertData: any = {
+        creator_id: creatorId,
+        source_lead_id: claimedLead.id,
+        brand_name: claimedLead.brand_name,
+        brand_email: claimedLead.brand_email,
+        brand_address: claimedLead.brand_address || null,
+        brand_gstin: claimedLead.brand_gstin || null,
+        brand_phone: claimedLead.brand_phone || null,
+        brand_website: claimedLead.brand_website || null,
+        brand_instagram: claimedLead.brand_instagram || null,
+        collab_type: collabTypeForDb,
+        budget_range: claimedLead.budget_range || null,
+        exact_budget: claimedLead.exact_budget || null,
+        barter_description: claimedLead.barter_description || null,
+        barter_value: claimedLead.barter_value || null,
+        barter_product_image_url: claimedLead.barter_product_image_url || null,
+        campaign_description: claimedLead.campaign_description,
+        deliverables: claimedLead.deliverables || [],
+        usage_rights: claimedLead.usage_rights === true,
+        deadline: claimedLead.deadline || null,
+        submitted_ip: claimedLead.submitted_ip || null,
+        submitted_user_agent: claimedLead.submitted_user_agent || null,
+        ...(brandContactId ? { brand_contact_id: brandContactId } : {}),
+      };
+
+      let requestId: string | null = null;
+      const { data: insertedRequest, error: insertError } = await supabase
+        .from('collab_requests')
+        .insert(insertData)
+        .select('id')
+        .maybeSingle();
+
+      if (insertError) {
+        const isDuplicateSourceLead = insertError.code === '23505' || /source_lead_id/i.test(insertError.message || '');
+        if (isDuplicateSourceLead) {
+          const { data: existingRequest } = await supabase
+            .from('collab_requests')
+            .select('id')
+            .eq('source_lead_id', claimedLead.id)
+            .maybeSingle();
+          requestId = existingRequest?.id || null;
+        } else {
+          throw insertError;
+        }
+      } else {
+        requestId = insertedRequest?.id || null;
+      }
+
+      if (!requestId) {
+        throw new Error('Failed to create request from lead');
+      }
+
+      const nowIso = new Date().toISOString();
+      await supabase
+        .from(leadSourceTable)
+        .update({
+          status: 'attached',
+          attached_creator_id: creatorId,
+          converted_request_id: requestId,
+          attached_at: nowIso,
+          updated_at: nowIso,
+          last_error: null,
+        })
+        .eq('id', claimedLead.id);
+
+      try {
+        await supabase.from('notifications').insert({
+          user_id: creatorId,
+          type: 'deal',
+          category: 'collab_request',
+          title: `New collaboration request from ${claimedLead.brand_name}`,
+          message: 'A request submitted before your onboarding is now attached to your account.',
+          data: {
+            collab_request_id: requestId,
+            brand_name: claimedLead.brand_name,
+            collab_type: collabTypeForApi,
+            source: 'attached_lead',
+          },
+          link: `${frontendUrl}/creator-dashboard`,
+          priority: 'high',
+          icon: 'collab_request',
+          action_label: 'Review Request',
+          action_link: `${frontendUrl}/creator-dashboard`,
+        });
+      } catch (notificationError) {
+        console.warn('[CollabRequests] Failed to create notification for attached lead (non-fatal):', notificationError);
+      }
+
+      if (creatorEmail) {
+        const deliverablesArray = Array.isArray(claimedLead.deliverables) ? claimedLead.deliverables : [];
+        let totalFollowers = 0;
+        if ((creatorProfile as any)?.instagram_followers) totalFollowers += (creatorProfile as any).instagram_followers;
+        if ((creatorProfile as any)?.youtube_subs) totalFollowers += (creatorProfile as any).youtube_subs;
+        if ((creatorProfile as any)?.tiktok_followers) totalFollowers += (creatorProfile as any).tiktok_followers;
+        if ((creatorProfile as any)?.twitter_followers) totalFollowers += (creatorProfile as any).twitter_followers;
+
+        sendCollabRequestCreatorNotificationEmail(creatorEmail, {
+          creatorName,
+          creatorCategory: (creatorProfile as any)?.creator_category || undefined,
+          followerCount: totalFollowers > 0 ? totalFollowers : undefined,
+          avatarUrl: (creatorProfile as any)?.avatar_url || undefined,
+          brandName: claimedLead.brand_name,
+          brandWebsite: claimedLead.brand_website || undefined,
+          campaignGoal: claimedLead.campaign_description || undefined,
+          collabType: collabTypeForApi,
+          budgetRange: claimedLead.budget_range || undefined,
+          exactBudget: claimedLead.exact_budget ?? undefined,
+          barterDescription: claimedLead.barter_description || undefined,
+          barterValue: claimedLead.barter_value ?? undefined,
+          barterProductImageUrl: claimedLead.barter_product_image_url || undefined,
+          deliverables: deliverablesArray,
+          deadline: claimedLead.deadline || undefined,
+          timeline: claimedLead.deadline || undefined,
+          requestId,
+          acceptUrl: `${frontendUrl}/collab-requests`,
+        }, creatorId).catch((emailError) => {
+          console.warn('[CollabRequests] Failed to send creator email for attached lead (non-fatal):', emailError);
+        });
+      }
+
+      attached += 1;
+    } catch (error: any) {
+      failed += 1;
+      const lastError = error?.message ? String(error.message).slice(0, 500) : 'Unknown attachment error';
+      await supabase
+        .from(lead.__source_table || LEGACY_LEADS_TABLE)
+        .update({ status: 'failed', last_error: lastError, updated_at: new Date().toISOString() })
+        .eq('id', lead.id);
+      console.error('[CollabRequests] Failed attaching lead:', lead.id, error);
+    }
+  }
+
+  return { attached, failed };
 }
 
 // ============================================================================
@@ -228,7 +610,7 @@ router.get('/accept/preview/:requestToken', async (req: Request, res: Response) 
         status: request.status,
         message: 'This request has already been handled',
         brand_name: request.brand_name,
-        collab_type: request.collab_type,
+        collab_type: normalizeCollabTypeForApi(request.collab_type) || request.collab_type,
         deliverables: request.deliverables || [],
         deadline: request.deadline,
         amount: request.exact_budget ?? request.barter_value ?? null,
@@ -244,13 +626,13 @@ router.get('/accept/preview/:requestToken', async (req: Request, res: Response) 
     } catch {
       deliverablesArray = [];
     }
-    const dealType = request.collab_type === 'barter' ? 'Barter' : request.collab_type === 'paid' ? 'Paid' : 'Paid / Barter';
-    const amount = request.collab_type === 'barter' ? (request.barter_value ?? null) : (request.exact_budget ?? null);
+    const dealType = isBarterLikeCollab(request.collab_type) && !isPaidLikeCollab(request.collab_type) ? 'Barter' : isPaidLikeCollab(request.collab_type) && !isBarterLikeCollab(request.collab_type) ? 'Paid' : 'Paid / Barter';
+    const amount = isBarterLikeCollab(request.collab_type) && !isPaidLikeCollab(request.collab_type) ? (request.barter_value ?? null) : (request.exact_budget ?? null);
     return res.json({
       success: true,
       alreadyHandled: false,
       brand_name: request.brand_name,
-      collab_type: request.collab_type,
+      collab_type: normalizeCollabTypeForApi(request.collab_type) || request.collab_type,
       deal_type_label: dealType,
       amount,
       deliverables: deliverablesArray,
@@ -344,6 +726,8 @@ router.get('/:username', async (req: Request, res: Response) => {
     const normalizedUsername = username.toLowerCase().trim();
 
     // Use limit(1) instead of maybeSingle() to avoid 500s on duplicate usernames/handles.
+    // Keep the first profile lookup limited to stable columns so one missing optional
+    // column in production schema doesn't fail the entire collab page with 500.
     const baseProfileSelect = `
       id,
       first_name,
@@ -383,18 +767,45 @@ router.get('/:username', async (req: Request, res: Response) => {
         .from('profiles')
         .select(`
           creator_category,
+          audience_gender_split,
+          top_cities,
+          audience_age_range,
+          primary_audience_language,
+          posting_frequency,
           youtube_channel_id,
           tiktok_handle,
           twitter_handle,
           facebook_profile_url,
           instagram_followers,
+          instagram_profile_photo,
+          last_instagram_sync,
           youtube_subs,
           tiktok_followers,
           twitter_followers,
           facebook_followers,
           open_to_collabs,
           content_niches,
-          media_kit_url
+          media_kit_url,
+          avg_rate_reel,
+          avg_reel_views_manual,
+          avg_likes_manual,
+          active_brand_collabs_month,
+          campaign_slot_note,
+          collab_brands_count_override,
+          collab_response_hours_override,
+          collab_cancellations_percent_override,
+          collab_region_label,
+          collab_audience_fit_note,
+          collab_recent_activity_note,
+          collab_audience_relevance_note,
+          collab_delivery_reliability_note,
+          collab_engagement_confidence_note,
+          collab_response_behavior_note,
+          collab_cta_trust_note,
+          collab_cta_dm_note,
+          collab_cta_platform_note,
+          learned_avg_rate_reel,
+          learned_deal_count
       `)
         .eq('id', profile.id)
         .maybeSingle();
@@ -402,6 +813,24 @@ router.get('/:username', async (req: Request, res: Response) => {
       // Merge extended data if available (ignore errors for missing columns)
       if (extendedProfile) {
         profile = { ...profile, ...extendedProfile };
+      }
+
+      // Fetch optional trust arrays separately so older schemas don't break the main extended select.
+      const { data: trustArraysProfile } = await supabase
+        .from('profiles')
+        .select('past_brands, recent_campaign_types')
+        .eq('id', profile.id)
+        .maybeSingle();
+
+      if (trustArraysProfile) {
+        const nextProfile: Record<string, unknown> = { ...profile };
+        if (Array.isArray((trustArraysProfile as any).past_brands)) {
+          nextProfile.past_brands = (trustArraysProfile as any).past_brands;
+        }
+        if (Array.isArray((trustArraysProfile as any).recent_campaign_types)) {
+          nextProfile.recent_campaign_types = (trustArraysProfile as any).recent_campaign_types;
+        }
+        profile = nextProfile as typeof profile;
       }
     }
 
@@ -412,6 +841,15 @@ router.get('/:username', async (req: Request, res: Response) => {
       console.error('[CollabRequests] Error details:', JSON.stringify(profileError, null, 2));
       console.error('[CollabRequests] Username searched:', username.toLowerCase().trim());
       console.error('[CollabRequests] Supabase client initialized:', supabaseInitialized);
+
+      if (isUpstreamConnectivityError(profileError)) {
+        return res.status(503).json({
+          success: false,
+          error: 'Creator profile service temporarily unavailable',
+          code: 'UPSTREAM_CONNECTIVITY_ISSUE',
+          message: 'Unable to reach profile data provider from this network. Please retry shortly.',
+        });
+      }
 
       // Return more detailed error (always include in dev, optional in prod)
       const isDev = process.env.NODE_ENV === 'development' || !process.env.NODE_ENV;
@@ -432,22 +870,138 @@ router.get('/:username', async (req: Request, res: Response) => {
     }
 
     if (!profile) {
-      console.log('[CollabRequests] Creator not found for username:', username.toLowerCase().trim());
-      return res.status(404).json({
-        success: false,
-        error: 'Creator not found',
+      console.log('[CollabRequests] Creator not found in profiles table, trying Instagram fallback for username:', normalizedUsername);
+
+      let instagramData: Awaited<ReturnType<typeof fetchInstagramPublicData>> = null;
+      try {
+        instagramData = await getCachedInstagramPublicData(normalizedUsername);
+      } catch (fallbackError: any) {
+        console.warn('[CollabRequests] Instagram fallback failed:', fallbackError?.message || fallbackError);
+      }
+
+      const suggestedReelRate = estimateReelRate(instagramData?.followers ?? 0);
+      const suggestedPaidRange = estimateReelBudgetRange(suggestedReelRate);
+      const suggestedBarterRange = estimateBarterValueRange(suggestedReelRate);
+      const fallbackName = (instagramData?.full_name && instagramData.full_name.trim()) || normalizedUsername
+        .split(/[._-]+/)
+        .filter(Boolean)
+        .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+        .join(' ') || normalizedUsername;
+
+      let performanceProof: Record<string, unknown> | null = null;
+      try {
+        const { data: latestSnapshot } = await supabase
+          .from('instagram_performance_snapshots')
+          .select('engagement_rate, median_reel_views, avg_likes, avg_comments, avg_saves, avg_shares, sample_size, data_quality, captured_at')
+          .eq('ig_username', normalizedUsername)
+          .order('captured_at', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+
+        if (latestSnapshot) {
+          performanceProof = {
+            engagement_rate: (latestSnapshot as any).engagement_rate,
+            median_reel_views: (latestSnapshot as any).median_reel_views,
+            avg_likes: (latestSnapshot as any).avg_likes,
+            avg_comments: (latestSnapshot as any).avg_comments,
+            avg_saves: (latestSnapshot as any).avg_saves,
+            avg_shares: (latestSnapshot as any).avg_shares,
+            sample_size: (latestSnapshot as any).sample_size,
+            data_quality: (latestSnapshot as any).data_quality || 'limited',
+            captured_at: (latestSnapshot as any).captured_at,
+          };
+        }
+      } catch {
+        // No-op: table may not exist before migration.
+      }
+
+      return res.json({
+        success: true,
+        creator: {
+          id: `instagram:${normalizedUsername}`,
+          is_registered: false,
+          profile_type: 'public',
+          profile_label: 'Public Creator Profile',
+          submission_flow: 'lead_capture',
+          name: fallbackName,
+          username: normalizedUsername,
+          category: null,
+          platforms: [
+            {
+              name: 'Instagram',
+              handle: normalizedUsername,
+              followers: instagramData?.followers ?? undefined,
+            },
+          ],
+          suggested_reel_rate: suggestedReelRate,
+          suggested_paid_range_min: suggestedPaidRange.min,
+          suggested_paid_range_max: suggestedPaidRange.max,
+          suggested_barter_value_min: suggestedBarterRange.min,
+          suggested_barter_value_max: suggestedBarterRange.max,
+          profile_photo: normalizeImageUrl(instagramData?.profile_photo) || null,
+          followers: instagramData?.followers ?? null,
+          last_instagram_sync: new Date().toISOString(),
+          bio: instagramData?.bio || null,
+          open_to_collabs: true,
+          content_niches: [],
+          media_kit_url: null,
+          audience_gender_split: null,
+          top_cities: [],
+          audience_age_range: null,
+          primary_audience_language: null,
+          posting_frequency: null,
+          past_brands: [],
+          recent_campaign_types: [],
+          avg_reel_views: (performanceProof as any)?.median_reel_views ?? null,
+          avg_likes: (performanceProof as any)?.avg_likes ?? null,
+          past_brand_count: 0,
+          performance_proof: performanceProof,
+          trust_stats: {
+            brands_count: 0,
+            completed_deals: 0,
+            total_deals: 0,
+            completion_rate: null,
+            avg_response_hours: null,
+          },
+        },
       });
     }
+
+    // Background enrichment only: never blocks rendering of registered creator profile.
+    startRegisteredCreatorBackgroundSync(profile);
 
     // Build platforms array (handle missing columns gracefully)
     const platforms: Array<{ name: string; handle: string; followers?: number }> = [];
     const p = profile as any; // Use type assertion to access potentially missing columns
+    let resolvedInstagramFollowers: number | null = typeof p.instagram_followers === 'number'
+      ? p.instagram_followers
+      : null;
+    let resolvedProfilePhoto: string | null = normalizeImageUrl(p.instagram_profile_photo) || null;
+    let resolvedBio: string | null = profile.bio || null;
+
+    // If public Instagram data is missing in DB, fetch a cached public fallback for better collab-page UX.
+    if (profile.instagram_handle && (resolvedInstagramFollowers === null || !resolvedProfilePhoto || !resolvedBio)) {
+      try {
+        const instagramData = await getCachedInstagramPublicData(profile.instagram_handle);
+        if (resolvedInstagramFollowers === null && typeof instagramData?.followers === 'number') {
+          resolvedInstagramFollowers = instagramData.followers;
+        }
+        if (!resolvedProfilePhoto && instagramData?.profile_photo) {
+          resolvedProfilePhoto = normalizeImageUrl(instagramData.profile_photo);
+        }
+        if (!resolvedBio && instagramData?.bio) {
+          resolvedBio = instagramData.bio;
+        }
+      } catch (fallbackError: any) {
+        console.warn('[CollabRequests] Registered creator Instagram fallback skipped:', fallbackError?.message || fallbackError);
+      }
+    }
 
     if (profile.instagram_handle) {
       platforms.push({
         name: 'Instagram',
         handle: profile.instagram_handle,
-        followers: p.instagram_followers || undefined,
+        followers: resolvedInstagramFollowers ?? undefined,
       });
     }
     if (p.youtube_channel_id) {
@@ -484,18 +1038,170 @@ router.get('/:username', async (req: Request, res: Response) => {
       `${profile.first_name || ''} ${profile.last_name || ''}`.trim() ||
       'Creator';
 
+    // Public trust metrics for conversion (safe aggregates only)
+    let trustStats: {
+      brands_count: number;
+      completed_deals: number;
+      total_deals: number;
+      completion_rate: number | null;
+      avg_response_hours: number | null;
+    } = {
+      brands_count: 0,
+      completed_deals: 0,
+      total_deals: 0,
+      completion_rate: null,
+      avg_response_hours: null,
+    };
+
+    try {
+      const { data: dealsStatsRows } = await supabase
+        .from('brand_deals')
+        .select('brand_name, status, progress_percentage')
+        .eq('creator_id', profile.id);
+
+      const dealsRows = Array.isArray(dealsStatsRows) ? dealsStatsRows : [];
+      const totalDeals = dealsRows.length;
+      const completedDeals = dealsRows.filter((d: any) => {
+        const status = (d?.status || '').toLowerCase();
+        const progress = typeof d?.progress_percentage === 'number' ? d.progress_percentage : 0;
+        if (progress >= 100) return true;
+        return status.includes('completed') || status.includes('closed') || status.includes('resolved');
+      }).length;
+      const uniqueBrands = new Set(
+        dealsRows
+          .map((d: any) => (typeof d?.brand_name === 'string' ? d.brand_name.trim().toLowerCase() : ''))
+          .filter(Boolean)
+      ).size;
+      const baseBrandCountRaw = Number((profile as any).collab_brands_count_override);
+      const baseBrandCount = Number.isFinite(baseBrandCountRaw) && baseBrandCountRaw >= 0
+        ? Math.floor(baseBrandCountRaw)
+        : null;
+      const totalBrandCount = baseBrandCount !== null
+        ? baseBrandCount + uniqueBrands
+        : uniqueBrands;
+
+      const { data: responseRows } = await supabase
+        .from('collab_requests')
+        .select('created_at, updated_at, status')
+        .eq('creator_id', profile.id)
+        .in('status', ['accepted', 'countered', 'declined']);
+
+      const responseDurationsHours = (Array.isArray(responseRows) ? responseRows : [])
+        .map((r: any) => {
+          const created = r?.created_at ? new Date(r.created_at).getTime() : NaN;
+          const updated = r?.updated_at ? new Date(r.updated_at).getTime() : NaN;
+          if (!Number.isFinite(created) || !Number.isFinite(updated) || updated < created) return null;
+          const hours = (updated - created) / (1000 * 60 * 60);
+          // Ignore outliers above 7 days for better signal quality
+          if (hours < 0 || hours > 168) return null;
+          return hours;
+        })
+        .filter((v: number | null): v is number => typeof v === 'number');
+
+      const avgResponseHours = responseDurationsHours.length > 0
+        ? responseDurationsHours.reduce((sum: number, h: number) => sum + h, 0) / responseDurationsHours.length
+        : null;
+
+      trustStats = {
+        brands_count: totalBrandCount,
+        completed_deals: completedDeals,
+        total_deals: totalDeals,
+        completion_rate: totalDeals > 0 ? Math.round((completedDeals / totalDeals) * 100) : null,
+        avg_response_hours: avgResponseHours !== null ? Math.max(1, Math.round(avgResponseHours)) : null,
+      };
+    } catch (statsError) {
+      console.warn('[CollabRequests] Failed to compute trust stats:', statsError);
+    }
+
+    const suggestedReelRate = getEffectiveReelRate(profile);
+    const suggestedPaidRange = estimateReelBudgetRange(suggestedReelRate);
+    const suggestedBarterRange = estimateBarterValueRange(suggestedReelRate);
+    let performanceProof: Record<string, unknown> | null = null;
+    try {
+      const { data: latestSnapshot } = await supabase
+        .from('instagram_performance_snapshots')
+        .select('engagement_rate, median_reel_views, avg_likes, avg_comments, avg_saves, avg_shares, sample_size, data_quality, captured_at')
+        .eq('creator_id', profile.id)
+        .order('captured_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (latestSnapshot) {
+        performanceProof = {
+          engagement_rate: (latestSnapshot as any).engagement_rate,
+          median_reel_views: (latestSnapshot as any).median_reel_views,
+          avg_likes: (latestSnapshot as any).avg_likes,
+          avg_comments: (latestSnapshot as any).avg_comments,
+          avg_saves: (latestSnapshot as any).avg_saves,
+          avg_shares: (latestSnapshot as any).avg_shares,
+          sample_size: (latestSnapshot as any).sample_size,
+          data_quality: (latestSnapshot as any).data_quality || 'limited',
+          captured_at: (latestSnapshot as any).captured_at,
+        };
+      }
+    } catch {
+      // No-op: table may not exist before migration.
+    }
+
     res.json({
       success: true,
       creator: {
         id: profile.id,
+        is_registered: true,
+        profile_type: 'verified',
+        profile_label: 'Verified Creator Profile',
+        submission_flow: 'direct_request',
         name: creatorName,
         username: profile.username,
         category: profile.creator_category,
         platforms,
-        bio: profile.bio,
+        suggested_reel_rate: suggestedReelRate,
+        suggested_paid_range_min: suggestedPaidRange.min,
+        suggested_paid_range_max: suggestedPaidRange.max,
+        suggested_barter_value_min: suggestedBarterRange.min,
+        suggested_barter_value_max: suggestedBarterRange.max,
+        profile_photo: resolvedProfilePhoto,
+        followers: resolvedInstagramFollowers,
+        last_instagram_sync: (profile as any).last_instagram_sync || null,
+        bio: resolvedBio,
         open_to_collabs: (profile as any).open_to_collabs !== false,
         content_niches: Array.isArray((profile as any).content_niches) ? (profile as any).content_niches : [],
         media_kit_url: (profile as any).media_kit_url || null,
+        audience_gender_split: (profile as any).audience_gender_split || null,
+        top_cities: Array.isArray((profile as any).top_cities) ? (profile as any).top_cities : [],
+        audience_age_range: (profile as any).audience_age_range || null,
+        primary_audience_language: (profile as any).primary_audience_language || null,
+        posting_frequency: (profile as any).posting_frequency || null,
+        active_brand_collabs_month: (profile as any).active_brand_collabs_month ?? null,
+        campaign_slot_note: (profile as any).campaign_slot_note || null,
+        collab_brands_count_override: (profile as any).collab_brands_count_override ?? null,
+        collab_response_hours_override: (profile as any).collab_response_hours_override ?? null,
+        collab_cancellations_percent_override: (profile as any).collab_cancellations_percent_override ?? null,
+        collab_region_label: (profile as any).collab_region_label || null,
+        collab_audience_fit_note: (profile as any).collab_audience_fit_note || null,
+        collab_recent_activity_note: (profile as any).collab_recent_activity_note || null,
+        collab_audience_relevance_note: (profile as any).collab_audience_relevance_note || null,
+        collab_delivery_reliability_note: (profile as any).collab_delivery_reliability_note || null,
+        collab_engagement_confidence_note: (profile as any).collab_engagement_confidence_note || null,
+        collab_response_behavior_note: (profile as any).collab_response_behavior_note || null,
+        collab_cta_trust_note: (profile as any).collab_cta_trust_note || null,
+        collab_cta_dm_note: (profile as any).collab_cta_dm_note || null,
+        collab_cta_platform_note: (profile as any).collab_cta_platform_note || null,
+        past_brands: Array.isArray((profile as any).past_brands) ? (profile as any).past_brands : [],
+        recent_campaign_types: Array.isArray((profile as any).recent_campaign_types) ? (profile as any).recent_campaign_types : [],
+        avg_reel_views: (() => {
+          const manualViews = Number((profile as any).avg_reel_views_manual);
+          if (Number.isFinite(manualViews) && manualViews > 0) return manualViews;
+          return (performanceProof as any)?.median_reel_views ?? null;
+        })(),
+        avg_likes: (() => {
+          const manualLikes = Number((profile as any).avg_likes_manual);
+          if (Number.isFinite(manualLikes) && manualLikes > 0) return manualLikes;
+          return (performanceProof as any)?.avg_likes ?? null;
+        })(),
+        past_brand_count: trustStats.brands_count,
+        performance_proof: performanceProof,
+        trust_stats: trustStats,
       },
     });
   } catch (error: any) {
@@ -503,6 +1209,16 @@ router.get('/:username', async (req: Request, res: Response) => {
     console.error('[CollabRequests] Error stack:', error.stack);
     console.error('[CollabRequests] Error name:', error.name);
     console.error('[CollabRequests] Error message:', error.message);
+
+    if (isUpstreamConnectivityError(error)) {
+      return res.status(503).json({
+        success: false,
+        error: 'Creator profile service temporarily unavailable',
+        code: 'UPSTREAM_CONNECTIVITY_ISSUE',
+        message: 'Unable to reach profile data provider from this network. Please retry shortly.',
+      });
+    }
+
     const isDev = process.env.NODE_ENV === 'development' || !process.env.NODE_ENV;
     res.status(500).json({
       success: false,
@@ -575,10 +1291,18 @@ router.post('/:username/submit', async (req: Request, res: Response) => {
       barter_description,
       barter_value,
       barter_product_image_url,
+      campaign_category,
       campaign_description,
       deliverables,
       usage_rights,
       deadline,
+      authorized_signer_name,
+      authorized_signer_role,
+      usage_duration,
+      payment_terms,
+      approval_sla_hours,
+      shipping_timeline_days,
+      cancellation_policy,
     } = req.body;
 
     // Validation
@@ -613,7 +1337,10 @@ router.post('/:username/submit', async (req: Request, res: Response) => {
       }
     }
 
-    if (!collab_type || !['paid', 'barter', 'both'].includes(collab_type)) {
+    const collabTypeForDb = normalizeCollabTypeForDb(collab_type);
+    const collabTypeForApi = normalizeCollabTypeForApi(collab_type);
+
+    if (!collabTypeForDb) {
       return res.status(400).json({
         success: false,
         error: 'Valid collaboration type is required',
@@ -628,7 +1355,55 @@ router.post('/:username/submit', async (req: Request, res: Response) => {
     }
 
     // Get creator ID by username or instagram_handle
-    const normalizedUsername = username.toLowerCase().trim();
+    const normalizedUsername = normalizeHandle(username) || username.toLowerCase().trim();
+
+    // Create shared payload once (used for direct request or lead capture)
+    const extraTermsLines: string[] = [];
+    if (authorized_signer_name) extraTermsLines.push(`Authorized signer: ${String(authorized_signer_name).trim()}${authorized_signer_role ? ` (${String(authorized_signer_role).trim()})` : ''}`);
+    if (campaign_category && typeof campaign_category === 'string' && campaign_category.trim()) {
+      extraTermsLines.push(`Collab content category: ${campaign_category.trim()}`);
+    }
+    if (usage_duration) extraTermsLines.push(`Usage duration requested: ${String(usage_duration).trim()}`);
+    if (payment_terms) extraTermsLines.push(`Payment terms requested: ${String(payment_terms).trim()}`);
+    if (approval_sla_hours) extraTermsLines.push(`Approval SLA requested: ${String(approval_sla_hours).trim()} hours`);
+    if (shipping_timeline_days) extraTermsLines.push(`Shipping timeline requested: ${String(shipping_timeline_days).trim()} days`);
+    if (cancellation_policy) extraTermsLines.push(`Cancellation/reschedule policy: ${String(cancellation_policy).trim()}`);
+
+    const campaignDescriptionWithTerms = extraTermsLines.length > 0
+      ? `${campaign_description.trim()}\n\nAdditional Commercial Terms:\n- ${extraTermsLines.join('\n- ')}`
+      : campaign_description.trim();
+
+    const basePayload: any = {
+      target_handle: normalizedUsername,
+      brand_name: brand_name.trim(),
+      brand_email: brand_email.toLowerCase().trim(),
+      brand_address: brand_address.trim(),
+      brand_gstin: brand_gstin && typeof brand_gstin === 'string' ? brand_gstin.trim().toUpperCase() : null,
+      brand_phone: brand_phone?.trim() || null,
+      brand_website: brand_website?.trim() || null,
+      brand_instagram: brand_instagram?.trim() || null,
+      collab_type: collabTypeForDb,
+      campaign_description: campaignDescriptionWithTerms,
+      deliverables: Array.isArray(deliverables) ? deliverables : [],
+      usage_rights: usage_rights === true || usage_rights === 'true',
+      deadline: deadline || null,
+    };
+
+    if (isPaidLikeCollab(collabTypeForDb)) {
+      basePayload.budget_range = budget_range || null;
+      basePayload.exact_budget = exact_budget ? parseFloat(exact_budget) : null;
+    }
+
+    if (isBarterLikeCollab(collabTypeForDb)) {
+      basePayload.barter_description = barter_description?.trim() || null;
+      basePayload.barter_value = barter_value ? parseFloat(barter_value) : null;
+      if (barter_product_image_url != null && typeof barter_product_image_url === 'string') {
+        const trimmed = barter_product_image_url.trim();
+        if (trimmed && (trimmed.startsWith('http://') || trimmed.startsWith('https://'))) {
+          basePayload.barter_product_image_url = trimmed;
+        }
+      }
+    }
 
     // Try username first, then instagram_handle as fallback
     let { data: creator, error: creatorError } = await supabase
@@ -650,13 +1425,6 @@ router.post('/:username/submit', async (req: Request, res: Response) => {
       creatorError = result.error;
     }
 
-    if (creatorError || !creator) {
-      return res.status(404).json({
-        success: false,
-        error: 'Creator not found',
-      });
-    }
-
     // Rate limiting: Check for recent submissions from same email/IP
     // Disabled in development mode for easier testing
     const clientIp = req.ip || req.socket.remoteAddress || 'unknown';
@@ -667,19 +1435,46 @@ router.post('/:username/submit', async (req: Request, res: Response) => {
     if (!isDevelopment && !allowDemoEmail) {
       const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
 
-      const { data: recentSubmissions, error: rateLimitError } = await supabase
-        .from('collab_requests')
-        .select('id')
-        .eq('brand_email', brand_email.toLowerCase().trim())
-        .eq('creator_id', creator.id)
-        .gte('created_at', oneHourAgo)
-        .limit(1);
+      let hasRecentSubmission = false;
+      if (creator?.id) {
+        const { data: recentSubmissions, error: rateLimitError } = await supabase
+          .from('collab_requests')
+          .select('id')
+          .eq('brand_email', brand_email.toLowerCase().trim())
+          .eq('creator_id', creator.id)
+          .gte('created_at', oneHourAgo)
+          .limit(1);
 
-      if (rateLimitError) {
-        console.error('[CollabRequests] Rate limit check error:', rateLimitError);
+        if (rateLimitError) {
+          console.error('[CollabRequests] Rate limit check error (creator request):', rateLimitError);
+        }
+        hasRecentSubmission = Array.isArray(recentSubmissions) && recentSubmissions.length > 0;
+      } else {
+        let foundInAnyLeadTable = false;
+        for (const table of LEAD_SOURCE_TABLES) {
+          const { data: recentLeads, error: leadRateLimitError } = await supabase
+            .from(table)
+            .select('id')
+            .eq('brand_email', brand_email.toLowerCase().trim())
+            .eq('target_handle', normalizedUsername)
+            .gte('created_at', oneHourAgo)
+            .limit(1);
+
+          if (leadRateLimitError) {
+            if (isMissingTableError(leadRateLimitError)) continue;
+            console.error(`[CollabRequests] Rate limit check error (lead request, table=${table}):`, leadRateLimitError);
+            continue;
+          }
+
+          if (Array.isArray(recentLeads) && recentLeads.length > 0) {
+            foundInAnyLeadTable = true;
+            break;
+          }
+        }
+        hasRecentSubmission = foundInAnyLeadTable;
       }
 
-      if (recentSubmissions && recentSubmissions.length > 0) {
+      if (hasRecentSubmission) {
         return res.status(429).json({
           success: false,
           error: 'Please wait before submitting another request. You can submit one request per hour.',
@@ -687,6 +1482,84 @@ router.post('/:username/submit', async (req: Request, res: Response) => {
       }
     } else {
       console.log('[CollabRequests] Rate limiting disabled in development mode');
+    }
+
+    if (creatorError) {
+      return res.status(500).json({
+        success: false,
+        error: 'Failed to validate creator profile',
+      });
+    }
+
+    if (!creator) {
+      const leadInsertData: any = {
+        ...basePayload,
+        target_channel: 'username',
+        status: 'pending',
+        submitted_ip: clientIp,
+        submitted_user_agent: userAgent,
+        request_payload: req.body && typeof req.body === 'object' ? req.body : null,
+      };
+
+      let collabLead: any = null;
+      let leadTable = LEGACY_LEADS_TABLE;
+      try {
+        const inserted = await insertUnclaimedCollabRequest(leadInsertData);
+        collabLead = inserted.record;
+        leadTable = inserted.table;
+      } catch (leadInsertError) {
+        console.error('[CollabRequests] Error creating lead request:', leadInsertError);
+        return res.status(500).json({
+          success: false,
+          error: 'Failed to capture collaboration request',
+        });
+      }
+
+      sendCollabRequestSubmissionEmail(brand_email, {
+        creatorName: `@${normalizedUsername}`,
+        creatorPlatforms: ['Instagram'],
+        brandName: brand_name,
+        collabType: collabTypeForApi || collabTypeForDb,
+        budgetRange: budget_range || undefined,
+        exactBudget: exact_budget ? parseFloat(exact_budget.toString()) : undefined,
+        barterDescription: barter_description || undefined,
+        deliverables: Array.isArray(basePayload.deliverables) ? basePayload.deliverables : [],
+        deadline: deadline || undefined,
+        requestId: collabLead.id,
+      }).catch((emailError) => {
+        console.error('[CollabRequests] Lead submission email sending failed (non-fatal):', emailError);
+      });
+
+      sendCollabLeadCapturedAlertEmail(getCollabLeadAlertEmail(), {
+        targetHandle: normalizedUsername,
+        brandName: brand_name.trim(),
+        brandEmail: brand_email.toLowerCase().trim(),
+        collabType: collabTypeForApi || collabTypeForDb,
+        campaignDescription: campaignDescriptionWithTerms,
+        leadId: collabLead.id,
+      }).then(() => {
+        supabase
+          .from(leadTable)
+          .update({ notified_at: new Date().toISOString() })
+          .eq('id', collabLead.id)
+          .then(({ error }) => {
+            if (error) console.warn('[CollabRequests] Failed to mark lead notified_at:', error.message);
+          });
+      }).catch((alertError) => {
+        console.warn('[CollabRequests] Lead alert email failed (non-fatal):', alertError);
+      });
+
+      return res.json({
+        success: true,
+        submission_type: 'lead',
+        lead: {
+          id: collabLead.id,
+          target_handle: normalizedUsername,
+          submitted_at: collabLead.created_at,
+          status: 'pending_attachment',
+        },
+        message: 'Your request has been shared with the creator.',
+      });
     }
 
     // Resolve or create canonical brand for agency (deduped by email)
@@ -703,39 +1576,33 @@ router.post('/:username/submit', async (req: Request, res: Response) => {
     // Create collab request
     const insertData: any = {
       creator_id: creator.id,
-      brand_name: brand_name.trim(),
-      brand_email: brand_email.toLowerCase().trim(),
-      brand_address: brand_address.trim(),
-      brand_gstin: brand_gstin && typeof brand_gstin === 'string' ? brand_gstin.trim().toUpperCase() : null,
-      brand_phone: brand_phone?.trim() || null,
-      brand_website: brand_website?.trim() || null,
-      brand_instagram: brand_instagram?.trim() || null,
-      collab_type,
-      campaign_description: campaign_description.trim(),
-      deliverables: JSON.stringify(deliverables),
-      usage_rights: usage_rights === true || usage_rights === 'true',
-      deadline: deadline || null,
+      brand_name: basePayload.brand_name,
+      brand_email: basePayload.brand_email,
+      brand_address: basePayload.brand_address,
+      brand_gstin: basePayload.brand_gstin,
+      brand_phone: basePayload.brand_phone,
+      brand_website: basePayload.brand_website,
+      brand_instagram: basePayload.brand_instagram,
+      collab_type: basePayload.collab_type,
+      campaign_description: basePayload.campaign_description,
+      deliverables: JSON.stringify(basePayload.deliverables),
+      usage_rights: basePayload.usage_rights,
+      deadline: basePayload.deadline,
       submitted_ip: clientIp,
       submitted_user_agent: userAgent,
       ...(brandContactId ? { brand_contact_id: brandContactId } : {}),
     };
 
     // Add budget/barter fields based on collab_type
-    if (collab_type === 'paid' || collab_type === 'both') {
-      insertData.budget_range = budget_range || null;
-      insertData.exact_budget = exact_budget ? parseFloat(exact_budget) : null;
+    if (isPaidLikeCollab(basePayload.collab_type)) {
+      insertData.budget_range = basePayload.budget_range || null;
+      insertData.exact_budget = basePayload.exact_budget ?? null;
     }
 
-    if (collab_type === 'barter' || collab_type === 'both') {
-      insertData.barter_description = barter_description?.trim() || null;
-      insertData.barter_value = barter_value ? parseFloat(barter_value) : null;
-      // Optional barter product image URL (basic validation)
-      if (barter_product_image_url != null && typeof barter_product_image_url === 'string') {
-        const trimmed = barter_product_image_url.trim();
-        if (trimmed && (trimmed.startsWith('http://') || trimmed.startsWith('https://'))) {
-          insertData.barter_product_image_url = trimmed;
-        }
-      }
+    if (isBarterLikeCollab(basePayload.collab_type)) {
+      insertData.barter_description = basePayload.barter_description || null;
+      insertData.barter_value = basePayload.barter_value ?? null;
+      insertData.barter_product_image_url = basePayload.barter_product_image_url ?? null;
     }
 
     const { data: collabRequest, error: insertError } = await supabase
@@ -825,7 +1692,7 @@ router.post('/:username/submit', async (req: Request, res: Response) => {
         creatorName,
         creatorPlatforms: platforms.length > 0 ? platforms : undefined,
         brandName: brand_name,
-        collabType: collab_type,
+        collabType: collabTypeForApi || collabTypeForDb,
         budgetRange: budget_range || undefined,
         exactBudget: exact_budget ? parseFloat(exact_budget.toString()) : undefined,
         barterDescription: barter_description || undefined,
@@ -898,8 +1765,7 @@ router.post('/:username/submit', async (req: Request, res: Response) => {
           if (profileAny?.tiktok_followers) totalFollowers += profileAny.tiktok_followers;
           if (profileAny?.twitter_followers) totalFollowers += profileAny.twitter_followers;
 
-          // Send creator notification email (with Accept Deal CTA if token created)
-          sendCollabRequestCreatorNotificationEmail(creatorEmail, {
+          const creatorNotificationPayload = {
             creatorName,
             creatorCategory: creatorProfile?.creator_category || undefined,
             followerCount: totalFollowers > 0 ? totalFollowers : undefined,
@@ -907,7 +1773,7 @@ router.post('/:username/submit', async (req: Request, res: Response) => {
             brandName: brand_name,
             brandWebsite: brand_website || undefined,
             campaignGoal: campaign_description || undefined,
-            collabType: collab_type,
+            collabType: collabTypeForApi || collabTypeForDb,
             budgetRange: budget_range || undefined,
             exactBudget: exact_budget ? parseFloat(exact_budget.toString()) : undefined,
             barterDescription: barter_description || undefined,
@@ -916,17 +1782,36 @@ router.post('/:username/submit', async (req: Request, res: Response) => {
             deliverables: deliverablesArray,
             deadline: deadline || undefined,
             timeline: deadline || undefined, // Use deadline as timeline
-            notes: undefined, // Don't duplicate campaign description in notes
+            notes: extraTermsLines.length > 0 ? extraTermsLines.join(' | ') : undefined,
             requestId: collabRequest.id,
             acceptUrl,
-          }).then((result) => {
-            if (result.success) {
-              console.log('[CollabRequests] Creator notification email sent successfully:', result.emailId);
-            } else {
-              console.warn('[CollabRequests] Creator notification email failed (non-fatal):', result.error);
-            }
+          };
+
+          // 1. Send the primary creator notification (Email + WhatsApp)
+          // This is now unconditional to ensure reliability across all devices
+          sendCollabRequestCreatorNotificationEmail(creatorEmail, creatorNotificationPayload, creator.id).then(async () => {
+            // Mark as notified in DB
+            await supabase
+              .from('collab_requests')
+              .update({ last_notified_at: new Date().toISOString() })
+              .eq('id', collabRequest.id);
           }).catch((emailError) => {
-            console.error('[CollabRequests] Creator notification email sending failed (non-fatal):', emailError);
+            console.error('[CollabRequests] Primary creator email/wa notification failed (non-fatal):', emailError);
+          });
+
+          // 2. Also try Push Notification as a secondary real-time channel
+          notifyCreatorOnCollabRequestCreated({
+            creatorId: creator.id,
+            requestId: collabRequest.id,
+            emailData: creatorNotificationPayload,
+            // We set creatorEmail to null so push service doesn't send a redundant lightweight fallback email
+            creatorEmail: null,
+          }).then((result) => {
+            if (result.sent) {
+              console.log('[CollabRequests] Creator push notification sent:', result.channel);
+            }
+          }).catch((notifyError) => {
+            console.error('[CollabRequests] Creator push notification failed (non-fatal):', notifyError);
           });
 
           // Optionally: Add notification entry to notifications table (non-blocking)
@@ -945,7 +1830,7 @@ router.post('/:username/submit', async (req: Request, res: Response) => {
                 data: {
                   collab_request_id: collabRequest.id,
                   brand_name: brand_name,
-                  collab_type: collab_type,
+                  collab_type: collabTypeForApi || collabTypeForDb,
                 },
                 link: dashboardLink,
                 priority: 'high',
@@ -975,6 +1860,7 @@ router.post('/:username/submit', async (req: Request, res: Response) => {
 
     res.json({
       success: true,
+      submission_type: 'request',
       request: {
         id: collabRequest.id,
         brand_name: collabRequest.brand_name,
@@ -995,13 +1881,53 @@ router.post('/:username/submit', async (req: Request, res: Response) => {
 // ============================================================================
 
 /**
+ * POST /api/collab-requests/attach-leads
+ * Attach pending lead captures to the authenticated creator account (after onboarding)
+ */
+router.post('/attach-leads', async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    if (!req.user?.id) {
+      return res.status(401).json({ success: false, error: 'Authentication required' });
+    }
+
+    const result = await attachPendingCollabLeadsForCreator(req.user.id);
+    return res.json({
+      success: true,
+      attached: result.attached,
+      failed: result.failed,
+    });
+  } catch (error: any) {
+    console.error('[CollabRequests] Error in POST /attach-leads:', error);
+    return res.status(500).json({
+      success: false,
+      error: 'Failed to attach lead requests',
+    });
+  }
+});
+
+/**
  * GET /api/collab-requests
  * Get all collab requests for authenticated creator
  */
 router.get('/', async (req: AuthenticatedRequest, res: Response) => {
   try {
-    const userId = req.user!.id;
+    if (!req.user || !req.user.id) {
+      return res.status(401).json({
+        success: false,
+        error: 'Authentication required'
+      });
+    }
+
+    const userId = req.user.id;
     const { status } = req.query;
+
+    // Best-effort auto-attach to make onboarding->requests seamless even if frontend
+    // doesn't explicitly call /attach-leads.
+    try {
+      await attachPendingCollabLeadsForCreator(userId);
+    } catch (attachError) {
+      console.warn('[CollabRequests] Auto-attach leads failed (non-fatal):', attachError);
+    }
 
     let query = supabase
       .from('collab_requests')
@@ -1016,6 +1942,17 @@ router.get('/', async (req: AuthenticatedRequest, res: Response) => {
     const { data: requests, error } = await query;
 
     if (error) {
+      const missingSchema =
+        error.code === '42P01' ||
+        error.code === '42703' ||
+        /does not exist|relation .* does not exist|column .* does not exist/i.test(error.message || '');
+      if (missingSchema) {
+        console.warn('[CollabRequests] Missing table/column in production schema, returning empty requests:', error.message);
+        return res.json({
+          success: true,
+          requests: [],
+        });
+      }
       console.error('[CollabRequests] Error fetching requests:', error);
       console.error('[CollabRequests] Error details:', JSON.stringify(error, null, 2));
       console.error('[CollabRequests] User ID:', userId);
@@ -1026,9 +1963,14 @@ router.get('/', async (req: AuthenticatedRequest, res: Response) => {
       });
     }
 
+    const normalizedRequests = (requests || []).map((request: any) => ({
+      ...request,
+      collab_type: normalizeCollabTypeForApi(request.collab_type) || request.collab_type,
+    }));
+
     res.json({
       success: true,
-      requests: requests || [],
+      requests: normalizedRequests,
     });
   } catch (error: any) {
     console.error('[CollabRequests] Error in GET /:', error);
@@ -1100,10 +2042,10 @@ router.post('/accept/confirm', async (req: AuthenticatedRequest, res: Response) 
       deliverablesArray = [];
     }
     let dealAmount = 0;
-    if (request.collab_type === 'paid' || request.collab_type === 'both') {
+    if (isPaidLikeCollab(request.collab_type)) {
       dealAmount = request.exact_budget || 0;
     }
-    const isBarter = request.collab_type === 'barter';
+    const isBarter = normalizeCollabTypeForDb(request.collab_type) === 'barter';
 
     const dealData: any = {
       creator_id: userId,
@@ -1168,7 +2110,7 @@ router.post('/accept/confirm', async (req: AuthenticatedRequest, res: Response) 
         auth_method: 'magic_link',
         ip_address: clientIp,
         user_agent: userAgent,
-        collab_type: request.collab_type,
+        collab_type: normalizeCollabTypeForApi(request.collab_type) || request.collab_type,
         status: 'CONTRACT_READY'
       },
     }).then(({ error: logErr }) => {
@@ -1207,7 +2149,7 @@ router.post('/accept/confirm', async (req: AuthenticatedRequest, res: Response) 
         const creatorEmail = creatorProfile?.email || req.user?.email || undefined;
         const creatorAddress = creatorProfile?.location || creatorProfile?.address || undefined;
         let paymentTerms: string | undefined;
-        if (request.collab_type === 'paid' || request.collab_type === 'both') {
+        if (isPaidLikeCollab(request.collab_type)) {
           paymentTerms = `Payment expected by ${request.deadline ? new Date(request.deadline).toLocaleDateString() : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString()}`;
         }
         const dealSchema = {
@@ -1245,7 +2187,7 @@ router.post('/accept/confirm', async (req: AuthenticatedRequest, res: Response) 
           exclusivityDuration: null,
           terminationNoticeDays: 7,
           jurisdictionCity: 'Mumbai',
-          additionalTerms: request.collab_type === 'barter' && request.barter_description ? `Barter Collaboration: ${request.barter_description}` : undefined,
+          additionalTerms: normalizeCollabTypeForDb(request.collab_type) === 'barter' && request.barter_description ? `Barter Collaboration: ${request.barter_description}` : undefined,
         });
         const timestamp = Date.now();
         const storagePath = `contracts/${deal.id}/${timestamp}_${contractResult.fileName}`;
@@ -1275,7 +2217,7 @@ router.post('/accept/confirm', async (req: AuthenticatedRequest, res: Response) 
             creatorName: creatorNameForEmail,
             brandName: request.brand_name,
             dealAmount,
-            dealType: request.collab_type === 'barter' ? 'barter' : 'paid',
+            dealType: normalizeCollabTypeForDb(request.collab_type) === 'barter' ? 'barter' : 'paid',
             deliverables: deliverablesArray.length > 0 ? deliverablesArray : ['As per agreement'],
             contractReadyToken,
             contractUrl: contractUrl || undefined,
@@ -1342,11 +2284,11 @@ router.patch('/:id/accept', async (req: AuthenticatedRequest, res: Response) => 
 
     // Calculate deal amount
     let dealAmount = 0;
-    if (request.collab_type === 'paid' || request.collab_type === 'both') {
+    if (isPaidLikeCollab(request.collab_type)) {
       dealAmount = request.exact_budget || 0;
     }
 
-    const isBarter = request.collab_type === 'barter';
+    const isBarter = normalizeCollabTypeForDb(request.collab_type) === 'barter';
 
     // Create brand deal
     const dealData: any = {
@@ -1422,7 +2364,7 @@ router.patch('/:id/accept', async (req: AuthenticatedRequest, res: Response) => 
         auth_method: 'session',
         ip_address: clientIp,
         user_agent: userAgent,
-        collab_type: request.collab_type,
+        collab_type: normalizeCollabTypeForApi(request.collab_type) || request.collab_type,
         status: 'CONTRACT_READY'
       },
     }).then(({ error: logErr }) => {
@@ -1493,7 +2435,7 @@ router.patch('/:id/accept', async (req: AuthenticatedRequest, res: Response) => 
 
         // Build payment terms based on collab type
         let paymentTerms: string | undefined;
-        if (request.collab_type === 'paid' || request.collab_type === 'both') {
+        if (isPaidLikeCollab(request.collab_type)) {
           const paymentDate = request.deadline
             ? new Date(request.deadline).toLocaleDateString()
             : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString();
@@ -1557,7 +2499,7 @@ router.patch('/:id/accept', async (req: AuthenticatedRequest, res: Response) => 
           exclusivityDuration: null,
           terminationNoticeDays: 7,
           jurisdictionCity: 'Mumbai',
-          additionalTerms: request.collab_type === 'barter' && request.barter_description
+          additionalTerms: normalizeCollabTypeForDb(request.collab_type) === 'barter' && request.barter_description
             ? `Barter Collaboration: ${request.barter_description}`
             : undefined,
         });
@@ -1619,7 +2561,7 @@ router.patch('/:id/accept', async (req: AuthenticatedRequest, res: Response) => 
               creatorName,
               brandName: request.brand_name,
               dealAmount,
-              dealType: request.collab_type === 'barter' ? 'barter' : 'paid',
+              dealType: normalizeCollabTypeForDb(request.collab_type) === 'barter' ? 'barter' : 'paid',
               deliverables: deliverablesArray.length > 0 ? deliverablesArray : ['As per agreement'],
               contractReadyToken,
               contractUrl: contractUrl || undefined,
