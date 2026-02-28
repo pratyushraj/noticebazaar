@@ -15,6 +15,44 @@ export interface AuthenticatedRequest extends express.Request {
   };
 }
 
+function decodeJwtPayload(token: string): Record<string, any> | null {
+  try {
+    const parts = token.split('.');
+    if (parts.length < 2) return null;
+    const payload = parts[1]
+      .replace(/-/g, '+')
+      .replace(/_/g, '/');
+    const normalized = payload + '='.repeat((4 - (payload.length % 4)) % 4);
+    const decoded = Buffer.from(normalized, 'base64').toString('utf8');
+    return JSON.parse(decoded);
+  } catch {
+    return null;
+  }
+}
+
+function shouldAllowOfflineJwtAuth(): boolean {
+  const flag = (process.env.ALLOW_OFFLINE_JWT_AUTH || '').toLowerCase();
+  if (flag === 'true') return true;
+  if (flag === 'false') return false;
+  return process.env.NODE_ENV !== 'production';
+}
+
+function buildOfflineUser(token: string): { id: string; email?: string; role?: string } | null {
+  const payload = decodeJwtPayload(token);
+  if (!payload) return null;
+
+  const now = Math.floor(Date.now() / 1000);
+  if (typeof payload.exp === 'number' && payload.exp <= now) return null;
+
+  const sub = payload.sub || payload.user_id;
+  if (!sub || typeof sub !== 'string') return null;
+
+  return {
+    id: sub,
+    email: typeof payload.email === 'string' ? payload.email : undefined,
+    role: typeof payload.role === 'string' ? payload.role : undefined,
+  };
+}
 
 export const authMiddleware = async (
   req: AuthenticatedRequest,
@@ -43,6 +81,8 @@ export const authMiddleware = async (
       token = token.substring(1, token.length - 1);
     }
 
+    const allowOfflineFallback = shouldAllowOfflineJwtAuth();
+
     // Get user with timeout protection
     let user, authError;
     try {
@@ -53,13 +93,64 @@ export const authMiddleware = async (
       user = result.data?.user;
       authError = result.error;
     } catch (err: any) {
+      if (allowOfflineFallback) {
+        const offlineUser = buildOfflineUser(token);
+        if (offlineUser) {
+          req.user = {
+            id: offlineUser.id,
+            email: offlineUser.email,
+            role: offlineUser.role || 'creator'
+          };
+          console.warn('[AuthMiddleware] Using offline JWT fallback after auth request exception', {
+            userId: offlineUser.id,
+            error: err?.message,
+            path: req.path,
+            method: req.method
+          });
+          return next();
+        }
+      }
+
       if (err.message === 'Auth timeout') {
+        if (allowOfflineFallback) {
+          const offlineUser = buildOfflineUser(token);
+          if (offlineUser) {
+            req.user = {
+              id: offlineUser.id,
+              email: offlineUser.email,
+              role: offlineUser.role || 'creator'
+            };
+            console.warn('[AuthMiddleware] Using offline JWT fallback after timeout', {
+              userId: offlineUser.id,
+              path: req.path,
+              method: req.method
+            });
+            return next();
+          }
+        }
         return res.status(504).json({ error: 'Authentication timeout - Supabase connection issue' });
       }
       throw err;
     }
 
     if (authError || !user) {
+      if (allowOfflineFallback && authError) {
+        const offlineUser = buildOfflineUser(token);
+        if (offlineUser) {
+          req.user = {
+            id: offlineUser.id,
+            email: offlineUser.email,
+            role: offlineUser.role || 'creator'
+          };
+          console.warn('[AuthMiddleware] Using offline JWT fallback after auth error', {
+            userId: offlineUser.id,
+            authError: authError.message,
+            path: req.path,
+            method: req.method
+          });
+          return next();
+        }
+      }
       console.warn('[AuthMiddleware] Token verification failed:', {
         event: 'auth_failure',
         error: authError?.message,

@@ -7,6 +7,7 @@ import {
   getPushRuntimeStatus,
   getCreatorPushSubscriptionStatus,
   removeCreatorPushSubscription,
+  sendDirectTestPush,
   sendTestPushToCreator,
   upsertCreatorPushSubscription,
 } from '../services/pushNotificationService.js';
@@ -105,7 +106,15 @@ router.post('/subscribe', async (req: AuthenticatedRequest, res: Response) => {
     return res.json({ success: true });
   } catch (error: any) {
     console.error('[PushNotifications] POST /subscribe failed:', error);
-    return res.status(500).json({ success: false, error: 'Failed to store subscription' });
+    const message = error?.message || 'Failed to store subscription';
+    const isNetworkFailure =
+      /fetch failed|connect timeout|network|timed out|ENOTFOUND|ECONNREFUSED|ETIMEDOUT/i.test(message);
+    return res.status(isNetworkFailure ? 503 : 500).json({
+      success: false,
+      error: 'Failed to store subscription',
+      details: message,
+      code: isNetworkFailure ? 'supabase_unreachable' : 'subscription_store_failed',
+    });
   }
 });
 
@@ -150,6 +159,32 @@ router.post('/test', async (req: AuthenticatedRequest, res: Response) => {
   } catch (error: any) {
     console.error('[PushNotifications] POST /test failed:', error);
     return res.status(500).json({ success: false, error: 'Failed to send test push' });
+  }
+});
+
+router.post('/direct-test', async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    if (!req.user?.id) {
+      return res.status(401).json({ success: false, error: 'Authentication required' });
+    }
+
+    const subscription = req.body?.subscription;
+    const result = await sendDirectTestPush(subscription, {
+      title: req.body?.title,
+      body: req.body?.body,
+      url: req.body?.url,
+    });
+
+    return res.json({
+      success: result.sent,
+      ...result,
+      sentCount: result.delivered,
+      attemptedCount: result.attempted,
+      failedCount: result.failed,
+    });
+  } catch (error: any) {
+    console.error('[PushNotifications] POST /direct-test failed:', error);
+    return res.status(500).json({ success: false, error: 'Failed to send direct test push' });
   }
 });
 

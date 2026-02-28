@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, lazy, Suspense, type ReactNode } from "react";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate, useParams } from "react-router-dom";
@@ -24,7 +24,6 @@ import AdminCases from "./pages/AdminCases";
 import AdminClients from "./pages/AdminClients";
 import AdminConsultations from "./pages/AdminConsultations";
 import AdminSubscriptions from "./pages/AdminSubscriptions";
-import MessagesPage from "./pages/MessagesPage";
 import ClientProfile from "./pages/ClientProfile";
 import ClientSubscription from "./pages/ClientSubscription";
 import ClientCases from "./pages/ClientCases";
@@ -63,7 +62,6 @@ import GoogleAnalyticsTracker from "./components/GoogleAnalyticsTracker"; // Imp
 
 // NEW: Import Creator-specific pages
 import CreatorContracts from "./pages/CreatorContracts";
-import DealDetailPage from "./pages/DealDetailPage";
 import DealDeliveryDetailsPage from "./pages/DealDeliveryDetailsPage";
 import CreateDealPage from "./pages/CreateDealPage";
 import CreatorPaymentsAndRecovery from "./pages/CreatorPaymentsAndRecovery";
@@ -72,6 +70,7 @@ import CreatorContentProtection from "./pages/CreatorContentProtection";
 import CreatorTaxCompliancePage from "./pages/CreatorTaxCompliancePage";
 import CreatorOnboarding from "./pages/CreatorOnboarding"; // NEW: Import CreatorOnboarding
 import CreatorDashboardPreview from "./pages/CreatorDashboardPreview"; // NEW: Import CreatorDashboardPreview
+import DashboardPreview from "./pages/DashboardPreview"; // NEW: Dashboard Components Preview
 import BrandDirectory from "./pages/BrandDirectory";
 import BrandDetails from "./pages/BrandDetails";
 import BrandOpportunities from "./pages/BrandOpportunities";
@@ -83,7 +82,6 @@ import ReferralLanding from "./pages/ReferralLanding";
 import CreatorProfessionalTeamPage from "./pages/CreatorProfessionalTeam";
 import DocumentsVault from "./pages/DocumentsVault";
 import InsightsPage from "./pages/InsightsPage";
-import ContractUploadFlow from "./pages/ContractUploadFlow";
 import ContractComparison from "./pages/ContractComparison";
 import MaintenancePage from "./pages/MaintenancePage";
 import SearchResults from "./pages/SearchResults";
@@ -107,13 +105,33 @@ import UpgradePage from "./pages/UpgradePage";
 import CollabLinkLanding from "./pages/CollabLinkLanding";
 import CollabLinkSuccess from "./pages/CollabLinkSuccess";
 import CollabAcceptPage from "./pages/CollabAcceptPage";
+import CollabActionPage from "./pages/CollabActionPage";
 import LegacyCollabRedirect from "./components/collab/LegacyCollabRedirect";
 import LegacyCollabSuccessRedirect from "./components/collab/LegacyCollabSuccessRedirect";
 import CreatorsDirectory from "./pages/CreatorsDirectory";
 import CreatorProfilePage from "./pages/CreatorProfilePage";
+import PreviewAmanParmar from "./pages/PreviewAmanParmar";
+import PushTestLab from "./pages/PushTestLab";
 import { ErrorBoundary } from "./components/ui/error-boundary";
 import NetworkStatusWrapper from "./components/NetworkStatusWrapper";
 import ScrollToTop from "./components/ScrollToTop";
+
+const MessagesPage = lazy(() => import("./pages/MessagesPage"));
+const DealDetailPage = lazy(() => import("./pages/DealDetailPage"));
+const ContractUploadFlow = lazy(() => import("./pages/ContractUploadFlow"));
+
+const RouteFallback = () => (
+  <div className="min-h-[45vh] flex items-center justify-center px-4">
+    <div className="flex items-center gap-2 text-sm text-white/80">
+      <span className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+      Loading page...
+    </div>
+  </div>
+);
+
+const LazyRoute = ({ children }: { children: ReactNode }) => (
+  <Suspense fallback={<RouteFallback />}>{children}</Suspense>
+);
 
 // Redirect component for old brand-reply routes
 const ContractReadyRedirect = () => {
@@ -292,6 +310,8 @@ const App = () => {
                         {/* Preview Routes */}
                         <Route path="/dashboard-white-preview" element={<DashboardWhitePreview />} />
                         <Route path="/dashboard-preview" element={<CreatorDashboardPreview />} />
+                        <Route path="/dashboard-components-preview" element={<DashboardPreview />} />
+                        <Route path="/preview/aman-parmar" element={<PreviewAmanParmar />} />
 
                         {/* Referral Landing */}
                         <Route path="/p/:code" element={<ReferralLanding />} />
@@ -304,6 +324,8 @@ const App = () => {
                         {/* Collaboration Request Link Routes (Public) - SEO-friendly clean URLs */}
                         {/* Accept from email: public preview + soft auth, then redirect to deal */}
                         <Route path="/collab/accept/:requestToken" element={<CollabAcceptPage />} />
+                        <Route path="/collab/push-test" element={<Navigate to="/push-test" replace />} />
+                        <Route path="/collab-action" element={<CollabActionPage />} />
                         {/* Primary route: /collab/:username (clean URL for SEO) */}
                         <Route path="/collab/:username" element={<CollabLinkLanding />} />
                         <Route path="/collab/:username/success" element={<CollabLinkSuccess />} />
@@ -345,6 +367,7 @@ const App = () => {
                         <Route path="/collab-requests/:requestId/brief" element={<ProtectedLayout allowedRoles={['creator']}><CollabRequestBriefPage /></ProtectedLayout>} />
                         <Route path="/collab-requests/:requestId/counter" element={<ProtectedLayout allowedRoles={['creator']}><CollabRequestCounterPage /></ProtectedLayout>} />
                         <Route path="/creator-profile" element={<ProtectedLayout allowedRoles={['creator']}><CreatorProfile /></ProtectedLayout>} />
+                        <Route path="/push-test" element={<ProtectedLayout allowedRoles={['creator']}><PushTestLab /></ProtectedLayout>} />
                         <Route path="/creator-analytics" element={<ProtectedLayout allowedRoles={['creator']}><CreatorAnalytics /></ProtectedLayout>} />
                         <Route path="/notifications" element={<ProtectedLayout allowedRoles={['client', 'admin', 'chartered_accountant', 'creator']}><NotificationCenter /></ProtectedLayout>} />
                         <Route path="/search" element={<ProtectedLayout allowedRoles={['client', 'admin', 'chartered_accountant', 'creator']}><SearchResults /></ProtectedLayout>} />
@@ -356,7 +379,7 @@ const App = () => {
                         <Route path="/brand-deals" element={<ProtectedLayout allowedRoles={['creator']}><CreatorContracts /></ProtectedLayout>} />
                         <Route path="/create-deal" element={<ProtectedLayout allowedRoles={['creator']}><CreateDealPage /></ProtectedLayout>} />
                         <Route path="/creator-contracts/:dealId/delivery-details" element={<ProtectedLayout allowedRoles={['creator']}><DealDeliveryDetailsPage /></ProtectedLayout>} />
-                        <Route path="/creator-contracts/:dealId" element={<ProtectedLayout allowedRoles={['creator']}><DealDetailPage /></ProtectedLayout>} />
+                        <Route path="/creator-contracts/:dealId" element={<ProtectedLayout allowedRoles={['creator']}><LazyRoute><DealDetailPage /></LazyRoute></ProtectedLayout>} />
                         <Route path="/creator-payments" element={<ProtectedLayout allowedRoles={['creator']}><CreatorPaymentsAndRecovery /></ProtectedLayout>} />
                         <Route path="/payment/:paymentId" element={<ProtectedLayout allowedRoles={['creator']}><PaymentDetailPage /></ProtectedLayout>} />
                         {/* Protection route redirected to Deals - Protection is now integrated into each Deal */}
@@ -369,7 +392,7 @@ const App = () => {
                         <Route path="/brands/:brandId" element={<ProtectedLayout allowedRoles={['creator']}><BrandDetails /></ProtectedLayout>} />
                         <Route path="/brands/:brandId/opportunities" element={<ProtectedLayout allowedRoles={['creator']}><BrandOpportunities /></ProtectedLayout>} />
                         <Route path="/contract-analyzer" element={<ProtectedLayout allowedRoles={['creator']}><ContractAnalyzer /></ProtectedLayout>} />
-                        <Route path="/contract-upload" element={<ProtectedLayout allowedRoles={['creator']}><ContractUploadFlow /></ProtectedLayout>} />
+                        <Route path="/contract-upload" element={<ProtectedLayout allowedRoles={['creator']}><LazyRoute><ContractUploadFlow /></LazyRoute></ProtectedLayout>} />
                         <Route path="/contract-comparison" element={<ProtectedLayout allowedRoles={['creator']}><ContractComparison /></ProtectedLayout>} />
                         <Route path="/contract-protection/:contractId" element={<ProtectedLayout allowedRoles={['creator']}><ContractProtectionDetails /></ProtectedLayout>} />
                         {/* Public Brand Response Page - Redirect old routes to new Contract Ready page */}
@@ -399,7 +422,7 @@ const App = () => {
                         <Route path="/upgrade" element={<ProtectedLayout allowedRoles={['creator']}><UpgradePage /></ProtectedLayout>} />
 
                         {/* Shared routes (accessible by client, admin, CA, and creator - NOT lawyer) */}
-                        <Route path="/messages" element={<ProtectedLayout allowedRoles={['client', 'admin', 'chartered_accountant', 'creator']}><MessagesPage /></ProtectedLayout>} />
+                        <Route path="/messages" element={<ProtectedLayout allowedRoles={['client', 'admin', 'chartered_accountant', 'creator']}><LazyRoute><MessagesPage /></LazyRoute></ProtectedLayout>} />
 
                         {/* Advisor Dashboard (for admin and CA roles) */}
                         <Route path="/advisor-dashboard" element={<ProtectedLayout allowedRoles={['admin', 'chartered_accountant']}><AdvisorDashboard /></ProtectedLayout>} />

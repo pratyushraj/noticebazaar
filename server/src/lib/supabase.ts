@@ -1,6 +1,7 @@
 
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from '../types/supabase.js';
+import '../loadEnv.js';
 
 // Initialize Supabase client
 // Use VITE_SUPABASE_URL if SUPABASE_URL is not set or is a variable reference (for local dev)

@@ -146,7 +146,14 @@ export const useDealAlertNotifications = () => {
       });
 
       if (!response.ok) {
-        return { success: false, reason: 'subscribe_failed' };
+        let errorReason = 'subscribe_failed';
+        try {
+          const errorJson = await response.json();
+          errorReason = errorJson?.details || errorJson?.code || errorJson?.error || `subscribe_failed_${response.status}`;
+        } catch {
+          errorReason = `subscribe_failed_${response.status}`;
+        }
+        return { success: false, reason: errorReason };
       }
 
       setIsSubscribed(true);
