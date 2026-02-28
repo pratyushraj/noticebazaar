@@ -40,15 +40,16 @@ export const useDealAlertNotifications = () => {
   const isStandalone = useMemo(() => isStandaloneMode(), []);
   const isIOSNeedsInstall = isIOS && !isStandalone;
   const pushApiBase = useMemo(() => {
-    const base = getApiBaseUrl();
-    if (typeof window === 'undefined') return base;
+    if (typeof window === 'undefined') return getApiBaseUrl();
     const host = window.location.hostname.toLowerCase();
     const isPublicHost =
       host.endsWith('creatorarmour.com') ||
       host.endsWith('noticebazaar.com') ||
       host.endsWith('vercel.app');
-    // Hard-pin push routes to known-good backend to avoid edge rewrite drift.
-    return isPublicHost ? 'https://noticebazaar-api.onrender.com' : base;
+    // On production Vercel, use RELATIVE paths so requests go through the
+    // same-origin /api/push/* Vercel rewrite → Render. This avoids iOS Safari
+    // CSP cross-origin blocking of direct fetches to noticebazaar-api.onrender.com.
+    return isPublicHost ? '' : getApiBaseUrl();
   }, []);
 
   const hasVapidKey = !!import.meta.env.VITE_VAPID_PUBLIC_KEY;
