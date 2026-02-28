@@ -30,6 +30,15 @@ const PushTestLab = () => {
   const [copyMessage, setCopyMessage] = useState<string | null>(null);
 
   const apiBaseUrl = useMemo(() => getApiBaseUrl(), []);
+  const pushApiBase = useMemo(() => {
+    if (typeof window === 'undefined') return apiBaseUrl;
+    const host = window.location.hostname.toLowerCase();
+    const isPublicHost =
+      host.endsWith('creatorarmour.com') ||
+      host.endsWith('noticebazaar.com') ||
+      host.endsWith('vercel.app');
+    return isPublicHost ? '' : apiBaseUrl;
+  }, [apiBaseUrl]);
 
   const getToken = async () => {
     const { supabase } = await import('@/integrations/supabase/client');
@@ -75,7 +84,7 @@ const PushTestLab = () => {
     try {
       const token = await getToken();
       if (!token) throw new Error('No auth token');
-      const response = await fetch(`${apiBaseUrl}/api/push/debug-status`, {
+      const response = await fetch(`${pushApiBase}/api/push/debug-status`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -96,7 +105,7 @@ const PushTestLab = () => {
     try {
       const token = await getToken();
       if (!token) throw new Error('No auth token');
-      const response = await fetch(`${apiBaseUrl}/api/push/test`, {
+      const response = await fetch(`${pushApiBase}/api/push/test`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -127,7 +136,7 @@ const PushTestLab = () => {
 
       const subscription = await ensureBrowserSubscription();
 
-      const response = await fetch(`${apiBaseUrl}/api/push/direct-test`, {
+      const response = await fetch(`${pushApiBase}/api/push/direct-test`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -165,7 +174,7 @@ const PushTestLab = () => {
         body: 'This test bypasses Supabase reads and sends directly.',
         url: '/push-test',
       };
-      const resolvedApiBaseUrl = apiBaseUrl || window.location.origin;
+      const resolvedApiBaseUrl = pushApiBase || window.location.origin;
 
       const escapedPayload = JSON.stringify(payload).replace(/'/g, `'\"'\"'`);
       const curl = [
@@ -196,7 +205,7 @@ const PushTestLab = () => {
 
         <div className="rounded-2xl border border-white/15 bg-white/5 p-4 space-y-2">
           <p className="text-sm text-white/80">User: {user?.email || 'Not logged in'}</p>
-          <p className="text-sm text-white/80">API: {apiBaseUrl || '(same origin)'}</p>
+          <p className="text-sm text-white/80">API: {pushApiBase || '(same origin)'}</p>
           <p className="text-sm text-white/80">Browser support: {isSupported ? 'yes' : 'no'}</p>
           <p className="text-sm text-white/80">VAPID key loaded: {hasVapidKey ? 'yes' : 'no'}</p>
           <p className="text-sm text-white/80">Permission: {permission}</p>

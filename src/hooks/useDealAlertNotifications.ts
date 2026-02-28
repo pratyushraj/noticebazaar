@@ -38,6 +38,16 @@ export const useDealAlertNotifications = () => {
   const isIOS = useMemo(() => isIOSDevice(), []);
   const isStandalone = useMemo(() => isStandaloneMode(), []);
   const isIOSNeedsInstall = isIOS && !isStandalone;
+  const pushApiBase = useMemo(() => {
+    const base = getApiBaseUrl();
+    if (typeof window === 'undefined') return base;
+    const host = window.location.hostname.toLowerCase();
+    const isPublicHost =
+      host.endsWith('creatorarmour.com') ||
+      host.endsWith('noticebazaar.com') ||
+      host.endsWith('vercel.app');
+    return isPublicHost ? '' : base;
+  }, []);
 
   const hasVapidKey = !!import.meta.env.VITE_VAPID_PUBLIC_KEY;
 
@@ -65,7 +75,7 @@ export const useDealAlertNotifications = () => {
         return;
       }
 
-      const response = await fetch(`${getApiBaseUrl()}/api/push/status`, {
+      const response = await fetch(`${pushApiBase}/api/push/status`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -134,7 +144,7 @@ export const useDealAlertNotifications = () => {
         return { success: false, reason: 'not_authenticated' };
       }
 
-      const response = await fetch(`${getApiBaseUrl()}/api/push/subscribe`, {
+      const response = await fetch(`${pushApiBase}/api/push/subscribe`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -165,7 +175,7 @@ export const useDealAlertNotifications = () => {
     } finally {
       setIsBusy(false);
     }
-  }, [hasVapidKey, isSupported]);
+  }, [hasVapidKey, isSupported, pushApiBase]);
 
   return {
     isSupported,

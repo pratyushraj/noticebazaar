@@ -6,6 +6,10 @@
   "framework": "vite",
   "rewrites": [
     {
+      "source": "/api/push/(.*)",
+      "destination": "https://noticebazaar-api.onrender.com/api/push/$1"
+    },
+    {
       "source": "/api/dashboard-preview",
       "destination": "/api/dashboard-preview"
     },
@@ -15,7 +19,7 @@
     },
     {
       "source": "/api/(.*)",
-      "destination": "https://server-funnyraj10-3806s-projects.vercel.app/api/$1"
+      "destination": "https://api.creatorarmour.com/api/$1"
     },
     {
       "source": "/dashboard-preview",
@@ -28,6 +32,10 @@
     {
       "source": "/assets/:path*",
       "destination": "/assets/:path*"
+    },
+    {
+      "source": "/collab/:path*",
+      "destination": "/index.html"
     },
     {
       "source": "/((?!api/|assets/|.*\\..*).*)",
