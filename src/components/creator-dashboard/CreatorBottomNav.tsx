@@ -24,37 +24,37 @@ const CreatorBottomNav = () => {
     matchPaths: string[];
     onClick?: (e: React.MouseEvent) => void;
   }> = [
-    { 
-      to: "/creator-dashboard", 
-      icon: LayoutDashboard, 
-      label: "Home",
-      matchPaths: ["/creator-dashboard"]
-    },
-    { 
-      to: "/creator-contracts", 
-      icon: Briefcase, 
-      label: "Deals",
-      matchPaths: ["/creator-contracts", "/contract-upload", "/contract-protection"]
-    },
-    { 
-      to: "/creator-payments", 
-      icon: Wallet, 
-      label: "Payments",
-      matchPaths: ["/creator-payments", "/insights"]
-    },
-    { 
-      to: "/creator-collab", 
-      icon: Link2, 
-      label: "Collab",
-      matchPaths: ["/creator-collab"]
-    },
-    { 
-      to: "/creator-profile", 
-      icon: User, 
-      label: "Profile",
-      matchPaths: ["/creator-profile"]
-    },
-  ];
+      {
+        to: "/creator-dashboard",
+        icon: LayoutDashboard,
+        label: "Home",
+        matchPaths: ["/creator-dashboard"]
+      },
+      {
+        to: "/creator-contracts",
+        icon: Briefcase,
+        label: "Deals",
+        matchPaths: ["/creator-contracts", "/contract-upload", "/contract-protection"]
+      },
+      {
+        to: "/creator-payments",
+        icon: Wallet,
+        label: "Payments",
+        matchPaths: ["/creator-payments", "/insights"]
+      },
+      {
+        to: "/creator-collab",
+        icon: Link2,
+        label: "Collab",
+        matchPaths: ["/creator-collab"]
+      },
+      {
+        to: "/creator-profile",
+        icon: User,
+        label: "Profile",
+        matchPaths: ["/creator-profile"]
+      },
+    ];
 
   const isActive = (item: typeof navItems[0]) => {
     return item.matchPaths.some(path => location.pathname.startsWith(path));
@@ -81,7 +81,7 @@ const CreatorBottomNav = () => {
 
       const viewport = window.visualViewport;
       const currentViewportHeight = viewport.height;
-      
+
       // More sensitive threshold: if viewport height is less than 60% of initial, or
       // if the difference is more than 200px, keyboard is open
       const threshold1 = viewportInitialHeight * 0.6;
@@ -139,60 +139,59 @@ const CreatorBottomNav = () => {
   }, [location.pathname]); // Re-run when route changes to catch new inputs
 
   const bottomNavContent = (
-      <motion.div 
-        data-bottom-nav="true"
-        className={cn(
-          "fixed bottom-0 left-0 right-0",
-          // Translucent background so purple gradient shows through
-          "bg-white/5 backdrop-blur-2xl",
-          "border-t border-white/15",
-          shadows.depth,
-          radius.xl,
-          "progressive-blur transition-transform duration-300 ease-in-out",
-          "pointer-events-auto",
-          isKeyboardOpen && "translate-y-full"
-        )}
-        initial={{ y: 100, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={animations.spring}
+    <motion.div
+      data-bottom-nav="true"
+      className={cn(
+        "fixed bottom-0 left-0 right-0",
+        // Translucent background so purple gradient shows through
+        "bg-white/5 backdrop-blur-2xl",
+        "border-t border-white/15",
+        shadows.depth,
+        radius.xl,
+        "progressive-blur transition-transform duration-300 ease-in-out",
+        "pointer-events-auto",
+        isKeyboardOpen && "translate-y-full"
+      )}
+      initial={{ y: 100, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      transition={animations.spring}
+      style={{
+        position: 'fixed',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        zIndex: 9999,
+        width: '100%',
+        maxWidth: '100vw',
+        pointerEvents: 'auto',
+        // Pad the inside for the iPhone home indicator
+        paddingBottom: 'env(safe-area-inset-bottom, 0px)',
+        WebkitTransform: 'translateZ(0)',
+        transform: 'translateZ(0)',
+        willChange: 'transform',
+      }}
+    >
+      {/* Spotlight gradient at top */}
+      <div className={cn(spotlight.top, "opacity-50")} />
+
+      {/* Inner border for depth */}
+      <div className="absolute inset-x-0 top-0 h-[1px] bg-white/10" />
+
+      <nav
+        className="flex justify-around h-14 md:h-12 items-center px-2 md:px-4 relative z-10 pointer-events-auto"
         style={{
-          position: 'fixed',
-          bottom: 'env(safe-area-inset-bottom, 0px)',
-          left: 0,
-          right: 0,
-          zIndex: 9999, // Increased for Android browser compatibility
-          width: '100%',
-          maxWidth: '100vw', // Ensure it doesn't overflow
+          paddingTop: '6px',
+          paddingBottom: '6px',
+          // Remove hardcoded minHeight - let height class handle it
           pointerEvents: 'auto',
-          // iOS safe area support - add padding to container
-          paddingBottom: 'env(safe-area-inset-bottom, 0px)',
-          // Android-specific fixes
-          WebkitTransform: 'translateZ(0)', // Force hardware acceleration
-          transform: 'translateZ(0)',
-          willChange: 'transform',
         }}
+        role="navigation"
+        aria-label="Bottom navigation"
       >
-        {/* Spotlight gradient at top */}
-        <div className={cn(spotlight.top, "opacity-50")} />
-        
-        {/* Inner border for depth */}
-        <div className="absolute inset-x-0 top-0 h-[1px] bg-white/10" />
-        
-        <nav 
-          className="flex justify-around h-14 md:h-12 items-center px-2 md:px-4 relative z-10 pointer-events-auto"
-          style={{ 
-            paddingTop: '6px',
-            paddingBottom: '6px',
-            // Remove hardcoded minHeight - let height class handle it
-            pointerEvents: 'auto',
-          }}
-          role="navigation"
-          aria-label="Bottom navigation"
-        >
         {navItems.map((item) => {
           const Icon = item.icon;
           const active = isActive(item);
-          
+
           const handleKeyDown = (e: React.KeyboardEvent) => {
             if (e.key === 'Enter' || e.key === ' ') {
               e.preventDefault();
@@ -231,8 +230,8 @@ const CreatorBottomNav = () => {
                   "min-h-[44px] min-w-[44px] touch-manipulation",
                   "pointer-events-auto",
                   "cursor-pointer",
-                  active 
-                    ? "text-white" 
+                  active
+                    ? "text-white"
                     : "text-white/70"
                 )}
                 style={{
@@ -259,8 +258,8 @@ const CreatorBottomNav = () => {
                     )} />
                   </>
                 )}
-                
-                <motion.div 
+
+                <motion.div
                   className={cn(
                     "relative flex items-center justify-center mb-1 transition-transform duration-150",
                     active && "scale-110"
@@ -274,7 +273,7 @@ const CreatorBottomNav = () => {
                     active && "text-white", shadows.sm
                   )} />
                 </motion.div>
-                
+
                 <span className={cn(
                   "text-[11px] md:text-[10px] font-semibold transition-all duration-200",
                   active && "text-white font-bold"
@@ -293,7 +292,7 @@ const CreatorBottomNav = () => {
   if (typeof window !== 'undefined') {
     return createPortal(bottomNavContent, document.body);
   }
-  
+
   return bottomNavContent;
 };
 

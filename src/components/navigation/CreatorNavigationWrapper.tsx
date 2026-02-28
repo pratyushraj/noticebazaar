@@ -133,7 +133,7 @@ export const CreatorNavigationWrapper: React.FC<CreatorNavigationWrapperProps> =
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter className="gap-2 sm:gap-0">
-            <AlertDialogCancel 
+            <AlertDialogCancel
               onClick={() => {
                 triggerHaptic(HapticPatterns.light);
               }}
@@ -145,7 +145,7 @@ export const CreatorNavigationWrapper: React.FC<CreatorNavigationWrapperProps> =
               onClick={async () => {
                 try {
                   triggerHaptic(HapticPatterns.medium);
-                  
+
                   // Analytics tracking
                   if (typeof window !== 'undefined' && (window as any).gtag) {
                     (window as any).gtag('event', 'logout', {
@@ -154,7 +154,7 @@ export const CreatorNavigationWrapper: React.FC<CreatorNavigationWrapperProps> =
                       method: 'navigation_wrapper'
                     });
                   }
-                  
+
                   await signOutMutation.mutateAsync();
                   setShowMenu(false);
                   setShowLogoutDialog(false);
@@ -186,13 +186,11 @@ export const CreatorNavigationWrapper: React.FC<CreatorNavigationWrapperProps> =
         className={cn(
           "relative z-10",
           spacing.page,
-          "pb-24",
-          shouldShowBottomNav && "pb-24"
         )}
         style={{
-          paddingBottom: shouldShowBottomNav 
-            ? `calc(96px + env(safe-area-inset-bottom, 0px))`
-            : `calc(24px + env(safe-area-inset-bottom, 0px))`,
+          paddingBottom: shouldShowBottomNav
+            ? `calc(6rem + env(safe-area-inset-bottom, 16px))`
+            : `calc(1.5rem + env(safe-area-inset-bottom, 0px))`,
         }}
       >
         {children}
