@@ -80,7 +80,9 @@ export function getApiBaseUrl(): string {
       host.endsWith('trycloudflare.com');
 
     if (isPublicHost && localhostPattern.test(cleanedUrl)) {
-      cleanedUrl = '';
+      // Never allow localhost API on public frontend hosts.
+      // Route directly to production API domain.
+      cleanedUrl = 'https://api.creatorarmour.com';
     }
   }
 
