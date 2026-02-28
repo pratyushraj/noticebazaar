@@ -237,7 +237,6 @@ const ProfileSettings = () => {
   const [activeNudgeField, setActiveNudgeField] = useState<'avgViews' | 'region' | 'mediaKit' | null>(null);
   const [positioningNudge, setPositioningNudge] = useState<string | null>(null);
   const [ctaPressed, setCtaPressed] = useState(false);
-  const [isTestingPush, setIsTestingPush] = useState(false);
   const passiveNudgeIndexRef = useRef(0);
   const successNudgeTimeoutRef = useRef<number | null>(null);
   const hasManualDealSizeSelectionRef = useRef(false);
@@ -259,6 +258,7 @@ const ProfileSettings = () => {
     hasVapidKey,
     isIOSNeedsInstall,
     enableNotifications,
+    sendTestPush,
   } = useDealAlertNotifications();
 
   // Fetch real data for stats
@@ -560,62 +560,23 @@ const ProfileSettings = () => {
   };
 
   const handleTestPushFromAccount = async () => {
-    if (isTestingPush || !isPushSubscribed) return;
+    if (isPushBusy || !isPushSubscribed) return;
 
-    setIsTestingPush(true);
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.access_token) {
-        toast.error('Please sign in again and retry.');
-        return;
-      }
+    const result = await sendTestPush();
 
-      const response = await fetch(`${getApiBaseUrl()}/api/push/test`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${session.access_token}`,
-        },
-        body: JSON.stringify({
-          title: 'Test Notification 🚀',
-          body: 'If you see this, your push notifications are working perfectly!',
-          url: '/creator-profile?section=account',
-        }),
-      });
-
-      const raw = await response.text();
-      let data: any = {};
-      try {
-        data = raw ? JSON.parse(raw) : {};
-      } catch {
-        data = { error: raw?.slice(0, 160) || `HTTP ${response.status}` };
-      }
-
-      if (!response.ok) {
-        const apiError = data?.error || data?.reason || `Test push request failed (${response.status})`;
-        toast.error(String(apiError));
-        return;
-      }
-
-      if (data.success && data.sentCount > 0) {
-        toast.success('Test notification sent to your device!');
+    if (result.success) {
+      toast.success('Test notification sent to your device!');
+    } else {
+      const reason = result.reason || 'unknown';
+      if (reason === 'vapid_not_configured') {
+        toast.error('Push server is not configured (missing VAPID keys).');
+      } else if (reason === 'no_subscriptions') {
+        toast.error('No active device subscription found. Tap Refresh Notifications and try again.');
+      } else if (reason === 'all_push_attempts_failed') {
+        toast.error('Push delivery failed for all devices. Please refresh and retry.');
       } else {
-        const reason = data?.reason || data?.error || 'unknown';
-        if (reason === 'vapid_not_configured') {
-          toast.error('Push server is not configured (missing VAPID keys).');
-        } else if (reason === 'no_subscriptions') {
-          toast.error('No active device subscription found. Tap Refresh Notifications and try again.');
-        } else if (reason === 'all_push_attempts_failed') {
-          toast.error(`Push delivery failed for all devices (${data?.failedCount || data?.failed || 0}). Please refresh and retry.`);
-        } else {
-          toast.error(`Test push failed: ${reason}`);
-        }
+        toast.error(`Test push failed: ${reason}`);
       }
-    } catch (error: any) {
-      logger.error('CreatorProfile', 'Failed to send test push notification', error);
-      toast.error(error?.message || 'Failed to send test notification.');
-    } finally {
-      setIsTestingPush(false);
     }
   };
 
@@ -1686,6 +1647,8 @@ const ProfileSettings = () => {
                           // Update profile
                           await updateProfileMutation.mutateAsync({
                             id: profile.id,
+                            first_name: profile.first_name || '',
+                            last_name: profile.last_name || '',
                             avatar_url: publicUrl,
                           });
 
@@ -1964,7 +1927,7 @@ const ProfileSettings = () => {
                   </p>
                   {formData.instagramHandle && (
                     <p className="text-xs text-purple-300 mt-1">
-                      Link: {window.location.origin}/{formData.instagramHandle}
+                      Link: {window?.location?.origin || ''}/{formData.instagramHandle}
                     </p>
                   )}
                 </div>
@@ -2001,7 +1964,7 @@ const ProfileSettings = () => {
                           <div className="mt-2 h-1.5 rounded-full bg-white/10 overflow-hidden">
                             <div
                               className="h-full bg-gradient-to-r from-purple-400/80 to-indigo-400/80 rounded-full"
-                              style={{ width: `${Math.min(100, Math.max(0, achievement.progress))}%` }}
+                              style={{ width: `${Math.min(100, Math.max(0, achievement.progress || 0))}%` }}
                             />
                           </div>
                         </>
@@ -2818,10 +2781,10 @@ const ProfileSettings = () => {
                     <button
                       type="button"
                       onClick={handleTestPushFromAccount}
-                      disabled={isTestingPush}
+                      disabled={isPushBusy}
                       className="inline-flex items-center justify-center rounded-lg px-4 py-2 text-sm font-semibold bg-violet-500/20 hover:bg-violet-500/30 text-violet-200 border border-violet-500/30 disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
                     >
-                      {isTestingPush ? 'Sending…' : 'Send Test Notification'}
+                      {isPushBusy ? 'Sending…' : 'Send Test Notification'}
                     </button>
                     <span className="text-xs text-emerald-300/90">Push alerts active</span>
                   </>

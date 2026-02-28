@@ -239,7 +239,7 @@ export const notifyCreatorOnCollabRequestCreated = async ({
         requestId,
       });
 
-      for (const sub of subs) {
+      const pushPromises = subs.map(async (sub) => {
         try {
           await webpush.sendNotification(
             {
@@ -251,14 +251,21 @@ export const notifyCreatorOnCollabRequestCreated = async ({
             },
             payload
           );
-          pushSent = true;
+          return true;
         } catch (pushError: any) {
           console.warn('[PushNotificationService] Push send failed for subscription:', pushError?.message || pushError);
           if (isGoneSubscriptionError(pushError)) {
-            await supabase.from('creator_push_subscriptions').delete().eq('id', sub.id);
+            // Background delete; don't await to keep notify fast
+            supabase.from('creator_push_subscriptions').delete().eq('id', sub.id).then(({ error }) => {
+              if (error) console.warn('[PushNotificationService] Failed to cleanup stale sub:', sub.id, error.message);
+            });
           }
+          return false;
         }
-      }
+      });
+
+      const results = await Promise.all(pushPromises);
+      pushSent = results.some(r => r === true);
     }
   }
 
@@ -316,10 +323,7 @@ export const sendTestPushToCreator = async (
     sentAt: new Date().toISOString(),
   });
 
-  let delivered = 0;
-  let failed = 0;
-
-  for (const sub of subs) {
+  const pushPromises = subs.map(async (sub) => {
     try {
       await webpush.sendNotification(
         {
@@ -331,15 +335,21 @@ export const sendTestPushToCreator = async (
         },
         notificationPayload
       );
-      delivered += 1;
+      return { success: true, id: sub.id };
     } catch (error: any) {
-      failed += 1;
       console.warn('[PushNotificationService] Test push failed:', error?.message || error);
-      if (isGoneSubscriptionError(error)) {
-        await supabase.from('creator_push_subscriptions').delete().eq('id', sub.id);
+      const isGone = isGoneSubscriptionError(error);
+      if (isGone) {
+        // Background delete
+        supabase.from('creator_push_subscriptions').delete().eq('id', sub.id).catch(() => { });
       }
+      return { success: false, id: sub.id, isGone };
     }
-  }
+  });
+
+  const results = await Promise.all(pushPromises);
+  const delivered = results.filter(r => r.success).length;
+  const failed = results.filter(r => !r.success).length;
 
   return {
     sent: delivered > 0,

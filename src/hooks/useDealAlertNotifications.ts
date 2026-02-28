@@ -178,6 +178,45 @@ export const useDealAlertNotifications = () => {
     }
   }, [hasVapidKey, isSupported, pushApiBase]);
 
+  const sendTestPush = useCallback(async (options?: { title?: string; body?: string }): Promise<{ success: boolean; reason?: string }> => {
+    setIsBusy(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token;
+      if (!token) {
+        return { success: false, reason: 'not_authenticated' };
+      }
+
+      const response = await fetch(`${pushApiBase}/api/push/test`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          title: options?.title || 'Test Notification 🚀',
+          body: options?.body || 'If you see this, your push notifications are working perfectly!',
+          url: '/creator-profile?section=account',
+        }),
+      });
+
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        return { success: false, reason: data.error || data.reason || `server_error_${response.status}` };
+      }
+
+      if (data.success && data.sentCount > 0) {
+        return { success: true };
+      }
+
+      return { success: false, reason: data.reason || 'all_push_attempts_failed' };
+    } catch (error: any) {
+      return { success: false, reason: error?.message || 'unknown_error' };
+    } finally {
+      setIsBusy(false);
+    }
+  }, [pushApiBase]);
+
   return {
     isSupported,
     permission,
@@ -189,5 +228,6 @@ export const useDealAlertNotifications = () => {
     enableNotifications,
     dismissPrompt,
     refreshStatus: syncSubscriptionStatus,
+    sendTestPush,
   };
 };
