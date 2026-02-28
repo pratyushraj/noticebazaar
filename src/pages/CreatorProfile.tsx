@@ -1743,10 +1743,7 @@ const ProfileSettings = () => {
           <div className="space-y-3">
             {/* Basic Information */}
             <div
-              className={cn(
-                "bg-white/8 rounded-xl p-4 border border-white/15 transition-all duration-200 ease-out",
-                collabHeroAnimated ? "opacity-100 scale-100 shadow-[0_0_0_1px_rgba(255,255,255,0.08),0_14px_30px_rgba(139,92,246,0.22)]" : "opacity-0 scale-[0.96]"
-              )}
+              className="bg-white/8 rounded-xl p-4 border border-white/15"
             >
               <h2 className="font-semibold text-base mb-3 flex items-center gap-2">
                 <User className="w-4 h-4" />
