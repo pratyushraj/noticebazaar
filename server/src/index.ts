@@ -355,7 +355,44 @@ app.use('/api/conversations', authMiddleware, rateLimitMiddleware, conversations
 app.use('/api/conversations', authMiddleware, rateLimitMiddleware, messagesRouter);
 app.use('/api/conversations', authMiddleware, rateLimitMiddleware, attachmentsRouter);
 app.use('/api/payments', authMiddleware, rateLimitMiddleware, paymentsRouter);
+// Internal: allow Vercel api server to trigger collab push via Render's VAPID keys (no user auth)
+// MUST be registered before the auth-protected /api/push router
+app.post('/api/push/notify-collab', async (req: express.Request, res: express.Response) => {
+  try {
+    const authHeader = req.headers['authorization'] || '';
+    const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
+    // Validate by matching last 20 chars of service role key
+    if (!serviceKey || !authHeader.includes(serviceKey.slice(-20))) {
+      return res.status(401).json({ success: false, error: 'Unauthorized' });
+    }
+    const { creatorId, requestId, brandName, collabType, deliverables, deadline } = req.body || {};
+    if (!creatorId || !requestId) {
+      return res.status(400).json({ success: false, error: 'creatorId and requestId required' });
+    }
+    const { notifyCreatorOnCollabRequestCreated } = await import('./services/pushNotificationService.js');
+    const result = await notifyCreatorOnCollabRequestCreated({
+      creatorId,
+      requestId,
+      emailData: {
+        brandName: brandName || 'A brand',
+        collabType: collabType || 'paid',
+        deliverables: deliverables || [],
+        deadline: deadline || undefined,
+        requestId,
+      },
+      creatorEmail: null,
+    });
+    console.log(`[PushInternal] /notify-collab result for ${requestId}:`, result);
+    return res.json({ success: result.sent, ...result });
+  } catch (error: any) {
+    console.error('[PushInternal] /notify-collab error:', error);
+    return res.status(500).json({ success: false, error: error.message });
+  }
+});
+
 app.use('/api/push', authMiddleware, rateLimitMiddleware, pushNotificationsRouter);
+
+
 
 // Demo email (only when ALLOW_DEMO_EMAIL=true; restricted to *@yopmail.com)
 app.post('/api/demo-email/barter-accepted', async (req: express.Request, res: express.Response) => {
