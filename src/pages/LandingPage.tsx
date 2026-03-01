@@ -408,20 +408,20 @@ const LandingPage = () => {
             </motion.div>
 
             {/* CTAs */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, delay: 0.2 }}
-                className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-4"
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.2 }}
+              className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-4"
+            >
+              <Link
+                to="/signup"
+                className="group relative bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 px-8 py-4 rounded-full font-bold text-lg transition-all duration-300 active:scale-95 shadow-2xl shadow-violet-900/50 flex items-center gap-2 border border-white/20 overflow-hidden min-h-[56px]"
               >
-                <Link
-                  to="/signup"
-                  className="group relative bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 px-8 py-4 rounded-full font-bold text-lg transition-all duration-300 active:scale-95 shadow-2xl shadow-violet-900/50 flex items-center gap-2 border border-white/20 overflow-hidden min-h-[56px]"
-                >
-                  <span className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></span>
-                  <span className="relative z-10">Get My Collab Link</span>
-                  <ArrowRight className="w-5 h-5 relative z-10 transition-transform duration-300 group-hover:translate-x-1" />
-                </Link>
+                <span className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></span>
+                <span className="relative z-10">Get My Collab Link</span>
+                <ArrowRight className="w-5 h-5 relative z-10 transition-transform duration-300 group-hover:translate-x-1" />
+              </Link>
 
               <button
                 onClick={() => {
@@ -467,6 +467,32 @@ const LandingPage = () => {
               <div className="flex items-center gap-2">
                 <Shield className="w-4 h-4 text-pink-400" />
                 <span>Free forever plan</span>
+              </div>
+            </motion.div>
+
+            {/* Mobile Mockup Presentation */}
+            <motion.div
+              initial={{ opacity: 0, y: 40 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.5 }}
+              className="mt-16 relative max-w-[320px] mx-auto md:max-w-none md:w-[350px]"
+            >
+              {/* Glow Effect behind phone */}
+              <div className="absolute inset-0 bg-gradient-to-tr from-purple-500 to-indigo-500 blur-3xl opacity-20 transform scale-105 rounded-full" />
+
+              {/* Phone Frame */}
+              <div className="relative rounded-[2.5rem] bg-black border-[6px] border-slate-800 shadow-2xl overflow-hidden aspect-[390/844]">
+                {/* iPhone Dynamic Island / Notch */}
+                <div className="absolute top-0 inset-x-0 h-7 flex justify-center z-20">
+                  <div className="w-32 h-6 bg-black rounded-b-3xl"></div>
+                </div>
+
+                {/* Screenshot Image */}
+                <img
+                  src="/dashboard_mobile_view.png"
+                  alt="CreatorArmour Dashboard Preview"
+                  className="w-full h-full object-cover"
+                />
               </div>
             </motion.div>
 
@@ -607,7 +633,7 @@ const LandingPage = () => {
                 viewport={{ once: true }}
                 className={`relative ${index > 1 ? 'hidden md:block' : ''}`}
               >
-                  <div className="bg-white/5 backdrop-blur-md rounded-2xl p-8 border border-white/10 h-full">
+                <div className="bg-white/5 backdrop-blur-md rounded-2xl p-8 border border-white/10 h-full">
                   <div className="absolute -top-4 -left-4 w-12 h-12 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full flex items-center justify-center font-bold text-xl shadow-lg">
                     {step.step}
                   </div>
@@ -775,7 +801,7 @@ const LandingPage = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: index * 0.1 }}
                 viewport={{ once: true }}
-              className={`bg-white/5 backdrop-blur-md rounded-2xl p-6 border border-white/10 ${index > 0 ? 'hidden md:block' : ''}`}
+                className={`bg-white/5 backdrop-blur-md rounded-2xl p-6 border border-white/10 ${index > 0 ? 'hidden md:block' : ''}`}
               >
                 <div className="flex items-center gap-1 mb-4">
                   {[...Array(testimonial.rating)].map((_, i) => (
