@@ -2147,20 +2147,20 @@ const CreatorDashboard = () => {
 
                         <div className="mt-4 pt-4 border-t border-white/10">
                           <p className="text-xs font-medium uppercase tracking-wide text-white/55 mb-2">Momentum</p>
-                          <div className="grid grid-cols-1 sm:grid-cols-4 gap-2">
-                            <div className="rounded-lg border border-white/15 bg-white/5 px-3 py-2">
+                          <div className="flex overflow-x-auto snap-x snap-mandatory gap-3 pb-2 -mx-4 px-4 sm:mx-0 sm:px-0 sm:grid sm:grid-cols-4 sm:gap-2 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']">
+                            <div className="snap-center shrink-0 w-[140px] sm:w-auto rounded-lg border border-white/15 bg-white/5 px-3 py-2">
                               <p className="text-[11px] text-white/60">Brands visited</p>
                               <p className="text-sm font-semibold text-white mt-1">{collabMomentum.brandVisits}</p>
                             </div>
-                            <div className="rounded-lg border border-white/15 bg-white/5 px-3 py-2">
+                            <div className="snap-center shrink-0 w-[140px] sm:w-auto rounded-lg border border-white/15 bg-white/5 px-3 py-2">
                               <p className="text-[11px] text-white/60">Offers received</p>
                               <p className="text-sm font-semibold text-white mt-1">{collabMomentum.offersReceived}</p>
                             </div>
-                            <div className="rounded-lg border border-white/15 bg-white/5 px-3 py-2">
+                            <div className="snap-center shrink-0 w-[140px] sm:w-auto rounded-lg border border-white/15 bg-white/5 px-3 py-2">
                               <p className="text-[11px] text-white/60">Response time</p>
                               <p className="text-sm font-semibold text-white mt-1">{collabMomentum.responseTime}</p>
                             </div>
-                            <div className="rounded-lg border border-white/15 bg-white/5 px-3 py-2">
+                            <div className="snap-center shrink-0 w-[140px] sm:w-auto rounded-lg border border-white/15 bg-white/5 px-3 py-2">
                               <p className="text-[11px] text-white/60">Active collaborations</p>
                               <p className="text-sm font-semibold text-white mt-1">{activeDealsPreview.length > 0 ? activeDealsPreview.length.toString() : '—'}</p>
                             </div>
@@ -2169,7 +2169,7 @@ const CreatorDashboard = () => {
 
                         <div className="mt-4 pt-4 border-t border-white/10">
                           <p className="text-xs font-medium uppercase tracking-wide text-white/55 mb-2">Signals</p>
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                          <div className="flex overflow-x-auto snap-x snap-mandatory gap-3 pb-2 -mx-4 px-4 sm:mx-0 sm:px-0 sm:grid sm:grid-cols-2 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']">
                             {collabSignals.tiles.map((tile) => (
                               <button
                                 key={tile.key}
@@ -2179,7 +2179,7 @@ const CreatorDashboard = () => {
                                   navigate('/creator-profile');
                                 }}
                                 className={cn(
-                                  "rounded-lg border p-3 text-left transition-colors",
+                                  "snap-center shrink-0 w-[240px] sm:w-auto rounded-lg border p-3 text-left transition-colors",
                                   tile.done
                                     ? "border-emerald-400/35 bg-emerald-500/10"
                                     : "border-white/15 bg-white/5 hover:bg-white/10"
