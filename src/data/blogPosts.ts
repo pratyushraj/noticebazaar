@@ -36,25 +36,25 @@ export interface BlogPost {
   readTime: string;
   image?: string;
   summary: string; // Short summary for listing page
-  
+
   // Content structure
   content: {
     introduction: string; // First paragraph
     sections: BlogPostContentSection[];
     conclusion?: string;
   };
-  
+
   // SEO & Schema
   faqs: BlogPostFAQ[];
   keywords: string[];
-  
+
   // Internal links
   internalLinks?: {
     contractTool?: boolean; // Link to contract analyzer/upload
     homepage?: boolean; // Link to homepage
     collabLink?: boolean; // Link to collab link feature
   };
-  
+
   // Author info (for schema)
   author?: {
     name: string;
@@ -376,6 +376,79 @@ export const blogPosts: BlogPost[] = [
       homepage: true,
       collabLink: true,
       contractTool: true,
+    },
+    author: {
+      name: 'CreatorArmour',
+      type: 'Organization',
+    },
+  },
+  {
+    slug: 'how-to-build-a-media-kit-that-wins-deals',
+    title: 'How to Build a Media Kit That Actually Wins High-Paying Brand Deals',
+    metaDescription: 'Stop sending PDF attachments that get ignored. Learn how to structure your creator media kit, what metrics actually matter to brands, and how to price your services.',
+    category: 'Business',
+    date: '2026-03-01',
+    readTime: '6 min read',
+    image: '/blog-images/media-kit.jpg',
+    summary: 'A strong media kit is the difference between a €100 barter offer and a €1000 paid deal. Here is exactly what brands are looking for when they click your link.',
+    keywords: ['media kit', 'brand deals', 'creator economy', 'pitching brands', 'influencer rates', 'creator portfolio'],
+    content: {
+      introduction: 'Most creator media kits are beautiful, multipage PDFs that completely fail at their one job: closing deals. When a brand manager opens your kit, they aren\'t looking for your life story. They are looking for three things: Who is your audience? What is the quality of your work? And how much does it cost? Here is how to build a media kit that actually converts interest into paid contracts.',
+      sections: [
+        {
+          heading: '1. Ditch the PDF. Use a Live Link.',
+          content: 'PDFs are outdated the moment you export them. Your follower count changes, your engagement rate shifts, and that viral video from yesterday isn\'t in there. By the time a brand opens your PDF attached to an email, the file might be compressed, flagged as spam, or just annoying to read on a phone. Moving your media kit to a live link (like a Notion page, a link-in-bio tool, or your Creator Armour collab page) means you can update it instantly, track who views it, and make it interactive.',
+        },
+        {
+          heading: '2. The "3-Second Rule" Structure',
+          content: 'Brand managers evaluate dozens of creators a day. If they can\'t figure out your niche and your value in three seconds, they move on. Structure your media kit top-to-bottom like this:',
+          subsections: [
+            {
+              heading: 'The Hook (Top)',
+              content: 'Your name, your one-sentence pitch (e.g., "I make personal finance simple for Gen-Z"), and your hero stat (e.g., "500k monthly cross-platform reach").',
+            },
+            {
+              heading: 'The Proof (Middle)',
+              content: 'Recent, high-performing examples of your work. Embed the posts directly if it\'s a live link. Follow this with your audience demographics (Age, Gender, Top Locations).',
+            },
+            {
+              heading: 'The Pitch (Bottom)',
+              content: 'Clear packages and pricing. Make it incredibly easy for them to say "I want Option B."',
+            }
+          ]
+        },
+        {
+          heading: '3. Stop Tracking Vanity Metrics',
+          content: 'Followers are a vanity metric. What brands actually pay for is trust and attention. Instead of leading with your follower count, highlight your 30-day reach, your average views per video (this is vastly more important than followers on platforms like TikTok and YouTube Shorts), and your engagement rate. If you have a highly engaged micro-audience (e.g., you have 5,000 followers but they are all software engineers), highlight that. Niche attention is expensive and highly valuable.',
+        },
+        {
+          heading: '4. Structure Your Rates Like a Menu',
+          content: 'Don\'t make brands guess your rates, and don\'t offer a convoluted ala-carte menu of 50 different options. Give them three clear packages to choose from. For example: The Starter (1 Reel, 1 Story), The Standard (1 Reel, 3 Stories, Link in Bio for 48 hrs), and The Partner (3 Reels over a month, Whitelisting rights, usage rights). This anchors your pricing and turns the negotiation from "Can we afford this?" to "Which package should we pick?"',
+        },
+        {
+          heading: '5. The Call to Action',
+          content: 'Every media kit needs a clear next step. Don\'t just say "Email me." Give them a frictionless way to submit an offer or book a call. Integrating your Creator Armour link at the bottom of your media kit allows the brand to submit a structured offer directly into your dashboard, kicking off the contract and payment workflow instantly.',
+        }
+      ],
+      conclusion: 'Your media kit isn\'t a scrapbook; it\'s a sales document. Keep it concise, metric-driven, and easy to act upon. The easier you make it for a brand to understand your value and submit an offer, the more closed deals you\'ll see in your pipeline.',
+    },
+    faqs: [
+      {
+        question: 'Should I put my exact rates in my media kit?',
+        answer: 'Yes. Putting clear starting rates or packages in your media kit filters out brands with zero budget and saves you hours of pointless email negotiations. You can always state "Rates starting at..." if you need flexibility for complex campaigns.',
+      },
+      {
+        question: 'How long should my media kit be?',
+        answer: 'If it\'s a PDF or deck, 2-3 pages maximum. If it\'s a web page, it should be scannable in under 30 seconds. Less text, more impact.',
+      },
+      {
+        question: 'Do I need a media kit if I have less than 10k followers?',
+        answer: 'Absolutely. A media kit is even more important for micro-creators because it shows professionalism and highlights your engagement rate and niche focus, which are your biggest selling points.',
+      }
+    ],
+    internalLinks: {
+      homepage: true,
+      collabLink: true,
     },
     author: {
       name: 'CreatorArmour',
