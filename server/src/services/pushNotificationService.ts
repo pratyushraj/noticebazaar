@@ -231,10 +231,15 @@ export const notifyCreatorOnCollabRequestCreated = async ({
       console.warn('[PushNotificationService] Failed to fetch push subscriptions:', subsError.message);
     }
 
-    if (Array.isArray(subs) && subs.length > 0) {
+    if (!Array.isArray(subs) || subs.length === 0) {
+      console.warn(`[PushNotificationService] No push subscriptions for creator ${creatorId} — push skipped`);
+    } else {
+      console.log(`[PushNotificationService] Sending collab push to ${subs.length} device(s) for creator ${creatorId}`);
+
+      const brandName = emailData?.brandName || 'A brand';
       const payload = JSON.stringify({
-        title: 'New Brand Offer',
-        body: 'A brand wants to collaborate with you.',
+        title: '💼 New Brand Offer!',
+        body: `${brandName} wants to collaborate with you. Tap to review.`,
         url: '/collab-requests',
         requestId,
       });
@@ -251,13 +256,17 @@ export const notifyCreatorOnCollabRequestCreated = async ({
             },
             payload
           );
+          console.log(`[PushNotificationService] ✅ Collab push delivered to sub ${sub.id}`);
           return true;
         } catch (pushError: any) {
-          console.warn('[PushNotificationService] Push send failed for subscription:', pushError?.message || pushError);
+          const statusCode = pushError?.statusCode || pushError?.status || 'unknown';
+          const body = pushError?.body || pushError?.message || String(pushError);
+          console.warn(`[PushNotificationService] ❌ Collab push FAILED for sub ${sub.id} — status: ${statusCode}, body: ${JSON.stringify(body)}`);
           if (isGoneSubscriptionError(pushError)) {
             // Background delete; don't await to keep notify fast
             supabase.from('creator_push_subscriptions').delete().eq('id', sub.id).then(({ error }) => {
               if (error) console.warn('[PushNotificationService] Failed to cleanup stale sub:', sub.id, error.message);
+              else console.log(`[PushNotificationService] Cleaned up stale subscription ${sub.id}`);
             });
           }
           return false;
@@ -266,7 +275,10 @@ export const notifyCreatorOnCollabRequestCreated = async ({
 
       const results = await Promise.all(pushPromises);
       pushSent = results.some(r => r === true);
+      console.log(`[PushNotificationService] Collab push result: ${results.filter(Boolean).length}/${subs.length} delivered`);
     }
+  } else {
+    console.warn('[PushNotificationService] VAPID not configured — push skipped');
   }
 
   if (pushSent) {
@@ -287,6 +299,7 @@ export const notifyCreatorOnCollabRequestCreated = async ({
     return { sent: false, channel: null, reason: emailResult.error || 'email_failed' };
   }
 
+  console.warn(`[PushNotificationService] Collab notification not sent for request ${requestId}: pushSent=${pushSent}, hasEmail=${!!creatorEmail}`);
   return { sent: false, channel: null, reason: 'no_push_and_no_email' };
 };
 
