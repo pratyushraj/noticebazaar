@@ -810,6 +810,22 @@ const CollabLinkLanding = () => {
       return;
     }
 
+    // Validate campaign goal first — required before proceeding
+    if (!campaignDescription.trim() || campaignDescription.trim().length < 20) {
+      setErrors((prev) => ({
+        ...prev,
+        campaignDescription: !campaignDescription.trim()
+          ? 'Campaign Goal is required before sending'
+          : 'Please provide more details (at least 20 characters)',
+      }));
+      toast.error('Please fill in the Campaign Goal before sending.');
+      // Scroll to the campaign goal field
+      window.setTimeout(() => {
+        document.getElementById('campaign-goal-field')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 100);
+      return;
+    }
+
     if (!showDetailedForm) {
       setShowDetailedForm(true);
       toast.info('Add final details before sending.');
@@ -1966,7 +1982,7 @@ const CollabLinkLanding = () => {
             </div>
 
             {/* Message -> Campaign Goal */}
-            <div>
+            <div id="campaign-goal-field">
               <label className="mb-2 inline-flex items-center gap-2 text-[10px] font-bold text-violet-200/65 uppercase tracking-wider">
                 <Target className="h-3.5 w-3.5 text-violet-400" />
                 Campaign Goal <span className="text-red-400 ml-0.5">*</span>
