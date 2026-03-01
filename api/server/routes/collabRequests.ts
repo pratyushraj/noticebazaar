@@ -19,6 +19,7 @@ import {
   sendCollabDraftResumeEmail,
 } from '../services/collabRequestEmailService';
 import { resolveOrCreateBrandContact } from '../services/brandContactService';
+import { notifyCreatorOnCollabRequestCreated } from '../services/pushNotificationService';
 
 const router = express.Router();
 
@@ -33,12 +34,12 @@ const barterImageUpload = multer({
  */
 function hashIp(ip: string): string {
   if (!ip || ip === 'unknown') return 'unknown';
-  
+
   const parts = ip.split('.');
   if (parts.length >= 3) {
     return `${parts[0]}.${parts[1]}.${parts[2]}.xxx`;
   }
-  
+
   // For IPv6 or other formats, hash it
   return crypto.createHash('sha256').update(ip).digest('hex').substring(0, 16) + '...';
 }
@@ -48,7 +49,7 @@ function hashIp(ip: string): string {
  */
 function detectDeviceType(userAgent: string | undefined): string {
   if (!userAgent) return 'unknown';
-  
+
   const ua = userAgent.toLowerCase();
   if (ua.includes('mobile') || ua.includes('android') || ua.includes('iphone')) {
     return 'mobile';
@@ -322,7 +323,7 @@ router.get('/:username', async (req: Request, res: Response) => {
     // Fetch creator profile by username or instagram_handle
     // Check both fields to support legacy usernames and new Instagram handle-based usernames
     const normalizedUsername = username.toLowerCase().trim();
-    
+
     // Try username first, then instagram_handle as fallback
     // Using minimal required columns first, then fetching additional data if needed
     let { data: profile, error: profileError } = await supabase
@@ -339,7 +340,7 @@ router.get('/:username', async (req: Request, res: Response) => {
       .eq('username', normalizedUsername)
       .eq('role', 'creator')
       .maybeSingle();
-    
+
     // If not found by username, try instagram_handle
     if (!profile && !profileError) {
       const result = await supabase
@@ -359,7 +360,7 @@ router.get('/:username', async (req: Request, res: Response) => {
       profile = result.data;
       profileError = result.error;
     }
-    
+
     // If profile found, fetch additional optional columns separately (to handle missing columns gracefully)
     if (profile && !profileError) {
       const { data: extendedProfile } = await supabase
@@ -380,8 +381,8 @@ router.get('/:username', async (req: Request, res: Response) => {
           media_kit_url
       `)
         .eq('id', profile.id)
-      .maybeSingle();
-      
+        .maybeSingle();
+
       // Merge extended data if available (ignore errors for missing columns)
       if (extendedProfile) {
         profile = { ...profile, ...extendedProfile };
@@ -395,7 +396,7 @@ router.get('/:username', async (req: Request, res: Response) => {
       console.error('[CollabRequests] Error details:', JSON.stringify(profileError, null, 2));
       console.error('[CollabRequests] Username searched:', username.toLowerCase().trim());
       console.error('[CollabRequests] Supabase client initialized:', supabaseInitialized);
-      
+
       // Return more detailed error (always include in dev, optional in prod)
       const isDev = process.env.NODE_ENV === 'development' || !process.env.NODE_ENV;
       return res.status(500).json({
@@ -425,7 +426,7 @@ router.get('/:username', async (req: Request, res: Response) => {
     // Build platforms array (handle missing columns gracefully)
     const platforms: Array<{ name: string; handle: string; followers?: number }> = [];
     const p = profile as any; // Use type assertion to access potentially missing columns
-    
+
     if (profile.instagram_handle) {
       platforms.push({
         name: 'Instagram',
@@ -463,8 +464,8 @@ router.get('/:username', async (req: Request, res: Response) => {
     }
 
     // Get creator name
-    const creatorName = profile.business_name || 
-      `${profile.first_name || ''} ${profile.last_name || ''}`.trim() || 
+    const creatorName = profile.business_name ||
+      `${profile.first_name || ''} ${profile.last_name || ''}`.trim() ||
       'Creator';
 
     res.json({
@@ -612,7 +613,7 @@ router.post('/:username/submit', async (req: Request, res: Response) => {
 
     // Get creator ID by username or instagram_handle
     const normalizedUsername = username.toLowerCase().trim();
-    
+
     // Try username first, then instagram_handle as fallback
     let { data: creator, error: creatorError } = await supabase
       .from('profiles')
@@ -620,7 +621,7 @@ router.post('/:username/submit', async (req: Request, res: Response) => {
       .eq('username', normalizedUsername)
       .eq('role', 'creator')
       .maybeSingle();
-    
+
     // If not found by username, try instagram_handle
     if (!creator && !creatorError) {
       const result = await supabase
@@ -647,25 +648,25 @@ router.post('/:username/submit', async (req: Request, res: Response) => {
     const isDevelopment = process.env.NODE_ENV === 'development' || !process.env.NODE_ENV;
 
     if (!isDevelopment) {
-    const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+      const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
 
-    const { data: recentSubmissions, error: rateLimitError } = await supabase
-      .from('collab_requests')
-      .select('id')
-      .eq('brand_email', brand_email.toLowerCase().trim())
-      .eq('creator_id', creator.id)
-      .gte('created_at', oneHourAgo)
-      .limit(1);
+      const { data: recentSubmissions, error: rateLimitError } = await supabase
+        .from('collab_requests')
+        .select('id')
+        .eq('brand_email', brand_email.toLowerCase().trim())
+        .eq('creator_id', creator.id)
+        .gte('created_at', oneHourAgo)
+        .limit(1);
 
-    if (rateLimitError) {
-      console.error('[CollabRequests] Rate limit check error:', rateLimitError);
-    }
+      if (rateLimitError) {
+        console.error('[CollabRequests] Rate limit check error:', rateLimitError);
+      }
 
-    if (recentSubmissions && recentSubmissions.length > 0) {
-      return res.status(429).json({
-        success: false,
-        error: 'Please wait before submitting another request. You can submit one request per hour.',
-      });
+      if (recentSubmissions && recentSubmissions.length > 0) {
+        return res.status(429).json({
+          success: false,
+          error: 'Please wait before submitting another request. You can submit one request per hour.',
+        });
       }
     } else {
       console.log('[CollabRequests] Rate limiting disabled in development mode');
@@ -739,10 +740,10 @@ router.post('/:username/submit', async (req: Request, res: Response) => {
     if (collabRequest && collabRequest.id) {
       try {
         const { data: profileData } = await supabase
-        .from('profiles')
+          .from('profiles')
           .select('first_name, last_name, business_name, username, instagram_handle, youtube_channel_id, tiktok_handle, twitter_handle, avatar_url, creator_category, instagram_followers, youtube_subs, tiktok_followers, twitter_followers')
-        .eq('id', creator.id)
-        .maybeSingle();
+          .eq('id', creator.id)
+          .maybeSingle();
         creatorProfile = profileData;
       } catch (profileError) {
         console.warn('[CollabRequests] Could not fetch creator profile for emails (non-fatal):', profileError);
@@ -768,7 +769,7 @@ router.post('/:username/submit', async (req: Request, res: Response) => {
         }
       }
     }
-    
+
     // If still "Creator", try to get email username as fallback
     if (creatorName === 'Creator') {
       try {
@@ -786,14 +787,14 @@ router.post('/:username/submit', async (req: Request, res: Response) => {
     }
 
     // Parse deliverables once (reuse for both emails)
-      let deliverablesArray: string[] = [];
-      try {
-        deliverablesArray = typeof deliverables === 'string' 
-          ? JSON.parse(deliverables)
-          : deliverables || [];
-      } catch {
-        deliverablesArray = Array.isArray(deliverables) ? deliverables : [];
-      }
+    let deliverablesArray: string[] = [];
+    try {
+      deliverablesArray = typeof deliverables === 'string'
+        ? JSON.parse(deliverables)
+        : deliverables || [];
+    } catch {
+      deliverablesArray = Array.isArray(deliverables) ? deliverables : [];
+    }
 
     // Send email notification to brand (async, non-blocking)
     if (collabRequest && collabRequest.id) {
@@ -843,10 +844,41 @@ router.post('/:username/submit', async (req: Request, res: Response) => {
 
     // Send email notification to creator (async, non-blocking)
     if (collabRequest && collabRequest.id) {
+
+      // ── Push Notification (fires immediately, independent of email) ──────────
+      try {
+        notifyCreatorOnCollabRequestCreated({
+          creatorId: creator.id,
+          requestId: collabRequest.id,
+          emailData: {
+            creatorName,
+            brandName: brand_name,
+            collabType: collab_type,
+            budgetRange: budget_range || undefined,
+            exactBudget: exact_budget ? parseFloat(exact_budget.toString()) : undefined,
+            deliverables: deliverablesArray,
+            deadline: deadline || undefined,
+            requestId: collabRequest.id,
+          },
+          creatorEmail: null,
+        }).then((result) => {
+          if (result.sent) {
+            console.log(`[CollabRequests] ✅ Push sent via ${result.channel} for request ${collabRequest.id}`);
+          } else {
+            console.warn(`[CollabRequests] Push not sent for ${collabRequest.id}: ${result.reason}`);
+          }
+        }).catch((notifyError) => {
+          console.error('[CollabRequests] Push notification failed (non-fatal):', notifyError);
+        });
+      } catch (pushError) {
+        console.error('[CollabRequests] Push notification threw (non-fatal):', pushError);
+      }
+
+      // ── Email Notification (requires creator email from auth.users) ──────────
       // Get creator's email from auth.users
       try {
         const { data: authUser, error: authError } = await supabase.auth.admin.getUserById(creator.id);
-        
+
         if (!authError && authUser?.user?.email) {
           const creatorEmail = authUser.user.email;
 
@@ -910,7 +942,7 @@ router.post('/:username/submit', async (req: Request, res: Response) => {
           try {
             const frontendUrl = process.env.FRONTEND_URL || 'https://creatorarmour.com';
             const dashboardLink = `${frontendUrl}/creator-dashboard`;
-            
+
             const { error: notificationError } = await supabase
               .from('notifications')
               .insert({
@@ -1294,7 +1326,7 @@ router.patch('/:id/accept', async (req: AuthenticatedRequest, res: Response) => 
     // Parse deliverables
     let deliverablesArray: string[] = [];
     try {
-      deliverablesArray = typeof request.deliverables === 'string' 
+      deliverablesArray = typeof request.deliverables === 'string'
         ? JSON.parse(request.deliverables)
         : request.deliverables || [];
     } catch {
@@ -1440,14 +1472,14 @@ router.patch('/:id/accept', async (req: AuthenticatedRequest, res: Response) => 
         const creatorName = creatorProfile
           ? `${creatorProfile.first_name || ''} ${creatorProfile.last_name || ''}`.trim() || 'Creator'
           : 'Creator';
-        
+
         const creatorEmail = creatorProfile?.email || req.user?.email || undefined;
         const creatorAddress = creatorProfile?.location || creatorProfile?.address || undefined;
 
         // Build payment terms based on collab type
         let paymentTerms: string | undefined;
         if (request.collab_type === 'paid' || request.collab_type === 'both') {
-          const paymentDate = request.deadline 
+          const paymentDate = request.deadline
             ? new Date(request.deadline).toLocaleDateString()
             : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString();
           paymentTerms = `Payment expected by ${paymentDate}`;
@@ -1488,7 +1520,7 @@ router.patch('/:id/accept', async (req: AuthenticatedRequest, res: Response) => 
           dealAmount,
           deliverables: deliverablesArray.length > 0 ? deliverablesArray : ['As per agreement'],
           paymentTerms,
-          dueDate: request.deadline 
+          dueDate: request.deadline
             ? new Date(request.deadline).toLocaleDateString()
             : undefined,
           paymentExpectedDate: request.deadline
@@ -1602,7 +1634,7 @@ router.patch('/:id/accept', async (req: AuthenticatedRequest, res: Response) => 
         url: contractUrl,
         token: contractReadyToken,
       } : null,
-      message: contractUrl 
+      message: contractUrl
         ? 'Collaboration request accepted. Deal created and contract generated successfully.'
         : 'Collaboration request accepted. Deal created successfully.',
     });
