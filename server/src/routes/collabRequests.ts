@@ -1728,34 +1728,46 @@ router.post('/:username/submit', async (req: Request, res: Response) => {
 
     // Send email notification to creator (async, non-blocking)
     if (collabRequest && collabRequest.id) {
-      // Get creator's email from auth.users
+
+      // ── Push Notification (fires immediately, independent of email) ──────────
+      try {
+        notifyCreatorOnCollabRequestCreated({
+          creatorId: creator.id,
+          requestId: collabRequest.id,
+          emailData: {
+            creatorName,
+            brandName: brand_name,
+            collabType: collabTypeForApi || collabTypeForDb,
+            budgetRange: budget_range || undefined,
+            exactBudget: exact_budget ? parseFloat(exact_budget.toString()) : undefined,
+            deliverables: deliverablesArray,
+            deadline: deadline || undefined,
+            requestId: collabRequest.id,
+          },
+          creatorEmail: null,
+        }).then((result) => {
+          if (result.sent) {
+            console.log(`[CollabRequests] ✅ Push sent via ${result.channel} for request ${collabRequest.id}`);
+          } else {
+            console.warn(`[CollabRequests] Push not sent for ${collabRequest.id}: ${result.reason}`);
+          }
+        }).catch((notifyError) => {
+          console.error('[CollabRequests] Push notification failed (non-fatal):', notifyError);
+        });
+      } catch (pushError) {
+        console.error('[CollabRequests] Push notification threw (non-fatal):', pushError);
+      }
+
+      // ── Email Notification (requires creator's email from auth.users) ────────
       try {
         const { data: authUser, error: authError } = await supabase.auth.admin.getUserById(creator.id);
 
         if (!authError && authUser?.user?.email) {
           const creatorEmail = authUser.user.email;
 
-          // Create accept-from-email token (7 days) and build Accept Deal URL
+          // Build Accept Deal URL
           const frontendUrl = (process.env.FRONTEND_URL || 'https://creatorarmour.com').replace(/\/$/, '');
-          let acceptUrl: string | undefined;
-          const acceptTokenId = crypto.randomBytes(24).toString('hex');
-          const acceptExpiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
-          // collab_accept_tokens table is missing in production schema
-          /*
-          const { error: tokenInsertError } = await supabase
-            .from('collab_accept_tokens')
-            .insert({
-              id: acceptTokenId,
-              collab_request_id: collabRequest.id,
-              creator_email: creatorEmail,
-              expires_at: acceptExpiresAt.toISOString(),
-            });
-          if (!tokenInsertError) {
-            acceptUrl = `${frontendUrl}/collab/accept/${acceptTokenId}`;
-          }
-          */
-          acceptUrl = `${frontendUrl}/collab-requests`;
-          console.warn('[CollabRequests] Magic link token creation skipped: collab_accept_tokens table missing');
+          const acceptUrl = `${frontendUrl}/collab-requests`;
 
           // Calculate total follower count
           const profileAny = creatorProfile as any;
@@ -1781,80 +1793,58 @@ router.post('/:username/submit', async (req: Request, res: Response) => {
             barterProductImageUrl: (insertData as any).barter_product_image_url ?? undefined,
             deliverables: deliverablesArray,
             deadline: deadline || undefined,
-            timeline: deadline || undefined, // Use deadline as timeline
+            timeline: deadline || undefined,
             notes: extraTermsLines.length > 0 ? extraTermsLines.join(' | ') : undefined,
             requestId: collabRequest.id,
             acceptUrl,
           };
 
-          // 1. Send the primary creator notification (Email + WhatsApp)
-          // This is now unconditional to ensure reliability across all devices
+          // Send email
           sendCollabRequestCreatorNotificationEmail(creatorEmail, creatorNotificationPayload, creator.id).then(async () => {
-            // Mark as notified in DB
             await supabase
               .from('collab_requests')
               .update({ last_notified_at: new Date().toISOString() })
               .eq('id', collabRequest.id);
           }).catch((emailError) => {
-            console.error('[CollabRequests] Primary creator email/wa notification failed (non-fatal):', emailError);
+            console.error('[CollabRequests] Creator email notification failed (non-fatal):', emailError);
           });
-
-          // 2. Also try Push Notification as a secondary real-time channel
-          notifyCreatorOnCollabRequestCreated({
-            creatorId: creator.id,
-            requestId: collabRequest.id,
-            emailData: creatorNotificationPayload,
-            // We set creatorEmail to null so push service doesn't send a redundant lightweight fallback email
-            creatorEmail: null,
-          }).then((result) => {
-            if (result.sent) {
-              console.log('[CollabRequests] Creator push notification sent:', result.channel);
-            }
-          }).catch((notifyError) => {
-            console.error('[CollabRequests] Creator push notification failed (non-fatal):', notifyError);
-          });
-
-          // Optionally: Add notification entry to notifications table (non-blocking)
-          try {
-            const frontendUrl = process.env.FRONTEND_URL || 'https://creatorarmour.com';
-            const dashboardLink = `${frontendUrl}/creator-dashboard`;
-
-            const { error: notificationError } = await supabase
-              .from('notifications')
-              .insert({
-                user_id: creator.id,
-                type: 'deal',
-                category: 'collab_request',
-                title: `New collaboration request from ${brand_name}`,
-                message: `You have a new collaboration request. Review it in your dashboard.`,
-                data: {
-                  collab_request_id: collabRequest.id,
-                  brand_name: brand_name,
-                  collab_type: collabTypeForApi || collabTypeForDb,
-                },
-                link: dashboardLink,
-                priority: 'high',
-                icon: 'collab_request',
-                action_label: 'Review Request',
-                action_link: dashboardLink,
-              });
-
-            if (notificationError) {
-              console.warn('[CollabRequests] Failed to create notification entry (non-fatal):', notificationError);
-              // Don't fail the request if notification creation fails
-            } else {
-              console.log('[CollabRequests] Notification entry created successfully');
-            }
-          } catch (notificationError) {
-            console.warn('[CollabRequests] Error creating notification entry (non-fatal):', notificationError);
-            // Don't fail the request if notification creation fails
-          }
         } else {
-          console.warn('[CollabRequests] Could not fetch creator email for notification:', authError);
+          console.warn('[CollabRequests] Could not fetch creator email for email notification:', authError?.message);
         }
-      } catch (error) {
-        console.error('[CollabRequests] Error sending creator notification (non-fatal):', error);
-        // Don't fail the request if notification fails
+      } catch (emailBlockError) {
+        console.error('[CollabRequests] Error in email notification block (non-fatal):', emailBlockError);
+      }
+
+      // ── In-app Notification ──────────────────────────────────────────────────
+      try {
+        const frontendUrl = process.env.FRONTEND_URL || 'https://creatorarmour.com';
+        const dashboardLink = `${frontendUrl}/creator-dashboard`;
+        const { error: notificationError } = await supabase
+          .from('notifications')
+          .insert({
+            user_id: creator.id,
+            type: 'deal',
+            category: 'collab_request',
+            title: `New collaboration request from ${brand_name}`,
+            message: `You have a new collaboration request. Review it in your dashboard.`,
+            data: {
+              collab_request_id: collabRequest.id,
+              brand_name: brand_name,
+              collab_type: collabTypeForApi || collabTypeForDb,
+            },
+            link: dashboardLink,
+            priority: 'high',
+            icon: 'collab_request',
+            action_label: 'Review Request',
+            action_link: dashboardLink,
+          });
+        if (notificationError) {
+          console.warn('[CollabRequests] Failed to create notification entry (non-fatal):', notificationError.message);
+        } else {
+          console.log('[CollabRequests] In-app notification entry created');
+        }
+      } catch (notificationError) {
+        console.warn('[CollabRequests] In-app notification error (non-fatal):', notificationError);
       }
     }
 
