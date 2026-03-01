@@ -1234,7 +1234,7 @@ const CollabLinkLanding = () => {
         ? (barterValue ? `Barter • ₹${Number(barterValue).toLocaleString('en-IN')} value` : 'Barter')
         : isHybridCollab(collabType)
           ? `Hybrid${barterValue ? ` • ₹${Number(barterValue).toLocaleString('en-IN')} barter value` : ''}${exactBudget ? ` • ₹${Number(exactBudget).toLocaleString('en-IN')} paid` : ''}`
-        : 'Not set';
+          : 'Not set';
   const displayDeadline = deadline
     ? new Date(deadline).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })
     : 'Not set';
@@ -1372,12 +1372,12 @@ const CollabLinkLanding = () => {
                     )}
                   </div>
                   <div>
-                  <h1 className={`text-4xl font-bold text-white tracking-tight leading-none mb-1 ${typePageTitle}`}>{creator.name.split(' ')[0]}</h1>
-                  {creator.platforms.find(p => p.name.toLowerCase() === 'instagram' && p.handle) && (
-                    <span className="text-sm font-medium text-white/70">
-                      @{creator.platforms.find(p => p.name.toLowerCase() === 'instagram')?.handle.replace('@', '')}
-                    </span>
-                  )}
+                    <h1 className={`text-4xl font-bold text-white tracking-tight leading-none mb-1 ${typePageTitle}`}>{creator.name.split(' ')[0]}</h1>
+                    {creator.platforms.find(p => p.name.toLowerCase() === 'instagram' && p.handle) && (
+                      <span className="text-sm font-medium text-white/70">
+                        @{creator.platforms.find(p => p.name.toLowerCase() === 'instagram')?.handle.replace('@', '')}
+                      </span>
+                    )}
                     <div className="text-xs text-white/70 mt-1">
                       {primaryFollowers
                         ? `${formatFollowers(primaryFollowers)} Followers`
@@ -1725,13 +1725,13 @@ const CollabLinkLanding = () => {
         {/* Mobile-first collapsed audience snapshot */}
         <div className="md:hidden mt-6 mb-6 rounded-xl border border-white/10 bg-white/[0.05] p-4 backdrop-blur-md">
           <h3 className="text-base font-semibold text-white">Audience Fit Snapshot</h3>
-            <div className="mt-3 space-y-4">
+          <div className="mt-3 space-y-4">
+            <div className="rounded-lg border border-white/10 bg-white/[0.03] p-3">
+              <p className="text-xs text-white/60 inline-flex items-center gap-2"><TrendingUp className="h-4 w-4 text-sky-400" />Engagement Quality</p>
+              <p className="text-sm text-white mt-1">{mobileEngagementLabel}</p>
+            </div>
+            {audienceRegionLabel && (
               <div className="rounded-lg border border-white/10 bg-white/[0.03] p-3">
-                <p className="text-xs text-white/60 inline-flex items-center gap-2"><TrendingUp className="h-4 w-4 text-sky-400" />Engagement Quality</p>
-                <p className="text-sm text-white mt-1">{mobileEngagementLabel}</p>
-              </div>
-              {audienceRegionLabel && (
-                <div className="rounded-lg border border-white/10 bg-white/[0.03] p-3">
                 <p className="inline-flex items-center gap-2 rounded-full border border-cyan-300/30 bg-cyan-400/10 px-2.5 py-1 text-xs font-semibold text-cyan-100">
                   <MapPin className="h-4 w-4 text-sky-400" />
                   {audienceRegionLabel} Audience
@@ -1967,13 +1967,25 @@ const CollabLinkLanding = () => {
 
             {/* Message -> Campaign Goal */}
             <div>
-              <label className="mb-2 inline-flex items-center gap-2 text-[10px] font-bold text-violet-200/65 uppercase tracking-wider"><Target className="h-3.5 w-3.5 text-violet-400" />Campaign Goal (optional)</label>
+              <label className="mb-2 inline-flex items-center gap-2 text-[10px] font-bold text-violet-200/65 uppercase tracking-wider">
+                <Target className="h-3.5 w-3.5 text-violet-400" />
+                Campaign Goal <span className="text-red-400 ml-0.5">*</span>
+              </label>
               <Textarea
                 value={campaignDescription}
-                onChange={(e) => setCampaignDescription(e.target.value)}
-                placeholder={`Briefly outline the campaign goal...`}
-                className="bg-white/[0.06] border-white/15 rounded-2xl min-h-[100px] text-white placeholder:text-violet-200/45 focus:ring-purple-500/30 text-sm leading-relaxed"
+                onChange={(e) => {
+                  setCampaignDescription(e.target.value);
+                  if (errors.campaignDescription) setErrors({ ...errors, campaignDescription: '' });
+                }}
+                placeholder={`Briefly outline the campaign goal... (min 20 characters)`}
+                className={`bg-white/[0.06] border-white/15 rounded-2xl min-h-[100px] text-white placeholder:text-violet-200/45 focus:ring-purple-500/30 text-sm leading-relaxed ${errors.campaignDescription ? 'border-red-400/50' : ''}`}
               />
+              {errors.campaignDescription && (
+                <p className="text-xs text-red-400 mt-1">{errors.campaignDescription}</p>
+              )}
+              {!errors.campaignDescription && campaignDescription.length > 0 && campaignDescription.length < 20 && (
+                <p className="text-xs text-amber-400 mt-1">{20 - campaignDescription.length} more characters needed</p>
+              )}
             </div>
 
           </div>
@@ -2111,7 +2123,7 @@ const CollabLinkLanding = () => {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
                     <div>
                       <label className={`block text-white mb-2 ${typeLabel}`}>
-                      <span className="inline-flex items-center gap-2"><Globe className="h-4 w-4 text-slate-300" />Website</span>
+                        <span className="inline-flex items-center gap-2"><Globe className="h-4 w-4 text-slate-300" />Website</span>
                       </label>
                       <Input
                         type="text"
@@ -2129,7 +2141,7 @@ const CollabLinkLanding = () => {
                     </div>
                     <div>
                       <label className={`block text-white mb-2 ${typeLabel}`}>
-                      <span className="inline-flex items-center gap-2"><AtSign className="h-4 w-4 text-slate-300" />Instagram Handle</span>
+                        <span className="inline-flex items-center gap-2"><AtSign className="h-4 w-4 text-slate-300" />Instagram Handle</span>
                       </label>
                       <Input
                         type="text"
