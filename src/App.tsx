@@ -71,6 +71,7 @@ import CreatorTaxCompliancePage from "./pages/CreatorTaxCompliancePage";
 import CreatorOnboarding from "./pages/CreatorOnboarding"; // NEW: Import CreatorOnboarding
 import CreatorDashboardPreview from "./pages/CreatorDashboardPreview"; // NEW: Import CreatorDashboardPreview
 import DashboardPreview from "./pages/DashboardPreview"; // NEW: Dashboard Components Preview
+import MobileDashboardDemo from "./pages/MobileDashboardDemo"; // NEW: Premium Mobile Demo
 import BrandDirectory from "./pages/BrandDirectory";
 import BrandDetails from "./pages/BrandDetails";
 import BrandOpportunities from "./pages/BrandOpportunities";
@@ -311,6 +312,7 @@ const App = () => {
                         <Route path="/dashboard-white-preview" element={<DashboardWhitePreview />} />
                         <Route path="/dashboard-preview" element={<CreatorDashboardPreview />} />
                         <Route path="/dashboard-components-preview" element={<DashboardPreview />} />
+                        <Route path="/demo-dashboard" element={<MobileDashboardDemo />} />
                         <Route path="/preview/aman-parmar" element={<PreviewAmanParmar />} />
 
                         {/* Referral Landing */}
