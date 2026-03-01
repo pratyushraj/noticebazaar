@@ -53,7 +53,7 @@ export const StatCard = ({ label, value, prefix, suffix, trend, icon, color, del
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay, duration: 0.3 }}
             className={cn(
-                'bg-gradient-to-br backdrop-blur-xl border-2 rounded-xl md:rounded-2xl p-3.5 md:p-6 shadow-lg relative overflow-hidden',
+                'bg-gradient-to-br backdrop-blur-xl border rounded-xl md:rounded-2xl p-4 md:p-5 shadow-lg relative overflow-hidden flex flex-col justify-between min-h-[110px] md:min-h-[140px]',
                 colors.bg,
                 colors.border
             )}
@@ -61,14 +61,14 @@ export const StatCard = ({ label, value, prefix, suffix, trend, icon, color, del
             {/* Background glow */}
             <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent pointer-events-none" />
 
-            <div className="relative z-10">
-                <div className="flex items-center justify-between mb-2.5 md:mb-4">
-                    <div className={cn('w-9 h-9 md:w-12 md:h-12 rounded-lg md:rounded-xl flex items-center justify-center', colors.icon)}>
+            <div className="relative z-10 flex flex-col h-full justify-between gap-3">
+                <div className="flex items-start justify-between">
+                    <div className={cn('w-8 h-8 md:w-10 md:h-10 rounded-lg md:rounded-xl flex items-center justify-center shrink-0', colors.icon)}>
                         {icon}
                     </div>
                     {trend && (
                         <div className={cn(
-                            'flex items-center gap-1 text-[10px] md:text-xs font-bold px-1.5 py-0.5 md:px-2 md:py-1 rounded-full',
+                            'flex items-center gap-1 text-[10px] md:text-xs font-bold px-1.5 py-0.5 md:px-2 md:py-1 rounded-full shrink-0',
                             trend.isPositive ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'
                         )}>
                             {trend.isPositive ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
@@ -77,18 +77,20 @@ export const StatCard = ({ label, value, prefix, suffix, trend, icon, color, del
                     )}
                 </div>
 
-                <p className="text-white/65 text-[11px] md:text-sm mb-1 md:mb-2 leading-tight">{label}</p>
-                <p className={cn('text-[22px] md:text-3xl font-bold leading-tight', colors.text)}>
-                    {prefix}
-                    <CountUp
-                        end={value}
-                        duration={1.5}
-                        delay={delay}
-                        separator=","
-                        decimals={0}
-                    />
-                    {suffix}
-                </p>
+                <div>
+                    <p className="text-white/70 text-[11px] md:text-sm font-medium mb-0.5 md:mb-1">{label}</p>
+                    <p className={cn('text-xl md:text-3xl font-bold leading-none truncate', colors.text)}>
+                        {prefix}
+                        <CountUp
+                            end={value}
+                            duration={1.5}
+                            delay={delay}
+                            separator=","
+                            decimals={0}
+                        />
+                        {suffix}
+                    </p>
+                </div>
             </div>
         </motion.div>
     );

@@ -86,33 +86,42 @@ export const UrgentActionsWidget = ({ actions }: UrgentActionsWidgetProps) => {
                             transition={{ delay: index * 0.1 }}
                             onClick={action.onClick}
                             className={cn(
-                                'w-full bg-gradient-to-br backdrop-blur-xl border-2 rounded-lg md:rounded-xl p-3 md:p-4 shadow-lg transition-all hover:scale-[1.02] active:scale-[0.98] group',
-                                config.bgClass,
-                                config.borderClass
+                                'w-full bg-gradient-to-br backdrop-blur-xl border border-white/10 rounded-xl p-3 md:p-4 shadow-sm hover:shadow-md transition-all active:scale-[0.98] group relative overflow-hidden',
+                                config.bgClass
                             )}
                         >
-                            <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-2.5 md:gap-3 min-w-0">
-                                    <div className={cn('w-9 h-9 md:w-10 md:h-10 rounded-lg flex items-center justify-center shrink-0', config.iconClass)}>
+                            {/* Accent line on left */}
+                            <div className={cn("absolute left-0 top-0 bottom-0 w-1", config.iconClass.split(' ')[0])} />
+
+                            <div className="flex items-center justify-between pl-2">
+                                <div className="flex items-center gap-3 min-w-0">
+                                    <div className={cn('w-10 h-10 rounded-full flex items-center justify-center shrink-0', config.iconClass)}>
                                         <Icon className="w-4 h-4 md:w-5 md:h-5" />
                                     </div>
                                     <div className="text-left min-w-0">
-                                        <p className="text-xs md:text-sm font-bold text-white truncate">{action.brand_name}</p>
-                                        <p className="text-[11px] md:text-xs text-white/60">{config.label}</p>
-                                        {action.daysOverdue && (
-                                            <p className="text-[11px] md:text-xs text-red-400 font-bold mt-0.5 md:mt-1">
-                                                {action.daysOverdue} day{action.daysOverdue > 1 ? 's' : ''} overdue
-                                            </p>
-                                        )}
+                                        <p className="text-sm font-bold text-white truncate">{action.brand_name}</p>
+                                        <div className="flex flex-wrap items-center gap-2 mt-0.5">
+                                            <p className="text-[11px] text-white/60 font-medium">{config.label}</p>
+                                            {action.daysOverdue && (
+                                                <>
+                                                    <span className="w-1 h-1 rounded-full bg-white/20" />
+                                                    <p className="text-[11px] text-red-400 font-semibold">
+                                                        {action.daysOverdue}d overdue
+                                                    </p>
+                                                </>
+                                            )}
+                                        </div>
                                     </div>
                                 </div>
-                                <div className="flex items-center gap-1.5 md:gap-2 shrink-0">
+                                <div className="flex flex-col items-end gap-1 shrink-0 ml-2">
                                     {action.amount && (
-                                        <span className="text-white font-bold text-xs md:text-sm">
+                                        <span className={cn("font-bold text-sm", config.iconClass.split(' ')[1])}>
                                             {formatIndianCurrency(action.amount)}
                                         </span>
                                     )}
-                                    <ArrowRight className="w-3.5 h-3.5 md:w-4 md:h-4 text-white/40 group-hover:text-white group-hover:translate-x-1 transition-all" />
+                                    <div className="flex items-center gap-1 text-[10px] text-white/40 group-hover:text-white/70 transition-colors">
+                                        Action <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
+                                    </div>
                                 </div>
                             </div>
                         </motion.button>

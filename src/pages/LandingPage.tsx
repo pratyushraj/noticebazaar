@@ -470,31 +470,7 @@ const LandingPage = () => {
               </div>
             </motion.div>
 
-            {/* Mobile Mockup Presentation */}
-            <motion.div
-              initial={{ opacity: 0, y: 40 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.5 }}
-              className="mt-16 relative max-w-[320px] mx-auto md:max-w-none md:w-[350px]"
-            >
-              {/* Glow Effect behind phone */}
-              <div className="absolute inset-0 bg-gradient-to-tr from-purple-500 to-indigo-500 blur-3xl opacity-20 transform scale-105 rounded-full" />
 
-              {/* Phone Frame */}
-              <div className="relative rounded-[2.5rem] bg-black border-[6px] border-slate-800 shadow-2xl overflow-hidden aspect-[390/844]">
-                {/* iPhone Dynamic Island / Notch */}
-                <div className="absolute top-0 inset-x-0 h-7 flex justify-center z-20">
-                  <div className="w-32 h-6 bg-black rounded-b-3xl"></div>
-                </div>
-
-                {/* Screenshot Image */}
-                <img
-                  src="/dashboard_mobile_view.png"
-                  alt="CreatorArmour Dashboard Preview"
-                  className="w-full h-full object-cover"
-                />
-              </div>
-            </motion.div>
 
           </div>
         </div>
