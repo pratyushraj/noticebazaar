@@ -390,6 +390,33 @@ app.post('/api/push/notify-collab', async (req: express.Request, res: express.Re
   }
 });
 
+app.post('/api/push/notify-generic', async (req: express.Request, res: express.Response) => {
+  try {
+    const authHeader = req.headers['authorization'] || '';
+    const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
+    if (!serviceKey || !authHeader.includes(serviceKey.slice(-20))) {
+      return res.status(401).json({ success: false, error: 'Unauthorized' });
+    }
+    const { creatorId, title, body, url, data } = req.body || {};
+    if (!creatorId || !title || !body) {
+      return res.status(400).json({ success: false, error: 'creatorId, title, and body required' });
+    }
+    const { sendGenericPushNotificationToCreator } = await import('./services/pushNotificationService.js');
+    const result = await sendGenericPushNotificationToCreator({
+      creatorId,
+      title,
+      body,
+      url,
+      data,
+    });
+    console.log(`[PushInternal] /notify-generic result for ${creatorId}:`, result);
+    return res.json({ success: result.sent, ...result });
+  } catch (error: any) {
+    console.error('[PushInternal] /notify-generic error:', error);
+    return res.status(500).json({ success: false, error: error.message });
+  }
+});
+
 app.use('/api/push', authMiddleware, rateLimitMiddleware, pushNotificationsRouter);
 
 

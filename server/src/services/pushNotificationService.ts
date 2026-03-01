@@ -197,6 +197,81 @@ export const getCreatorPushSubscriptionStatus = async (creatorId: string) => {
   };
 };
 
+export interface GenericPushInput {
+  creatorId: string;
+  title: string;
+  body: string;
+  url: string;
+  data?: Record<string, any>;
+}
+
+export const sendGenericPushNotificationToCreator = async ({
+  creatorId,
+  title,
+  body,
+  url,
+  data,
+}: GenericPushInput): Promise<{ sent: boolean; delivered: number; attempted: number; failed: number }> => {
+  if (!creatorId || !title || !body) {
+    return { sent: false, delivered: 0, attempted: 0, failed: 0 };
+  }
+
+  if (!vapidConfigured) {
+    return { sent: false, delivered: 0, attempted: 0, failed: 0 };
+  }
+
+  const { data: subs, error: subsError } = await supabase
+    .from('creator_push_subscriptions')
+    .select('id, endpoint, p256dh_key, auth_key')
+    .eq('creator_id', creatorId);
+
+  if (subsError || !Array.isArray(subs) || subs.length === 0) {
+    return { sent: false, delivered: 0, attempted: 0, failed: 0 };
+  }
+
+  const payload = JSON.stringify({
+    title,
+    body,
+    url,
+    ...(data || {}),
+  });
+
+  let delivered = 0;
+  let failed = 0;
+
+  const pushPromises = subs.map(async (sub) => {
+    try {
+      await webpush.sendNotification(
+        {
+          endpoint: sub.endpoint,
+          keys: {
+            p256dh: sub.p256dh_key,
+            auth: sub.auth_key,
+          },
+        },
+        payload
+      );
+      delivered++;
+      // Update last_seen
+      await supabase
+        .from('creator_push_subscriptions')
+        .update({ last_seen: new Date().toISOString() })
+        .eq('id', sub.id);
+    } catch (pushError: any) {
+      failed++;
+      console.warn('[PushNotificationService] Failed to send to sub:', sub.id, pushError?.message);
+      if (isGoneSubscriptionError(pushError)) {
+        console.log(`[PushNotificationService] Sub invalid (404/410) - removing ${sub.id}`);
+        await removeCreatorPushSubscription(creatorId, sub.endpoint);
+      }
+    }
+  });
+
+  await Promise.allSettled(pushPromises);
+
+  return { sent: delivered > 0, delivered, attempted: subs.length, failed };
+};
+
 export const notifyCreatorOnCollabRequestCreated = async ({
   creatorId,
   creatorEmail,

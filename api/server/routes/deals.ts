@@ -12,6 +12,36 @@ import { sendCollabRequestAcceptedEmail } from '../services/collabRequestEmailSe
 import { createShippingToken } from '../services/shippingTokenService';
 import { sendBrandShippingUpdateEmail, sendBrandShippingIssueEmail } from '../services/shippingEmailService';
 
+// Helper: delegate generic push to Render server
+async function sendGenericPushViaRender(params: {
+  creatorId: string;
+  title: string;
+  body: string;
+  url: string;
+  data?: any;
+}): Promise<void> {
+  const renderUrl = 'https://noticebazaar-api.onrender.com/api/push/notify-generic';
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
+  try {
+    const resp = await fetch(renderUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${serviceKey}`,
+      },
+      body: JSON.stringify(params),
+    });
+    const data = await resp.json() as any;
+    if (data.sent) {
+      console.log(`[Deals] ✅ Generic push sent to creator ${params.creatorId}: ${params.title}`);
+    } else {
+      console.warn(`[Deals] Generic push not delivered to ${params.creatorId}:`, data);
+    }
+  } catch (err) {
+    console.error('[Deals] Failed to call Render generic push endpoint (non-fatal):', err);
+  }
+}
+
 const router = Router();
 
 /** Mask phone for contract PDF: 98XXXXXX21 (first 2 + last 2 visible) */

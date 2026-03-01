@@ -14,25 +14,25 @@ const router = Router();
 function hashIpAddress(ip: string): { hash: string | null; partial: string | null } {
   if (!ip || ip === 'unknown') {
     return { hash: null, partial: null };
-    }
+  }
 
   // Extract first 3 octets for partial IP (e.g., "192.168.1.xxx")
   const partialMatch = ip.match(/^(\d+\.\d+\.\d+)\.\d+$/);
   const partial = partialMatch ? `${partialMatch[1]}.xxx` : null;
-  
+
   // Create a simple hash (SHA-256, first 16 chars for storage efficiency)
   const hash = crypto.createHash('sha256').update(ip).digest('hex').substring(0, 16);
-  
+
   return { hash, partial };
-    }
+}
 
 // Helper function to get client IP
 function getClientIp(req: Request): string {
-  return req.ip || 
-         req.headers['x-forwarded-for']?.toString().split(',')[0]?.trim() || 
-                     req.headers['x-real-ip']?.toString() || 
-                     req.socket.remoteAddress || 
-                     'unknown';
+  return req.ip ||
+    req.headers['x-forwarded-for']?.toString().split(',')[0]?.trim() ||
+    req.headers['x-real-ip']?.toString() ||
+    req.socket.remoteAddress ||
+    'unknown';
 }
 
 /**
@@ -97,9 +97,9 @@ async function shouldRequireBrandConfirmation(dealId: string): Promise<boolean> 
       if (!reportError && report?.analysis_json) {
         const analysisData = report.analysis_json;
         const keyTerms = analysisData?.keyTerms || {};
-        
+
         // Check for missing critical terms that require clarification
-        const hasMissingCriticalTerms = 
+        const hasMissingCriticalTerms =
           (!keyTerms?.usageRights || keyTerms.usageRights === 'Not specified') ||
           (!keyTerms?.exclusivity || keyTerms.exclusivity === 'Not specified') ||
           (!keyTerms?.paymentSchedule || keyTerms.paymentSchedule === 'Not specified') ||
@@ -112,7 +112,7 @@ async function shouldRequireBrandConfirmation(dealId: string): Promise<boolean> 
 
         // Check for high/medium severity issues
         const issues = Array.isArray(analysisData?.issues) ? analysisData.issues : [];
-        const hasImportantIssues = issues.some((issue: any) => 
+        const hasImportantIssues = issues.some((issue: any) =>
           issue.severity === 'high' || issue.severity === 'medium'
         );
 
@@ -125,14 +125,14 @@ async function shouldRequireBrandConfirmation(dealId: string): Promise<boolean> 
 
     // C. Check deal schema for payment risks
     if (deal.deal_schema) {
-      const dealSchema = typeof deal.deal_schema === 'string' 
-        ? JSON.parse(deal.deal_schema) 
+      const dealSchema = typeof deal.deal_schema === 'string'
+        ? JSON.parse(deal.deal_schema)
         : deal.deal_schema;
 
       // Payment risk: missing payment method or vague terms
       const paymentMethod = dealSchema.payment_method || dealSchema.paymentMethod;
       const paymentTerms = dealSchema.payment_terms || dealSchema.paymentTerms;
-      
+
       if (!paymentMethod || !paymentTerms || paymentTerms === 'Not specified' || paymentTerms === 'Unclear') {
         console.log('[shouldRequireBrandConfirmation] Payment risk detected');
         return true;
@@ -179,19 +179,19 @@ async function logAuditEntry(
         .order('action_timestamp', { ascending: false })
         .limit(1)
         .maybeSingle();
-      
+
       if (lastViewed) {
         const lastViewedTime = new Date(lastViewed.action_timestamp);
         const now = new Date();
         const hoursSinceLastView = (now.getTime() - lastViewedTime.getTime()) / (1000 * 60 * 60);
-        
+
         // Only log if more than 1 hour has passed since last view
         if (hoursSinceLastView < 1) {
           return; // Skip logging duplicate view
         }
       }
     }
-    
+
     // Calculate decision_version for decision-related actions
     let decisionVersion: number | null = null;
     if (actionType !== 'viewed') {
@@ -204,14 +204,14 @@ async function logAuditEntry(
         .order('decision_version', { ascending: false })
         .limit(1)
         .maybeSingle();
-      
+
       decisionVersion = lastDecision?.decision_version ? lastDecision.decision_version + 1 : 1;
     }
-    
+
     const userAgent = req.headers['user-agent'] || null;
     const ip = getClientIp(req);
     const { hash, partial } = hashIpAddress(ip);
-    
+
     const { error } = await supabase
       .from('brand_reply_audit_log')
       .insert({
@@ -228,7 +228,7 @@ async function logAuditEntry(
         brand_team_name: metadata.brandTeamName || null,
         decision_version: decisionVersion,
       });
-    
+
     if (error) {
       console.error('[BrandResponse] Audit log error:', error);
       // Don't fail the request if audit logging fails
@@ -236,8 +236,8 @@ async function logAuditEntry(
   } catch (error: any) {
     console.error('[BrandResponse] Audit log exception:', error);
     // Don't fail the request if audit logging fails
-      }
-    }
+  }
+}
 
 // GET /api/brand-response/:token
 // Public endpoint to fetch deal info via secure token
@@ -260,7 +260,7 @@ router.get('/:token', async (req: Request, res: Response) => {
         error: 'Invalid token format'
       });
     }
-    
+
     if (!supabaseInitialized) {
       console.error('[BrandResponse] GET Supabase not initialized');
       return res.status(500).json({
@@ -268,14 +268,14 @@ router.get('/:token', async (req: Request, res: Response) => {
         error: 'Server configuration error'
       });
     }
-    
+
     // Fetch token and validate
     const { data: tokenData, error: tokenError } = await supabase
       .from('brand_reply_tokens')
       .select('id, deal_id, is_active, expires_at, revoked_at')
       .eq('id', token.trim())
       .maybeSingle();
-    
+
     if (tokenError) {
       console.error('[BrandResponse] GET Token fetch error:', tokenError);
       return res.status(500).json({
@@ -283,7 +283,7 @@ router.get('/:token', async (req: Request, res: Response) => {
         error: 'An error occurred. Please try again later.'
       });
     }
-    
+
     if (!tokenData) {
       // Token doesn't exist - show neutral error (no hints, no IDs)
       return res.status(404).json({
@@ -291,7 +291,7 @@ router.get('/:token', async (req: Request, res: Response) => {
         error: 'This link is no longer valid. Please contact the creator.'
       });
     }
-    
+
     // Check if token is active
     if (!tokenData.is_active || tokenData.revoked_at) {
       return res.status(403).json({
@@ -299,7 +299,7 @@ router.get('/:token', async (req: Request, res: Response) => {
         error: 'This link is no longer valid. Please contact the creator.'
       });
     }
-    
+
     // Check if token is expired
     if (tokenData.expires_at) {
       const now = new Date();
@@ -310,11 +310,11 @@ router.get('/:token', async (req: Request, res: Response) => {
           error: 'This request has expired. Please ask the creator to resend.'
         });
       }
-      }
-      
+    }
+
     // Log "viewed" action
     await logAuditEntry(tokenData.id, tokenData.deal_id, 'viewed', req);
-    
+
     // Fetch deal (only expose safe fields)
     let deal: any = null;
     let dealError: any = null;
@@ -350,7 +350,7 @@ router.get('/:token', async (req: Request, res: Response) => {
           )
           .eq('id', tokenData.deal_id)
           .maybeSingle();
-    
+
         if (!fallbackError && fallbackDeal) {
           deal = fallbackDeal;
           dealError = null;
@@ -369,7 +369,7 @@ router.get('/:token', async (req: Request, res: Response) => {
 
     if (dealError || !deal) {
       console.error('[BrandResponse] GET Deal fetch error (falling back to minimal deal):', dealError);
-      
+
       // Try to fetch at least the response status even if other fields fail
       if (tokenData?.deal_id) {
         const { data: minimalDeal } = await supabase
@@ -377,7 +377,7 @@ router.get('/:token', async (req: Request, res: Response) => {
           .select('brand_name, brand_response_status, brand_response_message, brand_response_at, deal_amount, deliverables')
           .eq('id', tokenData.deal_id)
           .maybeSingle();
-        
+
         if (minimalDeal) {
           return res.json({
             success: true,
@@ -394,7 +394,7 @@ router.get('/:token', async (req: Request, res: Response) => {
           });
         }
       }
-      
+
       // Final fallback: return a minimal, generic deal so the brand page still loads
       return res.json({
         success: true,
@@ -414,7 +414,7 @@ router.get('/:token', async (req: Request, res: Response) => {
     // Fetch requested changes (issues + missing clauses) from protection_issues
     let requestedChanges: any[] = [];
     let analysisData: any = null;
-    
+
     if (deal.analysis_report_id) {
       // Fetch issues
       const { data: issues, error: issuesError } = await supabase
@@ -523,7 +523,7 @@ router.post('/:token', async (req: Request, res: Response) => {
       .select('id, deal_id, is_active, expires_at, revoked_at')
       .eq('id', token.trim()) // Uses primary key index
       .maybeSingle();
-    
+
     if (tokenError || !tokenData) {
       // Neutral error (no hints, no IDs)
       return res.status(404).json({
@@ -531,7 +531,7 @@ router.post('/:token', async (req: Request, res: Response) => {
         error: 'This link is no longer valid. Please contact the creator.'
       });
     }
-    
+
     // Check if token is active (revoked tokens remain in DB with revoked_at)
     if (!tokenData.is_active || tokenData.revoked_at) {
       return res.status(403).json({
@@ -539,7 +539,7 @@ router.post('/:token', async (req: Request, res: Response) => {
         error: 'This link is no longer valid. Please contact the creator.'
       });
     }
-    
+
     // Check if token is expired - expired tokens cannot submit decisions
     if (tokenData.expires_at) {
       const now = new Date();
@@ -576,11 +576,11 @@ router.post('/:token', async (req: Request, res: Response) => {
 
     // Determine action type for audit log
     const isUpdate = deal.brand_response_status && deal.brand_response_status !== 'pending';
-    const actionType: 'accepted' | 'negotiation_requested' | 'rejected' | 'updated_response' = 
+    const actionType: 'accepted' | 'negotiation_requested' | 'rejected' | 'updated_response' =
       isUpdate ? 'updated_response' :
-      status === 'accepted' || status === 'accepted_verified' ? 'accepted' :
-      status === 'negotiating' ? 'negotiation_requested' :
-      'rejected';
+        status === 'accepted' || status === 'accepted_verified' ? 'accepted' :
+          status === 'negotiating' ? 'negotiation_requested' :
+            'rejected';
 
     // Update deal with brand response
     const updateData: any = {
@@ -634,6 +634,42 @@ router.post('/:token', async (req: Request, res: Response) => {
       });
     }
 
+    // ── Send Push Notification to Creator ──
+    try {
+      let pushTitle = 'Brand Update';
+
+      let pushBody = `${deal.brand_name || 'A brand'} opened your request.`;
+
+      if (status === 'accepted' || status === 'accepted_verified') {
+        pushTitle = '🎉 Offer Accepted!';
+        pushBody = `${deal.brand_name || 'A brand'} accepted your offer!`;
+      } else if (status === 'negotiating') {
+        pushTitle = '💬 Counter Offer';
+        pushBody = `${deal.brand_name || 'A brand'} wants to negotiate details.`;
+      } else if (status === 'rejected') {
+        pushTitle = '❌ Offer Declined';
+        pushBody = `${deal.brand_name || 'A brand'} passed on your offer.`;
+      }
+
+      const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
+      fetch('https://noticebazaar-api.onrender.com/api/push/notify-generic', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${serviceKey}`
+        },
+        body: JSON.stringify({
+          creatorId: deal.creator_id,
+          title: pushTitle,
+          body: pushBody,
+          url: '/creator-dashboard',
+          data: { dealId: tokenData.deal_id }
+        })
+      }).catch(err => console.error('[BrandResponse] Render Push error:', err));
+    } catch (e) {
+      // ignore
+    }
+
     // Log audit entry
     await logAuditEntry(
       tokenData.id,
@@ -652,7 +688,7 @@ router.post('/:token', async (req: Request, res: Response) => {
     if (!requiresConfirmation && (status === 'accepted' || status === 'accepted_verified')) {
       try {
         console.log('[BrandResponse] Auto-generating contract (happy path)...');
-        
+
         // Fetch creator details for contract generation
         const { data: creator, error: creatorError } = await supabase
           .from('profiles')
@@ -688,7 +724,7 @@ router.post('/:token', async (req: Request, res: Response) => {
           }
 
           // Parse deal schema
-          const dealSchema = deal.deal_schema 
+          const dealSchema = deal.deal_schema
             ? (typeof deal.deal_schema === 'string' ? JSON.parse(deal.deal_schema) : deal.deal_schema)
             : {};
 
@@ -864,26 +900,26 @@ router.post('/:token', async (req: Request, res: Response) => {
 // Debug endpoint to check token existence (dev only)
 router.get('/debug/:token', async (req: Request, res: Response) => {
   const { token } = req.params;
-  
+
   if (process.env.NODE_ENV === 'production') {
     return res.status(403).json({ error: 'Debug endpoint disabled in production' });
   }
-  
+
   try {
     console.log('[BrandResponse] DEBUG Checking token:', token);
-    
+
     const { data: tokenData, error: tokenError } = await supabase
       .from('brand_reply_tokens')
       .select('id, deal_id, is_active, expires_at, revoked_at, created_at')
       .eq('id', token.trim())
       .maybeSingle();
-    
+
     const { data: deal, error: dealError } = tokenData ? await supabase
       .from('brand_deals')
       .select('id, brand_name, status')
       .eq('id', tokenData.deal_id)
       .maybeSingle() : { data: null, error: null };
-    
+
     return res.json({
       token: token.trim(),
       tokenData: tokenData || null,
@@ -891,9 +927,9 @@ router.get('/debug/:token', async (req: Request, res: Response) => {
         code: tokenError.code,
         message: tokenError.message
       } : null,
-        deal: deal || null,
+      deal: deal || null,
       dealError: dealError ? {
-          code: dealError.code,
+        code: dealError.code,
         message: dealError.message
       } : null
     });
