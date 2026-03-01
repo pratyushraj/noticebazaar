@@ -19,7 +19,37 @@ import {
   sendCollabDraftResumeEmail,
 } from '../services/collabRequestEmailService';
 import { resolveOrCreateBrandContact } from '../services/brandContactService';
-import { notifyCreatorOnCollabRequestCreated } from '../services/pushNotificationService';
+
+// Helper: delegate collab push to Render server (which has matching VAPID keys for all subscriptions)
+async function sendCollabPushViaRender(params: {
+  creatorId: string;
+  requestId: string;
+  brandName: string;
+  collabType: string;
+  deliverables: string[];
+  deadline?: string;
+}): Promise<void> {
+  const renderUrl = 'https://noticebazaar-api.onrender.com/api/push/notify-collab';
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
+  try {
+    const resp = await fetch(renderUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${serviceKey}`,
+      },
+      body: JSON.stringify(params),
+    });
+    const data = await resp.json() as any;
+    if (data.sent) {
+      console.log(`[CollabRequests] ✅ Collab push sent via Render for ${params.requestId}`);
+    } else {
+      console.warn(`[CollabRequests] Push via Render not delivered for ${params.requestId}:`, data.reason);
+    }
+  } catch (err) {
+    console.error('[CollabRequests] Failed to call Render push endpoint (non-fatal):', err);
+  }
+}
 
 const router = express.Router();
 
@@ -845,34 +875,15 @@ router.post('/:username/submit', async (req: Request, res: Response) => {
     // Send email notification to creator (async, non-blocking)
     if (collabRequest && collabRequest.id) {
 
-      // ── Push Notification (fires immediately, independent of email) ──────────
-      try {
-        notifyCreatorOnCollabRequestCreated({
-          creatorId: creator.id,
-          requestId: collabRequest.id,
-          emailData: {
-            creatorName,
-            brandName: brand_name,
-            collabType: collab_type,
-            budgetRange: budget_range || undefined,
-            exactBudget: exact_budget ? parseFloat(exact_budget.toString()) : undefined,
-            deliverables: deliverablesArray,
-            deadline: deadline || undefined,
-            requestId: collabRequest.id,
-          },
-          creatorEmail: null,
-        }).then((result) => {
-          if (result.sent) {
-            console.log(`[CollabRequests] ✅ Push sent via ${result.channel} for request ${collabRequest.id}`);
-          } else {
-            console.warn(`[CollabRequests] Push not sent for ${collabRequest.id}: ${result.reason}`);
-          }
-        }).catch((notifyError) => {
-          console.error('[CollabRequests] Push notification failed (non-fatal):', notifyError);
-        });
-      } catch (pushError) {
-        console.error('[CollabRequests] Push notification threw (non-fatal):', pushError);
-      }
+      // ── Push Notification via Render (matching VAPID keys) ──────────────────
+      sendCollabPushViaRender({
+        creatorId: creator.id,
+        requestId: collabRequest.id,
+        brandName: brand_name,
+        collabType: collab_type,
+        deliverables: deliverablesArray,
+        deadline: deadline || undefined,
+      }).catch((err) => console.error('[CollabRequests] sendCollabPushViaRender error:', err));
 
       // ── Email Notification (requires creator email from auth.users) ──────────
       // Get creator's email from auth.users

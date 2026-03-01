@@ -189,4 +189,45 @@ router.post('/direct-test', async (req: AuthenticatedRequest, res: Response) => 
   }
 });
 
+/**
+ * POST /api/push/notify-collab
+ * Internal endpoint: called by Vercel api server to send collab push via Render's VAPID keys.
+ * Secured by Supabase service role key in Authorization header.
+ */
+router.post('/notify-collab', async (req: any, res: Response) => {
+  try {
+    // Validate internal service key
+    const authHeader = req.headers['authorization'] || '';
+    const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
+    if (!authHeader || !serviceKey || !authHeader.includes(serviceKey.slice(-20))) {
+      return res.status(401).json({ success: false, error: 'Unauthorized' });
+    }
+
+    const { creatorId, requestId, brandName, collabType, deliverables, deadline } = req.body || {};
+    if (!creatorId || !requestId) {
+      return res.status(400).json({ success: false, error: 'creatorId and requestId required' });
+    }
+
+    const { notifyCreatorOnCollabRequestCreated } = await import('../services/pushNotificationService.js');
+    const result = await notifyCreatorOnCollabRequestCreated({
+      creatorId,
+      requestId,
+      emailData: {
+        brandName: brandName || 'A brand',
+        collabType: collabType || 'paid',
+        deliverables: deliverables || [],
+        deadline: deadline || undefined,
+        requestId,
+      },
+      creatorEmail: null,
+    });
+
+    console.log(`[PushNotifications] /notify-collab result for ${requestId}:`, result);
+    return res.json({ success: result.sent, ...result });
+  } catch (error: any) {
+    console.error('[PushNotifications] POST /notify-collab failed:', error);
+    return res.status(500).json({ success: false, error: error.message });
+  }
+});
+
 export default router;
