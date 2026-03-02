@@ -58,6 +58,8 @@ import {
   DashboardStatsSkeleton,
 } from '@/components/creator-dashboard';
 
+import MobileDashboardDemo from './MobileDashboardDemo';
+
 import {
   calculateDashboardStats,
   calculateTrends,
@@ -1081,6 +1083,12 @@ const CreatorDashboard = () => {
   }
 
   // Import enhanced skeleton (fallback to inline if import fails)
+
+  // Force new premium UI as default
+  const isDemoMode = true;
+  if (isDemoMode) {
+    return <MobileDashboardDemo profile={profile} userEmail={session?.user?.email} />;
+  }
 
   return (
     <div className={`min-h-[100dvh] ${gradients.page} text-white overflow-x-hidden flex flex-col`}>
