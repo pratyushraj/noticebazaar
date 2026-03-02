@@ -350,12 +350,12 @@ const MobileDashboardDemo = ({ profile, userEmail }: MobileDashboardProps = {}) 
                 <div className="absolute bottom-0 inset-x-0 w-full border-t border-slate-200/60 px-6 py-2 pb-safe z-40" style={{ backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', backgroundColor: 'rgba(255,255,255,0.75)' }}>
                     <div className="max-w-md mx-auto flex items-center justify-between pb-4 pt-2">
 
-                        <button onClick={() => { triggerHaptic(); navigate('/creator-dashboard'); }} className="flex flex-col items-center gap-1 w-12 text-slate-900 font-bold active:scale-95 transition-transform shrink-0">
+                        <button onClick={() => { triggerHaptic(); navigate('/creator-dashboard'); }} className="flex flex-col items-center gap-1 w-14 text-slate-900 font-bold hover:opacity-70 active:opacity-50 transition-opacity shrink-0">
                             <LayoutDashboard className="w-[22px] h-[22px] fill-current" />
                             <span className="text-[10px]">Dashboard</span>
                         </button>
 
-                        <button onClick={() => { triggerHaptic(); navigate('/creator-dashboard?tab=deals'); }} className="flex flex-col items-center gap-1 w-14 text-slate-400 relative hover:text-slate-600 transition-all active:scale-95 shrink-0">
+                        <button onClick={() => { triggerHaptic(); navigate('/creator-dashboard?tab=deals'); }} className="flex flex-col items-center gap-1 w-14 text-slate-400 relative hover:text-slate-900 active:opacity-50 transition-opacity shrink-0">
                             <Briefcase className="w-[22px] h-[22px]" />
                             <span className="absolute top-0 right-1 w-4 h-4 bg-emerald-500 border-2 border-white rounded-full flex items-center justify-center text-[9px] font-bold text-white shadow-sm">5</span>
                             <span className="text-[10px] font-medium">Collabs</span>
@@ -364,19 +364,19 @@ const MobileDashboardDemo = ({ profile, userEmail }: MobileDashboardProps = {}) 
                         {/* Center Action Button: Collab Link Engine */}
                         <button
                             onClick={() => { triggerHaptic(); navigate('/creator-profile'); }}
-                            className="transform -translate-y-4 px-5 py-3.5 rounded-full flex items-center gap-2 border-4 border-[#F8F9FA] text-white font-bold text-[14px] hover:opacity-90 transition-all active:scale-95 shrink-0"
-                            style={{ backgroundColor: '#0F172A', boxShadow: '0px 8px 24px rgba(15,23,42,0.2)' }}
+                            className="transform -translate-y-3 px-4 py-2.5 rounded-xl flex items-center gap-1.5 text-white font-bold text-[13px] hover:opacity-90 active:opacity-75 transition-opacity shrink-0 relative"
+                            style={{ backgroundColor: '#0F172A', boxShadow: '0px 6px 16px rgba(15,23,42,0.15), 0px 2px 4px rgba(15,23,42,0.08)' }}
                         >
                             <LinkIcon className="w-4 h-4" strokeWidth={2.5} />
                             Collab Link
                         </button>
 
-                        <button onClick={() => { triggerHaptic(); navigate('/creator-dashboard?tab=payments'); }} className="flex flex-col items-center gap-1 w-14 relative text-slate-400 hover:text-slate-600 transition-all active:scale-95 shrink-0">
+                        <button onClick={() => { triggerHaptic(); navigate('/creator-dashboard?tab=payments'); }} className="flex flex-col items-center gap-1 w-14 relative text-slate-400 hover:text-slate-900 active:opacity-50 transition-opacity shrink-0">
                             <CreditCard className="w-[22px] h-[22px]" />
                             <span className="text-[10px] font-medium">Payments</span>
                         </button>
 
-                        <button onClick={() => { triggerHaptic(); navigate('/creator-profile'); }} className="flex flex-col items-center gap-1 w-12 text-slate-400 hover:text-slate-600 transition-all active:scale-95 shrink-0">
+                        <button onClick={() => { triggerHaptic(); navigate('/creator-profile'); }} className="flex flex-col items-center gap-1 w-14 text-slate-400 hover:text-slate-900 active:opacity-50 transition-opacity shrink-0">
                             <User className="w-[22px] h-[22px]" />
                             <span className="text-[10px] font-medium">Profile</span>
                         </button>
