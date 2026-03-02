@@ -20,6 +20,26 @@ const MobileDashboardDemo = ({ profile, userEmail }: MobileDashboardProps = {}) 
     const username = profile?.username || profile?.full_name || 'Creator';
     const avatarUrl = profile?.avatar_url || "https://i.pravatar.cc/150?img=47";
 
+    React.useEffect(() => {
+        // Change theme color for this specific page to blend with white header
+        const metaThemeColor = document.querySelector("meta[name=theme-color]");
+        const originalColor = metaThemeColor?.getAttribute("content");
+        if (metaThemeColor) {
+            metaThemeColor.setAttribute("content", "#ffffff");
+        }
+
+        // Force body background to hide any Layout gradients bleeding in safe areas
+        const originalBodyBg = document.body.style.backgroundColor;
+        document.body.style.backgroundColor = '#ffffff';
+
+        return () => {
+            if (metaThemeColor && originalColor) {
+                metaThemeColor.setAttribute("content", originalColor);
+            }
+            document.body.style.backgroundColor = originalBodyBg;
+        };
+    }, []);
+
     return (
         <div className="fixed inset-0 z-[10000] sm:bg-slate-100 flex justify-center overflow-hidden selection:bg-blue-100" style={{ backgroundColor: '#ffffff' }}>
 
