@@ -72,6 +72,8 @@ import CreatorOnboarding from "./pages/CreatorOnboarding"; // NEW: Import Creato
 import CreatorDashboardPreview from "./pages/CreatorDashboardPreview"; // NEW: Import CreatorDashboardPreview
 import DashboardPreview from "./pages/DashboardPreview"; // NEW: Dashboard Components Preview
 import MobileDashboardDemo from "./pages/MobileDashboardDemo"; // NEW: Premium Mobile Demo
+import BrandDealConsoleDemo from './pages/BrandDealConsoleDemo';
+import BrandDesktopDashboard from './pages/BrandDesktopDashboard';
 import BrandDirectory from "./pages/BrandDirectory";
 import BrandDetails from "./pages/BrandDetails";
 import BrandOpportunities from "./pages/BrandOpportunities";
@@ -313,6 +315,8 @@ const App = () => {
                         <Route path="/dashboard-preview" element={<CreatorDashboardPreview />} />
                         <Route path="/dashboard-components-preview" element={<DashboardPreview />} />
                         <Route path="/demo-dashboard" element={<MobileDashboardDemo />} />
+                        <Route path="/brand-console-demo" element={<BrandDealConsoleDemo />} />
+                        <Route path="/brand-desktop-demo" element={<BrandDesktopDashboard />} />
                         <Route path="/preview/aman-parmar" element={<PreviewAmanParmar />} />
 
                         {/* Referral Landing */}
