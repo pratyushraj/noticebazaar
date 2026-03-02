@@ -1,33 +1,42 @@
 <!doctype html>
 <html lang="en-IN">
-  <head>
-    <meta charset="UTF-8" />
-    <!-- Favicon - Uses the high-res premium logo directly -->
-    <link rel="icon" type="image/png" href="/logo.png" />
-    <link rel="apple-touch-icon" href="/logo.png" />
-    <link rel="manifest" href="/manifest.json" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <meta name="theme-color" content="#6A5CFF" />
-    <title>CreatorArmour: Legal & Tax Services for Content Creators & Influencers | Contracts, Payments & Protection</title>
-    <meta name="description" content="Generate professional contracts, track payment risks, and protect your brand deals. Free legal consultations, consumer complaints, and payment recovery for creators. Start free." />
-    <meta name="keywords" content="legal services for influencers, tax services for content creators, influencer contract review, creator payment recovery, GST filing for creators, legal tech for creators, consumer complaints, free legal consultation, India" />
-    
-    <!-- Open Graph / Facebook -->
-    <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://creatorarmour.com/" />
-    <meta property="og:title" content="CreatorArmour - Legal & Tax Services for Content Creators" />
-    <meta property="og:description" content="India's first AI-powered legal platform for content creators & influencers. Dedicated Advocates & CAs from ₹2,999/month." />
-    <meta property="og:image" content="/logo.png" />
 
-    <!-- Twitter -->
-    <meta property="twitter:card" content="summary_large_image" />
-    <meta property="twitter:url" content="https://creatorarmour.com/" />
-    <meta property="twitter:title" content="CreatorArmour - Legal & Tax Services for Creators" />
-    <meta property="twitter:description" content="Dedicated Advocates & CAs from ₹2,999/month. Trusted by 500+ content creators." />
-    <meta property="twitter:image" content="/logo.png" />
-    
-    <!-- Structured Data (Schema.org) -->
-    <script type="application/ld+json">
+<head>
+  <meta charset="UTF-8" />
+  <!-- Favicon - Uses the high-res premium logo directly -->
+  <link rel="icon" type="image/png" href="/logo.png" />
+  <link rel="apple-touch-icon" href="/logo.png" />
+  <link rel="manifest" href="/manifest.json" />
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=0" />
+  <meta name="theme-color" content="#6A5CFF" />
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <title>CreatorArmour: Legal & Tax Services for Content Creators & Influencers | Contracts, Payments & Protection
+  </title>
+  <meta name="description"
+    content="Generate professional contracts, track payment risks, and protect your brand deals. Free legal consultations, consumer complaints, and payment recovery for creators. Start free." />
+  <meta name="keywords"
+    content="legal services for influencers, tax services for content creators, influencer contract review, creator payment recovery, GST filing for creators, legal tech for creators, consumer complaints, free legal consultation, India" />
+
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://creatorarmour.com/" />
+  <meta property="og:title" content="CreatorArmour - Legal & Tax Services for Content Creators" />
+  <meta property="og:description"
+    content="India's first AI-powered legal platform for content creators & influencers. Dedicated Advocates & CAs from ₹2,999/month." />
+  <meta property="og:image" content="/logo.png" />
+
+  <!-- Twitter -->
+  <meta property="twitter:card" content="summary_large_image" />
+  <meta property="twitter:url" content="https://creatorarmour.com/" />
+  <meta property="twitter:title" content="CreatorArmour - Legal & Tax Services for Creators" />
+  <meta property="twitter:description"
+    content="Dedicated Advocates & CAs from ₹2,999/month. Trusted by 500+ content creators." />
+  <meta property="twitter:image" content="/logo.png" />
+
+  <!-- Structured Data (Schema.org) -->
+  <script type="application/ld+json">
     {
       "@context": "https://schema.org",
       "@type": "ProfessionalService",
@@ -76,44 +85,45 @@
     }
     </script>
 
-    <!-- Google tag (gtag.js) - Google Analytics -->
-    <script>
-      // Load Google Analytics with error handling
-      (function() {
-        window.dataLayer = window.dataLayer || [];
-        function gtag(){dataLayer.push(arguments);}
-        window.gtag = gtag;
-        gtag('js', new Date());
-        
-        // Try to load the script, but handle errors gracefully
-        const script = document.createElement('script');
-        script.async = true;
-        script.src = 'https://www.googletagmanager.com/gtag/js?id=G-PYTGVWEEVP';
-        script.onerror = function() {
-          // Silently handle Google Analytics load failure (common with ad blockers)
-          // Initialize gtag with a no-op function if script fails
-          window.gtag = function() {
-            // Silently fail - analytics is not critical for app functionality
-          };
+  <!-- Google tag (gtag.js) - Google Analytics -->
+  <script>
+    // Load Google Analytics with error handling
+    (function () {
+      window.dataLayer = window.dataLayer || [];
+      function gtag() { dataLayer.push(arguments); }
+      window.gtag = gtag;
+      gtag('js', new Date());
+
+      // Try to load the script, but handle errors gracefully
+      const script = document.createElement('script');
+      script.async = true;
+      script.src = 'https://www.googletagmanager.com/gtag/js?id=G-PYTGVWEEVP';
+      script.onerror = function () {
+        // Silently handle Google Analytics load failure (common with ad blockers)
+        // Initialize gtag with a no-op function if script fails
+        window.gtag = function () {
+          // Silently fail - analytics is not critical for app functionality
         };
-        document.head.appendChild(script);
-        
-        // Configure GA4 (will work even if script fails to load)
-        try {
-          gtag('config', 'G-PYTGVWEEVP');
-        } catch (e) {
-          console.warn('Google Analytics configuration failed:', e);
-        }
-      })();
-    </script>
+      };
+      document.head.appendChild(script);
 
-    <script src="https://assets.calendly.com/assets/external/widget.js" type="text/javascript" async></script>
-  </head>
+      // Configure GA4 (will work even if script fails to load)
+      try {
+        gtag('config', 'G-PYTGVWEEVP');
+      } catch (e) {
+        console.warn('Google Analytics configuration failed:', e);
+      }
+    })();
+  </script>
 
-  <body>
-    <div id="root"></div>
-    <!-- Meta Pixel is loaded in-app (production only) to avoid fbevents.js ERR_BLOCKED_BY_CLIENT in dev / when ad blocked -->
+  <script src="https://assets.calendly.com/assets/external/widget.js" type="text/javascript" async></script>
+</head>
 
-    <script type="module" src="/src/main.tsx?v=2"></script>
-  </body>
+<body>
+  <div id="root"></div>
+  <!-- Meta Pixel is loaded in-app (production only) to avoid fbevents.js ERR_BLOCKED_BY_CLIENT in dev / when ad blocked -->
+
+  <script type="module" src="/src/main.tsx?v=2"></script>
+</body>
+
 </html>

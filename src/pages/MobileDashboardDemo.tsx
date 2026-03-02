@@ -40,16 +40,22 @@ const MobileDashboardDemo = ({ profile, userEmail }: MobileDashboardProps = {}) 
         };
     }, []);
 
+    const triggerHaptic = () => {
+        if (typeof navigator !== 'undefined' && navigator.vibrate) {
+            navigator.vibrate(10);
+        }
+    };
+
     return (
         <div className="fixed inset-0 z-[10000] sm:bg-slate-100 flex justify-center overflow-hidden selection:bg-blue-100" style={{ backgroundColor: '#ffffff' }}>
 
             {/* Mobile Screen Container */}
-            <div className="w-full sm:max-w-[430px] relative h-[100dvh] sm:h-[100dvh] sm:shadow-[0_0_50px_rgba(0,0,0,0.12)] sm:border-x sm:border-slate-200 text-slate-900 font-sans flex flex-col" style={{ backgroundColor: '#F8F9FA' }}>
+            <div className="w-full sm:max-w-[430px] relative h-[100dvh] sm:h-[100dvh] sm:shadow-[0_0_50px_rgba(0,0,0,0.12)] sm:border-x sm:border-slate-200 text-slate-900 font-sans flex flex-col" style={{ background: 'linear-gradient(180deg, #F6F8FB 0%, #EEF1F7 100%)' }}>
 
                 {/* Scrollable Content Area */}
-                <div className="flex-1 overflow-y-auto overflow-x-hidden pb-[84px] scrollbar-hide">
+                <div className="flex-1 overflow-y-auto overflow-x-hidden pb-[84px] scrollbar-hide" style={{ WebkitOverflowScrolling: 'touch' }}>
                     {/* Top Header Section */}
-                    <div className="px-5 pt-12 pb-5 bg-white/95 backdrop-blur-md border-b border-slate-100 shadow-sm sticky top-0 z-[110]">
+                    <div className="px-5 pb-5 bg-white/95 backdrop-blur-md border-b border-slate-100 shadow-sm sticky top-0 z-[110] transition-all" style={{ paddingTop: 'max(env(safe-area-inset-top), 48px)' }}>
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-3">
                                 <div className="relative flex shrink-0">
@@ -71,10 +77,10 @@ const MobileDashboardDemo = ({ profile, userEmail }: MobileDashboardProps = {}) 
                             </div>
 
                             <div className="flex items-center gap-2">
-                                <button className="relative w-10 h-10 bg-[#F8F9FA] rounded-full flex items-center justify-center border border-slate-100 text-slate-600 hover:bg-slate-100 transition-colors">
+                                <button onClick={triggerHaptic} className="relative w-10 h-10 bg-[#F8F9FA] rounded-full flex items-center justify-center border border-slate-100 text-slate-600 hover:bg-slate-100 transition-colors active:scale-95">
                                     <Search className="w-5 h-5" />
                                 </button>
-                                <button className="relative w-10 h-10 bg-[#F8F9FA] rounded-full flex items-center justify-center border border-slate-100 text-slate-600 hover:bg-slate-100 transition-colors">
+                                <button onClick={triggerHaptic} className="relative w-10 h-10 bg-[#F8F9FA] rounded-full flex items-center justify-center border border-slate-100 text-slate-600 hover:bg-slate-100 transition-colors active:scale-95">
                                     <Bell className="w-5 h-5" />
                                     <span className="absolute top-0 right-0 w-3.5 h-3.5 bg-red-500 border-2 border-white rounded-full flex items-center justify-center text-[8px] font-bold text-white">3</span>
                                 </button>
@@ -142,8 +148,8 @@ const MobileDashboardDemo = ({ profile, userEmail }: MobileDashboardProps = {}) 
                             </div>
 
                             <div className="space-y-4">
-                                {/* Offer Card 1 - Nike */}
-                                <div className="bg-white rounded-[20px] p-5 shadow-[0_8px_30px_rgb(0,0,0,0.06)] border border-slate-200/80 relative overflow-hidden">
+                                {/* Offer Card - iOS depth styling */}
+                                <div className="bg-white rounded-[20px] p-5 border border-slate-200/80 relative overflow-hidden" style={{ boxShadow: '0px 4px 12px rgba(0,0,0,0.06), 0px 1px 2px rgba(0,0,0,0.04)' }}>
                                     {/* Brand Header */}
                                     <div className="flex items-start justify-between mb-4">
                                         <div className="flex gap-3 items-center">
@@ -217,20 +223,24 @@ const MobileDashboardDemo = ({ profile, userEmail }: MobileDashboardProps = {}) 
                                         </div>
                                     </div>
 
-                                    <div className="h-[1px] bg-slate-100 w-full mb-3" />
+                                    <div className="h-[1px] bg-black/5 w-full mb-3 mt-4" />
 
                                     {/* Horizontal Action Stack */}
                                     <div className="flex items-center gap-2">
                                         <motion.button
-                                            whileTap={{ scale: 0.96 }}
-                                            className="flex-[2] py-3.5 px-3 rounded-xl font-bold text-[14px] bg-[#10B981] shadow-[0_4px_16px_rgba(16,185,129,0.25)] text-white hover:bg-[#059669] transition-all flex items-center justify-center gap-1.5"
+                                            onClick={triggerHaptic}
+                                            whileTap={{ scale: 0.97 }}
+                                            animate={{ boxShadow: ["0px 4px 16px rgba(15,23,42,0.2)", "0px 4px 24px rgba(16,185,129,0.3)", "0px 4px 16px rgba(15,23,42,0.2)"] }}
+                                            transition={{ repeat: Infinity, duration: 2 }}
+                                            className="flex-[2] py-3.5 px-3 rounded-xl font-bold text-[14px] text-white hover:opacity-90 transition-all flex items-center justify-center gap-1.5 active:scale-95"
+                                            style={{ backgroundColor: '#0F172A' }}
                                         >
                                             Accept Deal <Check className="w-4 h-4 text-white" strokeWidth={3} />
                                         </motion.button>
-                                        <button className="flex-[1.2] py-3.5 px-3 rounded-xl font-bold text-[13px] border border-slate-200 text-slate-700 bg-white hover:bg-slate-50 transition-colors">
+                                        <button onClick={triggerHaptic} className="flex-[1.2] py-3.5 px-3 rounded-xl font-bold text-[13px] border border-slate-200 text-slate-700 bg-white hover:bg-slate-50 transition-colors active:scale-95">
                                             Negotiate
                                         </button>
-                                        <button className="flex-1 py-3.5 px-3 rounded-xl font-bold text-[13px] border border-slate-200 text-slate-700 bg-white hover:bg-slate-50 transition-colors flex items-center justify-center">
+                                        <button onClick={triggerHaptic} className="flex-1 py-3.5 px-3 rounded-xl font-bold text-[13px] border border-slate-200 text-slate-700 bg-white hover:bg-slate-50 transition-colors flex items-center justify-center active:scale-95">
                                             Question?
                                         </button>
                                     </div>
@@ -279,7 +289,8 @@ const MobileDashboardDemo = ({ profile, userEmail }: MobileDashboardProps = {}) 
                                         </span>
                                     </div>
 
-                                    <div className="h-[1px] bg-slate-100 w-full mb-4" />
+                                    {/* Divider for native feel */}
+                                    <div className="h-[1px] bg-black/5 w-full mt-4 mb-4" />
 
                                     {/* Details & Urgency */}
                                     <div className="space-y-3 mb-5">
@@ -301,17 +312,24 @@ const MobileDashboardDemo = ({ profile, userEmail }: MobileDashboardProps = {}) 
                                         </div>
                                     </div>
 
-                                    <div className="h-[1px] bg-slate-100 w-full mb-3" />
+                                    <div className="h-[1px] bg-black/5 w-full mb-3 mt-4" />
 
                                     {/* Horizontal Action Stack */}
                                     <div className="flex items-center gap-2">
-                                        <motion.button whileTap={{ scale: 0.96 }} className="flex-[2] py-3.5 px-3 rounded-xl font-bold text-[14px] shadow-[0_4px_16px_rgba(15,23,42,0.2)] text-white hover:opacity-90 transition-all flex items-center justify-center gap-1.5" style={{ backgroundColor: '#0F172A' }}>
+                                        <motion.button
+                                            onClick={triggerHaptic}
+                                            whileTap={{ scale: 0.97 }}
+                                            animate={{ boxShadow: ["0px 4px 16px rgba(15,23,42,0.2)", "0px 4px 24px rgba(16,185,129,0.3)", "0px 4px 16px rgba(15,23,42,0.2)"] }}
+                                            transition={{ repeat: Infinity, duration: 2 }}
+                                            className="flex-[2] py-3.5 px-3 rounded-xl font-bold text-[14px] text-white hover:opacity-90 transition-all flex items-center justify-center gap-1.5 active:scale-95"
+                                            style={{ backgroundColor: '#0F172A' }}
+                                        >
                                             Accept Deal <Check className="w-4 h-4 text-white" strokeWidth={3} />
                                         </motion.button>
-                                        <button className="flex-[1.2] py-3.5 px-3 rounded-xl font-bold text-[13px] border border-slate-200 text-slate-700 bg-white hover:bg-slate-50 transition-colors">
+                                        <button onClick={triggerHaptic} className="flex-[1.2] py-3.5 px-3 rounded-xl font-bold text-[13px] border border-slate-200 text-slate-700 bg-white hover:bg-slate-50 transition-colors active:scale-95">
                                             Negotiate
                                         </button>
-                                        <button className="flex-1 py-3.5 px-3 rounded-xl font-bold text-[13px] border border-slate-200 text-slate-700 bg-white hover:bg-slate-50 transition-colors flex items-center justify-center">
+                                        <button onClick={triggerHaptic} className="flex-1 py-3.5 px-3 rounded-xl font-bold text-[13px] border border-slate-200 text-slate-700 bg-white hover:bg-slate-50 transition-colors flex items-center justify-center active:scale-95">
                                             Question?
                                         </button>
                                     </div>
@@ -325,33 +343,33 @@ const MobileDashboardDemo = ({ profile, userEmail }: MobileDashboardProps = {}) 
                 </div> {/* End Scrollable Content Area */}
 
                 {/* Floating Bottom Navigation */}
-                <div className="absolute bottom-0 inset-x-0 w-full bg-white/95 backdrop-blur-md border-t border-slate-200/60 px-6 py-2 pb-safe shadow-[0_-10px_40px_rgb(0,0,0,0.05)] z-40">
+                <div className="absolute bottom-0 inset-x-0 w-full border-t border-slate-200/60 px-6 py-2 pb-safe z-40" style={{ backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', backgroundColor: 'rgba(255,255,255,0.75)' }}>
                     <div className="max-w-md mx-auto flex items-center justify-between pb-4 pt-2">
 
-                        <button onClick={() => navigate('/creator-dashboard')} className="flex flex-col items-center gap-1 w-12 text-slate-900 font-bold">
+                        <button onClick={() => { triggerHaptic(); navigate('/creator-dashboard'); }} className="flex flex-col items-center gap-1 w-12 text-slate-900 font-bold active:scale-95 transition-transform">
                             <Home className="w-6 h-6 fill-current" />
                             <span className="text-[10px]">Home</span>
                         </button>
 
-                        <button onClick={() => navigate('/creator-dashboard?tab=deals')} className="flex flex-col items-center gap-1 w-12 text-slate-400 relative hover:text-slate-600 transition-colors">
+                        <button onClick={() => { triggerHaptic(); navigate('/creator-dashboard?tab=deals'); }} className="flex flex-col items-center gap-1 w-12 text-slate-400 relative hover:text-slate-600 transition-all active:scale-95">
                             <Briefcase className="w-6 h-6" />
                             <span className="absolute top-0 right-1 w-4 h-4 bg-blue-600 border-2 border-white rounded-full flex items-center justify-center text-[9px] font-bold text-white shadow-sm">5</span>
                             <span className="text-[10px] font-medium">Deals</span>
                         </button>
 
                         {/* Center Action Button */}
-                        <button className="transform -translate-y-4 px-6 py-3.5 bg-blue-600 rounded-full flex items-center gap-2 shadow-[0_8px_20px_rgba(37,99,235,0.3)] border-4 border-[#F8F9FA] text-white font-bold text-[15px] hover:bg-blue-700 transition-colors">
+                        <button onClick={triggerHaptic} className="transform -translate-y-4 px-6 py-3.5 bg-blue-600 rounded-full flex items-center gap-2 border-4 border-[#F8F9FA] text-white font-bold text-[15px] hover:bg-blue-700 transition-all active:scale-95" style={{ boxShadow: '0px 8px 24px rgba(60,100,255,0.25)' }}>
                             <Plus className="w-5 h-5" strokeWidth={3} />
                             Pitch
                         </button>
 
-                        <button onClick={() => navigate('/creator-dashboard?tab=messages')} className="flex flex-col items-center gap-1 w-12 text-slate-400 relative hover:text-slate-600 transition-colors">
+                        <button onClick={() => { triggerHaptic(); navigate('/creator-dashboard?tab=messages'); }} className="flex flex-col items-center gap-1 w-12 text-slate-400 relative hover:text-slate-600 transition-all active:scale-95">
                             <MessageSquare className="w-6 h-6" />
                             <span className="absolute -top-1 right-0 w-4 h-4 bg-red-400 border-2 border-white rounded-full flex items-center justify-center text-[9px] font-bold text-white shadow-sm">2</span>
                             <span className="text-[10px] font-medium">Chats</span>
                         </button>
 
-                        <button onClick={() => navigate('/creator-profile')} className="flex flex-col items-center gap-1 w-12 text-slate-400 hover:text-slate-600 transition-colors">
+                        <button onClick={() => { triggerHaptic(); navigate('/creator-profile'); }} className="flex flex-col items-center gap-1 w-12 text-slate-400 hover:text-slate-600 transition-all active:scale-95">
                             <User className="w-6 h-6" />
                             <span className="text-[10px] font-medium">Profile</span>
                         </button>
