@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import {
     Bell, MessageCircle, BarChart3, Target, Calendar,
     TrendingUp, Check, ChevronRight, Share, CheckCircle2,
-    Home, Briefcase, Plus, MessageSquare, User, Zap, Lock, Award, FileText, Search
+    Home, Briefcase, Plus, MessageSquare, User, Zap, Lock, Award, FileText, Search, Shield, ShieldCheck
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import CountUp from 'react-countup';
@@ -109,10 +109,11 @@ const MobileDashboardDemo = ({ profile, userEmail }: MobileDashboardProps = {}) 
                             </div>
 
                             {/* Total Earnings Card */}
-                            <div className="rounded-2xl p-4 shadow-xl relative overflow-hidden" style={{ backgroundColor: '#0A2540' }}>
-                                <div className="absolute right-0 bottom-0 w-32 h-32 bg-blue-500 rounded-full blur-2xl opacity-20" />
+                            <div className="rounded-2xl p-4 shadow-xl relative overflow-hidden" style={{ backgroundColor: '#0F172A' }}>
+                                <Shield className="absolute -right-6 -bottom-6 w-40 h-40 text-blue-50 opacity-5 -rotate-12" strokeWidth={1} />
+                                <div className="absolute right-0 bottom-0 w-32 h-32 bg-slate-500 rounded-full blur-2xl opacity-10" />
                                 <div className="flex justify-between items-start mb-1 relative z-10">
-                                    <p className="text-[12px] font-semibold uppercase tracking-wider" style={{ color: 'rgba(224, 231, 255, 0.7)' }}>Vault Balance</p>
+                                    <p className="text-[12px] font-semibold uppercase tracking-wider" style={{ color: 'rgba(255, 255, 255, 0.6)' }}>Vault Balance</p>
                                 </div>
                                 <p className="text-[26px] font-bold text-white tracking-tight leading-tight relative z-10 mt-1">
                                     ₹3,45,000
@@ -141,7 +142,9 @@ const MobileDashboardDemo = ({ profile, userEmail }: MobileDashboardProps = {}) 
                         {/* Brand Offers Section */}
                         <section>
                             <div className="flex items-center justify-between mb-4 mt-2">
-                                <h2 className="text-[18px] font-bold text-slate-900 tracking-tight">Active Offers</h2>
+                                <h2 className="text-[17px] font-bold text-slate-900 tracking-tight flex items-center gap-1.5 pt-1">
+                                    <Lock className="w-4 h-4 text-emerald-600 mb-0.5" /> Secured Deal Offers
+                                </h2>
                                 <button className="text-[13px] text-blue-600 font-semibold flex items-center gap-0.5 hover:text-blue-700 transition-colors">
                                     View All <ChevronRight className="w-4 h-4" />
                                 </button>
@@ -358,7 +361,7 @@ const MobileDashboardDemo = ({ profile, userEmail }: MobileDashboardProps = {}) 
                         </button>
 
                         {/* Center Action Button */}
-                        <button onClick={triggerHaptic} className="transform -translate-y-4 px-6 py-3.5 bg-blue-600 rounded-full flex items-center gap-2 border-4 border-[#F8F9FA] text-white font-bold text-[15px] hover:bg-blue-700 transition-all active:scale-95" style={{ boxShadow: '0px 8px 24px rgba(60,100,255,0.25)' }}>
+                        <button onClick={triggerHaptic} className="transform -translate-y-4 px-6 py-3.5 rounded-full flex items-center gap-2 border-4 border-[#F8F9FA] text-white font-bold text-[15px] hover:opacity-90 transition-all active:scale-95" style={{ backgroundColor: '#0F172A', boxShadow: '0px 8px 24px rgba(15,23,42,0.2)' }}>
                             <Plus className="w-5 h-5" strokeWidth={3} />
                             Pitch
                         </button>
