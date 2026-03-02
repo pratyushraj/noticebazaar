@@ -17,7 +17,7 @@ const Layout = ({ children }: LayoutProps) => {
   const { profile, session } = useSession();
   const location = useLocation();
   const { isOpen } = useSidebar();
-  
+
   // Show bottom nav for all users on creator routes (since creator dashboard is default)
   // Hide bottom nav during onboarding and for admin/CA/lawyer routes
   const isOnboarding = location.pathname === '/creator-onboarding';
@@ -26,45 +26,49 @@ const Layout = ({ children }: LayoutProps) => {
   const isLawyerRoute = location.pathname.startsWith('/lawyer-dashboard');
   const isAdvisorRoute = location.pathname.startsWith('/advisor-dashboard');
   const isClientRoute = location.pathname.startsWith('/client-');
-  const isCreatorRoute = location.pathname.startsWith('/creator-') || 
-                        location.pathname.startsWith('/messages') ||
-                        location.pathname.startsWith('/calendar') ||
-                        location.pathname.startsWith('/payment/') ||
-                        location.pathname.startsWith('/create-deal') ||
-                        location.pathname.startsWith('/contract-upload');
-  
+  const isCreatorRoute = location.pathname.startsWith('/creator-') ||
+    location.pathname.startsWith('/messages') ||
+    location.pathname.startsWith('/calendar') ||
+    location.pathname.startsWith('/payment/') ||
+    location.pathname.startsWith('/create-deal') ||
+    location.pathname.startsWith('/contract-upload');
+
+  // Specifically hide for the new demo dashboard replacing creator-dashboard
+  const isDemoOverride = location.pathname === '/creator-dashboard' || location.pathname === '/demo-dashboard';
+
   // Show bottom nav for creator routes (default for all users), hide for admin/CA/lawyer/advisor routes
   // Allow bottom nav if:
   // 1. User is logged in (has session)
   // 2. Profile exists OR profile is still loading (for new accounts, profile might be created by trigger)
   // 3. User is not explicitly an admin/CA/lawyer/advisor (if profile exists and has a different role)
   const isNonCreatorRole = profile && profile.role && !['creator', null, undefined].includes(profile.role);
-  const shouldShowBottomNav = isCreatorRoute && 
-                              !isOnboarding && 
-                              !isAdminRoute && 
-                              !isCARoute && 
-                              !isLawyerRoute && 
-                              !isAdvisorRoute && 
-                              !isClientRoute && 
-                              !!session && // User must be logged in
-                              !isNonCreatorRole; // Don't show if user has a non-creator role
+  const shouldShowBottomNav = isCreatorRoute &&
+    !isOnboarding &&
+    !isAdminRoute &&
+    !isCARoute &&
+    !isLawyerRoute &&
+    !isAdvisorRoute &&
+    !isClientRoute &&
+    !isDemoOverride &&
+    !!session && // User must be logged in
+    !isNonCreatorRole; // Don't show if user has a non-creator role
 
   return (
     <div className="relative min-h-[100dvh] bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 text-white overflow-hidden md:overflow-visible flex flex-col">
       {/* Skip to main content link */}
-      <a 
-        href="#main" 
+      <a
+        href="#main"
         className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[300] focus:bg-purple-600 focus:text-white focus:p-4 focus:rounded-lg focus:shadow-lg focus:outline-none focus:ring-4 focus:ring-purple-400/50"
       >
         Skip to main content
       </a>
-      
+
       <div className="relative z-10 flex flex-col flex-1 min-h-0">
         {/* Modern Navbar */}
         <Navbar />
-        
+
         <div className="flex flex-1 min-h-0 overflow-hidden md:overflow-visible flex-col">
-          <main 
+          <main
             id="main"
             className={cn(
               "relative flex-1 w-full py-6 px-4 md:px-6 lg:px-8 transition-all duration-300 ease-in-out",
@@ -74,13 +78,13 @@ const Layout = ({ children }: LayoutProps) => {
           >
             {children}
           </main>
-          
+
           {/* Footer - Hidden on mobile, shown on desktop, positioned at bottom */}
           <div className="hidden md:block text-center py-4 text-sm text-white/30 mt-auto">
             <a href="#" className="hover:underline">Legal Resources</a> | <MadeWithDyad />
           </div>
         </div>
-        
+
         {/* Bottom Navigation - Primary navigation for creators (all screen sizes) */}
         {shouldShowBottomNav && <CreatorBottomNav />}
       </div>

@@ -1,6 +1,7 @@
 import type { Config } from "tailwindcss";
 
 export default {
+  // force tailwind jit cache bust - 2026-03-02
   darkMode: ["class"],
   content: [
     "./pages/**/*.{ts,tsx}",
