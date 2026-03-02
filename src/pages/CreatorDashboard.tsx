@@ -139,7 +139,7 @@ const CreatorDashboard = () => {
       setPendingCollabRequestsCount(pending.length);
       // Keep the list small on dashboard, but unified (paid + barter in one list)
       setCollabRequestsPreview(
-        pending.slice(0, 1).map((r: any) => ({
+        pending.slice(0, 10).map((r: any) => ({
           id: r.id,
           brand_name: r.brand_name || 'Brand',
           brand_email: r.brand_email || undefined,
@@ -1087,7 +1087,7 @@ const CreatorDashboard = () => {
   // Force new premium UI as default
   const isDemoMode = true;
   if (isDemoMode) {
-    return <MobileDashboardDemo profile={profile} userEmail={session?.user?.email} />;
+    return <MobileDashboardDemo profile={profile} userEmail={session?.user?.email} collabRequests={collabRequestsPreview} />;
   }
 
   return (
