@@ -21,13 +21,13 @@ const MobileDashboardDemo = ({ profile, userEmail }: MobileDashboardProps = {}) 
     const avatarUrl = profile?.avatar_url || "https://i.pravatar.cc/150?img=47";
 
     return (
-        <div className="min-h-[100dvh] bg-[#F8F9FA] text-slate-900 font-sans sm:pb-0 pb-[84px] selection:bg-blue-100">
+        <div className="fixed inset-0 z-[100] bg-[#F8F9FA] text-slate-900 font-sans pb-[84px] selection:bg-blue-100 overflow-y-auto w-full h-[100dvh]">
 
             {/* Top Header Section */}
-            <div className="px-5 pt-12 pb-5 bg-white border-b border-slate-100 shadow-sm sticky top-0 z-30">
+            <div className="px-5 pt-12 pb-5 bg-white/95 backdrop-blur-md border-b border-slate-100 shadow-sm sticky top-0 z-[110]">
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                        <div className="relative">
+                        <div className="relative flex shrink-0">
                             <img
                                 src={avatarUrl}
                                 alt="Profile avatar"
@@ -82,7 +82,6 @@ const MobileDashboardDemo = ({ profile, userEmail }: MobileDashboardProps = {}) 
                         <div className="absolute right-0 bottom-0 w-32 h-32 bg-blue-500/20 blur-2xl rounded-full" />
                         <div className="flex justify-between items-start mb-1 relative z-10">
                             <p className="text-[12px] text-blue-100/70 font-semibold uppercase tracking-wider">Vault Balance</p>
-                            <TrendingUp className="w-4 h-4 text-emerald-400" />
                         </div>
                         <p className="text-[26px] font-bold text-white tracking-tight leading-tight relative z-10 mt-1">
                             ₹3,45,000
@@ -123,8 +122,8 @@ const MobileDashboardDemo = ({ profile, userEmail }: MobileDashboardProps = {}) 
                             {/* Brand Header */}
                             <div className="flex items-start justify-between mb-4">
                                 <div className="flex gap-3 items-center">
-                                    <div className="w-12 h-12 bg-black rounded-xl flex items-center justify-center shadow-md border border-slate-100 shrink-0">
-                                        <svg className="w-7 h-7 text-white" viewBox="0 0 24 24" fill="currentColor"><path d="M24 8.216c-3.111.96-6.666 1.838-10.592 1.838-5.333 0-10.37-.878-13.408-2.676v.053c0 6.666 4.667 9.889 10.963 9.889 4.333 0 8.703-1.89 13.037-5.592v-3.512z" /></svg>
+                                    <div className="w-12 h-12 bg-slate-900 rounded-xl flex items-center justify-center shadow-sm border border-slate-100 shrink-0">
+                                        <svg className="w-8 h-8 text-white" viewBox="0 0 24 24" fill="currentColor"><path d="M24 8.216c-3.111.96-6.666 1.838-10.592 1.838-5.333 0-10.37-.878-13.408-2.676v.053c0 6.666 4.667 9.889 10.963 9.889 4.333 0 8.703-1.89 13.037-5.592v-3.512z" /></svg>
                                     </div>
                                     <div className="flex flex-col justify-center">
                                         <div className="flex items-center gap-1.5">
@@ -146,7 +145,7 @@ const MobileDashboardDemo = ({ profile, userEmail }: MobileDashboardProps = {}) 
                                     <div className="text-slate-900 font-bold text-xl tracking-tight leading-none mb-1">
                                         ₹75,000
                                     </div>
-                                    <div className="text-[10px] text-emerald-600 font-bold bg-emerald-50 px-1.5 py-0.5 rounded-sm inline-block">
+                                    <div className="text-[10px] text-emerald-700 font-bold bg-emerald-100/80 px-1.5 py-0.5 rounded-sm inline-block">
                                         Escrow Ready
                                     </div>
                                 </div>
@@ -154,13 +153,13 @@ const MobileDashboardDemo = ({ profile, userEmail }: MobileDashboardProps = {}) 
 
                             {/* Trust Layer Badges */}
                             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }} className="flex flex-wrap gap-1.5 mb-4">
-                                <span className="bg-emerald-50 text-emerald-700 text-[10px] font-semibold px-2 py-1 rounded-md flex items-center gap-1 border border-emerald-100/50">
+                                <span className="bg-emerald-50 text-emerald-700 text-[10px] font-semibold px-2.5 py-1 rounded-md flex items-center gap-1.5 border border-emerald-100/50">
                                     <Lock className="w-3 h-3" /> Payment Secured
                                 </span>
-                                <span className="bg-blue-50 text-blue-700 text-[10px] font-semibold px-2 py-1 rounded-md flex items-center gap-1 border border-blue-100/50">
+                                <span className="bg-blue-50 text-blue-700 text-[10px] font-semibold px-2.5 py-1 rounded-md flex items-center gap-1.5 border border-blue-100/50">
                                     <FileText className="w-3 h-3" /> Contract Ready
                                 </span>
-                                <motion.span initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1, duration: 1 }} className="bg-slate-100 text-slate-700 text-[10px] font-semibold px-2 py-1 rounded-md flex items-center gap-1 border border-slate-200/50">
+                                <motion.span initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1, duration: 1 }} className="bg-slate-100 text-slate-700 text-[10px] font-semibold px-2.5 py-1 rounded-md flex items-center gap-1.5 border border-slate-200/50">
                                     <Award className="w-3 h-3 text-amber-500" /> Brand Verified
                                 </motion.span>
                             </motion.div>
@@ -192,13 +191,13 @@ const MobileDashboardDemo = ({ profile, userEmail }: MobileDashboardProps = {}) 
                                 </div>
                             </div>
 
+                            <div className="h-[1px] bg-slate-100 w-full mb-3" />
+
                             {/* Horizontal Action Stack */}
                             <div className="flex items-center gap-2">
                                 <motion.button
                                     whileTap={{ scale: 0.96 }}
-                                    animate={{ boxShadow: ["0 4px 14px 0 rgba(16, 185, 129, 0.39)", "0 6px 20px 0 rgba(16, 185, 129, 0.6)", "0 4px 14px 0 rgba(16, 185, 129, 0.39)"] }}
-                                    transition={{ repeat: Infinity, duration: 2 }}
-                                    className="flex-[2] py-3.5 px-3 rounded-xl font-bold text-[14px] bg-[#10B981] text-white hover:bg-[#059669] transition-colors border-b-4 border-[#047857] active:border-b-0 active:translate-y-1 flex items-center justify-center gap-1.5"
+                                    className="flex-[2] py-3.5 px-3 rounded-xl font-bold text-[14px] bg-[#10B981] shadow-[0_4px_16px_rgba(16,185,129,0.25)] text-white hover:bg-[#059669] transition-all flex items-center justify-center gap-1.5"
                                 >
                                     Accept Deal <Check className="w-4 h-4 text-white" strokeWidth={3} />
                                 </motion.button>
@@ -217,7 +216,7 @@ const MobileDashboardDemo = ({ profile, userEmail }: MobileDashboardProps = {}) 
                             <div className="flex items-start justify-between mb-4">
                                 <div className="flex gap-3 items-center">
                                     <div className="w-12 h-12 bg-[#FFFDF5] rounded-xl flex items-center justify-center shadow-sm border border-slate-200 shrink-0">
-                                        <span className="text-slate-900 font-serif italic font-bold">m<br />caffeine</span>
+                                        <span className="text-slate-900 font-serif italic font-bold leading-tight text-center text-[13px]">m<br />caffeine</span>
                                     </div>
                                     <div className="flex flex-col justify-center">
                                         <div className="flex items-center gap-1.5">
@@ -246,10 +245,10 @@ const MobileDashboardDemo = ({ profile, userEmail }: MobileDashboardProps = {}) 
 
                             {/* Trust Layer Badges */}
                             <div className="flex flex-wrap gap-1.5 mb-4">
-                                <span className="bg-emerald-50 text-emerald-700 text-[10px] font-semibold px-2 py-1 rounded-md flex items-center gap-1 border border-emerald-100/50">
+                                <span className="bg-emerald-50 text-emerald-700 text-[10px] font-semibold px-2.5 py-1 rounded-md flex items-center gap-1.5 border border-emerald-100/50">
                                     <Lock className="w-3 h-3" /> Payment Secured
                                 </span>
-                                <span className="bg-slate-100 text-slate-700 text-[10px] font-semibold px-2 py-1 rounded-md flex items-center gap-1 border border-slate-200/50">
+                                <span className="bg-slate-100 text-slate-700 text-[10px] font-semibold px-2.5 py-1 rounded-md flex items-center gap-1.5 border border-slate-200/50">
                                     <Award className="w-3 h-3 text-amber-500" /> Brand Verified
                                 </span>
                             </div>
@@ -276,9 +275,11 @@ const MobileDashboardDemo = ({ profile, userEmail }: MobileDashboardProps = {}) 
                                 </div>
                             </div>
 
+                            <div className="h-[1px] bg-slate-100 w-full mb-3" />
+
                             {/* Horizontal Action Stack */}
                             <div className="flex items-center gap-2">
-                                <motion.button whileTap={{ scale: 0.96 }} className="flex-[2] py-3.5 px-3 rounded-xl font-bold text-[14px] bg-slate-900 text-white hover:bg-slate-800 transition-colors border-b-4 border-slate-700 active:border-b-0 active:translate-y-1 flex items-center justify-center gap-1.5">
+                                <motion.button whileTap={{ scale: 0.96 }} className="flex-[2] py-3.5 px-3 rounded-xl font-bold text-[14px] bg-slate-900 shadow-[0_4px_16px_rgba(15,23,42,0.2)] text-white hover:bg-slate-800 transition-all flex items-center justify-center gap-1.5">
                                     Accept Deal <Check className="w-4 h-4 text-white" strokeWidth={3} />
                                 </motion.button>
                                 <button className="flex-[1.2] py-3.5 px-3 rounded-xl font-bold text-[13px] border border-slate-200 text-slate-700 bg-white hover:bg-slate-50 transition-colors">
