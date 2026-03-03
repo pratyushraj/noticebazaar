@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import {
     Bell, MessageCircle, BarChart3, Target, Calendar,
     TrendingUp, Check, ChevronRight, Share, CheckCircle2,
-    Home, Briefcase, Plus, MessageSquare, User, Zap, Lock, Award, FileText, Search, Shield, ShieldCheck,
+    Home, Briefcase, Plus, MessageSquare, User, Zap, Lock, Award, FileText, Search, Shield, ShieldCheck, Clock,
     LayoutDashboard, Link as LinkIcon, CreditCard
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -355,19 +355,20 @@ const MobileDashboardDemo = ({ profile, userEmail, collabRequests = [] }: Mobile
 
                                         {/* Dynamic Deal Cards (Mapped from actual database) */}
                                         {Array.isArray(collabRequests) && collabRequests.map((req, idx) => (
-                                            <div key={req.id || idx} className="bg-white rounded-[20px] p-5 shadow-[0_8px_30px_rgb(0,0,0,0.06)] border border-slate-200/80 relative overflow-hidden mt-6">
+                                            <div key={req.id || idx} className="bg-white rounded-[20px] p-5 border border-slate-200/80 relative overflow-hidden" style={{ boxShadow: '0px 4px 12px rgba(0,0,0,0.06), 0px 1px 2px rgba(0,0,0,0.04)' }}>
                                                 {/* Brand Header */}
                                                 <div className="flex items-start justify-between mb-4">
                                                     <div className="flex gap-3 items-center">
-                                                        <div className="w-12 h-12 bg-slate-100 rounded-xl flex items-center justify-center shadow-sm border border-slate-200 shrink-0">
-                                                            <span className="text-slate-900 font-bold text-[18px]">{req.brand_name?.charAt(0) || 'B'}</span>
+                                                        <div className="w-12 h-12 rounded-xl flex items-center justify-center shadow-sm border border-slate-100 shrink-0" style={{ backgroundColor: '#F8F9FA' }}>
+                                                            <span className="text-slate-700 font-bold text-[20px] uppercase">{req.brand_name?.charAt(0) || 'B'}</span>
                                                         </div>
                                                         <div className="flex flex-col justify-center">
                                                             <div className="flex items-center gap-1.5">
                                                                 <h3 className="font-bold text-[17px] text-slate-900 leading-none tracking-tight">{req.brand_name || 'Brand'}</h3>
                                                             </div>
+                                                            {/* Brand Indicator */}
                                                             <div className="flex items-center gap-1.5 mt-2">
-                                                                <div className="w-2 h-2 rounded-full bg-emerald-400" />
+                                                                <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
                                                                 <span className="text-[11px] text-slate-600 font-medium">New Offer</span>
                                                             </div>
                                                         </div>
@@ -379,8 +380,16 @@ const MobileDashboardDemo = ({ profile, userEmail, collabRequests = [] }: Mobile
                                                     </div>
                                                 </div>
 
+                                                {/* Trust Layer Badges */}
+                                                <div className="flex flex-wrap gap-1.5 mb-4">
+                                                    <span className="text-slate-700 text-[10px] font-semibold px-2.5 py-1 rounded-md flex items-center gap-1.5 border border-slate-200/50" style={{ backgroundColor: '#F8F9FA' }}>
+                                                        <Award className="w-3 h-3 text-amber-500" /> Pending Action
+                                                    </span>
+                                                </div>
+
                                                 <div className="h-[1px] bg-slate-100 w-full mb-4" />
 
+                                                {/* Details & Urgency */}
                                                 <div className="space-y-3 mb-5">
                                                     <div className="flex items-start gap-2">
                                                         <p className="text-[13px] text-slate-500 w-[70px] shrink-0 font-medium">Requires</p>
@@ -388,12 +397,23 @@ const MobileDashboardDemo = ({ profile, userEmail, collabRequests = [] }: Mobile
                                                             {req.collab_type || 'Content Creation'}
                                                         </p>
                                                     </div>
+
+                                                    <div className="flex items-center gap-2">
+                                                        <p className="text-[13px] text-slate-500 w-[70px] shrink-0 font-medium">Expires</p>
+                                                        <div className="flex items-center gap-1.5 px-2 py-1 rounded-md border border-slate-200" style={{ backgroundColor: '#F8F9FA' }}>
+                                                            <Clock className="w-3.5 h-3.5 text-slate-500" />
+                                                            <p className="text-[12px] text-slate-700 font-medium tracking-tight">
+                                                                Awaiting review
+                                                            </p>
+                                                        </div>
+                                                    </div>
                                                 </div>
 
                                                 <div className="h-[1px] bg-black/5 w-full mb-3 mt-4" />
 
+                                                {/* Horizontal Action Stack */}
                                                 <div className="flex items-center gap-2">
-                                                    <motion.button onClick={triggerHaptic} whileTap={{ scale: 0.97 }} className="flex-[2] py-3.5 px-3 rounded-xl font-bold text-[14px] text-white hover:opacity-90 transition-all flex items-center justify-center gap-1.5 active:scale-95 bg-[#0F172A]">
+                                                    <motion.button onClick={triggerHaptic} whileTap={{ scale: 0.97 }} className="flex-[2] py-3.5 px-3 rounded-xl font-bold text-[14px] text-white hover:opacity-90 transition-all flex items-center justify-center gap-1.5 active:scale-95" style={{ backgroundColor: '#0F172A' }}>
                                                         Review Deal <Check className="w-4 h-4 text-white" />
                                                     </motion.button>
                                                     <button onClick={triggerHaptic} className="flex-[1.2] py-3.5 px-3 rounded-xl font-bold text-[13px] border border-slate-200 text-slate-700 bg-white hover:bg-slate-50 transition-colors active:scale-95">
