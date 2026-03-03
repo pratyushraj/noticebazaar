@@ -144,13 +144,13 @@ const MobileDashboardDemo = ({ profile, userEmail, collabRequests = [] }: Mobile
                                 {/* Filter Pills */}
                                 <div className="flex gap-2 overflow-x-auto pb-4 pt-1 snap-x mb-2 scrollbar-hide -mx-5 px-5">
                                     <button className="snap-start shrink-0 text-white px-5 py-2 rounded-full text-[13px] font-semibold flex items-center shadow-md border" style={{ backgroundColor: '#0F172A', borderColor: '#0F172A' }}>
-                                        Action Needed <span className="ml-1.5 text-slate-400 opacity-90">5</span>
+                                        Action Needed <span className="ml-1.5 text-slate-400">5</span>
                                     </button>
                                     <button className="snap-start shrink-0 bg-white border border-slate-200 text-slate-600 px-5 py-2 rounded-full text-[13px] font-medium shadow-sm hover:bg-slate-50 transition-colors flex items-center">
-                                        In Negotiation <span className="ml-1.5 opacity-60">2</span>
+                                        In Negotiation <span className="ml-1.5 text-slate-400">2</span>
                                     </button>
                                     <button className="snap-start shrink-0 bg-white border border-slate-200 text-slate-600 px-5 py-2 rounded-full text-[13px] font-medium shadow-sm hover:bg-slate-50 transition-colors flex items-center">
-                                        Active Contracts <span className="ml-1.5 opacity-60">4</span>
+                                        Active Contracts <span className="ml-1.5 text-slate-400">4</span>
                                     </button>
                                 </div>
 
