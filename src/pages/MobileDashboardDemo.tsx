@@ -61,7 +61,7 @@ const MobileDashboardDemo = ({ profile, userEmail, collabRequests = [] }: Mobile
                     {activeTab === 'dashboard' && (
                         <>
                             {/* Top Header Section */}
-                            <div className="px-5 pb-5 bg-white/95 backdrop-blur-md border-b border-slate-100 shadow-sm sticky top-0 z-[110] transition-all" style={{ paddingTop: 'max(env(safe-area-inset-top), 48px)' }}>
+                            <div className="px-5 pb-5 bg-white border-b border-slate-100 shadow-sm sticky top-0 z-50 transition-all" style={{ paddingTop: 'max(env(safe-area-inset-top), 48px)', transform: 'translateZ(0)' }}>
                                 <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-3">
                                         <div className="relative flex shrink-0">
