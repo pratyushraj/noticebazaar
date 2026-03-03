@@ -52,8 +52,8 @@ const MobileDashboardDemo = ({ profile, userEmail, collabRequests = [] }: Mobile
     return (
         <div className="fixed inset-0 z-[10000] sm:bg-slate-100 flex justify-center overflow-hidden selection:bg-blue-100" style={{ backgroundColor: '#ffffff' }}>
 
-            {/* Mobile Screen Container */}
-            <div className="w-full sm:max-w-[430px] relative h-[100dvh] sm:h-[100dvh] sm:shadow-[0_0_50px_rgba(0,0,0,0.12)] sm:border-x sm:border-slate-200 text-slate-900 font-sans flex flex-col" style={{ background: 'linear-gradient(180deg, #F6F8FB 0%, #EEF1F7 100%)' }}>
+            {/* Mobile / Tablet Screen Container */}
+            <div className="w-full md:max-w-3xl lg:max-w-5xl mx-auto relative h-[100dvh] sm:h-[100dvh] md:border-x md:border-slate-200 text-slate-900 font-sans flex flex-col" style={{ background: 'linear-gradient(180deg, #F6F8FB 0%, #EEF1F7 100%)', boxShadow: '0 0 50px rgba(0,0,0,0.05)' }}>
 
                 {/* Scrollable Content Area */}
                 <div className="flex-1 overflow-y-auto overflow-x-hidden pb-[84px] scrollbar-hide" style={{ WebkitOverflowScrolling: 'touch' }}>
@@ -165,7 +165,7 @@ const MobileDashboardDemo = ({ profile, userEmail, collabRequests = [] }: Mobile
                                         </button>
                                     </div>
 
-                                    <div className="space-y-4">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 md:gap-6">
                                         {/* Offer Card - iOS depth styling */}
                                         <div className="bg-white rounded-[20px] p-5 border border-slate-200/80 relative overflow-hidden" style={{ boxShadow: '0px 4px 12px rgba(0,0,0,0.06), 0px 1px 2px rgba(0,0,0,0.04)' }}>
                                             {/* Brand Header */}
@@ -550,7 +550,7 @@ const MobileDashboardDemo = ({ profile, userEmail, collabRequests = [] }: Mobile
 
                 {/* Floating Bottom Navigation */}
                 <div className="absolute bottom-0 inset-x-0 w-full border-t border-slate-200/60 px-6 py-2 pb-safe z-40" style={{ backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', backgroundColor: 'rgba(255,255,255,0.75)' }}>
-                    <div className="max-w-md mx-auto flex items-center justify-between pb-4 pt-2">
+                    <div className="max-w-md md:max-w-2xl mx-auto flex items-center justify-between pb-4 pt-2">
 
                         <button onClick={() => { triggerHaptic(); setActiveTab('dashboard'); }} className={`flex flex-col items-center gap-1 w-14 font-bold hover:opacity-70 active:opacity-50 transition-opacity shrink-0 ${activeTab === 'dashboard' ? 'text-slate-900' : 'text-slate-400 font-medium'}`}>
                             <LayoutDashboard className="w-[22px] h-[22px] fill-current" />
