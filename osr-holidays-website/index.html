@@ -4,198 +4,240 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>OSR Holidays | Tours & Travels</title>
-    <meta
-      name="description"
-      content="OSR Holidays offers international and domestic tour packages, flights, hotels, visa assistance, MICE, and honeymoon trips."
-    />
+    <meta name="description" content="OSR Holidays offers international and domestic tour packages, flights, hotels, visa assistance, MICE, and honeymoon trips." />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Sora:wght@500;600;700&display=swap"
-      rel="stylesheet"
-    />
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
+    <div class="top-strip">
+      <p>International & Domestic Tour Specialist</p>
+      <div>
+        <a href="tel:+919725425001">+91 97254 25001</a>
+        <a href="mailto:osrholidays@gmail.com">osrholidays@gmail.com</a>
+      </div>
+    </div>
+
     <header class="topbar">
-      <a class="brand" href="#home">
-        <img src="./assets/osr-logo.svg" alt="OSR Holidays logo" />
-        <span>
-          <strong>OSR Holidays</strong>
-          <small>Tours & Travels</small>
-        </span>
-      </a>
+      <a class="brand" href="#home"><img src="./assets/osr-logo-full.svg" alt="OSR Holidays logo" /></a>
       <button id="menuBtn" class="menu-btn" aria-label="Open menu">Menu</button>
       <nav id="navLinks" class="nav-links">
+        <a href="#top-tours">Top Tours</a>
+        <a href="#summer">Summer Special</a>
+        <a href="#star-packages">Star Packages</a>
         <a href="#services">Services</a>
-        <a href="#international">International</a>
-        <a href="#domestic">Domestic</a>
-        <a href="#contact">Contact</a>
+        <a href="#" class="nav-cta open-lead-form">Enquire Now</a>
       </nav>
     </header>
 
-    <main id="home">
+    <main id="home" class="page-bg">
       <section class="hero">
-        <div class="hero-copy">
-          <p class="eyebrow">Your Journey, Professionally Planned</p>
-          <h1>Explore More With <span>OSR Holidays</span></h1>
-          <p>
-            Complete travel solutions for flights, hotels, visa support, MICE events,
-            and honeymoon experiences across India and the world.
-          </p>
-          <div class="hero-cta">
-            <a class="btn primary" href="#contact">Plan My Trip</a>
-            <a class="btn ghost" href="#international">View Packages</a>
-          </div>
-          <ul class="quick-points">
-            <li>International & Domestic Packages</li>
-            <li>Air Ticket + Hotel + Visa Assistance</li>
-            <li>MICE & Corporate Group Travel</li>
-          </ul>
+        <img src="https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?auto=format&fit=crop&w=1800&q=80" alt="India travel" />
+        <div class="hero-overlay">
+          <p>Premium Tours & Travels</p>
+          <h1>Discover India</h1>
+          <a href="#" class="btn primary open-lead-form">Plan My Trip</a>
         </div>
-        <div class="hero-card">
-          <img
-            class="hero-photo"
-            src="https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&w=1100&q=80"
-            alt="Traveler looking at mountain landscape"
-          />
-          <h3>What We Handle</h3>
-          <p>End-to-end support from booking to return.</p>
+      </section>
+
+      <section id="top-tours" class="section white">
+        <div class="section-head-row"><h2>Top Tours</h2><a href="#" class="view-link open-lead-form">Get Quote</a></div>
+        <div class="scroll-row cards-5">
+          <article class="mini-tour"><img src="https://images.unsplash.com/photo-1512453979798-5ea266f8880c?auto=format&fit=crop&w=700&q=80" alt="Thailand" /><h3>Top - Thailand</h3><p>4N/5D</p></article>
+          <article class="mini-tour"><img src="https://images.unsplash.com/photo-1596422846543-75c6fc197f07?auto=format&fit=crop&w=700&q=80" alt="Kerala" /><h3>Top - Kerala</h3><p>5N/6D</p></article>
+          <article class="mini-tour"><img src="https://images.unsplash.com/photo-1512632578888-169bbbc64f33?auto=format&fit=crop&w=700&q=80" alt="Kashmir" /><h3>Top - Kashmir</h3><p>6N/7D</p></article>
+          <article class="mini-tour"><img src="https://images.unsplash.com/photo-1520454974749-611b7248ffdb?auto=format&fit=crop&w=700&q=80" alt="Sikkim" /><h3>Top - Sikkim</h3><p>5N/6D</p></article>
+          <article class="mini-tour"><img src="https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=700&q=80" alt="Ladakh" /><h3>Top - Ladakh</h3><p>6N/7D</p></article>
+        </div>
+      </section>
+
+      <section id="all-travel-plans" class="section white">
+        <div class="section-head-row"><h2>All Travel Plans</h2><a href="#" class="view-link open-lead-form">Customise Plan</a></div>
+        <div class="package-grid-4">
+          <article class="package-card"><img src="https://images.unsplash.com/photo-1493558103817-58b2924bce98?auto=format&fit=crop&w=900&q=80" alt="Thailand" /><div><h3>Thailand Explorer</h3><p>Bangkok + Pattaya + Phuket</p><strong>Rs. 42,999</strong><a href="#" class="open-lead-form">Book Now</a></div></article>
+          <article class="package-card"><img src="https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?auto=format&fit=crop&w=900&q=80" alt="Dubai" /><div><h3>Dubai Classic</h3><p>City + Desert Safari</p><strong>Rs. 39,999</strong><a href="#" class="open-lead-form">Book Now</a></div></article>
+          <article class="package-card"><img src="https://images.unsplash.com/photo-1514282401047-d79a71a590e8?auto=format&fit=crop&w=900&q=80" alt="Singapore" /><div><h3>Singapore Family Tour</h3><p>City + Sentosa</p><strong>Rs. 44,999</strong><a href="#" class="open-lead-form">Book Now</a></div></article>
+          <article class="package-card"><img src="https://images.unsplash.com/photo-1525625293386-3f8f99389edd?auto=format&fit=crop&w=900&q=80" alt="Malaysia" /><div><h3>Malaysia Discovery</h3><p>Kuala Lumpur + Genting</p><strong>Rs. 36,999</strong><a href="#" class="open-lead-form">Book Now</a></div></article>
+          <article class="package-card"><img src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=900&q=80" alt="Maldives" /><div><h3>Maldives Honeymoon</h3><p>Beach villa package</p><strong>Rs. 49,999</strong><a href="#" class="open-lead-form">Book Now</a></div></article>
+          <article class="package-card"><img src="https://images.unsplash.com/photo-1537996194471-e657df975ab4?auto=format&fit=crop&w=900&q=80" alt="Sri Lanka" /><div><h3>Sri Lanka Escape</h3><p>Colombo + Kandy</p><strong>Rs. 34,500</strong><a href="#" class="open-lead-form">Book Now</a></div></article>
+          <article class="package-card"><img src="https://images.unsplash.com/photo-1552733407-5d5c46c3bb3b?auto=format&fit=crop&w=900&q=80" alt="Bali" /><div><h3>Bali Island Tour</h3><p>Romantic getaway</p><strong>Rs. 46,500</strong><a href="#" class="open-lead-form">Book Now</a></div></article>
+          <article class="package-card"><img src="https://images.unsplash.com/photo-1478720568477-152d9b164e26?auto=format&fit=crop&w=900&q=80" alt="Baku" /><div><h3>Baku City Break</h3><p>Azerbaijan highlights</p><strong>Rs. 52,500</strong><a href="#" class="open-lead-form">Book Now</a></div></article>
+          <article class="package-card"><img src="https://images.unsplash.com/photo-1518509562904-e7ef99cdcc86?auto=format&fit=crop&w=900&q=80" alt="Goa" /><div><h3>Goa Beach Fun</h3><p>3N/4D quick trip</p><strong>Rs. 14,999</strong><a href="#" class="open-lead-form">Book Now</a></div></article>
+          <article class="package-card"><img src="https://images.unsplash.com/photo-1477587458883-47145ed94245?auto=format&fit=crop&w=900&q=80" alt="Kerala" /><div><h3>Kerala Munnar-Kovalam</h3><p>Nature + backwaters</p><strong>Rs. 19,999</strong><a href="#" class="open-lead-form">Book Now</a></div></article>
+          <article class="package-card"><img src="https://images.unsplash.com/photo-1518684079-3c830dcef090?auto=format&fit=crop&w=900&q=80" alt="Port Blair" /><div><h3>Port Blair Andaman</h3><p>Island holiday</p><strong>Rs. 29,999</strong><a href="#" class="open-lead-form">Book Now</a></div></article>
+          <article class="package-card"><img src="https://images.unsplash.com/photo-1598091383021-15ddea10925d?auto=format&fit=crop&w=900&q=80" alt="Manali Shimla" /><div><h3>Manali Shimla Tour</h3><p>Himalayan scenic route</p><strong>Rs. 23,999</strong><a href="#" class="open-lead-form">Book Now</a></div></article>
+          <article class="package-card"><img src="https://images.unsplash.com/photo-1529220502050-f15e570c634e?auto=format&fit=crop&w=900&q=80" alt="Srinagar" /><div><h3>Srinagar Special</h3><p>Houseboat + sightseeing</p><strong>Rs. 31,999</strong><a href="#" class="open-lead-form">Book Now</a></div></article>
+          <article class="package-card"><img src="https://images.unsplash.com/photo-1520454974749-611b7248ffdb?auto=format&fit=crop&w=900&q=80" alt="Gangtok Darjeeling" /><div><h3>Gangtok Darjeeling</h3><p>Eastern Himalaya circuit</p><strong>Rs. 27,500</strong><a href="#" class="open-lead-form">Book Now</a></div></article>
+          <article class="package-card"><img src="https://images.unsplash.com/photo-1544735716-392fe2489ffa?auto=format&fit=crop&w=900&q=80" alt="Rishikesh" /><div><h3>Rishikesh Retreat</h3><p>Adventure + spirituality</p><strong>Rs. 18,500</strong><a href="#" class="open-lead-form">Book Now</a></div></article>
+          <article class="package-card"><img src="https://images.unsplash.com/photo-1544737151-6e4b7b8c0d8f?auto=format&fit=crop&w=900&q=80" alt="Dharamshala McLeodganj" /><div><h3>Dharamshala McLeodganj</h3><p>Peaceful hill stay</p><strong>Rs. 21,500</strong><a href="#" class="open-lead-form">Book Now</a></div></article>
+        </div>
+      </section>
+
+      <section id="summer" class="section gray">
+        <h2>Summer Special</h2>
+        <div class="grid-six">
+          <article class="image-card tall"><img src="https://images.unsplash.com/photo-1470246973918-29a93221c455?auto=format&fit=crop&w=900&q=80" alt="Vietnam" /><div><h3>Vietnam</h3><p>Special Departure</p></div></article>
+          <article class="image-card"><img src="https://images.unsplash.com/photo-1569288063643-5d2f3fb9771f?auto=format&fit=crop&w=900&q=80" alt="Kailash" /><div><h3>Kailash Tour Package</h3></div></article>
+          <article class="image-card"><img src="https://images.unsplash.com/photo-1552733407-5d5c46c3bb3b?auto=format&fit=crop&w=900&q=80" alt="Bali" /><div><h3>Bali</h3></div></article>
+          <article class="image-card"><img src="https://images.unsplash.com/photo-1493558103817-58b2924bce98?auto=format&fit=crop&w=900&q=80" alt="Thailand" /><div><h3>Thailand</h3></div></article>
+          <article class="image-card"><img src="https://images.unsplash.com/photo-1525625293386-3f8f99389edd?auto=format&fit=crop&w=900&q=80" alt="Singapore Malaysia" /><div><h3>Singapore Malaysia</h3></div></article>
+          <article class="image-card"><img src="https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?auto=format&fit=crop&w=900&q=80" alt="Dubai" /><div><h3>Dubai</h3></div></article>
+        </div>
+      </section>
+
+      <section id="star-packages" class="section gray">
+        <div class="section-head-row"><h2>Hamare Star Packages</h2><a href="#" class="view-link open-lead-form">View All</a></div>
+        <div class="package-grid-4">
+          <article class="package-card"><img src="https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=900&q=80" alt="Chardham" /><div><h3>Chardham Yatra</h3><p>5N/6D</p><strong>Rs. 29,500</strong><a href="#" class="open-lead-form">Book Now</a></div></article>
+          <article class="package-card"><img src="https://images.unsplash.com/photo-1529220502050-f15e570c634e?auto=format&fit=crop&w=900&q=80" alt="Kashmir" /><div><h3>Kashmir Deluxe</h3><p>6N/7D</p><strong>Rs. 34,999</strong><a href="#" class="open-lead-form">Book Now</a></div></article>
+          <article class="package-card"><img src="https://images.unsplash.com/photo-1536599018102-9f803c140fc1?auto=format&fit=crop&w=900&q=80" alt="Kailash" /><div><h3>Kailash Yatra</h3><p>11N/12D</p><strong>Rs. 79,999</strong><a href="#" class="open-lead-form">Book Now</a></div></article>
+          <article class="package-card"><img src="https://images.unsplash.com/photo-1519822476624-6f4d4dc5f8d8?auto=format&fit=crop&w=900&q=80" alt="Akshardham" /><div><h3>Senior Citizen Tour</h3><p>4N/5D</p><strong>Rs. 23,999</strong><a href="#" class="open-lead-form">Book Now</a></div></article>
+        </div>
+      </section>
+
+      <section class="section blue-band">
+        <h2>Explore your world <span>Starting from your city</span></h2>
+        <div class="city-cards">
+          <article><h3>Ahmedabad</h3><p>20+ packages</p></article>
+          <article><h3>Vadodara</h3><p>18+ packages</p></article>
+          <article><h3>Rajkot</h3><p>14+ packages</p></article>
+          <article><h3>Surat</h3><p>22+ packages</p></article>
+        </div>
+      </section>
+
+      <section class="section white">
+        <h2>More Countries One tour</h2>
+        <div class="package-grid-4">
+          <article class="package-card"><img src="https://images.unsplash.com/photo-1531545514256-b1400bc00f31?auto=format&fit=crop&w=900&q=80" alt="Grand UAE" /><div><h3>Grand UAE</h3><p>Dubai + Abu Dhabi</p><strong>Rs. 43,500</strong><a href="#" class="open-lead-form">Book Now</a></div></article>
+          <article class="package-card"><img src="https://images.unsplash.com/photo-1520454974749-611b7248ffdb?auto=format&fit=crop&w=900&q=80" alt="South East Asia" /><div><h3>South East Asia</h3><p>Singapore + Malaysia + Thailand</p><strong>Rs. 58,000</strong><a href="#" class="open-lead-form">Book Now</a></div></article>
+          <article class="package-card"><img src="https://images.unsplash.com/photo-1478720568477-152d9b164e26?auto=format&fit=crop&w=900&q=80" alt="Japan + Korea" /><div><h3>Japan & Korea</h3><p>Culture + city combo</p><strong>Rs. 1,25,000</strong><a href="#" class="open-lead-form">Book Now</a></div></article>
+          <article class="package-card"><img src="https://images.unsplash.com/photo-1521295121783-8a321d551ad2?auto=format&fit=crop&w=900&q=80" alt="Europe" /><div><h3>European Highlights</h3><p>4 countries in one tour</p><strong>Rs. 1,45,000</strong><a href="#" class="open-lead-form">Book Now</a></div></article>
+        </div>
+      </section>
+
+      <section class="section white">
+        <article class="kashmir-banner">
+          <img src="https://images.unsplash.com/photo-1598091383021-15ddea10925d?auto=format&fit=crop&w=1800&q=80" alt="Best of Kashmir" />
+          <div><h2>Best of Kashmir</h2><p>All inclusive getaway package</p><strong>Rs. 28,500</strong></div>
+        </article>
+      </section>
+
+      <section class="section gray all-inclusive">
+        <img src="https://images.unsplash.com/photo-1469571486292-b53601010863?auto=format&fit=crop&w=1200&q=80" alt="Group travel" />
+        <div>
+          <h2>All Inclusive Tours</h2>
+          <p>Flights, hotels, meals, sightseeing and on-trip support with planned comfort.</p>
           <ul>
-            <li>International / Domestic Flight Booking</li>
-            <li>International / Domestic Hotel Booking</li>
-            <li>Visa Documentation Support</li>
-            <li>MICE: Meetings, Incentives, Conferences, Exhibitions</li>
-            <li>Honeymoon Packages</li>
+            <li>Assured Hotel Stays</li><li>Professional Tour Manager</li><li>Visa Guidance</li>
+            <li>Meals Included</li><li>Airport Transfers</li><li>Honeymoon Add-ons</li>
           </ul>
         </div>
       </section>
 
-      <section id="services" class="section">
-        <div class="section-head">
-          <p class="eyebrow">Core Services</p>
-          <h2>Travel Operations Built For Convenience</h2>
-        </div>
-        <div class="grid services-grid">
-          <article class="card">
-            <img
-              src="https://images.unsplash.com/photo-1436491865332-7a61a109cc05?auto=format&fit=crop&w=900&q=80"
-              alt="Aircraft wing over clouds"
-            />
-            <h3>Air Tickets</h3>
-            <p>Domestic and international flight ticket booking with reliable options.</p>
-          </article>
-          <article class="card">
-            <img
-              src="https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?auto=format&fit=crop&w=900&q=80"
-              alt="Luxury hotel lobby"
-            />
-            <h3>Hotel Booking</h3>
-            <p>Curated hotel stays for budget, premium, and luxury travel goals.</p>
-          </article>
-          <article class="card">
-            <img
-              src="https://images.unsplash.com/photo-1521295121783-8a321d551ad2?auto=format&fit=crop&w=900&q=80"
-              alt="Passport and visa travel documents"
-            />
-            <h3>Visa Support</h3>
-            <p>Guidance on visa paperwork and documentation for smoother approvals.</p>
-          </article>
-          <article class="card">
-            <img
-              src="https://images.unsplash.com/photo-1511578314322-379afb476865?auto=format&fit=crop&w=900&q=80"
-              alt="Business conference hall"
-            />
-            <h3>MICE Travel</h3>
-            <p>Meetings, incentives, conferences, and exhibition logistics planning.</p>
-          </article>
-          <article class="card">
-            <img
-              src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=900&q=80"
-              alt="Couple on tropical beach"
-            />
-            <h3>Honeymoon Packages</h3>
-            <p>Romantic destinations in India and abroad, tailored to your timeline.</p>
-          </article>
+      <section class="stats-dark">
+        <h2>We connect people through joy of travel</h2>
+        <div><article><strong>29+</strong><p>Years</p></article><article><strong>5280+</strong><p>Tours</p></article><article><strong>880k+</strong><p>Happy Guests</p></article><article><strong>2500</strong><p>Corporate Trips</p></article></div>
+      </section>
+
+      <section class="award-band">
+        <p>Gujarat's National Award Winning Tour Company</p>
+        <h3>No.1</h3>
+      </section>
+
+      <section class="section white">
+        <h2>Discover Europe</h2>
+        <div class="package-grid-4">
+          <article class="package-card"><img src="https://images.unsplash.com/photo-1471623320832-752e8bbf8413?auto=format&fit=crop&w=900&q=80" alt="Grand Europe" /><div><h3>Grand Europe</h3><p>Classic circuit</p><strong>Rs. 1,59,999</strong><a href="#" class="open-lead-form">Book Now</a></div></article>
+          <article class="package-card"><img src="https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&w=900&q=80" alt="Swiss Paris Italy" /><div><h3>Swiss + Paris + Italy</h3><p>Popular trio</p><strong>Rs. 1,34,999</strong><a href="#" class="open-lead-form">Book Now</a></div></article>
+          <article class="package-card"><img src="https://images.unsplash.com/photo-1531572753322-ad063cecc140?auto=format&fit=crop&w=900&q=80" alt="Italy" /><div><h3>Italy</h3><p>Romantic Europe</p><strong>Rs. 96,999</strong><a href="#" class="open-lead-form">Book Now</a></div></article>
+          <article class="package-card"><img src="https://images.unsplash.com/photo-1502602898536-47ad22581b52?auto=format&fit=crop&w=900&q=80" alt="Northern Lights" /><div><h3>Northern Lights</h3><p>Special departure</p><strong>Rs. 1,89,999</strong><a href="#" class="open-lead-form">Book Now</a></div></article>
         </div>
       </section>
 
-      <section id="international" class="section destinations">
-        <div class="section-head">
-          <p class="eyebrow">International Coverage</p>
-          <h2>Popular Global Destinations</h2>
-        </div>
-        <div class="pill-grid">
-          <span>Thailand</span>
-          <span>Phuket</span>
-          <span>Singapore</span>
-          <span>Malaysia</span>
-          <span>Dubai</span>
-          <span>Pattaya</span>
-          <span>Bangkok</span>
-          <span>Baku</span>
-          <span>Almaty</span>
-          <span>Maldives</span>
-          <span>Sri Lanka</span>
-        </div>
-        <div class="destination-gallery">
-          <img src="https://images.unsplash.com/photo-1528181304800-259b08848526?auto=format&fit=crop&w=1200&q=80" alt="Dubai city skyline" />
-          <img src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80" alt="Maldives overwater villas" />
-          <img src="https://images.unsplash.com/photo-1514282401047-d79a71a590e8?auto=format&fit=crop&w=1200&q=80" alt="Singapore skyline at sunset" />
+      <section class="section gray">
+        <h2>Pick Your Travel Experience</h2>
+        <div class="experience-grid">
+          <article style="background-image:url('https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?auto=format&fit=crop&w=900&q=80')">Mountain Tour</article>
+          <article style="background-image:url('https://images.unsplash.com/photo-1527631746610-bca00a040d60?auto=format&fit=crop&w=900&q=80')">Pilgrimage Tour</article>
+          <article style="background-image:url('https://images.unsplash.com/photo-1512100356356-de1b84283e18?auto=format&fit=crop&w=900&q=80')">City Gateway</article>
+          <article style="background-image:url('https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=900&q=80')">Family Tour</article>
+          <article style="background-image:url('https://images.unsplash.com/photo-1502920917128-1aa500764cbd?auto=format&fit=crop&w=900&q=80')">Senior Special</article>
         </div>
       </section>
 
-      <section id="domestic" class="section destinations alt">
-        <div class="section-head">
-          <p class="eyebrow">Domestic Coverage</p>
-          <h2>Top Indian Getaways</h2>
-        </div>
-        <div class="pill-grid">
-          <span>Kerala</span>
-          <span>Munnar</span>
-          <span>Kovalam</span>
-          <span>Goa</span>
-          <span>Port Blair</span>
-          <span>Gangtok</span>
-          <span>Darjeeling</span>
-          <span>Rishikesh</span>
-          <span>Manali</span>
-          <span>Shimla</span>
-          <span>Dharamshala</span>
-          <span>McLeodganj</span>
-          <span>Srinagar</span>
-        </div>
-        <div class="destination-gallery">
-          <img src="https://images.unsplash.com/photo-1477587458883-47145ed94245?auto=format&fit=crop&w=1200&q=80" alt="Kerala backwaters" />
-          <img src="https://images.unsplash.com/photo-1598091383021-15ddea10925d?auto=format&fit=crop&w=1200&q=80" alt="Himalayan mountains near Himachal" />
-          <img src="https://images.unsplash.com/photo-1518509562904-e7ef99cdcc86?auto=format&fit=crop&w=1200&q=80" alt="Goa beach coast" />
+      <section class="section white split-promo">
+        <div class="promo-copy"><h2>Your customised travel plan, our expertise</h2><p>Share your destination and budget. We will craft the package.</p><a href="#" class="btn light-blue open-lead-form">Call Back</a></div>
+        <article><img src="https://images.unsplash.com/photo-1521295121783-8a321d551ad2?auto=format&fit=crop&w=900&q=80" alt="Kailash" /><h3>Kailash Mansarovar</h3></article>
+        <article><img src="https://images.unsplash.com/photo-1533105079780-92b9be482077?auto=format&fit=crop&w=900&q=80" alt="Greece" /><h3>Greece</h3></article>
+      </section>
+
+      <section id="services" class="section white">
+        <h2>Our Services</h2>
+        <div class="services-row">
+          <article><h3>Air Ticketing</h3></article>
+          <article><h3>Hotel Booking</h3></article>
+          <article><h3>MICE</h3></article>
+          <article><h3>Visa</h3></article>
+          <article><h3>Honeymoon</h3></article>
         </div>
       </section>
 
-      <section class="section timeline">
-        <div class="section-head">
-          <p class="eyebrow">Fast Delivery</p>
-          <h2>Design Timeline Commitment</h2>
+      <section class="section white">
+        <h2>Travel Journal</h2>
+        <div class="journal-grid">
+          <article><img src="https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=900&q=80" alt="Jungle" /><h3>Xmas Camp Ahmedabad</h3></article>
+          <article><img src="https://images.unsplash.com/photo-1517760444937-f6397edcbbcd?auto=format&fit=crop&w=900&q=80" alt="Lake" /><h3>Offbeat Lakeside Escapes</h3></article>
+          <article><img src="https://images.unsplash.com/photo-1494526585095-c41746248156?auto=format&fit=crop&w=900&q=80" alt="City" /><h3>Best City Break Ideas</h3></article>
+          <article><img src="https://images.unsplash.com/photo-1470770841072-f978cf4d019e?auto=format&fit=crop&w=900&q=80" alt="Snow" /><h3>Winter Experiences</h3></article>
         </div>
-        <div class="card timeline-card">
-          <p>
-            Requested delivery target: <strong>Today before 5:30 PM</strong>.
-            This website structure is ready for immediate preview and final content handoff.
-          </p>
-        </div>
+      </section>
+
+      <section class="section white text-block">
+        <h3>Book Tour Package, Flights, Hotels, Mice, Cruise, and Holiday Packages</h3>
+        <p>OSR Holidays helps travelers with complete tour planning from inquiry to return. We manage domestic and international packages, hotel and flight bookings, visa support, MICE movement, and honeymoon trips with destination-specific plans and service support.</p>
       </section>
     </main>
 
-    <footer id="contact" class="footer">
-      <h2>OSR Holidays</h2>
-      <p>Ready to plan your next trip? Contact us for customized packages and bookings.</p>
-      <div class="footer-links">
-        <a href="tel:+919725425001">+91 97254 25001</a>
-        <a href="mailto:osrholidays@gmail.com">osrholidays@gmail.com</a>
-        <a href="https://osrholidays.in/" target="_blank" rel="noreferrer">osrholidays.in</a>
+    <footer class="mega-footer">
+      <div class="footer-top">
+        <div>
+          <h3>Contact Us</h3>
+          <p>+91 97254 25001</p>
+          <p>osrholidays@gmail.com</p>
+        </div>
+        <div>
+          <h3>Popular Destinations</h3>
+          <p>Thailand, Dubai, Singapore, Goa, Kashmir, Kerala</p>
+        </div>
+        <div>
+          <h3>Company</h3>
+          <p>About</p><p>Packages</p><p>Services</p>
+        </div>
+        <div>
+          <img class="footer-logo" src="./assets/osr-logo-full.svg" alt="OSR Holidays logo" />
+        </div>
       </div>
       <small>© <span id="year"></span> OSR Holidays. All rights reserved.</small>
     </footer>
+
+    <a class="whatsapp-float" href="https://wa.me/919725425001?text=Hi%20OSR%20Holidays%2C%20I%20want%20to%20plan%20my%20trip." target="_blank" rel="noreferrer" aria-label="Chat on WhatsApp">WhatsApp</a>
+
+    <div id="leadModal" class="modal-backdrop" aria-hidden="true">
+      <div class="lead-modal" role="dialog" aria-modal="true" aria-labelledby="leadModalTitle">
+        <button id="closeLeadModal" class="modal-close" aria-label="Close form">×</button>
+        <h3 id="leadModalTitle">Quick Travel Enquiry</h3>
+        <p>Fill your details and we will contact you quickly.</p>
+        <form id="leadForm" class="lead-form">
+          <label>Full Name<input type="text" name="name" required /></label>
+          <label>Phone Number<input type="tel" name="phone" required /></label>
+          <label>Destination<input type="text" name="destination" placeholder="Thailand / Goa / Dubai..." required /></label>
+          <label>Travel Month<input type="text" name="travelMonth" placeholder="May 2026" /></label>
+          <label>Message<textarea name="message" rows="3" placeholder="Adults, kids, budget, package preference"></textarea></label>
+          <button type="submit" class="btn primary submit-btn">Submit Enquiry</button>
+        </form>
+      </div>
+    </div>
 
     <script src="./app.js"></script>
   </body>

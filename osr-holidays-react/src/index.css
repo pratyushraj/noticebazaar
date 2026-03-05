@@ -1,0 +1,30 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  @apply m-0 bg-slate-100 text-slate-900 antialiased;
+  font-family: 'Manrope', system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: 'Outfit', 'Manrope', sans-serif;
+}
+
+.snap-x-scroll {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.snap-x-scroll::-webkit-scrollbar {
+  display: none;
+}

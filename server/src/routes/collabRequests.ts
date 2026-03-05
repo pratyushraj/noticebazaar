@@ -1303,6 +1303,7 @@ router.post('/:username/submit', async (req: Request, res: Response) => {
       approval_sla_hours,
       shipping_timeline_days,
       cancellation_policy,
+      offer_expires_at,
     } = req.body;
 
     // Validation
@@ -1387,6 +1388,7 @@ router.post('/:username/submit', async (req: Request, res: Response) => {
       deliverables: Array.isArray(deliverables) ? deliverables : [],
       usage_rights: usage_rights === true || usage_rights === 'true',
       deadline: deadline || null,
+      offer_expires_at: offer_expires_at || null,
     };
 
     if (isPaidLikeCollab(collabTypeForDb)) {
@@ -1588,6 +1590,7 @@ router.post('/:username/submit', async (req: Request, res: Response) => {
       deliverables: JSON.stringify(basePayload.deliverables),
       usage_rights: basePayload.usage_rights,
       deadline: basePayload.deadline,
+      offer_expires_at: basePayload.offer_expires_at,
       submitted_ip: clientIp,
       submitted_user_agent: userAgent,
       ...(brandContactId ? { brand_contact_id: brandContactId } : {}),
