@@ -354,77 +354,129 @@ const MobileDashboardDemo = ({ profile, userEmail, collabRequests = [] }: Mobile
                                         </div>
 
                                         {/* Dynamic Deal Cards (Mapped from actual database) */}
-                                        {Array.isArray(collabRequests) && collabRequests.map((req, idx) => (
-                                            <div key={req.id || idx} className="bg-white rounded-[20px] p-5 border border-slate-200/80 relative overflow-hidden" style={{ boxShadow: '0px 4px 12px rgba(0,0,0,0.06), 0px 1px 2px rgba(0,0,0,0.04)' }}>
-                                                {/* Brand Header */}
-                                                <div className="flex items-start justify-between mb-4">
-                                                    <div className="flex gap-3 items-center">
-                                                        <div className="w-12 h-12 rounded-xl flex items-center justify-center shadow-sm border border-slate-100 shrink-0" style={{ backgroundColor: '#F8F9FA' }}>
-                                                            <span className="text-slate-700 font-bold text-[20px] uppercase">{req.brand_name?.charAt(0) || 'B'}</span>
-                                                        </div>
-                                                        <div className="flex flex-col justify-center">
-                                                            <div className="flex items-center gap-1.5">
-                                                                <h3 className="font-bold text-[17px] text-slate-900 leading-none tracking-tight">{req.brand_name || 'Brand'}</h3>
+                                        {Array.isArray(collabRequests) && collabRequests.map((req, idx) => {
+                                            const daysRemaining = req.deadline
+                                                ? Math.ceil((new Date(req.deadline).getTime() - new Date().getTime()) / (1000 * 3600 * 24))
+                                                : 5;
+
+                                            // Determine display badge and styles based on status.
+                                            const isOffer = req.status === 'pending' || req.status === 'awaiting_review' || !req.status;
+
+                                            return (
+                                                <div key={req.id || idx} className="bg-white rounded-[20px] p-5 border border-slate-200/80 relative overflow-hidden" style={{ boxShadow: '0px 4px 12px rgba(0,0,0,0.06), 0px 1px 2px rgba(0,0,0,0.04)' }}>
+                                                    {/* Brand Header */}
+                                                    <div className="flex items-start justify-between mb-4">
+                                                        <div className="flex gap-3 items-center">
+                                                            <div className="w-12 h-12 rounded-xl flex items-center justify-center shadow-sm border border-slate-100 shrink-0" style={{ backgroundColor: '#F8F9FA' }}>
+                                                                <span className="text-slate-700 font-bold text-[20px] uppercase">{req.brand_name?.charAt(0) || 'B'}</span>
                                                             </div>
-                                                            {/* Brand Indicator */}
-                                                            <div className="flex items-center gap-1.5 mt-2">
-                                                                <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                                                                <span className="text-[11px] text-slate-600 font-medium">New Offer</span>
+                                                            <div className="flex flex-col justify-center">
+                                                                <div className="flex items-center gap-1.5">
+                                                                    <h3 className="font-bold text-[17px] text-slate-900 leading-none tracking-tight">{req.brand_name || 'Brand'}</h3>
+                                                                </div>
+                                                                {/* Brand Reliability Indicator */}
+                                                                <div className="flex items-center gap-1.5 mt-2">
+                                                                    <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                                                                    <span className="text-[11px] text-slate-600 font-medium">New Offer</span>
+                                                                </div>
+                                                                {/* Experience Indicator */}
+                                                                <div className="mt-1 flex items-center gap-1">
+                                                                    <span className="text-amber-500 text-[10px]">⭐</span>
+                                                                    <span className="text-[10px] text-slate-500 font-medium">Worked with creators before</span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div className="text-right shrink-0">
+                                                            <div className="text-slate-900 font-bold text-xl tracking-tight leading-none mb-1">
+                                                                ₹{req.exact_budget ? req.exact_budget.toLocaleString('en-IN') : (req.budget_range || 'TBD')}
+                                                            </div>
+                                                            <div className="text-[10px] text-emerald-700 font-bold px-1.5 py-0.5 rounded-sm inline-block" style={{ backgroundColor: 'rgba(209, 250, 229, 0.8)' }}>
+                                                                Escrow Ready
                                                             </div>
                                                         </div>
                                                     </div>
-                                                    <div className="text-right shrink-0">
-                                                        <div className="text-slate-900 font-bold text-xl tracking-tight leading-none mb-1">
-                                                            ₹{req.exact_budget ? req.exact_budget.toLocaleString('en-IN') : (req.budget_range || 'TBD')}
-                                                        </div>
-                                                    </div>
-                                                </div>
 
-                                                {/* Trust Layer Badges */}
-                                                <div className="flex flex-wrap gap-1.5 mb-4">
-                                                    <span className="text-slate-700 text-[10px] font-semibold px-2.5 py-1 rounded-md flex items-center gap-1.5 border border-slate-200/50" style={{ backgroundColor: '#F8F9FA' }}>
-                                                        <Award className="w-3 h-3 text-amber-500" /> Pending Action
-                                                    </span>
-                                                </div>
+                                                    {/* Trust Layer Badges */}
+                                                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }} className="flex flex-wrap gap-1.5 mb-4">
+                                                        <span className="text-emerald-700 text-[10px] font-semibold px-2.5 py-1 rounded-md flex items-center gap-1.5 border border-emerald-100/50" style={{ backgroundColor: 'rgba(236, 253, 245, 1)' }}>
+                                                            <Lock className="w-3 h-3" /> Payment Secured
+                                                        </span>
+                                                        <span className="text-blue-700 text-[10px] font-semibold px-2.5 py-1 rounded-md flex items-center gap-1.5 border border-blue-100/50" style={{ backgroundColor: 'rgba(239, 246, 255, 1)' }}>
+                                                            <FileText className="w-3 h-3" /> Contract Ready
+                                                        </span>
+                                                        <motion.span initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1, duration: 1 }} className="text-slate-700 text-[10px] font-semibold px-2.5 py-1 rounded-md flex items-center gap-1.5 border border-slate-200/50" style={{ backgroundColor: '#F8F9FA' }}>
+                                                            <Award className="w-3 h-3 text-amber-500" /> Brand Verified
+                                                        </motion.span>
+                                                    </motion.div>
 
-                                                <div className="h-[1px] bg-slate-100 w-full mb-4" />
+                                                    <div className="h-[1px] bg-slate-100 w-full mb-4" />
 
-                                                {/* Details & Urgency */}
-                                                <div className="space-y-3 mb-5">
-                                                    <div className="flex items-start gap-2">
-                                                        <p className="text-[13px] text-slate-500 w-[70px] shrink-0 font-medium">Requires</p>
-                                                        <p className="text-[13px] text-slate-900 font-bold flex flex-wrap items-center gap-x-2 gap-y-1">
-                                                            {req.collab_type || 'Content Creation'}
-                                                        </p>
-                                                    </div>
-
-                                                    <div className="flex items-center gap-2">
-                                                        <p className="text-[13px] text-slate-500 w-[70px] shrink-0 font-medium">Expires</p>
-                                                        <div className="flex items-center gap-1.5 px-2 py-1 rounded-md border border-slate-200" style={{ backgroundColor: '#F8F9FA' }}>
-                                                            <Clock className="w-3.5 h-3.5 text-slate-500" />
-                                                            <p className="text-[12px] text-slate-700 font-medium tracking-tight">
-                                                                Awaiting review
+                                                    {/* Details & Urgency */}
+                                                    <div className="space-y-3 mb-5">
+                                                        <div className="flex items-start gap-2">
+                                                            <p className="text-[13px] text-slate-500 w-[70px] shrink-0 font-medium">Requires</p>
+                                                            <p className="text-[13px] text-slate-900 font-bold flex flex-wrap items-center gap-x-2 gap-y-1">
+                                                                {req.collab_type || 'Content Creation'}
                                                             </p>
                                                         </div>
+
+                                                        <div className="flex items-center gap-2">
+                                                            <p className="text-[13px] text-slate-500 w-[70px] shrink-0 font-medium">Expires</p>
+                                                            {isOffer ? (
+                                                                <motion.div
+                                                                    animate={{ boxShadow: ["0 0 0px 0px rgba(249, 115, 22, 0)", "0 0 10px 2px rgba(249, 115, 22, 0.15)", "0 0 0px 0px rgba(249, 115, 22, 0)"] }}
+                                                                    transition={{ repeat: Infinity, duration: 3 }}
+                                                                    className="flex items-center gap-1.5 px-2 py-1 rounded-md border border-orange-200"
+                                                                    style={{ backgroundColor: 'rgba(255, 247, 237, 1)' }}
+                                                                >
+                                                                    <Zap className="w-3.5 h-3.5 text-orange-500 fill-current" />
+                                                                    <p className="text-[12px] text-orange-700 font-bold tracking-tight">
+                                                                        Offer expires in {daysRemaining > 0 ? daysRemaining : 1} days
+                                                                    </p>
+                                                                </motion.div>
+                                                            ) : (
+                                                                <div className="flex items-center gap-1.5 px-2 py-1 rounded-md border border-slate-200" style={{ backgroundColor: '#F8F9FA' }}>
+                                                                    <Clock className="w-3.5 h-3.5 text-slate-500" />
+                                                                    <p className="text-[12px] text-slate-700 font-medium tracking-tight">
+                                                                        In Progress
+                                                                    </p>
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="h-[1px] bg-black/5 w-full mb-3 mt-4" />
+
+                                                    {/* Horizontal Action Stack */}
+                                                    <div className="flex items-center gap-2">
+                                                        {isOffer ? (
+                                                            <>
+                                                                <motion.button
+                                                                    onClick={triggerHaptic}
+                                                                    whileTap={{ scale: 0.97 }}
+                                                                    animate={{ boxShadow: ["0px 4px 16px rgba(15,23,42,0.2)", "0px 4px 24px rgba(16,185,129,0.3)", "0px 4px 16px rgba(15,23,42,0.2)"] }}
+                                                                    transition={{ repeat: Infinity, duration: 2 }}
+                                                                    className="flex-[2] py-3.5 px-3 rounded-xl font-bold text-[14px] text-white hover:opacity-90 transition-all flex items-center justify-center gap-1.5 active:scale-95"
+                                                                    style={{ backgroundColor: '#0F172A' }}
+                                                                >
+                                                                    Accept Deal <Check className="w-4 h-4 text-white" strokeWidth={3} />
+                                                                </motion.button>
+                                                                <button onClick={triggerHaptic} className="flex-[1.2] py-3.5 px-3 rounded-xl font-bold text-[13px] border border-slate-200 text-slate-700 bg-white hover:bg-slate-50 transition-colors active:scale-95">
+                                                                    Negotiate
+                                                                </button>
+                                                                <button onClick={triggerHaptic} className="flex-1 py-3.5 px-3 rounded-xl font-bold text-[13px] border border-slate-200 text-slate-700 bg-white hover:bg-slate-50 transition-colors flex items-center justify-center active:scale-95">
+                                                                    Question?
+                                                                </button>
+                                                            </>
+                                                        ) : (
+                                                            <button onClick={triggerHaptic} className="w-full py-3.5 px-3 rounded-xl font-bold text-[14px] text-white hover:opacity-90 transition-all active:scale-95" style={{ backgroundColor: '#0F172A' }}>
+                                                                View Status
+                                                            </button>
+                                                        )}
                                                     </div>
                                                 </div>
-
-                                                <div className="h-[1px] bg-black/5 w-full mb-3 mt-4" />
-
-                                                {/* Horizontal Action Stack */}
-                                                <div className="flex items-center gap-2">
-                                                    <motion.button onClick={triggerHaptic} whileTap={{ scale: 0.97 }} className="flex-[2] py-3.5 px-3 rounded-xl font-bold text-[14px] text-white hover:opacity-90 transition-all flex items-center justify-center gap-1.5 active:scale-95" style={{ backgroundColor: '#0F172A' }}>
-                                                        Review Deal <Check className="w-4 h-4 text-white" />
-                                                    </motion.button>
-                                                    <button onClick={triggerHaptic} className="flex-[1.2] py-3.5 px-3 rounded-xl font-bold text-[13px] border border-slate-200 text-slate-700 bg-white hover:bg-slate-50 transition-colors active:scale-95">
-                                                        Negotiate
-                                                    </button>
-                                                    <button onClick={triggerHaptic} className="flex-1 py-3.5 px-3 rounded-xl font-bold text-[13px] border border-slate-200 text-slate-700 bg-white hover:bg-slate-50 transition-colors flex items-center justify-center active:scale-95">
-                                                        Question?
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        ))}
+                                            )
+                                        })}
 
                                     </div>
                                 </section>
