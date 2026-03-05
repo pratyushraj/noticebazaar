@@ -3,8 +3,8 @@ import { motion } from 'framer-motion';
 import {
     Bell, MessageCircle, BarChart3, Target, Calendar,
     TrendingUp, Check, ChevronRight, Share, CheckCircle2,
-    Home, Briefcase, Plus, MessageSquare, User, Zap, Lock, Award, FileText, Search, Shield, ShieldCheck, Clock,
-    LayoutDashboard, Link as LinkIcon, CreditCard
+    Home, Briefcase, Plus, MessageSquare, User, Zap, Lock, Award, FileText, Search, Shield, ShieldCheck, Clock, Handshake, SlidersHorizontal,
+    LayoutDashboard, CreditCard
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import CountUp from 'react-countup';
@@ -436,47 +436,108 @@ const MobileDashboardDemo = ({ profile, userEmail, collabRequests = [] }: Mobile
 
                     {/* Collabs Tab View */}
                     {activeTab === 'collabs' && (
-                        <>
-                            <div className="px-5 pb-5 bg-white/95 backdrop-blur-md border-b border-slate-100 shadow-sm sticky top-0 z-[110] transition-all" style={{ paddingTop: 'max(env(safe-area-inset-top), 48px)' }}>
-                                <div className="flex justify-between items-center mb-4">
-                                    <h1 className="text-[22px] font-bold tracking-tight text-slate-900">Collabs</h1>
-                                    <button onClick={triggerHaptic} className="bg-slate-100 w-8 h-8 rounded-full flex items-center justify-center text-slate-600 hover:bg-slate-200"><Search className="w-4 h-4" /></button>
+                        <div className="min-h-full bg-slate-50 flex flex-col">
+                            {/* Header */}
+                            <div className="px-5 pb-4 bg-white border-b border-slate-200/70 shadow-sm sticky top-0 z-50 transition-all pt-safe" style={{ paddingTop: 'max(env(safe-area-inset-top), 48px)', transform: 'translateZ(0)' }}>
+                                <div className="flex justify-between items-center mb-5">
+                                    <div className="flex items-center gap-2 text-slate-900">
+                                        <Handshake className="w-5 h-5 flex-shrink-0" />
+                                        <h1 className="text-[22px] font-semibold tracking-tight">Collaborations</h1>
+                                    </div>
+                                    <button onClick={triggerHaptic} className="w-9 h-9 flex items-center justify-center text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors">
+                                        <SlidersHorizontal className="w-[18px] h-[18px]" strokeWidth={2} />
+                                    </button>
                                 </div>
-                                <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-2">
-                                    <button className="px-4 py-1.5 bg-[#0F172A] text-white rounded-full text-[13px] font-bold shrink-0">Action Needed</button>
-                                    <button className="px-4 py-1.5 bg-slate-100 text-slate-600 rounded-full text-[13px] font-bold shrink-0">Active</button>
-                                    <button className="px-4 py-1.5 bg-slate-100 text-slate-600 rounded-full text-[13px] font-bold shrink-0">Past</button>
+                                <div className="flex gap-1 overflow-x-auto scrollbar-hide">
+                                    <button className="px-3.5 py-1.5 bg-slate-100 text-slate-900 rounded-md text-[13px] font-semibold shrink-0">New Offers</button>
+                                    <button className="px-3.5 py-1.5 text-slate-500 hover:text-slate-700 rounded-md text-[13px] font-medium shrink-0 transition-colors">Active</button>
+                                    <button className="px-3.5 py-1.5 text-slate-500 hover:text-slate-700 rounded-md text-[13px] font-medium shrink-0 transition-colors">Countered</button>
+                                    <button className="px-3.5 py-1.5 text-slate-500 hover:text-slate-700 rounded-md text-[13px] font-medium shrink-0 transition-colors">Completed</button>
                                 </div>
                             </div>
-                            <div className="px-5 pt-6 space-y-4">
-                                {/* Deal Item */}
-                                <div className="bg-white rounded-[20px] p-5 border border-slate-200/80 shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
-                                    <div className="flex items-center gap-2 mb-3">
-                                        <div className="w-2 h-2 rounded-full bg-orange-500 animate-pulse" />
-                                        <span className="text-[11px] font-bold text-orange-600 uppercase tracking-wide">Brand Countered</span>
-                                    </div>
-                                    <div className="flex items-center justify-between mb-3">
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-10 h-10 bg-slate-900 rounded-xl flex items-center justify-center text-white font-bold">N</div>
-                                            <div>
-                                                <h3 className="font-bold text-[15px] text-slate-900">Nike India</h3>
-                                                <p className="text-[12px] text-slate-500">1 Reel + 1 Story</p>
+
+                            <div className="px-4 py-6 space-y-4 flex-1 pb-24">
+                                {collabRequests && collabRequests.length > 0 ? collabRequests.map((req, idx) => {
+                                    // Dynamic badging based on status
+                                    let badgeBg = "bg-slate-50";
+                                    let badgeText = "text-slate-700";
+                                    let badgeBorder = "border-slate-200";
+                                    let badgeDot = "bg-slate-400";
+                                    let label = "Pending";
+
+                                    if (req.status === 'awaiting_review' || req.status === 'pending') {
+                                        badgeBg = "bg-amber-50"; badgeText = "text-amber-700"; badgeBorder = "border-amber-100"; badgeDot = "bg-amber-500"; label = "Awaiting Review";
+                                    } else if (req.status === 'in_progress' || req.status === 'accepted') {
+                                        badgeBg = "bg-emerald-50"; badgeText = "text-emerald-700"; badgeBorder = "border-emerald-100"; badgeDot = "bg-emerald-500"; label = "In Progress";
+                                    } else if (req.status === 'countered') {
+                                        badgeBg = "bg-orange-50"; badgeText = "text-orange-700"; badgeBorder = "border-orange-100"; badgeDot = "bg-orange-500"; label = "Countered";
+                                    } else if (req.status === 'completed') {
+                                        badgeBg = "bg-slate-50"; badgeText = "text-slate-700"; badgeBorder = "border-slate-200"; badgeDot = "bg-slate-400"; label = "Completed";
+                                    }
+
+                                    const initial = req.brand_name ? req.brand_name.charAt(0).toUpperCase() : 'B';
+                                    const payout = req.exact_budget ? `₹${req.exact_budget.toLocaleString('en-IN')}` : (req.budget_range || 'TBD');
+                                    const dateString = req.deadline ? new Date(req.deadline).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : 'Pending';
+
+                                    return (
+                                        <div key={req.id || idx} className="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
+                                            <div className="flex items-center justify-between mb-4">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="w-10 h-10 bg-slate-100 rounded-lg flex items-center justify-center text-slate-900 font-bold border border-slate-200/60 shadow-sm">
+                                                        {initial}
+                                                    </div>
+                                                    <div>
+                                                        <h3 className="font-semibold text-[16px] text-slate-900 tracking-tight leading-tight">{req.brand_name || 'Brand Partner'}</h3>
+                                                    </div>
+                                                </div>
+                                                <div className={`${badgeBg} ${badgeText} px-2 py-0.5 rounded flex items-center gap-1.5 border ${badgeBorder}`}>
+                                                    <div className={`w-1.5 h-1.5 rounded-full ${badgeDot}`} />
+                                                    <span className="text-[11px] font-medium tracking-wide">{label}</span>
+                                                </div>
+                                            </div>
+
+                                            <div className="space-y-3 mb-5">
+                                                <div className="flex justify-between items-center text-[14px]">
+                                                    <span className="text-slate-500">Deliverables</span>
+                                                    <span className="font-medium text-slate-900">{req.collab_type || 'Brand Integration'}</span>
+                                                </div>
+                                                <div className="flex justify-between items-center text-[14px]">
+                                                    <span className="text-slate-500">Payout</span>
+                                                    <span className="font-semibold text-slate-900">{payout}</span>
+                                                </div>
+                                                <div className="flex justify-between items-center text-[14px]">
+                                                    <span className="text-slate-500">Deadline</span>
+                                                    <span className="font-medium text-slate-900">{dateString}</span>
+                                                </div>
+                                            </div>
+
+                                            <div className="flex gap-2">
+                                                {req.status === 'in_progress' ? (
+                                                    <button onClick={triggerHaptic} className="flex-1 py-2.5 bg-slate-50 text-slate-700 border border-slate-200 rounded-lg text-[14px] font-semibold hover:bg-slate-100 transition-colors active:scale-95">
+                                                        View Details
+                                                    </button>
+                                                ) : req.status === 'countered' ? (
+                                                    <button onClick={triggerHaptic} className="flex-1 py-2.5 bg-slate-900 text-white rounded-lg text-[14px] font-semibold hover:bg-slate-800 transition-colors active:scale-95">
+                                                        Respond
+                                                    </button>
+                                                ) : (
+                                                    <button onClick={triggerHaptic} className="w-full py-2.5 bg-slate-900 text-white rounded-lg text-[14px] font-semibold hover:bg-slate-800 transition-colors active:scale-95">
+                                                        Review Offer
+                                                    </button>
+                                                )}
                                             </div>
                                         </div>
+                                    );
+                                }) : (
+                                    <div className="flex flex-col items-center justify-center p-8 bg-white rounded-2xl border border-slate-200/80 shadow-sm">
+                                        <Handshake className="w-10 h-10 text-slate-200 mb-3" />
+                                        <p className="text-slate-500 text-[14px] font-medium text-center">No active collaborations yet.</p>
                                     </div>
-                                    <div className="bg-slate-50 rounded-lg p-3 border border-slate-100 mb-4">
-                                        <div className="flex justify-between text-[13px]">
-                                            <span className="text-slate-500">Counter Budget:</span>
-                                            <span className="font-bold text-slate-900">₹85,000</span>
-                                        </div>
-                                    </div>
-                                    <div className="flex gap-2">
-                                        <button onClick={triggerHaptic} className="flex-[2] py-2.5 bg-[#0F172A] text-white rounded-lg text-[13px] font-bold hover:bg-slate-800">Approve</button>
-                                        <button onClick={triggerHaptic} className="flex-1 py-2.5 border border-slate-200 bg-white text-slate-700 rounded-lg text-[13px] font-bold">Decline</button>
-                                    </div>
-                                </div>
+                                )}
+
+                                <div className="h-6" />
                             </div>
-                        </>
+                        </div>
                     )}
 
                     {/* Payments Tab View */}
@@ -572,33 +633,36 @@ const MobileDashboardDemo = ({ profile, userEmail, collabRequests = [] }: Mobile
                 <div className="absolute bottom-0 inset-x-0 w-full border-t border-slate-200/60 px-6 py-2 pb-safe z-40" style={{ backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', backgroundColor: 'rgba(255,255,255,0.75)' }}>
                     <div className="max-w-md md:max-w-2xl mx-auto flex items-center justify-between pb-4 pt-2">
 
-                        <button onClick={() => { triggerHaptic(); setActiveTab('dashboard'); }} className={`flex flex-col items-center gap-1 w-14 font-bold hover:opacity-70 active:opacity-50 transition-opacity shrink-0 ${activeTab === 'dashboard' ? 'text-slate-900' : 'text-slate-400 font-medium'}`}>
+                        <button onClick={() => { triggerHaptic(); setActiveTab('dashboard'); }} className={`flex flex-col items-center gap-1 w-16 font-bold hover:opacity-70 active:opacity-50 transition-opacity shrink-0 ${activeTab === 'dashboard' ? 'text-slate-900' : 'text-slate-400 font-medium'}`}>
                             <LayoutDashboard className="w-[22px] h-[22px] fill-current" />
                             <span className="text-[10px]">Dashboard</span>
                         </button>
 
-                        <button onClick={() => { triggerHaptic(); setActiveTab('collabs'); }} className={`flex flex-col items-center gap-1 w-14 relative hover:opacity-70 active:opacity-50 transition-opacity shrink-0 ${activeTab === 'collabs' ? 'text-slate-900 font-bold' : 'text-slate-400 font-medium'}`}>
-                            <Briefcase className={`w-[22px] h-[22px] ${activeTab === 'collabs' ? 'fill-slate-900' : ''}`} />
-                            <span className="absolute top-0 right-1 w-4 h-4 bg-emerald-500 border-2 border-white rounded-full flex items-center justify-center text-[9px] font-bold text-white shadow-sm">5</span>
+                        <button onClick={() => { triggerHaptic(); setActiveTab('collabs'); }} className={`flex flex-col items-center gap-1 w-16 relative hover:opacity-70 active:opacity-50 transition-opacity shrink-0 ${activeTab === 'collabs' ? 'text-slate-900 font-bold' : 'text-slate-400 font-medium'}`}>
+                            <Handshake className={`w-[22px] h-[22px] ${activeTab === 'collabs' ? 'stroke-slate-900' : ''}`} />
+                            <span className="absolute -top-0.5 right-2 w-4 h-4 bg-emerald-500 border-2 border-white rounded-full flex items-center justify-center text-[9px] font-bold text-white shadow-sm">5</span>
                             <span className="text-[10px]">Collabs</span>
                         </button>
 
                         {/* Center Action Button: Collab Link Engine */}
                         <button
                             onClick={() => { triggerHaptic(); navigate('/creator-profile'); }}
-                            className="transform -translate-y-3 px-4 py-2.5 rounded-xl flex items-center gap-1.5 text-white font-bold text-[13px] hover:opacity-90 active:opacity-75 transition-opacity shrink-0 relative"
-                            style={{ backgroundColor: '#0F172A', boxShadow: '0px 6px 16px rgba(15,23,42,0.15), 0px 2px 4px rgba(15,23,42,0.08)' }}
+                            className="transform -translate-y-4 px-4 py-3 rounded-[14px] flex items-center gap-1.5 text-white font-bold text-[13px] hover:opacity-90 active:opacity-75 transition-all shrink-0 relative"
+                            style={{
+                                backgroundColor: '#0F172A',
+                                boxShadow: '0px 0px 0px 1px rgba(255,255,255,0.1) inset, 0px 8px 24px rgba(15,23,42,0.4), 0px 4px 8px rgba(15,23,42,0.2), 0px 0px 12px rgba(56,189,248,0.3)'
+                            }}
                         >
-                            <LinkIcon className="w-4 h-4" strokeWidth={2.5} />
+                            <Shield className="w-4 h-4 text-sky-400" strokeWidth={2.5} />
                             Collab Link
                         </button>
 
-                        <button onClick={() => { triggerHaptic(); setActiveTab('payments'); }} className={`flex flex-col items-center gap-1 w-14 relative hover:opacity-70 active:opacity-50 transition-opacity shrink-0 ${activeTab === 'payments' ? 'text-slate-900 font-bold' : 'text-slate-400 font-medium'}`}>
+                        <button onClick={() => { triggerHaptic(); setActiveTab('payments'); }} className={`flex flex-col items-center gap-1 w-16 relative hover:opacity-70 active:opacity-50 transition-opacity shrink-0 ${activeTab === 'payments' ? 'text-slate-900 font-bold' : 'text-slate-400 font-medium'}`}>
                             <CreditCard className={`w-[22px] h-[22px] ${activeTab === 'payments' ? 'fill-slate-900' : ''}`} />
                             <span className="text-[10px]">Payments</span>
                         </button>
 
-                        <button onClick={() => { triggerHaptic(); setActiveTab('profile'); }} className={`flex flex-col items-center gap-1 w-14 hover:opacity-70 active:opacity-50 transition-opacity shrink-0 ${activeTab === 'profile' ? 'text-slate-900 font-bold' : 'text-slate-400 font-medium'}`}>
+                        <button onClick={() => { triggerHaptic(); setActiveTab('profile'); }} className={`flex flex-col items-center gap-1 w-16 hover:opacity-70 active:opacity-50 transition-opacity shrink-0 ${activeTab === 'profile' ? 'text-slate-900 font-bold' : 'text-slate-400 font-medium'}`}>
                             <User className={`w-[22px] h-[22px] ${activeTab === 'profile' ? 'fill-slate-900' : ''}`} />
                             <span className="text-[10px]">Profile</span>
                         </button>
