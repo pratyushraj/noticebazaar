@@ -314,16 +314,10 @@ const MobileDashboardDemo = ({
                                                         key={req.id || idx}
                                                         initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: idx * 0.05 }}
                                                         whileTap={{ scale: 0.98 }}
-                                                        className={cn('rounded-[16px] border p-6 shadow-sm transition-shadow relative', cardBgColor, borderColor)}
+                                                        className={cn('rounded-[16px] border p-5 shadow-[0_10px_40px_-10px_rgba(0,0,0,0.1)] dark:shadow-[0_10px_50px_-10px_rgba(0,0,0,0.4)] transition-all relative', cardBgColor, borderColor)}
                                                     >
-                                                        {/* Top bar: ID & timestamp */}
-                                                        <div className="flex justify-between items-center mb-4 pb-3 border-b border-slate-100 dark:border-white/5">
-                                                            <span className="text-[11px] font-semibold tracking-wider text-slate-500">ID: CA-{fakeId}</span>
-                                                            <span className="text-[11px] text-slate-400">Created {createdTime}</span>
-                                                        </div>
-
                                                         {/* Row 1: Brand & Budget */}
-                                                        <div className="flex justify-between items-start mb-6 mt-1">
+                                                        <div className="flex justify-between items-start mb-5">
                                                             <div className="flex items-center gap-3">
                                                                 <div className={cn("w-10 h-10 rounded-full border overflow-hidden flex items-center justify-center p-1 shrink-0", isDark ? "bg-[#1A253C] border-white/10" : "bg-white border-slate-200")}>
                                                                     {getBrandIcon(req.brand_logo, req.category)}
@@ -346,10 +340,10 @@ const MobileDashboardDemo = ({
                                                         </div>
 
                                                         {/* Row 2: Metadata */}
-                                                        <div className="grid grid-cols-2 gap-4 mb-6">
+                                                        <div className="grid grid-cols-2 gap-3 mb-5">
                                                             <div>
-                                                                <p className={cn("text-[12px] uppercase tracking-[0.06em] font-medium mb-2", secondaryTextColor)}>Deliverables</p>
-                                                                <div className="space-y-1.5 font-medium text-[14px]">
+                                                                <p className={cn("text-[12px] uppercase tracking-[0.06em] font-medium mb-1.5", secondaryTextColor)}>Deliverables</p>
+                                                                <div className="space-y-1 font-medium text-[14px]">
                                                                     {deliverablesArr.map((d, i) => (
                                                                         <p key={i} className="flex gap-2">
                                                                             <span className="text-slate-400">•</span>
@@ -359,19 +353,15 @@ const MobileDashboardDemo = ({
                                                                 </div>
                                                             </div>
                                                             <div>
-                                                                <p className={cn("text-[12px] uppercase tracking-[0.06em] font-medium mb-1", secondaryTextColor)}>Deadline</p>
-                                                                <p className={cn("text-[14px] font-medium mb-4", textColor)}>
+                                                                <p className={cn("text-[12px] uppercase tracking-[0.06em] font-medium mb-1.5", secondaryTextColor)}>Deadline</p>
+                                                                <p className={cn("text-[14px] font-medium", textColor)}>
                                                                     {deadlineText}
                                                                 </p>
-                                                                <p className={cn("text-[12px] uppercase tracking-[0.06em] font-medium mb-2", secondaryTextColor)}>Status</p>
-                                                                <div className="flex">
-                                                                    <StatusBadge status={reqStatus} />
-                                                                </div>
                                                             </div>
                                                         </div>
 
                                                         {/* Row 4: Actions (with divider) */}
-                                                        <div className="flex gap-3 pt-5 border-t border-slate-100 dark:border-white/5">
+                                                        <div className="flex gap-3 pt-4 border-t border-slate-100 dark:border-white/5">
                                                             <button
                                                                 onClick={(e) => { e.stopPropagation(); navigate(`/collab-requests/${req.id}/brief`); }}
                                                                 className={cn(
