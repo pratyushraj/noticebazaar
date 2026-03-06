@@ -3,7 +3,7 @@ import {
     User, Search, ShieldCheck, Handshake, Camera,
     LayoutDashboard, CreditCard, Briefcase, Menu, Clapperboard, Instagram,
     Target, Dumbbell, Shirt, Sun, Moon, RefreshCw, Loader2, Bell, ChevronRight, Zap, Link2, CheckCircle2, Download, Clock,
-    Info, Globe, Star, LogOut
+    Info, Globe, Star, LogOut, Copy, Share2, QrCode, ExternalLink, Eye, MoreHorizontal
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
@@ -123,6 +123,7 @@ const MobileDashboardDemo = ({
     const [activeTab, setActiveTab] = useState<'dashboard' | 'collabs' | 'payments' | 'profile'>('dashboard');
     const [collabSubTab, setCollabSubTab] = useState<'active' | 'pending'>('active');
     const [theme, setTheme] = useState<'light' | 'dark'>('dark');
+    const [showActionSheet, setShowActionSheet] = useState(false);
     const [processingDeal, setProcessingDeal] = React.useState<string | null>(null);
 
     const username = profile?.instagram_handle?.replace('@', '') || profile?.first_name || profile?.full_name?.split(' ')[0] || 'pratyush';
@@ -1067,7 +1068,7 @@ const MobileDashboardDemo = ({
 
                         {/* Middle Action: + Collab Link */}
                         <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
-                            onClick={() => { triggerHaptic(); navigate('/profile'); }}
+                            onClick={() => { triggerHaptic(); setShowActionSheet(true); }}
                             className="relative flex flex-col items-center -mt-8"
                         >
                             <div className={cn(
@@ -1092,8 +1093,146 @@ const MobileDashboardDemo = ({
                     </div>
                 </div>
 
+                {/* ─── ACTION SHEET (The Deal Intake Engine) ─── */}
+                <AnimatePresence>
+                    {showActionSheet && (
+                        <>
+                            {/* Background Backdrop Blur overlay */}
+                            <motion.div
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                onClick={() => setShowActionSheet(false)}
+                                className="fixed inset-0 z-[100] bg-black/40 backdrop-blur-md"
+                            />
+                            {/* Bottom Sheet Menu */}
+                            <motion.div
+                                initial={{ y: '100%' }}
+                                animate={{ y: 0 }}
+                                exit={{ y: '100%' }}
+                                transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+                                className={cn(
+                                    "fixed bottom-0 inset-x-0 z-[110] rounded-t-[2.5rem] border-t p-6 pb-safe overflow-hidden shadow-2xl",
+                                    isDark ? "bg-[#0F172A] border-white/10" : "bg-white border-slate-200"
+                                )}
+                            >
+                                {/* Pull handle indicator */}
+                                <div className="w-12 h-1 bg-slate-500/20 rounded-full mx-auto mb-6" />
+
+                                {/* Hub Content */}
+                                <div className="max-w-md mx-auto">
+                                    {/* Header with Stats (Power Feature) */}
+                                    <div className="flex items-start justify-between mb-8">
+                                        <div>
+                                            <h2 className={cn("text-2xl font-bold tracking-tight", isDark ? "text-white" : "text-slate-900")}>Collab Hub</h2>
+                                            <div className="flex items-center gap-3 mt-1.5">
+                                                <span className="flex items-center gap-1 text-[11px] font-black uppercase tracking-widest text-emerald-500 bg-emerald-500/10 px-2 py-1 rounded-lg">
+                                                    <Eye className="w-3.5 h-3.5" /> 24 Views
+                                                </span>
+                                                <span className="flex items-center gap-1 text-[11px] font-black uppercase tracking-widest text-blue-500 bg-blue-500/10 px-2 py-1 rounded-lg">
+                                                    <Bell className="w-3.5 h-3.5" /> 4 New
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <motion.button
+                                            whileTap={{ scale: 0.9 }}
+                                            onClick={() => setShowActionSheet(false)}
+                                            className={cn("w-10 h-10 rounded-full flex items-center justify-center", isDark ? "bg-white/5" : "bg-slate-100")}
+                                        >
+                                            <MoreHorizontal className="w-5 h-5 text-slate-400" />
+                                        </motion.button>
+                                    </div>
+
+                                    {/* Link Section (Visual Anchor) */}
+                                    <div className={cn("p-5 rounded-3xl mb-8 border", isDark ? "bg-[#1E293B]/40 border-white/10" : "bg-slate-50 border-slate-200")}>
+                                        <div className="flex flex-col items-center text-center">
+                                            <div className="w-12 h-12 rounded-2xl bg-blue-600/10 flex items-center justify-center mb-3">
+                                                <Link2 className="w-7 h-7 text-blue-500" />
+                                            </div>
+                                            <p className={cn("text-[10px] font-black uppercase tracking-[0.15em] opacity-40 mb-1", isDark ? "text-white" : "text-slate-900")}>Official Intake Link</p>
+                                            <h3 className={cn("text-lg font-bold tracking-tight mb-5", isDark ? "text-slate-200" : "text-slate-700")}>
+                                                creatorarmour.com/{username}
+                                            </h3>
+                                            <div className="flex items-center gap-3 w-full">
+                                                <motion.button
+                                                    whileTap={{ scale: 0.95 }}
+                                                    onClick={() => { triggerHaptic(); }}
+                                                    className="flex-1 flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-500 text-white h-12 rounded-2xl font-bold border-0 shadow-lg shadow-blue-500/20 active:shadow-blue-500/10 transition-all"
+                                                >
+                                                    <Copy className="w-4 h-4" /> Copy
+                                                </motion.button>
+                                                <motion.button
+                                                    whileTap={{ scale: 0.95 }}
+                                                    onClick={() => { triggerHaptic(); }}
+                                                    className={cn("flex-1 flex items-center justify-center gap-2 h-12 rounded-2xl font-bold border transition-all",
+                                                        isDark ? "bg-white/5 border-white/10 text-white" : "bg-white border-slate-200 text-slate-700")}
+                                                >
+                                                    <Share2 className="w-4 h-4" /> Share
+                                                </motion.button>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Actions Grid */}
+                                    <div className="grid grid-cols-2 gap-3 mb-8">
+                                        <motion.button
+                                            whileTap={{ scale: 0.96 }}
+                                            onClick={() => { setShowActionSheet(false); setActiveTab('collabs'); setCollabSubTab('pending'); }}
+                                            className={cn("p-4 rounded-3xl text-left transition-all border group", isDark ? "bg-white/5 border-white/10 hover:bg-white/10" : "bg-white border-slate-100 hover:border-blue-200")}
+                                        >
+                                            <div className="w-10 h-10 rounded-2xl bg-orange-500/10 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+                                                <Handshake className="w-5 h-5 text-orange-500" />
+                                            </div>
+                                            <p className={cn("font-bold text-[15px]", isDark ? "text-white" : "text-slate-900")}>View Offers</p>
+                                            <p className={cn("text-[11px] opacity-40 mt-1.5", isDark ? "text-white/60" : "text-slate-500")}>Manage brand requests</p>
+                                        </motion.button>
+                                        <motion.button
+                                            whileTap={{ scale: 0.96 }}
+                                            onClick={() => { setShowActionSheet(false); window.open(`/collab/${username}`, '_blank'); }}
+                                            className={cn("p-4 rounded-3xl text-left transition-all border group", isDark ? "bg-white/5 border-white/10 hover:bg-white/10" : "bg-white border-slate-100 hover:border-pink-200")}
+                                        >
+                                            <div className="w-10 h-10 rounded-2xl bg-pink-500/10 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+                                                <Eye className="w-5 h-5 text-pink-500" />
+                                            </div>
+                                            <p className={cn("font-bold text-[15px]", isDark ? "text-white" : "text-slate-900")}>Preview Page</p>
+                                            <p className={cn("text-[11px] opacity-40 mt-1.5", isDark ? "text-white/60" : "text-slate-500")}>See what brands see</p>
+                                        </motion.button>
+                                    </div>
+
+                                    {/* Tertiary Actions */}
+                                    <div className="space-y-1">
+                                        <motion.button
+                                            whileTap={{ scale: 0.98 }}
+                                            className={cn("w-full flex items-center justify-between p-4 rounded-2xl transition-all group", isDark ? "hover:bg-white/5" : "hover:bg-slate-50")}
+                                        >
+                                            <div className="flex items-center gap-4">
+                                                <div className="w-8 h-8 rounded-xl bg-slate-500/10 flex items-center justify-center">
+                                                    <QrCode className="w-4 h-4 text-slate-400 group-hover:text-blue-400 transition-colors" />
+                                                </div>
+                                                <p className={cn("font-bold text-[14px]", isDark ? "text-white" : "text-slate-900")}>Generate QR Code</p>
+                                            </div>
+                                            <ChevronRight className="w-4 h-4 text-slate-300" />
+                                        </motion.button>
+                                        <motion.button
+                                            whileTap={{ scale: 0.98 }}
+                                            className={cn("w-full flex items-center justify-between p-4 rounded-2xl transition-all group", isDark ? "hover:bg-white/5" : "hover:bg-slate-50")}
+                                        >
+                                            <div className="flex items-center gap-4">
+                                                <div className="w-8 h-8 rounded-xl bg-slate-500/10 flex items-center justify-center">
+                                                    <RefreshCw className="w-4 h-4 text-slate-400 group-hover:text-emerald-400 transition-colors" />
+                                                </div>
+                                                <p className={cn("font-bold text-[14px]", isDark ? "text-white" : "text-slate-900")}>Test Intake Form</p>
+                                            </div>
+                                            <ChevronRight className="w-4 h-4 text-slate-300" />
+                                        </motion.button>
+                                    </div>
+                                </div>
+                            </motion.div>
+                        </>
+                    )}
+                </AnimatePresence>
             </div>
-        </div>
+        </div >
     );
 };
 
