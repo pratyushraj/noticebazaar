@@ -1029,7 +1029,7 @@ const MobileDashboardDemo = ({
                         >
                             <div className={cn(
                                 "w-16 h-16 rounded-full flex items-center justify-center transition-all hover:brightness-110",
-                                isDark ? "bg-[#1E293B] border border-[#334155] text-white shadow-[0_4px_30px_rgba(59,130,246,0.15)] hover:shadow-[0_6px_40px_rgba(59,130,246,0.25)] ring-1 ring-white/10"
+                                isDark ? "bg-blue-600 border-4 border-[#0B0F14] text-white shadow-[0_4px_30px_rgba(59,130,246,0.3)] hover:shadow-[0_6px_40px_rgba(59,130,246,0.4)] ring-1 ring-blue-400/30"
                                     : "bg-slate-900 border-4 border-white text-white shadow-lg hover:shadow-xl ring-1 ring-slate-200"
                             )}>
                                 <Link2 className="w-7 h-7" />
