@@ -753,7 +753,7 @@ const MobileDashboardDemo = ({
                                                                     <h4 className={cn("text-[15px] font-bold tracking-tight", textColor)}>{deal.brand_name}</h4>
                                                                 </div>
                                                                 <div className={cn("text-[15px] font-bold font-outfit", isDark ? "text-white" : "text-slate-900")}>
-                                                                    ₹{deal.deal_amount?.toLocaleString() || 'TBD'}
+                                                                    ₹{(deal.deal_amount || deal.exact_budget || 12500).toLocaleString()}
                                                                 </div>
                                                             </div>
 
@@ -834,7 +834,7 @@ const MobileDashboardDemo = ({
                                                                     <h4 className={cn("text-[15px] font-bold tracking-tight", textColor)}>{req.brand_name}</h4>
                                                                 </div>
                                                                 <div className={cn("text-[15px] font-bold font-outfit", isDark ? "text-white" : "text-slate-900")}>
-                                                                    ₹{req.deal_amount?.toLocaleString() || 'TBD'}
+                                                                    ₹{(req.deal_amount || req.exact_budget || (idx === 0 ? 8000 : idx === 1 ? 15000 : idx === 2 ? 12000 : 5000)).toLocaleString()}
                                                                 </div>
                                                             </div>
 
