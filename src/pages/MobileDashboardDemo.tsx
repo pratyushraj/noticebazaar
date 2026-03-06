@@ -233,13 +233,13 @@ const MobileDashboardDemo = ({
                                 {/* Row 1: Earnings (Full width) */}
                                 <motion.div
                                     initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
-                                    className={cn('p-6 py-10 rounded-[16px] border shadow-md hover:shadow-lg transition-all mb-4', isDark ? 'bg-[#121826] border-[#1F2937]' : 'bg-white border-slate-200')}
+                                    className={cn('p-5 py-6 rounded-[16px] border shadow-md hover:shadow-lg transition-all mb-4', isDark ? 'bg-[#121826] border-[#1F2937]' : 'bg-white border-slate-200')}
                                 >
-                                    <div className="flex items-center gap-2 mb-3">
+                                    <div className="flex items-center gap-2 mb-2">
                                         <CreditCard className={cn('w-4 h-4', secondaryTextColor)} strokeWidth={1.5} />
                                         <span className={cn('text-[12px] uppercase tracking-[0.06em] font-medium', secondaryTextColor)}>Monthly Earnings</span>
                                     </div>
-                                    <p className={cn('text-[40px] font-semibold tracking-tight mt-1', textColor)}>
+                                    <p className={cn('text-[32px] font-semibold tracking-tight mt-0.5', textColor)}>
                                         ₹{(earnings / 100).toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
                                     </p>
                                     <p className={cn('text-[12px] font-medium mt-1', isDark ? 'text-slate-500' : 'text-slate-400')}>
