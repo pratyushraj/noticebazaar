@@ -238,7 +238,7 @@ const CollabRequestsPage = () => {
             {pendingRequests.length} pending • newest first
           </p>
         </div>
-        )}
+
 
         {/* Empty state or request cards */}
         {pendingRequests.length === 0 ? (
@@ -453,7 +453,7 @@ const CollabRequestsPage = () => {
             </Card>
           ))}
         </div>
-        )}
+
 
         {/* Decline confirmation */}
         <AlertDialog open={showDeclineDialog} onOpenChange={(showDeclineDialog) => setShowDeclineDialog(showDeclineDialog)}>
