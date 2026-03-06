@@ -1089,21 +1089,43 @@ const CreatorDashboard = () => {
   const isDemoMode = true;
   if (isDemoMode) {
     return (
-      <MobileDashboardDemo
-        profile={profile}
-        userEmail={session?.user?.email}
-        collabRequests={collabRequestsPreview}
-        brandDeals={brandDeals}
-        stats={stats}
-        onAcceptRequest={acceptCollabRequest}
-        onDeclineRequest={(id: string) => {
-          setDeclineRequestId(id);
-          setShowDeclineRequestDialog(true);
-        }}
-        onOpenMenu={() => setShowMenu(true)}
-        isRefreshing={isRefreshing}
-        onRefresh={handleRefresh}
-      />
+      <>
+        <MobileDashboardDemo
+          profile={profile}
+          collabRequests={collabRequestsPreview}
+          brandDeals={brandDeals}
+          stats={stats}
+          onAcceptRequest={acceptCollabRequest}
+          onDeclineRequest={(id: string) => {
+            setDeclineRequestId(id);
+            setShowDeclineRequestDialog(true);
+          }}
+          onOpenMenu={() => setShowMenu(true)}
+          isRefreshing={isRefreshing}
+          onRefresh={handleRefresh}
+        />
+        <PremiumDrawer
+          open={showMenu}
+          onClose={() => {
+            setShowMenu(false);
+            triggerHaptic(HapticPatterns.light);
+          }}
+          onNavigate={(path) => {
+            navigate(path);
+            triggerHaptic(HapticPatterns.light);
+          }}
+          onSetActiveTab={(tab) => {
+            // Note: MobileDashboardDemo handles its own tabs, but this keeps the sidebar synced
+            triggerHaptic(HapticPatterns.light);
+          }}
+          onLogout={() => {
+            triggerHaptic(HapticPatterns.medium);
+            setShowLogoutDialog(true);
+          }}
+          activeItem={activeTab}
+          counts={{ messages: 3 }}
+        />
+      </>
     );
   }
 
@@ -1402,7 +1424,7 @@ const CreatorDashboard = () => {
                 </div>
 
                 {/* Hero: Your Official Brand Collaboration Link */}
-                <BaseCard variant="secondary" className="text-center p-6 md:p-6 relative border border-blue-400/20" onClick={(e: React.MouseEvent<HTMLDivElement>) => e?.stopPropagation()}>
+                <BaseCard variant="secondary" className="text-center p-6 md:p-6 relative border border-blue-400/20" onClick={(e?: any) => e?.stopPropagation()}>
                   <motion.div
                     initial={{ scale: 0.8, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}

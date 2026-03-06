@@ -123,7 +123,6 @@ const MobileDashboardDemo = ({
     const [activeTab, setActiveTab] = useState<'dashboard' | 'collabs' | 'payments' | 'profile'>('dashboard');
     const [collabSubTab, setCollabSubTab] = useState<'active' | 'pending'>('active');
     const [theme, setTheme] = useState<'light' | 'dark'>('dark');
-    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [processingDeal, setProcessingDeal] = React.useState<string | null>(null);
 
     const username = profile?.instagram_handle?.replace('@', '') || profile?.first_name || profile?.full_name?.split(' ')[0] || 'pratyush';
@@ -191,7 +190,7 @@ const MobileDashboardDemo = ({
     const handleAction = (action: string) => {
         triggerHaptic();
         if (action === 'notifications') navigate('/notifications');
-        else if (action === 'menu') { setIsSidebarOpen(true); if (onOpenMenu) onOpenMenu(); }
+        else if (action === 'menu') { if (onOpenMenu) onOpenMenu(); }
         else if (action === 'view_all') setActiveTab('collabs');
     };
 
@@ -1049,20 +1048,6 @@ const MobileDashboardDemo = ({
                     </div>
                 </div>
 
-                {/* Sidebar logic is simplified/hidden to focus on main dashboard UX */}
-                <AnimatePresence>
-                    {isSidebarOpen && (
-                        <motion.div
-                            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                            onClick={() => setIsSidebarOpen(false)}
-                            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100]"
-                        >
-                            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white rounded-xl p-6 text-center text-slate-900">
-                                <p className="font-semibold px-4 py-2">Sidebar hidden for demo cleaniness</p>
-                            </div>
-                        </motion.div>
-                    )}
-                </AnimatePresence>
             </div>
         </div>
     );
