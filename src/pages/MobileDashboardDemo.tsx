@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
     User, Search, ShieldCheck, Handshake, Camera, Lock,
-    LayoutDashboard, CreditCard, Briefcase, Menu, Clapperboard,
+    LayoutDashboard, CreditCard, Briefcase, Menu, Clapperboard, Instagram,
     Target, Dumbbell, Shirt, Sun, Moon, RefreshCw, Loader2, Bell, ChevronRight, Zap, Link2, CheckCircle2, Download, MessageSquare, Clock,
     Key, Heart, Info, Globe, Star, Smartphone
 } from 'lucide-react';
@@ -712,8 +712,11 @@ const MobileDashboardDemo = ({
                                                                 </div>
                                                             </div>
 
-                                                            <div className="flex items-center gap-1.5 ml-[52px] mb-4">
-                                                                <span className={cn("text-[11px] font-medium", secondaryTextColor)}>{deal.category || 'Other'}</span>
+                                                            <div className="flex items-center gap-2 ml-[52px] mb-4">
+                                                                <div className="flex items-center gap-1 bg-slate-500/5 px-2 py-0.5 rounded-full border border-slate-500/10">
+                                                                    <Instagram className="w-2.5 h-2.5 text-pink-500" />
+                                                                    <span className={cn("text-[10px] font-bold", isDark ? "text-slate-300" : "text-slate-600")}>1 Reel + 1 Post</span>
+                                                                </div>
                                                                 <span className={cn("text-[11px] opacity-20", textColor)}>•</span>
                                                                 <span className={cn("text-[11px] font-medium opacity-50", textColor)}>Started {startedDays}d ago</span>
                                                             </div>
