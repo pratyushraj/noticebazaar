@@ -213,16 +213,18 @@ const MobileDashboardDemo = ({
 
                                 {/* Greeting / Status */}
                                 <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
-                                    <h1 className={cn('text-[18px] font-semibold tracking-tight', textColor)}>
-                                        Creator Dashboard
-                                    </h1>
+                                    <div className="flex items-center justify-between">
+                                        <h1 className={cn('text-[18px] font-semibold tracking-tight', textColor)}>
+                                            Creator Dashboard
+                                        </h1>
+                                        <div className={cn("flex items-center gap-1.5 px-2 py-0.5 rounded-full border", isDark ? "bg-emerald-500/10 border-emerald-500/20" : "bg-emerald-50 border-emerald-100")}>
+                                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
+                                            <span className="text-[10px] uppercase font-bold tracking-[0.06em] text-emerald-600 dark:text-emerald-400">Active</span>
+                                        </div>
+                                    </div>
                                     <p className={cn('text-[14px] font-medium mt-0.5', secondaryTextColor)}>
                                         @{username}
                                     </p>
-                                    <div className="flex items-center gap-2 mt-3">
-                                        <span className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
-                                        <span className="text-[12px] uppercase tracking-[0.06em] font-semibold text-emerald-500">Account Status: Active</span>
-                                    </div>
                                 </motion.div>
                             </div>
 
