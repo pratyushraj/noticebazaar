@@ -25,10 +25,10 @@ interface MobileDashboardProps {
 // Minimal Status Badge for Deal Cards
 const StatusBadge = ({ status }: { status: string }) => {
     const config: Record<string, { bg: string; text: string; label: string }> = {
-        'new': { bg: 'bg-slate-100 dark:bg-white/10', text: 'text-slate-700 dark:text-slate-300', label: 'NEW OFFER' },
-        'pending': { bg: 'bg-slate-100 dark:bg-white/10', text: 'text-slate-700 dark:text-slate-300', label: 'PENDING' },
+        'new': { bg: 'bg-slate-100 dark:bg-white/10', text: 'text-slate-700 dark:text-slate-300', label: 'NEW' },
+        'pending': { bg: 'bg-slate-100 dark:bg-white/10', text: 'text-slate-700 dark:text-slate-300', label: 'AWAITING REVIEW' },
         'negotiating': { bg: 'bg-slate-100 dark:bg-white/10', text: 'text-slate-700 dark:text-slate-300', label: 'IN NEGOTIATION' },
-        'active': { bg: 'bg-slate-100 dark:bg-white/10', text: 'text-slate-700 dark:text-slate-300', label: 'FUNDS VERIFIED' },
+        'active': { bg: 'bg-slate-100 dark:bg-white/10', text: 'text-slate-700 dark:text-slate-300', label: 'ACTIVE' },
         'completed': { bg: 'bg-slate-100 dark:bg-white/10', text: 'text-slate-700 dark:text-slate-300', label: 'COMPLETED' },
     };
     const c = config[status?.toLowerCase()] ?? config['new'];
@@ -221,7 +221,7 @@ const MobileDashboardDemo = ({
                                     </p>
                                     <div className="flex items-center gap-2 mt-3">
                                         <span className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
-                                        <span className="text-[12px] uppercase tracking-[0.06em] font-semibold text-emerald-500">System Status: Active</span>
+                                        <span className="text-[12px] uppercase tracking-[0.06em] font-semibold text-emerald-500">Account Status: Active</span>
                                     </div>
                                 </motion.div>
                             </div>
@@ -229,22 +229,22 @@ const MobileDashboardDemo = ({
                             {/* Metrics Strip */}
                             <div className="px-5 mb-8">
                                 {/* Row 1: Earnings (Full width) */}
-                                <motion.div 
+                                <motion.div
                                     initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
-                                    className={cn('p-5 rounded-[16px] border shadow-sm mb-4', cardBgColor, borderColor)}
+                                    className={cn('p-6 py-8 rounded-[16px] border shadow-sm mb-4', cardBgColor, borderColor)}
                                 >
-                                    <div className="flex items-center gap-2 mb-2.5">
+                                    <div className="flex items-center gap-2 mb-3">
                                         <CreditCard className={cn('w-4 h-4', secondaryTextColor)} />
                                         <span className={cn('text-[12px] uppercase tracking-[0.06em] font-medium', secondaryTextColor)}>Monthly Earnings</span>
                                     </div>
-                                    <p className={cn('text-[28px] font-semibold tracking-tight', textColor)}>
+                                    <p className={cn('text-[36px] font-semibold tracking-tight mt-1', textColor)}>
                                         ₹{(earnings / 100).toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
                                     </p>
                                 </motion.div>
 
                                 {/* Row 2: Active & Pending Deals (Side by side) */}
                                 <div className="grid grid-cols-2 gap-4">
-                                     <motion.div 
+                                    <motion.div
                                         initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
                                         className={cn('p-5 rounded-[16px] border shadow-sm', cardBgColor, borderColor)}
                                     >
@@ -255,7 +255,7 @@ const MobileDashboardDemo = ({
                                         <p className={cn('text-[28px] font-semibold tracking-tight', textColor)}>{activeDealsCount}</p>
                                     </motion.div>
 
-                                    <motion.div 
+                                    <motion.div
                                         initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
                                         className={cn('p-5 rounded-[16px] border shadow-sm', cardBgColor, borderColor)}
                                     >
@@ -285,95 +285,116 @@ const MobileDashboardDemo = ({
                                         </motion.div>
                                     ) : (
                                         <div className="space-y-6">
-                                        {collabRequests.map((req, idx) => {
-                                            const reqStatus = req.status || (idx === 0 ? 'new' : idx === 1 ? 'pending' : 'negotiating');
-                                            
-                                            // Handle deliverables display
-                                            let deliverablesText = 'Reel + Story + Post';
-                                            if (req.raw?.deliverables) {
-                                                if (Array.isArray(req.raw.deliverables)) {
-                                                    deliverablesText = req.raw.deliverables.join(' + ');
-                                                } else {
-                                                    deliverablesText = req.raw.deliverables;
-                                                }
-                                            }
+                                            {collabRequests.map((req, idx) => {
+                                                const reqStatus = req.status || (idx === 0 ? 'new' : idx === 1 ? 'pending' : 'negotiating');
 
-                                            return (
-                                                <motion.div
-                                                    key={req.id || idx}
-                                                    initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: idx * 0.05 }}
-                                                    whileTap={{ scale: 0.98 }}
-                                                    className={cn('rounded-[16px] border p-5 shadow-sm transition-shadow', cardBgColor, borderColor)}
-                                                >
-                                                    {/* Row 1: Brand & Budget */}
-                                                    <div className="flex justify-between items-start mb-5">
-                                                        <div className="flex items-center gap-3">
-                                                            <div className={cn("w-10 h-10 rounded-full border overflow-hidden flex items-center justify-center p-1", isDark ? "bg-[#1A253C] border-white/10" : "bg-white border-slate-200")}>
-                                                                {getBrandIcon(req.brand_logo, req.category)}
+                                                // Format deliverables as array
+                                                let deliverablesArr = ['1 Reel', '1 Story', '1 Post'];
+                                                if (req.raw?.deliverables) {
+                                                    deliverablesArr = Array.isArray(req.raw.deliverables) ? req.raw.deliverables : [req.raw.deliverables];
+                                                }
+
+                                                // Determine Deadline text
+                                                let deadlineText = '21 Mar';
+                                                if (req.deadline) {
+                                                    const dDate = new Date(req.deadline);
+                                                    const diffDays = Math.ceil((dDate.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
+                                                    deadlineText = diffDays > 0 ? `${dDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })} (in ${diffDays} days)` : 'Past Due';
+                                                }
+
+                                                // Mock/Get ID and time
+                                                const fakeId = req.id ? req.id.slice(0, 4).toUpperCase() + Math.floor(Math.random() * 1000) : 'CA-2024-018';
+                                                const createdStr = idx === 0 ? '3 hours ago' : idx === 1 ? 'Yesterday' : '2 days ago';
+                                                const createdTime = req.created_at ? new Date(req.created_at).toLocaleDateString() : createdStr;
+
+                                                return (
+                                                    <motion.div
+                                                        key={req.id || idx}
+                                                        initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: idx * 0.05 }}
+                                                        whileTap={{ scale: 0.98 }}
+                                                        className={cn('rounded-[16px] border p-6 shadow-sm transition-shadow relative', cardBgColor, borderColor)}
+                                                    >
+                                                        {/* Top bar: ID & timestamp */}
+                                                        <div className="flex justify-between items-center mb-4 pb-3 border-b border-slate-100 dark:border-white/5">
+                                                            <span className="text-[11px] font-semibold tracking-wider text-slate-500">ID: CA-{fakeId}</span>
+                                                            <span className="text-[11px] text-slate-400">Created {createdTime}</span>
+                                                        </div>
+
+                                                        {/* Row 1: Brand & Budget */}
+                                                        <div className="flex justify-between items-start mb-6 mt-1">
+                                                            <div className="flex items-center gap-3">
+                                                                <div className={cn("w-10 h-10 rounded-full border overflow-hidden flex items-center justify-center p-1 shrink-0", isDark ? "bg-[#1A253C] border-white/10" : "bg-white border-slate-200")}>
+                                                                    {getBrandIcon(req.brand_logo, req.category)}
+                                                                </div>
+                                                                <div className="min-w-0 pr-3">
+                                                                    <h3 className={cn("text-[17px] font-semibold text-slate-900 dark:text-white truncate")}>{req.brand_name || 'Brand'}</h3>
+                                                                    <div className="flex items-center gap-1.5 mt-0.5 whitespace-nowrap overflow-hidden text-ellipsis">
+                                                                        <p className={cn("text-[12px] font-medium", secondaryTextColor)}>{req.category || 'Lifestyle'}</p>
+                                                                        <span className={cn("text-[10px]", secondaryTextColor)}>•</span>
+                                                                        <ShieldCheck className="w-3.5 h-3.5 text-blue-500" />
+                                                                        <span className={cn("text-[12px] font-medium text-slate-500")}>Verified Brand</span>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <div className="text-right shrink-0">
+                                                                <span className={cn("text-[22px] font-semibold tracking-tight", textColor)}>
+                                                                    {req.exact_budget ? formatCurrency(req.exact_budget) : (req.budget_range || '₹75,000')}
+                                                                </span>
+                                                            </div>
+                                                        </div>
+
+                                                        {/* Row 2: Metadata */}
+                                                        <div className="grid grid-cols-2 gap-4 mb-6">
+                                                            <div>
+                                                                <p className={cn("text-[12px] uppercase tracking-[0.06em] font-medium mb-2", secondaryTextColor)}>Deliverables</p>
+                                                                <div className="space-y-1.5 font-medium text-[14px]">
+                                                                    {deliverablesArr.map((d, i) => (
+                                                                        <p key={i} className="flex gap-2">
+                                                                            <span className="text-slate-400">•</span>
+                                                                            <span className={textColor}>{d}</span>
+                                                                        </p>
+                                                                    ))}
+                                                                </div>
                                                             </div>
                                                             <div>
-                                                                <div className="flex items-center gap-1.5">
-                                                                    <h3 className={cn("text-[16px] font-medium", textColor)}>{req.brand_name || 'Brand'}</h3>
-                                                                    <ShieldCheck className="w-3.5 h-3.5 text-blue-500" />
+                                                                <p className={cn("text-[12px] uppercase tracking-[0.06em] font-medium mb-1", secondaryTextColor)}>Deadline</p>
+                                                                <p className={cn("text-[14px] font-medium mb-4", textColor)}>
+                                                                    {deadlineText}
+                                                                </p>
+                                                                <p className={cn("text-[12px] uppercase tracking-[0.06em] font-medium mb-2", secondaryTextColor)}>Status</p>
+                                                                <div className="flex">
+                                                                    <StatusBadge status={reqStatus} />
                                                                 </div>
-                                                                <p className={cn("text-[12px] font-medium", secondaryTextColor)}>{req.category || 'Lifestyle'}</p>
                                                             </div>
                                                         </div>
-                                                        <div className="text-right">
-                                                            <span className={cn("text-[20px] font-semibold tracking-tight", textColor)}>
-                                                                {req.exact_budget ? formatCurrency(req.exact_budget) : (req.budget_range || '₹75,000')}
-                                                            </span>
-                                                        </div>
-                                                    </div>
 
-                                                    {/* Row 2: Metadata */}
-                                                    <div className="grid grid-cols-2 gap-4 mb-5">
-                                                        <div>
-                                                            <p className={cn("text-[12px] uppercase tracking-[0.06em] font-medium mb-1", secondaryTextColor)}>Deliverables</p>
-                                                            <p className={cn("text-[14px] font-medium", textColor)}>
-                                                                {deliverablesText}
-                                                            </p>
+                                                        {/* Row 4: Actions (with divider) */}
+                                                        <div className="flex gap-3 pt-5 border-t border-slate-100 dark:border-white/5">
+                                                            <button
+                                                                onClick={(e) => { e.stopPropagation(); navigate(`/collab-requests/${req.id}/brief`); }}
+                                                                className={cn(
+                                                                    "flex-1 py-3.5 rounded-[14px] font-medium text-[14px] border transition-all",
+                                                                    isDark ? "border-[#334155] text-slate-300 hover:bg-white/5" : "border-slate-300 text-slate-700 hover:bg-slate-50"
+                                                                )}
+                                                            >
+                                                                Review Details
+                                                            </button>
+                                                            <button
+                                                                onClick={(e) => { e.stopPropagation(); handleAccept(req); }}
+                                                                disabled={processingDeal === req.id}
+                                                                className={cn(
+                                                                    "flex-1 py-3.5 rounded-[14px] font-medium text-[14px] transition-all flex items-center justify-center gap-2 hover:brightness-110",
+                                                                    isDark
+                                                                        ? "bg-[#0F172A] border border-[#1E293B] text-white hover:bg-[#1E293B]"
+                                                                        : "bg-slate-900 border border-slate-900 text-white hover:bg-slate-800"
+                                                                )}
+                                                            >
+                                                                {processingDeal === req.id ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Accept Deal'}
+                                                            </button>
                                                         </div>
-                                                        <div>
-                                                            <p className={cn("text-[12px] uppercase tracking-[0.06em] font-medium mb-1", secondaryTextColor)}>Deadline</p>
-                                                            <p className={cn("text-[14px] font-medium", textColor)}>
-                                                                {req.deadline ? new Date(req.deadline).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) : '21 Mar'}
-                                                            </p>
-                                                        </div>
-                                                    </div>
-
-                                                    {/* Row 3: Status */}
-                                                    <div className="mb-6 flex">
-                                                        <StatusBadge status={reqStatus} />
-                                                    </div>
-
-                                                    {/* Row 4: Actions */}
-                                                    <div className="flex gap-3">
-                                                        <button
-                                                            onClick={(e) => { e.stopPropagation(); navigate(`/collab-requests/${req.id}/brief`); }}
-                                                            className={cn(
-                                                                "flex-1 py-3.5 rounded-[14px] font-medium text-[14px] border transition-all",
-                                                                isDark ? "border-[#334155] text-slate-300 hover:bg-white/5" : "border-slate-300 text-slate-700 hover:bg-slate-50"
-                                                            )}
-                                                        >
-                                                            Review Details
-                                                        </button>
-                                                        <button
-                                                            onClick={(e) => { e.stopPropagation(); handleAccept(req); }}
-                                                            disabled={processingDeal === req.id}
-                                                            className={cn(
-                                                                "flex-1 py-3.5 rounded-[14px] font-medium text-[14px] transition-all flex items-center justify-center gap-2",
-                                                                isDark 
-                                                                    ? "bg-[#0F172A] border border-[#1E293B] text-white hover:bg-[#1E293B]" 
-                                                                    : "bg-slate-900 border border-slate-900 text-white hover:bg-slate-800"
-                                                            )}
-                                                        >
-                                                            {processingDeal === req.id ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Accept Deal'}
-                                                        </button>
-                                                    </div>
-                                                </motion.div>
-                                            );
-                                        })}
+                                                    </motion.div>
+                                                );
+                                            })}
                                         </div>
                                     )}
                                 </AnimatePresence>
@@ -410,15 +431,16 @@ const MobileDashboardDemo = ({
                         {/* Middle Action: + Collab Link */}
                         <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
                             onClick={() => { triggerHaptic(); navigate('/profile'); }}
-                            className="relative flex flex-col items-center -mt-6"
+                            className="relative flex flex-col items-center -mt-8"
                         >
                             <div className={cn(
-                                "w-14 h-14 rounded-full flex items-center justify-center shadow-lg transition-all",
-                                isDark ? "bg-[#1E293B] border border-[#334155] text-white shadow-[0_0_15px_rgba(255,255,255,0.05)]" : "bg-slate-900 text-white shadow-xl shadow-slate-900/20"
+                                "w-16 h-16 rounded-full flex items-center justify-center transition-all hover:brightness-110",
+                                isDark ? "bg-[#1E293B] border border-[#334155] text-white shadow-[0_4px_30px_rgba(59,130,246,0.15)] hover:shadow-[0_6px_40px_rgba(59,130,246,0.25)]"
+                                    : "bg-slate-900 border-4 border-white text-white shadow-[0_8px_25px_rgba(15,23,42,0.25)] hover:shadow-[0_12px_35px_rgba(15,23,42,0.35)]"
                             )}>
-                                <Link2 className="w-6 h-6" />
+                                <Link2 className="w-7 h-7" />
                             </div>
-                            <span className={cn("text-[10px] font-semibold tracking-tight mt-1 absolute -bottom-4 whitespace-nowrap", isDark ? "text-slate-400" : "text-slate-600")}>+ Collab Link</span>
+                            <span className={cn("text-[11px] font-semibold tracking-tight mt-1 absolute -bottom-5 whitespace-nowrap", isDark ? "text-slate-400" : "text-slate-600")}>+ Collab Link</span>
                         </motion.button>
 
                         <motion.button whileTap={{ scale: 0.94 }} onClick={() => { triggerHaptic(); setActiveTab('payments'); }} className="flex flex-col items-center gap-1 w-14">
@@ -441,9 +463,9 @@ const MobileDashboardDemo = ({
                             onClick={() => setIsSidebarOpen(false)}
                             className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100]"
                         >
-                           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white rounded-xl p-6 text-center text-slate-900">
-                               <p className="font-semibold px-4 py-2">Sidebar hidden for demo cleaniness</p>
-                           </div>
+                            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white rounded-xl p-6 text-center text-slate-900">
+                                <p className="font-semibold px-4 py-2">Sidebar hidden for demo cleaniness</p>
+                            </div>
                         </motion.div>
                     )}
                 </AnimatePresence>
