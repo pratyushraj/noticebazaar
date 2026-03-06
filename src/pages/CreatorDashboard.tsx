@@ -148,7 +148,7 @@ const CreatorDashboard = () => {
           exact_budget: r.exact_budget ?? null,
           barter_value: r.barter_value ?? null,
           deadline: r.deadline ?? null,
-          brand_logo: r.brand_logo || r.raw?.brand_logo || (r as any).brand?.logo_url,
+          brand_logo: r.brand_logo || r.brand_logo_url || r.raw?.brand_logo || r.raw?.brand_logo_url || (r as any).brand?.logo_url,
           created_at: r.created_at || '',
           raw: r,
         }))
