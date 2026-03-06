@@ -8,7 +8,8 @@ import {
     Wallet,
     TrendingUp,
     Zap,
-    Link2
+    Link2,
+    Menu
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
@@ -79,10 +80,12 @@ const StatusPill = ({ status }: { status: string }) => {
 
 const MobileDashboardDemo = ({
     profile,
+    userEmail,
     collabRequests = [],
     brandDeals = [],
     stats,
     onAcceptRequest,
+    onOpenMenu,
     isRefreshing: isRefreshingProp,
     onRefresh
 }: MobileDashboardProps) => {
