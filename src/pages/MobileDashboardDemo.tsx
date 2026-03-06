@@ -300,11 +300,11 @@ const MobileDashboardDemo = ({
                                                 }
 
                                                 // Determine Deadline text
-                                                let deadlineText = '21 Mar';
+                                                let deadlineText = '';
                                                 if (req.deadline) {
                                                     const dDate = new Date(req.deadline);
                                                     const diffDays = Math.ceil((dDate.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
-                                                    deadlineText = diffDays > 0 ? `${dDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })} (in ${diffDays} days)` : 'Past Due';
+                                                    deadlineText = diffDays > 0 ? `In ${diffDays} Days` : 'Past Due';
                                                 }
 
                                                 // Mock/Get ID and time
@@ -357,7 +357,7 @@ const MobileDashboardDemo = ({
                                                                     <CalendarIcon className="w-3 h-3 text-slate-400" />
                                                                     <span>{req.deadline ? new Date(req.deadline).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) : '21 Mar'}</span>
                                                                 </div>
-                                                                {deadlineText && deadlineText !== '21 Mar' && (
+                                                                {deadlineText && (
                                                                     <span className={cn("px-2 py-1 rounded-[8px] text-[10px] font-bold tracking-wide uppercase", isDark ? "bg-amber-500/10 text-amber-500" : "bg-amber-50 text-amber-600")}>
                                                                         {deadlineText.replace('(', '').replace(')', '')}
                                                                     </span>
