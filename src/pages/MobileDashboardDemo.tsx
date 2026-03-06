@@ -217,7 +217,7 @@ const MobileDashboardDemo = ({
                                         <h1 className={cn('text-[18px] font-semibold tracking-tight', textColor)}>
                                             Creator Dashboard
                                         </h1>
-                                        <div className={cn("flex items-center gap-1.5 px-2 py-0.5 rounded-full border", isDark ? "bg-emerald-500/10 border-emerald-500/20" : "bg-emerald-50 border-emerald-100")}>
+                                        <div className={cn("flex items-center gap-1.5 px-2.5 py-1 rounded-full", isDark ? "bg-emerald-500/10" : "bg-emerald-50")}>
                                             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
                                             <span className="text-[10px] uppercase font-bold tracking-[0.06em] text-emerald-600 dark:text-emerald-400">Active</span>
                                         </div>
@@ -233,14 +233,17 @@ const MobileDashboardDemo = ({
                                 {/* Row 1: Earnings (Full width) */}
                                 <motion.div
                                     initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
-                                    className={cn('p-6 py-8 rounded-[16px] border shadow-sm mb-4', cardBgColor, borderColor)}
+                                    className={cn('p-6 py-10 rounded-[16px] border shadow-md hover:shadow-lg transition-all mb-4', isDark ? 'bg-[#121826] border-[#1F2937]' : 'bg-white border-slate-200')}
                                 >
                                     <div className="flex items-center gap-2 mb-3">
-                                        <CreditCard className={cn('w-4 h-4', secondaryTextColor)} />
+                                        <CreditCard className={cn('w-4 h-4', secondaryTextColor)} strokeWidth={1.5} />
                                         <span className={cn('text-[12px] uppercase tracking-[0.06em] font-medium', secondaryTextColor)}>Monthly Earnings</span>
                                     </div>
-                                    <p className={cn('text-[36px] font-semibold tracking-tight mt-1', textColor)}>
+                                    <p className={cn('text-[40px] font-semibold tracking-tight mt-1', textColor)}>
                                         ₹{(earnings / 100).toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                                    </p>
+                                    <p className={cn('text-[12px] font-medium mt-1', isDark ? 'text-slate-500' : 'text-slate-400')}>
+                                        {earnings === 0 ? 'No earnings yet this month' : '+14% from last month'}
                                     </p>
                                 </motion.div>
 
@@ -248,10 +251,10 @@ const MobileDashboardDemo = ({
                                 <div className="grid grid-cols-2 gap-4">
                                     <motion.div
                                         initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
-                                        className={cn('p-5 rounded-[16px] border shadow-sm', cardBgColor, borderColor)}
+                                        className={cn('p-5 rounded-[16px] border shadow-md hover:shadow-lg transition-all', isDark ? 'bg-[#121826] border-[#1F2937]' : 'bg-white border-slate-200')}
                                     >
                                         <div className="flex items-center gap-2 mb-2.5">
-                                            <Briefcase className={cn('w-4 h-4', secondaryTextColor)} />
+                                            <Briefcase className={cn('w-4 h-4', secondaryTextColor)} strokeWidth={1.5} />
                                             <span className={cn('text-[12px] uppercase tracking-[0.06em] font-medium', secondaryTextColor)}>Active Deals</span>
                                         </div>
                                         <p className={cn('text-[28px] font-semibold tracking-tight', textColor)}>{activeDealsCount}</p>
@@ -259,10 +262,10 @@ const MobileDashboardDemo = ({
 
                                     <motion.div
                                         initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
-                                        className={cn('p-5 rounded-[16px] border shadow-sm', cardBgColor, borderColor)}
+                                        className={cn('p-5 rounded-[16px] border shadow-md hover:shadow-lg transition-all', isDark ? 'bg-[#121826] border-[#1F2937]' : 'bg-white border-slate-200')}
                                     >
                                         <div className="flex items-center gap-2 mb-2.5">
-                                            <Handshake className={cn('w-4 h-4', secondaryTextColor)} />
+                                            <Handshake className={cn('w-4 h-4', secondaryTextColor)} strokeWidth={1.5} />
                                             <span className={cn('text-[12px] uppercase tracking-[0.06em] font-medium', secondaryTextColor)}>Pending Offers</span>
                                         </div>
                                         <p className={cn('text-[28px] font-semibold tracking-tight', textColor)}>{pendingOffersCount}</p>
@@ -282,11 +285,11 @@ const MobileDashboardDemo = ({
                                             initial={{ opacity: 0 }} animate={{ opacity: 1 }}
                                             className={cn('p-8 rounded-[16px] border border-dashed text-center', borderColor, cardBgColor)}
                                         >
-                                            <Search className="w-6 h-6 mx-auto mb-3 text-slate-400" />
+                                            <Search className="w-6 h-6 mx-auto mb-3 text-slate-400" strokeWidth={1.5} />
                                             <p className={cn('text-[14px] font-medium', secondaryTextColor)}>No pending offers yet</p>
                                         </motion.div>
                                     ) : (
-                                        <div className="space-y-6">
+                                        <div className="space-y-8">
                                             {collabRequests.map((req, idx) => {
                                                 const reqStatus = req.status || (idx === 0 ? 'new' : idx === 1 ? 'pending' : 'negotiating');
 
@@ -316,36 +319,36 @@ const MobileDashboardDemo = ({
                                                         whileTap={{ scale: 0.98 }}
                                                         className={cn('rounded-[16px] border p-5 shadow-[0_10px_40px_-10px_rgba(0,0,0,0.1)] dark:shadow-[0_10px_50px_-10px_rgba(0,0,0,0.4)] transition-all relative', cardBgColor, borderColor)}
                                                     >
-                                                        {/* Row 1: Brand & Budget */}
-                                                        <div className="flex justify-between items-start mb-5">
-                                                            <div className="flex items-center gap-3">
-                                                                <div className={cn("w-10 h-10 rounded-full border overflow-hidden flex items-center justify-center p-1 shrink-0", isDark ? "bg-[#1A253C] border-white/10" : "bg-white border-slate-200")}>
-                                                                    {getBrandIcon(req.brand_logo, req.category)}
-                                                                </div>
-                                                                <div className="min-w-0 pr-3">
-                                                                    <h3 className={cn("text-[17px] font-semibold text-slate-900 dark:text-white truncate")}>{req.brand_name || 'Brand'}</h3>
-                                                                    <div className="flex items-center gap-1.5 mt-0.5 whitespace-nowrap overflow-hidden text-ellipsis">
-                                                                        <p className={cn("text-[12px] font-medium", secondaryTextColor)}>{req.category || 'Lifestyle'}</p>
-                                                                        <span className={cn("text-[10px]", secondaryTextColor)}>•</span>
-                                                                        <ShieldCheck className="w-3.5 h-3.5 text-blue-500" />
-                                                                        <span className={cn("text-[12px] font-medium text-slate-500")}>Verified Brand</span>
-                                                                    </div>
-                                                                </div>
+                                                        {/* Row 1: Brand Header */}
+                                                        <div className="flex items-start gap-4 mb-6 pt-1">
+                                                            <div className={cn("w-12 h-12 rounded-full border overflow-hidden flex items-center justify-center p-1 shrink-0 shadow-sm", isDark ? "bg-[#1A253C] border-white/10" : "bg-white border-slate-200")}>
+                                                                {getBrandIcon(req.brand_logo, req.category)}
                                                             </div>
-                                                            <div className="text-right shrink-0">
-                                                                <span className={cn("text-[22px] font-semibold tracking-tight", textColor)}>
-                                                                    {req.exact_budget ? formatCurrency(req.exact_budget) : (req.budget_range || '₹75,000')}
-                                                                </span>
+                                                            <div className="min-w-0 pr-3 flex-1">
+                                                                <h3 className={cn("text-[18px] font-semibold truncate", isDark ? "text-white" : "text-slate-900")}>{req.brand_name || 'Brand'}</h3>
+                                                                <div className="flex items-center gap-1.5 mt-0.5 whitespace-nowrap overflow-hidden text-ellipsis">
+                                                                    <p className={cn("text-[13px] font-medium", secondaryTextColor)}>{req.category || 'Lifestyle'}</p>
+                                                                    <span className={cn("text-[10px]", secondaryTextColor)}>•</span>
+                                                                    <ShieldCheck className="w-3.5 h-3.5 text-blue-500" strokeWidth={1.5} />
+                                                                    <span className={cn("text-[13px] font-medium", isDark ? "text-slate-400" : "text-slate-500")}>Verified Brand</span>
+                                                                </div>
+                                                                {/* Budget underneath */}
+                                                                <div className="mt-3">
+                                                                    <p className={cn("text-[20px] font-semibold tracking-tight", textColor)}>
+                                                                        {req.exact_budget ? formatCurrency(req.exact_budget) : (req.budget_range || '₹75,000')}
+                                                                    </p>
+                                                                    <p className={cn("text-[11px] uppercase tracking-[0.06em] font-medium", isDark ? "text-slate-500" : "text-slate-400")}>Campaign Budget</p>
+                                                                </div>
                                                             </div>
                                                         </div>
 
                                                         {/* Row 2: Metadata */}
-                                                        <div className="grid grid-cols-2 gap-3 mb-5">
+                                                        <div className="grid grid-cols-[1.5fr_1fr] gap-4 mb-6">
                                                             <div>
-                                                                <p className={cn("text-[12px] uppercase tracking-[0.06em] font-medium mb-1.5", secondaryTextColor)}>Deliverables</p>
-                                                                <div className="space-y-1 font-medium text-[14px]">
+                                                                <p className={cn("text-[11px] uppercase tracking-[0.08em] font-bold mb-2", isDark ? "text-slate-500" : "text-slate-400")}>Deliverables</p>
+                                                                <div className="space-y-1.5 font-medium text-[14px]">
                                                                     {deliverablesArr.map((d, i) => (
-                                                                        <p key={i} className="flex gap-2">
+                                                                        <p key={i} className="flex gap-2 leading-relaxed">
                                                                             <span className="text-slate-400">•</span>
                                                                             <span className={textColor}>{d}</span>
                                                                         </p>
@@ -353,20 +356,25 @@ const MobileDashboardDemo = ({
                                                                 </div>
                                                             </div>
                                                             <div>
-                                                                <p className={cn("text-[12px] uppercase tracking-[0.06em] font-medium mb-1.5", secondaryTextColor)}>Deadline</p>
-                                                                <p className={cn("text-[14px] font-medium", textColor)}>
-                                                                    {deadlineText}
+                                                                <p className={cn("text-[11px] uppercase tracking-[0.08em] font-bold mb-2", isDark ? "text-slate-500" : "text-slate-400")}>Deadline</p>
+                                                                <p className={cn("text-[15px] font-medium mb-1.5", textColor)}>
+                                                                    {req.deadline ? new Date(req.deadline).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) : '21 Mar'}
                                                                 </p>
+                                                                {deadlineText && deadlineText !== '21 Mar' && (
+                                                                    <div className={cn("inline-flex px-2 py-0.5 rounded-full text-[11px] font-semibold mt-1", isDark ? "bg-amber-500/10 text-amber-500" : "bg-amber-50 text-amber-600")}>
+                                                                        {deadlineText.replace('(', '').replace(')', '')}
+                                                                    </div>
+                                                                )}
                                                             </div>
                                                         </div>
 
                                                         {/* Row 4: Actions (with divider) */}
-                                                        <div className="flex gap-3 pt-4 border-t border-slate-100 dark:border-white/5">
+                                                        <div className="flex gap-3 pt-5 border-t border-slate-100 dark:border-white/5">
                                                             <button
                                                                 onClick={(e) => { e.stopPropagation(); navigate(`/collab-requests/${req.id}/brief`); }}
                                                                 className={cn(
-                                                                    "flex-1 py-3.5 rounded-[14px] font-medium text-[14px] border transition-all",
-                                                                    isDark ? "border-[#334155] text-slate-300 hover:bg-white/5" : "border-slate-300 text-slate-700 hover:bg-slate-50"
+                                                                    "flex-1 h-12 rounded-[14px] font-semibold text-[14px] border transition-all",
+                                                                    isDark ? "border-[#334155] text-slate-300 hover:bg-white/5" : "border-slate-300 text-slate-700 hover:bg-gray-50 bg-white"
                                                                 )}
                                                             >
                                                                 Review Details
@@ -375,10 +383,10 @@ const MobileDashboardDemo = ({
                                                                 onClick={(e) => { e.stopPropagation(); handleAccept(req); }}
                                                                 disabled={processingDeal === req.id}
                                                                 className={cn(
-                                                                    "flex-1 py-3.5 rounded-[14px] font-medium text-[14px] transition-all flex items-center justify-center gap-2 hover:brightness-110",
+                                                                    "flex-1 h-12 rounded-[14px] font-semibold text-[14px] transition-all flex items-center justify-center gap-2",
                                                                     isDark
                                                                         ? "bg-[#0F172A] border border-[#1E293B] text-white hover:bg-[#1E293B]"
-                                                                        : "bg-slate-900 border border-slate-900 text-white hover:bg-slate-800"
+                                                                        : "bg-slate-900 border border-slate-900 text-white hover:bg-slate-800 shadow-md"
                                                                 )}
                                                             >
                                                                 {processingDeal === req.id ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Accept Deal'}
@@ -427,8 +435,8 @@ const MobileDashboardDemo = ({
                         >
                             <div className={cn(
                                 "w-16 h-16 rounded-full flex items-center justify-center transition-all hover:brightness-110",
-                                isDark ? "bg-[#1E293B] border border-[#334155] text-white shadow-[0_4px_30px_rgba(59,130,246,0.15)] hover:shadow-[0_6px_40px_rgba(59,130,246,0.25)]"
-                                    : "bg-slate-900 border-4 border-white text-white shadow-[0_8px_25px_rgba(15,23,42,0.25)] hover:shadow-[0_12px_35px_rgba(15,23,42,0.35)]"
+                                isDark ? "bg-[#1E293B] border border-[#334155] text-white shadow-[0_4px_30px_rgba(59,130,246,0.15)] hover:shadow-[0_6px_40px_rgba(59,130,246,0.25)] ring-1 ring-white/10"
+                                    : "bg-slate-900 border-4 border-white text-white shadow-lg hover:shadow-xl ring-1 ring-slate-200"
                             )}>
                                 <Link2 className="w-7 h-7" />
                             </div>
