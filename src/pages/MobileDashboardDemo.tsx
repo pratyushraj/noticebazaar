@@ -301,8 +301,10 @@ const MobileDashboardDemo = ({
                                     animate={{ scale: 1, opacity: 1 }}
                                     transition={{ delay: 0.1 }}
                                     className={cn(
-                                        "py-8 px-8 rounded-[2rem] shadow-xl shadow-emerald-500/10 border-0 mb-6 bg-gradient-to-br relative overflow-hidden",
-                                        isDark ? "from-emerald-400 via-cyan-500 to-blue-600" : "from-emerald-500 via-teal-500 to-blue-600"
+                                        "py-8 px-8 rounded-[2rem] shadow-xl shadow-emerald-500/20 border-0 mb-6 bg-gradient-to-br relative overflow-hidden",
+                                        isDark
+                                            ? "from-emerald-400 via-cyan-500 to-blue-600"
+                                            : "bg-emerald-600 from-emerald-600 via-teal-500 to-blue-700"
                                     )}
                                 >
                                     {/* Decorative elements */}
@@ -763,8 +765,10 @@ const MobileDashboardDemo = ({
                                 animate={{ scale: 1, opacity: 1 }}
                                 transition={{ delay: 0.1 }}
                                 className={cn(
-                                    "p-8 rounded-[2.5rem] shadow-xl shadow-amber-500/10 border-0 mb-6 bg-gradient-to-br relative overflow-hidden",
-                                    isDark ? "from-amber-400 via-orange-500 to-rose-600" : "from-amber-500 via-orange-500 to-rose-600"
+                                    "py-8 px-8 rounded-[2.5rem] shadow-xl shadow-orange-500/20 border-0 mb-6 bg-gradient-to-br relative overflow-hidden",
+                                    isDark
+                                        ? "from-amber-400 via-orange-500 to-rose-600"
+                                        : "bg-orange-600 from-orange-600 via-rose-500 to-purple-700"
                                 )}
                             >
                                 {/* Decorative elements */}
