@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
-    User, Search, ShieldCheck, Handshake, Camera, Lock,
+    User, Search, ShieldCheck, Handshake, Camera,
     LayoutDashboard, CreditCard, Briefcase, Menu, Clapperboard, Instagram,
-    Target, Dumbbell, Shirt, Sun, Moon, RefreshCw, Loader2, Bell, ChevronRight, Zap, Link2, CheckCircle2, Download, MessageSquare, Clock,
-    Key, Heart, Info, Globe, Star, Smartphone
+    Target, Dumbbell, Shirt, Sun, Moon, RefreshCw, Loader2, Bell, ChevronRight, Zap, Link2, CheckCircle2, Download, Clock,
+    Info, Globe, Star, LogOut
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
@@ -52,15 +52,59 @@ const AnimatedCounter = ({ value }: { value: number }) => {
     return <motion.span>{displayValue}</motion.span>;
 };
 
-// Helper component for iOS-style Settings Rows
-const SettingsRow = ({ icon, label, iconBg, hasChevron = true, hasBorder = false, isDark, textColor }: any) => (
-    <div className={cn("flex items-center gap-3 py-3 px-4 active:bg-opacity-50 transition-all cursor-pointer", isDark ? "active:bg-white/5" : "active:bg-slate-100", hasBorder && (isDark ? "border-b border-[#2C2C2E]" : "border-b border-[#C6C6C8]"))}>
-        <div className={cn("w-7 h-7 rounded-md flex items-center justify-center shadow-sm", iconBg)}>
-            {icon}
+// Helper components for iOS-style Settings
+const SettingsRow = ({ icon, label, subtext, iconBg, hasChevron, isDark, textColor, onClick, rightElement, labelClassName }: any) => (
+    <div
+        onClick={onClick}
+        className={cn(
+            "flex items-center gap-4 py-4 px-4 active:bg-opacity-50 transition-all cursor-pointer group",
+            isDark ? "active:bg-white/5" : "active:bg-slate-100"
+        )}
+    >
+        <div className={cn("w-8 h-8 rounded-lg flex items-center justify-center shadow-sm shrink-0", iconBg)}>
+            {React.cloneElement(icon, { size: 20, strokeWidth: 1.5 })}
         </div>
-        <span className={cn("flex-1 text-[17px] font-normal", textColor)}>{label}</span>
-        {hasChevron && <ChevronRight className="w-5 h-5 opacity-20" />}
+        <div className="flex-1 min-w-0">
+            <p className={cn("text-[17px] font-medium leading-tight", textColor, labelClassName)}>{label}</p>
+            {subtext && <p className={cn("text-[13px] opacity-50 mt-0.5", textColor)}>{subtext}</p>}
+        </div>
+        {rightElement}
+        {hasChevron && !rightElement && <ChevronRight className="w-5 h-5 opacity-20" />}
     </div>
+);
+
+const SettingsGroup = ({ children, isDark }: any) => (
+    <div className={cn(
+        "mx-4 overflow-hidden rounded-2xl border mb-8",
+        isDark ? "bg-[#1C1C1E] border-[#2C2C2E] divide-[#2C2C2E]" : "bg-white border-[#E5E5EA] divide-[#E5E5EA] shadow-sm",
+        "divide-y"
+    )}>
+        {children}
+    </div>
+);
+
+const SectionHeader = ({ title, isDark }: any) => (
+    <p className={cn(
+        "px-8 mb-2 text-[13px] font-bold uppercase tracking-wider opacity-40",
+        isDark ? "text-white" : "text-black"
+    )}>
+        {title}
+    </p>
+);
+
+const ToggleSwitch = ({ active, onToggle, isDark }: any) => (
+    <button
+        onClick={(e) => { e.stopPropagation(); onToggle(); }}
+        className={cn(
+            "w-11 h-6 rounded-full relative transition-colors duration-200 ease-in-out",
+            active ? "bg-green-500" : (isDark ? "bg-[#39393D]" : "bg-[#E9E9EB]")
+        )}
+    >
+        <motion.div
+            animate={{ x: active ? 22 : 2 }}
+            className="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow-md"
+        />
+    </button>
 );
 
 // Main Component
@@ -78,7 +122,6 @@ const MobileDashboardDemo = ({
     const signOutMutation = useSignOut();
     const [activeTab, setActiveTab] = useState<'dashboard' | 'collabs' | 'payments' | 'profile'>('dashboard');
     const [collabSubTab, setCollabSubTab] = useState<'active' | 'pending'>('active');
-    const [profileSubTab, setProfileSubTab] = useState<'profile' | 'account' | 'collab' | 'support'>('profile');
     const [theme, setTheme] = useState<'light' | 'dark'>('dark');
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [processingDeal, setProcessingDeal] = React.useState<string | null>(null);
@@ -513,129 +556,131 @@ const MobileDashboardDemo = ({
 
                     {/* ─── OTHER TABS (Simplified for UI flow) ─── */}
                     {activeTab === 'profile' && (
-                        <div className={cn("animate-in fade-in slide-in-from-bottom-4 duration-500 pb-20 min-h-screen", isDark ? "bg-[#000000]" : "bg-[#F2F2F7]")}>
+                        <div className={cn("animate-in fade-in slide-in-from-bottom-4 duration-500 pb-32 min-h-screen", isDark ? "bg-[#000000]" : "bg-[#F2F2F7]")}>
                             {/* Header */}
-                            <div className={cn("px-6 pt-12 pb-4 flex items-baseline justify-between", isDark ? "bg-[#000000]" : "bg-[#F2F2F7]")}>
-                                <h1 className={cn("text-3xl font-black", textColor)}>Settings</h1>
+                            <div className={cn("px-6 pt-16 pb-6", isDark ? "bg-[#000000]" : "bg-[#F2F2F7]")}>
+                                <h1 className={cn("text-3xl font-black tracking-tight", textColor)}>Settings</h1>
                             </div>
 
-                            <div className="px-4 mb-6">
-                                {/* Segmented Control (Those 4 Options) */}
-                                <div className={cn("grid grid-cols-4 gap-1 p-1 rounded-xl", isDark ? "bg-[#1C1C1E]" : "bg-[#E3E3E8]")}>
-                                    {(['profile', 'account', 'collab', 'support'] as const).map((tab) => (
-                                        <button
-                                            key={tab}
-                                            onClick={() => { triggerHaptic(); setProfileSubTab(tab); }}
-                                            className={cn(
-                                                "py-1.5 rounded-[10px] text-[11px] font-bold transition-all",
-                                                profileSubTab === tab
-                                                    ? (isDark ? "bg-[#636366] text-white shadow-sm" : "bg-white text-black shadow-sm")
-                                                    : "text-slate-500"
-                                            )}
-                                        >
-                                            {tab === 'profile' ? 'Profile' : tab === 'account' ? 'Account' : tab === 'collab' ? 'Collab' : 'Support'}
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
-
-                            <div className="space-y-8 mt-2">
-                                <AnimatePresence mode="wait">
-                                    {profileSubTab === 'profile' && (
-                                        <motion.div key="profile" initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }}>
-                                            {/* Profile Entry Row */}
-                                            <div className={cn("px-4 py-3 flex items-center gap-4 active:bg-opacity-80 transition-all", isDark ? "bg-[#1C1C1E] border-t border-b border-[#2C2C2E]" : "bg-white border-t border-b border-[#C6C6C8]")}>
-                                                <div className="relative">
-                                                    <div className="w-16 h-16 rounded-full overflow-hidden border border-white/10">
-                                                        <img src={avatarUrl} alt="avatar" className="w-full h-full object-cover" />
-                                                    </div>
-                                                    <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-blue-500 rounded-full border-2 border-[#1C1C1E] flex items-center justify-center">
-                                                        <Camera className="w-3 h-3 text-white" />
-                                                    </div>
-                                                </div>
-                                                <div className="flex-1">
-                                                    <h2 className={cn("text-[17px] font-bold", textColor)}>{profile?.full_name || 'Pratyush'}</h2>
-                                                    <p className={cn("text-[13px] opacity-60", textColor)}>Verified Creator Profile • {username}</p>
-                                                </div>
-                                                <ChevronRight className="w-5 h-5 opacity-20" />
+                            <motion.div
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                className="space-y-1"
+                            >
+                                {/* PROFILE SECTION */}
+                                <div className="px-4 mb-8">
+                                    <div className={cn(
+                                        "p-5 rounded-3xl flex items-center gap-4 transition-all border",
+                                        isDark ? "bg-[#1C1C1E] border-[#2C2C2E]" : "bg-white border-[#E5E5EA] shadow-sm"
+                                    )}>
+                                        <div className="relative">
+                                            <div className="w-20 h-20 rounded-2xl overflow-hidden border border-white/10 shadow-md">
+                                                <img src={avatarUrl} alt="avatar" className="w-full h-full object-cover" />
                                             </div>
+                                            <button className="absolute -bottom-1 -right-1 w-7 h-7 bg-blue-500 rounded-full border-2 border-[#1C1C1E] flex items-center justify-center shadow-lg active:scale-90 transition-transform">
+                                                <Camera className="w-3.5 h-3.5 text-white" />
+                                            </button>
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <h2 className={cn("text-xl font-bold tracking-tight", textColor)}>{profile?.full_name || 'Pratyush'}</h2>
+                                            <p className={cn("text-[14px] opacity-40 font-medium mb-1.5", textColor)}> @{username || 'theblooming.miss'}</p>
 
-                                            <div className="mt-8">
-                                                <div className={cn("border-t border-b", isDark ? "border-[#2C2C2E] bg-[#1C1C1E]" : "border-[#C6C6C8] bg-white")}>
-                                                    <SettingsRow icon={<User className="w-4 h-4 text-white" />} iconBg="bg-blue-500" label="Personal Information" hasBorder isDark={isDark} textColor={textColor} />
-                                                    <SettingsRow icon={<Star className="w-4 h-4 text-white" />} iconBg="bg-yellow-400" label="Starred Deals" hasBorder isDark={isDark} textColor={textColor} />
-                                                    <SettingsRow icon={<Globe className="w-4 h-4 text-white" />} iconBg="bg-emerald-500" label="Public Portfolio" isDark={isDark} textColor={textColor} />
-                                                </div>
+                                            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-blue-500/10 border border-blue-500/20">
+                                                <ShieldCheck className="w-3 h-3 text-blue-500" />
+                                                <span className="text-[10px] font-black uppercase tracking-wider text-blue-500">Verified Creator</span>
                                             </div>
-                                        </motion.div>
-                                    )}
-
-                                    {profileSubTab === 'account' && (
-                                        <motion.div key="account" initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }}>
-                                            <div className={cn("border-t border-b", isDark ? "border-[#2C2C2E] bg-[#1C1C1E]" : "border-[#C6C6C8] bg-white")}>
-                                                <SettingsRow icon={<Key className="w-4 h-4 text-white" />} iconBg="bg-blue-400" label="Account Security" hasBorder isDark={isDark} textColor={textColor} />
-                                                <SettingsRow icon={<Lock className="w-4 h-4 text-white" />} iconBg="bg-blue-600" label="Privacy" hasBorder isDark={isDark} textColor={textColor} />
-                                                <SettingsRow icon={<CreditCard className="w-4 h-4 text-white" />} iconBg="bg-emerald-500" label="Payments & Payouts" hasBorder isDark={isDark} textColor={textColor} />
-                                                <SettingsRow icon={<Smartphone className="w-4 h-4 text-white" />} iconBg="bg-[#8E8E93]" label="Linked Devices" isDark={isDark} textColor={textColor} />
-                                            </div>
-                                        </motion.div>
-                                    )}
-
-                                    {profileSubTab === 'collab' && (
-                                        <motion.div key="collab" initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }}>
-                                            <div className={cn("border-t border-b", isDark ? "border-[#2C2C2E] bg-[#1C1C1E]" : "border-[#C6C6C8] bg-white")}>
-                                                <SettingsRow icon={<Briefcase className="w-4 h-4 text-white" />} iconBg="bg-orange-500" label="Collaboration History" hasBorder isDark={isDark} textColor={textColor} />
-                                                <SettingsRow icon={<Zap className="w-4 h-4 text-white" />} iconBg="bg-yellow-500" label="Active Negotiations" hasBorder isDark={isDark} textColor={textColor} />
-                                                <SettingsRow icon={<ShieldCheck className="w-4 h-4 text-white" />} iconBg="bg-blue-500" label="Armour Verification" isDark={isDark} textColor={textColor} />
-                                            </div>
-                                        </motion.div>
-                                    )}
-
-                                    {profileSubTab === 'support' && (
-                                        <motion.div key="support" initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }}>
-                                            <div className={cn("border-t border-b", isDark ? "border-[#2C2C2E] bg-[#1C1C1E]" : "border-[#C6C6C8] bg-white")}>
-                                                <SettingsRow icon={<Info className="w-4 h-4 text-white" />} iconBg="bg-blue-400" label="Help & FAQ" hasBorder isDark={isDark} textColor={textColor} />
-                                                <SettingsRow icon={<MessageSquare className="w-4 h-4 text-white" />} iconBg="bg-emerald-600" label="Contact Support" hasBorder isDark={isDark} textColor={textColor} />
-                                                <SettingsRow icon={<Heart className="w-4 h-4 text-white" />} iconBg="bg-rose-500" label="Tell a Friend" isDark={isDark} textColor={textColor} />
-                                            </div>
-                                        </motion.div>
-                                    )}
-                                </AnimatePresence>
-
-                                {/* Common App Config */}
-                                <div>
-                                    <div className={cn("border-t border-b", isDark ? "border-[#2C2C2E] bg-[#1C1C1E]" : "border-[#C6C6C8] bg-white")}>
-                                        <button
-                                            onClick={() => { triggerHaptic(); setTheme(isDark ? 'light' : 'dark'); }}
-                                            className="w-full"
-                                        >
-                                            <SettingsRow icon={isDark ? <Sun className="w-4 h-4 text-white" /> : <Moon className="w-4 h-4 text-white" />} iconBg="bg-[#8E8E93]" label={`Dark Mode: ${isDark ? 'On' : 'Off'}`} hasBorder isDark={isDark} textColor={textColor} />
-                                        </button>
-                                        <SettingsRow icon={<Bell className="w-4 h-4 text-white" />} iconBg="bg-red-500" label="Notifications" isDark={isDark} textColor={textColor} />
+                                        </div>
+                                        <ChevronRight className="w-5 h-5 opacity-20" />
                                     </div>
                                 </div>
 
-                                {/* Danger Group */}
-                                <div>
-                                    <div className={cn("border-t border-b", isDark ? "border-[#2C2C2E] bg-[#1C1C1E]" : "border-[#C6C6C8] bg-white")}>
-                                        <button
+                                {/* ACCOUNT GROUP */}
+                                <SectionHeader title="Account" isDark={isDark} />
+                                <SettingsGroup isDark={isDark}>
+                                    <SettingsRow
+                                        icon={<User />} iconBg="bg-blue-500"
+                                        label="Personal Information"
+                                        subtext="Manage your name and contact info"
+                                        isDark={isDark} textColor={textColor}
+                                    />
+                                    <SettingsRow
+                                        icon={<Globe />} iconBg="bg-emerald-500"
+                                        label="Public Portfolio"
+                                        subtext="View your public creator page"
+                                        isDark={isDark} textColor={textColor}
+                                    />
+                                    <SettingsRow
+                                        icon={<Star />} iconBg="bg-amber-400"
+                                        label="Starred Deals"
+                                        subtext="Your favorite collaboration offers"
+                                        isDark={isDark} textColor={textColor}
+                                    />
+                                    <SettingsRow
+                                        icon={<Link2 />} iconBg="bg-violet-500"
+                                        label="Collab Link"
+                                        subtext="Manage your collaboration intake link"
+                                        isDark={isDark} textColor={textColor}
+                                    />
+                                </SettingsGroup>
+
+                                {/* PREFERENCES GROUP */}
+                                <SectionHeader title="Preferences" isDark={isDark} />
+                                <SettingsGroup isDark={isDark}>
+                                    <SettingsRow
+                                        icon={isDark ? <Sun /> : <Moon />} iconBg="bg-slate-500"
+                                        label="Dark Mode"
+                                        subtext="Enhance visual comfort"
+                                        isDark={isDark} textColor={textColor}
+                                        rightElement={<ToggleSwitch active={isDark} onToggle={() => { triggerHaptic(); setTheme(isDark ? 'light' : 'dark'); }} isDark={isDark} />}
+                                    />
+                                    <SettingsRow
+                                        icon={<Bell />} iconBg="bg-rose-500"
+                                        label="Notifications"
+                                        subtext="Manage deal alerts and updates"
+                                        isDark={isDark} textColor={textColor}
+                                    />
+                                </SettingsGroup>
+
+                                {/* SECURITY & SUPPORT GROUP */}
+                                <SectionHeader title="Support" isDark={isDark} />
+                                <SettingsGroup isDark={isDark}>
+                                    <SettingsRow
+                                        icon={<ShieldCheck />} iconBg="bg-blue-600"
+                                        label="Armour Verification"
+                                        subtext="Identity and account protection"
+                                        isDark={isDark} textColor={textColor}
+                                    />
+                                    <SettingsRow
+                                        icon={<Info />} iconBg="bg-slate-400"
+                                        label="About Creator Armour"
+                                        subtext="Version 2.4.1 (Stable)"
+                                        isDark={isDark} textColor={textColor}
+                                    />
+                                </SettingsGroup>
+
+                                {/* DANGER ZONE */}
+                                <div className="mt-8">
+                                    <SettingsGroup isDark={isDark}>
+                                        <SettingsRow
+                                            icon={<LogOut />} iconBg="bg-red-500/10"
+                                            label="Log Out"
+                                            labelClassName="text-red-500 font-bold"
+                                            isDark={isDark} textColor={textColor}
+                                            hasChevron={false}
                                             onClick={() => { triggerHaptic(); signOutMutation.mutate(); }}
-                                            className="w-full"
-                                        >
-                                            <div className="px-4 py-3.5 flex items-center justify-center text-red-500 font-bold active:opacity-60 transition-all">
-                                                Log Out
-                                            </div>
-                                        </button>
-                                    </div>
+                                        />
+                                    </SettingsGroup>
                                 </div>
 
-                                <div className="text-center pb-12">
-                                    <p className="text-[11px] font-medium opacity-30 uppercase tracking-widest" style={{ color: isDark ? '#FFFFFF' : '#000000' }}>
-                                        Creator Armour for iOS<br />
-                                        Version 2.4.1 (Stable)
-                                    </p>
+                                <div className="text-center py-6">
+                                    <div className="inline-flex items-center gap-2 opacity-20">
+                                        <ShieldCheck className={cn("w-4 h-4", textColor)} />
+                                        <p className={cn("text-[11px] font-black uppercase tracking-[0.2em]", textColor)}>
+                                            Secured by Creator Armour
+                                        </p>
+                                    </div>
                                 </div>
-                            </div>
+                            </motion.div>
                         </div>
                     )}
 
@@ -924,14 +969,14 @@ const MobileDashboardDemo = ({
                     <div className="max-w-md md:max-w-2xl mx-auto flex items-center justify-between px-6 py-3 pb-safe" style={{ paddingBottom: 'max(env(safe-area-inset-bottom), 16px)' }}>
                         <motion.button whileTap={{ scale: 0.94 }} onClick={() => { triggerHaptic(); setActiveTab('dashboard'); }} className="flex flex-col items-center gap-1 w-14">
                             <LayoutDashboard className={cn('w-[22px] h-[22px]', activeTab === 'dashboard' ? (isDark ? 'text-white' : 'text-slate-900') : secondaryTextColor)} />
-                            <span className={cn('text-[10px] font-medium tracking-tight', activeTab === 'dashboard' ? (isDark ? 'text-white' : 'text-slate-900') : secondaryTextColor)}>Dashboard</span>
+                            <span className={cn('text-[10px] tracking-tight', activeTab === 'dashboard' ? (isDark ? 'text-white font-bold' : 'text-slate-900 font-bold') : cn('font-medium', secondaryTextColor))}>Dashboard</span>
                         </motion.button>
 
                         <motion.button whileTap={{ scale: 0.94 }} onClick={() => { triggerHaptic(); setActiveTab('collabs'); }} className="flex flex-col items-center gap-1 w-14 relative">
                             <div className="relative">
                                 <Briefcase className={cn('w-[22px] h-[22px]', activeTab === 'collabs' ? (isDark ? 'text-white' : 'text-slate-900') : secondaryTextColor)} />
                             </div>
-                            <span className={cn('text-[10px] font-medium tracking-tight', activeTab === 'collabs' ? (isDark ? 'text-white' : 'text-slate-900') : secondaryTextColor)}>Collabs</span>
+                            <span className={cn('text-[10px] tracking-tight', activeTab === 'collabs' ? (isDark ? 'text-white font-bold' : 'text-slate-900 font-bold') : cn('font-medium', secondaryTextColor))}>Collabs</span>
                         </motion.button>
 
                         {/* Middle Action: + Collab Link */}
@@ -951,12 +996,12 @@ const MobileDashboardDemo = ({
 
                         <motion.button whileTap={{ scale: 0.94 }} onClick={() => { triggerHaptic(); setActiveTab('payments'); }} className="flex flex-col items-center gap-1 w-14">
                             <CreditCard className={cn('w-[22px] h-[22px]', activeTab === 'payments' ? (isDark ? 'text-white' : 'text-slate-900') : secondaryTextColor)} />
-                            <span className={cn('text-[10px] font-medium tracking-tight', activeTab === 'payments' ? (isDark ? 'text-white' : 'text-slate-900') : secondaryTextColor)}>Payments</span>
+                            <span className={cn('text-[10px] tracking-tight', activeTab === 'payments' ? (isDark ? 'text-white font-bold' : 'text-slate-900 font-bold') : cn('font-medium', secondaryTextColor))}>Payments</span>
                         </motion.button>
 
                         <motion.button whileTap={{ scale: 0.94 }} onClick={() => { triggerHaptic(); setActiveTab('profile'); }} className="flex flex-col items-center gap-1 w-14">
                             <User className={cn('w-[22px] h-[22px]', activeTab === 'profile' ? (isDark ? 'text-white' : 'text-slate-900') : secondaryTextColor)} />
-                            <span className={cn('text-[10px] font-medium tracking-tight', activeTab === 'profile' ? (isDark ? 'text-white' : 'text-slate-900') : secondaryTextColor)}>Profile</span>
+                            <span className={cn('text-[10px] tracking-tight', activeTab === 'profile' ? (isDark ? 'text-white font-bold' : 'text-slate-900 font-bold') : cn('font-medium', secondaryTextColor))}>Profile</span>
                         </motion.button>
                     </div>
                 </div>
