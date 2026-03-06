@@ -135,11 +135,11 @@ const RESERVED_USERNAMES = [
 ];
 
 const DELIVERABLE_OPTIONS = [
-  { label: 'Reel', value: 'Instagram Reel', icon: <Clapperboard className="h-3.5 w-3.5 text-violet-300 inline-block" /> },
-  { label: 'Post', value: 'Post', icon: <ImageIcon className="h-3.5 w-3.5 text-violet-300 inline-block" /> },
-  { label: 'Story', value: 'Story', icon: <FileText className="h-3.5 w-3.5 text-violet-300 inline-block" /> },
-  { label: 'YouTube', value: 'YouTube Video', icon: <Youtube className="h-3.5 w-3.5 text-violet-300 inline-block" /> },
-  { label: 'Custom', value: 'Custom', icon: <Target className="h-3.5 w-3.5 text-violet-300 inline-block" /> },
+  { label: 'Reel', value: 'Instagram Reel', icon: <Clapperboard className="h-3.5 w-3.5 text-slate-400 inline-block" /> },
+  { label: 'Post', value: 'Post', icon: <ImageIcon className="h-3.5 w-3.5 text-slate-400 inline-block" /> },
+  { label: 'Story', value: 'Story', icon: <FileText className="h-3.5 w-3.5 text-slate-400 inline-block" /> },
+  { label: 'YouTube', value: 'YouTube Video', icon: <Youtube className="h-3.5 w-3.5 text-slate-400 inline-block" /> },
+  { label: 'Custom', value: 'Custom', icon: <Target className="h-3.5 w-3.5 text-slate-400 inline-block" /> },
 ];
 
 // const CAMPAIGN_CATEGORY_OPTIONS = [
@@ -1070,8 +1070,8 @@ const CollabLinkLanding = () => {
       ? 'Add final details before sending'
       : 'Contract & payment protected';
   const ctaIcon = ctaStep === 'send'
-    ? <Send className="h-4 w-4 text-violet-300" />
-    : <Rocket className="h-4 w-4 text-violet-300" />;
+    ? <Send className="h-4 w-4 text-slate-400" />
+    : <Rocket className="h-4 w-4 text-slate-400" />;
   const isFinalSubmissionStep = ctaStep === 'send';
   const showSubmittingTrust = submitting && isFinalSubmissionStep;
   const submittingChecklist = [
@@ -1193,7 +1193,7 @@ const CollabLinkLanding = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 flex items-center justify-center">
+      <div className="min-h-screen bg-black flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-white" />
       </div>
     );
@@ -1203,7 +1203,7 @@ const CollabLinkLanding = () => {
     const isNotFoundError = /not found/i.test(error);
     const errorTitle = isNotFoundError ? 'Creator Not Found' : 'Unable to Load Profile';
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 text-white flex items-center justify-center">
+      <div className="min-h-screen bg-black text-white flex items-center justify-center">
         <div className="text-center max-w-md mx-auto px-4">
           <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-lg p-8">
             <h1 className="text-2xl font-bold mb-4">{errorTitle}</h1>
@@ -1222,7 +1222,7 @@ const CollabLinkLanding = () => {
                   setLoading(true);
                   window.location.reload();
                 }}
-                className="bg-purple-600 hover:bg-purple-700"
+                className="bg-white text-black hover:bg-slate-200"
               >
                 Try Again
               </Button>
@@ -1407,7 +1407,7 @@ const CollabLinkLanding = () => {
         }).filter(Boolean),
       }} />
 
-      <div className="min-h-screen bg-[#0E061E] text-white selection:bg-purple-500/30">
+      <div className="min-h-screen bg-[#0A0B0D] text-white selection:bg-purple-500/30">
         <div className="container mx-auto px-4 pt-4 pb-0 md:py-6 md:pb-28 max-w-lg md:max-w-[960px] relative">
           {/* Header - Deal Desk Intake Portal */}
           <div className="mb-4 pt-2 md:mb-8 md:pt-4">
@@ -1447,7 +1447,7 @@ const CollabLinkLanding = () => {
           {/* Creator Performance Snapshot */}
           <div className={`hidden md:block mb-12 backdrop-blur-md rounded-xl p-6 ${elevationLevel2}`}>
             <h3 className={`text-base font-semibold text-white ${typeSectionTitle}`}>Audience Fit Snapshot</h3>
-            <p className={`${typeHelper} text-violet-100/70 mt-1 mb-4`}>
+            <p className={`${typeHelper} text-slate-100/70 mt-1 mb-4`}>
               Helps brands align campaigns with audience size & content style.
             </p>
             <div className="space-y-8">
@@ -1540,7 +1540,7 @@ const CollabLinkLanding = () => {
                 {genderRows && (
                   <div className="rounded-lg border border-white/10 bg-white/[0.03] p-3">
                     <p className="text-xs text-white/60 mb-1">Gender</p>
-                    <ul className="text-sm text-violet-100/90 space-y-0.5">
+                    <ul className="text-sm text-slate-100/90 space-y-0.5">
                       {genderRows.map((row, idx) => (
                         <li key={`${row}-${idx}`}>• {row}</li>
                       ))}
@@ -1552,36 +1552,36 @@ const CollabLinkLanding = () => {
                   <div className="rounded-lg border border-white/10 bg-white/[0.03] p-3">
                     <p className="text-xs text-white/60 mb-1">Top Cities</p>
                     {audienceCities.length === 1 ? (
-                      <p className="text-sm text-violet-100/90">{audienceCities[0]}</p>
+                      <p className="text-sm text-slate-100/90">{audienceCities[0]}</p>
                     ) : (
-                      <ul className="text-sm text-violet-100/90 space-y-0.5">
+                      <ul className="text-sm text-slate-100/90 space-y-0.5">
                         {audienceCities.map((city, idx) => (
                           <li key={`${city}-${idx}`}>• {city}</li>
                         ))}
                       </ul>
                     )}
-                    <p className="text-xs text-violet-100/70 mt-1">{audienceRelevanceNote}</p>
+                    <p className="text-xs text-slate-100/70 mt-1">{audienceRelevanceNote}</p>
                   </div>
                 )}
 
                 {creator.audience_age_range && (
                   <div className="rounded-lg border border-white/10 bg-white/[0.03] p-3">
                     <p className="text-xs text-white/60 mb-1">Age</p>
-                    <p className="text-sm text-violet-100/90">{creator.audience_age_range}</p>
+                    <p className="text-sm text-slate-100/90">{creator.audience_age_range}</p>
                   </div>
                 )}
 
                 {creator.posting_frequency && (
                   <div className="rounded-lg border border-white/10 bg-white/[0.03] p-3">
                     <p className="text-xs text-white/60 mb-1">Posting Frequency</p>
-                    <p className="text-sm text-violet-100/90">{creator.posting_frequency}</p>
+                    <p className="text-sm text-slate-100/90">{creator.posting_frequency}</p>
                   </div>
                 )}
 
                 {audienceLanguage && (
                   <div className="rounded-lg border border-white/10 bg-white/[0.03] p-3 md:col-span-2">
                     <p className="text-xs text-white/60 mb-1">Language</p>
-                    <p className="text-sm text-violet-100/90">{audienceLanguage}</p>
+                    <p className="text-sm text-slate-100/90">{audienceLanguage}</p>
                   </div>
                 )}
               </div>
@@ -1595,7 +1595,7 @@ const CollabLinkLanding = () => {
                 {recentCampaignTypes.map((campaignType, idx) => (
                   <span
                     key={`${campaignType}-${idx}`}
-                    className="inline-flex items-center rounded-full border border-white/30 bg-white/[0.04] px-3.5 py-2 text-sm text-violet-100"
+                    className="inline-flex items-center rounded-full border border-white/30 bg-white/[0.04] px-3.5 py-2 text-sm text-slate-100"
                   >
                     {campaignType}
                   </span>
@@ -1610,7 +1610,7 @@ const CollabLinkLanding = () => {
             {/* Creator Bio & Platforms - Indexable Content */}
             <div className="bg-white/[0.07] backdrop-blur-xl rounded-xl p-6 border border-white/15">
               {creatorBio && (
-                <p className="text-violet-100/85 leading-relaxed mb-4">
+                <p className="text-slate-100/85 leading-relaxed mb-4">
                   {creatorBio}
                 </p>
               )}
@@ -1624,7 +1624,7 @@ const CollabLinkLanding = () => {
                     {creator.platforms.map((platform, idx) => {
                       const isInstagram = platform.name.toLowerCase() === 'instagram';
                       return (
-                        <div key={idx} className="flex items-center gap-3 text-violet-100/85">
+                        <div key={idx} className="flex items-center gap-3 text-slate-100/85">
                           {getPlatformIcon(platform.name)}
                           <div className="flex-1">
                             <p className="font-medium text-white">{platform.name}</p>
@@ -1633,18 +1633,18 @@ const CollabLinkLanding = () => {
                                 href={`https://instagram.com/${platform.handle.replace('@', '')}`}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="text-sm text-violet-200 hover:text-white transition-colors flex items-center gap-1"
+                                className="text-sm text-slate-200 hover:text-white transition-colors flex items-center gap-1"
                               >
                                 @{platform.handle.replace('@', '')}
                                 <ExternalLink className="h-3 w-3 opacity-60" />
                               </a>
                             ) : (
-                              <p className="text-sm text-violet-200/90">
+                              <p className="text-sm text-slate-200/90">
                                 {platform.handle}
                               </p>
                             )}
                             {platform.followers && (
-                              <p className="text-xs text-violet-200/65 mt-1">
+                              <p className="text-xs text-slate-200/65 mt-1">
                                 {platform.followers >= 1000
                                   ? `${(platform.followers / 1000).toFixed(1)}K followers`
                                   : `${platform.followers} followers`}
@@ -1669,7 +1669,7 @@ const CollabLinkLanding = () => {
                   )}
                   {creator.content_niches && creator.content_niches.length > 0 && (
                     <div>
-                      <p className="text-xs text-purple-400 mb-1">Content niches</p>
+                      <p className="text-xs text-slate-400 mb-1">Content niches</p>
                       <div className="flex flex-wrap gap-2">
                         {creator.content_niches.map((niche, i) => (
                           <Badge key={i} variant="secondary" className="bg-white/10 text-purple-200 border-white/20">
@@ -1690,7 +1690,7 @@ const CollabLinkLanding = () => {
                         <ExternalLink className="h-4 w-4 shrink-0" />
                         Media kit
                       </a>
-                      <p className="text-xs text-violet-100/70 mt-1">Ready for brand collaborations</p>
+                      <p className="text-xs text-slate-100/70 mt-1">Ready for brand collaborations</p>
                     </div>
                   )}
                 </div>
@@ -1736,7 +1736,7 @@ const CollabLinkLanding = () => {
             <button
               type="button"
               onClick={() => setShowMobileAudienceDetails((prev) => !prev)}
-              className="mt-3 w-full rounded-lg border border-white/20 bg-white/[0.04] px-3 py-2 text-sm font-semibold text-violet-100"
+              className="mt-3 w-full rounded-lg border border-white/20 bg-white/[0.04] px-3 py-2 text-sm font-semibold text-slate-100"
             >
               {showMobileAudienceDetails ? 'Hide Audience Details' : 'View Audience Details'}
             </button>
@@ -1775,7 +1775,7 @@ const CollabLinkLanding = () => {
                   </div>
                 )}
                 {hasEngagementAndRegion && (
-                  <p className="text-xs text-violet-100/75 px-1">
+                  <p className="text-xs text-slate-100/75 px-1">
                     Brands in similar categories have collaborated successfully.
                   </p>
                 )}
@@ -1793,10 +1793,10 @@ const CollabLinkLanding = () => {
           <p className="md:hidden text-center text-[10px] font-bold text-emerald-400 uppercase tracking-[0.1em] mb-1">
             Used by 50+ brands to close deals safely
           </p>
-          <p className="md:hidden text-center text-xs text-violet-100/65 mb-1">
+          <p className="md:hidden text-center text-xs text-slate-100/65 mb-1">
             Takes less than 20 seconds
           </p>
-          <div className="md:hidden flex items-center justify-center gap-1.5 mb-3 text-[10px] text-violet-100/70">
+          <div className="md:hidden flex items-center justify-center gap-1.5 mb-3 text-[10px] text-slate-100/70">
             <ShieldCheck className="h-3.5 w-3.5 text-emerald-400" />
             <span>Protected by contract & payment tracking</span>
           </div>
@@ -1809,9 +1809,9 @@ const CollabLinkLanding = () => {
 
             <div className="space-y-6 md:space-y-8">
               {/* Deal Type */}
-              <div className="bg-white/[0.06] rounded-2xl p-4 border border-white/15 transition-all focus-within:ring-2 focus-within:ring-purple-500/30">
+              <div className="bg-white/[0.06] rounded-2xl p-4 border border-white/15 transition-all focus-within:ring-2 focus-within:ring-white/20">
                 <div className="flex items-center justify-between gap-3">
-                  <span className={`inline-flex items-center gap-2 text-sm text-violet-100/90 ${typeLabel}`}><Target className="h-4 w-4 text-violet-400" />Deal Type</span>
+                  <span className={`inline-flex items-center gap-2 text-sm text-slate-100/90 ${typeLabel}`}><Target className="h-4 w-4 text-slate-400" />Deal Type</span>
                   <Select
                     value={collabType}
                     onValueChange={(value: CollabType) => {
@@ -1830,12 +1830,12 @@ const CollabLinkLanding = () => {
                     <SelectContent>
                       <SelectItem value="paid"><span className="inline-flex items-center gap-2"><Wallet className="h-4 w-4 text-amber-400" />Paid Deal</span></SelectItem>
                       <SelectItem value="barter"><span className="inline-flex items-center gap-2"><Package className="h-4 w-4 text-amber-400" />Product Exchange</span></SelectItem>
-                      <SelectItem value="hybrid"><span className="inline-flex items-center gap-2"><RefreshCcw className="h-4 w-4 text-violet-400" />Cash + Product</span></SelectItem>
+                      <SelectItem value="hybrid"><span className="inline-flex items-center gap-2"><RefreshCcw className="h-4 w-4 text-slate-400" />Cash + Product</span></SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
                 {collabType === 'barter' && (
-                  <p className="text-xs text-violet-100/75 mt-2">
+                  <p className="text-xs text-slate-100/75 mt-2">
                     Creator may request partial cash + product
                   </p>
                 )}
@@ -1846,17 +1846,17 @@ const CollabLinkLanding = () => {
                 aria-hidden={collabType !== 'paid'}
                 className={`overflow-hidden transition-all duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] ${collabType === 'paid' ? 'opacity-100 max-h-44 translate-y-0' : 'opacity-0 max-h-0 -translate-y-2 pointer-events-none'}`}
               >
-                <div className="bg-white/[0.06] rounded-2xl p-4 border border-white/15 transition-all focus-within:ring-2 focus-within:ring-purple-500/30">
+                <div className="bg-white/[0.06] rounded-2xl p-4 border border-white/15 transition-all focus-within:ring-2 focus-within:ring-white/20">
                   <div className="flex items-center justify-between">
-                    <span className="inline-flex items-center gap-2 text-sm font-semibold text-violet-100/90"><IndianRupee className="h-4 w-4 text-amber-400" />Proposed Budget</span>
+                    <span className="inline-flex items-center gap-2 text-sm font-semibold text-slate-100/90"><IndianRupee className="h-4 w-4 text-amber-400" />Proposed Budget</span>
                     <div className="relative flex items-center">
-                      <span className="text-violet-200/70 font-bold mr-1">₹</span>
+                      <span className="text-slate-200/70 font-bold mr-1">₹</span>
                       <input
                         type="number"
                         value={exactBudget}
                         onChange={(e) => setExactBudget(e.target.value)}
                         placeholder="3000"
-                        className="bg-transparent border-0 text-right w-24 focus:ring-0 text-white font-bold p-0 text-base placeholder:text-violet-200/55"
+                        className="bg-transparent border-0 text-right w-24 focus:ring-0 text-white font-bold p-0 text-base placeholder:text-slate-200/55"
                       />
                     </div>
                   </div>
@@ -1878,22 +1878,22 @@ const CollabLinkLanding = () => {
                 aria-hidden={collabType !== 'barter'}
                 className={`overflow-hidden transition-all duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] ${collabType === 'barter' ? 'opacity-100 max-h-60 translate-y-0' : 'opacity-0 max-h-0 -translate-y-2 pointer-events-none'}`}
               >
-                <div className="bg-white/[0.06] rounded-2xl p-4 border border-white/15 transition-all focus-within:ring-2 focus-within:ring-purple-500/30">
+                <div className="bg-white/[0.06] rounded-2xl p-4 border border-white/15 transition-all focus-within:ring-2 focus-within:ring-white/20">
                   <div className="flex items-center justify-between">
-                    <span className="inline-flex items-center gap-2 text-sm font-semibold text-violet-100/90"><Package className="h-4 w-4 text-amber-400" />Estimated Product / Service Value</span>
+                    <span className="inline-flex items-center gap-2 text-sm font-semibold text-slate-100/90"><Package className="h-4 w-4 text-amber-400" />Estimated Product / Service Value</span>
                     <div className="relative flex items-center">
-                      <span className="text-violet-200/70 font-bold mr-1">₹</span>
+                      <span className="text-slate-200/70 font-bold mr-1">₹</span>
                       <input
                         type="number"
                         value={barterValue}
                         onChange={(e) => setBarterValue(e.target.value)}
                         placeholder="3000"
-                        className="bg-transparent border-0 text-right w-24 focus:ring-0 text-white font-bold p-0 text-base placeholder:text-violet-200/55"
+                        className="bg-transparent border-0 text-right w-24 focus:ring-0 text-white font-bold p-0 text-base placeholder:text-slate-200/55"
                       />
                     </div>
                   </div>
-                  <p className="text-xs text-violet-100/65 mt-2">Helps creator evaluate collaboration value.</p>
-                  <p className="text-xs text-violet-100/60 mt-1">Used only for collaboration fairness.</p>
+                  <p className="text-xs text-slate-100/65 mt-2">Helps creator evaluate collaboration value.</p>
+                  <p className="text-xs text-slate-100/60 mt-1">Used only for collaboration fairness.</p>
                 </div>
               </div>
 
@@ -1901,42 +1901,42 @@ const CollabLinkLanding = () => {
                 aria-hidden={!isHybridCollab(collabType)}
                 className={`overflow-hidden transition-all duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] ${isHybridCollab(collabType) ? 'opacity-100 max-h-80 translate-y-0' : 'opacity-0 max-h-0 -translate-y-2 pointer-events-none'}`}
               >
-                <div className="bg-white/[0.06] rounded-2xl p-4 border border-white/15 space-y-3 transition-all focus-within:ring-2 focus-within:ring-purple-500/30">
+                <div className="bg-white/[0.06] rounded-2xl p-4 border border-white/15 space-y-3 transition-all focus-within:ring-2 focus-within:ring-white/20">
                   <div className="flex items-center justify-between">
-                    <span className="inline-flex items-center gap-2 text-sm font-semibold text-violet-100/90"><IndianRupee className="h-4 w-4 text-amber-400" />Proposed Budget</span>
+                    <span className="inline-flex items-center gap-2 text-sm font-semibold text-slate-100/90"><IndianRupee className="h-4 w-4 text-amber-400" />Proposed Budget</span>
                     <div className="relative flex items-center">
-                      <span className="text-violet-200/70 font-bold mr-1">₹</span>
+                      <span className="text-slate-200/70 font-bold mr-1">₹</span>
                       <input
                         type="number"
                         value={exactBudget}
                         onChange={(e) => setExactBudget(e.target.value)}
                         placeholder="3000"
-                        className="bg-transparent border-0 text-right w-24 focus:ring-0 text-white font-bold p-0 text-base placeholder:text-violet-200/55"
+                        className="bg-transparent border-0 text-right w-24 focus:ring-0 text-white font-bold p-0 text-base placeholder:text-slate-200/55"
                       />
                     </div>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="inline-flex items-center gap-2 text-sm font-semibold text-violet-100/90"><Package className="h-4 w-4 text-amber-400" />Estimated Product / Service Value</span>
+                    <span className="inline-flex items-center gap-2 text-sm font-semibold text-slate-100/90"><Package className="h-4 w-4 text-amber-400" />Estimated Product / Service Value</span>
                     <div className="relative flex items-center">
-                      <span className="text-violet-200/70 font-bold mr-1">₹</span>
+                      <span className="text-slate-200/70 font-bold mr-1">₹</span>
                       <input
                         type="number"
                         value={barterValue}
                         onChange={(e) => setBarterValue(e.target.value)}
                         placeholder="3000"
-                        className="bg-transparent border-0 text-right w-24 focus:ring-0 text-white font-bold p-0 text-base placeholder:text-violet-200/55"
+                        className="bg-transparent border-0 text-right w-24 focus:ring-0 text-white font-bold p-0 text-base placeholder:text-slate-200/55"
                       />
                     </div>
                   </div>
-                  <p className="text-xs text-violet-100/65">Helps creator evaluate collaboration value.</p>
-                  <p className="text-xs text-violet-100/60">Used only for collaboration fairness.</p>
+                  <p className="text-xs text-slate-100/65">Helps creator evaluate collaboration value.</p>
+                  <p className="text-xs text-slate-100/60">Used only for collaboration fairness.</p>
                 </div>
               </div>
 
               {/* Deliverables */}
               <div>
                 <div className="flex items-center justify-between mb-3">
-                  <span className="inline-flex items-center gap-2 text-sm font-semibold text-violet-100/90"><Clapperboard className="h-4 w-4 text-violet-400" />Content Requested</span>
+                  <span className="inline-flex items-center gap-2 text-sm font-semibold text-slate-100/90"><Clapperboard className="h-4 w-4 text-slate-400" />Content Requested</span>
                 </div>
                 <div className="flex flex-wrap items-center gap-2 py-0.5">
                   {DELIVERABLE_OPTIONS.filter((item) => item.value !== 'Custom').map((item) => {
@@ -1946,21 +1946,21 @@ const CollabLinkLanding = () => {
                         key={item.label}
                         type="button"
                         onClick={() => handleDeliverableToggle(item.value)}
-                        className={`shrink-0 px-4 py-2 rounded-xl text-xs font-bold transition-all border ${active ? 'bg-gradient-to-r from-fuchsia-500/80 to-violet-500/80 text-white border-fuchsia-300/70 shadow-lg shadow-fuchsia-900/50 ring-2 ring-fuchsia-400/40' : 'bg-white/[0.06] text-violet-100/80 border-white/25 hover:bg-white/[0.12]'}`}
+                        className={`shrink-0 px-4 py-2 rounded-xl text-xs font-bold transition-all border ${active ? 'bg-gradient-to-r from-fuchsia-500/80 to-violet-500/80 text-white border-fuchsia-300/70 shadow-lg shadow-fuchsia-900/50 ring-2 ring-fuchsia-400/40' : 'bg-white/[0.06] text-slate-100/80 border-white/25 hover:bg-white/[0.12]'}`}
                       >
                         <span className="mr-1">{item.icon}</span>{item.label}
                       </button>
                     );
                   })}
                 </div>
-                <p className="text-xs text-violet-100/65 mt-2">Custom deliverables can be discussed</p>
+                <p className="text-xs text-slate-100/65 mt-2">Custom deliverables can be discussed</p>
               </div>
 
               {/* Timeline */}
-              <div className="bg-white/[0.06] rounded-2xl p-4 border border-white/15 transition-all focus-within:ring-2 focus-within:ring-purple-500/30">
+              <div className="bg-white/[0.06] rounded-2xl p-4 border border-white/15 transition-all focus-within:ring-2 focus-within:ring-white/20">
                 <div className="flex flex-col gap-4">
                   <div className="flex items-center justify-between">
-                    <span className="inline-flex items-center gap-2 text-sm font-semibold text-violet-100/90"><Calendar className="h-4 w-4 text-slate-300" />Campaign Go-Live Date</span>
+                    <span className="inline-flex items-center gap-2 text-sm font-semibold text-slate-100/90"><Calendar className="h-4 w-4 text-slate-300" />Campaign Go-Live Date</span>
                     <input
                       type="date"
                       value={deadline}
@@ -1970,7 +1970,7 @@ const CollabLinkLanding = () => {
                   </div>
 
                   <div className="flex items-center justify-between border-t border-white/10 pt-4">
-                    <span className="inline-flex items-center gap-2 text-sm font-semibold text-violet-100/90"><Clock className="h-4 w-4 text-orange-300" />Proposal Validity Period</span>
+                    <span className="inline-flex items-center gap-2 text-sm font-semibold text-slate-100/90"><Clock className="h-4 w-4 text-orange-300" />Proposal Validity Period</span>
                     <input
                       type="date"
                       value={offerExpiry}
@@ -1983,8 +1983,8 @@ const CollabLinkLanding = () => {
 
               {/* Message -> Campaign Goal */}
               <div id="campaign-goal-field">
-                <label className="mb-2 inline-flex items-center gap-2 text-[10px] font-bold text-violet-200/65 uppercase tracking-wider">
-                  <Target className="h-3.5 w-3.5 text-violet-400" />
+                <label className="mb-2 inline-flex items-center gap-2 text-[10px] font-bold text-slate-200/65 uppercase tracking-wider">
+                  <Target className="h-3.5 w-3.5 text-slate-400" />
                   Campaign Goal <span className="text-red-400 ml-0.5">*</span>
                 </label>
                 <Textarea
@@ -1994,7 +1994,7 @@ const CollabLinkLanding = () => {
                     if (errors.campaignDescription) setErrors({ ...errors, campaignDescription: '' });
                   }}
                   placeholder={`Briefly outline the campaign goal... (min 20 characters)`}
-                  className={`bg-white/[0.06] border-white/15 rounded-2xl min-h-[100px] text-white placeholder:text-violet-200/45 focus:ring-purple-500/30 text-sm leading-relaxed ${errors.campaignDescription ? 'border-red-400/50' : ''}`}
+                  className={`bg-white/[0.06] border-white/15 rounded-2xl min-h-[100px] text-white placeholder:text-slate-200/45 focus:ring-purple-500/30 text-sm leading-relaxed ${errors.campaignDescription ? 'border-red-400/50' : ''}`}
                 />
                 {errors.campaignDescription && (
                   <p className="text-xs text-red-400 mt-1">{errors.campaignDescription}</p>
@@ -2010,11 +2010,11 @@ const CollabLinkLanding = () => {
               <button
                 type="button"
                 onClick={() => setShowSaveDraftModal(true)}
-                className="text-sm text-violet-100 hover:text-white border border-white/30 hover:border-white/50 rounded-xl px-4 py-2 transition-colors bg-white/[0.05] hover:bg-white/[0.10]"
+                className="text-sm text-slate-100 hover:text-white border border-white/30 hover:border-white/50 rounded-xl px-4 py-2 transition-colors bg-white/[0.05] hover:bg-white/[0.10]"
               >
                 Save and continue later
               </button>
-              <span className="text-xs text-violet-100/60">We’ll email you a link (valid 7 days)</span>
+              <span className="text-xs text-slate-100/60">We’ll email you a link (valid 7 days)</span>
             </div>
 
             {/* Demo Fill Button - Only in development or with ?demo=true */}
@@ -2023,7 +2023,7 @@ const CollabLinkLanding = () => {
                 <button
                   type="button"
                   onClick={fillDemoData}
-                  className="text-xs text-violet-200/70 hover:text-violet-100 underline underline-offset-4"
+                  className="text-xs text-slate-200/70 hover:text-slate-100 underline underline-offset-4"
                 >
                   Fill demo data
                 </button>
@@ -2044,7 +2044,7 @@ const CollabLinkLanding = () => {
                 </div>
                 <div className="mb-3 flex items-center gap-3">
                   <div style={revealDelayStyle(120)} className={`h-px flex-1 bg-white/20 origin-left transition-transform duration-300 ease-out ${showDetailedForm ? 'scale-x-100' : 'scale-x-0'}`} />
-                  <span style={revealDelayStyle(0)} className={`inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.18em] text-violet-100/80 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${showDetailedForm ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2'}`}><ShieldCheck className="h-4 w-4 text-emerald-400" /><Lock className="h-4 w-4 text-emerald-400" />Secure Details (after creator accepts)</span>
+                  <span style={revealDelayStyle(0)} className={`inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.18em] text-slate-100/80 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${showDetailedForm ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2'}`}><ShieldCheck className="h-4 w-4 text-emerald-400" /><Lock className="h-4 w-4 text-emerald-400" />Secure Details (after creator accepts)</span>
                   <div style={revealDelayStyle(120)} className={`h-px flex-1 bg-white/20 origin-left transition-transform duration-300 ease-out ${showDetailedForm ? 'scale-x-100' : 'scale-x-0'}`} />
                 </div>
                 <button
@@ -2069,7 +2069,7 @@ const CollabLinkLanding = () => {
                         <ImageIcon className="h-4 w-4 text-amber-400" />
                         Product / Service Image
                       </h3>
-                      <p className="text-xs text-violet-100/75">
+                      <p className="text-xs text-slate-100/75">
                         Upload an image representing what you&apos;re offering.
                       </p>
                       <input
@@ -2091,14 +2091,14 @@ const CollabLinkLanding = () => {
                             <button
                               type="button"
                               onClick={() => setBarterProductImageUrl(null)}
-                              className="mt-1 text-xs text-purple-300 hover:text-white underline"
+                              className="mt-1 text-xs text-slate-300 hover:text-white underline"
                             >
                               Remove image
                             </button>
                           </div>
                         </div>
                       )}
-                      <p className="text-xs text-violet-100/70">
+                      <p className="text-xs text-slate-100/70">
                         Product collaborations are treated as commercial partnerships.
                       </p>
                     </div>
@@ -2110,10 +2110,10 @@ const CollabLinkLanding = () => {
                     className={`space-y-4 md:space-y-5 rounded-xl border border-white/15 bg-white/[0.04] p-4 md:p-6 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${showDetailedForm ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-3'}`}
                   >
                     <h3 className="text-xl font-bold text-white flex items-center gap-2">
-                      <Clapperboard className="h-5 w-5 text-violet-400" />
+                      <Clapperboard className="h-5 w-5 text-slate-400" />
                       Content Requested
                     </h3>
-                    <p className="md:hidden text-xs text-violet-200/70">
+                    <p className="md:hidden text-xs text-slate-200/70">
                       Core campaign details were captured above. Add brand and legal details here.
                     </p>
 
@@ -2167,13 +2167,13 @@ const CollabLinkLanding = () => {
                             className={`flex flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-white/20 bg-white/5 p-6 transition-all hover:bg-white/10 cursor-pointer ${brandLogoUploading ? 'opacity-50 pointer-events-none' : ''}`}
                           >
                             {brandLogoUploading ? (
-                              <Loader2 className="h-6 w-6 text-purple-400 animate-spin" />
+                              <Loader2 className="h-6 w-6 text-slate-400 animate-spin" />
                             ) : (
-                              <ImageIcon className="h-6 w-6 text-violet-300" />
+                              <ImageIcon className="h-6 w-6 text-slate-400" />
                             )}
                             <div className="text-center">
                               <p className="text-sm font-medium text-white">Upload Brand Logo</p>
-                              <p className="text-[10px] text-violet-100/60 mt-1">PNG, JPG, WebP or SVG up to 2MB</p>
+                              <p className="text-[10px] text-slate-100/60 mt-1">PNG, JPG, WebP or SVG up to 2MB</p>
                             </div>
                           </label>
                         </div>
@@ -2191,7 +2191,7 @@ const CollabLinkLanding = () => {
                               <CheckCircle2 className="h-3 w-3" />
                               Identity Secured
                             </p>
-                            <p className="text-[10px] text-violet-100/60 mt-0.5">Will be displayed in the deal console</p>
+                            <p className="text-[10px] text-slate-100/60 mt-0.5">Will be displayed in the deal console</p>
                           </div>
                         </div>
                       )}
@@ -2248,7 +2248,7 @@ const CollabLinkLanding = () => {
                         <p className="text-xs text-red-400 mt-1">{errors.campaignDescription}</p>
                       )}
                       {campaignDescription && !errors.campaignDescription && (
-                        <p className="text-xs text-violet-100/65 mt-1">
+                        <p className="text-xs text-slate-100/65 mt-1">
                           {campaignDescription.length} characters
                         </p>
                       )}
@@ -2256,7 +2256,7 @@ const CollabLinkLanding = () => {
 
                     <div className="hidden md:block">
                       <label className={`block text-white mb-2 ${typeLabel}`}>
-                        <span className="inline-flex items-center gap-2"><Clapperboard className="h-4 w-4 text-violet-400" />Deliverables Requested <span className="text-red-400">*</span></span>
+                        <span className="inline-flex items-center gap-2"><Clapperboard className="h-4 w-4 text-slate-400" />Deliverables Requested <span className="text-red-400">*</span></span>
                       </label>
                       <p className={`${helperTextClass} mb-3`}>Multiple selections allowed</p>
                       <div className="flex flex-wrap gap-2.5 mt-2">
@@ -2269,7 +2269,7 @@ const CollabLinkLanding = () => {
                               onClick={() => handleDeliverableToggle(item.value)}
                               className={`rounded-full border px-3.5 py-1.5 text-sm transition-all ${active
                                 ? 'border-fuchsia-300/70 bg-fuchsia-500/25 text-white ring-2 ring-fuchsia-400/40 shadow-lg shadow-fuchsia-500/20'
-                                : 'border-white/25 bg-white/[0.04] text-violet-100/85 hover:bg-white/[0.08]'
+                                : 'border-white/25 bg-white/[0.04] text-slate-100/85 hover:bg-white/[0.08]'
                                 }`}
                             >
                               <span className="mr-1">{item.icon}</span>{item.label}
@@ -2289,7 +2289,7 @@ const CollabLinkLanding = () => {
                         onCheckedChange={(checked) => setUsageRights(checked === true)}
                         className="border-white/30 data-[state=checked]:bg-purple-600"
                       />
-                      <label htmlFor="usage-rights" className="text-sm text-violet-100/85 cursor-pointer">
+                      <label htmlFor="usage-rights" className="text-sm text-slate-100/85 cursor-pointer">
                         Usage rights needed?
                       </label>
                     </div>
@@ -2338,7 +2338,7 @@ const CollabLinkLanding = () => {
                         <button
                           type="button"
                           onClick={() => setShowCommercialTerms((prev) => !prev)}
-                          className="inline-flex items-center gap-2 text-sm font-semibold text-white hover:text-violet-100"
+                          className="inline-flex items-center gap-2 text-sm font-semibold text-white hover:text-slate-100"
                         >
                           <FileText className="h-4 w-4 text-slate-300" />
                           Commercial Terms (Optional)
@@ -2348,7 +2348,7 @@ const CollabLinkLanding = () => {
                           <button
                             type="button"
                             onClick={applyStandardTerms}
-                            className="text-xs text-violet-100 hover:text-white border border-white/25 rounded-md px-3 py-1.5 bg-white/[0.05] hover:bg-white/[0.1]"
+                            className="text-xs text-slate-100 hover:text-white border border-white/25 rounded-md px-3 py-1.5 bg-white/[0.05] hover:bg-white/[0.1]"
                           >
                             Use standard terms
                           </button>
@@ -2442,7 +2442,7 @@ const CollabLinkLanding = () => {
                       <ShieldCheck className="h-5 w-5 text-fuchsia-300" />
                       Secure Deal Details
                     </h3>
-                    <p className="text-xs text-violet-100/70 mt-[-6px]">
+                    <p className="text-xs text-slate-100/70 mt-[-6px]">
                       Used to auto-generate contract once creator accepts.
                     </p>
 
@@ -2463,7 +2463,7 @@ const CollabLinkLanding = () => {
                       {errors.brandEmail && (
                         <p className="text-xs text-red-400 mt-1">{errors.brandEmail}</p>
                       )}
-                      <p className="text-xs text-violet-100/70 mt-1.5 font-medium">Used for official contract generation. Corporate domain preferred.</p>
+                      <p className="text-xs text-slate-100/70 mt-1.5 font-medium">Used for official contract generation. Corporate domain preferred.</p>
                     </div>
 
                     <div>
@@ -2489,7 +2489,7 @@ const CollabLinkLanding = () => {
                           variant="outline"
                           onClick={handleGstLookup}
                           disabled={isGstLookupLoading || !brandGstin.trim() || brandGstin.trim().length !== 15}
-                          className="shrink-0 bg-white/[0.07] border-white/25 text-violet-100 hover:bg-white/[0.12] font-mono"
+                          className="shrink-0 bg-white/[0.07] border-white/25 text-slate-100 hover:bg-white/[0.12] font-mono"
                           aria-label="Fetch company name and address from GST"
                         >
                           {isGstLookupLoading ? (
@@ -2553,12 +2553,12 @@ const CollabLinkLanding = () => {
                   >
                     <h3 className={`text-base font-semibold text-white ${typeCardTitle}`}>Review before submit</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
-                      <div className="text-violet-100/80">Brand: <span className="text-white">{brandName.trim() || 'Not set'}</span></div>
-                      <div className="text-violet-100/80">Type: <span className="text-white">{collabType === 'paid' ? 'Paid Deal' : collabType === 'barter' ? 'Product Exchange' : 'Cash + Product'}</span></div>
-                      <div className="text-violet-100/80">Budget/Offer: <span className="text-white">{displayBudget}</span></div>
-                      <div className="text-violet-100/80">Deadline: <span className="text-white">{displayDeadline}</span></div>
-                      <div className="text-violet-100/80">Deliverables: <span className="text-white">{deliverables.length > 0 ? deliverables.join(', ') : 'Not set'}</span></div>
-                      <div className="text-violet-100/80">Payment terms: <span className="text-white">{paymentTerms.trim() || 'Default after negotiation'}</span></div>
+                      <div className="text-slate-100/80">Brand: <span className="text-white">{brandName.trim() || 'Not set'}</span></div>
+                      <div className="text-slate-100/80">Type: <span className="text-white">{collabType === 'paid' ? 'Paid Deal' : collabType === 'barter' ? 'Product Exchange' : 'Cash + Product'}</span></div>
+                      <div className="text-slate-100/80">Budget/Offer: <span className="text-white">{displayBudget}</span></div>
+                      <div className="text-slate-100/80">Deadline: <span className="text-white">{displayDeadline}</span></div>
+                      <div className="text-slate-100/80">Deliverables: <span className="text-white">{deliverables.length > 0 ? deliverables.join(', ') : 'Not set'}</span></div>
+                      <div className="text-slate-100/80">Payment terms: <span className="text-white">{paymentTerms.trim() || 'Default after negotiation'}</span></div>
                     </div>
                     {missingRequired.length > 0 && (
                       <p className="text-xs text-amber-200/90">Before submit, complete: {missingRequired.join(', ')}</p>
@@ -2589,9 +2589,9 @@ const CollabLinkLanding = () => {
             <details className="hidden md:block mt-10 max-w-3xl mx-auto bg-white/[0.07] backdrop-blur-xl rounded-xl p-6 border border-white/15">
               <summary className="cursor-pointer list-none text-xl font-bold text-white flex items-center justify-between">
                 <span>Professional Collaboration Workflow</span>
-                <ChevronDown className="h-4 w-4 text-violet-200" />
+                <ChevronDown className="h-4 w-4 text-slate-200" />
               </summary>
-              <div className="space-y-4 text-violet-100/85 leading-relaxed mt-4">
+              <div className="space-y-4 text-slate-100/85 leading-relaxed mt-4">
                 <p>
                   When you submit a collaboration request through this page, you're choosing a professional workflow designed for brands and agencies.
                 </p>
@@ -2637,10 +2637,10 @@ const CollabLinkLanding = () => {
                   This collaboration page is optimized for brands and agencies looking to partner with {creator.name} for influencer marketing campaigns. All requests are processed securely through Creator Armour's platform.
                 </p>
                 <p className="text-sm mt-3">
-                  <a href="mailto:support@creatorarmour.com" className="text-violet-200 hover:text-white underline">
+                  <a href="mailto:support@creatorarmour.com" className="text-slate-200 hover:text-white underline">
                     Help / Contact us
                   </a>
-                  <span className="text-purple-400/80 ml-1">— we’re here before any issue becomes a dispute.</span>
+                  <span className="text-slate-400/80 ml-1">— we’re here before any issue becomes a dispute.</span>
                 </p>
               </div>
             </details>
@@ -2653,7 +2653,7 @@ const CollabLinkLanding = () => {
               <DialogHeader>
                 <DialogTitle>Save and continue later</DialogTitle>
               </DialogHeader>
-              <p className="text-sm text-violet-100/85">
+              <p className="text-sm text-slate-100/85">
                 Enter your email. We&apos;ll send you a link to continue this request (valid for 7 days).
               </p>
               <Input
@@ -2676,7 +2676,7 @@ const CollabLinkLanding = () => {
                   type="button"
                   onClick={handleSaveDraftSubmit}
                   disabled={saveDraftSubmitting}
-                  className="bg-purple-600 hover:bg-purple-700 text-white"
+                  className="bg-white text-black hover:bg-slate-200 text-white"
                 >
                   {saveDraftSubmitting ? (
                     <>
@@ -2703,7 +2703,7 @@ const CollabLinkLanding = () => {
               >
                 {submitting ? (
                   <span className="flex items-center justify-center gap-2">
-                    <Lock className="h-5 w-5 text-violet-100" />
+                    <Lock className="h-5 w-5 text-slate-100" />
                     Processing Offer...
                   </span>
                 ) : (
@@ -2711,7 +2711,7 @@ const CollabLinkLanding = () => {
                 )}
               </Button>
             </div>
-            <p className="text-center text-[11px] text-violet-100/70 mt-2">
+            <p className="text-center text-[11px] text-slate-100/70 mt-2">
               {showSubmittingTrust ? 'Your offer is being processed securely' : ctaHelper}
             </p>
             {showSubmittingTrust && (
@@ -2719,8 +2719,8 @@ const CollabLinkLanding = () => {
                 {submittingChecklist.map((step, idx) => {
                   const complete = idx <= submitChecklistStep;
                   return (
-                    <div key={step} className={`flex items-center gap-2 text-xs transition-all duration-200 ${complete ? 'text-emerald-200 opacity-100 translate-y-0' : 'text-violet-100/50 opacity-70 translate-y-0.5'}`}>
-                      <CheckCircle2 className={`h-3.5 w-3.5 ${complete ? 'text-emerald-400' : 'text-violet-200/50'}`} />
+                    <div key={step} className={`flex items-center gap-2 text-xs transition-all duration-200 ${complete ? 'text-emerald-200 opacity-100 translate-y-0' : 'text-slate-100/50 opacity-70 translate-y-0.5'}`}>
+                      <CheckCircle2 className={`h-3.5 w-3.5 ${complete ? 'text-emerald-400' : 'text-slate-200/50'}`} />
                       <span>{step}</span>
                     </div>
                   );
@@ -2737,7 +2737,7 @@ const CollabLinkLanding = () => {
                 <div className="pointer-events-none absolute inset-0 -z-10 rounded-[24px] border border-violet-300/30 animate-ping" />
               )}
               {ctaStep === 'create' && (
-                <p className="text-center text-xs text-violet-100/85 mb-2 inline-flex w-full items-center justify-center gap-2">
+                <p className="text-center text-xs text-slate-100/85 mb-2 inline-flex w-full items-center justify-center gap-2">
                   <Clock className="h-4 w-4 text-sky-400" />
                   Most brands receive a response the same day
                 </p>
@@ -2749,7 +2749,7 @@ const CollabLinkLanding = () => {
               >
                 {submitting ? (
                   <span className="flex items-center justify-center gap-3">
-                    <Lock className="h-6 w-6 text-violet-100" />
+                    <Lock className="h-6 w-6 text-slate-100" />
                     Processing Offer...
                   </span>
                 ) : (
@@ -2759,7 +2759,7 @@ const CollabLinkLanding = () => {
                   </span>
                 )}
               </Button>
-              <p className="text-center text-xs text-violet-100/75 mt-2">
+              <p className="text-center text-xs text-slate-100/75 mt-2">
                 {showSubmittingTrust ? 'Your offer is being processed securely' : ctaHelper}
               </p>
               {showSubmittingTrust && (
@@ -2768,8 +2768,8 @@ const CollabLinkLanding = () => {
                     {submittingChecklist.map((step, idx) => {
                       const complete = idx <= submitChecklistStep;
                       return (
-                        <div key={step} className={`flex items-center gap-2 text-sm transition-all duration-200 ${complete ? 'text-emerald-200 opacity-100 translate-y-0' : 'text-violet-100/50 opacity-70 translate-y-0.5'}`}>
-                          <CheckCircle2 className={`h-4 w-4 ${complete ? 'text-emerald-400' : 'text-violet-200/50'}`} />
+                        <div key={step} className={`flex items-center gap-2 text-sm transition-all duration-200 ${complete ? 'text-emerald-200 opacity-100 translate-y-0' : 'text-slate-100/50 opacity-70 translate-y-0.5'}`}>
+                          <CheckCircle2 className={`h-4 w-4 ${complete ? 'text-emerald-400' : 'text-slate-200/50'}`} />
                           <span>{step}</span>
                         </div>
                       );

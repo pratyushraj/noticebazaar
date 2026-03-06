@@ -1463,10 +1463,10 @@ const ProfileSettings = () => {
   // Loading state
   if (sessionLoading) {
     return (
-      <div className="nb-screen-height bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 text-white flex items-center justify-center">
+      <div className="nb-screen-height bg-black text-white flex items-center justify-center">
         <div className="text-center">
-          <Loader2 className="w-12 h-12 animate-spin mx-auto mb-4 text-purple-400" />
-          <p className="text-purple-200">Loading profile...</p>
+          <Loader2 className="w-12 h-12 animate-spin mx-auto mb-4 text-slate-400" />
+          <p className="text-slate-200">Loading profile...</p>
         </div>
       </div>
     );
@@ -1479,9 +1479,9 @@ const ProfileSettings = () => {
   }
 
   return (
-    <div className="nb-screen-height bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 text-white">
+    <div className="nb-screen-height bg-black text-white">
       {/* Header */}
-      <div className="sticky top-0 z-50 bg-purple-900/90 backdrop-blur-lg border-b border-white/10">
+      <div className="sticky top-0 z-50 bg-[#0A0B0D]/90 backdrop-blur-lg border-b border-white/10">
         <div className="flex items-center justify-between p-4">
           <button
             type="button"
@@ -1510,7 +1510,7 @@ const ProfileSettings = () => {
             aria-label="Save profile"
           >
             {isSaving ? (
-              <Loader2 className="w-6 h-6 animate-spin text-purple-400" />
+              <Loader2 className="w-6 h-6 animate-spin text-slate-400" />
             ) : (
               <Check className="w-6 h-6 text-green-400" />
             )}
@@ -1519,7 +1519,7 @@ const ProfileSettings = () => {
       </div>
 
       {/* Sticky Segmented Control */}
-      <div className="sticky top-[57px] z-40 bg-purple-900/95 backdrop-blur-lg border-b border-white/10 px-4 py-3">
+      <div className="sticky top-[57px] z-40 bg-[#0A0B0D]/95 backdrop-blur-lg border-b border-white/10 px-4 py-3">
         <div
           role="tablist"
           aria-label="Profile sections"
@@ -1558,7 +1558,7 @@ const ProfileSettings = () => {
           <button
             role="tab"
             aria-selected={activeSection === 'collab'}
-            aria-label="Your Offer"
+            aria-label="Your Collab"
             onClick={() => handleSectionChange('collab')}
             className={cn(
               "w-full sm:flex-1 min-h-[44px] px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 text-center flex items-center justify-center gap-1.5",
@@ -1568,7 +1568,7 @@ const ProfileSettings = () => {
             )}
           >
             <SlidersHorizontal className="w-4 h-4" />
-            <span>Your Offer</span>
+            <span>Your Collab</span>
           </button>
           <button
             role="tab"
@@ -1590,8 +1590,8 @@ const ProfileSettings = () => {
 
       {dealSettingsRequired && (
         <div className="px-4 pt-3">
-          <div className="max-w-2xl mx-auto rounded-xl border border-purple-300/35 bg-purple-500/15 px-4 py-3 text-sm text-purple-100">
-            Complete your Deal Settings to finish onboarding and start receiving collaboration offers.
+          <div className="max-w-2xl mx-auto rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-slate-200">
+            Complete your Collab Settings to finish onboarding and start receiving collaboration offers.
           </div>
         </div>
       )}
@@ -1605,7 +1605,7 @@ const ProfileSettings = () => {
               {profile?.id ? (
                 <div className="relative">
                   <div
-                    className="w-20 h-20 sm:w-16 sm:h-16 rounded-full bg-purple-600 flex items-center justify-center text-2xl sm:text-xl font-bold overflow-hidden cursor-pointer hover:opacity-90 transition-opacity"
+                    className="w-20 h-20 sm:w-16 sm:h-16 rounded-full bg-slate-800 flex items-center justify-center text-2xl sm:text-xl font-bold overflow-hidden cursor-pointer hover:opacity-90 transition-opacity"
                     onClick={() => {
                       const fileInput = document.createElement('input');
                       fileInput.type = 'file';
@@ -1675,7 +1675,7 @@ const ProfileSettings = () => {
                       <span>{userData.avatar}</span>
                     )}
                   </div>
-                  <div className="absolute bottom-0 right-0 w-6 h-6 sm:w-5 sm:h-5 bg-purple-500 rounded-full flex items-center justify-center border-2 border-white/10 cursor-pointer hover:bg-purple-400 transition-colors">
+                  <div className="absolute bottom-0 right-0 w-6 h-6 sm:w-5 sm:h-5 bg-slate-500 rounded-full flex items-center justify-center border-2 border-white/10 cursor-pointer hover:bg-slate-400 transition-colors">
                     <Camera className="w-3 h-3 sm:w-2.5 sm:h-2.5 text-white" />
                   </div>
                   {userData.verified && (
@@ -1685,7 +1685,7 @@ const ProfileSettings = () => {
                   )}
                 </div>
               ) : (
-                <div className="w-20 h-20 sm:w-16 sm:h-16 rounded-full bg-purple-600 flex items-center justify-center text-2xl sm:text-xl font-bold">
+                <div className="w-20 h-20 sm:w-16 sm:h-16 rounded-full bg-slate-600 flex items-center justify-center text-2xl sm:text-xl font-bold">
                   {userData.avatar}
                 </div>
               )}
@@ -1758,7 +1758,7 @@ const ProfileSettings = () => {
                     onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
                     disabled={!editMode}
                     placeholder="Enter your full name"
-                    className={`w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-sm text-white placeholder-white/40 outline-none transition-colors ${editMode ? 'focus:border-purple-300/60 focus:ring-2 focus:ring-purple-400/20 focus:bg-white/12' : 'cursor-not-allowed'}`}
+                    className={`w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-sm text-white placeholder-white/40 outline-none transition-colors ${editMode ? 'focus:border-slate-300/60 focus:ring-2 focus:ring-slate-400/20 focus:bg-white/12' : 'cursor-not-allowed'}`}
                   />
                 </div>
                 <div>
@@ -1798,7 +1798,7 @@ const ProfileSettings = () => {
                       }}
                       disabled={!editMode}
                       placeholder="+91 98765 43210"
-                      className={`flex-1 bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-sm text-white placeholder-white/40 outline-none transition-colors ${editMode ? 'focus:border-purple-300/60 focus:ring-2 focus:ring-purple-400/20 focus:bg-white/12' : 'cursor-not-allowed'}`}
+                      className={`flex-1 bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-sm text-white placeholder-white/40 outline-none transition-colors ${editMode ? 'focus:border-slate-300/60 focus:ring-2 focus:ring-slate-400/20 focus:bg-white/12' : 'cursor-not-allowed'}`}
                     />
                   </div>
                 </div>
@@ -1813,7 +1813,7 @@ const ProfileSettings = () => {
                       onChange={(e) => setFormData(prev => ({ ...prev, addressLine: e.target.value }))}
                       disabled={!editMode}
                       placeholder="House/Flat No., Building, Street"
-                      className={`flex-1 bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-sm text-white placeholder-white/40 outline-none transition-colors ${editMode ? 'focus:border-purple-300/60 focus:ring-2 focus:ring-purple-400/20 focus:bg-white/12' : 'cursor-not-allowed'}`}
+                      className={`flex-1 bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-sm text-white placeholder-white/40 outline-none transition-colors ${editMode ? 'focus:border-slate-300/60 focus:ring-2 focus:ring-slate-400/20 focus:bg-white/12' : 'cursor-not-allowed'}`}
                     />
                   </div>
                 </div>
@@ -1833,10 +1833,10 @@ const ProfileSettings = () => {
                         disabled={!editMode}
                         placeholder="6-digit pincode"
                         maxLength={6}
-                        className={`flex-1 bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-sm text-white placeholder-white/40 outline-none transition-colors ${editMode ? 'focus:border-purple-300/60 focus:ring-2 focus:ring-purple-400/20 focus:bg-white/12' : 'cursor-not-allowed'}`}
+                        className={`flex-1 bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-sm text-white placeholder-white/40 outline-none transition-colors ${editMode ? 'focus:border-slate-300/60 focus:ring-2 focus:ring-slate-400/20 focus:bg-white/12' : 'cursor-not-allowed'}`}
                       />
                       {isLookingUpPincode && (
-                        <Loader2 className="w-4 h-4 animate-spin text-purple-400 flex-shrink-0" />
+                        <Loader2 className="w-4 h-4 animate-spin text-slate-400 flex-shrink-0" />
                       )}
                     </div>
                     {pincodeError && (
@@ -1865,7 +1865,7 @@ const ProfileSettings = () => {
                       }}
                       disabled={!editMode || isLookingUpPincode}
                       placeholder="City"
-                      className={`w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-sm text-white placeholder-white/40 outline-none transition-colors ${editMode ? 'focus:border-purple-300/60 focus:ring-2 focus:ring-purple-400/20 focus:bg-white/12' : 'cursor-not-allowed'} ${isLookingUpPincode ? 'opacity-50' : ''}`}
+                      className={`w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-sm text-white placeholder-white/40 outline-none transition-colors ${editMode ? 'focus:border-slate-300/60 focus:ring-2 focus:ring-slate-400/20 focus:bg-white/12' : 'cursor-not-allowed'} ${isLookingUpPincode ? 'opacity-50' : ''}`}
                     />
                   </div>
                 </div>
@@ -1880,7 +1880,7 @@ const ProfileSettings = () => {
                       onChange={(e) => setFormData(prev => ({ ...prev, state: e.target.value }))}
                       disabled={!editMode || isLookingUpPincode}
                       placeholder="State"
-                      className={`w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-sm text-white placeholder-white/40 outline-none transition-colors ${editMode ? 'focus:border-purple-300/60 focus:ring-2 focus:ring-purple-400/20 focus:bg-white/12' : 'cursor-not-allowed'} ${isLookingUpPincode ? 'opacity-50' : ''}`}
+                      className={`w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-sm text-white placeholder-white/40 outline-none transition-colors ${editMode ? 'focus:border-slate-300/60 focus:ring-2 focus:ring-slate-400/20 focus:bg-white/12' : 'cursor-not-allowed'} ${isLookingUpPincode ? 'opacity-50' : ''}`}
                     />
                   </div>
                 </div>
@@ -1916,14 +1916,14 @@ const ProfileSettings = () => {
                       }}
                       disabled={!editMode}
                       placeholder="e.g. your_handle"
-                      className={`flex-1 bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-sm text-white placeholder-white/40 outline-none transition-colors ${editMode ? 'focus:border-purple-300/60 focus:ring-2 focus:ring-purple-400/20 focus:bg-white/12' : 'cursor-not-allowed'}`}
+                      className={`flex-1 bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-sm text-white placeholder-white/40 outline-none transition-colors ${editMode ? 'focus:border-slate-300/60 focus:ring-2 focus:ring-slate-400/20 focus:bg-white/12' : 'cursor-not-allowed'}`}
                     />
                   </div>
                   <p className="text-xs text-white/60 mt-1">
                     This will be shown to brands on your collaboration page and used in your collaboration link: /{formData.instagramHandle || 'username'}
                   </p>
                   {formData.instagramHandle && (
-                    <p className="text-xs text-purple-300 mt-1">
+                    <p className="text-xs text-slate-300 mt-1">
                       Link: {window?.location?.origin || ''}/{formData.instagramHandle}
                     </p>
                   )}
@@ -1960,7 +1960,7 @@ const ProfileSettings = () => {
                           <div className="text-xs text-white/60">{achievement.progress}% complete</div>
                           <div className="mt-2 h-1.5 rounded-full bg-white/10 overflow-hidden">
                             <div
-                              className="h-full bg-gradient-to-r from-purple-400/80 to-indigo-400/80 rounded-full"
+                              className="h-full bg-gradient-to-r from-slate-400/80 to-slate-500/80 rounded-full"
                               style={{ width: `${Math.min(100, Math.max(0, achievement.progress || 0))}%` }}
                             />
                           </div>
@@ -2300,7 +2300,7 @@ const ProfileSettings = () => {
                     value={formData.creatorCategory}
                     onChange={(e) => setFormData(prev => ({ ...prev, creatorCategory: e.target.value }))}
                     disabled={!editMode}
-                    className={`w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-sm text-white outline-none transition-colors ${editMode ? 'focus:border-purple-300/60 focus:ring-2 focus:ring-purple-400/20 focus:bg-white/12' : 'cursor-not-allowed opacity-80'}`}
+                    className={`w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-sm text-white outline-none transition-colors ${editMode ? 'focus:border-slate-300/60 focus:ring-2 focus:ring-slate-400/20 focus:bg-white/12' : 'cursor-not-allowed opacity-80'}`}
                   >
                     {CREATOR_CATEGORY_OPTIONS.map((option) => (
                       <option key={option} value={option} className="bg-[#1b1037] text-white">{option}</option>
@@ -2320,7 +2320,7 @@ const ProfileSettings = () => {
                       onChange={(e) => setFormData(prev => ({ ...prev, avgRateReel: e.target.value }))}
                       disabled={!editMode}
                       placeholder="e.g. 1500"
-                      className={`w-full bg-white/10 border border-white/20 rounded-lg pl-7 pr-3 py-2 text-sm text-white placeholder-white/40 outline-none transition-colors ${editMode ? 'focus:border-purple-300/60 focus:ring-2 focus:ring-purple-400/20 focus:bg-white/12' : 'cursor-not-allowed'}`}
+                      className={`w-full bg-white/10 border border-white/20 rounded-lg pl-7 pr-3 py-2 text-sm text-white placeholder-white/40 outline-none transition-colors ${editMode ? 'focus:border-slate-300/60 focus:ring-2 focus:ring-slate-400/20 focus:bg-white/12' : 'cursor-not-allowed'}`}
                     />
                   </div>
                 </div>
@@ -2357,7 +2357,7 @@ const ProfileSettings = () => {
                           )}
                         >
                           <p className="text-sm font-semibold text-white/95">{option.title}</p>
-                          <p className="text-xs text-purple-100/90 mt-1">{option.range}</p>
+                          <p className="text-xs text-slate-100/90 mt-1">{option.range}</p>
                           <p className="text-[11px] text-white/60 mt-1">{option.helper}</p>
                         </button>
                       );
@@ -2381,7 +2381,7 @@ const ProfileSettings = () => {
                           onClick={() => setFormData(prev => ({ ...prev, collaborationPreference: option }))}
                           aria-pressed={isSelected}
                           className={`px-3 py-1.5 rounded-full text-xs border transition-all ${isSelected
-                            ? 'bg-gradient-to-r from-fuchsia-500/90 to-indigo-500/90 border-fuchsia-200/90 text-white shadow-[0_0_0_1px_rgba(255,255,255,0.22),0_8px_20px_rgba(99,102,241,0.35)] font-semibold'
+                            ? 'bg-gradient-to-r from-slate-700 to-slate-800 border-slate-600 text-white shadow-lg font-semibold'
                             : 'bg-white/8 border-white/20 text-white/75'} ${!editMode ? 'opacity-70 cursor-not-allowed' : 'hover:bg-white/15 hover:border-white/35'}`}
                         >
                           {option === 'paid' ? 'Paid' : option === 'barter' ? 'Barter' : 'Hybrid'}
@@ -2418,7 +2418,7 @@ const ProfileSettings = () => {
                             }
                           }}
                           className={`px-3 py-1.5 rounded-full text-xs border transition-all ${selected
-                            ? 'bg-gradient-to-r from-fuchsia-500/90 to-indigo-500/90 border-fuchsia-200/90 text-white shadow-[0_0_0_1px_rgba(255,255,255,0.22),0_8px_20px_rgba(99,102,241,0.35)] font-semibold'
+                            ? 'bg-gradient-to-r from-slate-700 to-slate-800 border-slate-600 text-white shadow-lg font-semibold'
                             : 'bg-white/8 border-white/20 text-white/75'} ${highlightNiche === niche ? 'scale-[1.03] shadow-[0_0_0_1px_rgba(244,114,182,0.4),0_0_24px_rgba(167,139,250,0.45)]' : ''} ${!editMode ? 'opacity-70 cursor-not-allowed' : 'hover:bg-white/15 hover:border-white/35'}`}
                         >
                           {niche}
@@ -2430,7 +2430,7 @@ const ProfileSettings = () => {
 
                 <div className={cn(
                   "rounded-lg transition-all",
-                  activeNudgeField === 'avgViews' && "ring-1 ring-purple-300/60 bg-purple-400/10"
+                  activeNudgeField === 'avgViews' && "ring-1 ring-slate-300/60 bg-slate-400/10"
                 )}>
                   <label className="text-xs text-white/70 mb-1.5 block">Avg Reel Views</label>
                   <input
@@ -2441,7 +2441,7 @@ const ProfileSettings = () => {
                     onChange={(e) => setFormData(prev => ({ ...prev, avgReelViewsManual: e.target.value }))}
                     disabled={!editMode}
                     placeholder="e.g. 12000"
-                    className={`w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-sm text-white placeholder-white/40 outline-none transition-colors ${editMode ? 'focus:border-purple-300/60 focus:ring-2 focus:ring-purple-400/20 focus:bg-white/12' : 'cursor-not-allowed'}`}
+                    className={`w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-sm text-white placeholder-white/40 outline-none transition-colors ${editMode ? 'focus:border-slate-300/60 focus:ring-2 focus:ring-slate-400/20 focus:bg-white/12' : 'cursor-not-allowed'}`}
                   />
                   {isAvgViewsMissing && (
                     <p className="text-[11px] text-white/55 mt-1">Helps brands estimate reach</p>
@@ -2450,7 +2450,7 @@ const ProfileSettings = () => {
 
                 <div className={cn(
                   "rounded-lg transition-all",
-                  activeNudgeField === 'region' && "ring-1 ring-purple-300/60 bg-purple-400/10"
+                  activeNudgeField === 'region' && "ring-1 ring-slate-300/60 bg-slate-400/10"
                 )}>
                   <label className="text-xs text-white/70 mb-1.5 block">Primary Audience Region</label>
                   <input
@@ -2459,7 +2459,7 @@ const ProfileSettings = () => {
                     onChange={(e) => setFormData(prev => ({ ...prev, collabRegionLabel: e.target.value }))}
                     disabled={!editMode}
                     placeholder="NCR (Delhi Region)"
-                    className={`w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-sm text-white placeholder-white/40 outline-none transition-colors ${editMode ? 'focus:border-purple-300/60 focus:ring-2 focus:ring-purple-400/20 focus:bg-white/12' : 'cursor-not-allowed'}`}
+                    className={`w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-sm text-white placeholder-white/40 outline-none transition-colors ${editMode ? 'focus:border-slate-300/60 focus:ring-2 focus:ring-slate-400/20 focus:bg-white/12' : 'cursor-not-allowed'}`}
                   />
                   {isRegionMissing && (
                     <p className="text-[11px] text-white/55 mt-1">Improves local deal matching</p>
@@ -2482,7 +2482,7 @@ const ProfileSettings = () => {
                         onChange={(e) => setGenderSplit(e.target.value)}
                         placeholder="Example: 70% Women • 30% Men"
                         disabled={!editMode}
-                        className={`w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-sm text-white placeholder-white/40 outline-none transition-colors ${editMode ? 'focus:border-purple-300/60 focus:ring-2 focus:ring-purple-400/20 focus:bg-white/12' : 'cursor-not-allowed'}`}
+                        className={`w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-sm text-white placeholder-white/40 outline-none transition-colors ${editMode ? 'focus:border-slate-300/60 focus:ring-2 focus:ring-slate-400/20 focus:bg-white/12' : 'cursor-not-allowed'}`}
                       />
                     </div>
                     <div>
@@ -2509,7 +2509,7 @@ const ProfileSettings = () => {
                           }}
                           placeholder="Type city & press Enter"
                           disabled={!editMode}
-                          className={`flex-1 bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-sm text-white placeholder-white/40 outline-none transition-colors ${editMode ? 'focus:border-purple-300/60 focus:ring-2 focus:ring-purple-400/20 focus:bg-white/12' : 'cursor-not-allowed'}`}
+                          className={`flex-1 bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-sm text-white placeholder-white/40 outline-none transition-colors ${editMode ? 'focus:border-slate-300/60 focus:ring-2 focus:ring-slate-400/20 focus:bg-white/12' : 'cursor-not-allowed'}`}
                         />
                         <button type="button" onClick={addCity} disabled={!editMode} className={`px-3 py-2 rounded-lg text-sm border border-white/20 ${editMode ? 'bg-white/10 hover:bg-white/15 text-white' : 'opacity-70 cursor-not-allowed text-white/70 bg-white/5'}`}>
                           Add
@@ -2523,7 +2523,7 @@ const ProfileSettings = () => {
                           value={ageRange}
                           onChange={(e) => setAgeRange(e.target.value)}
                           disabled={!editMode}
-                          className={`w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-sm text-white outline-none transition-colors ${editMode ? 'focus:border-purple-300/60 focus:ring-2 focus:ring-purple-400/20 focus:bg-white/12' : 'cursor-not-allowed opacity-80'}`}
+                          className={`w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-sm text-white outline-none transition-colors ${editMode ? 'focus:border-slate-300/60 focus:ring-2 focus:ring-slate-400/20 focus:bg-white/12' : 'cursor-not-allowed opacity-80'}`}
                         >
                           <option value="" className="bg-[#1b1037] text-white">Select</option>
                           <option value="18-24" className="bg-[#1b1037] text-white">18-24</option>
@@ -2538,7 +2538,7 @@ const ProfileSettings = () => {
                           value={postingFrequency}
                           onChange={(e) => setPostingFrequency(e.target.value)}
                           disabled={!editMode}
-                          className={`w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-sm text-white outline-none transition-colors ${editMode ? 'focus:border-purple-300/60 focus:ring-2 focus:ring-purple-400/20 focus:bg-white/12' : 'cursor-not-allowed opacity-80'}`}
+                          className={`w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-sm text-white outline-none transition-colors ${editMode ? 'focus:border-slate-300/60 focus:ring-2 focus:ring-slate-400/20 focus:bg-white/12' : 'cursor-not-allowed opacity-80'}`}
                         >
                           <option value="" className="bg-[#1b1037] text-white">Select</option>
                           <option value="Daily" className="bg-[#1b1037] text-white">Daily</option>
@@ -2556,7 +2556,7 @@ const ProfileSettings = () => {
                         onChange={(e) => setLanguage(e.target.value)}
                         placeholder="Example: Hindi • English"
                         disabled={!editMode}
-                        className={`w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-sm text-white placeholder-white/40 outline-none transition-colors ${editMode ? 'focus:border-purple-300/60 focus:ring-2 focus:ring-purple-400/20 focus:bg-white/12' : 'cursor-not-allowed'}`}
+                        className={`w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-sm text-white placeholder-white/40 outline-none transition-colors ${editMode ? 'focus:border-slate-300/60 focus:ring-2 focus:ring-slate-400/20 focus:bg-white/12' : 'cursor-not-allowed'}`}
                       />
                     </div>
                   </CollapsibleContent>
@@ -2579,7 +2579,7 @@ const ProfileSettings = () => {
                     value={formData.collabDeliveryReliabilityPreset}
                     onChange={(e) => setFormData(prev => ({ ...prev, collabDeliveryReliabilityPreset: e.target.value }))}
                     disabled={!editMode}
-                    className={`w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-sm text-white outline-none transition-colors ${editMode ? 'focus:border-purple-300/60 focus:ring-2 focus:ring-purple-400/20 focus:bg-white/12' : 'cursor-not-allowed opacity-80'}`}
+                    className={`w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-sm text-white outline-none transition-colors ${editMode ? 'focus:border-slate-300/60 focus:ring-2 focus:ring-slate-400/20 focus:bg-white/12' : 'cursor-not-allowed opacity-80'}`}
                   >
                     <option value="" className="bg-[#1b1037] text-white">Select</option>
                     {COLLAB_DELIVERY_RELIABILITY_OPTIONS.map((option) => (
@@ -2593,7 +2593,7 @@ const ProfileSettings = () => {
                     value={formData.collabResponseBehaviorPreset}
                     onChange={(e) => setFormData(prev => ({ ...prev, collabResponseBehaviorPreset: e.target.value }))}
                     disabled={!editMode}
-                    className={`w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-sm text-white outline-none transition-colors ${editMode ? 'focus:border-purple-300/60 focus:ring-2 focus:ring-purple-400/20 focus:bg-white/12' : 'cursor-not-allowed opacity-80'}`}
+                    className={`w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-sm text-white outline-none transition-colors ${editMode ? 'focus:border-slate-300/60 focus:ring-2 focus:ring-slate-400/20 focus:bg-white/12' : 'cursor-not-allowed opacity-80'}`}
                   >
                     <option value="" className="bg-[#1b1037] text-white">Select</option>
                     {COLLAB_CTA_BEHAVIOR_OPTIONS.map((option) => (
@@ -2609,7 +2609,7 @@ const ProfileSettings = () => {
                     onChange={(e) => setFormData(prev => ({ ...prev, collabCtaTrustNote: e.target.value }))}
                     disabled={!editMode}
                     placeholder="Mention rights or usage preference"
-                    className={`w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-sm text-white placeholder-white/40 outline-none transition-colors ${editMode ? 'focus:border-purple-300/60 focus:ring-2 focus:ring-purple-400/20 focus:bg-white/12' : 'cursor-not-allowed'}`}
+                    className={`w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-sm text-white placeholder-white/40 outline-none transition-colors ${editMode ? 'focus:border-slate-300/60 focus:ring-2 focus:ring-slate-400/20 focus:bg-white/12' : 'cursor-not-allowed'}`}
                   />
                 </div>
               </div>
@@ -2656,7 +2656,7 @@ const ProfileSettings = () => {
                     setFormData(prev => ({ ...prev, activeBrandCollabsMonth: mapped }));
                   }}
                   disabled={!editMode}
-                  className={`w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-sm text-white outline-none transition-colors ${editMode ? 'focus:border-purple-300/60 focus:ring-2 focus:ring-purple-400/20 focus:bg-white/12' : 'cursor-not-allowed opacity-80'}`}
+                  className={`w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-sm text-white outline-none transition-colors ${editMode ? 'focus:border-slate-300/60 focus:ring-2 focus:ring-slate-400/20 focus:bg-white/12' : 'cursor-not-allowed opacity-80'}`}
                 >
                   <option value="0" className="bg-[#1b1037] text-white">None yet</option>
                   <option value="1-2" className="bg-[#1b1037] text-white">1-2 deals</option>
@@ -2672,7 +2672,7 @@ const ProfileSettings = () => {
                   value={formData.campaignSlotPreset}
                   onChange={(e) => setFormData(prev => ({ ...prev, campaignSlotPreset: e.target.value }))}
                   disabled={!editMode}
-                  className={`w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-sm text-white outline-none transition-colors ${editMode ? 'focus:border-purple-300/60 focus:ring-2 focus:ring-purple-400/20 focus:bg-white/12' : 'cursor-not-allowed opacity-80'}`}
+                  className={`w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-sm text-white outline-none transition-colors ${editMode ? 'focus:border-slate-300/60 focus:ring-2 focus:ring-slate-400/20 focus:bg-white/12' : 'cursor-not-allowed opacity-80'}`}
                 >
                   <option value="" className="bg-[#1b1037] text-white">Select capacity</option>
                   {COLLAB_CAMPAIGN_SLOT_OPTIONS.map((option) => (
@@ -2696,7 +2696,7 @@ const ProfileSettings = () => {
                     <div className="bg-white/8 rounded-xl p-4 border border-white/15 space-y-3">
                       <div>
                         <label className="text-xs text-white/70 mb-1.5 block">Media Kit URL</label>
-                        <input type="url" value={formData.mediaKitUrl} onChange={(e) => setFormData(prev => ({ ...prev, mediaKitUrl: e.target.value }))} disabled={!editMode} placeholder="https://..." className={`w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-sm text-white placeholder-white/40 outline-none transition-colors ${editMode ? 'focus:border-purple-300/60 focus:ring-2 focus:ring-purple-400/20 focus:bg-white/12' : 'cursor-not-allowed'}`} />
+                        <input type="url" value={formData.mediaKitUrl} onChange={(e) => setFormData(prev => ({ ...prev, mediaKitUrl: e.target.value }))} disabled={!editMode} placeholder="https://..." className={`w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-sm text-white placeholder-white/40 outline-none transition-colors ${editMode ? 'focus:border-slate-300/60 focus:ring-2 focus:ring-slate-400/20 focus:bg-white/12' : 'cursor-not-allowed'}`} />
                         {isMediaKitMissing && (
                           <p className="text-[11px] text-white/55 mt-1">Increases premium deal invites</p>
                         )}
@@ -2763,7 +2763,7 @@ const ProfileSettings = () => {
                     || !isPushSupported
                     || (!isIOSNeedsInstall && !hasVapidKey)
                   }
-                  className="inline-flex items-center justify-center rounded-lg px-4 py-2 text-sm font-semibold bg-violet-500 hover:bg-violet-400 text-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  className="inline-flex items-center justify-center rounded-lg px-4 py-2 text-sm font-semibold bg-white text-black hover:bg-slate-200 text-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
                   {isPushBusy
                     ? 'Updating…'
@@ -2779,7 +2779,7 @@ const ProfileSettings = () => {
                       type="button"
                       onClick={handleTestPushFromAccount}
                       disabled={isPushBusy}
-                      className="inline-flex items-center justify-center rounded-lg px-4 py-2 text-sm font-semibold bg-violet-500/20 hover:bg-violet-500/30 text-violet-200 border border-violet-500/30 disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
+                      className="inline-flex items-center justify-center rounded-lg px-4 py-2 text-sm font-semibold bg-slate-500/20 hover:bg-slate-500/30 text-slate-200 border border-slate-500/30 disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
                     >
                       {isPushBusy ? 'Sending…' : 'Send Test Notification'}
                     </button>
@@ -2882,15 +2882,15 @@ const ProfileSettings = () => {
               <h2 className="font-semibold text-base mb-3">Help & Support</h2>
               <div className="space-y-2">
                 {/* Contact Support - Primary */}
-                <button className="w-full flex items-center justify-between min-h-[44px] p-2 bg-gradient-to-r from-purple-600/25 to-indigo-600/20 rounded-lg border border-purple-400/40 hover:from-purple-600/35 hover:to-indigo-600/30 transition-all backdrop-blur-sm">
+                <button className="w-full flex items-center justify-between min-h-[44px] p-2 bg-gradient-to-r from-slate-800 to-slate-900 border-white/10 hover:from-slate-700 hover:to-slate-800 transition-all backdrop-blur-sm">
                   <div className="flex items-center gap-2.5">
-                    <MessageCircle className="w-4 h-4 text-purple-300" />
+                    <MessageCircle className="w-4 h-4 text-slate-300" />
                     <div className="text-left">
                       <div className="font-semibold text-sm text-white">Contact Support</div>
                       <div className="text-xs text-white/60">Chat with our team</div>
                     </div>
                   </div>
-                  <ChevronRight className="w-4 h-4 text-purple-300" />
+                  <ChevronRight className="w-4 h-4 text-slate-300" />
                 </button>
 
                 {/* Help Center - Secondary */}
@@ -3020,13 +3020,13 @@ const ProfileSettings = () => {
         console.log('[CreatorProfile] Dialog open state changed:', open);
         setShowLogoutDialog(open);
       }}>
-        <AlertDialogContent className="bg-gradient-to-br from-purple-900/95 via-purple-800/95 to-indigo-900/95 backdrop-blur-xl border border-white/10 text-white">
+        <AlertDialogContent className="bg-slate-950/95 backdrop-blur-xl border border-white/10 text-white">
           <AlertDialogHeader>
             <AlertDialogTitle className="text-white text-xl flex items-center gap-2">
               <LogOut className="w-5 h-5 text-red-400" />
               Confirm Logout
             </AlertDialogTitle>
-            <AlertDialogDescription className="text-purple-200">
+            <AlertDialogDescription className="text-slate-200">
               Are you sure you want to log out? You'll need to sign in again to access your account.
             </AlertDialogDescription>
           </AlertDialogHeader>
@@ -3037,7 +3037,7 @@ const ProfileSettings = () => {
                   navigator.vibrate(30);
                 }
               }}
-              className="bg-white/10 text-white border-white/20 hover:bg-white/20 focus:ring-2 focus:ring-purple-400/50"
+              className="bg-white/10 text-white border-white/20 hover:bg-white/20 focus:ring-2 focus:ring-slate-400/50"
             >
               Cancel
             </AlertDialogCancel>

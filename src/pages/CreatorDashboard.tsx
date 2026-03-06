@@ -1294,15 +1294,15 @@ const CreatorDashboard = () => {
 
       {/* Decline Request Confirmation (dashboard inbox) */}
       <AlertDialog open={showDeclineRequestDialog} onOpenChange={setShowDeclineRequestDialog}>
-        <AlertDialogContent className="bg-gradient-to-br from-purple-900/95 via-purple-800/95 to-indigo-900/95 backdrop-blur-xl border border-white/10 text-white">
+        <AlertDialogContent className="bg-[#15171B]/95 backdrop-blur-xl border border-white/10 text-white">
           <AlertDialogHeader>
             <AlertDialogTitle className="text-white text-xl">Decline brand request?</AlertDialogTitle>
-            <AlertDialogDescription className="text-purple-200">
+            <AlertDialogDescription className="text-slate-400">
               This will send a polite decline to the brand. This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter className="gap-2 sm:gap-0">
-            <AlertDialogCancel className="bg-white/10 text-white border-white/20 hover:bg-white/20 focus:ring-2 focus:ring-purple-400/50">
+            <AlertDialogCancel className="bg-white/10 text-white border-white/20 hover:bg-white/20 focus:ring-2 focus:ring-slate-400/50">
               Cancel
             </AlertDialogCancel>
             <AlertDialogAction onClick={declineCollabRequest} className="bg-red-500/20 hover:bg-red-500/30 text-red-200 border border-red-500/40">
@@ -1402,13 +1402,13 @@ const CreatorDashboard = () => {
                 </div>
 
                 {/* Hero: Your Official Brand Collaboration Link */}
-                <BaseCard variant="secondary" className="text-center p-6 md:p-6 relative border border-purple-400/30" onClick={(e) => e?.stopPropagation()}>
+                <BaseCard variant="secondary" className="text-center p-6 md:p-6 relative border border-blue-400/20" onClick={(e: React.MouseEvent<HTMLDivElement>) => e?.stopPropagation()}>
                   <motion.div
                     initial={{ scale: 0.8, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
-                    className="w-16 h-16 md:w-14 md:h-14 rounded-xl bg-purple-500/20 flex items-center justify-center mx-auto mb-4"
+                    className="w-16 h-16 md:w-14 md:h-14 rounded-xl bg-blue-500/10 flex items-center justify-center mx-auto mb-4"
                   >
-                    <Link2 className={cn(iconSizes.xl, "md:w-7 md:h-7 text-purple-400")} />
+                    <Link2 className={cn(iconSizes.xl, "md:w-7 md:h-7 text-blue-400")} />
                   </motion.div>
                   <h2 className={cn(typography.h2, "mb-2 md:text-2xl break-words")}>Your Official Brand Collaboration Link</h2>
                   <p className={cn(typography.body, "mb-5 max-w-md mx-auto break-words")}>
@@ -1566,8 +1566,8 @@ const CreatorDashboard = () => {
                       className="cursor-pointer h-full"
                     >
                       <BaseCard variant="tertiary" interactive className="h-full md:p-4 hover:shadow-lg hover:shadow-purple-500/20 transition-all duration-200">
-                        <div className="w-10 h-10 md:w-9 md:h-9 rounded-lg bg-purple-500/20 flex items-center justify-center mb-2 md:mb-1.5">
-                          <Link2 className={cn(iconSizes.md, "md:w-4 md:h-4 text-purple-400")} />
+                        <div className="w-10 h-10 md:w-9 md:h-9 rounded-lg bg-blue-500/10 flex items-center justify-center mb-2 md:mb-1.5">
+                          <Link2 className={cn(iconSizes.md, "md:w-4 md:h-4 text-blue-400")} />
                         </div>
                         <h4 className={cn(typography.h4, "mb-0.5 md:mb-0 md:text-sm break-words")}>Share your Collab Link</h4>
                         <p className={cn(typography.bodySmall, "md:text-xs break-words")}>Brands submit structured requests</p>
@@ -1609,7 +1609,7 @@ const CreatorDashboard = () => {
                 {/* Hero Section - Edge-to-edge with gradient background */}
                 <div className={cn(
                   "-mx-4 md:mx-0",
-                  "bg-gradient-to-br from-purple-500/10 via-purple-500/5 to-transparent",
+                  "bg-gradient-to-br from-blue-500/5 via-transparent to-transparent",
                   "pt-4 pb-1 md:pt-5 md:pb-2",
                   "px-4 md:px-0",
                   "lg:mb-1"
@@ -1617,7 +1617,7 @@ const CreatorDashboard = () => {
                   {/* Greeting */}
                   <div className={cn("mb-2 md:pt-0 md:text-left")}>
                     <h1 className={cn(typography.h1, "mb-0.5 leading-tight md:text-xl whitespace-nowrap overflow-hidden text-ellipsis")}>
-                      {getGreeting()}, <span className="bg-gradient-to-r from-purple-400 to-pink-400 text-transparent bg-clip-text">{userData.name ? userData.name.charAt(0).toUpperCase() + userData.name.slice(1) : ''}!</span> 👋
+                      {getGreeting()}, <span className="bg-gradient-to-r from-blue-400 to-emerald-400 text-transparent bg-clip-text">{userData.name ? userData.name.charAt(0).toUpperCase() + userData.name.slice(1) : ''}!</span> 👋
                     </h1>
                     <p className={cn(typography.bodySmall, "text-white/70 mt-0.5")}>
                       Here&apos;s what&apos;s happening with your collabs.
@@ -1634,8 +1634,8 @@ const CreatorDashboard = () => {
                         onClick={() => { triggerHaptic(HapticPatterns.light); navigate('/collab-requests'); }}
                         className={cn(
                           "mt-1.5 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium",
-                          "bg-purple-500/25 text-purple-200 border border-purple-400/30",
-                          "hover:bg-purple-500/35 hover:border-purple-400/50 transition-colors"
+                          "bg-blue-500/10 text-blue-200 border border-blue-500/20",
+                          "hover:bg-blue-500/20 hover:border-blue-500/40 transition-colors"
                         )}
                         aria-label={`View ${pendingCollabRequestsCount} pending brand request${pendingCollabRequestsCount !== 1 ? 's' : ''}`}
                       >
@@ -1839,9 +1839,9 @@ const CreatorDashboard = () => {
                         <BaseCard variant="tertiary" className={cn(spacing.cardPadding.secondary, "text-center relative overflow-hidden")}>
                           {/* Spotlight */}
                           <div className={cn(vision.spotlight.base, "opacity-20")} />
-                          <Briefcase className={cn(iconSizes.xl, "text-purple-400/50 mx-auto mb-3")} />
+                          <Briefcase className={cn(iconSizes.xl, "text-blue-400/30 mx-auto mb-3")} />
                           <p className={typography.bodySmall}>No active collaborations yet</p>
-                          <p className={cn(typography.caption, "mt-1 text-purple-300/70")}>Accept a request to see your active deals here.</p>
+                          <p className={cn(typography.caption, "mt-1 text-slate-500")}>Accept a request to see your active deals here.</p>
                           <motion.button
                             onClick={() => {
                               triggerHaptic(HapticPatterns.light);

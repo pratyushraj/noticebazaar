@@ -8,12 +8,12 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { FileText, Upload, Calendar, DollarSign, AlertCircle, CheckCircle, Clock } from 'lucide-react';
+import { Calendar, AlertCircle, CheckCircle, Clock, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { spacing, typography, iconSizes, buttons, glass, shadows, radius, animations, gradients } from '@/lib/design-system';
+import { spacing, animations } from '@/lib/design-system';
 import { triggerHaptic, HapticPatterns } from '@/lib/utils/haptics';
 import { FileUploadPreview } from '@/components/expenses/FileUploadPreview';
-import { generateInvoiceNumber } from '@/lib/services/invoiceService';
+
 
 const DEAL_CATEGORIES = [
   'Influencer Content',
@@ -81,6 +81,26 @@ const CreateDealPage: React.FC = () => {
 
   const [errors, setErrors] = useState<FormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [theme, setTheme] = useState<'light' | 'dark'>('dark');
+
+  // Auto theme toggle based on system preference
+  useEffect(() => {
+    const mq = window.matchMedia('(prefers-color-scheme: dark)');
+    setTheme(mq.matches ? 'dark' : 'light');
+
+    const handleChange = (e: MediaQueryListEvent) => {
+      setTheme(e.matches ? 'dark' : 'light');
+    };
+
+    mq.addEventListener('change', handleChange);
+    return () => mq.removeEventListener('change', handleChange);
+  }, []);
+
+  const isDark = theme === 'dark';
+  const textColor = isDark ? 'text-white' : 'text-slate-900';
+  const secondaryTextColor = isDark ? 'text-slate-400' : 'text-slate-500';
+  const borderColor = isDark ? 'border-white/10' : 'border-slate-200';
+  const inputBg = isDark ? 'bg-white/5' : 'bg-slate-50';
 
   // Calculate due date based on payment terms
   const calculatedDueDate = useMemo(() => {
@@ -151,7 +171,7 @@ const CreateDealPage: React.FC = () => {
     const parts = value.split('.');
     const cleanedValue = parts.length > 2 ? parts[0] + '.' + parts.slice(1).join('') : value;
     setFormData(prev => ({ ...prev, dealValue: cleanedValue }));
-    
+
     // Clear error when user types
     if (errors.dealValue) {
       setErrors(prev => ({ ...prev, dealValue: undefined }));
@@ -183,20 +203,20 @@ const CreateDealPage: React.FC = () => {
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files[0]) {
       const file = event.target.files[0];
-      
+
       // Validate file type
       const validTypes = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png'];
       if (!validTypes.includes(file.type)) {
         toast.error('Please select a valid file (PDF, JPEG, or PNG)');
         return;
       }
-      
+
       // Validate file size (10MB)
       if (file.size > 10 * 1024 * 1024) {
         toast.error('File size must be less than 10MB');
         return;
       }
-      
+
       setFormData(prev => ({ ...prev, contractFile: file }));
     } else {
       setFormData(prev => ({ ...prev, contractFile: null }));
@@ -271,11 +291,6 @@ const CreateDealPage: React.FC = () => {
 
     try {
       const amountNum = parseFloat(formData.dealValue);
-      
-      // Generate invoice number (format: INV-YYYY-XXXXXX)
-      const year = new Date().getFullYear();
-      const random6 = Math.floor(100000 + Math.random() * 900000); // 6-digit random
-      const invoiceNumber = `INV-${year}-${random6}`;
 
       // Calculate due date
       let dueDate = calculatedDueDate || formData.endDate;
@@ -290,7 +305,7 @@ const CreateDealPage: React.FC = () => {
       }
 
       // Create deal
-      const result = await addDealMutation.mutateAsync({
+      await addDealMutation.mutateAsync({
         creator_id: profile.id,
         organization_id: organizationId || null,
         brand_name: formData.brandName.trim(),
@@ -304,6 +319,7 @@ const CreateDealPage: React.FC = () => {
         status: 'Negotiation' as const, // Start as Negotiation
         invoice_file: null,
         utr_number: null,
+        brand_phone: null,
         brand_email: null,
         payment_received_date: null,
       });
@@ -336,9 +352,9 @@ const CreateDealPage: React.FC = () => {
   return (
     <div className={cn(
       "nb-screen-height",
-      "bg-gradient-to-b from-[#2A004B] to-[#11001F]",
+      isDark ? "bg-[#0A0B0D]" : "bg-[#F8FAFC]",
       spacing.page,
-      "pb-24 safe-area-fix"
+      "pb-24 safe-area-fix overflow-y-auto"
     )}>
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -346,17 +362,18 @@ const CreateDealPage: React.FC = () => {
         transition={{ duration: 0.3 }}
         className={cn(
           "max-w-3xl mx-auto",
-          "bg-white/10 rounded-3xl border border-white/20 backdrop-blur-xl",
-          "p-6 shadow-2xl",
+          isDark ? "bg-[#15171B] border-white/5" : "bg-white border-slate-100",
+          "rounded-3xl border shadow-2xl",
+          "p-6",
           spacing.card
         )}
       >
         {/* Header */}
         <div className="mb-6">
-          <h1 className={cn(typography.h1, "mb-2 bg-gradient-to-r from-white to-white/80 bg-clip-text text-transparent")}>
+          <h1 className={cn("text-2xl font-bold tracking-tight", textColor)}>
             Create New Deal
           </h1>
-          <p className={cn(typography.body, "text-white/70")}>
+          <p className={cn("text-[14px] font-medium mt-1", secondaryTextColor)}>
             Add deal details manually for tracking & payments.
           </p>
         </div>
@@ -364,7 +381,7 @@ const CreateDealPage: React.FC = () => {
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Deal Title */}
           <div>
-            <Label htmlFor="dealTitle" className="text-white/90 mb-2 block">
+            <Label htmlFor="dealTitle" className={cn("mb-2 block font-bold text-[13px] uppercase tracking-wider", secondaryTextColor)}>
               Deal Title *
             </Label>
             <Input
@@ -372,13 +389,13 @@ const CreateDealPage: React.FC = () => {
               value={formData.dealTitle}
               onChange={(e) => handleFieldChange('dealTitle', e.target.value)}
               disabled={isSubmitting}
-              placeholder="Influencer Campaign with ABC Brand"
+              placeholder="e.g. FitScience Campaign"
               minLength={3}
               className={cn(
-                "bg-white/10 border border-white/20 rounded-xl backdrop-blur-xl",
-                "placeholder:text-white/40 text-white",
-                "px-4 py-3",
-                "focus:border-purple-400/50 focus:ring-2 focus:ring-purple-400/20",
+                inputBg, borderColor, "rounded-xl",
+                "placeholder:text-slate-500", textColor,
+                "px-4 py-3 h-12",
+                "focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500/50",
                 "transition-all duration-200",
                 errors.dealTitle && "border-red-400/50 focus:border-red-400"
               )}
@@ -392,12 +409,11 @@ const CreateDealPage: React.FC = () => {
           {/* Deal Value & Category */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="dealValue" className="text-white/90 mb-2 block">
+              <Label htmlFor="dealValue" className={cn("mb-2 block font-bold text-[13px] uppercase tracking-wider", secondaryTextColor)}>
                 Deal Value *
               </Label>
               <div className="relative">
-                <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/50 z-10" />
-                <div className="absolute left-9 top-1/2 -translate-y-1/2 text-white/70 text-sm z-10">
+                <div className={cn("absolute left-4 top-1/2 -translate-y-1/2 text-sm z-10 font-bold", secondaryTextColor)}>
                   ₹
                 </div>
                 <Input
@@ -409,10 +425,10 @@ const CreateDealPage: React.FC = () => {
                   disabled={isSubmitting}
                   placeholder="0"
                   className={cn(
-                    "pl-12 bg-white/10 border border-white/20 rounded-xl backdrop-blur-xl",
-                    "placeholder:text-white/40 text-white",
-                    "px-4 py-3",
-                    "focus:border-purple-400/50 focus:ring-2 focus:ring-purple-400/20",
+                    "pl-8", inputBg, borderColor, "rounded-xl",
+                    "placeholder:text-slate-500", textColor,
+                    "px-4 py-3 h-12",
+                    "focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500/50",
                     "transition-all duration-200",
                     errors.dealValue && "border-red-400/50 focus:border-red-400"
                   )}
@@ -420,53 +436,55 @@ const CreateDealPage: React.FC = () => {
                 />
               </div>
               {formData.dealValue && (
-                <p className="text-xs text-white/60 mt-1">
+                <p className={cn("text-[10px] font-bold mt-1 uppercase tracking-tight", isDark ? "text-emerald-500" : "text-emerald-600")}>
                   {formatAmountDisplay(formData.dealValue) ? `₹${formatAmountDisplay(formData.dealValue)}` : ''}
                 </p>
               )}
               {errors.dealValue && (
-                <p className="text-red-400 text-sm mt-1">{errors.dealValue}</p>
+                <p className="text-red-400 text-sm mt-1 font-medium">{errors.dealValue}</p>
               )}
             </div>
 
             <div>
-              <Label htmlFor="category" className="text-white/90 mb-2 block">
+              <Label htmlFor="category" className={cn("mb-2 block font-bold text-[13px] uppercase tracking-wider", secondaryTextColor)}>
                 Deal Category *
               </Label>
-              <Select 
-                value={formData.category} 
+              <Select
+                value={formData.category}
                 onValueChange={(value) => handleFieldChange('category', value)}
                 disabled={isSubmitting}
                 required
               >
-                <SelectTrigger 
+                <SelectTrigger
                   className={cn(
-                    "bg-white/10 border border-white/20 rounded-xl backdrop-blur-xl",
-                    "text-white placeholder:text-white/40",
-                    "px-4 py-3",
-                    "focus:border-purple-400/50 focus:ring-2 focus:ring-purple-400/20",
+                    inputBg, borderColor, "rounded-xl",
+                    textColor, "placeholder:text-slate-500",
+                    "px-4 py-3 h-12",
+                    "focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500/50",
                     errors.category && "border-red-400/50 focus:border-red-400"
                   )}
                 >
                   <SelectValue placeholder="Select category" />
                 </SelectTrigger>
-                <SelectContent className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-xl text-white">
+                <SelectContent className={cn(
+                  isDark ? "bg-[#1C1E23] border-white/10 text-white" : "bg-white border-slate-200 text-slate-900"
+                )}>
                   {DEAL_CATEGORIES.map((cat) => (
-                    <SelectItem key={cat} value={cat} className="hover:bg-white/10">
+                    <SelectItem key={cat} value={cat} className={isDark ? "focus:bg-white/5" : ""}>
                       {cat}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
               {errors.category && (
-                <p className="text-red-400 text-sm mt-1">{errors.category}</p>
+                <p className="text-red-400 text-sm mt-1 font-medium">{errors.category}</p>
               )}
             </div>
           </div>
 
           {/* Brand Name */}
           <div>
-            <Label htmlFor="brandName" className="text-white/90 mb-2 block">
+            <Label htmlFor="brandName" className={cn("mb-2 block font-bold text-[13px] uppercase tracking-wider", secondaryTextColor)}>
               Brand Name *
             </Label>
             <Input
@@ -474,25 +492,25 @@ const CreateDealPage: React.FC = () => {
               value={formData.brandName}
               onChange={(e) => handleFieldChange('brandName', e.target.value)}
               disabled={isSubmitting}
-              placeholder="e.g., ABC Brand"
+              placeholder="e.g., Myntra"
               className={cn(
-                "bg-white/10 border border-white/20 rounded-xl backdrop-blur-xl",
-                "placeholder:text-white/40 text-white",
-                "px-4 py-3",
-                "focus:border-purple-400/50 focus:ring-2 focus:ring-purple-400/20",
+                inputBg, borderColor, "rounded-xl",
+                "placeholder:text-slate-500", textColor,
+                "px-4 py-3 h-12",
+                "focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500/50",
                 "transition-all duration-200",
                 errors.brandName && "border-red-400/50 focus:border-red-400"
               )}
               required
             />
             {errors.brandName && (
-              <p className="text-red-400 text-sm mt-1">{errors.brandName}</p>
+              <p className="text-red-400 text-sm mt-1 font-medium">{errors.brandName}</p>
             )}
           </div>
 
           {/* Deliverables */}
           <div>
-            <Label htmlFor="deliverables" className="text-white/90 mb-2 block">
+            <Label htmlFor="deliverables" className={cn("mb-2 block font-bold text-[13px] uppercase tracking-wider", secondaryTextColor)}>
               Deliverables *
             </Label>
             <Textarea
@@ -500,20 +518,20 @@ const CreateDealPage: React.FC = () => {
               value={formData.deliverables}
               onChange={(e) => handleFieldChange('deliverables', e.target.value)}
               disabled={isSubmitting}
-              placeholder="e.g., 1 YouTube Video&#10;2 Reels + 3 Stories&#10;1 Post + 1 Reel"
+              placeholder="e.g., 2 Reels + 3 Stories"
               rows={4}
               className={cn(
-                "bg-white/10 border border-white/20 rounded-xl backdrop-blur-xl",
-                "placeholder:text-white/40 text-white",
+                inputBg, borderColor, "rounded-xl",
+                "placeholder:text-slate-500", textColor,
                 "px-4 py-3",
-                "focus:border-purple-400/50 focus:ring-2 focus:ring-purple-400/20",
+                "focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500/50",
                 "resize-none transition-all duration-200",
                 errors.deliverables && "border-red-400/50 focus:border-red-400"
               )}
               required
             />
             {errors.deliverables && (
-              <p className="text-red-400 text-sm mt-1">{errors.deliverables}</p>
+              <p className="text-red-400 text-sm mt-1 font-medium">{errors.deliverables}</p>
             )}
           </div>
 
@@ -581,13 +599,13 @@ const CreateDealPage: React.FC = () => {
             <Label htmlFor="paymentTerms" className="text-white/90 mb-2 block">
               Payment Terms *
             </Label>
-            <Select 
-              value={formData.paymentTerms} 
+            <Select
+              value={formData.paymentTerms}
               onValueChange={(value) => handleFieldChange('paymentTerms', value)}
               disabled={isSubmitting}
               required
             >
-              <SelectTrigger 
+              <SelectTrigger
                 className={cn(
                   "bg-white/10 border border-white/20 rounded-xl backdrop-blur-xl",
                   "text-white placeholder:text-white/40",
@@ -771,15 +789,15 @@ const CreateDealPage: React.FC = () => {
           </div>
 
           {/* Submit Button */}
-          <div className="pt-4 border-t border-white/10">
+          <div className="pt-6 border-t border-slate-100/10">
             <motion.button
               type="submit"
               disabled={isSubmitting}
               whileTap={animations.microTap}
               className={cn(
-                "w-full bg-purple-500 text-white rounded-2xl py-4 text-lg font-semibold",
-                "shadow-xl shadow-purple-900/30",
-                "hover:bg-purple-600",
+                "w-full bg-blue-600 text-white rounded-2xl py-4 text-lg font-black tracking-tight",
+                "shadow-xl shadow-blue-500/20",
+                "hover:bg-blue-700",
                 "disabled:opacity-50 disabled:cursor-not-allowed",
                 "transition-all duration-200",
                 "flex items-center justify-center gap-2"
@@ -787,13 +805,13 @@ const CreateDealPage: React.FC = () => {
             >
               {isSubmitting ? (
                 <>
-                  <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  <span>Creating Deal...</span>
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  <span>Generating Secure Link...</span>
                 </>
               ) : (
                 <>
                   <CheckCircle className="w-5 h-5" />
-                  <span>Create Deal</span>
+                  <span>Launch Campaign</span>
                 </>
               )}
             </motion.button>

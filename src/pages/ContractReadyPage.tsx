@@ -773,10 +773,10 @@ const ContractReadyPage = () => {
 
   if (isLoading) {
     return (
-      <div className="nb-screen-height bg-gradient-to-br from-purple-950 via-purple-900 to-indigo-950 flex items-center justify-center">
+      <div className="nb-screen-height bg-black flex items-center justify-center">
         <div className="text-center">
           <Loader2 className="w-8 h-8 animate-spin text-white mx-auto mb-4" />
-          <p className="text-white/70">Loading...</p>
+          <p className="text-slate-400">Loading...</p>
         </div>
       </div>
     );
@@ -784,11 +784,11 @@ const ContractReadyPage = () => {
 
   if (loadError || !dealInfo) {
     return (
-      <div className="nb-screen-height bg-gradient-to-br from-purple-950 via-purple-900 to-indigo-950 flex items-center justify-center p-4">
+      <div className="nb-screen-height bg-black flex items-center justify-center p-4">
         <div className="text-center max-w-md">
-          <XCircle className="w-16 h-16 text-red-400 mx-auto mb-4" />
+          <XCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
           <h1 className="text-2xl font-bold text-white mb-2">Link No Longer Valid</h1>
-          <p className="text-white/70">
+          <p className="text-slate-400">
             {loadError || 'This link is no longer valid. Please contact the creator.'}
           </p>
         </div>

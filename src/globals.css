@@ -32,11 +32,11 @@
 
 /* Prevent flicker by ensuring body has background color */
 html {
-  background: linear-gradient(to bottom right, #581c87, #4c1d95, #312e81);
+  background: #000000;
 }
 
 body {
-  background: linear-gradient(to bottom right, #581c87, #4c1d95, #312e81);
+  background: #000000;
 }
 
 /* Touch Feedback - Scale Animation */

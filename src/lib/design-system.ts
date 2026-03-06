@@ -17,7 +17,7 @@ export const cardVariants = {
     backdrop: "backdrop-blur-xl",
   },
   secondary: {
-    base: "bg-gradient-to-br from-purple-500/20 via-indigo-500/20 to-purple-600/20 border border-white/15 relative before:absolute before:inset-0 before:bg-gradient-to-b before:from-white/10 before:to-transparent before:rounded-[28px] before:pointer-events-none",
+    base: "bg-gradient-to-br from-blue-500/20 via-slate-500/10 to-blue-600/20 border border-white/10 relative before:absolute before:inset-0 before:bg-gradient-to-b before:from-white/10 before:to-transparent before:rounded-[28px] before:pointer-events-none",
     padding: "p-5",
     radius: "rounded-[28px]",
     shadow: "shadow-lg shadow-black/10",
@@ -150,7 +150,7 @@ export const spotlight = {
 // ============================================
 
 export const buttons = {
-  primary: "bg-gradient-to-r from-[#6C4BFF] to-[#9A3DFF] text-white font-semibold rounded-xl py-3 px-6 shadow-lg shadow-purple-500/20 active:scale-[0.97] transition-all",
+  primary: "bg-gradient-to-r from-blue-600 to-blue-700 text-white font-semibold rounded-xl py-3 px-6 shadow-lg shadow-blue-500/20 active:scale-[0.97] transition-all",
   secondary: "bg-white/5 border border-white/10 text-white/70 hover:text-white/90 rounded-xl py-3 px-4 transition-all",
   tertiary: "text-white/60 hover:text-white/90 transition-colors",
   icon: "p-2 hover:bg-white/10 rounded-lg transition-colors active:scale-95",
@@ -189,10 +189,10 @@ export const glass = {
 // ============================================
 
 export const gradients = {
-  page: "bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900",
+  page: "bg-black",
   card: "bg-gradient-to-br from-[#11121A] via-[#171822] to-[#12131A]",
-  primary: "bg-gradient-to-r from-[#6C4BFF] to-[#9A3DFF]",
-  secondary: "bg-gradient-to-r from-blue-500 to-purple-600",
+  primary: "bg-gradient-to-r from-blue-600 to-blue-700",
+  secondary: "bg-gradient-to-r from-blue-500 to-blue-600",
 } as const;
 
 // ============================================
@@ -233,7 +233,7 @@ export const scroll = {
 export const sectionHeader = {
   base: "flex items-center justify-between mb-4 md:mb-5",
   title: "font-semibold text-[17px] md:text-[20px]",
-  action: "text-sm text-purple-300 hover:text-white transition-colors",
+  action: "text-sm text-blue-400 hover:text-white transition-colors",
 } as const;
 
 // ============================================
