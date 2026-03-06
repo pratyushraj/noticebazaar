@@ -1270,6 +1270,42 @@ router.post(
   }
 );
 
+
+/**
+ * POST /api/collab/:username/upload-brand-logo
+ * Upload optional brand logo (public, no auth). Returns public URL.
+ */
+router.post(
+  '/:username/upload-brand-logo',
+  barterImageUpload.single('file'), // Reusing barterImageUpload for same limits
+  async (req: Request & { file?: Express.Multer.File }, res: Response) => {
+    try {
+      const file = req.file;
+      if (!file || !file.buffer) {
+        return res.status(400).json({ success: false, error: 'No image file provided' });
+      }
+      const allowed = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/svg+xml'];
+      if (!allowed.includes(file.mimetype)) {
+        return res.status(400).json({ success: false, error: 'Only JPEG, PNG, WebP, SVG, and GIF are allowed' });
+      }
+      const ext = file.mimetype.split('/')[1].split('+')[0]; // Simple extension Extraction
+      const path = `collab-requests/logos/${crypto.randomUUID()}.${ext}`;
+      const { error: uploadError } = await supabase.storage
+        .from('creator-assets')
+        .upload(path, file.buffer, { contentType: file.mimetype, upsert: false });
+      if (uploadError) {
+        console.error('[CollabRequests] Brief logo upload error:', uploadError);
+        return res.status(500).json({ success: false, error: 'Failed to upload logo' });
+      }
+      const { data: urlData } = supabase.storage.from('creator-assets').getPublicUrl(path);
+      return res.status(200).json({ success: true, url: urlData.publicUrl });
+    } catch (e) {
+      console.error('[CollabRequests] Logo upload exception:', e);
+      return res.status(500).json({ success: false, error: 'Failed to upload logo' });
+    }
+  }
+);
+
 /**
  * POST /api/collab/:username/submit
  * Submit a collaboration request (public, no auth)
@@ -1285,6 +1321,7 @@ router.post('/:username/submit', async (req: Request, res: Response) => {
       brand_phone,
       brand_website,
       brand_instagram,
+      brand_logo_url,
       collab_type,
       budget_range,
       exact_budget,
@@ -1383,6 +1420,7 @@ router.post('/:username/submit', async (req: Request, res: Response) => {
       brand_phone: brand_phone?.trim() || null,
       brand_website: brand_website?.trim() || null,
       brand_instagram: brand_instagram?.trim() || null,
+      brand_logo_url: brand_logo_url?.trim() || null,
       collab_type: collabTypeForDb,
       campaign_description: campaignDescriptionWithTerms,
       deliverables: Array.isArray(deliverables) ? deliverables : [],
@@ -1572,6 +1610,7 @@ router.post('/:username/submit', async (req: Request, res: Response) => {
       website: brand_website?.trim() || null,
       instagram: brand_instagram?.trim() || null,
       address: brand_address?.trim() || null,
+      logo_url: brand_logo_url?.trim() || null,
       gstin: brand_gstin && typeof brand_gstin === 'string' ? brand_gstin.trim().toUpperCase() : null,
     });
 
@@ -1585,6 +1624,7 @@ router.post('/:username/submit', async (req: Request, res: Response) => {
       brand_phone: basePayload.brand_phone,
       brand_website: basePayload.brand_website,
       brand_instagram: basePayload.brand_instagram,
+      brand_logo_url: basePayload.brand_logo_url,
       collab_type: basePayload.collab_type,
       campaign_description: basePayload.campaign_description,
       deliverables: JSON.stringify(basePayload.deliverables),
@@ -1866,6 +1906,157 @@ router.post('/:username/submit', async (req: Request, res: Response) => {
       success: false,
       error: 'Internal server error',
     });
+  }
+});
+
+/**
+ * GET /api/collab-requests/console/:token
+ * Public endpoint for the unified Brand Deal Console.
+ * Fetches the collaboration lifecycle state regardless of the stage.
+ */
+router.get('/console/:token', async (req: Request, res: Response) => {
+  try {
+    const { token } = req.params;
+    if (!token) return res.status(400).json({ success: false, error: 'Token is required' });
+
+    // 1. Try to find a collab_request by ID (this is our primary console token)
+    let { data: collabRequest, error: collabError } = await supabase
+      .from('collab_requests')
+      .select(`
+        *,
+        creator:creator_id (
+          id,
+          username,
+          first_name,
+          last_name,
+          avatar_url,
+          profile_label
+        )
+      `)
+      .eq('id', token)
+      .maybeSingle();
+
+    if (collabError) {
+      console.error('[CollabConsole] Error fetching collab request:', collabError);
+    }
+
+    // 2. If not found, it might be a deal_details_token or deal_id
+    let brandDeal = null;
+    let dealDetailsToken = null;
+
+    if (!collabRequest) {
+      // Check if it's a deal_details_token
+      const { data: dToken } = await supabase
+        .from('deal_details_tokens')
+        .select('*')
+        .eq('id', token)
+        .maybeSingle();
+
+      if (dToken) {
+        dealDetailsToken = dToken;
+        // Find if this token has a submission linked to a deal
+        const { data: submission } = await supabase
+          .from('deal_details_submissions')
+          .select('deal_id')
+          .eq('token_id', dToken.id)
+          .maybeSingle();
+
+        if (submission?.deal_id) {
+          const { data: deal } = await supabase
+            .from('brand_deals')
+            .select('*')
+            .eq('id', submission.deal_id)
+            .maybeSingle();
+          brandDeal = deal;
+        }
+      } else {
+        // Check if it's directly a brand_deal ID
+        const { data: deal } = await supabase
+          .from('brand_deals')
+          .select('*')
+          .eq('id', token)
+          .maybeSingle();
+
+        if (deal) {
+          brandDeal = deal;
+          // Try to find the collab_request that lead to this deal
+          const { data: cr } = await supabase
+            .from('collab_requests')
+            .select('*')
+            .eq('deal_id', deal.id)
+            .maybeSingle();
+          collabRequest = cr;
+        }
+      }
+    } else if (collabRequest.deal_id) {
+      // If we found a collabRequest, also fetch the linked brandDeal
+      const { data: deal } = await supabase
+        .from('brand_deals')
+        .select('*')
+        .eq('id', collabRequest.deal_id)
+        .maybeSingle();
+      brandDeal = deal;
+    }
+
+    if (!collabRequest && !brandDeal && !dealDetailsToken) {
+      return res.status(404).json({ success: false, error: 'Deal or request not found' });
+    }
+
+    // 3. Resolve Creator Info
+    let creator = collabRequest?.creator || null;
+    if (!creator && brandDeal?.creator_id) {
+      const { data: c } = await supabase
+        .from('profiles')
+        .select('id, username, first_name, last_name, avatar_url, profile_label')
+        .eq('id', brandDeal.creator_id)
+        .maybeSingle();
+      creator = c;
+    }
+
+    // 4. Activity Logs
+    let activity = [];
+    if (brandDeal?.id) {
+      const { data: logs } = await supabase
+        .from('deal_action_logs')
+        .select('*')
+        .eq('deal_id', brandDeal.id)
+        .order('created_at', { ascending: false });
+      activity = logs || [];
+    }
+
+    // 5. Construct Lifecycle State
+    let stage = 'PROPOSAL';
+    if (collabRequest?.status === 'accepted' || brandDeal?.status === 'Drafting' || brandDeal?.status === 'Intake') {
+      stage = 'INTAKE';
+    }
+    if (brandDeal?.status === 'CONTRACT_READY') {
+      stage = 'SIGNING';
+    }
+    if (brandDeal?.status === 'Executing') {
+      stage = 'EXECUTING';
+    }
+    if (brandDeal?.status === 'Vested' || brandDeal?.status === 'Completed') {
+      stage = 'VESTED';
+    }
+
+    return res.json({
+      success: true,
+      stage,
+      collabRequest,
+      brandDeal,
+      creator: creator ? {
+        name: `${creator.first_name || ''} ${creator.last_name || ''}`.trim() || creator.username,
+        username: creator.username,
+        avatar_url: creator.avatar_url,
+        profile_label: creator.profile_label
+      } : null,
+      activity,
+      dealDetailsToken
+    });
+
+  } catch (error: any) {
+    console.error('[CollabConsole] Universal fetch error:', error);
+    return res.status(500).json({ success: false, error: 'Internal server error' });
   }
 });
 

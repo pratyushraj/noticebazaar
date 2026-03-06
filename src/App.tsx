@@ -107,6 +107,7 @@ import ConsumerComplaintsHowItWorks from "./pages/ConsumerComplaintsHowItWorks";
 import UpgradePage from "./pages/UpgradePage";
 import CollabLinkLanding from "./pages/CollabLinkLanding";
 import CollabLinkSuccess from "./pages/CollabLinkSuccess";
+import BrandDealConsole from "./pages/BrandDealConsole";
 import CollabAcceptPage from "./pages/CollabAcceptPage";
 import CollabActionPage from "./pages/CollabActionPage";
 import LegacyCollabRedirect from "./components/collab/LegacyCollabRedirect";
@@ -412,7 +413,7 @@ const App = () => {
                         <Route path="/ship/:token" element={<ShipPage />} />
                         {/* Public Brand Deal Details Page - No auth required */}
                         <Route path="/deal-details/:token" element={<BrandDealDetailsPage />} />
-                        <Route path="/deal/:token" element={<BrandDealDetailsPage />} />
+                        <Route path="/deal/:token" element={<BrandDealConsole />} />
                         {/* Public Feedback Page - No auth required (read-only view) */}
                         <Route path="/feedback/:reportId" element={<FeedbackPage />} />
                         {/* Public Brand eSign Status Page - No auth required */}

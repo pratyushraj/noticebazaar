@@ -338,6 +338,8 @@ const CollabLinkLanding = () => {
   const [campaignCategory, setCampaignCategory] = useState('General');
   const [barterProductImageUrl, setBarterProductImageUrl] = useState<string | null>(null);
   const [barterImageUploading, setBarterImageUploading] = useState(false);
+  const [brandLogoUrl, setBrandLogoUrl] = useState<string | null>(null);
+  const [brandLogoUploading, setBrandLogoUploading] = useState(false);
   const [campaignDescription, setCampaignDescription] = useState('');
   const [deliverables, setDeliverables] = useState<string[]>([]);
   const [usageRights, setUsageRights] = useState(false);
@@ -575,7 +577,43 @@ const CollabLinkLanding = () => {
       toast.error('Failed to upload image.');
     } finally {
       setBarterImageUploading(false);
-      e.target.value = '';
+      if (e.target) e.target.value = '';
+    }
+  };
+
+  const handleLogoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !username) return;
+    const allowed = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/svg+xml'];
+    if (!allowed.includes(file.type)) {
+      toast.error('Please upload a valid image (JPEG, PNG, WebP, SVG, or GIF).');
+      return;
+    }
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error('Logo must be under 2MB.');
+      return;
+    }
+    setBrandLogoUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      const apiBaseUrl = getApiBaseUrl();
+      const res = await fetch(`${apiBaseUrl}/api/collab/${encodeURIComponent(username)}/upload-brand-logo`, {
+        method: 'POST',
+        body: formData,
+      });
+      const data = await res.json().catch(() => ({}));
+      if (data.success && data.url) {
+        setBrandLogoUrl(data.url);
+        toast.success('Brand logo uploaded.');
+      } else {
+        toast.error(data.error || 'Failed to upload logo.');
+      }
+    } catch {
+      toast.error('Failed to upload logo.');
+    } finally {
+      setBrandLogoUploading(false);
+      if (e.target) e.target.value = '';
     }
   };
 
@@ -937,6 +975,7 @@ const CollabLinkLanding = () => {
           brand_phone: brandPhone || undefined,
           brand_website: brandWebsite ? normalizeWebsiteUrl(brandWebsite) : undefined,
           brand_instagram: brandInstagram || undefined,
+          brand_logo_url: brandLogoUrl || undefined,
           collab_type: collabType,
           budget_range: budgetRange || undefined,
           exact_budget: exactBudget ? parseFloat(exactBudget) : undefined,
@@ -962,12 +1001,15 @@ const CollabLinkLanding = () => {
 
       if (data.success) {
         trackEvent('collab_link_form_submitted', { username: username || '', collab_type: collabType });
-        navigate(`/collab/${username}/success`, {
+        // Redirect to the unified Brand Deal Console
+        const consoleToken = data.request.id;
+        navigate(`/deal/${consoleToken}`, {
           state: {
             creatorName: creator?.name || 'the creator',
             submissionType: data.submission_type || (data.lead ? 'lead' : 'request'),
             confirmationMessage: data.message,
             profileLabel: creator?.profile_label || undefined,
+            isNewSubmission: true
           },
         });
       } else {
@@ -1206,12 +1248,12 @@ const CollabLinkLanding = () => {
   const pastBrands = Array.isArray(creator.past_brands)
     ? creator.past_brands.map((b) => (typeof b === 'string' ? b.trim() : '')).filter(Boolean)
     : [];
-  const recentCampaignTypes = Array.isArray(creator.recent_campaign_types)
-    ? creator.recent_campaign_types.map((t) => (typeof t === 'string' ? t.trim() : '')).filter(Boolean)
-    : [];
   const trustedBrands = trustStats?.brands_count ?? 0;
   const avgResponseHours = trustStats?.avg_response_hours ?? null;
   const completionRate = trustStats?.completion_rate ?? null;
+  const recentCampaignTypes = Array.isArray(creator.recent_campaign_types)
+    ? creator.recent_campaign_types.map((t) => (typeof t === 'string' ? t.trim() : '')).filter(Boolean)
+    : [];
   // const completedDeals = creator.past_brand_count || 0;(trustedBrands > 0 ? trustedBrands : pastBrands.length);
   const pastBrandCount = creator.past_brand_count ?? (trustedBrands > 0 ? trustedBrands : pastBrands.length);
   const followerText = followerCount > 0
@@ -1272,21 +1314,16 @@ const CollabLinkLanding = () => {
   const audienceCities = formatAudienceCities(creator.top_cities);
   const audienceLanguage = formatAudienceLanguage(creator.primary_audience_language);
   const audienceRegionLabel = creator.collab_region_label?.trim() || getAudienceRegionLabel(audienceCities);
+  const audienceRelevanceNote = creator.collab_audience_relevance_note?.trim() || 'Strong relevance for North India audience';
   const creatorBio = isScrapedInstagramBio(creator.bio) ? null : creator.bio;
-  const profileLabel = creator.profile_label || (creator.is_registered ? 'Verified Creator Profile' : 'Public Creator Profile');
   const audienceFitLine = creator.collab_audience_fit_note?.trim() || 'Works best for targeted audience campaigns.';
-  const responseCtaLine = avgResponseHours && avgResponseHours > 0
+  const sameDayResponseLine = avgResponseHours && avgResponseHours <= 20
     ? `~${Math.round(avgResponseHours)} hr${Math.round(avgResponseHours) > 1 ? 's' : ''}`
     : '~24 hrs';
   const showEngagementConfidence = engagementRange !== 'Growing Audience';
   const engagementConfidenceNote = 'Above-average engagement for creator size';
   const recentActivityNoteRaw = creator.collab_recent_activity_note?.trim() || 'Posting consistently';
   const recentActivityNote = withNeutralPrefix(recentActivityNoteRaw, 'Currently ');
-  const audienceRelevanceNote = creator.collab_audience_relevance_note?.trim() || 'Strong relevance for North India audience';
-  const activeBrandCollabsMonth = Number(creator.active_brand_collabs_month);
-  const currentMonthCollabCount = Number.isFinite(activeBrandCollabsMonth) && activeBrandCollabsMonth > 0
-    ? activeBrandCollabsMonth
-    : null;
   const campaignSlotNoteRaw = creator.campaign_slot_note?.trim() || 'Selective partnerships';
   const campaignSlotNoteText = withNeutralPrefix(campaignSlotNoteRaw, 'Works with ');
   const deliveryReliabilityNote = creator.collab_delivery_reliability_note?.trim() || 'Reliable delivery across past collaborations.'; // const responseCtaLine = collabResponseBehaviorPreset
@@ -1294,10 +1331,6 @@ const CollabLinkLanding = () => {
   //   : `Ready to review offers`;
   const responseBehaviorNoteRaw = creator.collab_response_behavior_note?.trim() || 'Most brands receive response within same day';
   const responseBehaviorNote = withNeutralPrefix(responseBehaviorNoteRaw, 'Typically ');
-  const sameDayResponseLine = responseBehaviorNoteRaw
-    .replace(/typically\s*/i, '')
-    .replace(/within\s+same day/i, 'same day')
-    .trim() || 'Most brands receive response same day';
   const ctaTrustNote = creator.collab_cta_trust_note?.trim() || 'Creator notified instantly — no DM required.';
   // const ctaTrustNote = creator.collab_cta_trust_note;
   const ctaDmNote = creator.collab_cta_dm_note?.trim() || 'No DMs required — creator replies here.';
@@ -2100,6 +2133,67 @@ const CollabLinkLanding = () => {
                       />
                       {errors.brandName && (
                         <p className="text-xs text-red-400 mt-1">{errors.brandName}</p>
+                      )}
+                    </div>
+
+                    <div className="space-y-4 rounded-lg border border-white/10 bg-white/5 p-4">
+                      <div className="flex items-center justify-between">
+                        <label className={`block text-white ${typeLabel}`}>
+                          <span className="inline-flex items-center gap-2"><ImageIcon className="h-4 w-4 text-slate-300" />Brand Identity (Logo)</span>
+                        </label>
+                        {brandLogoUrl && (
+                          <button
+                            type="button"
+                            onClick={() => setBrandLogoUrl(null)}
+                            className="text-[10px] text-red-400 hover:text-red-300 uppercase font-bold tracking-wider"
+                          >
+                            Remove
+                          </button>
+                        )}
+                      </div>
+
+                      {!brandLogoUrl ? (
+                        <div className="relative">
+                          <input
+                            type="file"
+                            id="logo-upload"
+                            accept="image/jpeg,image/png,image/webp,image/gif,image/svg+xml"
+                            onChange={handleLogoChange}
+                            disabled={brandLogoUploading}
+                            className="hidden"
+                          />
+                          <label
+                            htmlFor="logo-upload"
+                            className={`flex flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-white/20 bg-white/5 p-6 transition-all hover:bg-white/10 cursor-pointer ${brandLogoUploading ? 'opacity-50 pointer-events-none' : ''}`}
+                          >
+                            {brandLogoUploading ? (
+                              <Loader2 className="h-6 w-6 text-purple-400 animate-spin" />
+                            ) : (
+                              <ImageIcon className="h-6 w-6 text-violet-300" />
+                            )}
+                            <div className="text-center">
+                              <p className="text-sm font-medium text-white">Upload Brand Logo</p>
+                              <p className="text-[10px] text-violet-100/60 mt-1">PNG, JPG, WebP or SVG up to 2MB</p>
+                            </div>
+                          </label>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-4 p-2 rounded-xl bg-white/5 border border-emerald-500/20">
+                          <div className="h-16 w-16 rounded-lg bg-white/10 flex items-center justify-center p-2 overflow-hidden border border-white/10 shadow-inner">
+                            <img
+                              src={brandLogoUrl}
+                              alt="Brand Logo"
+                              className="max-h-full max-w-full object-contain"
+                            />
+                          </div>
+                          <div>
+                            <p className="text-xs font-bold text-emerald-400 flex items-center gap-1.5 uppercase tracking-wider">
+                              <CheckCircle2 className="h-3 w-3" />
+                              Identity Secured
+                            </p>
+                            <p className="text-[10px] text-violet-100/60 mt-0.5">Will be displayed in the deal console</p>
+                          </div>
+                        </div>
                       )}
                     </div>
 
