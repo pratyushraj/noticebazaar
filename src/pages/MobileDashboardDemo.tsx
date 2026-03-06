@@ -803,21 +803,71 @@ const MobileDashboardDemo = ({
                                         initial={{ opacity: 0, x: 10 }}
                                         animate={{ opacity: 1, x: 0 }}
                                         exit={{ opacity: 0, x: -10 }}
-                                        className={cn("p-6 rounded-2xl border mb-6", cardBgColor, borderColor)}
+                                        className="space-y-4"
                                     >
-                                        <h2 className={cn("text-xl font-bold mb-4", textColor)}>Pending Offers</h2>
+                                        <div className="flex items-center justify-between mb-4">
+                                            <h2 className={cn("text-xl font-bold", textColor)}>Pending Offers</h2>
+                                            <span className="px-3 py-1 bg-amber-500/10 text-amber-500 rounded-full text-xs font-bold">
+                                                {pendingOffersCount} New
+                                            </span>
+                                        </div>
+
                                         {pendingOffersCount > 0 ? (
-                                            <div className="space-y-3">
-                                                <p className={cn("text-sm", secondaryTextColor)}>{pendingOffersCount} brands are waiting for your response.</p>
-                                                <button
-                                                    onClick={() => { triggerHaptic(); navigate('/collab-requests'); }}
-                                                    className="w-full py-4 rounded-2xl bg-blue-600 text-white font-bold text-sm active:scale-95 transition-all shadow-lg shadow-blue-500/20"
-                                                >
-                                                    View {pendingOffersCount} Requests
-                                                </button>
+                                            <div className="space-y-4">
+                                                {collabRequests.slice(0, 10).map((req: any, idx: number) => {
+                                                    const expiresDays = 2 + (idx % 3);
+                                                    return (
+                                                        <motion.div
+                                                            key={idx}
+                                                            whileTap={{ scale: 0.98 }}
+                                                            className={cn(
+                                                                "p-4 rounded-2xl border transition-all duration-200 group active:scale-[0.99] hover:-translate-y-[1px] relative",
+                                                                borderColor,
+                                                                isDark ? "bg-white/5 active:bg-white/10" : "bg-white shadow-sm active:bg-slate-50"
+                                                            )}
+                                                        >
+                                                            <div className="flex items-center justify-between mb-1.5">
+                                                                <div className="flex items-center gap-3">
+                                                                    <div className="w-10 h-10 rounded-xl overflow-hidden border border-white/10 shrink-0 shadow-sm">
+                                                                        {getBrandIcon(req.brand_logo_url || req.logo_url, req.category, req.brand_name)}
+                                                                    </div>
+                                                                    <h4 className={cn("text-[15px] font-bold tracking-tight", textColor)}>{req.brand_name}</h4>
+                                                                </div>
+                                                                <div className={cn("text-[15px] font-bold font-outfit", isDark ? "text-white" : "text-slate-900")}>
+                                                                    ₹{req.deal_amount?.toLocaleString() || 'TBD'}
+                                                                </div>
+                                                            </div>
+
+                                                            <div className="flex items-center gap-2 ml-[52px] mb-4">
+                                                                <div className="flex items-center gap-1 bg-slate-500/5 px-2 py-0.5 rounded-full border border-slate-500/10">
+                                                                    <Instagram className="w-2.5 h-2.5 text-pink-500" />
+                                                                    <span className={cn("text-[10px] font-bold", isDark ? "text-slate-300" : "text-slate-600")}>1 Reel + 1 Post</span>
+                                                                </div>
+                                                                <span className={cn("text-[11px] opacity-20", textColor)}>•</span>
+                                                                <span className={cn("text-[11px] font-medium text-amber-500")}>Expires in {expiresDays}d</span>
+                                                            </div>
+
+                                                            <div className="flex items-center justify-between mt-2 pt-3 border-t border-slate-500/10">
+                                                                <div className={cn(
+                                                                    "px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider",
+                                                                    isDark ? "bg-amber-500/10 text-amber-400" : "bg-amber-50 text-amber-600"
+                                                                )}>
+                                                                    Pending Response
+                                                                </div>
+
+                                                                <button
+                                                                    onClick={(e) => { e.stopPropagation(); onAcceptRequest?.(req.id); }}
+                                                                    className="px-4 py-1.5 bg-blue-600 text-white rounded-lg text-[11px] font-bold active:scale-95 transition-all"
+                                                                >
+                                                                    View Details
+                                                                </button>
+                                                            </div>
+                                                        </motion.div>
+                                                    );
+                                                })}
                                             </div>
                                         ) : (
-                                            <div className="text-center py-8">
+                                            <div className="text-center py-12">
                                                 <Handshake className={cn("w-12 h-12 mx-auto mb-3 opacity-20", isDark ? "text-white" : "text-slate-900")} />
                                                 <p className={cn("text-sm", secondaryTextColor)}>No new requests right now.</p>
                                             </div>
@@ -825,13 +875,6 @@ const MobileDashboardDemo = ({
                                     </motion.div>
                                 )}
                             </AnimatePresence>
-
-                            <button
-                                onClick={() => { triggerHaptic(); navigate('/creator-contracts'); }}
-                                className="w-full py-4 rounded-2xl bg-blue-600 text-white font-bold shadow-lg shadow-blue-500/20 active:scale-95 transition-all"
-                            >
-                                Manage All Contracts
-                            </button>
                         </div>
                     )}
 
