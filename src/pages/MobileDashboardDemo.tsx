@@ -129,7 +129,7 @@ const MobileDashboardDemo = ({
     };
 
     const getBrandIcon = (logo?: string, category?: string) => {
-        if (logo) return <img src={logo} className="w-full h-full object-contain rounded-xl" />;
+        if (logo) return <img src={logo} className="w-full h-full object-cover" />;
         const cat = category?.toLowerCase() || '';
         if (cat.includes('fit') || cat.includes('gym') || cat.includes('sport')) return <Dumbbell className="w-5 h-5 text-slate-400" />;
         if (cat.includes('cloth') || cat.includes('fash') || cat.includes('beauty') || cat.includes('skin')) return <Shirt className="w-5 h-5 text-slate-400" />;
@@ -322,7 +322,7 @@ const MobileDashboardDemo = ({
                                                         {/* Row 1: Brand Header */}
                                                         <div className="flex justify-between items-start mb-4">
                                                             <div className="flex items-center gap-3">
-                                                                <div className={cn("w-10 h-10 rounded-full border overflow-hidden flex items-center justify-center p-1 shrink-0 shadow-sm", isDark ? "bg-[#1A253C] border-white/10" : "bg-white border-slate-200")}>
+                                                                <div className={cn("w-11 h-11 rounded-full border overflow-hidden flex items-center justify-center shrink-0 shadow-sm", isDark ? "bg-[#1A253C] border-white/10" : "bg-white border-slate-200")}>
                                                                     {getBrandIcon(req.brand_logo, req.category)}
                                                                 </div>
                                                                 <div className="min-w-0">
@@ -343,28 +343,24 @@ const MobileDashboardDemo = ({
                                                             </div>
                                                         </div>
 
-                                                        {/* Row 2: Metadata */}
-                                                        <div className="grid grid-cols-[1.5fr_1fr] gap-3 mb-4 bg-slate-50/50 dark:bg-[#1E293B]/30 p-3 rounded-xl border border-slate-100 dark:border-white/5">
-                                                            <div>
-                                                                <p className={cn("text-[10px] uppercase tracking-[0.08em] font-bold mb-1", isDark ? "text-slate-500" : "text-slate-400")}>Deliverables</p>
-                                                                <div className="space-y-0.5 font-medium text-[13px]">
-                                                                    {deliverablesArr.map((d, i) => (
-                                                                        <p key={i} className="flex gap-1.5 items-center">
-                                                                            <span className="text-slate-400/70 text-[10px]">•</span>
-                                                                            <span className={textColor}>{d}</span>
-                                                                        </p>
-                                                                    ))}
-                                                                </div>
+                                                        {/* Row 2: Metadata (Pills) */}
+                                                        <div className="flex flex-col gap-2.5 mb-5 mt-1">
+                                                            <div className="flex flex-wrap gap-1.5">
+                                                                {deliverablesArr.map((d, i) => (
+                                                                    <span key={i} className={cn("px-2 py-1 rounded-[8px] text-[11px] font-semibold border", isDark ? "bg-[#1E293B]/60 border-white/10 text-slate-300" : "bg-slate-50 border-slate-200 text-slate-600")}>
+                                                                        {d}
+                                                                    </span>
+                                                                ))}
                                                             </div>
-                                                            <div>
-                                                                <p className={cn("text-[10px] uppercase tracking-[0.08em] font-bold mb-1", isDark ? "text-slate-500" : "text-slate-400")}>Deadline</p>
-                                                                <p className={cn("text-[13px] font-semibold mb-1", textColor)}>
-                                                                    {req.deadline ? new Date(req.deadline).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) : '21 Mar'}
-                                                                </p>
+                                                            <div className="flex items-center gap-1.5">
+                                                                <div className={cn("flex items-center gap-1.5 px-2 py-1 rounded-[8px] text-[11px] font-semibold border", isDark ? "bg-[#1E293B]/60 border-white/10 text-slate-300" : "bg-slate-50 border-slate-200 text-slate-600")}>
+                                                                    <CalendarIcon className="w-3 h-3 text-slate-400" />
+                                                                    <span>{req.deadline ? new Date(req.deadline).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) : '21 Mar'}</span>
+                                                                </div>
                                                                 {deadlineText && deadlineText !== '21 Mar' && (
-                                                                    <div className={cn("inline-flex px-1.5 py-0.5 rounded text-[10px] font-bold", isDark ? "bg-amber-500/10 text-amber-500" : "bg-amber-50 text-amber-600")}>
+                                                                    <span className={cn("px-2 py-1 rounded-[8px] text-[10px] font-bold tracking-wide uppercase", isDark ? "bg-amber-500/10 text-amber-500" : "bg-amber-50 text-amber-600")}>
                                                                         {deadlineText.replace('(', '').replace(')', '')}
-                                                                    </div>
+                                                                    </span>
                                                                 )}
                                                             </div>
                                                         </div>
