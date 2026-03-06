@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import {
     User, Search, ShieldCheck, Handshake, SlidersHorizontal,
     LayoutDashboard, CreditCard, Shield, Briefcase, Menu, Clapperboard, Calendar as CalendarIcon,
-    Target, Dumbbell, Shirt, Sun, Moon, RefreshCw, Loader2, LogOut, Instagram, Bell, ChevronRight, Check, Zap, Plus, Link2
+    Target, Dumbbell, Shirt, Sun, Moon, RefreshCw, Loader2, LogOut, Instagram, Bell, ChevronRight, Check, Zap, Plus, Link2, TrendingUp
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
@@ -136,7 +136,10 @@ const MobileDashboardDemo = ({
         return <Target className="w-5 h-5 text-slate-400" />;
     };
 
-    const formatCurrency = (amt: number) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(amt);
+    const formatCurrency = (amt: number) => {
+        if (amt >= 100000) return `₹${(amt / 100000).toFixed(1)}L`;
+        return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(amt);
+    };
 
     const upcomingCampaigns = [
         { id: '1', title: 'Brand Shoot with FitScience', date: '12 April, 2:00 PM', status: 'Confirmed' },
@@ -202,7 +205,9 @@ const MobileDashboardDemo = ({
                                         <button onClick={() => handleAction('notifications')} className={cn('relative', secondaryTextColor)}>
                                             <Bell className="w-5 h-5" />
                                             {collabRequests.length > 0 && (
-                                                <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-blue-500 rounded-full border-2 border-transparent" style={{ borderColor: bgColor }} />
+                                                <span className="absolute -top-1.5 -right-1.5 w-[18px] h-[18px] bg-red-500 rounded-full border-2 text-[9px] font-bold flex items-center justify-center text-white" style={{ borderColor: bgColor }}>
+                                                    {collabRequests.length}
+                                                </span>
                                             )}
                                         </button>
                                         <button onClick={toggleTheme} className={secondaryTextColor}>
@@ -242,9 +247,18 @@ const MobileDashboardDemo = ({
                                     <p className={cn('text-[32px] font-semibold tracking-tight mt-0.5', textColor)}>
                                         ₹{(earnings / 100).toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
                                     </p>
-                                    <p className={cn('text-[12px] font-medium mt-1', isDark ? 'text-slate-500' : 'text-slate-400')}>
-                                        {earnings === 0 ? 'No earnings yet this month' : '+14% from last month'}
-                                    </p>
+                                    {earnings === 0 ? (
+                                        <div className="flex items-center gap-1.5 mt-1 border border-blue-500/20 bg-blue-500/5 px-2.5 py-1 rounded-full w-fit">
+                                            <TrendingUp className="w-3 h-3 text-blue-500" strokeWidth={2.5} />
+                                            <span className={cn('text-[11px] font-semibold tracking-wide uppercase', isDark ? 'text-blue-400' : 'text-blue-600')}>
+                                                Complete deals to start earning
+                                            </span>
+                                        </div>
+                                    ) : (
+                                        <p className={cn('text-[12px] font-medium mt-1', isDark ? 'text-emerald-400' : 'text-emerald-600')}>
+                                            +14% from last month
+                                        </p>
+                                    )}
                                 </motion.div>
 
                                 {/* Row 2: Active & Pending Deals (Side by side) */}
@@ -331,7 +345,11 @@ const MobileDashboardDemo = ({
                                                                         <p className={cn("text-[12px] font-medium", secondaryTextColor)}>{req.category || 'Lifestyle'}</p>
                                                                         <span className={cn("text-[10px]", secondaryTextColor)}>•</span>
                                                                         <ShieldCheck className="w-3.5 h-3.5 text-blue-500" strokeWidth={1.5} />
-                                                                        <span className={cn("text-[12px] font-medium", isDark ? "text-slate-400" : "text-slate-500")}>Verified Brand</span>
+                                                                        <span className={cn("text-[12px] font-medium", isDark ? "text-slate-400" : "text-slate-500")}>Verified</span>
+                                                                        <span className={cn("text-[10px]", secondaryTextColor)}>•</span>
+                                                                        <span className={cn("text-[10px] font-bold uppercase tracking-wide", req.status === 'active' ? "text-emerald-500" : "text-amber-500")}>
+                                                                            {req.status === 'active' ? 'ACTIVE DEAL' : 'PENDING'}
+                                                                        </span>
                                                                     </div>
                                                                 </div>
                                                             </div>
@@ -381,9 +399,7 @@ const MobileDashboardDemo = ({
                                                                 disabled={processingDeal === req.id}
                                                                 className={cn(
                                                                     "flex-1 h-10 rounded-[12px] font-semibold text-[13px] transition-all flex items-center justify-center gap-2",
-                                                                    isDark
-                                                                        ? "bg-[#0F172A] border border-[#1E293B] text-white hover:bg-[#1E293B]"
-                                                                        : "bg-slate-900 border border-slate-900 text-white hover:bg-slate-800 shadow-sm"
+                                                                    "bg-blue-600 border border-blue-600 text-white hover:bg-blue-700 shadow-md hover:shadow-lg"
                                                                 )}
                                                             >
                                                                 {processingDeal === req.id ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Accept Deal'}
