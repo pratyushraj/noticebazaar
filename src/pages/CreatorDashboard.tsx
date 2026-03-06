@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { createPortal } from 'react-dom';
-import { Home, Briefcase, CreditCard, Shield, TrendingUp, Calendar, FileText, FileEdit, AlertCircle, Clock, ChevronRight, Plus, Search, Target, BarChart3, LogOut, Loader2, XCircle, Menu, Link2, Copy, ExternalLink, Check, AlertTriangle, MessageCircle, Instagram, MapPin, BellRing } from 'lucide-react';
+import { Briefcase, CreditCard, Shield, TrendingUp, FileText, FileEdit, ChevronRight, Search, Target, BarChart3, LogOut, Loader2, XCircle, Menu, Link2, Copy, ExternalLink, Check, AlertTriangle, MessageCircle, Instagram, MapPin, BellRing } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { useSignOut } from '@/lib/hooks/useAuth';
@@ -13,15 +13,14 @@ import { supabase } from '@/integrations/supabase/client';
 import { logger } from '@/lib/utils/logger';
 import { isCreatorPro } from '@/lib/subscription';
 import { getInitials } from '@/lib/utils/avatar';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { triggerHaptic, HapticPatterns } from '@/lib/utils/haptics';
 import { trackEvent } from '@/lib/utils/analytics';
 import { cn } from '@/lib/utils';
 import { getApiBaseUrl, fetchWithTimeout } from '@/lib/utils/api';
 import { getCollabReadiness } from '@/lib/collab/readiness';
-import { sectionLayout, animations, spacing, typography, separators, iconSizes, scroll, sectionHeader, gradients, buttons, glass, shadows, spotlight, radius, zIndex, vision, motion as motionTokens, colors } from '@/lib/design-system';
-import { PremiumButton } from '@/components/ui/PremiumButton';
-import { BaseCard, SectionCard, StatCard, ActionCard } from '@/components/ui/card-variants';
+import { sectionLayout, animations, spacing, typography, separators, iconSizes, scroll, sectionHeader, gradients, buttons, shadows, radius, zIndex, vision, motion as motionTokens } from '@/lib/design-system';
+import { BaseCard, SectionCard, StatCard } from '@/components/ui/card-variants';
 // Onboarding components - commented out if not currently used
 // import OnboardingChecklist from '@/components/onboarding/OnboardingChecklist';
 // import InteractiveTutorial from '@/components/onboarding/InteractiveTutorial';
@@ -134,8 +133,8 @@ const CreatorDashboard = () => {
         }
         data = { success: false, requests: [] };
       }
-      const list = Array.isArray(data?.requests) ? data.requests : [];
-      const pending = list.filter((r: { status?: string }) => (r.status || '').toLowerCase() === 'pending');
+      const list = Array.isArray(data?.requests) ? (data.requests as any[]) : [];
+      const pending = list.filter((r) => (r.status || '').toLowerCase() === 'pending');
       setPendingCollabRequestsCount(pending.length);
       // Keep the list small on dashboard, but unified (paid + barter in one list)
       setCollabRequestsPreview(
@@ -1099,6 +1098,7 @@ const CreatorDashboard = () => {
           setDeclineRequestId(id);
           setShowDeclineRequestDialog(true);
         }}
+        onOpenMenu={() => setShowMenu(true)}
         isRefreshing={isRefreshing}
         onRefresh={handleRefresh}
       />

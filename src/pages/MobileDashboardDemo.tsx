@@ -2,7 +2,7 @@ import React from 'react';
 import {
     Bell, Check, ChevronRight,
     Plus, User, Zap, FileText, Search, ShieldCheck, Clock, Handshake, SlidersHorizontal,
-    LayoutDashboard, CreditCard, Link as LinkIcon, Shield, Briefcase, Menu, Package, Clapperboard, Calendar as CalendarIcon, Target, Dumbbell, Shirt, Mail, Grid2X2, Sun, Moon, RefreshCw, Loader2
+    LayoutDashboard, CreditCard, Link as LinkIcon, Shield, Briefcase, Menu, Package, Clapperboard, Calendar as CalendarIcon, Target, Dumbbell, Shirt, Mail, Grid2X2, Sun, Moon, RefreshCw, Loader2, LogOut, Instagram
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
@@ -16,6 +16,7 @@ interface MobileDashboardProps {
     stats?: any;
     onAcceptRequest?: (req: any) => Promise<void>;
     onDeclineRequest?: (id: string) => void;
+    onOpenMenu?: () => void;
     isRefreshing?: boolean;
     onRefresh?: () => Promise<void>;
 }
@@ -27,6 +28,7 @@ const MobileDashboardDemo = ({
     brandDeals = [],
     stats,
     onAcceptRequest,
+    onOpenMenu,
     isRefreshing: isRefreshingProp,
     onRefresh
 }: MobileDashboardProps) => {
@@ -153,12 +155,26 @@ const MobileDashboardDemo = ({
         if (action === 'notifications') {
             navigate('/notifications');
         } else if (action === 'menu') {
-            alert("Menu options: Profile, Settings, Help, Log Out");
+            if (onOpenMenu) onOpenMenu();
         } else if (action === 'view_all') {
             setActiveTab('collabs');
         } else if (action === 'withdraw') {
             navigate('/creator-payments');
         }
+    };
+
+    // Category logo helper
+    const getBrandIcon = (logo?: string, category?: string) => {
+        if (logo) return <img src={logo} className="w-full h-full object-contain rounded-lg" />;
+
+        const cat = category?.toLowerCase() || '';
+        if (cat.includes('fit') || cat.includes('gym') || cat.includes('health') || cat.includes('sport')) {
+            return <Dumbbell className="w-6 h-6 text-blue-500" />;
+        }
+        if (cat.includes('cloth') || cat.includes('fash') || cat.includes('wear') || cat.includes('style')) {
+            return <Shirt className="w-6 h-6 text-purple-500" />;
+        }
+        return <Target className="w-6 h-6 text-blue-500" />;
     };
 
     // Format currency helper
@@ -372,11 +388,7 @@ const MobileDashboardDemo = ({
                                                     <div className="flex items-start justify-between mb-5">
                                                         <div className="flex gap-4">
                                                             <div className={cn("w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 shadow-lg p-2", isDark ? "bg-zinc-800" : "bg-slate-100")}>
-                                                                {req.brand_logo ? (
-                                                                    <img src={req.brand_logo} className="w-full h-full object-contain rounded-lg" />
-                                                                ) : (
-                                                                    <Target className={cn("w-6 h-6", isDark ? "text-slate-600" : "text-slate-400")} />
-                                                                )}
+                                                                {getBrandIcon(req.brand_logo, req.category)}
                                                             </div>
                                                             <div>
                                                                 <div className="flex items-center gap-1.5">
@@ -438,11 +450,11 @@ const MobileDashboardDemo = ({
                                     </div>
                                 </section>
 
-                                {/* Upcoming Campaigns Section */}
+                                {/* Upcoming Campaigns Section moved here but will be duplicated/sticky if requested */}
                                 <section className="pb-10">
                                     <div className="flex items-center justify-between mb-4">
-                                        <h2 className={cn("text-[16px] font-bold tracking-tight", isDark ? "text-white" : "text-slate-900")}>Upcoming Deadlines</h2>
-                                        <button onClick={() => navigate('/calendar')} className="text-[12px] text-blue-400 font-bold active:scale-95 transition-all">See Calendar</button>
+                                        <h2 className={cn("text-[16px] font-bold tracking-tight", isDark ? "text-white" : "text-slate-900")}>Campaign Pipeline</h2>
+                                        <button onClick={() => navigate('/calendar')} className="text-[12px] text-blue-400 font-bold active:scale-95 transition-all">View Schedule</button>
                                     </div>
 
                                     {brandDeals.filter(d => d.due_date && d.status !== 'Completed').length === 0 ? (
@@ -451,39 +463,31 @@ const MobileDashboardDemo = ({
                                             <p className="text-xs">No imminent deadlines</p>
                                         </div>
                                     ) : (
-                                        brandDeals.filter(d => d.due_date && d.status !== 'Completed').slice(0, 1).map(deal => (
-                                            <div key={deal.id} className={cn(
-                                                "rounded-2xl p-4 border flex items-center justify-between shadow-xl transition-colors duration-300",
-                                                isDark ? "bg-[#15171B] border-white/5 shadow-black/20" : "bg-white border-slate-200 shadow-slate-200/50"
-                                            )}>
-                                                <div className="flex gap-4 items-center">
-                                                    <div className={cn("w-14 h-14 rounded-2xl border flex flex-col items-center justify-center overflow-hidden", isDark ? "bg-white/5 border-white/10" : "bg-slate-50 border-slate-200")}>
-                                                        <div className="w-full h-4 bg-red-500 flex items-center justify-center">
-                                                            <div className="flex gap-1">
-                                                                <div className="w-[3px] h-[3px] rounded-full bg-red-900" />
-                                                                <div className="w-[3px] h-[3px] rounded-full bg-red-900" />
-                                                            </div>
+                                        <div className="space-y-3">
+                                            {brandDeals.filter(d => d.due_date && d.status !== 'Completed').slice(0, 3).map(deal => (
+                                                <div key={deal.id} className={cn(
+                                                    "rounded-2xl p-4 border flex items-center justify-between shadow-xl transition-colors duration-300",
+                                                    isDark ? "bg-[#15171B] border-white/5 shadow-black/20" : "bg-white border-slate-200 shadow-slate-200/50"
+                                                )}>
+                                                    <div className="flex gap-4 items-center">
+                                                        <div className={cn("w-12 h-12 rounded-2xl flex items-center justify-center shadow-lg p-2", isDark ? "bg-zinc-800" : "bg-slate-100")}>
+                                                            {getBrandIcon(deal.brand_logo, deal.category)}
                                                         </div>
-                                                        <div className="flex-1 flex flex-col items-center justify-center pt-1">
-                                                            <span className={cn("text-[20px] font-black leading-none", isDark ? "text-white" : "text-slate-900")}>
-                                                                {new Date(deal.due_date).getDate()}
-                                                            </span>
+                                                        <div>
+                                                            <h3 className={cn("font-bold text-[14px] tracking-tight truncate max-w-[150px]", isDark ? "text-white" : "text-slate-900")}>
+                                                                {deal.brand_name}
+                                                            </h3>
+                                                            <p className={cn("text-[11px] font-medium mt-0.5", secondaryTextColor)}>
+                                                                Due: {new Date(deal.due_date).toLocaleDateString()}
+                                                            </p>
                                                         </div>
                                                     </div>
-                                                    <div>
-                                                        <h3 className={cn("font-bold text-[15px] tracking-tight truncate max-w-[150px]", isDark ? "text-white" : "text-slate-900")}>
-                                                            {deal.brand_name}
-                                                        </h3>
-                                                        <p className={cn("text-[13px] font-medium mt-0.5", secondaryTextColor)}>
-                                                            {new Date(deal.due_date).toLocaleDateString('en-IN', { month: 'long' })} • {deal.status}
-                                                        </p>
+                                                    <div className="bg-blue-500/10 text-blue-400 text-[10px] font-black px-3 py-1 rounded-full border border-blue-500/20">
+                                                        Active
                                                     </div>
                                                 </div>
-                                                <div className="bg-blue-500/10 text-blue-400 text-[11px] font-black px-4 py-1.5 rounded-full border border-blue-500/20 shadow-sm">
-                                                    Confirmed
-                                                </div>
-                                            </div>
-                                        ))
+                                            ))}
+                                        </div>
                                     )}
                                 </section>
                             </div>
@@ -548,21 +552,81 @@ const MobileDashboardDemo = ({
                                 "px-5 pb-5 border-b sticky top-0 z-[110] transition-all",
                                 isDark ? "bg-[#0A0B0D] border-white/10" : "bg-white border-slate-100"
                             )} style={{ paddingTop: 'max(env(safe-area-inset-top), 48px)' }}>
-                                <h1 className={cn("text-[22px] font-bold tracking-tight", isDark ? "text-white" : "text-slate-900")}>Ledger</h1>
+                                <div className="flex justify-between items-center">
+                                    <h1 className={cn("text-[22px] font-bold tracking-tight", isDark ? "text-white" : "text-slate-900")}>Ledger</h1>
+                                    <button onClick={() => navigate('/creator-payments')} className={cn("p-2 rounded-full", isDark ? "bg-white/5" : "bg-slate-100")}>
+                                        <SlidersHorizontal className="w-5 h-5" />
+                                    </button>
+                                </div>
                             </div>
+
                             <div className="px-5 pt-6 space-y-6">
-                                <div className="bg-[#0F172A] rounded-2xl p-6 shadow-xl relative overflow-hidden group">
-                                    <Shield className="absolute -right-6 -bottom-6 w-40 h-40 text-blue-50/5 -rotate-12 transition-transform group-hover:scale-110 duration-500" strokeWidth={1} />
-                                    <p className="text-[12px] font-semibold uppercase tracking-wider text-slate-400 mb-1 relative z-10">Vault Balance</p>
-                                    <h2 className="text-[32px] font-bold text-white tracking-tight relative z-10">{formatCurrency(stats?.earnings || 0)}</h2>
-                                    <div className="mt-8 flex items-center justify-between border-t border-slate-700/50 pt-5 relative z-10">
-                                        <div>
-                                            <p className="text-[11px] text-slate-400 font-medium">Pending Payouts</p>
-                                            <p className="text-[14px] font-bold text-white">{formatCurrency(stats?.pendingPayments || 0)}</p>
-                                        </div>
-                                        <button onClick={() => handleAction('withdraw')} className="px-6 py-2.5 bg-white text-slate-900 rounded-xl text-[13px] font-black shadow-lg shadow-white/10 active:scale-95 transition-all">Payments Hub</button>
+                                {/* Summary Cards */}
+                                <div className="grid grid-cols-2 gap-3">
+                                    <div className={cn("p-4 rounded-2xl border", isDark ? "bg-white/5 border-white/10" : "bg-slate-50 border-slate-200")}>
+                                        <p className={cn("text-[11px] font-bold uppercase tracking-wider mb-1", secondaryTextColor)}>Paid</p>
+                                        <h3 className="text-[18px] font-bold">{formatCurrency(stats?.earnings || 0)}</h3>
+                                    </div>
+                                    <div className={cn("p-4 rounded-2xl border", isDark ? "bg-white/5 border-white/10" : "bg-slate-50 border-slate-200")}>
+                                        <p className={cn("text-[11px] font-bold uppercase tracking-wider mb-1", secondaryTextColor)}>Pending</p>
+                                        <h3 className="text-[18px] font-bold text-amber-500">{formatCurrency(stats?.pendingPayments || 0)}</h3>
                                     </div>
                                 </div>
+
+                                {/* Active Deals / Transactions */}
+                                <div className="space-y-4">
+                                    <div className="flex items-center justify-between">
+                                        <h3 className={cn("font-bold text-[15px]", isDark ? "text-white" : "text-slate-900")}>Active Contracts</h3>
+                                        <button onClick={() => navigate('/creator-contracts')} className="text-blue-500 text-[13px] font-bold">View All</button>
+                                    </div>
+
+                                    {brandDeals && brandDeals.length > 0 ? (
+                                        <div className="space-y-3">
+                                            {brandDeals.slice(0, 5).map((deal) => (
+                                                <button
+                                                    key={deal.id}
+                                                    onClick={() => navigate(`/creator-contracts/${deal.id}`)}
+                                                    className={cn(
+                                                        "w-full p-4 rounded-2xl border text-left flex items-center justify-between transition-all active:scale-[0.98]",
+                                                        isDark ? "bg-[#15171B] border-white/5 hover:bg-white/5" : "bg-white border-slate-100 shadow-sm hover:border-blue-100"
+                                                    )}
+                                                >
+                                                    <div className="flex items-center gap-3">
+                                                        <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center", isDark ? "bg-zinc-800" : "bg-slate-50")}>
+                                                            <Briefcase className="w-5 h-5 text-blue-500" />
+                                                        </div>
+                                                        <div>
+                                                            <p className={cn("font-bold text-[14px]", isDark ? "text-white" : "text-slate-900")}>{deal.title || deal.brand_name || 'Campaign'}</p>
+                                                            <p className={cn("text-[11px] font-medium", deal.status === 'Completed' ? "text-green-500" : "text-blue-500")}>
+                                                                {deal.status === 'Active' ? 'Escrow Secured' : deal.status}
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                    <div className="text-right">
+                                                        <p className="font-bold text-[14px]">{formatCurrency(deal.deal_amount || deal.value || 0)}</p>
+                                                        <div className="flex items-center justify-end gap-1 mt-1">
+                                                            <ShieldCheck className="w-3 h-3 text-green-500" />
+                                                            <span className="text-[10px] text-slate-500 font-bold uppercase">Verified</span>
+                                                        </div>
+                                                    </div>
+                                                </button>
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <div className={cn("p-8 text-center rounded-2xl border border-dashed", isDark ? "border-white/10" : "border-slate-200")}>
+                                            <p className={secondaryTextColor}>No active transactions found</p>
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Payout Hub CTA */}
+                                <button
+                                    onClick={() => navigate('/creator-payments')}
+                                    className="w-full bg-blue-600 text-white rounded-2xl py-4 font-black text-[15px] shadow-lg shadow-blue-500/20 active:scale-95 transition-all flex items-center justify-center gap-2"
+                                >
+                                    <CreditCard className="w-5 h-5" />
+                                    Open Payments & Tax Hub
+                                </button>
                             </div>
                         </div>
                     )}
@@ -585,26 +649,80 @@ const MobileDashboardDemo = ({
                                 <h2 className={cn("text-[24px] font-black mt-6 tracking-tight", isDark ? "text-white" : "text-slate-900")}>@{username}</h2>
                                 <p className={cn("text-[15px] font-medium mt-1", secondaryTextColor)}>{userEmail || 'creator@example.com'}</p>
 
-                                <div className="w-full mt-10 space-y-3">
-                                    <button onClick={() => navigate('/creator-profile')} className={cn("w-full p-4 rounded-xl border flex items-center justify-between", isDark ? "bg-white/5 border-white/5" : "bg-slate-50 border-slate-100")}>
+                                <div className="w-full mt-10 space-y-1">
+                                    <h3 className={cn("text-[12px] font-bold uppercase tracking-widest px-2 mb-2", secondaryTextColor)}>Account Settings</h3>
+
+                                    <button onClick={() => navigate('/creator-profile?section=account')} className={cn("w-full p-4 rounded-xl border flex items-center justify-between", isDark ? "bg-white/5 border-white/5" : "bg-slate-50 border-slate-100")}>
                                         <div className="flex items-center gap-3">
-                                            <User className="w-5 h-5 text-blue-500" />
-                                            <span className="font-bold">Collab Readiness</span>
+                                            <div className="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center">
+                                                <User className="w-4 h-4 text-blue-500" />
+                                            </div>
+                                            <span className="font-bold text-[14px]">Personal Info</span>
                                         </div>
                                         <ChevronRight className="w-4 h-4 text-slate-500" />
                                     </button>
+
+                                    <button onClick={() => navigate('/creator-profile?section=collab')} className={cn("w-full p-4 rounded-xl border flex items-center justify-between", isDark ? "bg-white/5 border-white/5" : "bg-slate-50 border-slate-100")}>
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-8 h-8 rounded-lg bg-purple-500/10 flex items-center justify-center">
+                                                <Zap className="w-4 h-4 text-purple-500" />
+                                            </div>
+                                            <span className="font-bold text-[14px]">Collab Readiness</span>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <span className="px-2 py-0.5 rounded-full bg-green-500/20 text-green-500 text-[10px] font-bold uppercase">Strong</span>
+                                            <ChevronRight className="w-4 h-4 text-slate-500" />
+                                        </div>
+                                    </button>
+
                                     <button onClick={() => navigate('/creator-payments')} className={cn("w-full p-4 rounded-xl border flex items-center justify-between", isDark ? "bg-white/5 border-white/5" : "bg-slate-50 border-slate-100")}>
                                         <div className="flex items-center gap-3">
-                                            <CreditCard className="w-5 h-5 text-emerald-500" />
-                                            <span className="font-bold">Payments & Bank</span>
+                                            <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center">
+                                                <CreditCard className="w-4 h-4 text-emerald-500" />
+                                            </div>
+                                            <span className="font-bold text-[14px]">Payments & Bank</span>
                                         </div>
                                         <ChevronRight className="w-4 h-4 text-slate-500" />
                                     </button>
-                                </div>
 
-                                <button onClick={() => signOutMutation.mutate()} className="mt-10 px-8 py-3 rounded-xl border border-red-500/20 text-red-500 font-bold text-sm active:scale-95 transition-all bg-red-500/5">
-                                    Logout Session
-                                </button>
+                                    <button onClick={() => navigate('/creator-profile?section=platforms')} className={cn("w-full p-4 rounded-xl border flex items-center justify-between", isDark ? "bg-white/5 border-white/5" : "bg-slate-50 border-slate-100")}>
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-8 h-8 rounded-lg bg-red-500/10 flex items-center justify-center">
+                                                <Instagram className="w-4 h-4 text-red-500" />
+                                            </div>
+                                            <span className="font-bold text-[14px]">Social Platforms</span>
+                                        </div>
+                                        <ChevronRight className="w-4 h-4 text-slate-500" />
+                                    </button>
+
+                                    <button onClick={() => navigate('/creator-profile?section=branding')} className={cn("w-full p-4 rounded-xl border flex items-center justify-between", isDark ? "bg-white/5 border-white/5" : "bg-slate-50 border-slate-100")}>
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-8 h-8 rounded-lg bg-pink-500/10 flex items-center justify-center">
+                                                <Target className="w-4 h-4 text-pink-500" />
+                                            </div>
+                                            <span className="font-bold text-[14px]">Branding & Portfolio</span>
+                                        </div>
+                                        <ChevronRight className="w-4 h-4 text-slate-500" />
+                                    </button>
+
+                                    <button onClick={() => navigate('/notifications')} className={cn("w-full p-4 rounded-xl border flex items-center justify-between", isDark ? "bg-white/5 border-white/5" : "bg-slate-50 border-slate-100")}>
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-8 h-8 rounded-lg bg-orange-500/10 flex items-center justify-center">
+                                                <Bell className="w-4 h-4 text-orange-500" />
+                                            </div>
+                                            <span className="font-bold text-[14px]">App Notifications</span>
+                                        </div>
+                                        <ChevronRight className="w-4 h-4 text-slate-500" />
+                                    </button>
+
+                                    <div className="pt-8">
+                                        <button onClick={() => signOutMutation.mutate()} className="w-full py-4 rounded-xl border border-red-500/20 text-red-500 font-bold text-[14px] active:scale-95 transition-all bg-red-500/5 flex items-center justify-center gap-2">
+                                            <LogOut className="w-4 h-4" />
+                                            Sign Out Session
+                                        </button>
+                                        <p className={cn("text-center text-[10px] mt-4 uppercase tracking-[0.2em]", secondaryTextColor)}>CreatorArmour v2.4.0</p>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     )}
