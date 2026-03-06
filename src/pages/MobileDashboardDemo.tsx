@@ -400,7 +400,7 @@ const MobileDashboardDemo = ({
                                                         <div className="flex items-center gap-2 py-3">
                                                             <Clapperboard className="w-3.5 h-3.5 text-slate-500" />
                                                             <span className={cn('text-[12px] font-semibold px-2 py-0.5 rounded-full border', isDark ? 'bg-white/5 border-white/10 text-slate-300' : 'bg-slate-100 border-slate-200 text-slate-700')}>
-                                                                {req.deliverables_summary || 'Reel + Story + Post'}
+                                                                {req.raw?.deliverables ? (Array.isArray(req.raw.deliverables) ? req.raw.deliverables.join(' + ') : req.raw.deliverables) : 'Reel + Story + Post'}
                                                             </span>
                                                             {req.deadline && (
                                                                 <span className={cn('text-[11px] font-semibold ml-auto', secondaryTextColor)}>
