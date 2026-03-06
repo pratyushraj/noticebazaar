@@ -159,14 +159,16 @@ const MobileDashboardDemo = ({
 
             // Premium letter-based icon
             if (bName) {
-                const colors = [
-                    'bg-sky-500', 'bg-emerald-500', 'bg-violet-500',
-                    'bg-rose-500', 'bg-amber-500', 'bg-indigo-500',
-                    'bg-orange-500', 'bg-teal-500', 'bg-pink-500'
-                ];
-                const colorIdx = bName.length % colors.length;
+                const char = bName.trim().charAt(0).toUpperCase();
+                let color = 'bg-slate-500'; // Default
+                if (char >= 'A' && char <= 'E') color = 'bg-violet-500';
+                else if (char >= 'F' && char <= 'J') color = 'bg-blue-500';
+                else if (char >= 'K' && char <= 'O') color = 'bg-emerald-500';
+                else if (char >= 'P' && char <= 'T') color = 'bg-orange-500';
+                else if (char >= 'U' && char <= 'Z') color = 'bg-pink-500';
+
                 return (
-                    <div className={cn("w-full h-full flex items-center justify-center text-white font-bold text-lg shadow-inner", colors[colorIdx])}>
+                    <div className={cn("w-full h-full flex items-center justify-center text-white font-bold text-lg shadow-inner transition-colors duration-500", color)}>
                         {firstLetter}
                     </div>
                 );
@@ -650,7 +652,7 @@ const MobileDashboardDemo = ({
                                             : cn("opacity-40", textColor)
                                     )}
                                 >
-                                    Active Collabs
+                                    Active ({activeDealsCount})
                                 </button>
                                 <button
                                     onClick={() => { triggerHaptic(); setCollabSubTab('pending'); }}
@@ -661,7 +663,7 @@ const MobileDashboardDemo = ({
                                             : cn("opacity-40", textColor)
                                     )}
                                 >
-                                    Pending Offers
+                                    Pending ({pendingOffersCount})
                                 </button>
                             </div>
 
@@ -683,23 +685,62 @@ const MobileDashboardDemo = ({
 
                                         {activeDealsCount > 0 ? (
                                             <div className="space-y-4">
-                                                {brandDeals.slice(0, 5).map((deal: any, idx: number) => (
-                                                    <div key={idx} className={cn("p-4 rounded-xl border", borderColor, isDark ? "bg-white/5" : "bg-slate-50")}>
-                                                        <div className="flex items-center justify-between mb-2">
-                                                            <div className="flex items-center gap-3">
-                                                                <div className="w-8 h-8 rounded-lg overflow-hidden border border-white/10 shrink-0">
-                                                                    {getBrandIcon(deal.brand_logo_url || deal.logo_url, deal.category, deal.brand_name)}
+                                                {brandDeals.slice(0, 10).map((deal: any, idx: number) => {
+                                                    const startedDays = 2 + (idx % 5);
+                                                    return (
+                                                        <motion.div
+                                                            key={idx}
+                                                            drag="x"
+                                                            dragConstraints={{ left: -100, right: 0 }}
+                                                            dragElastic={0.1}
+                                                            whileTap={{ scale: 0.98 }}
+                                                            className={cn(
+                                                                "p-4 rounded-2xl border transition-all duration-200 group active:scale-[0.99] hover:-translate-y-[1px] relative",
+                                                                borderColor,
+                                                                isDark ? "bg-white/5 active:bg-white/10" : "bg-white shadow-sm active:bg-slate-50"
+                                                            )}
+                                                        >
+                                                            <div className="flex items-center justify-between mb-1.5">
+                                                                <div className="flex items-center gap-3">
+                                                                    <div className="w-10 h-10 rounded-xl overflow-hidden border border-white/10 shrink-0 shadow-sm">
+                                                                        {getBrandIcon(deal.brand_logo_url || deal.logo_url, deal.category, deal.brand_name)}
+                                                                    </div>
+                                                                    <h4 className={cn("text-[15px] font-bold tracking-tight", textColor)}>{deal.brand_name}</h4>
                                                                 </div>
-                                                                <span className={cn("text-sm font-bold", textColor)}>{deal.brand_name}</span>
+                                                                <div className={cn("text-[15px] font-bold font-outfit", isDark ? "text-white" : "text-slate-900")}>
+                                                                    ₹{deal.deal_amount?.toLocaleString() || 'TBD'}
+                                                                </div>
                                                             </div>
-                                                            <span className="text-[10px] font-bold text-blue-500 uppercase">IN PROGRESS</span>
-                                                        </div>
-                                                        <div className="flex items-center justify-between text-xs">
-                                                            <span className={secondaryTextColor}>{deal.platform || 'Instagram'}</span>
-                                                            <span className={textColor}>₹{deal.deal_amount?.toLocaleString() || 'TBD'}</span>
-                                                        </div>
-                                                    </div>
-                                                ))}
+
+                                                            <div className="flex items-center gap-1.5 ml-[52px] mb-4">
+                                                                <span className={cn("text-[11px] font-medium", secondaryTextColor)}>{deal.category || 'Other'}</span>
+                                                                <span className={cn("text-[11px] opacity-20", textColor)}>•</span>
+                                                                <span className={cn("text-[11px] font-medium opacity-50", textColor)}>Started {startedDays}d ago</span>
+                                                            </div>
+
+                                                            <div className="flex items-center justify-between mt-2 pt-3 border-t border-slate-500/10">
+                                                                <div className={cn(
+                                                                    "px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider",
+                                                                    isDark ? "bg-blue-500/10 text-blue-400" : "bg-blue-50 text-blue-600"
+                                                                )}>
+                                                                    In Progress
+                                                                </div>
+
+                                                                <div className="flex gap-1">
+                                                                    {[1, 2, 3, 4].map(step => (
+                                                                        <div
+                                                                            key={step}
+                                                                            className={cn(
+                                                                                "w-6 h-1 rounded-full",
+                                                                                step <= 1 ? "bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.3)]" : (isDark ? "bg-white/10" : "bg-slate-200")
+                                                                            )}
+                                                                        />
+                                                                    ))}
+                                                                </div>
+                                                            </div>
+                                                        </motion.div>
+                                                    );
+                                                })}
                                             </div>
                                         ) : (
                                             <div className="text-center py-8">
