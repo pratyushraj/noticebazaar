@@ -203,11 +203,16 @@ const MobileDashboardDemo = ({
             if (bName) {
                 const char = bName.trim().charAt(0).toUpperCase();
                 let color = 'bg-slate-500'; // Default
-                if (char >= 'A' && char <= 'E') color = 'bg-violet-500';
-                else if (char >= 'F' && char <= 'J') color = 'bg-blue-500';
-                else if (char >= 'K' && char <= 'O') color = 'bg-emerald-500';
-                else if (char >= 'P' && char <= 'T') color = 'bg-orange-500';
-                else if (char >= 'U' && char <= 'Z') color = 'bg-pink-500';
+                const nameLower = bName.toLowerCase();
+                if (nameLower.includes('boat')) color = 'bg-gradient-to-br from-violet-600 to-indigo-700';
+                else if (nameLower.includes('lenskart')) color = 'bg-gradient-to-br from-emerald-600 to-teal-700';
+                else if (nameLower.includes('nykaa')) color = 'bg-gradient-to-br from-pink-600 to-rose-700';
+                else if (nameLower.includes('mamaearth')) color = 'bg-gradient-to-br from-teal-600 to-cyan-700';
+                else if (char >= 'A' && char <= 'E') color = 'bg-gradient-to-br from-violet-500 to-purple-600';
+                else if (char >= 'F' && char <= 'J') color = 'bg-gradient-to-br from-blue-500 to-blue-600';
+                else if (char >= 'K' && char <= 'O') color = 'bg-gradient-to-br from-emerald-500 to-teal-600';
+                else if (char >= 'P' && char <= 'T') color = 'bg-gradient-to-br from-orange-500 to-amber-600';
+                else if (char >= 'U' && char <= 'Z') color = 'bg-gradient-to-br from-pink-500 to-rose-600';
 
                 return (
                     <div className={cn("w-full h-full flex items-center justify-center text-white font-bold text-lg shadow-inner transition-colors duration-500", color)}>
@@ -804,62 +809,101 @@ const MobileDashboardDemo = ({
                                         exit={{ opacity: 0, x: -10 }}
                                         className="space-y-4"
                                     >
-                                        <div className="flex items-center justify-between mb-4">
-                                            <h2 className={cn("text-xl font-bold", textColor)}>Pending Offers</h2>
-                                            <span className="px-3 py-1 bg-amber-500/10 text-amber-500 rounded-full text-xs font-bold">
-                                                {pendingOffersCount} New
-                                            </span>
+                                        <div className="flex items-center justify-between mb-5">
+                                            <div>
+                                                <h2 className={cn("text-xl font-bold tracking-tight", textColor)}>Pending Offers</h2>
+                                                <p className={cn("text-[11px] font-medium opacity-50", textColor)}>{pendingOffersCount} new opportunities waiting for you</p>
+                                            </div>
+                                            <div className="px-3 py-1 bg-blue-500/10 text-blue-500 rounded-full text-[10px] font-black tracking-widest uppercase">
+                                                Active Inbox
+                                            </div>
                                         </div>
 
                                         {pendingOffersCount > 0 ? (
                                             <div className="space-y-4">
                                                 {collabRequests.slice(0, 10).map((req: any, idx: number) => {
                                                     const expiresDays = 2 + (idx % 3);
+                                                    const amount = req.deal_amount || req.exact_budget || (idx === 0 ? 8000 : idx === 1 ? 15000 : idx === 2 ? 12000 : 5000);
+
                                                     return (
                                                         <motion.div
                                                             key={idx}
-                                                            whileTap={{ scale: 0.98 }}
+                                                            whileTap={{ scale: 0.983 }}
                                                             className={cn(
-                                                                "p-4 rounded-2xl border transition-all duration-200 group active:scale-[0.99] hover:-translate-y-[1px] relative",
+                                                                "p-4 rounded-2xl border transition-all duration-300 group active:scale-[0.99] hover:-translate-y-[1.5px] relative",
                                                                 borderColor,
-                                                                isDark ? "bg-white/5 active:bg-white/10" : "bg-white shadow-sm active:bg-slate-50"
+                                                                isDark
+                                                                    ? "bg-[#111827]/40 hover:bg-[#111827]/60 shadow-[0_4px_20px_rgba(0,0,0,0.2)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.4)]"
+                                                                    : "bg-white shadow-sm hover:shadow-md active:bg-slate-50"
                                                             )}
                                                         >
-                                                            <div className="flex items-center justify-between mb-1.5">
+                                                            {/* Brand Header & Budget Anchor */}
+                                                            <div className="flex items-start justify-between mb-4">
                                                                 <div className="flex items-center gap-3">
-                                                                    <div className="w-10 h-10 rounded-xl overflow-hidden border border-white/10 shrink-0 shadow-sm">
+                                                                    <div className="w-11 h-11 rounded-xl overflow-hidden border border-white/10 shrink-0 shadow-sm transition-transform group-hover:scale-105 duration-300">
                                                                         {getBrandIcon(req.brand_logo_url || req.logo_url, req.category, req.brand_name)}
                                                                     </div>
-                                                                    <h4 className={cn("text-[15px] font-bold tracking-tight", textColor)}>{req.brand_name}</h4>
+                                                                    <div>
+                                                                        <h4 className={cn("text-[15px] font-bold tracking-tight", textColor)}>{req.brand_name}</h4>
+                                                                        <div className="flex items-center gap-1.5 mt-0.5">
+                                                                            <ShieldCheck className="w-3 h-3 text-blue-500" />
+                                                                            <span className={cn("text-[10px] font-black uppercase tracking-widest opacity-40", textColor)}>Verified Brand</span>
+                                                                        </div>
+                                                                    </div>
                                                                 </div>
-                                                                <div className={cn("text-[15px] font-bold font-outfit", isDark ? "text-white" : "text-slate-900")}>
-                                                                    ₹{(req.deal_amount || req.exact_budget || (idx === 0 ? 8000 : idx === 1 ? 15000 : idx === 2 ? 12000 : 5000)).toLocaleString()}
+                                                                <div className="text-right">
+                                                                    <p className={cn("text-xl font-bold font-outfit tracking-tight", isDark ? "text-white" : "text-slate-900")}>
+                                                                        ₹{amount.toLocaleString()}
+                                                                    </p>
+                                                                    <p className={cn("text-[9px] font-black uppercase tracking-widest opacity-30 mt-0.5", textColor)}>Campaign Budget</p>
                                                                 </div>
                                                             </div>
 
-                                                            <div className="flex items-center gap-2 ml-[52px] mb-4">
-                                                                <div className="flex items-center gap-1 bg-slate-500/5 px-2 py-0.5 rounded-full border border-slate-500/10">
-                                                                    <Instagram className="w-2.5 h-2.5 text-pink-500" />
-                                                                    <span className={cn("text-[10px] font-bold", isDark ? "text-slate-300" : "text-slate-600")}>1 Reel + 1 Post</span>
+                                                            {/* Deliverable Chips & Expiry */}
+                                                            <div className="flex flex-wrap items-center gap-2 mb-4">
+                                                                <div className="flex items-center gap-1.5 bg-slate-500/5 px-2.5 py-1 rounded-lg border border-slate-500/10 hover:bg-slate-500/10 transition-colors">
+                                                                    <Instagram className="w-3 h-3 text-pink-500" />
+                                                                    <span className={cn("text-[10px] font-black uppercase tracking-wider", isDark ? "text-slate-300" : "text-slate-700")}>1 Reel</span>
                                                                 </div>
-                                                                <span className={cn("text-[11px] opacity-20", textColor)}>•</span>
-                                                                <span className={cn("text-[11px] font-medium text-amber-500")}>Expires in {expiresDays}d</span>
-                                                            </div>
-
-                                                            <div className="flex items-center justify-between mt-2 pt-3 border-t border-slate-500/10">
+                                                                <div className="flex items-center gap-1.5 bg-slate-500/5 px-2.5 py-1 rounded-lg border border-slate-500/10 hover:bg-slate-500/10 transition-colors">
+                                                                    <Instagram className="w-3 h-3 text-blue-400" />
+                                                                    <span className={cn("text-[10px] font-black uppercase tracking-wider", isDark ? "text-slate-300" : "text-slate-700")}>1 Post</span>
+                                                                </div>
                                                                 <div className={cn(
-                                                                    "px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider",
-                                                                    isDark ? "bg-amber-500/10 text-amber-400" : "bg-amber-50 text-amber-600"
+                                                                    "flex items-center gap-1.5 ml-auto px-2.5 py-1 rounded-lg border",
+                                                                    isDark ? "bg-amber-500/10 border-amber-500/20 text-amber-400" : "bg-amber-50 border-amber-500/10 text-amber-700"
                                                                 )}>
-                                                                    Pending Response
+                                                                    <Zap className="w-3 h-3 fill-current" />
+                                                                    <span className="text-[10px] font-bold">{expiresDays} Days Left</span>
+                                                                </div>
+                                                            </div>
+
+                                                            {/* Status Label & Action Buttons */}
+                                                            <div className="flex items-center justify-between pt-3 border-t border-slate-500/10">
+                                                                <div className={cn(
+                                                                    "px-2.5 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest",
+                                                                    isDark ? "bg-blue-500/10 text-blue-400" : "bg-blue-50 text-blue-600"
+                                                                )}>
+                                                                    Action Required
                                                                 </div>
 
-                                                                <button
-                                                                    onClick={(e) => { e.stopPropagation(); onAcceptRequest?.(req.id); }}
-                                                                    className="px-4 py-1.5 bg-blue-600 text-white rounded-lg text-[11px] font-bold active:scale-95 transition-all"
-                                                                >
-                                                                    View Details
-                                                                </button>
+                                                                <div className="flex gap-2">
+                                                                    <button
+                                                                        onClick={(e) => { e.stopPropagation(); triggerHaptic(); }}
+                                                                        className={cn(
+                                                                            "px-3.5 py-2 rounded-xl text-[11px] font-bold transition-all active:scale-95",
+                                                                            isDark ? "bg-white/5 text-slate-400 hover:bg-white/10" : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                                                                        )}
+                                                                    >
+                                                                        Review
+                                                                    </button>
+                                                                    <button
+                                                                        onClick={(e) => { e.stopPropagation(); triggerHaptic(); onAcceptRequest?.(req.id); }}
+                                                                        className="px-5 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-[11px] font-black shadow-lg shadow-blue-500/20 active:scale-95 transition-all"
+                                                                    >
+                                                                        Accept Offer
+                                                                    </button>
+                                                                </div>
                                                             </div>
                                                         </motion.div>
                                                     );
